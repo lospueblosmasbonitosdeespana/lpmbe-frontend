@@ -1,19 +1,19 @@
-export default function HomePage() {
+export default async function PueblosPage() {
+  const res = await fetch('http://localhost:3000/pueblos', {
+    cache: 'no-store',
+  });
+
+  const pueblos = await res.json();
+
   return (
-    <main style={{ padding: 48, maxWidth: 900 }}>
-      <h1 style={{ fontSize: 48, marginBottom: 16 }}>
-        Los Pueblos Más Bonitos de España
-      </h1>
+    <main style={{ padding: 24 }}>
+      <h1>Pueblos</h1>
 
-      <p style={{ fontSize: 20, marginBottom: 40 }}>
-        Plataforma oficial de la asociación.
-      </p>
-
-      <nav style={{ display: 'flex', gap: 24 }}>
-        <a href="/pueblos">Pueblos</a>
-        <a href="/notificaciones">Noticias</a>
-        <a href="/rutas">Rutas</a>
-      </nav>
+      <ul>
+        {pueblos.map((p: any) => (
+          <li key={p.id}>{p.nombre}</li>
+        ))}
+      </ul>
     </main>
   );
 }
