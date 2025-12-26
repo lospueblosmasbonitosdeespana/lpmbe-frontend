@@ -8,9 +8,17 @@ type Pueblo = {
   descripcion_larga?: string;
 };
 
+// 🔒 Forzamos render dinámico (no SSG)
+export const dynamic = "force-dynamic";
+
+// 🌍 Base de la API (Railway o local backend)
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
+  "http://localhost:3000";
+
 async function getPuebloBySlug(slug: string): Promise<Pueblo> {
-  // 1. Obtener todos los pueblos
-  const listRes = await fetch("http://localhost:3000/pueblos", {
+  // 1️⃣ Listado de pueblos DESDE LA API
+  const listRes = await fetch(`${API_BASE}/pueblos`, {
     cache: "no-store",
   });
 
@@ -20,15 +28,15 @@ async function getPuebloBySlug(slug: string): Promise<Pueblo> {
 
   const pueblos: Pueblo[] = await listRes.json();
 
-  // 2. Buscar el pueblo por slug
+  // 2️⃣ Buscar por slug
   const pueblo = pueblos.find((p) => p.slug === slug);
 
   if (!pueblo) {
     throw new Error("Pueblo no encontrado");
   }
 
-  // 3. Pedir el detalle por ID (lo que el backend espera)
-  const res = await fetch(`http://localhost:3000/pueblos/${pueblo.id}`, {
+  // 3️⃣ Detalle por ID
+  const res = await fetch(`${API_BASE}/pueblos/${pueblo.id}`, {
     cache: "no-store",
   });
 

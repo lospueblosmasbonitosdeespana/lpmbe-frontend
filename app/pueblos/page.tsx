@@ -8,8 +8,16 @@ type Pueblo = {
   comunidad: string;
 };
 
+// 🔒 Evita SSG / paths raros
+export const dynamic = "force-dynamic";
+
+// 🌍 API real (Railway)
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
+  "http://localhost:3000";
+
 async function getPueblos(): Promise<Pueblo[]> {
-  const res = await fetch("http://localhost:3000/pueblos", {
+  const res = await fetch(`${API_BASE}/pueblos`, {
     cache: "no-store",
   });
 
