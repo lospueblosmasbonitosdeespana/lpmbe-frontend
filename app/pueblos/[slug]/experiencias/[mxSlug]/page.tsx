@@ -1,5 +1,16 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getPuebloBySlug, type Pueblo } from "@/lib/api";
+
+// Helpers para SEO
+function cleanText(input: string) {
+  return input.replace(/\s+/g, " ").trim();
+}
+
+function cut(input: string, max = 160) {
+  const s = cleanText(input);
+  return s.length > max ? s.slice(0, max - 1).trimEnd() + "…" : s;
+}
 
 type Poi = {
   id: number;
@@ -16,6 +27,53 @@ type Poi = {
 
 // 🔒 Forzamos render dinámico (no SSG)
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string; mxSlug: string }>;
+}): Promise<Metadata> {
+  const { slug, mxSlug } = await params;
+  const pueblo = await getPuebloBySlug(slug);
+  const mx = pueblo.multiexperiencias.find(
+    (x: { multiexperiencia: { slug: string } }) =>
+      x.multiexperiencia.slug === mxSlug
+  );
+  const expTitle = mx?.multiexperiencia.titulo ?? "Experiencia";
+  const title = `${expTitle} – ${pueblo.nombre} – Los Pueblos Más Bonitos de España`;
+  const heroImage =
+    mx?.multiexperiencia.foto ??
+    pueblo.foto_destacada ??
+    pueblo.fotos[0]?.url ??
+    null;
+  const descSource = mx?.multiexperiencia.descripcion ?? null;
+  const description = descSource
+    ? cut(descSource, 160)
+    : "Detalle de la experiencia y sus paradas.";
+  const path = `/pueblos/${pueblo.slug}/experiencias/${mxSlug}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    robots: { index: true, follow: true },
+    openGraph: {
+      title,
+      description,
+      url: path,
+      type: "article",
+      images: heroImage
+        ? [{ url: heroImage, alt: `${expTitle} – ${pueblo.nombre}` }]
+        : undefined,
+    },
+    twitter: {
+      card: heroImage ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: heroImage ? [heroImage] : undefined,
+    },
+  };
+}
 
 export default async function MultiexperienciaPage({
   params,
@@ -97,84 +155,249 @@ export default async function MultiexperienciaPage({
         </p>
       </section>
 
+      {/* Resumen de la experiencia */}
+      <section
+        style={{
+          marginTop: "32px",
+          padding: "20px",
+          backgroundColor: "#f9f9f9",
+          borderRadius: "8px",
+          border: "1px solid #e0e0e0",
+        }}
+      >
+        <h2 style={{ marginTop: 0, marginBottom: "16px" }}>
+          Resumen de la experiencia
+        </h2>
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+          <Link
+            href={`/pueblos/${pueblo.slug}`}
+            style={{
+              padding: "10px 16px",
+              fontSize: "14px",
+              border: "1px solid #ddd",
+              borderRadius: "6px",
+              backgroundColor: "#fff",
+              textDecoration: "none",
+              color: "#333",
+              display: "inline-block",
+            }}
+          >
+            Volver al pueblo
+          </Link>
+          <Link
+            href={`/pueblos/${pueblo.slug}#mapa`}
+            style={{
+              padding: "10px 16px",
+              fontSize: "14px",
+              border: "1px solid #ddd",
+              borderRadius: "6px",
+              backgroundColor: "#fff",
+              textDecoration: "none",
+              color: "#333",
+              display: "inline-block",
+            }}
+          >
+            Ver mapa del pueblo
+          </Link>
+          {pueblo.lat && pueblo.lng ? (
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${pueblo.lat},${pueblo.lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                padding: "10px 16px",
+                fontSize: "14px",
+                border: "1px solid #ddd",
+                borderRadius: "6px",
+                backgroundColor: "#fff",
+                textDecoration: "none",
+                color: "#333",
+                display: "inline-block",
+              }}
+            >
+              Cómo llegar
+            </a>
+          ) : (
+            <button
+              disabled
+              style={{
+                padding: "10px 16px",
+                fontSize: "14px",
+                border: "1px solid #ddd",
+                borderRadius: "6px",
+                backgroundColor: "#f5f5f5",
+                cursor: "not-allowed",
+                color: "#999",
+              }}
+            >
+              Cómo llegar
+            </button>
+          )}
+        </div>
+      </section>
+
       {/* Paradas */}
       <section style={{ marginTop: "32px" }}>
         <h2>Paradas</h2>
         {paradasOrdenadas.length > 0 ? (
-          <div style={{ marginTop: "24px" }}>
-            {paradasOrdenadas.map((parada) => (
-              <div
-                key={parada.id}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  padding: "16px",
-                  marginBottom: "16px",
-                }}
-              >
-                <h3 style={{ margin: "0 0 12px 0" }}>{parada.nombre}</h3>
-
-                {/* Foto de parada */}
-                {parada.foto ? (
-                  <div style={{ marginBottom: "12px" }}>
-                    <img
-                      src={parada.foto}
-                      alt={parada.nombre}
+          <>
+            {/* Mini-índice de paradas */}
+            <div
+              style={{
+                marginTop: "16px",
+                padding: "16px",
+                backgroundColor: "#f5f5f5",
+                borderRadius: "8px",
+                marginBottom: "24px",
+              }}
+            >
+              <h3 style={{ margin: "0 0 12px 0", fontSize: "16px" }}>
+                Índice de paradas
+              </h3>
+              <ul style={{ margin: 0, paddingLeft: "20px" }}>
+                {paradasOrdenadas.map((parada, index) => (
+                  <li key={parada.id} style={{ marginBottom: "8px" }}>
+                    <a
+                      href={`#parada-${parada.id}`}
                       style={{
-                        width: "100%",
-                        maxHeight: "300px",
-                        objectFit: "cover",
-                        borderRadius: "4px",
+                        color: "#0066cc",
+                        textDecoration: "none",
+                        fontSize: "14px",
                       }}
-                    />
+                    >
+                      {index + 1}. {parada.nombre}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Lista de paradas */}
+            <div style={{ marginTop: "24px" }}>
+              {paradasOrdenadas.map((parada, index) => (
+                <div
+                  id={`parada-${parada.id}`}
+                  key={parada.id}
+                  style={{
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    padding: "16px",
+                    marginBottom: "16px",
+                    scrollMarginTop: "80px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "50%",
+                        backgroundColor: "#0066cc",
+                        color: "#fff",
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {index + 1}
+                    </span>
+                    <h3 style={{ margin: 0 }}>{parada.nombre}</h3>
                   </div>
-                ) : (
-                  <p
-                    style={{
-                      margin: "0 0 12px 0",
-                      fontSize: "14px",
-                      color: "#888",
-                      fontStyle: "italic",
-                    }}
-                  >
-                    Foto próximamente
-                  </p>
-                )}
 
-                {/* Descripción corta */}
-                {parada.descripcion_corta && (
-                  <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#555" }}>
-                    {parada.descripcion_corta}
-                  </p>
-                )}
+                  {/* Foto de parada */}
+                  {parada.foto ? (
+                    <div style={{ marginBottom: "12px" }}>
+                      <img
+                        src={parada.foto}
+                        alt={parada.nombre}
+                        style={{
+                          width: "100%",
+                          maxHeight: "300px",
+                          objectFit: "cover",
+                          borderRadius: "4px",
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        marginBottom: "12px",
+                        padding: "40px",
+                        backgroundColor: "#f5f5f5",
+                        borderRadius: "4px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: "12px",
+                          color: "#888",
+                          fontStyle: "italic",
+                        }}
+                      >
+                        Foto próximamente
+                      </p>
+                    </div>
+                  )}
 
-                {/* Descripción larga */}
-                {parada.descripcion_larga && (
-                  <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#555" }}>
-                    {parada.descripcion_larga}
-                  </p>
-                )}
+                  {/* Descripción corta */}
+                  {parada.descripcion_corta && (
+                    <p
+                      style={{
+                        margin: "0 0 8px 0",
+                        fontSize: "14px",
+                        color: "#555",
+                      }}
+                    >
+                      {parada.descripcion_corta}
+                    </p>
+                  )}
 
-                {/* Link a Google Maps si hay coordenadas */}
-                {parada.lat && parada.lng && (
-                  <a
-                    href={`https://www.google.com/maps?q=${parada.lat},${parada.lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: "inline-block",
-                      marginTop: "8px",
-                      fontSize: "14px",
-                      color: "#0066cc",
-                      textDecoration: "none",
-                    }}
-                  >
-                    Ver en Google Maps
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
+                  {/* Descripción larga */}
+                  {parada.descripcion_larga && (
+                    <p
+                      style={{
+                        margin: "0 0 8px 0",
+                        fontSize: "14px",
+                        color: "#555",
+                      }}
+                    >
+                      {parada.descripcion_larga}
+                    </p>
+                  )}
+
+                  {/* Link a Google Maps si hay coordenadas */}
+                  {parada.lat && parada.lng && (
+                    <a
+                      href={`https://www.google.com/maps?q=${parada.lat},${parada.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "inline-block",
+                        marginTop: "8px",
+                        fontSize: "14px",
+                        color: "#0066cc",
+                        textDecoration: "none",
+                      }}
+                    >
+                      Ver en Google Maps
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
         ) : (
           <p style={{ marginTop: "16px", color: "#666" }}>
             No hay paradas disponibles
