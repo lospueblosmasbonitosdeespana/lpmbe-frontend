@@ -1,5 +1,21 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getPuebloBySlug, type Pueblo } from "@/lib/api";
+import { getMeteo } from "@/lib/meteo/getMeteo";
+import PuebloActions from "./PuebloActions";
+import FeedSection from "../../components/FeedSection";
+import SemaforoBadge from "../../components/pueblos/SemaforoBadge";
+import MeteoBlock from "../../components/pueblos/MeteoBlock";
+
+// Helpers para SEO
+function cleanText(input: string) {
+  return input.replace(/\s+/g, " ").trim();
+}
+
+function cut(input: string, max = 160) {
+  const s = cleanText(input);
+  return s.length > max ? s.slice(0, max - 1).trimEnd() + "…" : s;
+}
 
 type Foto = {
   id: number;
@@ -63,6 +79,46 @@ type Noticia = {
 // 🔒 Forzamos render dinámico (no SSG)
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const pueblo = await getPuebloBySlug(slug);
+  const heroImage = pueblo.foto_destacada ?? pueblo.fotos[0]?.url ?? null;
+  const baseTitle = `${pueblo.nombre} · ${pueblo.provincia} · ${pueblo.comunidad}`;
+  const title = `${pueblo.nombre} – Los Pueblos Más Bonitos de España`;
+  const descSource =
+    pueblo.descripcion_corta ??
+    (pueblo.descripcion_larga ? cut(pueblo.descripcion_larga, 180) : null);
+  const description =
+    descSource
+      ? cut(descSource, 160)
+      : "Información, mapa, fotos, puntos de interés y experiencias del pueblo.";
+  const path = `/pueblos/${pueblo.slug}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    robots: { index: true, follow: true },
+    openGraph: {
+      title,
+      description,
+      url: path,
+      type: "article",
+      images: heroImage ? [{ url: heroImage, alt: baseTitle }] : undefined,
+    },
+    twitter: {
+      card: heroImage ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: heroImage ? [heroImage] : undefined,
+    },
+  };
+}
+
 export default async function PuebloPage({
   params,
 }: {
@@ -71,13 +127,13 @@ export default async function PuebloPage({
   const { slug } = await params;
   const pueblo = await getPuebloBySlug(slug);
 
-  // Separar POIs por categoría
-  const poisPOI = pueblo.pois.filter((poi: Poi) => poi.categoria === "POI");
-  const poisMultiexperiencia = pueblo.pois.filter(
-    (poi: Poi) => poi.categoria === "MULTIEXPERIENCIA"
+  // Separar POIs por categoría (excluir MULTIEXPERIENCIA - solo se muestran en páginas de multiexperiencia)
+  const poisEnPueblo = pueblo.pois.filter(
+    (poi: Poi) => poi.categoria !== "MULTIEXPERIENCIA"
   );
-  const poisOtros = pueblo.pois.filter(
-    (poi: Poi) => poi.categoria !== "POI" && poi.categoria !== "MULTIEXPERIENCIA"
+  const poisPOI = poisEnPueblo.filter((poi: Poi) => poi.categoria === "POI");
+  const poisOtros = poisEnPueblo.filter(
+    (poi: Poi) => poi.categoria !== "POI"
   );
 
   const heroImage = pueblo.foto_destacada ?? pueblo.fotos[0]?.url ?? null;
@@ -108,6 +164,47 @@ export default async function PuebloPage({
     return b.fecha.localeCompare(a.fecha);
   });
 
+  // Preparar datos para FeedSection
+  const eventosFeed = eventosOrdenados.map((e) => ({
+    id: e.id,
+    titulo: e.titulo,
+    fecha: e.fecha_inicio,
+    imagen: e.imagen ?? null,
+    excerpt: e.descripcion
+      ? e.descripcion.length > 140
+        ? e.descripcion.substring(0, 140) + "..."
+        : e.descripcion
+      : null,
+    href: `/eventos/${e.id}`,
+  }));
+
+  const noticiasFeed = noticiasOrdenadas.map((n) => ({
+    id: n.id,
+    titulo: n.titulo,
+    fecha: n.fecha,
+    imagen: n.imagen ?? null,
+    excerpt: n.contenido
+      ? n.contenido.length > 140
+        ? n.contenido.substring(0, 140) + "..."
+        : n.contenido
+      : null,
+    href: `/noticias/${n.id}`,
+  }));
+
+  // Obtener meteo si hay coordenadas
+  const meteo =
+    pueblo.lat && pueblo.lng ? await getMeteo(pueblo.lat, pueblo.lng) : null;
+
+  // Mapear semáforo (puede venir en diferentes formatos del backend)
+  const semaforoEstado =
+    pueblo.semaforo?.estado ?? (pueblo.semaforo as any)?.estado ?? null;
+  const semaforoMensaje =
+    pueblo.semaforo?.mensaje ?? (pueblo.semaforo as any)?.mensaje ?? null;
+  const semaforoUpdated =
+    pueblo.semaforo?.ultima_actualizacion ??
+    (pueblo.semaforo as any)?.ultima_actualizacion ??
+    null;
+
   return (
     <main>
       {/* HERO */}
@@ -123,6 +220,41 @@ export default async function PuebloPage({
             style={{ width: "100%", maxHeight: "400px", objectFit: "cover" }}
           />
         )}
+      </section>
+
+      {/* BARRA DE ACCIONES */}
+      <PuebloActions
+        nombre={pueblo.nombre}
+        lat={pueblo.lat}
+        lng={pueblo.lng}
+      />
+
+      {/* ESTADO DEL PUEBLO */}
+      <section style={{ marginTop: "32px" }}>
+        <h2>Estado del pueblo</h2>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "16px",
+            marginTop: "16px",
+          }}
+        >
+          <SemaforoBadge
+            estado={semaforoEstado}
+            mensaje={semaforoMensaje}
+            updatedAt={semaforoUpdated}
+            variant="panel"
+          />
+          {meteo && (meteo.temp !== null || meteo.code !== null) && (
+            <MeteoBlock
+              temp={meteo.temp}
+              code={meteo.code}
+              wind={meteo.wind}
+              variant="panel"
+            />
+          )}
+        </div>
       </section>
 
       {/* TEXTO */}
@@ -163,7 +295,7 @@ export default async function PuebloPage({
       )}
 
       {/* MAPA */}
-      <section style={{ marginTop: "32px" }}>
+      <section id="mapa" style={{ marginTop: "32px" }}>
         <h2>Mapa</h2>
         {pueblo.boldestMapId ? (
           <>
@@ -205,19 +337,14 @@ export default async function PuebloPage({
           <h2>Puntos de interés</h2>
           <ul>
             {poisPOI.map((poi: Poi) => (
-              <li key={poi.id}>{poi.nombre}</li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* POIs - Paradas de la experiencia */}
-      {poisMultiexperiencia.length > 0 && (
-        <section style={{ marginTop: "32px" }}>
-          <h2>Paradas de la experiencia</h2>
-          <ul>
-            {poisMultiexperiencia.map((poi: Poi) => (
-              <li key={poi.id}>{poi.nombre}</li>
+              <li key={poi.id}>
+                <Link
+                  href={`/pueblos/${pueblo.slug}/pois/${poi.id}`}
+                  style={{ color: "#0066cc", textDecoration: "none" }}
+                >
+                  {poi.nombre}
+                </Link>
+              </li>
             ))}
           </ul>
         </section>
@@ -229,7 +356,14 @@ export default async function PuebloPage({
           <h2>Otros</h2>
           <ul>
             {poisOtros.map((poi: Poi) => (
-              <li key={poi.id}>{poi.nombre}</li>
+              <li key={poi.id}>
+                <Link
+                  href={`/pueblos/${pueblo.slug}/pois/${poi.id}`}
+                  style={{ color: "#0066cc", textDecoration: "none" }}
+                >
+                  {poi.nombre}
+                </Link>
+              </li>
             ))}
           </ul>
         </section>
@@ -290,152 +424,18 @@ export default async function PuebloPage({
       )}
 
       {/* EVENTOS */}
-      <section style={{ marginTop: "32px" }}>
-        <h2>Eventos</h2>
-        {eventosOrdenados.length > 0 ? (
-          <div style={{ marginTop: "16px" }}>
-            {eventosOrdenados.map((evento) => {
-              const fechaInicio = evento.fecha_inicio
-                ? new Date(evento.fecha_inicio).toLocaleDateString("es-ES", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })
-                : null;
-              const excerpt = evento.descripcion
-                ? evento.descripcion.length > 140
-                  ? evento.descripcion.substring(0, 140) + "..."
-                  : evento.descripcion
-                : null;
-
-              return (
-                <div
-                  key={evento.id}
-                  style={{
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    padding: "16px",
-                    marginBottom: "16px",
-                  }}
-                >
-                  {evento.imagen && (
-                    <img
-                      src={evento.imagen}
-                      alt={evento.titulo}
-                      style={{
-                        width: "100%",
-                        height: "auto",
-                        borderRadius: "4px",
-                        marginBottom: "12px",
-                      }}
-                    />
-                  )}
-                  <h3 style={{ margin: "0 0 8px 0" }}>
-                    <Link
-                      href={`/eventos/${evento.id}`}
-                      style={{ color: "inherit", textDecoration: "none" }}
-                    >
-                      {evento.titulo}
-                    </Link>
-                  </h3>
-                  {fechaInicio && (
-                    <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#666" }}>
-                      {fechaInicio}
-                    </p>
-                  )}
-                  {excerpt && (
-                    <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#555" }}>
-                      {excerpt}
-                    </p>
-                  )}
-                  <Link
-                    href={`/eventos/${evento.id}`}
-                    style={{ fontSize: "14px", color: "#0066cc" }}
-                  >
-                    Ver más
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p style={{ marginTop: "16px" }}>No hay eventos publicados</p>
-        )}
-      </section>
+      <FeedSection
+        title="Eventos"
+        items={eventosFeed}
+        emptyText="No hay eventos publicados"
+      />
 
       {/* NOTICIAS */}
-      <section style={{ marginTop: "32px" }}>
-        <h2>Noticias</h2>
-        {noticiasOrdenadas.length > 0 ? (
-          <div style={{ marginTop: "16px" }}>
-            {noticiasOrdenadas.map((noticia) => {
-              const fecha = noticia.fecha
-                ? new Date(noticia.fecha).toLocaleDateString("es-ES", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })
-                : null;
-              const excerpt = noticia.contenido
-                ? noticia.contenido.length > 140
-                  ? noticia.contenido.substring(0, 140) + "..."
-                  : noticia.contenido
-                : null;
-
-              return (
-                <div
-                  key={noticia.id}
-                  style={{
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    padding: "16px",
-                    marginBottom: "16px",
-                  }}
-                >
-                  {noticia.imagen && (
-                    <img
-                      src={noticia.imagen}
-                      alt={noticia.titulo}
-                      style={{
-                        width: "100%",
-                        height: "auto",
-                        borderRadius: "4px",
-                        marginBottom: "12px",
-                      }}
-                    />
-                  )}
-                  <h3 style={{ margin: "0 0 8px 0" }}>
-                    <Link
-                      href={`/noticias/${noticia.id}`}
-                      style={{ color: "inherit", textDecoration: "none" }}
-                    >
-                      {noticia.titulo}
-                    </Link>
-                  </h3>
-                  {fecha && (
-                    <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#666" }}>
-                      {fecha}
-                    </p>
-                  )}
-                  {excerpt && (
-                    <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#555" }}>
-                      {excerpt}
-                    </p>
-                  )}
-                  <Link
-                    href={`/noticias/${noticia.id}`}
-                    style={{ fontSize: "14px", color: "#0066cc" }}
-                  >
-                    Ver más
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p style={{ marginTop: "16px" }}>No hay noticias publicadas</p>
-        )}
-      </section>
+      <FeedSection
+        title="Noticias"
+        items={noticiasFeed}
+        emptyText="No hay noticias publicadas"
+      />
     </main>
   );
 }

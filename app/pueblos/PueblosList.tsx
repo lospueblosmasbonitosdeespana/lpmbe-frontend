@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useMemo } from "react";
+import SemaforoBadge from "../components/pueblos/SemaforoBadge";
 
 type Pueblo = {
   id: number;
@@ -100,13 +101,19 @@ export default function PueblosList({ pueblos: initialPueblos }: PueblosListProp
               <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#555" }}>
                 {pueblo.provincia} · {pueblo.comunidad}
               </p>
-              {pueblo.semaforo && (
-                <p style={{ margin: 0, fontSize: "12px", color: "#888" }}>
-                  {typeof pueblo.semaforo === "string"
-                    ? pueblo.semaforo
-                    : "Semaforo disponible"}
-                </p>
-              )}
+              <div style={{ marginTop: "8px" }}>
+                <SemaforoBadge
+                  estado={
+                    pueblo.semaforo?.estado ??
+                    (typeof pueblo.semaforo === "object" &&
+                    pueblo.semaforo !== null &&
+                    "estado" in pueblo.semaforo
+                      ? (pueblo.semaforo as any).estado
+                      : null)
+                  }
+                  variant="badge"
+                />
+              </div>
             </Link>
           ))}
         </section>

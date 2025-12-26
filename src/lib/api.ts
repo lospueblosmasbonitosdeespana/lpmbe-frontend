@@ -70,6 +70,11 @@ export type Pueblo = {
   foto_destacada: string | null;
   puntosVisita?: number | null;
   boldestMapId?: string | null;
+  semaforo?: {
+    estado?: "VERDE" | "AMARILLO" | "ROJO" | null;
+    mensaje?: string | null;
+    ultima_actualizacion?: string | Date | null;
+  } | null;
   fotos: Foto[];
   pois: Poi[];
   multiexperiencias: PuebloMultiexperiencia[];
