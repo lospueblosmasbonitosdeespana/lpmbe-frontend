@@ -1,12 +1,4 @@
-import Link from "next/link";
-
-type Pueblo = {
-  id: number;
-  nombre: string;
-  slug: string;
-  provincia: string;
-  comunidad: string;
-};
+import PueblosList from "./PueblosList";
 
 // 🔒 Evita SSG / paths raros
 export const dynamic = "force-dynamic";
@@ -16,7 +8,7 @@ const API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
   "http://localhost:3000";
 
-async function getPueblos(): Promise<Pueblo[]> {
+async function getPueblos() {
   const res = await fetch(`${API_BASE}/pueblos`, {
     cache: "no-store",
   });
@@ -29,41 +21,17 @@ async function getPueblos(): Promise<Pueblo[]> {
 }
 
 export default async function PueblosPage() {
-  const pueblos = await getPueblos();
-
-  return (
-    <main>
-      <h1>Pueblos</h1>
-
-      <section
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-          gap: "16px",
-          marginTop: "24px",
-        }}
-      >
-        {pueblos.map((pueblo) => (
-          <Link
-            key={pueblo.id}
-            href={`/pueblos/${pueblo.slug}`}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-              padding: "16px",
-              textDecoration: "none",
-              color: "inherit",
-            }}
-          >
-            <h3 style={{ margin: "0 0 8px 0" }}>{pueblo.nombre}</h3>
-            <p style={{ margin: 0, fontSize: "14px", color: "#555" }}>
-              {pueblo.provincia}
-              <br />
-              {pueblo.comunidad}
-            </p>
-          </Link>
-        ))}
-      </section>
-    </main>
-  );
+  try {
+    const pueblos = await getPueblos();
+    return <PueblosList pueblos={pueblos} />;
+  } catch (error) {
+    return (
+      <main style={{ padding: "24px" }}>
+        <h1>Pueblos</h1>
+        <p style={{ marginTop: "24px", color: "#d32f2f" }}>
+          Error al cargar los pueblos. Por favor, intenta de nuevo más tarde.
+        </p>
+      </main>
+    );
+  }
 }
