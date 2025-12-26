@@ -40,6 +40,23 @@ type PuebloMultiexperiencia = {
   multiexperiencia: Multiexperiencia;
 };
 
+type Evento = {
+  id: number;
+  titulo: string;
+  descripcion: string | null;
+  fecha_inicio: string | null;
+  fecha_fin: string | null;
+  imagen: string | null;
+};
+
+type Noticia = {
+  id: number;
+  titulo: string;
+  contenido: string | null;
+  fecha: string | null;
+  imagen: string | null;
+};
+
 type Pueblo = {
   id: number;
   nombre: string;
@@ -56,9 +73,11 @@ type Pueblo = {
   fotos: Foto[];
   pois: Poi[];
   multiexperiencias: PuebloMultiexperiencia[];
-  eventos: any[];
-  noticias: any[];
+  eventos: Evento[];
+  noticias: Noticia[];
 };
+
+import Link from "next/link";
 
 // 🔒 Forzamos render dinámico (no SSG)
 export const dynamic = "force-dynamic";
@@ -127,6 +146,22 @@ export default async function PuebloPage({
 
   // Limitar a 24 fotos (sin orden adicional, tal cual viene del backend)
   const fotosGalería = fotosParaGalería.slice(0, 24);
+
+  // Ordenar eventos: por fecha_inicio ascendente (próximos primero), sin fecha al final
+  const eventosOrdenados = [...pueblo.eventos].sort((a, b) => {
+    if (!a.fecha_inicio && !b.fecha_inicio) return 0;
+    if (!a.fecha_inicio) return 1;
+    if (!b.fecha_inicio) return -1;
+    return a.fecha_inicio.localeCompare(b.fecha_inicio);
+  });
+
+  // Ordenar noticias: por fecha descendente (más recientes primero), sin fecha al final
+  const noticiasOrdenadas = [...pueblo.noticias].sort((a, b) => {
+    if (!a.fecha && !b.fecha) return 0;
+    if (!a.fecha) return 1;
+    if (!b.fecha) return -1;
+    return b.fecha.localeCompare(a.fecha);
+  });
 
   return (
     <main>
@@ -308,20 +343,148 @@ export default async function PuebloPage({
       {/* EVENTOS */}
       <section style={{ marginTop: "32px" }}>
         <h2>Eventos</h2>
-        {pueblo.eventos.length > 0 ? (
-          <p>Eventos próximamente.</p>
+        {eventosOrdenados.length > 0 ? (
+          <div style={{ marginTop: "16px" }}>
+            {eventosOrdenados.map((evento) => {
+              const fechaInicio = evento.fecha_inicio
+                ? new Date(evento.fecha_inicio).toLocaleDateString("es-ES", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })
+                : null;
+              const excerpt = evento.descripcion
+                ? evento.descripcion.length > 140
+                  ? evento.descripcion.substring(0, 140) + "..."
+                  : evento.descripcion
+                : null;
+
+              return (
+                <div
+                  key={evento.id}
+                  style={{
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    padding: "16px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  {evento.imagen && (
+                    <img
+                      src={evento.imagen}
+                      alt={evento.titulo}
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        borderRadius: "4px",
+                        marginBottom: "12px",
+                      }}
+                    />
+                  )}
+                  <h3 style={{ margin: "0 0 8px 0" }}>
+                    <Link
+                      href={`/eventos/${evento.id}`}
+                      style={{ color: "inherit", textDecoration: "none" }}
+                    >
+                      {evento.titulo}
+                    </Link>
+                  </h3>
+                  {fechaInicio && (
+                    <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#666" }}>
+                      {fechaInicio}
+                    </p>
+                  )}
+                  {excerpt && (
+                    <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#555" }}>
+                      {excerpt}
+                    </p>
+                  )}
+                  <Link
+                    href={`/eventos/${evento.id}`}
+                    style={{ fontSize: "14px", color: "#0066cc" }}
+                  >
+                    Ver más
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
         ) : (
-          <p>No hay eventos publicados</p>
+          <p style={{ marginTop: "16px" }}>No hay eventos publicados</p>
         )}
       </section>
 
       {/* NOTICIAS */}
       <section style={{ marginTop: "32px" }}>
         <h2>Noticias</h2>
-        {pueblo.noticias.length > 0 ? (
-          <p>Noticias próximamente.</p>
+        {noticiasOrdenadas.length > 0 ? (
+          <div style={{ marginTop: "16px" }}>
+            {noticiasOrdenadas.map((noticia) => {
+              const fecha = noticia.fecha
+                ? new Date(noticia.fecha).toLocaleDateString("es-ES", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })
+                : null;
+              const excerpt = noticia.contenido
+                ? noticia.contenido.length > 140
+                  ? noticia.contenido.substring(0, 140) + "..."
+                  : noticia.contenido
+                : null;
+
+              return (
+                <div
+                  key={noticia.id}
+                  style={{
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    padding: "16px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  {noticia.imagen && (
+                    <img
+                      src={noticia.imagen}
+                      alt={noticia.titulo}
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        borderRadius: "4px",
+                        marginBottom: "12px",
+                      }}
+                    />
+                  )}
+                  <h3 style={{ margin: "0 0 8px 0" }}>
+                    <Link
+                      href={`/noticias/${noticia.id}`}
+                      style={{ color: "inherit", textDecoration: "none" }}
+                    >
+                      {noticia.titulo}
+                    </Link>
+                  </h3>
+                  {fecha && (
+                    <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#666" }}>
+                      {fecha}
+                    </p>
+                  )}
+                  {excerpt && (
+                    <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#555" }}>
+                      {excerpt}
+                    </p>
+                  )}
+                  <Link
+                    href={`/noticias/${noticia.id}`}
+                    style={{ fontSize: "14px", color: "#0066cc" }}
+                  >
+                    Ver más
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
         ) : (
-          <p>No hay noticias publicadas</p>
+          <p style={{ marginTop: "16px" }}>No hay noticias publicadas</p>
         )}
       </section>
     </main>
