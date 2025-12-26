@@ -28,6 +28,52 @@ type Poi = {
 // 🔒 Forzamos render dinámico (no SSG)
 export const dynamic = "force-dynamic";
 
+// Helper para renderizar foto de parada
+// CONTRATO: Aquí caerán las fotos hijas cuando el backend rellene poi.foto
+// o entregue poi.media[]. Por ahora solo usa parada.foto (puede ser null).
+// NO usar pueblo.fotos como fallback.
+function renderParadaFoto(parada: Poi) {
+  if (parada.foto) {
+    return (
+      <div style={{ marginBottom: "12px" }}>
+        <img
+          src={parada.foto}
+          alt={parada.nombre}
+          style={{
+            width: "100%",
+            maxHeight: "300px",
+            objectFit: "cover",
+            borderRadius: "4px",
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        marginBottom: "12px",
+        padding: "40px",
+        backgroundColor: "#f5f5f5",
+        borderRadius: "4px",
+        textAlign: "center",
+      }}
+    >
+      <p
+        style={{
+          margin: 0,
+          fontSize: "12px",
+          color: "#888",
+          fontStyle: "italic",
+        }}
+      >
+        Foto próximamente
+      </p>
+    </div>
+  );
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -315,41 +361,7 @@ export default async function MultiexperienciaPage({
                   </div>
 
                   {/* Foto de parada */}
-                  {parada.foto ? (
-                    <div style={{ marginBottom: "12px" }}>
-                      <img
-                        src={parada.foto}
-                        alt={parada.nombre}
-                        style={{
-                          width: "100%",
-                          maxHeight: "300px",
-                          objectFit: "cover",
-                          borderRadius: "4px",
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div
-                      style={{
-                        marginBottom: "12px",
-                        padding: "40px",
-                        backgroundColor: "#f5f5f5",
-                        borderRadius: "4px",
-                        textAlign: "center",
-                      }}
-                    >
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: "12px",
-                          color: "#888",
-                          fontStyle: "italic",
-                        }}
-                      >
-                        Foto próximamente
-                      </p>
-                    </div>
-                  )}
+                  {renderParadaFoto(parada)}
 
                   {/* Descripción corta */}
                   {parada.descripcion_corta && (
