@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { getPuebloBySlug, type Pueblo } from "@/lib/api";
+
 type Foto = {
   id: number;
   url: string;
@@ -57,66 +60,8 @@ type Noticia = {
   imagen: string | null;
 };
 
-type Pueblo = {
-  id: number;
-  nombre: string;
-  slug: string;
-  provincia: string;
-  comunidad: string;
-  lat: number | null;
-  lng: number | null;
-  descripcion_corta: string | null;
-  descripcion_larga: string | null;
-  foto_destacada: string | null;
-  puntosVisita?: number | null;
-  boldestMapId?: string | null;
-  fotos: Foto[];
-  pois: Poi[];
-  multiexperiencias: PuebloMultiexperiencia[];
-  eventos: Evento[];
-  noticias: Noticia[];
-};
-
-import Link from "next/link";
-
 // 🔒 Forzamos render dinámico (no SSG)
 export const dynamic = "force-dynamic";
-
-// 🌍 Base de la API (Railway o local backend)
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
-  "http://localhost:3000";
-
-async function getPuebloBySlug(slug: string): Promise<Pueblo> {
-  // 1️⃣ Listado de pueblos DESDE LA API
-  const listRes = await fetch(`${API_BASE}/pueblos`, {
-    cache: "no-store",
-  });
-
-  if (!listRes.ok) {
-    throw new Error("No se pudo cargar el listado de pueblos");
-  }
-
-  const pueblos: Pueblo[] = await listRes.json();
-
-  // 2️⃣ Buscar por slug
-  const pueblo = pueblos.find((p) => p.slug === slug);
-
-  if (!pueblo) {
-    throw new Error("Pueblo no encontrado");
-  }
-
-  // 3️⃣ Detalle por ID
-  const res = await fetch(`${API_BASE}/pueblos/${pueblo.id}`, {
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    throw new Error("Error cargando el pueblo");
-  }
-
-  return res.json();
-}
 
 export default async function PuebloPage({
   params,
@@ -127,12 +72,12 @@ export default async function PuebloPage({
   const pueblo = await getPuebloBySlug(slug);
 
   // Separar POIs por categoría
-  const poisPOI = pueblo.pois.filter((poi) => poi.categoria === "POI");
+  const poisPOI = pueblo.pois.filter((poi: Poi) => poi.categoria === "POI");
   const poisMultiexperiencia = pueblo.pois.filter(
-    (poi) => poi.categoria === "MULTIEXPERIENCIA"
+    (poi: Poi) => poi.categoria === "MULTIEXPERIENCIA"
   );
   const poisOtros = pueblo.pois.filter(
-    (poi) => poi.categoria !== "POI" && poi.categoria !== "MULTIEXPERIENCIA"
+    (poi: Poi) => poi.categoria !== "POI" && poi.categoria !== "MULTIEXPERIENCIA"
   );
 
   const heroImage = pueblo.foto_destacada ?? pueblo.fotos[0]?.url ?? null;
@@ -141,7 +86,7 @@ export default async function PuebloPage({
   const fotoHeroUrl =
     heroImage && !pueblo.foto_destacada ? heroImage : null;
   const fotosParaGalería = fotoHeroUrl
-    ? pueblo.fotos.filter((f) => f.url !== fotoHeroUrl)
+    ? pueblo.fotos.filter((f: Foto) => f.url !== fotoHeroUrl)
     : pueblo.fotos;
 
   // Limitar a 24 fotos (sin orden adicional, tal cual viene del backend)
@@ -204,7 +149,7 @@ export default async function PuebloPage({
               marginTop: "16px",
             }}
           >
-            {fotosGalería.map((foto, index) => (
+            {fotosGalería.map((foto: Foto, index: number) => (
               <img
                 key={foto.id}
                 src={foto.url}
@@ -259,7 +204,7 @@ export default async function PuebloPage({
         <section style={{ marginTop: "32px" }}>
           <h2>Puntos de interés</h2>
           <ul>
-            {poisPOI.map((poi) => (
+            {poisPOI.map((poi: Poi) => (
               <li key={poi.id}>{poi.nombre}</li>
             ))}
           </ul>
@@ -271,7 +216,7 @@ export default async function PuebloPage({
         <section style={{ marginTop: "32px" }}>
           <h2>Paradas de la experiencia</h2>
           <ul>
-            {poisMultiexperiencia.map((poi) => (
+            {poisMultiexperiencia.map((poi: Poi) => (
               <li key={poi.id}>{poi.nombre}</li>
             ))}
           </ul>
@@ -283,7 +228,7 @@ export default async function PuebloPage({
         <section style={{ marginTop: "32px" }}>
           <h2>Otros</h2>
           <ul>
-            {poisOtros.map((poi) => (
+            {poisOtros.map((poi: Poi) => (
               <li key={poi.id}>{poi.nombre}</li>
             ))}
           </ul>
@@ -302,7 +247,7 @@ export default async function PuebloPage({
               marginTop: "16px",
             }}
           >
-            {pueblo.multiexperiencias.map((mx) => (
+            {pueblo.multiexperiencias.map((mx: PuebloMultiexperiencia) => (
               <Link
                 key={mx.multiexperiencia.id}
                 href={`/pueblos/${pueblo.slug}/experiencias/${mx.multiexperiencia.slug}`}

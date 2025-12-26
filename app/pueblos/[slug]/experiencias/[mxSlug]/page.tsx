@@ -1,10 +1,5 @@
-type Foto = {
-  id: number;
-  url: string;
-  alt: string | null;
-  orden: number | null;
-  puebloId: number;
-};
+import Link from "next/link";
+import { getPuebloBySlug, type Pueblo } from "@/lib/api";
 
 type Poi = {
   id: number;
@@ -19,85 +14,8 @@ type Poi = {
   puebloId: number;
 };
 
-type Multiexperiencia = {
-  id: number;
-  titulo: string;
-  descripcion: string | null;
-  foto: string | null;
-  slug: string;
-  categoria: string | null;
-  tipo: string;
-  programa: string | null;
-  qr: string | null;
-  puntos: number | null;
-  activo: boolean;
-};
-
-type PuebloMultiexperiencia = {
-  puebloId: number;
-  multiexperienciaId: number;
-  orden: number | null;
-  multiexperiencia: Multiexperiencia;
-};
-
-type Pueblo = {
-  id: number;
-  nombre: string;
-  slug: string;
-  provincia: string;
-  comunidad: string;
-  lat: number | null;
-  lng: number | null;
-  descripcion_corta: string | null;
-  descripcion_larga: string | null;
-  foto_destacada: string | null;
-  puntosVisita?: number | null;
-  boldestMapId?: string | null;
-  fotos: Foto[];
-  pois: Poi[];
-  multiexperiencias: PuebloMultiexperiencia[];
-};
-
-import Link from "next/link";
-
 // 🔒 Forzamos render dinámico (no SSG)
 export const dynamic = "force-dynamic";
-
-// 🌍 Base de la API (Railway o local backend)
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
-  "http://localhost:3000";
-
-async function getPuebloBySlug(slug: string): Promise<Pueblo> {
-  // 1️⃣ Listado de pueblos DESDE LA API
-  const listRes = await fetch(`${API_BASE}/pueblos`, {
-    cache: "no-store",
-  });
-
-  if (!listRes.ok) {
-    throw new Error("No se pudo cargar el listado de pueblos");
-  }
-
-  const pueblos: Pueblo[] = await listRes.json();
-
-  // 2️⃣ Buscar por slug
-  const pueblo = pueblos.find((p) => p.slug === slug);
-
-  if (!pueblo) {
-    throw new Error("Pueblo no encontrado");
-  }
-
-  // 3️⃣ Detalle por ID
-  const res = await fetch(`${API_BASE}/pueblos/${pueblo.id}`, {
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    throw new Error("Error cargando el pueblo");
-  }
-
-  return res.json();
-}
 
 export default async function MultiexperienciaPage({
   params,
@@ -109,7 +27,7 @@ export default async function MultiexperienciaPage({
 
   // Buscar la multiexperiencia por slug
   const mx = pueblo.multiexperiencias.find(
-    (x) => x.multiexperiencia.slug === mxSlug
+    (x: { multiexperiencia: { slug: string } }) => x.multiexperiencia.slug === mxSlug
   );
 
   if (!mx) {
@@ -118,8 +36,23 @@ export default async function MultiexperienciaPage({
 
   // Obtener paradas (POIs con categoria === "MULTIEXPERIENCIA")
   const paradas = pueblo.pois.filter(
-    (p) => p.categoria === "MULTIEXPERIENCIA"
+    (p: Poi) => p.categoria === "MULTIEXPERIENCIA"
   );
+
+  // Ordenar paradas: primero por orden ascendente (null al final), luego por id ascendente
+  const paradasOrdenadas = [...paradas].sort((a, b) => {
+    if (a.orden !== null && b.orden !== null) {
+      if (a.orden !== b.orden) {
+        return a.orden - b.orden;
+      }
+      // Tie-breaker: id ascendente
+      return a.id - b.id;
+    }
+    if (a.orden !== null) return -1;
+    if (b.orden !== null) return 1;
+    // Si ambos tienen orden null, ordenar por id ascendente
+    return a.id - b.id;
+  });
 
   return (
     <main style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -135,6 +68,11 @@ export default async function MultiexperienciaPage({
 
       {/* Título */}
       <h1>{mx.multiexperiencia.titulo}</h1>
+
+      {/* Información del pueblo */}
+      <p style={{ marginTop: "8px", fontSize: "14px", color: "#666" }}>
+        {pueblo.nombre} · {pueblo.provincia} · {pueblo.comunidad}
+      </p>
 
       {/* Foto padre */}
       {mx.multiexperiencia.foto && (
@@ -162,9 +100,9 @@ export default async function MultiexperienciaPage({
       {/* Paradas */}
       <section style={{ marginTop: "32px" }}>
         <h2>Paradas</h2>
-        {paradas.length > 0 ? (
+        {paradasOrdenadas.length > 0 ? (
           <div style={{ marginTop: "24px" }}>
-            {paradas.map((parada) => (
+            {paradasOrdenadas.map((parada) => (
               <div
                 key={parada.id}
                 style={{
@@ -212,9 +150,27 @@ export default async function MultiexperienciaPage({
 
                 {/* Descripción larga */}
                 {parada.descripcion_larga && (
-                  <p style={{ margin: 0, fontSize: "14px", color: "#555" }}>
+                  <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#555" }}>
                     {parada.descripcion_larga}
                   </p>
+                )}
+
+                {/* Link a Google Maps si hay coordenadas */}
+                {parada.lat && parada.lng && (
+                  <a
+                    href={`https://www.google.com/maps?q=${parada.lat},${parada.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-block",
+                      marginTop: "8px",
+                      fontSize: "14px",
+                      color: "#0066cc",
+                      textDecoration: "none",
+                    }}
+                  >
+                    Ver en Google Maps
+                  </a>
                 )}
               </div>
             ))}
