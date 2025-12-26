@@ -182,6 +182,43 @@ export default async function PuebloPage({
         </section>
       )}
 
+      {/* MAPA */}
+      <section style={{ marginTop: "32px" }}>
+        <h2>Mapa</h2>
+        {pueblo.boldestMapId ? (
+          <>
+            <iframe
+              src={`https://maps.lospueblosmasbonitosdeespana.org/es/mapas/${pueblo.boldestMapId}`}
+              width="100%"
+              height="480"
+              frameBorder="0"
+              style={{ border: 0 }}
+              title={`Mapa de ${pueblo.nombre}`}
+            />
+            <div style={{ marginTop: "16px" }}>
+              <a
+                href={`https://maps.lospueblosmasbonitosdeespana.org/es/mapas/${pueblo.boldestMapId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Ver en Boldest Maps
+              </a>
+            </div>
+          </>
+        ) : pueblo.lat && pueblo.lng ? (
+          <a
+            href={`https://www.google.com/maps?q=${pueblo.lat},${pueblo.lng}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: "inline-block", marginTop: "16px" }}
+          >
+            Ver en Google Maps
+          </a>
+        ) : (
+          <p style={{ marginTop: "16px" }}>Mapa próximamente</p>
+        )}
+      </section>
+
       {/* POIs - Puntos de interés */}
       {poisPOI.length > 0 && (
         <section style={{ marginTop: "32px" }}>
@@ -267,23 +304,6 @@ export default async function PuebloPage({
           </div>
         </section>
       )}
-
-      {/* MAPA */}
-      <section style={{ marginTop: "32px" }}>
-        <h2>Mapa</h2>
-        {pueblo.lat && pueblo.lng ? (
-          <a
-            href={`https://www.google.com/maps?q=${pueblo.lat},${pueblo.lng}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ display: "inline-block", marginTop: "16px" }}
-          >
-            Ver en Google Maps
-          </a>
-        ) : (
-          <p style={{ marginTop: "16px" }}>Mapa próximamente</p>
-        )}
-      </section>
 
       {/* EVENTOS */}
       <section style={{ marginTop: "32px" }}>
