@@ -303,12 +303,16 @@ export default async function PuebloPage({
             }}
           >
             {pueblo.multiexperiencias.map((mx) => (
-              <div
+              <Link
                 key={mx.multiexperiencia.id}
+                href={`/pueblos/${pueblo.slug}/experiencias/${mx.multiexperiencia.slug}`}
                 style={{
                   border: "1px solid #ddd",
                   borderRadius: "8px",
                   padding: "16px",
+                  textDecoration: "none",
+                  color: "inherit",
+                  display: "block",
                 }}
               >
                 {mx.multiexperiencia.foto && (
@@ -334,7 +338,7 @@ export default async function PuebloPage({
                       : mx.multiexperiencia.descripcion}
                   </p>
                 )}
-              </div>
+              </Link>
             ))}
           </div>
         </section>
