@@ -1,9 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getPuebloBySlug, type Pueblo } from "@/lib/api";
+import { getMeteo } from "@/lib/meteo/getMeteo";
 import PuebloActions from "./PuebloActions";
 import FeedSection from "../../components/FeedSection";
 import DescripcionPueblo from "./DescripcionPueblo";
+import SemaforoBadge from "../../components/pueblos/SemaforoBadge";
+import MeteoBlock from "../../components/pueblos/MeteoBlock";
 
 // Helpers para SEO
 function cleanText(input: string) {
@@ -193,6 +196,17 @@ export default async function PuebloPage({
     href: `/noticias/${n.id}`,
   }));
 
+  // Definir semáforo por defecto (VERDE si no existe)
+  const semaforoPueblo = (pueblo as any).semaforo ?? {
+    estado: "VERDE" as const,
+    mensaje: null,
+    ultima_actualizacion: null,
+  };
+
+  // Obtener meteo si hay coordenadas
+  const meteo =
+    pueblo.lat && pueblo.lng ? await getMeteo(pueblo.lat, pueblo.lng) : null;
+
   return (
     <main>
       {/* HERO */}
@@ -216,6 +230,33 @@ export default async function PuebloPage({
         lat={pueblo.lat}
         lng={pueblo.lng}
       />
+
+      {/* SEMÁFORO Y METEO */}
+      <section style={{ marginTop: "32px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: "24px",
+          }}
+        >
+          <SemaforoBadge
+            estado={semaforoPueblo.estado ?? "VERDE"}
+            mensaje={semaforoPueblo.mensaje ?? null}
+            updatedAt={semaforoPueblo.ultima_actualizacion ?? null}
+            variant="panel"
+          />
+          {meteo && (
+            <MeteoBlock
+              temp={meteo.temp}
+              code={meteo.code}
+              wind={meteo.wind}
+              variant="panel"
+            />
+          )}
+        </div>
+      </section>
 
       {/* TEXTO */}
       <section style={{ marginTop: "32px" }}>
