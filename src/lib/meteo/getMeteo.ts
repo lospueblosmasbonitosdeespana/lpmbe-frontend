@@ -59,3 +59,12 @@ export function getWeatherLabel(code: number | null): string {
   return "Meteo";
 }
 
+
+
+
+
+
+
+
+
+

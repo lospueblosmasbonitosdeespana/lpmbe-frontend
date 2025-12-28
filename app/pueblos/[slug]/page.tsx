@@ -1,11 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getPuebloBySlug, type Pueblo } from "@/lib/api";
-import { getMeteo } from "@/lib/meteo/getMeteo";
 import PuebloActions from "./PuebloActions";
 import FeedSection from "../../components/FeedSection";
-import SemaforoBadge from "../../components/pueblos/SemaforoBadge";
-import MeteoBlock from "../../components/pueblos/MeteoBlock";
 
 // Helpers para SEO
 function cleanText(input: string) {
@@ -86,7 +83,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const pueblo = await getPuebloBySlug(slug);
-  const heroImage = pueblo.foto_destacada ?? pueblo.fotos[0]?.url ?? null;
+  const fotos = Array.isArray(pueblo.fotos) ? pueblo.fotos : [];
+  const heroImage = pueblo.foto_destacada ?? fotos[0]?.url ?? null;
   const baseTitle = `${pueblo.nombre} · ${pueblo.provincia} · ${pueblo.comunidad}`;
   const title = `${pueblo.nombre} – Los Pueblos Más Bonitos de España`;
   const descSource =
@@ -127,23 +125,26 @@ export default async function PuebloPage({
   const { slug } = await params;
   const pueblo = await getPuebloBySlug(slug);
 
-  // Separar POIs por categoría (excluir MULTIEXPERIENCIA - solo se muestran en páginas de multiexperiencia)
-  const poisEnPueblo = pueblo.pois.filter(
-    (poi: Poi) => poi.categoria !== "MULTIEXPERIENCIA"
+  // Proteger fotos con Array.isArray
+  const fotos = Array.isArray(pueblo.fotos) ? pueblo.fotos : [];
+
+  // Separar POIs por categoría
+  const poisPOI = pueblo.pois.filter((poi: Poi) => poi.categoria === "POI");
+  const poisMultiexperiencia = pueblo.pois.filter(
+    (poi: Poi) => poi.categoria === "MULTIEXPERIENCIA"
   );
-  const poisPOI = poisEnPueblo.filter((poi: Poi) => poi.categoria === "POI");
-  const poisOtros = poisEnPueblo.filter(
-    (poi: Poi) => poi.categoria !== "POI"
+  const poisOtros = pueblo.pois.filter(
+    (poi: Poi) => poi.categoria !== "POI" && poi.categoria !== "MULTIEXPERIENCIA"
   );
 
-  const heroImage = pueblo.foto_destacada ?? pueblo.fotos[0]?.url ?? null;
+  const heroImage = pueblo.foto_destacada ?? fotos[0]?.url ?? null;
 
   // Filtrar fotos para galería: excluir la foto usada en hero si viene de fotos[]
   const fotoHeroUrl =
     heroImage && !pueblo.foto_destacada ? heroImage : null;
   const fotosParaGalería = fotoHeroUrl
-    ? pueblo.fotos.filter((f: Foto) => f.url !== fotoHeroUrl)
-    : pueblo.fotos;
+    ? fotos.filter((f: Foto) => f.url !== fotoHeroUrl)
+    : fotos;
 
   // Limitar a 24 fotos (sin orden adicional, tal cual viene del backend)
   const fotosGalería = fotosParaGalería.slice(0, 24);
@@ -191,20 +192,6 @@ export default async function PuebloPage({
     href: `/noticias/${n.id}`,
   }));
 
-  // Obtener meteo si hay coordenadas
-  const meteo =
-    pueblo.lat && pueblo.lng ? await getMeteo(pueblo.lat, pueblo.lng) : null;
-
-  // Mapear semáforo (puede venir en diferentes formatos del backend)
-  const semaforoEstado =
-    pueblo.semaforo?.estado ?? (pueblo.semaforo as any)?.estado ?? null;
-  const semaforoMensaje =
-    pueblo.semaforo?.mensaje ?? (pueblo.semaforo as any)?.mensaje ?? null;
-  const semaforoUpdated =
-    pueblo.semaforo?.ultima_actualizacion ??
-    (pueblo.semaforo as any)?.ultima_actualizacion ??
-    null;
-
   return (
     <main>
       {/* HERO */}
@@ -228,34 +215,6 @@ export default async function PuebloPage({
         lat={pueblo.lat}
         lng={pueblo.lng}
       />
-
-      {/* ESTADO DEL PUEBLO */}
-      <section style={{ marginTop: "32px" }}>
-        <h2>Estado del pueblo</h2>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "16px",
-            marginTop: "16px",
-          }}
-        >
-          <SemaforoBadge
-            estado={semaforoEstado}
-            mensaje={semaforoMensaje}
-            updatedAt={semaforoUpdated}
-            variant="panel"
-          />
-          {meteo && (meteo.temp !== null || meteo.code !== null) && (
-            <MeteoBlock
-              temp={meteo.temp}
-              code={meteo.code}
-              wind={meteo.wind}
-              variant="panel"
-            />
-          )}
-        </div>
-      </section>
 
       {/* TEXTO */}
       <section style={{ marginTop: "32px" }}>
@@ -337,6 +296,25 @@ export default async function PuebloPage({
           <h2>Puntos de interés</h2>
           <ul>
             {poisPOI.map((poi: Poi) => (
+              <li key={poi.id}>
+                <Link
+                  href={`/pueblos/${pueblo.slug}/pois/${poi.id}`}
+                  style={{ color: "#0066cc", textDecoration: "none" }}
+                >
+                  {poi.nombre}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* POIs - Paradas de la experiencia */}
+      {poisMultiexperiencia.length > 0 && (
+        <section style={{ marginTop: "32px" }}>
+          <h2>Paradas de la experiencia</h2>
+          <ul>
+            {poisMultiexperiencia.map((poi: Poi) => (
               <li key={poi.id}>
                 <Link
                   href={`/pueblos/${pueblo.slug}/pois/${poi.id}`}

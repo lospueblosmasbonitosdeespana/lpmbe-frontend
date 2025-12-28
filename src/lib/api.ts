@@ -70,11 +70,6 @@ export type Pueblo = {
   foto_destacada: string | null;
   puntosVisita?: number | null;
   boldestMapId?: string | null;
-  semaforo?: {
-    estado?: "VERDE" | "AMARILLO" | "ROJO" | null;
-    mensaje?: string | null;
-    ultima_actualizacion?: string | Date | null;
-  } | null;
   fotos: Foto[];
   pois: Poi[];
   multiexperiencias: PuebloMultiexperiencia[];
@@ -87,31 +82,32 @@ export const API_BASE =
   "http://localhost:3000";
 
 export async function getPuebloBySlug(slug: string): Promise<Pueblo> {
-  // 1️⃣ Listado de pueblos DESDE LA API
-  const listRes = await fetch(`${API_BASE}/pueblos`, {
-    cache: "no-store",
-  });
-
-  if (!listRes.ok) {
-    throw new Error("No se pudo cargar el listado de pueblos");
-  }
-
-  const pueblos: Pueblo[] = await listRes.json();
-
-  // 2️⃣ Buscar por slug
-  const pueblo = pueblos.find((p) => p.slug === slug);
-
-  if (!pueblo) {
-    throw new Error("Pueblo no encontrado");
-  }
-
-  // 3️⃣ Detalle por ID
-  const res = await fetch(`${API_BASE}/pueblos/${pueblo.id}`, {
+  const res = await fetch(`${API_BASE}/pueblos/${slug}`, {
     cache: "no-store",
   });
 
   if (!res.ok) {
-    throw new Error("Error cargando el pueblo");
+    const text = await res.text().catch(() => "");
+    throw new Error(
+      `Error cargando el pueblo (slug=${slug}) status=${res.status} ${res.statusText} body=${text.slice(0, 500)}`
+    );
+  }
+
+  return res.json();
+}
+
+// Función legacy para obtener lugar con multiexperiencias y POIs
+// Usa el endpoint legacy que devuelve los datos con flags true/false
+export async function getLugarLegacyBySlug(slug: string): Promise<Pueblo> {
+  const res = await fetch(`${API_BASE}/lugares-legacy/${slug}?multiexperiencias=true&pois=true`, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(
+      `Error cargando el lugar legacy (slug=${slug}) status=${res.status} ${res.statusText} body=${text.slice(0, 500)}`
+    );
   }
 
   return res.json();

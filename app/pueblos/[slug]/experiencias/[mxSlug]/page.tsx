@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getPuebloBySlug, type Pueblo } from "@/lib/api";
+import { getLugarLegacyBySlug, type Pueblo } from "@/lib/api";
 
 // Helpers para SEO
 function cleanText(input: string) {
@@ -29,15 +29,17 @@ type Poi = {
 export const dynamic = "force-dynamic";
 
 // Helper para renderizar foto de parada
-// CONTRATO: Aquí caerán las fotos hijas cuando el backend rellene poi.foto
-// o entregue poi.media[]. Por ahora solo usa parada.foto (puede ser null).
-// NO usar pueblo.fotos como fallback.
+// CONTRATO: El backend legacy devuelve poi.fotos[] (array)
+// Usar poi.fotos?.[0]?.url, NO usar poi.foto ni pueblo.fotos
 function renderParadaFoto(parada: Poi) {
-  if (parada.foto) {
+  // Obtener imagen desde poi.fotos[] (legacy)
+  const image = (parada as any).fotos?.[0]?.url ?? null;
+
+  if (image) {
     return (
       <div style={{ marginBottom: "12px" }}>
         <img
-          src={parada.foto}
+          src={image}
           alt={parada.nombre}
           style={{
             width: "100%",
@@ -80,19 +82,26 @@ export async function generateMetadata({
   params: Promise<{ slug: string; mxSlug: string }>;
 }): Promise<Metadata> {
   const { slug, mxSlug } = await params;
-  const pueblo = await getPuebloBySlug(slug);
-  const mx = pueblo.multiexperiencias.find(
-    (x: { multiexperiencia: { slug: string } }) =>
-      x.multiexperiencia.slug === mxSlug
-  );
-  const expTitle = mx?.multiexperiencia.titulo ?? "Experiencia";
+  const pueblo = await getLugarLegacyBySlug(slug);
+  
+  // Buscar la multiexperiencia por slug (soportar formato plano y anidado)
+  type MxItem = any;
+  const mxItem = (pueblo.multiexperiencias ?? []).find((x: MxItem) => {
+    const s = x?.slug ?? x?.multiexperiencia?.slug ?? null;
+    return s === mxSlug;
+  });
+  
+  // Normalizar: si viene anidada, usa x.multiexperiencia; si viene plana, usa x
+  const mx = mxItem?.multiexperiencia ?? mxItem ?? null;
+  
+  const expTitle = mx?.titulo ?? "Experiencia";
   const title = `${expTitle} – ${pueblo.nombre} – Los Pueblos Más Bonitos de España`;
   const heroImage =
-    mx?.multiexperiencia.foto ??
+    mx?.foto ??
     pueblo.foto_destacada ??
-    pueblo.fotos[0]?.url ??
+    pueblo.fotos?.[0]?.url ??
     null;
-  const descSource = mx?.multiexperiencia.descripcion ?? null;
+  const descSource = mx?.descripcion ?? null;
   const description = descSource
     ? cut(descSource, 160)
     : "Detalle de la experiencia y sus paradas.";
@@ -127,20 +136,26 @@ export default async function MultiexperienciaPage({
   params: Promise<{ slug: string; mxSlug: string }>;
 }) {
   const { slug, mxSlug } = await params;
-  const pueblo = await getPuebloBySlug(slug);
+  const pueblo = await getLugarLegacyBySlug(slug);
 
-  // Buscar la multiexperiencia por slug
-  const mx = pueblo.multiexperiencias.find(
-    (x: { multiexperiencia: { slug: string } }) => x.multiexperiencia.slug === mxSlug
-  );
+  // Buscar la multiexperiencia por slug (soportar formato plano y anidado)
+  type MxItem = any;
+  const mxItem = (pueblo.multiexperiencias ?? []).find((x: MxItem) => {
+    const s = x?.slug ?? x?.multiexperiencia?.slug ?? null;
+    return s === mxSlug;
+  });
+
+  // Normalizar: si viene anidada, usa x.multiexperiencia; si viene plana, usa x
+  const mx = mxItem?.multiexperiencia ?? mxItem ?? null;
 
   if (!mx) {
     throw new Error("Multiexperiencia no encontrada");
   }
 
-  // Obtener paradas (POIs con categoria === "MULTIEXPERIENCIA")
-  const paradas = pueblo.pois.filter(
-    (p: Poi) => p.categoria === "MULTIEXPERIENCIA"
+  // Obtener paradas desde POIs legacy: filtrar por categoría MULTIEXPERIENCIA
+  // En el endpoint legacy, las paradas ya vienen filtradas por la multiexperiencia
+  const paradas = (pueblo.pois ?? []).filter(
+    (p) => p.categoria === "MULTIEXPERIENCIA"
   );
 
   // Ordenar paradas: primero por orden ascendente (null al final), luego por id ascendente
@@ -171,7 +186,7 @@ export default async function MultiexperienciaPage({
       </div>
 
       {/* Título */}
-      <h1>{mx.multiexperiencia.titulo}</h1>
+      <h1>{mx.titulo}</h1>
 
       {/* Información del pueblo */}
       <p style={{ marginTop: "8px", fontSize: "14px", color: "#666" }}>
@@ -179,11 +194,11 @@ export default async function MultiexperienciaPage({
       </p>
 
       {/* Foto padre */}
-      {mx.multiexperiencia.foto && (
+      {mx.foto && (
         <div style={{ marginTop: "24px" }}>
           <img
-            src={mx.multiexperiencia.foto}
-            alt={mx.multiexperiencia.titulo}
+            src={mx.foto}
+            alt={mx.titulo}
             style={{
               width: "100%",
               maxHeight: "400px",
@@ -197,7 +212,7 @@ export default async function MultiexperienciaPage({
       {/* Descripción */}
       <section style={{ marginTop: "32px" }}>
         <p>
-          {mx.multiexperiencia.descripcion ?? "Descripción próximamente."}
+          {mx.descripcion ?? "Descripción próximamente."}
         </p>
       </section>
 
