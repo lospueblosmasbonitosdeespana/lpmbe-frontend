@@ -65,8 +65,7 @@ export type Pueblo = {
   comunidad: string;
   lat: number | null;
   lng: number | null;
-  descripcion_corta: string | null;
-  descripcion_larga: string | null;
+  descripcion: string | null;
   foto_destacada: string | null;
   puntosVisita?: number | null;
   boldestMapId?: string | null;

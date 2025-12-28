@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getPuebloBySlug, type Pueblo } from "@/lib/api";
 import PuebloActions from "./PuebloActions";
 import FeedSection from "../../components/FeedSection";
+import DescripcionPueblo from "./DescripcionPueblo";
 
 // Helpers para SEO
 function cleanText(input: string) {
@@ -87,13 +88,13 @@ export async function generateMetadata({
   const heroImage = pueblo.foto_destacada ?? fotos[0]?.url ?? null;
   const baseTitle = `${pueblo.nombre} · ${pueblo.provincia} · ${pueblo.comunidad}`;
   const title = `${pueblo.nombre} – Los Pueblos Más Bonitos de España`;
-  const descSource =
-    pueblo.descripcion_corta ??
-    (pueblo.descripcion_larga ? cut(pueblo.descripcion_larga, 180) : null);
-  const description =
-    descSource
-      ? cut(descSource, 160)
-      : "Información, mapa, fotos, puntos de interés y experiencias del pueblo.";
+  // Extraer texto plano del HTML para la descripción (sin tags)
+  const descText = pueblo.descripcion
+    ? cleanText(pueblo.descripcion.replace(/<[^>]*>/g, ""))
+    : null;
+  const description = descText
+    ? cut(descText, 160)
+    : "Información, mapa, fotos, puntos de interés y experiencias del pueblo.";
   const path = `/pueblos/${pueblo.slug}`;
 
   return {
@@ -218,14 +219,7 @@ export default async function PuebloPage({
 
       {/* TEXTO */}
       <section style={{ marginTop: "32px" }}>
-        {pueblo.descripcion_corta || pueblo.descripcion_larga ? (
-          <>
-            {pueblo.descripcion_corta && <p>{pueblo.descripcion_corta}</p>}
-            {pueblo.descripcion_larga && <p>{pueblo.descripcion_larga}</p>}
-          </>
-        ) : (
-          <p>Descripción próximamente.</p>
-        )}
+        <DescripcionPueblo descripcion={pueblo.descripcion} />
       </section>
 
       {/* GALERÍA */}
