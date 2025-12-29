@@ -25,6 +25,21 @@ type Poi = {
   puebloId: number;
 };
 
+type Multiexperiencia = {
+  id: number;
+  titulo: string;
+  descripcion: string | null;
+  foto: string | null;
+  slug: string;
+  categoria?: string | null;
+  tipo?: "LOCAL" | "NACIONAL" | string;
+  programa?: string | null;
+  qr?: string | null;
+  puntos?: number | null;
+  activo?: boolean | null;
+  legacyId?: number | null;
+};
+
 // 🔒 Forzamos render dinámico (no SSG)
 export const dynamic = "force-dynamic";
 
@@ -85,14 +100,13 @@ export async function generateMetadata({
   const pueblo = await getLugarLegacyBySlug(slug);
   
   // Buscar la multiexperiencia por slug (soportar formato plano y anidado)
-  type MxItem = any;
-  const mxItem = (pueblo.multiexperiencias ?? []).find((x: MxItem) => {
+  const mxItem = (pueblo.multiexperiencias ?? []).find((x: any) => {
     const s = x?.slug ?? x?.multiexperiencia?.slug ?? null;
     return s === mxSlug;
   });
   
   // Normalizar: si viene anidada, usa x.multiexperiencia; si viene plana, usa x
-  const mx = mxItem?.multiexperiencia ?? mxItem ?? null;
+  const mx = (mxItem?.multiexperiencia ?? mxItem ?? null) as Multiexperiencia | null;
   
   const expTitle = mx?.titulo ?? "Experiencia";
   const title = `${expTitle} – ${pueblo.nombre} – Los Pueblos Más Bonitos de España`;
@@ -139,14 +153,13 @@ export default async function MultiexperienciaPage({
   const pueblo = await getLugarLegacyBySlug(slug);
 
   // Buscar la multiexperiencia por slug (soportar formato plano y anidado)
-  type MxItem = any;
-  const mxItem = (pueblo.multiexperiencias ?? []).find((x: MxItem) => {
+  const mxItem = (pueblo.multiexperiencias ?? []).find((x: any) => {
     const s = x?.slug ?? x?.multiexperiencia?.slug ?? null;
     return s === mxSlug;
   });
 
   // Normalizar: si viene anidada, usa x.multiexperiencia; si viene plana, usa x
-  const mx = mxItem?.multiexperiencia ?? mxItem ?? null;
+  const mx = (mxItem?.multiexperiencia ?? mxItem ?? null) as Multiexperiencia | null;
 
   if (!mx) {
     throw new Error("Multiexperiencia no encontrada");
