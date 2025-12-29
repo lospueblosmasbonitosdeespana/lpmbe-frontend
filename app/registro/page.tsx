@@ -1,34 +1,17 @@
-// app/entrar/page.tsx
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-export default function EntrarPage() {
+export default function RegistroPage() {
   const router = useRouter();
+  const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await fetch('/api/auth/me', { cache: 'no-store' });
-        if (!mounted) return;
-        if (res.ok) {
-          router.replace('/cuenta');
-        }
-      } catch {
-        // ignore
-      }
-    })();
-
-    return () => {
-      mounted = false;
-    };
-  }, [router]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -36,20 +19,25 @@ export default function EntrarPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ nombre: nombre || null, email, password }),
       });
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data?.message ?? 'No se pudo iniciar sesión');
+        setError(data?.message ?? 'No se pudo registrar');
         return;
       }
 
-      router.push('/cuenta');
-      router.refresh();
+      if (data?.autoLogin) {
+        router.replace('/cuenta');
+        router.refresh();
+      } else {
+        router.replace('/entrar');
+        router.refresh();
+      }
     } finally {
       setLoading(false);
     }
@@ -57,9 +45,19 @@ export default function EntrarPage() {
 
   return (
     <main className="mx-auto max-w-md p-6">
-      <h1 className="text-2xl font-semibold">Entrar</h1>
+      <h1 className="text-2xl font-semibold">Registro</h1>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
+        <div className="space-y-2">
+          <label className="block text-sm">Nombre (opcional)</label>
+          <input
+            className="w-full rounded-md border px-3 py-2"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            autoComplete="name"
+          />
+        </div>
+
         <div className="space-y-2">
           <label className="block text-sm">Email</label>
           <input
@@ -79,28 +77,26 @@ export default function EntrarPage() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
+            autoComplete="new-password"
             required
           />
         </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
-        <button className="w-full rounded-md border px-3 py-2" type="submit" disabled={loading}>
-          {loading ? 'Entrando…' : 'Entrar'}
+        <button
+          className="w-full rounded-md border px-3 py-2"
+          type="submit"
+          disabled={loading}
+        >
+          {loading ? 'Creando cuenta…' : 'Crear cuenta'}
         </button>
 
         <p className="text-sm text-gray-600">
-          <a className="hover:underline" href="/recuperar">
-            ¿Has olvidado la contraseña?
-          </a>
-        </p>
-
-        <p className="text-sm text-gray-600">
-          ¿No tienes cuenta?{' '}
-          <a className="hover:underline" href="/registro">
-            Crear cuenta
-          </a>
+          ¿Ya tienes cuenta?{' '}
+          <Link className="hover:underline" href="/entrar">
+            Entrar
+          </Link>
         </p>
       </form>
     </main>

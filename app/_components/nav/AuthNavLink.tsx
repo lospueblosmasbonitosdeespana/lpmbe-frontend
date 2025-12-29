@@ -43,9 +43,9 @@ export default function AuthNavLink() {
 
   if (loading) {
     return (
-      <span className="text-sm font-medium opacity-70">
+      <Link href="/entrar" className="text-sm font-medium opacity-70 hover:underline">
         Entrar
-      </span>
+      </Link>
     );
   }
 
