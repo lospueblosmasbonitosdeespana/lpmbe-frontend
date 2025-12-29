@@ -17,3 +17,7 @@ export async function getAllPueblosServer(): Promise<PuebloMini[]> {
   })) as PuebloMini[];
 }
 
+
+
+
+
