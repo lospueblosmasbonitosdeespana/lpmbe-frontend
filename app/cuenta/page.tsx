@@ -72,8 +72,10 @@ export default async function CuentaPage() {
               </ul>
             )}
 
-            <div className="mt-4 text-sm text-gray-600">
-              Gestión (placeholder): /gestion (pendiente)
+            <div className="mt-4 text-sm">
+              <Link className="hover:underline" href="/gestion">
+                Ir a Gestión →
+              </Link>
             </div>
           </div>
         ) : null}
