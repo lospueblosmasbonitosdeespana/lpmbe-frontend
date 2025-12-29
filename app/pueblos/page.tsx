@@ -1,16 +1,17 @@
+import { getApiUrl } from "@/lib/api";
 import PueblosList from "./PueblosList";
 
 // 🔒 Evita SSG / paths raros
 export const dynamic = "force-dynamic";
 
-// 🌍 API real (Railway)
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
-  "http://localhost:3000";
+type SearchParams = {
+  comunidad?: string;
+  provincia?: string;
+};
 
 async function getPueblos() {
-  const res = await fetch(`${API_BASE}/pueblos`, {
-    cache: "no-store",
+  const res = await fetch(`${getApiUrl()}/pueblos`, {
+    next: { revalidate: 300 },
   });
 
   if (!res.ok) {
@@ -20,11 +21,28 @@ async function getPueblos() {
   return res.json();
 }
 
-export default async function PueblosPage() {
+export default async function PueblosPage({
+  searchParams,
+}: {
+  searchParams?: Promise<SearchParams> | SearchParams;
+}) {
+  const sp = searchParams
+    ? await Promise.resolve(searchParams)
+    : ({} as SearchParams);
+
+  const comunidad = (sp.comunidad ?? "").trim();
+  const provincia = (sp.provincia ?? "").trim();
+
   try {
     const pueblos = await getPueblos();
-    return <PueblosList pueblos={pueblos} />;
-  } catch (error) {
+    return (
+      <PueblosList
+        pueblos={pueblos}
+        initialComunidad={comunidad}
+        initialProvincia={provincia}
+      />
+    );
+  } catch {
     return (
       <main style={{ padding: "24px" }}>
         <h1>Pueblos</h1>

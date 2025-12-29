@@ -21,10 +21,21 @@ type Pueblo = {
 
 type PueblosListProps = {
   pueblos: Pueblo[];
+  initialComunidad?: string;
+  initialProvincia?: string;
 };
 
-export default function PueblosList({ pueblos: initialPueblos }: PueblosListProps) {
+const norm = (s: string) => s.trim().toLowerCase();
+
+export default function PueblosList({
+  pueblos: initialPueblos,
+  initialComunidad = "",
+  initialProvincia = "",
+}: PueblosListProps) {
   const [searchTerm, setSearchTerm] = useState("");
+
+  const comunidadNorm = initialComunidad ? norm(initialComunidad) : "";
+  const provinciaNorm = initialProvincia ? norm(initialProvincia) : "";
 
   // Ordenar alfabéticamente por nombre
   const pueblosOrdenados = useMemo(() => {
@@ -33,23 +44,82 @@ export default function PueblosList({ pueblos: initialPueblos }: PueblosListProp
     );
   }, [initialPueblos]);
 
-  // Filtrar por búsqueda (case-insensitive)
+  // Filtrar por comunidad, provincia y búsqueda (case-insensitive)
   const pueblosFiltrados = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return pueblosOrdenados;
+    let filtered = pueblosOrdenados;
+
+    // Filtro por comunidad
+    if (comunidadNorm) {
+      filtered = filtered.filter(
+        (p) => norm(p.comunidad ?? "") === comunidadNorm
+      );
     }
-    const term = searchTerm.toLowerCase();
-    return pueblosOrdenados.filter(
-      (pueblo) =>
-        pueblo.nombre.toLowerCase().includes(term) ||
-        pueblo.provincia.toLowerCase().includes(term) ||
-        pueblo.comunidad.toLowerCase().includes(term)
-    );
-  }, [pueblosOrdenados, searchTerm]);
+
+    // Filtro por provincia
+    if (provinciaNorm) {
+      filtered = filtered.filter(
+        (p) => norm(p.provincia ?? "") === provinciaNorm
+      );
+    }
+
+    // Filtro por búsqueda de texto
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (pueblo) =>
+          pueblo.nombre.toLowerCase().includes(term) ||
+          pueblo.provincia.toLowerCase().includes(term) ||
+          pueblo.comunidad.toLowerCase().includes(term)
+      );
+    }
+
+    return filtered;
+  }, [pueblosOrdenados, comunidadNorm, provinciaNorm, searchTerm]);
+
+  const hasActiveFilters = comunidadNorm || provinciaNorm;
 
   return (
     <main style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
       <h1>Pueblos</h1>
+
+      {/* Filtros activos */}
+      {hasActiveFilters && (
+        <div
+          style={{
+            marginTop: "16px",
+            padding: "12px 16px",
+            backgroundColor: "#f5f5f5",
+            borderRadius: "8px",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            flexWrap: "wrap",
+          }}
+        >
+          <span style={{ fontSize: "14px", fontWeight: "500" }}>Filtros activos:</span>
+          {comunidadNorm && (
+            <span style={{ fontSize: "14px", color: "#555" }}>
+              Comunidad: <strong>{initialComunidad}</strong>
+            </span>
+          )}
+          {provinciaNorm && (
+            <span style={{ fontSize: "14px", color: "#555" }}>
+              Provincia: <strong>{initialProvincia}</strong>
+            </span>
+          )}
+          <Link
+            href="/pueblos"
+            style={{
+              fontSize: "14px",
+              color: "#0066cc",
+              textDecoration: "underline",
+              marginLeft: "auto",
+            }}
+          >
+            Quitar filtros
+          </Link>
+        </div>
+      )}
 
       {/* Contador */}
       <p style={{ marginTop: "16px", fontSize: "16px", color: "#666" }}>

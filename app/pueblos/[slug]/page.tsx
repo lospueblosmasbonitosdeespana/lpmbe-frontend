@@ -18,12 +18,9 @@ function cut(input: string, max = 160) {
   return s.length > max ? s.slice(0, max - 1).trimEnd() + "…" : s;
 }
 
-type Foto = {
+type FotoPueblo = {
   id: number;
   url: string;
-  alt: string | null;
-  orden: number | null;
-  puebloId: number;
 };
 
 type Poi = {
@@ -87,7 +84,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const pueblo = await getPuebloBySlug(slug);
-  const fotos = Array.isArray(pueblo.fotos) ? pueblo.fotos : [];
+  const fotos = Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [];
   const heroImage = pueblo.foto_destacada ?? fotos[0]?.url ?? null;
   const baseTitle = `${pueblo.nombre} · ${pueblo.provincia} · ${pueblo.comunidad}`;
   const title = `${pueblo.nombre} – Los Pueblos Más Bonitos de España`;
@@ -130,7 +127,7 @@ export default async function PuebloPage({
   const pueblo = await getPuebloBySlug(slug);
 
   // Proteger fotos con Array.isArray
-  const fotos = Array.isArray(pueblo.fotos) ? pueblo.fotos : [];
+  const fotos = Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [];
 
   // Separar POIs por categoría
   const poisPOI = pueblo.pois.filter((poi: Poi) => poi.categoria === "POI");
@@ -143,11 +140,11 @@ export default async function PuebloPage({
 
   const heroImage = pueblo.foto_destacada ?? fotos[0]?.url ?? null;
 
-  // Filtrar fotos para galería: excluir la foto usada en hero si viene de fotos[]
+  // Filtrar fotos para galería: excluir la foto usada en hero si viene de fotosPueblo[]
   const fotoHeroUrl =
     heroImage && !pueblo.foto_destacada ? heroImage : null;
   const fotosParaGalería = fotoHeroUrl
-    ? fotos.filter((f: Foto) => f.url !== fotoHeroUrl)
+    ? fotos.filter((f: FotoPueblo) => f.url !== fotoHeroUrl)
     : fotos;
 
   // Limitar a 24 fotos (sin orden adicional, tal cual viene del backend)
@@ -275,11 +272,11 @@ export default async function PuebloPage({
               marginTop: "16px",
             }}
           >
-            {fotosGalería.map((foto: Foto, index: number) => (
+            {fotosGalería.map((foto: FotoPueblo, index: number) => (
               <img
                 key={foto.id}
                 src={foto.url}
-                alt={foto.alt ?? `${pueblo.nombre} - Foto ${index + 1}`}
+                alt={`${pueblo.nombre} - Foto ${index + 1}`}
                 loading="lazy"
                 style={{ width: "100%", height: "auto", borderRadius: "8px" }}
               />

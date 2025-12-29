@@ -70,6 +70,7 @@ export type Pueblo = {
   puntosVisita?: number | null;
   boldestMapId?: string | null;
   fotos: Foto[];
+  fotosPueblo?: { id: number; url: string }[];
   pois: Poi[];
   multiexperiencias: PuebloMultiexperiencia[];
   eventos: Evento[];
@@ -79,6 +80,10 @@ export type Pueblo = {
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
   "http://localhost:3000";
+
+export function getApiUrl(): string {
+  return API_BASE;
+}
 
 export async function getPuebloBySlug(slug: string): Promise<Pueblo> {
   const res = await fetch(`${API_BASE}/pueblos/${slug}`, {

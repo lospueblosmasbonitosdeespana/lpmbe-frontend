@@ -1,4 +1,6 @@
+import "./globals.css";
 import type { Metadata } from "next";
+import { Header } from "./_components/nav/Header";
 
 export const metadata: Metadata = {
   title: "LPBME 2.0",
@@ -13,6 +15,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body>
+        <Header />
         {children}
       </body>
     </html>
