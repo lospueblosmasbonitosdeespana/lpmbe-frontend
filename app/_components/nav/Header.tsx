@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MegaMenu } from "./MegaMenu";
+import AuthNavLink from "./AuthNavLink";
 
 export function Header() {
   return (
@@ -17,9 +18,7 @@ export function Header() {
           <Link href="/contacto" className="text-sm font-medium hover:underline">
             Contacto
           </Link>
-          <Link href="/login" className="text-sm font-medium hover:underline">
-            Entrar
-          </Link>
+          <AuthNavLink />
         </div>
       </div>
     </header>

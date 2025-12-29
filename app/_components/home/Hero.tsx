@@ -7,7 +7,7 @@ export function Hero({ floating }: { floating?: React.ReactNode }) {
   return (
     <section className="relative h-[420px] md:h-[520px] overflow-hidden">
       <HeroSlider
-        slides={hero?.slides ?? []}
+        slides={[...(hero?.slides ?? [])]}
         intervalMs={hero?.intervalMs ?? 6000}
         showControls
       />

@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 type Slide = { image: string; alt?: string };
 
 type Props = {
-  slides: Slide[];
+  slides: readonly Slide[];
   intervalMs?: number;
   showControls?: boolean;
 };
