@@ -29,7 +29,7 @@ export const navConfig: NavItem[] = [
         title: "Explorar",
         links: [
           { label: "Ver todos", href: "/pueblos" },
-          { label: "Mapa interactivo", href: "/mapa" },
+          { label: "Mapa interactivo", href: "https://maps.lospueblosmasbonitosdeespana.org/es/pueblos" },
         ],
       },
       {

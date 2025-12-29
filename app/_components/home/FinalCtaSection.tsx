@@ -34,15 +34,17 @@ export function FinalCtaSection() {
             </div>
           </Link>
 
-          <Link
-            href="/mapa"
+          <a
+            href="https://maps.lospueblosmasbonitosdeespana.org/es/pueblos"
+            target="_blank"
+            rel="noopener noreferrer"
             className="bg-white px-5 py-4 text-sm font-medium hover:underline"
           >
             Abrir mapa interactivo →
             <div className="mt-1 text-xs text-gray-500">
               Explorar por ubicación
             </div>
-          </Link>
+          </a>
         </div>
       </div>
     </section>

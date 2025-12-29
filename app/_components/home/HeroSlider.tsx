@@ -70,7 +70,7 @@ export function HeroSlider({
   }
 
   return (
-    <div className="absolute inset-0 group">
+    <div className="absolute inset-0 z-0 group">
       {safeSlides.map((s, i) => (
         <div
           key={`${s.image}-${i}`}

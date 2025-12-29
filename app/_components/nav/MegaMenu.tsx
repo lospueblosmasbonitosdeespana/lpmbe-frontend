@@ -97,13 +97,30 @@ function MegaPanel({ item }: { item: Extract<NavItem, { type: "mega" }> }) {
               {col.title}
             </div>
             <ul className="mt-3 space-y-2">
-              {col.links.map((l) => (
-                <li key={l.href}>
-                  <Link href={l.href} className="text-sm hover:underline">
-                    {l.label}
-                  </Link>
-                </li>
-              ))}
+              {col.links.map((l) => {
+                const isExternal = l.href.startsWith("http");
+                if (isExternal) {
+                  return (
+                    <li key={l.href}>
+                      <a
+                        href={l.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm hover:underline"
+                      >
+                        {l.label}
+                      </a>
+                    </li>
+                  );
+                }
+                return (
+                  <li key={l.href}>
+                    <Link href={l.href} className="text-sm hover:underline">
+                      {l.label}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}

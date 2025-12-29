@@ -72,7 +72,7 @@ export function NotificacionesFloating() {
   }, [items, active]);
 
   return (
-    <div className="w-[calc(100%-2rem)] rounded-2xl border border-black/10 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 shadow-[0_12px_40px_rgba(0,0,0,0.10)]">
+    <div className="relative z-50 pointer-events-auto w-[calc(100%-2rem)] rounded-2xl border border-black/10 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 shadow-[0_12px_40px_rgba(0,0,0,0.10)]">
       <div className="grid grid-cols-1 gap-0 md:grid-cols-[1fr_180px]">
         {/* Cuerpo */}
         <div className="px-6 py-6 md:px-8 md:py-8">

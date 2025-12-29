@@ -13,8 +13,8 @@ export function Hero({ floating }: { floating?: React.ReactNode }) {
       />
 
       {/* Overlay en 2 capas: base + degradado inferior */}
-      <div className="absolute inset-0 bg-black/35" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-black/35" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
 
       <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-center px-4">
         <h1 className="text-3xl font-semibold text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)] md:text-5xl">
@@ -27,7 +27,7 @@ export function Hero({ floating }: { floating?: React.ReactNode }) {
 
       {/* Panel flotante existente: NO CAMBIAR lógica */}
       {floating ? (
-        <div className="absolute left-1/2 bottom-[-48px] w-[calc(100%-2rem)] max-w-5xl -translate-x-1/2">
+        <div className="absolute z-50 left-1/2 bottom-[-48px] w-[calc(100%-2rem)] max-w-5xl -translate-x-1/2">
           {floating}
         </div>
       ) : null}
