@@ -24,19 +24,16 @@ export default async function GestionPage() {
           <ul className="mt-3 list-disc pl-5 text-sm">
             <li>
               <Link className="hover:underline" href="/gestion/mis-pueblos">
-                Mis pueblos (placeholder)
+                Mis pueblos
               </Link>
             </li>
-            <li>
-              <Link className="hover:underline" href="/gestion/noticias">
-                Noticias (placeholder)
-              </Link>
-            </li>
-            <li>
-              <Link className="hover:underline" href="/gestion/eventos">
-                Eventos (placeholder)
-              </Link>
-            </li>
+            {me.rol === 'ADMIN' ? (
+              <li>
+                <Link className="hover:underline" href="/gestion/asociacion">
+                  Asociación (global)
+                </Link>
+              </li>
+            ) : null}
           </ul>
         </div>
 
