@@ -11,7 +11,7 @@ export default async function GestionAsociacionPage() {
     <main className="mx-auto max-w-3xl p-6">
       <h1 className="text-2xl font-semibold">Gestión · Asociación</h1>
       <p className="mt-2 text-sm text-gray-600">
-        Noticias y eventos globales (visibles a nivel nacional).
+        Noticias, eventos y alertas globales (visibles a nivel nacional).
       </p>
 
       <div className="mt-8 rounded-md border p-4">
@@ -25,6 +25,11 @@ export default async function GestionAsociacionPage() {
           <li>
             <Link className="hover:underline" href="/gestion/asociacion/eventos">
               Eventos globales
+            </Link>
+          </li>
+          <li>
+            <Link className="hover:underline" href="/gestion/asociacion/alertas">
+              Alertas globales
             </Link>
           </li>
         </ul>
