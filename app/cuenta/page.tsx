@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getMeServer } from '@/lib/me';
 import { getMisPueblosServer } from '@/lib/misPueblos';
 import LogoutButton from './LogoutButton';
+import ProfileForm from './ProfileForm';
 import Link from 'next/link';
 
 export default async function CuentaPage() {
@@ -35,6 +36,10 @@ export default async function CuentaPage() {
           <div className="font-medium">{me.sub}</div>
         </div>
       </section>
+
+      <div className="mt-8">
+        <ProfileForm initialNombre={me.nombre ?? ''} />
+      </div>
 
       <section className="mt-10 space-y-3">
         {me.rol === 'USUARIO' ? (
