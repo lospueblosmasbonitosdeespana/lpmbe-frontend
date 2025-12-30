@@ -1,92 +1,37 @@
-import Link from 'next/link';
-import { getMeServer } from '@/lib/me';
-import { getMisPueblosServer } from '@/lib/misPueblos';
-import { redirect } from 'next/navigation';
+import Link from "next/link";
+import EventosList from "./EventosList.client";
 
-function getWebUrl() {
-  // En producción, usar NEXT_PUBLIC_WEB_URL si existe, sino VERCEL_URL
-  if (process.env.NEXT_PUBLIC_WEB_URL) {
-    return process.env.NEXT_PUBLIC_WEB_URL.replace(/\/$/, '');
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  return 'http://localhost:3000';
-}
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-async function fetchEventos(puebloSlug: string) {
-  const res = await fetch(
-    `${getWebUrl()}/api/gestion/eventos?puebloSlug=${encodeURIComponent(puebloSlug)}`,
-    {
-      cache: 'no-store',
-    }
-  );
-  if (!res.ok) return [];
-  const data = await res.json().catch(() => []);
-  return Array.isArray(data) ? data : [];
-}
-
-export default async function EventosPuebloPage({
+export default async function Page({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const me = await getMeServer();
-  if (!me) redirect('/entrar');
-  if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN') redirect('/cuenta');
-
-  if (me.rol === 'ALCALDE') {
-    const mis = await getMisPueblosServer();
-    if (!mis.some((p) => p.slug === slug)) redirect('/gestion/mis-pueblos');
-  }
-
-  const eventos = await fetchEventos(slug);
 
   return (
-    <main className="mx-auto max-w-4xl p-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Eventos</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            Pueblo: <strong>{slug}</strong>
-          </p>
-        </div>
+    <main className="mx-auto max-w-4xl px-6 py-8">
+      <header className="mb-6">
+        <h1 className="text-3xl font-semibold">Eventos</h1>
+        <p className="mt-1">
+          Pueblo: <strong>{slug}</strong>
+        </p>
+        <p className="mt-3">
+          <Link
+            href={`/gestion/pueblos/${slug}/eventos/nuevo`}
+            className="underline"
+          >
+            + Nuevo evento
+          </Link>
+        </p>
+      </header>
 
-        <Link
-          className="rounded-md border px-3 py-2 text-sm hover:underline"
-          href={`/gestion/pueblos/${slug}/eventos/nuevo`}
-        >
-          + Nuevo evento
-        </Link>
-      </div>
+      <EventosList puebloSlug={slug} />
 
-      {eventos.length === 0 ? (
-        <div className="mt-6 rounded-md border p-4 text-sm text-gray-600">
-          No hay eventos todavía.
-        </div>
-      ) : (
-        <ul className="mt-6 space-y-3">
-          {eventos.map((e: any) => (
-            <li key={e.id ?? e.titulo} className="rounded-md border p-4">
-              <div className="font-medium">{e.titulo ?? '(sin título)'}</div>
-              <div className="mt-1 text-xs text-gray-500">
-                {e.fecha_inicio ? String(e.fecha_inicio) : ''}
-                {e.fecha_fin ? ` → ${String(e.fecha_fin)}` : ''}
-              </div>
-              {e.descripcion ? (
-                <div className="mt-2 text-sm text-gray-700">
-                  {String(e.descripcion).slice(0, 200)}
-                  {String(e.descripcion).length > 200 ? '…' : ''}
-                </div>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className="mt-8 text-sm">
-        <Link className="hover:underline" href={`/gestion/pueblos/${slug}`}>
+      <div className="mt-6">
+        <Link href={`/gestion/pueblos/${slug}`} className="underline">
           ← Volver a gestión del pueblo
         </Link>
       </div>

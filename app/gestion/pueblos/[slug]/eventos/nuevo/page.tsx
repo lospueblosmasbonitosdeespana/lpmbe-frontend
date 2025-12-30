@@ -1,14 +1,11 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, use } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { useState } from 'react';
 
-export default function NuevoEventoPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = use(params);
+export default function NuevoEventoPage() {
+  const params = useParams<{ slug: string }>();
+  const slug = params?.slug || '';
   const router = useRouter();
 
   const [titulo, setTitulo] = useState('');
@@ -34,10 +31,11 @@ export default function NuevoEventoPage({
       const res = await fetch('/api/gestion/eventos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           puebloSlug: slug,
           titulo: t,
-          descripcion: descripcion.trim() || null,
+          descripcion: descripcion.trim() || '',
           fecha_inicio: fechaInicio || null,
           fecha_fin: fechaFin || null,
         }),
@@ -81,6 +79,7 @@ export default function NuevoEventoPage({
             rows={6}
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
+            required
           />
         </div>
 
@@ -92,6 +91,7 @@ export default function NuevoEventoPage({
               type="date"
               value={fechaInicio}
               onChange={(e) => setFechaInicio(e.target.value)}
+              required
             />
           </div>
           <div className="space-y-2">

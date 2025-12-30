@@ -1,15 +1,12 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { use, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { useState } from 'react';
 
-export default function NuevaNoticiaPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default function NuevaNoticiaPage() {
   const router = useRouter();
-  const { slug } = use(params);
+  const params = useParams<{ slug: string }>();
+  const slug = params?.slug || '';
   const [titulo, setTitulo] = useState('');
   const [contenido, setContenido] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,10 +27,11 @@ export default function NuevaNoticiaPage({
       const res = await fetch('/api/gestion/noticias', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           puebloSlug: slug,
           titulo: t,
-          contenido: contenido.trim() || null,
+          contenido: contenido.trim() || '',
         }),
       });
 
@@ -75,6 +73,7 @@ export default function NuevaNoticiaPage({
             rows={8}
             value={contenido}
             onChange={(e) => setContenido(e.target.value)}
+            required
           />
         </div>
 

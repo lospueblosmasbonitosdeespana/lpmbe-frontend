@@ -27,9 +27,10 @@ export default function NuevoEventoGlobalPage() {
         body: JSON.stringify({
           titulo: t,
           contenido,
-          fecha_inicio: fechaInicio || null,
-          fecha_fin: fechaFin || null,
+          fechaInicio: fechaInicio ? new Date(fechaInicio + 'T00:00:00.000Z').toISOString() : null,
+          fechaFin: fechaFin ? new Date(fechaFin + 'T00:00:00.000Z').toISOString() : null,
         }),
+        credentials: 'include',
       });
 
       const data = await res.json().catch(() => ({}));

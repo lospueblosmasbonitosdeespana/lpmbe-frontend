@@ -1,33 +1,52 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { AUTH_COOKIE_NAME } from '@/lib/auth';
+import { getApiUrl } from '@/lib/api';
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? 'http://localhost:3000';
+async function getToken(): Promise<string | null> {
+  const store = await cookies();
+  return store.get(AUTH_COOKIE_NAME)?.value ?? null;
+}
 
 export async function GET() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+  const token = await getToken();
   if (!token) return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
 
+  const API_BASE = getApiUrl();
   const upstream = await fetch(`${API_BASE}/notificaciones`, {
     method: 'GET',
     headers: { Authorization: `Bearer ${token}` },
     cache: 'no-store',
   });
 
-  const data = await upstream.json().catch(() => []);
-  const list = Array.isArray(data) ? data : [];
+  const text = await upstream.text();
+  let json: any = null;
+  try {
+    json = JSON.parse(text);
+  } catch {}
 
-  // Ajusta el filtro si el backend usa otro campo/nombre
-  const noticias = list.filter((n: any) => (n.tipo ?? n.type) === 'NOTICIA');
+  if (!upstream.ok) {
+    console.log('[NOTICIAS GLOBALES] upstream error', upstream.status, text.slice(0, 500));
+    return NextResponse.json(
+      { message: 'Upstream error', status: upstream.status },
+      { status: upstream.status }
+    );
+  }
+
+  const items = Array.isArray(json) ? json : (json?.items ?? json?.data ?? []);
+  
+  // TEMP DEBUG: loggear tipos
+  console.log('[NOTICIAS GLOBALES] items', items.length);
+  console.log('[NOTICIAS GLOBALES] tipos sample', items.slice(0, 30).map((n: any) => n?.tipo ?? n?.type));
+
+  // TEMP: devolver sin filtrar para debug
+  const noticias = items.filter((n: any) => (n.tipo ?? n.type) === 'NOTICIA');
 
   return NextResponse.json(noticias, { status: upstream.status });
 }
 
 export async function POST(req: Request) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+  const token = await getToken();
   if (!token) return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
 
   const body = await req.json().catch(() => null);
@@ -36,6 +55,7 @@ export async function POST(req: Request) {
 
   if (!titulo) return NextResponse.json({ message: 'titulo requerido' }, { status: 400 });
 
+  const API_BASE = getApiUrl();
   const upstream = await fetch(`${API_BASE}/notificaciones`, {
     method: 'POST',
     headers: {
@@ -50,7 +70,17 @@ export async function POST(req: Request) {
     cache: 'no-store',
   });
 
-  const data = await upstream.json().catch(() => ({}));
+  const text = await upstream.text();
+  console.log('[NOTICIAS GLOBALES POST] status', upstream.status);
+  console.log('[NOTICIAS GLOBALES POST] body', text.slice(0, 500));
+
+  let data: any = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { message: text };
+  }
+
   return NextResponse.json(data, { status: upstream.status });
 }
 
