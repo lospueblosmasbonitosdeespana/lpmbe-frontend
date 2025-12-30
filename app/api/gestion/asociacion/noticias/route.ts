@@ -26,7 +26,6 @@ export async function GET() {
   } catch {}
 
   if (!upstream.ok) {
-    console.log('[NOTICIAS GLOBALES] upstream error', upstream.status, text.slice(0, 500));
     return NextResponse.json(
       { message: 'Upstream error', status: upstream.status },
       { status: upstream.status }
@@ -35,11 +34,6 @@ export async function GET() {
 
   const items = Array.isArray(json) ? json : (json?.items ?? json?.data ?? []);
   
-  // TEMP DEBUG: loggear tipos
-  console.log('[NOTICIAS GLOBALES] items', items.length);
-  console.log('[NOTICIAS GLOBALES] tipos sample', items.slice(0, 30).map((n: any) => n?.tipo ?? n?.type));
-
-  // TEMP: devolver sin filtrar para debug
   const noticias = items.filter((n: any) => (n.tipo ?? n.type) === 'NOTICIA');
 
   return NextResponse.json(noticias, { status: upstream.status });
@@ -71,8 +65,6 @@ export async function POST(req: Request) {
   });
 
   const text = await upstream.text();
-  console.log('[NOTICIAS GLOBALES POST] status', upstream.status);
-  console.log('[NOTICIAS GLOBALES POST] body', text.slice(0, 500));
 
   let data: any = {};
   try {

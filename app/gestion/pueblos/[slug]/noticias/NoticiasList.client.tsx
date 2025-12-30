@@ -57,9 +57,6 @@ export default function NoticiasList({ puebloSlug }: Props) {
         Array.isArray(data.results) ? data.results :
         [];
 
-      console.log("[LIST] raw", data);
-      console.log("[LIST] items", items.length, items[0]);
-
       // Ordenar por fecha descendente
       const sorted = [...items].sort((a: any, b: any) => {
         const dateA = a.fecha || a.createdAt || "";

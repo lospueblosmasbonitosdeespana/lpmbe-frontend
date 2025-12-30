@@ -26,7 +26,6 @@ export async function GET() {
   } catch {}
 
   if (!upstream.ok) {
-    console.log('[EVENTOS GLOBALES] upstream error', upstream.status, text.slice(0, 500));
     return NextResponse.json(
       { message: 'Upstream error', status: upstream.status },
       { status: upstream.status }
@@ -34,10 +33,6 @@ export async function GET() {
   }
 
   const items = Array.isArray(json) ? json : (json?.items ?? json?.data ?? []);
-  
-  // TEMP DEBUG: loggear tipos
-  console.log('[EVENTOS GLOBALES] items', items.length);
-  console.log('[EVENTOS GLOBALES] tipos sample', items.slice(0, 30).map((n: any) => n?.tipo ?? n?.type));
 
   const eventos = items.filter((n: any) => (n.tipo ?? n.type) === 'EVENTO');
   return NextResponse.json(eventos, { status: upstream.status });
@@ -95,9 +90,6 @@ export async function POST(req: Request) {
   });
 
   const text = await upstream.text();
-  console.log('[EVENTOS GLOBALES POST] status', upstream.status);
-  console.log('[EVENTOS GLOBALES POST] body', text.slice(0, 500));
-  console.log('[EVENTOS GLOBALES POST] payload sent', JSON.stringify(payload));
 
   let data: any = {};
   try {

@@ -53,7 +53,6 @@ export async function GET(req: Request) {
 
   if (!upstream.ok) {
     const text = await upstream.text().catch(() => '');
-    console.log('[NOTICIAS PUEBLO GET] upstream error', upstream.status, text.slice(0, 500));
     return NextResponse.json(
       { message: 'Error upstream', status: upstream.status },
       { status: upstream.status }
@@ -67,8 +66,6 @@ export async function GET(req: Request) {
   } catch {}
 
   const noticias = Array.isArray(json) ? json : (json?.items ?? json?.data ?? []);
-
-  console.log('[NOTICIAS PUEBLO GET] total:', noticias.length);
 
   return NextResponse.json(noticias);
 }
@@ -112,8 +109,6 @@ export async function POST(req: Request) {
 
     if (upstream1.status !== 404) {
       const text = await upstream1.text();
-      console.log('[NOTICIAS PUEBLO POST] status', upstream1.status);
-      console.log('[NOTICIAS PUEBLO POST] body', text.slice(0, 500));
       
       let data: any = {};
       try {
@@ -142,8 +137,6 @@ export async function POST(req: Request) {
     });
 
     const text2 = await upstream2.text();
-    console.log('[NOTICIAS PUEBLO POST] fallback status', upstream2.status);
-    console.log('[NOTICIAS PUEBLO POST] fallback body', text2.slice(0, 500));
 
     let data2: any = {};
     try {
