@@ -60,14 +60,8 @@ export default async function Page({
     (n) => n.tipo === "ALERTA_PUEBLO" && getPuebloSlug(n) === slug
   );
 
-  const toTime = (v?: string | null) => {
-    if (!v) return 0;
-    const t = Date.parse(v);
-    return Number.isNaN(t) ? 0 : t;
-  };
-
   const alertasOrdenadas = [...alertas].sort(
-    (a, b) => toTime(b.createdAt) - toTime(a.createdAt)
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
   return (

@@ -11,7 +11,7 @@ type SearchParams = {
 
 async function getPueblos() {
   const res = await fetch(`${getApiUrl()}/pueblos`, {
-    next: { revalidate: 300 },
+    cache: "no-store",
   });
 
   if (!res.ok) {

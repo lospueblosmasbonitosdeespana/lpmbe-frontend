@@ -26,6 +26,7 @@ export async function GET() {
   } catch {}
 
   if (!upstream.ok) {
+    console.log('[EVENTOS GLOBALES] upstream error', upstream.status, text.slice(0, 500));
     return NextResponse.json(
       { message: 'Upstream error', status: upstream.status },
       { status: upstream.status }
@@ -33,6 +34,10 @@ export async function GET() {
   }
 
   const items = Array.isArray(json) ? json : (json?.items ?? json?.data ?? []);
+  
+  // TEMP DEBUG: loggear tipos
+  console.log('[EVENTOS GLOBALES] items', items.length);
+  console.log('[EVENTOS GLOBALES] tipos sample', items.slice(0, 30).map((n: any) => n?.tipo ?? n?.type));
 
   const eventos = items.filter((n: any) => (n.tipo ?? n.type) === 'EVENTO');
   return NextResponse.json(eventos, { status: upstream.status });
@@ -50,8 +55,6 @@ export async function POST(req: Request) {
 
   if (!titulo) return NextResponse.json({ message: 'titulo requerido' }, { status: 400 });
 
-  const API_BASE = getApiUrl();
-  
   // Convertir fechas de YYYY-MM-DD a ISO si vienen del input type="date"
   let fechaInicioISO = null;
   let fechaFinISO = null;
@@ -68,16 +71,17 @@ export async function POST(req: Request) {
       : new Date(fechaFin + 'T00:00:00.000Z').toISOString();
   }
 
-  // Eventos globales se crean como notificaciones tipo EVENTO
+  const API_BASE = getApiUrl();
   const payload: any = {
     tipo: 'EVENTO',
     titulo,
     contenido: contenido || null,
   };
 
-  // Añadir fechas si existen
-  if (fechaInicioISO) payload.fechaInicio = fechaInicioISO;
-  if (fechaFinISO) payload.fechaFin = fechaFinISO;
+  // Solo añadir fechas si existen (el endpoint de notificaciones puede no aceptarlas)
+  // Si el backend rechaza, quitar estos campos
+  if (fechaInicioISO) payload.fecha_inicio = fechaInicioISO;
+  if (fechaFinISO) payload.fecha_fin = fechaFinISO;
 
   const upstream = await fetch(`${API_BASE}/notificaciones`, {
     method: 'POST',
@@ -90,6 +94,9 @@ export async function POST(req: Request) {
   });
 
   const text = await upstream.text();
+  console.log('[EVENTOS GLOBALES POST] status', upstream.status);
+  console.log('[EVENTOS GLOBALES POST] body', text.slice(0, 500));
+  console.log('[EVENTOS GLOBALES POST] payload sent', JSON.stringify(payload));
 
   let data: any = {};
   try {

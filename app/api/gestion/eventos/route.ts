@@ -35,39 +35,33 @@ export async function GET(req: Request) {
   const puebloSlug = url.searchParams.get('puebloSlug');
   if (!puebloSlug) return NextResponse.json({ message: 'puebloSlug requerido' }, { status: 400 });
 
-  let puebloId: number;
   try {
-    puebloId = await getPuebloIdBySlug(puebloSlug);
+    const puebloId = await getPuebloIdBySlug(puebloSlug);
+    const API_BASE = getApiUrl();
+    
+    const upstream = await fetch(`${API_BASE}/pueblos/${puebloId}/eventos`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
+
+    const text = await upstream.text();
+    let data: any = [];
+    try {
+      data = text ? JSON.parse(text) : [];
+    } catch {}
+
+    if (!upstream.ok) {
+      console.log('[EVENTOS PUEBLO GET] error', upstream.status, text.slice(0, 500));
+    }
+
+    return NextResponse.json(Array.isArray(data) ? data : data.items ?? data.data ?? [], { 
+      status: upstream.status 
+    });
   } catch (e: any) {
-    return NextResponse.json({ message: e.message }, { status: 404 });
+    console.error('[EVENTOS PUEBLO GET]', e);
+    return NextResponse.json({ message: e?.message ?? 'Error obteniendo pueblo' }, { status: 500 });
   }
-
-  const API_BASE = getApiUrl();
-  
-  // 🔥 CAMBIO: Usar el endpoint específico de eventos del pueblo
-  const upstream = await fetch(`${API_BASE}/pueblos/${puebloId}/eventos`, {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${token}` },
-    cache: 'no-store',
-  });
-
-  if (!upstream.ok) {
-    const text = await upstream.text().catch(() => '');
-    return NextResponse.json(
-      { message: 'Error upstream', status: upstream.status },
-      { status: upstream.status }
-    );
-  }
-
-  const text = await upstream.text();
-  let json: any = null;
-  try {
-    json = JSON.parse(text);
-  } catch {}
-
-  const eventos = Array.isArray(json) ? json : (json?.items ?? json?.data ?? []);
-
-  return NextResponse.json(eventos);
 }
 
 export async function POST(req: Request) {
@@ -104,8 +98,7 @@ export async function POST(req: Request) {
       fechaFinISO = new Date(fechaFin + 'T00:00:00.000Z').toISOString();
     }
     
-    // 1) Intento endpoint específico por pueblo
-    const upstream1 = await fetch(`${API_BASE}/pueblos/${puebloId}/eventos`, {
+    const upstream = await fetch(`${API_BASE}/pueblos/${puebloId}/eventos`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -120,45 +113,19 @@ export async function POST(req: Request) {
       cache: 'no-store',
     });
 
-    if (upstream1.status !== 404) {
-      const text = await upstream1.text();
-      
-      let data: any = {};
-      try {
-        data = text ? JSON.parse(text) : {};
-      } catch {
-        data = { message: text };
-      }
-      
-      return NextResponse.json(data, { status: upstream1.status });
-    }
+    const text = await upstream.text();
+    console.log('[EVENTOS PUEBLO POST] status', upstream.status);
+    console.log('[EVENTOS PUEBLO POST] body', text.slice(0, 500));
+    console.log('[EVENTOS PUEBLO POST] payload', { titulo, descripcion, fecha_inicio: fechaInicioISO, fecha_fin: fechaFinISO, puebloId });
 
-    // 2) Fallback a /notificaciones (igual que alertas)
-    const upstream2 = await fetch(`${API_BASE}/notificaciones`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        tipo: 'EVENTO',
-        puebloSlug,
-        titulo,
-        contenido: descripcion || null,
-      }),
-      cache: 'no-store',
-    });
-
-    const text2 = await upstream2.text();
-
-    let data2: any = {};
+    let data: any = {};
     try {
-      data2 = text2 ? JSON.parse(text2) : {};
+      data = text ? JSON.parse(text) : {};
     } catch {
-      data2 = { message: text2 };
+      data = { message: text };
     }
 
-    return NextResponse.json(data2, { status: upstream2.status });
+    return NextResponse.json(data, { status: upstream.status });
   } catch (e: any) {
     console.error('[EVENTOS PUEBLO POST]', e);
     return NextResponse.json({ message: e?.message ?? 'Error obteniendo pueblo' }, { status: 500 });

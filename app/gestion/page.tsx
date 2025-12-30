@@ -27,6 +27,11 @@ export default async function GestionPage() {
                 Mis pueblos
               </Link>
             </li>
+            <li>
+              <Link className="hover:underline" href="/gestion/notificaciones">
+                Notificaciones
+              </Link>
+            </li>
             {me.rol === 'ADMIN' ? (
               <li>
                 <Link className="hover:underline" href="/gestion/asociacion">
