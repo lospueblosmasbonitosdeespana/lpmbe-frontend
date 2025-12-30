@@ -5,9 +5,13 @@ import { AUTH_COOKIE_NAME } from '@/lib/auth';
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? 'http://localhost:3000';
 
+async function getToken(): Promise<string | null> {
+  const store = await cookies();
+  return store.get(AUTH_COOKIE_NAME)?.value ?? null;
+}
+
 export async function GET() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+  const token = await getToken();
   if (!token) return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
 
   const upstream = await fetch(`${API_BASE}/notificaciones`, {
@@ -16,16 +20,27 @@ export async function GET() {
     cache: 'no-store',
   });
 
-  const data = await upstream.json().catch(() => []);
-  const list = Array.isArray(data) ? data : [];
-  const alertas = list.filter((n: any) => (n.tipo ?? n.type) === 'ALERTA');
+  const text = await upstream.text();
+  let json: any = null;
+  try {
+    json = JSON.parse(text);
+  } catch {}
+
+  if (!upstream.ok) {
+    return NextResponse.json(
+      { message: 'Upstream error', status: upstream.status },
+      { status: upstream.status }
+    );
+  }
+
+  const items = Array.isArray(json) ? json : (json?.items ?? json?.data ?? []);
+  const alertas = items.filter((n: any) => (n.tipo ?? n.type) === 'ALERTA');
 
   return NextResponse.json(alertas, { status: upstream.status });
 }
 
 export async function POST(req: Request) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+  const token = await getToken();
   if (!token) return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
 
   const body = await req.json().catch(() => null);
@@ -48,11 +63,13 @@ export async function POST(req: Request) {
     cache: 'no-store',
   });
 
-  const data = await upstream.json().catch(() => ({}));
+  const text = await upstream.text();
+  let data: any = {};
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = { message: text };
+  }
+
   return NextResponse.json(data, { status: upstream.status });
 }
-
-
-
-
-

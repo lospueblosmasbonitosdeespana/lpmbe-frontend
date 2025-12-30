@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { headers } from "next/headers";
+import AlertaItem from "./AlertaItem.client";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -55,57 +56,37 @@ export default async function Page({
   const data = await res.json();
   const items: Notif[] = Array.isArray(data) ? data : data.items ?? data.data ?? [];
 
-  const alertas = items
-    .filter((n) => n.tipo === "ALERTA_PUEBLO" && getPuebloSlug(n) === slug)
-    .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+  const alertas = items.filter(
+    (n) => n.tipo === "ALERTA_PUEBLO" && getPuebloSlug(n) === slug
+  );
+
+  const alertasOrdenadas = [...alertas].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-12">
-      <div className="flex items-start justify-between gap-4">
+    <main className="mx-auto max-w-4xl px-6 py-8">
+      <header className="mb-6">
+        <h1 className="text-3xl font-semibold">Alertas del pueblo</h1>
+        <p className="mt-1">Pueblo: <strong>{slug}</strong></p>
+        <p className="mt-3">
+          <Link href={`/gestion/pueblos/${slug}/alertas/nueva`} className="underline">+ Nueva alerta</Link>
+        </p>
+      </header>
+
+      {alertasOrdenadas.length === 0 ? (
+        <p className="py-4">No hay alertas todavía.</p>
+      ) : (
         <div>
-          <h1 className="text-4xl font-bold tracking-tight">Alertas del pueblo</h1>
-          <div className="mt-2 text-lg text-gray-600">
-            Pueblo: <span className="font-semibold text-gray-900">{slug}</span>
-          </div>
+          {alertasOrdenadas.map((a) => (
+            <AlertaItem key={a.id} alerta={a} slug={slug} />
+          ))}
         </div>
+      )}
 
-        <Link
-          href={`/gestion/pueblos/${slug}/alertas/nueva`}
-          className="inline-flex items-center gap-2 rounded-lg border border-gray-900 px-4 py-3 font-semibold text-gray-900 hover:bg-gray-50"
-        >
-          + Nueva alerta
-        </Link>
+      <div>
+        <Link href={`/gestion/pueblos/${slug}`}>← Volver</Link>
       </div>
-
-      <div className="mt-8">
-        {alertas.length === 0 ? (
-          <div className="rounded-xl border border-slate-300 bg-white px-6 py-5 text-gray-700">
-            No hay alertas todavía.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {alertas.map((a) => (
-              <div key={a.id} className="rounded-xl border border-slate-300 bg-white px-6 py-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="text-lg font-bold text-gray-900">{a.titulo}</div>
-                  {a.createdAt ? (
-                    <div className="whitespace-nowrap text-xs text-gray-500">
-                      {new Date(a.createdAt).toLocaleString("es-ES")}
-                    </div>
-                  ) : null}
-                </div>
-                <div className="mt-2 whitespace-pre-wrap text-gray-900">{a.contenido}</div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-8">
-        <Link href={`/gestion/pueblos/${slug}`} className="font-semibold text-gray-900 hover:underline">
-          ← Volver
-        </Link>
-      </div>
-    </div>
+    </main>
   );
 }

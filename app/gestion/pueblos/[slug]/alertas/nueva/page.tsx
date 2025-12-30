@@ -28,6 +28,7 @@ export default function NuevaAlertaPuebloPage({
       const res = await fetch('/api/gestion/pueblos/alertas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           puebloSlug: slug,
           titulo: t,

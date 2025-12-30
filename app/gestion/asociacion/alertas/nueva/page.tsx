@@ -22,7 +22,12 @@ export default function NuevaAlertaGlobalPage() {
       const res = await fetch('/api/gestion/asociacion/alertas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ titulo: t, contenido }),
+        credentials: 'include',
+        body: JSON.stringify({
+          tipo: 'ALERTA',
+          titulo: t,
+          contenido,
+        }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -31,7 +36,7 @@ export default function NuevaAlertaGlobalPage() {
         return;
       }
 
-      router.replace('/gestion/asociacion/alertas');
+      router.push('/gestion/asociacion/alertas');
       router.refresh();
     } finally {
       setLoading(false);
