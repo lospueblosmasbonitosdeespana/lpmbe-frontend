@@ -61,7 +61,9 @@ export default async function Page({
   );
 
   const alertasOrdenadas = [...alertas].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    (a, b) =>
+      new Date(b.createdAt ?? 0).getTime() -
+      new Date(a.createdAt ?? 0).getTime()
   );
 
   return (
