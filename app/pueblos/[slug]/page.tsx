@@ -156,11 +156,13 @@ export default async function PuebloPage({
   const fotosGalería = fotosParaGalería.slice(0, 24);
 
   // Ordenar eventos: por fecha_inicio ascendente (próximos primero), sin fecha al final
-  const eventosOrdenados = [...pueblo.eventos].sort((a, b) => {
+  const eventos = pueblo.eventos ?? [];
+
+  const eventosOrdenados = [...eventos].sort((a, b) => {
     if (!a.fecha_inicio && !b.fecha_inicio) return 0;
     if (!a.fecha_inicio) return 1;
     if (!b.fecha_inicio) return -1;
-    return a.fecha_inicio.localeCompare(b.fecha_inicio);
+    return new Date(a.fecha_inicio).getTime() - new Date(b.fecha_inicio).getTime();
   });
 
   // Ordenar noticias: por fecha descendente (más recientes primero), sin fecha al final
