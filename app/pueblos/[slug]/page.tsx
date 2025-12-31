@@ -130,8 +130,11 @@ export default async function PuebloPage({
   const fotos = Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [];
 
   // Separar POIs por categoría
-  const poisPOI = pueblo.pois.filter((poi: Poi) => poi.categoria === "POI");
-  const poisMultiexperiencia = pueblo.pois.filter(
+  const pois = pueblo.pois ?? [];
+
+  const poisPOI = pois.filter((poi: Poi) => poi.categoria === "POI");
+
+  const poisMultiexperiencia = pois.filter(
     (poi: Poi) => poi.categoria === "MULTIEXPERIENCIA"
   );
   const poisOtros = pueblo.pois.filter(
