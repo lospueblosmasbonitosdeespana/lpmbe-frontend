@@ -130,6 +130,7 @@ export default async function PuebloPage({
     ...pueblo,
     lat: pueblo.lat ?? null,
     lng: pueblo.lng ?? null,
+    descripcion: pueblo.descripcion ?? null,
     pois: pueblo.pois ?? [],
     eventos: pueblo.eventos ?? [],
     noticias: pueblo.noticias ?? [],
