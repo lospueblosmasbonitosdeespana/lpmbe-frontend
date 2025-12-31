@@ -201,8 +201,15 @@ export default async function PuebloPage({
   };
 
   // Obtener meteo si hay coordenadas
-  const meteo =
-    pueblo.lat && pueblo.lng ? await getMeteo(pueblo.lat, pueblo.lng) : null;
+  let meteo = null;
+  let meteoError = false;
+  if (pueblo.lat && pueblo.lng) {
+    try {
+      meteo = await getMeteo(pueblo.lat, pueblo.lng);
+    } catch (error) {
+      meteoError = true;
+    }
+  }
 
   return (
     <main>
@@ -244,14 +251,22 @@ export default async function PuebloPage({
             updatedAt={semaforoPueblo.ultima_actualizacion ?? null}
             variant="panel"
           />
-          {meteo && (
+          {meteo ? (
             <MeteoBlock
               temp={meteo.temp}
               code={meteo.code}
               wind={meteo.wind}
               variant="panel"
             />
-          )}
+          ) : pueblo.lat && pueblo.lng ? (
+            // Hay coordenadas pero falló el fetch
+            <MeteoBlock
+              temp={null}
+              code={null}
+              wind={null}
+              variant="panel"
+            />
+          ) : null}
         </div>
       </section>
 

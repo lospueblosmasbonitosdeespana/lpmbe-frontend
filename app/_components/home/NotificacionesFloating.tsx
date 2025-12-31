@@ -7,11 +7,18 @@ import { homeConfig } from "./home.config";
 type TabKey = (typeof homeConfig.notificaciones.tabs)[number]["key"];
 
 type Notificacion = {
-  id: number;
+  id: string | number;
   titulo: string;
-  tipo: string; // "NACIONAL" | "SEMAFORO" | "ALERTA" ... (legacy/actual)
-  fecha?: string; // ISO si viene
-  href?: string; // opcional si el backend lo da
+  tipo: string; // "NOTICIA" | "EVENTO" | "ALERTA" | "ALERTA_PUEBLO" | "SEMAFORO"
+  texto?: string;
+  fecha: string; // ISO
+  pueblo?: {
+    id: number;
+    nombre: string;
+    slug: string;
+  } | null;
+  estado?: string | null;
+  motivoPublico?: string | null;
 };
 
 function formatDate(iso?: string) {
@@ -35,19 +42,32 @@ export function NotificacionesFloating() {
       try {
         setLoading(true);
 
-        // Usar la misma configuración de API que el resto de la app
-        const base =
-          process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
-          "http://localhost:3000";
-
-        const res = await fetch(`${base}/notificaciones?limit=${limit}`, {
+        // Usar el mismo endpoint que funciona en /notificaciones
+        const res = await fetch("/api/notificaciones/feed", {
+          credentials: "include",
           cache: "no-store",
         });
 
         if (!res.ok) throw new Error("Error cargando notificaciones");
 
-        const data = (await res.json()) as Notificacion[];
-        if (!cancelled) setItems(Array.isArray(data) ? data : []);
+        const data = await res.json();
+        // El proxy devuelve { items: [...] }
+        const rawItems = Array.isArray(data.items) ? data.items : (data.items ?? data.data ?? []);
+        
+        if (!cancelled) {
+          // Mapear al formato esperado por el widget
+          const mapped: Notificacion[] = rawItems.map((item: any) => ({
+            id: item.id ?? item.refId ?? Math.random(),
+            titulo: item.titulo ?? "(sin título)",
+            tipo: item.tipo ?? "NOTICIA",
+            texto: item.texto ?? "",
+            fecha: item.fecha ?? new Date().toISOString(),
+            pueblo: item.pueblo ?? null,
+            estado: item.estado ?? null,
+            motivoPublico: item.motivoPublico ?? null,
+          }));
+          setItems(mapped);
+        }
       } catch {
         if (!cancelled) setItems([]);
       } finally {
@@ -62,12 +82,18 @@ export function NotificacionesFloating() {
   }, [limit]);
 
   const filtered = useMemo(() => {
-    // Aquí somos tolerantes con el backend:
-    // - si tipo coincide, filtramos
-    // - si no hay tipo, lo dejamos caer en NACIONAL
+    // Mapear tabs a tipos de notificación
+    const tipoMap: Record<TabKey, string[]> = {
+      NACIONAL: ["NOTICIA", "EVENTO"],
+      SEMAFORO: ["SEMAFORO"],
+      ALERTA: ["ALERTA", "ALERTA_PUEBLO"],
+    };
+    
+    const tiposPermitidos = tipoMap[active] ?? [];
+    
     return items.filter((n) => {
-      const t = (n.tipo || "NACIONAL").toUpperCase();
-      return t.includes(active);
+      const t = (n.tipo || "").toUpperCase();
+      return tiposPermitidos.includes(t);
     });
   }, [items, active]);
 
@@ -101,15 +127,23 @@ export function NotificacionesFloating() {
           <div className="mt-5">
             {loading ? (
               <div className="text-sm text-gray-500">Cargando…</div>
-            ) : filtered.length === 0 ? (
+            ) : items.length === 0 ? (
               <div className="text-sm text-gray-500">
                 No hay notificaciones ahora mismo.
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="text-sm text-gray-500">
+                No hay {homeConfig.notificaciones.tabs.find(t => t.key === active)?.label.toLowerCase()} ahora mismo.
               </div>
             ) : (
               <ul className="space-y-3">
                 {filtered.slice(0, limit).map((n) => {
                   const date = formatDate(n.fecha);
-                  const href = n.href ?? homeConfig.notificaciones.allHref;
+                  // Generar href según tipo
+                  let href: string = homeConfig.notificaciones.allHref;
+                  if (n.tipo === "SEMAFORO" && n.pueblo?.slug) {
+                    href = `/pueblos/${n.pueblo.slug}`;
+                  }
 
                   return (
                     <li key={n.id} className="flex items-center gap-4">
