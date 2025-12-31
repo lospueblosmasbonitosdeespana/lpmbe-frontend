@@ -166,11 +166,13 @@ export default async function PuebloPage({
   });
 
   // Ordenar noticias: por fecha descendente (más recientes primero), sin fecha al final
-  const noticiasOrdenadas = [...pueblo.noticias].sort((a, b) => {
+  const noticias = pueblo.noticias ?? [];
+
+  const noticiasOrdenadas = [...noticias].sort((a, b) => {
     if (!a.fecha && !b.fecha) return 0;
     if (!a.fecha) return 1;
     if (!b.fecha) return -1;
-    return b.fecha.localeCompare(a.fecha);
+    return new Date(b.fecha).getTime() - new Date(a.fecha).getTime();
   });
 
   // Preparar datos para FeedSection
