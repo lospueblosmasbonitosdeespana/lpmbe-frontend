@@ -28,12 +28,38 @@ function formatDate(iso?: string) {
   return d.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
 }
 
+// Función para obtener el título del item en Home
+function getHomeItemTitle(item: Notificacion): string {
+  if (item.tipo === "SEMAFORO") {
+    const puebloNombre = item.pueblo?.nombre ?? "Pueblo";
+    if (item.estado) {
+      const estado = item.estado.toUpperCase();
+      let color = "";
+      if (estado === "VERDE") color = "verde";
+      else if (estado === "AMARILLO") color = "amarillo";
+      else if (estado === "ROJO") color = "rojo";
+      
+      if (color) {
+        return `${puebloNombre} está en ${color}`;
+      }
+    }
+    return `${puebloNombre} actualizó su semáforo`;
+  }
+  
+  if (item.tipo === "ALERTA" || item.tipo === "ALERTA_PUEBLO") {
+    return item.titulo ?? item.texto ?? "Alerta";
+  }
+  
+  // NOTICIA o EVENTO
+  return item.titulo ?? item.texto ?? "Actualidad";
+}
+
 export function NotificacionesFloating() {
-  const [active, setActive] = useState<TabKey>("NACIONAL");
+  const [active, setActive] = useState<TabKey>("NACIONAL"); // "NACIONAL" = "Noticias"
   const [items, setItems] = useState<Notificacion[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const limit = homeConfig.notificaciones.limit;
+  const maxItems = 2; // Máximo 2 items visibles
 
   useEffect(() => {
     let cancelled = false;
@@ -79,7 +105,7 @@ export function NotificacionesFloating() {
     return () => {
       cancelled = true;
     };
-  }, [limit]);
+  }, []);
 
   const filtered = useMemo(() => {
     // Mapear tabs a tipos de notificación
@@ -101,10 +127,15 @@ export function NotificacionesFloating() {
     <div className="relative z-50 pointer-events-auto w-[calc(100%-2rem)] rounded-2xl border border-black/10 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 shadow-[0_12px_40px_rgba(0,0,0,0.10)]">
       <div className="grid grid-cols-1 gap-0 md:grid-cols-[1fr_180px]">
         {/* Cuerpo */}
-        <div className="px-6 py-6 md:px-8 md:py-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="text-base font-semibold">
-              {homeConfig.notificaciones.title}
+        <div className="px-6 py-4 md:px-8 md:py-5">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/notificaciones"
+                className="text-base font-semibold hover:underline"
+              >
+                {homeConfig.notificaciones.title}
+              </Link>
             </div>
 
             <div className="flex items-center gap-2">
@@ -124,7 +155,7 @@ export function NotificacionesFloating() {
             </div>
           </div>
 
-          <div className="mt-5">
+          <div className="mt-3">
             {loading ? (
               <div className="text-sm text-gray-500">Cargando…</div>
             ) : items.length === 0 ? (
@@ -136,8 +167,8 @@ export function NotificacionesFloating() {
                 No hay {homeConfig.notificaciones.tabs.find(t => t.key === active)?.label.toLowerCase()} ahora mismo.
               </div>
             ) : (
-              <ul className="space-y-3">
-                {filtered.slice(0, limit).map((n) => {
+              <ul className="space-y-2">
+                {filtered.slice(0, maxItems).map((n) => {
                   const date = formatDate(n.fecha);
                   // Generar href según tipo
                   let href: string = homeConfig.notificaciones.allHref;
@@ -145,17 +176,29 @@ export function NotificacionesFloating() {
                     href = `/pueblos/${n.pueblo.slug}`;
                   }
 
+                  const titulo = getHomeItemTitle(n);
+                  const motivo = n.tipo === "SEMAFORO" && n.motivoPublico?.trim() 
+                    ? n.motivoPublico.trim() 
+                    : null;
+
                   return (
-                    <li key={n.id} className="flex items-center gap-4">
-                      <div className="w-16 shrink-0 text-xs text-gray-500">
+                    <li key={n.id} className="flex items-start gap-3">
+                      <div className="w-14 shrink-0 text-xs text-gray-500 pt-0.5">
                         {date}
                       </div>
-                      <Link
-                        href={href}
-                        className="line-clamp-1 text-sm hover:underline"
-                      >
-                        {n.titulo}
-                      </Link>
+                      <div className="flex-1 min-w-0">
+                        <Link
+                          href={href}
+                          className="block text-sm hover:underline"
+                        >
+                          {titulo}
+                        </Link>
+                        {motivo && (
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            Motivo: {motivo}
+                          </div>
+                        )}
+                      </div>
                     </li>
                   );
                 })}
@@ -163,7 +206,7 @@ export function NotificacionesFloating() {
             )}
           </div>
 
-          <div className="mt-5">
+          <div className="mt-3">
             <Link
               href={homeConfig.notificaciones.allHref}
               className="text-sm font-medium hover:underline"

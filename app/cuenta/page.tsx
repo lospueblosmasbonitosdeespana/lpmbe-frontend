@@ -32,8 +32,8 @@ export default async function CuentaPage() {
           <div className="font-medium">{me.rol}</div>
         </div>
         <div>
-          <span className="text-sm text-gray-600">sub</span>
-          <div className="font-medium">{me.sub}</div>
+          <span className="text-sm text-gray-600">id</span>
+          <div className="font-medium">{me.id}</div>
         </div>
       </section>
 
