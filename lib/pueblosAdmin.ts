@@ -1,4 +1,4 @@
-// src/lib/pueblosAdmin.ts
+// lib/pueblosAdmin.ts
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? 'http://localhost:3000';
 
@@ -16,8 +16,4 @@ export async function getAllPueblosServer(): Promise<PuebloMini[]> {
     slug: String(p.slug ?? ''),
   })) as PuebloMini[];
 }
-
-
-
-
 

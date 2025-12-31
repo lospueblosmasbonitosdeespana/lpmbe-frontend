@@ -1,6 +1,6 @@
-// src/lib/misPueblos.ts
+// lib/misPueblos.ts
 import { cookies } from 'next/headers';
-import { AUTH_COOKIE_NAME } from './auth';
+import { AUTH_COOKIE_NAME } from '@/lib/auth';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? 'http://localhost:3000';

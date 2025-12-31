@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getPuebloBySlug } from '@/lib/api';
 import { getNotificacionesServer } from '@/lib/notificaciones';
+import NotificacionesBlock from './NotificacionesBlock.client';
 
 export default async function GestionPuebloPage({
   params,
@@ -83,29 +84,7 @@ export default async function GestionPuebloPage({
       </div>
 
       {/* Últimas notificaciones */}
-      {notificacionesPueblo.length > 0 && (
-        <div className="mt-6 rounded-md border p-4 text-sm">
-          <div className="font-medium text-gray-800">Últimas notificaciones</div>
-          <div className="mt-2 space-y-3">
-            {notificacionesPueblo.map((n) => (
-              <div key={n.id} className="border-b pb-2 last:border-b-0">
-                <div className="text-xs text-gray-500">
-                  {new Date(n.createdAt).toLocaleString('es-ES')}
-                </div>
-                <div className="mt-1 text-xs">
-                  Tipo: <strong>{n.tipo}</strong>
-                </div>
-                {n.titulo && (
-                  <div className="mt-1 font-semibold">{n.titulo}</div>
-                )}
-                {n.contenido && (
-                  <div className="mt-1 text-gray-600">{n.contenido}</div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <NotificacionesBlock notificaciones={notificacionesPueblo} slug={slug} />
 
       <div className="mt-6 rounded-md border p-4 text-sm text-gray-600">
         <div className="font-medium text-gray-800">Acciones</div>

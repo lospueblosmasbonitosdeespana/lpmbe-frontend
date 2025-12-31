@@ -1,4 +1,4 @@
-// src/lib/auth.ts
+// lib/auth.ts
 export const AUTH_COOKIE_NAME = 'lpbme_token';
 
 // Ajusta SOLO si el backend devuelve otra clave (pero en C0 soportamos 3 comunes).
