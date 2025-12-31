@@ -78,14 +78,18 @@ type PuebloSafe = {
   id: number;
   nombre: string;
   slug: string;
+  provincia: string;
+  comunidad: string;
   lat: number | null;
   lng: number | null;
   descripcion: string | null;
   boldestMapId?: string | null;
+  foto_destacada?: string | null;
   fotosPueblo?: Array<{ id: number; url: string }>;
   pois: any[];
   eventos: any[];
   noticias: any[];
+  multiexperiencias: any[];
 };
 
 // 🔒 Forzamos render dinámico (no SSG)
@@ -144,14 +148,18 @@ export default async function PuebloPage({
     id: pueblo.id,
     nombre: pueblo.nombre,
     slug: pueblo.slug,
+    provincia: pueblo.provincia,
+    comunidad: pueblo.comunidad,
     lat: pueblo.lat ?? null,
     lng: pueblo.lng ?? null,
     descripcion: pueblo.descripcion ?? null,
     boldestMapId: pueblo.boldestMapId ?? null,
+    foto_destacada: (pueblo as any).foto_destacada ?? null,
     fotosPueblo: Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [],
     pois: pueblo.pois ?? [],
     eventos: pueblo.eventos ?? [],
     noticias: pueblo.noticias ?? [],
+    multiexperiencias: (pueblo as any).multiexperiencias ?? [],
   };
 
   // Proteger fotos con Array.isArray
