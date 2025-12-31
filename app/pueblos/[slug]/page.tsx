@@ -74,6 +74,19 @@ type Noticia = {
   imagen: string | null;
 };
 
+type PuebloSafe = {
+  id: number;
+  nombre: string;
+  slug: string;
+  lat: number | null;
+  lng: number | null;
+  descripcion: string | null;
+  boldestMapId?: string | null;
+  pois: any[];
+  eventos: any[];
+  noticias: any[];
+};
+
 // 🔒 Forzamos render dinámico (no SSG)
 export const dynamic = "force-dynamic";
 
@@ -126,11 +139,14 @@ export default async function PuebloPage({
   const { slug } = await params;
   const pueblo = await getPuebloBySlug(slug);
 
-  const puebloSafe = {
-    ...pueblo,
+  const puebloSafe: PuebloSafe = {
+    id: pueblo.id,
+    nombre: pueblo.nombre,
+    slug: pueblo.slug,
     lat: pueblo.lat ?? null,
     lng: pueblo.lng ?? null,
     descripcion: pueblo.descripcion ?? null,
+    boldestMapId: pueblo.boldestMapId ?? null,
     pois: pueblo.pois ?? [],
     eventos: pueblo.eventos ?? [],
     noticias: pueblo.noticias ?? [],
