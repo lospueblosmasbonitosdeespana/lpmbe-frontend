@@ -35,7 +35,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, poiId } = await params;
   const pueblo = await getPuebloBySlug(slug);
-  const poi = pueblo.pois.find((p) => p.id === Number(poiId));
+  const poi = (pueblo.pois ?? []).find((p) => p.id === Number(poiId));
 
   if (!poi) {
     return {
@@ -85,7 +85,7 @@ export default async function PoiPage({
   const pueblo = await getPuebloBySlug(slug);
 
   // Buscar POI por ID
-  const poi = pueblo.pois.find((p) => p.id === Number(poiId));
+  const poi = (pueblo.pois ?? []).find((p) => p.id === Number(poiId));
 
   if (!poi) {
     throw new Error("POI no encontrado");
