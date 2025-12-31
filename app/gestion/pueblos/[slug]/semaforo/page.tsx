@@ -29,7 +29,7 @@ export default async function GestionSemaforoPage({ params }: Props) {
   const pueblo = await getPuebloBySlug(slug);
 
   // Leer datos del semáforo desde pueblo.semaforo (que viene de getPuebloBySlug)
-  const s: any = pueblo?.semaforo ?? null;
+  const s = (pueblo as any)?.semaforo ?? null;
 
   const estadoActual = s?.estado ?? "VERDE";
   const mensajeActual = s?.mensaje ?? "";

@@ -45,3 +45,4 @@ export async function getNotificacionesServer(): Promise<Notificacion[]> {
   return Array.isArray(data) ? (data as Notificacion[]) : [];
 }
 
+

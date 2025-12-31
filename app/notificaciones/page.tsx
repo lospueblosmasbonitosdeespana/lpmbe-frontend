@@ -4,7 +4,9 @@ import NotificacionesList from "../_components/notificaciones/NotificacionesList
 export const dynamic = "force-dynamic";
 
 type SearchParams = {
+  puebloSlug?: string;
   tipo?: string;
+  page?: string;
 };
 
 type NotificacionTipo = "NOTICIA" | "SEMAFORO" | "ALERTA";
@@ -20,14 +22,14 @@ function validateTipo(tipo: string): NotificacionTipo | undefined {
 export default async function NotificacionesPage({
   searchParams,
 }: {
-  searchParams?: Promise<SearchParams> | SearchParams;
+  searchParams?: Promise<SearchParams>;
 }) {
-  const sp = searchParams
-    ? await Promise.resolve(searchParams)
-    : ({} as SearchParams);
+  const sp = (await searchParams) ?? {};
 
+  const puebloSlug = sp.puebloSlug ?? null;
   const tipoRaw = (sp.tipo ?? "").trim();
   const tipo = tipoRaw ? validateTipo(tipoRaw) : undefined;
+  const page = sp.page ?? null;
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">

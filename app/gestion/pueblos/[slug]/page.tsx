@@ -25,7 +25,7 @@ export default async function GestionPuebloPage({
   const pueblo = await getPuebloBySlug(slug);
   
   // Leer datos del semáforo desde pueblo.semaforo
-  const s: any = pueblo?.semaforo ?? null;
+  const s = (pueblo as unknown as { semaforo?: any })?.semaforo ?? null;
   const estado = s?.estado ?? "VERDE";
   const fecha = s?.ultima_actualizacion ?? s?.ultimaActualizacion ?? null;
   const mensajePublico = s?.mensaje_publico ?? null;
