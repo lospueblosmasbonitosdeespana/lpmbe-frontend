@@ -126,11 +126,20 @@ export default async function PuebloPage({
   const { slug } = await params;
   const pueblo = await getPuebloBySlug(slug);
 
+  const puebloSafe = {
+    ...pueblo,
+    lat: pueblo.lat ?? null,
+    lng: pueblo.lng ?? null,
+    pois: pueblo.pois ?? [],
+    eventos: pueblo.eventos ?? [],
+    noticias: pueblo.noticias ?? [],
+  };
+
   // Proteger fotos con Array.isArray
-  const fotos = Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [];
+  const fotos = Array.isArray(puebloSafe.fotosPueblo) ? puebloSafe.fotosPueblo : [];
 
   // Separar POIs por categoría
-  const pois = pueblo.pois ?? [];
+  const pois = puebloSafe.pois;
 
   const poisPOI = pois.filter((poi: Poi) => poi.categoria === "POI");
 
@@ -143,11 +152,11 @@ export default async function PuebloPage({
       poi.categoria !== "POI" && poi.categoria !== "MULTIEXPERIENCIA"
   );
 
-  const heroImage = pueblo.foto_destacada ?? fotos[0]?.url ?? null;
+  const heroImage = puebloSafe.foto_destacada ?? fotos[0]?.url ?? null;
 
   // Filtrar fotos para galería: excluir la foto usada en hero si viene de fotosPueblo[]
   const fotoHeroUrl =
-    heroImage && !pueblo.foto_destacada ? heroImage : null;
+    heroImage && !puebloSafe.foto_destacada ? heroImage : null;
   const fotosParaGalería = fotoHeroUrl
     ? fotos.filter((f: FotoPueblo) => f.url !== fotoHeroUrl)
     : fotos;
@@ -156,7 +165,7 @@ export default async function PuebloPage({
   const fotosGalería = fotosParaGalería.slice(0, 24);
 
   // Ordenar eventos: por fecha_inicio ascendente (próximos primero), sin fecha al final
-  const eventos = pueblo.eventos ?? [];
+  const eventos = puebloSafe.eventos;
 
   const eventosOrdenados = [...eventos].sort((a, b) => {
     if (!a.fecha_inicio && !b.fecha_inicio) return 0;
@@ -166,7 +175,7 @@ export default async function PuebloPage({
   });
 
   // Ordenar noticias: por fecha descendente (más recientes primero), sin fecha al final
-  const noticias = pueblo.noticias ?? [];
+  const noticias = puebloSafe.noticias;
 
   const noticiasOrdenadas = [...noticias].sort((a, b) => {
     if (!a.fecha && !b.fecha) return 0;
@@ -203,7 +212,7 @@ export default async function PuebloPage({
   }));
 
   // Definir semáforo por defecto (VERDE si no existe)
-  const semaforoPueblo = (pueblo as any).semaforo ?? {
+  const semaforoPueblo = (puebloSafe as any).semaforo ?? {
     estado: "VERDE" as const,
     mensaje: null,
     ultima_actualizacion: null,
@@ -212,9 +221,9 @@ export default async function PuebloPage({
   // Obtener meteo si hay coordenadas
   let meteo = null;
   let meteoError = false;
-  if (pueblo.lat && pueblo.lng) {
+  if (puebloSafe.lat && puebloSafe.lng) {
     try {
-      meteo = await getMeteo(pueblo.lat, pueblo.lng);
+      meteo = await getMeteo(puebloSafe.lat, puebloSafe.lng);
     } catch (error) {
       meteoError = true;
     }
@@ -224,14 +233,14 @@ export default async function PuebloPage({
     <main>
       {/* HERO */}
       <section>
-        <h1>{pueblo.nombre}</h1>
+        <h1>{puebloSafe.nombre}</h1>
         <p>
-          {pueblo.provincia} · {pueblo.comunidad}
+          {puebloSafe.provincia} · {puebloSafe.comunidad}
         </p>
         {heroImage && (
           <img
             src={heroImage}
-            alt={pueblo.nombre}
+            alt={puebloSafe.nombre}
             style={{ width: "100%", maxHeight: "400px", objectFit: "cover" }}
           />
         )}
@@ -239,9 +248,9 @@ export default async function PuebloPage({
 
       {/* BARRA DE ACCIONES */}
       <PuebloActions
-        nombre={pueblo.nombre}
-        lat={pueblo.lat}
-        lng={pueblo.lng}
+        nombre={puebloSafe.nombre}
+        lat={puebloSafe.lat}
+        lng={puebloSafe.lng}
       />
 
       {/* SEMÁFORO Y METEO */}
@@ -267,7 +276,7 @@ export default async function PuebloPage({
               wind={meteo.wind}
               variant="panel"
             />
-          ) : pueblo.lat && pueblo.lng ? (
+          ) : puebloSafe.lat && puebloSafe.lng ? (
             // Hay coordenadas pero falló el fetch
             <MeteoBlock
               temp={null}
@@ -281,7 +290,7 @@ export default async function PuebloPage({
 
       {/* TEXTO */}
       <section style={{ marginTop: "32px" }}>
-        <DescripcionPueblo descripcion={pueblo.descripcion} />
+        <DescripcionPueblo descripcion={puebloSafe.descripcion} />
       </section>
 
       {/* GALERÍA */}
@@ -300,7 +309,7 @@ export default async function PuebloPage({
               <img
                 key={foto.id}
                 src={foto.url}
-                alt={`${pueblo.nombre} - Foto ${index + 1}`}
+                alt={`${puebloSafe.nombre} - Foto ${index + 1}`}
                 loading="lazy"
                 style={{ width: "100%", height: "auto", borderRadius: "8px" }}
               />
@@ -312,19 +321,19 @@ export default async function PuebloPage({
       {/* MAPA */}
       <section id="mapa" style={{ marginTop: "32px" }}>
         <h2>Mapa</h2>
-        {pueblo.boldestMapId ? (
+        {puebloSafe.boldestMapId ? (
           <>
             <iframe
-              src={`https://maps.lospueblosmasbonitosdeespana.org/es/mapas/${pueblo.boldestMapId}`}
+              src={`https://maps.lospueblosmasbonitosdeespana.org/es/mapas/${puebloSafe.boldestMapId}`}
               width="100%"
               height="480"
               frameBorder="0"
               style={{ border: 0 }}
-              title={`Mapa de ${pueblo.nombre}`}
+              title={`Mapa de ${puebloSafe.nombre}`}
             />
             <div style={{ marginTop: "16px" }}>
               <a
-                href={`https://maps.lospueblosmasbonitosdeespana.org/es/mapas/${pueblo.boldestMapId}`}
+                href={`https://maps.lospueblosmasbonitosdeespana.org/es/mapas/${puebloSafe.boldestMapId}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -332,9 +341,9 @@ export default async function PuebloPage({
               </a>
             </div>
           </>
-        ) : pueblo.lat && pueblo.lng ? (
+        ) : puebloSafe.lat && puebloSafe.lng ? (
           <a
-            href={`https://www.google.com/maps?q=${pueblo.lat},${pueblo.lng}`}
+            href={`https://www.google.com/maps?q=${puebloSafe.lat},${puebloSafe.lng}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ display: "inline-block", marginTop: "16px" }}
@@ -354,7 +363,7 @@ export default async function PuebloPage({
             {poisPOI.map((poi: Poi) => (
               <li key={poi.id}>
                 <Link
-                  href={`/pueblos/${pueblo.slug}/pois/${poi.id}`}
+                  href={`/pueblos/${puebloSafe.slug}/pois/${poi.id}`}
                   style={{ color: "#0066cc", textDecoration: "none" }}
                 >
                   {poi.nombre}
@@ -373,7 +382,7 @@ export default async function PuebloPage({
             {poisMultiexperiencia.map((poi: Poi) => (
               <li key={poi.id}>
                 <Link
-                  href={`/pueblos/${pueblo.slug}/pois/${poi.id}`}
+                  href={`/pueblos/${puebloSafe.slug}/pois/${poi.id}`}
                   style={{ color: "#0066cc", textDecoration: "none" }}
                 >
                   {poi.nombre}
@@ -392,7 +401,7 @@ export default async function PuebloPage({
             {poisOtros.map((poi: Poi) => (
               <li key={poi.id}>
                 <Link
-                  href={`/pueblos/${pueblo.slug}/pois/${poi.id}`}
+                  href={`/pueblos/${puebloSafe.slug}/pois/${poi.id}`}
                   style={{ color: "#0066cc", textDecoration: "none" }}
                 >
                   {poi.nombre}
@@ -404,7 +413,7 @@ export default async function PuebloPage({
       )}
 
       {/* MULTIEXPERIENCIAS */}
-      {pueblo.multiexperiencias.length > 0 && (
+      {puebloSafe.multiexperiencias.length > 0 && (
         <section style={{ marginTop: "32px" }}>
           <h2>Multiexperiencias</h2>
           <div
@@ -415,10 +424,10 @@ export default async function PuebloPage({
               marginTop: "16px",
             }}
           >
-            {pueblo.multiexperiencias.map((mx: PuebloMultiexperiencia) => (
+            {puebloSafe.multiexperiencias.map((mx: PuebloMultiexperiencia) => (
               <Link
                 key={mx.multiexperiencia.id}
-                href={`/pueblos/${pueblo.slug}/experiencias/${mx.multiexperiencia.slug}`}
+                href={`/pueblos/${puebloSafe.slug}/experiencias/${mx.multiexperiencia.slug}`}
                 style={{
                   border: "1px solid #ddd",
                   borderRadius: "8px",
