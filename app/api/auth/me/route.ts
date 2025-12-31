@@ -2,22 +2,44 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { AUTH_COOKIE_NAME } from '@/lib/auth';
-
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? 'http://localhost:3000';
+import { getApiUrl } from '@/lib/api';
 
 export async function GET() {
-  const cookieStore = await cookies(); // 👈 Next 16: cookies() puede ser Promise
-  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
-  if (!token) return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(AUTH_COOKIE_NAME)?.value ?? null;
+    
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-  const upstream = await fetch(`${API_BASE}/usuarios/me`, {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${token}` },
-    cache: 'no-store',
-  });
+    const API_BASE = getApiUrl();
+    const upstream = await fetch(`${API_BASE}/usuarios/me`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
 
-  const data = await upstream.json().catch(() => ({}));
-  return NextResponse.json(data, { status: upstream.status });
+    // Si el backend devuelve 401/403, devolver ese status
+    if (upstream.status === 401 || upstream.status === 403) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: upstream.status });
+    }
+
+    // Si hay error, devolver el error del backend
+    if (!upstream.ok) {
+      const errorText = await upstream.text().catch(() => 'Error desconocido');
+      return NextResponse.json({ error: errorText }, { status: upstream.status });
+    }
+
+    // Si todo OK, devolver los datos
+    const data = await upstream.json().catch(() => ({}));
+    return NextResponse.json(data, { status: 200 });
+  } catch (error: any) {
+    // Error inesperado (red, parseo, etc.)
+    return NextResponse.json(
+      { error: error?.message ?? 'Error interno' },
+      { status: 500 }
+    );
+  }
 }
 

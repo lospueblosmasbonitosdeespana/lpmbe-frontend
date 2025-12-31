@@ -1,19 +1,31 @@
-// lib/pueblosAdmin.ts
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? 'http://localhost:3000';
+import { getToken } from './auth';
+import { getApiUrl } from './api';
 
-export type PuebloMini = { id: number; nombre: string; slug: string };
+export type PuebloBasico = {
+  id: number;
+  nombre: string;
+  slug: string;
+};
 
-export async function getAllPueblosServer(): Promise<PuebloMini[]> {
-  const res = await fetch(`${API_BASE}/pueblos`, { cache: 'no-store' });
-  if (!res.ok) return [];
-  const data = await res.json().catch(() => []);
-  if (!Array.isArray(data)) return [];
+export async function getAllPueblosServer(): Promise<PuebloBasico[]> {
+  const token = await getToken();
+  if (!token) return [];
 
-  return data.map((p: any) => ({
-    id: Number(p.id),
-    nombre: String(p.nombre ?? ''),
-    slug: String(p.slug ?? ''),
-  })) as PuebloMini[];
+  const API_BASE = getApiUrl();
+  try {
+    const res = await fetch(`${API_BASE}/pueblos`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
+
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : (data?.items ?? data?.data ?? []);
+  } catch {
+    return [];
+  }
 }
+
+
 

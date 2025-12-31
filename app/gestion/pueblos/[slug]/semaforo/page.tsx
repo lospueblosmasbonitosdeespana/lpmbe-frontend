@@ -1,20 +1,19 @@
-import Link from "next/link";
-import { getPuebloBySlug } from "@/lib/api";
-import { getMeServer } from "@/lib/me";
-import { getMisPueblosServer } from "@/lib/misPueblos";
-import { redirect } from "next/navigation";
-import SemaforoForm from "./SemaforoForm.client";
+import { getMeServer } from '@/lib/me';
+import { getMisPueblosServer } from '@/lib/misPueblos';
+import { getPuebloBySlug } from '@/lib/api';
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
+import SemaforoForm from './SemaforoForm.client';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-type Props = {
+export default async function SemaforoPuebloPage({
+  params,
+}: {
   params: Promise<{ slug: string }>;
-};
-
-export default async function GestionSemaforoPage({ params }: Props) {
+}) {
   const { slug } = await params;
-  
   const me = await getMeServer();
   if (!me) redirect('/entrar');
   if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN') redirect('/cuenta');
@@ -26,9 +25,10 @@ export default async function GestionSemaforoPage({ params }: Props) {
     if (!allowed) redirect('/gestion/mis-pueblos');
   }
 
+  // Cargar pueblo real
   const pueblo = await getPuebloBySlug(slug);
 
-  // Leer datos del semáforo desde pueblo.semaforo (que viene de getPuebloBySlug)
+  // Leer datos del semáforo desde pueblo.semaforo
   const s = (pueblo as any)?.semaforo ?? null;
 
   const estadoActual = s?.estado ?? "VERDE";
@@ -38,66 +38,65 @@ export default async function GestionSemaforoPage({ params }: Props) {
   const inicioProgramadoActual = s?.programado_inicio ?? null;
   const finProgramadoActual = s?.programado_fin ?? null;
   const caducaEn = s?.caduca_en ?? null;
-  const ultimaActualizacion = s?.ultima_actualizacion ?? (s?.ultimaActualizacion ?? null);
+  const ultimaActualizacion = s?.ultima_actualizacion ?? s?.ultimaActualizacion ?? null;
 
   return (
-    <main style={{ padding: 32 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700 }}>Semáforo (Gestión)</h1>
-
-      <p style={{ marginTop: 8, color: "#666" }}>
-        Pueblo: <b>{pueblo?.nombre ?? slug}</b> · ID: <b>{pueblo?.id ?? "—"}</b>
+    <main className="mx-auto max-w-3xl p-6">
+      <h1 className="text-2xl font-semibold">Gestión del semáforo</h1>
+      <p className="mt-2 text-sm text-gray-600">
+        Pueblo: <strong>{pueblo.nombre}</strong>
       </p>
 
-      <div style={{ marginTop: 20 }}>
-        <Link href={`/gestion/pueblos/${slug}`}>&larr; Volver a gestión</Link>
+      {/* Estado actual (guardado) */}
+      <div className="mt-6 rounded-md border p-4 text-sm">
+        <div className="font-medium text-gray-800">Actual (guardado)</div>
+        <div className="mt-2 text-gray-600">
+          <p>Estado: <strong>{estadoActual}</strong></p>
+          {ultimaActualizacion && (
+            <p className="mt-1">Actualizado: {new Date(ultimaActualizacion).toLocaleString("es-ES")}</p>
+          )}
+          {mensajePublicoActual && (
+            <p className="mt-1">Mensaje público: {mensajePublicoActual}</p>
+          )}
+          {motivoActual && (
+            <p className="mt-1">Motivo: {motivoActual}</p>
+          )}
+          {mensajeActual && (
+            <p className="mt-1">Mensaje interno: {mensajeActual}</p>
+          )}
+          {caducaEn && estadoActual !== "VERDE" && !inicioProgramadoActual && !finProgramadoActual && (
+            <p className="mt-1">Caduca automático: {new Date(caducaEn).toLocaleString("es-ES")}</p>
+          )}
+          {inicioProgramadoActual && finProgramadoActual && (
+            <p className="mt-1">
+              Programado: {new Date(inicioProgramadoActual).toLocaleString("es-ES")} → {new Date(finProgramadoActual).toLocaleString("es-ES")}
+            </p>
+          )}
+        </div>
       </div>
 
-      {/* Estado actual guardado */}
-      <div style={{ marginTop: 24, padding: 16, backgroundColor: "#f5f5f5", borderRadius: 4 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Actual (guardado)</h2>
-        <p>Estado: <strong>{estadoActual}</strong></p>
-        {ultimaActualizacion && (
-          <p style={{ marginTop: 4 }}>
-            Actualizado: {new Date(ultimaActualizacion).toLocaleString("es-ES")}
-          </p>
-        )}
-        {mensajePublicoActual && (
-          <p style={{ marginTop: 4 }}>Mensaje público: {mensajePublicoActual}</p>
-        )}
-        {mensajeActual && (
-          <p style={{ marginTop: 4 }}>Mensaje interno: {mensajeActual}</p>
-        )}
-        {inicioProgramadoActual && finProgramadoActual ? (
-          <p style={{ marginTop: 4 }}>
-            Programado: {new Date(inicioProgramadoActual).toLocaleString("es-ES")} → {new Date(finProgramadoActual).toLocaleString("es-ES")}
-          </p>
-        ) : caducaEn && estadoActual !== "VERDE" && !inicioProgramadoActual && !finProgramadoActual ? (
-          <p style={{ marginTop: 4 }}>
-            Caduca automático: {new Date(caducaEn).toLocaleString("es-ES")}
-          </p>
-        ) : null}
-        {motivoActual && (
-          <p style={{ marginTop: 4 }}>Motivo: {motivoActual}</p>
-        )}
+      {/* Formulario */}
+      <div className="mt-6">
+        <SemaforoForm
+          puebloId={pueblo.id}
+          slug={slug}
+          estadoActual={estadoActual}
+          mensajeActual={mensajeActual}
+          mensajePublicoActual={mensajePublicoActual}
+          motivoActual={motivoActual}
+          inicioProgramadoActual={inicioProgramadoActual}
+          finProgramadoActual={finProgramadoActual}
+          key={`${pueblo.id}-${ultimaActualizacion ?? "na"}`}
+        />
       </div>
 
-      <SemaforoForm
-        key={`${pueblo.id}-${ultimaActualizacion ?? "na"}`}
-        puebloId={pueblo.id}
-        slug={slug}
-        estadoInicial={estadoActual}
-        mensajeInicial={mensajeActual}
-        mensajePublicoInicial={mensajePublicoActual}
-        motivoInicial={motivoActual}
-        inicioProgramadoInicial={inicioProgramadoActual}
-        finProgramadoInicial={finProgramadoActual}
-        estadoActual={estadoActual}
-      />
-
-      <p style={{ marginTop: 12, color: "#666" }}>
-        Nota: Por ahora es cambio manual. Programación (inicio/fin) va después.
-      </p>
+      <div className="mt-8 text-sm">
+        <Link className="hover:underline" href={`/gestion/pueblos/${slug}`}>
+          ← Volver a gestión del pueblo
+        </Link>
+      </div>
     </main>
   );
 }
+
 

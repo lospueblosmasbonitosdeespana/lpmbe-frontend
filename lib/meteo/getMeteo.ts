@@ -1,61 +1,62 @@
+import { getApiUrl } from '../api';
+
 export type MeteoData = {
   temp: number | null;
   code: number | null;
-  wind: number | null;
-  fetchedAt: Date;
+  wind?: number | null;
 };
 
-export async function getMeteo(
-  lat: number,
-  lng: number
-): Promise<MeteoData> {
+export async function getMeteo(lat: number, lng: number): Promise<MeteoData | null> {
+  const API_BASE = getApiUrl();
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code,wind_speed_10m&timezone=auto`;
-
-    const res = await fetch(url, {
-      next: { revalidate: 1800 }, // 30 minutos
+    const res = await fetch(`${API_BASE}/meteo?lat=${lat}&lng=${lng}`, {
+      cache: 'no-store',
     });
 
-    if (!res.ok) {
-      return {
-        temp: null,
-        code: null,
-        wind: null,
-        fetchedAt: new Date(),
-      };
-    }
-
+    if (!res.ok) return null;
     const data = await res.json();
-
     return {
-      temp: data.current?.temperature_2m ?? null,
-      code: data.current?.weather_code ?? null,
-      wind: data.current?.wind_speed_10m ?? null,
-      fetchedAt: new Date(),
+      temp: data.temp ?? data.temperatura ?? null,
+      code: data.code ?? data.codigo ?? null,
+      wind: data.wind ?? data.viento ?? null,
     };
-  } catch (error) {
-    // Si falla, devolver nulls sin throw para no tumbar SSR
-    return {
-      temp: null,
-      code: null,
-      wind: null,
-      fetchedAt: new Date(),
-    };
+  } catch {
+    return null;
   }
 }
 
 export function getWeatherLabel(code: number | null): string {
-  if (code === null) return "Meteo";
+  if (code === null) return 'Tiempo no disponible';
 
-  if (code === 0) return "Despejado";
-  if (code >= 1 && code <= 3) return "Poco nuboso";
-  if (code >= 45 && code <= 48) return "Niebla";
-  if (code >= 51 && code <= 57) return "Llovizna";
-  if (code >= 61 && code <= 67) return "Lluvia";
-  if (code >= 71 && code <= 77) return "Nieve";
-  if (code >= 80 && code <= 82) return "Chubascos";
-  if (code >= 95 && code <= 99) return "Tormenta";
+  // Códigos básicos de OpenWeatherMap / similar
+  const labels: Record<number, string> = {
+    0: 'Despejado',
+    1: 'Mayormente despejado',
+    2: 'Parcialmente nublado',
+    3: 'Nublado',
+    45: 'Niebla',
+    48: 'Niebla helada',
+    51: 'Llovizna ligera',
+    53: 'Llovizna moderada',
+    55: 'Llovizna densa',
+    61: 'Lluvia ligera',
+    63: 'Lluvia moderada',
+    65: 'Lluvia intensa',
+    71: 'Nieve ligera',
+    73: 'Nieve moderada',
+    75: 'Nieve intensa',
+    80: 'Chubascos ligeros',
+    81: 'Chubascos moderados',
+    82: 'Chubascos intensos',
+    85: 'Chubascos de nieve ligeros',
+    86: 'Chubascos de nieve intensos',
+    95: 'Tormenta',
+    96: 'Tormenta con granizo',
+    99: 'Tormenta intensa con granizo',
+  };
 
-  return "Meteo";
+  return labels[code] ?? `Código ${code}`;
 }
+
+
 

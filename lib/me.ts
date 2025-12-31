@@ -1,29 +1,31 @@
-// lib/me.ts
-import { cookies } from 'next/headers';
-import { AUTH_COOKIE_NAME } from '@/lib/auth';
+import { getToken } from './auth';
+import { getApiUrl } from './api';
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? 'http://localhost:3000';
-
-export type Me = {
-  sub: number;
+export type Usuario = {
+  id: number;
   email: string;
-  rol: 'USUARIO' | 'ALCALDE' | 'ADMIN';
   nombre?: string | null;
+  rol: 'ADMIN' | 'ALCALDE' | 'USUARIO';
 };
 
-export async function getMeServer(): Promise<Me | null> {
-  const cookieStore = await cookies(); // 👈 Next 16: cookies() puede ser Promise
-  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+export async function getMeServer(): Promise<Usuario | null> {
+  const token = await getToken();
   if (!token) return null;
 
-  const res = await fetch(`${API_BASE}/usuarios/me`, {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${token}` },
-    cache: 'no-store',
-  });
+  const API_BASE = getApiUrl();
+  try {
+    const res = await fetch(`${API_BASE}/usuarios/me`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
 
-  if (!res.ok) return null;
-  return (await res.json()) as Me;
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
 }
+
+
 

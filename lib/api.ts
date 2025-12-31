@@ -1,119 +1,44 @@
-type Foto = {
-  id: number;
-  url: string;
-  alt: string | null;
-  orden: number | null;
-  puebloId: number;
-};
+export function getApiUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
+    "http://localhost:3000"
+  );
+}
 
-type Poi = {
-  id: number;
-  nombre: string;
-  descripcion_corta: string | null;
-  descripcion_larga: string | null;
-  foto: string | null;
-  lat: number | null;
-  lng: number | null;
-  categoria: string | null;
-  orden: number | null;
-  puebloId: number;
-};
-
-type Multiexperiencia = {
-  id: number;
-  titulo: string;
-  descripcion: string | null;
-  foto: string | null;
-  slug: string;
-  categoria: string | null;
-  tipo: string;
-  programa: string | null;
-  qr: string | null;
-  puntos: number | null;
-  activo: boolean;
-};
-
-type PuebloMultiexperiencia = {
-  puebloId: number;
-  multiexperienciaId: number;
-  orden: number | null;
-  multiexperiencia: Multiexperiencia;
-};
-
-type Evento = {
-  id: number;
-  titulo: string;
-  descripcion: string | null;
-  fecha_inicio: string | null;
-  fecha_fin: string | null;
-  imagen: string | null;
-};
-
-type Noticia = {
-  id: number;
-  titulo: string;
-  contenido: string | null;
-  fecha: string | null;
-  imagen: string | null;
-};
-
+// Tipo básico para Pueblo (puede extenderse según necesidad)
 export type Pueblo = {
   id: number;
   nombre: string;
   slug: string;
   provincia: string;
   comunidad: string;
-  lat: number | null;
-  lng: number | null;
-  descripcion: string | null;
-  foto_destacada: string | null;
-  puntosVisita?: number | null;
-  boldestMapId?: string | null;
-  fotos: Foto[];
-  fotosPueblo?: { id: number; url: string }[];
-  pois: Poi[];
-  multiexperiencias: PuebloMultiexperiencia[];
-  eventos: Evento[];
-  noticias: Noticia[];
+  descripcion?: string | null;
+  foto_destacada?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  fotosPueblo?: Array<{ id: number; url: string }>;
+  eventos?: Array<any>;
+  noticias?: Array<any>;
+  pois?: Array<any>;
+  [key: string]: any; // Para propiedades adicionales como semaforo
 };
 
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
-  "http://localhost:3000";
-
-export function getApiUrl(): string {
-  return API_BASE;
-}
-
 export async function getPuebloBySlug(slug: string): Promise<Pueblo> {
+  const API_BASE = getApiUrl();
   const res = await fetch(`${API_BASE}/pueblos/${slug}`, {
-    cache: "no-store",
+    cache: 'no-store',
   });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(
-      `Error cargando el pueblo (slug=${slug}) status=${res.status} ${res.statusText} body=${text.slice(0, 500)}`
-    );
+    throw new Error(`Error cargando pueblo: ${res.status}`);
   }
 
-  return res.json();
+  return await res.json();
 }
 
-// Función legacy para obtener lugar con multiexperiencias y POIs
-// Usa el endpoint legacy que devuelve los datos con flags true/false
 export async function getLugarLegacyBySlug(slug: string): Promise<Pueblo> {
-  const res = await fetch(`${API_BASE}/lugares-legacy/${slug}?multiexperiencias=true&pois=true`, {
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(
-      `Error cargando el lugar legacy (slug=${slug}) status=${res.status} ${res.statusText} body=${text.slice(0, 500)}`
-    );
-  }
-
-  return res.json();
+  // Por ahora, usar la misma función
+  return getPuebloBySlug(slug);
 }
+
 

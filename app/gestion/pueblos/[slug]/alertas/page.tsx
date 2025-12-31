@@ -20,10 +20,6 @@ function getPuebloSlug(n: Notif) {
   return n.puebloSlug || n.slug || n.pueblo?.slug || null;
 }
 
-function toMs(v?: string | null): number {
-  return v ? Date.parse(v) : 0;
-}
-
 export default async function Page({
   params,
 }: {
@@ -65,7 +61,7 @@ export default async function Page({
   );
 
   const alertasOrdenadas = [...alertas].sort(
-    (a, b) => toMs(b.createdAt ?? null) - toMs(a.createdAt ?? null)
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
   return (

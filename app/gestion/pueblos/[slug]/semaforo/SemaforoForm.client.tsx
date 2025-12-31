@@ -1,61 +1,42 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-type Props = {
+type SemaforoFormProps = {
   puebloId: number;
   slug: string;
-  estadoInicial?: string | null;
-  mensajeInicial?: string | null;
-  mensajePublicoInicial?: string | null;
-  motivoInicial?: string | null;
-  inicioProgramadoInicial?: string | null;
-  finProgramadoInicial?: string | null;
-  estadoActual?: string | null;
+  estadoActual: string;
+  mensajeActual: string;
+  mensajePublicoActual: string;
+  motivoActual: string;
+  inicioProgramadoActual: string | null;
+  finProgramadoActual: string | null;
 };
-
-// Helper para convertir ISO a datetime-local
-function isoToDatetimeLocal(iso: string | null | undefined): string {
-  if (!iso) return "";
-  try {
-    const date = new Date(iso);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  } catch {
-    return "";
-  }
-}
-
-// Helper para convertir datetime-local a ISO
-function datetimeLocalToIso(dt: string | null | undefined): string | null {
-  if (!dt || !dt.trim()) return null;
-  try {
-    return new Date(dt).toISOString();
-  } catch {
-    return null;
-  }
-}
 
 export default function SemaforoForm({
   puebloId,
   slug,
-  estadoInicial = "VERDE",
-  mensajeInicial = "",
-  mensajePublicoInicial = "",
-  motivoInicial = "",
-  inicioProgramadoInicial = null,
-  finProgramadoInicial = null,
   estadoActual,
-}: Props) {
+  mensajeActual,
+  mensajePublicoActual,
+  motivoActual,
+  inicioProgramadoActual,
+  finProgramadoActual,
+}: SemaforoFormProps) {
   const router = useRouter();
+  const [estado, setEstado] = useState(estadoActual);
+  const [mensaje, setMensaje] = useState(mensajeActual);
+  const [mensajePublico, setMensajePublico] = useState(mensajePublicoActual);
+  const [motivo, setMotivo] = useState(motivoActual);
+  const [inicioProgramado, setInicioProgramado] = useState(
+    inicioProgramadoActual ? new Date(inicioProgramadoActual).toISOString().slice(0, 16) : ''
+  );
+  const [finProgramado, setFinProgramado] = useState(
+    finProgramadoActual ? new Date(finProgramadoActual).toISOString().slice(0, 16) : ''
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [estadoSeleccionado, setEstadoSeleccionado] = useState<string>(estadoInicial ?? "VERDE");
 
   async function saveSemaforo(payload: {
     estado: string;
@@ -70,11 +51,11 @@ export default function SemaforoForm({
 
     try {
       const res = await fetch(`/api/gestion/pueblos/${puebloId}/semaforo`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        credentials: "include",
-        redirect: "follow",
+        credentials: 'include',
+        redirect: 'follow',
       });
 
       const text = await res.text();
@@ -93,40 +74,18 @@ export default function SemaforoForm({
 
       router.replace(`/gestion/pueblos/${slug}/semaforo?ts=${Date.now()}`);
     } catch (e: any) {
-      setError(e?.message || "Error desconocido");
+      setError(e?.message || 'Error desconocido');
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    const formData = new FormData(e.currentTarget);
-    const estado = String(formData.get("estado") ?? "VERDE").trim().toUpperCase();
-    const mensajeRaw = formData.get("mensaje");
-    const mensaje = mensajeRaw ? String(mensajeRaw).trim() || null : null;
-    const mensajePublicoRaw = formData.get("mensajePublico");
-    const mensajePublico = mensajePublicoRaw ? String(mensajePublicoRaw).trim() || null : null;
-    const motivoRaw = formData.get("motivo");
-    const motivo = motivoRaw ? String(motivoRaw).trim() || null : null;
-    const inicioProgramadoRaw = formData.get("inicioProgramado");
-    const inicioProgramado = inicioProgramadoRaw ? datetimeLocalToIso(String(inicioProgramadoRaw)) : null;
-    const finProgramadoRaw = formData.get("finProgramado");
-    const finProgramado = finProgramadoRaw ? datetimeLocalToIso(String(finProgramadoRaw)) : null;
 
     // Validaciones
-    if (estado !== "VERDE" && !mensajePublico?.trim()) {
-      setError("El mensaje público es obligatorio cuando el estado no es VERDE");
-      setLoading(false);
-      return;
-    }
-
-    if ((inicioProgramado || finProgramado) && (!inicioProgramado || !finProgramado)) {
-      setError("Si hay programación, deben especificarse tanto inicio como fin");
-      setLoading(false);
+    if (estado !== 'VERDE' && !motivo.trim()) {
+      setError('El motivo es obligatorio para estados AMARILLO y ROJO');
       return;
     }
 
@@ -134,180 +93,156 @@ export default function SemaforoForm({
       const inicio = new Date(inicioProgramado);
       const fin = new Date(finProgramado);
       if (fin <= inicio) {
-        setError("La fecha de fin debe ser posterior a la fecha de inicio");
-        setLoading(false);
-        return;
-      }
-      if (!motivo) {
-        setError("El motivo es obligatorio cuando hay programación");
-        setLoading(false);
+        setError('La fecha de fin debe ser posterior a la de inicio');
         return;
       }
     }
 
-    try {
-      const res = await fetch(`/api/gestion/pueblos/${puebloId}/semaforo`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          estado,
-          mensaje,
-          mensajePublico,
-          motivo,
-          inicioProgramado,
-          finProgramado,
-        }),
-        credentials: "include",
-        redirect: "follow",
-      });
-
-      const text = await res.text();
-      let data: any = null;
-      try {
-        data = text ? JSON.parse(text) : null;
-      } catch {
-        data = null;
-      }
-
-      if (!res.ok) {
-        const msg = data?.message || data?.error || text || `HTTP ${res.status}`;
-        setError(msg);
-        return;
-      }
-
-      router.replace(`/gestion/pueblos/${slug}/semaforo?ts=${Date.now()}`);
-    } catch (e: any) {
-      setError(e?.message || "Error desconocido");
-    } finally {
-      setLoading(false);
+    if ((inicioProgramado && !finProgramado) || (!inicioProgramado && finProgramado)) {
+      setError('Debes especificar ambas fechas de programación o ninguna');
+      return;
     }
+
+    saveSemaforo({
+      estado,
+      mensaje: mensaje.trim() || null,
+      mensajePublico: mensajePublico.trim() || null,
+      motivo: motivo.trim() || null,
+      inicioProgramado: inicioProgramado ? new Date(inicioProgramado).toISOString() : null,
+      finProgramado: finProgramado ? new Date(finProgramado).toISOString() : null,
+    });
+  }
+
+  function handleResetVerde() {
+    setEstado('VERDE');
+    setMensaje('');
+    setMensajePublico('');
+    setMotivo('');
+    setInicioProgramado('');
+    setFinProgramado('');
+  }
+
+  function handleBorrarMensaje() {
+    setMensaje('');
+    setMensajePublico('');
   }
 
   return (
-    <>
+    <form onSubmit={handleSubmit} className="mt-6 rounded-md border p-4">
+      <h2 className="text-lg font-semibold">Editar semáforo</h2>
+
       {error && (
-        <div style={{ marginTop: 16, padding: 12, backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: 4 }}>
-          <strong>Error:</strong> {error}
+        <div className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-800">
+          {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ marginTop: 24 }}>
-        <div style={{ marginTop: 12 }}>
-          <label>
-            Estado
-            <select
-              name="estado"
-              defaultValue={estadoInicial ?? "VERDE"}
-              onChange={(e) => setEstadoSeleccionado(e.target.value)}
-              style={{ marginLeft: 12 }}
-              disabled={loading}
-            >
-              <option value="VERDE">VERDE</option>
-              <option value="AMARILLO">AMARILLO</option>
-              <option value="ROJO">ROJO</option>
-            </select>
+      <div className="mt-4 space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Estado <span className="text-red-500">*</span>
           </label>
+          <select
+            value={estado}
+            onChange={(e) => setEstado(e.target.value)}
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            required
+          >
+            <option value="VERDE">Verde</option>
+            <option value="AMARILLO">Amarillo</option>
+            <option value="ROJO">Rojo</option>
+          </select>
         </div>
 
-        <div style={{ marginTop: 12 }}>
-          <label>
-            Mensaje público {estadoSeleccionado !== "VERDE" && <span style={{ color: "red" }}>*</span>}
-            <textarea
-              name="mensajePublico"
-              defaultValue={mensajePublicoInicial ?? ""}
-              style={{ marginLeft: 12, width: 520, minHeight: 60 }}
-              placeholder={estadoSeleccionado === "VERDE" ? "Opcional" : "Obligatorio si estado no es VERDE"}
-              disabled={loading}
-              required={estadoSeleccionado !== "VERDE"}
-            />
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Motivo <span className="text-red-500">*</span>{' '}
+            <span className="text-xs text-gray-500">(obligatorio para AMARILLO/ROJO)</span>
           </label>
+          <input
+            type="text"
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            placeholder="Ej: Alta afluencia, nieve, obras..."
+          />
         </div>
 
-        <div style={{ marginTop: 12 }}>
-          <label>
-            Mensaje interno
-            <input
-              name="mensaje"
-              defaultValue={mensajeInicial ?? ""}
-              style={{ marginLeft: 12, width: 520 }}
-              placeholder="Opcional"
-              disabled={loading}
-            />
-          </label>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Mensaje público</label>
+          <textarea
+            value={mensajePublico}
+            onChange={(e) => setMensajePublico(e.target.value)}
+            rows={3}
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            placeholder="Mensaje visible para el público"
+          />
         </div>
 
-        <div style={{ marginTop: 24, padding: 12, backgroundColor: "#f0f0f0", borderRadius: 4 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Programación (opcional)</h3>
-          <div style={{ marginTop: 12 }}>
-            <label>
-              Inicio programado
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Mensaje interno</label>
+          <textarea
+            value={mensaje}
+            onChange={(e) => setMensaje(e.target.value)}
+            rows={3}
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            placeholder="Mensaje solo para gestión"
+          />
+        </div>
+
+        <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
+          <div className="text-sm font-medium text-gray-700">Programación (opcional)</div>
+          <div className="mt-3 grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-gray-600">Inicio programado</label>
               <input
                 type="datetime-local"
-                name="inicioProgramado"
-                defaultValue={isoToDatetimeLocal(inicioProgramadoInicial)}
-                style={{ marginLeft: 12 }}
-                disabled={loading}
+                value={inicioProgramado}
+                onChange={(e) => setInicioProgramado(e.target.value)}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1 text-sm"
               />
-            </label>
-          </div>
-          <div style={{ marginTop: 12 }}>
-            <label>
-              Fin programado
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600">Fin programado</label>
               <input
                 type="datetime-local"
-                name="finProgramado"
-                defaultValue={isoToDatetimeLocal(finProgramadoInicial)}
-                style={{ marginLeft: 12 }}
-                disabled={loading}
+                value={finProgramado}
+                onChange={(e) => setFinProgramado(e.target.value)}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1 text-sm"
               />
-            </label>
+            </div>
           </div>
-          <div style={{ marginTop: 12 }}>
-            <label>
-              Motivo <span style={{ color: "red" }}>*</span> (si hay programación)
-              <textarea
-                name="motivo"
-                defaultValue={motivoInicial ?? ""}
-                style={{ marginLeft: 12, width: 520, minHeight: 60 }}
-                placeholder="Obligatorio si hay programación"
-                disabled={loading}
-              />
-            </label>
-          </div>
+          <p className="mt-2 text-xs text-gray-500">
+            Si especificas fechas, el semáforo cambiará automáticamente en esos momentos.
+          </p>
         </div>
+      </div>
 
+      <div className="mt-6 flex flex-wrap gap-3">
         <button
           type="submit"
           disabled={loading}
-          style={{ marginTop: 16, padding: "8px 12px" }}
+          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? "Guardando..." : "Guardar"}
+          {loading ? 'Guardando...' : 'Guardar'}
         </button>
-      </form>
-
-      <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
         <button
           type="button"
-          onClick={() => saveSemaforo({ estado: "VERDE", mensajePublico: null, mensaje: null })}
-          disabled={loading}
-          style={{ padding: "8px 12px" }}
+          onClick={handleResetVerde}
+          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
         >
           Reset a VERDE
         </button>
         <button
           type="button"
-          onClick={() => saveSemaforo({ 
-            estado: estadoActual ?? estadoInicial ?? "VERDE", 
-            mensajePublico: null,
-            mensaje: null 
-          })}
-          disabled={loading}
-          style={{ padding: "8px 12px" }}
+          onClick={handleBorrarMensaje}
+          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
         >
           Borrar mensaje
         </button>
       </div>
-    </>
+    </form>
   );
 }
+
 
