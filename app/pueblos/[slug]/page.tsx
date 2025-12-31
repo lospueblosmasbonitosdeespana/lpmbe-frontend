@@ -137,8 +137,10 @@ export default async function PuebloPage({
   const poisMultiexperiencia = pois.filter(
     (poi: Poi) => poi.categoria === "MULTIEXPERIENCIA"
   );
-  const poisOtros = pueblo.pois.filter(
-    (poi: Poi) => poi.categoria !== "POI" && poi.categoria !== "MULTIEXPERIENCIA"
+
+  const poisOtros = pois.filter(
+    (poi: Poi) =>
+      poi.categoria !== "POI" && poi.categoria !== "MULTIEXPERIENCIA"
   );
 
   const heroImage = pueblo.foto_destacada ?? fotos[0]?.url ?? null;
