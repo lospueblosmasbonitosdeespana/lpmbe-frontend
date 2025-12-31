@@ -82,6 +82,7 @@ type PuebloSafe = {
   lng: number | null;
   descripcion: string | null;
   boldestMapId?: string | null;
+  fotosPueblo?: Array<{ id: number; url: string }>;
   pois: any[];
   eventos: any[];
   noticias: any[];
@@ -147,6 +148,7 @@ export default async function PuebloPage({
     lng: pueblo.lng ?? null,
     descripcion: pueblo.descripcion ?? null,
     boldestMapId: pueblo.boldestMapId ?? null,
+    fotosPueblo: Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [],
     pois: pueblo.pois ?? [],
     eventos: pueblo.eventos ?? [],
     noticias: pueblo.noticias ?? [],
