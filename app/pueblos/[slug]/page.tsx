@@ -1,12 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getPuebloBySlug, type Pueblo } from "@/lib/api";
-import { getMeteo } from "@/lib/meteo/getMeteo";
 import PuebloActions from "./PuebloActions";
 import FeedSection from "../../components/FeedSection";
 import DescripcionPueblo from "./DescripcionPueblo";
 import SemaforoBadge from "../../components/pueblos/SemaforoBadge";
-import MeteoBlock from "../../components/pueblos/MeteoBlock";
+import MeteoPanel from "./_components/MeteoPanel";
 
 // Helpers para SEO
 function cleanText(input: string) {
@@ -245,17 +244,6 @@ export default async function PuebloPage({
     ultima_actualizacion: null,
   };
 
-  // Obtener meteo si hay coordenadas
-  let meteo = null;
-  let meteoError = false;
-  if (puebloSafe.lat && puebloSafe.lng) {
-    try {
-      meteo = await getMeteo(puebloSafe.lat, puebloSafe.lng);
-    } catch (error) {
-      meteoError = true;
-    }
-  }
-
   return (
     <main>
       {/* HERO */}
@@ -286,7 +274,7 @@ export default async function PuebloPage({
           style={{
             display: "flex",
             flexWrap: "wrap",
-            alignItems: "center",
+            alignItems: "flex-start",
             gap: "24px",
           }}
         >
@@ -296,22 +284,7 @@ export default async function PuebloPage({
             updatedAt={semaforoPueblo.ultima_actualizacion ?? null}
             variant="panel"
           />
-          {meteo ? (
-            <MeteoBlock
-              temp={meteo.temp}
-              code={meteo.code}
-              wind={meteo.wind}
-              variant="panel"
-            />
-          ) : puebloSafe.lat && puebloSafe.lng ? (
-            // Hay coordenadas pero falló el fetch
-            <MeteoBlock
-              temp={null}
-              code={null}
-              wind={null}
-              variant="panel"
-            />
-          ) : null}
+          <MeteoPanel puebloId={puebloSafe.id} />
         </div>
       </section>
 
