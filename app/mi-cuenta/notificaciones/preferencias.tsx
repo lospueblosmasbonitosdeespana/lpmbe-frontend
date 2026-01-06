@@ -12,18 +12,19 @@ type Pueblo = {
 
 type Suscripcion = {
   puebloId: number;
-  tipo: 'NOTICIA' | 'EVENTO' | 'SEMAFORO' | 'METEO';
+  tipo: 'NOTICIA' | 'EVENTO' | 'SEMAFORO' | 'METEO' | 'ALERTA_PUEBLO';
   enabled: boolean;
 };
 
-const TIPOS: Array<{ key: 'NOTICIA' | 'EVENTO' | 'SEMAFORO' | 'METEO'; label: string }> = [
+const TIPOS: Array<{ key: 'NOTICIA' | 'EVENTO' | 'SEMAFORO' | 'METEO' | 'ALERTA_PUEBLO'; label: string }> = [
   { key: 'NOTICIA', label: 'Noticias' },
   { key: 'EVENTO', label: 'Eventos' },
   { key: 'SEMAFORO', label: 'Semáforos' },
   { key: 'METEO', label: 'Meteo' },
+  { key: 'ALERTA_PUEBLO', label: 'Alertas' },
 ];
 
-export default function NotificacionesPreferencias() {
+export default function NotificacionesPreferencias({ onChanged }: { onChanged?: () => void }) {
   const [pueblos, setPueblos] = useState<Pueblo[]>([]);
   const [suscripciones, setSuscripciones] = useState<Suscripcion[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -82,7 +83,7 @@ export default function NotificacionesPreferencias() {
     );
   }, [pueblos, searchTerm]);
 
-  async function handleToggle(puebloId: number, tipo: 'NOTICIA' | 'EVENTO' | 'SEMAFORO' | 'METEO') {
+  async function handleToggle(puebloId: number, tipo: 'NOTICIA' | 'EVENTO' | 'SEMAFORO' | 'METEO' | 'ALERTA_PUEBLO') {
     const key = `${puebloId}:${tipo}`;
     const currentValue = estadoLocal.has(key);
     const newValue = !currentValue;
@@ -141,6 +142,8 @@ export default function NotificacionesPreferencias() {
           })
           .catch(() => {});
       }
+      // Notificar cambio exitoso para actualizar Bandeja
+      onChanged?.();
     } catch (e: any) {
       setError(`Error al guardar: ${e?.message ?? String(e)}`);
       // Revertir actualización optimista
@@ -162,7 +165,7 @@ export default function NotificacionesPreferencias() {
     }
   }
 
-  async function handleSelectAll(tipo: 'NOTICIA' | 'EVENTO' | 'SEMAFORO' | 'METEO') {
+  async function handleSelectAll(tipo: 'NOTICIA' | 'EVENTO' | 'SEMAFORO' | 'METEO' | 'ALERTA_PUEBLO') {
     const allOn = pueblos.every((p) => estadoLocal.has(`${p.id}:${tipo}`));
     const targetEnabled = !allOn;
 
@@ -213,8 +216,12 @@ export default function NotificacionesPreferencias() {
           .then((data) => {
             const items = Array.isArray(data) ? (Array.isArray(data.items) ? data.items : data) : [];
             setSuscripciones(items);
+            // Notificar cambio para actualizar Bandeja (aunque haya fallado alguna)
+            onChanged?.();
           })
-          .catch(() => {});
+          .catch(() => {
+            onChanged?.();
+          });
       } else {
         // Recargar suscripciones para mantener consistencia
         fetch('/api/suscripciones/me')
@@ -222,8 +229,12 @@ export default function NotificacionesPreferencias() {
           .then((data) => {
             const items = Array.isArray(data) ? (Array.isArray(data.items) ? data.items : data) : [];
             setSuscripciones(items);
+            // Notificar cambio exitoso para actualizar Bandeja
+            onChanged?.();
           })
-          .catch(() => {});
+          .catch(() => {
+            onChanged?.();
+          });
       }
     } catch (e: any) {
       setError(`Error al guardar: ${e?.message ?? String(e)}`);
@@ -233,8 +244,12 @@ export default function NotificacionesPreferencias() {
         .then((data) => {
           const items = Array.isArray(data) ? (Array.isArray(data.items) ? data.items : data) : [];
           setSuscripciones(items);
+          // Notificar cambio para actualizar Bandeja
+          onChanged?.();
         })
-        .catch(() => {});
+        .catch(() => {
+          onChanged?.();
+        });
     } finally {
       setSaving((prev) => {
         const next = new Set(prev);

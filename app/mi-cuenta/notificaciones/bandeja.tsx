@@ -17,6 +17,8 @@ type PuebloItem = {
   nombre: string;
 };
 
+const MAX_ITEMS = 15;
+
 function formatFecha(fecha?: string | null) {
   if (!fecha) return '';
   const d = new Date(fecha);
@@ -24,23 +26,33 @@ function formatFecha(fecha?: string | null) {
   return d.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: '2-digit' });
 }
 
-export default function NotificacionesBandeja() {
+export default function NotificacionesBandeja({ refreshKey = 0 }: { refreshKey?: number }) {
   const [items, setItems] = useState<NotificacionItem[]>([]);
   const [pueblos, setPueblos] = useState<PuebloItem[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
 
+  // Cargar pueblos una sola vez
   useEffect(() => {
-    // Notificaciones del usuario
-    fetch('/api/notificaciones/me')
-      .then(r => (r.ok ? r.json() : []))
-      .then(data => setItems(Array.isArray(data) ? data : []))
-      .catch(() => setItems([]));
-
-    // Mapa de pueblos (id -> nombre)
     fetch('/api/pueblos')
       .then(r => (r.ok ? r.json() : []))
       .then(data => setPueblos(Array.isArray(data) ? data : []))
       .catch(() => setPueblos([]));
   }, []);
+
+  // Cargar notificaciones cuando cambie refreshKey
+  useEffect(() => {
+    fetch('/api/notificaciones/me')
+      .then(r => (r.ok ? r.json() : []))
+      .then(data => {
+        const allItems = Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : []);
+        setTotalItems(allItems.length);
+        setItems(allItems.slice(0, MAX_ITEMS));
+      })
+      .catch(() => {
+        setTotalItems(0);
+        setItems([]);
+      });
+  }, [refreshKey]);
 
   const puebloNombreById = useMemo(() => {
     const m = new Map<number, string>();
@@ -61,7 +73,8 @@ export default function NotificacionesBandeja() {
       <h2 className="font-medium">Bandeja</h2>
 
       {items.map(n => {
-        const tipoLabel = (n.tipo ?? n.notificacionTipo ?? n.type ?? 'NOTIFICACION').toString().toUpperCase();
+        const rawTipo = (n.tipo ?? n.notificacionTipo ?? n.type ?? 'NOTIFICACION').toString().toUpperCase();
+        const tipoLabel = rawTipo === 'ALERTA_PUEBLO' ? 'ALERTA' : rawTipo;
         const puebloNombre =
           typeof n.puebloId === 'number'
             ? (puebloNombreById.get(n.puebloId) ?? `#${n.puebloId}`)
@@ -89,6 +102,12 @@ export default function NotificacionesBandeja() {
           </div>
         );
       })}
+
+      {totalItems > MAX_ITEMS && (
+        <p className="text-sm text-gray-600 mt-3">
+          Mostrando las últimas {MAX_ITEMS} notificaciones.
+        </p>
+      )}
     </div>
   );
 }
