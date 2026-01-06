@@ -25,6 +25,11 @@ export default function MiCuentaPage() {
           <h2 className="font-medium">Perfil</h2>
           <p className="text-sm text-gray-600">Datos personales y seguridad</p>
         </Link>
+
+        <Link href="/mi-cuenta/club" className="p-4 border rounded">
+          <h2 className="font-medium">Club de Amigos</h2>
+          <p className="text-sm text-gray-600">QR y recursos turísticos visitados</p>
+        </Link>
       </div>
     </section>
   );

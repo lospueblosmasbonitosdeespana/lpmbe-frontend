@@ -56,6 +56,9 @@ export default async function GestionPuebloPage({
           <Link className="hover:underline" href={`/gestion/pueblos/${slug}/semaforo`}>
             Semáforo
           </Link>
+          <Link className="hover:underline" href={`/gestion/pueblos/${slug}/club`}>
+            Club de Amigos
+          </Link>
         </div>
       </div>
 
