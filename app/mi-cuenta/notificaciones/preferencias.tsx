@@ -66,8 +66,12 @@ export default function NotificacionesPreferencias({ onChanged }: { onChanged?: 
     // Cargar suscripciones del usuario
     fetch('/api/suscripciones/me')
       .then((r) => (r.ok ? r.json() : []))
-      .then((data) => {
-        const items = Array.isArray(data) ? (Array.isArray(data.items) ? data.items : data) : [];
+      .then((data: any) => {
+        const items = Array.isArray(data)
+          ? data
+          : Array.isArray((data as any)?.items)
+            ? (data as any).items
+            : [];
         setSuscripciones(items);
       })
       .catch(() => setSuscripciones([]));
@@ -137,8 +141,12 @@ export default function NotificacionesPreferencias({ onChanged }: { onChanged?: 
         // Recargar suscripciones para mantener consistencia
         fetch('/api/suscripciones/me')
           .then((r) => (r.ok ? r.json() : []))
-          .then((data) => {
-            const items = Array.isArray(data) ? (Array.isArray(data.items) ? data.items : data) : [];
+          .then((data: any) => {
+            const items = Array.isArray(data)
+              ? data
+              : Array.isArray((data as any)?.items)
+                ? (data as any).items
+                : [];
             setSuscripciones(items);
           })
           .catch(() => {});
@@ -231,8 +239,12 @@ export default function NotificacionesPreferencias({ onChanged }: { onChanged?: 
       // Recargar suscripciones para mantener consistencia
       fetch('/api/suscripciones/me')
         .then((r) => (r.ok ? r.json() : []))
-        .then((data) => {
-          const items = Array.isArray(data) ? (Array.isArray(data.items) ? data.items : data) : [];
+        .then((data: any) => {
+          const items = Array.isArray(data)
+            ? data
+            : Array.isArray((data as any)?.items)
+              ? (data as any).items
+              : [];
           setSuscripciones(items);
           // Notificar cambio para actualizar Bandeja
           onChanged?.();
@@ -248,8 +260,12 @@ export default function NotificacionesPreferencias({ onChanged }: { onChanged?: 
       // Re-cargar suscripciones para dejar estado real
       fetch('/api/suscripciones/me')
         .then((r) => (r.ok ? r.json() : []))
-        .then((data) => {
-          const items = Array.isArray(data) ? (Array.isArray(data.items) ? data.items : data) : [];
+        .then((data: any) => {
+          const items = Array.isArray(data)
+            ? data
+            : Array.isArray((data as any)?.items)
+              ? (data as any).items
+              : [];
           setSuscripciones(items);
           // Notificar cambio para actualizar Bandeja
           onChanged?.();
