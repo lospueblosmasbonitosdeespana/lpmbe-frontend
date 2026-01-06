@@ -9,7 +9,7 @@ export async function GET() {
   }
 
   const API_BASE = getApiUrl();
-  const upstream = await fetch(`${API_BASE}/notificaciones`, {
+  const upstream = await fetch(`${API_BASE}/suscripciones/me`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: 'no-store',
   });
@@ -22,5 +22,4 @@ export async function GET() {
     },
   });
 }
-
 

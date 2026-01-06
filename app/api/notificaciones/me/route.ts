@@ -9,10 +9,19 @@ export async function GET() {
   }
 
   const API_BASE = getApiUrl();
-  const upstream = await fetch(`${API_BASE}/notificaciones`, {
+  // Intentar /notificaciones/me primero, luego /notificaciones como fallback
+  let upstream = await fetch(`${API_BASE}/notificaciones/me`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: 'no-store',
   });
+
+  // Si /me no existe, usar /notificaciones
+  if (upstream.status === 404) {
+    upstream = await fetch(`${API_BASE}/notificaciones`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
+  }
 
   const text = await upstream.text();
   return new NextResponse(text, {
@@ -22,5 +31,4 @@ export async function GET() {
     },
   });
 }
-
 

@@ -2,29 +2,6 @@ import { NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 
-export async function GET() {
-  const token = await getToken();
-  if (!token) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  }
-
-  const API_BASE = getApiUrl();
-  // TODO: Reemplazar con la ruta real del backend cuando se descubra
-  // Candidatos: /suscripciones, /notificaciones/suscripciones, /usuarios/me/suscripciones
-  const upstream = await fetch(`${API_BASE}/suscripciones`, {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: 'no-store',
-  });
-
-  const text = await upstream.text();
-  return new NextResponse(text, {
-    status: upstream.status,
-    headers: {
-      'Content-Type': upstream.headers.get('content-type') || 'application/json',
-    },
-  });
-}
-
 export async function POST(req: Request) {
   const token = await getToken();
   if (!token) {
@@ -42,8 +19,6 @@ export async function POST(req: Request) {
   }
 
   const API_BASE = getApiUrl();
-  // TODO: Reemplazar con la ruta real del backend cuando se descubra
-  // Candidatos: /suscripciones, /notificaciones/suscripciones, /usuarios/me/suscripciones
   const upstream = await fetch(`${API_BASE}/suscripciones`, {
     method: 'POST',
     headers: {
@@ -62,5 +37,4 @@ export async function POST(req: Request) {
     },
   });
 }
-
 
