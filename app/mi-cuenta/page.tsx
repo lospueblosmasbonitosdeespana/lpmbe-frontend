@@ -21,10 +21,10 @@ export default function MiCuentaPage() {
           <p className="text-sm text-gray-600">Noticias, eventos y alertas</p>
         </Link>
 
-        <div className="p-4 border rounded opacity-50">
+        <Link href="/mi-cuenta/perfil" className="p-4 border rounded">
           <h2 className="font-medium">Perfil</h2>
-          <p className="text-sm text-gray-600">Próximamente</p>
-        </div>
+          <p className="text-sm text-gray-600">Datos personales y seguridad</p>
+        </Link>
       </div>
     </section>
   );
