@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 type Recurso = {
   id: number;
@@ -13,6 +14,7 @@ type Recurso = {
 };
 
 export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slug: string }) {
+  const router = useRouter();
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -447,6 +449,15 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                     >
                       Eliminar
                     </button>
+                    {r.activo && (
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/validador/${r.id}`)}
+                        className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
+                      >
+                        Validador
+                      </button>
+                    )}
                   </div>
                 </>
               )}
@@ -457,6 +468,10 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
     </>
   );
 }
+
+
+
+
 
 
 
