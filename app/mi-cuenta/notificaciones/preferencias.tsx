@@ -30,6 +30,7 @@ export default function NotificacionesPreferencias({ onChanged }: { onChanged?: 
   const [searchTerm, setSearchTerm] = useState('');
   const [saving, setSaving] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [selectAllStatus, setSelectAllStatus] = useState<{ tipo: string; ok: number; fallos: number } | null>(null);
 
   // Set de suscripciones activas: key = `${puebloId}:${tipo}`
   const susSet = useMemo(() => {
@@ -104,7 +105,7 @@ export default function NotificacionesPreferencias({ onChanged }: { onChanged?: 
 
     try {
       const res = await fetch('/api/suscripciones', {
-        method: 'POST',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         cache: 'no-store',
         body: JSON.stringify({
@@ -184,6 +185,7 @@ export default function NotificacionesPreferencias({ onChanged }: { onChanged?: 
     });
 
     setError(null);
+    setSelectAllStatus(null);
     const savingKeys = new Set<string>();
     pueblos.forEach((p) => {
       savingKeys.add(`${p.id}:${tipo}`);
@@ -191,51 +193,56 @@ export default function NotificacionesPreferencias({ onChanged }: { onChanged?: 
     setSaving((prev) => new Set([...prev, ...savingKeys]));
 
     try {
-      // Disparar Promise.all para POST por cada pueblo
-      const promises = pueblos.map((p) =>
-        fetch('/api/suscripciones', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          cache: 'no-store',
-          body: JSON.stringify({
-            puebloId: p.id,
-            tipo,
-            enabled: targetEnabled,
-          }),
-        })
-      );
-
-      const results = await Promise.all(promises);
-      const failed = results.some((r) => !r.ok);
-
-      if (failed) {
-        setError('Algunas suscripciones no se pudieron guardar. Recargando...');
-        // Re-cargar suscripciones para dejar estado real
-        fetch('/api/suscripciones/me')
-          .then((r) => (r.ok ? r.json() : []))
-          .then((data) => {
-            const items = Array.isArray(data) ? (Array.isArray(data.items) ? data.items : data) : [];
-            setSuscripciones(items);
-            // Notificar cambio para actualizar Bandeja (aunque haya fallado alguna)
-            onChanged?.();
-          })
-          .catch(() => {
-            onChanged?.();
-          });
-      } else {
-        // Recargar suscripciones para mantener consistencia
-        fetch('/api/suscripciones/me')
-          .then((r) => (r.ok ? r.json() : []))
-          .then((data) => {
-            const items = Array.isArray(data) ? (Array.isArray(data.items) ? data.items : data) : [];
-            setSuscripciones(items);
-            // Notificar cambio exitoso para actualizar Bandeja
-            onChanged?.();
-          })
-          .catch(() => {
-            onChanged?.();
-          });
+      // Disparar Promise.allSettled para PUT (upsert) por cada pueblo
+      // Procesar en lotes de 15 para no saturar
+      const BATCH_SIZE = 15;
+      const batches: typeof pueblos[] = [];
+      for (let i = 0; i < pueblos.length; i += BATCH_SIZE) {
+        batches.push(pueblos.slice(i, i + BATCH_SIZE));
       }
+
+      let totalOk = 0;
+      let totalFallos = 0;
+
+      for (const batch of batches) {
+        const promises = batch.map((p) =>
+          fetch('/api/suscripciones', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            cache: 'no-store',
+            body: JSON.stringify({
+              puebloId: p.id,
+              tipo,
+              enabled: targetEnabled,
+            }),
+          })
+        );
+
+        const results = await Promise.allSettled(promises);
+        const ok = results.filter((r) => r.status === 'fulfilled' && r.value.ok).length;
+        const fallos = results.length - ok;
+        totalOk += ok;
+        totalFallos += fallos;
+      }
+
+      // Mostrar feedback
+      setSelectAllStatus({ tipo, ok: totalOk, fallos: totalFallos });
+
+      // Recargar suscripciones para mantener consistencia
+      fetch('/api/suscripciones/me')
+        .then((r) => (r.ok ? r.json() : []))
+        .then((data) => {
+          const items = Array.isArray(data) ? (Array.isArray(data.items) ? data.items : data) : [];
+          setSuscripciones(items);
+          // Notificar cambio para actualizar Bandeja
+          onChanged?.();
+        })
+        .catch(() => {
+          onChanged?.();
+        });
+
+      // Limpiar mensaje después de 5 segundos
+      setTimeout(() => setSelectAllStatus(null), 5000);
     } catch (e: any) {
       setError(`Error al guardar: ${e?.message ?? String(e)}`);
       // Re-cargar suscripciones para dejar estado real
@@ -287,6 +294,11 @@ export default function NotificacionesPreferencias({ onChanged }: { onChanged?: 
             );
           })}
         </div>
+        {selectAllStatus && (
+          <div className="mt-2 text-sm text-gray-600">
+            Hecho (ok {selectAllStatus.ok} / fallos {selectAllStatus.fallos})
+          </div>
+        )}
       </div>
 
       <div>
