@@ -18,6 +18,9 @@ export function Header() {
           <Link href="/contacto" className="text-sm font-medium hover:underline">
             Contacto
           </Link>
+          <Link href="/mi-cuenta" className="text-sm font-medium hover:underline">
+            Mi cuenta
+          </Link>
           <AuthNavLink />
         </div>
       </div>

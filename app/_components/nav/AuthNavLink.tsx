@@ -52,7 +52,7 @@ export default function AuthNavLink() {
   if (me) {
     return (
       <Link href="/cuenta" className="text-sm font-medium hover:underline">
-        Cuenta
+        Gestión
       </Link>
     );
   }
