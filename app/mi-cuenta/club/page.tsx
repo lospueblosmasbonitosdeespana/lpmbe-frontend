@@ -14,23 +14,27 @@ type ClubMe = {
   qrPayload?: string | null;
 };
 
-type ClubVisita = {
+type ClubValidacion = {
   id: number;
   scannedAt: string;
-  puntos?: number | null;
+  resultado?: 'OK' | 'CADUCADO' | 'YA_USADO' | 'INVALIDO' | string | null;
   puebloId?: number | null;
-  estado?: 'OK' | 'CADUCADO' | 'RECHAZADO' | null;
+  puebloNombre?: string | null;
+  pueblo?: {
+    id: number;
+    nombre: string;
+  } | null;
+  recursoNombre?: string | null;
   recurso?: {
     id: number;
     nombre: string;
-    tipo: string;
-    codigoQr: string;
-    puebloId?: number | null;
-  };
+  } | null;
+  adultosUsados?: number | null;
+  descuentoPorcentaje?: number | null;
 };
 
-type ClubVisitasResponse = {
-  items?: ClubVisita[];
+type ClubValidacionesResponse = {
+  items?: ClubValidacion[];
   total?: number;
 };
 
@@ -81,7 +85,8 @@ function formatFechaHora(fecha: string | null | undefined): string {
 
 export default function ClubPage() {
   const [clubMe, setClubMe] = useState<ClubMe | null>(null);
-  const [visitas, setVisitas] = useState<ClubVisita[]>([]);
+  const [validaciones, setValidaciones] = useState<ClubValidacion[]>([]);
+  const [validacionesNoDisponible, setValidacionesNoDisponible] = useState(false);
   const [recursosDisponibles, setRecursosDisponibles] = useState<RecursoDisponible[]>([]);
   const [pueblos, setPueblos] = useState<Pueblo[]>([]);
   const [recursosDelPuebloSeleccionado, setRecursosDelPuebloSeleccionado] = useState<RecursoDisponible[]>([]);
@@ -106,20 +111,20 @@ export default function ClubPage() {
     setError(null);
 
     try {
-      const [meRes, visitasRes, recursosRes] = await Promise.all([
+      const [meRes, validacionesRes, recursosRes] = await Promise.all([
         fetch('/api/club/me', { cache: 'no-store' }),
-        fetch('/api/club/visitas', { cache: 'no-store' }),
+        fetch('/api/club/validaciones', { cache: 'no-store' }),
         fetch('/api/club/recursos/disponibles', { cache: 'no-store' }),
       ]);
 
-      if (meRes.status === 401 || visitasRes.status === 401 || recursosRes.status === 401) {
+      if (meRes.status === 401 || validacionesRes.status === 401 || recursosRes.status === 401) {
         window.location.href = '/entrar';
         return;
       }
 
       // Manejar errores 502 (backend no disponible)
-      if (meRes.status === 502 || visitasRes.status === 502 || recursosRes.status === 502) {
-        const errorData = await meRes.json().catch(() => visitasRes.json().catch(() => recursosRes.json().catch(() => null)));
+      if (meRes.status === 502 || validacionesRes.status === 502 || recursosRes.status === 502) {
+        const errorData = await meRes.json().catch(() => validacionesRes.json().catch(() => recursosRes.json().catch(() => null)));
         if (errorData?.error === 'upstream_fetch_failed') {
           setError(`No se pudo conectar al backend. Verifica que el servidor esté ejecutándose en ${errorData.upstream || 'http://localhost:3000'}`);
         } else {
@@ -134,10 +139,20 @@ export default function ClubPage() {
         throw new Error(errorText);
       }
 
-      if (!visitasRes.ok) {
-        const errorData = await visitasRes.json().catch(() => null);
-        const errorText = errorData?.error || errorData?.detail || await visitasRes.text().catch(() => 'Error cargando visitas');
-        throw new Error(errorText);
+      // Validaciones: si falla con 404/501, no es crítico, solo no las mostramos
+      let validaciones: ClubValidacion[] = [];
+      if (validacionesRes.ok) {
+        const validacionesData: ClubValidacionesResponse = await validacionesRes.json().catch(() => ({}));
+        validaciones = Array.isArray(validacionesData) 
+          ? validacionesData 
+          : (Array.isArray(validacionesData.items) ? validacionesData.items : []);
+        setValidacionesNoDisponible(false);
+      } else if (validacionesRes.status === 404 || validacionesRes.status === 501) {
+        // Endpoint aún no disponible en backend
+        validaciones = [];
+        setValidacionesNoDisponible(true);
+      } else {
+        setValidacionesNoDisponible(false);
       }
 
       // Recursos disponibles: si falla, no es crítico, solo no los mostramos
@@ -148,10 +163,9 @@ export default function ClubPage() {
       }
 
       const meData = await meRes.json();
-      const visitasData: ClubVisitasResponse = await visitasRes.json();
 
       setClubMe(meData);
-      setVisitas(Array.isArray(visitasData.items) ? visitasData.items : []);
+      setValidaciones(validaciones);
       setRecursosDisponibles(recursos);
     } catch (e: any) {
       setError(e?.message ?? 'Error desconocido');
@@ -394,7 +408,7 @@ export default function ClubPage() {
     );
   }
 
-  const visitasMostradas = visitas.slice(0, 30);
+  const validacionesMostradas = validaciones.slice(0, 30);
 
   return (
     <section className="max-w-4xl mx-auto p-6 space-y-6">
@@ -562,74 +576,79 @@ export default function ClubPage() {
         )}
       </div>
 
-      {/* Recursos turísticos visitados */}
+      {/* Historial de validaciones */}
       <div className="p-4 border rounded space-y-3">
-        <h2 className="font-medium">Recursos turísticos visitados</h2>
-        {visitas.length === 0 ? (
-          <div className="text-sm text-gray-600">Aún no has registrado recursos</div>
-        ) : (
-          <>
-            {visitas.length > 30 && (
-              <div className="text-sm text-gray-600">
-                Mostrando últimas {visitasMostradas.length} de {visitas.length}
-              </div>
-            )}
-            <div className="space-y-2">
-              {visitasMostradas.map((v) => (
-                <div key={v.id} className="p-3 border rounded space-y-1">
-                  <div className="text-sm">
-                    <span className="text-gray-600">Fecha: </span>
-                    <span className="font-medium">{formatFechaHora(v.scannedAt)}</span>
-                  </div>
-                  {v.recurso && (
-                    <>
-                      <div className="text-sm">
-                        <span className="text-gray-600">Recurso: </span>
-                        <span className="font-medium">{v.recurso.nombre}</span>
-                      </div>
-                      <div className="text-sm">
-                        <span className="text-gray-600">Tipo: </span>
-                        <span className="font-medium">{v.recurso.tipo}</span>
-                      </div>
-                      <div className="text-sm">
-                        <span className="text-gray-600">Código QR: </span>
-                        <span className="font-mono text-xs">{v.recurso.codigoQr}</span>
-                      </div>
-                    </>
-                  )}
-                  {v.puebloId && (
-                    <div className="text-sm">
-                      <span className="text-gray-600">Pueblo ID: </span>
-                      <span className="font-medium">{v.puebloId}</span>
-                    </div>
-                  )}
-                  {v.puntos !== null && v.puntos !== undefined && (
-                    <div className="text-sm">
-                      <span className="text-gray-600">Puntos: </span>
-                      <span className="font-medium">{v.puntos}</span>
-                    </div>
-                  )}
-                  {v.estado && (
-                    <div className="text-sm">
-                      <span className="text-gray-600">Estado: </span>
-                      <span className={`font-medium ${
-                        v.estado === 'OK' ? 'text-green-600' :
-                        v.estado === 'CADUCADO' ? 'text-orange-600' :
-                        v.estado === 'RECHAZADO' ? 'text-red-600' : ''
-                      }`}>
-                        {v.estado}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </>
+        <h2 className="font-medium">Historial de validaciones</h2>
+        <p className="text-sm text-gray-600">
+          Aquí puedes ver los beneficios del Club de Amigos que ya has utilizado.
+        </p>
+        
+        {validacionesNoDisponible && (
+          <p className="text-sm text-gray-500 mt-4">
+            Historial no disponible todavía.
+          </p>
+        )}
+
+        {!validacionesNoDisponible && validaciones.length === 0 && (
+          <p className="text-sm text-gray-500 mt-4">
+            Aún no has utilizado ningún beneficio del Club.
+          </p>
+        )}
+
+        {validaciones.length > 0 && (
+          <div className="mt-6 overflow-x-auto">
+            <table className="w-full text-sm border border-gray-200 rounded">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-3 py-2 text-left">Fecha</th>
+                  <th className="px-3 py-2 text-left">Pueblo</th>
+                  <th className="px-3 py-2 text-left">Recurso</th>
+                  <th className="px-3 py-2 text-center">Adultos</th>
+                  <th className="px-3 py-2 text-center">Descuento</th>
+                  <th className="px-3 py-2 text-center">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {validaciones.map((v, idx) => {
+                  const fecha = new Date(v.scannedAt).toLocaleDateString('es-ES');
+                  const estadoOk = v.resultado === 'OK';
+
+                  return (
+                    <tr
+                      key={`${v.scannedAt ?? ""}-${v.puebloNombre ?? ""}-${v.recursoNombre ?? ""}-${idx}`}
+                      className="border-t"
+                    >
+                      <td className="px-3 py-2">{fecha}</td>
+                      <td className="px-3 py-2">{v.puebloNombre || v.pueblo?.nombre || '—'}</td>
+                      <td className="px-3 py-2">{v.recursoNombre || v.recurso?.nombre || '—'}</td>
+                      <td className="px-3 py-2 text-center">
+                        {v.adultosUsados ?? 2}
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        {v.descuentoPorcentaje
+                          ? `–${v.descuentoPorcentaje}%`
+                          : '—'}
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        <span
+                          className={`font-semibold ${
+                            estadoOk ? 'text-green-600' : 'text-red-600'
+                          }`}
+                        >
+                          {estadoOk ? 'Beneficio aplicado' : 'Intento no válido'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
       {/* Registrar visita (demo) - SOLO DEV */}
-      {IS_DEV && (
+      {process.env.NODE_ENV === 'development' && (
         <div className="p-4 border rounded space-y-3">
           <h2 className="font-medium">Registrar visita (demo) [SOLO DEV]</h2>
           <div className="text-xs text-gray-500 mb-2">

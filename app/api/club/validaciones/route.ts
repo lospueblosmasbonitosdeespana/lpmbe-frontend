@@ -11,11 +11,12 @@ export async function GET() {
   }
 
   const API_BASE = getApiUrl();
-  const upstreamUrl = `${API_BASE}/club/recursos/disponibles`;
+  const upstreamUrl = `${API_BASE}/club/validaciones`;
 
   if (DEV_LOGS) {
-    console.error('[club/recursos/disponibles] upstreamUrl:', upstreamUrl);
-    console.error('[club/recursos/disponibles] token exists:', !!token);
+    console.error('[club/validaciones] upstreamUrl:', upstreamUrl);
+    console.error('[club/validaciones] token exists:', !!token);
+    console.error('[club/validaciones] API_BASE:', API_BASE);
   }
 
   try {
@@ -36,13 +37,15 @@ export async function GET() {
     return NextResponse.json(data, { status: upstream.status });
   } catch (error: any) {
     if (DEV_LOGS) {
-      console.error('[club/recursos/disponibles] fetch error:', {
+      console.error('[club/validaciones] fetch error:', {
         name: error?.name,
         message: error?.message,
         cause: error?.cause,
+        stack: error?.stack,
       });
     }
 
+    // Si es un error de red (fetch failed), devolver 502 con JSON claro
     if (error?.name === 'TypeError' && error?.message?.includes('fetch failed')) {
       return NextResponse.json(
         {
@@ -54,6 +57,7 @@ export async function GET() {
       );
     }
 
+    // Otros errores: 500 con mensaje
     return NextResponse.json(
       {
         error: error?.message ?? 'Error interno',
@@ -63,15 +67,6 @@ export async function GET() {
     );
   }
 }
-
-
-
-
-
-
-
-
-
 
 
 

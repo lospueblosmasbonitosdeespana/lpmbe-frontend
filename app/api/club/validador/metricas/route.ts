@@ -4,18 +4,26 @@ import { getApiUrl } from '@/lib/api';
 
 const DEV_LOGS = process.env.NODE_ENV === 'development';
 
-export async function GET() {
+export async function GET(req: Request) {
   const token = await getToken();
   if (!token) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
+  const { searchParams } = new URL(req.url);
+  const recursoId = searchParams.get('recursoId');
+  const days = searchParams.get('days') || '7';
+
+  if (!recursoId) {
+    return NextResponse.json({ message: 'Bad Request: recursoId requerido' }, { status: 400 });
+  }
+
   const API_BASE = getApiUrl();
-  const upstreamUrl = `${API_BASE}/club/recursos/disponibles`;
+  const upstreamUrl = `${API_BASE}/club/validador/metricas?recursoId=${encodeURIComponent(recursoId)}&days=${encodeURIComponent(days)}`;
 
   if (DEV_LOGS) {
-    console.error('[club/recursos/disponibles] upstreamUrl:', upstreamUrl);
-    console.error('[club/recursos/disponibles] token exists:', !!token);
+    console.error('[club/validador/metricas] upstreamUrl:', upstreamUrl);
+    console.error('[club/validador/metricas] token exists:', !!token);
   }
 
   try {
@@ -36,7 +44,7 @@ export async function GET() {
     return NextResponse.json(data, { status: upstream.status });
   } catch (error: any) {
     if (DEV_LOGS) {
-      console.error('[club/recursos/disponibles] fetch error:', {
+      console.error('[club/validador/metricas] fetch error:', {
         name: error?.name,
         message: error?.message,
         cause: error?.cause,
@@ -63,16 +71,6 @@ export async function GET() {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
 
 
 

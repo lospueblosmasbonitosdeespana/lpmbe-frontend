@@ -450,13 +450,14 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                       Eliminar
                     </button>
                     {r.activo && (
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/validador/${r.id}`)}
-                        className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
+                      <a
+                        href={`/validador/${r.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3 py-1 text-sm border rounded hover:bg-gray-50 inline-block text-center"
                       >
                         Validador
-                      </button>
+                      </a>
                     )}
                   </div>
                 </>

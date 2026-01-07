@@ -170,10 +170,17 @@ export function NotificacionesFloating() {
               <ul className="space-y-2">
                 {filtered.slice(0, maxItems).map((n) => {
                   const date = formatDate(n.fecha);
-                  // Generar href según tipo
-                  let href: string = homeConfig.notificaciones.allHref;
-                  if (n.tipo === "SEMAFORO" && n.pueblo?.slug) {
+                  
+                  // Generar href: prioridad url/href del backend, luego tipo específico, luego fallback a anchor
+                  let href: string;
+                  if ((n as any).url || (n as any).href) {
+                    href = (n as any).url || (n as any).href;
+                  } else if (n.tipo === "SEMAFORO" && n.pueblo?.slug) {
                     href = `/pueblos/${n.pueblo.slug}`;
+                  } else if (n.id) {
+                    href = `/notificaciones#notif-${n.id}`;
+                  } else {
+                    href = homeConfig.notificaciones.allHref;
                   }
 
                   const titulo = getHomeItemTitle(n);

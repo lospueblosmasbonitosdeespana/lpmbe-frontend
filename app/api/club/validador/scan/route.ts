@@ -15,6 +15,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'Bad Request: qrToken (string) y recursoId (number) requeridos' }, { status: 400 });
   }
 
+  // adultosUsados es opcional (1 o 2), default 2 si no viene
+  if (body.adultosUsados !== undefined && body.adultosUsados !== 1 && body.adultosUsados !== 2) {
+    return NextResponse.json({ message: 'Bad Request: adultosUsados debe ser 1 o 2' }, { status: 400 });
+  }
+
+  // menoresUsados es opcional (0 a 5)
+  if (body.menoresUsados !== undefined && (typeof body.menoresUsados !== 'number' || body.menoresUsados < 0 || body.menoresUsados > 5)) {
+    return NextResponse.json({ message: 'Bad Request: menoresUsados debe ser un número entre 0 y 5' }, { status: 400 });
+  }
+
   const API_BASE = getApiUrl();
   const upstreamUrl = `${API_BASE}/club/validador/scan`;
 
@@ -70,5 +80,8 @@ export async function POST(req: Request) {
     );
   }
 }
+
+
+
 
 
