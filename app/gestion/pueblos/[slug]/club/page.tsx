@@ -4,6 +4,7 @@ import { getPuebloBySlug } from '@/lib/api';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import ClubRecursos from './ClubRecursos.client';
+import MetricasResumen from './MetricasResumen.client';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -34,6 +35,22 @@ export default async function ClubGestionPage({
       <p className="mt-2 text-sm text-gray-600">
         Pueblo: <strong>{pueblo.nombre}</strong> (ID: {pueblo.id})
       </p>
+
+      {/* Bloque de acceso a métricas */}
+      <div className="mt-4 mb-4 rounded-md border p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="font-medium">Métricas del pueblo (todos los recursos)</div>
+            <MetricasResumen puebloId={pueblo.id} />
+          </div>
+          <Link
+            href={`/gestion/asociacion/club/metricas/${pueblo.id}`}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+          >
+            Ver métricas del pueblo
+          </Link>
+        </div>
+      </div>
 
       <ClubRecursos puebloId={pueblo.id} slug={slug} />
 

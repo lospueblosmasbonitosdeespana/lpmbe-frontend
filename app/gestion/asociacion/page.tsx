@@ -32,6 +32,11 @@ export default async function GestionAsociacionPage() {
               Alertas globales
             </Link>
           </li>
+          <li>
+            <Link className="hover:underline" href="/gestion/asociacion/club">
+              Club de amigos
+            </Link>
+          </li>
         </ul>
       </div>
 

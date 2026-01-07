@@ -4,19 +4,26 @@ import { getApiUrl } from '@/lib/api';
 
 const DEV_LOGS = process.env.NODE_ENV === 'development';
 
-export async function GET() {
+export async function GET(req: Request) {
   const token = await getToken();
   if (!token) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
+  const { searchParams } = new URL(req.url);
+  const puebloId = searchParams.get('puebloId');
+  const days = searchParams.get('days') || '7';
+
+  if (!puebloId) {
+    return NextResponse.json({ message: 'Bad Request: puebloId requerido' }, { status: 400 });
+  }
+
   const API_BASE = getApiUrl();
-  const upstreamUrl = `${API_BASE}/club/validaciones`;
+  const upstreamUrl = `${API_BASE}/club/validador/metricas-pueblo?puebloId=${encodeURIComponent(puebloId)}&days=${encodeURIComponent(days)}`;
 
   if (DEV_LOGS) {
-    console.error('[club/validaciones] upstreamUrl:', upstreamUrl);
-    console.error('[club/validaciones] token exists:', !!token);
-    console.error('[club/validaciones] API_BASE:', API_BASE);
+    console.error('[club/validador/metricas-pueblo] upstreamUrl:', upstreamUrl);
+    console.error('[club/validador/metricas-pueblo] token exists:', !!token);
   }
 
   try {
@@ -37,15 +44,13 @@ export async function GET() {
     return NextResponse.json(data, { status: upstream.status });
   } catch (error: any) {
     if (DEV_LOGS) {
-      console.error('[club/validaciones] fetch error:', {
+      console.error('[club/validador/metricas-pueblo] fetch error:', {
         name: error?.name,
         message: error?.message,
         cause: error?.cause,
-        stack: error?.stack,
       });
     }
 
-    // Si es un error de red (fetch failed), devolver 502 con JSON claro
     if (error?.name === 'TypeError' && error?.message?.includes('fetch failed')) {
       return NextResponse.json(
         {
@@ -57,7 +62,6 @@ export async function GET() {
       );
     }
 
-    // Otros errores: 500 con mensaje
     return NextResponse.json(
       {
         error: error?.message ?? 'Error interno',
@@ -67,9 +71,5 @@ export async function GET() {
     );
   }
 }
-
-
-
-
 
 

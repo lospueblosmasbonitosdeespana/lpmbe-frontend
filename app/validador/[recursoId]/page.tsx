@@ -83,6 +83,9 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
   const [menoresUsados, setMenoresUsados] = useState(0);
   const [metricas, setMetricas] = useState<Metricas>(() => normalizeMetricas(null));
   const [metricasError, setMetricasError] = useState<string | null>(null);
+  const [puebloId, setPuebloId] = useState<number | null>(null);
+  const [metricasPueblo, setMetricasPueblo] = useState<Metricas>(() => normalizeMetricas(null));
+  const [metricasPuebloError, setMetricasPuebloError] = useState<string | null>(null);
   const [wakeLockActive, setWakeLockActive] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanningRef = useRef(false);
@@ -294,6 +297,62 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
     }
   }
 
+  // Función para refrescar métricas del pueblo
+  async function refreshMetricasPueblo() {
+    if (!puebloId) return;
+
+    try {
+      const res = await fetch(`/api/club/validador/metricas-pueblo?puebloId=${puebloId}&days=7`, {
+        cache: 'no-store',
+      });
+
+      if (!res.ok) {
+        setMetricasPuebloError('Error cargando métricas del pueblo');
+        return;
+      }
+
+      const data = await res.json();
+      setMetricasPueblo(normalizeMetricas(data));
+      setMetricasPuebloError(null);
+    } catch (e: any) {
+      setMetricasPuebloError('Error cargando métricas del pueblo');
+    }
+  }
+
+  // Polling de métricas del pueblo cada 15 segundos
+  useEffect(() => {
+    if (!puebloId) return;
+
+    async function loadMetricasPueblo() {
+      if (showingResultRef.current) return;
+
+      try {
+        const res = await fetch(`/api/club/validador/metricas-pueblo?puebloId=${puebloId}&days=7`, {
+          cache: 'no-store',
+        });
+
+        if (!res.ok) {
+          setMetricasPuebloError('Error cargando métricas del pueblo');
+          return;
+        }
+
+        const data = await res.json();
+        setMetricasPueblo(normalizeMetricas(data));
+        setMetricasPuebloError(null);
+      } catch (e: any) {
+        setMetricasPuebloError('Error cargando métricas del pueblo');
+      }
+    }
+
+    loadMetricasPueblo();
+
+    const interval = setInterval(() => {
+      loadMetricasPueblo();
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [puebloId]);
+
   async function handleScan(rawText: string) {
     if (status !== 'SCANNING') return;
     
@@ -377,6 +436,13 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
       // Guardar resultado antes del reset
       setLastResult(data);
 
+      // Extraer puebloId del resultado si está disponible
+      if (data?.puebloId) {
+        setPuebloId(data.puebloId);
+      } else if (data?.pueblo?.id) {
+        setPuebloId(data.pueblo.id);
+      }
+
       // Marcar que estamos mostrando resultado (evitar refrescar métricas)
       showingResultRef.current = true;
 
@@ -396,6 +462,9 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
       // Pero esperamos un poco para que no parpadee
       setTimeout(() => {
         refreshMetricas();
+        if (puebloId) {
+          refreshMetricasPueblo();
+        }
       }, 500);
     } catch (e: any) {
       showingResultRef.current = true;
@@ -456,7 +525,12 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
         <h1 style={{ fontSize: 24, fontWeight: 700 }}>Validador</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <button
-            onClick={refreshMetricas}
+            onClick={() => {
+              refreshMetricas();
+              if (puebloId) {
+                refreshMetricasPueblo();
+              }
+            }}
             style={{
               padding: '8px 16px',
               fontSize: 14,
@@ -677,6 +751,88 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
               </div>
             </div>
           </div>
+
+          {/* Bloque TOTAL PUEBLO */}
+          {puebloId && (
+            <div style={{ border: '1px solid #ddd', padding: 16, borderRadius: 4, marginTop: 24 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>TOTAL PUEBLO</h2>
+
+              {metricasPuebloError && (
+                <div style={{ fontSize: 14, color: '#ef4444', marginBottom: 16 }}>
+                  {metricasPuebloError}
+                </div>
+              )}
+
+              {/* HOY */}
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>HOY</div>
+                <div style={{ fontSize: 14 }}>
+                  {metricasPueblo.hoy.total} intentos | OK: {metricasPueblo.hoy.ok} | NO OK: {metricasPueblo.hoy.noOk} | Adultos: {metricasPueblo.hoy.adultos} | Menores: {metricasPueblo.hoy.menores}
+                </div>
+              </div>
+
+              {/* Últimos 7 días */}
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>ÚLTIMOS 7 DÍAS</div>
+                <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid #ddd' }}>
+                      <th style={{ textAlign: 'left', padding: '4px 8px' }}>Fecha</th>
+                      <th style={{ textAlign: 'center', padding: '4px 8px' }}>Total</th>
+                      <th style={{ textAlign: 'center', padding: '4px 8px' }}>OK</th>
+                      <th style={{ textAlign: 'center', padding: '4px 8px' }}>Adultos</th>
+                      <th style={{ textAlign: 'center', padding: '4px 8px' }}>Menores</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {metricasPueblo.ultimosDias.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} style={{ padding: '8px', textAlign: 'center', color: '#666' }}>
+                          No hay datos
+                        </td>
+                      </tr>
+                    ) : (
+                      metricasPueblo.ultimosDias.map((dia, idx) => (
+                        <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
+                          <td style={{ padding: '4px 8px' }}>
+                            {dia.fecha ? new Date(dia.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) : '—'}
+                          </td>
+                          <td style={{ textAlign: 'center', padding: '4px 8px' }}>{dia.total}</td>
+                          <td style={{ textAlign: 'center', padding: '4px 8px' }}>{dia.ok}</td>
+                          <td style={{ textAlign: 'center', padding: '4px 8px' }}>{dia.adultos}</td>
+                          <td style={{ textAlign: 'center', padding: '4px 8px' }}>{dia.menores}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Últimos escaneos */}
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>ÚLTIMOS ESCANEOS</div>
+                <div style={{ fontSize: 12, maxHeight: 200, overflowY: 'auto' }}>
+                  {metricasPueblo.ultimosEscaneos.length === 0 ? (
+                    <div style={{ color: '#666' }}>No hay escaneos recientes</div>
+                  ) : (
+                    metricasPueblo.ultimosEscaneos.map((escaneo, idx) => {
+                      const adultosStr = escaneo.adultosUsados !== undefined ? `A: ${escaneo.adultosUsados}` : '';
+                      const menoresStr = escaneo.menoresUsados !== undefined ? `M: ${escaneo.menoresUsados}` : '';
+                      const personasStr = [adultosStr, menoresStr].filter(Boolean).join(' / ');
+                      return (
+                        <div key={idx} style={{ padding: '4px 0', borderBottom: '1px solid #eee' }}>
+                          {escaneo.hora || '—'} — <span style={{ color: escaneo.resultado === 'OK' ? '#22c55e' : '#ef4444', fontWeight: 600 }}>
+                            {escaneo.resultado === 'OK' ? 'OK' : 'NO OK'}
+                          </span>
+                          {personasStr && <span style={{ marginLeft: 8, fontSize: 11, color: '#666' }}>({personasStr})</span>}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
