@@ -8,6 +8,7 @@ type Recurso = {
   nombre: string;
   tipo: string;
   descuentoPorcentaje?: number | null;
+  precioCents?: number | null;
   activo: boolean;
   codigoQr: string;
   puebloId: number;
@@ -24,6 +25,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
   const [nuevoNombre, setNuevoNombre] = useState('');
   const [nuevoTipo, setNuevoTipo] = useState('');
   const [nuevoDescuento, setNuevoDescuento] = useState('');
+  const [nuevoPrecio, setNuevoPrecio] = useState('');
   const [nuevoActivo, setNuevoActivo] = useState(true);
   const [creando, setCreando] = useState(false);
 
@@ -32,6 +34,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
   const [editNombre, setEditNombre] = useState('');
   const [editTipo, setEditTipo] = useState('');
   const [editDescuento, setEditDescuento] = useState('');
+  const [editPrecio, setEditPrecio] = useState('');
   const [editActivo, setEditActivo] = useState(false);
   const [guardando, setGuardando] = useState(false);
 
@@ -90,6 +93,11 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
       return;
     }
 
+    if (nuevoPrecio && (isNaN(Number(nuevoPrecio)) || Number(nuevoPrecio) < 0)) {
+      setError('El precio debe ser un número positivo');
+      return;
+    }
+
     setCreando(true);
     setError(null);
 
@@ -102,6 +110,10 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
 
       if (nuevoDescuento) {
         body.descuentoPorcentaje = Number(nuevoDescuento);
+      }
+
+      if (nuevoPrecio) {
+        body.precioCents = Math.round(Number(nuevoPrecio) * 100);
       }
 
       const res = await fetch(`/api/club/recursos/pueblo/${puebloId}`, {
@@ -122,6 +134,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
       setNuevoNombre('');
       setNuevoTipo('');
       setNuevoDescuento('');
+      setNuevoPrecio('');
       setNuevoActivo(true);
       setShowForm(false);
       await loadRecursos();
@@ -137,6 +150,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
     setEditNombre(r.nombre);
     setEditTipo(r.tipo || '');
     setEditDescuento(r.descuentoPorcentaje?.toString() || '');
+    setEditPrecio(r.precioCents ? (r.precioCents / 100).toString() : '');
     setEditActivo(r.activo);
   }
 
@@ -145,6 +159,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
     setEditNombre('');
     setEditTipo('');
     setEditDescuento('');
+    setEditPrecio('');
     setEditActivo(false);
   }
 
@@ -156,6 +171,11 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
 
     if (editDescuento && (isNaN(Number(editDescuento)) || Number(editDescuento) < 0 || Number(editDescuento) > 100)) {
       setError('El descuento debe ser un número entre 0 y 100');
+      return;
+    }
+
+    if (editPrecio && (isNaN(Number(editPrecio)) || Number(editPrecio) < 0)) {
+      setError('El precio debe ser un número positivo');
       return;
     }
 
@@ -173,6 +193,12 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
         body.descuentoPorcentaje = Number(editDescuento);
       } else {
         body.descuentoPorcentaje = null;
+      }
+
+      if (editPrecio) {
+        body.precioCents = Math.round(Number(editPrecio) * 100);
+      } else {
+        body.precioCents = null;
       }
 
       const res = await fetch(`/api/club/recursos/${id}`, {
@@ -301,6 +327,19 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
               className="w-full px-3 py-2 border rounded disabled:opacity-50"
             />
           </div>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Precio (€)</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={nuevoPrecio}
+              onChange={(e) => setNuevoPrecio(e.target.value)}
+              disabled={creando}
+              className="w-full px-3 py-2 border rounded disabled:opacity-50"
+              placeholder="0.00"
+            />
+          </div>
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -327,6 +366,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                 setNuevoNombre('');
                 setNuevoTipo('');
                 setNuevoDescuento('');
+                setNuevoPrecio('');
                 setNuevoActivo(true);
               }}
               disabled={creando}
@@ -381,6 +421,19 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                       className="w-full px-3 py-2 border rounded disabled:opacity-50"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Precio (€)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={editPrecio}
+                      onChange={(e) => setEditPrecio(e.target.value)}
+                      disabled={guardando}
+                      className="w-full px-3 py-2 border rounded disabled:opacity-50"
+                      placeholder="0.00"
+                    />
+                  </div>
                   <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
@@ -416,6 +469,14 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                     <div className="flex-1">
                       <div className="font-medium">{r.nombre}</div>
                       <div className="text-sm text-gray-600">Tipo: {r.tipo || '—'}</div>
+                      <div className="text-sm text-gray-600">
+                        Precio: {r.precioCents ? `${(r.precioCents / 100).toFixed(2)} €` : '—'}
+                      </div>
+                      {r.descuentoPorcentaje && r.precioCents && (
+                        <div className="text-sm text-green-600 font-medium">
+                          Con descuento: {((r.precioCents / 100) * (1 - r.descuentoPorcentaje / 100)).toFixed(2)} €
+                        </div>
+                      )}
                       <div className="text-sm text-gray-600">
                         Descuento: {r.descuentoPorcentaje !== null && r.descuentoPorcentaje !== undefined ? `${r.descuentoPorcentaje}%` : '—'}
                       </div>

@@ -24,12 +24,14 @@ type ClubValidacion = {
     id: number;
     nombre: string;
   } | null;
+  recursoId?: number | null;
   recursoNombre?: string | null;
   recurso?: {
     id: number;
     nombre: string;
   } | null;
   adultosUsados?: number | null;
+  menoresUsados?: number | null;
   descuentoPorcentaje?: number | null;
 };
 
@@ -43,6 +45,7 @@ type RecursoDisponible = {
   nombre: string;
   tipo: string;
   descuentoPorcentaje?: number | null;
+  precioCents?: number | null;
   codigoQr: string;
   puebloId?: number | null;
   puebloNombre?: string | null;
@@ -410,6 +413,25 @@ export default function ClubPage() {
 
   const validacionesMostradas = validaciones.slice(0, 30);
 
+  // Helper para verificar si un recurso fue visitado
+  const esRecursoVisitado = (recursoId: number): { visitado: boolean; hoy: boolean } => {
+    const validacionesOk = validaciones.filter(v => v.resultado === 'OK' && v.recursoId === recursoId);
+    if (validacionesOk.length === 0) {
+      return { visitado: false, hoy: false };
+    }
+    
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    
+    const visitadoHoy = validacionesOk.some(v => {
+      const fecha = new Date(v.scannedAt);
+      fecha.setHours(0, 0, 0, 0);
+      return fecha.getTime() === hoy.getTime();
+    });
+    
+    return { visitado: true, hoy: visitadoHoy };
+  };
+
   return (
     <section className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -542,36 +564,63 @@ export default function ClubPage() {
           <div className="text-sm text-gray-600">No hay recursos disponibles con descuentos.</div>
         ) : (
           <div className="space-y-3">
-            {recursosDisponibles.map((r) => (
-              <div key={r.id} className="p-3 border rounded space-y-1">
-                <div className="text-sm">
-                  <span className="text-gray-600">Pueblo ID: </span>
-                  <span className="font-medium">{r.puebloId ?? '—'}</span>
-                </div>
-                <div className="text-sm">
-                  <span className="text-gray-600">Nombre: </span>
-                  <span className="font-medium">{r.nombre}</span>
-                </div>
-                <div className="text-sm">
-                  <span className="text-gray-600">Tipo: </span>
-                  <span className="font-medium">{r.tipo || '—'}</span>
-                </div>
-                <div className="text-sm">
-                  <span className="text-gray-600">Descuento: </span>
-                  <span className="font-medium">
-                    {r.descuentoPorcentaje !== null && r.descuentoPorcentaje !== undefined
-                      ? `${r.descuentoPorcentaje}%`
-                      : '—'}
-                  </span>
-                </div>
-                {clubMe?.isMember && (
-                  <div className="text-sm">
-                    <span className="text-gray-600">Código QR: </span>
-                    <span className="font-mono text-xs break-all">{r.codigoQr}</span>
+            {recursosDisponibles.map((r) => {
+              const { visitado, hoy } = esRecursoVisitado(r.id);
+              return (
+                <div key={r.id} className="p-3 border rounded space-y-1">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="text-sm">
+                        <span className="text-gray-600">Pueblo: </span>
+                        <span className="font-medium">{r.puebloNombre ?? r.puebloId ?? '—'}</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="text-gray-600">Nombre: </span>
+                        <span className="font-medium">{r.nombre}</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="text-gray-600">Tipo: </span>
+                        <span className="font-medium">{r.tipo || '—'}</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="text-gray-600">Precio: </span>
+                        <span className="font-medium">
+                          {r.precioCents ? `${(r.precioCents / 100).toFixed(2)} €` : '—'}
+                        </span>
+                      </div>
+                      {r.descuentoPorcentaje && r.precioCents && (
+                        <div className="text-sm text-green-600 font-medium">
+                          Con descuento: {((r.precioCents / 100) * (1 - r.descuentoPorcentaje / 100)).toFixed(2)} €
+                        </div>
+                      )}
+                      <div className="text-sm">
+                        <span className="text-gray-600">Descuento: </span>
+                        <span className="font-medium">
+                          {r.descuentoPorcentaje !== null && r.descuentoPorcentaje !== undefined
+                            ? `${r.descuentoPorcentaje}%`
+                            : '—'}
+                        </span>
+                      </div>
+                      {clubMe?.isMember && (
+                        <div className="text-sm">
+                          <span className="text-gray-600">Código QR: </span>
+                          <span className="font-mono text-xs break-all">{r.codigoQr}</span>
+                        </div>
+                      )}
+                    </div>
+                    {visitado && (
+                      <div className="ml-4">
+                        <span className={`text-xs px-2 py-1 rounded font-medium ${
+                          hoy ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {hoy ? 'VISITADO HOY' : 'VISITADO'}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -600,17 +649,18 @@ export default function ClubPage() {
             <table className="w-full text-sm border border-gray-200 rounded">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-3 py-2 text-left">Fecha</th>
+                  <th className="px-3 py-2 text-left">Fecha/Hora</th>
                   <th className="px-3 py-2 text-left">Pueblo</th>
                   <th className="px-3 py-2 text-left">Recurso</th>
+                  <th className="px-3 py-2 text-center">Resultado</th>
                   <th className="px-3 py-2 text-center">Adultos</th>
-                  <th className="px-3 py-2 text-center">Descuento</th>
-                  <th className="px-3 py-2 text-center">Estado</th>
+                  <th className="px-3 py-2 text-center">Menores</th>
+                  <th className="px-3 py-2 text-center">Descuento aplicado</th>
                 </tr>
               </thead>
               <tbody>
                 {validaciones.map((v, idx) => {
-                  const fecha = new Date(v.scannedAt).toLocaleDateString('es-ES');
+                  const fechaHora = formatFechaHora(v.scannedAt);
                   const estadoOk = v.resultado === 'OK';
 
                   return (
@@ -618,25 +668,28 @@ export default function ClubPage() {
                       key={`${v.scannedAt ?? ""}-${v.puebloNombre ?? ""}-${v.recursoNombre ?? ""}-${idx}`}
                       className="border-t"
                     >
-                      <td className="px-3 py-2">{fecha}</td>
+                      <td className="px-3 py-2">{fechaHora}</td>
                       <td className="px-3 py-2">{v.puebloNombre || v.pueblo?.nombre || '—'}</td>
                       <td className="px-3 py-2">{v.recursoNombre || v.recurso?.nombre || '—'}</td>
-                      <td className="px-3 py-2 text-center">
-                        {v.adultosUsados ?? 2}
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        {v.descuentoPorcentaje
-                          ? `–${v.descuentoPorcentaje}%`
-                          : '—'}
-                      </td>
                       <td className="px-3 py-2 text-center">
                         <span
                           className={`font-semibold ${
                             estadoOk ? 'text-green-600' : 'text-red-600'
                           }`}
                         >
-                          {estadoOk ? 'Beneficio aplicado' : 'Intento no válido'}
+                          {estadoOk ? 'OK' : (v.resultado || 'NO OK')}
                         </span>
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        {v.adultosUsados ?? '—'}
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        {v.menoresUsados ?? '—'}
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        {v.descuentoPorcentaje
+                          ? `–${v.descuentoPorcentaje}%`
+                          : '—'}
                       </td>
                     </tr>
                   );
