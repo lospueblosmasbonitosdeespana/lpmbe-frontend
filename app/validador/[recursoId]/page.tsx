@@ -632,7 +632,7 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
           <div style={{ fontSize: 48, fontWeight: 700, color: '#22c55e', marginBottom: 16 }}>
             VÁLIDO
           </div>
-          {lastResult && status !== 'SCANNING' && (
+          {lastResult && (
             <div style={{ fontSize: 14, color: '#666', marginTop: 16 }}>
               <div>Pueblo: {lastResult?.puebloNombre ?? lastResult?.pueblo?.nombre ?? lastResult?.pueblo ?? '—'}</div>
               <div>Recurso: {lastResult?.recursoNombre ?? lastResult?.recurso?.nombre ?? lastResult?.recurso ?? '—'}</div>
@@ -653,7 +653,7 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
               {motivo}
             </div>
           )}
-          {lastResult && status !== 'SCANNING' && (
+          {lastResult && (
             <div style={{ fontSize: 14, color: '#666', marginTop: 16 }}>
               <div>Pueblo: {lastResult?.puebloNombre ?? lastResult?.pueblo?.nombre ?? lastResult?.pueblo ?? '—'}</div>
               <div>Recurso: {lastResult?.recursoNombre ?? lastResult?.recurso?.nombre ?? lastResult?.recurso ?? '—'}</div>
