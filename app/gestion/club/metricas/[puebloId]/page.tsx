@@ -1,13 +1,8 @@
-import { redirect } from 'next/navigation';
+'use client';
 
-export default async function ClubMetricasPuebloPage({
-  params,
-}: {
-  params: Promise<{ puebloId: string }>;
-}) {
-  const { puebloId } = await params;
-  redirect(`/gestion/asociacion/club/metricas/${puebloId}`);
-}
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 type Metricas = {
   hoy: {
@@ -73,7 +68,7 @@ export default function ClubMetricasPuebloPage() {
   const params = useParams();
   const puebloId = params?.puebloId as string;
   const [loading, setLoading] = useState(true);
-  const [metricas, setMetricas] = useState<Metricas | null>(null);
+  const [metricas, setMetricas] = useState<Metricas>(() => normalizeMetricas(null));
   const [puebloNombre, setPuebloNombre] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
@@ -130,13 +125,13 @@ export default function ClubMetricasPuebloPage() {
     );
   }
 
-  if (error || !metricas) {
+  if (error) {
     return (
       <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ color: '#ef4444' }}>{error || 'Error cargando métricas'}</div>
+        <div style={{ color: '#ef4444' }}>{error}</div>
         <div style={{ marginTop: 16 }}>
-          <Link href="/gestion/club/metricas" style={{ color: '#0066cc', textDecoration: 'none' }}>
-            ← Volver a métricas
+          <Link href="/gestion/asociacion/club/metricas" style={{ color: '#0066cc', textDecoration: 'none' }}>
+            ← Volver a métricas globales
           </Link>
         </div>
       </div>
@@ -150,8 +145,8 @@ export default function ClubMetricasPuebloPage() {
           Métricas Club de Amigos {puebloNombre && `- ${puebloNombre}`}
         </h1>
         <div style={{ fontSize: 14, color: '#666' }}>
-          <Link href="/gestion/club/metricas" style={{ color: '#0066cc', textDecoration: 'none' }}>
-            ← Volver a métricas
+          <Link href="/gestion/asociacion/club/metricas" style={{ color: '#0066cc', textDecoration: 'none' }}>
+            ← Volver a métricas globales
           </Link>
         </div>
       </div>
