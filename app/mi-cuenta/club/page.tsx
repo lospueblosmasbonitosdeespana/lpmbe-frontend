@@ -411,26 +411,11 @@ export default function ClubPage() {
     );
   }
 
-  const validacionesMostradas = validaciones.slice(0, 30);
-
-  // Helper para verificar si un recurso fue visitado
-  const esRecursoVisitado = (recursoId: number): { visitado: boolean; hoy: boolean } => {
-    const validacionesOk = validaciones.filter(v => v.resultado === 'OK' && v.recursoId === recursoId);
-    if (validacionesOk.length === 0) {
-      return { visitado: false, hoy: false };
-    }
-    
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-    
-    const visitadoHoy = validacionesOk.some(v => {
-      const fecha = new Date(v.scannedAt);
-      fecha.setHours(0, 0, 0, 0);
-      return fecha.getTime() === hoy.getTime();
-    });
-    
-    return { visitado: true, hoy: visitadoHoy };
-  };
+  // Última validación para preview
+  const ultimaValidacion = validaciones.length > 0 ? validaciones[0] : null;
+  
+  // Preview de recursos (máximo 3)
+  const recursosPreview = recursosDisponibles.slice(0, 3);
 
   return (
     <section className="max-w-4xl mx-auto p-6 space-y-6">
@@ -557,145 +542,45 @@ export default function ClubPage() {
         </div>
       )}
 
-      {/* Descuentos en recursos turísticos */}
+      {/* Accesos rápidos */}
       <div className="p-4 border rounded space-y-3">
-        <h2 className="font-medium">Descuentos en recursos turísticos</h2>
-        {recursosDisponibles.length === 0 ? (
-          <div className="text-sm text-gray-600">No hay recursos disponibles con descuentos.</div>
-        ) : (
-          <div className="space-y-3">
-            {recursosDisponibles.map((r) => {
-              const { visitado, hoy } = esRecursoVisitado(r.id);
-              return (
-                <div key={r.id} className="p-3 border rounded space-y-1">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="text-sm">
-                        <span className="text-gray-600">Pueblo: </span>
-                        <span className="font-medium">{r.puebloNombre ?? r.puebloId ?? '—'}</span>
-                      </div>
-                      <div className="text-sm">
-                        <span className="text-gray-600">Nombre: </span>
-                        <span className="font-medium">{r.nombre}</span>
-                      </div>
-                      <div className="text-sm">
-                        <span className="text-gray-600">Tipo: </span>
-                        <span className="font-medium">{r.tipo || '—'}</span>
-                      </div>
-                      <div className="text-sm">
-                        <span className="text-gray-600">Precio: </span>
-                        <span className="font-medium">
-                          {r.precioCents ? `${(r.precioCents / 100).toFixed(2)} €` : '—'}
-                        </span>
-                      </div>
-                      {r.descuentoPorcentaje && r.precioCents && (
-                        <div className="text-sm text-green-600 font-medium">
-                          Con descuento: {((r.precioCents / 100) * (1 - r.descuentoPorcentaje / 100)).toFixed(2)} €
-                        </div>
-                      )}
-                      <div className="text-sm">
-                        <span className="text-gray-600">Descuento: </span>
-                        <span className="font-medium">
-                          {r.descuentoPorcentaje !== null && r.descuentoPorcentaje !== undefined
-                            ? `${r.descuentoPorcentaje}%`
-                            : '—'}
-                        </span>
-                      </div>
-                      {clubMe?.isMember && (
-                        <div className="text-sm">
-                          <span className="text-gray-600">Código QR: </span>
-                          <span className="font-mono text-xs break-all">{r.codigoQr}</span>
-                        </div>
-                      )}
-                    </div>
-                    {visitado && (
-                      <div className="ml-4">
-                        <span className={`text-xs px-2 py-1 rounded font-medium ${
-                          hoy ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-                        }`}>
-                          {hoy ? 'VISITADO HOY' : 'VISITADO'}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+        <h2 className="font-medium">Accesos</h2>
+        <div className="space-y-2">
+          <div>
+            <Link href="/mi-cuenta/club/recursos" className="text-sm text-blue-600 hover:underline">
+              → Descuentos en recursos turísticos
+            </Link>
+            {recursosDisponibles.length > 0 && (
+              <span className="text-xs text-gray-500 ml-2">
+                ({recursosDisponibles.length} recursos)
+              </span>
+            )}
           </div>
-        )}
-      </div>
-
-      {/* Historial de validaciones */}
-      <div className="p-4 border rounded space-y-3">
-        <h2 className="font-medium">Historial de validaciones</h2>
-        <p className="text-sm text-gray-600">
-          Aquí puedes ver los beneficios del Club de Amigos que ya has utilizado.
-        </p>
+          <div>
+            <Link href="/mi-cuenta/club/visitados" className="text-sm text-blue-600 hover:underline">
+              → Recursos turísticos visitados
+            </Link>
+            {validaciones.filter(v => v.resultado === 'OK').length > 0 && (
+              <span className="text-xs text-gray-500 ml-2">
+                ({validaciones.filter(v => v.resultado === 'OK').length} visitas)
+              </span>
+            )}
+          </div>
+          <div>
+            <Link href="/mi-cuenta/club/validaciones" className="text-sm text-blue-600 hover:underline">
+              → Historial de validaciones
+            </Link>
+            {validaciones.length > 0 && (
+              <span className="text-xs text-gray-500 ml-2">
+                ({validaciones.length} registros)
+              </span>
+            )}
+          </div>
+        </div>
         
-        {validacionesNoDisponible && (
-          <p className="text-sm text-gray-500 mt-4">
-            Historial no disponible todavía.
-          </p>
-        )}
-
-        {!validacionesNoDisponible && validaciones.length === 0 && (
-          <p className="text-sm text-gray-500 mt-4">
-            Aún no has utilizado ningún beneficio del Club.
-          </p>
-        )}
-
-        {validaciones.length > 0 && (
-          <div className="mt-6 overflow-x-auto">
-            <table className="w-full text-sm border border-gray-200 rounded">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-3 py-2 text-left">Fecha/Hora</th>
-                  <th className="px-3 py-2 text-left">Pueblo</th>
-                  <th className="px-3 py-2 text-left">Recurso</th>
-                  <th className="px-3 py-2 text-center">Resultado</th>
-                  <th className="px-3 py-2 text-center">Adultos</th>
-                  <th className="px-3 py-2 text-center">Menores</th>
-                  <th className="px-3 py-2 text-center">Descuento aplicado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {validaciones.map((v, idx) => {
-                  const fechaHora = formatFechaHora(v.scannedAt);
-                  const estadoOk = v.resultado === 'OK';
-
-                  return (
-                    <tr
-                      key={`${v.scannedAt ?? ""}-${v.puebloNombre ?? ""}-${v.recursoNombre ?? ""}-${idx}`}
-                      className="border-t"
-                    >
-                      <td className="px-3 py-2">{fechaHora}</td>
-                      <td className="px-3 py-2">{v.puebloNombre || v.pueblo?.nombre || '—'}</td>
-                      <td className="px-3 py-2">{v.recursoNombre || v.recurso?.nombre || '—'}</td>
-                      <td className="px-3 py-2 text-center">
-                        <span
-                          className={`font-semibold ${
-                            estadoOk ? 'text-green-600' : 'text-red-600'
-                          }`}
-                        >
-                          {estadoOk ? 'OK' : (v.resultado || 'NO OK')}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        {v.adultosUsados ?? '—'}
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        {v.menoresUsados ?? '—'}
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        {v.descuentoPorcentaje
-                          ? `–${v.descuentoPorcentaje}%`
-                          : '—'}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        {ultimaValidacion && (
+          <div className="mt-4 pt-4 border-t text-xs text-gray-600">
+            Última validación: {formatFechaHora(ultimaValidacion.scannedAt)} — {ultimaValidacion.puebloNombre || '—'} / {ultimaValidacion.recursoNombre || '—'} — {ultimaValidacion.resultado === 'OK' ? 'OK' : 'NO OK'}
           </div>
         )}
       </div>
