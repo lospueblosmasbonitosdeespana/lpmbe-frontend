@@ -52,16 +52,9 @@ type RecursoDisponible = {
   activo?: boolean;
 };
 
-type Pueblo = {
-  id: number;
-  nombre: string;
-  slug?: string;
-};
-
-type QrGenerado = {
+type QrIdentidad = {
   qrPayload: string;
   expiresAt: string;
-  recursoId: number;
 };
 
 function formatFecha(fecha: string | null | undefined): string {
@@ -91,9 +84,6 @@ export default function ClubPage() {
   const [validaciones, setValidaciones] = useState<ClubValidacion[]>([]);
   const [validacionesNoDisponible, setValidacionesNoDisponible] = useState(false);
   const [recursosDisponibles, setRecursosDisponibles] = useState<RecursoDisponible[]>([]);
-  const [pueblos, setPueblos] = useState<Pueblo[]>([]);
-  const [recursosDelPuebloSeleccionado, setRecursosDelPuebloSeleccionado] = useState<RecursoDisponible[]>([]);
-  const [cargandoRecursos, setCargandoRecursos] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [codigoQr, setCodigoQr] = useState('');
@@ -101,13 +91,11 @@ export default function ClubPage() {
   const [registroError, setRegistroError] = useState<string | null>(null);
   const [registroSuccess, setRegistroSuccess] = useState<string | null>(null);
 
-  // Nuevo flujo QR dinámico
-  const [puebloSeleccionado, setPuebloSeleccionado] = useState<number | null>(null);
-  const [recursoSeleccionado, setRecursoSeleccionado] = useState<number | null>(null);
-  const [qrGenerado, setQrGenerado] = useState<QrGenerado | null>(null);
-  const [generando, setGenerando] = useState(false);
-  const [qrError, setQrError] = useState<string | null>(null);
-  const [tiempoRestante, setTiempoRestante] = useState<number | null>(null);
+  // QR de identidad (5 min)
+  const [qrIdentidad, setQrIdentidad] = useState<QrIdentidad | null>(null);
+  const [generandoIdentidad, setGenerandoIdentidad] = useState(false);
+  const [qrIdentidadError, setQrIdentidadError] = useState<string | null>(null);
+  const [tiempoRestanteIdentidad, setTiempoRestanteIdentidad] = useState<number | null>(null);
 
   async function loadData() {
     setLoading(true);
@@ -177,94 +165,34 @@ export default function ClubPage() {
     }
   }
 
-  // Cargar todos los pueblos desde el endpoint canónico
+  // Contador regresivo para QR identidad
   useEffect(() => {
-    const cargarPueblos = async () => {
-      try {
-        const res = await fetch('/api/pueblos', { cache: 'no-store' });
-        if (!res.ok) return;
-        const data = await res.json();
-        setPueblos(
-          data
-            .filter((p: any) => p.id && p.nombre)
-            .sort((a: any, b: any) =>
-              a.nombre.localeCompare(b.nombre, 'es')
-            )
-        );
-      } catch (e) {
-        // Ignorar errores silenciosamente
-      }
-    };
-
-    cargarPueblos();
-  }, []);
-
-  // Cargar recursos del pueblo seleccionado
-  useEffect(() => {
-    if (!puebloSeleccionado) {
-      setRecursosDelPuebloSeleccionado([]);
-      return;
-    }
-
-    const cargarRecursosDelPueblo = async () => {
-      setCargandoRecursos(true);
-      try {
-        const res = await fetch(`/api/club/recursos/pueblo/${puebloSeleccionado}`, { cache: 'no-store' });
-        if (!res.ok) {
-          setRecursosDelPuebloSeleccionado([]);
-          return;
-        }
-        const data = await res.json();
-        const recursos = Array.isArray(data) ? data : (Array.isArray(data.items) ? data.items : []);
-        // Filtrar solo recursos activos
-        setRecursosDelPuebloSeleccionado(recursos.filter((r: RecursoDisponible) => r.activo !== false));
-      } catch (e) {
-        setRecursosDelPuebloSeleccionado([]);
-      } finally {
-        setCargandoRecursos(false);
-      }
-    };
-
-    cargarRecursosDelPueblo();
-  }, [puebloSeleccionado]);
-
-  // Contador regresivo para QR
-  useEffect(() => {
-    if (!qrGenerado?.expiresAt) {
-      setTiempoRestante(null);
+    if (!qrIdentidad?.expiresAt) {
+      setTiempoRestanteIdentidad(null);
       return;
     }
 
     const updateTimer = () => {
       const ahora = new Date().getTime();
-      const expira = new Date(qrGenerado.expiresAt).getTime();
+      const expira = new Date(qrIdentidad.expiresAt).getTime();
       const restante = Math.max(0, Math.floor((expira - ahora) / 1000));
-      setTiempoRestante(restante);
+      setTiempoRestanteIdentidad(restante);
 
       if (restante <= 0) {
-        setQrGenerado(null);
-        setRecursoSeleccionado(null);
-        setQrError(null);
+        setQrIdentidad(null);
+        setQrIdentidadError(null);
       }
     };
 
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [qrGenerado]);
+  }, [qrIdentidad]);
 
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Reset recurso y QR cuando cambia el pueblo
-  useEffect(() => {
-    setRecursoSeleccionado(null);
-    setQrGenerado(null);
-    setQrError(null);
-    setTiempoRestante(null);
-  }, [puebloSeleccionado]);
 
   async function handleRegistrarVisita() {
     if (!codigoQr.trim()) {
@@ -333,53 +261,44 @@ export default function ClubPage() {
     }
   }
 
-  async function handleGenerarQR() {
-    if (!recursoSeleccionado) {
-      setQrError('Selecciona un recurso');
-      return;
-    }
-
-    setGenerando(true);
-    setQrError(null);
+  async function handleGenerarQRIdentidad() {
+    setGenerandoIdentidad(true);
+    setQrIdentidadError(null);
 
     try {
-      const res = await fetch('/api/club/qr/generar', {
+      const res = await fetch('/api/club/qr/identidad/generar', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          recursoId: recursoSeleccionado,
-        }),
       });
 
       if (res.status === 502) {
         const errorData = await res.json().catch(() => ({}));
         if (errorData?.error === 'upstream_fetch_failed') {
-          setQrError('No se pudo conectar al backend. Verifica que el servidor esté ejecutándose.');
+          setQrIdentidadError('No se pudo conectar al backend. Verifica que el servidor esté ejecutándose.');
         } else {
-          setQrError('El backend no está disponible.');
+          setQrIdentidadError('El backend no está disponible.');
         }
         return;
       }
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => null);
-        const errorText = errorData?.error || errorData?.detail || await res.text().catch(() => 'Error generando QR');
-        setQrError(errorText);
+        const errorText = errorData?.error || errorData?.detail || await res.text().catch(() => 'Error generando QR de identidad');
+        setQrIdentidadError(errorText);
         return;
       }
 
       const data = await res.json();
-      setQrGenerado({
+      setQrIdentidad({
         qrPayload: data.qrPayload,
         expiresAt: data.expiresAt,
-        recursoId: recursoSeleccionado,
       });
     } catch (e: any) {
-      setQrError(e?.message ?? 'Error desconocido');
+      setQrIdentidadError(e?.message ?? 'Error desconocido');
     } finally {
-      setGenerando(false);
+      setGenerandoIdentidad(false);
     }
   }
 
@@ -447,94 +366,50 @@ export default function ClubPage() {
         </div>
       </div>
 
-      {/* Tu código de acceso */}
+      {/* Mi QR de identidad (5 min) */}
       {clubMe?.isMember && (
-        <div className="p-4 border rounded space-y-3">
-          <h2 className="font-medium">Tu código de acceso</h2>
+        <div className="p-4 border rounded space-y-3 bg-blue-50">
+          <h2 className="font-medium">Mi QR de Identidad</h2>
           <p className="text-sm text-gray-600">
-            Selecciona el recurso que vas a visitar y muestra este código en la entrada.
+            Genera un código QR temporal (válido 5 minutos) para identificarte como miembro del Club.
           </p>
           
-          {!qrGenerado && (
+          {!qrIdentidad && (
             <>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Pueblo</label>
-                <select
-                  value={puebloSeleccionado ?? ''}
-                  onChange={(e) => setPuebloSeleccionado(e.target.value ? Number(e.target.value) : null)}
-                  className="w-full px-3 py-2 border rounded"
-                  disabled={generando}
-                >
-                  <option value="">Selecciona un pueblo</option>
-                  {pueblos.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {puebloSeleccionado && (
-                <div>
-                  <label className="block text-sm text-gray-600 mb-1">Recurso</label>
-                  {cargandoRecursos ? (
-                    <div className="text-sm text-gray-600 py-2">Cargando recursos...</div>
-                  ) : recursosDelPuebloSeleccionado.length === 0 ? (
-                    <div className="text-sm text-gray-600 py-2">
-                      Este pueblo no tiene recursos disponibles
-                    </div>
-                  ) : (
-                    <select
-                      value={recursoSeleccionado ?? ''}
-                      onChange={(e) => setRecursoSeleccionado(e.target.value ? Number(e.target.value) : null)}
-                      className="w-full px-3 py-2 border rounded"
-                      disabled={generando}
-                    >
-                      <option value="">Selecciona un recurso</option>
-                      {recursosDelPuebloSeleccionado.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.nombre} {r.descuentoPorcentaje ? `(${r.descuentoPorcentaje}%)` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-              )}
-
               <button
                 type="button"
-                onClick={handleGenerarQR}
-                disabled={generando || !recursoSeleccionado || recursosDelPuebloSeleccionado.length === 0}
-                className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
+                onClick={handleGenerarQRIdentidad}
+                disabled={generandoIdentidad}
+                className="px-4 py-2 text-sm border rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
               >
-                {generando ? 'Generando…' : 'Mostrar QR'}
+                {generandoIdentidad ? 'Generando…' : 'Generar QR (5 min)'}
               </button>
 
-              {qrError && (
-                <div className="text-sm text-red-600">{qrError}</div>
+              {qrIdentidadError && (
+                <div className="text-sm text-red-600">{qrIdentidadError}</div>
               )}
             </>
           )}
 
-          {qrGenerado && (
-            <div className="mt-4 p-4 border rounded space-y-3 bg-gray-50">
+          {qrIdentidad && (
+            <div className="mt-4 p-4 border rounded space-y-3 bg-white">
               {/* QR visual */}
               <div className="p-4 border rounded bg-white text-center">
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrGenerado.qrPayload)}`}
-                  alt="Código QR"
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrIdentidad.qrPayload)}`}
+                  alt="Código QR de Identidad"
                   className="mx-auto"
                   style={{ maxWidth: '300px', width: '100%', height: 'auto' }}
                 />
               </div>
               
               <p className="text-xs text-gray-600 text-center">
-                Muestra este código en el acceso al recurso
+                Muestra este código para identificarte como miembro
               </p>
 
-              {tiempoRestante !== null && (
+              {tiempoRestanteIdentidad !== null && (
                 <div className="text-sm text-gray-600 text-center">
-                  Expira en: <strong>{formatTiempoRestante(tiempoRestante)}</strong>
+                  Expira en: <strong>{formatTiempoRestante(tiempoRestanteIdentidad)}</strong>
                 </div>
               )}
             </div>
