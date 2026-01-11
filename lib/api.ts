@@ -41,4 +41,16 @@ export async function getLugarLegacyBySlug(slug: string): Promise<Pueblo> {
   return getPuebloBySlug(slug);
 }
 
+export async function getPoiById(poiId: string | number) {
+  const API_BASE = getApiUrl();
+  const res = await fetch(`${API_BASE}/pois/${poiId}`, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Error cargando POI: ${res.status}`);
+  }
+
+  return await res.json();
+}
 

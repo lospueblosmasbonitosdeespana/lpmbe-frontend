@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getPuebloBySlug, type Pueblo } from "@/lib/api";
+import { notFound } from "next/navigation";
+import { getPuebloBySlug, getPoiById, type Pueblo } from "@/lib/api";
 
 type Poi = {
   id: number;
@@ -35,9 +36,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, poiId } = await params;
   const pueblo = await getPuebloBySlug(slug);
-  const poi = (pueblo.pois ?? []).find((p) => p.id === Number(poiId));
+  const poi = await getPoiById(poiId);
 
-  if (!poi) {
+  if (!poi || Number(poi.puebloId) !== Number(pueblo.id)) {
     return {
       title: "POI no encontrado",
       description: "El punto de interés no existe",
@@ -45,13 +46,13 @@ export async function generateMetadata({
   }
 
   const title = `${poi.nombre} – ${pueblo.nombre} – Los Pueblos Más Bonitos de España`;
-  const descSource =
-    poi.descripcion_corta ??
-    (poi.descripcion_larga ? cut(poi.descripcion_larga, 180) : null);
-  const description = descSource
-    ? cut(descSource, 160)
+  const descripcionHtml = (poi as any).descripcionHtml ?? null;
+  const description = descripcionHtml
+    ? cut(descripcionHtml.replace(/<[^>]*>/g, ''), 160)
     : `Información sobre ${poi.nombre} en ${pueblo.nombre}.`;
   const path = `/pueblos/${pueblo.slug}/pois/${poiId}`;
+
+  const fotoUrl = (poi as any).fotoUrl ?? (poi as any).foto ?? null;
 
   return {
     title,
@@ -63,15 +64,15 @@ export async function generateMetadata({
       description,
       url: path,
       type: "article",
-      images: poi.foto
-        ? [{ url: poi.foto, alt: `${poi.nombre} – ${pueblo.nombre}` }]
+      images: fotoUrl
+        ? [{ url: fotoUrl, alt: `${poi.nombre} – ${pueblo.nombre}` }]
         : undefined,
     },
     twitter: {
-      card: poi.foto ? "summary_large_image" : "summary",
+      card: fotoUrl ? "summary_large_image" : "summary",
       title,
       description,
-      images: poi.foto ? [poi.foto] : undefined,
+      images: fotoUrl ? [fotoUrl] : undefined,
     },
   };
 }
@@ -83,76 +84,69 @@ export default async function PoiPage({
 }) {
   const { slug, poiId } = await params;
   const pueblo = await getPuebloBySlug(slug);
+  const poi = await getPoiById(poiId);
 
-  // Buscar POI por ID
-  const poi = (pueblo.pois ?? []).find((p) => p.id === Number(poiId));
+  // Seguridad: si el POI no pertenece a ese pueblo, 404
+  if (!poi || Number(poi.puebloId) !== Number(pueblo.id)) notFound();
 
-  if (!poi) {
-    throw new Error("POI no encontrado");
-  }
+  const fotoUrl =
+    poi?.fotoUrl && poi.fotoUrl.trim() !== ""
+      ? poi.fotoUrl
+      : poi?.foto && poi.foto.trim() !== ""
+      ? poi.foto
+      : null;
 
   return (
-    <main style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
-      {/* Breadcrumb */}
-      <div style={{ marginBottom: "24px" }}>
-        <Link
-          href={`/pueblos/${pueblo.slug}`}
-          style={{ color: "#0066cc", textDecoration: "none" }}
-        >
+    <main style={{ padding: 24, maxWidth: 1200, margin: "0 auto" }}>
+      <div style={{ marginBottom: 24 }}>
+        <Link style={{ color: "#0066cc", textDecoration: "none" }} href={`/pueblos/${pueblo.slug}`}>
           ← Volver a {pueblo.nombre}
         </Link>
       </div>
 
-      {/* Título */}
       <h1>{poi.nombre}</h1>
 
-      {/* Información del pueblo */}
-      <p style={{ marginTop: "8px", fontSize: "14px", color: "#666" }}>
+      <p style={{ marginTop: 8, fontSize: 14, color: "#666" }}>
         {pueblo.nombre} · {pueblo.provincia} · {pueblo.comunidad}
       </p>
 
-      {/* Categoría si existe */}
-      {poi.categoria && (
-        <p style={{ marginTop: "8px", fontSize: "14px", color: "#888" }}>
-          Categoría: {poi.categoria}
-        </p>
-      )}
+      <p style={{ marginTop: 8, fontSize: 14, color: "#888" }}>
+        Categoría: {poi.categoria}
+      </p>
 
-      {/* Foto */}
-      {poi.foto && (
-        <div style={{ marginTop: "24px" }}>
+      {/* FOTO */}
+      {fotoUrl && (
+        <section style={{ marginTop: 32 }}>
           <img
-            src={poi.foto}
+            src={fotoUrl}
             alt={poi.nombre}
             style={{
               width: "100%",
-              maxHeight: "400px",
-              objectFit: "cover",
-              borderRadius: "8px",
+              maxWidth: 900,
+              borderRadius: 8,
             }}
+            loading="lazy"
           />
-        </div>
-      )}
-
-      {/* Descripción corta */}
-      {poi.descripcion_corta && (
-        <section style={{ marginTop: "32px" }}>
-          <p>{poi.descripcion_corta}</p>
         </section>
       )}
 
-      {/* Descripción larga */}
-      {poi.descripcion_larga && (
-        <section style={{ marginTop: "32px" }}>
-          <p>{poi.descripcion_larga}</p>
-        </section>
-      )}
+      {/* DESCRIPCIÓN */}
+      <section style={{ marginTop: 32 }}>
+        {poi.descripcionHtml ? (
+          <div
+            className="prose max-w-none"
+            dangerouslySetInnerHTML={{ __html: poi.descripcionHtml }}
+          />
+        ) : (
+          <p>Descripción próximamente.</p>
+        )}
+      </section>
 
-      {/* Coordenadas y Google Maps */}
+      {/* UBICACIÓN */}
       {poi.lat && poi.lng && (
-        <section style={{ marginTop: "32px" }}>
+        <section style={{ marginTop: 32 }}>
           <h2>Ubicación</h2>
-          <p style={{ marginTop: "8px", fontSize: "14px", color: "#666" }}>
+          <p style={{ marginTop: 8, fontSize: 14, color: "#666" }}>
             Coordenadas: {poi.lat}, {poi.lng}
           </p>
           <a
@@ -161,11 +155,11 @@ export default async function PoiPage({
             rel="noopener noreferrer"
             style={{
               display: "inline-block",
-              marginTop: "12px",
+              marginTop: 12,
               padding: "10px 16px",
-              fontSize: "14px",
+              fontSize: 14,
               border: "1px solid #ddd",
-              borderRadius: "6px",
+              borderRadius: 6,
               backgroundColor: "#fff",
               textDecoration: "none",
               color: "#333",
@@ -173,13 +167,6 @@ export default async function PoiPage({
           >
             Ver en Google Maps
           </a>
-        </section>
-      )}
-
-      {/* Si no hay descripciones */}
-      {!poi.descripcion_corta && !poi.descripcion_larga && (
-        <section style={{ marginTop: "32px" }}>
-          <p>Descripción próximamente.</p>
         </section>
       )}
     </main>
