@@ -43,7 +43,7 @@ export default async function GestionPuebloPage({
 
       <div className="mt-6 rounded-md border p-4 text-sm text-gray-600">
         <div className="font-medium text-gray-800">Acciones</div>
-        <div className="mt-3 flex gap-4 text-sm">
+        <div className="mt-3 flex gap-4 text-sm flex-wrap">
           <Link className="hover:underline" href={`/gestion/pueblos/${slug}/noticias`}>
             Noticias
           </Link>
@@ -58,6 +58,9 @@ export default async function GestionPuebloPage({
           </Link>
           <Link className="hover:underline" href={`/gestion/pueblos/${slug}/club`}>
             Club de Amigos
+          </Link>
+          <Link className="hover:underline" href={`/gestion/pueblos/${slug}/fotos`}>
+            Fotos del pueblo
           </Link>
         </div>
       </div>
