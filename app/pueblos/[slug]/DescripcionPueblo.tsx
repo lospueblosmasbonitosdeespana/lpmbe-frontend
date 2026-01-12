@@ -1,18 +1,43 @@
 "use client";
 
 import { useState } from "react";
+import { decode as heDecode } from "he";
 
-const DESCRIPCION_LIMIT = 900;
+const DESCRIPCION_LIMIT = 600;
 
-function stripHtml(html: string) {
-  return html.replace(/<[^>]*>?/gm, "");
-}
+function toPlainWithParagraphs(input: string) {
+  if (!input) return "";
 
-function truncateHtmlPreserveText(html: string, limit: number) {
-  const text = stripHtml(html);
-  if (text.length <= limit) return html;
-  const truncatedText = text.slice(0, limit) + "…";
-  return `<p>${truncatedText}</p>`;
+  let text = input;
+
+  // decode entidades (&nbsp; &aacute; etc.)
+  text = heDecode(text);
+
+  // convertir tags típicos a saltos antes de quitar HTML
+  text = text
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>\s*<p[^>]*>/gi, "\n\n")
+    .replace(/<\/?p[^>]*>/gi, "\n\n");
+
+  // quitar HTML restante
+  text = text.replace(/<[^>]*>/g, "");
+
+  // NBSP real a espacio normal
+  text = text.replace(/\u00A0/g, " ");
+
+  // normalizar saltos
+  text = text.replace(/\r\n/g, "\n");
+
+  // limpiar espacios por línea
+  text = text
+    .split("\n")
+    .map((l) => l.replace(/[ \t]+/g, " ").trim())
+    .join("\n");
+
+  // máximo 2 saltos seguidos
+  text = text.replace(/\n{3,}/g, "\n\n");
+
+  return text.trim();
 }
 
 export default function DescripcionPueblo({
@@ -30,23 +55,35 @@ export default function DescripcionPueblo({
     );
   }
 
-  const textLength = stripHtml(descripcion).length;
-  const shouldShowButton = textLength > DESCRIPCION_LIMIT;
+  // Normalizar y limpiar texto (blindado contra HTML viejo, &nbsp;, etc.)
+  const texto = toPlainWithParagraphs(descripcion ?? "");
+
+  // Detectar si hay más texto
+  const shouldShowButton = texto.length > DESCRIPCION_LIMIT;
+
+  // Texto visible según estado
+  const textoVisible = expanded ? texto : texto.slice(0, DESCRIPCION_LIMIT);
+
+  // Dividir SOLO lo visible en párrafos
+  const parrafos = textoVisible
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
 
   return (
     <div className="space-y-4">
-      <div
-        className="prose max-w-none"
-        dangerouslySetInnerHTML={{
-          __html: expanded
-            ? descripcion
-            : truncateHtmlPreserveText(descripcion, DESCRIPCION_LIMIT),
-        }}
-      />
+      <div className="prose max-w-none">
+        {parrafos.map((parrafo: string, i: number) => (
+          <p key={i} className="mb-4 leading-relaxed">
+            {parrafo}
+          </p>
+        ))}
+        {!expanded && shouldShowButton && <span>…</span>}
+      </div>
       {shouldShowButton && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="text-sm font-medium text-primary hover:underline"
+          className="mt-2 text-sm font-medium underline"
         >
           {expanded ? "Leer menos" : "Leer más"}
         </button>

@@ -62,6 +62,9 @@ export default async function GestionPuebloPage({
           <Link className="hover:underline" href={`/gestion/pueblos/${slug}/fotos`}>
             Fotos del pueblo
           </Link>
+          <Link className="hover:underline" href={`/gestion/pueblos/${slug}/descripcion`}>
+            Descripción del pueblo
+          </Link>
         </div>
       </div>
 

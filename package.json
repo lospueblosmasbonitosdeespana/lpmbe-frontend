@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "he": "^1.2.0",
     "html5-qrcode": "^2.3.8",
     "leaflet": "^1.9.4",
     "next": "^16.0.10",
