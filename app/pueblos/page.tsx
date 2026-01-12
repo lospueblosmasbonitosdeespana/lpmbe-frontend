@@ -24,11 +24,9 @@ async function getPueblos() {
 export default async function PueblosPage({
   searchParams,
 }: {
-  searchParams?: Promise<SearchParams> | SearchParams;
+  searchParams?: Promise<SearchParams>;
 }) {
-  const sp = searchParams
-    ? await Promise.resolve(searchParams)
-    : ({} as SearchParams);
+  const sp = searchParams ? await searchParams : ({} as SearchParams);
 
   const comunidad = (sp.comunidad ?? "").trim();
   const provincia = (sp.provincia ?? "").trim();
