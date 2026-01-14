@@ -68,6 +68,9 @@ export default async function GestionPuebloPage({
           <Link className="hover:underline" href={`/gestion/pueblos/${slug}/pois`}>
             POIs
           </Link>
+          <Link className="hover:underline" href={`/gestion/pueblos/${slug}/multiexperiencias`}>
+            Multiexperiencias
+          </Link>
         </div>
       </div>
 

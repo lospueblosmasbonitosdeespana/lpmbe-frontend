@@ -118,8 +118,26 @@ export default async function MultiexperienciaPage({
     throw new Error("Multiexperiencia no encontrada");
   }
 
-  // Obtener paradas desde paradasLegacy
-  const paradas = (pueblo as any).paradasLegacy ?? [];
+  // Obtener paradas fusionadas (legacy + overrides + custom) desde el endpoint público
+  let paradas: any[] = [];
+  
+  if (mx.id) {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001';
+      const res = await fetch(`${baseUrl}/api/multiexperiencias/${mx.id}/paradas`, {
+        cache: "no-store",
+      });
+      
+      if (res.ok) {
+        paradas = await res.json();
+        console.log(`[MX ${mx.id}] Paradas fusionadas:`, paradas.length);
+      } else {
+        console.error(`[MX ${mx.id}] Error cargando paradas:`, res.status);
+      }
+    } catch (err) {
+      console.error(`[MX ${mx.id}] Error fetching paradas:`, err);
+    }
+  }
 
   return (
     <main style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -252,37 +270,47 @@ export default async function MultiexperienciaPage({
           <p>No hay paradas disponibles</p>
         ) : (
           <div className="space-y-6">
-            {paradas.map((p: any, idx: number) => (
-              <article key={p.legacyId ?? idx} className="space-y-3">
-                {p.fotoUrl ? (
-                  <img
-                    src={p.fotoUrl}
-                    alt={p.nombre ?? "Parada"}
-                    className="w-full max-w-3xl rounded-lg"
-                    loading="lazy"
-                  />
-                ) : null}
+            {paradas.map((p: any, idx: number) => {
+              // Generar key única basada en kind + id
+              const key = p.kind === 'LEGACY' 
+                ? `L-${p.legacyLugarId}` 
+                : `C-${p.customId ?? idx}`;
+              
+              return (
+                <article key={key} className="space-y-3">
+                  {/* Foto */}
+                  {p.foto ? (
+                    <img
+                      src={p.foto}
+                      alt={p.titulo ?? "Parada"}
+                      className="w-full max-w-3xl rounded-lg"
+                      loading="lazy"
+                    />
+                  ) : null}
 
-                {p.nombre ? (
-                  <h3 className="text-xl font-semibold">{p.nombre}</h3>
-                ) : null}
+                  {/* Título */}
+                  {p.titulo ? (
+                    <h3 className="text-xl font-semibold">{p.titulo}</h3>
+                  ) : null}
 
-                {p.descripcionHtml ? (
-                  <div
-                    className="prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: p.descripcionHtml }}
-                  />
-                ) : (
-                  <p>Descripción próximamente.</p>
-                )}
+                  {/* Descripción */}
+                  {p.descripcion ? (
+                    <div className="prose max-w-none whitespace-pre-wrap">
+                      {p.descripcion}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">Descripción próximamente.</p>
+                  )}
 
-                {typeof p.lat === "number" && typeof p.lng === "number" ? (
-                  <p className="text-sm text-gray-600">
-                    Coordenadas: {p.lat}, {p.lng}
-                  </p>
-                ) : null}
-              </article>
-            ))}
+                  {/* Coordenadas */}
+                  {typeof p.lat === "number" && typeof p.lng === "number" ? (
+                    <p className="text-sm text-gray-600">
+                      Coordenadas: {p.lat}, {p.lng}
+                    </p>
+                  ) : null}
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
