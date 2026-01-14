@@ -712,7 +712,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                     </button>
                     
                     {/* Botón eliminar - SOLO para multiexperiencias CUSTOM (sin legacyId) */}
-                    {mx.legacyId == null && (
+                    {!('legacyId' in mx) && (
                       <button
                         onClick={() => handleDeleteMultiexperiencia(mx)}
                         className="rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700 whitespace-nowrap"
