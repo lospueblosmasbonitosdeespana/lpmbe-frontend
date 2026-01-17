@@ -108,10 +108,11 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
   
   // En modo editar, marcar slug como tocado para no sobrescribirlo
   useEffect(() => {
-    if (rutaId || initialData?.id) {
+    const initialId = (initialData as any)?.id;
+    if (rutaId || initialId) {
       setSlugTocado(true);
     }
-  }, [rutaId, initialData?.id]);
+  }, [rutaId, initialData]);
 
   // Paradas - con fallbacks para diferentes formatos del backend
   const rawStops = (initialData as any)?.pueblos ?? 
