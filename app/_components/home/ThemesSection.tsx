@@ -1,7 +1,15 @@
 import Link from "next/link";
 import { homeConfig } from "./home.config";
+import type { HomeTheme } from "@/lib/homeApi";
 
-export function ThemesSection() {
+type ThemesSectionProps = {
+  themes?: HomeTheme[];
+};
+
+export function ThemesSection({ themes }: ThemesSectionProps) {
+  // Usar themes del backend o fallback local
+  const themesToShow = themes ?? homeConfig.themes;
+
   return (
     <section className="mx-auto max-w-6xl px-4 py-16">
       <div className="mb-8">
@@ -12,7 +20,7 @@ export function ThemesSection() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {homeConfig.themes.map((theme) => (
+        {themesToShow.map((theme) => (
           <Link
             key={theme.key}
             href={theme.href}

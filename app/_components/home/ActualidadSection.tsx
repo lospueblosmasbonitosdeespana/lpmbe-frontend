@@ -9,22 +9,26 @@ type Notificacion = {
   href?: string;
 };
 
-async function getActualidad(): Promise<Notificacion[]> {
+async function getActualidad(limit: number): Promise<Notificacion[]> {
   const base =
     process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
     "http://localhost:3000";
 
-  const res = await fetch(`${base}/notificaciones?limit=4`, {
+  const res = await fetch(`${base}/notificaciones?limit=${limit}`, {
     next: { revalidate: 120 }, // HOME: cache corta
   });
 
   if (!res.ok) return [];
   const data = (await res.json()) as Notificacion[];
-  return Array.isArray(data) ? data.slice(0, 4) : [];
+  return Array.isArray(data) ? data.slice(0, limit) : [];
 }
 
-export async function ActualidadSection() {
-  const items = await getActualidad();
+type ActualidadSectionProps = {
+  limit?: number;
+};
+
+export async function ActualidadSection({ limit = 4 }: ActualidadSectionProps) {
+  const items = await getActualidad(limit);
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-16">

@@ -18,6 +18,11 @@ export default async function GestionAsociacionPage() {
         <div className="font-medium">Accesos</div>
         <ul className="mt-3 list-disc pl-5 text-sm">
           <li>
+            <Link className="hover:underline" href="/gestion/asociacion/home">
+              Configuración del Home
+            </Link>
+          </li>
+          <li>
             <Link className="hover:underline" href="/gestion/asociacion/noticias">
               Noticias globales
             </Link>

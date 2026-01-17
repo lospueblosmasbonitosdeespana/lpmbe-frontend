@@ -54,4 +54,85 @@ export async function getPoiById(poiId: string | number) {
   return await res.json();
 }
 
+// Tipos para Rutas
+export type Ruta = {
+  id: number;
+  titulo: string;
+  slug: string;
+  descripcion: string | null;
+  foto_portada: string | null;
+  distancia: number | null;
+  dificultad: string | null;
+  tipo: string | null;
+  tiempo: number | null;
+  activo: boolean;
+  boldestMapId?: string | null;
+  pueblos?: Array<{
+    id: number;
+    nombre: string;
+    slug: string;
+    orden: number;
+  }>;
+};
+
+export type RutaMapa = {
+  ruta: {
+    id: number;
+    titulo: string;
+    slug: string;
+    boldest: {
+      mapId?: string | null;
+      slug?: string | null;
+    } | null;
+  };
+  pueblos: Array<{
+    id: number;
+    nombre: string;
+    slug: string;
+    orden: number;
+  }>;
+};
+
+// Obtener todas las rutas activas
+export async function getRutas(): Promise<Ruta[]> {
+  const API_BASE = getApiUrl();
+  const res = await fetch(`${API_BASE}/rutas`, {
+    next: { revalidate: 300 },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Error cargando rutas: ${res.status}`);
+  }
+
+  return await res.json();
+}
+
+// Obtener ruta por ID
+export async function getRutaById(id: number): Promise<Ruta> {
+  const API_BASE = getApiUrl();
+  const res = await fetch(`${API_BASE}/rutas/${id}`, {
+    next: { revalidate: 300 },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Error cargando ruta: ${res.status}`);
+  }
+
+  return await res.json();
+}
+
+// Obtener mapa de ruta
+export async function getRutaMapa(id: number): Promise<RutaMapa> {
+  const API_BASE = getApiUrl();
+  const res = await fetch(`${API_BASE}/rutas/${id}/mapa`, {
+    next: { revalidate: 300 },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Error cargando mapa de ruta: ${res.status}`);
+  }
+
+  return await res.json();
+}
+
 

@@ -1,8 +1,15 @@
 import { homeConfig } from "./home.config";
 import { HeroSlider } from "./HeroSlider";
+import type { HomeConfig } from "@/lib/homeApi";
 
-export function Hero({ floating }: { floating?: React.ReactNode }) {
-  const hero = homeConfig.hero;
+type HeroProps = {
+  configHero?: HomeConfig["hero"];
+  floating?: React.ReactNode;
+};
+
+export function Hero({ configHero, floating }: HeroProps) {
+  // Usar config del backend o fallback local
+  const hero = configHero ?? homeConfig.hero;
 
   return (
     <section className="relative h-[420px] md:h-[520px] overflow-hidden">
