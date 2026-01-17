@@ -96,15 +96,23 @@ export type RutaMapa = {
 // Obtener todas las rutas activas
 export async function getRutas(): Promise<Ruta[]> {
   const API_BASE = getApiUrl();
-  const res = await fetch(`${API_BASE}/rutas`, {
-    next: { revalidate: 300 },
-  });
+  
+  try {
+    const res = await fetch(`${API_BASE}/rutas`, {
+      cache: "no-store", // no-store para evitar fallos en build
+    });
 
-  if (!res.ok) {
-    throw new Error(`Error cargando rutas: ${res.status}`);
+    // Si no es OK, devolver array vacío en lugar de lanzar error
+    if (!res.ok) {
+      console.warn(`[RUTAS] Backend respondió ${res.status}, devolviendo []`);
+      return [];
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error('[RUTAS] Error fetching:', err);
+    return [];
   }
-
-  return await res.json();
 }
 
 // Obtener ruta por ID

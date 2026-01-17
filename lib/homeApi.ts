@@ -42,11 +42,13 @@ export async function getHomeConfig(): Promise<HomeConfig> {
   
   try {
     const res = await fetch(`${API_BASE}/home`, {
-      next: { revalidate: 300 },
+      cache: "no-store", // Cambiar a no-store para evitar cache en build
     });
 
+    // Si no es OK, devolver fallback en lugar de lanzar error
     if (!res.ok) {
-      throw new Error(`Error cargando config home: ${res.status}`);
+      console.warn(`[HOME] Backend respondió ${res.status}, usando fallback`);
+      return getFallbackHomeConfig();
     }
 
     return await res.json();

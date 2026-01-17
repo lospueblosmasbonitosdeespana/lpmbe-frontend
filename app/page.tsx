@@ -8,8 +8,13 @@ import { ActualidadSection } from "./_components/home/ActualidadSection";
 import { FinalCtaSection } from "./_components/home/FinalCtaSection";
 import { getHomeConfig } from "@/lib/homeApi";
 
+// Forzar render dinámico para evitar que el build falle si el backend no responde
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function HomePage() {
   // Cargar configuración del home desde el backend
+  // Si falla, getHomeConfig ya devuelve fallback (no lanza error)
   const config = await getHomeConfig();
 
   return (
