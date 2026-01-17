@@ -1,0 +1,1136 @@
+# ============================================================
+# LPBME 2.0 — CURSOR RULES + PROJECT KNOWLEDGE (CANÓNICO)
+# Proyecto: Los Pueblos Más Bonitos de España
+# Owner: Fran
+# Última actualización: enero 2026
+# ============================================================
+
+#############################################################
+# 1. VISIÓN GENERAL DEL PROYECTO
+#############################################################
+
+LPBME 2.0 es la reconstrucción completa del ecosistema digital
+de la asociación "Los Pueblos Más Bonitos de España".
+
+Incluye:
+- Web pública institucional
+- Casa del Usuario (gamificación, visitas, puntos)
+- Panel de pueblos (alcaldes)
+- Backend unificado
+- App móvil iOS y Android ya en producción
+
+NO es un proyecto experimental.
+Es un proyecto institucional, estable y a largo plazo.
+
+La web debe:
+- Funcionar SIEMPRE
+- Ser robusta ante errores
+- No depender de WordPress
+- Compartir backend con la app móvil
+
+#############################################################
+# 2. STACK TECNOLÓGICO (DECISIÓN FIRME)
+#############################################################
+
+BACKEND
+- Node.js
+- NestJS
+- Prisma ORM
+- PostgreSQL
+- Deploy en Railway
+- Puerto local: 3000
+
+FRONTEND (WEB)
+- Next.js 16
+- App Router
+- React Server Components
+- TypeScript
+- Tailwind CSS
+- Deploy en Vercel
+- Puerto local: 3001
+
+APP
+- React Native (Expo)
+- Comparte backend con la web
+- Ya en producción (iOS + Android)
+
+NO se debe:
+- Cambiar de stack
+- Introducir frameworks nuevos
+- Introducir CMS
+- Volver a WordPress
+
+#############################################################
+# 3. PRINCIPIOS FUNDAMENTALES DE LA WEB
+#############################################################
+
+La web LPBME NO es:
+- Una landing
+- Un blog
+- Un simple catálogo
+
+Es un portal institucional + experiencial.
+
+Principios:
+- Contenido estructurado
+- Datos normalizados
+- Relación directa con la app
+- Escalable a futuro (club, premium, etc.)
+
+La web debe poder:
+- Funcionar sin backend temporalmente
+- Mostrar fallbacks siempre
+- No romper build jamás
+
+#############################################################
+# 4. ESTRUCTURA DE LA WEB (ALTO NIVEL)
+#############################################################
+
+Páginas principales:
+
+- /
+  Home institucional
+
+- /pueblos
+  Listado de pueblos
+
+- /pueblos/[slug]
+  Ficha de pueblo
+
+- /rutas
+  Listado de rutas
+
+- /rutas/[slug]
+  Ficha de ruta + mapa Boldest
+
+- /entrar
+  Login
+
+- /cuenta
+  Casa del usuario
+
+- /admin (futuro)
+  Gestión interna
+
+#############################################################
+# 5. HOME (MUY IMPORTANTE)
+#############################################################
+
+La Home:
+- Es institucional
+- No depende de autenticación
+- No debe romper build jamás
+
+Contenido típico:
+- Hero
+- Mapa o acceso a mapa
+- Destacados
+- Rutas
+- Pueblos
+- CTA
+
+Reglas técnicas:
+- dynamic = "force-dynamic"
+- revalidate = 0
+- cache: "no-store"
+- Si backend falla → mostrar contenido por defecto
+- JAMÁS lanzar error en build
+
+#############################################################
+# 6. PUEBLOS
+#############################################################
+
+Entidad central del proyecto.
+
+Cada Pueblo:
+- Tiene slug único
+- Tiene fotos
+- Tiene POIs
+- Tiene eventos
+- Tiene noticias
+- Tiene rutas asociadas
+- Tiene visitas (gamificación)
+
+La ficha de pueblo:
+- NO debe depender de WordPress
+- NO debe hacer joins raros
+- NO debe romper si faltan datos
+
+Si algo falta:
+- Se oculta
+- Se muestra placeholder
+- Nunca error
+
+#############################################################
+# 7. RUTAS (CLAVE)
+#############################################################
+
+Las rutas son entidades propias.
+
+Tabla: Ruta
+
+Campos importantes:
+- id
+- slug
+- nombre
+- foto_portada
+- boldestMapId (RB-1, RB-2…)
+- boldestMapSlug (slug REAL del mapa)
+
+Las rutas:
+- NO se crean dinámicamente
+- Son exactamente 16 (por ahora)
+- Vienen de WordPress legacy
+- Ya están migradas
+
+#############################################################
+# 8. MAPAS (BOLDEST)
+#############################################################
+
+Los mapas de rutas usan BOLDEST.
+
+Reglas:
+- El frontend NO inventa slugs
+- El slug válido está en BD (boldestMapSlug)
+- Si boldestMapSlug es null:
+  - Mostrar “Mapa no disponible”
+  - Nunca romper la página
+
+El comportamiento debe ser:
+- Igual al WordPress original
+- Panel derecho scrollable
+- Sin hacks reactivos innecesarios
+- Priorizar estabilidad
+
+#############################################################
+# 9. CASA DEL USUARIO
+#############################################################
+
+La Casa del Usuario incluye:
+- Perfil
+- Pueblos visitados
+- Visitas GPS vs manuales
+- Puntos
+- Notificaciones
+- Futuro Club de Amigos
+
+Es compartida con la app.
+
+Reglas:
+- Todo viene del backend
+- El frontend solo pinta
+- No duplicar lógica
+- No inventar puntos
+
+#############################################################
+# 10. BACKEND: FILOSOFÍA
+#############################################################
+
+El backend es la ÚNICA fuente de verdad.
+
+Debe:
+- Arrancar siempre
+- No crashear por configuración incompleta
+- Degradar servicios opcionales
+
+Ejemplo:
+- R2 / Media
+  - Si falta config → backend ARRANCA
+  - Solo falla el upload con 503
+
+Nunca:
+- throw en constructor por env vars
+- crash en startup
+- loops de reinicio en Railway
+
+#############################################################
+# 11. MEDIA Y R2
+#############################################################
+
+Media usa Cloudflare R2.
+
+Variables:
+- R2_ACCOUNT_ID
+- R2_ACCESS_KEY_ID
+- R2_SECRET_ACCESS_KEY
+- R2_BUCKET
+- R2_PUBLIC_BASE_URL
+
+Si faltan:
+- r2Enabled = false
+- s3 = null
+- Backend sigue funcionando
+- Upload devuelve 503
+
+#############################################################
+# 12. FRONTEND: FETCH Y BUILD
+#############################################################
+
+Regla de oro:
+EL FRONTEND NO PUEDE ROMPER BUILD.
+
+Nunca:
+- throw en fetch en build
+- asumir que el backend responde
+- asumir que un endpoint existe
+
+Siempre:
+- comprobar res.ok
+- devolver fallback
+- usar cache: "no-store"
+
+#############################################################
+# 13. VARIABLES DE ENTORNO FRONTEND
+#############################################################
+
+- NEXT_PUBLIC_API_URL es OBLIGATORIA
+- Puede ser:
+  - https://backend.railway.app
+  - https://backend.railway.app/api
+
+Nunca asumir prefijos.
+
+#############################################################
+# 14. DEPLOY
+#############################################################
+
+FRONTEND
+- Deploy automático desde GitHub
+- Redeploy si no hay cambios:
+  git commit --allow-empty -m "chore: redeploy"
+
+BACKEND
+- Deploy en Railway
+- Logs claros
+- Sin crash loops
+
+#############################################################
+# 15. ESTILO VISUAL
+#############################################################
+
+Diseño:
+- Plano
+- Sin sombras
+- Sin tarjetas
+- Sin iconos decorativos
+- Sin animaciones gratuitas
+
+Prioridad:
+FUNCIONAR > SER BONITO
+
+#############################################################
+# 16. FILOSOFÍA FINAL
+#############################################################
+
+Este proyecto:
+- No se reescribe
+- No se reinventa
+- No se “optimiza” por capricho
+
+Cada cambio debe:
+- Ser consciente
+- Ser estable
+- No romper nada existente
+
+Si algo funciona:
+NO SE TOCA.
+
+#############################################################
+# FIN DEL DOCUMENTO
+############################################################# 
+
+admin
+ "email": franmestre@lospueblosmasbonitosdeespana.org
+    "password": Fran2575
+{"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoiYWRtaW5AbHBibWUuZXMiLCJyb2wiOiJBRE1JTiIsImlhdCI6MTc2NTgyMDkyMywiZXhwIjoxNzY2NDI1NzIzfQ.TOS3q-h7EWvasNAcZghf__jKOI68AEwHZgh6dTfvIwU","user":{"id":1,"email":"admin@lpbme.es","rol":"ADMIN"}}%   
+
+USUARIOS PONER SIEMPRE AL INICIAR CHAT
+
+🔗 URLS IMPORTANTES (GUÁRDALAS)
+
+Públic 
+postgresql://postgres:qcBdmEnnndcUMfsXjaoRkXXYRwwgqgmV@hopper.proxy.rlwy.net:23359/railway
+
+postgresql://postgres:qcBdmEnnndcUMfsXjaoRkXXYRwwgqgmV@postgres.railway.internal:5432/railway
+
+Frontend (producción):
+https://lpbme-frontend.vercel.app
+Backend (producción):
+https://lpbme-backend-production.up.railway.app
+Ejemplo endpoint real:
+https://lpbme-backend-production.up.railway.app/notificaciones
+
+📘 BIBLIA DEFINITIVA LPBME MULTIMEDIA, FOTOS Y MULTIEXPERIENCIAS
+
+Multimedia · Multiexperiencias · Paradas · POIs · Legacy
+
+Este documento es la fuente de verdad del sistema LPBME 2.0 en lo relativo a:
+	•	multiexperiencias
+	•	paradas (hijas)
+	•	multimedia
+	•	relación entre sistema nuevo y legacy WordPress
+
+Si en algún momento algo “no sale”, la respuesta está aquí.
+
+⸻
+
+1. PRINCIPIO FUNDAMENTAL DEL SISTEMA
+
+LPBME no tiene un único modelo de datos para el contenido turístico.
+
+Conviven dos sistemas:
+
+A) Sistema NUEVO (Prisma / Nest / Next / App)
+	•	Usuarios
+	•	Pueblos
+	•	Multiexperiencias padre
+	•	Visitas, puntos, gamificación
+	•	Casa del usuario
+	•	Mapa
+	•	Club de Amigos
+
+B) Sistema LEGACY (WordPress / JetEngine)
+	•	Paradas de multiexperiencias
+	•	Fotos históricas
+	•	Textos largos
+	•	POIs históricos
+	•	Coordenadas originales
+
+👉 Nada está “mal”: simplemente hay que leer cada cosa de donde toca.
+
+⸻
+
+2. PUEBLOS
+
+2.1 Tabla Pueblo
+	•	IDs bajos: 1–126
+	•	Fuente oficial de:
+	•	nombre
+	•	slug
+	•	lat / lng
+	•	datos administrativos
+
+2.2 Fotos del pueblo
+
+📌 Fuente única correcta: tabla Foto
+
+Tabla Foto:
+	•	id
+	•	url
+	•	alt
+	•	orden
+	•	puebloId
+
+Regla:
+
+Fotos del pueblo = Foto WHERE puebloId = Pueblo.id
+
+✔️ Esto funciona
+✔️ No depende de legacy
+✔️ No se toca
+
+⸻
+
+3. MULTIEXPERIENCIAS PADRE
+
+3.1 Tabla Multiexperiencia (NUEVA)
+
+Ejemplos:
+	•	Aínsa, pueblo de Leyenda
+	•	Ilustres contemporáneos
+	•	Un recorrido mágico…
+
+Campos clave:
+	•	id
+	•	titulo
+	•	slug
+	•	foto ✅
+	•	relaciones con pueblo vía PuebloMultiexperiencia
+
+3.2 Relación con pueblos
+
+Tabla: PuebloMultiexperiencia
+
+Campos:
+	•	puebloId
+	•	multiexperienciaId
+	•	orden
+
+Regla:
+
+Una multiexperiencia padre pertenece a uno o varios pueblos
+
+
+⸻
+
+4. MULTIEXPERIENCIAS HIJAS (PARADAS)
+
+⚠️ PUNTO MÁS IMPORTANTE DEL SISTEMA
+
+4.1 Dónde viven REALMENTE las paradas
+
+👉 NO viven en Poi
+👉 Viven en LEGACY
+
+Las paradas son IDs ALTOS (ej. 2102, 2145, 2597…)
+
+⸻
+
+5. MODELO LEGACY DE MULTIEXPERIENCIAS
+
+5.1 wp_multiexperiencias_legacy
+
+Define el padre legacy por pueblo.
+
+Campos clave:
+	•	_ID → legacy_parent_id
+	•	nombre
+	•	id_lugar → puebloId
+	•	tipo = 'Pueblo'
+	•	imagen (foto del padre)
+
+Ejemplo:
+
+Aínsa → _ID = 50, id_lugar = 37
+
+
+⸻
+
+5.2 wp_multiexperiencias_pueblos_legacy
+
+Define las hijas (paradas).
+
+Campos:
+	•	id_multiexperiencia → legacy_parent_id
+	•	id_pueblo → ID ALTO de la parada
+
+Ejemplo:
+
+50 → [2102, 2103, 2104, 2105, 2106]
+
+
+⸻
+
+6. DATOS DE UNA PARADA (HIJA)
+
+Para cada id_pueblo_alto:
+
+6.1 Nombre y coordenadas
+
+Tabla: wp_lugar_legacy
+
+Campos:
+	•	legacy_lugar_id
+	•	latitud
+	•	longitud
+	•	(y variantes coordenadas_*)
+
+Regla:
+
+Lat/Lng de parada = wp_lugar_legacy WHERE legacy_lugar_id = id_pueblo_alto
+
+✔️ No dependemos de Poi
+✔️ Coordenadas fiables
+
+⸻
+
+6.2 Texto descriptivo
+
+Tabla: legacy_descripcion
+
+Campos:
+	•	legacy_lugar_id
+	•	descripcion_html
+
+Regla:
+
+Texto de parada = legacy_descripcion WHERE legacy_lugar_id = id_pueblo_alto
+
+
+⸻
+
+6.3 Foto de la parada
+
+Tabla: wp_multimedia_legacy
+
+Campos:
+	•	id_lugar
+	•	tipo
+	•	url
+
+Regla:
+
+Foto de parada =
+  wp_multimedia_legacy
+  WHERE id_lugar = id_pueblo_alto
+  AND tipo = 'Imagen'
+
+✔️ Confirmado en producción
+✔️ Todas las paradas tienen foto
+
+⸻
+
+7. POIs (PUNTOS DE INTERÉS)
+
+7.1 Tabla Poi
+
+Contiene:
+	•	POIs reales
+	•	restos históricos
+	•	antiguas “paradas” duplicadas
+
+Campos:
+	•	id
+	•	nombre
+	•	categoria → POI | MULTIEXPERIENCIA
+	•	puebloId
+	•	lat / lng
+	•	foto ❌ (siempre NULL)
+
+⸻
+
+7.2 Fotos de POIs
+
+📊 Estado real:
+	•	POIs totales: 622
+	•	POIs con foto legacy: 125
+	•	POIs sin foto: 497
+
+Regla:
+
+Foto POI =
+  wp_multimedia_legacy
+  WHERE id_lugar = Poi.id
+
+Si no hay → no hay foto (dato histórico).
+
+⸻
+
+8. SOBRE Poi.categoria = 'MULTIEXPERIENCIA'
+
+⚠️ NO ES FUENTE DE VERDAD
+
+Problemas detectados:
+	•	multiexperienciaId contaminado
+	•	IDs mezclados entre pueblos
+	•	multis “nacionales” mal representadas
+
+Decisión:
+
+Poi.MULTIEXPERIENCIA = obsoleto para paradas
+
+No se usa para:
+	•	fotos
+	•	texto
+	•	estructura de paradas
+
+⸻
+
+9. REGLA DEFINITIVA DE LECTURA (PRODUCCIÓN SEGURA)
+
+🔹 Multiexperiencia PADRE
+	•	Fuente: Multiexperiencia (nueva)
+
+🔹 Paradas (HIJAS)
+	•	Fuente: 100% LEGACY
+	•	estructura → wp_multiexperiencias_*
+	•	coords → wp_lugar_legacy
+	•	texto → legacy_descripcion
+	•	foto → wp_multimedia_legacy
+
+🔹 POIs normales
+	•	Fuente: Poi
+	•	Foto: legacy si existe
+
+⸻
+
+10. CONSECUENCIA CLAVE
+
+No hay que:
+	•	migrar datos ahora
+	•	limpiar legacy ahora
+	•	tocar producción
+
+Solo hay que:
+👉 leer bien
+
+⸻
+
+📌  BIBLIA de pois
+
+BIBLIA (DOCUMENTACIÓN CANÓNICA) — CÓMO SE OBTIENEN POIs, FOTOS Y DESCRIPCIONES
+	1.	Problema original (por qué “Mojácar en Albarracín”)
+
+	•	Los POIs del sistema nuevo (Poi) NO contienen los IDs legacy que apuntan a fotos y descripciones.
+	•	Las fotos y descripciones en WordPress están “colgadas” de un identificador legacy de “Lugar” (CCT Lugares).
+	•	Error típico: buscar multimedia con idLugar = Poi.id (mal). Eso mezcla contenido porque Poi.id no tiene relación con los IDs legacy.
+
+	2.	Fuentes de datos (tablas) y qué representa cada una
+
+2.1 Tabla nueva (LPBME)
+	•	Poi
+	•	POI operativo en el sistema nuevo.
+	•	Campos: id, nombre, puebloId, categoria, lat, lng, etc.
+	•	Importante: Poi NO trae foto/descr legacy “de serie”.
+
+2.2 Tablas legacy (WordPress espejo)
+	•	LugarLegacy
+	•	Representa “Lugares” legacy (incluye POIs de pueblo).
+	•	Clave principal: LugarLegacy.id (BigInt)  ← ESTE es el ID maestro legacy.
+	•	Vinculación a pueblo: LugarLegacy.puebloid (Int) = ID del pueblo (ej: 37 Aínsa).
+	•	Flags para clasificar:
+	•	poiPueblo = true  (POI de pueblo)
+	•	poiMultiexperiencia = false (NO parada de multiexperiencia)
+	•	Ejemplo canónico:
+	•	LugarLegacy.id = 1350 → “Castillo de Aínsa”
+	•	LugarLegacy.puebloid = 37 → Aínsa
+	•	MultimediaLegacy
+	•	Multimedia legacy (imágenes, vídeos, etc.)
+	•	Clave de unión:
+	•	MultimediaLegacy.idLugar (BigInt) = LugarLegacy.id
+	•	Para POIs: nos interesan filas con tipo='Imagen' y normalmente cctStatus='publish'.
+	•	La URL final suele estar en url (o el campo que ya estás usando).
+	•	legacy_descripcion
+	•	Descripciones HTML legacy.
+	•	Clave de unión:
+	•	legacy_descripcion.legacy_lugar_id (BigInt) = LugarLegacy.id
+	•	Campo clave:
+	•	descripcion_html (HTML para pintar)
+	•	Selección:
+	•	primero tipo='Larga' (si existe)
+	•	si no, cualquier tipo
+	•	Filtrar por cct_status='publish' cuando aplique.
+
+	3.	Clave del sistema: Poi.legacyLugarId
+
+	•	Se añadió Poi.legacyLugarId (BigInt?) para guardar el LugarLegacy.id correcto.
+	•	Esta es la unión canónica:
+	•	Poi.legacyLugarId  → LugarLegacy.id
+
+	4.	Cómo se asigna legacyLugarId (backfill)
+
+	•	Se busca el LugarLegacy correcto usando:
+	•	mismo pueblo: LugarLegacy.puebloid = Poi.puebloId
+	•	mismo nombre (o estrategia equivalente): LugarLegacy.nombre = Poi.nombre
+	•	y filtros:
+	•	poiPueblo=true
+	•	poiMultiexperiencia=false
+	•	Resultado:
+	•	La mayoría de POIs quedan enlazados (en vuestro caso ~599/622).
+
+	5.	Cómo se obtiene la FOTO (fotoUrl) para un POI
+Entrada:
+
+	•	poi.legacyLugarId
+
+Proceso:
+	•	Buscar primera imagen en MultimediaLegacy con:
+	•	idLugar = poi.legacyLugarId
+	•	tipo='Imagen'
+	•	(opcional) cctStatus='publish'
+	•	Elegir 1 imagen estable:
+	•	orden por id asc (o por fecha si tenéis una)
+Salida:
+	•	fotoUrl = multimedia.url (o el campo URL equivalente)
+Si no hay filas:
+	•	fotoUrl = null
+
+Regla de oro:
+	•	Nunca buscar por idLugar = Poi.id.
+
+	6.	Cómo se obtiene la DESCRIPCIÓN (descripcionHtml) para un POI
+Entrada:
+
+	•	poi.legacyLugarId
+
+Proceso:
+	1.	Buscar descripción “Larga”
+
+	•	legacy_descripcion where:
+	•	legacy_lugar_id = poi.legacyLugarId
+	•	cct_status='publish'
+	•	tipo='Larga'
+
+	2.	Si no existe, buscar cualquiera
+
+	•	legacy_descripcion where:
+	•	legacy_lugar_id = poi.legacyLugarId
+	•	cct_status='publish'
+
+Salida:
+	•	descripcionHtml = descripcion_html
+Si no hay filas:
+	•	descripcionHtml = null
+
+	7.	BigInt y por qué os daba 500
+
+	•	Prisma devuelve BigInt en campos como LugarLegacy.id / idLugar / legacy_lugar_id.
+	•	Express/Nest al hacer res.json() revienta si cualquier BigInt llega al response:
+	•	“Do not know how to serialize a BigInt”
+Soluciones canónicas:
+	•	No devolver BigInt en respuestas públicas, o convertirlo a string.
+	•	Y/o parche global BigInt.prototype.toJSON.
+
+	8.	Qué NO se toca
+
+	•	Multiexperiencias: intactas (no se alteran reglas ni queries).
+	•	La lógica POI se basa solo en el enlace legacy vía LugarLegacy.
+
+	9.	Verificación rápida (canónica)
+
+	•	Caso Aínsa:
+	•	Poi (Castillo de Aínsa) → legacyLugarId = 1350
+	•	MultimediaLegacy.idLugar=1350 devuelve foto correcta
+	•	legacy_descripcion.legacy_lugar_id=1350 devuelve HTML correcto
+
+
+
+TUTORIAL 
+
+Voy a analizar la estructura del frontend para identificar el sistema de gestión y preparar la implementación de POIs:
+
+[10 tools called]
+
+Perfecto, he analizado toda la estructura del frontend. Aquí está el **mapa completo del sistema de gestión**:
+
+---
+
+## 📋 **ANÁLISIS COMPLETO DEL SISTEMA DE GESTIÓN**
+
+### **1. ESTRUCTURA DE RUTAS (PAGE.TSX)**
+
+#### **Gestión Principal:**
+```
+/gestion/
+├── page.tsx                           (Dashboard principal)
+├── mis-pueblos/page.tsx               (Lista de pueblos del alcalde)
+├── eventos/page.tsx                   (Eventos globales)
+└── noticias/page.tsx                  (Noticias globales)
+```
+
+#### **Gestión por Pueblo:**
+```
+/gestion/pueblos/[slug]/
+├── page.tsx                           ⭐ MENÚ PRINCIPAL (shell con links)
+├── noticias/page.tsx                  (Noticias del pueblo)
+├── eventos/page.tsx                   (Eventos del pueblo)
+├── alertas/page.tsx                   (Alertas del pueblo)
+├── semaforo/page.tsx                  (Semáforo del pueblo)
+├── club/page.tsx                      (Club de Amigos)
+├── fotos/page.tsx                     ⭐ PATRÓN FOTOS (copiar para POIs)
+└── descripcion/page.tsx               (Descripción del pueblo)
+```
+
+#### **Gestión Asociación (ADMIN):**
+```
+/gestion/asociacion/
+├── page.tsx
+├── alertas/page.tsx
+├── eventos/page.tsx
+├── noticias/page.tsx
+└── club/metricas/page.tsx
+```
+
+---
+
+### **2. SHELL DE GESTIÓN (MENÚ DE PUEBLO)**
+
+**Archivo:** `app/gestion/pueblos/[slug]/page.tsx`
+
+**Estructura actual:**
+
+```56:67:app/gestion/pueblos/[slug]/page.tsx
+          <Link className="hover:underline" href={`/gestion/pueblos/${slug}/semaforo`}>
+            Semáforo
+          </Link>
+          <Link className="hover:underline" href={`/gestion/pueblos/${slug}/club`}>
+            Club de Amigos
+          </Link>
+          <Link className="hover:underline" href={`/gestion/pueblos/${slug}/fotos`}>
+            Fotos del pueblo
+          </Link>
+          <Link className="hover:underline" href={`/gestion/pueblos/${slug}/descripcion`}>
+            Descripción del pueblo
+          </Link>
+```
+
+**👉 Aquí añadiremos:** `Puntos de Interés (POIs)`
+
+---
+
+### **3. PATRÓN API (BACKEND PROXY)**
+
+**Helper principal:** `lib/api.ts`
+
+```1:6:lib/api.ts
+export function getApiUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
+    "http://localhost:3000"
+  );
+}
+```
+
+**Patrón de uso:**
+- ✅ `getApiUrl()` → `http://localhost:3000` (backend local)
+- ✅ Todas las llamadas usan `/api/...` (proxies de Next.js)
+- ✅ Los proxies reenvían a `${UPSTREAM}/...` (backend real)
+
+---
+
+### **4. PATRÓN FOTOS (TEMPLATE PERFECTO PARA POIS)**
+
+#### **A) Server Component (wrapper):**
+
+```1:10:app/gestion/pueblos/[slug]/fotos/page.tsx
+import FotosPuebloClient from "./FotosPuebloClient";
+
+export default async function FotosPuebloPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  return <FotosPuebloClient slug={slug} />;
+}
+```
+
+#### **B) Client Component (lógica completa):**
+
+```1:100:app/gestion/pueblos/[slug]/fotos/FotosPuebloClient.tsx
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+
+type FotoRow = {
+  id: string | number;
+  url: string;
+  alt?: string | null;
+  orden?: number | null;
+  origen?: "LEGACY" | "NUEVA" | string;
+  activo?: boolean;
+  editable?: boolean;
+};
+
+export default function FotosPuebloClient({ slug }: { slug: string }) {
+  const [puebloId, setPuebloId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+
+  const [rows, setRows] = useState<FotoRow[]>([]);
+
+  const [editId, setEditId] = useState<string | number | null>(null);
+  const [editAlt, setEditAlt] = useState("");
+  const [editOrden, setEditOrden] = useState<number | "">("");
+
+  const sorted = useMemo(() => {
+    const copy = [...rows];
+    copy.sort((a, b) => (a.orden ?? 999999) - (b.orden ?? 999999));
+    return copy;
+  }, [rows]);
+
+  async function fetchPuebloId() {
+    const r = await fetch(`/api/pueblos/${encodeURIComponent(slug)}`, { cache: "no-store" });
+    if (r.status === 401) {
+      window.location.href = "/entrar";
+      return null;
+    }
+    if (!r.ok) throw new Error(`Error cargando pueblo (${r.status})`);
+    const data = await r.json();
+    if (!data?.id) throw new Error("Pueblo sin id");
+    return Number(data.id);
+  }
+
+  async function fetchFotos(pid: number) {
+    const r = await fetch(`/api/admin/pueblos/${pid}/fotos`, { cache: "no-store" });
+    if (r.status === 401) {
+      window.location.href = "/entrar";
+      return [];
+    }
+    if (r.status === 403) throw new Error("No autorizado (403)");
+    if (!r.ok) throw new Error(`Error cargando fotos (${r.status})`);
+    return (await r.json()) as FotoRow[];
+  }
+
+  async function refresh() {
+    setLoading(true);
+    setErr(null);
+    try {
+      const pid = puebloId ?? (await fetchPuebloId());
+      if (!pid) return;
+      if (!puebloId) setPuebloId(pid);
+      const fotos = await fetchFotos(pid);
+      setRows(fotos);
+    } catch (e: any) {
+      setErr(e?.message ?? "Error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
+
+  function startEdit(row: FotoRow) {
+    setEditId(row.id);
+    setEditAlt(row.alt ?? "");
+    setEditOrden((row.orden ?? "") as any);
+  }
+
+  function cancelEdit() {
+    setEditId(null);
+    setEditAlt("");
+    setEditOrden("");
+  }
+
+  async function saveEdit() {
+    if (editId == null) return;
+    setErr(null);
+
+    const payload: any = {};
+    if (typeof editOrden === "number") payload.orden = editOrden;
+    if (editAlt.trim()) payload.alt = editAlt.trim();
+    if (!editAlt.trim()) payload.alt = ""; // permitir limpiar
+
+    const r = await fetch(`/api/admin/fotos/${editId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+```
+
+**Funcionalidades implementadas:**
+- ✅ Cargar lista (legacy + nuevas)
+- ✅ Añadir nueva (prompt)
+- ✅ Editar ALT y orden
+- ✅ Eliminar (solo editables)
+- ✅ Reordenar (↑↓ con swap)
+- ✅ Badge "Principal" (orden=1)
+- ✅ Separación legacy/editable
+
+---
+
+### **5. ESTRUCTURA DE API PROXIES (FOTOS)**
+
+```
+app/api/admin/
+├── fotos/
+│   └── [fotoId]/
+│       └── route.ts                   (PUT, DELETE individual)
+└── pueblos/
+    └── [puebloId]/
+        ├── descripcion/
+        │   └── route.ts               (GET, PUT descripción)
+        └── fotos/
+            ├── route.ts               (GET lista, POST nueva)
+            └── swap/
+                └── route.ts           (POST swap orden)
+```
+
+**Patrón de proxy típico:**
+```typescript
+import { getToken } from "@/lib/auth";
+
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ puebloId: string }> }
+) {
+  const { puebloId } = await params;
+  const UPSTREAM = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+  
+  const token = await getToken();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  
+  const res = await fetch(`${UPSTREAM}/admin/pueblos/${puebloId}/fotos`, {
+    headers,
+    cache: "no-store",
+  });
+  
+  const text = await res.text();
+  return new Response(text, {
+    status: res.status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+```
+
+---
+
+### **6. PERMISOS Y AUTH**
+
+**Patrón usado en todas las páginas de gestión:**
+
+```10:25:app/gestion/pueblos/[slug]/page.tsx
+export default async function GestionPuebloPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const me = await getMeServer();
+  if (!me) redirect('/entrar');
+  if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN') redirect('/cuenta');
+
+  // Si es ALCALDE, verificamos que el pueblo está en su lista.
+  if (me.rol === 'ALCALDE') {
+    const mis = await getMisPueblosServer();
+    const allowed = mis.some((p) => p.slug === slug);
+    if (!allowed) redirect('/gestion/mis-pueblos');
+  }
+```
+
+**Roles:**
+- ✅ `ADMIN` → Acceso total
+- ✅ `ALCALDE` → Solo sus pueblos
+- ✅ Otros roles → Redirigir a `/cuenta`
+
+---
+
+### **7. RESUMEN PARA IMPLEMENTAR POIs**
+
+#### **Archivos a crear (copiando patrón de Fotos):**
+
+```
+app/gestion/pueblos/[slug]/pois/
+├── page.tsx                           (server wrapper)
+└── PoisPuebloClient.tsx               (client component)
+
+app/api/admin/
+├── pois/
+│   └── [poiId]/
+│       └── route.ts                   (PUT, DELETE)
+└── pueblos/
+    └── [puebloId]/
+        └── pois/
+            ├── route.ts               (GET lista, POST nuevo)
+            └── swap/
+                └── route.ts           (POST swap orden)
+```
+
+#### **Añadir link en el menú:**
+
+```typescript
+// En app/gestion/pueblos/[slug]/page.tsx
+<Link className="hover:underline" href={`/gestion/pueblos/${slug}/pois`}>
+  Puntos de Interés (POIs)
+</Link>
+```
+
+---
+
+## ✅ **CONCLUSIÓN**
+
+**Sistema analizado y documentado completamente:**
+- ✅ Estructura de rutas mapeada
+- ✅ Shell de gestión identificado
+- ✅ Patrón de Fotos documentado (template perfecto)
+- ✅ Sistema de API proxies entendido
+- ✅ Permisos y auth clarificados
+
+**Listo para implementar POIs siguiendo el patrón exacto de Fotos.** 🚀
+
+
