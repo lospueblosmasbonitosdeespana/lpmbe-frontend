@@ -23,6 +23,11 @@ export default async function GestionAsociacionPage() {
             </Link>
           </li>
           <li>
+            <Link className="hover:underline" href="/gestion/asociacion/rutas">
+              Rutas
+            </Link>
+          </li>
+          <li>
             <Link className="hover:underline" href="/gestion/asociacion/noticias">
               Noticias globales
             </Link>

@@ -119,7 +119,7 @@ export async function getRutas(): Promise<Ruta[]> {
 export async function getRutaById(id: number): Promise<Ruta> {
   const API_BASE = getApiUrl();
   const res = await fetch(`${API_BASE}/rutas/${id}`, {
-    next: { revalidate: 300 },
+    cache: 'no-store', // Sin cache para ver cambios al instante
   });
 
   if (!res.ok) {

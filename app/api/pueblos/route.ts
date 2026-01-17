@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
 import { getApiUrl } from '@/lib/api';
 
-export async function GET() {
+export async function GET(req: Request) {
   const API_BASE = getApiUrl();
-  const upstream = await fetch(`${API_BASE}/pueblos`, {
+  
+  // Extraer parámetros de búsqueda
+  const { searchParams } = new URL(req.url);
+  const search = searchParams.get('search');
+  
+  // Construir URL con query params
+  let url = `${API_BASE}/pueblos`;
+  if (search) {
+    url += `?search=${encodeURIComponent(search)}`;
+  }
+  
+  const upstream = await fetch(url, {
     cache: 'no-store',
   });
 
