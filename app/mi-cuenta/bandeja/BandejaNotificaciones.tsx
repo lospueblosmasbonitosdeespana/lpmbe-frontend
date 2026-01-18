@@ -19,7 +19,7 @@ type PuebloItem = {
 
 type FilterType = 'TODAS' | 'NOTICIA' | 'EVENTO' | 'ALERTA' | 'SEMAFORO' | 'METEO';
 
-const MAX_ITEMS = 50;
+const MAX_ITEMS = 150;
 
 const FILTERS: Array<{ key: FilterType; label: string }> = [
   { key: 'TODAS', label: 'Todas' },
