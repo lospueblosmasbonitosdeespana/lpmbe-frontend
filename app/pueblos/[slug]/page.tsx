@@ -321,25 +321,36 @@ export default async function PuebloPage({
       {/* MAPA */}
       <section id="mapa" style={{ marginTop: "32px" }}>
         <h2>Mapa</h2>
-        {puebloSafe.boldestMapId ? (
+        {puebloSafe.boldestMapId || puebloSafe.slug ? (
           <>
-            <iframe
-              src={`https://maps.lospueblosmasbonitosdeespana.org/es/mapas/${puebloSafe.boldestMapId}`}
-              width="100%"
-              height="480"
-              frameBorder="0"
-              style={{ border: 0 }}
-              title={`Mapa de ${puebloSafe.nombre}`}
-            />
-            <div style={{ marginTop: "16px" }}>
-              <a
-                href={`https://maps.lospueblosmasbonitosdeespana.org/es/mapas/${puebloSafe.boldestMapId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Ver en Boldest Maps
-              </a>
-            </div>
+            {(() => {
+              const boldestSrc =
+                puebloSafe.boldestMapId?.startsWith('PB-')
+                  ? `https://maps.lospueblosmasbonitosdeespana.org/es/mapas/${puebloSafe.boldestMapId}`
+                  : `https://maps.lospueblosmasbonitosdeespana.org/es/pueblos/resource/${puebloSafe.slug}`;
+
+              return (
+                <>
+                  <iframe
+                    src={boldestSrc}
+                    width="100%"
+                    height="480"
+                    frameBorder="0"
+                    style={{ border: 0 }}
+                    title={`Mapa de ${puebloSafe.nombre}`}
+                  />
+                  <div style={{ marginTop: "16px" }}>
+                    <a
+                      href={boldestSrc}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Ver en Boldest Maps
+                    </a>
+                  </div>
+                </>
+              );
+            })()}
           </>
         ) : puebloSafe.lat && puebloSafe.lng ? (
           <a
