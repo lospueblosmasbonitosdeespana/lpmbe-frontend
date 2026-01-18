@@ -24,7 +24,7 @@ const TIPOS: Array<{ key: 'NOTICIA' | 'EVENTO' | 'SEMAFORO' | 'METEO' | 'ALERTA_
   { key: 'ALERTA_PUEBLO', label: 'Alertas' },
 ];
 
-export default function NotificacionesPreferencias({ onChanged }: { onChanged?: () => void }) {
+export default function NotificacionesPreferencias() {
   const [pueblos, setPueblos] = useState<Pueblo[]>([]);
   const [suscripciones, setSuscripciones] = useState<Suscripcion[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -151,8 +151,6 @@ export default function NotificacionesPreferencias({ onChanged }: { onChanged?: 
           })
           .catch(() => {});
       }
-      // Notificar cambio exitoso para actualizar Bandeja
-      onChanged?.();
     } catch (e: any) {
       setError(`Error al guardar: ${e?.message ?? String(e)}`);
       // Revertir actualización optimista
@@ -246,12 +244,8 @@ export default function NotificacionesPreferencias({ onChanged }: { onChanged?: 
               ? (data as any).items
               : [];
           setSuscripciones(items);
-          // Notificar cambio para actualizar Bandeja
-          onChanged?.();
         })
-        .catch(() => {
-          onChanged?.();
-        });
+        .catch(() => {});
 
       // Limpiar mensaje después de 5 segundos
       setTimeout(() => setSelectAllStatus(null), 5000);
@@ -267,12 +261,8 @@ export default function NotificacionesPreferencias({ onChanged }: { onChanged?: 
               ? (data as any).items
               : [];
           setSuscripciones(items);
-          // Notificar cambio para actualizar Bandeja
-          onChanged?.();
         })
-        .catch(() => {
-          onChanged?.();
-        });
+        .catch(() => {});
     } finally {
       setSaving((prev) => {
         const next = new Set(prev);
