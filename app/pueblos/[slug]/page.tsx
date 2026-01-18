@@ -6,6 +6,7 @@ import FeedSection from "../../components/FeedSection";
 import DescripcionPueblo from "./DescripcionPueblo";
 import SemaforoBadge from "../../components/pueblos/SemaforoBadge";
 import MeteoPanel from "./_components/MeteoPanel";
+import { getComunidadFlagSrc } from "@/lib/flags";
 
 // Helpers para SEO
 function cleanText(input: string) {
@@ -244,14 +245,34 @@ export default async function PuebloPage({
     ultima_actualizacion: null,
   };
 
+  // Obtener bandera de la comunidad
+  const comunidadFlagSrc = getComunidadFlagSrc(puebloSafe.comunidad);
+
   return (
     <main>
+      {/* HEADER CON BANDERA */}
+      <header className="mb-6">
+        <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-tight">
+          {puebloSafe.nombre}
+        </h1>
+
+        <div className="mt-2 flex items-center gap-2 text-base md:text-lg text-neutral-600">
+          {comunidadFlagSrc ? (
+            <img
+              src={comunidadFlagSrc}
+              alt={`Bandera de ${puebloSafe.comunidad}`}
+              className="h-5 w-8 rounded-sm object-cover"
+            />
+          ) : null}
+
+          <span>{puebloSafe.provincia}</span>
+          <span aria-hidden="true">·</span>
+          <span>{puebloSafe.comunidad}</span>
+        </div>
+      </header>
+
       {/* HERO */}
       <section>
-        <h1>{puebloSafe.nombre}</h1>
-        <p>
-          {puebloSafe.provincia} · {puebloSafe.comunidad}
-        </p>
         {heroImage && (
           <img
             src={heroImage}

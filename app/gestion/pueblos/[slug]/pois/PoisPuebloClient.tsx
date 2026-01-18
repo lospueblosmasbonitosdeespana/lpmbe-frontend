@@ -437,7 +437,6 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                   setShowCreateForm(false);
                   setCreateNombre("");
                   setCreateDescripcion("");
-                  setCreateFoto("");
                   setCreateLat("");
                   setCreateLng("");
                 }}
