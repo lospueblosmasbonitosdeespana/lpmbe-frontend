@@ -26,9 +26,11 @@ export default async function GestionPuebloPage({
 
   // Resolver pueblo real
   let puebloNombre = slug;
+  let puebloId: number | null = null;
   try {
     const pueblo = await getPuebloBySlug(slug);
     puebloNombre = pueblo.nombre ?? slug;
+    puebloId = pueblo.id;
   } catch (e) {
     // Si falla, usar slug como fallback
     puebloNombre = slug;
@@ -44,11 +46,14 @@ export default async function GestionPuebloPage({
       <div className="mt-6 rounded-md border p-4 text-sm text-gray-600">
         <div className="font-medium text-gray-800">Acciones</div>
         <div className="mt-3 flex gap-4 text-sm flex-wrap">
-          <Link className="hover:underline" href={`/gestion/pueblos/${slug}/noticias`}>
+          <Link className="hover:underline" href={`/gestion/pueblo/contenidos?tipo=NOTICIA${puebloId ? `&puebloId=${puebloId}` : ''}`}>
             Noticias
           </Link>
-          <Link className="hover:underline" href={`/gestion/pueblos/${slug}/eventos`}>
+          <Link className="hover:underline" href={`/gestion/pueblo/contenidos?tipo=EVENTO${puebloId ? `&puebloId=${puebloId}` : ''}`}>
             Eventos
+          </Link>
+          <Link className="hover:underline" href={`/gestion/pueblo/contenidos${puebloId ? `?puebloId=${puebloId}` : ''}`}>
+            Contenidos
           </Link>
           <Link className="hover:underline" href={`/gestion/pueblos/${slug}/alertas`}>
             Alertas

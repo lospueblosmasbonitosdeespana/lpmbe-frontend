@@ -8,16 +8,21 @@ async function getToken(): Promise<string | null> {
   return store.get(AUTH_COOKIE_NAME)?.value ?? null;
 }
 
-// GET /api/gestion/asociacion/contenidos (listar)
+// GET /api/gestion/pueblo/contenidos (listar con puebloId y tipo)
 export async function GET(req: Request) {
   const token = await getToken();
   if (!token) return NextResponse.json({ items: [] }, { status: 200 });
 
   const API_BASE = getApiUrl();
   const { searchParams } = new URL(req.url);
+  const puebloId = searchParams.get('puebloId');
+  const tipo = searchParams.get('tipo');
+  const limit = searchParams.get('limit') ?? '100';
+
   const params = new URLSearchParams();
-  if (searchParams.get('limit')) params.set('limit', searchParams.get('limit')!);
-  if (searchParams.get('tipo')) params.set('tipo', searchParams.get('tipo')!);
+  if (puebloId) params.set('puebloId', puebloId);
+  if (tipo) params.set('tipo', tipo);
+  params.set('limit', limit);
   const queryString = params.toString() ? `?${params.toString()}` : '';
 
   const upstream = await fetch(`${API_BASE}/admin/contenidos${queryString}`, {
@@ -32,7 +37,7 @@ export async function GET(req: Request) {
   });
 }
 
-// POST /api/gestion/asociacion/contenidos (crear)
+// POST /api/gestion/pueblo/contenidos (crear con puebloId en body)
 export async function POST(req: Request) {
   const token = await getToken();
   if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });

@@ -1,13 +1,16 @@
-import Link from 'next/link';
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
-import NoticiaItem from './NoticiaItem';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
-async function fetchNoticiasGlobales() {
+export default async function NoticiasGlobalesPage() {
+  const me = await getMeServer();
+  if (!me) redirect('/entrar');
+  if (me.rol !== 'ADMIN') redirect('/cuenta');
+
+  // REDIRECT A CMS NUEVO
+  redirect('/gestion/asociacion/contenidos?tipo=NOTICIA');
+}
   const h = await headers();
   const host = h.get('host');
   const proto = h.get('x-forwarded-proto') ?? 'http';

@@ -174,9 +174,11 @@ export function NotificacionesFloating() {
                 {filtered.slice(0, maxItems).map((n) => {
                   const date = formatDate(n.fecha);
                   
-                  // Generar href: prioridad url/href del backend, luego tipo específico, luego fallback a anchor
+                  // Generar href: prioridad contenidoSlug, luego url/href del backend, luego tipo específico, luego fallback
                   let href: string;
-                  if ((n as any).url || (n as any).href) {
+                  if ((n as any).contenidoSlug) {
+                    href = `/c/${(n as any).contenidoSlug}`;
+                  } else if ((n as any).url || (n as any).href) {
                     href = (n as any).url || (n as any).href;
                   } else if (n.tipo === "SEMAFORO" && n.pueblo?.slug) {
                     href = `/pueblos/${n.pueblo.slug}`;

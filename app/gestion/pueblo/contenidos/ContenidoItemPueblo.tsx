@@ -3,11 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-type ContenidoItemProps = {
+type ContenidoItemPuebloProps = {
   contenido: any;
 };
 
-export default function ContenidoItem({ contenido }: ContenidoItemProps) {
+export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloProps) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
 
@@ -16,6 +16,7 @@ export default function ContenidoItem({ contenido }: ContenidoItemProps) {
 
     setDeleting(true);
     try {
+      // Usar endpoint genérico (funciona para asociación y pueblo)
       const res = await fetch(`/api/gestion/asociacion/contenidos/${contenido.id}`, {
         method: 'DELETE',
       });
@@ -90,7 +91,7 @@ export default function ContenidoItem({ contenido }: ContenidoItemProps) {
             </a>
           )}
           <a
-            href={`/gestion/asociacion/contenidos/${contenido.id}/editar`}
+            href={`/gestion/pueblo/contenidos/${contenido.id}/editar`}
             onClick={(e) => e.stopPropagation()}
             className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
           >

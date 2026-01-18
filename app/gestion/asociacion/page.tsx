@@ -33,16 +33,6 @@ export default async function GestionAsociacionPage() {
             </Link>
           </li>
           <li>
-            <Link className="hover:underline" href="/gestion/asociacion/noticias">
-              Noticias globales (legacy)
-            </Link>
-          </li>
-          <li>
-            <Link className="hover:underline" href="/gestion/asociacion/eventos">
-              Eventos globales (legacy)
-            </Link>
-          </li>
-          <li>
             <Link className="hover:underline" href="/gestion/asociacion/alertas">
               Alertas globales
             </Link>

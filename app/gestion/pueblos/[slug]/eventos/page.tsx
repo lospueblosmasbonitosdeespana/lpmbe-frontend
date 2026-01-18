@@ -1,35 +1,39 @@
-import Link from 'next/link';
 import { getMeServer } from '@/lib/me';
 import { getMisPueblosServer } from '@/lib/misPueblos';
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
+import { getPuebloBySlug } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
-async function fetchEventos(puebloSlug: string) {
-  const h = await headers();
-  const host = h.get('host');
-  const proto = h.get('x-forwarded-proto') ?? 'http';
-  const baseUrl = `${proto}://${host}`;
-
-  const res = await fetch(
-    `${baseUrl}/api/gestion/eventos?puebloSlug=${encodeURIComponent(puebloSlug)}`,
-    {
-      cache: 'no-store',
-      headers: { cookie: h.get('cookie') ?? '' },
-    }
-  );
-  if (!res.ok) return [];
-  const data = await res.json().catch(() => []);
-  return Array.isArray(data) ? data : [];
-}
 
 export default async function EventosPuebloPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const { slug } = await params;
+  const me = await getMeServer();
+  if (!me) redirect('/entrar');
+  if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN') redirect('/cuenta');
+
+  // Verificar acceso
+  if (me.rol === 'ALCALDE') {
+    const mis = await getMisPueblosServer();
+    const allowed = mis.some((p) => p.slug === slug);
+    if (!allowed) redirect('/gestion/mis-pueblos');
+  }
+
+  // Obtener puebloId para redirect
+  let puebloId: number | null = null;
+  try {
+    const pueblo = await getPuebloBySlug(slug);
+    puebloId = pueblo.id;
+  } catch (e) {
+    // Si falla, redirect sin puebloId (la página lo resolverá)
+  }
+
+  // REDIRECT A CMS NUEVO
+  redirect(`/gestion/pueblo/contenidos?tipo=EVENTO${puebloId ? `&puebloId=${puebloId}` : ''}`);
+}
   const { slug } = await params;
   const me = await getMeServer();
   if (!me) redirect('/entrar');

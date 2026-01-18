@@ -7,6 +7,8 @@ type Notificacion = {
   tipo?: string;
   fecha?: string;
   href?: string;
+  contenidoSlug?: string;
+  contenidoUrl?: string;
 };
 
 async function getActualidad(limit: number): Promise<Notificacion[]> {
@@ -53,15 +55,24 @@ export async function ActualidadSection({ limit = 4 }: ActualidadSectionProps) {
         </div>
       ) : (
         <div className="bg-white">
-          {items.map((n) => (
-            <ActualidadItem
-              key={n.id}
-              titulo={n.titulo}
-              fecha={n.fecha}
-              tipo={n.tipo}
-              href={n.href ?? "/notificaciones"}
-            />
-          ))}
+          {items.map((n) => {
+            // Prioridad: contenidoSlug -> contenidoUrl -> href -> fallback
+            const itemHref = n.contenidoSlug
+              ? `/c/${n.contenidoSlug}`
+              : n.contenidoUrl
+              ? n.contenidoUrl
+              : n.href ?? '/notificaciones';
+
+            return (
+              <ActualidadItem
+                key={n.id}
+                titulo={n.titulo}
+                fecha={n.fecha}
+                tipo={n.tipo}
+                href={itemHref}
+              />
+            );
+          })}
         </div>
       )}
     </section>
