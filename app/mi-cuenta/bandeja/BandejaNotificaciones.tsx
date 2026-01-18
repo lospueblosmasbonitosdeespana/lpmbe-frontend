@@ -59,12 +59,12 @@ export default function BandejaNotificaciones() {
 
   // Cargar notificaciones
   useEffect(() => {
-    fetch('/api/notificaciones/me')
+    fetch(`/api/notificaciones/me?limit=${MAX_ITEMS}`)
       .then(r => (r.ok ? r.json() : []))
       .then(data => {
         const allItems = Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : []);
         setTotalItems(allItems.length);
-        setItems(allItems.slice(0, MAX_ITEMS));
+        setItems(allItems);
       })
       .catch(() => {
         setTotalItems(0);
@@ -172,12 +172,12 @@ export default function BandejaNotificaciones() {
       </div>
 
       {/* Contador */}
-      {totalItems > MAX_ITEMS && (
+      {totalItems === MAX_ITEMS && (
         <p className="text-sm text-gray-600 text-center">
-          Mostrando las últimas {MAX_ITEMS} notificaciones de {totalItems} totales.
+          Mostrando las últimas {MAX_ITEMS} notificaciones.
         </p>
       )}
-      {totalItems <= MAX_ITEMS && totalItems > 0 && (
+      {totalItems < MAX_ITEMS && totalItems > 0 && (
         <p className="text-sm text-gray-500 text-center">
           {totalItems} {totalItems === 1 ? 'notificación' : 'notificaciones'}
         </p>
