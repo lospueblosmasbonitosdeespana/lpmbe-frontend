@@ -87,6 +87,7 @@ export const navConfig: NavItem[] = [
           { label: "Ver notificaciones", href: "/notificaciones" },
           { label: "Cambios de semáforo", href: "/notificaciones?tipo=SEMAFORO" },
           { label: "Alertas", href: "/notificaciones?tipo=ALERTA" },
+          { label: "Meteo", href: "/meteo" },
         ],
       },
       {

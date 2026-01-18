@@ -113,6 +113,7 @@ export function NotificacionesFloating() {
       NACIONAL: ["NOTICIA", "EVENTO"],
       SEMAFORO: ["SEMAFORO"],
       ALERTA: ["ALERTA", "ALERTA_PUEBLO"],
+      METEO: ["METEO"],
     };
     
     const tiposPermitidos = tipoMap[active] ?? [];
@@ -164,7 +165,9 @@ export function NotificacionesFloating() {
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-sm text-gray-500">
-                No hay {homeConfig.notificaciones.tabs.find(t => t.key === active)?.label.toLowerCase()} ahora mismo.
+                {active === "METEO" 
+                  ? "No hay alertas meteorológicas ahora mismo."
+                  : `No hay ${homeConfig.notificaciones.tabs.find(t => t.key === active)?.label.toLowerCase()} ahora mismo.`}
               </div>
             ) : (
               <ul className="space-y-2">
@@ -226,7 +229,7 @@ export function NotificacionesFloating() {
         {/* Botón lateral premium */}
         <div className="flex items-stretch">
           <Link
-            href={homeConfig.notificaciones.allHref}
+            href={active === "METEO" ? "/meteo" : homeConfig.notificaciones.allHref}
             className="flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700 h-14 md:h-16"
           >
             Abrir

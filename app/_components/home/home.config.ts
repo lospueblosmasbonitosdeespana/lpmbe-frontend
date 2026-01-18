@@ -15,6 +15,7 @@ export const homeConfig = {
       { key: "NACIONAL", label: "Noticias" },
       { key: "SEMAFORO", label: "Semáforos" },
       { key: "ALERTA", label: "Alertas" },
+      { key: "METEO", label: "Meteo" },
     ] as const,
     limit: 5,
     allHref: "/notificaciones",
