@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
+import EventoItem from './EventoItem';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -17,8 +18,9 @@ async function fetchEventosGlobales() {
     headers: { cookie: h.get('cookie') ?? '' },
   });
   if (!res.ok) return [];
-  const data = await res.json().catch(() => []);
-  return Array.isArray(data) ? data : [];
+  const json = await res.json().catch(() => ({}));
+  const items = Array.isArray(json) ? json : (json?.items ?? []);
+  return items;
 }
 
 export default async function EventosGlobalesPage() {
@@ -51,19 +53,7 @@ export default async function EventosGlobalesPage() {
       ) : (
         <ul className="mt-6 space-y-3">
           {eventos.map((e: any) => (
-            <li key={e.id ?? e.titulo} className="rounded-md border p-4">
-              <div className="font-medium">{e.titulo ?? '(sin título)'}</div>
-              <div className="mt-1 text-xs text-gray-500">
-                {e.fecha_inicio ? String(e.fecha_inicio) : ''}
-                {e.fecha_fin ? ` → ${String(e.fecha_fin)}` : ''}
-              </div>
-              {e.contenido ? (
-                <div className="mt-2 text-sm text-gray-700">
-                  {String(e.contenido).slice(0, 220)}
-                  {String(e.contenido).length > 220 ? '…' : ''}
-                </div>
-              ) : null}
-            </li>
+            <EventoItem key={e.id ?? e.titulo} evento={e} />
           ))}
         </ul>
       )}

@@ -8,41 +8,23 @@ async function getToken(): Promise<string | null> {
   return store.get(AUTH_COOKIE_NAME)?.value ?? null;
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const token = await getToken();
-  if (!token) return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
+  if (!token) return NextResponse.json({ items: [] }, { status: 200 });
 
   const API_BASE = getApiUrl();
-  const upstream = await fetch(`${API_BASE}/notificaciones`, {
-    method: 'GET',
+  const url = `${API_BASE}/admin/notificaciones/global?tipo=NOTICIA&limit=200`;
+
+  const upstream = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
     cache: 'no-store',
   });
 
   const text = await upstream.text();
-  let json: any = null;
-  try {
-    json = JSON.parse(text);
-  } catch {}
-
-  if (!upstream.ok) {
-    console.log('[NOTICIAS GLOBALES] upstream error', upstream.status, text.slice(0, 500));
-    return NextResponse.json(
-      { message: 'Upstream error', status: upstream.status },
-      { status: upstream.status }
-    );
-  }
-
-  const items = Array.isArray(json) ? json : (json?.items ?? json?.data ?? []);
-  
-  // TEMP DEBUG: loggear tipos
-  console.log('[NOTICIAS GLOBALES] items', items.length);
-  console.log('[NOTICIAS GLOBALES] tipos sample', items.slice(0, 30).map((n: any) => n?.tipo ?? n?.type));
-
-  // TEMP: devolver sin filtrar para debug
-  const noticias = items.filter((n: any) => (n.tipo ?? n.type) === 'NOTICIA');
-
-  return NextResponse.json(noticias, { status: upstream.status });
+  return new NextResponse(text, {
+    status: upstream.status,
+    headers: { 'Content-Type': upstream.headers.get('content-type') || 'application/json' },
+  });
 }
 
 export async function POST(req: Request) {

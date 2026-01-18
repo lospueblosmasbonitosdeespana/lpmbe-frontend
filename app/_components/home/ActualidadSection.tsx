@@ -14,13 +14,16 @@ async function getActualidad(limit: number): Promise<Notificacion[]> {
     process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
     "http://localhost:3000";
 
-  const res = await fetch(`${base}/notificaciones?limit=${limit}`, {
+  const res = await fetch(`${base}/public/notificaciones/feed?limit=${limit}&tipos=NOTICIA,EVENTO`, {
     next: { revalidate: 120 }, // HOME: cache corta
+    cache: 'no-store',
   });
 
   if (!res.ok) return [];
-  const data = (await res.json()) as Notificacion[];
-  return Array.isArray(data) ? data.slice(0, limit) : [];
+  const json = await res.json();
+  // CRÍTICO: el backend devuelve { items: [...] }
+  const items = Array.isArray(json) ? json : (json?.items ?? []);
+  return Array.isArray(items) ? items.slice(0, limit) : [];
 }
 
 type ActualidadSectionProps = {

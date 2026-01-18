@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import NotificacionesList from "../_components/notificaciones/NotificacionesList";
 
 type NotifItem = {
@@ -38,7 +39,7 @@ export default function NotificacionesPage() {
       try {
         setLoading(true);
         setErr(null);
-        const res = await fetch("/api/notificaciones/feed", { cache: "no-store" });
+        const res = await fetch("/api/public/notificaciones/feed", { cache: "no-store" });
         const data = await res.json().catch(() => null);
         const normalized = normalizeFeed(data);
         if (alive) {
@@ -65,8 +66,18 @@ export default function NotificacionesPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
-      <h1 className="text-4xl font-semibold">Centro de notificaciones</h1>
-      <p className="mt-2 text-gray-600">Noticias, alertas y estado de semáforos.</p>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h1 className="text-4xl font-semibold">Centro de notificaciones</h1>
+          <p className="mt-2 text-gray-600">Noticias, alertas y estado de semáforos.</p>
+        </div>
+        <Link
+          href="/meteo"
+          className="px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition font-medium"
+        >
+          🌤️ Alertas Meteo
+        </Link>
+      </div>
 
       {loading ? (
         <p className="mt-8">Cargando...</p>

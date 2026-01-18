@@ -4,7 +4,7 @@ import { getTokenFromCookies } from '@/lib/auth';
 
 type FeedItem = {
   id: string | number;
-  tipo: 'NOTICIA' | 'EVENTO' | 'ALERTA' | 'ALERTA_PUEBLO' | 'SEMAFORO';
+  tipo: 'NOTICIA' | 'EVENTO' | 'ALERTA' | 'ALERTA_PUEBLO' | 'SEMAFORO' | 'METEO';
   titulo: string;
   texto: string;
   fecha: string; // ISO
@@ -57,7 +57,7 @@ function normalizeItem(item: any): FeedItem | null {
   const tipo = String(item.tipo ?? item.type ?? '').trim().toUpperCase();
   
   // Solo tipos permitidos
-  const tiposPermitidos: FeedItem['tipo'][] = ['NOTICIA', 'EVENTO', 'ALERTA', 'ALERTA_PUEBLO', 'SEMAFORO'];
+  const tiposPermitidos: FeedItem['tipo'][] = ['NOTICIA', 'EVENTO', 'ALERTA', 'ALERTA_PUEBLO', 'SEMAFORO', 'METEO'];
   if (!tiposPermitidos.includes(tipo as FeedItem['tipo'])) {
     return null;
   }
@@ -71,6 +71,7 @@ function normalizeItem(item: any): FeedItem | null {
   let estado: string | null = null;
   let motivoPublico: string | null = null;
   let texto = '';
+  let titulo = '';
 
   if (tipo === 'SEMAFORO') {
     // Leer estado directamente del backend (ya viene normalizado)
@@ -87,15 +88,21 @@ function normalizeItem(item: any): FeedItem | null {
     
     // Para texto: usar motivoPublico si existe, sino contenido
     texto = motivoPublico ?? item.contenido ?? '';
+    titulo = item.titulo ?? '(sin título)';
+  } else if (tipo === 'METEO') {
+    // Para METEO: título especial si no viene
+    titulo = item.titulo ?? 'Alerta meteorológica';
+    texto = item.contenido ?? item.descripcion ?? item.mensaje ?? '';
   } else {
     // Para otros tipos, usar mapeo normal
     texto = item.contenido ?? item.descripcion ?? item.mensaje ?? '';
+    titulo = item.titulo ?? '(sin título)';
   }
 
   return {
     id: item.id ?? item.refId ?? Math.random(),
     tipo: tipo as FeedItem['tipo'],
-    titulo: item.titulo ?? '(sin título)',
+    titulo: titulo,
     texto: String(texto),
     fecha: normalizeFecha(item),
     pueblo: item.pueblo ?? null,
@@ -182,6 +189,10 @@ export async function GET() {
       const tipo = (n.tipo ?? n.type)?.toUpperCase();
       return tipo === 'SEMAFORO';
     });
+    const meteo = allItems.filter((n: any) => {
+      const tipo = (n.tipo ?? n.type)?.toUpperCase();
+      return tipo === 'METEO';
+    });
 
     // PASO 1: Log temporal para inspeccionar estructura real de semáforo
     if (semaforos.length > 0) {
@@ -193,9 +204,10 @@ export async function GET() {
       eventos: eventos.length,
       alertas: alertas.length,
       semaforos: semaforos.length,
+      meteo: meteo.length,
     };
 
-    const filteredItems = [...noticias, ...eventos, ...alertas, ...semaforos];
+    const filteredItems = [...noticias, ...eventos, ...alertas, ...semaforos, ...meteo];
 
     // PASO 4: Normalizar todos los items filtrados
     const normalized: FeedItem[] = filteredItems

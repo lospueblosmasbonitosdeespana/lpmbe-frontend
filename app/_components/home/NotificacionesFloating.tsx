@@ -68,8 +68,8 @@ export function NotificacionesFloating() {
       try {
         setLoading(true);
 
-        // Usar el mismo endpoint que funciona en /notificaciones
-        const res = await fetch("/api/notificaciones/feed", {
+        // Endpoint corregido con tipos explícitos
+        const res = await fetch("/api/public/notificaciones/feed?limit=10&tipos=NOTICIA,EVENTO,ALERTA,ALERTA_PUEBLO,SEMAFORO", {
           credentials: "include",
           cache: "no-store",
         });
@@ -77,8 +77,8 @@ export function NotificacionesFloating() {
         if (!res.ok) throw new Error("Error cargando notificaciones");
 
         const data = await res.json();
-        // El proxy devuelve { items: [...] }
-        const rawItems = Array.isArray(data.items) ? data.items : (data.items ?? data.data ?? []);
+        // CRÍTICO: el backend devuelve { items: [...] }
+        const rawItems = Array.isArray(data) ? data : (data?.items ?? []);
         
         if (!cancelled) {
           // Mapear al formato esperado por el widget

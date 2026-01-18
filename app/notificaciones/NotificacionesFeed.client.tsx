@@ -18,7 +18,7 @@ type FeedItem = {
   motivoPublico?: string | null; // Para SEMAFORO: motivo público del cambio
 };
 
-type FilterType = "TODAS" | "NOTICIA" | "ALERTA" | "SEMAFORO" | "EVENTO" | "METEO";
+type FilterType = "TODAS" | "NOTICIA" | "ALERTA" | "SEMAFORO" | "EVENTO";
 
 // Helper seguro para convertir fecha a milisegundos
 function toMs(value: string | null | undefined): number {
@@ -84,7 +84,7 @@ export default function NotificacionesFeed() {
         setLoading(true);
         setError(null);
 
-        const res = await fetch("/api/notificaciones/feed", {
+        const res = await fetch("/api/public/notificaciones/feed", {
           credentials: "include",
           cache: "no-store",
         });
@@ -92,9 +92,9 @@ export default function NotificacionesFeed() {
         const data = await res.json();
         const rawItems = Array.isArray(data.items) ? data.items : (data.items ?? data.data ?? []);
 
-        // FILTRADO DOBLE: aunque el proxy filtre, volver a filtrar por seguridad
-        const tiposPermitidos = ["NOTICIA", "EVENTO", "ALERTA", "ALERTA_PUEBLO", "SEMAFORO", "METEO"];
-        const tiposExcluidos = ["NOTICIA_PUEBLO", "EVENTO_PUEBLO"];
+        // FILTRADO: tipos permitidos SIN METEO
+        const tiposPermitidos = ["NOTICIA", "EVENTO", "ALERTA", "ALERTA_PUEBLO", "SEMAFORO"];
+        const tiposExcluidos = ["NOTICIA_PUEBLO", "EVENTO_PUEBLO", "METEO"];
         
         const preFiltered = rawItems.filter((item: any) => {
           const tipo = (item.tipo ?? item.type ?? "").toUpperCase();
@@ -112,11 +112,8 @@ export default function NotificacionesFeed() {
             
             const texto = item.contenido ?? item.descripcion ?? item.mensaje ?? "";
 
-            // Título especial para METEO si no viene
+            // Título
             let titulo = item.titulo ?? "";
-            if (!titulo && tipo === "METEO") {
-              titulo = "Alerta meteorológica";
-            }
             if (!titulo) {
               titulo = "(sin título)";
             }
@@ -133,8 +130,8 @@ export default function NotificacionesFeed() {
             };
           })
           .filter((item: FeedItem) => {
-            // Validación final: solo tipos permitidos
-            return tiposPermitidos.includes(item.tipo);
+            // Validación final: solo tipos permitidos SIN METEO
+            return ["NOTICIA", "EVENTO", "ALERTA", "ALERTA_PUEBLO", "SEMAFORO"].includes(item.tipo);
           });
 
         // Ordenar por fecha desc usando helper seguro
@@ -258,60 +255,37 @@ export default function NotificacionesFeed() {
           borderBottom: "1px solid #e5e5e5",
           paddingBottom: "0.5rem",
           alignItems: "center",
-          justifyContent: "space-between",
           flexWrap: "wrap",
         }}
       >
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-          {([
-            { key: "TODAS", label: "Todas" },
-            { key: "NOTICIA", label: "Noticias" },
-            { key: "EVENTO", label: "Eventos" },
-            { key: "ALERTA", label: "Alertas" },
-            { key: "SEMAFORO", label: "Semáforos" },
-            { key: "METEO", label: "Meteo" },
-          ] as { key: FilterType; label: string }[]).map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setFilter(key)}
-              style={{
-                padding: "0.5rem 1rem",
-                border: "none",
-                background: filter === key ? "#000" : "transparent",
-                color: filter === key ? "#fff" : "#000",
-                cursor: "pointer",
-                textDecoration: "underline",
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {filter === "METEO" && (
-          <Link
-            href="/meteo"
+        {([
+          { key: "TODAS", label: "Todas" },
+          { key: "NOTICIA", label: "Noticias" },
+          { key: "EVENTO", label: "Eventos" },
+          { key: "ALERTA", label: "Alertas" },
+          { key: "SEMAFORO", label: "Semáforos" },
+        ] as { key: FilterType; label: string }[]).map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setFilter(key)}
             style={{
               padding: "0.5rem 1rem",
-              backgroundColor: "#f5f5f5",
-              color: "#000",
-              textDecoration: "none",
-              borderRadius: "4px",
-              fontSize: "0.875rem",
-              fontWeight: 500,
+              border: "none",
+              background: filter === key ? "#000" : "transparent",
+              color: filter === key ? "#fff" : "#000",
+              cursor: "pointer",
+              textDecoration: "underline",
             }}
           >
-            Ver página completa →
-          </Link>
-        )}
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* Lista de items - visual plano */}
       {filteredItems.length === 0 ? (
         <div style={{ padding: "1rem", color: "#666" }}>
-          {filter === "METEO" 
-            ? "No hay alertas meteorológicas ahora mismo."
-            : "No hay notificaciones para mostrar."}
+          No hay notificaciones para mostrar.
         </div>
       ) : (
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>

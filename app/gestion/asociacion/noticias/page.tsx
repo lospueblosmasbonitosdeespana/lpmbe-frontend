@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
+import NoticiaItem from './NoticiaItem';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -17,8 +18,9 @@ async function fetchNoticiasGlobales() {
     headers: { cookie: h.get('cookie') ?? '' },
   });
   if (!res.ok) return [];
-  const data = await res.json().catch(() => []);
-  return Array.isArray(data) ? data : [];
+  const json = await res.json().catch(() => ({}));
+  const items = Array.isArray(json) ? json : (json?.items ?? []);
+  return items;
 }
 
 export default async function NoticiasGlobalesPage() {
@@ -51,18 +53,7 @@ export default async function NoticiasGlobalesPage() {
       ) : (
         <ul className="mt-6 space-y-3">
           {noticias.map((n: any) => (
-            <li key={n.id ?? n.titulo} className="rounded-md border p-4">
-              <div className="font-medium">{n.titulo ?? '(sin título)'}</div>
-              <div className="mt-1 text-xs text-gray-500">
-                {n.fecha ?? n.createdAt ?? ''}
-              </div>
-              {n.contenido ? (
-                <div className="mt-2 text-sm text-gray-700">
-                  {String(n.contenido).slice(0, 220)}
-                  {String(n.contenido).length > 220 ? '…' : ''}
-                </div>
-              ) : null}
-            </li>
+            <NoticiaItem key={n.id ?? n.titulo} noticia={n} />
           ))}
         </ul>
       )}
