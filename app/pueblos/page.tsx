@@ -10,15 +10,53 @@ type SearchParams = {
 };
 
 async function getPueblos() {
-  const res = await fetch(`${getApiUrl()}/pueblos`, {
-    next: { revalidate: 300 },
+  const API_BASE = getApiUrl();
+  
+  const res = await fetch(`${API_BASE}/pueblos`, {
+    cache: 'no-store',
   });
 
   if (!res.ok) {
     throw new Error("Error cargando pueblos");
   }
 
-  return res.json();
+  const pueblos = await res.json();
+  
+  if (!Array.isArray(pueblos)) {
+    return [];
+  }
+  
+  // Enriquecer con foto principal de cada pueblo
+  const enriched = await Promise.all(
+    pueblos.map(async (pueblo: any) => {
+      try {
+        const puebloRes = await fetch(`${API_BASE}/pueblos/${pueblo.slug}`, {
+          cache: 'no-store',
+        });
+        
+        if (puebloRes.ok) {
+          const puebloCompleto = await puebloRes.json();
+          const fotos = puebloCompleto.fotosPueblo;
+          
+          // Buscar foto con orden=1 (principal) o la primera disponible
+          const principal = Array.isArray(fotos)
+            ? fotos.find((f: any) => f.orden === 1)
+            : null;
+          
+          return {
+            ...pueblo,
+            fotoPrincipalUrl: principal?.url ?? fotos?.[0]?.url ?? null,
+          };
+        }
+      } catch (err) {
+        console.error(`Error cargando foto para pueblo ${pueblo.slug}:`, err);
+      }
+      
+      return pueblo;
+    })
+  );
+  
+  return enriched;
 }
 
 export default async function PueblosPage({

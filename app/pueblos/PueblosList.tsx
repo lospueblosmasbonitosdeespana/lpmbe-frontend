@@ -14,6 +14,7 @@ type Pueblo = {
   lng: number | null;
   altitud: number | null;
   foto_destacada: string | null;
+  fotoPrincipalUrl?: string | null;
   escudo_bandera: string | null;
   boldestMapId: string | null;
   semaforo: any | null;
@@ -154,38 +155,76 @@ export default function PueblosList({
             marginTop: "24px",
           }}
         >
-          {pueblosFiltrados.map((pueblo) => (
-            <Link
-              key={pueblo.id}
-              href={`/pueblos/${pueblo.slug}`}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                padding: "16px",
-                textDecoration: "none",
-                color: "inherit",
-                display: "block",
-              }}
-            >
-              <h3 style={{ margin: "0 0 8px 0" }}>{pueblo.nombre}</h3>
-              <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#555" }}>
-                {pueblo.provincia} · {pueblo.comunidad}
-              </p>
-              <div style={{ marginTop: "8px" }}>
-                <SemaforoBadge
-                  estado={
-                    pueblo.semaforo?.estado ??
-                    (typeof pueblo.semaforo === "object" &&
-                    pueblo.semaforo !== null &&
-                    "estado" in pueblo.semaforo
-                      ? (pueblo.semaforo as any).estado
-                      : null)
-                  }
-                  variant="badge"
-                />
-              </div>
-            </Link>
-          ))}
+          {pueblosFiltrados.map((pueblo) => {
+            const foto = pueblo.fotoPrincipalUrl ?? pueblo.foto_destacada;
+            
+            return (
+              <Link
+                key={pueblo.id}
+                href={`/pueblos/${pueblo.slug}`}
+                style={{
+                  border: "1px solid #ddd",
+                  borderRadius: "8px",
+                  overflow: "hidden",
+                  textDecoration: "none",
+                  color: "inherit",
+                  display: "flex",
+                  flexDirection: "column",
+                  backgroundColor: "#fff",
+                }}
+              >
+                {/* Foto */}
+                <div
+                  style={{
+                    width: "100%",
+                    height: "140px",
+                    backgroundColor: "#f0f0f0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                  }}
+                >
+                  {foto ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={foto}
+                      alt={pueblo.nombre}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span style={{ fontSize: "12px", color: "#999" }}>Sin imagen</span>
+                  )}
+                </div>
+
+                {/* Contenido */}
+                <div style={{ padding: "16px" }}>
+                  <h3 style={{ margin: "0 0 8px 0", fontSize: "16px" }}>{pueblo.nombre}</h3>
+                  <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#555" }}>
+                    {pueblo.provincia} · {pueblo.comunidad}
+                  </p>
+                  <div style={{ marginTop: "8px" }}>
+                    <SemaforoBadge
+                      estado={
+                        pueblo.semaforo?.estado ??
+                        (typeof pueblo.semaforo === "object" &&
+                        pueblo.semaforo !== null &&
+                        "estado" in pueblo.semaforo
+                          ? (pueblo.semaforo as any).estado
+                          : null)
+                      }
+                      variant="badge"
+                    />
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </section>
       ) : (
         <p style={{ marginTop: "24px", color: "#666" }}>
