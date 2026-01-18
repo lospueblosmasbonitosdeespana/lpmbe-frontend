@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import PhotoManager from "@/app/components/PhotoManager";
 
 type PoiRow = {
   id: number;
@@ -41,7 +42,6 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
   const [editId, setEditId] = useState<number | null>(null);
   const [editNombre, setEditNombre] = useState("");
   const [editDescripcion, setEditDescripcion] = useState("");
-  const [editFoto, setEditFoto] = useState("");
   const [editLat, setEditLat] = useState<number | "">("");
   const [editLng, setEditLng] = useState<number | "">("");
 
@@ -49,7 +49,6 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createNombre, setCreateNombre] = useState("");
   const [createDescripcion, setCreateDescripcion] = useState("");
-  const [createFoto, setCreateFoto] = useState("");
   const [createLat, setCreateLat] = useState<number | "">("");
   const [createLng, setCreateLng] = useState<number | "">("");
 
@@ -112,7 +111,6 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     setEditId(row.id);
     setEditNombre(row.nombre ?? "");
     setEditDescripcion(row.descripcion ?? "");
-    setEditFoto(row.foto ?? "");
     setEditLat(row.lat ?? "");
     setEditLng(row.lng ?? "");
   }
@@ -121,7 +119,6 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     setEditId(null);
     setEditNombre("");
     setEditDescripcion("");
-    setEditFoto("");
     setEditLat("");
     setEditLng("");
   }
@@ -133,7 +130,6 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     const payload: any = {
       nombre: editNombre.trim() || undefined,
       descripcion: editDescripcion.trim() || null,
-      foto: editFoto.trim() || null,
       lat: typeof editLat === "number" ? editLat : null,
       lng: typeof editLng === "number" ? editLng : null,
     };
@@ -201,7 +197,6 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     const payload = {
       nombre: createNombre.trim(),
       descripcion: createDescripcion.trim() || null,
-      foto: createFoto.trim() || null,
       lat: latVal ?? null,
       lng: lngVal ?? null,
     };
@@ -227,7 +222,6 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     // Limpiar formulario
     setCreateNombre("");
     setCreateDescripcion("");
-    setCreateFoto("");
     setCreateLat("");
     setCreateLng("");
     setShowCreateForm(false);
@@ -405,59 +399,22 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                 }}
               />
             </div>
-            <div>
-              <label style={{ display: "block", fontSize: 14, marginBottom: 4 }}>
-                Foto (URL)
-              </label>
-              <input
-                type="text"
-                value={createFoto}
-                onChange={(e) => setCreateFoto(e.target.value)}
-                placeholder="https://..."
-                style={{
-                  width: "100%",
-                  padding: 8,
-                  fontSize: 14,
-                  border: "1px solid #ccc",
-                  borderRadius: 4,
-                }}
-              />
-              {createFoto && (
-                <div style={{ marginTop: 8 }}>
-                  <img
-                    src={createFoto}
-                    alt="Preview"
-                    style={{
-                      maxWidth: 200,
-                      maxHeight: 150,
-                      borderRadius: 4,
-                      objectFit: "cover",
-                      border: "1px solid #ddd",
-                    }}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
-                  />
-                </div>
-              )}
-              <div style={{ marginTop: 8 }}>
-                <input
-                  type="file"
-                  disabled
-                  style={{
-                    padding: 8,
-                    fontSize: 14,
-                    border: "1px solid #ccc",
-                    borderRadius: 4,
-                    backgroundColor: "#f5f5f5",
-                    cursor: "not-allowed",
-                  }}
-                />
-                <p style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
-                  Subida de archivo (próximamente)
-                </p>
-              </div>
+            
+            {/* Info sobre fotos */}
+            <div
+              style={{
+                marginTop: 20,
+                padding: 12,
+                backgroundColor: "#f0f9ff",
+                border: "1px solid #bae6fd",
+                borderRadius: 6,
+                fontSize: 13,
+                color: "#0c4a6e",
+              }}
+            >
+              💡 Después de crear el POI podrás subir fotos desde el editor.
             </div>
+            
             <div style={{ display: "flex", gap: 8 }}>
               <button
                 type="button"
@@ -622,58 +579,34 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                           }}
                         />
                       </div>
-                      <div>
-                        <label style={{ display: "block", fontSize: 14, marginBottom: 4 }}>
-                          Foto (URL)
-                        </label>
-                        <input
-                          type="text"
-                          value={editFoto}
-                          onChange={(e) => setEditFoto(e.target.value)}
-                          style={{
-                            width: "100%",
-                            padding: 8,
-                            fontSize: 14,
-                            border: "1px solid #ccc",
-                            borderRadius: 4,
-                          }}
-                        />
-                        {editFoto && (
-                          <div style={{ marginTop: 8 }}>
-                            <img
-                              src={editFoto}
-                              alt="Preview"
-                              style={{
-                                maxWidth: 200,
-                                maxHeight: 150,
-                                borderRadius: 4,
-                                objectFit: "cover",
-                                border: "1px solid #ddd",
-                              }}
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = "none";
-                              }}
-                            />
-                          </div>
-                        )}
-                        <div style={{ marginTop: 8 }}>
-                          <input
-                            type="file"
-                            disabled
-                            style={{
-                              padding: 8,
-                              fontSize: 14,
-                              border: "1px solid #ccc",
-                              borderRadius: 4,
-                              backgroundColor: "#f5f5f5",
-                              cursor: "not-allowed",
-                            }}
-                          />
-                          <p style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
-                            Subida de archivo (próximamente)
+                      
+                      {/* Fotos */}
+                      {editId ? (
+                        <div style={{ marginTop: 20 }}>
+                          <h4 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>
+                            Fotos
+                          </h4>
+                          <p style={{ fontSize: 13, color: "#666", marginBottom: 12 }}>
+                            La primera foto (orden #1) es la principal.
                           </p>
+                          <PhotoManager entity="poi" entityId={editId} />
                         </div>
-                      </div>
+                      ) : (
+                        <div
+                          style={{
+                            marginTop: 20,
+                            padding: 12,
+                            backgroundColor: "#f9fafb",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: 6,
+                            fontSize: 14,
+                            color: "#6b7280",
+                          }}
+                        >
+                          Guarda el POI para poder subir fotos.
+                        </div>
+                      )}
+                      
                       <div style={{ display: "flex", gap: 8 }}>
                         <button
                           type="button"

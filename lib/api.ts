@@ -51,7 +51,15 @@ export async function getPoiById(poiId: string | number) {
     throw new Error(`Error cargando POI: ${res.status}`);
   }
 
-  return await res.json();
+  const poi = await res.json();
+  
+  // Si tiene fotos, extraer la primera como foto principal
+  if (Array.isArray(poi.fotosPoi) && poi.fotosPoi.length > 0) {
+    const fotoPrincipal = poi.fotosPoi.find((f: any) => f.orden === 1) ?? poi.fotosPoi[0];
+    poi.fotoPrincipalUrl = fotoPrincipal?.url ?? null;
+  }
+  
+  return poi;
 }
 
 // Tipos para Rutas
