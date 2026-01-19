@@ -32,7 +32,7 @@ async function fetchContenidosPueblo(puebloId: number, tipo?: string) {
 export default async function ContenidosPuebloPage({
   searchParams,
 }: {
-  searchParams: Promise<{ puebloId?: string; tipo?: string }>;
+  searchParams: Promise<{ puebloId?: string; puebloNombre?: string; tipo?: string }>;
 }) {
   const me = await getMeServer();
   if (!me) redirect('/entrar');
@@ -40,23 +40,33 @@ export default async function ContenidosPuebloPage({
 
   const params = await searchParams;
   
-  // Si viene puebloId en query, usarlo; sino, usar primer pueblo de alcalde
-  let puebloId: number;
-  let puebloNombre: string;
-  
-  if (params.puebloId) {
-    puebloId = Number(params.puebloId);
-    // Obtener nombre del pueblo (simplificado: podrías hacer fetch si lo necesitas)
-    puebloNombre = 'Pueblo';
-  } else {
-    const misPueblos = await getMisPueblosServer();
-    if (misPueblos.length === 0) {
-      // Si falla getMisPueblos, redirigir a mis-pueblos en vez de /gestion
-      redirect('/gestion/mis-pueblos');
-    }
-    puebloId = misPueblos[0].id;
-    puebloNombre = misPueblos[0].nombre;
+  // puebloId OBLIGATORIO (source of truth desde searchParams)
+  if (!params.puebloId) {
+    // Si no viene puebloId, redirigir a mis-pueblos
+    redirect('/gestion/mis-pueblos');
   }
+
+  const puebloId = Number(params.puebloId);
+  
+  // Validar que sea número válido
+  if (Number.isNaN(puebloId) || puebloId <= 0) {
+    redirect('/gestion/mis-pueblos');
+  }
+
+  // Obtener nombre del pueblo real
+  let puebloNombre = `Pueblo #${puebloId}`; // Fallback con espacio y #
+  
+  // Prioridad 1: puebloNombre desde query params (viene del dashboard)
+  if (params.puebloNombre) {
+    puebloNombre = decodeURIComponent(params.puebloNombre);
+  } 
+  // Prioridad 2: buscar en mis pueblos (alcaldes)
+  else if (me.rol === 'ALCALDE') {
+    const misPueblos = await getMisPueblosServer();
+    const pueblo = misPueblos.find(p => p.id === puebloId);
+    if (pueblo) puebloNombre = pueblo.nombre;
+  }
+  // Admin sin puebloNombre: queda el fallback "Pueblo #37"
 
   const contenidos = await fetchContenidosPueblo(puebloId, params.tipo);
   
@@ -78,7 +88,7 @@ export default async function ContenidosPuebloPage({
 
         <Link
           className="rounded-md border px-3 py-2 text-sm hover:underline"
-          href={`/gestion/pueblo/contenidos/nuevo${params.puebloId ? `?puebloId=${params.puebloId}` : ''}`}
+          href={`/gestion/pueblo/contenidos/nuevo?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}`}
         >
           + Nuevo {params.tipo === 'NOTICIA' ? 'noticia' : params.tipo === 'EVENTO' ? 'evento' : 'contenido'}
         </Link>

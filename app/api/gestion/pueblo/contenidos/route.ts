@@ -19,11 +19,19 @@ export async function GET(req: Request) {
   const tipo = searchParams.get('tipo');
   const limit = searchParams.get('limit') ?? '100';
 
+  // puebloId OBLIGATORIO para evitar listados globales por accidente
+  if (!puebloId) {
+    return NextResponse.json(
+      { message: 'puebloId requerido' },
+      { status: 400 }
+    );
+  }
+
   const params = new URLSearchParams();
-  if (puebloId) params.set('puebloId', puebloId);
+  params.set('puebloId', puebloId);
   if (tipo) params.set('tipo', tipo);
   params.set('limit', limit);
-  const queryString = params.toString() ? `?${params.toString()}` : '';
+  const queryString = `?${params.toString()}`;
 
   const upstream = await fetch(`${API_BASE}/admin/contenidos${queryString}`, {
     headers: { Authorization: `Bearer ${token}` },

@@ -46,15 +46,21 @@ export default async function GestionPuebloPage({
       <div className="mt-6 rounded-md border p-4 text-sm text-gray-600">
         <div className="font-medium text-gray-800">Acciones</div>
         <div className="mt-3 flex gap-4 text-sm flex-wrap">
-          <Link className="hover:underline" href={`/gestion/pueblo/contenidos?tipo=NOTICIA${puebloId ? `&puebloId=${puebloId}` : ''}`}>
-            Noticias
-          </Link>
-          <Link className="hover:underline" href={`/gestion/pueblo/contenidos?tipo=EVENTO${puebloId ? `&puebloId=${puebloId}` : ''}`}>
-            Eventos
-          </Link>
-          <Link className="hover:underline" href={`/gestion/pueblo/contenidos${puebloId ? `?puebloId=${puebloId}` : ''}`}>
-            Contenidos
-          </Link>
+          {puebloId ? (
+            <>
+              <Link className="hover:underline" href={`/gestion/pueblo/contenidos?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}&tipo=NOTICIA`}>
+                Noticias
+              </Link>
+              <Link className="hover:underline" href={`/gestion/pueblo/contenidos?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}&tipo=EVENTO`}>
+                Eventos
+              </Link>
+              <Link className="hover:underline" href={`/gestion/pueblo/contenidos?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}`}>
+                Contenidos
+              </Link>
+            </>
+          ) : (
+            <span className="text-red-600">Error: No se pudo obtener el ID del pueblo</span>
+          )}
           <Link className="hover:underline" href={`/gestion/pueblos/${slug}/alertas`}>
             Alertas
           </Link>

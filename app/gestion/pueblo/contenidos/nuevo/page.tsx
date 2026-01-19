@@ -3,18 +3,48 @@ import { getMisPueblosServer } from '@/lib/misPueblos';
 import { redirect } from 'next/navigation';
 import NuevoContenidoPuebloClient from './NuevoContenidoPuebloClient';
 
-export default async function NuevoContenidoPuebloPage() {
+export default async function NuevoContenidoPuebloPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ puebloId?: string; puebloNombre?: string; tipo?: string }>;
+}) {
   const me = await getMeServer();
   if (!me) redirect('/entrar');
   if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN') redirect('/cuenta');
 
-  const misPueblos = await getMisPueblosServer();
-  if (misPueblos.length === 0) {
-    // Si falla getMisPueblos, redirigir a mis-pueblos en vez de /gestion
+  const params = await searchParams;
+
+  // puebloId OBLIGATORIO desde searchParams
+  if (!params.puebloId) {
     redirect('/gestion/mis-pueblos');
   }
 
-  const pueblo = misPueblos[0];
+  const puebloId = Number(params.puebloId);
 
-  return <NuevoContenidoPuebloClient puebloId={pueblo.id} puebloNombre={pueblo.nombre} />;
+  // Validar que sea número válido
+  if (Number.isNaN(puebloId) || puebloId <= 0) {
+    redirect('/gestion/mis-pueblos');
+  }
+
+  // Obtener nombre del pueblo
+  let puebloNombre = `Pueblo #${puebloId}`; // Fallback con espacio y #
+
+  // Prioridad 1: puebloNombre desde query params
+  if (params.puebloNombre) {
+    puebloNombre = decodeURIComponent(params.puebloNombre);
+  }
+  // Prioridad 2: buscar en mis pueblos (alcaldes)
+  else if (me.rol === 'ALCALDE') {
+    const misPueblos = await getMisPueblosServer();
+    const pueblo = misPueblos.find(p => p.id === puebloId);
+    if (pueblo) puebloNombre = pueblo.nombre;
+  }
+
+  return (
+    <NuevoContenidoPuebloClient
+      puebloId={puebloId}
+      puebloNombre={puebloNombre}
+      tipoInicial={params.tipo}
+    />
+  );
 }

@@ -2,17 +2,19 @@
 
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
+import CoverPicker from '@/app/_components/media/CoverPicker';
 
 type NuevoContenidoPuebloClientProps = {
   puebloId: number;
   puebloNombre: string;
+  tipoInicial?: string;
 };
 
-export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre }: NuevoContenidoPuebloClientProps) {
+export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tipoInicial }: NuevoContenidoPuebloClientProps) {
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const [tipo, setTipo] = useState('NOTICIA');
+  const [tipo, setTipo] = useState(tipoInicial ?? 'NOTICIA');
   const [titulo, setTitulo] = useState('');
   const [resumen, setResumen] = useState('');
   const [contenidoMd, setContenidoMd] = useState('');
@@ -220,20 +222,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre }: N
           </div>
         )}
 
-        <div>
-          <label className="block font-medium mt-6">Foto de portada</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)}
-            className="mt-2 block w-full text-sm"
-          />
-          {coverFile && (
-            <p className="mt-2 text-sm text-gray-600">
-              Archivo seleccionado: <span className="font-medium">{coverFile.name}</span>
-            </p>
-          )}
-        </div>
+        <CoverPicker onFileSelected={(file) => setCoverFile(file)} />
 
         <div className="space-y-2">
           <label className="block text-sm font-medium">Contenido (Markdown)</label>
