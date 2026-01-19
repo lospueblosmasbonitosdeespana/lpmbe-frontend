@@ -475,18 +475,97 @@ export default async function PuebloPage({
       {poisPOI.length > 0 && (
         <section style={{ marginTop: "32px" }}>
           <h2>Puntos de interés</h2>
-          <ul>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              gap: "20px",
+              marginTop: "16px",
+            }}
+          >
             {poisPOI.map((poi: Poi) => (
-              <li key={poi.id}>
-                <Link
-                  href={`/pueblos/${puebloSafe.slug}/pois/${poi.id}`}
-                  style={{ color: "#0066cc", textDecoration: "none" }}
-                >
-                  {poi.nombre}
-                </Link>
-              </li>
+              <Link
+                key={poi.id}
+                href={`/pueblos/${puebloSafe.slug}/pois/${poi.id}`}
+                style={{
+                  border: "1px solid #ddd",
+                  borderRadius: "8px",
+                  overflow: "hidden",
+                  textDecoration: "none",
+                  color: "inherit",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "box-shadow 0.2s",
+                }}
+              >
+                {poi.foto ? (
+                  <img
+                    src={poi.foto}
+                    alt={poi.nombre}
+                    style={{
+                      width: "100%",
+                      height: "200px",
+                      objectFit: "cover",
+                    }}
+                    loading="lazy"
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "200px",
+                      backgroundColor: "#f0f0f0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#999",
+                      fontSize: "14px",
+                    }}
+                  >
+                    Sin imagen
+                  </div>
+                )}
+
+                <div style={{ padding: "16px" }}>
+                  {poi.categoria && (
+                    <p
+                      style={{
+                        margin: "0 0 8px 0",
+                        fontSize: "12px",
+                        color: "#666",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      {poi.categoria}
+                    </p>
+                  )}
+
+                  <h3
+                    style={{
+                      margin: "0",
+                      fontSize: "18px",
+                      fontWeight: "600",
+                      lineHeight: "1.4",
+                    }}
+                  >
+                    {poi.nombre}
+                  </h3>
+
+                  <p
+                    style={{
+                      margin: "12px 0 0 0",
+                      fontSize: "14px",
+                      color: "#0066cc",
+                      fontWeight: "500",
+                    }}
+                  >
+                    Ver detalle →
+                  </p>
+                </div>
+              </Link>
             ))}
-          </ul>
+          </div>
         </section>
       )}
 
@@ -494,18 +573,97 @@ export default async function PuebloPage({
       {poisMultiexperiencia.length > 0 && (
         <section style={{ marginTop: "32px" }}>
           <h2>Paradas de la experiencia</h2>
-          <ul>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              gap: "20px",
+              marginTop: "16px",
+            }}
+          >
             {poisMultiexperiencia.map((poi: Poi) => (
-              <li key={poi.id}>
-                <Link
-                  href={`/pueblos/${puebloSafe.slug}/pois/${poi.id}`}
-                  style={{ color: "#0066cc", textDecoration: "none" }}
-                >
-                  {poi.nombre}
-                </Link>
-              </li>
+              <Link
+                key={poi.id}
+                href={`/pueblos/${puebloSafe.slug}/pois/${poi.id}`}
+                style={{
+                  border: "1px solid #ddd",
+                  borderRadius: "8px",
+                  overflow: "hidden",
+                  textDecoration: "none",
+                  color: "inherit",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "box-shadow 0.2s",
+                }}
+              >
+                {poi.foto ? (
+                  <img
+                    src={poi.foto}
+                    alt={poi.nombre}
+                    style={{
+                      width: "100%",
+                      height: "200px",
+                      objectFit: "cover",
+                    }}
+                    loading="lazy"
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "200px",
+                      backgroundColor: "#f0f0f0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#999",
+                      fontSize: "14px",
+                    }}
+                  >
+                    Sin imagen
+                  </div>
+                )}
+
+                <div style={{ padding: "16px" }}>
+                  {poi.categoria && (
+                    <p
+                      style={{
+                        margin: "0 0 8px 0",
+                        fontSize: "12px",
+                        color: "#666",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      {poi.categoria}
+                    </p>
+                  )}
+
+                  <h3
+                    style={{
+                      margin: "0",
+                      fontSize: "18px",
+                      fontWeight: "600",
+                      lineHeight: "1.4",
+                    }}
+                  >
+                    {poi.nombre}
+                  </h3>
+
+                  <p
+                    style={{
+                      margin: "12px 0 0 0",
+                      fontSize: "14px",
+                      color: "#0066cc",
+                      fontWeight: "500",
+                    }}
+                  >
+                    Ver detalle →
+                  </p>
+                </div>
+              </Link>
             ))}
-          </ul>
+          </div>
         </section>
       )}
 
@@ -513,18 +671,97 @@ export default async function PuebloPage({
       {poisOtros.length > 0 && (
         <section style={{ marginTop: "32px" }}>
           <h2>Otros</h2>
-          <ul>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              gap: "20px",
+              marginTop: "16px",
+            }}
+          >
             {poisOtros.map((poi: Poi) => (
-              <li key={poi.id}>
-                <Link
-                  href={`/pueblos/${puebloSafe.slug}/pois/${poi.id}`}
-                  style={{ color: "#0066cc", textDecoration: "none" }}
-                >
-                  {poi.nombre}
-                </Link>
-              </li>
+              <Link
+                key={poi.id}
+                href={`/pueblos/${puebloSafe.slug}/pois/${poi.id}`}
+                style={{
+                  border: "1px solid #ddd",
+                  borderRadius: "8px",
+                  overflow: "hidden",
+                  textDecoration: "none",
+                  color: "inherit",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "box-shadow 0.2s",
+                }}
+              >
+                {poi.foto ? (
+                  <img
+                    src={poi.foto}
+                    alt={poi.nombre}
+                    style={{
+                      width: "100%",
+                      height: "200px",
+                      objectFit: "cover",
+                    }}
+                    loading="lazy"
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "200px",
+                      backgroundColor: "#f0f0f0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#999",
+                      fontSize: "14px",
+                    }}
+                  >
+                    Sin imagen
+                  </div>
+                )}
+
+                <div style={{ padding: "16px" }}>
+                  {poi.categoria && (
+                    <p
+                      style={{
+                        margin: "0 0 8px 0",
+                        fontSize: "12px",
+                        color: "#666",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      {poi.categoria}
+                    </p>
+                  )}
+
+                  <h3
+                    style={{
+                      margin: "0",
+                      fontSize: "18px",
+                      fontWeight: "600",
+                      lineHeight: "1.4",
+                    }}
+                  >
+                    {poi.nombre}
+                  </h3>
+
+                  <p
+                    style={{
+                      margin: "12px 0 0 0",
+                      fontSize: "14px",
+                      color: "#0066cc",
+                      fontWeight: "500",
+                    }}
+                  >
+                    Ver detalle →
+                  </p>
+                </div>
+              </Link>
             ))}
-          </ul>
+          </div>
         </section>
       )}
 
