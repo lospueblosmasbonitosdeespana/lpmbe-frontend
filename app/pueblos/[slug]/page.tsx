@@ -7,6 +7,8 @@ import DescripcionPueblo from "./DescripcionPueblo";
 import SemaforoBadge from "../../components/pueblos/SemaforoBadge";
 import MeteoPanel from "./_components/MeteoPanel";
 import { getComunidadFlagSrc } from "@/lib/flags";
+import ContenidosPuebloSection from "./ContenidosPuebloSection";
+import { headers } from "next/headers";
 
 // Helpers para SEO
 function cleanText(input: string) {
@@ -92,6 +94,84 @@ type PuebloSafe = {
   multiexperiencias: any[];
 };
 
+type Contenido = {
+  id: number;
+  titulo: string;
+  tipo: 'EVENTO' | 'NOTICIA' | 'ARTICULO' | 'PAGINA';
+  coverUrl: string | null;
+  slug: string;
+  publishedAt: string | null;
+  fecha_inicio: string | null;
+};
+
+// Función para obtener contenidos del CMS del pueblo
+async function fetchContenidosPueblo(puebloId: number): Promise<Contenido[]> {
+  try {
+    const h = await headers();
+    const host = h.get('host');
+    const proto = h.get('x-forwarded-proto') ?? 'http';
+    const baseUrl = `${proto}://${host}`;
+
+    const res = await fetch(
+      `${baseUrl}/api/public/contenidos?puebloId=${puebloId}&limit=20`,
+      { cache: 'no-store' }
+    );
+
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : data?.items ?? [];
+
+    return items;
+  } catch (error) {
+    console.error('Error fetching contenidos:', error);
+    return [];
+  }
+}
+
+// Función para ordenar y limitar contenidos según reglas
+function procesarContenidos(contenidos: Contenido[]): Contenido[] {
+  const ahora = new Date();
+
+  // Separar por tipo
+  const eventos = contenidos.filter((c) => c.tipo === 'EVENTO');
+  const noticias = contenidos.filter((c) => c.tipo === 'NOTICIA');
+  const articulos = contenidos.filter((c) => c.tipo === 'ARTICULO');
+  const paginas = contenidos.filter((c) => c.tipo === 'PAGINA');
+
+  // Eventos: solo futuros, ordenar por fecha_inicio asc, máximo 3
+  const eventosFuturos = eventos
+    .filter((e) => {
+      if (!e.fecha_inicio) return false;
+      return new Date(e.fecha_inicio) >= ahora;
+    })
+    .sort((a, b) => {
+      if (!a.fecha_inicio || !b.fecha_inicio) return 0;
+      return new Date(a.fecha_inicio).getTime() - new Date(b.fecha_inicio).getTime();
+    })
+    .slice(0, 3);
+
+  // Noticias: ordenar por publishedAt desc, máximo 3
+  const noticiasRecientes = noticias
+    .sort((a, b) => {
+      if (!a.publishedAt || !b.publishedAt) return 0;
+      return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+    })
+    .slice(0, 3);
+
+  // Artículos y páginas: máximo 2 cada uno
+  const articulosLimitados = articulos.slice(0, 2);
+  const paginasLimitadas = paginas.slice(0, 2);
+
+  // Concatenar en orden
+  return [
+    ...eventosFuturos,
+    ...noticiasRecientes,
+    ...articulosLimitados,
+    ...paginasLimitadas,
+  ];
+}
+
 // 🔒 Forzamos render dinámico (no SSG)
 export const dynamic = "force-dynamic";
 
@@ -161,6 +241,10 @@ export default async function PuebloPage({
     noticias: pueblo.noticias ?? [],
     multiexperiencias: (pueblo as any).multiexperiencias ?? [],
   };
+
+  // Obtener contenidos del CMS
+  const contenidosCMS = await fetchContenidosPueblo(puebloSafe.id);
+  const contenidosProcesados = procesarContenidos(contenidosCMS);
 
   // Proteger fotos con Array.isArray
   const fotos = Array.isArray(puebloSafe.fotosPueblo) ? puebloSafe.fotosPueblo : [];
@@ -498,19 +582,22 @@ export default async function PuebloPage({
         </section>
       )}
 
-      {/* EVENTOS */}
+      {/* CONTENIDOS DEL PUEBLO (CMS) */}
+      <ContenidosPuebloSection contenidos={contenidosProcesados} />
+
+      {/* EVENTOS Y NOTICIAS LEGACY - COMENTADO
       <FeedSection
         title="Eventos"
         items={eventosFeed}
         emptyText="No hay eventos publicados"
       />
 
-      {/* NOTICIAS */}
       <FeedSection
         title="Noticias"
         items={noticiasFeed}
         emptyText="No hay noticias publicadas"
       />
+      */}
     </main>
   );
 }
