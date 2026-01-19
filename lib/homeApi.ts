@@ -78,6 +78,9 @@ export async function getHomeConfig(): Promise<HomeConfig> {
       }))
       .slice(0, 5);  // Solo limitar cantidad, NO filtrar por hidden ni por image vacío
     
+    // Si el backend no devuelve themes, usar fallback local
+    const fallback = getFallbackHomeConfig();
+    
     return {
       hero: {
         title: hero.title ?? '',
@@ -85,7 +88,9 @@ export async function getHomeConfig(): Promise<HomeConfig> {
         intervalMs: Number(hero.intervalMs) || 6000,
         slides,
       },
-      themes: Array.isArray(data.themes) ? data.themes : [],
+      themes: Array.isArray(data.themes) && data.themes.length > 0 
+        ? data.themes 
+        : fallback.themes,
       homeRutas: {
         enabled: data.homeRutas?.enabled ?? true,
         count: data.homeRutas?.count ?? 4,
