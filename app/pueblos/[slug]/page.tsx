@@ -334,6 +334,25 @@ export default async function PuebloPage({
 
   return (
     <main>
+      {/* Estilos para galería responsive */}
+      <style>{`
+        .galeria-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 16px;
+        }
+        @media (max-width: 1024px) {
+          .galeria-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+        @media (max-width: 640px) {
+          .galeria-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+
       {/* HEADER CON BANDERA */}
       <header className="mb-6">
         <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-tight">
@@ -388,24 +407,36 @@ export default async function PuebloPage({
 
       {/* GALERÍA */}
       {fotosGalería.length > 0 && (
-        <section style={{ marginTop: "32px" }}>
-          <h2>Galería</h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: "16px",
-              marginTop: "16px",
-            }}
-          >
+        <section
+          style={{
+            marginTop: "48px",
+            padding: "32px 0",
+            backgroundColor: "#fff",
+          }}
+        >
+          <h2 style={{ marginBottom: "24px" }}>Galería</h2>
+          <div className="galeria-grid">
             {fotosGalería.map((foto: FotoPueblo, index: number) => (
-              <img
+              <div
                 key={foto.id}
-                src={foto.url}
-                alt={`${puebloSafe.nombre} - Foto ${index + 1}`}
-                loading="lazy"
-                style={{ width: "100%", height: "auto", borderRadius: "8px" }}
-              />
+                style={{
+                  aspectRatio: "4 / 3",
+                  overflow: "hidden",
+                  backgroundColor: "#f5f5f5",
+                }}
+              >
+                <img
+                  src={foto.url}
+                  alt={`${puebloSafe.nombre} - Foto ${index + 1}`}
+                  loading="lazy"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
+              </div>
             ))}
           </div>
         </section>
