@@ -102,8 +102,7 @@ type Contenido = {
   coverUrl: string | null;
   slug: string;
   publishedAt: string | null;
-  fecha_inicio: string | null;
-  fechaInicio: string | null;  // Alias del backend (para compatibilidad)
+  fechaInicio: string | null;
   fechaFin: string | null;
 };
 
@@ -142,18 +141,15 @@ function procesarContenidos(contenidos: Contenido[]): Contenido[] {
   const articulos = contenidos.filter((c) => c.tipo === 'ARTICULO');
   const paginas = contenidos.filter((c) => c.tipo === 'PAGINA');
 
-  // Eventos: solo futuros, ordenar por fecha_inicio asc, máximo 3
+  // Eventos: solo futuros, ordenar por fechaInicio asc, máximo 3
   const eventosFuturos = eventos
     .filter((e) => {
-      const fechaEvento = e.fechaInicio || e.fecha_inicio;
-      if (!fechaEvento) return false;
-      return new Date(fechaEvento) >= ahora;
+      if (!e.fechaInicio) return false;
+      return new Date(e.fechaInicio) >= ahora;
     })
     .sort((a, b) => {
-      const fechaA = a.fechaInicio || a.fecha_inicio;
-      const fechaB = b.fechaInicio || b.fecha_inicio;
-      if (!fechaA || !fechaB) return 0;
-      return new Date(fechaA).getTime() - new Date(fechaB).getTime();
+      if (!a.fechaInicio || !b.fechaInicio) return 0;
+      return new Date(a.fechaInicio).getTime() - new Date(b.fechaInicio).getTime();
     })
     .slice(0, 3);
 

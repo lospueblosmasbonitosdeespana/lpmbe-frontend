@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 
 type Contenido = {
   id: number;
@@ -9,7 +10,6 @@ type Contenido = {
   coverUrl: string | null;
   slug: string;
   publishedAt: string | null;
-  fecha_inicio: string | null;
   fechaInicio: string | null;
   fechaFin: string | null;
 };
@@ -17,57 +17,6 @@ type Contenido = {
 type ContenidosPuebloSectionProps = {
   contenidos: Contenido[];
 };
-
-function formatearFecha(fecha: string | null): string {
-  if (!fecha) return '';
-  try {
-    const date = new Date(fecha);
-    return date.toLocaleDateString('es-ES', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-  } catch {
-    return '';
-  }
-}
-
-function formatearFechaEvento(fechaInicio: string | null, fechaFin: string | null): string {
-  if (!fechaInicio) return '';
-  
-  try {
-    const inicio = new Date(fechaInicio);
-    const opcionesFecha: Intl.DateTimeFormatOptions = {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    };
-    const opcionesHora: Intl.DateTimeFormatOptions = {
-      hour: '2-digit',
-      minute: '2-digit',
-    };
-
-    const fechaInicioStr = inicio.toLocaleDateString('es-ES', opcionesFecha);
-    const horaInicioStr = inicio.toLocaleTimeString('es-ES', opcionesHora);
-
-    if (fechaFin) {
-      const fin = new Date(fechaFin);
-      const fechaFinStr = fin.toLocaleDateString('es-ES', opcionesFecha);
-      const horaFinStr = fin.toLocaleTimeString('es-ES', opcionesHora);
-      
-      // Si es el mismo día, mostrar solo una fecha
-      if (fechaInicioStr === fechaFinStr) {
-        return `${fechaInicioStr} · ${horaInicioStr} — ${horaFinStr}`;
-      }
-      
-      return `${fechaInicioStr} · ${horaInicioStr} — ${fechaFinStr} · ${horaFinStr}`;
-    }
-
-    return `${fechaInicioStr} · ${horaInicioStr}`;
-  } catch {
-    return '';
-  }
-}
 
 export default function ContenidosPuebloSection({
   contenidos,
@@ -88,7 +37,11 @@ export default function ContenidosPuebloSection({
       >
         {contenidos.map((contenido) => {
           const esEvento = contenido.tipo === 'EVENTO';
-          const fechaEvento = esEvento ? (contenido.fechaInicio || contenido.fecha_inicio) : null;
+          const labelFecha = esEvento && contenido.fechaInicio 
+            ? formatEventoRangeEs(contenido.fechaInicio, contenido.fechaFin)
+            : contenido.publishedAt 
+            ? formatDateTimeEs(contenido.publishedAt)
+            : '';
 
           return (
             <Link
@@ -179,8 +132,8 @@ export default function ContenidosPuebloSection({
                     {contenido.titulo}
                   </h3>
 
-                  {/* Fecha: diferente según tipo */}
-                  {esEvento && fechaEvento ? (
+                  {/* Fecha */}
+                  {labelFecha && (
                     <p
                       style={{
                         margin: '0 0 12px 0',
@@ -189,20 +142,9 @@ export default function ContenidosPuebloSection({
                         lineHeight: '1.4',
                       }}
                     >
-                      {formatearFechaEvento(fechaEvento, contenido.fechaFin)}
+                      {labelFecha}
                     </p>
-                  ) : contenido.publishedAt ? (
-                    <p
-                      style={{
-                        margin: '0 0 12px 0',
-                        fontSize: '13px',
-                        color: '#999',
-                        lineHeight: '1.4',
-                      }}
-                    >
-                      {formatearFecha(contenido.publishedAt)}
-                    </p>
-                  ) : null}
+                  )}
 
                   {/* Texto Ver más (solo informativo) */}
                   <div style={{ marginTop: 'auto', paddingTop: '8px' }}>

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import CoverPicker from '@/app/_components/media/CoverPicker';
 import MarkdownEditor from '@/app/_components/editor/MarkdownEditor';
 import ImageManager from '@/app/_components/editor/ImageManager';
+import { toDatetimeLocal, datetimeLocalToIsoUtc } from '@/app/_lib/dates';
 
 type EditarContenidoClientProps = {
   id: string;
@@ -35,16 +36,7 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
 
-  // HELPER FECHA/HORA
-  function toDatetimeLocal(isoString: string): string {
-    const date = new Date(isoString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  }
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -201,13 +193,13 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
       };
       if (newCoverUrl) payload.coverUrl = newCoverUrl;
       if (estado === 'PROGRAMADA' && publishedAt) {
-        payload.publishedAt = new Date(publishedAt).toISOString();
+        payload.publishedAt = datetimeLocalToIsoUtc(publishedAt);
       }
       // Añadir fechas del evento
       if (tipo === 'EVENTO' && fechaInicioLocal) {
-        payload.fechaInicio = new Date(fechaInicioLocal).toISOString();
+        payload.fechaInicio = datetimeLocalToIsoUtc(fechaInicioLocal);
         if (fechaFinLocal) {
-          payload.fechaFin = new Date(fechaFinLocal).toISOString();
+          payload.fechaFin = datetimeLocalToIsoUtc(fechaFinLocal);
         }
       }
 

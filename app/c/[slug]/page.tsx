@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
 import BackButton from './BackButton';
+import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -18,7 +19,6 @@ type Contenido = {
   estado: string;
   publishedAt?: string;
   createdAt?: string;
-  fecha_inicio?: string;
   fechaInicio?: string;
   fechaFin?: string;
 };
@@ -87,51 +87,11 @@ export default async function ContenidoPage({
 
   // Determinar fecha de publicación
   const fechaPublicacion = contenido.publishedAt ?? contenido.createdAt;
-  const fechaPublicacionFormateada = fechaPublicacion
-    ? new Date(fechaPublicacion).toLocaleDateString('es-ES', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-    : '';
+  const fechaPublicacionFormateada = fechaPublicacion ? formatDateTimeEs(fechaPublicacion) : '';
 
   // Formatear fechas del evento si es EVENTO
   const esEvento = contenido.tipo === 'EVENTO';
-  const fechaInicioEvento = esEvento ? (contenido.fechaInicio || contenido.fecha_inicio) : null;
-  
-  function formatearFechaEvento(inicio: string, fin?: string): string {
-    try {
-      const fechaInicio = new Date(inicio);
-      const opcionesFecha: Intl.DateTimeFormatOptions = {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      };
-      const opcionesHora: Intl.DateTimeFormatOptions = {
-        hour: '2-digit',
-        minute: '2-digit',
-      };
-
-      const fechaInicioStr = fechaInicio.toLocaleDateString('es-ES', opcionesFecha);
-      const horaInicioStr = fechaInicio.toLocaleTimeString('es-ES', opcionesHora);
-
-      if (fin) {
-        const fechaFin = new Date(fin);
-        const fechaFinStr = fechaFin.toLocaleDateString('es-ES', opcionesFecha);
-        const horaFinStr = fechaFin.toLocaleTimeString('es-ES', opcionesHora);
-        
-        if (fechaInicioStr === fechaFinStr) {
-          return `${fechaInicioStr} de ${horaInicioStr} a ${horaFinStr}`;
-        }
-        
-        return `Del ${fechaInicioStr} (${horaInicioStr}) al ${fechaFinStr} (${horaFinStr})`;
-      }
-
-      return `${fechaInicioStr} a las ${horaInicioStr}`;
-    } catch {
-      return '';
-    }
-  }
+  const fechaInicioEvento = esEvento ? contenido.fechaInicio : null;
 
   // Texto del badge según tipo
   const tipoBadge: Record<string, string> = {
@@ -232,7 +192,7 @@ export default async function ContenidoPage({
                   borderRadius: '4px',
                 }}
               >
-                <strong>Evento:</strong> {formatearFechaEvento(fechaInicioEvento, contenido.fechaFin)}
+                <strong>Evento:</strong> {formatEventoRangeEs(fechaInicioEvento, contenido.fechaFin)}
               </p>
             )}
 

@@ -8,7 +8,7 @@ type MarkdownEditorProps = {
   onChange: (value: string) => void;
   uploading: boolean;
   onUploadImages: () => void;
-  textareaRef?: React.RefObject<HTMLTextAreaElement>;
+  textareaRef?: React.RefObject<HTMLTextAreaElement | null>;
 };
 
 export default function MarkdownEditor({

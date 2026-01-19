@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 
 type Contenido = {
   id: number;
@@ -22,7 +22,7 @@ const TIPOS = [
   { key: 'ARTICULO', label: 'Artículos' },
 ];
 
-export default function ActualidadPage() {
+function ActualidadContent() {
   const searchParams = useSearchParams();
   const tipoParam = searchParams.get('tipo') ?? 'TODOS';
   
@@ -158,5 +158,13 @@ export default function ActualidadPage() {
         </Link>
       </div>
     </main>
+  );
+}
+
+export default function ActualidadPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-4xl px-6 py-10 text-gray-600">Cargando...</div>}>
+      <ActualidadContent />
+    </Suspense>
   );
 }
