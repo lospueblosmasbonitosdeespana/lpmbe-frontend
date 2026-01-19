@@ -2,7 +2,7 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
-import Link from 'next/link';
+import BackButton from './BackButton';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -222,12 +222,7 @@ export default async function ContenidoPage({
               borderTop: '1px solid #e5e5e5',
             }}
           >
-            <Link
-              href="/actualidad"
-              className="link-volver"
-            >
-              ← Volver a actualidad
-            </Link>
+            <BackButton />
           </div>
         </div>
       </article>
