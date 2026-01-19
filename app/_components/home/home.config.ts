@@ -3,9 +3,9 @@ export const homeConfig = {
     title: "Los Pueblos Más Bonitos de España",
     subtitle: "Descubre, planifica y explora.",
     slides: [
-      { image: "/hero/1.jpg", alt: "Slide 1" },
-      { image: "/hero/2.jpg", alt: "Slide 2" },
-      { image: "/hero/3.jpg", alt: "Slide 3" },
+      { image: "/hero/1.jpg", alt: "Slide 1", hidden: false },
+      { image: "/hero/2.jpg", alt: "Slide 2", hidden: false },
+      { image: "/hero/3.jpg", alt: "Slide 3", hidden: false },
     ],
     intervalMs: 6000,
   },

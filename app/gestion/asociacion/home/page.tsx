@@ -1,16 +1,108 @@
 import Link from 'next/link';
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
-import { getHomeConfig } from '@/lib/homeApi';
+import { getToken } from '@/lib/auth';
+import { getApiUrl } from '@/lib/api';
 import HomeConfigForm from './HomeConfigForm';
+import type { HomeConfig, HomeSlide } from '@/lib/homeApi';
+
+async function getAdminHomeConfig(token: string): Promise<HomeConfig> {
+  const API_BASE = getApiUrl();
+  
+  try {
+    // Llamada DIRECTA al backend admin (sin filtrar ocultas)
+    const res = await fetch(`${API_BASE}/admin/home`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      console.warn(`[ADMIN HOME] Backend respondió ${res.status}`);
+      return getFallbackConfig();
+    }
+
+    const data = await res.json();
+    
+    // Normalizar: asegurar que slides existe y está bien formado
+    const hero = data.hero ?? {};
+    let slides: HomeSlide[] = [];
+
+    if (Array.isArray(hero.slides)) {
+      slides = hero.slides;
+    } else if (Array.isArray(hero.images)) {
+      // Convertir images legacy a slides
+      slides = hero.images.map((u: any) => ({ 
+        image: String(u || ''), 
+        alt: '', 
+        hidden: false 
+      }));
+    }
+
+    // Normalizar cada slide (SIN filtrar por hidden ni por image vacío)
+    slides = slides
+      .map((s: any) => ({
+        image: typeof s?.image === 'string' ? s.image : '',
+        alt: typeof s?.alt === 'string' ? s.alt : '',
+        hidden: !!s?.hidden,
+        title: typeof s?.title === 'string' ? s.title : undefined,
+        subtitle: typeof s?.subtitle === 'string' ? s.subtitle : undefined,
+        cta: s?.cta && typeof s.cta === 'object' ? s.cta : undefined,
+      }))
+      .slice(0, 5);  // Solo limitar cantidad
+
+    return {
+      hero: {
+        title: hero.title ?? '',
+        subtitle: hero.subtitle ?? '',
+        intervalMs: Number(hero.intervalMs) || 6000,
+        slides,
+      },
+      themes: Array.isArray(data.themes) ? data.themes : [],
+      homeRutas: {
+        enabled: data.homeRutas?.enabled ?? true,
+        count: data.homeRutas?.count ?? 4,
+      },
+      actualidad: {
+        limit: data.actualidad?.limit ?? 6,
+      },
+    };
+  } catch (err) {
+    console.error('[ADMIN HOME] Error cargando config:', err);
+    return getFallbackConfig();
+  }
+}
+
+function getFallbackConfig(): HomeConfig {
+  return {
+    hero: {
+      title: "Los Pueblos Más Bonitos de España",
+      subtitle: "Descubre la esencia de nuestros pueblos",
+      slides: [],
+      intervalMs: 6000,
+    },
+    themes: [],
+    homeRutas: {
+      enabled: true,
+      count: 4,
+    },
+    actualidad: {
+      limit: 6,
+    },
+  };
+}
 
 export default async function GestionHomePage() {
   const me = await getMeServer();
   if (!me) redirect('/entrar');
   if (me.rol !== 'ADMIN') redirect('/cuenta');
 
-  // Cargar configuración actual
-  const config = await getHomeConfig();
+  const token = await getToken();
+  if (!token) redirect('/entrar');
+
+  // Cargar configuración ADMIN (sin filtrar ocultas)
+  const config = await getAdminHomeConfig(token);
 
   return (
     <main className="mx-auto max-w-5xl p-6">

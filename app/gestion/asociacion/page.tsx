@@ -42,6 +42,11 @@ export default async function GestionAsociacionPage() {
               Club de amigos
             </Link>
           </li>
+          <li>
+            <Link className="hover:underline" href="/gestion/asociacion/ajustes">
+              Ajustes de marca (logo y nombre)
+            </Link>
+          </li>
         </ul>
       </div>
 

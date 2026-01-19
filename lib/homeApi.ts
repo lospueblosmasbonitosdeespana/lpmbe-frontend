@@ -2,12 +2,11 @@ import { getApiUrl } from "./api";
 
 export type HomeSlide = {
   image: string;
+  alt?: string;
   title?: string;
   subtitle?: string;
-  cta?: {
-    text: string;
-    href: string;
-  };
+  cta?: { text: string; href: string };
+  hidden?: boolean; // NUEVO: permite ocultar sin borrar
 };
 
 export type HomeTheme = {
@@ -42,19 +41,61 @@ export async function getHomeConfig(): Promise<HomeConfig> {
   
   try {
     const res = await fetch(`${API_BASE}/home`, {
-      cache: "no-store", // Cambiar a no-store para evitar cache en build
+      cache: "no-store",
     });
 
-    // Si no es OK, devolver fallback en lugar de lanzar error
     if (!res.ok) {
       console.warn(`[HOME] Backend respondió ${res.status}, usando fallback`);
       return getFallbackHomeConfig();
     }
 
-    return await res.json();
+    const data = await res.json();
+    
+    // Normalizar hero: soportar slides o images legacy
+    const hero = data.hero ?? {};
+    let slides: HomeSlide[] = [];
+
+    if (Array.isArray(hero.slides)) {
+      slides = hero.slides;
+    } else if (Array.isArray(hero.images)) {
+      // Convertir images legacy a slides
+      slides = hero.images.map((u: any) => ({ 
+        image: String(u || ''), 
+        alt: '', 
+        hidden: false 
+      }));
+    }
+
+    // Normalizar cada slide (sin filtrar por image vacío ni por hidden)
+    slides = slides
+      .map((s: any) => ({
+        image: typeof s?.image === 'string' ? s.image : '',
+        alt: typeof s?.alt === 'string' ? s.alt : '',
+        hidden: !!s?.hidden,
+        title: typeof s?.title === 'string' ? s.title : undefined,
+        subtitle: typeof s?.subtitle === 'string' ? s.subtitle : undefined,
+        cta: s?.cta && typeof s.cta === 'object' ? s.cta : undefined,
+      }))
+      .slice(0, 5);  // Solo limitar cantidad, NO filtrar por hidden ni por image vacío
+    
+    return {
+      hero: {
+        title: hero.title ?? '',
+        subtitle: hero.subtitle ?? '',
+        intervalMs: Number(hero.intervalMs) || 6000,
+        slides,
+      },
+      themes: Array.isArray(data.themes) ? data.themes : [],
+      homeRutas: {
+        enabled: data.homeRutas?.enabled ?? true,
+        count: data.homeRutas?.count ?? 4,
+      },
+      actualidad: {
+        limit: data.actualidad?.limit ?? 6,
+      },
+    };
   } catch (err) {
     console.error('[HOME] Error cargando config desde backend:', err);
-    // Fallback a config local si falla
     return getFallbackHomeConfig();
   }
 }
@@ -66,13 +107,11 @@ export async function updateHomeConfig(
   token: string,
   patch: Partial<HomeConfig>
 ): Promise<void> {
-  const API_BASE = getApiUrl();
-  
-  const res = await fetch(`${API_BASE}/admin/home`, {
+  // Usar proxy de Next.js que maneja auth automáticamente
+  const res = await fetch('/api/admin/home', {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(patch),
   });
@@ -91,14 +130,8 @@ function getFallbackHomeConfig(): HomeConfig {
     hero: {
       title: "Los Pueblos Más Bonitos de España",
       subtitle: "Descubre la esencia de nuestros pueblos",
-      slides: [
-        {
-          image: "https://via.placeholder.com/1920x800/4a90e2/ffffff?text=Slide+1",
-          title: "Bienvenido",
-          subtitle: "Explora los pueblos más bonitos",
-        },
-      ],
-      intervalMs: 5000,
+      slides: [],
+      intervalMs: 6000,
     },
     themes: [
       {

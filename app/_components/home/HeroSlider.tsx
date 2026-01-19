@@ -27,17 +27,31 @@ export function HeroSlider({
   intervalMs = 6000,
   showControls = true,
 }: Props) {
-  const safeSlides = useMemo(
-    () => (Array.isArray(slides) ? slides.filter((s) => !!s?.image) : []),
-    [slides]
-  );
+  // FILTRAR SLIDES INVÁLIDOS (CRÍTICO)
+  const safeSlides = useMemo(() => {
+    if (!Array.isArray(slides)) return [];
+    return slides
+      .filter((s) => s && typeof s.image === 'string' && s.image.length > 0)
+      .slice(0, 5); // Limitar a 5 máximo
+  }, [slides]);
+
+  const slidesLen = safeSlides.length;
+
+  // intervalMs puede venir como string desde config → normalizar
+  const interval = Math.max(2000, Number(intervalMs) || 6000);
 
   const reducedMotion = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);
 
+  // Asegurar que el índice actual siempre es válido cuando cambia el array
+  useEffect(() => {
+    if (slidesLen === 0) return;
+    setIndex((i) => Math.min(i, slidesLen - 1));
+  }, [slidesLen]);
+
   const goTo = (i: number) => {
-    if (safeSlides.length === 0) return;
-    const next = ((i % safeSlides.length) + safeSlides.length) % safeSlides.length;
+    if (slidesLen === 0) return;
+    const next = ((i % slidesLen) + slidesLen) % slidesLen;
     setIndex(next);
   };
 
@@ -54,19 +68,20 @@ export function HeroSlider({
     });
   }, [safeSlides]);
 
+  // Auto-rotate (SIEMPRE avanza cuando hay 2+ slides)
   useEffect(() => {
-    if (safeSlides.length <= 1) return;
-    if (reducedMotion) return;
+    if (slidesLen <= 1) return;
 
-    const t = window.setInterval(() => {
-      setIndex((i) => (i + 1) % safeSlides.length);
-    }, intervalMs);
+    const id = window.setInterval(() => {
+      setIndex((i) => (i + 1) % slidesLen);
+    }, interval);
 
-    return () => window.clearInterval(t);
-  }, [safeSlides.length, intervalMs, reducedMotion]);
+    return () => window.clearInterval(id);
+  }, [slidesLen, interval]);
 
-  if (safeSlides.length === 0) {
-    return <div className="absolute inset-0 bg-gray-200" />;
+  // FALLBACK SI NO HAY SLIDES VÁLIDOS
+  if (slidesLen === 0) {
+    return null;
   }
 
   return (

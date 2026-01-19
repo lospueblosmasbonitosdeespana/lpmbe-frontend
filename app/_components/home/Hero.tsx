@@ -11,10 +11,17 @@ export function Hero({ configHero, floating }: HeroProps) {
   // Usar config del backend o fallback local
   const hero = configHero ?? homeConfig.hero;
 
+  // Convertir slides a formato para HeroSlider
+  // En admin se muestran todas (incluso hidden)
+  // En público el backend ya filtra
+  const slides = (hero?.slides || [])
+    .filter((s) => typeof s.image === 'string' && s.image.length > 0)
+    .map((s) => ({ image: s.image, alt: s.alt || '' }));
+
   return (
     <section className="relative h-[420px] md:h-[520px] overflow-hidden">
       <HeroSlider
-        slides={[...(hero?.slides ?? [])]}
+        slides={slides}
         intervalMs={hero?.intervalMs ?? 6000}
         showControls
       />

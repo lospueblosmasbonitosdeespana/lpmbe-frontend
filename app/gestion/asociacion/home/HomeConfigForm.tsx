@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { updateHomeConfig, type HomeConfig, type HomeSlide, type HomeTheme } from "@/lib/homeApi";
 
 type HomeConfigFormProps = {
@@ -16,6 +16,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
   // Subir imagen a R2
   async function uploadImage(file: File): Promise<string> {
     setUploading(true);
+    setMessage(null);
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -36,20 +37,61 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
     }
   }
 
+  // Cambiar número de slides (1-5)
+  const setSlidesCount = (n: number) => {
+    setConfig((prev) => {
+      const cur = prev.hero?.slides ?? [];
+      const next = [...cur];
+
+      while (next.length < n) next.push({ image: '', alt: '', hidden: false });
+      while (next.length > n) next.pop();
+
+      return { ...prev, hero: { ...prev.hero, slides: next } };
+    });
+  };
+
   // Guardar configuración
   async function handleSave() {
     setSaving(true);
     setMessage(null);
 
     try {
-      // Obtener token de sesión
+      // CRÍTICO: NO filtrar slides por hidden
+      // Solo filtrar slides completamente vacíos (sin image)
+      const slides = (config.hero.slides ?? [])
+        .filter((s) => typeof s?.image === "string" && s.image.trim().length > 0)
+        .slice(0, 5)
+        .map((s, i) => ({
+          image: s.image.trim(),
+          alt: typeof s.alt === "string" ? s.alt : "",
+          hidden: i === 0 ? false : !!s.hidden,  // ← Imagen 1 siempre visible
+          title: s.title,
+          subtitle: s.subtitle,
+          cta: s.cta,
+        }));
+
+      const payload = {
+        hero: {
+          title: config.hero.title,
+          subtitle: config.hero.subtitle,
+          intervalMs: config.hero.intervalMs,
+          slides,  // ← Incluye slides con hidden=true
+        },
+        themes: config.themes,
+        homeRutas: config.homeRutas,
+        actualidad: config.actualidad,
+      };
+
+      console.log("HOME PAYLOAD", JSON.stringify(payload, null, 2));
+
+      // Obtener token de sesión (ya no se usa, el proxy lo obtiene de cookies)
       const resMe = await fetch("/api/auth/me");
       if (!resMe.ok) throw new Error("No autorizado");
       
       const meData = await resMe.json();
       const token = meData.token;
 
-      await updateHomeConfig(token, config);
+      await updateHomeConfig(token, payload);
       
       setMessage({ type: "success", text: "Configuración guardada correctamente" });
       
@@ -67,14 +109,13 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
   return (
     <div className="space-y-8">
       {/* Mensaje de éxito/error */}
-      {message && (
-        <div
-          className={`rounded-lg p-4 ${
-            message.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200"
-          }`}
-        >
+      {message && message.type === "error" && (
+        <div className="rounded-lg p-4 bg-red-50 text-red-800 border border-red-200">
+          {message.text}
+        </div>
+      )}
+      {message && message.type === "success" && (
+        <div className="rounded-lg p-4 bg-green-50 text-green-800 border border-green-200">
           {message.text}
         </div>
       )}
@@ -124,118 +165,47 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
               onChange={(e) =>
                 setConfig({
                   ...config,
-                  hero: { ...config.hero, intervalMs: parseInt(e.target.value) },
+                  hero: { ...config.hero, intervalMs: parseInt(e.target.value) || 6000 },
                 })
               }
               className="w-full rounded border border-gray-300 px-3 py-2"
             />
           </div>
 
-          {/* Slides */}
+          {/* Selector de número de imágenes */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium">Slides</label>
-              <button
-                onClick={() => {
-                  const newSlide: HomeSlide = {
-                    image: "https://via.placeholder.com/1920x800",
-                    title: "Nuevo slide",
-                    subtitle: "",
-                  };
-                  setConfig({
-                    ...config,
-                    hero: {
-                      ...config.hero,
-                      slides: [...config.hero.slides, newSlide],
-                    },
+            <label className="block text-sm font-medium mb-1">Número de imágenes</label>
+            <select
+              value={config.hero.slides?.length || 0}
+              onChange={(e) => setSlidesCount(Number(e.target.value))}
+              className="w-full rounded border border-gray-300 px-3 py-2"
+            >
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Imágenes */}
+          <div className="space-y-4">
+            {(config.hero.slides || []).map((slide, idx) => (
+              <SlideEditor
+                key={idx}
+                slide={slide}
+                idx={idx}
+                uploading={uploading}
+                uploadImage={uploadImage}
+                updateSlide={(updatedSlide) => {
+                  setConfig((prev) => {
+                    const slides = [...(prev.hero.slides || [])];
+                    slides[idx] = updatedSlide;
+                    return { ...prev, hero: { ...prev.hero, slides } };
                   });
                 }}
-                className="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700"
-              >
-                + Añadir slide
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {config.hero.slides.map((slide, idx) => (
-                <div key={idx} className="rounded border border-gray-200 p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <span className="text-sm font-medium">Slide {idx + 1}</span>
-                    <button
-                      onClick={() => {
-                        setConfig({
-                          ...config,
-                          hero: {
-                            ...config.hero,
-                            slides: config.hero.slides.filter((_, i) => i !== idx),
-                          },
-                        });
-                      }}
-                      className="text-xs text-red-600 hover:underline"
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs font-medium mb-1">Imagen URL</label>
-                      <input
-                        type="text"
-                        value={slide.image}
-                        onChange={(e) => {
-                          const newSlides = [...config.hero.slides];
-                          newSlides[idx] = { ...newSlides[idx], image: e.target.value };
-                          setConfig({
-                            ...config,
-                            hero: { ...config.hero, slides: newSlides },
-                          });
-                        }}
-                        className="w-full rounded border border-gray-300 px-2 py-1 text-sm"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium mb-1">
-                        Subir imagen
-                      </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-
-                          try {
-                            const url = await uploadImage(file);
-                            const newSlides = [...config.hero.slides];
-                            newSlides[idx] = { ...newSlides[idx], image: url };
-                            setConfig({
-                              ...config,
-                              hero: { ...config.hero, slides: newSlides },
-                            });
-                          } catch (err) {
-                            alert("Error subiendo imagen");
-                          }
-
-                          e.target.value = "";
-                        }}
-                        disabled={uploading}
-                        className="text-xs"
-                      />
-                    </div>
-
-                    {slide.image && (
-                      <img
-                        src={slide.image}
-                        alt={`Slide ${idx + 1}`}
-                        className="h-20 w-auto rounded border"
-                      />
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -274,20 +244,6 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                     onChange={(e) => {
                       const newThemes = [...config.themes];
                       newThemes[idx] = { ...newThemes[idx], href: e.target.value };
-                      setConfig({ ...config, themes: newThemes });
-                    }}
-                    className="w-full rounded border border-gray-300 px-2 py-1 text-sm"
-                  />
-                </div>
-
-                <div className="col-span-2">
-                  <label className="block text-xs font-medium mb-1">Imagen URL</label>
-                  <input
-                    type="text"
-                    value={theme.image}
-                    onChange={(e) => {
-                      const newThemes = [...config.themes];
-                      newThemes[idx] = { ...newThemes[idx], image: e.target.value };
                       setConfig({ ...config, themes: newThemes });
                     }}
                     className="w-full rounded border border-gray-300 px-2 py-1 text-sm"
@@ -371,7 +327,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
               onChange={(e) =>
                 setConfig({
                   ...config,
-                  homeRutas: { ...config.homeRutas, count: parseInt(e.target.value) },
+                  homeRutas: { ...config.homeRutas, count: parseInt(e.target.value) || 4 },
                 })
               }
               className="w-full rounded border border-gray-300 px-3 py-2"
@@ -396,7 +352,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
             onChange={(e) =>
               setConfig({
                 ...config,
-                actualidad: { limit: parseInt(e.target.value) },
+                actualidad: { limit: parseInt(e.target.value) || 6 },
               })
             }
             className="w-full rounded border border-gray-300 px-3 py-2"
@@ -417,6 +373,98 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
         {uploading && (
           <span className="text-sm text-gray-600">Subiendo imagen...</span>
         )}
+      </div>
+    </div>
+  );
+}
+
+// Componente separado para editar cada slide
+function SlideEditor({
+  slide,
+  idx,
+  uploading,
+  uploadImage,
+  updateSlide,
+}: {
+  slide: HomeSlide;
+  idx: number;
+  uploading: boolean;
+  uploadImage: (file: File) => Promise<string>;
+  updateSlide: (slide: HomeSlide) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  return (
+    <div className="rounded border border-gray-200 p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-sm font-medium">Imagen {idx + 1}</span>
+        
+        {/* Checkbox Ocultar - SOLO si idx > 0 */}
+        {idx > 0 && (
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={!!slide.hidden}
+                onChange={(e) => {
+                  updateSlide({ ...slide, hidden: e.target.checked });
+                }}
+                className="h-4 w-4"
+              />
+              Ocultar
+            </label>
+
+            {slide.hidden && (
+              <span className="text-xs font-medium text-red-600">OCULTA</span>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-3">
+        {/* Preview de imagen */}
+        {slide.image && (
+          <img
+            src={slide.image}
+            alt={slide.alt || `Imagen ${idx + 1}`}
+            style={{ opacity: slide.hidden ? 0.35 : 1 }}
+            className="h-40 w-auto rounded border object-cover"
+          />
+        )}
+
+        {/* Input file oculto */}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={async (ev) => {
+            const input = ev.currentTarget;
+            const file = input.files?.[0];
+            if (!file) return;
+
+            // Reset inmediato ANTES del await para evitar crash
+            input.value = "";
+
+            try {
+              const url = await uploadImage(file);
+              updateSlide({ ...slide, image: url });
+            } catch (err) {
+              alert("Error subiendo imagen");
+            }
+          }}
+          disabled={uploading}
+        />
+
+        {/* Botón de subida */}
+        <button
+          type="button"
+          className="inline-flex items-center rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90 disabled:bg-gray-400"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+        >
+          {slide.image ? 'Cambiar imagen' : 'Subir imagen'}
+        </button>
       </div>
     </div>
   );

@@ -11,7 +11,6 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Obtener FormData del request
     const formData = await req.formData();
     
     console.log("[proxy POST uploads] FormData keys:", Array.from(formData.keys()));
@@ -19,22 +18,49 @@ export async function POST(req: Request) {
     const API_BASE = getApiUrl();
     const upstreamUrl = `${API_BASE}/admin/uploads`;
 
-    // Reenviar el FormData tal cual al backend
     const upstream = await fetch(upstreamUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
-        // NO incluir Content-Type aquí, fetch lo añadirá automáticamente con el boundary correcto
       },
       body: formData,
     });
 
-    const text = await upstream.text();
-    console.log("[proxy POST uploads] upstream status=", upstream.status, "text=", text);
+    const raw = await upstream.text();
+    console.log("[proxy POST uploads] upstream status=", upstream.status, "raw=", raw);
 
-    return new Response(text, {
-      status: upstream.status,
-      headers: { 'Content-Type': 'application/json' },
+    let data: any;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      return NextResponse.json(
+        { error: "Upstream no devolvió JSON", raw, status: upstream.status },
+        { status: 500 }
+      );
+    }
+
+    if (!upstream.ok) {
+      return NextResponse.json(
+        { error: "Upload falló", status: upstream.status, data },
+        { status: upstream.status }
+      );
+    }
+
+    // Normaliza: nos quedamos solo con lo que usa el frontend
+    // (URL string obligatoria)
+    if (!data?.url || typeof data.url !== "string") {
+      return NextResponse.json(
+        { error: "Upload OK pero falta data.url", data },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      url: data.url,
+      filename: data.filename ?? null,
+      originalName: data.originalName ?? null,
+      size: data.size ?? null,
+      mimetype: data.mimetype ?? null,
     });
   } catch (error: any) {
     console.error('[proxy POST uploads] error:', error);
