@@ -1,7 +1,7 @@
 import { getMeServer } from '@/lib/me';
 import { getMisPueblosServer } from '@/lib/misPueblos';
 import { redirect } from 'next/navigation';
-import EditarContenidoClient from '../../../../asociacion/contenidos/[id]/editar/EditarContenidoClient';
+import EditarContenidoPuebloClient from './EditarContenidoPuebloClient';
 
 export default async function EditarContenidoPuebloPage({
   params,
@@ -14,7 +14,6 @@ export default async function EditarContenidoPuebloPage({
 
   const { id } = await params;
 
-  // Reutilizar el componente de edición (el backend valida puebloId y permisos)
-  // No necesitamos validar misPueblos aquí porque el backend lo valida por contenidoId
-  return <EditarContenidoClient id={id} />;
+  // Usar el componente de edición específico de PUEBLO
+  return <EditarContenidoPuebloClient id={id} />;
 }

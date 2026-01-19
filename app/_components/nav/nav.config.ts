@@ -62,10 +62,11 @@ export const navConfig: NavItem[] = [
       {
         title: "Temáticas",
         links: [
-          { label: "Gastronomía", href: "/pueblos?tema=gastronomia" },
-          { label: "Naturaleza", href: "/pueblos?tema=naturaleza" },
-          { label: "Cultura", href: "/pueblos?tema=cultura" },
-          { label: "En familia", href: "/pueblos?tema=familia" },
+          { label: "Gastronomía", href: "/experiencias/gastronomia" },
+          { label: "Naturaleza", href: "/experiencias/naturaleza" },
+          { label: "Cultura", href: "/experiencias/cultura" },
+          { label: "En familia", href: "/experiencias/en-familia" },
+          { label: "Petfriendly", href: "/experiencias/petfriendly" },
         ],
       },
       {

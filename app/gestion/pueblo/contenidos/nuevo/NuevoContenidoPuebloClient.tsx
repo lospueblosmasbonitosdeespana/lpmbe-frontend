@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import CoverPicker from '@/app/_components/media/CoverPicker';
 import MarkdownEditor from '@/app/_components/editor/MarkdownEditor';
 import ImageManager from '@/app/_components/editor/ImageManager';
@@ -18,14 +18,40 @@ type UploadedImage = {
   name: string;
 };
 
+type TematicaPage = {
+  id: number;
+  titulo: string;
+  resumen?: string | null;
+  contenido: string;
+  coverUrl?: string | null;
+  published: boolean;
+};
+
+type TematicasPages = {
+  GASTRONOMIA?: TematicaPage;
+  NATURALEZA?: TematicaPage;
+  CULTURA?: TematicaPage;
+  EN_FAMILIA?: TematicaPage;
+  PETFRIENDLY?: TematicaPage;
+};
+
+const CATEGORIAS_TEMATICAS = [
+  { value: 'GASTRONOMIA', label: 'Gastronomía' },
+  { value: 'NATURALEZA', label: 'Naturaleza' },
+  { value: 'CULTURA', label: 'Cultura' },
+  { value: 'EN_FAMILIA', label: 'En familia' },
+  { value: 'PETFRIENDLY', label: 'Petfriendly' },
+];
+
 export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tipoInicial }: NuevoContenidoPuebloClientProps) {
   const router = useRouter();
 
   const [tipo, setTipo] = useState(tipoInicial ?? 'NOTICIA');
+  const [categoria, setCategoria] = useState('');
   const [titulo, setTitulo] = useState('');
   const [resumen, setResumen] = useState('');
   const [contenidoMd, setContenidoMd] = useState('');
-  const [estado, setEstado] = useState('BORRADOR');
+  const [estado, setEstado] = useState('PUBLICADA'); // PUBLICADA por defecto
   const [publishedAt, setPublishedAt] = useState('');
   const [fechaInicioLocal, setFechaInicioLocal] = useState('');
   const [fechaFinLocal, setFechaFinLocal] = useState('');
@@ -34,7 +60,47 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
 
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loadingPage, setLoadingPage] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Cargar páginas temáticas cuando tipo=PAGINA
+  useEffect(() => {
+    if (tipo !== 'PAGINA' || !categoria) return;
+
+    async function loadTematicaPage() {
+      setLoadingPage(true);
+      try {
+        const res = await fetch(`/api/admin/pueblos/${puebloId}/pages`);
+        if (!res.ok) {
+          console.warn('[LOAD TEMATICA] Error', res.status);
+          return;
+        }
+
+        const data: TematicasPages = await res.json();
+        const page = data[categoria as keyof TematicasPages];
+
+        if (page) {
+          setTitulo(page.titulo);
+          setResumen(page.resumen || '');
+          setContenidoMd(page.contenido);
+          setEstado(page.published ? 'PUBLICADA' : 'BORRADOR');
+          // coverUrl ya está en backend, no modificamos coverFile aquí
+        } else {
+          // Limpiar formulario si no existe
+          setTitulo('');
+          setResumen('');
+          setContenidoMd('');
+          setEstado('BORRADOR');
+        }
+      } catch (e) {
+        console.error('[LOAD TEMATICA] Error:', e);
+      } finally {
+        setLoadingPage(false);
+      }
+    }
+
+    loadTematicaPage();
+  }, [tipo, categoria, puebloId]);
 
   async function handleUploadImages() {
     const fileInput = document.createElement('input');
@@ -90,6 +156,11 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
 
     if (!titulo.trim()) return setError('Título requerido');
 
+    // Si es PÁGINA, validar categoría
+    if (tipo === 'PAGINA' && !categoria) {
+      return setError('Selecciona una categoría temática');
+    }
+
     if (estado === 'PROGRAMADA' && !publishedAt) {
       return setError('Selecciona fecha y hora de publicación');
     }
@@ -143,14 +214,46 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
         coverUrl = upJson?.url ?? upJson?.publicUrl ?? null;
       }
 
-      // 2. Crear contenido con puebloId
+      // 2. Si es PÁGINA, usar endpoint /admin/pages
+      if (tipo === 'PAGINA') {
+        const payload: any = {
+          puebloId,
+          category: categoria,
+          titulo: titulo.trim(),
+          resumen: resumen.trim() || null,
+          contenido: contenidoMd,
+          published: estado === 'PUBLICADA',
+        };
+        if (coverUrl) payload.coverUrl = coverUrl;
+
+        console.log('[POST /admin/pages] Payload:', JSON.stringify(payload, null, 2));
+
+        const res = await fetch('/api/admin/pages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setError(data?.message ?? 'No se pudo guardar la página');
+          return;
+        }
+
+        alert('Página temática guardada correctamente');
+        router.replace('/gestion/pueblo/contenidos');
+        router.refresh();
+        return;
+      }
+
+      // 3. Para otros tipos (NOTICIA, EVENTO, ARTICULO), usar endpoint contenidos normal
       const payload: any = {
         tipo,
         titulo: titulo.trim(),
         resumen: resumen.trim() || null,
         contenidoMd,
         estado,
-        puebloId, // INYECTADO AUTOMÁTICAMENTE
+        puebloId,
       };
       if (coverUrl) payload.coverUrl = coverUrl;
       if (estado === 'PROGRAMADA' && publishedAt) {
@@ -196,6 +299,10 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
             onChange={(e) => {
               const newTipo = e.target.value;
               setTipo(newTipo);
+              // Reset categoría si deja de ser PÁGINA
+              if (newTipo !== 'PAGINA') {
+                setCategoria('');
+              }
               // Reset fechas del evento si deja de ser EVENTO
               if (newTipo !== 'EVENTO') {
                 setFechaInicioLocal('');
@@ -206,9 +313,36 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
             <option value="NOTICIA">Noticia</option>
             <option value="EVENTO">Evento</option>
             <option value="ARTICULO">Artículo</option>
-            <option value="PAGINA">Página</option>
+            <option value="PAGINA">Página temática</option>
           </select>
         </div>
+
+        {tipo === 'PAGINA' && (
+          <div className="space-y-2 rounded-md border border-purple-200 bg-purple-50 p-4">
+            <label className="block text-sm font-medium text-purple-900">
+              Categoría temática
+            </label>
+            <select
+              className="w-full rounded-md border px-3 py-2"
+              value={categoria}
+              onChange={(e) => setCategoria(e.target.value)}
+              required
+            >
+              <option value="">Selecciona una categoría</option>
+              {CATEGORIAS_TEMATICAS.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-purple-700">
+              Solo hay 1 página por categoría y pueblo. Si existe, se actualizará.
+            </p>
+            {loadingPage && (
+              <p className="text-xs text-purple-600">Cargando página existente...</p>
+            )}
+          </div>
+        )}
 
         <div className="space-y-2">
           <label className="block text-sm font-medium">Título</label>
@@ -239,12 +373,12 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
             onChange={(e) => setEstado(e.target.value)}
           >
             <option value="BORRADOR">Borrador</option>
-            <option value="PROGRAMADA">Programada</option>
+            {tipo !== 'PAGINA' && <option value="PROGRAMADA">Programada</option>}
             <option value="PUBLICADA">Publicada</option>
           </select>
         </div>
 
-        {estado === 'PROGRAMADA' && (
+        {estado === 'PROGRAMADA' && tipo !== 'PAGINA' && (
           <div className="space-y-2">
             <label className="block text-sm font-medium">
               Fecha y hora de publicación
@@ -322,10 +456,10 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
         <div className="flex items-center gap-4">
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || (tipo === 'PAGINA' && !categoria)}
             className="rounded-md bg-black px-4 py-2 text-white disabled:opacity-50"
           >
-            {saving ? 'Guardando…' : 'Crear contenido'}
+            {saving ? 'Guardando…' : tipo === 'PAGINA' ? 'Guardar página' : 'Crear contenido'}
           </button>
 
           <button

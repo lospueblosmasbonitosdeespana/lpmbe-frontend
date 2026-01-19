@@ -7,17 +7,27 @@ type ContenidoItemPuebloProps = {
   contenido: any;
 };
 
+const CATEGORIA_TO_SLUG: Record<string, string> = {
+  GASTRONOMIA: 'gastronomia',
+  NATURALEZA: 'naturaleza',
+  CULTURA: 'cultura',
+  EN_FAMILIA: 'en-familia',
+  PETFRIENDLY: 'petfriendly',
+};
+
 export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloProps) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
+
+  const isPaginaTematica = contenido.tipo === 'PAGINA_TEMATICA' || String(contenido.id ?? '').startsWith('page-');
 
   async function handleDelete() {
     if (!confirm('¿Borrar este contenido?')) return;
 
     setDeleting(true);
     try {
-      // Usar endpoint genérico (funciona para asociación y pueblo)
-      const res = await fetch(`/api/gestion/asociacion/contenidos/${contenido.id}`, {
+      // FIX: Usar endpoint correcto de PUEBLO
+      const res = await fetch(`/api/gestion/pueblo/contenidos/${contenido.id}`, {
         method: 'DELETE',
       });
 
@@ -44,6 +54,21 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
     return colors[estado] ?? 'bg-gray-100 text-gray-700';
   };
 
+  // Construir link "Ver página"
+  let verPagenaUrl: string | null = null;
+  if (contenido.estado === 'PUBLICADA') {
+    if (isPaginaTematica && contenido.categoria && contenido.pueblo?.slug) {
+      // Página temática: ir a /experiencias/{slug}/pueblos/{puebloSlug}
+      const slugTematica = CATEGORIA_TO_SLUG[contenido.categoria];
+      if (slugTematica) {
+        verPagenaUrl = `/experiencias/${slugTematica}/pueblos/${contenido.pueblo.slug}`;
+      }
+    } else if (contenido.slug) {
+      // Contenido legacy: ir a /c/{slug}
+      verPagenaUrl = `/c/${contenido.slug}`;
+    }
+  }
+
   return (
     <li className="rounded-md border p-4">
       <div className="flex items-start justify-between gap-4">
@@ -57,7 +82,9 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
             >
               {contenido.estado}
             </span>
-            <span className="text-xs text-gray-500 uppercase">{contenido.tipo}</span>
+            <span className="text-xs text-gray-500 uppercase">
+              {isPaginaTematica ? `PÁGINA · ${contenido.categoria}` : contenido.tipo}
+            </span>
           </div>
 
           {contenido.resumen && (
@@ -69,6 +96,7 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
 
           {contenido.coverUrl && (
             <div className="mt-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={contenido.coverUrl}
                 alt={contenido.titulo}
@@ -79,9 +107,9 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
         </div>
 
         <div className="flex flex-col gap-2">
-          {contenido.slug && contenido.estado === 'PUBLICADA' && (
+          {verPagenaUrl && (
             <a
-              href={`/c/${contenido.slug}`}
+              href={verPagenaUrl}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
@@ -91,7 +119,7 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
             </a>
           )}
           <a
-            href={`/gestion/pueblo/contenidos/${contenido.id}/editar`}
+            href={`/gestion/pueblo/contenidos/${contenido.id}/editar?puebloId=${contenido.pueblo?.id ?? ''}&puebloNombre=${encodeURIComponent(contenido.pueblo?.nombre ?? '')}`}
             onClick={(e) => e.stopPropagation()}
             className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
           >

@@ -9,6 +9,7 @@ import MeteoPanel from "./_components/MeteoPanel";
 import { getComunidadFlagSrc } from "@/lib/flags";
 import ContenidosPuebloSection from "./ContenidosPuebloSection";
 import GaleriaGrid from "./GaleriaGrid";
+import TematicasPuebloTabs from "./TematicasPuebloTabs";
 import { headers } from "next/headers";
 
 // Helpers para SEO
@@ -822,6 +823,9 @@ export default async function PuebloPage({
 
       {/* CONTENIDOS DEL PUEBLO (CMS) */}
       <ContenidosPuebloSection contenidos={contenidosProcesados} />
+
+      {/* TEMÁTICAS DEL PUEBLO (Gastronomía, Naturaleza, etc.) */}
+      <TematicasPuebloTabs puebloSlug={puebloSafe.slug} />
 
       {/* EVENTOS Y NOTICIAS LEGACY - COMENTADO
       <FeedSection

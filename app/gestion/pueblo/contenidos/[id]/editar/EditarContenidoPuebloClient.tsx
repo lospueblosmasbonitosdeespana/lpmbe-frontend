@@ -1,53 +1,35 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useRef, useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import CoverPicker from '@/app/_components/media/CoverPicker';
 import MarkdownEditor from '@/app/_components/editor/MarkdownEditor';
 import ImageManager from '@/app/_components/editor/ImageManager';
-import { datetimeLocalToIsoUtc } from '@/app/_lib/dates';
+import { toDatetimeLocal, datetimeLocalToIsoUtc } from '@/app/_lib/dates';
+
+type EditarContenidoPuebloClientProps = {
+  id: string;
+};
 
 type UploadedImage = {
   url: string;
   name: string;
 };
 
-type TematicaPage = {
-  id: number;
-  titulo: string;
-  resumen?: string | null;
-  contenido: string;
-  coverUrl?: string | null;
-  published: boolean;
-};
-
-type TematicasPages = {
-  GASTRONOMIA?: TematicaPage;
-  NATURALEZA?: TematicaPage;
-  CULTURA?: TematicaPage;
-  EN_FAMILIA?: TematicaPage;
-  PETFRIENDLY?: TematicaPage;
-};
-
-const CATEGORIAS_TEMATICAS = [
-  { value: 'GASTRONOMIA', label: 'Gastronomía' },
-  { value: 'NATURALEZA', label: 'Naturaleza' },
-  { value: 'CULTURA', label: 'Cultura' },
-  { value: 'EN_FAMILIA', label: 'En familia' },
-  { value: 'PETFRIENDLY', label: 'Petfriendly' },
-];
-
-type Props = {
-  tipoInicial?: string;
-  categoriaInicial?: string;
-};
-
-export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: Props) {
+export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebloClientProps) {
   const router = useRouter();
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const searchParams = useSearchParams();
+  const puebloId = searchParams.get('puebloId');
+  const puebloNombre = searchParams.get('puebloNombre');
 
-  const [tipo, setTipo] = useState(tipoInicial ?? 'NOTICIA');
-  const [categoria, setCategoria] = useState(categoriaInicial ?? '');
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [tipo, setTipo] = useState('NOTICIA');
+  const [categoria, setCategoria] = useState('');
   const [titulo, setTitulo] = useState('');
   const [resumen, setResumen] = useState('');
   const [contenidoMd, setContenidoMd] = useState('');
@@ -58,55 +40,48 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
-  const [existingPageId, setExistingPageId] = useState<number | null>(null);
 
-  const [uploading, setUploading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [loadingPage, setLoadingPage] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Cargar páginas temáticas cuando tipo=PAGINA
   useEffect(() => {
-    if (tipo !== 'PAGINA' || !categoria) return;
-
-    async function loadTematicaPage() {
-      setLoadingPage(true);
+    (async () => {
       try {
-        const res = await fetch('/api/admin/asociacion/pages');
+        // FIX: Llamar al proxy correcto de PUEBLO
+        const res = await fetch(`/api/gestion/pueblo/contenidos/${id}`, {
+          cache: 'no-store',
+        });
+
         if (!res.ok) {
-          console.warn('[LOAD TEMATICA ASOCIACION] Error', res.status);
+          setError('No se pudo cargar el contenido');
           return;
         }
 
-        const data: TematicasPages = await res.json();
-        const page = data[categoria as keyof TematicasPages];
+        const data = await res.json();
+        setTipo(data.tipo ?? 'NOTICIA');
+        setCategoria(data.categoria ?? '');
+        setTitulo(data.titulo ?? '');
+        setResumen(data.resumen ?? '');
+        setContenidoMd(data.contenidoMd ?? '');
+        setEstado(data.estado ?? 'BORRADOR');
+        setCoverUrl(data.coverUrl ?? null);
 
-        if (page) {
-          setExistingPageId(page.id);
-          setTitulo(page.titulo);
-          setResumen(page.resumen || '');
-          setContenidoMd(page.contenido);
-          setCoverUrl(page.coverUrl || null);
-          setEstado(page.published ? 'PUBLICADA' : 'BORRADOR');
-        } else {
-          // Limpiar formulario si no existe
-          setExistingPageId(null);
-          setTitulo('');
-          setResumen('');
-          setContenidoMd('');
-          setCoverUrl(null);
-          setEstado('PUBLICADA'); // Por defecto publicada para asociación
+        if (data.publishedAt) {
+          setPublishedAt(toDatetimeLocal(data.publishedAt));
         }
-      } catch (e) {
-        console.error('[LOAD TEMATICA ASOCIACION] Error:', e);
+        
+        if (data.fechaInicio) {
+          setFechaInicioLocal(toDatetimeLocal(data.fechaInicio));
+        }
+        if (data.fechaFin) {
+          setFechaFinLocal(toDatetimeLocal(data.fechaFin));
+        }
+      } catch (e: any) {
+        setError(e?.message ?? 'Error al cargar');
       } finally {
-        setLoadingPage(false);
+        setLoading(false);
       }
-    }
-
-    loadTematicaPage();
-  }, [tipo, categoria]);
+    })();
+  }, [id]);
 
   async function handleUploadImages() {
     const fileInput = document.createElement('input');
@@ -157,12 +132,11 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
   }
 
   async function handleDelete() {
-    if (!existingPageId) return;
-    if (!confirm('¿Borrar esta página temática de Asociación?')) return;
+    if (!confirm('¿Borrar esta página temática?')) return;
 
     setDeleting(true);
     try {
-      const res = await fetch(`/api/gestion/asociacion/contenidos/page-${existingPageId}`, {
+      const res = await fetch(`/api/gestion/pueblo/contenidos/${id}`, {
         method: 'DELETE',
       });
 
@@ -173,7 +147,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
       }
 
       alert('Página borrada correctamente');
-      router.push('/gestion/asociacion/contenidos');
+      router.push(`/gestion/pueblo/contenidos?puebloId=${puebloId}&puebloNombre=${puebloNombre}`);
       router.refresh();
     } catch (e: any) {
       alert(e?.message ?? 'Error');
@@ -188,41 +162,10 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
 
     if (!titulo.trim()) return setError('Título requerido');
 
-    // Si es PÁGINA, validar categoría
-    if (tipo === 'PAGINA' && !categoria) {
-      return setError('Selecciona una categoría temática');
-    }
-
-    if (estado === 'PROGRAMADA' && !publishedAt && tipo !== 'PAGINA') {
-      return setError('Selecciona fecha y hora de publicación');
-    }
-
-    // Validar fecha futura para PROGRAMADA
-    if (estado === 'PROGRAMADA' && publishedAt) {
-      const selectedDate = new Date(publishedAt);
-      if (selectedDate < new Date()) {
-        return setError('La fecha y hora de publicación debe ser futura');
-      }
-    }
-
-    // Validar fechas del evento
-    if (tipo === 'EVENTO') {
-      if (!fechaInicioLocal) {
-        return setError('Selecciona inicio del evento');
-      }
-      if (fechaFinLocal) {
-        const inicio = new Date(fechaInicioLocal);
-        const fin = new Date(fechaFinLocal);
-        if (fin < inicio) {
-          return setError('El fin debe ser posterior al inicio');
-        }
-      }
-    }
-
     setSaving(true);
     try {
       // 1. Subir cover si existe
-      let coverUrl: string | null = null;
+      let newCoverUrl: string | null = coverUrl;
 
       if (coverFile) {
         if (coverFile.size > 25 * 1024 * 1024) {
@@ -243,43 +186,10 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           return;
         }
         const upJson = await up.json();
-        coverUrl = upJson?.url ?? upJson?.publicUrl ?? null;
+        newCoverUrl = upJson?.url ?? upJson?.publicUrl ?? null;
       }
 
-      // 2. Si es PÁGINA, usar endpoint /admin/pages con scope ASOCIACION
-      if (tipo === 'PAGINA') {
-        const payload: any = {
-          scope: 'ASOCIACION',
-          puebloId: null,
-          category: categoria,
-          titulo: titulo.trim(),
-          resumen: resumen.trim() || null,
-          contenido: contenidoMd,
-          published: estado === 'PUBLICADA',
-        };
-        if (coverUrl) payload.coverUrl = coverUrl;
-
-        console.log('[POST /admin/pages ASOCIACION] Payload:', JSON.stringify(payload, null, 2));
-
-        const res = await fetch('/api/admin/pages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          setError(data?.message ?? 'No se pudo guardar la página');
-          return;
-        }
-
-        alert('Página temática de Asociación guardada correctamente');
-        router.replace('/gestion/asociacion/contenidos');
-        router.refresh();
-        return;
-      }
-
-      // 3. Para otros tipos (NOTICIA, EVENTO, ARTICULO), usar endpoint contenidos normal
+      // 2. Actualizar contenido
       const payload: any = {
         tipo,
         titulo: titulo.trim(),
@@ -287,7 +197,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
         contenidoMd,
         estado,
       };
-      if (coverUrl) payload.coverUrl = coverUrl;
+      if (newCoverUrl) payload.coverUrl = newCoverUrl;
       if (estado === 'PROGRAMADA' && publishedAt) {
         payload.publishedAt = datetimeLocalToIsoUtc(publishedAt);
       }
@@ -299,83 +209,77 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
         }
       }
 
-      const res = await fetch('/api/gestion/asociacion/contenidos', {
-        method: 'POST',
+      const res = await fetch(`/api/gestion/pueblo/contenidos/${id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data?.message ?? 'No se pudo crear');
+        setError(data?.message ?? 'No se pudo actualizar');
         return;
       }
 
-      router.replace('/gestion/asociacion/contenidos');
+      alert('Contenido actualizado correctamente');
+      router.push(`/gestion/pueblo/contenidos?puebloId=${puebloId}&puebloNombre=${puebloNombre}`);
       router.refresh();
     } finally {
       setSaving(false);
     }
   }
 
+  if (loading) {
+    return (
+      <main className="mx-auto max-w-3xl p-6">
+        <p className="text-gray-600">Cargando...</p>
+      </main>
+    );
+  }
+
+  if (error && !tipo) {
+    return (
+      <main className="mx-auto max-w-3xl p-6">
+        <p className="text-red-600">{error}</p>
+        <button
+          onClick={() => router.back()}
+          className="mt-4 text-sm text-blue-600 hover:underline"
+        >
+          ← Volver
+        </button>
+      </main>
+    );
+  }
+
+  const isPaginaTematica = String(id ?? '').startsWith('page-');
+
   return (
     <main className="mx-auto max-w-3xl p-6">
-      <h1 className="text-2xl font-semibold">Nuevo contenido · Asociación</h1>
+      <h1 className="text-2xl font-semibold">
+        Editar contenido · {puebloNombre || 'Pueblo'}
+      </h1>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Tipo</label>
-          <select
-            className="w-full rounded-md border px-3 py-2"
-            value={tipo}
-            onChange={(e) => {
-              const newTipo = e.target.value;
-              setTipo(newTipo);
-              // Reset categoría si deja de ser PÁGINA
-              if (newTipo !== 'PAGINA') {
-                setCategoria('');
-              }
-              // Reset fechas del evento si deja de ser EVENTO
-              if (newTipo !== 'EVENTO') {
-                setFechaInicioLocal('');
-                setFechaFinLocal('');
-              }
-            }}
-          >
-            <option value="NOTICIA">Noticia</option>
-            <option value="EVENTO">Evento</option>
-            <option value="ARTICULO">Artículo</option>
-            <option value="PAGINA">Página temática</option>
-          </select>
-        </div>
+        {!isPaginaTematica && (
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Tipo</label>
+            <input
+              type="text"
+              className="w-full rounded-md border px-3 py-2 bg-gray-50"
+              value={tipo}
+              disabled
+            />
+          </div>
+        )}
 
-        {tipo === 'PAGINA' && (
-          <div className="space-y-2 rounded-md border border-purple-200 bg-purple-50 p-4">
-            <label className="block text-sm font-medium text-purple-900">
-              Categoría temática
-            </label>
-            <select
-              className="w-full rounded-md border px-3 py-2"
-              value={categoria}
-              onChange={(e) => setCategoria(e.target.value)}
-              required
-            >
-              <option value="">Selecciona una categoría</option>
-              {CATEGORIAS_TEMATICAS.map((cat) => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.label}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-purple-700">
-              Solo hay 1 página de Asociación por categoría. Si existe, se actualizará.
+        {isPaginaTematica && (
+          <div className="rounded-md border border-purple-200 bg-purple-50 p-4">
+            <p className="text-sm font-medium text-purple-900">
+              Página temática: {categoria}
             </p>
-            <p className="text-xs font-medium text-purple-800">
-              ℹ️ Se guarda como Asociación (nacional). Visible en /experiencias.
+            <p className="text-xs text-purple-700 mt-1">
+              Esta es una página temática del pueblo.
             </p>
-            {loadingPage && (
-              <p className="text-xs text-purple-600">Cargando página existente...</p>
-            )}
           </div>
         )}
 
@@ -408,17 +312,12 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
             onChange={(e) => setEstado(e.target.value)}
           >
             <option value="BORRADOR">Borrador</option>
-            {tipo !== 'PAGINA' && <option value="PROGRAMADA">Programada</option>}
+            {!isPaginaTematica && <option value="PROGRAMADA">Programada</option>}
             <option value="PUBLICADA">Publicada</option>
           </select>
-          {tipo === 'PAGINA' && (
-            <p className="text-xs text-gray-600">
-              Publicada: visible en /experiencias. Borrador: solo visible para ADMIN.
-            </p>
-          )}
         </div>
 
-        {estado === 'PROGRAMADA' && tipo !== 'PAGINA' && (
+        {estado === 'PROGRAMADA' && !isPaginaTematica && (
           <div className="space-y-2">
             <label className="block text-sm font-medium">
               Fecha y hora de publicación
@@ -430,19 +329,13 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
               onChange={(e) => setPublishedAt(e.target.value)}
               required
             />
-            <p className="text-xs text-gray-600">
-              Se publicará automáticamente a esa hora. Puedes cambiarlo cuando quieras.
-            </p>
           </div>
         )}
 
-        {tipo === 'EVENTO' && (
+        {tipo === 'EVENTO' && !isPaginaTematica && (
           <div className="space-y-4 rounded-md border border-blue-200 bg-blue-50 p-4">
             <p className="text-sm font-medium text-blue-900">
               Fechas del evento
-            </p>
-            <p className="text-xs text-blue-700">
-              Estas fechas son del evento (no de la publicación).
             </p>
 
             <div className="space-y-2">
@@ -531,10 +424,10 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
         <div className="flex items-center gap-4">
           <button
             type="submit"
-            disabled={saving || (tipo === 'PAGINA' && !categoria)}
+            disabled={saving}
             className="rounded-md bg-black px-4 py-2 text-white disabled:opacity-50"
           >
-            {saving ? 'Guardando…' : tipo === 'PAGINA' ? 'Guardar página' : 'Crear contenido'}
+            {saving ? 'Guardando…' : 'Guardar cambios'}
           </button>
 
           <button
@@ -545,8 +438,8 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
             Cancelar
           </button>
 
-          {/* Botón BORRAR para páginas temáticas existentes */}
-          {tipo === 'PAGINA' && existingPageId && (
+          {/* Botón BORRAR para páginas temáticas */}
+          {isPaginaTematica && (
             <button
               type="button"
               onClick={handleDelete}

@@ -8,7 +8,7 @@ async function getToken(): Promise<string | null> {
   return store.get(AUTH_COOKIE_NAME)?.value ?? null;
 }
 
-// GET /api/gestion/asociacion/contenidos/[id]
+// GET /api/gestion/pueblo/contenidos/[id]
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -30,7 +30,7 @@ export async function GET(
   });
 }
 
-// PUT /api/gestion/asociacion/contenidos/[id]
+// PUT /api/gestion/pueblo/contenidos/[id]
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -59,7 +59,7 @@ export async function PUT(
   });
 }
 
-// DELETE /api/gestion/asociacion/contenidos/[id]
+// DELETE /api/gestion/pueblo/contenidos/[id]
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
