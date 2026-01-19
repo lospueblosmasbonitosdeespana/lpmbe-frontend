@@ -55,7 +55,7 @@ export const navConfig: NavItem[] = [
       {
         title: "Ideas de viaje",
         links: [
-          { label: "Multiexperiencias", href: "/experiencias" },
+          { label: "Multiexperiencias", href: "/multiexperiencias" },
           { label: "Rutas", href: "/rutas" },
         ],
       },
