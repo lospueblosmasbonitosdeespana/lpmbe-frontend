@@ -105,7 +105,7 @@ export default async function ContenidoPage({
     <main style={{ padding: '40px 20px' }}>
       <article>
         {/* IMAGEN DE PORTADA (si existe) */}
-        {contenido.coverUrl && (
+        {contenido.coverUrl && contenido.coverUrl.trim() && (
           <div
             style={{
               maxWidth: '1200px',
@@ -115,7 +115,7 @@ export default async function ContenidoPage({
             }}
           >
             <img
-              src={contenido.coverUrl}
+              src={contenido.coverUrl.trim()}
               alt={contenido.titulo}
               style={{
                 width: '100%',

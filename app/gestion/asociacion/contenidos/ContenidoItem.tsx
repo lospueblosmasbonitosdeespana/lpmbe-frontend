@@ -66,10 +66,10 @@ export default function ContenidoItem({ contenido }: ContenidoItemProps) {
             </div>
           )}
 
-          {contenido.coverUrl && (
+          {contenido.coverUrl && contenido.coverUrl.trim() && (
             <div className="mt-2">
               <img
-                src={contenido.coverUrl}
+                src={contenido.coverUrl.trim()}
                 alt={contenido.titulo}
                 className="h-16 w-auto rounded object-cover"
               />

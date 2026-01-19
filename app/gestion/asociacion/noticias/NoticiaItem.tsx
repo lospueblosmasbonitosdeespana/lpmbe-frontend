@@ -48,10 +48,10 @@ export default function NoticiaItem({ noticia }: NoticiaItemProps) {
               {String(noticia.contenido).length > 220 ? '…' : ''}
             </div>
           ) : null}
-          {noticia.coverUrl && (
+          {noticia.coverUrl && noticia.coverUrl.trim() && (
             <div className="mt-2">
               <img
-                src={noticia.coverUrl}
+                src={noticia.coverUrl.trim()}
                 alt={noticia.titulo ?? 'Portada'}
                 className="h-24 w-auto rounded object-cover"
               />

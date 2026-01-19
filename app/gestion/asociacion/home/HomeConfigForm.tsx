@@ -8,7 +8,21 @@ type HomeConfigFormProps = {
 };
 
 export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
-  const [config, setConfig] = useState<HomeConfig>(initialConfig);
+  // Asegurar que themes siempre tenga los 5 items (fallback si vacío)
+  const configWithDefaults: HomeConfig = {
+    ...initialConfig,
+    themes: initialConfig.themes.length > 0 
+      ? initialConfig.themes 
+      : [
+          { key: "gastronomia", title: "Gastronomía", image: "", href: "/experiencias/gastronomia" },
+          { key: "naturaleza", title: "Naturaleza", image: "", href: "/experiencias/naturaleza" },
+          { key: "cultura", title: "Cultura", image: "", href: "/experiencias/cultura" },
+          { key: "en-familia", title: "En familia", image: "", href: "/experiencias/en-familia" },
+          { key: "petfriendly", title: "Petfriendly", image: "", href: "/experiencias/petfriendly" },
+        ],
+  };
+
+  const [config, setConfig] = useState<HomeConfig>(configWithDefaults);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -212,80 +226,88 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
 
       {/* Themes */}
       <section className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="text-xl font-semibold mb-4">Temas</h2>
+        <h2 className="text-xl font-semibold mb-4">Temas (Ideas para tu viaje)</h2>
+        <p className="text-sm text-gray-600 mb-6">
+          Gestiona las 5 imágenes temáticas que aparecen en la home pública.
+        </p>
 
         <div className="space-y-4">
           {config.themes.map((theme, idx) => (
             <div key={theme.key} className="rounded border border-gray-200 p-4">
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-sm font-medium">{theme.title}</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium mb-1">Título</label>
-                  <input
-                    type="text"
-                    value={theme.title}
-                    onChange={(e) => {
-                      const newThemes = [...config.themes];
-                      newThemes[idx] = { ...newThemes[idx], title: e.target.value };
-                      setConfig({ ...config, themes: newThemes });
-                    }}
-                    className="w-full rounded border border-gray-300 px-2 py-1 text-sm"
-                  />
+              <div className="flex items-start gap-4">
+                {/* Preview de imagen */}
+                <div className="flex-shrink-0">
+                  {theme.image && theme.image.trim() ? (
+                    <div className="relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={theme.image.trim()}
+                        alt={theme.title}
+                        className="h-32 w-48 rounded border object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-32 w-48 rounded border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center">
+                      <span className="text-xs text-gray-400">Sin imagen</span>
+                    </div>
+                  )}
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium mb-1">Enlace (href)</label>
-                  <input
-                    type="text"
-                    value={theme.href}
-                    onChange={(e) => {
-                      const newThemes = [...config.themes];
-                      newThemes[idx] = { ...newThemes[idx], href: e.target.value };
-                      setConfig({ ...config, themes: newThemes });
-                    }}
-                    className="w-full rounded border border-gray-300 px-2 py-1 text-sm"
-                  />
-                </div>
-
-                <div className="col-span-2">
-                  <label className="block text-xs font-medium mb-1">
-                    Subir imagen
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-
-                      try {
-                        const url = await uploadImage(file);
-                        const newThemes = [...config.themes];
-                        newThemes[idx] = { ...newThemes[idx], image: url };
-                        setConfig({ ...config, themes: newThemes });
-                      } catch (err) {
-                        alert("Error subiendo imagen");
-                      }
-
-                      e.target.value = "";
-                    }}
-                    disabled={uploading}
-                    className="text-xs"
-                  />
-                </div>
-
-                {theme.image && (
-                  <div className="col-span-2">
-                    <img
-                      src={theme.image}
-                      alt={theme.title}
-                      className="h-24 w-auto rounded border"
-                    />
+                {/* Info y controles */}
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <span className="text-sm font-medium">{theme.title}</span>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Enlace: <code className="text-blue-600">{theme.href}</code>
+                    </p>
                   </div>
-                )}
+
+                  {/* Botones */}
+                  <div className="flex gap-2">
+                    <label className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 cursor-pointer disabled:opacity-50">
+                      {theme.image ? 'Cambiar imagen' : 'Subir imagen'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const target = e.currentTarget;
+                          const file = target.files?.[0];
+                          if (!file) return;
+
+                          try {
+                            const url = await uploadImage(file);
+                            const newThemes = [...config.themes];
+                            newThemes[idx] = { ...newThemes[idx], image: url };
+                            setConfig({ ...config, themes: newThemes });
+                          } catch (err) {
+                            alert("Error subiendo imagen");
+                          }
+
+                          target.value = "";
+                        }}
+                        disabled={uploading}
+                      />
+                    </label>
+
+                    {theme.image && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm(`¿Quitar imagen de ${theme.title}?`)) {
+                            const newThemes = [...config.themes];
+                            newThemes[idx] = { ...newThemes[idx], image: '' };
+                            setConfig({ ...config, themes: newThemes });
+                          }
+                        }}
+                        disabled={uploading}
+                        className="inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                      >
+                        Quitar
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           ))}

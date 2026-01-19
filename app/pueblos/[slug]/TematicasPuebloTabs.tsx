@@ -125,11 +125,11 @@ export default function TematicasPuebloTabs({ puebloSlug }: Props) {
         <div className="prose prose-gray max-w-none">
           <h2 className="text-2xl font-semibold mb-4">{currentPage.titulo}</h2>
 
-          {currentPage.coverUrl && (
+          {currentPage.coverUrl && currentPage.coverUrl.trim() && (
             <div className="mb-6">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={currentPage.coverUrl}
+                src={currentPage.coverUrl.trim()}
                 alt={currentPage.titulo}
                 className="w-full max-h-96 rounded-lg object-cover"
               />

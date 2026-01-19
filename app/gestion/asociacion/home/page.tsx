@@ -52,6 +52,12 @@ async function getAdminHomeConfig(token: string): Promise<HomeConfig> {
       }))
       .slice(0, 5);  // Solo limitar cantidad
 
+    // Normalizar themes: usar del backend o fallback local
+    const fallback = getFallbackConfig();
+    const themes = Array.isArray(data.themes) && data.themes.length > 0 
+      ? data.themes 
+      : fallback.themes;
+
     return {
       hero: {
         title: hero.title ?? '',
@@ -59,7 +65,7 @@ async function getAdminHomeConfig(token: string): Promise<HomeConfig> {
         intervalMs: Number(hero.intervalMs) || 6000,
         slides,
       },
-      themes: Array.isArray(data.themes) ? data.themes : [],
+      themes,
       homeRutas: {
         enabled: data.homeRutas?.enabled ?? true,
         count: data.homeRutas?.count ?? 4,
@@ -82,7 +88,38 @@ function getFallbackConfig(): HomeConfig {
       slides: [],
       intervalMs: 6000,
     },
-    themes: [],
+    themes: [
+      {
+        key: "gastronomia",
+        title: "Gastronomía",
+        image: "",
+        href: "/experiencias/gastronomia",
+      },
+      {
+        key: "naturaleza",
+        title: "Naturaleza",
+        image: "",
+        href: "/experiencias/naturaleza",
+      },
+      {
+        key: "cultura",
+        title: "Cultura",
+        image: "",
+        href: "/experiencias/cultura",
+      },
+      {
+        key: "en-familia",
+        title: "En familia",
+        image: "",
+        href: "/experiencias/en-familia",
+      },
+      {
+        key: "petfriendly",
+        title: "Petfriendly",
+        image: "",
+        href: "/experiencias/petfriendly",
+      },
+    ],
     homeRutas: {
       enabled: true,
       count: 4,

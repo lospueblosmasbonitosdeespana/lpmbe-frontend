@@ -477,11 +477,11 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           <CoverPicker onFileSelected={(file) => setCoverFile(file)} />
           
           {/* Preview de portada existente */}
-          {coverUrl && (
+          {coverUrl && coverUrl.trim() && (
             <div className="mt-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={coverUrl}
+                src={coverUrl.trim()}
                 alt="Portada actual"
                 className="max-w-[240px] rounded border"
               />

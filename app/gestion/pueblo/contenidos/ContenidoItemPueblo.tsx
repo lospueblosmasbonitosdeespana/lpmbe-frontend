@@ -94,11 +94,11 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
             </div>
           )}
 
-          {contenido.coverUrl && (
+          {contenido.coverUrl && contenido.coverUrl.trim() && (
             <div className="mt-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={contenido.coverUrl}
+                src={contenido.coverUrl.trim()}
                 alt={contenido.titulo}
                 className="h-16 w-auto rounded object-cover"
               />

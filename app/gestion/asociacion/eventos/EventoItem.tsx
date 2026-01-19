@@ -51,10 +51,10 @@ export default function EventoItem({ evento }: EventoItemProps) {
               {String(evento.contenido).length > 220 ? '…' : ''}
             </div>
           ) : null}
-          {evento.coverUrl && (
+          {evento.coverUrl && evento.coverUrl.trim() && (
             <div className="mt-2">
               <img
-                src={evento.coverUrl}
+                src={evento.coverUrl.trim()}
                 alt={evento.titulo ?? 'Portada'}
                 className="h-24 w-auto rounded object-cover"
               />

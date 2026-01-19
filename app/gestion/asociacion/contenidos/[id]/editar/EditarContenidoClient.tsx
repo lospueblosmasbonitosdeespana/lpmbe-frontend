@@ -353,11 +353,11 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
           </div>
         )}
 
-        {coverUrl && !coverFile && (
+        {coverUrl && coverUrl.trim() && !coverFile && (
           <div>
             <label className="block text-sm font-medium mb-2">Foto actual</label>
             <img
-              src={coverUrl}
+              src={coverUrl.trim()}
               alt="Portada actual"
               className="h-32 w-auto rounded object-cover"
             />

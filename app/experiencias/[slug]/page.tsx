@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 type TematicaPage = {
   id: number;
@@ -135,11 +134,11 @@ export default async function TematicaPage({
                 href={`/experiencias/${slug}/asociacion`}
                 className="block overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-lg"
               >
-                {asociacion.coverUrl && (
+                {asociacion.coverUrl && asociacion.coverUrl.trim() && (
                   <div className="h-64 w-full overflow-hidden rounded-t-lg bg-gray-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={asociacion.coverUrl}
+                      src={asociacion.coverUrl.trim()}
                       alt={asociacion.titulo}
                       className="h-full w-full object-cover"
                     />
@@ -177,11 +176,11 @@ export default async function TematicaPage({
                         className="block overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-lg"
                       >
                         {/* Imagen */}
-                        {item.coverUrl ? (
+                        {item.coverUrl && item.coverUrl.trim() ? (
                           <div className="h-28 w-full overflow-hidden rounded-t-lg bg-gray-100">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                              src={item.coverUrl}
+                              src={item.coverUrl.trim()}
                               alt={item.titulo}
                               className="h-full w-full object-cover"
                             />

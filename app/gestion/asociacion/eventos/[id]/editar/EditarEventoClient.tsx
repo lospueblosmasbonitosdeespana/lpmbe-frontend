@@ -179,11 +179,11 @@ export default function EditarEventoClient({ id }: EditarEventoClientProps) {
           </div>
         </div>
 
-        {coverUrl && !file && (
+        {coverUrl && coverUrl.trim() && !file && (
           <div>
             <label className="block text-sm font-medium mb-2">Foto actual</label>
             <img
-              src={coverUrl}
+              src={coverUrl.trim()}
               alt="Portada actual"
               className="h-32 w-auto rounded object-cover"
             />

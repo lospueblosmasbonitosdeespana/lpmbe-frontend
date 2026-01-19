@@ -2,7 +2,6 @@ import ReactMarkdown from 'react-markdown';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 type TematicaPage = {
   id: number;
@@ -86,11 +85,11 @@ export default async function AsociacionTematicaPage({
         
         <h1 className="mt-2 text-4xl font-semibold">{page.titulo}</h1>
 
-        {page.coverUrl && (
+        {page.coverUrl && page.coverUrl.trim() && (
           <div className="my-8">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={page.coverUrl}
+              src={page.coverUrl.trim()}
               alt={page.titulo}
               className="w-full rounded-lg object-cover"
               style={{ maxHeight: '500px' }}

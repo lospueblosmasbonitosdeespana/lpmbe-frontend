@@ -67,7 +67,7 @@ export default function ContenidosPuebloSection({
                 }}
               >
                 {/* IMAGEN: solo si existe */}
-                {contenido.coverUrl && (
+                {contenido.coverUrl && contenido.coverUrl.trim() && (
                   <div
                     style={{
                       width: '100%',
@@ -77,7 +77,7 @@ export default function ContenidosPuebloSection({
                     }}
                   >
                     <img
-                      src={contenido.coverUrl}
+                      src={contenido.coverUrl.trim()}
                       alt={contenido.titulo}
                       style={{
                         width: '100%',

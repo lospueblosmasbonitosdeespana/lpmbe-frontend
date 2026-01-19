@@ -112,10 +112,10 @@ function ActualidadContent() {
             return (
               <article key={item.id} className="border-b pb-6 last:border-0">
                 <Link href={href} className="group block">
-                  {item.coverUrl && (
+                  {item.coverUrl && item.coverUrl.trim() && (
                     <div className="mb-4 overflow-hidden rounded-lg">
                       <img
-                        src={item.coverUrl}
+                        src={item.coverUrl.trim()}
                         alt={item.titulo}
                         className="h-64 w-full object-cover transition group-hover:scale-105"
                       />
