@@ -456,15 +456,32 @@ function SlideEditor({
           disabled={uploading}
         />
 
-        {/* Botón de subida */}
-        <button
-          type="button"
-          className="inline-flex items-center rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90 disabled:bg-gray-400"
-          onClick={() => fileRef.current?.click()}
-          disabled={uploading}
-        >
-          {slide.image ? 'Cambiar imagen' : 'Subir imagen'}
-        </button>
+        {/* Botones de acción */}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className="inline-flex items-center rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90 disabled:bg-gray-400"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+          >
+            {slide.image ? 'Cambiar imagen' : 'Subir imagen'}
+          </button>
+
+          {slide.image && (
+            <button
+              type="button"
+              className="inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:bg-gray-400"
+              onClick={() => {
+                if (confirm('¿Eliminar esta imagen?')) {
+                  updateSlide({ ...slide, image: '' });
+                }
+              }}
+              disabled={uploading}
+            >
+              Eliminar
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
