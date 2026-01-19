@@ -8,6 +8,7 @@ import SemaforoBadge from "../../components/pueblos/SemaforoBadge";
 import MeteoPanel from "./_components/MeteoPanel";
 import { getComunidadFlagSrc } from "@/lib/flags";
 import ContenidosPuebloSection from "./ContenidosPuebloSection";
+import GaleriaGrid from "./GaleriaGrid";
 import { headers } from "next/headers";
 
 // Helpers para SEO
@@ -415,30 +416,10 @@ export default async function PuebloPage({
           }}
         >
           <h2 style={{ marginBottom: "24px" }}>Galería</h2>
-          <div className="galeria-grid">
-            {fotosGalería.map((foto: FotoPueblo, index: number) => (
-              <div
-                key={foto.id}
-                style={{
-                  aspectRatio: "4 / 3",
-                  overflow: "hidden",
-                  backgroundColor: "#f5f5f5",
-                }}
-              >
-                <img
-                  src={foto.url}
-                  alt={`${puebloSafe.nombre} - Foto ${index + 1}`}
-                  loading="lazy"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    display: "block",
-                  }}
-                />
-              </div>
-            ))}
-          </div>
+          <GaleriaGrid
+            fotos={fotosGalería}
+            puebloNombre={puebloSafe.nombre}
+          />
         </section>
       )}
 
