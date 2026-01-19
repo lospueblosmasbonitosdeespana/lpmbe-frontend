@@ -19,6 +19,8 @@ type Contenido = {
   publishedAt?: string;
   createdAt?: string;
   fecha_inicio?: string;
+  fechaInicio?: string;
+  fechaFin?: string;
 };
 
 async function fetchContenido(slug: string): Promise<Contenido | null> {
@@ -83,21 +85,53 @@ export default async function ContenidoPage({
     notFound();
   }
 
-  // Determinar fecha según tipo
-  let fecha: string | undefined;
-  if (contenido.tipo === 'EVENTO' && contenido.fecha_inicio) {
-    fecha = contenido.fecha_inicio;
-  } else {
-    fecha = contenido.publishedAt ?? contenido.createdAt;
-  }
-
-  const fechaFormateada = fecha
-    ? new Date(fecha).toLocaleDateString('es-ES', {
+  // Determinar fecha de publicación
+  const fechaPublicacion = contenido.publishedAt ?? contenido.createdAt;
+  const fechaPublicacionFormateada = fechaPublicacion
+    ? new Date(fechaPublicacion).toLocaleDateString('es-ES', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
       })
     : '';
+
+  // Formatear fechas del evento si es EVENTO
+  const esEvento = contenido.tipo === 'EVENTO';
+  const fechaInicioEvento = esEvento ? (contenido.fechaInicio || contenido.fecha_inicio) : null;
+  
+  function formatearFechaEvento(inicio: string, fin?: string): string {
+    try {
+      const fechaInicio = new Date(inicio);
+      const opcionesFecha: Intl.DateTimeFormatOptions = {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      };
+      const opcionesHora: Intl.DateTimeFormatOptions = {
+        hour: '2-digit',
+        minute: '2-digit',
+      };
+
+      const fechaInicioStr = fechaInicio.toLocaleDateString('es-ES', opcionesFecha);
+      const horaInicioStr = fechaInicio.toLocaleTimeString('es-ES', opcionesHora);
+
+      if (fin) {
+        const fechaFin = new Date(fin);
+        const fechaFinStr = fechaFin.toLocaleDateString('es-ES', opcionesFecha);
+        const horaFinStr = fechaFin.toLocaleTimeString('es-ES', opcionesHora);
+        
+        if (fechaInicioStr === fechaFinStr) {
+          return `${fechaInicioStr} de ${horaInicioStr} a ${horaFinStr}`;
+        }
+        
+        return `Del ${fechaInicioStr} (${horaInicioStr}) al ${fechaFinStr} (${horaFinStr})`;
+      }
+
+      return `${fechaInicioStr} a las ${horaInicioStr}`;
+    } catch {
+      return '';
+    }
+  }
 
   // Texto del badge según tipo
   const tipoBadge: Record<string, string> = {
@@ -171,8 +205,8 @@ export default async function ContenidoPage({
               {contenido.titulo}
             </h1>
 
-            {/* Fecha */}
-            {fechaFormateada && (
+            {/* Fecha de publicación */}
+            {fechaPublicacionFormateada && (
               <p
                 style={{
                   fontSize: '14px',
@@ -180,7 +214,25 @@ export default async function ContenidoPage({
                   marginTop: '8px',
                 }}
               >
-                {fechaFormateada}
+                {fechaPublicacionFormateada}
+              </p>
+            )}
+
+            {/* Fechas del evento (si es EVENTO) */}
+            {esEvento && fechaInicioEvento && (
+              <p
+                style={{
+                  fontSize: '16px',
+                  color: '#111',
+                  marginTop: '16px',
+                  fontWeight: 500,
+                  padding: '12px 16px',
+                  backgroundColor: '#f0f9ff',
+                  borderLeft: '3px solid #0066cc',
+                  borderRadius: '4px',
+                }}
+              >
+                <strong>Evento:</strong> {formatearFechaEvento(fechaInicioEvento, contenido.fechaFin)}
               </p>
             )}
 

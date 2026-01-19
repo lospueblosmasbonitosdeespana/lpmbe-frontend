@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import CoverPicker from '@/app/_components/media/CoverPicker';
+import MarkdownEditor from '@/app/_components/editor/MarkdownEditor';
+import ImageManager from '@/app/_components/editor/ImageManager';
 
 type NuevoContenidoPuebloClientProps = {
   puebloId: number;
@@ -10,36 +12,42 @@ type NuevoContenidoPuebloClientProps = {
   tipoInicial?: string;
 };
 
+type UploadedImage = {
+  url: string;
+  name: string;
+};
+
 export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tipoInicial }: NuevoContenidoPuebloClientProps) {
   const router = useRouter();
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [tipo, setTipo] = useState(tipoInicial ?? 'NOTICIA');
   const [titulo, setTitulo] = useState('');
   const [resumen, setResumen] = useState('');
   const [contenidoMd, setContenidoMd] = useState('');
   const [estado, setEstado] = useState('BORRADOR');
-  const [scheduledAt, setScheduledAt] = useState('');
+  const [publishedAt, setPublishedAt] = useState('');
+  const [fechaInicioLocal, setFechaInicioLocal] = useState('');
+  const [fechaFinLocal, setFechaFinLocal] = useState('');
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
 
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleInsertImage() {
+  async function handleUploadImages() {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = 'image/*';
-    fileInput.multiple = true; // MÚLTIPLES ARCHIVOS
+    fileInput.multiple = true;
 
     fileInput.onchange = async (e: any) => {
       const files = Array.from(e.target.files || []) as File[];
       if (files.length === 0) return;
 
-      // Control de tamaño por archivo
       const oversized = files.find(f => f.size > 25 * 1024 * 1024);
       if (oversized) {
-        alert(`La imagen "${oversized.name}" pesa demasiado (máx 25MB). Todas deben ser menores a 25MB.`);
+        alert(`La imagen "${oversized.name}" pesa demasiado (máx 25MB).`);
         return;
       }
 
@@ -59,28 +67,12 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
         const json = await res.json();
         const images = json?.images ?? [];
 
-        if (images.length > 0 && textareaRef.current) {
-          const textarea = textareaRef.current;
-          const start = textarea.selectionStart;
-          const end = textarea.selectionEnd;
-          const text = textarea.value;
+        const newImages = images.map((img: any, idx: number) => ({
+          url: img.url,
+          name: files[idx]?.name || `imagen-${idx + 1}`,
+        }));
 
-          const before = text.substring(0, start);
-          const after = text.substring(end);
-          
-          // Construir bloque con todas las imágenes
-          const imageLines = images.map((img: any) => `![imagen](${img.url})`).join('\n\n');
-          const insert = `\n\n${imageLines}\n\n`;
-
-          const newText = before + insert + after;
-          setContenidoMd(newText);
-
-          // Mover cursor después de la inserción
-          setTimeout(() => {
-            textarea.focus();
-            textarea.selectionStart = textarea.selectionEnd = start + insert.length;
-          }, 0);
-        }
+        setUploadedImages((prev) => [...prev, ...newImages]);
       } catch (e: any) {
         alert(e?.message ?? 'Error subiendo imágenes');
       } finally {
@@ -96,6 +88,32 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
     setError(null);
 
     if (!titulo.trim()) return setError('Título requerido');
+
+    if (estado === 'PROGRAMADA' && !publishedAt) {
+      return setError('Selecciona fecha y hora de publicación');
+    }
+
+    // Validar fecha futura para PROGRAMADA
+    if (estado === 'PROGRAMADA' && publishedAt) {
+      const selectedDate = new Date(publishedAt);
+      if (selectedDate < new Date()) {
+        return setError('La fecha y hora de publicación debe ser futura');
+      }
+    }
+
+    // Validar fechas del evento
+    if (tipo === 'EVENTO') {
+      if (!fechaInicioLocal) {
+        return setError('Selecciona inicio del evento');
+      }
+      if (fechaFinLocal) {
+        const inicio = new Date(fechaInicioLocal);
+        const fin = new Date(fechaFinLocal);
+        if (fin < inicio) {
+          return setError('El fin debe ser posterior al inicio');
+        }
+      }
+    }
 
     setSaving(true);
     try {
@@ -134,8 +152,15 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
         puebloId, // INYECTADO AUTOMÁTICAMENTE
       };
       if (coverUrl) payload.coverUrl = coverUrl;
-      if (estado === 'PROGRAMADA' && scheduledAt) {
-        payload.scheduledAt = new Date(scheduledAt + 'T00:00:00.000Z').toISOString();
+      if (estado === 'PROGRAMADA' && publishedAt) {
+        payload.publishedAt = new Date(publishedAt).toISOString();
+      }
+      // Añadir fechas del evento
+      if (tipo === 'EVENTO' && fechaInicioLocal) {
+        payload.fechaInicio = new Date(fechaInicioLocal).toISOString();
+        if (fechaFinLocal) {
+          payload.fechaFin = new Date(fechaFinLocal).toISOString();
+        }
       }
 
       const res = await fetch('/api/gestion/pueblo/contenidos', {
@@ -167,7 +192,15 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
           <select
             className="w-full rounded-md border px-3 py-2"
             value={tipo}
-            onChange={(e) => setTipo(e.target.value)}
+            onChange={(e) => {
+              const newTipo = e.target.value;
+              setTipo(newTipo);
+              // Reset fechas del evento si deja de ser EVENTO
+              if (newTipo !== 'EVENTO') {
+                setFechaInicioLocal('');
+                setFechaFinLocal('');
+              }
+            }}
           >
             <option value="NOTICIA">Noticia</option>
             <option value="EVENTO">Evento</option>
@@ -212,44 +245,76 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
 
         {estado === 'PROGRAMADA' && (
           <div className="space-y-2">
-            <label className="block text-sm font-medium">Fecha de publicación</label>
+            <label className="block text-sm font-medium">
+              Fecha y hora de publicación
+            </label>
             <input
-              type="date"
+              type="datetime-local"
               className="w-full rounded-md border px-3 py-2"
-              value={scheduledAt}
-              onChange={(e) => setScheduledAt(e.target.value)}
+              value={publishedAt}
+              onChange={(e) => setPublishedAt(e.target.value)}
+              required
             />
+            <p className="text-xs text-gray-600">
+              Se publicará automáticamente a esa hora. Puedes cambiarlo cuando quieras.
+            </p>
+          </div>
+        )}
+
+        {tipo === 'EVENTO' && (
+          <div className="space-y-4 rounded-md border border-blue-200 bg-blue-50 p-4">
+            <p className="text-sm font-medium text-blue-900">
+              Fechas del evento
+            </p>
+            <p className="text-xs text-blue-700">
+              Estas fechas son del evento (no de la publicación).
+            </p>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">
+                Inicio del evento
+              </label>
+              <input
+                type="datetime-local"
+                className="w-full rounded-md border px-3 py-2"
+                value={fechaInicioLocal}
+                onChange={(e) => setFechaInicioLocal(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">
+                Fin del evento (opcional)
+              </label>
+              <input
+                type="datetime-local"
+                className="w-full rounded-md border px-3 py-2"
+                value={fechaFinLocal}
+                onChange={(e) => setFechaFinLocal(e.target.value)}
+              />
+            </div>
           </div>
         )}
 
         <CoverPicker onFileSelected={(file) => setCoverFile(file)} />
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Contenido (Markdown)</label>
-          
-          <div className="flex gap-2 mb-2">
-            <button
-              type="button"
-              onClick={handleInsertImage}
-              disabled={uploading}
-              className="rounded border px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-50"
-            >
-              {uploading ? 'Subiendo imágenes...' : '📷 Insertar imagen(es)'}
-            </button>
-          </div>
+        <MarkdownEditor
+          value={contenidoMd}
+          onChange={setContenidoMd}
+          uploading={uploading}
+          onUploadImages={handleUploadImages}
+        />
 
-          <textarea
-            ref={textareaRef}
-            className="w-full rounded-md border px-3 py-2 font-mono text-sm"
-            rows={20}
-            value={contenidoMd}
-            onChange={(e) => setContenidoMd(e.target.value)}
-            placeholder="Escribe aquí el contenido en Markdown..."
-          />
-          <p className="text-xs text-gray-500">
-            Usa Markdown: **negrita**, - lista, [texto](url), ![alt](imagen-url). Puedes seleccionar múltiples imágenes.
-          </p>
-        </div>
+        <ImageManager
+          images={uploadedImages}
+          defaultAlt={titulo || 'Imagen'}
+          onInsertAtCursor={(md) => {
+            setContenidoMd((prev) => prev + md);
+          }}
+          onAppendToEnd={(md) => setContenidoMd(contenidoMd + md)}
+          onClear={() => setUploadedImages([])}
+        />
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

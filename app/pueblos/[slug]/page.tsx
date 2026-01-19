@@ -103,6 +103,8 @@ type Contenido = {
   slug: string;
   publishedAt: string | null;
   fecha_inicio: string | null;
+  fechaInicio: string | null;  // Alias del backend (para compatibilidad)
+  fechaFin: string | null;
 };
 
 // Función para obtener contenidos del CMS del pueblo
@@ -143,12 +145,15 @@ function procesarContenidos(contenidos: Contenido[]): Contenido[] {
   // Eventos: solo futuros, ordenar por fecha_inicio asc, máximo 3
   const eventosFuturos = eventos
     .filter((e) => {
-      if (!e.fecha_inicio) return false;
-      return new Date(e.fecha_inicio) >= ahora;
+      const fechaEvento = e.fechaInicio || e.fecha_inicio;
+      if (!fechaEvento) return false;
+      return new Date(fechaEvento) >= ahora;
     })
     .sort((a, b) => {
-      if (!a.fecha_inicio || !b.fecha_inicio) return 0;
-      return new Date(a.fecha_inicio).getTime() - new Date(b.fecha_inicio).getTime();
+      const fechaA = a.fechaInicio || a.fecha_inicio;
+      const fechaB = b.fechaInicio || b.fecha_inicio;
+      if (!fechaA || !fechaB) return 0;
+      return new Date(fechaA).getTime() - new Date(fechaB).getTime();
     })
     .slice(0, 3);
 
