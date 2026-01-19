@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import SemaforoBadge from "../../components/pueblos/SemaforoBadge";
 
 type PuebloActionsProps = {
   nombre: string;
@@ -12,6 +11,19 @@ type PuebloActionsProps = {
   semaforoMensaje?: string | null;
   semaforoUpdatedAt?: string | Date | null;
 };
+
+function getSemaforoConfig(estado: string | null) {
+  switch (estado) {
+    case "VERDE":
+      return { texto: "Tranquilo", color: "#28a745", bgColor: "#d4edda" };
+    case "AMARILLO":
+      return { texto: "Precaución", color: "#ffc107", bgColor: "#fff3cd" };
+    case "ROJO":
+      return { texto: "Alta afluencia", color: "#dc3545", bgColor: "#f8d7da" };
+    default:
+      return null;
+  }
+}
 
 export default function PuebloActions({
   nombre,
@@ -52,114 +64,123 @@ export default function PuebloActions({
     ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
     : "#";
 
+  const semaforoConfig = semaforoEstado ? getSemaforoConfig(semaforoEstado) : null;
+
   return (
     <div
       style={{
         display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: "16px",
+        gap: "12px",
         marginTop: "24px",
         marginBottom: "24px",
         flexWrap: "wrap",
       }}
     >
-      {/* Botones de acciones */}
-      <div
+      <button
+        onClick={handleCompartir}
         style={{
-          display: "flex",
-          gap: "12px",
-          flexWrap: "wrap",
+          padding: "10px 16px",
+          fontSize: "14px",
+          border: "1px solid #ddd",
+          borderRadius: "6px",
+          backgroundColor: "#fff",
+          cursor: "pointer",
+          color: copied ? "#28a745" : "#333",
         }}
       >
-        <button
-          onClick={handleCompartir}
+        {copied ? "✓ Copiado" : "Compartir"}
+      </button>
+
+      <button
+        onClick={handleVerEnMapa}
+        style={{
+          padding: "10px 16px",
+          fontSize: "14px",
+          border: "1px solid #ddd",
+          borderRadius: "6px",
+          backgroundColor: "#fff",
+          cursor: "pointer",
+        }}
+      >
+        Ver en mapa
+      </button>
+
+      {tieneCoords ? (
+        <a
+          href={googleMapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
           style={{
             padding: "10px 16px",
             fontSize: "14px",
             border: "1px solid #ddd",
             borderRadius: "6px",
             backgroundColor: "#fff",
-            cursor: "pointer",
-            color: copied ? "#28a745" : "#333",
+            textDecoration: "none",
+            color: "#333",
+            display: "inline-block",
           }}
         >
-          {copied ? "✓ Copiado" : "Compartir"}
-        </button>
-
+          Cómo llegar
+        </a>
+      ) : (
         <button
-          onClick={handleVerEnMapa}
+          disabled
           style={{
             padding: "10px 16px",
             fontSize: "14px",
             border: "1px solid #ddd",
             borderRadius: "6px",
-            backgroundColor: "#fff",
-            cursor: "pointer",
+            backgroundColor: "#f5f5f5",
+            cursor: "not-allowed",
+            color: "#999",
           }}
         >
-          Ver en mapa
+          Cómo llegar
         </button>
+      )}
 
-        {tieneCoords ? (
-          <a
-            href={googleMapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+      <button
+        onClick={handleSuscribirse}
+        style={{
+          padding: "10px 16px",
+          fontSize: "14px",
+          border: "1px solid #ddd",
+          borderRadius: "6px",
+          backgroundColor: "#fff",
+          cursor: "pointer",
+        }}
+      >
+        Suscribirse
+      </button>
+
+      {/* Semáforo turístico como botón del mismo nivel */}
+      {semaforoConfig && (
+        <div
+          style={{
+            padding: "10px 16px",
+            fontSize: "14px",
+            border: `2px solid ${semaforoConfig.color}`,
+            borderRadius: "6px",
+            backgroundColor: semaforoConfig.bgColor,
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <span
             style={{
-              padding: "10px 16px",
-              fontSize: "14px",
-              border: "1px solid #ddd",
-              borderRadius: "6px",
-              backgroundColor: "#fff",
-              textDecoration: "none",
-              color: "#333",
               display: "inline-block",
+              width: "10px",
+              height: "10px",
+              borderRadius: "50%",
+              backgroundColor: semaforoConfig.color,
+              flexShrink: 0,
             }}
-          >
-            Cómo llegar
-          </a>
-        ) : (
-          <button
-            disabled
-            style={{
-              padding: "10px 16px",
-              fontSize: "14px",
-              border: "1px solid #ddd",
-              borderRadius: "6px",
-              backgroundColor: "#f5f5f5",
-              cursor: "not-allowed",
-              color: "#999",
-            }}
-          >
-            Cómo llegar
-          </button>
-        )}
-
-        <button
-          onClick={handleSuscribirse}
-          style={{
-            padding: "10px 16px",
-            fontSize: "14px",
-            border: "1px solid #ddd",
-            borderRadius: "6px",
-            backgroundColor: "#fff",
-            cursor: "pointer",
-          }}
-        >
-          Suscribirse
-        </button>
-      </div>
-
-      {/* Semáforo turístico - badge compacto */}
-      {semaforoEstado && (
-        <div style={{ flexShrink: 0 }}>
-          <SemaforoBadge
-            estado={semaforoEstado}
-            mensaje={semaforoMensaje}
-            updatedAt={semaforoUpdatedAt}
-            variant="badge"
           />
+          <span style={{ fontWeight: 500, color: "#333" }}>
+            Semáforo turístico · <span style={{ color: semaforoConfig.color }}>{semaforoConfig.texto}</span>
+          </span>
         </div>
       )}
     </div>
