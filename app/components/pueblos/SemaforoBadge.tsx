@@ -70,13 +70,13 @@ export default function SemaforoBadge({
     return (
       <div
         style={{
-          padding: "16px",
+          padding: "12px",
           border: "2px solid #ccc",
           borderRadius: "8px",
           backgroundColor: "#f5f5f5",
         }}
       >
-        <h3 style={{ margin: "0 0 12px 0", fontSize: "18px" }}>
+        <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", fontWeight: 600 }}>
           Semáforo turístico
         </h3>
         <p style={{ margin: 0, fontSize: "14px", color: "#666" }}>
@@ -90,28 +90,28 @@ export default function SemaforoBadge({
   return (
     <div
       style={{
-        padding: "16px",
+        padding: "12px",
         border: `2px solid ${config.color}`,
         borderRadius: "8px",
         backgroundColor: config.bgColor,
       }}
     >
-      <h3 style={{ margin: "0 0 12px 0", fontSize: "18px" }}>
+      <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", fontWeight: 600 }}>
         Semáforo turístico
       </h3>
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          gap: "12px",
-          marginBottom: mensaje ? "12px" : "0",
+          gap: "10px",
+          marginBottom: mensaje ? "8px" : "0",
         }}
       >
         <span
           style={{
             display: "inline-block",
-            width: "24px",
-            height: "24px",
+            width: "20px",
+            height: "20px",
             borderRadius: "50%",
             backgroundColor: config.color,
             flexShrink: 0,
@@ -119,7 +119,7 @@ export default function SemaforoBadge({
         />
         <span
           style={{
-            fontSize: "16px",
+            fontSize: "15px",
             fontWeight: "600",
             color: config.color,
           }}
@@ -128,7 +128,7 @@ export default function SemaforoBadge({
         </span>
       </div>
       {mensaje && (
-        <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#333" }}>
+        <p style={{ margin: "0 0 6px 0", fontSize: "14px", color: "#333" }}>
           {mensaje}
         </p>
       )}

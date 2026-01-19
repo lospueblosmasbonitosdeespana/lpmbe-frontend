@@ -93,18 +93,18 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
 
   if (loading) {
     return (
-      <div style={{ border: "1px solid #ddd", padding: 16 }}>
-        <div style={{ fontWeight: 700, fontSize: 18 }}>Tiempo</div>
-        <div style={{ marginTop: 8 }}>Cargando…</div>
+      <div style={{ border: "1px solid #ddd", padding: "12px" }}>
+        <div style={{ fontWeight: 600, fontSize: "16px" }}>Tiempo</div>
+        <div style={{ marginTop: 6, fontSize: "14px" }}>Cargando…</div>
       </div>
     );
   }
 
   if (err || !data) {
     return (
-      <div style={{ border: "1px solid #ddd", padding: 16 }}>
-        <div style={{ fontWeight: 700, fontSize: 18 }}>Tiempo</div>
-        <div style={{ marginTop: 8, color: "#777" }}>{err || "Tiempo no disponible"}</div>
+      <div style={{ border: "1px solid #ddd", padding: "12px" }}>
+        <div style={{ fontWeight: 600, fontSize: "16px" }}>Tiempo</div>
+        <div style={{ marginTop: 6, fontSize: "14px", color: "#777" }}>{err || "Tiempo no disponible"}</div>
       </div>
     );
   }
@@ -112,66 +112,66 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
   const c = data.current;
 
   return (
-    <div style={{ border: "1px solid #ddd", padding: 16 }}>
+    <div style={{ border: "1px solid #ddd", padding: "12px" }}>
       <div style={{ display: "flex", gap: 16, alignItems: "stretch" }}>
-        <div style={{ flex: 1, minWidth: 260 }}>
-          <div style={{ fontWeight: 700, fontSize: 18 }}>Tiempo ahora</div>
+        <div style={{ flex: 1, minWidth: 240 }}>
+          <div style={{ fontWeight: 600, fontSize: "16px" }}>Tiempo ahora</div>
 
-          <div style={{ marginTop: 10, display: "flex", gap: 18, flexWrap: "wrap" }}>
+          <div style={{ marginTop: 8, display: "flex", gap: 12, flexWrap: "wrap" }}>
             <div>
-              <div style={{ color: "#777" }}>Estado</div>
-              <div style={{ fontWeight: 600 }}>{codeToText(c.weatherCode)}</div>
+              <div style={{ color: "#777", fontSize: "13px" }}>Estado</div>
+              <div style={{ fontWeight: 600, fontSize: "14px" }}>{codeToText(c.weatherCode)}</div>
             </div>
 
             <div>
-              <div style={{ color: "#777" }}>Temperatura</div>
-              <div style={{ fontWeight: 600 }}>
+              <div style={{ color: "#777", fontSize: "13px" }}>Temperatura</div>
+              <div style={{ fontWeight: 600, fontSize: "14px" }}>
                 {c.temperatureC == null ? "—" : `${Math.round(c.temperatureC)}°C`}
               </div>
             </div>
 
             <div>
-              <div style={{ color: "#777" }}>Viento</div>
-              <div style={{ fontWeight: 600 }}>
+              <div style={{ color: "#777", fontSize: "13px" }}>Viento</div>
+              <div style={{ fontWeight: 600, fontSize: "14px" }}>
                 {c.windKph == null ? "—" : `${Math.round(c.windKph)} km/h`}{" "}
                 {degToCardinal(c.windDirDeg)}
               </div>
             </div>
 
             <div>
-              <div style={{ color: "#777" }}>Actualizado</div>
-              <div style={{ fontWeight: 600 }}>
+              <div style={{ color: "#777", fontSize: "13px" }}>Actualizado</div>
+              <div style={{ fontWeight: 600, fontSize: "14px" }}>
                 {c.time ? new Date(c.time).toLocaleString("es-ES") : "—"}
               </div>
             </div>
           </div>
 
           {data.daily?.[0] && (
-            <div style={{ marginTop: 10, color: "#777" }}>
+            <div style={{ marginTop: 8, color: "#777", fontSize: "12px" }}>
               Amanecer: {data.daily[0].sunrise ? new Date(data.daily[0].sunrise).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) : "—"}{" "}
               · Atardecer: {data.daily[0].sunset ? new Date(data.daily[0].sunset).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) : "—"}
             </div>
           )}
         </div>
 
-        <div style={{ width: 420, minWidth: 360 }}>
-          <div style={{ fontWeight: 700, fontSize: 18 }}>Próximos 3 días</div>
+        <div style={{ width: 380, minWidth: 320 }}>
+          <div style={{ fontWeight: 600, fontSize: "16px" }}>Próximos 3 días</div>
 
-          <div style={{ marginTop: 10, display: "flex", gap: 12 }}>
+          <div style={{ marginTop: 8, display: "flex", gap: 10 }}>
             {next3.map((d) => (
               <div
                 key={d.date}
                 style={{
                   flex: 1,
                   border: "1px solid #ddd",
-                  padding: 12,
+                  padding: "10px",
                   minWidth: 0,
                 }}
               >
-                <div style={{ fontWeight: 700 }}>{formatDay(d.date)}</div>
-                <div style={{ marginTop: 6 }}>{codeToText(d.weatherCode)}</div>
-                <div style={{ marginTop: 8 }}>
-                  <span style={{ fontWeight: 700 }}>
+                <div style={{ fontWeight: 600, fontSize: "14px" }}>{formatDay(d.date)}</div>
+                <div style={{ marginTop: 4, fontSize: "13px" }}>{codeToText(d.weatherCode)}</div>
+                <div style={{ marginTop: 6, fontSize: "14px" }}>
+                  <span style={{ fontWeight: 600 }}>
                     {d.tMaxC == null ? "—" : `${Math.round(d.tMaxC)}°`}
                   </span>{" "}
                   /{" "}
@@ -179,10 +179,10 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
                     {d.tMinC == null ? "—" : `${Math.round(d.tMinC)}°`}
                   </span>
                 </div>
-                <div style={{ marginTop: 6, color: "#777" }}>
+                <div style={{ marginTop: 4, color: "#777", fontSize: "12px" }}>
                   Lluvia: {d.precipitationMm == null ? "—" : `${Math.round(d.precipitationMm)} mm`}
                 </div>
-                <div style={{ marginTop: 2, color: "#777" }}>
+                <div style={{ marginTop: 2, color: "#777", fontSize: "12px" }}>
                   Prob: {d.precipProbPct == null ? "—" : `${Math.round(d.precipProbPct)}%`}
                 </div>
               </div>
