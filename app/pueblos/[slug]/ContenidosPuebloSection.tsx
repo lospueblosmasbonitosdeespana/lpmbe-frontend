@@ -30,21 +30,6 @@ function formatearFecha(fecha: string | null): string {
   }
 }
 
-function getBadgeColor(tipo: string): string {
-  switch (tipo) {
-    case 'EVENTO':
-      return '#e74c3c';
-    case 'NOTICIA':
-      return '#3498db';
-    case 'ARTICULO':
-      return '#2ecc71';
-    case 'PAGINA':
-      return '#95a5a6';
-    default:
-      return '#95a5a6';
-  }
-}
-
 export default function ContenidosPuebloSection({
   contenidos,
 }: ContenidosPuebloSectionProps) {
@@ -77,63 +62,91 @@ export default function ContenidosPuebloSection({
                 overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
+                backgroundColor: '#fff',
               }}
             >
+              {/* IMAGEN: solo si existe */}
               {contenido.coverUrl && (
-                <img
-                  src={contenido.coverUrl}
-                  alt={contenido.titulo}
+                <div
                   style={{
                     width: '100%',
                     height: '180px',
-                    objectFit: 'cover',
+                    overflow: 'hidden',
+                    backgroundColor: '#f5f5f5',
                   }}
-                  loading="lazy"
-                />
+                >
+                  <img
+                    src={contenido.coverUrl}
+                    alt={contenido.titulo}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      display: 'block',
+                    }}
+                    loading="lazy"
+                  />
+                </div>
               )}
 
-              <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+              {/* CONTENIDO */}
+              <div
+                style={{
+                  padding: '16px',
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                {/* Badge tipo */}
                 <div style={{ marginBottom: '8px' }}>
                   <span
                     style={{
                       display: 'inline-block',
-                      backgroundColor: getBadgeColor(contenido.tipo),
-                      color: 'white',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      fontSize: '12px',
+                      fontSize: '11px',
                       fontWeight: '600',
                       textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      color: '#666',
                     }}
                   >
                     {contenido.tipo}
                   </span>
                 </div>
 
+                {/* Título con line-clamp */}
                 <h3
                   style={{
                     margin: '0 0 8px 0',
                     fontSize: '18px',
                     fontWeight: '600',
-                    lineHeight: '1.4',
+                    lineHeight: '1.3',
+                    color: '#111',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
                   }}
                 >
                   {contenido.titulo}
                 </h3>
 
+                {/* Fecha */}
                 {fecha && (
                   <p
                     style={{
                       margin: '0 0 12px 0',
-                      fontSize: '14px',
-                      color: '#666',
+                      fontSize: '13px',
+                      color: '#999',
+                      lineHeight: '1.4',
                     }}
                   >
                     {formatearFecha(fecha)}
                   </p>
                 )}
 
-                <div style={{ marginTop: 'auto' }}>
+                {/* Link Ver más */}
+                <div style={{ marginTop: 'auto', paddingTop: '8px' }}>
                   <Link
                     href={`/c/${contenido.slug}`}
                     style={{
