@@ -54,116 +54,136 @@ export default function ContenidosPuebloSection({
               : contenido.publishedAt;
 
           return (
-            <article
+            <Link
               key={contenido.id}
+              href={`/c/${contenido.slug}`}
               style={{
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-                backgroundColor: '#fff',
+                textDecoration: 'none',
+                color: 'inherit',
+                display: 'block',
+                cursor: 'pointer',
               }}
+              className="contenido-card-link"
             >
-              {/* IMAGEN: solo si existe */}
-              {contenido.coverUrl && (
-                <div
-                  style={{
-                    width: '100%',
-                    height: '180px',
-                    overflow: 'hidden',
-                    backgroundColor: '#f5f5f5',
-                  }}
-                >
-                  <img
-                    src={contenido.coverUrl}
-                    alt={contenido.titulo}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      display: 'block',
-                    }}
-                    loading="lazy"
-                  />
-                </div>
-              )}
-
-              {/* CONTENIDO */}
-              <div
+              <article
                 style={{
-                  padding: '16px',
-                  flex: 1,
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
                   display: 'flex',
                   flexDirection: 'column',
+                  backgroundColor: '#fff',
+                  height: '100%',
                 }}
               >
-                {/* Badge tipo */}
-                <div style={{ marginBottom: '8px' }}>
-                  <span
+                {/* IMAGEN: solo si existe */}
+                {contenido.coverUrl && (
+                  <div
                     style={{
-                      display: 'inline-block',
-                      fontSize: '11px',
-                      fontWeight: '600',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      color: '#666',
+                      width: '100%',
+                      height: '180px',
+                      overflow: 'hidden',
+                      backgroundColor: '#f5f5f5',
                     }}
                   >
-                    {contenido.tipo}
-                  </span>
-                </div>
-
-                {/* Título con line-clamp */}
-                <h3
-                  style={{
-                    margin: '0 0 8px 0',
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    lineHeight: '1.3',
-                    color: '#111',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                  }}
-                >
-                  {contenido.titulo}
-                </h3>
-
-                {/* Fecha */}
-                {fecha && (
-                  <p
-                    style={{
-                      margin: '0 0 12px 0',
-                      fontSize: '13px',
-                      color: '#999',
-                      lineHeight: '1.4',
-                    }}
-                  >
-                    {formatearFecha(fecha)}
-                  </p>
+                    <img
+                      src={contenido.coverUrl}
+                      alt={contenido.titulo}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        display: 'block',
+                      }}
+                      loading="lazy"
+                    />
+                  </div>
                 )}
 
-                {/* Link Ver más */}
-                <div style={{ marginTop: 'auto', paddingTop: '8px' }}>
-                  <Link
-                    href={`/c/${contenido.slug}`}
+                {/* CONTENIDO */}
+                <div
+                  style={{
+                    padding: '16px',
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  {/* Badge tipo */}
+                  <div style={{ marginBottom: '8px' }}>
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        color: '#666',
+                      }}
+                    >
+                      {contenido.tipo}
+                    </span>
+                  </div>
+
+                  {/* Título con line-clamp */}
+                  <h3
                     style={{
-                      color: '#0066cc',
-                      textDecoration: 'none',
-                      fontSize: '14px',
-                      fontWeight: '500',
+                      margin: '0 0 8px 0',
+                      fontSize: '18px',
+                      fontWeight: '600',
+                      lineHeight: '1.3',
+                      color: '#111',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
                     }}
                   >
-                    Ver más →
-                  </Link>
+                    {contenido.titulo}
+                  </h3>
+
+                  {/* Fecha */}
+                  {fecha && (
+                    <p
+                      style={{
+                        margin: '0 0 12px 0',
+                        fontSize: '13px',
+                        color: '#999',
+                        lineHeight: '1.4',
+                      }}
+                    >
+                      {formatearFecha(fecha)}
+                    </p>
+                  )}
+
+                  {/* Texto Ver más (solo informativo) */}
+                  <div style={{ marginTop: 'auto', paddingTop: '8px' }}>
+                    <span
+                      style={{
+                        color: '#0066cc',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                      }}
+                    >
+                      Ver más →
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </article>
+              </article>
+            </Link>
           );
         })}
       </div>
+
+      {/* ESTILOS CSS PARA HOVER */}
+      <style>{`
+        .contenido-card-link article {
+          transition: border-color 0.2s ease;
+        }
+        .contenido-card-link:hover article {
+          border-color: #999;
+        }
+      `}</style>
     </section>
   );
 }
