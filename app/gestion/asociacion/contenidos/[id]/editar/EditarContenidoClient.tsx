@@ -61,33 +61,36 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = 'image/*';
+    fileInput.multiple = true; // MÚLTIPLES ARCHIVOS
 
     fileInput.onchange = async (e: any) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+      const files = Array.from(e.target.files || []) as File[];
+      if (files.length === 0) return;
 
-      if (file.size > 25 * 1024 * 1024) {
-        alert('La imagen pesa demasiado (máx 25MB)');
+      // Control de tamaño por archivo
+      const oversized = files.find(f => f.size > 25 * 1024 * 1024);
+      if (oversized) {
+        alert(`La imagen "${oversized.name}" pesa demasiado (máx 25MB). Todas deben ser menores a 25MB.`);
         return;
       }
 
       setUploading(true);
       try {
         const fd = new FormData();
-        fd.append('file', file);
+        files.forEach(file => fd.append('files', file));
         fd.append('folder', 'contenidos');
 
-        const res = await fetch('/api/media/upload', { method: 'POST', body: fd });
+        const res = await fetch('/api/media/upload-multiple', { method: 'POST', body: fd });
         if (!res.ok) {
           const msg = await res.text();
-          alert(`Error subiendo imagen: ${msg}`);
+          alert(`Error subiendo imágenes: ${msg}`);
           return;
         }
 
         const json = await res.json();
-        const url = json?.url ?? json?.publicUrl ?? '';
+        const images = json?.images ?? [];
 
-        if (url && textareaRef.current) {
+        if (images.length > 0 && textareaRef.current) {
           const textarea = textareaRef.current;
           const start = textarea.selectionStart;
           const end = textarea.selectionEnd;
@@ -95,46 +98,28 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
 
           const before = text.substring(0, start);
           const after = text.substring(end);
-          const insert = `\n\n![imagen](${url})\n\n`;
+          
+          // Construir bloque con todas las imágenes
+          const imageLines = images.map((img: any) => `![imagen](${img.url})`).join('\n\n');
+          const insert = `\n\n${imageLines}\n\n`;
 
           const newText = before + insert + after;
           setContenidoMd(newText);
 
+          // Mover cursor después de la inserción
           setTimeout(() => {
             textarea.focus();
             textarea.selectionStart = textarea.selectionEnd = start + insert.length;
           }, 0);
         }
       } catch (e: any) {
-        alert(e?.message ?? 'Error subiendo imagen');
+        alert(e?.message ?? 'Error subiendo imágenes');
       } finally {
         setUploading(false);
       }
     };
 
     fileInput.click();
-  }
-
-  function handleInsertGallery() {
-    if (!textareaRef.current) return;
-
-    const textarea = textareaRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-
-    const before = text.substring(0, start);
-    const after = text.substring(end);
-    
-    const insert = `\n\n<!-- Galería: sube varias imágenes -->\n\n![imagen 1](URL_1)\n\n![imagen 2](URL_2)\n\n![imagen 3](URL_3)\n\n`;
-
-    const newText = before + insert + after;
-    setContenidoMd(newText);
-
-    setTimeout(() => {
-      textarea.focus();
-      textarea.selectionStart = textarea.selectionEnd = start + insert.length;
-    }, 0);
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -321,14 +306,7 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
               disabled={uploading}
               className="rounded border px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-50"
             >
-              {uploading ? 'Subiendo...' : '📷 Insertar imagen'}
-            </button>
-            <button
-              type="button"
-              onClick={handleInsertGallery}
-              className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-            >
-              🖼️ Insertar galería
+              {uploading ? 'Subiendo imágenes...' : '📷 Insertar imagen(es)'}
             </button>
           </div>
 
@@ -341,7 +319,7 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
             placeholder="Escribe aquí el contenido en Markdown..."
           />
           <p className="text-xs text-gray-500">
-            Usa Markdown: **negrita**, - lista, [texto](url), ![alt](imagen-url)
+            Usa Markdown: **negrita**, - lista, [texto](url), ![alt](imagen-url). Puedes seleccionar múltiples imágenes.
           </p>
         </div>
 
