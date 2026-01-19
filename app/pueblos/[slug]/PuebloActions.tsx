@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import SemaforoBadge from "../../components/pueblos/SemaforoBadge";
 
 type PuebloActionsProps = {
   nombre: string;
   lat: number | null;
   lng: number | null;
   mapAnchorId?: string;
+  semaforoEstado?: "VERDE" | "AMARILLO" | "ROJO" | null;
+  semaforoMensaje?: string | null;
+  semaforoUpdatedAt?: string | Date | null;
 };
 
 export default function PuebloActions({
@@ -14,6 +18,9 @@ export default function PuebloActions({
   lat,
   lng,
   mapAnchorId = "mapa",
+  semaforoEstado,
+  semaforoMensaje,
+  semaforoUpdatedAt,
 }: PuebloActionsProps) {
   const [copied, setCopied] = useState(false);
 
@@ -49,89 +56,112 @@ export default function PuebloActions({
     <div
       style={{
         display: "flex",
-        gap: "12px",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: "16px",
         marginTop: "24px",
         marginBottom: "24px",
         flexWrap: "wrap",
       }}
     >
-      <button
-        onClick={handleCompartir}
+      {/* Botones de acciones */}
+      <div
         style={{
-          padding: "10px 16px",
-          fontSize: "14px",
-          border: "1px solid #ddd",
-          borderRadius: "6px",
-          backgroundColor: "#fff",
-          cursor: "pointer",
-          color: copied ? "#28a745" : "#333",
+          display: "flex",
+          gap: "12px",
+          flexWrap: "wrap",
         }}
       >
-        {copied ? "✓ Copiado" : "Compartir"}
-      </button>
-
-      <button
-        onClick={handleVerEnMapa}
-        style={{
-          padding: "10px 16px",
-          fontSize: "14px",
-          border: "1px solid #ddd",
-          borderRadius: "6px",
-          backgroundColor: "#fff",
-          cursor: "pointer",
-        }}
-      >
-        Ver en mapa
-      </button>
-
-      {tieneCoords ? (
-        <a
-          href={googleMapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={handleCompartir}
           style={{
             padding: "10px 16px",
             fontSize: "14px",
             border: "1px solid #ddd",
             borderRadius: "6px",
             backgroundColor: "#fff",
-            textDecoration: "none",
-            color: "#333",
-            display: "inline-block",
+            cursor: "pointer",
+            color: copied ? "#28a745" : "#333",
           }}
         >
-          Cómo llegar
-        </a>
-      ) : (
+          {copied ? "✓ Copiado" : "Compartir"}
+        </button>
+
         <button
-          disabled
+          onClick={handleVerEnMapa}
           style={{
             padding: "10px 16px",
             fontSize: "14px",
             border: "1px solid #ddd",
             borderRadius: "6px",
-            backgroundColor: "#f5f5f5",
-            cursor: "not-allowed",
-            color: "#999",
+            backgroundColor: "#fff",
+            cursor: "pointer",
           }}
         >
-          Cómo llegar
+          Ver en mapa
         </button>
-      )}
 
-      <button
-        onClick={handleSuscribirse}
-        style={{
-          padding: "10px 16px",
-          fontSize: "14px",
-          border: "1px solid #ddd",
-          borderRadius: "6px",
-          backgroundColor: "#fff",
-          cursor: "pointer",
-        }}
-      >
-        Suscribirse
-      </button>
+        {tieneCoords ? (
+          <a
+            href={googleMapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              padding: "10px 16px",
+              fontSize: "14px",
+              border: "1px solid #ddd",
+              borderRadius: "6px",
+              backgroundColor: "#fff",
+              textDecoration: "none",
+              color: "#333",
+              display: "inline-block",
+            }}
+          >
+            Cómo llegar
+          </a>
+        ) : (
+          <button
+            disabled
+            style={{
+              padding: "10px 16px",
+              fontSize: "14px",
+              border: "1px solid #ddd",
+              borderRadius: "6px",
+              backgroundColor: "#f5f5f5",
+              cursor: "not-allowed",
+              color: "#999",
+            }}
+          >
+            Cómo llegar
+          </button>
+        )}
+
+        <button
+          onClick={handleSuscribirse}
+          style={{
+            padding: "10px 16px",
+            fontSize: "14px",
+            border: "1px solid #ddd",
+            borderRadius: "6px",
+            backgroundColor: "#fff",
+            cursor: "pointer",
+          }}
+        >
+          Suscribirse
+        </button>
+      </div>
+
+      {/* Semáforo turístico - badge compacto */}
+      {semaforoEstado && (
+        <div style={{ flexShrink: 0 }}>
+          <SemaforoBadge
+            estado={semaforoEstado}
+            mensaje={semaforoMensaje}
+            updatedAt={semaforoUpdatedAt}
+            variant="badge"
+          />
+        </div>
+      )}
     </div>
   );
 }

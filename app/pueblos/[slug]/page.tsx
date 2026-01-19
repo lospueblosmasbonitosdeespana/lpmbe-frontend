@@ -366,31 +366,19 @@ export default async function PuebloPage({
         )}
       </section>
 
-      {/* BARRA DE ACCIONES */}
+      {/* BARRA DE ACCIONES CON SEMÁFORO */}
       <PuebloActions
         nombre={puebloSafe.nombre}
         lat={puebloSafe.lat}
         lng={puebloSafe.lng}
+        semaforoEstado={semaforoPueblo.estado ?? "VERDE"}
+        semaforoMensaje={semaforoPueblo.mensaje ?? null}
+        semaforoUpdatedAt={semaforoPueblo.ultima_actualizacion ?? null}
       />
 
-      {/* SEMÁFORO Y METEO */}
-      <section style={{ marginTop: "32px" }}>
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "flex-start",
-            gap: "24px",
-          }}
-        >
-          <SemaforoBadge
-            estado={semaforoPueblo.estado ?? "VERDE"}
-            mensaje={semaforoPueblo.mensaje ?? null}
-            updatedAt={semaforoPueblo.ultima_actualizacion ?? null}
-            variant="panel"
-          />
-          <MeteoPanel puebloId={puebloSafe.id} />
-        </div>
+      {/* METEO (sin semáforo) */}
+      <section style={{ marginTop: "16px" }}>
+        <MeteoPanel puebloId={puebloSafe.id} />
       </section>
 
       {/* TEXTO */}
