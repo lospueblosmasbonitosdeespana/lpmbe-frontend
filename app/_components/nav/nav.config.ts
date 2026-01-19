@@ -96,14 +96,26 @@ export const navConfig: NavItem[] = [
         links: [
           { label: "Noticias", href: "/noticias" },
           { label: "Agenda", href: "/agenda" },
+          { label: "Artículos", href: "/articulos" },
         ],
       },
     ],
   },
   {
-    type: "link",
+    type: "mega",
     label: "El sello",
-    href: "/el-sello",
+    columns: [
+      {
+        title: "El sello",
+        links: [
+          { label: "¿Cómo se obtiene el sello?", href: "/el-sello/como-se-obtiene" },
+          { label: "Quiénes somos", href: "/el-sello/quienes-somos" },
+          { label: "Socios", href: "/el-sello/socios" },
+          { label: "El sello en el mundo", href: "/el-sello/internacional" },
+          { label: "Únete", href: "/el-sello/unete" },
+        ],
+      },
+    ],
   },
 ];
 

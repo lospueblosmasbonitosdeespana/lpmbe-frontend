@@ -6,7 +6,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const limit = searchParams.get('limit') ?? '20';
 
-  const upstream = await fetch(`${API_BASE}/public/noticias?limit=${limit}`, {
+  const upstream = await fetch(`${API_BASE}/public/noticias?scope=ASOCIACION&limit=${limit}`, {
     cache: 'no-store',
   });
 

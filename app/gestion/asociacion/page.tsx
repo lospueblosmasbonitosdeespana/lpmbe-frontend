@@ -47,6 +47,16 @@ export default async function GestionAsociacionPage() {
               Ajustes de marca (logo y nombre)
             </Link>
           </li>
+          <li>
+            <Link className="hover:underline" href="/gestion/asociacion/el-sello">
+              El Sello (CMS)
+            </Link>
+          </li>
+          <li>
+            <Link className="hover:underline" href="/gestion/asociacion/el-sello/documentos">
+              Documentos (PDFs)
+            </Link>
+          </li>
         </ul>
       </div>
 

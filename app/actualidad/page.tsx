@@ -35,12 +35,24 @@ function ActualidadContent() {
     async function load() {
       try {
         setLoading(true);
-        const params = new URLSearchParams();
-        if (tipoParam !== 'TODOS') params.set('tipo', tipoParam);
-        params.set('limit', '50');
         
-        const queryString = params.toString() ? `?${params.toString()}` : '';
-        const res = await fetch(`/api/public/contenidos${queryString}`, {
+        let url: string;
+        
+        // Usar endpoints específicos para noticias y eventos (solo Asociación)
+        if (tipoParam === 'NOTICIA') {
+          url = '/api/public/noticias?limit=50';
+        } else if (tipoParam === 'EVENTO') {
+          url = '/api/public/eventos?limit=50';
+        } else {
+          // Para TODOS o ARTICULO, usar contenidos con scope
+          const params = new URLSearchParams();
+          params.set('scope', 'ASOCIACION');
+          if (tipoParam !== 'TODOS') params.set('tipo', tipoParam);
+          params.set('limit', '50');
+          url = `/api/public/contenidos?${params.toString()}`;
+        }
+        
+        const res = await fetch(url, {
           cache: 'no-store',
         });
 
