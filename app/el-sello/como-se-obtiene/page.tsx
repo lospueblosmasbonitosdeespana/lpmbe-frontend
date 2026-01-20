@@ -2,6 +2,8 @@ import Link from 'next/link';
 import SelloCmsPage from '@/app/_components/ui/SelloCmsPage';
 import type { SelloPage } from '@/lib/cms/sello';
 
+export const dynamic = 'force-dynamic';
+
 async function getPage(): Promise<SelloPage | null> {
   try {
     const res = await fetch(

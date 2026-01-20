@@ -83,7 +83,7 @@ export default async function MultiexperienciasPage() {
                     // Construir href solo si tenemos los datos necesarios
                     const hasValidData = item.pueblo?.slug && item.slug;
                     const href = hasValidData
-                      ? `/pueblos/${item.pueblo.slug}/experiencias/${item.slug}`
+                      ? `/pueblos/${item.pueblo!.slug}/experiencias/${item.slug}`
                       : item.pueblo?.slug
                       ? `/pueblos/${item.pueblo.slug}`
                       : null;

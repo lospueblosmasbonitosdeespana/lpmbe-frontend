@@ -10,8 +10,8 @@ type ThemesSectionProps = {
 };
 
 // Fisher-Yates shuffle con seed opcional
-function seededShuffle<T>(array: T[], seed: number): T[] {
-  const arr = [...array];
+function seededShuffle<T>(array: readonly T[], seed: number): T[] {
+  const arr = [...array]; // Copia mutable
   let currentSeed = seed;
   
   // Simple LCG (Linear Congruential Generator)

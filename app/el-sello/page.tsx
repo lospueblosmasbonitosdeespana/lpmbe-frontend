@@ -3,6 +3,8 @@ import Breadcrumbs from '@/app/_components/ui/Breadcrumbs';
 import { EnrichedMarkdown } from '@/lib/cms/enrichedMarkdown';
 import type { SelloPage, CmsDocumento } from '@/lib/cms/sello';
 
+export const dynamic = 'force-dynamic';
+
 const sections = [
   {
     title: '¿Cómo se obtiene el sello?',
