@@ -1,7 +1,7 @@
 // API cliente para la tienda
 
 import { getApiUrl } from '@/lib/api';
-import type { Product, Direccion, Order } from '@/src/types/tienda';
+import type { Product, Direccion, Order, Coupon } from '@/src/types/tienda';
 
 const API_BASE = getApiUrl();
 
@@ -47,14 +47,17 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 // ===== DIRECCIONES =====
 
 export async function getUserDirecciones(): Promise<Direccion[]> {
-  const res = await authFetch(`${API_BASE}/usuarios/me/direcciones`);
+  const res = await fetch('/api/usuarios/me/direcciones', {
+    cache: 'no-store',
+  });
   if (!res.ok) throw new Error('Error cargando direcciones');
   return res.json();
 }
 
 export async function createDireccion(data: Omit<Direccion, 'id'>): Promise<Direccion> {
-  const res = await authFetch(`${API_BASE}/usuarios/me/direcciones`, {
+  const res = await fetch('/api/usuarios/me/direcciones', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Error creando dirección');
@@ -68,9 +71,14 @@ export type CheckoutPayload = {
   items: Array<{ productoId: number; cantidad: number }>;
 };
 
-export async function createCheckout(payload: CheckoutPayload): Promise<{ sessionUrl?: string; orderId: number }> {
-  const res = await authFetch(`${API_BASE}/orders/checkout`, {
+export async function createCheckout(payload: CheckoutPayload): Promise<{ 
+  sessionUrl?: string; 
+  orderId: number;
+  clientSecret?: string;
+}> {
+  const res = await fetch('/api/orders/checkout', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
   
@@ -84,47 +92,150 @@ export async function createCheckout(payload: CheckoutPayload): Promise<{ sessio
 
 // ===== ADMIN PRODUCTOS =====
 
-export async function createProduct(data: Partial<Product>): Promise<Product> {
-  const res = await authFetch(`${API_BASE}/products/admin`, {
+export async function uploadProductImage(file: File): Promise<string> {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('folder', 'productos');
+
+  const res = await fetch('/api/media/upload', {
     method: 'POST',
+    body: fd,
+  });
+
+  if (!res.ok) throw new Error('Error subiendo imagen');
+
+  const data = await res.json();
+  return data?.url ?? data?.publicUrl;
+}
+
+export async function createProduct(data: Partial<Product>): Promise<Product> {
+  const res = await fetch('/api/products/admin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Error creando producto');
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    throw new Error(message);
+  }
   return res.json();
 }
 
 export async function updateProduct(id: number, data: Partial<Product>): Promise<Product> {
-  const res = await authFetch(`${API_BASE}/products/admin/${id}`, {
+  const res = await fetch(`/api/products/admin/${id}`, {
     method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Error actualizando producto');
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    throw new Error(message);
+  }
   return res.json();
 }
 
 export async function deleteProduct(id: number): Promise<void> {
-  const res = await authFetch(`${API_BASE}/products/admin/${id}`, {
+  const res = await fetch(`/api/products/admin/${id}`, {
     method: 'DELETE',
   });
-  if (!res.ok) throw new Error('Error eliminando producto');
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    throw new Error(message);
+  }
 }
 
 // ===== ADMIN PEDIDOS =====
 
 export async function getAdminOrders(): Promise<Order[]> {
-  const res = await authFetch(`${API_BASE}/admin/orders`);
-  if (!res.ok) throw new Error('Error cargando pedidos');
+  const res = await fetch('/api/admin/orders', {
+    cache: 'no-store',
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    throw new Error(message);
+  }
   return res.json();
 }
 
 export async function updateOrderStatus(
   id: number,
-  estado: Order['estado']
+  payload: { status: string; trackingNumber?: string }
 ): Promise<Order> {
-  const res = await authFetch(`${API_BASE}/admin/orders/${id}/status`, {
+  const res = await fetch(`/api/admin/orders/${id}/status`, {
     method: 'PATCH',
-    body: JSON.stringify({ estado }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error('Error actualizando estado');
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    throw new Error(message);
+  }
   return res.json();
+}
+
+// ===== ADMIN CUPONES =====
+
+export async function getAdminCoupons(): Promise<Coupon[]> {
+  const res = await fetch('/api/admin/coupons', {
+    cache: 'no-store',
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    throw new Error(message);
+  }
+  return res.json();
+}
+
+export async function createCoupon(data: Partial<Coupon>): Promise<Coupon> {
+  const res = await fetch('/api/admin/coupons', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    throw new Error(message);
+  }
+  return res.json();
+}
+
+export async function updateCoupon(id: number, data: Partial<Coupon>): Promise<Coupon> {
+  const res = await fetch(`/api/admin/coupons/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    throw new Error(message);
+  }
+  return res.json();
+}
+
+export async function deleteCoupon(id: number): Promise<void> {
+  const res = await fetch(`/api/admin/coupons/${id}`, {
+    method: 'DELETE',
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    throw new Error(message);
+  }
 }

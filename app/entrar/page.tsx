@@ -1,11 +1,12 @@
 // app/entrar/page.tsx
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function EntrarPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -48,7 +49,9 @@ export default function EntrarPage() {
         return;
       }
 
-      router.push('/cuenta');
+      // Respetar redirect si existe
+      const redirect = searchParams.get('redirect');
+      router.push(redirect || '/cuenta');
       router.refresh();
     } finally {
       setLoading(false);

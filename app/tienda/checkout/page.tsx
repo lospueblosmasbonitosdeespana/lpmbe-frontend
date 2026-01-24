@@ -6,6 +6,7 @@ import { useCartStore } from '@/src/store/cart';
 import { getUserDirecciones, createDireccion, createCheckout } from '@/src/lib/tiendaApi';
 import { formatEUR, toNumber } from '@/src/lib/money';
 import type { Direccion } from '@/src/types/tienda';
+import StripePaymentClient from './StripePaymentClient';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function CheckoutPage() {
   const [showNewDireccion, setShowNewDireccion] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [payment, setPayment] = useState<{ orderId: number; clientSecret: string } | null>(null);
 
   // Formulario nueva dirección
   const [formData, setFormData] = useState({
@@ -28,7 +30,7 @@ export default function CheckoutPage() {
     codigoPostal: '',
     pais: 'España',
     telefono: '',
-    predeterminada: false,
+    esPrincipal: false,
   });
 
   useEffect(() => {
@@ -36,26 +38,33 @@ export default function CheckoutPage() {
   }, []);
 
   const checkAuth = async () => {
-    const token = localStorage.getItem('access_token');
-    setIsLoggedIn(!!token);
-    
-    if (token) {
-      try {
-        const dirs = await getUserDirecciones();
-        setDirecciones(dirs);
-        
-        // Seleccionar predeterminada si existe
-        const defaultDir = dirs.find((d) => d.predeterminada);
-        if (defaultDir) {
-          setSelectedDireccionId(defaultDir.id);
-        } else if (dirs.length > 0) {
-          setSelectedDireccionId(dirs[0].id);
-        } else {
-          setShowNewDireccion(true);
+    try {
+      const res = await fetch('/api/auth/me', { cache: 'no-store' });
+      const ok = res.ok;
+      setIsLoggedIn(ok);
+      
+      if (ok) {
+        // Usuario está logueado, cargar direcciones
+        try {
+          const dirs = await getUserDirecciones();
+          setDirecciones(dirs);
+          
+          // Seleccionar principal si existe
+          const defaultDir = dirs.find((d) => d.esPrincipal);
+          if (defaultDir) {
+            setSelectedDireccionId(defaultDir.id);
+          } else if (dirs.length > 0) {
+            setSelectedDireccionId(dirs[0].id);
+          } else {
+            setShowNewDireccion(true);
+          }
+        } catch (e: any) {
+          setError('Error cargando direcciones');
         }
-      } catch (e: any) {
-        setError('Error cargando direcciones');
       }
+    } catch (e: any) {
+      setIsLoggedIn(false);
+      setError('Error verificando autenticación');
     }
     
     setLoading(false);
@@ -85,7 +94,7 @@ export default function CheckoutPage() {
         codigoPostal: '',
         pais: 'España',
         telefono: '',
-        predeterminada: false,
+        esPrincipal: false,
       });
     } catch (e: any) {
       setError(e?.message ?? 'Error creando dirección');
@@ -114,14 +123,18 @@ export default function CheckoutPage() {
 
       const result = await createCheckout(payload);
 
-      // Si hay sessionUrl (Stripe activo), redirigir
-      if (result.sessionUrl) {
-        window.location.href = result.sessionUrl;
-      } else {
-        // Sin Stripe: mostrar pedido creado
-        clear();
-        router.push(`/tienda/pedido/${result.orderId}`);
+      // Si hay clientSecret, mostrar formulario de pago de Stripe
+      if (result.clientSecret) {
+        setPayment({
+          orderId: result.orderId,
+          clientSecret: result.clientSecret,
+        });
+        return;
       }
+
+      // Sin Stripe o sin clientSecret: ir directo al pedido
+      clear();
+      router.push(`/tienda/pedido/${result.orderId}`);
     } catch (e: any) {
       if (e?.message === 'Pagos no disponibles todavía') {
         setError('Los pagos no están disponibles todavía. Inténtalo más tarde.');
@@ -218,9 +231,9 @@ export default function CheckoutPage() {
                         Tel: {dir.telefono}
                       </>
                     )}
-                    {dir.predeterminada && (
+                    {dir.esPrincipal && (
                       <span className="ml-3 inline-block rounded bg-green-100 px-2 py-1 text-xs text-green-800">
-                        Predeterminada
+                        Principal
                       </span>
                     )}
                   </label>
@@ -334,12 +347,12 @@ export default function CheckoutPage() {
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    checked={formData.predeterminada}
+                    checked={formData.esPrincipal}
                     onChange={(e) =>
-                      setFormData({ ...formData, predeterminada: e.target.checked })
+                      setFormData({ ...formData, esPrincipal: e.target.checked })
                     }
                   />
-                  <span className="text-sm">Establecer como predeterminada</span>
+                  <span className="text-sm">Establecer como principal</span>
                 </label>
 
                 <div className="flex gap-3 pt-3">
@@ -399,13 +412,23 @@ export default function CheckoutPage() {
               <span>{formatEUR(total)} €</span>
             </div>
 
-            <button
-              onClick={handleCheckout}
-              disabled={processing || !selectedDireccionId}
-              className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {processing ? 'Procesando...' : 'Realizar pedido'}
-            </button>
+            {payment ? (
+              <div>
+                <h3 className="mb-3 text-lg font-semibold">Pago</h3>
+                <StripePaymentClient 
+                  clientSecret={payment.clientSecret} 
+                  orderId={payment.orderId} 
+                />
+              </div>
+            ) : (
+              <button
+                onClick={handleCheckout}
+                disabled={processing || !selectedDireccionId}
+                className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {processing ? 'Procesando...' : 'Realizar pedido'}
+              </button>
+            )}
           </div>
         </div>
       </div>

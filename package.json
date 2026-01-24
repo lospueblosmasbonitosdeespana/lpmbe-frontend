@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^5.4.1",
+    "@stripe/stripe-js": "^8.6.4",
     "he": "^1.2.0",
     "html5-qrcode": "^2.3.8",
     "leaflet": "^1.9.4",

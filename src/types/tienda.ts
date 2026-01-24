@@ -30,26 +30,68 @@ export type Direccion = {
   codigoPostal: string;
   pais: string;
   telefono: string | null;
-  predeterminada: boolean;
+  esPrincipal: boolean; // ✅ Campo del backend
 };
 
 export type Order = {
   id: number;
-  usuarioId: number;
-  direccionId: number;
-  total: number;
-  estado: 'PENDIENTE' | 'PAGADO' | 'ENVIADO' | 'COMPLETADO' | 'CANCELADO';
+  userId: number;
+  shippingAddressId: number;
+  total: number | string; // Decimal viene como string desde backend
+  status: 'PENDING' | 'PAID' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+  paymentStatus: string;
+  stripePaymentIntentId: string | null;
   stripeSessionId: string | null;
+  orderNumber: string;
+  trackingNumber: string | null;
+  couponCode: string | null;
+  discountTotal: number | string; // Decimal viene como string desde backend
+  totalBeforeDiscount: number | string; // Decimal viene como string desde backend
+  paidAt: string | null;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  cancelledAt: string | null;
   createdAt: string;
   updatedAt: string;
   items: OrderItem[];
+  user?: {
+    id: number;
+    email: string;
+    nombre?: string | null;
+    apellidos?: string | null;
+  };
+  shippingAddressRef?: {
+    id: number;
+    nombre: string;
+    direccion: string;
+    ciudad: string;
+    provincia: string;
+    codigoPostal: string;
+    pais: string;
+    telefono: string | null;
+  };
 };
 
 export type OrderItem = {
   id: number;
-  pedidoId: number;
-  productoId: number;
+  orderId: number;
+  productId: number;
   cantidad: number;
-  precioUnitario: number;
+  precioUnitario: number | string; // Decimal viene como string desde backend
   producto?: Product;
+};
+
+export type Coupon = {
+  id: number;
+  code: string;
+  type: 'PERCENT' | 'FIXED';
+  value: number | string; // Decimal viene como string desde backend
+  activo: boolean;
+  startsAt: string | null;
+  endsAt: string | null;
+  minAmount: number | string | null; // Decimal viene como string desde backend
+  usageLimit: number | null;
+  usedCount: number;
+  createdAt: string;
+  updatedAt: string;
 };
