@@ -1,0 +1,414 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCartStore } from '@/src/store/cart';
+import { getUserDirecciones, createDireccion, createCheckout } from '@/src/lib/tiendaApi';
+import { formatEUR, toNumber } from '@/src/lib/money';
+import type { Direccion } from '@/src/types/tienda';
+
+export default function CheckoutPage() {
+  const router = useRouter();
+  const { items, clear, getTotal } = useCartStore();
+  
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [direcciones, setDirecciones] = useState<Direccion[]>([]);
+  const [selectedDireccionId, setSelectedDireccionId] = useState<number | null>(null);
+  const [showNewDireccion, setShowNewDireccion] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Formulario nueva dirección
+  const [formData, setFormData] = useState({
+    nombre: '',
+    direccion: '',
+    ciudad: '',
+    provincia: '',
+    codigoPostal: '',
+    pais: 'España',
+    telefono: '',
+    predeterminada: false,
+  });
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const token = localStorage.getItem('access_token');
+    setIsLoggedIn(!!token);
+    
+    if (token) {
+      try {
+        const dirs = await getUserDirecciones();
+        setDirecciones(dirs);
+        
+        // Seleccionar predeterminada si existe
+        const defaultDir = dirs.find((d) => d.predeterminada);
+        if (defaultDir) {
+          setSelectedDireccionId(defaultDir.id);
+        } else if (dirs.length > 0) {
+          setSelectedDireccionId(dirs[0].id);
+        } else {
+          setShowNewDireccion(true);
+        }
+      } catch (e: any) {
+        setError('Error cargando direcciones');
+      }
+    }
+    
+    setLoading(false);
+  };
+
+  const handleCreateDireccion = async () => {
+    if (!formData.nombre || !formData.direccion || !formData.ciudad || !formData.codigoPostal) {
+      setError('Completa todos los campos obligatorios');
+      return;
+    }
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const newDir = await createDireccion(formData);
+      setDirecciones([...direcciones, newDir]);
+      setSelectedDireccionId(newDir.id);
+      setShowNewDireccion(false);
+      
+      // Reset form
+      setFormData({
+        nombre: '',
+        direccion: '',
+        ciudad: '',
+        provincia: '',
+        codigoPostal: '',
+        pais: 'España',
+        telefono: '',
+        predeterminada: false,
+      });
+    } catch (e: any) {
+      setError(e?.message ?? 'Error creando dirección');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleCheckout = async () => {
+    if (!selectedDireccionId) {
+      setError('Selecciona una dirección de envío');
+      return;
+    }
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const payload = {
+        direccionId: selectedDireccionId,
+        items: items.map((item) => ({
+          productoId: item.product.id,
+          cantidad: item.quantity,
+        })),
+      };
+
+      const result = await createCheckout(payload);
+
+      // Si hay sessionUrl (Stripe activo), redirigir
+      if (result.sessionUrl) {
+        window.location.href = result.sessionUrl;
+      } else {
+        // Sin Stripe: mostrar pedido creado
+        clear();
+        router.push(`/tienda/pedido/${result.orderId}`);
+      }
+    } catch (e: any) {
+      if (e?.message === 'Pagos no disponibles todavía') {
+        setError('Los pagos no están disponibles todavía. Inténtalo más tarde.');
+      } else {
+        setError(e?.message ?? 'Error procesando el pedido');
+      }
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const total = getTotal();
+
+  // Redirigir si carrito vacío
+  if (!loading && items.length === 0) {
+    router.push('/tienda/carrito');
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <main className="mx-auto max-w-7xl px-6 py-12">
+        <p>Cargando...</p>
+      </main>
+    );
+  }
+
+  // Sin login
+  if (!isLoggedIn) {
+    return (
+      <main className="mx-auto max-w-7xl px-6 py-12">
+        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+        
+        <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-8 text-center">
+          <h2 className="text-xl font-semibold mb-3">Login requerido</h2>
+          <p className="text-gray-700 mb-6">
+            Debes iniciar sesión para completar tu compra
+          </p>
+          <button
+            onClick={() => router.push('/entrar?redirect=/tienda/checkout')}
+            className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+          >
+            Iniciar sesión
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="mx-auto max-w-7xl px-6 py-12">
+      <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+
+      {error && (
+        <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-red-800">
+          {error}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        {/* Direcciones */}
+        <div className="lg:col-span-2 space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Dirección de envío</h2>
+
+            {!showNewDireccion && direcciones.length > 0 && (
+              <div className="space-y-3">
+                {direcciones.map((dir) => (
+                  <label
+                    key={dir.id}
+                    className={`block rounded-lg border p-4 cursor-pointer transition-colors ${
+                      selectedDireccionId === dir.id
+                        ? 'border-blue-600 bg-blue-50'
+                        : 'border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="direccion"
+                      checked={selectedDireccionId === dir.id}
+                      onChange={() => setSelectedDireccionId(dir.id)}
+                      className="mr-3"
+                    />
+                    <strong>{dir.nombre}</strong>
+                    <br />
+                    {dir.direccion}
+                    <br />
+                    {dir.codigoPostal} {dir.ciudad}, {dir.provincia}
+                    <br />
+                    {dir.pais}
+                    {dir.telefono && (
+                      <>
+                        <br />
+                        Tel: {dir.telefono}
+                      </>
+                    )}
+                    {dir.predeterminada && (
+                      <span className="ml-3 inline-block rounded bg-green-100 px-2 py-1 text-xs text-green-800">
+                        Predeterminada
+                      </span>
+                    )}
+                  </label>
+                ))}
+
+                <button
+                  onClick={() => setShowNewDireccion(true)}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  + Añadir nueva dirección
+                </button>
+              </div>
+            )}
+
+            {(showNewDireccion || direcciones.length === 0) && (
+              <div className="rounded-lg border border-gray-200 bg-white p-6 space-y-4">
+                <h3 className="font-semibold">Nueva dirección</h3>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Nombre completo *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.nombre}
+                    onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                    className="w-full rounded border border-gray-300 px-3 py-2"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Dirección *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.direccion}
+                    onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
+                    className="w-full rounded border border-gray-300 px-3 py-2"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Ciudad *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.ciudad}
+                      onChange={(e) => setFormData({ ...formData, ciudad: e.target.value })}
+                      className="w-full rounded border border-gray-300 px-3 py-2"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Provincia
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.provincia}
+                      onChange={(e) => setFormData({ ...formData, provincia: e.target.value })}
+                      className="w-full rounded border border-gray-300 px-3 py-2"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Código Postal *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.codigoPostal}
+                      onChange={(e) => setFormData({ ...formData, codigoPostal: e.target.value })}
+                      className="w-full rounded border border-gray-300 px-3 py-2"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      País
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.pais}
+                      onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
+                      className="w-full rounded border border-gray-300 px-3 py-2"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Teléfono
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.telefono}
+                    onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                    className="w-full rounded border border-gray-300 px-3 py-2"
+                  />
+                </div>
+
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.predeterminada}
+                    onChange={(e) =>
+                      setFormData({ ...formData, predeterminada: e.target.checked })
+                    }
+                  />
+                  <span className="text-sm">Establecer como predeterminada</span>
+                </label>
+
+                <div className="flex gap-3 pt-3">
+                  <button
+                    onClick={handleCreateDireccion}
+                    disabled={processing}
+                    className="rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {processing ? 'Guardando...' : 'Guardar dirección'}
+                  </button>
+                  
+                  {direcciones.length > 0 && (
+                    <button
+                      onClick={() => setShowNewDireccion(false)}
+                      className="rounded-lg border border-gray-300 px-6 py-2 hover:bg-gray-50"
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Resumen */}
+        <div className="lg:col-span-1">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 sticky top-6">
+            <h2 className="text-xl font-bold mb-4">Resumen del pedido</h2>
+
+            <div className="space-y-2 border-b border-gray-200 pb-4 mb-4">
+              {items.map((item) => (
+                <div key={item.product.id} className="flex justify-between text-sm">
+                  <span className="flex-1 line-clamp-1">
+                    {item.product.nombre} × {item.quantity}
+                  </span>
+                  <span className="font-medium">
+                    {formatEUR(toNumber(item.product.precio) * item.quantity)} €
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-2 border-b border-gray-200 pb-4 mb-4">
+              <div className="flex justify-between text-sm">
+                <span>Subtotal</span>
+                <span>{formatEUR(total)} €</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Envío</span>
+                <span className="text-gray-500">A calcular</span>
+              </div>
+            </div>
+
+            <div className="flex justify-between text-lg font-bold mb-6">
+              <span>Total</span>
+              <span>{formatEUR(total)} €</span>
+            </div>
+
+            <button
+              onClick={handleCheckout}
+              disabled={processing || !selectedDireccionId}
+              className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {processing ? 'Procesando...' : 'Realizar pedido'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}

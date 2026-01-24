@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MegaMenu } from "./MegaMenu";
 import AuthNavLink from "./AuthNavLink";
+import CartIndicator from "../tienda/CartIndicator";
 import { headers } from "next/headers";
 
 type SiteSettings = {
@@ -93,6 +94,7 @@ export async function Header() {
         </div>
 
         <div className="flex items-center gap-4">
+          <CartIndicator />
           <Link href="/contacto" className="text-sm font-medium hover:underline">
             Contacto
           </Link>

@@ -43,6 +43,11 @@ export default async function GestionAsociacionPage() {
             </Link>
           </li>
           <li>
+            <Link className="hover:underline" href="/gestion/asociacion/tienda">
+              Tienda
+            </Link>
+          </li>
+          <li>
             <Link className="hover:underline" href="/gestion/asociacion/ajustes">
               Ajustes de marca (logo y nombre)
             </Link>

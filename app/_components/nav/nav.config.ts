@@ -117,5 +117,10 @@ export const navConfig: NavItem[] = [
       },
     ],
   },
+  {
+    type: "link",
+    label: "Tienda",
+    href: "/tienda",
+  },
 ];
 
