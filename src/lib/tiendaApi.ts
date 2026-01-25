@@ -83,8 +83,8 @@ export async function getActivePromotions(): Promise<Promotion[]> {
 // ===== CHECKOUT =====
 
 export type CheckoutPayload = {
-  direccionId: number;
-  items: Array<{ productoId: number; cantidad: number }>;
+  shippingAddressId: number;
+  items: Array<{ productId: number; quantity: number }>;
   couponCode?: string;
 };
 

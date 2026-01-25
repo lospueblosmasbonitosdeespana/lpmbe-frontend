@@ -117,17 +117,34 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Validar que el ID es un número válido
+    const shippingAddressId = Number(dirId);
+    if (!Number.isInteger(shippingAddressId)) {
+      setError('ID de dirección inválido');
+      return;
+    }
+
     setError(null);
     
     try {
+      // ✅ Payload correcto según backend
       const payload = {
-        direccionId: dirId,
+        shippingAddressId,
         items: items.map((item) => ({
-          productoId: item.product.id,
-          cantidad: item.quantity,
+          productId: Number(item.product.id),
+          quantity: Number(item.quantity),
         })),
         couponCode: coupon,
       };
+
+      // Validar items
+      const invalidItem = payload.items.find(
+        i => !Number.isInteger(i.productId) || !Number.isInteger(i.quantity)
+      );
+      if (invalidItem) {
+        setError('Datos de carrito inválidos');
+        return;
+      }
 
       const result = await createCheckout(payload);
       setCheckoutData(result);
