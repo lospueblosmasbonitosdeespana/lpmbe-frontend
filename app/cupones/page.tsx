@@ -37,6 +37,9 @@ export default function CuponesPage() {
       <div className="rounded-lg bg-green-50 border border-green-200 p-6 mb-8">
         <h2 className="text-xl font-semibold mb-3 text-green-900">Promociones Activas</h2>
         <p className="text-green-800 mb-3">
+          <strong>Los descuentos automáticos se aplican directamente en el producto y en el checkout cuando hay una promoción activa.</strong>
+        </p>
+        <p className="text-green-800 mb-3">
           Las promociones activas se aplican automáticamente. No necesitas introducir ningún código.
         </p>
         <p className="text-sm text-green-700">

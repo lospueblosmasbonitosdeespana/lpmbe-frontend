@@ -229,6 +229,10 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 <p className="mt-1 text-sm text-gray-600">
                   Ahorro: {formatEUR(product.precio - finalPrice)} €
                 </p>
+                <p className="mt-2 text-sm text-green-700 font-medium">
+                  ✓ Descuento aplicado automáticamente: {applicablePromotion.name}
+                  {applicablePromotion.type === 'PERCENT' && ` (−${applicablePromotion.value}%)`}
+                </p>
               </div>
             ) : (
               <span className="text-4xl font-bold">{formatEUR(product.precio)} €</span>

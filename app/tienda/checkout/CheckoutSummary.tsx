@@ -59,21 +59,24 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
         </div>
       </div>
 
-      {/* Descuentos */}
+      {/* Descuentos: SOLO mostrar si hay descuentos reales */}
       {hasDiscounts && (
         <div className="space-y-2 border-b border-gray-200 pb-4 mb-4">
           <p className="text-sm font-semibold text-gray-700">Descuentos aplicados:</p>
           
           {/* Promociones automáticas */}
-          {checkoutData.discounts.promotions.map((promo, idx) => (
-            <div key={idx} className="flex justify-between text-sm text-green-700">
-              <span className="flex items-center gap-1">
-                <span className="text-lg">✓</span>
-                {promo.promotionName}
-              </span>
-              <span className="font-medium">−{formatEUR(toNumber(promo.amount))} €</span>
-            </div>
-          ))}
+          {checkoutData.discounts.promotions.map((promo, idx) => {
+            const promoName = promo.promotionName?.trim() || 'Promoción automática';
+            return (
+              <div key={idx} className="flex justify-between text-sm text-green-700">
+                <span className="flex items-center gap-1">
+                  <span className="text-lg">✓</span>
+                  {promoName}
+                </span>
+                <span className="font-medium">−{formatEUR(toNumber(promo.amount))} €</span>
+              </div>
+            );
+          })}
 
           {/* Cupón manual */}
           {checkoutData.discounts.coupon && (
