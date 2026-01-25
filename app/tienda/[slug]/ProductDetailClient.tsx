@@ -95,10 +95,24 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   // Encontrar promoción aplicable a este producto
   const applicablePromotion = useMemo(() => {
     return activePromotions.find(promo => {
-      if (!promo.active) return false;
+      if (!promo || !promo.active) return false;
+      
+      // Aplicable a todos los productos
       if (promo.applicableToAll) return true;
-      if (promo.productIds.includes(product.id)) return true;
-      if (product.categoria && promo.categoryNames.includes(product.categoria)) return true;
+      
+      // Aplicable por ID de producto
+      if (Array.isArray(promo.productIds) && promo.productIds.includes(product.id)) {
+        return true;
+      }
+      
+      // Aplicable por categoría
+      if (product.categoria && 
+          Array.isArray(promo.categoryNames) && 
+          promo.categoryNames.length > 0 &&
+          promo.categoryNames.includes(product.categoria)) {
+        return true;
+      }
+      
       return false;
     });
   }, [activePromotions, product.id, product.categoria]);
