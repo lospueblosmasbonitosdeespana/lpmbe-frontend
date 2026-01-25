@@ -16,16 +16,21 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
+  // Determinar imágenes: usar galería si existe, sino imagenUrl
+  const hasGallery = product.images && product.images.length > 0;
+  const galleryImages = hasGallery ? product.images! : [];
+  const fallbackImage = product.imagenUrl && product.imagenUrl.trim() ? product.imagenUrl.trim() : null;
+  
+  // Estado de imagen activa (inicia con la primera de la galería o fallback)
+  const [selectedImage, setSelectedImage] = useState<string | null>(
+    hasGallery ? galleryImages[0].url : fallbackImage
+  );
+
   const handleAddToCart = () => {
     addItem(product, quantity);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
-
-  const safeSrc =
-    product.imagenUrl && product.imagenUrl.trim()
-      ? product.imagenUrl.trim()
-      : null;
 
   const canAdd = product.activo && product.stock > 0 && quantity <= product.stock;
 
@@ -39,17 +44,42 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       </button>
 
       <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
-        {/* Imagen */}
-        <div className="aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
-          {safeSrc ? (
-            <img
-              src={safeSrc}
-              alt={product.nombre}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <span className="text-gray-400">Sin imagen</span>
+        {/* Imagen + Galería */}
+        <div>
+          <div className="aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
+            {selectedImage ? (
+              <img
+                src={selectedImage}
+                alt={product.nombre}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <span className="text-gray-400">Sin imagen</span>
+              </div>
+            )}
+          </div>
+
+          {/* Thumbnails de la galería */}
+          {hasGallery && galleryImages.length > 1 && (
+            <div className="mt-4 flex gap-2 overflow-x-auto">
+              {galleryImages.map((img, index) => (
+                <button
+                  key={img.id}
+                  onClick={() => setSelectedImage(img.url)}
+                  className={`flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${
+                    selectedImage === img.url
+                      ? 'border-blue-600 ring-2 ring-blue-600 ring-offset-2'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <img
+                    src={img.url}
+                    alt={img.alt || `Imagen ${index + 1}`}
+                    className="h-20 w-20 object-cover"
+                  />
+                </button>
+              ))}
             </div>
           )}
         </div>

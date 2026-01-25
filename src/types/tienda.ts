@@ -1,5 +1,15 @@
 // Tipos para la tienda
 
+export type ProductImage = {
+  id: number;
+  productId: number;
+  url: string;
+  alt: string | null;
+  orden: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Product = {
   id: number;
   nombre: string;
@@ -14,6 +24,7 @@ export type Product = {
   destacado: boolean;
   createdAt: string;
   updatedAt: string;
+  images?: ProductImage[]; // Galería opcional
 };
 
 export type CartItem = {

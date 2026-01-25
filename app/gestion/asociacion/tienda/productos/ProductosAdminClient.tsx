@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getProducts, createProduct, updateProduct, deleteProduct } from "@/src/lib/tiendaApi";
 import type { Product } from "@/src/types/tienda";
 import { formatEUR, toNumber } from "@/src/lib/money";
+import ProductGalleryManager from "./ProductGalleryManager";
 
 type FormMode = "create" | "edit" | null;
 
@@ -410,6 +411,13 @@ export default function ProductosAdminClient() {
                 Formato: JPG, PNG, WebP (máx 25MB)
               </p>
             </div>
+
+            {/* GALERÍA (solo en modo edición) */}
+            {mode === "edit" && editingId && (
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <ProductGalleryManager productId={editingId} />
+              </div>
+            )}
 
             <div className="flex gap-4">
               <label className="flex items-center gap-2">

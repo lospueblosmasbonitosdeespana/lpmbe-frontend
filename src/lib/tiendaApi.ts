@@ -1,7 +1,7 @@
 // API cliente para la tienda
 
 import { getApiUrl } from '@/lib/api';
-import type { Product, Direccion, Order, Coupon } from '@/src/types/tienda';
+import type { Product, ProductImage, Direccion, Order, Coupon } from '@/src/types/tienda';
 
 const API_BASE = getApiUrl();
 
@@ -262,5 +262,99 @@ export async function deleteCoupon(id: number): Promise<void> {
     const errorData = await res.json().catch(() => ({}));
     const message = errorData?.message || errorData?.error || `Error ${res.status}`;
     throw new Error(message);
+  }
+}
+
+// ===== ADMIN PRODUCT IMAGES (GALERÍA) =====
+
+export async function listProductImages(productId: number): Promise<ProductImage[]> {
+  const res = await fetch(`/api/products/admin/${productId}/images`, {
+    cache: 'no-store',
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    const error: any = new Error(message);
+    error.status = res.status;
+    throw error;
+  }
+  return res.json();
+}
+
+export async function createProductImage(
+  productId: number,
+  data: { url: string; alt?: string; orden?: number }
+): Promise<ProductImage> {
+  const res = await fetch(`/api/products/admin/${productId}/images`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    const error: any = new Error(message);
+    error.status = res.status;
+    throw error;
+  }
+  return res.json();
+}
+
+export async function updateProductImage(
+  productId: number,
+  imageId: number,
+  data: { alt?: string; orden?: number }
+): Promise<ProductImage> {
+  const res = await fetch(`/api/products/admin/${productId}/images/${imageId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    const error: any = new Error(message);
+    error.status = res.status;
+    throw error;
+  }
+  return res.json();
+}
+
+export async function deleteProductImage(
+  productId: number,
+  imageId: number
+): Promise<void> {
+  const res = await fetch(`/api/products/admin/${productId}/images/${imageId}`, {
+    method: 'DELETE',
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    const error: any = new Error(message);
+    error.status = res.status;
+    throw error;
+  }
+}
+
+export async function reorderProductImages(
+  productId: number,
+  imageIds: number[]
+): Promise<void> {
+  const res = await fetch(`/api/products/admin/${productId}/images/reorder`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids: imageIds }),
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    const error: any = new Error(message);
+    error.status = res.status;
+    throw error;
   }
 }
