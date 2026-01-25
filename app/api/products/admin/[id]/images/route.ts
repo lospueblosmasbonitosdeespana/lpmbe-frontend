@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const API_BASE = getApiUrl();
 
 // GET /api/products/admin/:id/images - Listar imágenes del producto

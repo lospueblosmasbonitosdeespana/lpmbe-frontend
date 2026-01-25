@@ -284,7 +284,7 @@ export async function listProductImages(productId: number): Promise<ProductImage
 
 export async function createProductImage(
   productId: number,
-  data: { url: string; alt?: string; orden?: number }
+  data: { url: string; alt?: string; order?: number }
 ): Promise<ProductImage> {
   const res = await fetch(`/api/products/admin/${productId}/images`, {
     method: 'POST',
@@ -305,7 +305,7 @@ export async function createProductImage(
 export async function updateProductImage(
   productId: number,
   imageId: number,
-  data: { alt?: string; orden?: number }
+  data: { alt?: string; order?: number }
 ): Promise<ProductImage> {
   const res = await fetch(`/api/products/admin/${productId}/images/${imageId}`, {
     method: 'PATCH',

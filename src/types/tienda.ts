@@ -5,7 +5,7 @@ export type ProductImage = {
   productId: number;
   url: string;
   alt: string | null;
-  orden: number;
+  order: number; // ✅ Normalizado con backend (no "orden")
   createdAt: string;
   updatedAt: string;
 };
@@ -24,7 +24,7 @@ export type Product = {
   destacado: boolean;
   createdAt: string;
   updatedAt: string;
-  images?: ProductImage[]; // Galería opcional
+  images?: ProductImage[]; // Galería (siempre normalizar si es undefined)
 };
 
 export type CartItem = {

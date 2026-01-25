@@ -415,7 +415,7 @@ export default function ProductosAdminClient() {
             {/* GALERÍA (solo en modo edición) */}
             {mode === "edit" && editingId && (
               <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                <ProductGalleryManager productId={editingId} />
+                <ProductGalleryManager productId={editingId} productNombre={form.nombre || "Producto"} />
               </div>
             )}
 

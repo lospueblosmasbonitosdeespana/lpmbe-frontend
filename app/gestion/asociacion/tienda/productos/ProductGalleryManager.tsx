@@ -12,9 +12,39 @@ import {
 
 type Props = {
   productId: number;
+  productNombre: string;
 };
 
-export default function ProductGalleryManager({ productId }: Props) {
+const extractUploadedUrl = (payload: any): string | null => {
+  const candidates = [
+    payload?.url,
+    payload?.publicUrl,
+    payload?.imageUrl,
+    payload?.data?.url,
+    payload?.data?.publicUrl,
+    payload?.data?.imageUrl,
+    payload?.result?.url,
+    payload?.result?.publicUrl,
+    payload?.result?.imageUrl,
+    payload?.file?.url,
+    payload?.file?.publicUrl,
+    payload?.file?.imageUrl,
+  ].filter(Boolean);
+
+  const url = candidates.find((u: any) => typeof u === "string" && u.startsWith("http"));
+  return url ?? null;
+};
+
+const assertMediaDomain = (url: string) => {
+  const ok = url.startsWith("https://media.lospueblosmasbonitosdeespana.org/");
+  if (!ok) {
+    throw new Error(
+      `URL de upload inválida. Debe ser de media.lospueblosmasbonitosdeespana.org. Recibida: ${url}`
+    );
+  }
+};
+
+export default function ProductGalleryManager({ productId, productNombre }: Props) {
   const [images, setImages] = useState<ProductImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -26,10 +56,15 @@ export default function ProductGalleryManager({ productId }: Props) {
     try {
       setLoading(true);
       setError(null);
+      console.log('[Gallery] Cargando imágenes para productId:', productId);
+      
       const data = await listProductImages(productId);
+      console.log('[Gallery] Imágenes recibidas:', data);
+      
       setImages(data);
     } catch (e: any) {
       const status = e?.status || 0;
+      console.error('[Gallery] Error cargando:', { status, message: e?.message });
       
       if (status === 404) {
         setError('Ruta API no registrada (proxy). Reinicia el servidor.');
@@ -67,28 +102,61 @@ export default function ProductGalleryManager({ productId }: Props) {
       setError(null);
 
       try {
+        console.log('[Gallery] 1. Iniciando upload:', file.name);
+        
+        // 1) Upload
         const fd = new FormData();
         fd.append('file', file);
-        fd.append('folder', 'productos'); // ✅ Igual que el uploader principal
+        fd.append('folder', 'productos');
 
         const uploadRes = await fetch('/api/media/upload', {
           method: 'POST',
           body: fd,
+          credentials: 'include',
         });
 
+        console.log('[Gallery] 2. Upload response status:', uploadRes.status);
+
+        const uploadText = await uploadRes.text();
+        let uploadJson: any = null;
+        try { 
+          uploadJson = uploadText ? JSON.parse(uploadText) : null; 
+        } catch {}
+
+        console.log('[Gallery] 2. Upload response data:', uploadJson);
+
         if (!uploadRes.ok) {
-          const errorData = await uploadRes.json().catch(() => ({}));
-          throw new Error(errorData.error || errorData.message || 'Error subiendo imagen');
+          throw new Error(`Upload falló (${uploadRes.status}): ${uploadText}`);
         }
 
-        const data = await uploadRes.json();
-        const url = data?.url ?? data?.publicUrl;
+        const uploadedUrl = extractUploadedUrl(uploadJson);
+        console.log('[Gallery] 3. URL extraída:', uploadedUrl);
 
-        if (!url) throw new Error('No se recibió URL de la imagen');
+        if (!uploadedUrl) {
+          throw new Error(`Upload OK pero no encuentro URL en respuesta: ${uploadText}`);
+        }
 
-        await createProductImage(productId, { url });
+        assertMediaDomain(uploadedUrl);
+
+        // 2) Crear ProductImage en backend con alt autogenerado
+        const nextIndex = images.length + 1;
+        const autoAlt = `${productNombre} - Imagen ${nextIndex}`;
+        console.log('[Gallery] 4. Creando imagen en galería con alt:', autoAlt);
+        const created = await createProductImage(productId, { url: uploadedUrl, alt: autoAlt });
+        console.log('[Gallery] 4. Imagen creada:', created);
+
+        // 3) Refresco robusto: optimista + loadImages
+        setImages((prev) => {
+          const next = [...prev, created];
+          next.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+          return next;
+        });
+
+        console.log('[Gallery] 5. Recargando lista...');
         await loadImages();
+        console.log('[Gallery] 5. Lista recargada');
       } catch (e: any) {
+        console.error('[Gallery] Error en flujo:', e);
         setError(e?.message ?? 'Error subiendo imagen');
       } finally {
         setUploading(false);
@@ -222,7 +290,9 @@ export default function ProductGalleryManager({ productId }: Props) {
                 </div>
               ) : (
                 <div>
-                  <p className="text-sm text-gray-700">{img.alt || '(sin alt)'}</p>
+                  <p className="text-sm text-gray-700">
+                    {img.alt || `${productNombre} - Imagen ${index + 1}`}
+                  </p>
                   <button
                     onClick={() => startEditAlt(img)}
                     className="text-xs text-gray-500 underline hover:no-underline"

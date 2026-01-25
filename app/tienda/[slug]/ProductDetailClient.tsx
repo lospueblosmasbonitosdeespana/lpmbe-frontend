@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/src/store/cart';
 import { formatEUR } from '@/src/lib/money';
@@ -10,21 +10,68 @@ type ProductDetailClientProps = {
   product: Product;
 };
 
+function toTime(v?: string) {
+  const t = v ? new Date(v).getTime() : 0;
+  return Number.isFinite(t) ? t : 0;
+}
+
 export default function ProductDetailClient({ product }: ProductDetailClientProps) {
   const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
-  // Determinar imágenes: usar galería si existe, sino imagenUrl
-  const hasGallery = product.images && product.images.length > 0;
-  const galleryImages = hasGallery ? product.images! : [];
-  const fallbackImage = product.imagenUrl && product.imagenUrl.trim() ? product.imagenUrl.trim() : null;
-  
-  // Estado de imagen activa (inicia con la primera de la galería o fallback)
-  const [selectedImage, setSelectedImage] = useState<string | null>(
-    hasGallery ? galleryImages[0].url : fallbackImage
-  );
+  // 1) Imagen principal por defecto: product.imagenUrl
+  const mainDefaultUrl = product?.imagenUrl?.trim() || null;
+
+  // 2) Galería: product.images ordenadas (sin mezclar con principal)
+  const galleryImages = useMemo(() => {
+    const imgs = Array.isArray(product?.images) ? product.images : [];
+    
+    return [...imgs]
+      .sort((a: any, b: any) => {
+        const ao = Number(a?.order ?? 0);
+        const bo = Number(b?.order ?? 0);
+        if (ao !== bo) return ao - bo;
+        return toTime(a?.createdAt) - toTime(b?.createdAt);
+      })
+      .filter((i: any) => i?.url && String(i.url).trim().length > 0);
+  }, [product?.images]);
+
+  // 3) Estado: reset SOLO cuando cambia product.id
+  const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (mainDefaultUrl) {
+      setSelectedUrl(mainDefaultUrl);
+    } else {
+      setSelectedUrl(galleryImages[0]?.url ?? null);
+    }
+  }, [product?.id]);
+
+  // 4) Imagen principal: cascada selectedUrl → mainDefaultUrl → primera galería
+  const mainUrl = selectedUrl ?? mainDefaultUrl ?? galleryImages[0]?.url ?? null;
+
+  // 5) Thumbnails: incluir principal + galería (sin duplicar)
+  const allThumbs = useMemo(() => {
+    const thumbs: any[] = [];
+    
+    // Añadir principal si existe
+    if (mainDefaultUrl) {
+      thumbs.push({ url: mainDefaultUrl, type: 'main', alt: product?.nombre });
+    }
+    
+    // Añadir galería (evitar duplicados con principal)
+    galleryImages.forEach((img: any) => {
+      if (img.url !== mainDefaultUrl) {
+        thumbs.push({ ...img, type: 'gallery' });
+      }
+    });
+    
+    return thumbs;
+  }, [mainDefaultUrl, galleryImages, product?.nombre]);
+
+  const hasThumbs = allThumbs.length > 0;
 
   const handleAddToCart = () => {
     addItem(product, quantity);
@@ -47,39 +94,48 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
         {/* Imagen + Galería */}
         <div>
           <div className="aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
-            {selectedImage ? (
+            {mainUrl ? (
               <img
-                src={selectedImage}
-                alt={product.nombre}
-                className="h-full w-full object-cover"
+                src={mainUrl}
+                alt={product?.nombre || "Producto"}
+                className="h-full w-full object-contain"
               />
             ) : (
-              <div className="flex h-full items-center justify-center">
-                <span className="text-gray-400">Sin imagen</span>
+              <div className="flex h-full w-full items-center justify-center text-sm text-gray-500">
+                Sin imagen
               </div>
             )}
           </div>
 
-          {/* Thumbnails de la galería */}
-          {hasGallery && galleryImages.length > 1 && (
-            <div className="mt-4 flex gap-2 overflow-x-auto">
-              {galleryImages.map((img, index) => (
-                <button
-                  key={img.id}
-                  onClick={() => setSelectedImage(img.url)}
-                  className={`flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${
-                    selectedImage === img.url
-                      ? 'border-blue-600 ring-2 ring-blue-600 ring-offset-2'
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <img
-                    src={img.url}
-                    alt={img.alt || `Imagen ${index + 1}`}
-                    className="h-20 w-20 object-cover"
-                  />
-                </button>
-              ))}
+          {/* Thumbnails: principal + galería */}
+          {hasThumbs && (
+            <div className="mt-4 flex gap-3 overflow-x-auto">
+              {allThumbs.map((img: any) => {
+                const active = img.url === mainUrl;
+                const isMain = img.type === 'main';
+                return (
+                  <button
+                    key={img.url}
+                    type="button"
+                    onClick={() => setSelectedUrl(img.url)}
+                    className={`h-20 w-20 flex-shrink-0 overflow-hidden rounded border ${
+                      active ? "border-blue-600" : "border-gray-200"
+                    } bg-gray-100 relative`}
+                    aria-label="Ver imagen"
+                  >
+                    <img 
+                      src={img.url} 
+                      alt={img.alt || product?.nombre || "Producto"} 
+                      className="h-full w-full object-cover" 
+                    />
+                    {isMain && (
+                      <span className="absolute bottom-0 left-0 right-0 bg-blue-600 text-white text-xs text-center py-0.5">
+                        Principal
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
