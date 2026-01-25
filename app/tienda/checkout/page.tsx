@@ -132,14 +132,14 @@ export default function CheckoutPage() {
         shippingAddressId,
         items: items.map((item) => ({
           productId: Number(item.product.id),
-          quantity: Number(item.quantity),
+          cantidad: Math.max(1, parseInt(String(item.quantity ?? 1), 10) || 1),
         })),
         couponCode: coupon,
       };
 
       // Validar items
       const invalidItem = payload.items.find(
-        i => !Number.isInteger(i.productId) || !Number.isInteger(i.quantity)
+        i => !Number.isInteger(i.productId) || !Number.isInteger(i.cantidad) || i.cantidad < 1
       );
       if (invalidItem) {
         setError('Datos de carrito inválidos');

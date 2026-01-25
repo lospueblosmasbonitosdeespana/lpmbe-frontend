@@ -84,7 +84,7 @@ export async function getActivePromotions(): Promise<Promotion[]> {
 
 export type CheckoutPayload = {
   shippingAddressId: number;
-  items: Array<{ productId: number; quantity: number }>;
+  items: Array<{ productId: number; cantidad: number }>;
   couponCode?: string;
 };
 
