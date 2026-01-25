@@ -96,14 +96,8 @@ export default async function TiendaPage() {
                       
                       {product.stock <= 0 ? (
                         <span className="text-sm text-red-600">Agotado</span>
-                      ) : product.stock < 10 ? (
-                        <span className="text-sm text-orange-600">
-                          Últimas unidades
-                        </span>
                       ) : (
-                        <span className="text-sm text-green-600">
-                          En stock
-                        </span>
+                        <span className="text-sm text-green-600">En stock</span>
                       )}
                     </div>
                   </div>

@@ -112,8 +112,13 @@ export default function CheckoutPage() {
   // Previsualizar checkout (calcular precios sin crear pedido)
   const previewCheckout = async (direccionId?: number, coupon?: string) => {
     const dirId = direccionId ?? selectedDireccionId;
-    if (!dirId) return;
+    if (!dirId) {
+      setCheckoutData(null);
+      return;
+    }
 
+    setError(null);
+    
     try {
       const payload = {
         direccionId: dirId,
@@ -129,6 +134,13 @@ export default function CheckoutPage() {
     } catch (e: any) {
       console.error('Error previsualizando checkout:', e);
       setCheckoutData(null);
+      
+      // Mostrar error específico
+      if (e?.message) {
+        setError(`No se pudo calcular el total: ${e.message}`);
+      } else {
+        setError('No se pudo calcular el total. Verifica tu dirección e inténtalo de nuevo.');
+      }
     }
   };
 

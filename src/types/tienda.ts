@@ -119,8 +119,8 @@ export type Promotion = {
   stackable: boolean;
   priority: number;
   applicableToAll: boolean;
-  productIds: number[];
-  categoryNames: string[];
+  productIds?: number[]; // Opcional, puede no venir del backend
+  categoryNames?: string[]; // Opcional, puede no venir del backend
   createdAt: string;
   updatedAt: string;
 };

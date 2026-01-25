@@ -32,7 +32,13 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
   if (!checkoutData) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <p className="text-gray-500">Calculando precios...</p>
+        <h2 className="text-xl font-bold mb-4">Resumen del pedido</h2>
+        <div className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-3"></div>
+            <p className="text-sm text-gray-500">Calculando precios...</p>
+          </div>
+        </div>
       </div>
     );
   }

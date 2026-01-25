@@ -93,6 +93,7 @@ export async function createCheckout(payload: CheckoutPayload): Promise<Checkout
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
+    cache: 'no-store',
   });
   
   if (res.status === 503) {
@@ -111,9 +112,16 @@ export async function createCheckout(payload: CheckoutPayload): Promise<Checkout
         throw error;
       }
       
-      throw new Error(errorData.message || 'Error en checkout');
+      // Error 400 con detalles del backend
+      if (res.status === 400) {
+        const message = errorData.message || errorData.error || 'Datos de checkout incorrectos';
+        throw new Error(message);
+      }
+      
+      throw new Error(errorData.message || errorData.error || `Error ${res.status}`);
     } catch (parseError) {
-      throw new Error('Error en checkout');
+      if (parseError instanceof Error) throw parseError;
+      throw new Error(`Error en checkout (${res.status})`);
     }
   }
   

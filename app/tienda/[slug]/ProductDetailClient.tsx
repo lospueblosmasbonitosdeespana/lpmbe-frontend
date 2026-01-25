@@ -100,16 +100,20 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       // Aplicable a todos los productos
       if (promo.applicableToAll) return true;
       
+      // Normalizar arrays (defensivo)
+      const promoProductIds = Array.isArray(promo.productIds) ? promo.productIds : [];
+      const promoCategoryNames = Array.isArray(promo.categoryNames) ? promo.categoryNames : [];
+      const productCategory = product.categoria ?? '';
+      
       // Aplicable por ID de producto
-      if (Array.isArray(promo.productIds) && promo.productIds.includes(product.id)) {
+      if (promoProductIds.length > 0 && promoProductIds.includes(product.id)) {
         return true;
       }
       
       // Aplicable por categoría
-      if (product.categoria && 
-          Array.isArray(promo.categoryNames) && 
-          promo.categoryNames.length > 0 &&
-          promo.categoryNames.includes(product.categoria)) {
+      if (productCategory && 
+          promoCategoryNames.length > 0 &&
+          promoCategoryNames.includes(productCategory)) {
         return true;
       }
       
@@ -235,12 +239,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           <div className="mt-4">
             {product.stock <= 0 ? (
               <span className="text-red-600 font-medium">Agotado</span>
-            ) : product.stock < 10 ? (
-              <span className="text-orange-600">
-                Últimas {product.stock} unidades
-              </span>
             ) : (
-              <span className="text-green-600">En stock ({product.stock} disponibles)</span>
+              <span className="text-green-600">En stock</span>
             )}
           </div>
 
