@@ -25,6 +25,16 @@ export type Product = {
   createdAt: string;
   updatedAt: string;
   images?: ProductImage[]; // Galería (siempre normalizar si es undefined)
+  // Nuevos campos para descuentos
+  price?: number; // Alias de precio (compatibilidad)
+  finalPrice?: number; // Precio final calculado por backend (con descuento aplicado)
+  discount?: {
+    percent: number;
+    label?: string;
+    source: 'PRODUCT' | 'GLOBAL';
+  } | null;
+  discountPercent?: number | null; // Descuento propio del producto (0-100)
+  discountLabel?: string | null; // Etiqueta del descuento propio
 };
 
 export type CartItem = {
@@ -141,10 +151,39 @@ export type CheckoutResponse = {
   clientSecret: string;
   originalTotal: number | string;
   finalTotal: number | string;
+  // ✅ NUEVO: items con precios calculados por el backend
+  items: CheckoutItemDetail[];
   discounts: {
     promotions: PromotionDiscount[];
     coupon: CouponDiscount | null;
   };
   couponsAllowed: boolean;
   stripeConfigured: boolean;
+};
+
+// Nuevo tipo para detalle de item en checkout (calculado por backend)
+export type CheckoutItemDetail = {
+  productId: number;
+  nombre: string;
+  cantidad: number;
+  unitOriginalPrice: number | string;
+  unitFinalPrice: number | string;
+  lineOriginalTotal: number | string;
+  lineFinalTotal: number | string;
+  discount?: {
+    percent: number;
+    label?: string;
+    source?: 'PRODUCT' | 'GLOBAL';
+  } | null;
+};
+
+// Nuevo tipo para promoción global
+export type GlobalPromotion = {
+  id: number;
+  title: string;
+  percent: number;
+  description: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
 };

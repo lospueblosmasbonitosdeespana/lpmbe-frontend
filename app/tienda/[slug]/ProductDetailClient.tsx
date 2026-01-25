@@ -4,8 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/src/store/cart';
 import { formatEUR } from '@/src/lib/money';
-import type { Product, Promotion } from '@/src/types/tienda';
-import { getActivePromotions } from '@/src/lib/tiendaApi';
+import type { Product } from '@/src/types/tienda';
 
 type ProductDetailClientProps = {
   product: Product;
@@ -21,16 +20,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const addItem = useCartStore((state) => state.addItem);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
-  const [activePromotions, setActivePromotions] = useState<Promotion[]>([]);
-
-  // Cargar promociones activas
-  useEffect(() => {
-    getActivePromotions().then(promos => {
-      setActivePromotions(promos);
-    }).catch(() => {
-      setActivePromotions([]);
-    });
-  }, []);
 
   // 1) Imagen principal por defecto: product.imagenUrl
   const mainDefaultUrl = product?.imagenUrl?.trim() || null;
@@ -58,7 +47,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     } else {
       setSelectedUrl(galleryImages[0]?.url ?? null);
     }
-  }, [product?.id]);
+  }, [product?.id, mainDefaultUrl, galleryImages]);
 
   // 4) Imagen principal: cascada selectedUrl → mainDefaultUrl → primera galería
   const mainUrl = selectedUrl ?? mainDefaultUrl ?? galleryImages[0]?.url ?? null;
@@ -92,49 +81,10 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
   const canAdd = product.activo && product.stock > 0 && quantity <= product.stock;
 
-  // Encontrar promoción aplicable a este producto
-  const applicablePromotion = useMemo(() => {
-    return activePromotions.find(promo => {
-      if (!promo || !promo.active) return false;
-      
-      // Aplicable a todos los productos
-      if (promo.applicableToAll) return true;
-      
-      // Normalizar arrays (defensivo)
-      const promoProductIds = Array.isArray(promo.productIds) ? promo.productIds : [];
-      const promoCategoryNames = Array.isArray(promo.categoryNames) ? promo.categoryNames : [];
-      const productCategory = product.categoria ?? '';
-      
-      // Aplicable por ID de producto
-      if (promoProductIds.length > 0 && promoProductIds.includes(product.id)) {
-        return true;
-      }
-      
-      // Aplicable por categoría
-      if (productCategory && 
-          promoCategoryNames.length > 0 &&
-          promoCategoryNames.includes(productCategory)) {
-        return true;
-      }
-      
-      return false;
-    });
-  }, [activePromotions, product.id, product.categoria]);
-
-  // Calcular precio con descuento si hay promoción
-  const finalPrice = useMemo(() => {
-    if (!applicablePromotion) return product.precio;
-    
-    const value = typeof applicablePromotion.value === 'string' 
-      ? parseFloat(applicablePromotion.value) 
-      : applicablePromotion.value;
-    
-    if (applicablePromotion.type === 'PERCENT') {
-      return product.precio * (1 - value / 100);
-    } else {
-      return product.precio - value;
-    }
-  }, [product.precio, applicablePromotion]);
+  // ✅ NUEVO SISTEMA: usar finalPrice y discount del backend
+  const hasDiscount = product.finalPrice && product.finalPrice < product.precio;
+  const displayPrice = product.finalPrice ?? product.precio;
+  const discountInfo = product.discount;
 
   return (
     <main className="mx-auto max-w-7xl px-6 py-12">
@@ -197,17 +147,17 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
         {/* Información */}
         <div>
-          {/* Badges de promoción y destacado */}
+          {/* Badges: SOLO si hay descuento con info del backend */}
           <div className="flex gap-2 mb-3">
-            {applicablePromotion && (
+            {hasDiscount && discountInfo && (
               <span className="inline-block rounded bg-red-100 px-3 py-1 text-sm font-medium text-red-800">
-                🔥 {applicablePromotion.name}
-                {applicablePromotion.type === 'PERCENT' && ` −${applicablePromotion.value}%`}
+                🔥 {discountInfo.label || 'Descuento aplicado'}
+                {discountInfo.percent > 0 && ` −${discountInfo.percent}%`}
               </span>
             )}
             {product.destacado && (
               <span className="inline-block rounded bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
-                Destacado
+                ⭐ Destacado
               </span>
             )}
           </div>
@@ -218,24 +168,28 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             <p className="mt-2 text-sm text-gray-500">{product.categoria}</p>
           )}
 
-          {/* Precio con promoción */}
+          {/* Precio con descuento del backend */}
           <div className="mt-6">
-            {applicablePromotion ? (
+            {hasDiscount ? (
               <div>
                 <div className="flex items-baseline gap-3">
-                  <span className="text-4xl font-bold text-red-600">{formatEUR(finalPrice)} €</span>
+                  <span className="text-4xl font-bold text-red-600">{formatEUR(displayPrice)} €</span>
                   <span className="text-xl text-gray-400 line-through">{formatEUR(product.precio)} €</span>
                 </div>
                 <p className="mt-1 text-sm text-gray-600">
-                  Ahorro: {formatEUR(product.precio - finalPrice)} €
+                  Ahorro: {formatEUR(product.precio - displayPrice)} €
                 </p>
                 <p className="mt-2 text-sm text-green-700 font-medium">
-                  ✓ Descuento aplicado automáticamente: {applicablePromotion.name}
-                  {applicablePromotion.type === 'PERCENT' && ` (−${applicablePromotion.value}%)`}
+                  ✓ Descuento aplicado automáticamente: {discountInfo?.label || 'Descuento'}
+                  {discountInfo?.source && (
+                    <span className="ml-1 text-xs text-gray-600">
+                      ({discountInfo.source === 'PRODUCT' ? 'Producto' : 'Global'})
+                    </span>
+                  )}
                 </p>
               </div>
             ) : (
-              <span className="text-4xl font-bold">{formatEUR(product.precio)} €</span>
+              <span className="text-4xl font-bold">{formatEUR(displayPrice)} €</span>
             )}
           </div>
 

@@ -51,11 +51,91 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
     <div className="rounded-lg border border-gray-200 bg-white p-6">
       <h2 className="text-xl font-bold mb-4">Resumen del pedido</h2>
 
+      {/* ✅ NUEVO: Desglose de items calculados por backend */}
+      {checkoutData.items && checkoutData.items.length > 0 && (
+        <div className="space-y-3 border-b border-gray-200 pb-4 mb-4">
+          <p className="text-sm font-semibold text-gray-700">Productos:</p>
+          {checkoutData.items.map((item, idx) => {
+            const unitOriginal = toNumber(item.unitOriginalPrice);
+            const unitFinal = toNumber(item.unitFinalPrice);
+            const lineOriginal = toNumber(item.lineOriginalTotal);
+            const lineFinal = toNumber(item.lineFinalTotal);
+            const hasItemDiscount = unitFinal < unitOriginal;
+            const itemSavings = lineOriginal - lineFinal;
+
+            return (
+              <div key={idx} className="text-sm">
+                <div className="flex justify-between items-start mb-1">
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900">{item.nombre}</div>
+                    <div className="text-xs text-gray-500">Cantidad: {item.cantidad}</div>
+                  </div>
+                  <div className="text-right">
+                    {hasItemDiscount ? (
+                      <div>
+                        <div className="font-semibold text-green-600">
+                          {formatEUR(lineFinal)} €
+                        </div>
+                        <div className="text-xs text-gray-400 line-through">
+                          {formatEUR(lineOriginal)} €
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="font-semibold">{formatEUR(lineFinal)} €</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Detalle de precio unitario y descuento */}
+                {hasItemDiscount && (
+                  <div className="ml-2 text-xs text-gray-600 space-y-0.5">
+                    <div className="flex justify-between">
+                      <span>Precio unitario:</span>
+                      <span>
+                        <span className="text-green-600 font-medium">{formatEUR(unitFinal)} €</span>
+                        {' '}
+                        <span className="line-through text-gray-400">{formatEUR(unitOriginal)} €</span>
+                      </span>
+                    </div>
+                    {item.discount && (
+                      <div className="flex justify-between text-green-700">
+                        <span>✓ {item.discount.label || 'Descuento'}:</span>
+                        <span>
+                          −{item.discount.percent}%
+                          {item.discount.source && (
+                            <span className="ml-1 text-gray-500">
+                              ({item.discount.source === 'PRODUCT' ? 'Producto' : 'Global'})
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    )}
+                    {itemSavings > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Ahorro:</span>
+                        <span className="font-medium">−{formatEUR(itemSavings)} €</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Subtotal */}
       <div className="space-y-2 border-b border-gray-200 pb-4 mb-4">
         <div className="flex justify-between text-sm">
           <span>Subtotal</span>
-          <span>{formatEUR(originalTotal)} €</span>
+          {originalTotal !== finalTotal ? (
+            <div>
+              <span className="text-gray-400 line-through mr-2">{formatEUR(originalTotal)} €</span>
+              <span className="font-semibold text-green-600">{formatEUR(finalTotal)} €</span>
+            </div>
+          ) : (
+            <span>{formatEUR(originalTotal)} €</span>
+          )}
         </div>
       </div>
 

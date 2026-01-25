@@ -20,6 +20,8 @@ type ProductForm = {
   orden: string;
   categoria: string;
   imagenUrl: string;
+  discountPercent: string; // 0-100
+  discountLabel: string;
 };
 
 const emptyForm: ProductForm = {
@@ -33,6 +35,8 @@ const emptyForm: ProductForm = {
   orden: "0",
   categoria: "",
   imagenUrl: "",
+  discountPercent: "",
+  discountLabel: "",
 };
 
 export default function ProductosAdminClient() {
@@ -85,6 +89,8 @@ export default function ProductosAdminClient() {
       orden: producto.orden.toString(),
       categoria: producto.categoria ?? "",
       imagenUrl: producto.imagenUrl ?? "",
+      discountPercent: producto.discountPercent?.toString() ?? "",
+      discountLabel: producto.discountLabel ?? "",
     });
     setError(null);
     setSuccess(null);
@@ -171,6 +177,19 @@ export default function ProductosAdminClient() {
       return;
     }
 
+    // Validar descuento
+    const discountPercent = form.discountPercent.trim() ? toNumber(form.discountPercent) : null;
+    if (discountPercent !== null && (discountPercent < 0 || discountPercent > 100)) {
+      setError("El descuento debe estar entre 0 y 100");
+      return;
+    }
+
+    // Auto-rellenar label si hay descuento pero no hay label
+    let discountLabel = form.discountLabel.trim() || null;
+    if (discountPercent !== null && discountPercent > 0 && !discountLabel) {
+      discountLabel = `Descuento ${discountPercent}%`;
+    }
+
     const payload: Partial<Product> = {
       nombre: form.nombre.trim(),
       slug: form.slug.trim() || undefined,
@@ -182,6 +201,8 @@ export default function ProductosAdminClient() {
       orden: toNumber(form.orden),
       categoria: form.categoria.trim() || null,
       imagenUrl: form.imagenUrl.trim() || null,
+      discountPercent,
+      discountLabel,
     };
 
     console.log("[ProductosAdmin] Payload a enviar:", payload);
@@ -418,6 +439,54 @@ export default function ProductosAdminClient() {
                 <ProductGalleryManager productId={editingId} productNombre={form.nombre || "Producto"} />
               </div>
             )}
+
+            {/* DESCUENTO (opcional) */}
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-3">
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-blue-900">
+                  Descuento del producto (opcional)
+                </label>
+                <p className="text-xs text-blue-700 mb-3">
+                  Si pones descuento en el producto, se ignora la promoción global.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Descuento (%)
+                  </label>
+                  <input
+                    type="number"
+                    value={form.discountPercent}
+                    onChange={(e) => setForm({ ...form, discountPercent: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    placeholder="0-100"
+                    min="0"
+                    max="100"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Deja vacío para usar la promoción global
+                  </p>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Etiqueta del descuento
+                  </label>
+                  <input
+                    type="text"
+                    value={form.discountLabel}
+                    onChange={(e) => setForm({ ...form, discountLabel: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    placeholder='Ej: "Black Friday", "Especial"'
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Si está vacío, se genera automáticamente
+                  </p>
+                </div>
+              </div>
+            </div>
 
             <div className="flex gap-4">
               <label className="flex items-center gap-2">

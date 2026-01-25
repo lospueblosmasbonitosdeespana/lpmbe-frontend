@@ -34,6 +34,16 @@ export default async function TiendaAdminPage() {
         </Link>
 
         <Link
+          href="/gestion/asociacion/tienda/promocion-global"
+          className="block rounded-lg border border-blue-200 bg-blue-50 p-6 transition-shadow hover:shadow-lg"
+        >
+          <h2 className="text-xl font-semibold">🔥 Promoción Global</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Gestionar promoción global que se aplica a todos los productos sin descuento propio
+          </p>
+        </Link>
+
+        <Link
           href="/gestion/asociacion/tienda/pedidos"
           className="block rounded-lg border border-gray-200 bg-white p-6 transition-shadow hover:shadow-lg"
         >

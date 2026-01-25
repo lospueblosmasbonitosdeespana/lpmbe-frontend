@@ -221,6 +221,111 @@ export async function updateOrderStatus(
   return res.json();
 }
 
+// ===== ADMIN PROMOCIÓN GLOBAL =====
+
+export async function listGlobalPromotions(): Promise<import('@/src/types/tienda').GlobalPromotion[]> {
+  const res = await fetch('/api/admin/global-promotion', {
+    cache: 'no-store',
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    throw new Error(message);
+  }
+  return res.json();
+}
+
+export async function createGlobalPromotion(payload: {
+  title: string;
+  percent: number;
+  description?: string;
+  active?: boolean;
+}): Promise<import('@/src/types/tienda').GlobalPromotion> {
+  const res = await fetch('/api/admin/global-promotion', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    throw new Error(message);
+  }
+  return res.json();
+}
+
+export async function updateGlobalPromotion(
+  id: number,
+  payload: {
+    title?: string;
+    percent?: number;
+    description?: string;
+    active?: boolean;
+  }
+): Promise<import('@/src/types/tienda').GlobalPromotion> {
+  const res = await fetch(`/api/admin/global-promotion/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    throw new Error(message);
+  }
+  return res.json();
+}
+
+export async function activateGlobalPromotion(id: number): Promise<import('@/src/types/tienda').GlobalPromotion> {
+  const res = await fetch(`/api/admin/global-promotion/${id}/activate`, {
+    method: 'POST',
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    throw new Error(message);
+  }
+  return res.json();
+}
+
+export async function deactivateGlobalPromotion(id: number): Promise<import('@/src/types/tienda').GlobalPromotion> {
+  const res = await fetch(`/api/admin/global-promotion/${id}/deactivate`, {
+    method: 'POST',
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    throw new Error(message);
+  }
+  return res.json();
+}
+
+export async function deleteGlobalPromotion(id: number): Promise<void> {
+  const res = await fetch(`/api/admin/global-promotion/${id}`, {
+    method: 'DELETE',
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.message || errorData?.error || `Error ${res.status}`;
+    throw new Error(message);
+  }
+}
+
+// ===== PROMOCIÓN GLOBAL ACTIVA (PÚBLICO) =====
+
+export async function getActiveGlobalPromotion(): Promise<import('@/src/types/tienda').GlobalPromotion | null> {
+  const res = await fetch('/api/global-promotion/active', { cache: 'no-store' });
+  if (res.status === 404) return null;
+  if (!res.ok) return null;
+  return res.json();
+}
+
 // ===== ADMIN CUPONES =====
 
 export async function getAdminCoupons(): Promise<Coupon[]> {

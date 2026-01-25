@@ -7,9 +7,14 @@ import { formatEUR, toNumber } from '@/src/lib/money';
 
 export default function CarritoPage() {
   const router = useRouter();
-  const { items, removeItem, setQuantity, clear, getTotal, getItemCount } = useCartStore();
+  const { items, removeItem, setQuantity, clear, getItemCount } = useCartStore();
 
-  const total = getTotal();
+  // ✅ Calcular subtotal usando finalPrice si existe (precio efectivo)
+  const subtotal = items.reduce((acc, item) => {
+    const effectivePrice = item.product.finalPrice ?? item.product.precio;
+    return acc + (toNumber(effectivePrice) * item.quantity);
+  }, 0);
+
   const itemCount = getItemCount();
 
   if (items.length === 0) {
@@ -51,6 +56,12 @@ export default function CarritoPage() {
                 ? item.product.imagenUrl.trim()
                 : null;
 
+            // ✅ Usar precio efectivo (finalPrice si existe, sino precio)
+            const effectiveUnitPrice = item.product.finalPrice ?? item.product.precio;
+            const originalPrice = item.product.precio;
+            const hasDiscount = item.product.finalPrice && item.product.finalPrice < originalPrice;
+            const lineTotal = toNumber(effectiveUnitPrice) * item.quantity;
+
             return (
               <div
                 key={item.product.id}
@@ -80,6 +91,15 @@ export default function CarritoPage() {
                     </p>
                   )}
 
+                  {/* Badge de descuento si existe */}
+                  {hasDiscount && item.product.discount && (
+                    <div className="mt-1">
+                      <span className="inline-block rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                        {item.product.discount.label || 'Descuento'} −{item.product.discount.percent}%
+                      </span>
+                    </div>
+                  )}
+
                   <div className="mt-auto flex items-center justify-between pt-3">
                     {/* Cantidad */}
                     <div className="flex items-center gap-2">
@@ -99,14 +119,23 @@ export default function CarritoPage() {
                       </button>
                     </div>
 
-                    {/* Precio */}
+                    {/* Precio con descuento si aplica */}
                     <div className="text-right">
                       <p className="font-bold">
-                        {formatEUR(toNumber(item.product.precio) * item.quantity)} €
+                        {formatEUR(lineTotal)} €
                       </p>
-                      <p className="text-xs text-gray-500">
-                        {formatEUR(item.product.precio)} € / ud
-                      </p>
+                      {hasDiscount ? (
+                        <p className="text-xs text-gray-500">
+                          <span className="text-green-600 font-medium">{formatEUR(effectiveUnitPrice)} €</span>
+                          {' '}
+                          <span className="line-through text-gray-400">{formatEUR(originalPrice)} €</span>
+                          {' / ud'}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-gray-500">
+                          {formatEUR(effectiveUnitPrice)} € / ud
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -139,7 +168,7 @@ export default function CarritoPage() {
             <div className="space-y-2 border-b border-gray-200 pb-4">
               <div className="flex justify-between text-sm">
                 <span>Subtotal</span>
-                <span>{formatEUR(total)} €</span>
+                <span>{formatEUR(subtotal)} €</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Envío</span>
@@ -147,9 +176,21 @@ export default function CarritoPage() {
               </div>
             </div>
 
+            {/* ✅ Mostrar ahorro si hay descuentos */}
+            {items.some(item => item.product.finalPrice && item.product.finalPrice < item.product.precio) && (
+              <div className="mt-3 mb-3 rounded-md bg-green-50 border border-green-200 p-3">
+                <p className="text-xs text-green-800 font-medium">
+                  ✓ Descuentos aplicados
+                </p>
+                <p className="text-xs text-green-700 mt-1">
+                  Total con descuento: {formatEUR(subtotal)} €
+                </p>
+              </div>
+            )}
+
             <div className="flex justify-between text-lg font-bold mt-4 mb-6">
               <span>Total</span>
-              <span>{formatEUR(total)} €</span>
+              <span>{formatEUR(subtotal)} €</span>
             </div>
 
             <button
