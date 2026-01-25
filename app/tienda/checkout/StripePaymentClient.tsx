@@ -1,15 +1,13 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
+import { getStripe, isStripeEnabled } from '@/src/lib/stripe/client';
 
 type Props = {
   clientSecret: string;
   orderId: number;
 };
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
 function InnerForm({ orderId }: { orderId: number }) {
   const stripe = useStripe();
@@ -69,6 +67,8 @@ function InnerForm({ orderId }: { orderId: number }) {
 }
 
 export default function StripePaymentClient({ clientSecret, orderId }: Props) {
+  const stripePromise = getStripe();
+
   const options = useMemo(
     () => ({
       clientSecret,
@@ -77,10 +77,16 @@ export default function StripePaymentClient({ clientSecret, orderId }: Props) {
     [clientSecret],
   );
 
-  if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+  // Si Stripe no está configurado correctamente
+  if (!isStripeEnabled() || !stripePromise) {
     return (
-      <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-        Falta NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY en frontend/.env.local
+      <div className="rounded-md border border-yellow-200 bg-yellow-50 p-4">
+        <p className="text-sm font-semibold text-yellow-800 mb-2">
+          Pagos temporalmente desactivados
+        </p>
+        <p className="text-xs text-yellow-700">
+          Falta configuración de Stripe. Contacta con el administrador.
+        </p>
       </div>
     );
   }

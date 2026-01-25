@@ -7,6 +7,7 @@ import { getUserDirecciones, createDireccion, createCheckout } from '@/src/lib/t
 import { formatEUR, toNumber } from '@/src/lib/money';
 import type { Direccion } from '@/src/types/tienda';
 import StripePaymentClient from './StripePaymentClient';
+import { isStripeEnabled } from '@/src/lib/stripe/client';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -109,6 +110,12 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Si Stripe no está configurado, bloquear el checkout
+    if (!isStripeEnabled()) {
+      setError('Los pagos están temporalmente desactivados. Falta configuración de Stripe.');
+      return;
+    }
+
     setProcessing(true);
     setError(null);
 
@@ -136,7 +143,10 @@ export default function CheckoutPage() {
       clear();
       router.push(`/tienda/pedido/${result.orderId}`);
     } catch (e: any) {
-      if (e?.message === 'Pagos no disponibles todavía') {
+      // Manejo específico de error de Stripe no configurado desde backend
+      if (e?.code === 'STRIPE_NOT_CONFIGURED' || e?.message?.includes('STRIPE_NOT_CONFIGURED')) {
+        setError('Los pagos están temporalmente desactivados. Falta configuración de Stripe.');
+      } else if (e?.message === 'Pagos no disponibles todavía') {
         setError('Los pagos no están disponibles todavía. Inténtalo más tarde.');
       } else {
         setError(e?.message ?? 'Error procesando el pedido');
@@ -421,13 +431,25 @@ export default function CheckoutPage() {
                 />
               </div>
             ) : (
-              <button
-                onClick={handleCheckout}
-                disabled={processing || !selectedDireccionId}
-                className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {processing ? 'Procesando...' : 'Realizar pedido'}
-              </button>
+              <>
+                {!isStripeEnabled() && (
+                  <div className="rounded-md border border-yellow-200 bg-yellow-50 p-3 mb-3">
+                    <p className="text-sm font-semibold text-yellow-800 mb-1">
+                      Pagos temporalmente desactivados
+                    </p>
+                    <p className="text-xs text-yellow-700">
+                      Falta configuración de Stripe. No se pueden procesar pagos en este momento.
+                    </p>
+                  </div>
+                )}
+                <button
+                  onClick={handleCheckout}
+                  disabled={processing || !selectedDireccionId || !isStripeEnabled()}
+                  className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {processing ? 'Procesando...' : 'Realizar pedido'}
+                </button>
+              </>
             )}
           </div>
         </div>

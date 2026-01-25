@@ -14,10 +14,18 @@ function getAuthToken(): string | null {
 // Helper para fetch con auth
 async function authFetch(url: string, options: RequestInit = {}) {
   const token = getAuthToken();
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
   };
+  
+  // Merge existing headers
+  if (options.headers) {
+    Object.entries(options.headers).forEach(([key, value]) => {
+      if (typeof value === 'string') {
+        headers[key] = value;
+      }
+    });
+  }
   
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
@@ -86,7 +94,24 @@ export async function createCheckout(payload: CheckoutPayload): Promise<{
     throw new Error('Pagos no disponibles todavía');
   }
   
-  if (!res.ok) throw new Error('Error en checkout');
+  if (!res.ok) {
+    // Intentar parsear el error del backend
+    try {
+      const errorData = await res.json();
+      
+      // Si el backend devuelve código específico de Stripe no configurado
+      if (errorData.code === 'STRIPE_NOT_CONFIGURED') {
+        const error: any = new Error('Stripe no configurado');
+        error.code = 'STRIPE_NOT_CONFIGURED';
+        throw error;
+      }
+      
+      throw new Error(errorData.message || 'Error en checkout');
+    } catch (parseError) {
+      throw new Error('Error en checkout');
+    }
+  }
+  
   return res.json();
 }
 
