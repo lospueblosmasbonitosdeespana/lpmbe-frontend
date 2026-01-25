@@ -106,3 +106,45 @@ export type Coupon = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type Promotion = {
+  id: number;
+  name: string;
+  type: 'PERCENT' | 'FIXED';
+  value: number | string;
+  active: boolean;
+  startsAt: string | null;
+  endsAt: string | null;
+  minAmount: number | string | null;
+  stackable: boolean;
+  priority: number;
+  applicableToAll: boolean;
+  productIds: number[];
+  categoryNames: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PromotionDiscount = {
+  promotionId: number;
+  promotionName: string;
+  amount: number | string;
+};
+
+export type CouponDiscount = {
+  couponCode: string;
+  amount: number | string;
+};
+
+export type CheckoutResponse = {
+  orderId: number;
+  clientSecret: string;
+  originalTotal: number | string;
+  finalTotal: number | string;
+  discounts: {
+    promotions: PromotionDiscount[];
+    coupon: CouponDiscount | null;
+  };
+  couponsAllowed: boolean;
+  stripeConfigured: boolean;
+};

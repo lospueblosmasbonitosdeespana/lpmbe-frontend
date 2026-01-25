@@ -1,7 +1,7 @@
 // API cliente para la tienda
 
 import { getApiUrl } from '@/lib/api';
-import type { Product, ProductImage, Direccion, Order, Coupon } from '@/src/types/tienda';
+import type { Product, ProductImage, Direccion, Order, Coupon, Promotion, CheckoutResponse } from '@/src/types/tienda';
 
 const API_BASE = getApiUrl();
 
@@ -72,18 +72,23 @@ export async function createDireccion(data: Omit<Direccion, 'id'>): Promise<Dire
   return res.json();
 }
 
+// ===== PROMOCIONES =====
+
+export async function getActivePromotions(): Promise<Promotion[]> {
+  const res = await fetch(`${API_BASE}/promotions/active`, { cache: 'no-store' });
+  if (!res.ok) return [];
+  return res.json();
+}
+
 // ===== CHECKOUT =====
 
 export type CheckoutPayload = {
   direccionId: number;
   items: Array<{ productoId: number; cantidad: number }>;
+  couponCode?: string;
 };
 
-export async function createCheckout(payload: CheckoutPayload): Promise<{ 
-  sessionUrl?: string; 
-  orderId: number;
-  clientSecret?: string;
-}> {
+export async function createCheckout(payload: CheckoutPayload): Promise<CheckoutResponse> {
   const res = await fetch('/api/orders/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
