@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/src/store/cart';
 import { getUserDirecciones, createDireccion, createCheckout } from '@/src/lib/tiendaApi';
 import { formatEUR, toNumber } from '@/src/lib/money';
-import type { Direccion } from '@/src/types/tienda';
+import type { Direccion, CheckoutResponse } from '@/src/types/tienda';
 import StripePaymentClient from './StripePaymentClient';
-import { isStripeEnabled } from '@/src/lib/stripe/client';
+import CheckoutSummary from './CheckoutSummary';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -21,6 +21,8 @@ export default function CheckoutPage() {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [payment, setPayment] = useState<{ orderId: number; clientSecret: string } | null>(null);
+  const [checkoutData, setCheckoutData] = useState<CheckoutResponse | null>(null);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   // Formulario nueva dirección
   const [formData, setFormData] = useState({
@@ -97,6 +99,9 @@ export default function CheckoutPage() {
         telefono: '',
         esPrincipal: false,
       });
+      
+      // Previsualizar checkout tras crear dirección
+      await previewCheckout(newDir.id);
     } catch (e: any) {
       setError(e?.message ?? 'Error creando dirección');
     } finally {
@@ -104,15 +109,64 @@ export default function CheckoutPage() {
     }
   };
 
+  // Previsualizar checkout (calcular precios sin crear pedido)
+  const previewCheckout = async (direccionId?: number, coupon?: string) => {
+    const dirId = direccionId ?? selectedDireccionId;
+    if (!dirId) return;
+
+    try {
+      const payload = {
+        direccionId: dirId,
+        items: items.map((item) => ({
+          productoId: item.product.id,
+          cantidad: item.quantity,
+        })),
+        couponCode: coupon,
+      };
+
+      const result = await createCheckout(payload);
+      setCheckoutData(result);
+    } catch (e: any) {
+      console.error('Error previsualizando checkout:', e);
+      setCheckoutData(null);
+    }
+  };
+
+  // Aplicar cupón
+  const handleApplyCoupon = async (code: string) => {
+    setApplyingCoupon(true);
+    setError(null);
+    
+    try {
+      await previewCheckout(selectedDireccionId!, code);
+    } catch (e: any) {
+      throw new Error(e?.message ?? 'Cupón no válido');
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  // Previsualizar cuando cambie la dirección seleccionada
+  useEffect(() => {
+    if (selectedDireccionId && items.length > 0) {
+      previewCheckout(selectedDireccionId);
+    }
+  }, [selectedDireccionId, items.length]);
+
   const handleCheckout = async () => {
     if (!selectedDireccionId) {
       setError('Selecciona una dirección de envío');
       return;
     }
 
-    // Si Stripe no está configurado, bloquear el checkout
-    if (!isStripeEnabled()) {
-      setError('Los pagos están temporalmente desactivados. Falta configuración de Stripe.');
+    if (!checkoutData) {
+      setError('Error calculando el pedido. Recarga la página.');
+      return;
+    }
+
+    // Verificar Stripe
+    if (!checkoutData.stripeConfigured) {
+      setError('Los pagos están temporalmente desactivados.');
       return;
     }
 
@@ -120,37 +174,20 @@ export default function CheckoutPage() {
     setError(null);
 
     try {
-      const payload = {
-        direccionId: selectedDireccionId,
-        items: items.map((item) => ({
-          productoId: item.product.id,
-          cantidad: item.quantity,
-        })),
-      };
-
-      const result = await createCheckout(payload);
-
-      // Si hay clientSecret, mostrar formulario de pago de Stripe
-      if (result.clientSecret) {
+      // El checkout ya se calculó en preview, usar el clientSecret
+      if (checkoutData.clientSecret) {
         setPayment({
-          orderId: result.orderId,
-          clientSecret: result.clientSecret,
+          orderId: checkoutData.orderId,
+          clientSecret: checkoutData.clientSecret,
         });
         return;
       }
 
-      // Sin Stripe o sin clientSecret: ir directo al pedido
+      // Sin clientSecret (no debería pasar)
       clear();
-      router.push(`/tienda/pedido/${result.orderId}`);
+      router.push(`/tienda/pedido/${checkoutData.orderId}`);
     } catch (e: any) {
-      // Manejo específico de error de Stripe no configurado desde backend
-      if (e?.code === 'STRIPE_NOT_CONFIGURED' || e?.message?.includes('STRIPE_NOT_CONFIGURED')) {
-        setError('Los pagos están temporalmente desactivados. Falta configuración de Stripe.');
-      } else if (e?.message === 'Pagos no disponibles todavía') {
-        setError('Los pagos no están disponibles todavía. Inténtalo más tarde.');
-      } else {
-        setError(e?.message ?? 'Error procesando el pedido');
-      }
+      setError(e?.message ?? 'Error procesando el pedido');
     } finally {
       setProcessing(false);
     }
@@ -390,66 +427,28 @@ export default function CheckoutPage() {
 
         {/* Resumen */}
         <div className="lg:col-span-1">
-          <div className="rounded-lg border border-gray-200 bg-white p-6 sticky top-6">
-            <h2 className="text-xl font-bold mb-4">Resumen del pedido</h2>
-
-            <div className="space-y-2 border-b border-gray-200 pb-4 mb-4">
-              {items.map((item) => (
-                <div key={item.product.id} className="flex justify-between text-sm">
-                  <span className="flex-1 line-clamp-1">
-                    {item.product.nombre} × {item.quantity}
-                  </span>
-                  <span className="font-medium">
-                    {formatEUR(toNumber(item.product.precio) * item.quantity)} €
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="space-y-2 border-b border-gray-200 pb-4 mb-4">
-              <div className="flex justify-between text-sm">
-                <span>Subtotal</span>
-                <span>{formatEUR(total)} €</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Envío</span>
-                <span className="text-gray-500">A calcular</span>
-              </div>
-            </div>
-
-            <div className="flex justify-between text-lg font-bold mb-6">
-              <span>Total</span>
-              <span>{formatEUR(total)} €</span>
-            </div>
+          <div className="sticky top-6">
+            <CheckoutSummary 
+              checkoutData={checkoutData}
+              onApplyCoupon={handleApplyCoupon}
+              applying={applyingCoupon}
+            />
 
             {payment ? (
-              <div>
-                <h3 className="mb-3 text-lg font-semibold">Pago</h3>
+              <div className="mt-4">
                 <StripePaymentClient 
                   clientSecret={payment.clientSecret} 
                   orderId={payment.orderId} 
                 />
               </div>
             ) : (
-              <>
-                {!isStripeEnabled() && (
-                  <div className="rounded-md border border-yellow-200 bg-yellow-50 p-3 mb-3">
-                    <p className="text-sm font-semibold text-yellow-800 mb-1">
-                      Pagos temporalmente desactivados
-                    </p>
-                    <p className="text-xs text-yellow-700">
-                      Falta configuración de Stripe. No se pueden procesar pagos en este momento.
-                    </p>
-                  </div>
-                )}
-                <button
-                  onClick={handleCheckout}
-                  disabled={processing || !selectedDireccionId || !isStripeEnabled()}
-                  className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {processing ? 'Procesando...' : 'Realizar pedido'}
-                </button>
-              </>
+              <button
+                onClick={handleCheckout}
+                disabled={processing || !selectedDireccionId || !checkoutData?.stripeConfigured}
+                className="mt-4 w-full rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {processing ? 'Procesando...' : 'Realizar pedido'}
+              </button>
             )}
           </div>
         </div>
