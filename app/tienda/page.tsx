@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { getProducts } from '@/src/lib/tiendaApi';
 import { formatEUR } from '@/src/lib/money';
+import type { Product } from '@/src/types/tienda';
 
 export const dynamic = 'force-dynamic';
 
 export default async function TiendaPage() {
-  let products = [];
-  let error = null;
+  let products: Product[] = [];
+  let error: string | null = null;
 
   try {
     products = await getProducts();

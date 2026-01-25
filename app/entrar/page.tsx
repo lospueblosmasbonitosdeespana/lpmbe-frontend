@@ -2,9 +2,9 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 
-export default function EntrarPage() {
+function EntrarForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
@@ -110,3 +110,15 @@ export default function EntrarPage() {
   );
 }
 
+export default function EntrarPage() {
+  return (
+    <Suspense fallback={
+      <main className="mx-auto max-w-md p-6">
+        <h1 className="text-2xl font-semibold">Entrar</h1>
+        <div className="mt-6 text-center text-gray-600">Cargando...</div>
+      </main>
+    }>
+      <EntrarForm />
+    </Suspense>
+  );
+}

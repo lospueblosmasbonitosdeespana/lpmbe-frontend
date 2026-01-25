@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getAdminOrders, updateOrderStatus } from "@/src/lib/tiendaApi";
 import type { Order } from "@/src/types/tienda";
-import { formatEUR } from "@/src/lib/money";
+import { formatEUR, toNumber } from "@/src/lib/money";
 
 const ESTADOS: Order['status'][] = ['PENDING', 'PAID', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 
@@ -198,7 +198,7 @@ export default function PedidosAdminClient() {
                   <div>
                     <div className="text-xs text-gray-500">Total</div>
                     <div className="text-sm font-bold text-gray-900">
-                      {formatEUR(pedido.total)} €
+                      {formatEUR(toNumber(pedido.total))} €
                     </div>
                   </div>
 
@@ -294,30 +294,37 @@ export default function PedidosAdminClient() {
                         </tr>
                       </thead>
                       <tbody>
-                        {pedido.items.map((item) => (
-                          <tr key={item.id} className="border-b border-gray-100">
-                            <td className="py-2">
-                              {item.producto?.nombre || `Producto ${item.productId}`}
-                            </td>
-                            <td className="py-2 text-right">
-                              {formatEUR(item.precioUnitario)} €
-                            </td>
-                            <td className="py-2 text-right">{item.cantidad}</td>
-                            <td className="py-2 text-right font-medium">
-                              {formatEUR(item.precioUnitario * item.cantidad)} €
-                            </td>
-                          </tr>
-                        ))}
+                        {pedido.items.map((item) => {
+                          // ✅ Conversión segura a número antes de operar
+                          const precioUnitarioNum = toNumber(item.precioUnitario);
+                          const cantidadNum = Number(item.cantidad);
+                          const subtotalLinea = precioUnitarioNum * cantidadNum;
+
+                          return (
+                            <tr key={item.id} className="border-b border-gray-100">
+                              <td className="py-2">
+                                {item.producto?.nombre || `Producto ${item.productId}`}
+                              </td>
+                              <td className="py-2 text-right">
+                                {formatEUR(precioUnitarioNum)} €
+                              </td>
+                              <td className="py-2 text-right">{cantidadNum}</td>
+                              <td className="py-2 text-right font-medium">
+                                {formatEUR(subtotalLinea)} €
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                       <tfoot>
-                        {pedido.discountTotal > 0 && (
+                        {toNumber(pedido.discountTotal) > 0 && (
                           <>
                             <tr>
                               <td colSpan={3} className="pt-3 text-right text-gray-600">
                                 Subtotal:
                               </td>
                               <td className="pt-3 text-right">
-                                {formatEUR(pedido.totalBeforeDiscount)} €
+                                {formatEUR(toNumber(pedido.totalBeforeDiscount))} €
                               </td>
                             </tr>
                             <tr>
@@ -325,7 +332,7 @@ export default function PedidosAdminClient() {
                                 Descuento {pedido.couponCode && `(${pedido.couponCode})`}:
                               </td>
                               <td className="text-right text-green-600">
-                                -{formatEUR(pedido.discountTotal)} €
+                                -{formatEUR(toNumber(pedido.discountTotal))} €
                               </td>
                             </tr>
                           </>
@@ -335,7 +342,7 @@ export default function PedidosAdminClient() {
                             Total:
                           </td>
                           <td className="pt-3 text-right text-lg font-bold">
-                            {formatEUR(pedido.total)} €
+                            {formatEUR(toNumber(pedido.total))} €
                           </td>
                         </tr>
                       </tfoot>
