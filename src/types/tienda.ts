@@ -153,9 +153,10 @@ export type CheckoutResponse = {
   finalTotal: number | string;
   // ✅ NUEVO: items con precios calculados por el backend
   items: CheckoutItemDetail[];
-  discounts: {
-    promotions: PromotionDiscount[];
-    coupon: CouponDiscount | null;
+  // ✅ CRÍTICO: discounts puede venir undefined/null desde backend
+  discounts?: {
+    promotions?: PromotionDiscount[];
+    coupon?: CouponDiscount | null;
   };
   couponsAllowed: boolean;
   stripeConfigured: boolean;

@@ -147,7 +147,17 @@ export default function CheckoutPage() {
       }
 
       const result = await createCheckout(payload);
-      setCheckoutData(result);
+      
+      // ✅ Normalizar discounts para evitar undefined/null
+      const normalizedResult: CheckoutResponse = {
+        ...result,
+        discounts: {
+          promotions: Array.isArray(result.discounts?.promotions) ? result.discounts.promotions : [],
+          coupon: result.discounts?.coupon ?? null,
+        },
+      };
+      
+      setCheckoutData(normalizedResult);
     } catch (e: any) {
       console.error('Error previsualizando checkout:', e);
       setCheckoutData(null);

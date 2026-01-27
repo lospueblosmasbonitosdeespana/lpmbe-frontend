@@ -43,9 +43,15 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
     );
   }
 
+  // ✅ Normalización defensiva de discounts
+  const promotions = Array.isArray(checkoutData.discounts?.promotions) 
+    ? checkoutData.discounts.promotions 
+    : [];
+  const coupon = checkoutData.discounts?.coupon ?? null;
+
   const originalTotal = toNumber(checkoutData.originalTotal);
   const finalTotal = toNumber(checkoutData.finalTotal);
-  const hasDiscounts = checkoutData.discounts.promotions.length > 0 || checkoutData.discounts.coupon;
+  const hasDiscounts = promotions.length > 0 || coupon !== null;
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6">
@@ -145,7 +151,7 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
           <p className="text-sm font-semibold text-gray-700">Descuentos aplicados:</p>
           
           {/* Promociones automáticas */}
-          {checkoutData.discounts.promotions.map((promo, idx) => {
+          {promotions.map((promo, idx) => {
             const promoName = promo.promotionName?.trim() || 'Promoción automática';
             return (
               <div key={idx} className="flex justify-between text-sm text-green-700">
@@ -159,13 +165,13 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
           })}
 
           {/* Cupón manual */}
-          {checkoutData.discounts.coupon && (
+          {coupon && (
             <div className="flex justify-between text-sm text-blue-700">
               <span className="flex items-center gap-1">
                 <span className="text-lg">🎟️</span>
-                Cupón: {checkoutData.discounts.coupon.couponCode}
+                Cupón: {coupon.couponCode}
               </span>
-              <span className="font-medium">−{formatEUR(toNumber(checkoutData.discounts.coupon.amount))} €</span>
+              <span className="font-medium">−{formatEUR(toNumber(coupon.amount))} €</span>
             </div>
           )}
         </div>
@@ -185,11 +191,11 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
               }}
               placeholder="CODIGO"
               className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
-              disabled={applying || !!checkoutData.discounts.coupon}
+              disabled={applying || coupon !== null}
             />
             <button
               onClick={handleApplyCoupon}
-              disabled={applying || !couponCode.trim() || !!checkoutData.discounts.coupon}
+              disabled={applying || !couponCode.trim() || coupon !== null}
               className="rounded bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {applying ? 'Aplicando...' : 'Aplicar'}
@@ -198,7 +204,7 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
           {couponError && (
             <p className="mt-1 text-xs text-red-600">{couponError}</p>
           )}
-          {checkoutData.discounts.coupon && (
+          {coupon && (
             <p className="mt-1 text-xs text-green-600">✓ Cupón aplicado correctamente</p>
           )}
         </div>
