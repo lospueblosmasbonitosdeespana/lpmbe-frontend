@@ -143,58 +143,6 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
     handleReorder(photo.id, nextPhoto.order);
   }
 
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          aId: photoA.id,
-          bId: photoB.id,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error(`Error reordenando (${res.status})`);
-      }
-
-      await loadPhotos();
-    } catch (e: any) {
-      setError(e?.message ?? "Error reordenando");
-    }
-  }
-
-  // Mover foto abajo
-  async function moveDown(index: number) {
-    if (index === photos.length - 1) return;
-
-    const photoA = photos[index];
-    const photoB = photos[index + 1];
-
-    setError(null);
-
-    try {
-      const endpoint = entity === "pueblo"
-        ? `/api/admin/pueblos/${entityId}/fotos/swap`
-        : `/api/admin/pois/${entityId}/fotos/swap`;
-
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          aId: photoA.id,
-          bId: photoB.id,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error(`Error reordenando (${res.status})`);
-      }
-
-      await loadPhotos();
-    } catch (e: any) {
-      setError(e?.message ?? "Error reordenando");
-    }
-  }
-
   if (loading) {
     return (
       <div style={{ padding: "20px" }}>
