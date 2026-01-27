@@ -26,11 +26,23 @@ async function getPueblos() {
     return [];
   }
   
-  // Enriquecer con fotosPueblo desde el sistema /media
+  // Si el backend devuelve mainPhotoUrl en el listado, no necesitamos enriquecer
+  // Si no, mantener el enriquecimiento como fallback
+  const needsEnrichment = pueblos.some((p: any) => !p.mainPhotoUrl);
+  
+  if (!needsEnrichment) {
+    // Backend ya incluye mainPhotoUrl, retornar directamente
+    return pueblos;
+  }
+  
+  // Enriquecer solo si es necesario (fallback legacy)
   const enriched = await Promise.all(
     pueblos.map(async (pueblo: any) => {
+      // Si ya tiene mainPhotoUrl, no enriquecer
+      if (pueblo.mainPhotoUrl) return pueblo;
+      
       try {
-        // Obtener pueblo completo que incluye fotosPueblo desde /media
+        // Obtener pueblo completo que incluye fotos/fotosPueblo
         const puebloRes = await fetch(`${API_BASE}/pueblos/${pueblo.slug}`, {
           cache: 'no-store',
         });
@@ -40,14 +52,15 @@ async function getPueblos() {
           
           // 🔍 Diagnóstico temporal
           console.log(`[Pueblo Enrich] ${pueblo.nombre} (id=${pueblo.id}):`, {
+            mainPhotoUrl: puebloCompleto.mainPhotoUrl ?? 'ninguna',
             fotos: puebloCompleto.fotos?.length ?? 0,
             fotosPueblo: puebloCompleto.fotosPueblo?.length ?? 0,
-            primeraFoto: puebloCompleto.fotos?.[0]?.url ?? puebloCompleto.fotosPueblo?.[0]?.publicUrl ?? 'ninguna',
           });
           
-          // ✅ Conservar tanto fotos (tabla Foto) como fotosPueblo (media_asset)
+          // Conservar mainPhotoUrl, fotos y fotosPueblo
           return {
             ...pueblo,
+            mainPhotoUrl: puebloCompleto.mainPhotoUrl,
             fotos: Array.isArray(puebloCompleto.fotos) ? puebloCompleto.fotos : [],
             fotosPueblo: Array.isArray(puebloCompleto.fotosPueblo) ? puebloCompleto.fotosPueblo : [],
           };

@@ -50,7 +50,7 @@ export default async function FotosPuebloPage({
         </p>
       </div>
 
-      <PhotoManager entity="pueblo" entityId={pueblo.id} />
+      <PhotoManager entity="pueblo" entityId={pueblo.id} useAdminEndpoint={true} />
     </div>
   );
 }

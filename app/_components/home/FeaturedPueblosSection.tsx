@@ -35,20 +35,31 @@ async function getFeaturedPueblos(): Promise<Pueblo[]> {
   // Random + primeros 8
   const selected = shuffle(data).slice(0, 8);
   
-  // Enriquecer con foto principal de cada pueblo
+  // Si el backend devuelve mainPhotoUrl, no necesitamos enriquecer
+  const needsEnrichment = selected.some((p: any) => !p.mainPhotoUrl);
+  
+  if (!needsEnrichment) {
+    return selected;
+  }
+  
+  // Enriquecer con foto principal de cada pueblo (fallback legacy)
   const enriched = await Promise.all(
     selected.map(async (pueblo) => {
+      // Si ya tiene mainPhotoUrl, no enriquecer
+      if (pueblo.mainPhotoUrl) return pueblo;
+      
       try {
-        // Obtener pueblo individual que incluye fotos y fotosPueblo
+        // Obtener pueblo individual que incluye mainPhotoUrl, fotos y fotosPueblo
         const puebloRes = await fetch(`${API_BASE}/pueblos/${pueblo.slug}`, {
           cache: "no-store",
         });
         
         if (puebloRes.ok) {
           const puebloCompleto = await puebloRes.json();
-          // Conservar tanto fotos como fotosPueblo
+          // Conservar mainPhotoUrl, fotos y fotosPueblo
           return {
             ...pueblo,
+            mainPhotoUrl: puebloCompleto.mainPhotoUrl,
             fotos: puebloCompleto.fotos,
             fotosPueblo: puebloCompleto.fotosPueblo,
           } as Pueblo;

@@ -6,23 +6,42 @@ import type { MediaItem } from "@/src/types/media";
 type PhotoManagerProps = {
   entity: "pueblo" | "poi";
   entityId: number;
+  useAdminEndpoint?: boolean; // Si true, usa /api/admin/pueblos/:id/fotos
 };
 
-export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
-  const [photos, setPhotos] = useState<MediaItem[]>([]);
+type FotoItem = {
+  id: number;
+  url: string;
+  orden: number;
+  activo?: boolean;
+};
+
+export default function PhotoManager({ entity, entityId, useAdminEndpoint = false }: PhotoManagerProps) {
+  const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  // Cargar fotos desde /media
+  // Cargar fotos desde el endpoint apropiado
   async function loadPhotos() {
     setLoading(true);
     setError(null);
     
     try {
-      const res = await fetch(`/api/media?ownerType=${entity}&ownerId=${entityId}`, {
-        cache: "no-store",
-      });
+      let res: Response;
+      
+      if (useAdminEndpoint) {
+        // Usar endpoint legacy admin
+        const endpoint = entity === "pueblo"
+          ? `/api/admin/pueblos/${entityId}/fotos`
+          : `/api/admin/pois/${entityId}/fotos`;
+        res = await fetch(endpoint, { cache: "no-store" });
+      } else {
+        // Usar endpoint /media nuevo
+        res = await fetch(`/api/media?ownerType=${entity}&ownerId=${entityId}`, {
+          cache: "no-store",
+        });
+      }
       
       if (res.status === 401) {
         window.location.href = "/entrar";
@@ -34,9 +53,29 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
       }
       
       const data = await res.json();
-      // Backend ya devuelve ordenado por 'order'
-      const media = Array.isArray(data.media) ? data.media : [];
-      setPhotos(media);
+      
+      let fotosArray: any[] = [];
+      
+      if (useAdminEndpoint) {
+        // Backend devuelve array directo: [{ id, url, orden, activo }]
+        fotosArray = Array.isArray(data) ? data : [];
+        // Normalizar a formato común
+        fotosArray = fotosArray.map(f => ({
+          id: f.id,
+          publicUrl: f.url,
+          order: f.orden,
+          activo: f.activo,
+          altText: null,
+        }));
+      } else {
+        // Backend devuelve { media: [...] }
+        fotosArray = Array.isArray(data.media) ? data.media : [];
+      }
+      
+      // Ordenar por orden ascendente
+      fotosArray.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+      
+      setPhotos(fotosArray);
     } catch (e: any) {
       setError(e?.message ?? "Error cargando fotos");
     } finally {
@@ -58,19 +97,40 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
     setError(null);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("ownerType", entity);
-      formData.append("ownerId", String(entityId));
+      if (useAdminEndpoint) {
+        // Subir usando endpoint legacy admin
+        const formData = new FormData();
+        formData.append("file", file);
+        
+        const endpoint = entity === "pueblo"
+          ? `/api/admin/pueblos/${entityId}/fotos/upload`
+          : `/api/admin/pois/${entityId}/fotos/upload`;
+        
+        const uploadRes = await fetch(endpoint, {
+          method: "POST",
+          body: formData,
+        });
 
-      const uploadRes = await fetch("/api/media/upload", {
-        method: "POST",
-        body: formData,
-      });
+        if (!uploadRes.ok) {
+          const errorData = await uploadRes.json().catch(() => ({}));
+          throw new Error(errorData?.error ?? `Error subiendo archivo (${uploadRes.status})`);
+        }
+      } else {
+        // Usar /media/upload nuevo
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("ownerType", entity);
+        formData.append("ownerId", String(entityId));
 
-      if (!uploadRes.ok) {
-        const errorData = await uploadRes.json().catch(() => ({}));
-        throw new Error(errorData?.error ?? `Error subiendo archivo (${uploadRes.status})`);
+        const uploadRes = await fetch("/api/media/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const errorData = await uploadRes.json().catch(() => ({}));
+          throw new Error(errorData?.error ?? `Error subiendo archivo (${uploadRes.status})`);
+        }
       }
 
       // Recargar lista
@@ -92,12 +152,26 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
     setError(null);
 
     try {
-      const res = await fetch(`/api/media/${photoId}`, {
-        method: "DELETE",
-      });
+      if (useAdminEndpoint) {
+        const endpoint = entity === "pueblo"
+          ? `/api/admin/pueblos/fotos/${photoId}`
+          : `/api/admin/pois/fotos/${photoId}`;
+        
+        const res = await fetch(endpoint, {
+          method: "DELETE",
+        });
 
-      if (!res.ok) {
-        throw new Error(`Error eliminando foto (${res.status})`);
+        if (!res.ok) {
+          throw new Error(`Error eliminando foto (${res.status})`);
+        }
+      } else {
+        const res = await fetch(`/api/media/${photoId}`, {
+          method: "DELETE",
+        });
+
+        if (!res.ok) {
+          throw new Error(`Error eliminando foto (${res.status})`);
+        }
       }
 
       await loadPhotos();
@@ -111,14 +185,27 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
     setError(null);
 
     try {
-      const res = await fetch(`/api/media/${photoId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order: newOrder }),
-      });
+      if (useAdminEndpoint) {
+        // Usar endpoint de reorder admin
+        const res = await fetch(`/api/admin/fotos/reorder`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fotoId: photoId, orden: newOrder }),
+        });
 
-      if (!res.ok) {
-        throw new Error(`Error reordenando foto (${res.status})`);
+        if (!res.ok) {
+          throw new Error(`Error reordenando foto (${res.status})`);
+        }
+      } else {
+        const res = await fetch(`/api/media/${photoId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ order: newOrder }),
+        });
+
+        if (!res.ok) {
+          throw new Error(`Error reordenando foto (${res.status})`);
+        }
       }
 
       await loadPhotos();
