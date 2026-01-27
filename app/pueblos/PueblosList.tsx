@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useMemo } from "react";
 import SemaforoBadge from "../components/pueblos/SemaforoBadge";
+import { getPuebloMainPhoto } from "@/lib/api";
 
 type Pueblo = {
   id: number;
