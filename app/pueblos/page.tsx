@@ -40,17 +40,16 @@ async function getPueblos() {
           
           // 🔍 Diagnóstico temporal
           console.log(`[Pueblo Enrich] ${pueblo.nombre} (id=${pueblo.id}):`, {
+            fotos: puebloCompleto.fotos?.length ?? 0,
             fotosPueblo: puebloCompleto.fotosPueblo?.length ?? 0,
-            primeraFoto: puebloCompleto.fotosPueblo?.[0]?.publicUrl ?? 'ninguna',
+            primeraFoto: puebloCompleto.fotos?.[0]?.url ?? puebloCompleto.fotosPueblo?.[0]?.publicUrl ?? 'ninguna',
           });
           
-          // ✅ El backend ya devuelve fotosPueblo como MediaItem[]
-          // con campos: id, publicUrl, order, altText, etc.
+          // ✅ Conservar tanto fotos (tabla Foto) como fotosPueblo (media_asset)
           return {
             ...pueblo,
-            fotosPueblo: Array.isArray(puebloCompleto.fotosPueblo) 
-              ? puebloCompleto.fotosPueblo 
-              : [],
+            fotos: Array.isArray(puebloCompleto.fotos) ? puebloCompleto.fotos : [],
+            fotosPueblo: Array.isArray(puebloCompleto.fotosPueblo) ? puebloCompleto.fotosPueblo : [],
           };
         }
       } catch (err) {

@@ -502,8 +502,10 @@ export default async function PuebloPage({
               >
                 {poi.foto ? (
                   <img
+                    key={`${puebloSafe.id}-${poi.id}-${poi.foto}`}
                     src={poi.foto}
                     alt={poi.nombre}
+                    data-src={`${puebloSafe.id}-${poi.id}-${poi.foto}`}
                     style={{
                       width: "100%",
                       height: "200px",
@@ -600,8 +602,10 @@ export default async function PuebloPage({
               >
                 {poi.foto ? (
                   <img
+                    key={`${puebloSafe.id}-${poi.id}-${poi.foto}`}
                     src={poi.foto}
                     alt={poi.nombre}
+                    data-src={`${puebloSafe.id}-${poi.id}-${poi.foto}`}
                     style={{
                       width: "100%",
                       height: "200px",
@@ -698,8 +702,10 @@ export default async function PuebloPage({
               >
                 {poi.foto ? (
                   <img
+                    key={`${puebloSafe.id}-${poi.id}-${poi.foto}`}
                     src={poi.foto}
                     alt={poi.nombre}
+                    data-src={`${puebloSafe.id}-${poi.id}-${poi.foto}`}
                     style={{
                       width: "100%",
                       height: "200px",

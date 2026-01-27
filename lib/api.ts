@@ -18,7 +18,8 @@ export type Pueblo = {
   foto_destacada?: string | null; // Legacy, se mantiene por compatibilidad
   lat?: number | null;
   lng?: number | null;
-  fotosPueblo?: MediaItem[]; // ✅ Ahora usa MediaItem del sistema unificado
+  fotos?: Array<{ id: number | string; url: string; orden?: number | null; order?: number | null }>; // Desde tabla Foto
+  fotosPueblo?: MediaItem[]; // Desde media_asset (sistema /media unificado)
   eventos?: Array<any>;
   noticias?: Array<any>;
   pois?: Array<any>;
@@ -26,16 +27,30 @@ export type Pueblo = {
 };
 
 // Helper para obtener la foto principal de un pueblo
-// ✅ Solo sistema nuevo - sin fallbacks legacy
+// Prioridad 1: tabla Foto (canónico)
+// Prioridad 2: media_asset (sistema /media) como fallback
 export function getPuebloMainPhoto(pueblo: Pueblo): string | null {
-  // Obtener desde fotosPueblo (sistema /media unificado)
+  // 1. Intentar desde fotos (tabla Foto - canónico)
+  if (Array.isArray(pueblo.fotos) && pueblo.fotos.length > 0) {
+    // Ordenar por orden/order ascendente
+    const fotosOrdenadas = [...pueblo.fotos].sort((a, b) => {
+      const ordenA = a.order ?? a.orden ?? 999;
+      const ordenB = b.order ?? b.orden ?? 999;
+      return ordenA - ordenB;
+    });
+    
+    // Buscar orden=1 (principal) o tomar la primera
+    const principal = fotosOrdenadas.find(f => (f.order === 1 || f.orden === 1)) ?? fotosOrdenadas[0];
+    return principal.url;
+  }
+  
+  // 2. Fallback a fotosPueblo (media_asset)
   if (Array.isArray(pueblo.fotosPueblo) && pueblo.fotosPueblo.length > 0) {
-    // Buscar foto con order=1 (principal) o tomar la primera
     const principal = pueblo.fotosPueblo.find(f => f.order === 1) ?? pueblo.fotosPueblo[0];
     return principal.publicUrl;
   }
   
-  // Sin fallback legacy - si no hay media, es correcto mostrar "Sin imagen"
+  // 3. Sin foto
   return null;
 }
 

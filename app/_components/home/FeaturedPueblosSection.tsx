@@ -39,14 +39,19 @@ async function getFeaturedPueblos(): Promise<Pueblo[]> {
   const enriched = await Promise.all(
     selected.map(async (pueblo) => {
       try {
-        // Obtener pueblo individual que incluye fotosPueblo
+        // Obtener pueblo individual que incluye fotos y fotosPueblo
         const puebloRes = await fetch(`${API_BASE}/pueblos/${pueblo.slug}`, {
           cache: "no-store",
         });
         
         if (puebloRes.ok) {
           const puebloCompleto = await puebloRes.json();
-          return puebloCompleto as Pueblo;
+          // Conservar tanto fotos como fotosPueblo
+          return {
+            ...pueblo,
+            fotos: puebloCompleto.fotos,
+            fotosPueblo: puebloCompleto.fotosPueblo,
+          } as Pueblo;
         }
       } catch (err) {
         console.error(`Error cargando fotos para pueblo ${pueblo.slug}:`, err);
