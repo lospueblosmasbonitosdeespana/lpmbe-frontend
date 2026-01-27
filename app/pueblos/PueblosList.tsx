@@ -156,7 +156,7 @@ export default function PueblosList({
           }}
         >
           {pueblosFiltrados.map((pueblo) => {
-            const foto = pueblo.fotoPrincipalUrl ?? pueblo.foto_destacada;
+            const foto = getPuebloMainPhoto(pueblo);
             
             return (
               <Link

@@ -1,20 +1,10 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { PuebloCard } from "./PuebloCard";
+import type { Pueblo } from "@/lib/api";
+import { getPuebloMainPhoto } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
-
-type Pueblo = {
-  id: number;
-  nombre: string;
-  slug: string;
-  provincia?: string | null;
-  fotoPrincipalUrl?: string | null;
-  fotoDestacada?: string | null;
-  foto_destacada?: string | null; // tolerante por si viene legacy
-  fotoPortada?: string | null;
-  imagenPrincipal?: string | null;
-};
 
 function shuffle<T>(arr: T[]) {
   const a = [...arr];
@@ -56,17 +46,7 @@ async function getFeaturedPueblos(): Promise<Pueblo[]> {
         
         if (puebloRes.ok) {
           const puebloCompleto = await puebloRes.json();
-          const fotos = puebloCompleto.fotosPueblo;
-          
-          // Buscar foto con orden=1 (principal)
-          const principal = Array.isArray(fotos)
-            ? fotos.find((f: any) => f.orden === 1)
-            : null;
-          
-          return {
-            ...pueblo,
-            fotoPrincipalUrl: principal?.url ?? fotos?.[0]?.url ?? null,
-          };
+          return puebloCompleto as Pueblo;
         }
       } catch (err) {
         console.error(`Error cargando fotos para pueblo ${pueblo.slug}:`, err);
@@ -104,14 +84,7 @@ export async function FeaturedPueblosSection() {
       ) : (
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
           {pueblos.map((p) => {
-            // Priorizar fotoPrincipalUrl con fallbacks
-            const img =
-              p.fotoPrincipalUrl ??
-              p.fotoDestacada ??
-              p.foto_destacada ??
-              p.fotoPortada ??
-              p.imagenPrincipal ??
-              null;
+            const img = getPuebloMainPhoto(p);
             
             return (
               <PuebloCard

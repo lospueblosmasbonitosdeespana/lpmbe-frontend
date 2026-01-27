@@ -1,14 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-type Photo = {
-  id: string | number;
-  url: string;
-  alt?: string | null;
-  orden: number;
-  editable?: boolean;
-};
+import type { MediaItem } from "@/src/types/media";
 
 type PhotoManagerProps = {
   entity: "pueblo" | "poi";
@@ -16,22 +9,20 @@ type PhotoManagerProps = {
 };
 
 export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
-  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [photos, setPhotos] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  // Cargar fotos
+  // Cargar fotos desde /media
   async function loadPhotos() {
     setLoading(true);
     setError(null);
     
     try {
-      const endpoint = entity === "pueblo" 
-        ? `/api/admin/pueblos/${entityId}/fotos`
-        : `/api/admin/pois/${entityId}/fotos`;
-      
-      const res = await fetch(endpoint, { cache: "no-store" });
+      const res = await fetch(`/api/media?ownerType=${entity}&ownerId=${entityId}`, {
+        cache: "no-store",
+      });
       
       if (res.status === 401) {
         window.location.href = "/entrar";
@@ -43,11 +34,9 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
       }
       
       const data = await res.json();
-      const sorted = Array.isArray(data) 
-        ? data.sort((a: any, b: any) => (a.orden ?? 999) - (b.orden ?? 999))
-        : [];
-      
-      setPhotos(sorted);
+      // Backend ya devuelve ordenado por 'order'
+      const media = Array.isArray(data.media) ? data.media : [];
+      setPhotos(media);
     } catch (e: any) {
       setError(e?.message ?? "Error cargando fotos");
     } finally {
@@ -69,37 +58,22 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
     setError(null);
 
     try {
-      // 1. Subir archivo a /media/upload
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("ownerType", entity);
+      formData.append("ownerId", String(entityId));
 
-      const uploadRes = await fetch("/api/admin/uploads", {
+      const uploadRes = await fetch("/api/media/upload", {
         method: "POST",
         body: formData,
       });
 
       if (!uploadRes.ok) {
-        throw new Error(`Error subiendo archivo (${uploadRes.status})`);
+        const errorData = await uploadRes.json().catch(() => ({}));
+        throw new Error(errorData?.error ?? `Error subiendo archivo (${uploadRes.status})`);
       }
 
-      const { url } = await uploadRes.json();
-
-      // 2. Crear foto en el entity
-      const endpoint = entity === "pueblo"
-        ? `/api/admin/pueblos/${entityId}/fotos`
-        : `/api/admin/pois/${entityId}/fotos`;
-
-      const createRes = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
-
-      if (!createRes.ok) {
-        throw new Error(`Error creando foto (${createRes.status})`);
-      }
-
-      // 3. Recargar lista
+      // Recargar lista
       await loadPhotos();
 
       // Reset input
@@ -112,13 +86,13 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
   }
 
   // Borrar foto
-  async function handleDelete(photoId: string | number) {
+  async function handleDelete(photoId: number) {
     if (!confirm("¿Eliminar esta foto?")) return;
 
     setError(null);
 
     try {
-      const res = await fetch(`/api/admin/fotos/${photoId}`, {
+      const res = await fetch(`/api/media/${photoId}`, {
         method: "DELETE",
       });
 
@@ -132,19 +106,42 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
     }
   }
 
-  // Mover foto arriba
-  async function moveUp(index: number) {
-    if (index === 0) return;
-
-    const photoA = photos[index];
-    const photoB = photos[index - 1];
-
+  // Reordenar fotos
+  async function handleReorder(photoId: number, newOrder: number) {
     setError(null);
 
     try {
-      const endpoint = entity === "pueblo"
-        ? `/api/admin/pueblos/${entityId}/fotos/swap`
-        : `/api/admin/pois/${entityId}/fotos/swap`;
+      const res = await fetch(`/api/media/${photoId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order: newOrder }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Error reordenando foto (${res.status})`);
+      }
+
+      await loadPhotos();
+    } catch (e: any) {
+      setError(e?.message ?? "Error reordenando foto");
+    }
+  }
+
+  // Mover foto arriba
+  function moveUp(index: number) {
+    if (index === 0) return;
+    const photo = photos[index];
+    const prevPhoto = photos[index - 1];
+    handleReorder(photo.id, prevPhoto.order);
+  }
+
+  // Mover foto abajo
+  function moveDown(index: number) {
+    if (index === photos.length - 1) return;
+    const photo = photos[index];
+    const nextPhoto = photos[index + 1];
+    handleReorder(photo.id, nextPhoto.order);
+  }
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -315,8 +312,8 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
 
               {/* Thumbnail */}
               <img
-                src={photo.url}
-                alt={photo.alt ?? ""}
+                src={photo.publicUrl}
+                alt={photo.altText ?? ""}
                 style={{
                   width: "120px",
                   height: "80px",
@@ -329,8 +326,8 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
               {/* Info */}
               <div style={{ fontSize: "14px" }}>
                 <div style={{ fontWeight: "500", marginBottom: "4px" }}>
-                  Foto #{photo.orden}
-                  {photo.orden === 1 && (
+                  Foto #{photo.order}
+                  {photo.order === 1 && (
                     <span
                       style={{
                         marginLeft: "8px",
@@ -347,29 +344,27 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
                   )}
                 </div>
                 <div style={{ color: "#6b7280", fontSize: "12px", wordBreak: "break-all" }}>
-                  {photo.url}
+                  {photo.publicUrl}
                 </div>
               </div>
 
               {/* Botón borrar */}
-              {photo.editable !== false && (
-                <button
-                  onClick={() => handleDelete(photo.id)}
-                  style={{
-                    padding: "8px 12px",
-                    backgroundColor: "#fee2e2",
-                    color: "#dc2626",
-                    border: "1px solid #fecaca",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                  }}
-                  title="Eliminar"
-                >
-                  🗑️
-                </button>
-              )}
+              <button
+                onClick={() => handleDelete(photo.id)}
+                style={{
+                  padding: "8px 12px",
+                  backgroundColor: "#fee2e2",
+                  color: "#dc2626",
+                  border: "1px solid #fecaca",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                }}
+                title="Eliminar"
+              >
+                🗑️
+              </button>
             </div>
           ))}
         </div>

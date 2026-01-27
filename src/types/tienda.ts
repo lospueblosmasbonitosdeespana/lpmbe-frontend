@@ -1,11 +1,13 @@
 // Tipos para la tienda
 
+// ✅ ProductImage ahora debe usar MediaItem del sistema unificado
+// Manteniendo compatibilidad con el formato actual
 export type ProductImage = {
   id: number;
   productId: number;
-  url: string;
+  url: string; // ← Se mapea desde publicUrl del backend
   alt: string | null;
-  order: number; // ✅ Normalizado con backend (no "orden")
+  order: number; // ✅ Normalizado con backend
   createdAt: string;
   updatedAt: string;
 };
@@ -153,14 +155,25 @@ export type CheckoutResponse = {
   finalTotal: number | string;
   // ✅ NUEVO: items con precios calculados por el backend
   items: CheckoutItemDetail[];
-  // ✅ CRÍTICO: discounts puede venir undefined/null desde backend
-  discounts?: {
-    promotions?: PromotionDiscount[];
-    coupon?: CouponDiscount | null;
+  // ✅ CRÍTICO: discounts SIEMPRE existe (normalizado en frontend si viene undefined/null)
+  discounts: {
+    promotions: PromotionDiscount[];
+    coupon: CouponDiscount | null;
   };
   couponsAllowed: boolean;
   stripeConfigured: boolean;
 };
+
+// Helper para normalizar CheckoutResponse del backend
+export function normalizeCheckoutResponse(data: any): CheckoutResponse {
+  return {
+    ...data,
+    discounts: {
+      promotions: Array.isArray(data.discounts?.promotions) ? data.discounts.promotions : [],
+      coupon: data.discounts?.coupon ?? null,
+    },
+  };
+}
 
 // Nuevo tipo para detalle de item en checkout (calculado por backend)
 export type CheckoutItemDetail = {

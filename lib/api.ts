@@ -1,3 +1,5 @@
+import type { MediaItem } from '@/src/types/media';
+
 export function getApiUrl(): string {
   return (
     process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
@@ -13,15 +15,27 @@ export type Pueblo = {
   provincia: string;
   comunidad: string;
   descripcion?: string | null;
-  foto_destacada?: string | null;
+  foto_destacada?: string | null; // Legacy, se mantiene por compatibilidad
   lat?: number | null;
   lng?: number | null;
-  fotosPueblo?: Array<{ id: number; url: string }>;
+  fotosPueblo?: MediaItem[]; // ✅ Ahora usa MediaItem del sistema unificado
   eventos?: Array<any>;
   noticias?: Array<any>;
   pois?: Array<any>;
   [key: string]: any; // Para propiedades adicionales como semaforo
 };
+
+// Helper para obtener la foto principal de un pueblo
+export function getPuebloMainPhoto(pueblo: Pueblo): string | null {
+  // 1. Intentar desde fotosPueblo (nuevo sistema)
+  if (Array.isArray(pueblo.fotosPueblo) && pueblo.fotosPueblo.length > 0) {
+    const principal = pueblo.fotosPueblo.find(f => f.order === 1) ?? pueblo.fotosPueblo[0];
+    return principal.publicUrl;
+  }
+  
+  // 2. Fallback a foto_destacada (legacy)
+  return pueblo.foto_destacada ?? null;
+}
 
 export async function getPuebloBySlug(slug: string): Promise<Pueblo> {
   const API_BASE = getApiUrl();
@@ -55,11 +69,23 @@ export async function getPoiById(poiId: string | number) {
   
   // Si tiene fotos, extraer la primera como foto principal
   if (Array.isArray(poi.fotosPoi) && poi.fotosPoi.length > 0) {
-    const fotoPrincipal = poi.fotosPoi.find((f: any) => f.orden === 1) ?? poi.fotosPoi[0];
-    poi.fotoPrincipalUrl = fotoPrincipal?.url ?? null;
+    const fotoPrincipal = poi.fotosPoi.find((f: any) => f.order === 1) ?? poi.fotosPoi[0];
+    poi.fotoPrincipalUrl = fotoPrincipal?.publicUrl ?? null;
   }
   
   return poi;
+}
+
+// Helper para obtener la foto principal de un POI
+export function getPoiMainPhoto(poi: any): string | null {
+  // 1. Intentar desde fotosPoi (nuevo sistema con MediaItem)
+  if (Array.isArray(poi.fotosPoi) && poi.fotosPoi.length > 0) {
+    const principal = poi.fotosPoi.find((f: any) => f.order === 1) ?? poi.fotosPoi[0];
+    return principal?.publicUrl ?? principal?.url ?? null;
+  }
+  
+  // 2. Fallback a fotoUrl o foto (legacy)
+  return poi.fotoUrl ?? poi.foto ?? poi.imagen ?? null;
 }
 
 // Tipos para Rutas

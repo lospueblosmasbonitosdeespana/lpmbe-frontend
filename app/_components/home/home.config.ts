@@ -24,29 +24,27 @@ export const homeConfig = {
     {
       key: "gastronomia",
       title: "Gastronomía",
-      image:
-        "https://lospueblosmasbonitosdeespana.org/wp-content/uploads/2023/12/gastronomia.jpg",
+      // ✅ Estas imágenes se gestionan desde el panel de admin (HomeConfigForm)
+      // Temporalmente usar placeholder hasta que se configure desde admin
+      image: "/themes/gastronomia.jpg",
       href: "/pueblos?tema=gastronomia",
     },
     {
       key: "naturaleza",
       title: "Naturaleza",
-      image:
-        "https://lospueblosmasbonitosdeespana.org/wp-content/uploads/2023/12/naturaleza.jpg",
+      image: "/themes/naturaleza.jpg",
       href: "/pueblos?tema=naturaleza",
     },
     {
       key: "patrimonio",
       title: "Patrimonio",
-      image:
-        "https://lospueblosmasbonitosdeespana.org/wp-content/uploads/2023/12/patrimonio.jpg",
+      image: "/themes/patrimonio.jpg",
       href: "/pueblos?tema=patrimonio",
     },
     {
       key: "familia",
       title: "En familia",
-      image:
-        "https://lospueblosmasbonitosdeespana.org/wp-content/uploads/2023/12/familia.jpg",
+      image: "/themes/familia.jpg",
       href: "/pueblos?tema=familia",
     },
   ],

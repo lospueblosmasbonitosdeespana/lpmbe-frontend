@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/src/store/cart';
 import { getUserDirecciones, createDireccion, createCheckout } from '@/src/lib/tiendaApi';
 import { formatEUR, toNumber } from '@/src/lib/money';
-import type { Direccion, CheckoutResponse } from '@/src/types/tienda';
+import type { Direccion, CheckoutResponse, normalizeCheckoutResponse } from '@/src/types/tienda';
 import StripePaymentClient from './StripePaymentClient';
 import CheckoutSummary from './CheckoutSummary';
 
@@ -147,17 +147,7 @@ export default function CheckoutPage() {
       }
 
       const result = await createCheckout(payload);
-      
-      // ✅ Normalizar discounts para evitar undefined/null
-      const normalizedResult: CheckoutResponse = {
-        ...result,
-        discounts: {
-          promotions: Array.isArray(result.discounts?.promotions) ? result.discounts.promotions : [],
-          coupon: result.discounts?.coupon ?? null,
-        },
-      };
-      
-      setCheckoutData(normalizedResult);
+      setCheckoutData(normalizeCheckoutResponse(result));
     } catch (e: any) {
       console.error('Error previsualizando checkout:', e);
       setCheckoutData(null);
