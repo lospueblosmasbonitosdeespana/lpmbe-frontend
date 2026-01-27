@@ -145,24 +145,31 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = fals
     }
   }
 
-  // Borrar foto
+  // Borrar/Desasociar foto
   async function handleDelete(photoId: number) {
-    if (!confirm("¿Eliminar esta foto?")) return;
+    const confirmMessage = useAdminEndpoint && entity === "pueblo"
+      ? "¿Desasociar esta foto del pueblo? (la foto no se borrará, solo se quitará de este pueblo)"
+      : "¿Eliminar esta foto?";
+    
+    if (!confirm(confirmMessage)) return;
 
     setError(null);
 
     try {
       if (useAdminEndpoint) {
+        // Para pueblos: DETACH (desasociar) en vez de DELETE
         const endpoint = entity === "pueblo"
-          ? `/api/admin/pueblos/fotos/${photoId}`
+          ? `/api/admin/pueblos/${entityId}/fotos/${photoId}/detach`
           : `/api/admin/pois/fotos/${photoId}`;
         
         const res = await fetch(endpoint, {
           method: "DELETE",
+          cache: "no-store",
         });
 
         if (!res.ok) {
-          throw new Error(`Error eliminando foto (${res.status})`);
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData?.error ?? `Error desasociando foto (${res.status})`);
         }
       } else {
         const res = await fetch(`/api/media/${photoId}`, {
@@ -174,6 +181,7 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = fals
         }
       }
 
+      // Refetch inmediato sin caché
       await loadPhotos();
     } catch (e: any) {
       setError(e?.message ?? "Error eliminando foto");
