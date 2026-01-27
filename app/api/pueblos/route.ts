@@ -23,9 +23,6 @@ export async function GET(req: Request) {
     status: upstream.status,
     headers: {
       'Content-Type': upstream.headers.get('content-type') || 'application/json',
-      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0',
     },
   });
 }

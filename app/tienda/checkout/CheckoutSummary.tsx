@@ -61,7 +61,7 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
       {checkoutData.items && checkoutData.items.length > 0 && (
         <div className="space-y-3 border-b border-gray-200 pb-4 mb-4">
           <p className="text-sm font-semibold text-gray-700">Productos:</p>
-          {checkoutData.items.map((item, idx) => {
+          {checkoutData.items.map((item) => {
             const unitOriginal = toNumber(item.unitOriginalPrice);
             const unitFinal = toNumber(item.unitFinalPrice);
             const lineOriginal = toNumber(item.lineOriginalTotal);
@@ -70,7 +70,7 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
             const itemSavings = lineOriginal - lineFinal;
 
             return (
-              <div key={idx} className="text-sm">
+              <div key={item.productId} className="text-sm">
                 <div className="flex justify-between items-start mb-1">
                   <div className="flex-1">
                     <div className="font-medium text-gray-900">{item.nombre}</div>
@@ -151,10 +151,10 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
           <p className="text-sm font-semibold text-gray-700">Descuentos aplicados:</p>
           
           {/* Promociones automáticas */}
-          {promotions.map((promo, idx) => {
+          {promotions.map((promo) => {
             const promoName = promo.promotionName?.trim() || 'Promoción automática';
             return (
-              <div key={idx} className="flex justify-between text-sm text-green-700">
+              <div key={promo.promotionId} className="flex justify-between text-sm text-green-700">
                 <span className="flex items-center gap-1">
                   <span className="text-lg">✓</span>
                   {promoName}

@@ -38,13 +38,7 @@ export async function GET(req: Request) {
     }
 
     const data = await res.json();
-    return NextResponse.json(data, {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      },
-    });
+    return NextResponse.json(data);
   } catch (error: any) {
     console.error('[GET /api/media] error:', error);
     return NextResponse.json(

@@ -14,7 +14,6 @@ async function getPueblos() {
   
   const res = await fetch(`${API_BASE}/pueblos`, {
     cache: 'no-store',
-    next: { revalidate: 0 },
   });
 
   if (!res.ok) {
@@ -34,7 +33,6 @@ async function getPueblos() {
         // Obtener pueblo completo que incluye fotosPueblo desde /media
         const puebloRes = await fetch(`${API_BASE}/pueblos/${pueblo.slug}`, {
           cache: 'no-store',
-          next: { revalidate: 0 },
         });
         
         if (puebloRes.ok) {

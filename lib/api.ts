@@ -43,7 +43,6 @@ export async function getPuebloBySlug(slug: string): Promise<Pueblo> {
   const API_BASE = getApiUrl();
   const res = await fetch(`${API_BASE}/pueblos/${slug}`, {
     cache: 'no-store',
-    next: { revalidate: 0 },
   });
 
   if (!res.ok) {

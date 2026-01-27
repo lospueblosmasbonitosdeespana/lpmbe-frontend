@@ -25,7 +25,6 @@ async function getFeaturedPueblos(): Promise<Pueblo[]> {
   
   const res = await fetch(`${base}/api/pueblos`, {
     cache: "no-store",
-    next: { revalidate: 0 },
   });
 
   if (!res.ok) return [];
@@ -43,7 +42,6 @@ async function getFeaturedPueblos(): Promise<Pueblo[]> {
         // Obtener pueblo individual que incluye fotosPueblo
         const puebloRes = await fetch(`${API_BASE}/pueblos/${pueblo.slug}`, {
           cache: "no-store",
-          next: { revalidate: 0 },
         });
         
         if (puebloRes.ok) {
