@@ -21,7 +21,6 @@ async function getFeaturedPueblos(): Promise<Pueblo[]> {
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const proto = h.get("x-forwarded-proto") ?? "https";
   const base = host ? `${proto}://${host}` : "";
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
   
   const res = await fetch(`${base}/api/pueblos`, {
     cache: "no-store",
@@ -35,44 +34,9 @@ async function getFeaturedPueblos(): Promise<Pueblo[]> {
   // Random + primeros 8
   const selected = shuffle(data).slice(0, 8);
   
-  // Si el backend devuelve mainPhotoUrl, no necesitamos enriquecer
-  const needsEnrichment = selected.some((p: any) => !p.mainPhotoUrl);
-  
-  if (!needsEnrichment) {
-    return selected;
-  }
-  
-  // Enriquecer con foto principal de cada pueblo (fallback legacy)
-  const enriched = await Promise.all(
-    selected.map(async (pueblo) => {
-      // Si ya tiene mainPhotoUrl, no enriquecer
-      if (pueblo.mainPhotoUrl) return pueblo;
-      
-      try {
-        // Obtener pueblo individual que incluye mainPhotoUrl, fotos y fotosPueblo
-        const puebloRes = await fetch(`${API_BASE}/pueblos/${pueblo.slug}`, {
-          cache: "no-store",
-        });
-        
-        if (puebloRes.ok) {
-          const puebloCompleto = await puebloRes.json();
-          // Conservar mainPhotoUrl, fotos y fotosPueblo
-          return {
-            ...pueblo,
-            mainPhotoUrl: puebloCompleto.mainPhotoUrl,
-            fotos: puebloCompleto.fotos,
-            fotosPueblo: puebloCompleto.fotosPueblo,
-          } as Pueblo;
-        }
-      } catch (err) {
-        console.error(`Error cargando fotos para pueblo ${pueblo.slug}:`, err);
-      }
-      
-      return pueblo;
-    })
-  );
-  
-  return enriched;
+  // ✅ El backend decide mainPhotoUrl, el frontend NO enriquece
+  // Si no hay mainPhotoUrl, se mostrará "Sin imagen"
+  return selected;
 }
 
 export async function FeaturedPueblosSection() {

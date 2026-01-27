@@ -26,54 +26,9 @@ async function getPueblos() {
     return [];
   }
   
-  // Si el backend devuelve mainPhotoUrl en el listado, no necesitamos enriquecer
-  // Si no, mantener el enriquecimiento como fallback
-  const needsEnrichment = pueblos.some((p: any) => !p.mainPhotoUrl);
-  
-  if (!needsEnrichment) {
-    // Backend ya incluye mainPhotoUrl, retornar directamente
-    return pueblos;
-  }
-  
-  // Enriquecer solo si es necesario (fallback legacy)
-  const enriched = await Promise.all(
-    pueblos.map(async (pueblo: any) => {
-      // Si ya tiene mainPhotoUrl, no enriquecer
-      if (pueblo.mainPhotoUrl) return pueblo;
-      
-      try {
-        // Obtener pueblo completo que incluye fotos/fotosPueblo
-        const puebloRes = await fetch(`${API_BASE}/pueblos/${pueblo.slug}`, {
-          cache: 'no-store',
-        });
-        
-        if (puebloRes.ok) {
-          const puebloCompleto = await puebloRes.json();
-          
-          // 🔍 Diagnóstico temporal
-          console.log(`[Pueblo Enrich] ${pueblo.nombre} (id=${pueblo.id}):`, {
-            mainPhotoUrl: puebloCompleto.mainPhotoUrl ?? 'ninguna',
-            fotos: puebloCompleto.fotos?.length ?? 0,
-            fotosPueblo: puebloCompleto.fotosPueblo?.length ?? 0,
-          });
-          
-          // Conservar mainPhotoUrl, fotos y fotosPueblo
-          return {
-            ...pueblo,
-            mainPhotoUrl: puebloCompleto.mainPhotoUrl,
-            fotos: Array.isArray(puebloCompleto.fotos) ? puebloCompleto.fotos : [],
-            fotosPueblo: Array.isArray(puebloCompleto.fotosPueblo) ? puebloCompleto.fotosPueblo : [],
-          };
-        }
-      } catch (err) {
-        console.error(`Error cargando fotos para pueblo ${pueblo.slug}:`, err);
-      }
-      
-      return pueblo;
-    })
-  );
-  
-  return enriched;
+  // ✅ El backend decide mainPhotoUrl, el frontend NO enriquece
+  // Si no hay mainPhotoUrl, se mostrará "Sin imagen"
+  return pueblos;
 }
 
 export default async function PueblosPage({
