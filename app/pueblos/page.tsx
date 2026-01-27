@@ -38,6 +38,12 @@ async function getPueblos() {
         if (puebloRes.ok) {
           const puebloCompleto = await puebloRes.json();
           
+          // 🔍 Diagnóstico temporal
+          console.log(`[Pueblo Enrich] ${pueblo.nombre} (id=${pueblo.id}):`, {
+            fotosPueblo: puebloCompleto.fotosPueblo?.length ?? 0,
+            primeraFoto: puebloCompleto.fotosPueblo?.[0]?.publicUrl ?? 'ninguna',
+          });
+          
           // ✅ El backend ya devuelve fotosPueblo como MediaItem[]
           // con campos: id, publicUrl, order, altText, etc.
           return {
