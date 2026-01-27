@@ -26,15 +26,17 @@ export type Pueblo = {
 };
 
 // Helper para obtener la foto principal de un pueblo
+// ✅ Solo sistema nuevo - sin fallbacks legacy
 export function getPuebloMainPhoto(pueblo: Pueblo): string | null {
-  // 1. Intentar desde fotosPueblo (nuevo sistema)
+  // Obtener desde fotosPueblo (sistema /media unificado)
   if (Array.isArray(pueblo.fotosPueblo) && pueblo.fotosPueblo.length > 0) {
+    // Buscar foto con order=1 (principal) o tomar la primera
     const principal = pueblo.fotosPueblo.find(f => f.order === 1) ?? pueblo.fotosPueblo[0];
     return principal.publicUrl;
   }
   
-  // 2. Fallback a foto_destacada (legacy)
-  return pueblo.foto_destacada ?? null;
+  // Sin fallback legacy - si no hay media, es correcto mostrar "Sin imagen"
+  return null;
 }
 
 export async function getPuebloBySlug(slug: string): Promise<Pueblo> {

@@ -26,30 +26,29 @@ async function getPueblos() {
     return [];
   }
   
-  // Enriquecer con foto principal de cada pueblo
+  // Enriquecer con fotosPueblo desde el sistema /media
   const enriched = await Promise.all(
     pueblos.map(async (pueblo: any) => {
       try {
+        // Obtener pueblo completo que incluye fotosPueblo desde /media
         const puebloRes = await fetch(`${API_BASE}/pueblos/${pueblo.slug}`, {
           cache: 'no-store',
         });
         
         if (puebloRes.ok) {
           const puebloCompleto = await puebloRes.json();
-          const fotos = puebloCompleto.fotosPueblo;
           
-          // Buscar foto con orden=1 (principal) o la primera disponible
-          const principal = Array.isArray(fotos)
-            ? fotos.find((f: any) => f.orden === 1)
-            : null;
-          
+          // ✅ El backend ya devuelve fotosPueblo como MediaItem[]
+          // con campos: id, publicUrl, order, altText, etc.
           return {
             ...pueblo,
-            fotoPrincipalUrl: principal?.url ?? fotos?.[0]?.url ?? null,
+            fotosPueblo: Array.isArray(puebloCompleto.fotosPueblo) 
+              ? puebloCompleto.fotosPueblo 
+              : [],
           };
         }
       } catch (err) {
-        console.error(`Error cargando foto para pueblo ${pueblo.slug}:`, err);
+        console.error(`Error cargando fotos para pueblo ${pueblo.slug}:`, err);
       }
       
       return pueblo;

@@ -3,23 +3,7 @@
 import Link from "next/link";
 import { useState, useMemo } from "react";
 import SemaforoBadge from "../components/pueblos/SemaforoBadge";
-import { getPuebloMainPhoto } from "@/lib/api";
-
-type Pueblo = {
-  id: number;
-  nombre: string;
-  slug: string;
-  provincia: string;
-  comunidad: string;
-  lat: number | null;
-  lng: number | null;
-  altitud: number | null;
-  foto_destacada: string | null;
-  fotoPrincipalUrl?: string | null;
-  escudo_bandera: string | null;
-  boldestMapId: string | null;
-  semaforo: any | null;
-};
+import { getPuebloMainPhoto, type Pueblo } from "@/lib/api";
 
 type PueblosListProps = {
   pueblos: Pueblo[];
