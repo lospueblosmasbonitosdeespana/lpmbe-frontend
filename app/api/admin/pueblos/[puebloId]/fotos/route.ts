@@ -9,8 +9,14 @@ export async function GET(
   req: Request,
   { params }: { params: Promise<{ puebloId: string }> }
 ) {
+  // Intentar obtener token de cookies (flujo normal navegador)
   const token = await getToken();
-  if (!token) {
+  
+  // También leer Authorization header del request (para debug/curl)
+  const authHeader = req.headers.get('authorization');
+  
+  // Si no hay ni token ni header, unauthorized
+  if (!token && !authHeader) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
@@ -20,14 +26,24 @@ export async function GET(
 
   if (DEV_LOGS) {
     console.error('[admin/pueblos/fotos GET] upstreamUrl:', upstreamUrl);
+    console.error('[admin/pueblos/fotos GET] hasToken:', !!token, 'hasAuthHeader:', !!authHeader);
   }
 
   try {
+    // Construir headers para upstream
+    const upstreamHeaders: Record<string, string> = {};
+    
+    // Priorizar Authorization header si existe (para curl/debug)
+    if (authHeader) {
+      upstreamHeaders['Authorization'] = authHeader;
+    } else if (token) {
+      // Fallback a token de cookies (flujo normal)
+      upstreamHeaders['Authorization'] = `Bearer ${token}`;
+    }
+
     const upstream = await fetch(upstreamUrl, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: upstreamHeaders,
       cache: 'no-store',
     });
 
