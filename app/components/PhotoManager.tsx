@@ -57,13 +57,14 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = fals
       let fotosArray: any[] = [];
       
       if (useAdminEndpoint) {
-        // Backend devuelve array directo: [{ id, url, orden, activo }]
+        // Backend devuelve array directo: [{ id, url, order, activo }]
+        // La API route ya normalizó orden -> order
         fotosArray = Array.isArray(data) ? data : [];
         // Normalizar a formato común
         fotosArray = fotosArray.map(f => ({
           id: f.id,
           publicUrl: f.url,
-          order: f.orden,
+          order: Number(f.order ?? f.orden ?? 999), // Asegurar number
           activo: f.activo,
           altText: null,
         }));
@@ -72,8 +73,12 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = fals
         fotosArray = Array.isArray(data.media) ? data.media : [];
       }
       
-      // Ordenar por orden ascendente
-      fotosArray.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+      // Ordenar por orden ascendente (nulos/undefined al final)
+      fotosArray.sort((a, b) => {
+        const orderA = a.order ?? 999999;
+        const orderB = b.order ?? 999999;
+        return orderA - orderB;
+      });
       
       setPhotos(fotosArray);
     } catch (e: any) {

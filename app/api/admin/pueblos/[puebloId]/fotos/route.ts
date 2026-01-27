@@ -37,7 +37,19 @@ export async function GET(
     }
 
     const data = await upstream.json().catch(() => ({}));
-    return NextResponse.json(data, { status: upstream.status });
+    
+    // Normalizar orden -> order para compatibilidad frontend
+    let normalized = data;
+    if (Array.isArray(data)) {
+      normalized = data.map((item: any) => ({
+        ...item,
+        order: item.order ?? item.orden ?? null,
+        // Eliminar orden para no duplicar
+        orden: undefined,
+      }));
+    }
+    
+    return NextResponse.json(normalized, { status: upstream.status });
   } catch (error: any) {
     if (DEV_LOGS) {
       console.error('[admin/pueblos/fotos GET] fetch error:', {
