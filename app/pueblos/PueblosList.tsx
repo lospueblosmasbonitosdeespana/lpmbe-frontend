@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useState, useMemo } from "react";
 import SemaforoBadge from "../components/pueblos/SemaforoBadge";
-import { getPuebloMainPhoto, type Pueblo } from "@/lib/api";
+import { type Pueblo } from "@/lib/api";
+import { usePuebloPhotos } from "@/app/hooks/usePuebloPhotos";
 
 type PueblosListProps = {
   pueblos: Pueblo[];
@@ -63,6 +64,9 @@ export default function PueblosList({
   }, [pueblosOrdenados, comunidadNorm, provinciaNorm, searchTerm]);
 
   const hasActiveFilters = comunidadNorm || provinciaNorm;
+
+  // Hidratación inteligente con IntersectionObserver + cache
+  const { photos, observe } = usePuebloPhotos(pueblosFiltrados);
 
   return (
     <main style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -141,12 +145,14 @@ export default function PueblosList({
           }}
         >
           {pueblosFiltrados.map((pueblo) => {
-            const foto = getPuebloMainPhoto(pueblo);
+            const foto = photos[pueblo.slug] ?? null;
             
             return (
               <Link
                 key={pueblo.id}
                 href={`/pueblos/${pueblo.slug}`}
+                ref={observe}
+                data-pueblo-slug={pueblo.slug}
                 style={{
                   border: "1px solid #ddd",
                   borderRadius: "8px",

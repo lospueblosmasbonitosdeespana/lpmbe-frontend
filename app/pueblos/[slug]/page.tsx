@@ -25,6 +25,8 @@ function cut(input: string, max = 160) {
 type FotoPueblo = {
   id: number;
   url: string;
+  orden?: number; // Orden de la foto (1, 2, 3...)
+  rotation?: number; // Grados de rotación (0, 90, 180, 270)
 };
 
 type Poi = {
@@ -265,11 +267,9 @@ export default async function PuebloPage({
 
   // Obtener fotos del backend
   const fotosRaw = Array.isArray(puebloSafe.fotosPueblo) ? puebloSafe.fotosPueblo : [];
-  console.log('[PUEBLO PÚBLICO] Fotos recibidas:', fotosRaw.length);
   
   // DEDUPLICAR POR URL (canónica + legacy pueden tener mismo URL)
   const fotos = dedupeByUrl(fotosRaw);
-  console.log('[PUEBLO PÚBLICO] Fotos tras deduplicar:', fotos.length);
 
   // Separar POIs por categoría
   const pois = puebloSafe.pois;
@@ -294,8 +294,13 @@ export default async function PuebloPage({
     ? fotos.filter((f: FotoPueblo) => f.url !== fotoHeroUrl)
     : fotos;
 
-  // Limitar a 24 fotos (sin orden adicional, tal cual viene del backend)
-  const fotosGalería = fotosParaGalería.slice(0, 24);
+  // Ordenar por orden antes del slice
+  const fotosSorted = [...fotosParaGalería].sort(
+    (a, b) => ((a as FotoPueblo)?.orden ?? 999999) - ((b as FotoPueblo)?.orden ?? 999999)
+  );
+  
+  // Limitar a 24 fotos
+  const fotosGalería = fotosSorted.slice(0, 24);
 
   // Ordenar eventos: por fecha_inicio ascendente (próximos primero), sin fecha al final
   const eventos = puebloSafe.eventos;

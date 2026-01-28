@@ -25,10 +25,51 @@ export type Pueblo = {
 };
 
 // Helper para obtener la foto principal de un pueblo
-// ✅ SOLO mainPhotoUrl - SIN FALLBACKS
-// El backend decide la foto principal, el frontend NO opina
-export function getPuebloMainPhoto(pueblo: Pueblo): string | null {
-  return pueblo.mainPhotoUrl ?? null;
+export function getPuebloMainPhoto(pueblo: any): string | null {
+  if (!pueblo) return null;
+
+  // ✅ PRIORIDAD 1: backend canonical main photo
+  const main =
+    pueblo.mainPhotoUrl ??
+    pueblo.main_photo_url ??
+    pueblo?.mainPhoto?.url ??
+    pueblo?.main_photo?.url;
+
+  if (typeof main === "string" && main.trim()) return main.trim();
+
+  // ✅ PRIORIDAD 2: foto_destacada (campo legacy del listado)
+  if (typeof pueblo.foto_destacada === "string" && pueblo.foto_destacada.trim()) {
+    return pueblo.foto_destacada.trim();
+  }
+
+  // ✅ PRIORIDAD 3: fallback a array de fotos (solo si viene array; en listas NO viene)
+  const fotos =
+    pueblo?.fotosPueblo ??
+    pueblo?.fotos ??
+    pueblo?.fotosGaleria ??
+    pueblo?.galeria ??
+    [];
+
+  if (!Array.isArray(fotos) || fotos.length === 0) return null;
+
+  const sorted = [...fotos].sort(
+    (a, b) => (a?.orden ?? a?.order ?? 999999) - (b?.orden ?? b?.order ?? 999999)
+  );
+
+  return (sorted[0]?.url ?? null) as string | null;
+}
+
+// Helper puro para resolver foto principal desde detalle de pueblo
+export function resolvePuebloMainPhotoUrl(pueblo: any): string | null {
+  const direct = pueblo?.mainPhotoUrl;
+  if (typeof direct === "string" && direct.trim()) return direct.trim();
+
+  const fotos = Array.isArray(pueblo?.fotosPueblo) ? pueblo.fotosPueblo : [];
+  if (!fotos.length) return null;
+
+  const sorted = [...fotos].sort((a, b) => (a?.orden ?? 999999) - (b?.orden ?? 999999));
+  const url = sorted[0]?.url;
+  return typeof url === "string" && url.trim() ? url.trim() : null;
 }
 
 export async function getPuebloBySlug(slug: string): Promise<Pueblo> {

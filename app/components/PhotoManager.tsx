@@ -227,20 +227,62 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = fals
     }
   }
 
-  // Mover foto arriba
-  function moveUp(index: number) {
+  // Mover foto arriba (usa SWAP)
+  async function moveUp(index: number) {
     if (index === 0) return;
-    const photo = photos[index];
-    const prevPhoto = photos[index - 1];
-    handleReorder(photo.id, prevPhoto.order);
+    
+    const photoA = photos[index];
+    const photoB = photos[index - 1];
+    
+    setError(null);
+    
+    try {
+      const res = await fetch(`/api/admin/fotos/swap`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          aId: photoA.id,
+          bId: photoB.id,
+        }),
+      });
+      
+      if (!res.ok) {
+        throw new Error(`Error intercambiando fotos (${res.status})`);
+      }
+      
+      await loadPhotos();
+    } catch (e: any) {
+      setError(e?.message ?? "Error intercambiando fotos");
+    }
   }
 
-  // Mover foto abajo
-  function moveDown(index: number) {
+  // Mover foto abajo (usa SWAP)
+  async function moveDown(index: number) {
     if (index === photos.length - 1) return;
-    const photo = photos[index];
-    const nextPhoto = photos[index + 1];
-    handleReorder(photo.id, nextPhoto.order);
+    
+    const photoA = photos[index];
+    const photoB = photos[index + 1];
+    
+    setError(null);
+    
+    try {
+      const res = await fetch(`/api/admin/fotos/swap`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          aId: photoA.id,
+          bId: photoB.id,
+        }),
+      });
+      
+      if (!res.ok) {
+        throw new Error(`Error intercambiando fotos (${res.status})`);
+      }
+      
+      await loadPhotos();
+    } catch (e: any) {
+      setError(e?.message ?? "Error intercambiando fotos");
+    }
   }
 
   // Rotar foto 90 grados

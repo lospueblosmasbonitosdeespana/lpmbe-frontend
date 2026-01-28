@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
-import { PuebloCard } from "./PuebloCard";
 import type { Pueblo } from "@/lib/api";
-import { getPuebloMainPhoto } from "@/lib/api";
+import { FeaturedPueblosGrid } from "./FeaturedPueblosGrid";
 
 export const dynamic = "force-dynamic";
 
@@ -62,21 +61,7 @@ export async function FeaturedPueblosSection() {
           No hay pueblos disponibles ahora mismo.
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-          {pueblos.map((p) => {
-            const img = getPuebloMainPhoto(p);
-            
-            return (
-              <PuebloCard
-                key={p.id}
-                slug={p.slug}
-                nombre={p.nombre}
-                provincia={p.provincia}
-                foto={img}
-              />
-            );
-          })}
-        </div>
+        <FeaturedPueblosGrid pueblos={pueblos} />
       )}
     </section>
   );

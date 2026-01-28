@@ -19,6 +19,7 @@ export async function GET(req: Request) {
   });
 
   const text = await upstream.text();
+  
   return new NextResponse(text, {
     status: upstream.status,
     headers: {
@@ -26,3 +27,4 @@ export async function GET(req: Request) {
     },
   });
 }
+
