@@ -7,6 +7,7 @@ type Photo = {
   url: string;
   alt?: string | null;
   orden: number;
+  rotation?: number; // ✅ Grados de rotación (0, 90, 180, 270)
   editable?: boolean;
 };
 
@@ -47,7 +48,13 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
         ? data.sort((a: any, b: any) => (a.orden ?? 999) - (b.orden ?? 999))
         : [];
       
-      setPhotos(sorted);
+      // Normalizar rotation
+      const normalized = sorted.map((f: any) => ({
+        ...f,
+        rotation: Number(f.rotation ?? 0),
+      }));
+      
+      setPhotos(normalized);
     } catch (e: any) {
       setError(e?.message ?? "Error cargando fotos");
     } finally {
@@ -129,6 +136,31 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
       await loadPhotos();
     } catch (e: any) {
       setError(e?.message ?? "Error eliminando foto");
+    }
+  }
+
+  // Rotar foto 90 grados
+  async function handleRotate(photoId: string | number) {
+    // Solo permitir rotación en fotos con ID numérico (no legacy-xxx)
+    if (typeof photoId !== 'number') {
+      setError("No se puede rotar esta foto (formato legacy)");
+      return;
+    }
+
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/admin/fotos/${photoId}/rotate90`, {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        throw new Error(`Error rotando foto (${res.status})`);
+      }
+
+      await loadPhotos();
+    } catch (e: any) {
+      setError(e?.message ?? "Error rotando foto");
     }
   }
 
@@ -323,6 +355,7 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
                   objectFit: "cover",
                   borderRadius: "6px",
                   border: "1px solid #e5e7eb",
+                  transform: `rotate(${photo.rotation ?? 0}deg)`,
                 }}
               />
 
@@ -351,25 +384,48 @@ export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
                 </div>
               </div>
 
-              {/* Botón borrar */}
-              {photo.editable !== false && (
-                <button
-                  onClick={() => handleDelete(photo.id)}
-                  style={{
-                    padding: "8px 12px",
-                    backgroundColor: "#fee2e2",
-                    color: "#dc2626",
-                    border: "1px solid #fecaca",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                  }}
-                  title="Eliminar"
-                >
-                  🗑️
-                </button>
-              )}
+              {/* Botones de acción */}
+              <div style={{ display: "flex", gap: "8px" }}>
+                {/* Botón rotar */}
+                {typeof photo.id === 'number' && (
+                  <button
+                    onClick={() => handleRotate(photo.id)}
+                    style={{
+                      padding: "8px 12px",
+                      backgroundColor: "#e0f2fe",
+                      color: "#0369a1",
+                      border: "1px solid #bae6fd",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                    }}
+                    title="Girar 90°"
+                  >
+                    🔄
+                  </button>
+                )}
+                
+                {/* Botón borrar */}
+                {photo.editable !== false && (
+                  <button
+                    onClick={() => handleDelete(photo.id)}
+                    style={{
+                      padding: "8px 12px",
+                      backgroundColor: "#fee2e2",
+                      color: "#dc2626",
+                      border: "1px solid #fecaca",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                    }}
+                    title="Eliminar"
+                  >
+                    🗑️
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
