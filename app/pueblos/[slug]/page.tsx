@@ -249,8 +249,27 @@ export default async function PuebloPage({
   const contenidosCMS = await fetchContenidosPueblo(puebloSafe.id);
   const contenidosProcesados = procesarContenidos(contenidosCMS);
 
-  // Proteger fotos con Array.isArray
-  const fotos = Array.isArray(puebloSafe.fotosPueblo) ? puebloSafe.fotosPueblo : [];
+  // Función para deduplicar por URL (no por ID)
+  function dedupeByUrl<T extends { url: string }>(arr: T[]) {
+    const seen = new Set<string>();
+    const out: T[] = [];
+    for (const item of arr) {
+      const key = (item.url || "").trim().toLowerCase();
+      if (!key) continue;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(item);
+    }
+    return out;
+  }
+
+  // Obtener fotos del backend
+  const fotosRaw = Array.isArray(puebloSafe.fotosPueblo) ? puebloSafe.fotosPueblo : [];
+  console.log('[PUEBLO PÚBLICO] Fotos recibidas:', fotosRaw.length);
+  
+  // DEDUPLICAR POR URL (canónica + legacy pueden tener mismo URL)
+  const fotos = dedupeByUrl(fotosRaw);
+  console.log('[PUEBLO PÚBLICO] Fotos tras deduplicar:', fotos.length);
 
   // Separar POIs por categoría
   const pois = puebloSafe.pois;
