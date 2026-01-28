@@ -8,8 +8,9 @@ import { getApiUrl } from '@/lib/api';
  */
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const token = await getToken();
   if (!token) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -17,7 +18,7 @@ export async function DELETE(
 
   try {
     const API_BASE = getApiUrl();
-    const res = await fetch(`${API_BASE}/media/${params.id}`, {
+    const res = await fetch(`${API_BASE}/media/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',
@@ -44,8 +45,9 @@ export async function DELETE(
  */
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const token = await getToken();
   if (!token) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -55,7 +57,7 @@ export async function PATCH(
     const body = await req.json();
     const API_BASE = getApiUrl();
 
-    const res = await fetch(`${API_BASE}/media/${params.id}`, {
+    const res = await fetch(`${API_BASE}/media/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

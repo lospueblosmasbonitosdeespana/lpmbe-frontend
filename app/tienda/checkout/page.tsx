@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/src/store/cart';
 import { getUserDirecciones, createDireccion, createCheckout } from '@/src/lib/tiendaApi';
 import { formatEUR, toNumber } from '@/src/lib/money';
-import type { Direccion, CheckoutResponse, normalizeCheckoutResponse } from '@/src/types/tienda';
+import type { Direccion, CheckoutResponse } from '@/src/types/tienda';
+import { normalizeCheckoutResponse } from '@/src/types/tienda';
 import StripePaymentClient from './StripePaymentClient';
 import CheckoutSummary from './CheckoutSummary';
 
