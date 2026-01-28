@@ -243,6 +243,26 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = fals
     handleReorder(photo.id, nextPhoto.order);
   }
 
+  // Rotar foto 90 grados
+  async function handleRotate(fotoId: number) {
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/admin/fotos/${fotoId}/rotate90`, {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        throw new Error(`Error rotando foto (${res.status})`);
+      }
+
+      // Refrescar la lista tras rotación exitosa
+      await loadPhotos();
+    } catch (e: any) {
+      setError(e?.message ?? "Error rotando foto");
+    }
+  }
+
   if (loading) {
     return (
       <div style={{ padding: "20px" }}>
@@ -368,6 +388,7 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = fals
                   objectFit: "cover",
                   borderRadius: "6px",
                   border: "1px solid #e5e7eb",
+                  transform: `rotate(${photo.rotation ?? 0}deg)`,
                 }}
               />
 
@@ -396,23 +417,44 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = fals
                 </div>
               </div>
 
-              {/* Botón borrar */}
-              <button
-                onClick={() => handleDelete(photo.id)}
-                style={{
-                  padding: "8px 12px",
-                  backgroundColor: "#fee2e2",
-                  color: "#dc2626",
-                  border: "1px solid #fecaca",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                }}
-                title="Eliminar"
-              >
-                🗑️
-              </button>
+              {/* Botones de acción */}
+              <div style={{ display: "flex", gap: "8px" }}>
+                {/* Botón rotar */}
+                <button
+                  onClick={() => handleRotate(photo.id)}
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: "#e0f2fe",
+                    color: "#0369a1",
+                    border: "1px solid #bae6fd",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                  }}
+                  title="Girar 90°"
+                >
+                  🔄
+                </button>
+
+                {/* Botón borrar */}
+                <button
+                  onClick={() => handleDelete(photo.id)}
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: "#fee2e2",
+                    color: "#dc2626",
+                    border: "1px solid #fecaca",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                  }}
+                  title="Eliminar"
+                >
+                  🗑️
+                </button>
+              </div>
             </div>
           ))}
         </div>
