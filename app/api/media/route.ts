@@ -2,47 +2,77 @@ import { NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 
-/**
- * GET /api/media?ownerType=X&ownerId=Y
- * Obtiene lista de media para una entidad
- */
-export async function GET(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const ownerType = searchParams.get('ownerType');
-    const ownerId = searchParams.get('ownerId');
+const DEV_LOGS = process.env.NODE_ENV === 'development';
 
-    if (!ownerType || !ownerId) {
-      return NextResponse.json(
-        { error: 'ownerType y ownerId son obligatorios' },
-        { status: 400 }
-      );
+// GET /api/media
+export async function GET(req: Request) {
+  const token = await getToken();
+  const { searchParams } = new URL(req.url);
+  const ownerType = searchParams.get('ownerType');
+  const ownerId = searchParams.get('ownerId');
+  
+  const API_BASE = getApiUrl();
+  
+  // Detectar si hay token para usar endpoint admin o public
+  let upstreamUrl: string;
+  if (token) {
+    // Con token → admin endpoint
+    upstreamUrl = `${API_BASE}/admin/media?ownerType=${ownerType ?? ''}&ownerId=${ownerId ?? ''}`;
+  } else {
+    // Sin token → public endpoint
+    upstreamUrl = `${API_BASE}/public/media?ownerType=${ownerType ?? ''}&ownerId=${ownerId ?? ''}`;
+  }
+
+  if (DEV_LOGS) {
+    console.error('[api/media GET] upstreamUrl:', upstreamUrl);
+    console.error('[api/media GET] hasToken:', !!token);
+  }
+
+  try {
+    const headers: Record<string, string> = {};
+    
+    // Si hay token, añadir Authorization header
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const API_BASE = getApiUrl();
-    const url = `${API_BASE}/media?ownerType=${ownerType}&ownerId=${ownerId}`;
-
-    // Media puede ser público o privado según la entidad
-    // Intentar con token si existe
-    const token = await getToken();
-    const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
-
-    const res = await fetch(url, {
+    const upstream = await fetch(upstreamUrl, {
+      method: 'GET',
       headers,
       cache: 'no-store',
     });
 
-    if (!res.ok) {
-      const error = await res.json().catch(() => ({ message: 'Error' }));
-      return NextResponse.json(error, { status: res.status });
+    if (!upstream.ok) {
+      const errorText = await upstream.text().catch(() => 'Error desconocido');
+      return NextResponse.json({ error: errorText }, { status: upstream.status });
     }
 
-    const data = await res.json();
-    return NextResponse.json(data);
+    const data = await upstream.json().catch(() => ({}));
+    return NextResponse.json(data, { status: upstream.status });
   } catch (error: any) {
-    console.error('[GET /api/media] error:', error);
+    if (DEV_LOGS) {
+      console.error('[api/media GET] fetch error:', {
+        name: error?.name,
+        message: error?.message,
+      });
+    }
+
+    if (error?.name === 'TypeError' && error?.message?.includes('fetch failed')) {
+      return NextResponse.json(
+        {
+          error: 'upstream_fetch_failed',
+          upstream: upstreamUrl,
+          detail: error?.message ?? 'No se pudo conectar al backend',
+        },
+        { status: 502 }
+      );
+    }
+
     return NextResponse.json(
-      { error: error?.message ?? 'Error interno' },
+      {
+        error: error?.message ?? 'Error interno',
+        upstream: upstreamUrl,
+      },
       { status: 500 }
     );
   }

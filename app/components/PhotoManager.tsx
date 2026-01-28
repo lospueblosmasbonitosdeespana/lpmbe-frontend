@@ -28,20 +28,12 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = fals
     setError(null);
     
     try {
-      let res: Response;
+      // Usar endpoint entity-specific (NUNCA /api/media genérico)
+      const endpoint = entity === "pueblo"
+        ? `/api/admin/pueblos/${entityId}/fotos`
+        : `/api/admin/pois/${entityId}/fotos`;
       
-      if (useAdminEndpoint) {
-        // Usar endpoint legacy admin
-        const endpoint = entity === "pueblo"
-          ? `/api/admin/pueblos/${entityId}/fotos`
-          : `/api/admin/pois/${entityId}/fotos`;
-        res = await fetch(endpoint, { cache: "no-store" });
-      } else {
-        // Usar endpoint /media nuevo
-        res = await fetch(`/api/media?ownerType=${entity}&ownerId=${entityId}`, {
-          cache: "no-store",
-        });
-      }
+      const res = await fetch(endpoint, { cache: "no-store" });
       
       if (res.status === 401) {
         window.location.href = "/entrar";
