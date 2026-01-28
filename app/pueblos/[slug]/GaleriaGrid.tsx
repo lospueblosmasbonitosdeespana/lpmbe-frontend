@@ -6,6 +6,7 @@ import ImageLightbox from './ImageLightbox';
 type FotoGaleria = {
   id: number;
   url: string;
+  rotation?: number; // Grados de rotación (0, 90, 180, 270)
 };
 
 type GaleriaGridProps = {
@@ -39,6 +40,7 @@ export default function GaleriaGrid({ fotos, puebloNombre }: GaleriaGridProps) {
                 height: '100%',
                 objectFit: 'cover',
                 display: 'block',
+                transform: `rotate(${foto.rotation ?? 0}deg)`,
               }}
             />
           </div>
