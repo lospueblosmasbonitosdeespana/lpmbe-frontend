@@ -18,7 +18,13 @@ export async function POST(
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  const { fotoId } = await params;
+  const { fotoId: rawFotoId } = await params;
+  
+  // Normalizar ID: "legacy-1948" → "1948"
+  const fotoId = rawFotoId.startsWith('legacy-') 
+    ? rawFotoId.replace(/^legacy-/, '') 
+    : rawFotoId;
+  
   const API_BASE = getApiUrl();
   const upstreamUrl = `${API_BASE}/admin/fotos/${fotoId}/rotate90`;
 

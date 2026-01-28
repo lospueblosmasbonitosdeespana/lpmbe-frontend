@@ -10,7 +10,13 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
+  const { id: rawId } = await params;
+  
+  // Normalizar ID: "legacy-1948" → "1948"
+  const id = rawId.startsWith('legacy-') 
+    ? rawId.replace(/^legacy-/, '') 
+    : rawId;
+  
   const token = await getToken();
   if (!token) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -47,7 +53,13 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
+  const { id: rawId } = await params;
+  
+  // Normalizar ID: "legacy-1948" → "1948"
+  const id = rawId.startsWith('legacy-') 
+    ? rawId.replace(/^legacy-/, '') 
+    : rawId;
+  
   const token = await getToken();
   if (!token) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
