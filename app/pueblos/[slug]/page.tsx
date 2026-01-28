@@ -249,8 +249,18 @@ export default async function PuebloPage({
   const contenidosCMS = await fetchContenidosPueblo(puebloSafe.id);
   const contenidosProcesados = procesarContenidos(contenidosCMS);
 
-  // Proteger fotos con Array.isArray
-  const fotos = Array.isArray(puebloSafe.fotosPueblo) ? puebloSafe.fotosPueblo : [];
+  // Proteger fotos con Array.isArray y deduplicar por URL
+  const fotosRaw = Array.isArray(puebloSafe.fotosPueblo) ? puebloSafe.fotosPueblo : [];
+  
+  // DEDUPLICACIÓN: Eliminar fotos duplicadas (mismo URL)
+  // Esto es defensivo mientras el backend no implemente la lógica canónica/legacy
+  const fotosUnicas = new Map<string, FotoPueblo>();
+  fotosRaw.forEach((foto) => {
+    if (!fotosUnicas.has(foto.url)) {
+      fotosUnicas.set(foto.url, foto);
+    }
+  });
+  const fotos = Array.from(fotosUnicas.values());
 
   // Separar POIs por categoría
   const pois = puebloSafe.pois;
