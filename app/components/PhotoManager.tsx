@@ -16,7 +16,7 @@ type FotoItem = {
   activo?: boolean;
 };
 
-export default function PhotoManager({ entity, entityId, useAdminEndpoint = false }: PhotoManagerProps) {
+export default function PhotoManager({ entity, entityId, useAdminEndpoint = true }: PhotoManagerProps) {
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,24 +46,32 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = fals
       
       const data = await res.json();
       
+      // Parsing tolerante: detectar estructura automáticamente
       let fotosArray: any[] = [];
       
-      if (useAdminEndpoint) {
-        // Backend devuelve array directo: [{ id, url, order, activo }]
-        // La API route ya normalizó orden -> order
-        fotosArray = Array.isArray(data) ? data : [];
-        // Normalizar a formato común
-        fotosArray = fotosArray.map(f => ({
-          id: f.id,
-          publicUrl: f.url,
-          order: Number(f.order ?? f.orden ?? 999), // Asegurar number
-          activo: f.activo,
-          altText: null,
-        }));
-      } else {
+      if (Array.isArray(data)) {
+        // Backend devuelve array directo: [{ id, url, orden/order, activo }]
+        fotosArray = data;
+      } else if (Array.isArray(data?.media)) {
         // Backend devuelve { media: [...] }
-        fotosArray = Array.isArray(data.media) ? data.media : [];
+        fotosArray = data.media;
+      } else if (Array.isArray(data?.fotos)) {
+        // Backend devuelve { fotos: [...] }
+        fotosArray = data.fotos;
+      } else {
+        // No hay fotos o formato desconocido
+        fotosArray = [];
       }
+      
+      // Normalizar a formato común
+      fotosArray = fotosArray.map(f => ({
+        id: f.id,
+        publicUrl: f.url ?? f.publicUrl,
+        order: Number(f.order ?? f.orden ?? 999),
+        activo: f.activo,
+        altText: f.altText ?? null,
+        rotation: f.rotation ?? 0,
+      }));
       
       // Ordenar por orden ascendente (nulos/undefined al final)
       fotosArray.sort((a, b) => {
