@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo } from "react";
 import SemaforoBadge from "../components/pueblos/SemaforoBadge";
 import { type Pueblo } from "@/lib/api";
 import { usePuebloPhotos } from "@/app/hooks/usePuebloPhotos";
@@ -13,6 +13,94 @@ type PueblosListProps = {
 };
 
 const norm = (s: string) => s.trim().toLowerCase();
+
+// Componente memoizado para evitar re-renders innecesarios
+const PuebloCard = memo(function PuebloCard({
+  pueblo,
+  foto,
+  isPriority,
+  observe,
+}: {
+  pueblo: Pueblo;
+  foto: string | null;
+  isPriority: boolean;
+  observe: (el: HTMLElement | null) => void;
+}) {
+  return (
+    <Link
+      href={`/pueblos/${pueblo.slug}`}
+      ref={observe}
+      data-pueblo-slug={pueblo.slug}
+      style={{
+        border: "1px solid #ddd",
+        borderRadius: "8px",
+        overflow: "hidden",
+        textDecoration: "none",
+        color: "inherit",
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: "#fff",
+        minHeight: "240px", // Altura mínima fija para estabilidad
+      }}
+    >
+      {/* Foto con contenedor de altura fija */}
+      <div
+        style={{
+          width: "100%",
+          height: "140px",
+          backgroundColor: "#f0f0f0",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+          flexShrink: 0, // No permitir que se encoja
+          position: "relative",
+        }}
+      >
+        {foto ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={foto}
+            alt={pueblo.nombre}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+            loading={isPriority ? "eager" : "lazy"}
+            fetchPriority={isPriority ? "high" : "auto"}
+            decoding="async"
+          />
+        ) : (
+          <span style={{ fontSize: "12px", color: "#999" }}>Sin imagen</span>
+        )}
+      </div>
+
+      {/* Contenido con altura mínima para consistencia */}
+      <div style={{ padding: "16px", flex: 1, display: "flex", flexDirection: "column" }}>
+        <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", lineHeight: "1.3" }}>
+          {pueblo.nombre}
+        </h3>
+        <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#555", lineHeight: "1.4" }}>
+          {pueblo.provincia} · {pueblo.comunidad}
+        </p>
+        <div style={{ marginTop: "auto" }}>
+          <SemaforoBadge
+            estado={
+              pueblo.semaforo?.estado ??
+              (typeof pueblo.semaforo === "object" &&
+              pueblo.semaforo !== null &&
+              "estado" in pueblo.semaforo
+                ? (pueblo.semaforo as any).estado
+                : null)
+            }
+            variant="badge"
+          />
+        </div>
+      </div>
+    </Link>
+  );
+});
 
 export default function PueblosList({
   pueblos: initialPueblos,
@@ -65,8 +153,8 @@ export default function PueblosList({
 
   const hasActiveFilters = comunidadNorm || provinciaNorm;
 
-  // Hidratación inteligente con IntersectionObserver + cache
-  const { photos, observe } = usePuebloPhotos(pueblosFiltrados);
+  // Carga BULK de fotos (1 sola request)
+  const { photos, loading, observe } = usePuebloPhotos(pueblosFiltrados);
 
   return (
     <main style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -134,7 +222,7 @@ export default function PueblosList({
         />
       </div>
 
-      {/* Listado */}
+      {/* Listado con grid estable */}
       {pueblosFiltrados.length > 0 ? (
         <section
           style={{
@@ -142,78 +230,22 @@ export default function PueblosList({
             gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
             gap: "16px",
             marginTop: "24px",
+            alignItems: "start", // Evita que las tarjetas se estiren
           }}
         >
-          {pueblosFiltrados.map((pueblo) => {
-            const foto = photos[pueblo.slug] ?? null;
+          {pueblosFiltrados.map((pueblo, index) => {
+            const photoData = photos[String(pueblo.id)];
+            const foto = photoData?.url ?? null;
+            const isPriority = index < 8; // Primeras 8 imágenes: priority
             
             return (
-              <Link
+              <PuebloCard
                 key={pueblo.id}
-                href={`/pueblos/${pueblo.slug}`}
-                ref={observe}
-                data-pueblo-slug={pueblo.slug}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  overflow: "hidden",
-                  textDecoration: "none",
-                  color: "inherit",
-                  display: "flex",
-                  flexDirection: "column",
-                  backgroundColor: "#fff",
-                }}
-              >
-                {/* Foto */}
-                <div
-                  style={{
-                    width: "100%",
-                    height: "140px",
-                    backgroundColor: "#f0f0f0",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    overflow: "hidden",
-                  }}
-                >
-                  {foto ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={foto}
-                      alt={pueblo.nombre}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                      loading="lazy"
-                    />
-                  ) : (
-                    <span style={{ fontSize: "12px", color: "#999" }}>Sin imagen</span>
-                  )}
-                </div>
-
-                {/* Contenido */}
-                <div style={{ padding: "16px" }}>
-                  <h3 style={{ margin: "0 0 8px 0", fontSize: "16px" }}>{pueblo.nombre}</h3>
-                  <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#555" }}>
-                    {pueblo.provincia} · {pueblo.comunidad}
-                  </p>
-                  <div style={{ marginTop: "8px" }}>
-                    <SemaforoBadge
-                      estado={
-                        pueblo.semaforo?.estado ??
-                        (typeof pueblo.semaforo === "object" &&
-                        pueblo.semaforo !== null &&
-                        "estado" in pueblo.semaforo
-                          ? (pueblo.semaforo as any).estado
-                          : null)
-                      }
-                      variant="badge"
-                    />
-                  </div>
-                </div>
-              </Link>
+                pueblo={pueblo}
+                foto={foto}
+                isPriority={isPriority}
+                observe={observe}
+              />
             );
           })}
         </section>

@@ -1,208 +1,164 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { resolvePuebloMainPhotoUrl } from "@/lib/api";
 
-type PuebloItem = { slug: string; [k: string]: any };
+type PuebloItem = { id: number; slug: string; [k: string]: any };
 
-const CACHE_KEY_PREFIX = "pueblo_photo_";
-const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 horas
-const RETRY_TTL = 5 * 60 * 1000; // 5 minutos para reintentar fallos
-const MAX_CONCURRENT = 2; // Reducido a 2
-const MAX_HYDRATE_LIMIT = 60; // Límite duro de hidratación
-
-interface CacheEntry {
-  url: string | null;
-  ts: number;
-  failed?: boolean;
-}
-
-// Cola de peticiones pendientes
-const fetchQueue: Array<{ slug: string; resolve: (url: string | null) => void }> = [];
-let activeFetches = 0;
-const hydratedSlugs = new Set<string>(); // Registro global de slugs ya procesados
-let hydrationCount = 0; // Contador de hidrataciones
-
-// Logs de performance
-const perfLogs = {
-  queueSize: 0,
-  totalFetches: 0,
-  totalTime: 0,
-  imageLoadTimes: [] as number[],
+type PhotoData = {
+  url: string;
+  rotation?: number;
 };
 
-function getCachedPhoto(slug: string): string | null | undefined {
+const CACHE_KEY = "pueblos_photos_bulk";
+const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 horas
+
+interface CacheEntry {
+  photos: Record<string, PhotoData>;
+  ts: number;
+}
+
+function getCachedPhotos(): Record<string, PhotoData> | null {
   try {
-    const cached = sessionStorage.getItem(CACHE_KEY_PREFIX + slug);
-    if (!cached) return undefined;
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
     
     const entry: CacheEntry = JSON.parse(cached);
     const now = Date.now();
     
-    // Si falló recientemente, no reintentar aún
-    if (entry.failed && (now - entry.ts) < RETRY_TTL) {
+    // Si expiró el cache, limpiar
+    if ((now - entry.ts) > CACHE_TTL) {
+      sessionStorage.removeItem(CACHE_KEY);
       return null;
     }
     
-    // Si expiró el cache, limpiar
-    if ((now - entry.ts) > CACHE_TTL) {
-      sessionStorage.removeItem(CACHE_KEY_PREFIX + slug);
-      return undefined;
-    }
-    
-    return entry.url;
+    return entry.photos;
   } catch {
-    return undefined;
+    return null;
   }
 }
 
-function setCachedPhoto(slug: string, url: string | null, failed = false) {
+function setCachedPhotos(photos: Record<string, PhotoData>) {
   try {
-    const entry: CacheEntry = { url, ts: Date.now(), failed };
-    sessionStorage.setItem(CACHE_KEY_PREFIX + slug, JSON.stringify(entry));
+    const entry: CacheEntry = { photos, ts: Date.now() };
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(entry));
   } catch {
     // Si sessionStorage está lleno, ignorar
   }
 }
 
-async function fetchPhotoWithQueue(slug: string): Promise<string | null> {
-  // Si ya hay demasiadas peticiones activas, encolar
-  if (activeFetches >= MAX_CONCURRENT) {
-    perfLogs.queueSize = fetchQueue.length + 1;
-    return new Promise((resolve) => {
-      fetchQueue.push({ slug, resolve });
-    });
-  }
+async function fetchPhotosBulk(puebloIds: number[]): Promise<Record<string, PhotoData>> {
+  if (puebloIds.length === 0) return {};
   
-  activeFetches++;
-  const startTime = Date.now();
+  const ids = puebloIds.join(",");
+  
+  console.log(`[usePuebloPhotos] Fetching ${puebloIds.length} photos, first 5 IDs:`, puebloIds.slice(0, 5));
   
   try {
-    const res = await fetch(`/api/pueblos/${slug}`, { cache: "no-store" });
+    // Llamar a Next.js API route (misma origin, sin CORS)
+    const res = await fetch(`/api/public/pueblos/photos?ids=${ids}`, {
+      cache: "no-store",
+    });
+
     if (!res.ok) {
-      setCachedPhoto(slug, null, true);
-      return null;
+      const text = await res.text();
+      console.error(`[usePuebloPhotos] API error ${res.status}:`, text.substring(0, 500));
+      return {};
     }
-    
+
     const data = await res.json();
-    const url = resolvePuebloMainPhotoUrl(data);
-    setCachedPhoto(slug, url, false);
     
-    // Log de tiempo
-    const elapsed = Date.now() - startTime;
-    perfLogs.totalFetches++;
-    perfLogs.totalTime += elapsed;
-    
-    if (perfLogs.totalFetches % 10 === 0) {
-      console.log(`[HYDRATION] ${perfLogs.totalFetches} fetches, avg: ${Math.round(perfLogs.totalTime / perfLogs.totalFetches)}ms, queue: ${perfLogs.queueSize}`);
+    // Normalizar: asegurar que todas las claves son strings
+    const normalized: Record<string, PhotoData> = {};
+    for (const [key, value] of Object.entries(data)) {
+      normalized[String(key)] = value as PhotoData;
     }
     
-    return url;
-  } catch (e) {
-    setCachedPhoto(slug, null, true);
-    return null;
-  } finally {
-    activeFetches--;
+    const withUrl = Object.values(normalized).filter(p => p?.url).length;
+    console.log(`[usePuebloPhotos] Received ${withUrl}/${Object.keys(normalized).length} photos with URL`);
     
-    // Procesar siguiente en cola
-    const next = fetchQueue.shift();
-    if (next) {
-      perfLogs.queueSize = fetchQueue.length;
-      fetchPhotoWithQueue(next.slug).then(next.resolve);
-    }
+    return normalized;
+  } catch (err: any) {
+    console.error("[usePuebloPhotos] Fetch error:", err.message);
+    return {};
   }
 }
 
 export function usePuebloPhotos(pueblos: PuebloItem[], options?: { eager?: boolean }) {
-  const [photos, setPhotos] = useState<Record<string, string | null>>({});
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const fetchedRef = useRef<Set<string>>(new Set());
-  const observedElements = useRef<Set<string>>(new Set());
-  
-  const fetchPhoto = useCallback(async (slug: string) => {
-    // Verificar límite global de hidratación
-    if (hydrationCount >= MAX_HYDRATE_LIMIT && !options?.eager) {
-      return;
-    }
-    
-    // No re-procesar slugs ya vistos globalmente
-    if (hydratedSlugs.has(slug)) {
-      return;
-    }
-    
-    if (fetchedRef.current.has(slug)) return;
-    fetchedRef.current.add(slug);
-    hydratedSlugs.add(slug);
-    hydrationCount++;
-    
-    // Primero buscar en cache
-    const cached = getCachedPhoto(slug);
-    if (cached !== undefined) {
-      setPhotos(prev => ({ ...prev, [slug]: cached }));
-      return;
-    }
-    
-    // Pedir al servidor
-    const url = await fetchPhotoWithQueue(slug);
-    setPhotos(prev => ({ ...prev, [slug]: url }));
-  }, [options?.eager]);
+  const [photos, setPhotos] = useState<Record<string, PhotoData>>({});
+  const [loading, setLoading] = useState(true);
+  const fetchedRef = useRef(false);
+  const puebloIdsRef = useRef<string>("");
   
   useEffect(() => {
-    // Cargar fotos desde cache primero
-    const initialPhotos: Record<string, string | null> = {};
-    pueblos.forEach(p => {
-      const cached = getCachedPhoto(p.slug);
-      if (cached !== undefined) {
-        initialPhotos[p.slug] = cached;
-        fetchedRef.current.add(p.slug);
-        hydratedSlugs.add(p.slug);
-      }
-    });
-    if (Object.keys(initialPhotos).length > 0) {
-      setPhotos(initialPhotos);
-    }
+    const puebloIds = pueblos.map(p => p.id);
+    const idsKey = puebloIds.join(",");
     
-    // Si es eager (destacados), fetch todos inmediatamente
-    if (options?.eager) {
-      pueblos.forEach(p => {
-        if (!fetchedRef.current.has(p.slug)) {
-          fetchPhoto(p.slug);
-        }
-      });
+    console.log(`[usePuebloPhotos] useEffect triggered, ${pueblos.length} pueblos`);
+    console.log(`[usePuebloPhotos] First 3 pueblos:`, pueblos.slice(0, 3).map(p => ({ id: p.id, slug: p.slug })));
+    
+    // Si los IDs no cambiaron, no refetch
+    if (idsKey === puebloIdsRef.current && fetchedRef.current) {
+      console.log(`[usePuebloPhotos] Skipping fetch (same IDs)`);
       return;
     }
     
-    // Configurar IntersectionObserver para lazy load
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const slug = entry.target.getAttribute("data-pueblo-slug");
-            if (slug && !observedElements.current.has(slug)) {
-              observedElements.current.add(slug);
-              if (!fetchedRef.current.has(slug) && !hydratedSlugs.has(slug)) {
-                fetchPhoto(slug);
-              }
-            }
+    puebloIdsRef.current = idsKey;
+    
+    async function load() {
+      setLoading(true);
+      
+      // 1) Intentar cargar desde cache
+      const cached = getCachedPhotos();
+      if (cached) {
+        const relevantPhotos: Record<string, PhotoData> = {};
+        let allFound = true;
+        
+        for (const p of pueblos) {
+          const key = String(p.id);
+          if (key in cached) {
+            relevantPhotos[key] = cached[key];
+          } else {
+            allFound = false;
+            break;
           }
-        });
-      },
-      { rootMargin: "200px" }
-    );
+        }
+        
+        // Si todas las fotos están en cache, usarlas
+        if (allFound && Object.keys(relevantPhotos).length === pueblos.length) {
+          setPhotos(relevantPhotos);
+          setLoading(false);
+          fetchedRef.current = true;
+          console.log(`[usePuebloPhotos] Loaded ${pueblos.length} photos from cache`);
+          return;
+        }
+      }
+      
+      // 2) Fetch bulk directo al backend
+      console.log(`[usePuebloPhotos] Fetching ${puebloIds.length} photos (bulk direct)...`);
+      const startTime = Date.now();
+      
+      const photosByIdNum = await fetchPhotosBulk(puebloIds);
+      
+      setPhotos(photosByIdNum);
+      setCachedPhotos(photosByIdNum);
+      
+      const elapsed = Date.now() - startTime;
+      const withPhoto = Object.values(photosByIdNum).filter(p => p?.url).length;
+      console.log(
+        `[usePuebloPhotos] Loaded ${withPhoto}/${pueblos.length} photos in ${elapsed}ms`
+      );
+      
+      setLoading(false);
+      fetchedRef.current = true;
+    }
     
-    return () => {
-      observerRef.current?.disconnect();
-    };
-  }, [pueblos, options?.eager, fetchPhoto]);
+    load();
+  }, [pueblos]);
   
-  const observe = useCallback((element: HTMLElement | null) => {
-    if (!element || !observerRef.current || options?.eager) return;
-    
-    const slug = element.getAttribute("data-pueblo-slug");
-    if (!slug || observedElements.current.has(slug)) return;
-    
-    observerRef.current.observe(element);
-  }, [options?.eager]);
+  // observe: ya no es necesario con bulk, pero lo mantenemos para compatibilidad
+  const observe = useCallback(() => {
+    // noop
+  }, []);
   
-  return { photos, observe };
+  return { photos, loading, observe };
 }

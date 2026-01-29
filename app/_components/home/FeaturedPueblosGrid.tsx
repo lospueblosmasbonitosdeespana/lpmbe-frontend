@@ -15,7 +15,8 @@ export function FeaturedPueblosGrid({ pueblos }: FeaturedPueblosGridProps) {
   return (
     <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
       {pueblos.map((p) => {
-        const img = photos[p.slug] ?? null;
+        const photoData = photos[String(p.id)];
+        const img = photoData?.url ?? null;
         
         return (
           <PuebloCard
