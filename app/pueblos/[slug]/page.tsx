@@ -36,6 +36,7 @@ type Poi = {
   descripcion_corta: string | null;
   descripcion_larga: string | null;
   foto: string | null;
+  rotation?: number | null;
   lat: number | null;
   lng: number | null;
   categoria: string | null;
