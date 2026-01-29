@@ -9,6 +9,7 @@ type PoiRow = {
   nombre: string;
   descripcion?: string | null;
   foto?: string | null;
+  rotation?: number | null;
   lat?: number | null;
   lng?: number | null;
   orden?: number | null;
