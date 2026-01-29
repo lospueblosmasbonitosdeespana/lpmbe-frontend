@@ -15,12 +15,31 @@ function getBackendBase() {
 
 export async function GET() {
   const base = getBackendBase();
-  const r = await fetch(`${base}/public/meteo/pueblos`, { cache: "no-store" });
-  const text = await r.text();
-  return new NextResponse(text, {
-    status: r.status,
-    headers: {
-      "content-type": r.headers.get("content-type") ?? "application/json",
-    },
-  });
+  const url = `${base}/public/meteo/pueblos`;
+  
+  console.log("[api/meteo/pueblos] Fetching:", url);
+  
+  try {
+    const r = await fetch(url, { cache: "no-store" });
+    const text = await r.text();
+    
+    console.log("[api/meteo/pueblos] Backend response:", r.status);
+    
+    if (!r.ok) {
+      console.error("[api/meteo/pueblos] Backend error:", text.substring(0, 500));
+    }
+    
+    return new NextResponse(text, {
+      status: r.status,
+      headers: {
+        "content-type": r.headers.get("content-type") ?? "application/json",
+      },
+    });
+  } catch (err: any) {
+    console.error("[api/meteo/pueblos] Fetch error:", err.message);
+    return new NextResponse(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { "content-type": "application/json" },
+    });
+  }
 }
