@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import PhotoManager from "@/app/components/PhotoManager";
+import RotatedImage from "@/app/components/RotatedImage";
 
 type PoiRow = {
   id: number;
@@ -701,18 +702,14 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                             </div>
                           )}
                           {row.foto && (
-                            <div style={{ marginTop: 8 }}>
-                              <img
-                                src={row.foto}
-                                alt={row.nombre}
-                                style={{
-                                  maxWidth: 200,
-                                  maxHeight: 150,
-                                  borderRadius: 4,
-                                  objectFit: "cover",
-                                }}
-                              />
-                            </div>
+                            <RotatedImage
+                              src={row.foto}
+                              alt={row.nombre}
+                              rotation={row.rotation}
+                              height={150}
+                              width={200}
+                              loading="eager"
+                            />
                           )}
                         </div>
                         <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>

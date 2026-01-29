@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { MediaItem } from "@/src/types/media";
 
 type PhotoManagerProps = {
@@ -16,11 +16,43 @@ type FotoItem = {
   activo?: boolean;
 };
 
+// Cache global de rotaciones para sobrevivir a unmount/remount
+const rotationCacheGlobal = new Map<string, number>();
+
+const rotationStorageKey = (id: string | number) => `lpbme-photo-rotation:${id}`;
+
+function getStoredRotation(id: string | number): number | undefined {
+  if (typeof window === "undefined") return undefined;
+  const raw = window.localStorage.getItem(rotationStorageKey(id));
+  if (raw == null) return undefined;
+  const num = Number(raw);
+  return Number.isFinite(num) ? num : undefined;
+}
+
+function setStoredRotation(id: string | number, rotation: number) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(rotationStorageKey(id), String(rotation));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function clearStoredRotation(id: string | number) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(rotationStorageKey(id));
+  } catch {
+    // ignore storage errors
+  }
+}
+
 export default function PhotoManager({ entity, entityId, useAdminEndpoint = true }: PhotoManagerProps) {
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const rotationCacheRef = useRef<Map<string, number>>(new Map());
 
   // Cargar fotos desde el endpoint apropiado
   async function loadPhotos() {
@@ -64,14 +96,34 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
       }
       
       // Normalizar a formato común
-      fotosArray = fotosArray.map(f => ({
-        id: f.id,
-        publicUrl: f.url ?? f.publicUrl,
-        order: Number(f.order ?? f.orden ?? 999),
-        activo: f.activo,
-        altText: f.altText ?? null,
-        rotation: f.rotation ?? 0,
-      }));
+      fotosArray = fotosArray.map((f) => {
+        const id = f.id;
+        const cachedRotation =
+          rotationCacheRef.current.get(String(id)) ??
+          rotationCacheGlobal.get(String(id)) ??
+          getStoredRotation(id);
+        const hasRotationFromApi = f.rotation !== undefined && f.rotation !== null
+          || f.rotacion !== undefined && f.rotacion !== null;
+        const rotation = hasRotationFromApi
+          ? (f.rotation ?? f.rotacion)
+          : (cachedRotation !== undefined ? cachedRotation : 0);
+
+        // Solo actualizar cache si el backend envía rotación explícita
+        if (hasRotationFromApi && rotation !== undefined && rotation !== null) {
+          rotationCacheRef.current.set(String(id), rotation);
+          rotationCacheGlobal.set(String(id), rotation);
+          setStoredRotation(id, rotation);
+        }
+
+        return {
+          id,
+          publicUrl: f.url ?? f.publicUrl,
+          order: Number(f.order ?? f.orden ?? 999),
+          activo: f.activo,
+          altText: f.altText ?? null,
+          rotation,
+        };
+      });
       
       // Ordenar por orden ascendente (nulos/undefined al final)
       fotosArray.sort((a, b) => {
@@ -188,6 +240,11 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
 
       // Refetch inmediato sin caché
       await loadPhotos();
+
+      // Limpiar cache local/global
+      rotationCacheRef.current.delete(String(photoId));
+      rotationCacheGlobal.delete(String(photoId));
+      clearStoredRotation(photoId);
     } catch (e: any) {
       setError(e?.message ?? "Error eliminando foto");
     }
@@ -227,79 +284,147 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
     }
   }
 
-  // Mover foto arriba (usa SWAP)
+  // Persistir orden completo de fotos en backend
+  async function persistOrder(orderedPhotos: any[]) {
+    try {
+      const payload = {
+        fotos: orderedPhotos.map((p, idx) => ({
+          id: p.id, // puede ser "legacy-XXXX" o number
+          orden: idx + 1, // backend espera "orden" (con r)
+        })),
+      };
+
+      const res = await fetch("/api/admin/fotos/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => "Error desconocido");
+        throw new Error(`Error persistiendo orden (${res.status}): ${errorText}`);
+      }
+
+      // Actualizar el campo `order` local después del éxito
+      setPhotos((prev) =>
+        prev.map((p, idx) => ({
+          ...p,
+          order: orderedPhotos[idx].id === p.id ? idx + 1 : p.order,
+        }))
+      );
+    } catch (e: any) {
+      setError(e?.message ?? "Error persistiendo orden");
+      // Refrescar para volver al estado del backend
+      await loadPhotos();
+    }
+  }
+
+  // Mover foto arriba
   async function moveUp(index: number) {
     if (index === 0) return;
     
-    const photoA = photos[index];
-    const photoB = photos[index - 1];
-    
     setError(null);
     
-    try {
-      const res = await fetch(`/api/admin/fotos/swap`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          aId: photoA.id,
-          bId: photoB.id,
-        }),
-      });
-      
-      if (!res.ok) {
-        throw new Error(`Error intercambiando fotos (${res.status})`);
-      }
-      
-      await loadPhotos();
-    } catch (e: any) {
-      setError(e?.message ?? "Error intercambiando fotos");
-    }
+    // Swap en el array local
+    const nextPhotos = [...photos];
+    [nextPhotos[index - 1], nextPhotos[index]] = [nextPhotos[index], nextPhotos[index - 1]];
+    
+    // Actualizar UI inmediatamente
+    setPhotos(nextPhotos);
+    
+    // Persistir en backend (asíncrono)
+    await persistOrder(nextPhotos);
   }
 
-  // Mover foto abajo (usa SWAP)
+  // Mover foto abajo
   async function moveDown(index: number) {
     if (index === photos.length - 1) return;
     
-    const photoA = photos[index];
-    const photoB = photos[index + 1];
-    
     setError(null);
     
-    try {
-      const res = await fetch(`/api/admin/fotos/swap`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          aId: photoA.id,
-          bId: photoB.id,
-        }),
-      });
-      
-      if (!res.ok) {
-        throw new Error(`Error intercambiando fotos (${res.status})`);
-      }
-      
-      await loadPhotos();
-    } catch (e: any) {
-      setError(e?.message ?? "Error intercambiando fotos");
-    }
+    // Swap en el array local
+    const nextPhotos = [...photos];
+    [nextPhotos[index], nextPhotos[index + 1]] = [nextPhotos[index + 1], nextPhotos[index]];
+    
+    // Actualizar UI inmediatamente
+    setPhotos(nextPhotos);
+    
+    // Persistir en backend (asíncrono)
+    await persistOrder(nextPhotos);
   }
 
-  // Rotar foto 90 grados
-  async function handleRotate(fotoId: number) {
+  // Rotar foto 90 grados (AUTOSAVE inmediato, igual que pueblo)
+  async function handleRotate(fotoId: number | string) {
     setError(null);
 
+    // Encontrar la foto actual para calcular siguiente rotación
+    const currentPhoto = photos.find((p) => String(p.id) === String(fotoId));
+    if (!currentPhoto) return;
+
+    // Usar cache si existe para evitar rotación reseteada por GET sin rotation
+    const cachedRotation = rotationCacheRef.current.get(String(fotoId));
+    const baseRotation = cachedRotation ?? currentPhoto.rotation ?? 0;
+    const nextRotation = (baseRotation + 90) % 360;
+
+    console.log("[PhotoManager] rotate", { fotoId, nextRotation });
+
     try {
-      const res = await fetch(`/api/admin/fotos/${fotoId}/rotate90`, {
-        method: "POST",
+      // 1) Optimistic update local (UI rota al instante)
+      setPhotos((prev) =>
+        prev.map((p) =>
+          String(p.id) === String(fotoId) ? { ...p, rotation: nextRotation } : p
+        )
+      );
+      rotationCacheRef.current.set(String(fotoId), nextRotation);
+      rotationCacheGlobal.set(String(fotoId), nextRotation);
+      setStoredRotation(fotoId, nextRotation);
+
+      // 2) Persistir en backend
+      console.log("[PhotoManager] PATCH /api/admin/fotos/:id/rotation", fotoId);
+      
+      const res = await fetch(`/api/admin/fotos/${fotoId}/rotation`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rotation: nextRotation }),
       });
 
       if (!res.ok) {
+        const errorText = await res.text().catch(() => "");
+        console.error("[PhotoManager] rotation PATCH failed", res.status, errorText);
+        
+        // Rollback: recargar fotos del backend para estado correcto
+        await loadPhotos();
         throw new Error(`Error rotando foto (${res.status})`);
       }
 
-      // Refrescar la lista tras rotación exitosa
-      await loadPhotos();
+      const updated = await res.json();
+      console.log("[PhotoManager] rotation PATCH success", updated);
+
+      // 3) Reconciliar: si ID cambia (legacy->canónica), sustituir
+      setPhotos((prev) =>
+        prev.map((p) => {
+          if (String(p.id) !== String(fotoId)) return p;
+          
+          return {
+            ...p,
+            id: updated.id, // Muy importante si canoniza
+            rotation: updated.rotation, // Muy importante
+            publicUrl: updated.url ?? updated.publicUrl ?? p.publicUrl,
+            altText: updated.alt ?? p.altText,
+            order: updated.orden ?? updated.order ?? p.order,
+          };
+        })
+      );
+
+      // Mantener cache de rotaciones para evitar resets
+      rotationCacheRef.current.set(String(updated.id ?? fotoId), updated.rotation ?? nextRotation);
+      rotationCacheGlobal.set(String(updated.id ?? fotoId), updated.rotation ?? nextRotation);
+      setStoredRotation(updated.id ?? fotoId, updated.rotation ?? nextRotation);
+      if (String(updated.id) !== String(fotoId)) {
+        rotationCacheRef.current.delete(String(fotoId));
+        rotationCacheGlobal.delete(String(fotoId));
+        clearStoredRotation(fotoId);
+      }
     } catch (e: any) {
       setError(e?.message ?? "Error rotando foto");
     }
@@ -453,6 +578,22 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
                       Principal
                     </span>
                   )}
+                  {String(photo.id).startsWith('legacy-') && (
+                    <span
+                      style={{
+                        marginLeft: "8px",
+                        padding: "2px 8px",
+                        backgroundColor: "#fef3c7",
+                        color: "#92400e",
+                        borderRadius: "12px",
+                        fontSize: "12px",
+                        fontWeight: "600",
+                      }}
+                      title="Foto heredada del sistema antiguo. Al editarla se convertirá en nueva."
+                    >
+                      Legacy
+                    </span>
+                  )}
                 </div>
                 <div style={{ color: "#6b7280", fontSize: "12px", wordBreak: "break-all" }}>
                   {photo.publicUrl}
@@ -516,6 +657,23 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
       >
         💡 La primera foto (orden #1) se usa como <strong>foto principal</strong> en listados y cards.
       </div>
+      
+      {/* Info Legacy */}
+      {photos.some(p => String(p.id).startsWith('legacy-')) && (
+        <div
+          style={{
+            marginTop: "12px",
+            padding: "12px",
+            backgroundColor: "#fffbeb",
+            border: "1px solid #fde68a",
+            borderRadius: "6px",
+            fontSize: "13px",
+            color: "#78350f",
+          }}
+        >
+          📌 <strong>Fotos Legacy:</strong> Heredadas del sistema antiguo. Al rotar, reordenar o editar una foto legacy, se canoniza automáticamente (obtiene un ID nuevo). Esto es normal y permite editarla sin afectar otros pueblos.
+        </div>
+      )}
     </div>
   );
 }

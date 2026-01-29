@@ -13,9 +13,9 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => null);
   
-  if (!body || !body.fotoId || body.orden === undefined) {
+  if (!body) {
     return NextResponse.json(
-      { message: 'Bad Request: fotoId y orden son requeridos' },
+      { message: 'Bad Request: body requerido' },
       { status: 400 }
     );
   }
@@ -24,8 +24,8 @@ export async function POST(req: Request) {
   const upstreamUrl = `${API_BASE}/admin/fotos/reorder`;
 
   if (DEV_LOGS) {
-    console.error('[admin/fotos/reorder POST] upstreamUrl:', upstreamUrl);
-    console.error('[admin/fotos/reorder POST] body:', body);
+    console.log('[admin/fotos/reorder POST] upstreamUrl:', upstreamUrl);
+    console.log('[admin/fotos/reorder POST] body:', body);
   }
 
   try {
@@ -39,12 +39,18 @@ export async function POST(req: Request) {
       cache: 'no-store',
     });
 
-    if (!upstream.ok) {
-      const errorText = await upstream.text().catch(() => 'Error desconocido');
-      return NextResponse.json({ error: errorText }, { status: upstream.status });
+    const text = await upstream.text();
+    
+    if (DEV_LOGS) {
+      console.log('[admin/fotos/reorder POST] status:', upstream.status);
+      console.log('[admin/fotos/reorder POST] response:', text);
     }
 
-    const data = await upstream.json().catch(() => ({}));
+    if (!upstream.ok) {
+      return NextResponse.json({ error: text }, { status: upstream.status });
+    }
+
+    const data = JSON.parse(text || '{}');
     return NextResponse.json(data, { status: upstream.status });
   } catch (error: any) {
     if (DEV_LOGS) {

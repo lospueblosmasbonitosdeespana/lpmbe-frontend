@@ -123,7 +123,7 @@ export default async function PoiPage({
         </p>
       )}
 
-      {/* FOTO */}
+      {/* FOTO PRINCIPAL */}
       {foto ? (
         <section style={{ marginTop: 32 }}>
           <img
@@ -134,11 +134,87 @@ export default async function PoiPage({
               width: "100%",
               height: "auto",
               borderRadius: 8,
+              // Aplicar rotación de la foto principal si existe
+              transform: (() => {
+                const fotos = Array.isArray(data?.fotosPoi) ? data.fotosPoi : [];
+                const principal = fotos.find((f: any) => f?.orden === 1) ?? fotos[0];
+                const rotation = principal?.rotation ?? 0;
+                return rotation !== 0 ? `rotate(${rotation}deg)` : undefined;
+              })(),
             }}
             loading="eager"
           />
         </section>
       ) : null}
+
+      {/* GALERÍA DE FOTOS (si hay más de 1) */}
+      {(() => {
+        const fotos = Array.isArray(data?.fotosPoi) ? data.fotosPoi : [];
+        const fotosSorted = [...fotos].sort((a, b) => (a.orden ?? 999) - (b.orden ?? 999));
+        
+        if (fotosSorted.length <= 1) return null;
+        
+        return (
+          <section style={{ marginTop: 32 }}>
+            <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 16 }}>
+              Galería
+            </h2>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+                gap: 16,
+              }}
+            >
+              {fotosSorted.map((foto: any, idx: number) => (
+                <div
+                  key={foto.id ?? idx}
+                  style={{
+                    position: "relative",
+                    paddingTop: "75%",
+                    overflow: "hidden",
+                    borderRadius: 8,
+                    backgroundColor: "#f5f5f5",
+                  }}
+                >
+                  <img
+                    src={foto.url}
+                    alt={foto.alt ?? `${data.nombre} - Foto ${idx + 1}`}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      // IMPORTANTE: Aplicar rotación desde el dato
+                      transform: foto.rotation ? `rotate(${foto.rotation}deg)` : undefined,
+                    }}
+                    loading="lazy"
+                  />
+                  {foto.orden === 1 && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 8,
+                        left: 8,
+                        padding: "4px 8px",
+                        backgroundColor: "rgba(33, 150, 243, 0.9)",
+                        color: "white",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        borderRadius: 4,
+                      }}
+                    >
+                      Principal
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
 
       {/* DESCRIPCIÓN */}
       {descripcionHtml ? (

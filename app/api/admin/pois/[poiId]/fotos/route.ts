@@ -36,7 +36,11 @@ export async function GET(
       return NextResponse.json({ error: errorText }, { status: upstream.status });
     }
 
-    const data = await upstream.json().catch(() => ({}));
+    const text = await upstream.text().catch(() => "");
+    if (DEV_LOGS) {
+      console.error("[admin/pois/fotos GET] response:", text);
+    }
+    const data = text ? JSON.parse(text) : {};
     return NextResponse.json(data, { status: upstream.status });
   } catch (error: any) {
     if (DEV_LOGS) {

@@ -14,26 +14,16 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { aId: rawAId, bId: rawBId } = body;
+    const { aId, bId } = body;
 
-    if (!rawAId || !rawBId) {
+    if (!aId || !bId) {
       return NextResponse.json(
         { message: "Se requieren aId y bId" },
         { status: 400 }
       );
     }
 
-    // Normalizar IDs: "legacy-1948" → "1948"
-    const normalizeId = (id: string | number): string | number => {
-      if (typeof id === 'string' && id.startsWith('legacy-')) {
-        return id.replace(/^legacy-/, '');
-      }
-      return id;
-    };
-
-    const aId = normalizeId(rawAId);
-    const bId = normalizeId(rawBId);
-
+    // NO normalizar: enviar "legacy-XXXX" tal cual al backend
     const API_BASE = getApiUrl();
     const res = await fetch(`${API_BASE}/admin/fotos/swap`, {
       method: "POST",

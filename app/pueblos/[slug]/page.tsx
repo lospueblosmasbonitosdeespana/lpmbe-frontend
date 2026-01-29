@@ -11,6 +11,7 @@ import ContenidosPuebloSection from "./ContenidosPuebloSection";
 import GaleriaGrid from "./GaleriaGrid";
 import TematicasPuebloTabs from "./TematicasPuebloTabs";
 import { headers } from "next/headers";
+import RotatedImage from "@/app/components/RotatedImage";
 
 // Helpers para SEO
 function cleanText(input: string) {
@@ -525,16 +526,11 @@ export default async function PuebloPage({
                 }}
               >
                 {poi.foto ? (
-                  <img
-                    key={`${puebloSafe.id}-${poi.id}-${poi.foto}`}
+                  <RotatedImage
                     src={poi.foto}
                     alt={poi.nombre}
-                    data-src={`${puebloSafe.id}-${poi.id}-${poi.foto}`}
-                    style={{
-                      width: "100%",
-                      height: "200px",
-                      objectFit: "cover",
-                    }}
+                    rotation={poi.rotation}
+                    height={200}
                     loading="lazy"
                   />
                 ) : (
@@ -625,16 +621,11 @@ export default async function PuebloPage({
                 }}
               >
                 {poi.foto ? (
-                  <img
-                    key={`${puebloSafe.id}-${poi.id}-${poi.foto}`}
+                  <RotatedImage
                     src={poi.foto}
                     alt={poi.nombre}
-                    data-src={`${puebloSafe.id}-${poi.id}-${poi.foto}`}
-                    style={{
-                      width: "100%",
-                      height: "200px",
-                      objectFit: "cover",
-                    }}
+                    rotation={poi.rotation}
+                    height={200}
                     loading="lazy"
                   />
                 ) : (
@@ -725,16 +716,11 @@ export default async function PuebloPage({
                 }}
               >
                 {poi.foto ? (
-                  <img
-                    key={`${puebloSafe.id}-${poi.id}-${poi.foto}`}
+                  <RotatedImage
                     src={poi.foto}
                     alt={poi.nombre}
-                    data-src={`${puebloSafe.id}-${poi.id}-${poi.foto}`}
-                    style={{
-                      width: "100%",
-                      height: "200px",
-                      objectFit: "cover",
-                    }}
+                    rotation={poi.rotation}
+                    height={200}
                     loading="lazy"
                   />
                 ) : (
