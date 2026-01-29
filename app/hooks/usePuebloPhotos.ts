@@ -9,12 +9,14 @@ type PhotoData = {
   rotation?: number;
 };
 
-const CACHE_KEY = "pueblos_photos_bulk";
+const CACHE_KEY = "pueblos_photos_v3"; // Cambio de versión para forzar limpieza
 const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 horas
+const MIN_VALID_PERCENTAGE = 0.5; // Al menos 50% deben tener URL válida
 
 interface CacheEntry {
   photos: Record<string, PhotoData>;
   ts: number;
+  version: string;
 }
 
 function getCachedPhotos(): Record<string, PhotoData> | null {
@@ -25,24 +27,60 @@ function getCachedPhotos(): Record<string, PhotoData> | null {
     const entry: CacheEntry = JSON.parse(cached);
     const now = Date.now();
     
+    // Verificar versión (invalidar si no coincide)
+    if (!entry.version || entry.version !== "v3") {
+      sessionStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    
     // Si expiró el cache, limpiar
     if ((now - entry.ts) > CACHE_TTL) {
       sessionStorage.removeItem(CACHE_KEY);
       return null;
     }
     
+    // VALIDACIÓN: verificar que el cache tenga sentido
+    const totalPhotos = Object.keys(entry.photos).length;
+    if (totalPhotos === 0) {
+      console.warn("[Cache] Cache vacío, invalidando");
+      sessionStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    
+    const withUrl = Object.values(entry.photos).filter(p => p?.url).length;
+    const percentage = withUrl / totalPhotos;
+    
+    // Si menos del 50% tienen URL, el cache está corrupto
+    if (percentage < MIN_VALID_PERCENTAGE) {
+      console.warn(`[Cache] Cache corrupto (solo ${Math.round(percentage * 100)}% válidos), invalidando`);
+      sessionStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    
     return entry.photos;
-  } catch {
+  } catch (err) {
+    console.error("[Cache] Error leyendo cache:", err);
+    sessionStorage.removeItem(CACHE_KEY);
     return null;
   }
 }
 
 function setCachedPhotos(photos: Record<string, PhotoData>) {
   try {
-    const entry: CacheEntry = { photos, ts: Date.now() };
+    const entry: CacheEntry = { 
+      photos, 
+      ts: Date.now(),
+      version: "v3"
+    };
     sessionStorage.setItem(CACHE_KEY, JSON.stringify(entry));
-  } catch {
-    // Si sessionStorage está lleno, ignorar
+    
+    // Limpiar caches viejos
+    try {
+      sessionStorage.removeItem("pueblos_photos_bulk");
+      sessionStorage.removeItem("pueblos_photos_bulk_v2");
+    } catch {}
+  } catch (err) {
+    console.warn("[Cache] No se pudo guardar cache:", err);
   }
 }
 
@@ -90,11 +128,12 @@ export function usePuebloPhotos(pueblos: PuebloItem[], options?: { eager?: boole
   const puebloIdsRef = useRef<string>("");
   
   useEffect(() => {
-    const puebloIds = pueblos.map(p => p.id);
+    // Generar IDs ordenados dentro del useEffect para consistencia
+    const puebloIds = pueblos.map(p => p.id).sort((a, b) => a - b);
     const idsKey = puebloIds.join(",");
     
     console.log(`[usePuebloPhotos] useEffect triggered, ${pueblos.length} pueblos`);
-    console.log(`[usePuebloPhotos] First 3 pueblos:`, pueblos.slice(0, 3).map(p => ({ id: p.id, slug: p.slug })));
+    console.log(`[usePuebloPhotos] IDs key:`, idsKey.substring(0, 100));
     
     // Si los IDs no cambiaron, no refetch
     if (idsKey === puebloIdsRef.current && fetchedRef.current) {
@@ -109,14 +148,22 @@ export function usePuebloPhotos(pueblos: PuebloItem[], options?: { eager?: boole
       
       // 1) Intentar cargar desde cache
       const cached = getCachedPhotos();
-      if (cached) {
+      if (cached && Object.keys(cached).length > 0) {
         const relevantPhotos: Record<string, PhotoData> = {};
         let allFound = true;
+        let validCount = 0;
         
         for (const p of pueblos) {
           const key = String(p.id);
           if (key in cached) {
-            relevantPhotos[key] = cached[key];
+            // Verificar que el valor no sea null
+            if (cached[key] && cached[key].url) {
+              relevantPhotos[key] = cached[key];
+              validCount++;
+            } else {
+              // Si es null, incluirlo pero no contar como válido
+              relevantPhotos[key] = cached[key];
+            }
           } else {
             allFound = false;
             break;
@@ -128,7 +175,7 @@ export function usePuebloPhotos(pueblos: PuebloItem[], options?: { eager?: boole
           setPhotos(relevantPhotos);
           setLoading(false);
           fetchedRef.current = true;
-          console.log(`[usePuebloPhotos] Loaded ${pueblos.length} photos from cache`);
+          console.log(`[usePuebloPhotos] Loaded ${pueblos.length} photos from cache (${validCount} with URLs)`);
           return;
         }
       }
@@ -153,7 +200,7 @@ export function usePuebloPhotos(pueblos: PuebloItem[], options?: { eager?: boole
     }
     
     load();
-  }, [pueblos]);
+  }, [pueblos]); // Volver a pueblos como dependencia, pero con check de IDs dentro
   
   // observe: ya no es necesario con bulk, pero lo mantenemos para compatibilidad
   const observe = useCallback(() => {
