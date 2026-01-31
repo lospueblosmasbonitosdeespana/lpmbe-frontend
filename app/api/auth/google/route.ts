@@ -1,5 +1,5 @@
 // app/api/auth/google/route.ts
-// Recibe idToken de Google (credential) y lo envía al backend.
+// Recibe datos de Google (accessToken o idToken) y los envía al backend.
 import { NextResponse } from 'next/server';
 import { AUTH_COOKIE_NAME, pickToken } from '@/lib/auth';
 
@@ -9,12 +9,19 @@ function getApiBase(): string | null {
     console.error('[api/auth/google] NEXT_PUBLIC_API_URL no está definida');
     return null;
   }
-  // Permitir http en desarrollo local
   if (!raw.startsWith('http://') && !raw.startsWith('https://')) {
     console.error('[api/auth/google] NEXT_PUBLIC_API_URL debe ser HTTP o HTTPS');
     return null;
   }
   return raw;
+}
+
+interface GoogleAuthBody {
+  idToken?: string;
+  accessToken?: string;
+  email?: string;
+  name?: string;
+  googleId?: string;
 }
 
 export async function POST(req: Request) {
@@ -28,26 +35,33 @@ export async function POST(req: Request) {
 
   console.log('[api/auth/google] API_BASE =', API_BASE);
 
-  let body: { idToken?: string } = {};
+  let body: GoogleAuthBody = {};
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ message: 'Cuerpo inválido' }, { status: 400 });
   }
 
-  const idToken = body?.idToken;
-  if (!idToken || typeof idToken !== 'string') {
-    return NextResponse.json({ message: 'idToken requerido' }, { status: 400 });
+  // Soportar tanto idToken (credential flow) como accessToken (implicit flow)
+  const { idToken, accessToken, email, name, googleId } = body;
+
+  if (!idToken && !accessToken) {
+    return NextResponse.json({ message: 'idToken o accessToken requerido' }, { status: 400 });
   }
 
-  console.log('[api/auth/google] idToken presente = true');
+  console.log('[api/auth/google] idToken =', !!idToken, ', accessToken =', !!accessToken);
+
+  // Construir payload para el backend
+  const payload = idToken
+    ? { idToken }
+    : { accessToken, email, name, googleId };
 
   let upstream: Response;
   try {
     upstream = await fetch(`${API_BASE}/auth/google`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken }),
+      body: JSON.stringify(payload),
     });
   } catch (err) {
     console.error('[api/auth/google] fetch error:', err);
