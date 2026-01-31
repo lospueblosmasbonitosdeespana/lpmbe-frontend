@@ -3,6 +3,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
+import AppleSignInButton from '@/app/components/auth/AppleSignInButton';
 
 function EntrarForm() {
   const router = useRouter();
@@ -92,6 +93,8 @@ function EntrarForm() {
         <button className="w-full rounded-md border px-3 py-2" type="submit" disabled={loading}>
           {loading ? 'Entrando…' : 'Entrar'}
         </button>
+
+        <AppleSignInButton />
 
         <p className="text-sm text-gray-600">
           <a className="hover:underline" href="/recuperar">

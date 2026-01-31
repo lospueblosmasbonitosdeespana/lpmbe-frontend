@@ -354,7 +354,7 @@ postgresql://postgres:qcBdmEnnndcUMfsXjaoRkXXYRwwgqgmV@hopper.proxy.rlwy.net:233
 postgresql://postgres:qcBdmEnnndcUMfsXjaoRkXXYRwwgqgmV@postgres.railway.internal:5432/railway
 
 Frontend (producción):
-https://lpbme-frontend.vercel.app
+https://lpmbe-frontend.vercel.app
 Backend (producción):
 https://lpbme-backend-production.up.railway.app
 Ejemplo endpoint real:

@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: "Descubre rutas turísticas por los pueblos más bonitos de España",
 };
 
+export const dynamic = "force-dynamic";
+
 export const revalidate = 300;
 
 export default async function RutasPage() {
