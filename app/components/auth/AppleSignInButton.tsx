@@ -156,7 +156,7 @@ export default function AppleSignInButton() {
       const data = await apiRes.json().catch(() => ({}));
 
       if (!apiRes.ok) {
-        setError(formatAppleError(data) || data?.message ?? `Error ${apiRes.status}`);
+        setError(formatAppleError(data) || (data?.message ?? `Error ${apiRes.status}`));
         return;
       }
 
