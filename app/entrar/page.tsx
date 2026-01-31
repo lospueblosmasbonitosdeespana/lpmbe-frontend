@@ -4,6 +4,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import AppleSignInButton from '@/app/components/auth/AppleSignInButton';
+import GoogleSignInButton from '@/app/components/auth/GoogleSignInButton';
 
 function EntrarForm() {
   const router = useRouter();
@@ -95,6 +96,7 @@ function EntrarForm() {
         </button>
 
         <AppleSignInButton />
+        <GoogleSignInButton />
 
         <p className="text-sm text-gray-600">
           <a className="hover:underline" href="/recuperar">
