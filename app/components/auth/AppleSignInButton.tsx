@@ -138,13 +138,19 @@ export default function AppleSignInButton() {
         setLoading(false);
         return;
       }
-      // Redirect flow: signIn() redirige la ventana a Apple; el callback /auth/callback/apple procesa el retorno
+      // Redirect flow: signIn() redirige a Apple; el token llega por POST a route.ts
       await auth.signIn();
-      // Si no hay redirect (p.ej. Safari bloqueó), seguimos aquí
+      // Si llegamos aquí, no hubo redirect (p.ej. Safari bloqueó)
+      setError('Safari bloqueó el redirect. Prueba en otro navegador o permite redirecciones.');
       setLoading(false);
     } catch (err: unknown) {
       console.error('[AppleSignIn]', err);
-      setError(formatAppleError(err));
+      const msg = formatAppleError(err);
+      setError(
+        msg.includes('popup_closed') || msg.includes('popup')
+          ? 'Safari bloqueó el redirect. Prueba en otro navegador.'
+          : msg
+      );
       setLoading(false);
     }
   }, [clientId, redirectURI, loadSdk]);

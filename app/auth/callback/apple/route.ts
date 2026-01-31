@@ -1,7 +1,11 @@
-// Handler POST para el callback de Apple (response_mode=form_post).
-// Apple hace POST a redirectURI con form data (id_token, state, etc.).
+// Única implementación del callback Apple: route.ts (no page.tsx en este path).
+// POST = form_post desde Apple; GET = alguien entró por URL a mano.
 import { NextResponse } from 'next/server';
 import { AUTH_COOKIE_NAME, pickToken } from '@/lib/auth';
+
+export function GET(request: Request) {
+  return NextResponse.redirect(new URL('/entrar', request.url), 303);
+}
 
 function getApiBase(): string | null {
   const raw = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? '';
