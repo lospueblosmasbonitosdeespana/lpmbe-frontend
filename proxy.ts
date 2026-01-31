@@ -6,11 +6,12 @@ const CANONICAL_HOST = 'staging.lospueblosmasbonitosdeespana.org';
 const VERCEL_HOST = 'lpmbe-frontend.vercel.app';
 
 export function proxy(req: NextRequest) {
-  const { pathname, hostname } = req.nextUrl;
+  const { pathname } = req.nextUrl;
+  const host = req.headers.get('host') ?? '';
 
   // 1) Dominio canónico: si entran por Vercel → redirect 308 a staging
-  if (hostname === VERCEL_HOST) {
-    const url = req.nextUrl.clone();
+  if (host === VERCEL_HOST || host.startsWith(VERCEL_HOST + ':')) {
+    const url = new URL(req.url);
     url.protocol = 'https:';
     url.host = CANONICAL_HOST;
     return NextResponse.redirect(url, 308);
@@ -30,6 +31,6 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)', '/'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)'],
 };
 
