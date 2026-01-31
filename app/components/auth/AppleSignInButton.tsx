@@ -140,12 +140,20 @@ export default function AppleSignInButton() {
       }
       // Redirect flow: signIn() redirige a Apple; el token llega por POST a route.ts
       await auth.signIn();
-      // Si llegamos aquí, no hubo redirect (p.ej. Safari bloqueó)
+      // Si llegamos aquí, puede ser que el redirect esté en curso.
+      // Esperamos un momento: si el redirect funciona, el usuario ya no estará aquí.
+      await new Promise((r) => setTimeout(r, 3000));
+      // Si seguimos aquí después de 3s, el redirect no ocurrió
       setError('Safari bloqueó el redirect. Prueba en otro navegador o permite redirecciones.');
       setLoading(false);
     } catch (err: unknown) {
-      console.error('[AppleSignIn]', err);
+      // Ignorar errores de "user cancelled" o popup - pueden ser falsos positivos durante redirect
       const msg = formatAppleError(err);
+      if (msg.includes('popup_closed') || msg.includes('popup') || msg.includes('user_cancelled')) {
+        // Esperar antes de mostrar error: si el redirect funciona, no verán esto
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+      console.error('[AppleSignIn]', err);
       setError(
         msg.includes('popup_closed') || msg.includes('popup')
           ? 'Safari bloqueó el redirect. Prueba en otro navegador.'
