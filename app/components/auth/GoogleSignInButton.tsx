@@ -15,7 +15,7 @@ export default function GoogleSignInButton() {
 
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
-  async function handleSuccess(credentialResponse: CredentialResponse) {
+  function handleSuccess(credentialResponse: CredentialResponse) {
     const idToken = credentialResponse.credential;
     if (!idToken) {
       setError('Google no devolvió credenciales');
@@ -25,28 +25,31 @@ export default function GoogleSignInButton() {
     setError(null);
     setLoading(true);
 
-    try {
-      const res = await fetch('/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken }),
-      });
+    // IIFE async para no devolver Promise en el callback
+    (async () => {
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken }),
+        });
 
-      const data = await res.json().catch(() => ({}));
+        const data = await res.json().catch(() => ({}));
 
-      if (!res.ok) {
-        setError(data?.message ?? `Error ${res.status}`);
-        return;
+        if (!res.ok) {
+          setError(data?.message ?? `Error ${res.status}`);
+          return;
+        }
+
+        router.refresh();
+        router.push('/cuenta');
+      } catch (err) {
+        console.error('[GoogleSignIn]', err);
+        setError('Error de conexión');
+      } finally {
+        setLoading(false);
       }
-
-      router.refresh();
-      router.push('/cuenta');
-    } catch (err) {
-      console.error('[GoogleSignIn]', err);
-      setError('Error de conexión');
-    } finally {
-      setLoading(false);
-    }
+    })();
   }
 
   function handleError() {
@@ -64,11 +67,8 @@ export default function GoogleSignInButton() {
         <GoogleLogin
           onSuccess={handleSuccess}
           onError={handleError}
-          useOneTap={false}
           text="continue_with"
           shape="rectangular"
-          width="100%"
-          locale="es"
         />
       </div>
       {loading && (
