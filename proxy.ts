@@ -2,9 +2,21 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { AUTH_COOKIE_NAME } from '@/lib/auth';
 
-export function proxy(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+const CANONICAL_HOST = 'staging.lospueblosmasbonitosdeespana.org';
+const VERCEL_HOST = 'lpmbe-frontend.vercel.app';
 
+export function proxy(req: NextRequest) {
+  const { pathname, hostname } = req.nextUrl;
+
+  // 1) Dominio canónico: si entran por Vercel → redirect 308 a staging
+  if (hostname === VERCEL_HOST) {
+    const url = req.nextUrl.clone();
+    url.protocol = 'https:';
+    url.host = CANONICAL_HOST;
+    return NextResponse.redirect(url, 308);
+  }
+
+  // 2) /cuenta sin cookie → redirect a /entrar
   if (pathname.startsWith('/cuenta')) {
     const token = req.cookies.get(AUTH_COOKIE_NAME)?.value;
     if (!token) {
@@ -18,6 +30,6 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/cuenta/:path*'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)', '/'],
 };
 
