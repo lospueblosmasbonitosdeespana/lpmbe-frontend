@@ -9,6 +9,7 @@ const API_BASE =
 export async function GET() {
   const cookieStore = await cookies(); // 👈 Next 16: cookies() puede ser Promise
   const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+  console.log('[api/auth/me] cookie recibida? =', Boolean(token));
   if (!token) return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
 
   const upstream = await fetch(`${API_BASE}/usuarios/me`, {

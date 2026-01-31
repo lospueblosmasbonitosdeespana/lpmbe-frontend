@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 
 declare global {
   interface Window {
@@ -12,6 +11,8 @@ declare global {
           scope: string;
           redirectURI: string;
           usePopup: boolean;
+          responseType?: string;
+          responseMode?: string;
         }) => void;
         signIn: () => Promise<{
           authorization?: { id_token: string };
@@ -41,8 +42,6 @@ function formatAppleError(err: unknown): string {
 }
 
 export default function AppleSignInButton() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sdkLoadedRef = useRef(false);
@@ -107,7 +106,9 @@ export default function AppleSignInButton() {
           clientId,
           scope: 'name email',
           redirectURI,
-          usePopup: true,
+          usePopup: false,
+          responseType: 'id_token',
+          responseMode: 'form_post',
         });
       })
       .catch((err) => {
@@ -134,42 +135,19 @@ export default function AppleSignInButton() {
       const auth = window.AppleID?.auth;
       if (!auth) {
         setError('Inicio de sesión con Apple no disponible');
+        setLoading(false);
         return;
       }
-
-      const res = await auth.signIn();
-      const hasIdToken = Boolean(res?.authorization?.id_token);
-      console.log('[AppleSignIn] después de signIn(): id_token presente =', hasIdToken);
-      const idToken = res?.authorization?.id_token;
-      if (!idToken) {
-        const appleError = res && typeof res === 'object' ? (res as Record<string, unknown>).error : null;
-        setError(formatAppleError(appleError ?? { message: 'Apple no devolvió token. ¿Cancelaste el popup?' }));
-        return;
-      }
-
-      const apiRes = await fetch('/api/auth/apple', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken }),
-      });
-
-      const data = await apiRes.json().catch(() => ({}));
-
-      if (!apiRes.ok) {
-        setError(formatAppleError(data) || (data?.message ?? `Error ${apiRes.status}`));
-        return;
-      }
-
-      const redirectTo = searchParams.get('redirect') || '/cuenta';
-      router.refresh();
-      router.push(redirectTo);
+      // Redirect flow: signIn() redirige la ventana a Apple; el callback /auth/callback/apple procesa el retorno
+      await auth.signIn();
+      // Si no hay redirect (p.ej. Safari bloqueó), seguimos aquí
+      setLoading(false);
     } catch (err: unknown) {
       console.error('[AppleSignIn]', err);
       setError(formatAppleError(err));
-    } finally {
       setLoading(false);
     }
-  }, [clientId, redirectURI, loadSdk, router, searchParams]);
+  }, [clientId, redirectURI, loadSdk]);
 
   if (!clientId || !redirectURI) return null;
 
