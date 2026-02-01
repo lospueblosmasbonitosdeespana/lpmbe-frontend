@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getLugarLegacyBySlug, type Pueblo } from "@/lib/api";
+import { getLugarLegacyBySlug, getApiUrl, type Pueblo } from "@/lib/api";
 
 // Helpers para SEO
 function cleanText(input: string) {
@@ -118,13 +118,13 @@ export default async function MultiexperienciaPage({
     throw new Error("Multiexperiencia no encontrada");
   }
 
-  // Obtener paradas fusionadas (legacy + overrides + custom) desde el endpoint público
+  // Obtener paradas fusionadas (legacy + overrides + custom) desde el endpoint público del backend
   let paradas: any[] = [];
   
   if (mx.id) {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001';
-      const res = await fetch(`${baseUrl}/api/multiexperiencias/${mx.id}/paradas`, {
+      const apiBase = getApiUrl();
+      const res = await fetch(`${apiBase}/multiexperiencias/${mx.id}/paradas`, {
         cache: "no-store",
       });
       
