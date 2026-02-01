@@ -153,8 +153,8 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
             alignItems: 'start',
           }}
         >
-          {/* Columna izquierda: pueblos visitados */}
-          <div style={{ minWidth: 0 }}>
+          {/* Columna izquierda: pueblos visitados (scroll fijo) */}
+          <div style={{ minWidth: 0 }} className="max-h-[70vh] overflow-y-auto">
             <PueblosVisitadosList
               items={data.items}
               onRatingSaved={handleRatingSaved}
