@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000";
+import { getApiUrl } from "@/lib/api";
 
 /**
  * GET /api/multiexperiencias/[mxId]/paradas
@@ -12,7 +11,8 @@ export async function GET(
 ) {
   const { mxId } = await context.params;
 
-  const upstreamUrl = `${BACKEND_URL}/multiexperiencias/${mxId}/paradas`;
+  const API_BASE = getApiUrl();
+  const upstreamUrl = `${API_BASE}/multiexperiencias/${mxId}/paradas`;
 
   console.log("[GET /api/multiexperiencias/:mxId/paradas] upstream:", upstreamUrl);
 

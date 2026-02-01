@@ -2,6 +2,7 @@ import PhotoManager from "@/app/components/PhotoManager";
 import { getMeServer } from "@/lib/me";
 import { getMisPueblosServer } from "@/lib/misPueblos";
 import { redirect } from "next/navigation";
+import { getApiUrl } from "@/lib/api";
 
 export default async function FotosPuebloPage({
   params,
@@ -23,7 +24,7 @@ export default async function FotosPuebloPage({
   }
 
   // Obtener ID del pueblo
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+  const API_BASE = getApiUrl();
   const res = await fetch(`${API_BASE}/pueblos/${slug}`, {
     cache: "no-store",
   });

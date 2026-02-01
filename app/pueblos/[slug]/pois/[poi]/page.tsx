@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getApiUrl } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ function pickFotoPrincipal(poi: any): string | null {
 }
 
 async function fetchPoi(puebloSlug: string, poiParam: string) {
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+  const API_BASE = getApiUrl();
 
   const url = isNumeric(poiParam)
     ? `${API_BASE}/pueblos/${puebloSlug}/pois/${poiParam}`

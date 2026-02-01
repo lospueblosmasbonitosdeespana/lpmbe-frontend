@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { AUTH_COOKIE_NAME } from "@/lib/auth";
+import { getApiUrl } from "@/lib/api";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-const UPSTREAM = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
 
 export async function PATCH(
   req: Request,
@@ -21,7 +20,8 @@ export async function PATCH(
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const body = await req.text();
-  const res = await fetch(`${UPSTREAM}/admin/global-promotion/${id}`, {
+  const upstream = getApiUrl();
+  const res = await fetch(`${upstream}/admin/global-promotion/${id}`, {
     method: "PATCH",
     headers,
     body,
@@ -48,7 +48,8 @@ export async function DELETE(
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${UPSTREAM}/admin/global-promotion/${id}`, {
+  const upstream = getApiUrl();
+  const res = await fetch(`${upstream}/admin/global-promotion/${id}`, {
     method: "DELETE",
     headers,
     cache: "no-store",

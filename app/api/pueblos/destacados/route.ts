@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getApiUrl } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ function shuffle<T>(arr: T[]) {
 }
 
 export async function GET() {
-  const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+  const base = getApiUrl();
   const res = await fetch(`${base}/pueblos`, { cache: "no-store" });
   if (!res.ok) {
     return NextResponse.json({ error: "upstream_failed" }, { status: 502 });

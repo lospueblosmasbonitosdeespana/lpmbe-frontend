@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getApiUrl } from "@/lib/api";
 import { ActualidadItem } from "./ActualidadItem";
 
 type Notificacion = {
@@ -12,9 +13,7 @@ type Notificacion = {
 };
 
 async function getActualidad(limit: number): Promise<Notificacion[]> {
-  const base =
-    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
-    "http://localhost:3000";
+  const base = getApiUrl();
 
   const res = await fetch(`${base}/public/notificaciones/feed?limit=${limit}&tipos=NOTICIA,EVENTO`, {
     next: { revalidate: 120 }, // HOME: cache corta

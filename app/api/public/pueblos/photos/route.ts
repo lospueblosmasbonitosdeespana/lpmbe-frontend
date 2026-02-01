@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getApiUrl } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +22,8 @@ export async function GET(req: NextRequest) {
   }
 
   // Backend URL (server-side, no CORS)
-  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-  const url = `${BACKEND_URL}/public/pueblos/photos?ids=${idsParam}`;
+  const API_BASE = getApiUrl();
+  const url = `${API_BASE}/public/pueblos/photos?ids=${idsParam}`;
 
   console.log(`[api/public/pueblos/photos] Fetching from backend: ${url}`);
   console.log(`[api/public/pueblos/photos] IDs count: ${idsParam.split(',').length}`);

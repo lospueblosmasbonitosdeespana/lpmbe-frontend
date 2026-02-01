@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
+import { getApiUrl } from "@/lib/api";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const UPSTREAM = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
-
 export async function GET() {
-  const res = await fetch(`${UPSTREAM}/global-promotion/active`, {
+  const upstream = getApiUrl();
+  const res = await fetch(`${upstream}/global-promotion/active`, {
     cache: "no-store",
   });
 
