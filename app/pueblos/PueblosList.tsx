@@ -14,7 +14,26 @@ type PueblosListProps = {
 
 const norm = (s: string) => s.trim().toLowerCase();
 
-// Componente memoizado para evitar re-renders innecesarios
+// Placeholder cuando no hay imagen o falla la carga
+function ImagePlaceholder() {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-gray-200">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        className="h-10 w-10 text-blue-500"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg>
+    </div>
+  );
+}
+
 const PuebloCard = memo(function PuebloCard({
   pueblo,
   foto,
@@ -26,76 +45,52 @@ const PuebloCard = memo(function PuebloCard({
   isPriority: boolean;
   observe: (el: HTMLElement | null) => void;
 }) {
+  const [imgError, setImgError] = useState(false);
+  const showImage = foto && !imgError;
+
+  const estado =
+    pueblo.semaforo?.estado ??
+    (typeof pueblo.semaforo === "object" &&
+    pueblo.semaforo !== null &&
+    "estado" in pueblo.semaforo
+      ? (pueblo.semaforo as { estado?: string }).estado
+      : null);
+
   return (
     <Link
       href={`/pueblos/${pueblo.slug}`}
       ref={observe}
       data-pueblo-slug={pueblo.slug}
-      style={{
-        border: "1px solid #ddd",
-        borderRadius: "8px",
-        overflow: "hidden",
-        textDecoration: "none",
-        color: "inherit",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: "#fff",
-        minHeight: "240px", // Altura mínima fija para estabilidad
-      }}
+      className="group flex flex-col overflow-hidden rounded-lg bg-white shadow-sm transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500/50"
     >
-      {/* Foto con contenedor de altura fija */}
-      <div
-        style={{
-          width: "100%",
-          height: "140px",
-          backgroundColor: "#f0f0f0",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-          flexShrink: 0, // No permitir que se encoja
-          position: "relative",
-        }}
-      >
-        {foto ? (
+      {/* Imagen 16:10 (landscape) - v0 villagesDense */}
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-200">
+        {showImage ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
-            src={foto}
-            alt={pueblo.nombre}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-            }}
+            src={foto!}
+            alt={`Vista de ${pueblo.nombre}`}
             loading={isPriority ? "eager" : "lazy"}
             fetchPriority={isPriority ? "high" : "auto"}
             decoding="async"
+            onError={() => setImgError(true)}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
-          <span style={{ fontSize: "12px", color: "#999" }}>Sin imagen</span>
+          <ImagePlaceholder />
         )}
       </div>
 
-      {/* Contenido con altura mínima para consistencia */}
-      <div style={{ padding: "16px", flex: 1, display: "flex", flexDirection: "column" }}>
-        <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", lineHeight: "1.3" }}>
+      {/* Contenido compacto */}
+      <div className="flex flex-1 flex-col px-3 py-2">
+        <h3 className="font-display text-sm font-medium text-gray-900 line-clamp-2 group-hover:text-blue-700">
           {pueblo.nombre}
         </h3>
-        <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#555", lineHeight: "1.4" }}>
-          {pueblo.provincia} · {pueblo.comunidad}
+        <p className="mt-0.5 text-[10px] uppercase tracking-wide text-gray-500">
+          {pueblo.provincia}, {pueblo.comunidad}
         </p>
-        <div style={{ marginTop: "auto" }}>
-          <SemaforoBadge
-            estado={
-              pueblo.semaforo?.estado ??
-              (typeof pueblo.semaforo === "object" &&
-              pueblo.semaforo !== null &&
-              "estado" in pueblo.semaforo
-                ? (pueblo.semaforo as any).estado
-                : null)
-            }
-            variant="badge"
-          />
+        <div className="mt-auto pt-2">
+          <SemaforoBadge estado={estado} variant="badge" />
         </div>
       </div>
     </Link>
@@ -112,32 +107,27 @@ export default function PueblosList({
   const comunidadNorm = initialComunidad ? norm(initialComunidad) : "";
   const provinciaNorm = initialProvincia ? norm(initialProvincia) : "";
 
-  // Ordenar alfabéticamente por nombre
   const pueblosOrdenados = useMemo(() => {
     return [...initialPueblos].sort((a, b) =>
       a.nombre.localeCompare(b.nombre)
     );
   }, [initialPueblos]);
 
-  // Filtrar por comunidad, provincia y búsqueda (case-insensitive)
   const pueblosFiltrados = useMemo(() => {
     let filtered = pueblosOrdenados;
 
-    // Filtro por comunidad
     if (comunidadNorm) {
       filtered = filtered.filter(
         (p) => norm(p.comunidad ?? "") === comunidadNorm
       );
     }
 
-    // Filtro por provincia
     if (provinciaNorm) {
       filtered = filtered.filter(
         (p) => norm(p.provincia ?? "") === provinciaNorm
       );
     }
 
-    // Filtro por búsqueda de texto
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -152,111 +142,96 @@ export default function PueblosList({
   }, [pueblosOrdenados, comunidadNorm, provinciaNorm, searchTerm]);
 
   const hasActiveFilters = comunidadNorm || provinciaNorm;
-
-  // Carga BULK de fotos (1 sola request)
-  const { photos, loading, observe } = usePuebloPhotos(pueblosFiltrados);
+  const { photos, observe } = usePuebloPhotos(pueblosFiltrados);
 
   return (
-    <main style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
-      <h1>Pueblos</h1>
+    <main
+      className="min-h-screen"
+      style={{ backgroundColor: "var(--color-bg-section)" }}
+    >
+      {/* Page header - v0 centered */}
+      <section className="bg-white/80 py-12">
+        <div className="mx-auto max-w-3xl px-4 text-center">
+          <p className="text-sm font-medium uppercase tracking-wider text-gray-500">
+            Descubre
+          </p>
+          <h1 className="mt-1 font-display text-3xl font-bold text-gray-900 md:text-4xl">
+            Pueblos
+          </h1>
+          <p className="mt-2 text-base text-gray-600">
+            {pueblosFiltrados.length}{" "}
+            {pueblosFiltrados.length === 1 ? "pueblo" : "pueblos"}
+          </p>
+
+          {/* Buscador */}
+          <div className="mt-6">
+            <input
+              type="text"
+              placeholder="Buscar por nombre, provincia o comunidad..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base shadow-sm transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      </section>
 
       {/* Filtros activos */}
       {hasActiveFilters && (
-        <div
-          style={{
-            marginTop: "16px",
-            padding: "12px 16px",
-            backgroundColor: "#f5f5f5",
-            borderRadius: "8px",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            flexWrap: "wrap",
-          }}
-        >
-          <span style={{ fontSize: "14px", fontWeight: "500" }}>Filtros activos:</span>
-          {comunidadNorm && (
-            <span style={{ fontSize: "14px", color: "#555" }}>
-              Comunidad: <strong>{initialComunidad}</strong>
-            </span>
-          )}
-          {provinciaNorm && (
-            <span style={{ fontSize: "14px", color: "#555" }}>
-              Provincia: <strong>{initialProvincia}</strong>
-            </span>
-          )}
-          <Link
-            href="/pueblos"
-            style={{
-              fontSize: "14px",
-              color: "#0066cc",
-              textDecoration: "underline",
-              marginLeft: "auto",
-            }}
-          >
-            Quitar filtros
-          </Link>
+        <div className="mx-auto max-w-6xl px-4 py-3">
+          <div className="flex flex-wrap items-center gap-3 rounded-lg bg-gray-100 px-4 py-3">
+            <span className="text-sm font-medium">Filtros activos:</span>
+            {comunidadNorm && (
+              <span className="text-sm text-gray-600">
+                Comunidad: <strong>{initialComunidad}</strong>
+              </span>
+            )}
+            {provinciaNorm && (
+              <span className="text-sm text-gray-600">
+                Provincia: <strong>{initialProvincia}</strong>
+              </span>
+            )}
+            <Link
+              href="/pueblos"
+              className="ml-auto text-sm text-blue-600 underline hover:text-blue-700"
+            >
+              Quitar filtros
+            </Link>
+          </div>
         </div>
       )}
 
-      {/* Contador */}
-      <p style={{ marginTop: "16px", fontSize: "16px", color: "#666" }}>
-        {pueblosFiltrados.length} {pueblosFiltrados.length === 1 ? "pueblo" : "pueblos"}
-      </p>
+      {/* Grid - v0 villagesDense: 4 cols desktop, 3 tablet, 2 mobile */}
+      <section className="mx-auto max-w-6xl px-4 py-12">
+        {pueblosFiltrados.length > 0 ? (
+          <div
+            className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+            role="list"
+          >
+            {pueblosFiltrados.map((pueblo, index) => {
+              const photoData = photos[String(pueblo.id)];
+              const foto = photoData?.url ?? pueblo.mainPhotoUrl ?? null;
+              const isPriority = index < 8;
 
-      {/* Buscador */}
-      <div style={{ marginTop: "24px", marginBottom: "24px" }}>
-        <input
-          type="text"
-          placeholder="Buscar por nombre, provincia o comunidad..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            width: "100%",
-            maxWidth: "500px",
-            padding: "12px",
-            fontSize: "16px",
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-          }}
-        />
-      </div>
-
-      {/* Listado con grid estable */}
-      {pueblosFiltrados.length > 0 ? (
-        <section
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-            gap: "16px",
-            marginTop: "24px",
-            alignItems: "start", // Evita que las tarjetas se estiren
-          }}
-        >
-          {pueblosFiltrados.map((pueblo, index) => {
-            const photoData = photos[String(pueblo.id)];
-            const foto = photoData?.url ?? null;
-            const isPriority = index < 8; // Primeras 8 imágenes: priority
-            
-            return (
-              <PuebloCard
-                key={pueblo.id}
-                pueblo={pueblo}
-                foto={foto}
-                isPriority={isPriority}
-                observe={observe}
-              />
-            );
-          })}
-        </section>
-      ) : (
-        <p style={{ marginTop: "24px", color: "#666" }}>
-          {searchTerm
-            ? "No se encontraron pueblos con ese criterio de búsqueda"
-            : "No hay pueblos disponibles"}
-        </p>
-      )}
+              return (
+                <PuebloCard
+                  key={pueblo.id}
+                  pueblo={pueblo}
+                  foto={foto}
+                  isPriority={isPriority}
+                  observe={observe}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-center text-gray-600">
+            {searchTerm
+              ? "No se encontraron pueblos con ese criterio de búsqueda"
+              : "No hay pueblos disponibles"}
+          </p>
+        )}
+      </section>
     </main>
   );
 }
-

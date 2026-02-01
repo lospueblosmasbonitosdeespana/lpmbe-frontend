@@ -1,3 +1,11 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
+/* Design tokens - v0 Villages Listing */
+:root {
+  --color-bg-section: #faf9f7;
+}
 
+@theme {
+  --font-display: "Playfair Display", Georgia, serif;
+}
