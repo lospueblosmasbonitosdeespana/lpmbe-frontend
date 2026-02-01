@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getApiUrl } from '@/lib/api';
-
-const AUTH_COOKIE_NAME = 'lpbme_auth_token';
+import { AUTH_COOKIE_NAME } from '@/lib/auth';
 
 /**
  * POST /api/visitas

@@ -81,8 +81,8 @@ export default function PueblosPorVisitar({
         </div>
       )}
 
-      {/* Lista */}
-      <div className="max-h-[400px] overflow-y-auto border border-gray-200 rounded-lg">
+      {/* Lista en 2 columnas */}
+      <div className="max-h-[500px] overflow-y-auto border border-gray-200 rounded-lg bg-white">
         {pueblosFiltrados.length === 0 ? (
           <div className="p-4 text-center text-gray-500">
             {busqueda
@@ -90,30 +90,29 @@ export default function PueblosPorVisitar({
               : 'Has visitado todos los pueblos'}
           </div>
         ) : (
-          <ul className="divide-y divide-gray-200">
+          <div className="grid grid-cols-2 gap-px bg-gray-200">
             {pueblosFiltrados.map((pueblo) => (
-              <li
+              <div
                 key={pueblo.id}
-                className="flex items-center justify-between p-3 hover:bg-gray-50"
+                className="flex items-center justify-between p-3 bg-white hover:bg-gray-50 transition-colors"
               >
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 truncate">
+                <div className="flex-1 min-w-0 mr-3">
+                  <p className="font-medium text-gray-900 truncate text-sm">
                     {pueblo.nombre}
                   </p>
-                  <p className="text-sm text-gray-500 truncate">
+                  <p className="text-xs text-gray-500 truncate">
                     {pueblo.provincia}
-                    {pueblo.comunidad ? ` / ${pueblo.comunidad}` : ''}
                   </p>
                 </div>
                 <button
                   onClick={() => handleMarcar(pueblo.id)}
                   disabled={loadingId === pueblo.id}
-                  className="ml-4 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
                 >
                   {loadingId === pueblo.id ? (
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-1.5">
                       <svg
-                        className="animate-spin h-4 w-4"
+                        className="animate-spin h-3 w-3"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -132,15 +131,15 @@ export default function PueblosPorVisitar({
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         />
                       </svg>
-                      Guardando...
+                      ...
                     </span>
                   ) : (
-                    'Marcar visitado'
+                    'Marcar'
                   )}
                 </button>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>
