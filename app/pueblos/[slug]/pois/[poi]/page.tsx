@@ -130,9 +130,11 @@ export default async function PoiPage({
             src={foto}
             alt={data?.nombre ?? "POI"}
             style={{
-              maxWidth: 900,
+              maxWidth: "800px",
+              maxHeight: "500px",
               width: "100%",
               height: "auto",
+              objectFit: "cover",
               borderRadius: 8,
               // Aplicar rotación de la foto principal si existe
               transform: (() => {

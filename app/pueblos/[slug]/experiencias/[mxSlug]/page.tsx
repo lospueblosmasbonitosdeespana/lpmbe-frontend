@@ -283,7 +283,14 @@ export default async function MultiexperienciaPage({
                     <img
                       src={p.foto}
                       alt={p.titulo ?? "Parada"}
-                      className="w-full max-w-3xl rounded-lg"
+                      style={{
+                        maxWidth: "800px",
+                        maxHeight: "500px",
+                        width: "100%",
+                        height: "auto",
+                        objectFit: "cover",
+                        borderRadius: "8px",
+                      }}
                       loading="lazy"
                     />
                   ) : null}
