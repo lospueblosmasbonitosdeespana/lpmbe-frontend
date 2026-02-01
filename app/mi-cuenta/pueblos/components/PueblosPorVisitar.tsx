@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Image from 'next/image';
+import { getComunidadFlagSrc } from '@/lib/flags';
 
 type Pueblo = {
   id: number;
@@ -91,7 +93,9 @@ export default function PueblosPorVisitar({
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-px bg-gray-200">
-            {pueblosFiltrados.map((pueblo) => (
+            {pueblosFiltrados.map((pueblo) => {
+              const flagSrc = getComunidadFlagSrc(pueblo.comunidad);
+              return (
               <div
                 key={pueblo.id}
                 className="flex items-center justify-between p-3 bg-white hover:bg-gray-50 transition-colors"
@@ -104,6 +108,17 @@ export default function PueblosPorVisitar({
                     {pueblo.provincia}
                   </p>
                 </div>
+                {flagSrc && (
+                  <div className="flex-shrink-0 mr-2" title={pueblo.comunidad ?? undefined}>
+                    <Image
+                      src={flagSrc}
+                      alt={`Bandera de ${pueblo.comunidad ?? ''}`}
+                      width={28}
+                      height={21}
+                      className="rounded-sm object-cover border border-gray-200"
+                    />
+                  </div>
+                )}
                 <button
                   onClick={() => handleMarcar(pueblo.id)}
                   disabled={loadingId === pueblo.id}
@@ -138,7 +153,8 @@ export default function PueblosPorVisitar({
                   )}
                 </button>
               </div>
-            ))}
+            );
+            })}
           </div>
         )}
       </div>

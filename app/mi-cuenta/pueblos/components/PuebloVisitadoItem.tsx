@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import RatingSelector from './RatingSelector';
+import { getComunidadFlagSrc } from '@/lib/flags';
 
 type PuebloVisitado = {
   puebloId: number;
@@ -35,6 +37,8 @@ function formatFecha(fecha: string): string {
 }
 
 export default function PuebloVisitadoItem({ item, onRatingSaved }: Props) {
+  const flagSrc = getComunidadFlagSrc(item.pueblo.comunidad);
+
   return (
     <li className="border-b border-gray-200 pb-3">
       <div className="flex justify-between items-start gap-4">
@@ -60,6 +64,17 @@ export default function PuebloVisitadoItem({ item, onRatingSaved }: Props) {
             />
           </div>
         </div>
+        {flagSrc && (
+          <div className="flex-shrink-0" title={`Bandera de ${item.pueblo.comunidad}`}>
+            <Image
+              src={flagSrc}
+              alt={`Bandera de ${item.pueblo.comunidad}`}
+              width={32}
+              height={24}
+              className="rounded-sm object-cover border border-gray-200"
+            />
+          </div>
+        )}
       </div>
     </li>
   );
