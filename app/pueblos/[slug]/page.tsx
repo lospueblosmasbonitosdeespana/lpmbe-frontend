@@ -464,14 +464,19 @@ export default async function PuebloPage({
 
               return (
                 <>
-                  <iframe
-                    src={boldestSrc}
-                    width="100%"
-                    height="480"
-                    frameBorder="0"
-                    style={{ border: 0 }}
-                    title={`Mapa de ${puebloSafe.nombre}`}
-                  />
+                  <div style={{ height: '80vh', minHeight: 700, maxHeight: 900, marginTop: '16px' }}>
+                    <iframe
+                      src={boldestSrc}
+                      width="100%"
+                      height="100%"
+                      frameBorder="0"
+                      style={{ border: 0, borderRadius: 8 }}
+                      title={`Mapa de ${puebloSafe.nombre}`}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      allow="geolocation"
+                    />
+                  </div>
                   <div style={{ marginTop: "16px" }}>
                     <a
                       href={boldestSrc}
