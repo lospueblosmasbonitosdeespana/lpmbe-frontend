@@ -14,6 +14,7 @@ function normalizeForMatch(s: string): string {
 /** Alias de nombres de comunidad que usa el backend vs CCAA */
 const ALIASES: Record<string, string> = {
   'islas baleares': 'Illes Balears',
+  'murcia': 'Región de Murcia',
 };
 
 /** Resuelve la URL de la bandera de una comunidad autónoma por su nombre */

@@ -26,8 +26,8 @@ export const CCAA: CcaaConfig[] = [
   { slug: "navarra", name: "Comunidad Foral de Navarra", flagSrc: "/ccaa/Bandera_de_Navarra.png" },
   { slug: "pais-vasco", name: "País Vasco", flagSrc: "/ccaa/Flag_of_the_Basque_Country.png" },
 
-  // Murcia entra aunque esté vacía, SIN bandera (no la tienes todavía)
-  { slug: "murcia", name: "Región de Murcia" },
+  // Murcia entra aunque esté vacía
+  { slug: "murcia", name: "Región de Murcia", flagSrc: "/ccaa/Flag_of_the_Region_of_Murcia.svg" },
 ];
 
 export function findCcaaBySlug(slug: string) {
