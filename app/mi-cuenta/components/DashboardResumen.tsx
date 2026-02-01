@@ -1,3 +1,5 @@
+import NivelIcono from './NivelIcono';
+
 type Nivel = {
   nombre: string;
   nivel: number;
@@ -26,9 +28,12 @@ export default function DashboardResumen({
 
   return (
     <section className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold">Mi cuenta</h1>
-        <p className="text-sm text-gray-600">{nombreNivel}</p>
+      <div className="flex items-center gap-3">
+        <NivelIcono nombreNivel={nombreNivel} />
+        <div>
+          <h1 className="text-2xl font-semibold">Mi cuenta</h1>
+          <p className="text-sm text-gray-600">{nombreNivel}</p>
+        </div>
       </div>
 
       <div>
