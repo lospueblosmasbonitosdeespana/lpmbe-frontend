@@ -90,7 +90,7 @@ export default async function CuentaPage() {
             )}
 
             <div className="mt-4 text-sm">
-              <Link className="hover:underline" href="/gestion">
+              <Link className="hover:underline" href={me.rol === 'ALCALDE' ? '/gestion/mis-pueblos' : '/gestion'}>
                 Ir a Gestión →
               </Link>
             </div>

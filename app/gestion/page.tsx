@@ -11,6 +11,11 @@ export default async function GestionPage() {
     redirect('/cuenta');
   }
 
+  // Alcaldes van directo a mis-pueblos (evitar paso intermedio innecesario)
+  if (me.rol === 'ALCALDE') {
+    redirect('/gestion/mis-pueblos');
+  }
+
   return (
     <main className="mx-auto max-w-3xl p-6">
       <h1 className="text-2xl font-semibold">Gestión</h1>
