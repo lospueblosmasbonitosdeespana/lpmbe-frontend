@@ -33,8 +33,10 @@ export default async function MisPueblosGestionPage() {
           {pueblos.map((p) => (
             <li key={p.id} className="flex items-center justify-between rounded-md border p-3">
               <div>
-                <div className="font-medium">{p.nombre}</div>
-                <div className="text-xs text-gray-500">#{p.id} · {p.slug}</div>
+                <div className="font-medium">{p.nombre || `Pueblo ${p.id}`}</div>
+                {me.rol === 'ADMIN' && (
+                  <div className="text-xs text-gray-500">{p.slug}</div>
+                )}
               </div>
 
               <div className="flex gap-3 text-sm">

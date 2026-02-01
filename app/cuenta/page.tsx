@@ -31,10 +31,16 @@ export default async function CuentaPage() {
           <span className="text-sm text-gray-600">Rol</span>
           <div className="font-medium">{me.rol}</div>
         </div>
-        <div>
-          <span className="text-sm text-gray-600">id</span>
-          <div className="font-medium">{me.id}</div>
-        </div>
+        {me.rol === 'ALCALDE' && misPueblos.length > 0 && (
+          <div>
+            <span className="text-sm text-gray-600">
+              {misPueblos.length === 1 ? 'Pueblo que representas' : 'Pueblos que representas'}
+            </span>
+            <div className="font-medium">
+              {misPueblos.map((p) => p.nombre).join(', ')}
+            </div>
+          </div>
+        )}
       </section>
 
       <div className="mt-8">
@@ -53,11 +59,23 @@ export default async function CuentaPage() {
 
         {(me.rol === 'ALCALDE' || me.rol === 'ADMIN') ? (
           <div className="rounded-md border p-4">
-            <div className="font-medium">Mis pueblos</div>
+            <div className="font-medium">
+              {me.rol === 'ALCALDE' && misPueblos.length === 1
+                ? misPueblos[0].nombre
+                : me.rol === 'ADMIN'
+                  ? 'Gestión de pueblos'
+                  : 'Mis pueblos'}
+            </div>
 
             {misPueblos.length === 0 ? (
               <div className="mt-2 text-sm text-gray-600">
                 No hay pueblos asociados a este usuario.
+              </div>
+            ) : me.rol === 'ALCALDE' && misPueblos.length === 1 ? (
+              <div className="mt-2 text-sm text-gray-600">
+                <Link className="hover:underline" href={`/pueblos/${misPueblos[0].slug}`}>
+                  Ver ficha del pueblo →
+                </Link>
               </div>
             ) : (
               <ul className="mt-3 space-y-2">
@@ -66,7 +84,6 @@ export default async function CuentaPage() {
                     <Link className="text-sm hover:underline" href={`/pueblos/${p.slug}`}>
                       {p.nombre}
                     </Link>
-                    <span className="ml-2 text-xs text-gray-500">#{p.id}</span>
                   </li>
                 ))}
               </ul>
