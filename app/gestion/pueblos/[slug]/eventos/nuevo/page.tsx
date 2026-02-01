@@ -12,6 +12,7 @@ export default function NuevoEventoPage() {
   const [descripcion, setDescripcion] = useState('');
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
+  const [file, setFile] = useState<File | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +29,28 @@ export default function NuevoEventoPage() {
 
     setLoading(true);
     try {
+      let imagen: string | null = null;
+
+      if (file) {
+        if (file.size > 25 * 1024 * 1024) {
+          setError('La imagen pesa demasiado (máx 25MB). Prueba con JPG o reduce tamaño.');
+          setLoading(false);
+          return;
+        }
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('folder', 'eventos-pueblo');
+        const up = await fetch('/api/media/upload', { method: 'POST', body: fd });
+        if (!up.ok) {
+          const msg = await up.text();
+          setError(`Error subiendo foto: ${msg}`);
+          setLoading(false);
+          return;
+        }
+        const upJson = await up.json();
+        imagen = upJson?.url ?? upJson?.publicUrl ?? null;
+      }
+
       const res = await fetch('/api/gestion/eventos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -38,6 +61,7 @@ export default function NuevoEventoPage() {
           descripcion: descripcion.trim() || '',
           fecha_inicio: fechaInicio || null,
           fecha_fin: fechaFin || null,
+          ...(imagen && { imagen }),
         }),
       });
 
@@ -80,6 +104,16 @@ export default function NuevoEventoPage() {
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
             required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm">Imagen (opcional)</label>
+          <input
+            type="file"
+            accept="image/*"
+            className="w-full rounded-md border px-3 py-2"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
         </div>
 

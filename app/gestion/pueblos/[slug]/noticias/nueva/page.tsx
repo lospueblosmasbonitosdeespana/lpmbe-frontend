@@ -9,6 +9,7 @@ export default function NuevaNoticiaPage() {
   const slug = params?.slug || '';
   const [titulo, setTitulo] = useState('');
   const [contenido, setContenido] = useState('');
+  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,6 +25,28 @@ export default function NuevaNoticiaPage() {
 
     setLoading(true);
     try {
+      let imagen: string | null = null;
+
+      if (file) {
+        if (file.size > 25 * 1024 * 1024) {
+          setError('La imagen pesa demasiado (máx 25MB). Prueba con JPG o reduce tamaño.');
+          setLoading(false);
+          return;
+        }
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('folder', 'noticias-pueblo');
+        const up = await fetch('/api/media/upload', { method: 'POST', body: fd });
+        if (!up.ok) {
+          const msg = await up.text();
+          setError(`Error subiendo foto: ${msg}`);
+          setLoading(false);
+          return;
+        }
+        const upJson = await up.json();
+        imagen = upJson?.url ?? upJson?.publicUrl ?? null;
+      }
+
       const res = await fetch('/api/gestion/noticias', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -32,6 +55,7 @@ export default function NuevaNoticiaPage() {
           puebloSlug: slug,
           titulo: t,
           contenido: contenido.trim() || '',
+          ...(imagen && { imagen }),
         }),
       });
 
@@ -74,6 +98,16 @@ export default function NuevaNoticiaPage() {
             value={contenido}
             onChange={(e) => setContenido(e.target.value)}
             required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm">Imagen (opcional)</label>
+          <input
+            type="file"
+            accept="image/*"
+            className="w-full rounded-md border px-3 py-2"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
         </div>
 

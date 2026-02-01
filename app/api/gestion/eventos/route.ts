@@ -72,6 +72,7 @@ export async function POST(req: Request) {
   const puebloSlug = body?.puebloSlug;
   const titulo = typeof body?.titulo === 'string' ? body.titulo.trim() : '';
   const descripcion = typeof body?.descripcion === 'string' ? body.descripcion.trim() : '';
+  const imagen = typeof body?.imagen === 'string' ? body.imagen.trim() || null : null;
   const fechaInicio = body?.fecha_inicio || body?.fechaInicio || null;
   const fechaFin = body?.fecha_fin || body?.fechaFin || null;
 
@@ -98,18 +99,21 @@ export async function POST(req: Request) {
       fechaFinISO = new Date(fechaFin + 'T00:00:00.000Z').toISOString();
     }
     
+    const payload: Record<string, unknown> = { 
+      titulo, 
+      descripcion,
+      fecha_inicio: fechaInicioISO,
+      fecha_fin: fechaFinISO || undefined,
+    };
+    if (imagen) payload.imagen = imagen;
+    
     const upstream = await fetch(`${API_BASE}/pueblos/${puebloId}/eventos`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ 
-        titulo, 
-        descripcion,
-        fecha_inicio: fechaInicioISO,
-        fecha_fin: fechaFinISO || undefined,
-      }),
+      body: JSON.stringify(payload),
       cache: 'no-store',
     });
 

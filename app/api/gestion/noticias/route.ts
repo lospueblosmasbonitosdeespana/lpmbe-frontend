@@ -72,6 +72,7 @@ export async function POST(req: Request) {
   const puebloSlug = body?.puebloSlug;
   const titulo = typeof body?.titulo === 'string' ? body.titulo.trim() : '';
   const contenido = typeof body?.contenido === 'string' ? body.contenido.trim() : '';
+  const imagen = typeof body?.imagen === 'string' ? body.imagen.trim() || null : null;
 
   if (!puebloSlug) return NextResponse.json({ message: 'puebloSlug requerido' }, { status: 400 });
   if (!titulo) return NextResponse.json({ message: 'titulo requerido' }, { status: 400 });
@@ -86,24 +87,23 @@ export async function POST(req: Request) {
     // El DTO requiere fecha (ISO) y contenido (string)
     const fecha = new Date().toISOString();
     
+    const payload: Record<string, unknown> = { titulo, contenido, fecha };
+    if (imagen) payload.imagen = imagen;
+    
     const upstream = await fetch(`${API_BASE}/pueblos/${puebloId}/noticias`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ 
-        titulo, 
-        contenido,
-        fecha,
-      }),
+      body: JSON.stringify(payload),
       cache: 'no-store',
     });
 
     const text = await upstream.text();
     console.log('[NOTICIAS PUEBLO POST] status', upstream.status);
     console.log('[NOTICIAS PUEBLO POST] body', text.slice(0, 500));
-    console.log('[NOTICIAS PUEBLO POST] payload', { titulo, contenido, fecha, puebloId });
+    console.log('[NOTICIAS PUEBLO POST] payload', { titulo, contenido, fecha, puebloId, imagen: imagen ?? '(ninguna)' });
 
     let data: any = {};
     try {
