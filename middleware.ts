@@ -17,8 +17,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
 
-  // 2) /cuenta sin cookie de sesión → redirect a /entrar (mantiene ?redirect= si existe)
-  if (pathname.startsWith('/cuenta')) {
+  // 2) /cuenta y /mi-cuenta sin cookie de sesión → redirect a /entrar (mantiene ?redirect= si existe)
+  if (pathname.startsWith('/cuenta') || pathname.startsWith('/mi-cuenta')) {
     const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
     if (!token) {
       const url = request.nextUrl.clone();

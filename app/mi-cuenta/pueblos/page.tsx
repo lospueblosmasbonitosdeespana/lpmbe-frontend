@@ -64,7 +64,7 @@ async function getPueblosVisitados(): Promise<PueblosVisitadosResponse> {
   const token = await getToken();
 
   if (!token) {
-    redirect('/login');
+    redirect('/entrar');
   }
 
   const API_BASE = getApiUrl();
@@ -77,7 +77,7 @@ async function getPueblosVisitados(): Promise<PueblosVisitadosResponse> {
   });
 
   if (res.status === 401) {
-    redirect('/login');
+    redirect('/entrar');
   }
 
   if (!res.ok) {

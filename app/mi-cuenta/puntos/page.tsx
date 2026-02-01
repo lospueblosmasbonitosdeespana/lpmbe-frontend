@@ -11,7 +11,7 @@ async function getDashboardData() {
   const token = await getToken();
 
   if (!token) {
-    redirect('/login');
+    redirect('/entrar');
   }
 
   const API_BASE = getApiUrl();
@@ -24,7 +24,7 @@ async function getDashboardData() {
   });
 
   if (res.status === 401) {
-    redirect('/login');
+    redirect('/entrar');
   }
 
   if (!res.ok) {
@@ -58,7 +58,7 @@ export default async function PuntosPage() {
   const token = await getToken();
 
   if (!token) {
-    redirect('/login');
+    redirect('/entrar');
   }
 
   const API_BASE = getApiUrl();
