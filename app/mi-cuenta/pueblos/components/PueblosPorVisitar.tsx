@@ -98,27 +98,29 @@ export default function PueblosPorVisitar({
               return (
               <div
                 key={pueblo.id}
-                className="flex items-center justify-between p-3 bg-white hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-between gap-3 p-3 bg-white hover:bg-gray-50 transition-colors"
               >
-                <div className="flex-1 min-w-0 mr-3">
+                <div className="flex-1 min-w-0">
                   <p className="font-medium text-gray-900 truncate text-sm">
                     {pueblo.nombre}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    {pueblo.provincia}
-                  </p>
-                </div>
-                {flagSrc && (
-                  <div className="flex-shrink-0 mr-2" title={pueblo.comunidad ?? undefined}>
-                    <Image
-                      src={flagSrc}
-                      alt={`Bandera de ${pueblo.comunidad ?? ''}`}
-                      width={28}
-                      height={21}
-                      className="rounded-sm object-cover border border-gray-200"
-                    />
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-xs text-gray-500 truncate">
+                      {pueblo.provincia}
+                    </p>
+                    {flagSrc && (
+                      <span className="flex-shrink-0" title={pueblo.comunidad ?? undefined}>
+                        <Image
+                          src={flagSrc}
+                          alt={`Bandera de ${pueblo.comunidad ?? ''}`}
+                          width={24}
+                          height={18}
+                          className="rounded-sm object-cover border border-gray-200"
+                        />
+                      </span>
+                    )}
                   </div>
-                )}
+                </div>
                 <button
                   onClick={() => handleMarcar(pueblo.id)}
                   disabled={loadingId === pueblo.id}

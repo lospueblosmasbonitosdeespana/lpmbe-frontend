@@ -41,40 +41,40 @@ export default function PuebloVisitadoItem({ item, onRatingSaved }: Props) {
 
   return (
     <li className="border-b border-gray-200 pb-3">
-      <div className="flex justify-between items-start gap-4">
-        <div className="flex-1 min-w-0">
-          <Link
-            href={`/pueblos/${item.pueblo.slug}`}
-            className="text-base font-semibold hover:underline"
-          >
-            {item.pueblo.nombre}
-          </Link>
+      <div>
+        <Link
+          href={`/pueblos/${item.pueblo.slug}`}
+          className="text-base font-semibold hover:underline"
+        >
+          {item.pueblo.nombre}
+        </Link>
+        <div className="flex items-center gap-2 mt-0.5">
           <p className="text-xs text-gray-600">
             {item.pueblo.provincia} / {item.pueblo.comunidad}
           </p>
-          <div className="flex gap-3 mt-1 text-xs text-gray-500">
-            <span>Origen: {item.origen}</span>
-            <span>{formatFecha(item.ultima_fecha)}</span>
-          </div>
-          <div className="mt-2">
-            <RatingSelector
-              puebloId={item.pueblo.id}
-              initialRating={item.rating ?? null}
-              onRatingSaved={onRatingSaved}
-            />
-          </div>
+          {flagSrc && (
+            <span className="flex-shrink-0" title={`Bandera de ${item.pueblo.comunidad}`}>
+              <Image
+                src={flagSrc}
+                alt={`Bandera de ${item.pueblo.comunidad}`}
+                width={28}
+                height={21}
+                className="rounded-sm object-cover border border-gray-200"
+              />
+            </span>
+          )}
         </div>
-        {flagSrc && (
-          <div className="flex-shrink-0" title={`Bandera de ${item.pueblo.comunidad}`}>
-            <Image
-              src={flagSrc}
-              alt={`Bandera de ${item.pueblo.comunidad}`}
-              width={32}
-              height={24}
-              className="rounded-sm object-cover border border-gray-200"
-            />
-          </div>
-        )}
+        <div className="flex gap-3 mt-1 text-xs text-gray-500">
+          <span>Origen: {item.origen}</span>
+          <span>{formatFecha(item.ultima_fecha)}</span>
+        </div>
+        <div className="mt-2">
+          <RatingSelector
+            puebloId={item.pueblo.id}
+            initialRating={item.rating ?? null}
+            onRatingSaved={onRatingSaved}
+          />
+        </div>
       </div>
     </li>
   );
