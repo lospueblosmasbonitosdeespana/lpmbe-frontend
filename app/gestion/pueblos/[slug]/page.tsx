@@ -82,6 +82,11 @@ export default async function GestionPuebloPage({
           <Link className="hover:underline" href={`/gestion/pueblos/${slug}/multiexperiencias`}>
             Multiexperiencias
           </Link>
+          {me.rol === 'ADMIN' && (
+            <Link className="hover:underline text-blue-700 font-medium" href={`/gestion/pueblos/${slug}/autorizados`}>
+              Autorizados
+            </Link>
+          )}
         </div>
       </div>
 
