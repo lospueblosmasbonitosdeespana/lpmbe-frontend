@@ -45,9 +45,13 @@ async function getDashboardData() {
       ? { nombre: String(raw.nivel), nivel: 0 }
       : null,
     siguienteNivel: raw?.nivel_siguiente
-      ? { nombre: String(raw.nivel_siguiente), nivel: 0, puntos_necesarios: 0 }
+      ? {
+          nombre: String(raw.nivel_siguiente),
+          nivel: 0,
+          puntos_necesarios: Number(raw.puntos_necesarios ?? 0),
+        }
       : null,
-    progreso: 0,
+    progreso: Number(raw.progreso ?? 0),
   };
 
   return data;
