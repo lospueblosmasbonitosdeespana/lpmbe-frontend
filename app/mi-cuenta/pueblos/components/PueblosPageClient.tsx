@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import PueblosVisitadosList from './PueblosVisitadosList';
 import PueblosPorVisitar from './PueblosPorVisitar';
 import MapaPueblosVisitados from '../mapa';
@@ -43,6 +43,11 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
   const [data, setData] = useState(initialData);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  // Sincronizar con datos frescos del servidor (ej. tras router.refresh())
+  useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
+
   // Set de IDs visitados
   const visitedIds = useMemo(() => {
     return new Set(data.items.map((item) => item.puebloId));
@@ -66,6 +71,8 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
       // Encontrar el pueblo en todosPueblos para obtener sus datos
       const pueblo = todosPueblos.find((p) => p.id === puebloId);
       if (!pueblo) return;
+
+      const puntosOtorgados = result.puntos?.puntos ?? 20;
 
       // Crear nuevo item visitado
       const nuevoItem: PuebloVisitado = {
@@ -92,11 +99,20 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
       }));
 
       // Mostrar mensaje de éxito
-      setSuccessMsg(`${pueblo.nombre} marcado como visitado (+20 puntos)`);
+      setSuccessMsg(`${pueblo.nombre} marcado como visitado (+${puntosOtorgados} puntos)`);
       setTimeout(() => setSuccessMsg(null), 4000);
     },
     [todosPueblos]
   );
+
+  const handleRatingSaved = useCallback((puebloId: number, rating: number) => {
+    setData((prev) => ({
+      ...prev,
+      items: prev.items.map((it) =>
+        it.puebloId === puebloId ? { ...it, rating } : it
+      ),
+    }));
+  }, []);
 
   return (
     <div style={{ width: '100vw', marginLeft: 'calc(50% - 50vw)' }}>
@@ -140,7 +156,10 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
           {/* Columna izquierda: listas */}
           <div style={{ minWidth: 0 }}>
             {/* Pueblos visitados */}
-            <PueblosVisitadosList items={data.items} />
+            <PueblosVisitadosList
+              items={data.items}
+              onRatingSaved={handleRatingSaved}
+            />
 
             {/* Pueblos por visitar */}
             <PueblosPorVisitar

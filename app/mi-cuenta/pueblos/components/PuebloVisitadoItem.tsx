@@ -18,6 +18,7 @@ type PuebloVisitado = {
 
 type Props = {
   item: PuebloVisitado;
+  onRatingSaved?: (puebloId: number, rating: number) => void;
 };
 
 function formatFecha(fecha: string): string {
@@ -33,7 +34,7 @@ function formatFecha(fecha: string): string {
   }
 }
 
-export default function PuebloVisitadoItem({ item }: Props) {
+export default function PuebloVisitadoItem({ item, onRatingSaved }: Props) {
   return (
     <li className="border-b border-gray-200 pb-3">
       <div className="flex justify-between items-start gap-4">
@@ -55,6 +56,7 @@ export default function PuebloVisitadoItem({ item }: Props) {
             <RatingSelector
               puebloId={item.pueblo.id}
               initialRating={item.rating ?? null}
+              onRatingSaved={onRatingSaved}
             />
           </div>
         </div>

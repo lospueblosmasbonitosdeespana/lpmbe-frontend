@@ -20,11 +20,12 @@ type PuebloVisitado = {
 
 type Props = {
   items: PuebloVisitado[];
+  onRatingSaved?: (puebloId: number, rating: number) => void;
 };
 
 const ITEMS_PER_PAGE = 15;
 
-export default function PueblosVisitadosList({ items }: Props) {
+export default function PueblosVisitadosList({ items, onRatingSaved }: Props) {
   const [currentPage, setCurrentPage] = useState(1);
 
   if (items.length === 0) {
@@ -44,7 +45,11 @@ export default function PueblosVisitadosList({ items }: Props) {
     <div>
       <ul className="space-y-3">
         {currentItems.map((item) => (
-          <PuebloVisitadoItem key={item.puebloId} item={item} />
+          <PuebloVisitadoItem
+            key={item.puebloId}
+            item={item}
+            onRatingSaved={onRatingSaved}
+          />
         ))}
       </ul>
 

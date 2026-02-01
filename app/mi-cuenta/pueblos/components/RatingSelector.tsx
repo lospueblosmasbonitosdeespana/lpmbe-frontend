@@ -6,9 +6,10 @@ import { useRouter } from 'next/navigation';
 type Props = {
   puebloId: number;
   initialRating: number | null;
+  onRatingSaved?: (puebloId: number, rating: number) => void;
 };
 
-export default function RatingSelector({ puebloId, initialRating }: Props) {
+export default function RatingSelector({ puebloId, initialRating, onRatingSaved }: Props) {
   const router = useRouter();
   const [selected, setSelected] = useState<number>(initialRating ?? 0);
   const [isOpen, setIsOpen] = useState(false);
@@ -23,6 +24,7 @@ export default function RatingSelector({ puebloId, initialRating }: Props) {
       const res = await fetch('/api/valoraciones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         cache: 'no-store',
         body: JSON.stringify({ puebloId, rating: selected }),
       });
@@ -33,6 +35,7 @@ export default function RatingSelector({ puebloId, initialRating }: Props) {
         return;
       }
 
+      onRatingSaved?.(puebloId, selected);
       setIsOpen(false);
       router.refresh();
     } catch (e: any) {
