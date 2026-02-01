@@ -15,10 +15,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'No file provided' }, { status: 400 });
   }
 
-  const API_BASE = getApiUrl();
+  // Reenviar usando buffer: el File puede corromperse al reenviar FormData en Node
+  const buffer = await file.arrayBuffer();
+  const blob = new Blob([buffer], { type: file.type });
   const backendFormData = new FormData();
-  backendFormData.append('file', file);
+  backendFormData.append('file', blob, file.name || 'avatar.jpg');
 
+  const API_BASE = getApiUrl();
   try {
     const upstream = await fetch(`${API_BASE}/usuarios/me/avatar`, {
       method: 'POST',
