@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLugarLegacyBySlug, getApiUrl, type Pueblo } from "@/lib/api";
+import ParadasMap from "@/app/_components/ParadasMap";
 
 // Helpers para SEO
 function cleanText(input: string) {
@@ -260,6 +261,14 @@ export default async function MultiexperienciaPage({
               Cómo llegar
             </button>
           )}
+        </div>
+
+        {/* Mapa de paradas */}
+        <div style={{ marginTop: "20px" }}>
+          <h3 style={{ marginBottom: "12px", fontSize: "16px", fontWeight: 500 }}>
+            Mapa de la ruta
+          </h3>
+          <ParadasMap paradas={paradas} puebloNombre={pueblo.nombre} />
         </div>
       </section>
 
