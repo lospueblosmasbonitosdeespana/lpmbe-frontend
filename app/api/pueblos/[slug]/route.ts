@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
+import { getApiUrl } from "@/lib/api";
 
 export async function GET(_req: Request, ctx: { params: Promise<{ slug: string }> }) {
   const { slug } = await ctx.params;
 
-  const upstreamUrl = `http://localhost:3000/pueblos/${encodeURIComponent(slug)}`;
+  const API_BASE = getApiUrl();
+  const upstreamUrl = `${API_BASE}/pueblos/${encodeURIComponent(slug)}`;
   const r = await fetch(upstreamUrl, { cache: "no-store" });
 
   const text = await r.text();
