@@ -90,7 +90,7 @@ export default function PueblosPorVisitar({
               : 'Has visitado todos los pueblos'}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-px bg-gray-200">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-px bg-gray-200">
             {pueblosFiltrados.map((pueblo) => (
               <div
                 key={pueblo.id}

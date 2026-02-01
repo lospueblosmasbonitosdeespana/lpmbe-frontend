@@ -116,7 +116,7 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
 
   return (
     <div style={{ width: '100vw', marginLeft: 'calc(50% - 50vw)' }}>
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-8">
+      <main className="max-w-[1600px] mx-auto px-4 py-6 space-y-8">
         <div>
           <h1 className="text-2xl font-semibold">Mis pueblos visitados</h1>
         </div>
@@ -144,7 +144,7 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
           </div>
         </div>
 
-        {/* Layout principal */}
+        {/* Layout principal: visitados + mapa */}
         <div
           style={{
             display: 'grid',
@@ -153,19 +153,11 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
             alignItems: 'start',
           }}
         >
-          {/* Columna izquierda: listas */}
+          {/* Columna izquierda: pueblos visitados */}
           <div style={{ minWidth: 0 }}>
-            {/* Pueblos visitados */}
             <PueblosVisitadosList
               items={data.items}
               onRatingSaved={handleRatingSaved}
-            />
-
-            {/* Pueblos por visitar */}
-            <PueblosPorVisitar
-              pueblos={todosPueblos}
-              visitedIds={visitedIds}
-              onMarcarVisitado={handleMarcarVisitado}
             />
           </div>
 
@@ -173,6 +165,15 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
           <div style={{ minWidth: 0 }}>
             <MapaPueblosVisitados pueblos={todosPueblos} visitedIds={visitedIds} />
           </div>
+        </div>
+
+        {/* Pueblos por visitar: ancho completo, 4 columnas */}
+        <div className="w-full">
+          <PueblosPorVisitar
+            pueblos={todosPueblos}
+            visitedIds={visitedIds}
+            onMarcarVisitado={handleMarcarVisitado}
+          />
         </div>
       </main>
     </div>
