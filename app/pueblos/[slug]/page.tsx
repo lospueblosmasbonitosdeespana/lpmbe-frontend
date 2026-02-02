@@ -187,10 +187,33 @@ export default async function PuebloPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [pueblo, pueblosLite] = await Promise.all([
+  const API_BASE = getApiUrl();
+  const [pueblo, pueblosLite, pagesRes] = await Promise.all([
     getPuebloBySlug(slug),
     getPueblosLite(),
+    fetch(`${API_BASE}/public/pueblos/${slug}/pages`, { cache: "no-store" }).catch(() => null),
   ]);
+
+  // Páginas temáticas del pueblo (contenidos temáticos)
+  let paginasTematicas: Array<{ id: number; titulo: string; coverUrl: string | null; category: string }> = [];
+  if (pagesRes?.ok) {
+    try {
+      const pagesData = await pagesRes.json();
+      paginasTematicas = Object.entries(pagesData)
+        .filter(([, v]) => v && typeof v === "object" && "titulo" in v)
+        .map(([cat, p]) => {
+          const page = p as { id: number; titulo: string; coverUrl?: string | null };
+          return {
+            id: page.id,
+            titulo: page.titulo,
+            coverUrl: page.coverUrl ?? null,
+            category: cat,
+          };
+        });
+    } catch {
+      // ignorar
+    }
+  }
 
   const puebloSafe: PuebloSafe = {
     id: pueblo.id,
@@ -414,21 +437,6 @@ export default async function PuebloPage({
       {/* METEO - Diseño imagen referencia */}
       <MeteoPanel puebloId={puebloSafe.id} />
 
-      {/* Qué hacer en [Pueblo] - Multiexperiencias */}
-      <QueHacerSection
-        puebloNombre={puebloSafe.nombre}
-        puebloSlug={puebloSafe.slug}
-        multiexperiencias={puebloSafe.multiexperiencias ?? []}
-        paginasTematicas={[]}
-        poisFallback={allPoisPOI.slice(0, 6).map((poi: Poi) => ({
-          id: poi.id,
-          nombre: poi.nombre,
-          descripcion_corta: poi.descripcion_corta,
-          foto: poi.foto,
-          rotation: poi.rotation,
-        }))}
-      />
-
       {/* TEXTO: Enunciado + Descripción - Diseño tourism-website-design */}
       {(puebloSafe.lead || puebloSafe.descripcion) && (() => {
         const plainDesc = puebloSafe.descripcion?.replace(/<[^>]*>/g, "").trim() ?? "";
@@ -456,7 +464,7 @@ export default async function PuebloPage({
         />
       )}
 
-      {/* Qué ver - Lugares de interés (POIs) */}
+      {/* Qué ver - Lugares de interés (POIs) - LOS BONITOS Y PERFECTOS */}
       {poisPOI.length > 0 && (
         <PointsOfInterest
           points={poisPOI.map((poi: Poi) => ({
@@ -693,59 +701,13 @@ export default async function PuebloPage({
         </section>
       )}
 
-      {/* Experiencias por categoría - SIEMPRE las 6 categorías, colores del diseño */}
-      <CategoryHighlights
-        categories={(() => {
-          const CAT_TO_TYPE: Record<string, "nature" | "culture" | "family" | "heritage" | "petfriendly" | "gastronomy"> = {
-            NATURALEZA: "nature",
-            CULTURA: "culture",
-            EN_FAMILIA: "family",
-            PATRIMONIO: "heritage",
-            PETFRIENDLY: "petfriendly",
-            GASTRONOMIA: "gastronomy",
-          };
-          const CAT_DESC: Record<string, string> = {
-            NATURALEZA: "Senderismo, paisajes y espacios naturales",
-            CULTURA: "Monumentos, museos y patrimonio histórico",
-            EN_FAMILIA: "Actividades para todas las edades",
-            PATRIMONIO: "Bienes de interés cultural y arquitectura histórica",
-            PETFRIENDLY: "Espacios y actividades para ir con tu mascota",
-            GASTRONOMIA: "Restaurantes, productos locales y tradición culinaria",
-          };
-          const byCat: Record<string, Poi[]> = {};
-          for (const poi of allPoisPOI) {
-            if (poi.categoriaTematica) {
-              if (!byCat[poi.categoriaTematica]) byCat[poi.categoriaTematica] = [];
-              byCat[poi.categoriaTematica].push(poi);
-            }
-          }
-          const order = ["NATURALEZA", "CULTURA", "EN_FAMILIA", "PATRIMONIO", "PETFRIENDLY", "GASTRONOMIA"];
-          return order
-            .filter((k) => CAT_TO_TYPE[k])
-            .map((k) => ({
-              type: CAT_TO_TYPE[k]!,
-              title: CATEGORIA_TEMATICA_LABELS[k] ?? k,
-              description: CAT_DESC[k],
-              items: (byCat[k] ?? []).map((p: Poi) => ({
-                title: p.nombre,
-                href: `/pueblos/${puebloSafe.slug}/pois/${p.id}`,
-              })),
-              href: `/pueblos/${puebloSafe.slug}?tab=${k === "EN_FAMILIA" ? "en-familia" : k.toLowerCase()}`,
-            }));
-        })()}
-      />
-
-      {/* Tabs de categorías (contenido detallado) */}
-      <TematicasPuebloTabs
+      {/* Qué hacer en [Pueblo] - AQUÍ antes de pueblos cercanos */}
+      <QueHacerSection
+        puebloNombre={puebloSafe.nombre}
         puebloSlug={puebloSafe.slug}
-        pois={allPoisPOI.map((poi: Poi) => ({
-          id: poi.id,
-          nombre: poi.nombre,
-          descripcion_corta: poi.descripcion_corta,
-          descripcion_larga: poi.descripcion_larga,
-          foto: poi.foto,
-          categoriaTematica: poi.categoriaTematica,
-        }))}
+        paginasTematicas={paginasTematicas}
+        pois={allPoisPOI}
+        multiexperiencias={puebloSafe.multiexperiencias ?? []}
       />
 
       {/* PUEBLOS CERCANOS */}
