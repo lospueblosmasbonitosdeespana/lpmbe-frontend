@@ -915,7 +915,7 @@ export default async function PuebloPage({
       {/* CONTENIDOS DEL PUEBLO (CMS) */}
       <ContenidosPuebloSection contenidos={contenidosProcesados} />
 
-      {/* TEMÁTICAS DEL PUEBLO (Gastronomía, Naturaleza, etc.) */}
+      {/* CATEGORÍAS TEMÁTICAS (Gastronomía, Naturaleza, etc.) - antes de Pueblos cercanos */}
       <TematicasPuebloTabs puebloSlug={puebloSafe.slug} />
 
       {/* PUEBLOS CERCANOS */}

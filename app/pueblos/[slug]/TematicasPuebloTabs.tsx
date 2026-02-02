@@ -102,7 +102,8 @@ export default function TematicasPuebloTabs({ puebloSlug }: Props) {
   const currentPage = activeTab ? tematicas[activeTab as keyof TematicasPueblo] : null;
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-12">
+    <section style={{ marginTop: '48px' }} className="mx-auto max-w-6xl px-4 py-12">
+      <h2 style={{ marginBottom: '24px' }}>Categorías temáticas</h2>
       {/* Tabs */}
       <div className="mb-6 flex gap-2 border-b border-gray-200">
         {availableTabs.map((tab) => (
