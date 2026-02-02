@@ -10,7 +10,9 @@ import { getComunidadFlagSrc } from "@/lib/flags";
 import GaleriaGrid from "./GaleriaGrid";
 import TematicasPuebloTabs from "./TematicasPuebloTabs";
 import PueblosCercanosSection from "./_components/PueblosCercanosSection";
-import EnCifrasSection from "./_components/EnCifrasSection";
+import { DetailStatsBlock } from "@/app/components/village/detail-stats-block";
+import { CategoryHighlights } from "@/app/components/village/category-highlights";
+import { MapSection } from "@/app/components/village/map-section";
 import RotatedImage from "@/app/components/RotatedImage";
 
 /** Distancia Haversine en km */
@@ -414,8 +416,16 @@ export default async function PuebloPage({
         semaforoUpdatedAt={semaforoPueblo.ultima_actualizacion ?? null}
       />
 
-      {/* EN CIFRAS - Patrimonio y Tradición */}
-      <EnCifrasSection highlights={puebloSafe.highlights ?? []} />
+      {/* EN CIFRAS - Patrimonio y Tradición (V0) */}
+      <DetailStatsBlock
+        eyebrow="EN CIFRAS"
+        title="Patrimonio y Tradición"
+        stats={(puebloSafe.highlights ?? []).slice(0, 4).map((h) => ({
+          value: h.valor,
+          label: h.etiqueta,
+        }))}
+        columns={4}
+      />
 
       {/* METEO (sin semáforo) */}
       <section style={{ marginTop: "16px" }}>
@@ -457,53 +467,37 @@ export default async function PuebloPage({
         </section>
       )}
 
-      {/* MAPA */}
-      <section id="mapa" style={{ marginTop: "32px" }}>
-        <h2>Mapa</h2>
-        {puebloSafe.boldestMapId || puebloSafe.slug ? (
-          <>
-            {(() => {
-              const boldestSrc =
-                puebloSafe.boldestMapId?.startsWith('PB-')
+      {/* MAPA (V0 MapSection) */}
+      {puebloSafe.lat != null && puebloSafe.lng != null && (
+        <div id="mapa">
+          <MapSection
+            title="Ubicación"
+            description={
+              puebloSafe.lat && puebloSafe.lng
+                ? `${puebloSafe.nombre} se encuentra en ${puebloSafe.provincia}, ${puebloSafe.comunidad}.`
+                : undefined
+            }
+            center={{ lat: puebloSafe.lat, lng: puebloSafe.lng }}
+            markers={poisPOI
+              .filter((p: Poi) => p.lat != null && p.lng != null)
+              .slice(0, 10)
+              .map((p: Poi) => ({
+                id: String(p.id),
+                lat: p.lat!,
+                lng: p.lng!,
+                label: p.nombre,
+              }))}
+            boldestMapUrl={
+              puebloSafe.boldestMapId || puebloSafe.slug
+                ? puebloSafe.boldestMapId?.startsWith("PB-")
                   ? `https://maps.lospueblosmasbonitosdeespana.org/es/mapas/${puebloSafe.boldestMapId}`
-                  : `https://maps.lospueblosmasbonitosdeespana.org/es/pueblos/resource/${puebloSafe.slug}`;
-
-              return (
-                <>
-                  <iframe
-                    src={boldestSrc}
-                    width="100%"
-                    height="480"
-                    frameBorder="0"
-                    style={{ border: 0, marginTop: '16px' }}
-                    title={`Mapa de ${puebloSafe.nombre}`}
-                  />
-                  <div style={{ marginTop: "16px" }}>
-                    <a
-                      href={boldestSrc}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Ver en Boldest Maps
-                    </a>
-                  </div>
-                </>
-              );
-            })()}
-          </>
-        ) : puebloSafe.lat && puebloSafe.lng ? (
-          <a
-            href={`https://www.google.com/maps?q=${puebloSafe.lat},${puebloSafe.lng}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ display: "inline-block", marginTop: "16px" }}
-          >
-            Ver en Google Maps
-          </a>
-        ) : (
-          <p style={{ marginTop: "16px" }}>Mapa próximamente</p>
-        )}
-      </section>
+                  : `https://maps.lospueblosmasbonitosdeespana.org/es/pueblos/resource/${puebloSafe.slug}`
+                : undefined
+            }
+            boldestMapId={puebloSafe.boldestMapId ?? undefined}
+          />
+        </div>
+      )}
 
       {/* POIs - Puntos de interés */}
       {poisPOI.length > 0 && (
@@ -853,7 +847,49 @@ export default async function PuebloPage({
         </section>
       )}
 
-      {/* CATEGORÍAS TEMÁTICAS (Gastronomía, Naturaleza, etc.) - antes de Pueblos cercanos */}
+      {/* Experiencias por categoría (V0) */}
+      <CategoryHighlights
+        categories={(() => {
+          const CAT_TO_TYPE: Record<string, "nature" | "culture" | "family" | "heritage" | "petfriendly" | "gastronomy"> = {
+            NATURALEZA: "nature",
+            CULTURA: "culture",
+            EN_FAMILIA: "family",
+            PATRIMONIO: "heritage",
+            PETFRIENDLY: "petfriendly",
+            GASTRONOMIA: "gastronomy",
+          };
+          const CAT_DESC: Record<string, string> = {
+            NATURALEZA: "Senderismo, paisajes y espacios naturales",
+            CULTURA: "Monumentos, museos y patrimonio histórico",
+            EN_FAMILIA: "Actividades para todas las edades",
+            PATRIMONIO: "Bienes de interés cultural y arquitectura histórica",
+            PETFRIENDLY: "Espacios y actividades para ir con tu mascota",
+            GASTRONOMIA: "Restaurantes, productos locales y tradición culinaria",
+          };
+          const byCat: Record<string, Poi[]> = {};
+          for (const poi of allPoisPOI) {
+            if (poi.categoriaTematica) {
+              if (!byCat[poi.categoriaTematica]) byCat[poi.categoriaTematica] = [];
+              byCat[poi.categoriaTematica].push(poi);
+            }
+          }
+          const order = ["NATURALEZA", "CULTURA", "EN_FAMILIA", "PATRIMONIO", "PETFRIENDLY", "GASTRONOMIA"];
+          return order
+            .filter((k) => byCat[k]?.length && CAT_TO_TYPE[k])
+            .map((k) => ({
+              type: CAT_TO_TYPE[k]!,
+              title: CATEGORIA_TEMATICA_LABELS[k] ?? k,
+              description: CAT_DESC[k],
+              items: byCat[k].map((p: Poi) => ({
+                title: p.nombre,
+                href: `/pueblos/${puebloSafe.slug}/pois/${p.id}`,
+              })),
+              href: `/pueblos/${puebloSafe.slug}?tab=${k === "EN_FAMILIA" ? "en-familia" : k.toLowerCase()}`,
+            }));
+        })()}
+      />
+
+      {/* Tabs de categorías (contenido detallado) */}
       <TematicasPuebloTabs
         puebloSlug={puebloSafe.slug}
         pois={allPoisPOI.map((poi: Poi) => ({
