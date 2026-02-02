@@ -449,8 +449,13 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
       await loadPhotos();
     } catch (e: any) {
       console.error("[PhotoManager] persistOrder exception:", e);
-      setError(e?.message ?? "Error guardando orden");
+      const errorMsg = e?.message ?? "Error guardando orden";
+      // Recargar fotos para volver al estado del backend (sin borrar el error)
       await loadPhotos();
+      // Mostrar error DESPUÉS de recargar para que no se borre
+      setError(errorMsg);
+      // Alert para que el usuario vea el error inmediatamente
+      alert(`Error al guardar orden: ${errorMsg}`);
     }
   }
 
