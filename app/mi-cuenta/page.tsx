@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function MiCuentaPage() {
   return (
     <section className="max-w-4xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Mi Cuenta</h1>
+      <h1 className="font-display text-2xl font-semibold">Mi Cuenta</h1>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Link href="/mi-cuenta/puntos" className="p-4 border rounded hover:bg-gray-50 transition">

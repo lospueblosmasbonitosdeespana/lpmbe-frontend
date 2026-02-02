@@ -124,6 +124,9 @@ git fetch origin && git pull origin main
 - Meteo: `components/meteo/meteo-list-row.tsx` + `meteo-listing-page.tsx` (diseño de referencia).
   - **IMPORTANTE**: En LPMBE, mantener SOLO bandera de comunidad (NO añadir emojis 🏰🏴🍇 ni iconos de categoría).
   - Usar SVG de clima, estructura Link clickable, colores de temperatura.
+- Tienda: `components/shop/shop-page.tsx` + `product-card.tsx` + `shop-category-card.tsx` (diseño de referencia).
+  - **Implementado**: Hero con búsqueda, BenefitsBar, ProductCard, banners destacados, newsletter CTA.
+  - Componentes creados: `ProductCard.tsx`, `ShopCategoryCard.tsx` en `app/_components/tienda/`.
 
 ---
 

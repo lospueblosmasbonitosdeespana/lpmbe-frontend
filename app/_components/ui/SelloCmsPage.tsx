@@ -24,7 +24,7 @@ export default function SelloCmsPage({
   children,
 }: SelloCmsPageProps) {
   return (
-    <main className="mx-auto max-w-5xl px-6 py-12">
+    <main className="font-sans mx-auto max-w-5xl px-6 py-12">
       <Breadcrumbs items={breadcrumbs} />
 
       {heroUrl && heroUrl.trim() && (
@@ -38,10 +38,10 @@ export default function SelloCmsPage({
         </div>
       )}
 
-      <h1 className="text-4xl font-semibold mb-6">{titulo}</h1>
+      <h1 className="font-display text-4xl font-semibold mb-6">{titulo}</h1>
 
       {subtitle && (
-        <p className="text-xl text-gray-600 mb-8">{subtitle}</p>
+        <p className="font-sans text-xl text-gray-600 mb-8">{subtitle}</p>
       )}
 
       {contenido && (
