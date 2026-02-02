@@ -425,6 +425,8 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
         })),
       };
 
+      console.log("[PhotoManager] persistOrder llamado, payload:", payload);
+
       const res = await fetch("/api/admin/fotos/reorder", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -432,14 +434,21 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
         credentials: "include",
       });
 
+      console.log("[PhotoManager] persistOrder response status:", res.status);
+
       if (!res.ok) {
         const errorText = await res.text().catch(() => "Error desconocido");
+        console.error("[PhotoManager] persistOrder error:", res.status, errorText);
         throw new Error(`Error guardando orden (${res.status}): ${errorText}`);
       }
+
+      const result = await res.json().catch(() => ({}));
+      console.log("[PhotoManager] persistOrder success:", result);
 
       // Refrescar para sincronizar con backend (p. ej. IDs canonizados)
       await loadPhotos();
     } catch (e: any) {
+      console.error("[PhotoManager] persistOrder exception:", e);
       setError(e?.message ?? "Error guardando orden");
       await loadPhotos();
     }

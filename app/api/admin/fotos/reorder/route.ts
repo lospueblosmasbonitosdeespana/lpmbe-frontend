@@ -2,16 +2,20 @@ import { NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 
-const DEV_LOGS = process.env.NODE_ENV === 'development';
-
 // POST /admin/fotos/reorder
 export async function POST(req: Request) {
+  console.log('[admin/fotos/reorder POST] Iniciando...');
+  
   const token = await getToken();
+  console.log('[admin/fotos/reorder POST] Token presente:', !!token);
+  
   if (!token) {
+    console.error('[admin/fotos/reorder POST] No hay token - 401');
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
   const body = await req.json().catch(() => null);
+  console.log('[admin/fotos/reorder POST] Body recibido:', body);
   
   if (!body) {
     return NextResponse.json(
@@ -22,11 +26,7 @@ export async function POST(req: Request) {
 
   const API_BASE = getApiUrl();
   const upstreamUrl = `${API_BASE}/admin/fotos/reorder`;
-
-  if (DEV_LOGS) {
-    console.log('[admin/fotos/reorder POST] upstreamUrl:', upstreamUrl);
-    console.log('[admin/fotos/reorder POST] body:', body);
-  }
+  console.log('[admin/fotos/reorder POST] upstreamUrl:', upstreamUrl);
 
   try {
     const upstream = await fetch(upstreamUrl, {
@@ -40,25 +40,22 @@ export async function POST(req: Request) {
     });
 
     const text = await upstream.text();
-    
-    if (DEV_LOGS) {
-      console.log('[admin/fotos/reorder POST] status:', upstream.status);
-      console.log('[admin/fotos/reorder POST] response:', text);
-    }
+    console.log('[admin/fotos/reorder POST] upstream status:', upstream.status);
+    console.log('[admin/fotos/reorder POST] upstream response:', text);
 
     if (!upstream.ok) {
+      console.error('[admin/fotos/reorder POST] upstream error:', upstream.status, text);
       return NextResponse.json({ error: text }, { status: upstream.status });
     }
 
     const data = JSON.parse(text || '{}');
+    console.log('[admin/fotos/reorder POST] ✅ Success');
     return NextResponse.json(data, { status: upstream.status });
   } catch (error: any) {
-    if (DEV_LOGS) {
-      console.error('[admin/fotos/reorder POST] fetch error:', {
-        name: error?.name,
-        message: error?.message,
-      });
-    }
+    console.error('[admin/fotos/reorder POST] fetch error:', {
+      name: error?.name,
+      message: error?.message,
+    });
 
     if (error?.name === 'TypeError' && error?.message?.includes('fetch failed')) {
       return NextResponse.json(
