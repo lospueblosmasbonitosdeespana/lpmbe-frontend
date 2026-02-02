@@ -445,12 +445,30 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
         const result = await res.json().catch(() => ({}));
         console.log("[PhotoManager] persistOrder success:", result);
 
+        // Sincronizar foto_destacada (hero + tarjeta) con la foto #1
+        if (entity === "pueblo" && orderedPhotos.length > 0) {
+          const firstUrl = orderedPhotos[0]?.publicUrl ?? orderedPhotos[0]?.url;
+          if (typeof firstUrl === "string" && firstUrl.trim()) {
+            try {
+              const patchRes = await fetch(`/api/admin/pueblos/${entityId}/foto-destacada`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url: firstUrl.trim() }),
+                credentials: "include",
+              });
+              if (patchRes.ok) {
+                console.log("[PhotoManager] foto_destacada sincronizada");
+              }
+            } catch (e) {
+              console.warn("[PhotoManager] Error sincronizando foto_destacada:", e);
+            }
+          }
+        }
+
         // Invalidar cache de fotos de pueblos para que la tarjeta muestre la foto actualizada
         try {
           sessionStorage.removeItem("pueblos_photos_v3");
-          // Guardar timestamp para cache busting en CDN
           localStorage.setItem("pueblos_photos_reorder_ts", String(Date.now()));
-          console.log("[PhotoManager] Cache de fotos de pueblos invalidado + timestamp guardado");
         } catch {}
 
         // Refrescar para sincronizar con backend (p. ej. IDs canonizados)
