@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getPuebloBySlug, getPueblosLite, type Pueblo } from "@/lib/api";
+import { getPuebloBySlug, getPueblosLite, getApiUrl, type Pueblo } from "@/lib/api";
 import PuebloActions from "./PuebloActions";
 import FeedSection from "../../components/FeedSection";
 import DescripcionPueblo from "./DescripcionPueblo";
@@ -14,6 +14,26 @@ import PueblosCercanosSection from "./_components/PueblosCercanosSection";
 import EnCifrasSection from "./_components/EnCifrasSection";
 import { headers } from "next/headers";
 import RotatedImage from "@/app/components/RotatedImage";
+
+/** Distancia Haversine en km */
+function haversineKm(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number
+): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 // Helpers para SEO
 function cleanText(input: string) {
@@ -369,6 +389,35 @@ export default async function PuebloPage({
 
   // Obtener bandera de la comunidad
   const comunidadFlagSrc = getComunidadFlagSrc(puebloSafe.comunidad);
+
+  // Fotos para Pueblos Cercanos (4 más próximos por coordenadas)
+  let pueblosCercanosPhotos: Record<string, { url: string } | null> = {};
+  if (puebloSafe.lat != null && puebloSafe.lng != null) {
+    const otros = pueblosLite.filter((p) => p.id !== puebloSafe.id && p.lat != null && p.lng != null);
+    const conDistancia = otros
+      .map((p) => ({ ...p, km: haversineKm(puebloSafe.lat!, puebloSafe.lng!, p.lat!, p.lng!) }))
+      .sort((a, b) => a.km - b.km)
+      .slice(0, 4);
+    const ids = conDistancia.map((p) => p.id);
+    if (ids.length > 0) {
+      try {
+        const API_BASE = getApiUrl();
+        const res = await fetch(`${API_BASE}/public/pueblos/photos?ids=${ids.join(",")}`, {
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const data = (await res.json()) as Record<string, { url?: string } | null>;
+          pueblosCercanosPhotos = {};
+          for (const id of ids) {
+            const v = data[String(id)];
+            pueblosCercanosPhotos[String(id)] = v?.url ? { url: v.url } : null;
+          }
+        }
+      } catch {
+        // ignorar errores de fetch
+      }
+    }
+  }
 
   return (
     <main>
@@ -877,6 +926,7 @@ export default async function PuebloPage({
           lng: puebloSafe.lng,
         }}
         pueblos={pueblosLite}
+        photosByPuebloId={pueblosCercanosPhotos}
       />
 
       {/* EVENTOS Y NOTICIAS LEGACY - COMENTADO

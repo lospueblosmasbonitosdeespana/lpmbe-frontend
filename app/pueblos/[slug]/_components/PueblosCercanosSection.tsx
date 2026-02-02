@@ -25,12 +25,15 @@ function haversineKm(
 type Props = {
   puebloActual: { id: number; lat: number | null; lng: number | null };
   pueblos: PuebloLite[];
+  /** Foto principal por pueblo id (desde bulk API). Si no se pasa, usa foto_destacada. */
+  photosByPuebloId?: Record<string, { url: string } | null>;
   limit?: number;
 };
 
 export default function PueblosCercanosSection({
   puebloActual,
   pueblos,
+  photosByPuebloId,
   limit = 4,
 }: Props) {
   const { lat, lng } = puebloActual;
@@ -65,7 +68,10 @@ export default function PueblosCercanosSection({
 
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {conDistancia.map((pueblo) => {
-            const foto = getPuebloMainPhoto(pueblo) ?? pueblo.foto_destacada;
+            const foto =
+              photosByPuebloId?.[String(pueblo.id)]?.url ??
+              getPuebloMainPhoto(pueblo) ??
+              pueblo.foto_destacada;
             return (
               <Link
                 key={pueblo.id}
