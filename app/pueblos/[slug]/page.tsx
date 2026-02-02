@@ -423,7 +423,7 @@ export default async function PuebloPage({
         semaforoUpdatedAt={semaforoPueblo.ultima_actualizacion ?? null}
       />
 
-      {/* EN CIFRAS - Patrimonio y Tradición (V0) */}
+      {/* EN CIFRAS - Patrimonio y Tradición (V0 - como captura 1) */}
       <DetailStatsBlock
         eyebrow="EN CIFRAS"
         title="Patrimonio y Tradición"
@@ -432,6 +432,7 @@ export default async function PuebloPage({
           label: h.etiqueta,
         }))}
         columns={4}
+        background="default"
       />
 
       {/* METEO - Diseño imagen referencia */}
@@ -467,6 +468,7 @@ export default async function PuebloPage({
       {/* Qué ver - Lugares de interés (POIs) - LOS BONITOS Y PERFECTOS */}
       {poisPOI.length > 0 && (
         <PointsOfInterest
+          id="lugares-de-interes"
           points={poisPOI.map((poi: Poi) => ({
             id: poi.id,
             name: poi.nombre,
@@ -477,38 +479,6 @@ export default async function PuebloPage({
             href: `/pueblos/${puebloSafe.slug}/pois/${poi.id}`,
           }))}
         />
-      )}
-
-      {/* MAPA (V0 MapSection) */}
-      {puebloSafe.lat != null && puebloSafe.lng != null && (
-        <div id="mapa">
-          <MapSection
-            title="Ubicación"
-            description={
-              puebloSafe.lat && puebloSafe.lng
-                ? `${puebloSafe.nombre} se encuentra en ${puebloSafe.provincia}, ${puebloSafe.comunidad}.`
-                : undefined
-            }
-            center={{ lat: puebloSafe.lat, lng: puebloSafe.lng }}
-            markers={poisPOI
-              .filter((p: Poi) => p.lat != null && p.lng != null)
-              .slice(0, 10)
-              .map((p: Poi) => ({
-                id: String(p.id),
-                lat: p.lat!,
-                lng: p.lng!,
-                label: p.nombre,
-              }))}
-            boldestMapUrl={
-              puebloSafe.boldestMapId || puebloSafe.slug
-                ? puebloSafe.boldestMapId?.startsWith("PB-")
-                  ? `https://maps.lospueblosmasbonitosdeespana.org/es/mapas/${puebloSafe.boldestMapId}`
-                  : `https://maps.lospueblosmasbonitosdeespana.org/es/pueblos/resource/${puebloSafe.slug}`
-                : undefined
-            }
-            boldestMapId={puebloSafe.boldestMapId ?? undefined}
-          />
-        </div>
       )}
 
       {/* POIs - Paradas de la experiencia */}
@@ -701,7 +671,7 @@ export default async function PuebloPage({
         </section>
       )}
 
-      {/* Qué hacer en [Pueblo] - AQUÍ antes de pueblos cercanos */}
+      {/* Qué hacer en [Pueblo] - Lugares a visitar + Multiexperiencias */}
       <QueHacerSection
         puebloNombre={puebloSafe.nombre}
         puebloSlug={puebloSafe.slug}
@@ -709,6 +679,87 @@ export default async function PuebloPage({
         pois={allPoisPOI}
         multiexperiencias={puebloSafe.multiexperiencias ?? []}
       />
+
+      {/* Experiencias por categoría - 6 categorías, colores V0 - enlazan a página de categoría */}
+      <CategoryHighlights
+        id="experiencias-por-categoria"
+        categories={[
+          {
+            type: "nature",
+            title: "Naturaleza",
+            description: "Senderismo, paisajes y espacios naturales",
+            items: [...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "NATURALEZA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))), ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "NATURALEZA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/experiencias/${m.multiexperiencia.slug}/pueblo/${puebloSafe.slug}` }))],
+            href: `/pueblos/${puebloSafe.slug}/categoria/naturaleza`,
+          },
+          {
+            type: "culture",
+            title: "Cultura",
+            description: "Monumentos, museos y patrimonio histórico",
+            items: [...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "CULTURA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))), ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "CULTURA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/experiencias/${m.multiexperiencia.slug}/pueblo/${puebloSafe.slug}` }))],
+            href: `/pueblos/${puebloSafe.slug}/categoria/cultura`,
+          },
+          {
+            type: "family",
+            title: "En familia",
+            description: "Actividades para todas las edades",
+            items: [...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "EN_FAMILIA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))), ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "EN_FAMILIA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/experiencias/${m.multiexperiencia.slug}/pueblo/${puebloSafe.slug}` }))],
+            href: `/pueblos/${puebloSafe.slug}/categoria/en-familia`,
+          },
+          {
+            type: "heritage",
+            title: "Patrimonio",
+            description: "Bienes de interés cultural y arquitectura histórica",
+            items: [...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "PATRIMONIO").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))), ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "PATRIMONIO").map((m) => ({ title: m.multiexperiencia.titulo, href: `/experiencias/${m.multiexperiencia.slug}/pueblo/${puebloSafe.slug}` }))],
+            href: `/pueblos/${puebloSafe.slug}/categoria/patrimonio`,
+          },
+          {
+            type: "petfriendly",
+            title: "Petfriendly",
+            description: "Espacios y actividades para ir con tu mascota",
+            items: [...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "PETFRIENDLY").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))), ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "PETFRIENDLY").map((m) => ({ title: m.multiexperiencia.titulo, href: `/experiencias/${m.multiexperiencia.slug}/pueblo/${puebloSafe.slug}` }))],
+            href: `/pueblos/${puebloSafe.slug}/categoria/petfriendly`,
+          },
+          {
+            type: "gastronomy",
+            title: "Gastronomía",
+            description: "Restaurantes, productos locales y tradición culinaria",
+            items: [...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "GASTRONOMIA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))), ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "GASTRONOMIA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/experiencias/${m.multiexperiencia.slug}/pueblo/${puebloSafe.slug}` }))],
+            href: `/pueblos/${puebloSafe.slug}/categoria/gastronomia`,
+          },
+        ]}
+      />
+
+      {/* MAPA (Ubicación) - Boldest, encima de pueblos cercanos */}
+      {puebloSafe.lat != null && puebloSafe.lng != null && (
+        <div id="mapa">
+          <MapSection
+            title="Ubicación"
+            description={
+              puebloSafe.lat && puebloSafe.lng
+                ? `${puebloSafe.nombre} se encuentra en ${puebloSafe.provincia}, ${puebloSafe.comunidad}.`
+                : undefined
+            }
+            center={{ lat: puebloSafe.lat, lng: puebloSafe.lng }}
+            markers={poisPOI
+              .filter((p: Poi) => p.lat != null && p.lng != null)
+              .slice(0, 10)
+              .map((p: Poi) => ({
+                id: String(p.id),
+                lat: p.lat!,
+                lng: p.lng!,
+                label: p.nombre,
+              }))}
+            boldestMapUrl={
+              puebloSafe.boldestMapId || puebloSafe.slug
+                ? puebloSafe.boldestMapId?.startsWith("PB-")
+                  ? `https://maps.lospueblosmasbonitosdeespana.org/es/mapas/${puebloSafe.boldestMapId}`
+                  : `https://maps.lospueblosmasbonitosdeespana.org/es/pueblos/resource/${puebloSafe.slug}`
+                : undefined
+            }
+            boldestMapId={puebloSafe.boldestMapId ?? undefined}
+          />
+        </div>
+      )}
 
       {/* PUEBLOS CERCANOS */}
       <PueblosCercanosSection

@@ -2,7 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Section } from "@/app/components/ui/section"
 import { Container } from "@/app/components/ui/container"
-import { Headline, Lead, Eyebrow } from "@/app/components/ui/typography"
+import { Title, Body, Eyebrow } from "@/app/components/ui/typography"
 
 type Multiexperiencia = {
   id: number
@@ -10,6 +10,7 @@ type Multiexperiencia = {
   descripcion: string | null
   foto: string | null
   slug: string
+  tipo?: string | null
 }
 
 type PuebloMultiexperiencia = {
@@ -29,6 +30,16 @@ type Poi = {
   descripcion_corta: string | null
   foto: string | null
   rotation?: number | null
+  categoriaTematica?: string | null
+}
+
+const CATEGORIA_LABEL: Record<string, string> = {
+  NATURALEZA: "NATURALEZA",
+  CULTURA: "CULTURA",
+  PATRIMONIO: "PATRIMONIO",
+  GASTRONOMIA: "GASTRONOMÍA",
+  EN_FAMILIA: "EN FAMILIA",
+  PETFRIENDLY: "PETFRIENDLY",
 }
 
 // Slug para URL de categoría temática
@@ -56,16 +67,16 @@ export function QueHacerSection({
   pois,
   multiexperiencias,
 }: QueHacerSectionProps) {
-  // Primera fila: máx 3 - temáticos primero, si no hay entonces POIs
+  // Primera fila: máx 3 - temáticos primero, si no hay entonces POIs (diseño V0: sin tarjeta, texto abajo)
   const topItems = paginasTematicas.length > 0
     ? paginasTematicas.slice(0, 3).map((p) => ({
         type: "tematica" as const,
         id: p.id,
         titulo: p.titulo,
         imagen: p.coverUrl,
-        href: `/pueblos/${puebloSlug}#categoria-${CATEGORY_TO_SLUG[p.category] || p.category.toLowerCase()}`,
+        href: `/pueblos/${puebloSlug}/categoria/${CATEGORY_TO_SLUG[p.category] || p.category.toLowerCase()}`,
         rotation: undefined as number | undefined,
-        descripcion: null as string | null,
+        detalle: CATEGORIA_LABEL[p.category] ?? p.category,
       }))
     : pois.slice(0, 3).map((poi) => ({
         type: "poi" as const,
@@ -74,7 +85,7 @@ export function QueHacerSection({
         imagen: poi.foto,
         href: `/pueblos/${puebloSlug}/pois/${poi.id}`,
         rotation: poi.rotation ?? undefined,
-        descripcion: poi.descripcion_corta,
+        detalle: poi.categoriaTematica ? (CATEGORIA_LABEL[poi.categoriaTematica.toUpperCase()] ?? poi.categoriaTematica) : "LUGAR DE INTERÉS",
       }))
 
   const hasTop = topItems.length > 0
@@ -85,25 +96,36 @@ export function QueHacerSection({
   return (
     <Section spacing="md" background="default" id="que-hacer">
       <Container>
-        <div className="mb-10">
-          <Headline>Qué hacer en {puebloNombre}</Headline>
-          <Lead className="mt-2">
+        <div className="mb-6">
+          <Title as="h2">Qué hacer en {puebloNombre}</Title>
+          <Body className="mt-2 text-muted-foreground">
             Rutas, experiencias y actividades para descubrir el pueblo.
-          </Lead>
+          </Body>
         </div>
 
-        {/* Primera fila: 3 cards - contenidos temáticos o POIs */}
+        {/* Primera fila: 3 items - diseño V0 (sin tarjeta, imagen + texto abajo, hover zoom) */}
         {hasTop && (
           <div className="mb-12">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+            <div className="mb-4 flex items-center justify-between">
+              <Eyebrow>
+                {paginasTematicas.length > 0 ? "LUGARES A VISITAR" : "LUGARES DE INTERÉS"}
+              </Eyebrow>
+              <Link
+                href={`/pueblos/${puebloSlug}/lugares`}
+                className="text-sm font-medium text-primary hover:text-primary/80"
+              >
+                Ver todas
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
               {topItems.map((item) => (
                 <Link
                   key={`${item.type}-${item.id}`}
                   href={item.href}
-                  className="group block overflow-hidden rounded-lg border border-border bg-card transition-shadow hover:shadow-md"
+                  className="group block"
                 >
                   {item.imagen && (
-                    <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+                    <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-muted">
                       <Image
                         src={item.imagen}
                         alt={item.titulo}
@@ -112,15 +134,13 @@ export function QueHacerSection({
                       />
                     </div>
                   )}
-                  <div className="p-4">
-                    <h3 className="font-serif text-lg font-medium text-foreground transition-colors group-hover:text-primary">
+                  <div className="mt-3">
+                    <span className="mb-0.5 block text-xs uppercase tracking-wider text-muted-foreground">
+                      {item.detalle}
+                    </span>
+                    <h3 className="font-serif text-lg leading-snug transition-colors group-hover:text-primary">
                       {item.titulo}
                     </h3>
-                    {item.descripcion && (
-                      <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-                        {item.descripcion}
-                      </p>
-                    )}
                   </div>
                 </Link>
               ))}
@@ -128,7 +148,7 @@ export function QueHacerSection({
           </div>
         )}
 
-        {/* Segunda fila: SÓLO multiexperiencias - horizontal, primera a la izquierda, más a la derecha */}
+        {/* Segunda fila: MULTIEXPERIENCIAS - diseño V0 (sin tarjeta, imagen + texto abajo, hover zoom) */}
         {hasMultiex && (
           <div>
             <div className="mb-4 flex items-center justify-between">
@@ -140,15 +160,15 @@ export function QueHacerSection({
                 Ver todas
               </Link>
             </div>
-            <div className="flex flex-wrap gap-6">
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {multiexperiencias.map(({ multiexperiencia: mx }) => (
                 <Link
                   key={mx.id}
                   href={`/experiencias/${mx.slug}/pueblo/${puebloSlug}`}
-                  className="group block w-full min-w-[280px] max-w-[400px] overflow-hidden rounded-lg border border-border bg-card transition-shadow hover:shadow-md sm:flex-1"
+                  className="group block"
                 >
                   {mx.foto && (
-                    <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+                    <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-muted">
                       <Image
                         src={mx.foto}
                         alt={mx.titulo}
@@ -157,14 +177,17 @@ export function QueHacerSection({
                       />
                     </div>
                   )}
-                  <div className="p-4">
-                    <h3 className="font-serif text-lg font-medium text-foreground transition-colors group-hover:text-primary">
+                  <div className="mt-3">
+                    <span className="mb-0.5 block text-xs uppercase tracking-wider text-muted-foreground">
+                      EXPERIENCIA
+                    </span>
+                    <h3 className="font-serif text-lg leading-snug transition-colors group-hover:text-primary">
                       {mx.titulo}
                     </h3>
                     {mx.descripcion && (
-                      <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-                        {mx.descripcion.length > 150
-                          ? mx.descripcion.substring(0, 150) + "..."
+                      <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                        {mx.descripcion.length > 120
+                          ? mx.descripcion.substring(0, 120) + "..."
                           : mx.descripcion}
                       </p>
                     )}

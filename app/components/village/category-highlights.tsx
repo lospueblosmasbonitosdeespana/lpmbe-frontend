@@ -35,6 +35,7 @@ interface CategoryHighlightsProps {
   categories: CategoryData[]
   layout?: "cards" | "list"
   className?: string
+  id?: string
 }
 
 const categoryIcons: Record<CategoryType, React.ReactNode> = {
@@ -151,9 +152,10 @@ export function CategoryHighlights({
   categories,
   layout = "cards",
   className,
+  id,
 }: CategoryHighlightsProps) {
   return (
-    <Section spacing="md" className={className}>
+    <Section spacing="md" className={className} id={id}>
       <Container>
         <div className="mb-6">
           <Eyebrow>Qué hacer</Eyebrow>

@@ -22,14 +22,45 @@ type ActionBarState = "idle" | "loading" | "success" | "error";
 function getSemaforoConfig(estado: string | null) {
   switch (estado) {
     case "VERDE":
-      return { texto: "Tranquilo", color: "#28a745", bgColor: "#d4edda" };
+      return {
+        label: "Baja afluencia",
+        mensajeDefault: "Momento ideal para visitar. Poca afluencia turística prevista.",
+        color: "text-green-700",
+        dotClass: "bg-green-500",
+      };
     case "AMARILLO":
-      return { texto: "Precaución", color: "#ffc107", bgColor: "#fff3cd" };
+      return {
+        label: "Afluencia moderada",
+        mensajeDefault: "Afluencia turística moderada. Conviene planificar la visita.",
+        color: "text-amber-700",
+        dotClass: "bg-amber-500",
+      };
     case "ROJO":
-      return { texto: "Alta afluencia", color: "#dc3545", bgColor: "#f8d7da" };
+      return {
+        label: "Alta afluencia",
+        mensajeDefault: "Alta afluencia turística. Se recomienda evitar horas punta.",
+        color: "text-red-700",
+        dotClass: "bg-red-500",
+      };
     default:
       return null;
   }
+}
+
+function formatActualizado(updatedAt: string | Date | null | undefined): string | null {
+  if (!updatedAt) return null;
+  const d = typeof updatedAt === "string" ? new Date(updatedAt) : updatedAt;
+  if (isNaN(d.getTime())) return null;
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffMins < 1) return "Actualizado: Ahora mismo";
+  if (diffMins < 60) return `Actualizado: Hace ${diffMins} min`;
+  if (diffHours < 24) return `Actualizado: Hace ${diffHours} ${diffHours === 1 ? "hora" : "horas"}`;
+  if (diffDays < 7) return `Actualizado: Hace ${diffDays} ${diffDays === 1 ? "día" : "días"}`;
+  return `Actualizado: ${d.toLocaleDateString("es-ES", { day: "numeric", month: "short" })}`;
 }
 
 /* ----- ICONS ----- */
@@ -259,11 +290,11 @@ export default function PuebloActions({
             />
           </div>
 
-          {/* Semáforo turístico */}
+          {/* Semáforo turístico - V0: label + mensaje + actualizado */}
           {semaforoConfig && (
-            <div className="mt-4 flex items-center justify-center gap-4 rounded-lg border border-border bg-card px-4 py-3">
+            <div className="mt-4 flex items-start justify-center gap-4 rounded-lg border border-border bg-card px-4 py-4">
               {/* Indicador visual del semáforo */}
-              <div className="flex flex-col gap-1 rounded-full bg-foreground/90 p-1.5">
+              <div className="flex flex-col gap-1 rounded-full bg-foreground/90 p-1.5 shrink-0">
                 <div className={cn(
                   "h-3 w-3 rounded-full transition-opacity",
                   semaforoEstado === "ROJO" ? "bg-red-500" : "bg-red-500/20"
@@ -277,11 +308,22 @@ export default function PuebloActions({
                   semaforoEstado === "VERDE" ? "bg-green-500" : "bg-green-500/20"
                 )} />
               </div>
-              {/* Texto */}
-              <div className="flex-1">
-                <span className="text-sm font-medium text-foreground/80">
-                  Semáforo turístico · {semaforoConfig.texto}
-                </span>
+              {/* Texto: label + mensaje + actualizado */}
+              <div className="flex-1 min-w-0 max-w-2xl">
+                <div className="flex items-center gap-2">
+                  <span className={cn("text-sm font-semibold", semaforoConfig.color)}>
+                    {semaforoConfig.label}
+                  </span>
+                  <span className={cn("h-2 w-2 rounded-full shrink-0", semaforoConfig.dotClass)} />
+                </div>
+                <p className="mt-0.5 text-sm text-foreground/80">
+                  {semaforoMensaje?.trim() || semaforoConfig.mensajeDefault}
+                </p>
+                {formatActualizado(semaforoUpdatedAt) && (
+                  <span className="mt-1 block text-xs text-muted-foreground">
+                    {formatActualizado(semaforoUpdatedAt)}
+                  </span>
+                )}
               </div>
             </div>
           )}
