@@ -13,7 +13,18 @@ type PoiRow = {
   lat?: number | null;
   lng?: number | null;
   orden?: number | null;
+  categoriaTematica?: string | null;
 };
+
+// Categorías temáticas disponibles
+const CATEGORIAS_TEMATICAS = [
+  { value: '', label: 'Sin categoría' },
+  { value: 'GASTRONOMIA', label: 'Gastronomía' },
+  { value: 'NATURALEZA', label: 'Naturaleza' },
+  { value: 'CULTURA', label: 'Cultura' },
+  { value: 'EN_FAMILIA', label: 'En familia' },
+  { value: 'PETFRIENDLY', label: 'Petfriendly' },
+];
 
 // Helpers para comparar coordenadas con tolerancia (~5m)
 const EPS = 0.00005;
@@ -46,6 +57,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
   const [editDescripcion, setEditDescripcion] = useState("");
   const [editLat, setEditLat] = useState<number | "">("");
   const [editLng, setEditLng] = useState<number | "">("");
+  const [editCategoriaTematica, setEditCategoriaTematica] = useState("");
 
   // Formulario de creación
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -53,6 +65,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
   const [createDescripcion, setCreateDescripcion] = useState("");
   const [createLat, setCreateLat] = useState<number | "">("");
   const [createLng, setCreateLng] = useState<number | "">("");
+  const [createCategoriaTematica, setCreateCategoriaTematica] = useState("");
 
   const sorted = useMemo(() => {
     const copy = [...rows];
@@ -115,6 +128,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     setEditDescripcion(row.descripcion ?? "");
     setEditLat(row.lat ?? "");
     setEditLng(row.lng ?? "");
+    setEditCategoriaTematica(row.categoriaTematica ?? "");
   }
 
   function cancelEdit() {
@@ -123,6 +137,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     setEditDescripcion("");
     setEditLat("");
     setEditLng("");
+    setEditCategoriaTematica("");
   }
 
   async function saveEdit() {
@@ -134,6 +149,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
       descripcion: editDescripcion.trim() || null,
       lat: typeof editLat === "number" ? editLat : null,
       lng: typeof editLng === "number" ? editLng : null,
+      categoriaTematica: editCategoriaTematica.trim() || null,
     };
 
     const r = await fetch(`/api/admin/pois/${editId}`, {
@@ -201,6 +217,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
       descripcion: createDescripcion.trim() || null,
       lat: latVal ?? null,
       lng: lngVal ?? null,
+      categoriaTematica: createCategoriaTematica.trim() || null,
     };
 
     const r = await fetch(`/api/admin/pueblos/${puebloId}/pois`, {
@@ -226,6 +243,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     setCreateDescripcion("");
     setCreateLat("");
     setCreateLng("");
+    setCreateCategoriaTematica("");
     setShowCreateForm(false);
 
     await refresh();
@@ -402,6 +420,34 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
               />
             </div>
             
+            {/* Categoría temática */}
+            <div>
+              <label style={{ display: "block", fontSize: 14, marginBottom: 4 }}>
+                Categoría temática
+              </label>
+              <select
+                value={createCategoriaTematica}
+                onChange={(e) => setCreateCategoriaTematica(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: 8,
+                  fontSize: 14,
+                  border: "1px solid #ccc",
+                  borderRadius: 4,
+                  backgroundColor: "#fff",
+                }}
+              >
+                {CATEGORIAS_TEMATICAS.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </option>
+                ))}
+              </select>
+              <p style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
+                Clasifica este POI para que aparezca en &quot;Qué hacer&quot; → categoría seleccionada.
+              </p>
+            </div>
+            
             {/* Info sobre fotos */}
             <div
               style={{
@@ -441,6 +487,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                   setCreateDescripcion("");
                   setCreateLat("");
                   setCreateLng("");
+                  setCreateCategoriaTematica("");
                 }}
                 style={{
                   padding: "8px 16px",
@@ -581,6 +628,34 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                         />
                       </div>
                       
+                      {/* Categoría temática */}
+                      <div>
+                        <label style={{ display: "block", fontSize: 14, marginBottom: 4 }}>
+                          Categoría temática
+                        </label>
+                        <select
+                          value={editCategoriaTematica}
+                          onChange={(e) => setEditCategoriaTematica(e.target.value)}
+                          style={{
+                            width: "100%",
+                            padding: 8,
+                            fontSize: 14,
+                            border: "1px solid #ccc",
+                            borderRadius: 4,
+                            backgroundColor: "#fff",
+                          }}
+                        >
+                          {CATEGORIAS_TEMATICAS.map((cat) => (
+                            <option key={cat.value} value={cat.value}>
+                              {cat.label}
+                            </option>
+                          ))}
+                        </select>
+                        <p style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
+                          Clasifica este POI para que aparezca en &quot;Qué hacer&quot; → categoría seleccionada.
+                        </p>
+                      </div>
+                      
                       {/* Fotos */}
                       {editId ? (
                         <div style={{ marginTop: 20 }}>
@@ -666,7 +741,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                               {row.nombre}
                             </h3>
                           </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
                             <div style={{ fontSize: 13, color: "#666" }}>
                               Coordenadas: {row.lat ?? "—"}, {row.lng ?? "—"}
                             </div>
@@ -685,6 +760,23 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                                 }}
                               >
                                 Coordenadas del pueblo
+                              </span>
+                            )}
+                            {row.categoriaTematica && (
+                              <span
+                                style={{
+                                  display: "inline-block",
+                                  padding: "2px 8px",
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  color: "#0d6efd",
+                                  backgroundColor: "#e7f1ff",
+                                  border: "1px solid #b6d4fe",
+                                  borderRadius: 999,
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {CATEGORIAS_TEMATICAS.find(c => c.value === row.categoriaTematica)?.label || row.categoriaTematica}
                               </span>
                             )}
                           </div>

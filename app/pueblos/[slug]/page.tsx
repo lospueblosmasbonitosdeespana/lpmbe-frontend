@@ -62,8 +62,18 @@ type Poi = {
   lat: number | null;
   lng: number | null;
   categoria: string | null;
+  categoriaTematica: string | null;
   orden: number | null;
   puebloId: number;
+};
+
+// Mapeo de categorías temáticas a labels en español
+const CATEGORIA_TEMATICA_LABELS: Record<string, string> = {
+  GASTRONOMIA: 'Gastronomía',
+  NATURALEZA: 'Naturaleza',
+  CULTURA: 'Cultura',
+  EN_FAMILIA: 'En familia',
+  PETFRIENDLY: 'Petfriendly',
 };
 
 type Multiexperiencia = {
@@ -305,7 +315,12 @@ export default async function PuebloPage({
   // Separar POIs por categoría
   const pois = puebloSafe.pois;
 
-  const poisPOI = pois.filter((poi: Poi) => poi.categoria === "POI");
+  // POIs normales (todos para filtrar por categoría)
+  const allPoisPOI = pois.filter((poi: Poi) => poi.categoria === "POI");
+  // Mostrar solo los primeros 6 en la sección principal
+  const poisPOI = allPoisPOI.slice(0, 6);
+  // Flag para indicar si hay más POIs
+  const hayMasPois = allPoisPOI.length > 6;
 
   const poisMultiexperiencia = pois.filter(
     (poi: Poi) => poi.categoria === "MULTIEXPERIENCIA"
@@ -626,17 +641,18 @@ export default async function PuebloPage({
                 )}
 
                 <div style={{ padding: "16px" }}>
-                  {poi.categoria && (
+                  {poi.categoriaTematica && (
                     <p
                       style={{
                         margin: "0 0 8px 0",
                         fontSize: "12px",
-                        color: "#666",
+                        color: "#8b5e34",
                         textTransform: "uppercase",
                         letterSpacing: "0.5px",
+                        fontWeight: "600",
                       }}
                     >
-                      {poi.categoria}
+                      {CATEGORIA_TEMATICA_LABELS[poi.categoriaTematica] || poi.categoriaTematica}
                     </p>
                   )}
 
@@ -665,6 +681,14 @@ export default async function PuebloPage({
               </Link>
             ))}
           </div>
+          {hayMasPois && (
+            <div style={{ marginTop: "16px", textAlign: "center" }}>
+              <p style={{ fontSize: "14px", color: "#666" }}>
+                Mostrando 6 de {allPoisPOI.length} puntos de interés.
+                Explora las categorías temáticas para ver todos.
+              </p>
+            </div>
+          )}
         </section>
       )}
 
@@ -916,7 +940,17 @@ export default async function PuebloPage({
       <ContenidosPuebloSection contenidos={contenidosProcesados} />
 
       {/* CATEGORÍAS TEMÁTICAS (Gastronomía, Naturaleza, etc.) - antes de Pueblos cercanos */}
-      <TematicasPuebloTabs puebloSlug={puebloSafe.slug} />
+      <TematicasPuebloTabs
+        puebloSlug={puebloSafe.slug}
+        pois={allPoisPOI.map((poi: Poi) => ({
+          id: poi.id,
+          nombre: poi.nombre,
+          descripcion_corta: poi.descripcion_corta,
+          descripcion_larga: poi.descripcion_larga,
+          foto: poi.foto,
+          categoriaTematica: poi.categoriaTematica,
+        }))}
+      />
 
       {/* PUEBLOS CERCANOS */}
       <PueblosCercanosSection
