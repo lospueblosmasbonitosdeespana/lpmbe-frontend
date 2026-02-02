@@ -39,8 +39,8 @@ export default async function ComunidadesPage() {
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
       <div className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-tight">Comunidades autónomas</h1>
-        <p className="mt-2 text-sm text-black/60">
+        <h1 className="font-display text-3xl font-semibold tracking-tight">Comunidades autónomas</h1>
+        <p className="mt-2 text-sm text-black/60 font-sans">
           Elige una comunidad autónoma para ver provincias y pueblos.
         </p>
       </div>
@@ -51,39 +51,39 @@ export default async function ComunidadesPage() {
             Array.from(countByComunidad.entries()).find(([name]) => norm(name) === norm(c.name))?.[1] ?? 0;
 
           return (
-            <Link
-              key={c.slug}
-              href={`/pueblos/comunidades/${c.slug}`}
-              className="group rounded-2xl border border-black/10 bg-white p-4 shadow-sm hover:bg-black/[0.02]"
-            >
-              <div className="flex items-center gap-4">
-                <div className="relative h-10 w-14 overflow-hidden rounded-lg border border-black/10 bg-black/5">
-                  {c.flagSrc ? (
-                    <Image
-                      src={c.flagSrc}
-                      alt={`Bandera de ${c.name}`}
-                      fill
-                      className="object-cover"
-                      sizes="56px"
-                      priority={false}
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs text-black/50">
-                      (sin bandera)
-                    </div>
-                  )}
-                </div>
-
-                <div className="min-w-0">
-                  <div className="truncate font-medium">{c.name}</div>
-                  <div className="mt-1 text-sm text-black/60">
-                    {total > 0 ? `${total} pueblo${total === 1 ? "" : "s"}` : "Todavía sin pueblos"}
+              <Link
+                key={c.slug}
+                href={`/pueblos/comunidades/${c.slug}`}
+                className="group rounded-2xl border border-black/10 bg-neutral-50 p-4 shadow-sm transition-colors hover:bg-neutral-100"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="relative h-10 w-14 overflow-hidden rounded-lg border border-black/10 bg-black/5">
+                    {c.flagSrc ? (
+                      <Image
+                        src={c.flagSrc}
+                        alt={`Bandera de ${c.name}`}
+                        fill
+                        className="object-cover"
+                        sizes="56px"
+                        priority={false}
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-xs text-black/50">
+                        (sin bandera)
+                      </div>
+                    )}
                   </div>
-                </div>
 
-                <div className="ml-auto text-sm text-black/40 group-hover:text-black/60">→</div>
-              </div>
-            </Link>
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{c.name}</div>
+                    <div className="mt-1 text-sm text-black/60">
+                      {total > 0 ? `${total} pueblo${total === 1 ? "" : "s"}` : "Todavía sin pueblos"}
+                    </div>
+                  </div>
+
+                  <div className="ml-auto text-sm text-black/40 transition-transform group-hover:translate-x-1">→</div>
+                </div>
+              </Link>
           );
         })}
       </div>

@@ -58,11 +58,11 @@
 }
 
 @theme inline {
-  /* Typography */
-  --font-sans: var(--font-sans, 'Source Sans 3'), 'Source Sans 3 Fallback', system-ui, sans-serif;
-  --font-serif: var(--font-serif, 'Playfair Display'), 'Playfair Display Fallback', Georgia, serif;
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
-  --font-display: 'Playfair Display', 'Playfair Display Fallback', Georgia, serif;
+  /* Typography - mismas fuentes que /pueblos */
+  --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-mono: ui-monospace, monospace;
+  --font-display: "Playfair Display", Georgia, serif;
   
   /* Section Spacing Scale */
   --spacing-section-sm: 3rem;
@@ -142,9 +142,7 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-}
-
-@layer base {
+}@layer base {
   * {
     @apply border-border outline-ring/50;
   }

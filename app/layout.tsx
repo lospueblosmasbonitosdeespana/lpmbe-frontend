@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className="antialiased">
+      <body className="font-sans antialiased">
         <GoogleAuthProviderWrapper>
           <Header />
           {children}

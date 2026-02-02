@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
+        protocol: 'http',
+        hostname: 'localhost',
+        pathname: '/**',
+      },
+      {
         protocol: 'https',
         hostname: 'lospueblosmasbonitosdeespana.org',
       },
