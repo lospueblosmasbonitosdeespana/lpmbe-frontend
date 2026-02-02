@@ -23,10 +23,14 @@ export async function GET(req: NextRequest) {
 
   // Backend URL (server-side, no CORS)
   const API_BASE = getApiUrl();
-  const url = `${API_BASE}/public/pueblos/photos?ids=${idsParam}`;
+  
+  // Pasar cache buster si viene (para bypass CDN)
+  const cacheBuster = searchParams.get("_t") || "";
+  const cacheBusterParam = cacheBuster ? `&_t=${cacheBuster}` : "";
+  const url = `${API_BASE}/public/pueblos/photos?ids=${idsParam}${cacheBusterParam}`;
 
   console.log(`[api/public/pueblos/photos] Fetching from backend: ${url}`);
-  console.log(`[api/public/pueblos/photos] IDs count: ${idsParam.split(',').length}`);
+  console.log(`[api/public/pueblos/photos] IDs count: ${idsParam.split(',').length}, cacheBuster: ${cacheBuster || 'none'}`);
 
   try {
     const res = await fetch(url, {
@@ -61,7 +65,10 @@ export async function GET(req: NextRequest) {
 
     return new Response(text, {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+      },
     });
   } catch (err: any) {
     console.error("[api/public/pueblos/photos] Fetch error:", err.message);
