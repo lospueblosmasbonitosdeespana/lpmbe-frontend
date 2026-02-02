@@ -454,8 +454,6 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
       await loadPhotos();
       // Mostrar error DESPUÉS de recargar para que no se borre
       setError(errorMsg);
-      // Alert para que el usuario vea el error inmediatamente
-      alert(`Error al guardar orden: ${errorMsg}`);
     }
   }
 
