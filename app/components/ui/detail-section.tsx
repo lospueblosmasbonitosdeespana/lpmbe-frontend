@@ -26,7 +26,7 @@ export function DetailIntroSection(props: DetailIntroSectionProps) {
   } = props
   return (
     <Section background={background} className={className}>
-      <Container size="md">
+      <Container size="lg">
         <div className={cn(align === "center" && "text-center")}>
           {eyebrow && <Eyebrow className="mb-4">{eyebrow}</Eyebrow>}
           {title && <Headline className="mb-6">{title}</Headline>}

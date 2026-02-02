@@ -419,6 +419,14 @@ export default async function PuebloPage({
         puebloNombre={puebloSafe.nombre}
         puebloSlug={puebloSafe.slug}
         multiexperiencias={puebloSafe.multiexperiencias ?? []}
+        paginasTematicas={[]}
+        poisFallback={allPoisPOI.slice(0, 6).map((poi: Poi) => ({
+          id: poi.id,
+          nombre: poi.nombre,
+          descripcion_corta: poi.descripcion_corta,
+          foto: poi.foto,
+          rotation: poi.rotation,
+        }))}
       />
 
       {/* TEXTO: Enunciado + Descripción - Diseño tourism-website-design */}

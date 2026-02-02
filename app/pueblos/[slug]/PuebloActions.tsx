@@ -261,20 +261,28 @@ export default function PuebloActions({
 
           {/* Semáforo turístico */}
           {semaforoConfig && (
-            <div
-              className="mt-4 flex items-center justify-center gap-2 rounded-lg border-2 py-2 px-4"
-              style={{
-                borderColor: semaforoConfig.color,
-                backgroundColor: semaforoConfig.bgColor,
-              }}
-            >
-              <span
-                className="h-2.5 w-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: semaforoConfig.color }}
-              />
-              <span className="text-sm font-medium" style={{ color: semaforoConfig.color }}>
-                Semáforo turístico · {semaforoConfig.texto}
-              </span>
+            <div className="mt-4 flex items-center justify-center gap-4 rounded-lg border border-border bg-card px-4 py-3">
+              {/* Indicador visual del semáforo */}
+              <div className="flex flex-col gap-1 rounded-full bg-foreground/90 p-1.5">
+                <div className={cn(
+                  "h-3 w-3 rounded-full transition-opacity",
+                  semaforoEstado === "ROJO" ? "bg-red-500" : "bg-red-500/20"
+                )} />
+                <div className={cn(
+                  "h-3 w-3 rounded-full transition-opacity",
+                  semaforoEstado === "AMARILLO" ? "bg-amber-500" : "bg-amber-500/20"
+                )} />
+                <div className={cn(
+                  "h-3 w-3 rounded-full transition-opacity",
+                  semaforoEstado === "VERDE" ? "bg-green-500" : "bg-green-500/20"
+                )} />
+              </div>
+              {/* Texto */}
+              <div className="flex-1">
+                <span className="text-sm font-medium text-foreground/80">
+                  Semáforo turístico · {semaforoConfig.texto}
+                </span>
+              </div>
             </div>
           )}
         </Container>

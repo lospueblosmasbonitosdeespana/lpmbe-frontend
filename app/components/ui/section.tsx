@@ -14,9 +14,9 @@ interface SectionProps {
 
 const spacingClasses: Record<SectionSpacing, string> = {
   none: "",
-  sm: "py-12 md:py-16",
-  md: "py-16 md:py-20",
-  lg: "py-20 md:py-28",
+  sm: "py-8 md:py-12",
+  md: "py-12 md:py-16",
+  lg: "py-16 md:py-20",
 }
 
 const backgroundClasses: Record<SectionBackground, string> = {

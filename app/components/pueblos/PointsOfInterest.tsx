@@ -34,8 +34,8 @@ export function PointsOfInterest({ points, className }: PointsOfInterestProps) {
           <Headline>Lugares de interés</Headline>
         </div>
 
-        <Grid columns={2} gap="md">
-          {points.map((point, index) => (
+        <Grid columns={3} gap="md">
+          {points.slice(0, 6).map((point, index) => (
             <PointOfInterestCard key={point.id} point={point} index={index} />
           ))}
         </Grid>
@@ -48,12 +48,12 @@ function PointOfInterestCard({ point, index }: { point: PointOfInterest; index: 
   const content = (
     <article
       className={cn(
-        "flex gap-4 border border-border bg-card p-4 transition-colors lg:p-5",
+        "flex flex-col gap-3 border border-border bg-card p-4 transition-colors lg:p-5",
         point.href && "cursor-pointer hover:border-primary/30"
       )}
     >
       {point.image && (
-        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-sm bg-muted lg:h-24 lg:w-24">
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-sm bg-muted">
           <Image
             src={point.image}
             alt={point.name}
@@ -63,8 +63,8 @@ function PointOfInterestCard({ point, index }: { point: PointOfInterest; index: 
         </div>
       )}
 
-      <div className="flex flex-1 items-start gap-3">
-        <span className="font-serif text-3xl font-medium leading-none text-primary/30 lg:text-4xl">
+      <div className="flex items-start gap-2">
+        <span className="font-serif text-2xl font-medium leading-none text-primary/30">
           {String(index + 1).padStart(2, "0")}
         </span>
 
@@ -72,10 +72,10 @@ function PointOfInterestCard({ point, index }: { point: PointOfInterest; index: 
           <span className="mb-1 block text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
             {point.type}
           </span>
-          <h3 className={cn("mb-1 font-serif text-lg font-medium text-foreground lg:text-xl", point.href && "group-hover:text-primary transition-colors")}>
+          <h3 className={cn("mb-2 font-serif text-lg font-medium text-foreground", point.href && "group-hover:text-primary transition-colors")}>
             {point.name}
           </h3>
-          <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+          <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
             {point.description}
           </p>
         </div>
