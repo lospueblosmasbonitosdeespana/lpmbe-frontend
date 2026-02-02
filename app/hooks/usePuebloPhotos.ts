@@ -12,6 +12,7 @@ type PhotoData = {
 const CACHE_KEY = "pueblos_photos_v3"; // Cambio de versión para forzar limpieza
 const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 horas
 const MIN_VALID_PERCENTAGE = 0.5; // Al menos 50% deben tener URL válida
+const REORDER_TS_KEY = "pueblos_photos_reorder_ts"; // Timestamp del último reordenamiento
 
 interface CacheEntry {
   photos: Record<string, PhotoData>;
@@ -91,9 +92,27 @@ async function fetchPhotosBulk(puebloIds: number[]): Promise<Record<string, Phot
   
   console.log(`[usePuebloPhotos] Fetching ${puebloIds.length} photos, first 5 IDs:`, puebloIds.slice(0, 5));
   
+  // Cache buster: si hubo reordenamiento reciente, añadir timestamp para bypass CDN cache
+  let cacheBuster = "";
+  try {
+    const reorderTs = localStorage.getItem(REORDER_TS_KEY);
+    if (reorderTs) {
+      const ts = parseInt(reorderTs, 10);
+      const age = Date.now() - ts;
+      // Solo usar cache buster si el reordenamiento fue hace menos de 5 minutos
+      if (age < 5 * 60 * 1000) {
+        cacheBuster = `&_t=${ts}`;
+        console.log(`[usePuebloPhotos] Using cache buster (reorder ${Math.round(age/1000)}s ago)`);
+      } else {
+        // Limpiar timestamp viejo
+        localStorage.removeItem(REORDER_TS_KEY);
+      }
+    }
+  } catch {}
+  
   try {
     // Llamar a Next.js API route (misma origin, sin CORS)
-    const res = await fetch(`/api/public/pueblos/photos?ids=${ids}`, {
+    const res = await fetch(`/api/public/pueblos/photos?ids=${ids}${cacheBuster}`, {
       cache: "no-store",
     });
 

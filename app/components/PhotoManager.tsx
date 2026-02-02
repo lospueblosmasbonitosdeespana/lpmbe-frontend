@@ -448,7 +448,9 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
         // Invalidar cache de fotos de pueblos para que la tarjeta muestre la foto actualizada
         try {
           sessionStorage.removeItem("pueblos_photos_v3");
-          console.log("[PhotoManager] Cache de fotos de pueblos invalidado");
+          // Guardar timestamp para cache busting en CDN
+          localStorage.setItem("pueblos_photos_reorder_ts", String(Date.now()));
+          console.log("[PhotoManager] Cache de fotos de pueblos invalidado + timestamp guardado");
         } catch {}
 
         // Refrescar para sincronizar con backend (p. ej. IDs canonizados)
