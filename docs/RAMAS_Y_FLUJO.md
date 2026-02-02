@@ -58,6 +58,39 @@ DESPUÉS DE TERMINAR DISEÑO (cuando el usuario confirme):
 
 ---
 
+## Flujo seguro (no fastidiar main)
+
+**Objetivo**: Subir diseño a GitHub sin tocar main. Luego, cuando acabemos el día, subir lo hecho a main. No equivocarse.
+
+### 1. Subir solo a rama diseño (NO toca main)
+
+```bash
+cd frontend
+git status                    # Comprobar rama (debe ser Desingn-V0)
+git add .
+git commit -m "feat(meteo): diseño completo"
+git push origin Desingn-V0    # Solo la rama diseño, main NO se toca
+```
+
+### 2. Al acabar el día: pasar diseño a producción (main)
+
+```bash
+cd frontend
+git checkout main             # Cambiar a main
+git pull origin main          # Traer última versión de main
+git merge Desingn-V0          # Incorporar diseño
+git push origin main          # Subir a producción
+```
+
+### Reglas clave
+
+- **Nunca hacer push a main** hasta que el usuario confirme explícitamente.
+- **No hacer checkout a main** si hay cambios sin commitear (primero commit en Desingn-V0).
+- **`git push origin Desingn-V0`** solo actualiza la rama diseño; main permanece intacta.
+- **El merge a main** lo decide el usuario cuando todo esté listo.
+
+---
+
 ## v0-tourism-website-design
 
 - **Ruta local** (IMPORTANTE, memorizar): `Projects/LPMBE/tourism-website-design` (clonada a mano)
