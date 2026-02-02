@@ -1,18 +1,19 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getPuebloBySlug, getPueblosLite, getApiUrl, type Pueblo } from "@/lib/api";
+import { getPuebloBySlug, getPueblosLite, getApiUrl } from "@/lib/api";
 import PuebloActions from "./PuebloActions";
-import FeedSection from "../../components/FeedSection";
 import DescripcionPueblo from "./DescripcionPueblo";
-import SemaforoBadge from "../../components/pueblos/SemaforoBadge";
 import MeteoPanel from "./_components/MeteoPanel";
 import { getComunidadFlagSrc } from "@/lib/flags";
-import GaleriaGrid from "./GaleriaGrid";
 import TematicasPuebloTabs from "./TematicasPuebloTabs";
 import PueblosCercanosSection from "./_components/PueblosCercanosSection";
+import { DetailPageHero } from "@/app/components/ui/detail-page-hero";
+import { DetailIntroSection } from "@/app/components/ui/detail-section";
 import { DetailStatsBlock } from "@/app/components/village/detail-stats-block";
 import { CategoryHighlights } from "@/app/components/village/category-highlights";
 import { MapSection } from "@/app/components/village/map-section";
+import { DetailGallerySection } from "@/app/components/ui/detail-gallery-section";
+import { PointsOfInterest } from "@/app/components/pueblos/PointsOfInterest";
 import RotatedImage from "@/app/components/RotatedImage";
 
 /** Distancia Haversine en km */
@@ -352,58 +353,40 @@ export default async function PuebloPage({
     }
   }
 
+  const breadcrumbs = [
+    { label: "Inicio", href: "/" },
+    { label: "Pueblos", href: "/pueblos" },
+    { label: puebloSafe.nombre, href: `/pueblos/${puebloSafe.slug}` },
+  ];
+
+  const heroMetadata = (
+    <div className="flex items-center gap-2">
+      {comunidadFlagSrc && (
+        <img
+          src={comunidadFlagSrc}
+          alt={`Bandera de ${puebloSafe.comunidad}`}
+          className="h-5 w-8 rounded-sm object-cover"
+        />
+      )}
+      <span>{puebloSafe.provincia}</span>
+      <span aria-hidden="true">·</span>
+      <span>{puebloSafe.comunidad}</span>
+    </div>
+  );
+
   return (
     <main>
-      {/* Estilos para galería responsive */}
-      <style>{`
-        .galeria-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 16px;
-        }
-        @media (max-width: 1024px) {
-          .galeria-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-        @media (max-width: 640px) {
-          .galeria-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
-
-      {/* HEADER CON BANDERA */}
-      <header className="mb-6">
-        <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-tight">
-          {puebloSafe.nombre}
-        </h1>
-
-        <div className="mt-2 flex items-center gap-2 text-base md:text-lg text-neutral-600">
-          {comunidadFlagSrc ? (
-            <img
-              src={comunidadFlagSrc}
-              alt={`Bandera de ${puebloSafe.comunidad}`}
-              className="h-5 w-8 rounded-sm object-cover"
-            />
-          ) : null}
-
-          <span>{puebloSafe.provincia}</span>
-          <span aria-hidden="true">·</span>
-          <span>{puebloSafe.comunidad}</span>
-        </div>
-      </header>
-
-      {/* HERO */}
-      <section>
-        {heroImage && (
-          <img
-            src={heroImage}
-            alt={puebloSafe.nombre}
-            style={{ width: "100%", maxHeight: "400px", objectFit: "cover" }}
-          />
-        )}
-      </section>
+      {/* HERO - Diseño tourism-website-design */}
+      <DetailPageHero
+        title={puebloSafe.nombre}
+        eyebrow={`${puebloSafe.comunidad} / ${puebloSafe.provincia}`}
+        metadata={heroMetadata}
+        image={heroImage}
+        imageAlt={puebloSafe.nombre}
+        breadcrumbs={breadcrumbs}
+        variant="fullscreen"
+        overlay="gradient"
+      />
 
       {/* BARRA DE ACCIONES CON SEMÁFORO */}
       <PuebloActions
@@ -432,39 +415,46 @@ export default async function PuebloPage({
         <MeteoPanel puebloId={puebloSafe.id} />
       </section>
 
-      {/* TEXTO: Enunciado + Descripción */}
-      <section
-        style={{
-          marginTop: "32px",
-          padding: "24px 0",
-          backgroundColor: "var(--color-bg-section)",
-        }}
-      >
-        <div className="mx-auto max-w-3xl px-4">
-          {puebloSafe.lead && (
-            <p className="mb-6 text-xl font-medium leading-relaxed text-gray-800 md:text-2xl">
-              {puebloSafe.lead}
-            </p>
-          )}
-          <DescripcionPueblo descripcion={puebloSafe.descripcion} />
-        </div>
-      </section>
-
-      {/* GALERÍA */}
-      {fotosGalería.length > 0 && (
-        <section
-          style={{
-            marginTop: "48px",
-            padding: "32px 0",
-            backgroundColor: "#fff",
-          }}
-        >
-          <h2 style={{ marginBottom: "24px" }}>Galería</h2>
-          <GaleriaGrid
-            fotos={fotosGalería}
-            puebloNombre={puebloSafe.nombre}
+      {/* TEXTO: Enunciado + Descripción - Diseño tourism-website-design */}
+      {(puebloSafe.lead || puebloSafe.descripcion) && (() => {
+        const plainDesc = puebloSafe.descripcion?.replace(/<[^>]*>/g, "").trim() ?? "";
+        const introLead = puebloSafe.lead ?? (plainDesc ? plainDesc.slice(0, 250) + (plainDesc.length > 250 ? "…" : "") : "Descubre este pueblo.");
+        return (
+          <DetailIntroSection
+            lead={introLead}
+            body={puebloSafe.descripcion ? <DescripcionPueblo descripcion={puebloSafe.descripcion} /> : undefined}
+            background="default"
           />
-        </section>
+        );
+      })()}
+
+      {/* GALERÍA - Diseño tourism-website-design */}
+      {fotosGalería.length > 0 && (
+        <DetailGallerySection
+          eyebrow="Galería"
+          title={`Imágenes de ${puebloSafe.nombre}`}
+          images={fotosGalería.map((f: FotoPueblo) => ({
+            src: f.url,
+            alt: `${puebloSafe.nombre} - foto ${f.id}`,
+          }))}
+          layout="featured"
+          background="card"
+        />
+      )}
+
+      {/* PUNTOS DE INTERÉS - Diseño tourism-website-design */}
+      {poisPOI.length > 0 && (
+        <PointsOfInterest
+          points={poisPOI.map((poi: Poi) => ({
+            id: poi.id,
+            name: poi.nombre,
+            type: (CATEGORIA_TEMATICA_LABELS[poi.categoriaTematica ?? ""] ?? poi.categoria ?? "Punto de interés"),
+            description: poi.descripcion_corta ?? poi.descripcion_larga?.replace(/<[^>]*>/g, "").slice(0, 120) ?? "",
+            image: poi.foto,
+            rotation: poi.rotation,
+            href: `/pueblos/${puebloSafe.slug}/pois/${poi.id}`,
+          }))}
+        />
       )}
 
       {/* MAPA (V0 MapSection) */}
@@ -497,110 +487,6 @@ export default async function PuebloPage({
             boldestMapId={puebloSafe.boldestMapId ?? undefined}
           />
         </div>
-      )}
-
-      {/* POIs - Puntos de interés */}
-      {poisPOI.length > 0 && (
-        <section style={{ marginTop: "32px" }}>
-          <h2>Puntos de interés</h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-              gap: "20px",
-              marginTop: "16px",
-            }}
-          >
-            {poisPOI.map((poi: Poi) => (
-              <Link
-                key={`${puebloSafe.id}-poi-${poi.id}`}
-                href={`/pueblos/${puebloSafe.slug}/pois/${poi.id}`}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  overflow: "hidden",
-                  textDecoration: "none",
-                  color: "inherit",
-                  display: "flex",
-                  flexDirection: "column",
-                  transition: "box-shadow 0.2s",
-                }}
-              >
-                {poi.foto ? (
-                  <RotatedImage
-                    src={poi.foto}
-                    alt={poi.nombre}
-                    rotation={poi.rotation}
-                    height={200}
-                    loading="lazy"
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "200px",
-                      backgroundColor: "#f0f0f0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#999",
-                      fontSize: "14px",
-                    }}
-                  >
-                    Sin imagen
-                  </div>
-                )}
-
-                <div style={{ padding: "16px" }}>
-                  {poi.categoriaTematica && (
-                    <p
-                      style={{
-                        margin: "0 0 8px 0",
-                        fontSize: "12px",
-                        color: "#8b5e34",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                        fontWeight: "600",
-                      }}
-                    >
-                      {CATEGORIA_TEMATICA_LABELS[poi.categoriaTematica] || poi.categoriaTematica}
-                    </p>
-                  )}
-
-                  <h3
-                    style={{
-                      margin: "0",
-                      fontSize: "18px",
-                      fontWeight: "600",
-                      lineHeight: "1.4",
-                    }}
-                  >
-                    {poi.nombre}
-                  </h3>
-
-                  <p
-                    style={{
-                      margin: "12px 0 0 0",
-                      fontSize: "14px",
-                      color: "#0066cc",
-                      fontWeight: "500",
-                    }}
-                  >
-                    Ver detalle →
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-          {hayMasPois && (
-            <div style={{ marginTop: "16px", textAlign: "center" }}>
-              <p style={{ fontSize: "14px", color: "#666" }}>
-                Mostrando 6 de {allPoisPOI.length} puntos de interés.
-                Explora las categorías temáticas para ver todos.
-              </p>
-            </div>
-          )}
-        </section>
       )}
 
       {/* POIs - Paradas de la experiencia */}

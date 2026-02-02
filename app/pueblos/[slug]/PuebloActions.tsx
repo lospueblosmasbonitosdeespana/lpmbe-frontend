@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { Section } from "@/app/components/ui/section";
+import { Container } from "@/app/components/ui/container";
 
 type PuebloActionsProps = {
   nombre: string;
@@ -112,12 +114,12 @@ function ActionButton({ icon, label, state = "idle", onClick, href, external, hi
   const isSuccess = state === "success";
 
   const iconClasses = highlighted
-    ? "flex h-10 w-10 items-center justify-center rounded-full bg-gray-900 text-white transition-colors group-hover:bg-gray-700"
-    : "flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 transition-colors group-hover:bg-gray-900 group-hover:text-white";
+    ? "flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors group-hover:bg-primary/90"
+    : "flex h-10 w-10 items-center justify-center rounded-full bg-muted transition-colors group-hover:bg-primary group-hover:text-primary-foreground";
 
   const labelClasses = highlighted
-    ? "mt-1.5 text-xs font-semibold text-gray-900 transition-colors group-hover:text-gray-700"
-    : "mt-1.5 text-xs font-medium text-gray-500 transition-colors group-hover:text-gray-900";
+    ? "mt-1.5 text-xs font-semibold text-primary transition-colors group-hover:text-primary/80"
+    : "mt-1.5 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground";
 
   const buttonContent = (
     <>
@@ -222,8 +224,8 @@ export default function PuebloActions({
 
   return (
     <>
-      <section className={cn("border-b border-gray-200")}>
-        <div className="mx-auto max-w-4xl px-4">
+      <Section spacing="none" className={cn("border-b border-border")}>
+        <Container>
           <div className="flex items-center justify-center gap-8 py-4 sm:gap-12">
             <ActionButton
               icon={<ShareIcon className="h-5 w-5" />}
@@ -260,9 +262,9 @@ export default function PuebloActions({
           {/* Semáforo turístico */}
           {semaforoConfig && (
             <div
-              className="mb-4 flex items-center justify-center gap-2 rounded-lg py-2 px-4"
+              className="mt-4 flex items-center justify-center gap-2 rounded-lg border-2 py-2 px-4"
               style={{
-                border: `2px solid ${semaforoConfig.color}`,
+                borderColor: semaforoConfig.color,
                 backgroundColor: semaforoConfig.bgColor,
               }}
             >
@@ -275,8 +277,8 @@ export default function PuebloActions({
               </span>
             </div>
           )}
-        </div>
-      </section>
+        </Container>
+      </Section>
 
       {/* Modal Suscribirse */}
       {showSuscribirseModal && (
