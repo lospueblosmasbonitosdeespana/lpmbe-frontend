@@ -442,11 +442,17 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
         throw new Error(`Error guardando orden (${res.status}): ${errorText}`);
       }
 
-      const result = await res.json().catch(() => ({}));
-      console.log("[PhotoManager] persistOrder success:", result);
+        const result = await res.json().catch(() => ({}));
+        console.log("[PhotoManager] persistOrder success:", result);
 
-      // Refrescar para sincronizar con backend (p. ej. IDs canonizados)
-      await loadPhotos();
+        // Invalidar cache de fotos de pueblos para que la tarjeta muestre la foto actualizada
+        try {
+          sessionStorage.removeItem("pueblos_photos_v3");
+          console.log("[PhotoManager] Cache de fotos de pueblos invalidado");
+        } catch {}
+
+        // Refrescar para sincronizar con backend (p. ej. IDs canonizados)
+        await loadPhotos();
     } catch (e: any) {
       console.error("[PhotoManager] persistOrder exception:", e);
       const errorMsg = e?.message ?? "Error guardando orden";
