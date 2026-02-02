@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 
 type Contenido = {
   id: number;
@@ -12,12 +13,72 @@ type Contenido = {
   tipo: string;
   publishedAt?: string;
   createdAt?: string;
+  fechaInicio?: string | null;
+  fechaFin?: string | null;
 };
 
 type ActualidadPuebloClientProps = {
   puebloId: number;
   puebloNombre: string;
   puebloSlug: string;
+};
+
+function procesarContenidos(contenidos: Contenido[]): Contenido[] {
+  const ahora = new Date();
+
+  const eventos = contenidos.filter((c) => c.tipo === 'EVENTO');
+  const noticias = contenidos.filter((c) => c.tipo === 'NOTICIA');
+  const articulos = contenidos.filter((c) => c.tipo === 'ARTICULO');
+  const paginas = contenidos.filter((c) => c.tipo === 'PAGINA');
+
+  // Eventos: solo próximos, ordenar por fechaInicio ascendente
+  const eventosProximos = eventos
+    .filter((e) => {
+      if (!e.fechaInicio) return false;
+      return new Date(e.fechaInicio) >= ahora;
+    })
+    .sort((a, b) => {
+      if (!a.fechaInicio || !b.fechaInicio) return 0;
+      return new Date(a.fechaInicio).getTime() - new Date(b.fechaInicio).getTime();
+    });
+
+  // Noticias: por publishedAt descendente (más recientes primero)
+  const noticiasOrdenadas = [...noticias].sort((a, b) => {
+    const pa = a.publishedAt ?? a.createdAt ?? '';
+    const pb = b.publishedAt ?? b.createdAt ?? '';
+    if (!pa || !pb) return 0;
+    return new Date(pb).getTime() - new Date(pa).getTime();
+  });
+
+  // Artículos: por publishedAt descendente
+  const articulosOrdenados = [...articulos].sort((a, b) => {
+    const pa = a.publishedAt ?? a.createdAt ?? '';
+    const pb = b.publishedAt ?? b.createdAt ?? '';
+    if (!pa || !pb) return 0;
+    return new Date(pb).getTime() - new Date(pa).getTime();
+  });
+
+  // Páginas: por publishedAt descendente
+  const paginasOrdenadas = [...paginas].sort((a, b) => {
+    const pa = a.publishedAt ?? a.createdAt ?? '';
+    const pb = b.publishedAt ?? b.createdAt ?? '';
+    if (!pa || !pb) return 0;
+    return new Date(pb).getTime() - new Date(pa).getTime();
+  });
+
+  return [
+    ...noticiasOrdenadas,
+    ...eventosProximos,
+    ...articulosOrdenados,
+    ...paginasOrdenadas,
+  ];
+}
+
+const TIPO_LABEL: Record<string, string> = {
+  EVENTO: 'Evento',
+  NOTICIA: 'Noticia',
+  ARTICULO: 'Artículo',
+  PAGINA: 'Página temática',
 };
 
 export default function ActualidadPuebloClient({ puebloId, puebloNombre, puebloSlug }: ActualidadPuebloClientProps) {
@@ -38,7 +99,7 @@ export default function ActualidadPuebloClient({ puebloId, puebloNombre, puebloS
 
         const json = await res.json();
         const data = Array.isArray(json) ? json : (json?.items ?? []);
-        
+
         if (!cancelled) {
           setItems(data);
         }
@@ -55,6 +116,8 @@ export default function ActualidadPuebloClient({ puebloId, puebloNombre, puebloS
     };
   }, [puebloId]);
 
+  const itemsProcesados = useMemo(() => procesarContenidos(items), [items]);
+
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
       <div className="mb-8">
@@ -66,22 +129,21 @@ export default function ActualidadPuebloClient({ puebloId, puebloNombre, puebloS
 
       {loading ? (
         <div className="text-gray-600">Cargando...</div>
-      ) : items.length === 0 ? (
+      ) : itemsProcesados.length === 0 ? (
         <div className="rounded-md border p-6 text-gray-600">
           No hay contenido disponible.
         </div>
       ) : (
         <div className="space-y-6">
-          {items.map((item) => {
+          {itemsProcesados.map((item) => {
             const href = `/c/${item.slug}`;
-            const fecha = item.publishedAt ?? item.createdAt;
-            const fechaFormateada = fecha
-              ? new Date(fecha).toLocaleDateString('es-ES', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })
-              : '';
+            const esEvento = item.tipo === 'EVENTO';
+            const fechaPub = item.publishedAt ?? item.createdAt;
+            const fechaFormateada = esEvento && item.fechaInicio
+              ? formatEventoRangeEs(item.fechaInicio, item.fechaFin ?? undefined)
+              : fechaPub
+                ? formatDateTimeEs(fechaPub)
+                : '';
 
             return (
               <article key={item.id} className="border-b pb-6 last:border-0">
@@ -98,7 +160,7 @@ export default function ActualidadPuebloClient({ puebloId, puebloNombre, puebloS
 
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xs font-medium text-gray-500 uppercase">
-                      {item.tipo}
+                      {TIPO_LABEL[item.tipo] ?? item.tipo}
                     </span>
                     {fechaFormateada && (
                       <>

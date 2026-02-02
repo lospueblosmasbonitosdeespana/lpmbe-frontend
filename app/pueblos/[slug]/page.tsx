@@ -491,6 +491,7 @@ export default async function PuebloPage({
       {/* BARRA DE ACCIONES CON SEMÁFORO */}
       <PuebloActions
         nombre={puebloSafe.nombre}
+        puebloSlug={puebloSafe.slug}
         lat={puebloSafe.lat}
         lng={puebloSafe.lng}
         semaforoEstado={semaforoPueblo.estado ?? "VERDE"}
