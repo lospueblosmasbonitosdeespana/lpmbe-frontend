@@ -52,6 +52,8 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [hasUnsavedOrder, setHasUnsavedOrder] = useState(false);
   const rotationCacheRef = useRef<Map<string, number>>(new Map());
 
   // Cargar fotos desde el endpoint apropiado
@@ -133,6 +135,7 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
       });
       
       setPhotos(fotosArray);
+      setHasUnsavedOrder(false);
     } catch (e: any) {
       setError(e?.message ?? "Error cargando fotos");
     } finally {
@@ -284,8 +287,10 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
     }
   }
 
-  // Persistir orden completo de fotos en backend
+  // Persistir orden completo de fotos en backend (llamado al pulsar "Guardar orden")
   async function persistOrder(orderedPhotos: any[]) {
+    setSavingOrder(true);
+    setError(null);
     try {
       const payload = {
         fotos: orderedPhotos.map((p, idx) => ({
@@ -305,52 +310,45 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
         throw new Error(`Error persistiendo orden (${res.status}): ${errorText}`);
       }
 
-      // Actualizar el campo `order` local después del éxito
-      setPhotos((prev) =>
-        prev.map((p, idx) => ({
-          ...p,
-          order: orderedPhotos[idx].id === p.id ? idx + 1 : p.order,
-        }))
-      );
+      setHasUnsavedOrder(false);
+      // Refrescar para obtener estado definitivo (p. ej. IDs canonizados)
+      await loadPhotos();
     } catch (e: any) {
       setError(e?.message ?? "Error persistiendo orden");
-      // Refrescar para volver al estado del backend
       await loadPhotos();
+    } finally {
+      setSavingOrder(false);
     }
   }
 
-  // Mover foto arriba
-  async function moveUp(index: number) {
+  // Mover foto arriba (solo cambia el orden local; hay que pulsar Guardar)
+  function moveUp(index: number) {
     if (index === 0) return;
-    
     setError(null);
-    
-    // Swap en el array local
+
     const nextPhotos = [...photos];
     [nextPhotos[index - 1], nextPhotos[index]] = [nextPhotos[index], nextPhotos[index - 1]];
-    
-    // Actualizar UI inmediatamente
-    setPhotos(nextPhotos);
-    
-    // Persistir en backend (asíncrono)
-    await persistOrder(nextPhotos);
+    // Actualizar campo order para que el label "Foto #N" sea correcto
+    const reordered = nextPhotos.map((p, i) => ({ ...p, order: i + 1 }));
+    setPhotos(reordered);
+    setHasUnsavedOrder(true);
   }
 
-  // Mover foto abajo
-  async function moveDown(index: number) {
-    if (index === photos.length - 1) return;
-    
+  // Mover foto abajo (solo cambia el orden local; hay que pulsar Guardar)
+  function moveDown(index: number) {
+    if (index >= photos.length - 1) return;
     setError(null);
-    
-    // Swap en el array local
+
     const nextPhotos = [...photos];
     [nextPhotos[index], nextPhotos[index + 1]] = [nextPhotos[index + 1], nextPhotos[index]];
-    
-    // Actualizar UI inmediatamente
-    setPhotos(nextPhotos);
-    
-    // Persistir en backend (asíncrono)
-    await persistOrder(nextPhotos);
+    const reordered = nextPhotos.map((p, i) => ({ ...p, order: i + 1 }));
+    setPhotos(reordered);
+    setHasUnsavedOrder(true);
+  }
+
+  async function handleGuardarOrden() {
+    if (!hasUnsavedOrder) return;
+    await persistOrder(photos);
   }
 
   // Rotar foto 90 grados (AUTOSAVE inmediato, igual que pueblo)
@@ -441,8 +439,8 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
   return (
     <div style={{ padding: "20px" }}>
       {/* Header */}
-      <div style={{ marginBottom: "20px" }}>
-        <h3 style={{ margin: "0 0 10px 0", fontSize: "18px", fontWeight: "600" }}>
+      <div style={{ marginBottom: "20px", display: "flex", flexWrap: "wrap", alignItems: "center", gap: "12px" }}>
+        <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>
           Fotos
         </h3>
         
@@ -469,6 +467,33 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
             style={{ display: "none" }}
           />
         </label>
+
+        {/* Botón Guardar orden (visible cuando hay cambios sin guardar) */}
+        {photos.length > 1 && (
+          <button
+            type="button"
+            onClick={handleGuardarOrden}
+            disabled={!hasUnsavedOrder || savingOrder}
+            style={{
+              padding: "10px 16px",
+              backgroundColor: hasUnsavedOrder ? "#16a34a" : "#9ca3af",
+              color: "white",
+              borderRadius: "6px",
+              cursor: hasUnsavedOrder && !savingOrder ? "pointer" : "not-allowed",
+              opacity: savingOrder ? 0.7 : 1,
+              fontSize: "14px",
+              fontWeight: "500",
+              border: "none",
+            }}
+          >
+            {savingOrder ? "Guardando..." : "💾 Guardar orden"}
+          </button>
+        )}
+        {hasUnsavedOrder && photos.length > 1 && (
+          <span style={{ fontSize: "13px", color: "#dc2626" }}>
+            Hay cambios sin guardar
+          </span>
+        )}
       </div>
 
       {/* Error */}
@@ -562,8 +587,8 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
               {/* Info */}
               <div style={{ fontSize: "14px" }}>
                 <div style={{ fontWeight: "500", marginBottom: "4px" }}>
-                  Foto #{photo.order}
-                  {photo.order === 1 && (
+                  Foto #{index + 1}
+                  {index === 0 && (
                     <span
                       style={{
                         marginLeft: "8px",
