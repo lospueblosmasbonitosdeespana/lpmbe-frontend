@@ -20,12 +20,14 @@ type TematicasPages = {
   CULTURA?: TematicaPage;
   EN_FAMILIA?: TematicaPage;
   PETFRIENDLY?: TematicaPage;
+  PATRIMONIO?: TematicaPage;
 };
 
 const CATEGORIAS = [
   { key: 'GASTRONOMIA', label: 'Gastronomía' },
   { key: 'NATURALEZA', label: 'Naturaleza' },
   { key: 'CULTURA', label: 'Cultura' },
+  { key: 'PATRIMONIO', label: 'Patrimonio' },
   { key: 'EN_FAMILIA', label: 'En familia' },
   { key: 'PETFRIENDLY', label: 'Petfriendly' },
 ];

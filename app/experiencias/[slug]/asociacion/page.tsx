@@ -19,6 +19,7 @@ const CATEGORY_MAP: Record<string, CategoryConfig> = {
   gastronomia: { title: 'Gastronomía', category: 'GASTRONOMIA' },
   naturaleza: { title: 'Naturaleza', category: 'NATURALEZA' },
   cultura: { title: 'Cultura', category: 'CULTURA' },
+  patrimonio: { title: 'Patrimonio', category: 'PATRIMONIO' },
   'en-familia': { title: 'En familia', category: 'EN_FAMILIA' },
   petfriendly: { title: 'Petfriendly', category: 'PETFRIENDLY' },
 };

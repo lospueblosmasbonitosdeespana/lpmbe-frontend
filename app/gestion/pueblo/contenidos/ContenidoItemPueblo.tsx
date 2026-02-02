@@ -11,6 +11,7 @@ const CATEGORIA_TO_SLUG: Record<string, string> = {
   GASTRONOMIA: 'gastronomia',
   NATURALEZA: 'naturaleza',
   CULTURA: 'cultura',
+  PATRIMONIO: 'patrimonio',
   EN_FAMILIA: 'en-familia',
   PETFRIENDLY: 'petfriendly',
 };

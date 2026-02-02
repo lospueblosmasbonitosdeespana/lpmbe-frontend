@@ -72,6 +72,7 @@ const CATEGORIA_TEMATICA_LABELS: Record<string, string> = {
   GASTRONOMIA: 'Gastronomía',
   NATURALEZA: 'Naturaleza',
   CULTURA: 'Cultura',
+  PATRIMONIO: 'Patrimonio',
   EN_FAMILIA: 'En familia',
   PETFRIENDLY: 'Petfriendly',
 };

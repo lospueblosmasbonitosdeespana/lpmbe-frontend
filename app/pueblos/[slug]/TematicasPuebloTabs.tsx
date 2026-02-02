@@ -17,6 +17,7 @@ type TematicasPueblo = {
   CULTURA?: TematicaPage;
   EN_FAMILIA?: TematicaPage;
   PETFRIENDLY?: TematicaPage;
+  PATRIMONIO?: TematicaPage;
 };
 
 type PoiTematica = {
@@ -38,6 +39,7 @@ const TABS: TabConfig[] = [
   { key: 'GASTRONOMIA', label: 'Gastronomía', slug: 'gastronomia' },
   { key: 'NATURALEZA', label: 'Naturaleza', slug: 'naturaleza' },
   { key: 'CULTURA', label: 'Cultura', slug: 'cultura' },
+  { key: 'PATRIMONIO', label: 'Patrimonio', slug: 'patrimonio' },
   { key: 'EN_FAMILIA', label: 'En familia', slug: 'en-familia' },
   { key: 'PETFRIENDLY', label: 'Petfriendly', slug: 'petfriendly' },
 ];
