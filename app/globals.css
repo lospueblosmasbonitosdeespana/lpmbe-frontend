@@ -58,6 +58,18 @@
 }
 
 @theme inline {
+  /* Typography */
+  --font-sans: var(--font-sans, 'Source Sans 3'), 'Source Sans 3 Fallback', system-ui, sans-serif;
+  --font-serif: var(--font-serif, 'Playfair Display'), 'Playfair Display Fallback', Georgia, serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-display: 'Playfair Display', 'Playfair Display Fallback', Georgia, serif;
+  
+  /* Section Spacing Scale */
+  --spacing-section-sm: 3rem;
+  --spacing-section: 5rem;
+  --spacing-section-lg: 7rem;
+  
+  /* Radius */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
