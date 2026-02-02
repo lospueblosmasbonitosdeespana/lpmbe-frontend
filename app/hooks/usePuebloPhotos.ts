@@ -165,37 +165,55 @@ export function usePuebloPhotos(pueblos: PuebloItem[], options?: { eager?: boole
     async function load() {
       setLoading(true);
       
-      // 1) Intentar cargar desde cache
-      const cached = getCachedPhotos();
-      if (cached && Object.keys(cached).length > 0) {
-        const relevantPhotos: Record<string, PhotoData> = {};
-        let allFound = true;
-        let validCount = 0;
-        
-        for (const p of pueblos) {
-          const key = String(p.id);
-          if (key in cached) {
-            // Verificar que el valor no sea null
-            if (cached[key] && cached[key].url) {
-              relevantPhotos[key] = cached[key];
-              validCount++;
-            } else {
-              // Si es null, incluirlo pero no contar como válido
-              relevantPhotos[key] = cached[key];
-            }
-          } else {
-            allFound = false;
-            break;
+      // Verificar si hubo reordenamiento reciente (ignorar cache si es así)
+      let skipCache = false;
+      try {
+        const reorderTs = localStorage.getItem(REORDER_TS_KEY);
+        if (reorderTs) {
+          const ts = parseInt(reorderTs, 10);
+          const age = Date.now() - ts;
+          if (age < 5 * 60 * 1000) {
+            skipCache = true;
+            console.log(`[usePuebloPhotos] Skipping cache due to recent reorder (${Math.round(age/1000)}s ago)`);
+            // Limpiar sessionStorage para forzar datos frescos
+            sessionStorage.removeItem(CACHE_KEY);
           }
         }
-        
-        // Si todas las fotos están en cache, usarlas
-        if (allFound && Object.keys(relevantPhotos).length === pueblos.length) {
-          setPhotos(relevantPhotos);
-          setLoading(false);
-          fetchedRef.current = true;
-          console.log(`[usePuebloPhotos] Loaded ${pueblos.length} photos from cache (${validCount} with URLs)`);
-          return;
+      } catch {}
+      
+      // 1) Intentar cargar desde cache (solo si no hay reordenamiento reciente)
+      if (!skipCache) {
+        const cached = getCachedPhotos();
+        if (cached && Object.keys(cached).length > 0) {
+          const relevantPhotos: Record<string, PhotoData> = {};
+          let allFound = true;
+          let validCount = 0;
+          
+          for (const p of pueblos) {
+            const key = String(p.id);
+            if (key in cached) {
+              // Verificar que el valor no sea null
+              if (cached[key] && cached[key].url) {
+                relevantPhotos[key] = cached[key];
+                validCount++;
+              } else {
+                // Si es null, incluirlo pero no contar como válido
+                relevantPhotos[key] = cached[key];
+              }
+            } else {
+              allFound = false;
+              break;
+            }
+          }
+          
+          // Si todas las fotos están en cache, usarlas
+          if (allFound && Object.keys(relevantPhotos).length === pueblos.length) {
+            setPhotos(relevantPhotos);
+            setLoading(false);
+            fetchedRef.current = true;
+            console.log(`[usePuebloPhotos] Loaded ${pueblos.length} photos from cache (${validCount} with URLs)`);
+            return;
+          }
         }
       }
       
