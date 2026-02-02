@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getPuebloBySlug, type Pueblo } from "@/lib/api";
+import { getPuebloBySlug, getPueblosLite, type Pueblo } from "@/lib/api";
 import PuebloActions from "./PuebloActions";
 import FeedSection from "../../components/FeedSection";
 import DescripcionPueblo from "./DescripcionPueblo";
@@ -10,6 +10,8 @@ import { getComunidadFlagSrc } from "@/lib/flags";
 import ContenidosPuebloSection from "./ContenidosPuebloSection";
 import GaleriaGrid from "./GaleriaGrid";
 import TematicasPuebloTabs from "./TematicasPuebloTabs";
+import PueblosCercanosSection from "./_components/PueblosCercanosSection";
+import EnCifrasSection from "./_components/EnCifrasSection";
 import { headers } from "next/headers";
 import RotatedImage from "@/app/components/RotatedImage";
 
@@ -91,6 +93,8 @@ type PuebloSafe = {
   lat: number | null;
   lng: number | null;
   descripcion: string | null;
+  lead?: string | null;
+  highlights?: Array<{ orden: number; valor: string; etiqueta: string }>;
   boldestMapId?: string | null;
   foto_destacada?: string | null;
   fotosPueblo?: Array<{ id: number; url: string }>;
@@ -229,7 +233,10 @@ export default async function PuebloPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const pueblo = await getPuebloBySlug(slug);
+  const [pueblo, pueblosLite] = await Promise.all([
+    getPuebloBySlug(slug),
+    getPueblosLite(),
+  ]);
 
   const puebloSafe: PuebloSafe = {
     id: pueblo.id,
@@ -240,6 +247,8 @@ export default async function PuebloPage({
     lat: pueblo.lat ?? null,
     lng: pueblo.lng ?? null,
     descripcion: pueblo.descripcion ?? null,
+    lead: (pueblo as any).lead ?? null,
+    highlights: (pueblo as any).highlights ?? [],
     boldestMapId: pueblo.boldestMapId ?? null,
     foto_destacada: (pueblo as any).foto_destacada ?? null,
     fotosPueblo: Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [],
@@ -424,14 +433,30 @@ export default async function PuebloPage({
         semaforoUpdatedAt={semaforoPueblo.ultima_actualizacion ?? null}
       />
 
+      {/* EN CIFRAS - Patrimonio y Tradición */}
+      <EnCifrasSection highlights={puebloSafe.highlights ?? []} />
+
       {/* METEO (sin semáforo) */}
       <section style={{ marginTop: "16px" }}>
         <MeteoPanel puebloId={puebloSafe.id} />
       </section>
 
-      {/* TEXTO */}
-      <section style={{ marginTop: "32px" }}>
-        <DescripcionPueblo descripcion={puebloSafe.descripcion} />
+      {/* TEXTO: Enunciado + Descripción */}
+      <section
+        style={{
+          marginTop: "32px",
+          padding: "24px 0",
+          backgroundColor: "var(--color-bg-section)",
+        }}
+      >
+        <div className="mx-auto max-w-3xl px-4">
+          {puebloSafe.lead && (
+            <p className="mb-6 text-xl font-medium leading-relaxed text-gray-800 md:text-2xl">
+              {puebloSafe.lead}
+            </p>
+          )}
+          <DescripcionPueblo descripcion={puebloSafe.descripcion} />
+        </div>
       </section>
 
       {/* GALERÍA */}
@@ -843,6 +868,16 @@ export default async function PuebloPage({
 
       {/* TEMÁTICAS DEL PUEBLO (Gastronomía, Naturaleza, etc.) */}
       <TematicasPuebloTabs puebloSlug={puebloSafe.slug} />
+
+      {/* PUEBLOS CERCANOS */}
+      <PueblosCercanosSection
+        puebloActual={{
+          id: puebloSafe.id,
+          lat: puebloSafe.lat,
+          lng: puebloSafe.lng,
+        }}
+        pueblos={pueblosLite}
+      />
 
       {/* EVENTOS Y NOTICIAS LEGACY - COMENTADO
       <FeedSection

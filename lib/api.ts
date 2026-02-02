@@ -90,6 +90,30 @@ export async function getLugarLegacyBySlug(slug: string): Promise<Pueblo> {
   return getPuebloBySlug(slug);
 }
 
+/** Listado ligero para cálculos (pueblos cercanos, etc.) */
+export type PuebloLite = {
+  id: number;
+  nombre: string;
+  slug: string;
+  provincia: string;
+  comunidad: string;
+  lat: number;
+  lng: number;
+  foto_destacada?: string | null;
+};
+
+export async function getPueblosLite(): Promise<PuebloLite[]> {
+  const API_BASE = getApiUrl();
+  try {
+    const res = await fetch(`${API_BASE}/pueblos`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function getPoiById(poiId: string | number) {
   const API_BASE = getApiUrl();
   const res = await fetch(`${API_BASE}/pois/${poiId}`, {

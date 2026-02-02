@@ -26,6 +26,7 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
   const [noPermisos, setNoPermisos] = useState(false);
 
   const [descripcion, setDescripcion] = useState("");
+  const [lead, setLead] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
 
@@ -74,6 +75,7 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
         const text3 = text2.replace(/\u00A0/g, " ");
         const clean = normalizeDescripcion(text3);
         setDescripcion(clean);
+        setLead(data?.lead ?? "");
       } catch (e: any) {
         console.error(e);
         setErr(e?.message ?? "Load failed");
@@ -95,7 +97,7 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
       const r = await fetch(`/api/admin/pueblos/${puebloId}/descripcion`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ descripcion }),
+        body: JSON.stringify({ descripcion, lead: lead.trim() || null }),
         credentials: "include",
       });
 
@@ -155,6 +157,26 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
       </p>
 
       <div className="mt-6">
+        <label className="block text-sm font-medium text-gray-700">
+          Enunciado (1-2 frases impactantes, opcional)
+        </label>
+        <input
+          type="text"
+          value={lead}
+          onChange={(e) => setLead(e.target.value)}
+          className="mt-1 w-full rounded border border-gray-300 p-3 text-sm focus:border-blue-500 focus:outline-none"
+          placeholder="Ej: El pueblo donde la naturaleza manda"
+          maxLength={250}
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          {lead.length} / 250 caracteres
+        </p>
+      </div>
+
+      <div className="mt-6">
+        <label className="block text-sm font-medium text-gray-700">
+          Descripción completa
+        </label>
         <textarea
           value={descripcion}
           onChange={(e) => setDescripcion(e.target.value)}

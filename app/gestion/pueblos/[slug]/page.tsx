@@ -76,6 +76,9 @@ export default async function GestionPuebloPage({
           <Link className="hover:underline" href={`/gestion/pueblos/${slug}/descripcion`}>
             Descripción del pueblo
           </Link>
+          <Link className="hover:underline" href={`/gestion/pueblos/${slug}/en-cifras`}>
+            En cifras
+          </Link>
           <Link className="hover:underline" href={`/gestion/pueblos/${slug}/pois`}>
             POIs
           </Link>
