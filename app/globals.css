@@ -6,8 +6,8 @@
 
 /* Design tokens - v0 Villages + LPBME */
 :root {
-  --color-bg-section: oklch(0.97 0.01 60); /* V0 design - beige cálido */
-  --card: oklch(0.99 0.005 60); /* V0 design - card con matiz cálido */
+  --color-bg-section: oklch(0.94 0.025 60); /* Beige más intenso - bajada luminosidad + más saturación */
+  --card: oklch(0.96 0.02 60); /* Card con más intensidad */
   --card-foreground: oklch(0.145 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
@@ -18,7 +18,7 @@
   --border: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --radius: 0.625rem;
-  --background: oklch(0.97 0.01 60); /* V0 design */
+  --background: oklch(0.94 0.025 60); /* Beige más intenso */
   --foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
@@ -43,7 +43,7 @@
 
 @theme {
   --font-display: "Playfair Display", Georgia, serif;
-  --color-background: oklch(0.97 0.01 60); /* V0 design */
+  --color-background: oklch(0.94 0.025 60); /* Beige más intenso */
   --color-foreground: #171717;
   --color-card: #ffffff;
   --color-card-foreground: #171717;
