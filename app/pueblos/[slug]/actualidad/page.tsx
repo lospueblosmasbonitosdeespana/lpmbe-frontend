@@ -27,10 +27,13 @@ async function fetchPueblo(slug: string): Promise<Pueblo | null> {
 
 export default async function ActualidadPuebloPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ tipo?: string }>;
 }) {
   const { slug } = await params;
+  const { tipo } = await searchParams;
   const pueblo = await fetchPueblo(slug);
 
   if (!pueblo) {
@@ -42,6 +45,7 @@ export default async function ActualidadPuebloPage({
       puebloId={pueblo.id}
       puebloNombre={pueblo.nombre}
       puebloSlug={pueblo.slug}
+      tipo={tipo}
     />
   );
 }
