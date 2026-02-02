@@ -6,7 +6,7 @@
 
 /* Design tokens - v0 Villages + LPBME */
 :root {
-  --color-bg-section: #fbf9f6;
+  --color-bg-section: #f5f0e8;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --muted: oklch(0.97 0 0);
@@ -18,7 +18,7 @@
   --border: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --radius: 0.625rem;
-  --background: #fbf9f6;
+  --background: #f5f0e8;
   --foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
@@ -43,7 +43,7 @@
 
 @theme {
   --font-display: "Playfair Display", Georgia, serif;
-  --color-background: #fbf9f6;
+  --color-background: #f5f0e8;
   --color-foreground: #171717;
   --color-card: #ffffff;
   --color-card-foreground: #171717;
