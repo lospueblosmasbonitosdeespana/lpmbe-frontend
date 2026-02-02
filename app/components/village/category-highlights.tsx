@@ -152,10 +152,6 @@ export function CategoryHighlights({
   layout = "cards",
   className,
 }: CategoryHighlightsProps) {
-  if (categories.length === 0) {
-    return null
-  }
-
   return (
     <Section spacing="md" className={className}>
       <Container>

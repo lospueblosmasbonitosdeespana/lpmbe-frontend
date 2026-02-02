@@ -7,6 +7,7 @@ import MeteoPanel from "./_components/MeteoPanel";
 import { getComunidadFlagSrc } from "@/lib/flags";
 import TematicasPuebloTabs from "./TematicasPuebloTabs";
 import PueblosCercanosSection from "./_components/PueblosCercanosSection";
+import { QueHacerSection } from "./_components/QueHacerSection";
 import { DetailPageHero } from "@/app/components/ui/detail-page-hero";
 import { DetailIntroSection } from "@/app/components/ui/detail-section";
 import { DetailStatsBlock } from "@/app/components/village/detail-stats-block";
@@ -375,7 +376,7 @@ export default async function PuebloPage({
   );
 
   return (
-    <main>
+    <main className="bg-background">
       {/* HERO - Diseño tourism-website-design */}
       <DetailPageHero
         title={puebloSafe.nombre}
@@ -410,10 +411,15 @@ export default async function PuebloPage({
         columns={4}
       />
 
-      {/* METEO (sin semáforo) */}
-      <section style={{ marginTop: "16px" }}>
-        <MeteoPanel puebloId={puebloSafe.id} />
-      </section>
+      {/* METEO - Diseño imagen referencia */}
+      <MeteoPanel puebloId={puebloSafe.id} />
+
+      {/* Qué hacer en [Pueblo] - Multiexperiencias */}
+      <QueHacerSection
+        puebloNombre={puebloSafe.nombre}
+        puebloSlug={puebloSafe.slug}
+        multiexperiencias={puebloSafe.multiexperiencias ?? []}
+      />
 
       {/* TEXTO: Enunciado + Descripción - Diseño tourism-website-design */}
       {(puebloSafe.lead || puebloSafe.descripcion) && (() => {
@@ -442,7 +448,7 @@ export default async function PuebloPage({
         />
       )}
 
-      {/* PUNTOS DE INTERÉS - Diseño tourism-website-design */}
+      {/* Qué ver - Lugares de interés (POIs) */}
       {poisPOI.length > 0 && (
         <PointsOfInterest
           points={poisPOI.map((poi: Poi) => ({
@@ -679,61 +685,7 @@ export default async function PuebloPage({
         </section>
       )}
 
-      {/* MULTIEXPERIENCIAS */}
-      {puebloSafe.multiexperiencias.length > 0 && (
-        <section style={{ marginTop: "32px" }}>
-          <h2>Multiexperiencias</h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-              gap: "16px",
-              marginTop: "16px",
-            }}
-          >
-            {puebloSafe.multiexperiencias.map((mx: PuebloMultiexperiencia) => (
-              <Link
-                key={mx.multiexperiencia.id}
-                href={`/pueblos/${puebloSafe.slug}/experiencias/${mx.multiexperiencia.slug}`}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  padding: "16px",
-                  textDecoration: "none",
-                  color: "inherit",
-                  display: "block",
-                }}
-              >
-                {mx.multiexperiencia.foto && (
-                  <img
-                    src={mx.multiexperiencia.foto}
-                    alt={mx.multiexperiencia.titulo}
-                    style={{
-                      width: "100%",
-                      height: "auto",
-                      borderRadius: "4px",
-                      marginBottom: "12px",
-                    }}
-                  />
-                )}
-                <h3 style={{ margin: "0 0 8px 0" }}>
-                  {mx.multiexperiencia.titulo}
-                </h3>
-                {mx.multiexperiencia.descripcion && (
-                  <p style={{ margin: 0, fontSize: "14px", color: "#555" }}>
-                    {mx.multiexperiencia.descripcion.length > 150
-                      ? mx.multiexperiencia.descripcion.substring(0, 150) +
-                        "..."
-                      : mx.multiexperiencia.descripcion}
-                  </p>
-                )}
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Experiencias por categoría (V0) */}
+      {/* Experiencias por categoría - SIEMPRE las 6 categorías, colores del diseño */}
       <CategoryHighlights
         categories={(() => {
           const CAT_TO_TYPE: Record<string, "nature" | "culture" | "family" | "heritage" | "petfriendly" | "gastronomy"> = {
@@ -761,12 +713,12 @@ export default async function PuebloPage({
           }
           const order = ["NATURALEZA", "CULTURA", "EN_FAMILIA", "PATRIMONIO", "PETFRIENDLY", "GASTRONOMIA"];
           return order
-            .filter((k) => byCat[k]?.length && CAT_TO_TYPE[k])
+            .filter((k) => CAT_TO_TYPE[k])
             .map((k) => ({
               type: CAT_TO_TYPE[k]!,
               title: CATEGORIA_TEMATICA_LABELS[k] ?? k,
               description: CAT_DESC[k],
-              items: byCat[k].map((p: Poi) => ({
+              items: (byCat[k] ?? []).map((p: Poi) => ({
                 title: p.nombre,
                 href: `/pueblos/${puebloSafe.slug}/pois/${p.id}`,
               })),

@@ -31,7 +31,7 @@ export function PointsOfInterest({ points, className }: PointsOfInterestProps) {
       <Container>
         <div className="mb-10 lg:mb-12">
           <Eyebrow className="mb-4">Qué ver</Eyebrow>
-          <Headline>Puntos de Interés</Headline>
+          <Headline>Lugares de interés</Headline>
         </div>
 
         <Grid columns={2} gap="md">
