@@ -164,22 +164,21 @@ function FeaturedBanner({ banner, align = "left" }: FeaturedBannerProps) {
     <Link href={href} className="group block">
       <div
         className={cn(
-          "relative flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm lg:flex-row",
-          align === "right" && "lg:flex-row-reverse"
+          "relative flex min-h-[320px] overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 to-accent/10",
+          align === "right" && "flex-row-reverse"
         )}
       >
-        <div className="relative h-60 w-full lg:h-auto lg:min-h-[320px] lg:w-1/2">
+        <div className="absolute inset-0">
           <Image
             src={imageUrl}
             alt={`Imagen de ${banner.product.nombre}`}
             fill
-            className="object-cover"
-            sizes="(min-width: 1024px) 50vw, 100vw"
+            className="object-cover opacity-20"
+            sizes="100vw"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/20" />
         </div>
-        <div className="flex w-full flex-col justify-center gap-4 p-8 lg:w-1/2">
+        <div className="flex w-full flex-col justify-center gap-4 p-8 md:p-12">
           <Eyebrow className="text-primary">Destacado</Eyebrow>
           <Title as="h3">{banner.title}</Title>
           {banner.description && (
