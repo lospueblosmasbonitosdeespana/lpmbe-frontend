@@ -97,18 +97,12 @@ export default async function CuentaPage({
                     No hay pueblos asociados a este usuario.
                   </p>
                 ) : misPueblos.length === 1 ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-3">
                     <Link
                       className="inline-flex items-center gap-1 rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
                       href={`/gestion/pueblos/${misPueblos[0].slug}`}
                     >
                       Gestión de {misPueblos[0].nombre} →
-                    </Link>
-                    <Link
-                      className="text-sm text-gray-600 hover:underline"
-                      href={`/pueblos/${misPueblos[0].slug}`}
-                    >
-                      Ver ficha
                     </Link>
                   </div>
                 ) : (
@@ -116,19 +110,14 @@ export default async function CuentaPage({
                     {misPueblos.map((p) => (
                       <li key={p.id} className="flex items-center justify-between gap-2">
                         <span className="text-sm">{p.nombre}</span>
-                        <div className="flex gap-2">
-                          <Link className="text-sm hover:underline" href={`/pueblos/${p.slug}`}>
-                            Ver ficha
-                          </Link>
-                          <Link className="text-sm font-medium text-blue-700 hover:underline" href={`/gestion/pueblos/${p.slug}`}>
-                            Gestión de {p.nombre} →
-                          </Link>
-                        </div>
+                        <Link className="text-sm font-medium text-blue-700 hover:underline" href={`/gestion/pueblos/${p.slug}`}>
+                          Gestión de {p.nombre} →
+                        </Link>
                       </li>
                     ))}
                   </ul>
                 )}
-                {misPueblos.length > 0 && (
+                {misPueblos.length > 0 && me.rol === 'ADMIN' && (
                   <div className="mt-4">
                     <Link className="text-sm hover:underline" href="/gestion/mis-pueblos">
                       Ver listado de pueblos →

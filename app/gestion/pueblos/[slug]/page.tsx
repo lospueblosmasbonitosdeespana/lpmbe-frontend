@@ -86,7 +86,11 @@ export default async function GestionPuebloPage({
       </div>
 
       <div className="mt-8 text-sm">
-        <Link className="hover:underline" href="/gestion/mis-pueblos">← Volver a pueblos</Link>
+        {me.rol === 'ADMIN' ? (
+          <Link className="hover:underline" href="/gestion/mis-pueblos">← Volver a pueblos</Link>
+        ) : (
+          <Link className="hover:underline" href="/cuenta">← Volver</Link>
+        )}
       </div>
     </main>
   );
