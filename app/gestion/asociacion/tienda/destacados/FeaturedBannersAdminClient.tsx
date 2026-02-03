@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ImageUpload } from "@/app/_components/ImageUpload";
 
 type Product = {
   id: number;
@@ -42,7 +43,7 @@ export default function FeaturedBannersAdminClient() {
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
-  const [imageInput, setImageInput] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const emptyForm: FormData = {
     productId: null,
@@ -87,7 +88,6 @@ export default function FeaturedBannersAdminClient() {
   function openCreate() {
     setEditingId(null);
     setForm(emptyForm);
-    setImageInput("");
     setShowModal(true);
   }
 
@@ -102,7 +102,6 @@ export default function FeaturedBannersAdminClient() {
       images: banner.images,
       active: banner.active,
     });
-    setImageInput("");
     setShowModal(true);
   }
 
@@ -111,7 +110,6 @@ export default function FeaturedBannersAdminClient() {
     setEditingId(null);
     setForm(emptyForm);
     setMessage("");
-    setImageInput("");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -176,6 +174,10 @@ export default function FeaturedBannersAdminClient() {
 
   function removeImage(index: number) {
     setForm({ ...form, images: form.images.filter((_, i) => i !== index) });
+  }
+
+  function handleImageUploaded(url: string) {
+    setForm({ ...form, images: [...form.images, url] });
   }
 
   if (loading) {
@@ -385,43 +387,55 @@ export default function FeaturedBannersAdminClient() {
 
               {/* Imágenes adicionales */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Imágenes adicionales (URLs)
+                <label className="mb-3 block text-sm font-medium text-gray-700">
+                  Imágenes adicionales para el banner
                 </label>
-                <div className="mb-2 flex gap-2">
-                  <input
-                    type="text"
-                    value={imageInput}
-                    onChange={(e) => setImageInput(e.target.value)}
-                    className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm"
-                    placeholder="https://..."
+                
+                {/* Componente de subida de imágenes */}
+                <div className="mb-4 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4">
+                  <ImageUpload
+                    onUploadSuccess={handleImageUploaded}
+                    folder="banners"
+                    buttonText="+ Subir imagen"
+                    showPreview={false}
                   />
-                  <button
-                    type="button"
-                    onClick={addImage}
-                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                  >
-                    Añadir
-                  </button>
                 </div>
+
+                {/* Lista de imágenes ya añadidas */}
                 {form.images.length > 0 && (
                   <div className="space-y-2">
+                    <p className="text-xs font-medium text-gray-600">
+                      {form.images.length} imagen(es) añadida(s):
+                    </p>
                     {form.images.map((img, i) => (
                       <div
                         key={i}
-                        className="flex items-center justify-between rounded bg-gray-50 p-2 text-sm"
+                        className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3"
                       >
-                        <span className="truncate">{img}</span>
+                        <img
+                          src={img}
+                          alt={`Imagen ${i + 1}`}
+                          className="h-16 w-16 rounded object-cover"
+                        />
+                        <span className="flex-1 truncate text-sm text-gray-600">
+                          {img}
+                        </span>
                         <button
                           type="button"
                           onClick={() => removeImage(i)}
-                          className="ml-2 text-red-600 hover:text-red-800"
+                          className="rounded bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-200"
                         >
                           Eliminar
                         </button>
                       </div>
                     ))}
                   </div>
+                )}
+
+                {form.images.length === 0 && (
+                  <p className="text-xs text-gray-500">
+                    No hay imágenes adicionales. Puedes usar la imagen principal del producto o subir imágenes personalizadas.
+                  </p>
                 )}
               </div>
 
