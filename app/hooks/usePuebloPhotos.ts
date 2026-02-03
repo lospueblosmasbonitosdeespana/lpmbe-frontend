@@ -9,7 +9,7 @@ type PhotoData = {
   rotation?: number;
 };
 
-const CACHE_KEY = "pueblos_photos_v3"; // Cambio de versión para forzar limpieza
+const CACHE_KEY = "pueblos_photos_v4"; // v4: forzar limpieza para pueblos nuevos
 const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 horas
 const MIN_VALID_PERCENTAGE = 0.5; // Al menos 50% deben tener URL válida
 const REORDER_TS_KEY = "pueblos_photos_reorder_ts"; // Timestamp del último reordenamiento
@@ -29,7 +29,7 @@ function getCachedPhotos(): Record<string, PhotoData> | null {
     const now = Date.now();
     
     // Verificar versión (invalidar si no coincide)
-    if (!entry.version || entry.version !== "v3") {
+    if (!entry.version || entry.version !== "v4") {
       sessionStorage.removeItem(CACHE_KEY);
       return null;
     }
@@ -71,7 +71,7 @@ function setCachedPhotos(photos: Record<string, PhotoData>) {
     const entry: CacheEntry = { 
       photos, 
       ts: Date.now(),
-      version: "v3"
+      version: "v4"
     };
     sessionStorage.setItem(CACHE_KEY, JSON.stringify(entry));
     
