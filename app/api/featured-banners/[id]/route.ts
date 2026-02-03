@@ -12,15 +12,20 @@ async function ensureToken() {
 }
 
 type RouteContext = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
-export async function GET(_req: NextRequest, { params }: RouteContext) {
+async function resolveParams(context: RouteContext) {
+  return context.params instanceof Promise ? context.params : Promise.resolve(context.params);
+}
+
+export async function GET(_req: NextRequest, context: RouteContext) {
   try {
+    const { id } = await resolveParams(context);
     const token = await ensureToken();
-    const res = await fetch(`${API_BASE}/featured-banners/${params.id}`, {
+    const res = await fetch(`${API_BASE}/featured-banners/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -40,12 +45,13 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: RouteContext) {
+export async function PATCH(req: NextRequest, context: RouteContext) {
   try {
+    const { id } = await resolveParams(context);
     const token = await ensureToken();
     const body = await req.json();
 
-    const res = await fetch(`${API_BASE}/featured-banners/${params.id}`, {
+    const res = await fetch(`${API_BASE}/featured-banners/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -68,10 +74,11 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: RouteContext) {
+export async function DELETE(_req: NextRequest, context: RouteContext) {
   try {
+    const { id } = await resolveParams(context);
     const token = await ensureToken();
-    const res = await fetch(`${API_BASE}/featured-banners/${params.id}`, {
+    const res = await fetch(`${API_BASE}/featured-banners/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
