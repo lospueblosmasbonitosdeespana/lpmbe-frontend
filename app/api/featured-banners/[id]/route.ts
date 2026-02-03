@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "@/lib/auth";
 import { getApiUrl } from "@/lib/api";
 
@@ -11,13 +11,13 @@ async function ensureToken() {
   return token;
 }
 
-type Params = {
+type RouteContext = {
   params: {
     id: string;
   };
 };
 
-export async function GET(_req: Request, { params }: Params) {
+export async function GET(_req: NextRequest, { params }: RouteContext) {
   try {
     const token = await ensureToken();
     const res = await fetch(`${API_BASE}/featured-banners/${params.id}`, {
@@ -40,7 +40,7 @@ export async function GET(_req: Request, { params }: Params) {
   }
 }
 
-export async function PATCH(req: Request, { params }: Params) {
+export async function PATCH(req: NextRequest, { params }: RouteContext) {
   try {
     const token = await ensureToken();
     const body = await req.json();
@@ -68,7 +68,7 @@ export async function PATCH(req: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_req: Request, { params }: Params) {
+export async function DELETE(_req: NextRequest, { params }: RouteContext) {
   try {
     const token = await ensureToken();
     const res = await fetch(`${API_BASE}/featured-banners/${params.id}`, {
