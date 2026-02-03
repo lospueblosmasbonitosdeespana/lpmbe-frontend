@@ -3,6 +3,14 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname),
+  
+  // Aumentar límite de body para subida de imágenes grandes
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '25mb',
+    },
+  },
+  
   images: {
     remotePatterns: [
       {

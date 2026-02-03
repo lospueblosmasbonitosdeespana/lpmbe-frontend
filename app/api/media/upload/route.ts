@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 
+// Configuración para aumentar límite de body (default 4.5MB es muy pequeño)
+export const runtime = 'nodejs';
+export const maxDuration = 60; // 60 segundos para subidas grandes
+
 // Alias de /api/admin/uploads para uso más general
 export async function POST(req: Request) {
   const token = await getToken();
