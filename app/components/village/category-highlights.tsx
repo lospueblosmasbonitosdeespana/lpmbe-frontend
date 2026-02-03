@@ -44,6 +44,8 @@ const categoryIcons: Record<CategoryType, React.ReactNode> = {
       <path d="M12 22c4.97 0 9-2.24 9-5v-1.5c0-2.76-4.03-5-9-5s-9 2.24-9 5V17c0 2.76 4.03 5 9 5z" />
       <path d="M12 11.5V5" />
       <path d="M8 8c0-1.66 1.79-3 4-3s4 1.34 4 3" />
+      <path d="M12 5c1.66 0 3-1.34 3-3" />
+      <path d="M12 5c-1.66 0-3-1.34-3-3" />
     </svg>
   ),
   culture: (
@@ -51,6 +53,10 @@ const categoryIcons: Record<CategoryType, React.ReactNode> = {
       <path d="M3 21h18" />
       <path d="M5 21V7l8-4 8 4v14" />
       <path d="M9 21v-6h6v6" />
+      <path d="M10 9h1" />
+      <path d="M14 9h1" />
+      <path d="M10 13h1" />
+      <path d="M14 13h1" />
     </svg>
   ),
   family: (
@@ -59,6 +65,10 @@ const categoryIcons: Record<CategoryType, React.ReactNode> = {
       <path d="M12 8v4" />
       <circle cx="6" cy="15" r="2" />
       <circle cx="18" cy="15" r="2" />
+      <path d="M6 17v2" />
+      <path d="M18 17v2" />
+      <path d="M9 12h6" />
+      <path d="M12 12v3" />
     </svg>
   ),
   heritage: (
@@ -66,7 +76,11 @@ const categoryIcons: Record<CategoryType, React.ReactNode> = {
       <path d="M12 2L2 7h20L12 2z" />
       <path d="M4 7v10" />
       <path d="M20 7v10" />
+      <path d="M8 7v10" />
+      <path d="M12 7v10" />
+      <path d="M16 7v10" />
       <path d="M2 17h20" />
+      <path d="M2 21h20" />
     </svg>
   ),
   petfriendly: (
