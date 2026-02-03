@@ -17,14 +17,20 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
 
-  // 2) /cuenta y /mi-cuenta sin cookie de sesión → redirect a /entrar (mantiene ?redirect= si existe)
-  if (pathname.startsWith('/cuenta') || pathname.startsWith('/mi-cuenta')) {
-    const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
-    if (!token) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/entrar';
-      return NextResponse.redirect(url);
+  // 2) Rutas que requieren sesión
+  const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+  const rutasProtegidas =
+    pathname.startsWith('/cuenta') ||
+    pathname.startsWith('/mi-cuenta') ||
+    pathname.startsWith('/gestion');
+
+  if (rutasProtegidas && !token) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/entrar';
+    if (pathname.startsWith('/gestion')) {
+      url.searchParams.set('from', 'gestion');
     }
+    return NextResponse.redirect(url);
   }
 
   return NextResponse.next();

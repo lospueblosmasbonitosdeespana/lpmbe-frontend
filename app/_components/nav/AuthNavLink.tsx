@@ -49,10 +49,18 @@ export default function AuthNavLink() {
     );
   }
 
-  if (me && (me.rol === 'ALCALDE' || me.rol === 'ADMIN')) {
+  if (me) {
+    // ALCALDE y ADMIN → Gestión (/cuenta). USUARIO → Mi cuenta (/mi-cuenta)
+    if (me.rol === 'ALCALDE' || me.rol === 'ADMIN') {
+      return (
+        <Link href="/cuenta" className="text-sm font-medium hover:underline">
+          Gestión
+        </Link>
+      );
+    }
     return (
-      <Link href="/cuenta" className="text-sm font-medium hover:underline">
-        Gestión
+      <Link href="/mi-cuenta" className="text-sm font-medium hover:underline">
+        Mi cuenta
       </Link>
     );
   }
