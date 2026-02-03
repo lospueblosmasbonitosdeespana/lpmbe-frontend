@@ -7,7 +7,7 @@ import { getUserDirecciones, createDireccion, createCheckout } from '@/src/lib/t
 import { formatEUR, toNumber } from '@/src/lib/money';
 import type { Direccion, CheckoutResponse } from '@/src/types/tienda';
 import { normalizeCheckoutResponse } from '@/src/types/tienda';
-import StripePaymentClient from './StripePaymentClient';
+import StripeElementsForm from '@/src/components/checkout/StripeElementsForm';
 import CheckoutSummary from './CheckoutSummary';
 
 export default function CheckoutPage() {
@@ -466,9 +466,9 @@ export default function CheckoutPage() {
 
             {payment ? (
               <div className="mt-4">
-                <StripePaymentClient 
-                  clientSecret={payment.clientSecret} 
-                  orderId={payment.orderId} 
+                <StripeElementsForm
+                  clientSecret={payment.clientSecret}
+                  orderId={payment.orderId}
                 />
               </div>
             ) : (

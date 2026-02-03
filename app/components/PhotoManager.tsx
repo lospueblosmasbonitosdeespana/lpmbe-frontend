@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -22,7 +24,6 @@ import { CSS } from "@dnd-kit/utilities";
 type PhotoManagerProps = {
   entity: "pueblo" | "poi";
   entityId: number;
-  useAdminEndpoint?: boolean; // Si true, usa /api/admin/pueblos/:id/fotos
 };
 
 // Cache global de rotaciones para sobrevivir a unmount/remount
@@ -66,7 +67,7 @@ function SortablePhotoRow({
   photo: any;
   index: number;
   onRotate: (id: string | number) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string | number) => void;
 }) {
   const id = String(photo.id);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
@@ -119,8 +120,8 @@ function SortablePhotoRow({
       </div>
 
       <img
-        src={photo.publicUrl}
-        alt={photo.altText ?? ""}
+        src={photo.url}
+        alt={photo.altText ?? photo.alt ?? ""}
         style={{
           width: "120px",
           height: "80px",
@@ -167,7 +168,7 @@ function SortablePhotoRow({
           )}
         </div>
         <div style={{ color: "#6b7280", fontSize: "12px", wordBreak: "break-all" }}>
-          {photo.publicUrl}
+          {photo.url}
         </div>
       </div>
 
@@ -211,7 +212,7 @@ function SortablePhotoRow({
   );
 }
 
-export default function PhotoManager({ entity, entityId, useAdminEndpoint = true }: PhotoManagerProps) {
+export default function PhotoManager({ entity, entityId }: PhotoManagerProps) {
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -266,26 +267,31 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
           rotationCacheRef.current.get(String(id)) ??
           rotationCacheGlobal.get(String(id)) ??
           getStoredRotation(id);
-        const hasRotationFromApi = f.rotation !== undefined && f.rotation !== null
-          || f.rotacion !== undefined && f.rotacion !== null;
+        const hasRotationFromApi =
+          (f.rotation !== undefined && f.rotation !== null) ||
+          (f.rotacion !== undefined && f.rotacion !== null);
         const rotation = hasRotationFromApi
           ? (f.rotation ?? f.rotacion)
-          : (cachedRotation !== undefined ? cachedRotation : 0);
+          : cachedRotation !== undefined
+            ? cachedRotation
+            : 0;
 
-        // Solo actualizar cache si el backend envía rotación explícita
         if (hasRotationFromApi && rotation !== undefined && rotation !== null) {
           rotationCacheRef.current.set(String(id), rotation);
           rotationCacheGlobal.set(String(id), rotation);
           setStoredRotation(id, rotation);
         }
 
+        const url = f.url ?? f.publicUrl ?? f.mediaUrl ?? "";
+
         return {
           id,
-          publicUrl: f.url ?? f.publicUrl,
+          url,
           order: Number(f.order ?? f.orden ?? 999),
-          activo: f.activo,
-          altText: f.altText ?? null,
+          activo: f.activo ?? true,
+          altText: f.alt ?? f.altText ?? null,
           rotation,
+          editable: f.editable ?? true,
         };
       });
       
@@ -318,46 +324,50 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
     setError(null);
 
     try {
-      if (useAdminEndpoint) {
-        // Subir usando endpoint legacy admin
-        const formData = new FormData();
-        formData.append("file", file);
-        
-        const endpoint = entity === "pueblo"
-          ? `/api/admin/pueblos/${entityId}/fotos/upload`
-          : `/api/admin/pois/${entityId}/fotos/upload`;
-        
-        const uploadRes = await fetch(endpoint, {
-          method: "POST",
-          body: formData,
-        });
+      const formData = new FormData();
+      formData.append("file", file);
 
-        if (!uploadRes.ok) {
-          const errorData = await uploadRes.json().catch(() => ({}));
-          throw new Error(errorData?.error ?? `Error subiendo archivo (${uploadRes.status})`);
-        }
-      } else {
-        // Usar /media/upload nuevo
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("ownerType", entity);
-        formData.append("ownerId", String(entityId));
-
-        const uploadRes = await fetch("/api/media/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!uploadRes.ok) {
-          const errorData = await uploadRes.json().catch(() => ({}));
-          throw new Error(errorData?.error ?? `Error subiendo archivo (${uploadRes.status})`);
-        }
+      if (entity === "pueblo") {
+        formData.append("puebloId", String(entityId));
+        formData.append("folder", `pueblos/${entityId}`);
+      } else if (entity === "poi") {
+        formData.append("folder", `pois/${entityId}`);
       }
 
-      // Recargar lista
-      await loadPhotos();
+      const uploadRes = await fetch("/api/media/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-      // Reset input
+      if (!uploadRes.ok) {
+        const errorData = await uploadRes.json().catch(() => ({}));
+        throw new Error(errorData?.error ?? `Error subiendo archivo (${uploadRes.status})`);
+      }
+
+      const uploadData = await uploadRes.json().catch(() => null);
+      const imageUrl = uploadData?.url ?? uploadData?.publicUrl ?? uploadData?.Location ?? null;
+      if (!imageUrl) {
+        throw new Error("El servicio de subida no devolvió la URL de la imagen");
+      }
+
+      const altText = file.name.replace(/\.[^/.]+$/, "");
+      const createEndpoint =
+        entity === "pueblo"
+          ? `/api/admin/pueblos/${entityId}/fotos`
+          : `/api/admin/pois/${entityId}/fotos`;
+
+      const createRes = await fetch(createEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: imageUrl, alt: altText }),
+      });
+
+      if (!createRes.ok) {
+        const errorData = await createRes.json().catch(() => ({}));
+        throw new Error(errorData?.error ?? `Error guardando foto (${createRes.status})`);
+      }
+
+      await loadPhotos();
       e.target.value = "";
     } catch (e: any) {
       setError(e?.message ?? "Error subiendo foto");
@@ -367,39 +377,25 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
   }
 
   // Borrar/Desasociar foto
-  async function handleDelete(photoId: number) {
-    const confirmMessage = useAdminEndpoint && entity === "pueblo"
-      ? "¿Desasociar esta foto del pueblo? (la foto no se borrará, solo se quitará de este pueblo)"
-      : "¿Eliminar esta foto?";
-    
+  async function handleDelete(photoId: number | string) {
+    const confirmMessage =
+      entity === "pueblo"
+        ? "¿Eliminar esta foto del pueblo?"
+        : "¿Eliminar esta foto?";
+
     if (!confirm(confirmMessage)) return;
 
     setError(null);
 
     try {
-      if (useAdminEndpoint) {
-        // Para pueblos: DETACH (desasociar) en vez de DELETE
-        const endpoint = entity === "pueblo"
-          ? `/api/admin/pueblos/${entityId}/fotos/${photoId}/detach`
-          : `/api/admin/pois/fotos/${photoId}`;
-        
-        const res = await fetch(endpoint, {
-          method: "DELETE",
-          cache: "no-store",
-        });
+      const res = await fetch(`/api/admin/fotos/${photoId}`, {
+        method: "DELETE",
+        cache: "no-store",
+      });
 
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData?.error ?? `Error desasociando foto (${res.status})`);
-        }
-      } else {
-        const res = await fetch(`/api/media/${photoId}`, {
-          method: "DELETE",
-        });
-
-        if (!res.ok) {
-          throw new Error(`Error eliminando foto (${res.status})`);
-        }
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData?.error ?? `Error eliminando foto (${res.status})`);
       }
 
       // Refetch inmediato sin caché
@@ -447,7 +443,7 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
 
         // Sincronizar foto_destacada (hero + tarjeta) con la foto #1
         if (entity === "pueblo" && orderedPhotos.length > 0) {
-          const firstUrl = orderedPhotos[0]?.publicUrl ?? orderedPhotos[0]?.url;
+          const firstUrl = orderedPhotos[0]?.url;
           if (typeof firstUrl === "string" && firstUrl.trim()) {
             try {
               const patchRes = await fetch(`/api/admin/pueblos/${entityId}/foto-destacada`, {
@@ -558,7 +554,7 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
             ...p,
             id: updated.id, // Muy importante si canoniza
             rotation: updated.rotation, // Muy importante
-            publicUrl: updated.url ?? updated.publicUrl ?? p.publicUrl,
+            url: updated.url ?? updated.publicUrl ?? p.url,
             altText: updated.alt ?? p.altText,
             order: updated.orden ?? updated.order ?? p.order,
           };
