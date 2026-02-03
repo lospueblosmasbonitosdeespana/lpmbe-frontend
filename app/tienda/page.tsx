@@ -8,6 +8,26 @@ import { Container } from "@/app/components/ui/container";
 export const dynamic = "force-dynamic";
 
 /* ===========================================
+   TYPES
+   =========================================== */
+
+export type FeaturedBannerData = {
+  id: number;
+  title: string;
+  description: string | null;
+  ctaText: string;
+  images: string[];
+  product: {
+    id: number;
+    nombre: string;
+    slug: string;
+    precio: number;
+    imagenUrl: string | null;
+    discountPercent: number | null;
+  };
+};
+
+/* ===========================================
    HELPER: Convert Product to ProductCardData
    =========================================== */
 
@@ -33,10 +53,20 @@ function productToCardData(product: Product): ProductCardData {
 
 export default async function TiendaPage() {
   let products: Product[] = [];
+  let banners: FeaturedBannerData[] = [];
   let error: string | null = null;
 
   try {
-    products = await getProducts();
+    // Cargar productos y banners en paralelo
+    const [productsData, bannersData] = await Promise.all([
+      getProducts(),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/featured-banners/active`, {
+        cache: 'no-store',
+      }).then(res => res.ok ? res.json() : []),
+    ]);
+
+    products = productsData;
+    banners = bannersData;
   } catch (e: any) {
     error = e?.message ?? "Error cargando productos";
   }
@@ -63,5 +93,5 @@ export default async function TiendaPage() {
 
   const allProductCards = activeProducts.sort((a, b) => a.orden - b.orden).map(productToCardData);
 
-  return <TiendaPageClient allProducts={allProductCards} featuredProducts={featuredProducts} />;
+  return <TiendaPageClient allProducts={allProductCards} featuredProducts={featuredProducts} featuredBanners={banners} />;
 }

@@ -8,6 +8,7 @@ import { Grid } from "@/app/components/ui/grid";
 import { Display, Headline, Lead, Body, Eyebrow, Title } from "@/app/components/ui/typography";
 import { ProductCard, type ProductCardData } from "@/app/_components/tienda/ProductCard";
 import { cn } from "@/lib/utils";
+import type { FeaturedBannerData } from "./page";
 
 /* ===========================================
    SHOP HERO WITH SEARCH
@@ -145,18 +146,18 @@ function BenefitsBar() {
 }
 
 /* ===========================================
-   FEATURED BANNER
+   FEATURED BANNER - Ahora dinámico desde API
    =========================================== */
 
 interface FeaturedBannerProps {
-  title: string;
-  description: string;
-  cta: string;
-  href: string;
+  banner: FeaturedBannerData;
   align?: "left" | "right";
 }
 
-function FeaturedBanner({ title, description, cta, href, align = "left" }: FeaturedBannerProps) {
+function FeaturedBanner({ banner, align = "left" }: FeaturedBannerProps) {
+  const productSlug = banner.product.slug;
+  const href = `/tienda/${productSlug}`;
+
   return (
     <Link href={href} className="group block">
       <div
@@ -169,11 +170,13 @@ function FeaturedBanner({ title, description, cta, href, align = "left" }: Featu
         <div className="flex w-full flex-col justify-center p-8 md:p-12">
           <Eyebrow className="mb-3">Destacado</Eyebrow>
           <Title as="h3" className="mb-3">
-            {title}
+            {banner.title}
           </Title>
-          <Body className="mb-6 text-muted-foreground">{description}</Body>
+          {banner.description && (
+            <Body className="mb-6 text-muted-foreground">{banner.description}</Body>
+          )}
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition-all group-hover:gap-3">
-            {cta}
+            {banner.ctaText}
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
@@ -273,9 +276,10 @@ function NewsletterCTA() {
 interface TiendaPageClientProps {
   allProducts: ProductCardData[];
   featuredProducts: ProductCardData[];
+  featuredBanners: FeaturedBannerData[];
 }
 
-export function TiendaPageClient({ allProducts, featuredProducts }: TiendaPageClientProps) {
+export function TiendaPageClient({ allProducts, featuredProducts, featuredBanners }: TiendaPageClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filtrar productos
@@ -288,6 +292,10 @@ export function TiendaPageClient({ allProducts, featuredProducts }: TiendaPageCl
     : allProducts;
 
   const isSearching = searchQuery.trim().length > 0;
+
+  // Separar banners por posición
+  const banner1 = featuredBanners.find(b => b.product && b.product.slug);
+  const banner2 = featuredBanners.length > 1 ? featuredBanners[1] : null;
 
   return (
     <main className="min-h-screen">
@@ -316,17 +324,11 @@ export function TiendaPageClient({ allProducts, featuredProducts }: TiendaPageCl
         </Section>
       )}
 
-      {/* Banner 1 - Solo si NO hay búsqueda */}
-      {!isSearching && (
+      {/* Banner 1 - Solo si NO hay búsqueda y existe */}
+      {!isSearching && banner1 && (
         <Section spacing="lg">
           <Container>
-            <FeaturedBanner
-              title="Libro: Los Pueblos Más Bonitos de España"
-              description="Un viaje fotográfico por los 126 pueblos que conforman nuestra asociación. Edición de coleccionista con más de 400 fotografías."
-              cta="Descubrir libro"
-              href="/tienda"
-              align="left"
-            />
+            <FeaturedBanner banner={banner1} align="left" />
           </Container>
         </Section>
       )}
@@ -359,17 +361,11 @@ export function TiendaPageClient({ allProducts, featuredProducts }: TiendaPageCl
         </Container>
       </Section>
 
-      {/* Banner 2 - Solo si NO hay búsqueda */}
-      {!isSearching && (
+      {/* Banner 2 - Solo si NO hay búsqueda y existe */}
+      {!isSearching && banner2 && (
         <Section spacing="lg" background="muted">
           <Container>
-            <FeaturedBanner
-              title="Colección Gastronomía"
-              description="Los mejores productos de la tierra: aceites, mieles, embutidos y vinos de denominación de origen de nuestros pueblos."
-              cta="Explorar colección"
-              href="/tienda"
-              align="right"
-            />
+            <FeaturedBanner banner={banner2} align="right" />
           </Container>
         </Section>
       )}

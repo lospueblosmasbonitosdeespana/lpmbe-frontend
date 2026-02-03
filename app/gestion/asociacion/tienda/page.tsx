@@ -34,6 +34,16 @@ export default async function TiendaAdminPage() {
         </Link>
 
         <Link
+          href="/gestion/asociacion/tienda/destacados"
+          className="block rounded-lg border border-amber-200 bg-amber-50 p-6 transition-shadow hover:shadow-lg"
+        >
+          <h2 className="text-xl font-semibold">⭐ Productos Destacados</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Gestionar los banners grandes de la tienda (máximo 2 productos destacados)
+          </p>
+        </Link>
+
+        <Link
           href="/gestion/asociacion/tienda/promocion-global"
           className="block rounded-lg border border-blue-200 bg-blue-50 p-6 transition-shadow hover:shadow-lg"
         >
