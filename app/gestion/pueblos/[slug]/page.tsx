@@ -47,17 +47,9 @@ export default async function GestionPuebloPage({
         <div className="font-medium text-gray-800">Acciones</div>
         <div className="mt-3 flex gap-4 text-sm flex-wrap">
           {puebloId ? (
-            <>
-              <Link className="hover:underline" href={`/gestion/pueblo/contenidos?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}&tipo=NOTICIA`}>
-                Noticias
-              </Link>
-              <Link className="hover:underline" href={`/gestion/pueblo/contenidos?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}&tipo=EVENTO`}>
-                Eventos
-              </Link>
-              <Link className="hover:underline" href={`/gestion/pueblo/contenidos?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}`}>
-                Contenidos
-              </Link>
-            </>
+            <Link className="hover:underline" href={`/gestion/pueblo/contenidos?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}`}>
+              Contenidos
+            </Link>
           ) : (
             <span className="text-red-600">Error: No se pudo obtener el ID del pueblo</span>
           )}
