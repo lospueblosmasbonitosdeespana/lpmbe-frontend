@@ -6,8 +6,8 @@ import Link from 'next/link';
 
 export default async function MisPueblosGestionPage() {
   const me = await getMeServer();
-  if (!me) redirect('/entrar');
-  if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN') redirect('/cuenta');
+  if (!me) redirect('/entrar?from=gestion');
+  if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN') redirect('/cuenta?msg=gestion_solo_autorizados');
 
   const pueblos =
     me.rol === 'ADMIN' ? await getAllPueblosServer() : await getMisPueblosServer();

@@ -49,7 +49,7 @@ export default function AuthNavLink() {
     );
   }
 
-  if (me) {
+  if (me && (me.rol === 'ALCALDE' || me.rol === 'ADMIN')) {
     return (
       <Link href="/cuenta" className="text-sm font-medium hover:underline">
         Gestión

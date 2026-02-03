@@ -60,9 +60,20 @@ function EntrarForm() {
     }
   }
 
+  const fromGestion = searchParams.get('from') === 'gestion';
+
   return (
     <main className="mx-auto max-w-md p-6">
       <h1 className="text-2xl font-semibold">Entrar</h1>
+
+      {fromGestion ? (
+        <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm text-amber-800">
+            <strong>Zona de gestión</strong> — Esta página es solo para alcaldes y administradores
+            con permisos para gestionar pueblos. Si crees que deberías tener acceso, contacta con la asociación.
+          </p>
+        </div>
+      ) : null}
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <div className="space-y-2">
