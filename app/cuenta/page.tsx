@@ -78,12 +78,15 @@ export default async function CuentaPage({
                 <p className="mt-1 text-sm text-gray-600">
                   Tienes acceso completo a todos los pueblos y a la asociación.
                 </p>
-                <div className="mt-4">
+                <div className="mt-4 flex flex-wrap gap-4">
                   <Link
                     className="inline-flex items-center gap-1 text-sm font-medium text-blue-700 hover:underline"
                     href="/gestion"
                   >
                     Ir a Gestión de pueblos y asociación →
+                  </Link>
+                  <Link className="text-sm hover:underline" href="/gestion/mis-pueblos">
+                    Ver listado de pueblos →
                   </Link>
                 </div>
               </>
@@ -116,13 +119,6 @@ export default async function CuentaPage({
                       </li>
                     ))}
                   </ul>
-                )}
-                {misPueblos.length > 0 && me.rol === 'ADMIN' && (
-                  <div className="mt-4">
-                    <Link className="text-sm hover:underline" href="/gestion/mis-pueblos">
-                      Ver listado de pueblos →
-                    </Link>
-                  </div>
                 )}
               </>
             )}

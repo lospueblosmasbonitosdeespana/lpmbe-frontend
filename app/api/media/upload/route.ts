@@ -2,15 +2,8 @@ import { NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 
-// IMPORTANTE: Configurar límite de body para Vercel
-// El límite default de 4.5MB es muy pequeño para imágenes
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '25mb',
-    },
-  },
-};
+// Límite de body: configurar en next.config.js si se necesitan uploads >4.5MB
+// La opción 'config.api.bodyParser' está deprecada en App Router
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
