@@ -1,18 +1,8 @@
 {
   "functions": {
     "app/api/media/upload/route.ts": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "memory": 1024
     }
-  },
-  "headers": [
-    {
-      "source": "/api/media/upload",
-      "headers": [
-        {
-          "key": "x-vercel-max-body-size",
-          "value": "25mb"
-        }
-      ]
-    }
-  ]
+  }
 }
