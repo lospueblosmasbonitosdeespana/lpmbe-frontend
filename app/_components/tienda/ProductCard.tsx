@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useCartStore } from "@/src/store/cart";
+import type { Product } from "@/src/types/tienda";
 
 export interface ProductCardData {
   slug: string;
@@ -13,6 +16,8 @@ export interface ProductCardData {
   category: string;
   badge?: "new" | "sale" | "bestseller" | "limited";
   villageOrigin?: string;
+  // Datos completos del producto para el carrito
+  fullProduct?: Product;
 }
 
 interface ProductCardProps {
@@ -35,10 +40,28 @@ const badgeLabels = {
 };
 
 export function ProductCard({ product, className }: ProductCardProps) {
+  const [added, setAdded] = useState(false);
+  const addItem = useCartStore((state) => state.addItem);
+  
   const hasDiscount = product.originalPrice && product.originalPrice > product.price;
   const discountPercent = hasDiscount
     ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)
     : 0;
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!product.fullProduct) {
+      // Si no tenemos el producto completo, redirigir a la página de detalle
+      window.location.href = `/tienda/${product.slug}`;
+      return;
+    }
+    
+    addItem(product.fullProduct, 1);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  };
 
   return (
     <Link
@@ -70,13 +93,15 @@ export function ProductCard({ product, className }: ProductCardProps) {
           
           {/* Quick add button */}
           <button
-            onClick={(e) => {
-              e.preventDefault();
-              // Add to cart logic
-            }}
-            className="absolute bottom-3 left-3 right-3 translate-y-2 rounded-md bg-card/95 px-4 py-2.5 text-sm font-medium text-foreground opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 hover:bg-card"
+            onClick={handleAddToCart}
+            className={cn(
+              "absolute bottom-3 left-3 right-3 translate-y-2 rounded-md px-4 py-2.5 text-sm font-medium backdrop-blur-sm transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100",
+              added
+                ? "bg-green-500/95 text-white opacity-100"
+                : "bg-card/95 text-foreground opacity-0 hover:bg-card"
+            )}
           >
-            Agregar al carrito
+            {added ? "✓ Añadido" : "Agregar al carrito"}
           </button>
         </div>
 
