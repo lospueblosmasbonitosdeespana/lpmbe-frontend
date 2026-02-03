@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ImageUpload } from "@/app/_components/ImageUpload";
+import Image from "next/image";
 import { getProducts } from "@/src/lib/tiendaApi";
 
 type Product = {
@@ -31,7 +31,6 @@ type FormData = {
   title: string;
   description: string;
   ctaText: string;
-  images: string[];
   active: boolean;
 };
 
@@ -49,7 +48,6 @@ export default function FeaturedBannersAdminClient() {
     title: "",
     description: "",
     ctaText: "Descubrir",
-    images: [],
     active: true,
   };
 
@@ -103,7 +101,6 @@ export default function FeaturedBannersAdminClient() {
       title: banner.title,
       description: banner.description || "",
       ctaText: banner.ctaText,
-      images: banner.images,
       active: banner.active,
     });
     setShowModal(true);
@@ -170,14 +167,6 @@ export default function FeaturedBannersAdminClient() {
     }
   }
 
-  function removeImage(index: number) {
-    setForm({ ...form, images: form.images.filter((_, i) => i !== index) });
-  }
-
-  function handleImageUploaded(url: string) {
-    setForm({ ...form, images: [...form.images, url] });
-  }
-
   if (loading) {
     return (
       <main className="mx-auto max-w-6xl px-6 py-12">
@@ -229,14 +218,15 @@ export default function FeaturedBannersAdminClient() {
             >
               <div className="flex items-start justify-between gap-6">
                 <div className="flex gap-6">
-                  {banner.product.imagenUrl && (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={banner.product.imagenUrl}
+                  <div className="relative h-24 w-24 overflow-hidden rounded-lg bg-gray-100">
+                    <Image
+                      src={banner.product.imagenUrl || "/placeholder.svg"}
                       alt={banner.product.nombre}
-                      className="h-24 w-24 rounded-lg object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="96px"
                     />
-                  )}
+                  </div>
                   <div>
                     <div className="mb-2 flex items-center gap-3">
                       <span
@@ -263,11 +253,9 @@ export default function FeaturedBannersAdminClient() {
                         {banner.description}
                       </p>
                     )}
-                    {banner.images.length > 0 && (
-                      <p className="mt-2 text-xs text-gray-400">
-                        {banner.images.length} imagen(es) adicional(es)
-                      </p>
-                    )}
+                    <p className="mt-2 text-xs text-gray-400">
+                      La imagen mostrada corresponde a la foto principal del producto
+                    </p>
                   </div>
                 </div>
 
@@ -384,59 +372,12 @@ export default function FeaturedBannersAdminClient() {
                 />
               </div>
 
-              {/* Imágenes adicionales */}
-              <div>
-                <label className="mb-3 block text-sm font-medium text-gray-700">
-                  Imágenes adicionales para el banner
-                </label>
-                
-                {/* Componente de subida de imágenes */}
-                <div className="mb-4 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4">
-                  <ImageUpload
-                    onUploadSuccess={handleImageUploaded}
-                    folder="banners"
-                    buttonText="+ Subir imagen"
-                    showPreview={false}
-                  />
-                </div>
-
-                {/* Lista de imágenes ya añadidas */}
-                {form.images.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium text-gray-600">
-                      {form.images.length} imagen(es) añadida(s):
-                    </p>
-                        {form.images.map((img, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3"
-                      >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={img}
-                          alt={`Imagen ${i + 1}`}
-                          className="h-16 w-16 rounded object-cover"
-                        />
-                        <span className="flex-1 truncate text-sm text-gray-600">
-                          {img}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => removeImage(i)}
-                          className="rounded bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-200"
-                        >
-                          Eliminar
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {form.images.length === 0 && (
-                  <p className="text-xs text-gray-500">
-                    No hay imágenes adicionales. Puedes usar la imagen principal del producto o subir imágenes personalizadas.
-                  </p>
-                )}
+              {/* Información sobre la imagen */}
+              <div className="rounded-lg border border-amber-100 bg-amber-50 p-4 text-sm text-amber-900">
+                <p className="font-semibold">Imagen del banner</p>
+                <p className="mt-1">
+                  No necesitas subir una foto manualmente: se usará la imagen principal del producto seleccionado.
+                </p>
               </div>
 
               {/* Activo */}

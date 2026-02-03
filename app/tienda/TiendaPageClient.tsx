@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Grid } from "@/app/components/ui/grid";
@@ -146,7 +147,7 @@ function BenefitsBar() {
 }
 
 /* ===========================================
-   FEATURED BANNER - Ahora dinámico desde API
+   FEATURED BANNER - Ahora con imagen real
    =========================================== */
 
 interface FeaturedBannerProps {
@@ -157,23 +158,32 @@ interface FeaturedBannerProps {
 function FeaturedBanner({ banner, align = "left" }: FeaturedBannerProps) {
   const productSlug = banner.product.slug;
   const href = `/tienda/${productSlug}`;
+  const imageUrl = banner.images?.[0] || banner.product.imagenUrl || "/placeholder.svg";
 
   return (
     <Link href={href} className="group block">
       <div
         className={cn(
-          "relative flex min-h-[320px] overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 to-accent/10",
-          align === "right" && "flex-row-reverse"
+          "relative flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm lg:flex-row",
+          align === "right" && "lg:flex-row-reverse"
         )}
       >
-        {/* Content */}
-        <div className="flex w-full flex-col justify-center p-8 md:p-12">
-          <Eyebrow className="mb-3">Destacado</Eyebrow>
-          <Title as="h3" className="mb-3">
-            {banner.title}
-          </Title>
+        <div className="relative h-60 w-full lg:h-auto lg:min-h-[320px] lg:w-1/2">
+          <Image
+            src={imageUrl}
+            alt={`Imagen de ${banner.product.nombre}`}
+            fill
+            className="object-cover"
+            sizes="(min-width: 1024px) 50vw, 100vw"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/20" />
+        </div>
+        <div className="flex w-full flex-col justify-center gap-4 p-8 lg:w-1/2">
+          <Eyebrow className="text-primary">Destacado</Eyebrow>
+          <Title as="h3">{banner.title}</Title>
           {banner.description && (
-            <Body className="mb-6 text-muted-foreground">{banner.description}</Body>
+            <Body className="text-muted-foreground">{banner.description}</Body>
           )}
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition-all group-hover:gap-3">
             {banner.ctaText}
@@ -217,7 +227,7 @@ function NewsletterCTA() {
         setStatus("error");
         setMessage(data.error || "Error al suscribirse");
       }
-    } catch (error) {
+    } catch {
       setStatus("error");
       setMessage("Error de conexión");
     }
