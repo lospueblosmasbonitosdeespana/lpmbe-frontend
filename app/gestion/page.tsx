@@ -6,7 +6,7 @@ import Link from 'next/link';
 export default async function GestionPage() {
   const me = await getMeServer();
   if (!me) redirect('/entrar?from=gestion');
-  if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN') redirect('/cuenta?msg=gestion_solo_autorizados');
+  if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN') redirect('/mi-cuenta?msg=gestion_solo_autorizados');
 
   // Alcaldes van directo a mis-pueblos (evitar paso intermedio innecesario)
   if (me.rol === 'ALCALDE') {

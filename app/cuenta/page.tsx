@@ -14,13 +14,17 @@ export default async function CuentaPage({
   const me = await getMeServer();
   if (!me) redirect('/entrar');
 
-  const params = await searchParams;
-  const showGestionNotice = params.msg === 'gestion_solo_autorizados';
+  // USUARIO va a su área personal en /mi-cuenta
+  if (me.rol === 'USUARIO') {
+    const params = await searchParams;
+    if (params.msg === 'gestion_solo_autorizados') {
+      redirect('/mi-cuenta?msg=gestion_solo_autorizados');
+    }
+    redirect('/mi-cuenta');
+  }
 
-  const misPueblos =
-    me.rol === 'ALCALDE' || me.rol === 'ADMIN'
-      ? await getMisPueblosServer()
-      : [];
+  // Solo ADMIN y ALCALDE llegan aquí
+  const misPueblos = await getMisPueblosServer();
 
   return (
     <main className="mx-auto max-w-2xl p-6">
@@ -52,25 +56,8 @@ export default async function CuentaPage({
       </div>
 
       <section className="mt-10 space-y-3">
-        {showGestionNotice && me.rol === 'USUARIO' ? (
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
-            <div className="font-medium text-amber-800">Zona restringida</div>
-            <p className="mt-1 text-sm text-amber-700">
-              La gestión de pueblos es solo para alcaldes y administradores autorizados.
-              Tu área personal está en <Link href="/mi-cuenta" className="underline">Mi cuenta</Link>.
-            </p>
-          </div>
-        ) : null}
-        {me.rol === 'USUARIO' ? (
-          <div className="rounded-md border p-4">
-            <div className="font-medium">Tu cuenta</div>
-            <div className="text-sm text-gray-600">
-              Área de usuario básica (seguiremos ampliando).
-            </div>
-          </div>
-        ) : null}
-
-        {(me.rol === 'ALCALDE' || me.rol === 'ADMIN') ? (
+        {/* Solo ADMIN y ALCALDE llegan aquí, USUARIO ya fue redirigido */}
+        {me.rol === 'ADMIN' || me.rol === 'ALCALDE' ? (
           <div className="rounded-md border p-4">
             {me.rol === 'ADMIN' ? (
               <>
