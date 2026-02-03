@@ -76,10 +76,15 @@ export function ImageUpload({
       }
 
       const data = await response.json();
-      onUploadSuccess(data.url);
-      setPreview(data.url);
-    } catch (err: any) {
-      setError(err.message || "Error al subir imagen");
+      const uploadedUrl = data?.url ?? data?.publicUrl;
+      if (!uploadedUrl) {
+        throw new Error("La respuesta no incluye la URL de la imagen");
+      }
+      onUploadSuccess(uploadedUrl);
+      setPreview(uploadedUrl);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Error al subir imagen";
+      setError(message);
       setPreview(initialUrl || null);
     } finally {
       setUploading(false);
@@ -90,6 +95,7 @@ export function ImageUpload({
     <div className={className}>
       {showPreview && preview && (
         <div className="mb-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={preview}
             alt="Preview"

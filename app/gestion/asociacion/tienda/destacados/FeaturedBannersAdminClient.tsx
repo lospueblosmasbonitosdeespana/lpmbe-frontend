@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ImageUpload } from "@/app/_components/ImageUpload";
+import { getProducts } from "@/src/lib/tiendaApi";
 
 type Product = {
   id: number;
@@ -36,14 +36,12 @@ type FormData = {
 };
 
 export default function FeaturedBannersAdminClient() {
-  const router = useRouter();
   const [banners, setBanners] = useState<FeaturedBanner[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
-  const [uploadingImage, setUploadingImage] = useState(false);
 
   const emptyForm: FormData = {
     productId: null,
@@ -63,23 +61,29 @@ export default function FeaturedBannersAdminClient() {
 
   async function loadData() {
     try {
-      const [bannersRes, productsRes] = await Promise.all([
-        fetch("/api/featured-banners", { credentials: "include" }),
-        fetch("/api/products", { credentials: "include" }),
+      setLoading(true);
+      setMessage("");
+
+      const [bannersRes, productsData] = await Promise.all([
+        fetch("/api/featured-banners", {
+          credentials: "include",
+          cache: "no-store",
+        }),
+        getProducts(),
       ]);
 
-      if (bannersRes.ok) {
-        const bannersData = await bannersRes.json();
-        setBanners(bannersData);
+      if (!bannersRes.ok) {
+        const errData = await bannersRes.json().catch(() => ({}));
+        throw new Error(errData?.message || errData?.error || "Error cargando banners");
       }
 
-      if (productsRes.ok) {
-        const productsData = await productsRes.json();
-        setProducts(productsData);
-      }
+      const bannersData = await bannersRes.json();
+      setBanners(Array.isArray(bannersData) ? bannersData : []);
+      setProducts(productsData);
     } catch (error) {
       console.error("Error cargando datos:", error);
-      setMessage("Error cargando datos");
+      const message = error instanceof Error ? error.message : "Error cargando datos";
+      setMessage(message);
     } finally {
       setLoading(false);
     }
@@ -140,7 +144,7 @@ export default function FeaturedBannersAdminClient() {
         const data = await res.json();
         setMessage(data.message || "Error al guardar");
       }
-    } catch (error) {
+    } catch {
       setMessage("Error de conexión");
     }
   }
@@ -161,15 +165,9 @@ export default function FeaturedBannersAdminClient() {
         const data = await res.json();
         setMessage(data.message || "Error al eliminar");
       }
-    } catch (error) {
+    } catch {
       setMessage("Error de conexión");
     }
-  }
-
-  function addImage() {
-    if (!imageInput.trim()) return;
-    setForm({ ...form, images: [...form.images, imageInput.trim()] });
-    setImageInput("");
   }
 
   function removeImage(index: number) {
@@ -232,6 +230,7 @@ export default function FeaturedBannersAdminClient() {
               <div className="flex items-start justify-between gap-6">
                 <div className="flex gap-6">
                   {banner.product.imagenUrl && (
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={banner.product.imagenUrl}
                       alt={banner.product.nombre}
@@ -407,11 +406,12 @@ export default function FeaturedBannersAdminClient() {
                     <p className="text-xs font-medium text-gray-600">
                       {form.images.length} imagen(es) añadida(s):
                     </p>
-                    {form.images.map((img, i) => (
+                        {form.images.map((img, i) => (
                       <div
                         key={i}
                         className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3"
                       >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={img}
                           alt={`Imagen ${i + 1}`}

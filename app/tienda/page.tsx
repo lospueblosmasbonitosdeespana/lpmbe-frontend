@@ -4,6 +4,7 @@ import { TiendaPageClient } from "./TiendaPageClient";
 import type { ProductCardData } from "@/app/_components/tienda/ProductCard";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
+import { getApiUrl } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -57,18 +58,19 @@ export default async function TiendaPage() {
   let error: string | null = null;
 
   try {
+    const API_BASE = getApiUrl();
     // Cargar productos y banners en paralelo
     const [productsData, bannersData] = await Promise.all([
       getProducts(),
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/featured-banners/active`, {
+      fetch(`${API_BASE}/featured-banners/active`, {
         cache: 'no-store',
       }).then(res => res.ok ? res.json() : []),
     ]);
 
     products = productsData;
     banners = bannersData;
-  } catch (e: any) {
-    error = e?.message ?? "Error cargando productos";
+  } catch (e) {
+    error = e instanceof Error ? e.message : "Error cargando productos";
   }
 
   if (error) {
