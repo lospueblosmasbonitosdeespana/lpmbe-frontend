@@ -22,6 +22,12 @@ type ProductForm = {
   imagenUrl: string;
   discountPercent: string; // 0-100
   discountLabel: string;
+  // Nuevos campos para página rica
+  descripcionLarga: string;
+  caracteristicas: string; // JSON como string
+  origenPueblo: string;
+  artesano: string;
+  infoAdicional: string;
 };
 
 const emptyForm: ProductForm = {
@@ -37,6 +43,11 @@ const emptyForm: ProductForm = {
   imagenUrl: "",
   discountPercent: "",
   discountLabel: "",
+  descripcionLarga: "",
+  caracteristicas: "",
+  origenPueblo: "",
+  artesano: "",
+  infoAdicional: "",
 };
 
 export default function ProductosAdminClient() {
@@ -91,6 +102,11 @@ export default function ProductosAdminClient() {
       imagenUrl: producto.imagenUrl ?? "",
       discountPercent: producto.discountPercent?.toString() ?? "",
       discountLabel: producto.discountLabel ?? "",
+      descripcionLarga: producto.descripcionLarga ?? "",
+      caracteristicas: producto.caracteristicas ?? "",
+      origenPueblo: producto.origenPueblo ?? "",
+      artesano: producto.artesano ?? "",
+      infoAdicional: producto.infoAdicional ?? "",
     });
     setError(null);
     setSuccess(null);
@@ -203,6 +219,12 @@ export default function ProductosAdminClient() {
       imagenUrl: form.imagenUrl.trim() || null,
       discountPercent,
       discountLabel,
+      // Nuevos campos
+      descripcionLarga: form.descripcionLarga.trim() || null,
+      caracteristicas: form.caracteristicas.trim() || null,
+      origenPueblo: form.origenPueblo.trim() || null,
+      artesano: form.artesano.trim() || null,
+      infoAdicional: form.infoAdicional.trim() || null,
     };
 
     console.log("[ProductosAdmin] Payload a enviar:", payload);
@@ -484,6 +506,86 @@ export default function ProductosAdminClient() {
                   <p className="mt-1 text-xs text-gray-500">
                     Si está vacío, se genera automáticamente
                   </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Sección de página de producto rica */}
+            <div className="border-t border-gray-300 pt-6 mt-6">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">Página de producto (opcional)</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Descripción larga (HTML/Markdown)
+                  </label>
+                  <textarea
+                    value={form.descripcionLarga}
+                    onChange={(e) => setForm({ ...form, descripcionLarga: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono"
+                    rows={8}
+                    placeholder="Descripción detallada del producto. Acepta HTML básico."
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Puedes usar HTML básico para formato (p, strong, em, ul, li, etc.)
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      Pueblo de origen
+                    </label>
+                    <input
+                      type="text"
+                      value={form.origenPueblo}
+                      onChange={(e) => setForm({ ...form, origenPueblo: e.target.value })}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                      placeholder="Ej: Aínsa, Santillana del Mar..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      Artesano/Productor
+                    </label>
+                    <input
+                      type="text"
+                      value={form.artesano}
+                      onChange={(e) => setForm({ ...form, artesano: e.target.value })}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                      placeholder="Nombre del artesano o productor"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Características (JSON)
+                  </label>
+                  <textarea
+                    value={form.caracteristicas}
+                    onChange={(e) => setForm({ ...form, caracteristicas: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono"
+                    rows={4}
+                    placeholder='["Hecho a mano", "100% natural", "Denominación de origen"]'
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Array JSON de strings. Ej: ["Característica 1", "Característica 2"]
+                  </p>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Información adicional
+                  </label>
+                  <textarea
+                    value={form.infoAdicional}
+                    onChange={(e) => setForm({ ...form, infoAdicional: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    rows={4}
+                    placeholder="Info sobre envío, devoluciones, conservación, etc."
+                  />
                 </div>
               </div>
             </div>

@@ -274,6 +274,79 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           )}
         </div>
       </div>
+
+      {/* Secciones adicionales de producto */}
+      <div className="mt-16 grid grid-cols-1 gap-12 lg:grid-cols-3">
+        {/* Descripción larga */}
+        {product.descripcionLarga && (
+          <div className="lg:col-span-2">
+            <h2 className="text-2xl font-bold mb-4">Descripción detallada</h2>
+            <div 
+              className="prose prose-gray max-w-none"
+              dangerouslySetInnerHTML={{ __html: product.descripcionLarga }}
+            />
+          </div>
+        )}
+
+        {/* Sidebar con info adicional */}
+        <div className="space-y-6">
+          {/* Origen */}
+          {(product.origenPueblo || product.artesano) && (
+            <div className="rounded-lg border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold mb-4">Origen del producto</h3>
+              {product.origenPueblo && (
+                <div className="mb-3">
+                  <p className="text-sm text-gray-500 mb-1">Pueblo</p>
+                  <p className="font-medium">{product.origenPueblo}</p>
+                </div>
+              )}
+              {product.artesano && (
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Artesano/Productor</p>
+                  <p className="font-medium">{product.artesano}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Características */}
+          {product.caracteristicas && (() => {
+            try {
+              const features = JSON.parse(product.caracteristicas);
+              if (Array.isArray(features) && features.length > 0) {
+                return (
+                  <div className="rounded-lg border border-gray-200 p-6">
+                    <h3 className="text-lg font-semibold mb-4">Características</h3>
+                    <ul className="space-y-2">
+                      {features.map((feature: any, index: number) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <span className="text-green-600 mt-0.5">✓</span>
+                          <span className="text-sm text-gray-700">
+                            {typeof feature === 'string' ? feature : feature.name || feature.label}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              }
+            } catch (e) {
+              // Si no es JSON válido, no mostrar nada
+            }
+            return null;
+          })()}
+
+          {/* Información adicional */}
+          {product.infoAdicional && (
+            <div className="rounded-lg bg-blue-50 p-6">
+              <h3 className="text-lg font-semibold mb-3">Información adicional</h3>
+              <div className="text-sm text-gray-700 whitespace-pre-line">
+                {product.infoAdicional}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </main>
   );
 }
