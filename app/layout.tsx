@@ -25,3 +25,4 @@ export default function RootLayout({
     </html>
   );
 }
+// Vercel trigger: 1770130302
