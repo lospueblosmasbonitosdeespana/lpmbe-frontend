@@ -28,6 +28,15 @@ interface TipTapEditorProps {
   minHeight?: string;
 }
 
+type ImageSize = 'small' | 'medium' | 'large' | 'full';
+
+const IMAGE_SIZES: Record<ImageSize, { label: string; width: string }> = {
+  small: { label: 'Pequeña (300px)', width: '300px' },
+  medium: { label: 'Mediana (500px)', width: '500px' },
+  large: { label: 'Grande (700px)', width: '700px' },
+  full: { label: 'Ancho completo', width: '100%' },
+};
+
 export default function TipTapEditor({
   content,
   onChange,
@@ -36,6 +45,8 @@ export default function TipTapEditor({
   minHeight = '400px',
 }: TipTapEditorProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [showImageSizeModal, setShowImageSizeModal] = useState(false);
+  const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
 
   const editor = useEditor({
     extensions: [
@@ -48,7 +59,6 @@ export default function TipTapEditor({
         inline: false,
         HTMLAttributes: {
           class: 'editor-image',
-          style: 'max-width: 800px; width: 100%; height: auto; border-radius: 0.5rem; margin: 1rem 0;',
         },
       }),
       Link.configure({
@@ -78,7 +88,7 @@ export default function TipTapEditor({
         const file = event.dataTransfer.files[0];
         if (file.type.startsWith('image/')) {
           event.preventDefault();
-          handleImageUpload(file);
+          handleImageUploadWithSize(file);
           return true;
         }
 
@@ -92,7 +102,7 @@ export default function TipTapEditor({
         const file = event.clipboardData.files[0];
         if (file.type.startsWith('image/')) {
           event.preventDefault();
-          handleImageUpload(file);
+          handleImageUploadWithSize(file);
           return true;
         }
 
@@ -101,14 +111,42 @@ export default function TipTapEditor({
     },
   });
 
-  const handleImageUpload = useCallback(async (file: File) => {
+  const insertImageWithSize = useCallback((url: string, size: ImageSize) => {
+    if (!editor) return;
+    
+    const { width } = IMAGE_SIZES[size];
+    const style = `max-width: ${width}; width: 100%; height: auto; border-radius: 0.5rem; margin: 1rem 0;`;
+    
+    editor.chain().focus().setImage({ 
+      src: url,
+      alt: 'Imagen',
+      title: '',
+    }).run();
+
+    // Aplicar estilo a la imagen recién insertada
+    setTimeout(() => {
+      const images = editor.view.dom.querySelectorAll('img.editor-image');
+      const lastImage = images[images.length - 1] as HTMLImageElement;
+      if (lastImage && lastImage.src === url) {
+        lastImage.style.cssText = style;
+        // Forzar actualización del HTML
+        onChange(editor.getHTML());
+      }
+    }, 100);
+
+    setShowImageSizeModal(false);
+    setPendingImageUrl(null);
+  }, [editor, onChange]);
+
+  const handleImageUploadWithSize = useCallback(async (file: File) => {
     if (!onUploadImage || !editor) return;
 
     setIsUploading(true);
     try {
       const url = await onUploadImage(file);
       if (url) {
-        editor.chain().focus().setImage({ src: url }).run();
+        setPendingImageUrl(url);
+        setShowImageSizeModal(true);
       }
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -128,36 +166,31 @@ export default function TipTapEditor({
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        await handleImageUpload(file);
+        await handleImageUploadWithSize(file);
       }
     };
 
     input.click();
-  }, [editor, handleImageUpload, onUploadImage]);
+  }, [editor, handleImageUploadWithSize, onUploadImage]);
 
   const setLink = useCallback(() => {
     if (!editor) return;
     
-    // Obtener URL actual si existe
     const previousUrl = editor.getAttributes('link').href || '';
     const url = window.prompt('URL del enlace:', previousUrl);
 
-    // Si cancela, no hacer nada
     if (url === null) return;
 
-    // Si está vacío, eliminar el enlace
     if (url.trim() === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
       return;
     }
 
-    // Añadir https:// si no tiene protocolo
     let finalUrl = url.trim();
     if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://') && !finalUrl.startsWith('/')) {
       finalUrl = 'https://' + finalUrl;
     }
 
-    // Aplicar enlace al texto seleccionado o extender si ya es enlace
     editor.chain().focus().extendMarkRange('link').setLink({ href: finalUrl }).run();
   }, [editor]);
 
@@ -202,7 +235,46 @@ export default function TipTapEditor({
 
   return (
     <div className="space-y-3">
-      {/* Barra de herramientas fija con gradiente sutil */}
+      {/* Modal selector de tamaño de imagen */}
+      {showImageSizeModal && pendingImageUrl && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+            <h3 className="text-lg font-semibold mb-4">Elige el tamaño de la imagen</h3>
+            
+            <div className="mb-4">
+              <img 
+                src={pendingImageUrl} 
+                alt="Vista previa" 
+                className="w-full h-32 object-cover rounded-lg"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2">
+              {(Object.keys(IMAGE_SIZES) as ImageSize[]).map((size) => (
+                <button
+                  key={size}
+                  onClick={() => insertImageWithSize(pendingImageUrl, size)}
+                  className="px-4 py-3 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors text-sm font-medium"
+                >
+                  {IMAGE_SIZES[size].label}
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => {
+                setShowImageSizeModal(false);
+                setPendingImageUrl(null);
+              }}
+              className="mt-4 w-full px-4 py-2 text-gray-600 hover:text-gray-800 text-sm"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Barra de herramientas */}
       <div className="sticky top-0 z-10 flex flex-wrap items-center gap-1 rounded-xl border border-gray-200 bg-gradient-to-r from-white to-gray-50/50 backdrop-blur-sm p-2 shadow-sm">
         <div className="flex items-center gap-1">
           <ToolbarButton
@@ -270,7 +342,7 @@ export default function TipTapEditor({
           <ToolbarButton
             onClick={setLink}
             isActive={editor.isActive('link')}
-            title="Insertar enlace"
+            title="Insertar enlace (selecciona texto primero)"
           >
             <LinkIcon className="w-4 h-4" />
           </ToolbarButton>
@@ -307,27 +379,27 @@ export default function TipTapEditor({
         </div>
       </div>
 
-      {/* Editor con diseño más cuidado */}
+      {/* Editor */}
       <div className="group rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
         <EditorContent editor={editor} />
       </div>
 
-      {/* Ayuda y feedback */}
+      {/* Ayuda */}
       <div className="flex items-center justify-between text-xs text-gray-500">
         {onUploadImage && (
           <div className="flex items-center gap-2">
             <Sparkles className="w-3 h-3 text-blue-500" />
-            <span>Arrastra imágenes aquí o pégalas con Ctrl+V (máx. 800px de ancho)</span>
+            <span>Arrastra imágenes o pégalas con Ctrl+V</span>
           </div>
         )}
-        <div className="flex items-center gap-2 text-gray-400">
-          <span>{editor.storage.characterCount?.characters() || 0} caracteres</span>
+        <div className="text-gray-400">
+          <span>Para enlaces: selecciona texto → clic en 🔗</span>
         </div>
       </div>
 
       {/* Notificación de carga */}
       {isUploading && (
-        <div className="fixed bottom-4 right-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in slide-in-from-bottom-2">
+        <div className="fixed bottom-4 right-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3">
           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           <span className="font-medium">Subiendo imagen...</span>
         </div>

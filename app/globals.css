@@ -161,20 +161,19 @@
   @apply text-gray-400 float-left h-0 pointer-events-none;
 }
 
+/* Las imágenes usan estilos inline para el tamaño, solo añadimos defaults */
 .ProseMirror img,
 .editor-image {
-  max-width: 800px !important;
-  width: 100% !important;
-  height: auto !important;
-  border-radius: 0.5rem !important;
-  margin: 1rem 0 !important;
-  display: block !important;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1) !important;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  display: block;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
 }
 
-.ProseMirror img:hover {
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
-  cursor: pointer;
+.ProseMirror img:hover,
+.editor-image:hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
 .ProseMirror h2 {
