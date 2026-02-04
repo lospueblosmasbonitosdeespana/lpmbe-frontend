@@ -4,6 +4,7 @@ import { Container } from '@/app/components/ui/container';
 import { Grid } from '@/app/components/ui/grid';
 import { Display, Lead, Eyebrow, Headline } from '@/app/components/ui/typography';
 import { ProductCard } from '@/app/_components/tienda/ProductCard';
+import { NewsletterCta } from '@/app/_components/tienda/NewsletterCta';
 import type { Product } from '@/src/types/tienda';
 import { cn } from '@/lib/utils';
 
@@ -211,6 +212,8 @@ export default async function TiendaPage() {
           )}
         </Container>
       </Section>
+
+      <NewsletterCta />
     </>
   );
 }
