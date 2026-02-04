@@ -135,6 +135,7 @@ type PuebloSafe = {
   eventos: any[];
   noticias: any[];
   multiexperiencias: any[];
+  rutas?: Array<{ ruta: { id: number; titulo: string; slug: string; foto_portada?: string | null } }>;
 };
 
 // 🔒 Forzamos render dinámico (no SSG)
@@ -235,6 +236,7 @@ export default async function PuebloPage({
     eventos: pueblo.eventos ?? [],
     noticias: pueblo.noticias ?? [],
     multiexperiencias: (pueblo as any).multiexperiencias ?? [],
+    rutas: (pueblo as any).rutas ?? [],
   };
 
   // Función para deduplicar por URL (no por ID)

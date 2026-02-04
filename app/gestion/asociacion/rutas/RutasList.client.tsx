@@ -3,6 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+type PuebloEnRuta = {
+  orden: number;
+  pueblo: { id: number; nombre: string; slug: string; provincia?: string };
+};
+
 type RutaRow = {
   id: number;
   titulo: string;
@@ -10,6 +15,8 @@ type RutaRow = {
   activo: boolean;
   programa?: string | null;
   _count?: { paradas: number };
+  paradasCount?: number;
+  pueblos?: PuebloEnRuta[];
 };
 
 export default function RutasList() {
@@ -97,6 +104,7 @@ export default function RutasList() {
             <thead>
               <tr className="border-b bg-gray-50">
                 <th className="px-4 py-2 text-left font-medium">Título</th>
+                <th className="px-4 py-2 text-left font-medium">Pueblos</th>
                 <th className="px-4 py-2 text-left font-medium">Slug</th>
                 <th className="px-4 py-2 text-left font-medium">Programa</th>
                 <th className="px-4 py-2 text-center font-medium">Paradas</th>
@@ -107,51 +115,79 @@ export default function RutasList() {
               </tr>
             </thead>
             <tbody>
-              {rutas.map((r) => (
-                <tr key={r.id} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-3">{r.titulo}</td>
-                  <td className="px-4 py-3 text-gray-600">{r.slug}</td>
-                  <td className="px-4 py-3 text-gray-600">{r.programa || '—'}</td>
-                  <td className="px-4 py-3 text-center text-gray-600">
-                    {(r as any).paradasCount ??
-                     (r as any)._count?.pueblos ??
-                     (Array.isArray((r as any).pueblos) ? (r as any).pueblos.length : 0)}
-                  </td>
-                  <td className="px-4 py-3 text-center text-gray-600">
-                    {(r as any).distancia_km ?? (r as any).distanciaKm ?? '—'}
-                  </td>
-                  <td className="px-4 py-3 text-center text-gray-600">
-                    {(r as any).tiempo_estimado ?? (r as any).tiempoEstimado ?? '—'}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    {r.activo ? (
-                      <span className="inline-block rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">
-                        Sí
-                      </span>
-                    ) : (
-                      <span className="inline-block rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600">
-                        No
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <Link
-                        href={`/gestion/asociacion/rutas/${r.id}/editar`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        Editar
-                      </Link>
-                      <button
-                        onClick={() => eliminarRuta(r.id)}
-                        className="text-red-600 hover:underline"
-                      >
-                        Borrar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {rutas.map((r) => {
+                const pueblosList = (r as RutaRow).pueblos ?? [];
+                return (
+                  <tr key={r.id} className="border-b hover:bg-gray-50">
+                    <td className="px-4 py-3 font-medium">{r.titulo}</td>
+                    <td className="max-w-xs px-4 py-3">
+                      {pueblosList.length === 0 ? (
+                        <span className="text-gray-400">—</span>
+                      ) : (
+                        <ul className="flex flex-wrap gap-x-2 gap-y-0.5">
+                          {pueblosList
+                            .sort((a, b) => a.orden - b.orden)
+                            .map((rp, idx) => (
+                              <li key={rp.pueblo.id} className="inline">
+                                <Link
+                                  href={`/pueblos/${rp.pueblo.slug}`}
+                                  className="text-blue-600 hover:underline"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {rp.pueblo.nombre}
+                                </Link>
+                                {idx < pueblosList.length - 1 && (
+                                  <span className="text-gray-300"> · </span>
+                                )}
+                              </li>
+                            ))}
+                        </ul>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{r.slug}</td>
+                    <td className="px-4 py-3 text-gray-600">{r.programa || '—'}</td>
+                    <td className="px-4 py-3 text-center text-gray-600">
+                      {(r as any).paradasCount ??
+                       (r as any)._count?.pueblos ??
+                       pueblosList.length}
+                    </td>
+                    <td className="px-4 py-3 text-center text-gray-600">
+                      {(r as any).distancia_km ?? (r as any).distanciaKm ?? '—'}
+                    </td>
+                    <td className="px-4 py-3 text-center text-gray-600">
+                      {(r as any).tiempo_estimado ?? (r as any).tiempoEstimado ?? '—'}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {r.activo ? (
+                        <span className="inline-block rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">
+                          Sí
+                        </span>
+                      ) : (
+                        <span className="inline-block rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600">
+                          No
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <Link
+                          href={`/gestion/asociacion/rutas/${r.id}/editar`}
+                          className="text-blue-600 hover:underline"
+                        >
+                          Editar
+                        </Link>
+                        <button
+                          onClick={() => eliminarRuta(r.id)}
+                          className="text-red-600 hover:underline"
+                        >
+                          Borrar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
