@@ -148,7 +148,6 @@ export default async function TiendaPage() {
     });
 
   const destacados = activeProducts.filter((p) => p.destacado);
-  const restantes = activeProducts.filter((p) => !p.destacado);
 
   return (
     <>
@@ -174,7 +173,7 @@ export default async function TiendaPage() {
           {!error && activeProducts.length > 0 && (
             <>
               {destacados.length > 0 && (
-                <div className={cn(restantes.length > 0 && 'mb-12')}>
+                <div className={cn(destacados.length > 0 ? 'mb-12' : '')}>
                   <div className="mb-8 flex items-end justify-between">
                     <div>
                       <Eyebrow className="mb-2">Selección especial</Eyebrow>
@@ -189,25 +188,23 @@ export default async function TiendaPage() {
                 </div>
               )}
 
-              {restantes.length > 0 && (
-                <div>
-                  <div className="mb-8 flex items-end justify-between">
-                    <div>
-                      <Eyebrow className="mb-2">Explora</Eyebrow>
-                      <Headline as="h2">
-                        {destacados.length > 0
-                          ? 'Todos los productos'
-                          : 'Productos'}
-                      </Headline>
-                    </div>
+              <div>
+                <div className="mb-8 flex items-end justify-between">
+                  <div>
+                    <Eyebrow className="mb-2">Explora</Eyebrow>
+                    <Headline as="h2">
+                      {destacados.length > 0
+                        ? 'Todos los productos'
+                        : 'Productos'}
+                    </Headline>
                   </div>
-                  <Grid columns={4} gap="md">
-                    {restantes.map((product) => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
-                  </Grid>
                 </div>
-              )}
+                <Grid columns={4} gap="md">
+                  {activeProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </Grid>
+              </div>
             </>
           )}
         </Container>
