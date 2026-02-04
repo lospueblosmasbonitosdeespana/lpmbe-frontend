@@ -6,6 +6,7 @@ import { RutasSection } from "./_components/home/RutasSection";
 import { FeaturedPueblosSection } from "./_components/home/FeaturedPueblosSection";
 import { ActualidadSection } from "./_components/home/ActualidadSection";
 import { FinalCtaSection } from "./_components/home/FinalCtaSection";
+import { TiendaBannerSection } from "./_components/home/TiendaBannerSection";
 import { getHomeConfig } from "@/lib/homeApi";
 
 // Forzar render dinámico para evitar que el build falle si el backend no responde
@@ -34,6 +35,7 @@ export default async function HomePage() {
         )}
         <FeaturedPueblosSection />
         <ActualidadSection limit={config.actualidad.limit} />
+        <TiendaBannerSection />
         <FinalCtaSection />
       </div>
     </main>

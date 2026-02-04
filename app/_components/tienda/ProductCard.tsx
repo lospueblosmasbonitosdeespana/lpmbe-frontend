@@ -17,9 +17,17 @@ function toNum(v: unknown): number {
 }
 
 export function ProductCard({ product, className }: ProductCardProps) {
+  const precioOriginal = toNum(product.precio);
   const precioFinal = toNum(product.finalPrice ?? product.precio);
-  const hasDiscount = product.discountPercent && product.discountPercent > 0;
-  const precioOriginal = hasDiscount ? toNum(product.precio) : undefined;
+  const hasDiscount =
+    (product.discountPercent != null && product.discountPercent > 0) ||
+    (product.discount != null) ||
+    (precioFinal > 0 && precioOriginal > precioFinal);
+  const discountPercent =
+    product.discountPercent ??
+    product.discount?.percent ??
+    (precioOriginal > 0 ? Math.round(((precioOriginal - precioFinal) / precioOriginal) * 100) : 0);
+  const ahorro = hasDiscount ? precioOriginal - precioFinal : 0;
 
   const rawImg = product.imagenUrl && String(product.imagenUrl).trim();
   const safeSrc = rawImg || undefined;
@@ -49,17 +57,17 @@ export function ProductCard({ product, className }: ProductCardProps) {
           )}
           <div className="absolute inset-0 bg-foreground/0 transition-colors duration-300 group-hover:bg-foreground/5" />
 
-          {/* Badge Destacado */}
+          {/* Badge Destacado (top-left) */}
           {product.destacado && (
             <span className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
               Destacado
             </span>
           )}
 
-          {/* Badge descuento */}
-          {hasDiscount && !product.destacado && (
-            <span className="absolute left-3 top-3 rounded-full bg-destructive px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
-              -{product.discountPercent}%
+          {/* Badge descuento/oferta (top-right, siempre visible si hay descuento) */}
+          {hasDiscount && discountPercent > 0 && (
+            <span className="absolute right-3 top-3 rounded-full bg-destructive px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
+              -{discountPercent}%
             </span>
           )}
 
@@ -79,21 +87,34 @@ export function ProductCard({ product, className }: ProductCardProps) {
           <h3 className="font-serif text-base font-medium leading-snug transition-colors group-hover:text-primary">
             {product.nombre}
           </h3>
-          <div className="mt-1 flex items-center justify-between gap-2">
-            <span className="font-medium text-foreground">
-              {precioFinal.toFixed(2)} €
-            </span>
-            {product.stock <= 0 ? (
-              <span className="text-xs text-destructive">Agotado</span>
-            ) : (
-              <span className="text-xs text-green-600">En stock</span>
+          <div className="mt-1 flex flex-col gap-0.5">
+            <div className="flex items-center justify-between gap-2">
+              {hasDiscount ? (
+                <>
+                  <span className="font-semibold text-destructive">
+                    {precioFinal.toFixed(2)} €
+                  </span>
+                  <span className="text-sm text-muted-foreground line-through">
+                    {precioOriginal.toFixed(2)} €
+                  </span>
+                </>
+              ) : (
+                <span className="font-medium text-foreground">
+                  {precioFinal.toFixed(2)} €
+                </span>
+              )}
+              {product.stock <= 0 ? (
+                <span className="text-xs text-destructive">Agotado</span>
+              ) : (
+                <span className="text-xs text-green-600">En stock</span>
+              )}
+            </div>
+            {hasDiscount && ahorro > 0 && (
+              <span className="text-xs font-medium text-green-600">
+                Ahorro: {ahorro.toFixed(2)} €
+              </span>
             )}
           </div>
-          {precioOriginal && precioOriginal > precioFinal && (
-            <span className="text-sm text-muted-foreground line-through">
-              {precioOriginal.toFixed(2)} €
-            </span>
-          )}
         </div>
       </article>
     </Link>
