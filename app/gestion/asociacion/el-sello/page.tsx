@@ -228,9 +228,40 @@ export default function ElSelloCmsPage() {
     }
   }
 
+  async function handleResetAll() {
+    if (!confirm('¿Estás seguro de que quieres BORRAR TODO el contenido de TODAS las páginas del sello?\n\nEsta acción no se puede deshacer.')) {
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/cms/sello/reset-all', {
+        method: 'POST',
+      });
+      
+      if (!res.ok) throw new Error('Error reseteando páginas');
+      
+      const data = await res.json();
+      alert(data.message || 'Páginas reseteadas correctamente');
+      
+      setSelectedKey(null);
+      setFormData({ titulo: '', subtitle: '', heroUrl: '', contenido: '' });
+      await loadPages();
+    } catch (e: unknown) {
+      alert((e as Error)?.message ?? 'Error reseteando páginas');
+    }
+  }
+
   return (
     <main className="mx-auto max-w-7xl px-6 py-12">
-      <h1 className="text-3xl font-semibold mb-8">El Sello (CMS)</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-semibold">El Sello (CMS)</h1>
+        <button
+          onClick={handleResetAll}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+        >
+          🗑️ Borrar todo el contenido
+        </button>
+      </div>
 
       <div className="grid gap-8 lg:grid-cols-[300px,1fr]">
         <div className="space-y-2">

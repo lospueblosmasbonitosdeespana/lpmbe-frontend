@@ -138,27 +138,32 @@ export default function TipTapEditor({
   const setLink = useCallback(() => {
     if (!editor) return;
     
+    // Verificar si hay texto seleccionado
+    const { from, to } = editor.state.selection;
+    if (from === to) {
+      alert('Selecciona el texto al que quieres añadir el enlace');
+      return;
+    }
+
     // Si hay texto seleccionado, obtener su URL si es un enlace
-    const previousUrl = editor.getAttributes('link').href;
-    const url = window.prompt('URL del enlace:', previousUrl);
+    const previousUrl = editor.getAttributes('link').href || '';
+    const url = window.prompt('URL del enlace (ej: https://ejemplo.com):', previousUrl);
 
     if (url === null) return;
 
     // Si está vacío, eliminar el enlace
-    if (url === '') {
+    if (url.trim() === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
       return;
     }
 
-    // Si hay selección, aplicar enlace
-    // Si no hay selección, mostrar advertencia
-    const { from, to } = editor.state.selection;
-    if (from === to) {
-      alert('Por favor, selecciona el texto al que quieres añadir el enlace');
-      return;
+    // Añadir https:// si no tiene protocolo
+    let finalUrl = url.trim();
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://') && !finalUrl.startsWith('/')) {
+      finalUrl = 'https://' + finalUrl;
     }
 
-    editor.chain().focus().setLink({ href: url }).run();
+    editor.chain().focus().setLink({ href: finalUrl }).run();
   }, [editor]);
 
   if (!editor) {
