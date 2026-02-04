@@ -673,12 +673,10 @@ export default async function PuebloPage({
         </section>
       )}
 
-      {/* Qué hacer en [Pueblo] - Lugares a visitar + Multiexperiencias */}
+      {/* Qué hacer en [Pueblo] - Solo Multiexperiencias */}
       <QueHacerSection
         puebloNombre={puebloSafe.nombre}
         puebloSlug={puebloSafe.slug}
-        paginasTematicas={paginasTematicas}
-        pois={allPoisPOI}
         multiexperiencias={puebloSafe.multiexperiencias ?? []}
       />
 
