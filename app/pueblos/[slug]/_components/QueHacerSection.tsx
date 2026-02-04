@@ -164,7 +164,7 @@ export function QueHacerSection({
               {multiexperiencias.map(({ multiexperiencia: mx }) => (
                 <Link
                   key={mx.id}
-                  href={`/experiencias/${mx.slug}/pueblo/${puebloSlug}`}
+                  href={`/experiencias/${mx.slug}/pueblos/${puebloSlug}`}
                   className="group block"
                 >
                   {mx.foto && (
