@@ -1,38 +1,21 @@
 'use client';
 
-import { useMemo } from 'react';
-
 interface SafeHtmlProps {
   html: string;
   className?: string;
 }
 
-// Decodifica entidades HTML escapadas (puede estar doblemente escapado)
-function decodeHtmlEntities(html: string): string {
-  if (!html) return '';
+export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
+  // Si el HTML tiene entidades escapadas (&lt; &gt;), las decodificamos UNA sola vez
+  let processedHtml = html || '';
   
-  let result = html;
-  let prevResult = '';
-  
-  // Aplicar hasta 3 veces por si está múltiplemente escapado
-  for (let i = 0; i < 3 && result !== prevResult; i++) {
-    prevResult = result;
-    result = result
+  // Solo decodificar si detectamos entidades escapadas de etiquetas (no comillas)
+  if (processedHtml.includes('&lt;') || processedHtml.includes('&gt;')) {
+    processedHtml = processedHtml
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
-      .replace(/&amp;/g, '&')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&#x27;/g, "'")
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&#(\d+);/g, (_, num) => String.fromCharCode(parseInt(num, 10)));
+      .replace(/&amp;/g, '&');
   }
-  
-  return result;
-}
-
-export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
-  const processedHtml = useMemo(() => decodeHtmlEntities(html), [html]);
   
   return (
     <div
