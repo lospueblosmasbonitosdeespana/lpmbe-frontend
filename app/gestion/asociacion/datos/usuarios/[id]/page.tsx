@@ -85,6 +85,7 @@ export default function UsuarioDetallePage() {
   const [pueblosOptions, setPueblosOptions] = useState<Pueblo[]>([]);
   const [addingVisita, setAddingVisita] = useState(false);
   const [visitaError, setVisitaError] = useState<string | null>(null);
+  const [updatingPuebloId, setUpdatingPuebloId] = useState<number | null>(null);
 
   const loadUser = useCallback(async () => {
     if (!id) return;
@@ -188,6 +189,51 @@ export default function UsuarioDetallePage() {
       setVisitaError('Error al añadir visita');
     } finally {
       setAddingVisita(false);
+    }
+  };
+
+  const handleChangeOrigen = async (puebloId: number, origen: 'GPS' | 'MANUAL') => {
+    if (!id) return;
+    setUpdatingPuebloId(puebloId);
+    setVisitaError(null);
+    try {
+      const res = await fetch(`/api/admin/datos/usuarios/${id}/visitas/${puebloId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ origen }),
+      });
+      if (res.ok) {
+        await loadUser();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setVisitaError(err?.message ?? err?.error ?? 'Error al cambiar origen');
+      }
+    } catch (e) {
+      setVisitaError('Error al cambiar origen');
+    } finally {
+      setUpdatingPuebloId(null);
+    }
+  };
+
+  const handleDeleteVisita = async (puebloId: number) => {
+    if (!id) return;
+    if (!confirm('¿Eliminar este pueblo de las visitas? También se quitarán los puntos asociados.')) return;
+    setUpdatingPuebloId(puebloId);
+    setVisitaError(null);
+    try {
+      const res = await fetch(`/api/admin/datos/usuarios/${id}/visitas/${puebloId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        await loadUser();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setVisitaError(err?.message ?? err?.error ?? 'Error al eliminar');
+      }
+    } catch (e) {
+      setVisitaError('Error al eliminar');
+    } finally {
+      setUpdatingPuebloId(null);
     }
   };
 
@@ -460,16 +506,16 @@ export default function UsuarioDetallePage() {
               {user.pueblosVisitados.items.map((item) => (
                 <li
                   key={item.puebloId}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                  className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 hover:bg-gray-50 sm:flex-nowrap"
                 >
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <span className="font-medium">{item.pueblo.nombre}</span>
                     <span className="ml-2 text-sm text-gray-500">
                       {item.pueblo.provincia}
                       {item.pueblo.comunidad ? ` · ${item.pueblo.comunidad}` : ''}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                         item.origen === 'GPS'
@@ -482,6 +528,35 @@ export default function UsuarioDetallePage() {
                     <span className="text-xs text-gray-500">
                       {new Date(item.ultima_fecha).toLocaleDateString('es-ES')}
                     </span>
+                    <div className="flex gap-1">
+                      {item.origen === 'MANUAL' ? (
+                        <button
+                          onClick={() => handleChangeOrigen(item.puebloId, 'GPS')}
+                          disabled={updatingPuebloId === item.puebloId}
+                          className="rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200 disabled:opacity-50"
+                          title="Cambiar a GPS"
+                        >
+                          → GPS
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleChangeOrigen(item.puebloId, 'MANUAL')}
+                          disabled={updatingPuebloId === item.puebloId}
+                          className="rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-200 disabled:opacity-50"
+                          title="Cambiar a Manual"
+                        >
+                          → Manual
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDeleteVisita(item.puebloId)}
+                        disabled={updatingPuebloId === item.puebloId}
+                        className="rounded bg-red-100 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-200 disabled:opacity-50"
+                        title="Eliminar"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </div>
                 </li>
               ))}

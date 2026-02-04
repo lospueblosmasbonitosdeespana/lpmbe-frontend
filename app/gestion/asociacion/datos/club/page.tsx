@@ -3,43 +3,51 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-type Usuario = {
+type ClubCliente = {
   id: number;
+  userId: number;
   email: string;
   nombre: string | null;
   apellidos: string | null;
-  rol: string;
-  activo: boolean;
-  createdAt: string;
-  lastLoginAt: string | null;
-  esCliente: boolean;
+  tipo: string;
+  estado: string;
+  startsAt: string;
+  expiresAt: string;
+  importeCents: number | null;
+  diasRestantes: number | null;
   totalVisitas: number;
-  totalPedidos: number;
+  totalValidaciones: number;
+  clubStatus: string | null;
+  clubPlan: string | null;
 };
 
 type ListResponse = {
-  items: Usuario[];
+  items: ClubCliente[];
   total: number;
 };
 
-const ROL_LABELS: Record<string, string> = {
-  ADMIN: 'Admin',
-  ALCALDE: 'Alcalde',
-  USUARIO: 'Usuario',
-  CLIENTE: 'Cliente',
+const TIPO_LABELS: Record<string, string> = {
+  ANUAL: 'Anual',
+  MENSUAL: 'Mensual',
 };
 
-const LIMIT_OPTIONS = [50, 100, 200, 500];
+const ESTADO_LABELS: Record<string, string> = {
+  ACTIVA: 'Activa',
+  CADUCADA: 'Caducada',
+  CANCELADA: 'Cancelada',
+};
 
-export default function DatosUsuariosPage() {
+const LIMIT_OPTIONS = [50, 100, 200];
+
+export default function DatosClubPage() {
   const [data, setData] = useState<ListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState('');
-  const [rol, setRol] = useState<string>('');
+  const [estado, setEstado] = useState<string>('');
   const [debouncedQ, setDebouncedQ] = useState('');
   const [page, setPage] = useState(0);
-  const [limit, setLimit] = useState(100);
+  const [limit, setLimit] = useState(50);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 400);
@@ -48,7 +56,7 @@ export default function DatosUsuariosPage() {
 
   useEffect(() => {
     setPage(0);
-  }, [debouncedQ, rol, limit]);
+  }, [debouncedQ, estado, limit]);
 
   useEffect(() => {
     async function load() {
@@ -59,8 +67,8 @@ export default function DatosUsuariosPage() {
         params.set('limit', String(limit));
         params.set('offset', String(page * limit));
         if (debouncedQ) params.set('q', debouncedQ);
-        if (rol) params.set('rol', rol);
-        const res = await fetch(`/api/admin/datos/usuarios?${params.toString()}`, {
+        if (estado) params.set('estado', estado);
+        const res = await fetch(`/api/admin/datos/club?${params.toString()}`, {
           cache: 'no-store',
         });
         if (res.ok) {
@@ -68,16 +76,16 @@ export default function DatosUsuariosPage() {
           setData(json);
         } else {
           const err = await res.json().catch(() => ({}));
-          setError(err?.message ?? 'Error cargando usuarios');
+          setError(err?.message ?? 'Error cargando datos');
         }
       } catch (e) {
-        setError('Error cargando usuarios');
+        setError('Error cargando datos');
       } finally {
         setLoading(false);
       }
     }
     load();
-  }, [debouncedQ, rol, page, limit]);
+  }, [debouncedQ, estado, page, limit]);
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -94,9 +102,9 @@ export default function DatosUsuariosPage() {
         >
           ← Volver a Datos
         </Link>
-        <h1 className="text-3xl font-bold">Usuarios</h1>
+        <h1 className="text-3xl font-bold">Club de Amigos</h1>
         <p className="mt-2 text-gray-600">
-          Gestión completa: ver, editar, cambiar roles y pueblos visitados
+          Suscriptores del club: quién ha pagado, duración, pueblos visitados y validaciones
         </p>
       </div>
 
@@ -109,12 +117,12 @@ export default function DatosUsuariosPage() {
           className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
         <select
-          value={rol}
-          onChange={(e) => setRol(e.target.value)}
+          value={estado}
+          onChange={(e) => setEstado(e.target.value)}
           className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
-          <option value="">Todos los roles</option>
-          {Object.entries(ROL_LABELS).map(([v, l]) => (
+          <option value="">Todos los estados</option>
+          {Object.entries(ESTADO_LABELS).map(([v, l]) => (
             <option key={v} value={v}>
               {l}
             </option>
@@ -142,7 +150,7 @@ export default function DatosUsuariosPage() {
       )}
 
       {loading ? (
-        <div className="animate-pulse rounded-lg bg-gray-100 p-8">Cargando usuarios...</div>
+        <div className="animate-pulse rounded-lg bg-gray-100 p-8">Cargando...</div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
           <div className="overflow-x-auto">
@@ -150,22 +158,28 @@ export default function DatosUsuariosPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Usuario
+                    Socio
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Email
+                    Tipo
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Rol
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Visitas
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Pedidos
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Importe
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Estado
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Válida hasta
+                  </th>
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Días rest.
+                  </th>
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Pueblos
+                  </th>
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Validaciones
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Acciones
@@ -175,39 +189,72 @@ export default function DatosUsuariosPage() {
               <tbody className="divide-y divide-gray-200 bg-white">
                 {items.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
-                      No hay usuarios
+                    <td colSpan={9} className="px-4 py-12 text-center text-gray-500">
+                      No hay suscriptores del club
                     </td>
                   </tr>
                 ) : (
-                  items.map((u) => (
-                    <tr key={u.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                        {[u.nombre, u.apellidos].filter(Boolean).join(' ') || '—'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{u.email}</td>
+                  items.map((c) => (
+                    <tr key={c.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3">
-                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
-                          {ROL_LABELS[u.rol] ?? u.rol}
-                        </span>
+                        <div>
+                          <span className="font-medium text-gray-900">
+                            {[c.nombre, c.apellidos].filter(Boolean).join(' ') || '—'}
+                          </span>
+                          <div className="text-sm text-gray-500">{c.email}</div>
+                        </div>
                       </td>
-                      <td className="px-4 py-3 text-center text-sm">{u.totalVisitas}</td>
-                      <td className="px-4 py-3 text-center text-sm">{u.totalPedidos}</td>
+                      <td className="px-4 py-3 text-sm">
+                        {TIPO_LABELS[c.tipo] ?? c.tipo}
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm">
+                        {c.importeCents != null
+                          ? `${(c.importeCents / 100).toFixed(2)} €`
+                          : '—'}
+                      </td>
                       <td className="px-4 py-3">
                         <span
                           className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                            u.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            c.estado === 'ACTIVA'
+                              ? 'bg-green-100 text-green-800'
+                              : c.estado === 'CADUCADA'
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-gray-100 text-gray-700'
                           }`}
                         >
-                          {u.activo ? 'Activo' : 'Inactivo'}
+                          {ESTADO_LABELS[c.estado] ?? c.estado}
                         </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {new Date(c.expiresAt).toLocaleDateString('es-ES')}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm">
+                        {c.diasRestantes != null ? (
+                          <span
+                            className={
+                              c.diasRestantes <= 30
+                                ? 'font-medium text-amber-600'
+                                : 'text-gray-600'
+                            }
+                          >
+                            {c.diasRestantes} días
+                          </span>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm">
+                        {c.totalVisitas}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm">
+                        {c.totalValidaciones}
                       </td>
                       <td className="px-4 py-3">
                         <Link
-                          href={`/gestion/asociacion/datos/usuarios/${u.id}`}
+                          href={`/gestion/asociacion/datos/usuarios/${c.userId}`}
                           className="text-sm font-medium text-blue-600 hover:underline"
                         >
-                          Ver / Editar
+                          Ver usuario
                         </Link>
                       </td>
                     </tr>
@@ -218,7 +265,7 @@ export default function DatosUsuariosPage() {
           </div>
           <div className="flex flex-wrap items-center justify-between gap-4 border-t border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
             <span>
-              Mostrando {from}–{to} de {total} usuarios
+              Mostrando {from}–{to} de {total} socios
             </span>
             <div className="flex items-center gap-2">
               <button
@@ -242,6 +289,13 @@ export default function DatosUsuariosPage() {
           </div>
         </div>
       )}
+
+      <Link
+        href="/gestion/asociacion/club/metricas"
+        className="mt-6 inline-block text-sm text-blue-600 hover:underline"
+      >
+        Ver métricas de validaciones del Club →
+      </Link>
     </main>
   );
 }

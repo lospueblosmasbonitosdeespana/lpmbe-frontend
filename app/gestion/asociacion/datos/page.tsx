@@ -44,12 +44,32 @@ export default async function DatosAdminPage() {
         </Link>
 
         <Link
+          href="/gestion/asociacion/datos/club"
+          className="block rounded-lg border border-gray-200 bg-white p-6 transition-shadow hover:shadow-lg"
+        >
+          <h2 className="text-xl font-semibold">🎫 Club de Amigos</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Socios del club: suscripciones, duración, pueblos visitados y validaciones
+          </p>
+        </Link>
+
+        <Link
           href="/gestion/asociacion/datos/clientes"
           className="block rounded-lg border border-gray-200 bg-white p-6 transition-shadow hover:shadow-lg"
         >
-          <h2 className="text-xl font-semibold">👥 Clientes</h2>
+          <h2 className="text-xl font-semibold">👥 Clientes tienda</h2>
           <p className="mt-2 text-sm text-gray-600">
             Listado de clientes de la tienda con historial de pedidos
+          </p>
+        </Link>
+
+        <Link
+          href="/gestion/asociacion/datos/valoraciones-pueblos"
+          className="block rounded-lg border border-gray-200 bg-white p-6 transition-shadow hover:shadow-lg"
+        >
+          <h2 className="text-xl font-semibold">⭐ Valoraciones de pueblos</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Estrellas por pueblo, tops y estadísticas
           </p>
         </Link>
 
