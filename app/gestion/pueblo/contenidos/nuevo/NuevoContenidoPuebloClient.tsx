@@ -15,22 +15,6 @@ type NuevoContenidoPuebloClientProps = {
   tipoInicial?: string;
 };
 
-type TematicaPage = {
-  id: number;
-  titulo: string;
-  resumen?: string | null;
-  contenido: string;
-  coverUrl?: string | null;
-  published: boolean;
-};
-
-type TematicasPages = {
-  GASTRONOMIA?: TematicaPage;
-  NATURALEZA?: TematicaPage;
-  CULTURA?: TematicaPage;
-  EN_FAMILIA?: TematicaPage;
-  PETFRIENDLY?: TematicaPage;
-};
 
 const CATEGORIAS_TEMATICAS = [
   { value: 'GASTRONOMIA', label: 'Gastronomía' },
@@ -57,51 +41,22 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
 
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [loadingPage, setLoadingPage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   // Sistema de 3 modos: Editor TipTap, HTML directo, Vista previa
   const [editorMode, setEditorMode] = useState<EditorMode>('html');
 
-  // Cargar páginas temáticas cuando tipo=PAGINA
+  // Limpiar formulario cuando cambia la categoría (ya no se carga página existente)
+  // Ahora se permiten hasta 4 páginas por categoría
   useEffect(() => {
-    if (tipo !== 'PAGINA' || !categoria) return;
-
-    async function loadTematicaPage() {
-      setLoadingPage(true);
-      try {
-        const res = await fetch(`/api/admin/pueblos/${puebloId}/pages`);
-        if (!res.ok) {
-          console.warn('[LOAD TEMATICA] Error', res.status);
-          return;
-        }
-
-        const data: TematicasPages = await res.json();
-        const page = data[categoria as keyof TematicasPages];
-
-        if (page) {
-          setTitulo(page.titulo);
-          setResumen(page.resumen || '');
-          setContenido(page.contenido);
-          setCoverUrl(page.coverUrl || null);
-          setEstado(page.published ? 'PUBLICADA' : 'BORRADOR');
-        } else {
-          // Limpiar formulario si no existe
-          setTitulo('');
-          setResumen('');
-          setContenido('');
-          setCoverUrl(null);
-          setEstado('BORRADOR');
-        }
-      } catch (e) {
-        console.error('[LOAD TEMATICA] Error:', e);
-      } finally {
-        setLoadingPage(false);
-      }
-    }
-
-    loadTematicaPage();
-  }, [tipo, categoria, puebloId]);
+    if (tipo !== 'PAGINA') return;
+    // Limpiar formulario al cambiar categoría
+    setTitulo('');
+    setResumen('');
+    setContenido('');
+    setCoverUrl(null);
+    setEstado('BORRADOR');
+  }, [tipo, categoria]);
 
   // Función para subir imágenes en TipTap
   async function handleUploadEditorImage(file: File): Promise<string> {
@@ -305,11 +260,8 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
               ))}
             </select>
             <p className="text-xs text-purple-700">
-              Solo hay 1 página por categoría y pueblo. Si existe, se actualizará.
+              Se permiten 4 páginas temáticas por categoría.
             </p>
-            {loadingPage && (
-              <p className="text-xs text-purple-600">Cargando página existente...</p>
-            )}
           </div>
         )}
 
