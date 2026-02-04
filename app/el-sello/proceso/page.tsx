@@ -31,6 +31,15 @@ export default async function ProcesoPage() {
   const contenidoRaw = page?.contenido ?? '';
   const contenido = needsFallback(contenidoRaw) ? CONTENIDO_PROCESO : contenidoRaw;
 
+  // DEBUG temporal
+  if (process.env.NODE_ENV === 'development') {
+    console.log('=== DEBUG PROCESO PAGE ===');
+    console.log('contenidoRaw length:', contenidoRaw.length);
+    console.log('needsFallback:', needsFallback(contenidoRaw));
+    console.log('contenidoRaw preview:', contenidoRaw.substring(0, 200));
+    console.log('=========================');
+  }
+
   return (
     <SelloCmsPage
       titulo={titulo}
