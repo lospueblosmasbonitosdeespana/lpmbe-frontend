@@ -56,19 +56,19 @@ export async function POST(req: Request) {
     }
 
     // ✅ Normalizar respuesta del backend
-    // Backend devuelve: { id, publicUrl, ownerType, ownerId, order }
-    if (!data?.publicUrl || typeof data.publicUrl !== "string") {
+    // Backend media/upload devuelve: { key, url }
+    const fileUrl = data?.publicUrl ?? data?.url;
+    if (!fileUrl || typeof fileUrl !== "string") {
       return NextResponse.json(
-        { error: "Upload OK pero falta data.publicUrl", data },
+        { error: "Upload OK pero falta URL del archivo", data },
         { status: 500 }
       );
     }
 
-    // Compatibilidad: devolver tanto 'url' como 'publicUrl'
     return NextResponse.json({
       id: data.id ?? null,
-      url: data.publicUrl, // ← Para componentes legacy que esperan 'url'
-      publicUrl: data.publicUrl, // ← Para nuevos componentes
+      url: fileUrl,
+      publicUrl: fileUrl,
       ownerType: data.ownerType ?? null,
       ownerId: data.ownerId ?? null,
       order: data.order ?? 0,

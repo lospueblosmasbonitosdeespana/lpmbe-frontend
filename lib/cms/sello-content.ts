@@ -69,3 +69,10 @@ Se valora la **implicación del ayuntamiento** en la conservación, promoción y
 
 Para consultar el texto íntegro de la Carta de Calidad, puedes descargar o visualizar el documento oficial en PDF en la sección que aparece más abajo.
 `;
+
+export const CONTENIDO_COMO_SE_OBTIENE = `# Cómo obtener el Sello
+
+Requisitos y proceso para que un pueblo pueda optar a la certificación. El camino consta de **tres etapas** que culminan en la decisión de la Comisión de Calidad.
+
+A continuación puedes conocer el **proceso de selección** paso a paso y los **criterios de evaluación** que deben cumplir los pueblos candidatos.
+`;

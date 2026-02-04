@@ -2,9 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { EnrichedMarkdown } from '@/lib/cms/enrichedMarkdown';
-import type { SelloPage, SelloPageKey } from '@/lib/cms/sello';
+import type { SelloPage, SelloPageKey, CmsDocumento } from '@/lib/cms/sello';
 import { SELLO_PAGE_LABELS } from '@/lib/cms/sello';
+import {
+  CONTENIDO_PROCESO,
+  CONTENIDO_CRITERIOS,
+  CONTENIDO_COMO_SE_OBTIENE,
+} from '@/lib/cms/sello-content';
 
 const PAGES: SelloPageKey[] = [
   'SELLO_HOME',
@@ -16,6 +22,27 @@ const PAGES: SelloPageKey[] = [
   'SELLO_INTERNACIONAL',
   'SELLO_UNETE',
 ];
+
+function getDefaultContent(key: SelloPageKey): string {
+  switch (key) {
+    case 'SELLO_PROCESO':
+      return CONTENIDO_PROCESO;
+    case 'SELLO_CRITERIOS':
+      return CONTENIDO_CRITERIOS;
+    case 'SELLO_COMO_SE_OBTIENE':
+      return CONTENIDO_COMO_SE_OBTIENE;
+    default:
+      return '';
+  }
+}
+
+function needsFallback(contenido: string, key: SelloPageKey): boolean {
+  const c = (contenido ?? '').trim();
+  if (c.length < 300) return true;
+  if (key === 'SELLO_PROCESO' && c.includes('Conoce las etapas del proceso de certificación')) return true;
+  if (key === 'SELLO_CRITERIOS' && c.includes('Los criterios que aplicamos para evaluar')) return true;
+  return false;
+}
 
 export default function ElSelloCmsPage() {
   const router = useRouter();
@@ -34,9 +61,24 @@ export default function ElSelloCmsPage() {
     contenido: '',
   });
 
+  const [cartaCalidadDocs, setCartaCalidadDocs] = useState<CmsDocumento[]>([]);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [pdfForm, setPdfForm] = useState({ titulo: 'Carta de Calidad', url: '' });
+
   useEffect(() => {
     loadPages();
   }, []);
+
+  useEffect(() => {
+    if (selectedKey === 'SELLO_CRITERIOS') {
+      fetch('/api/admin/cms/documentos?type=CARTA_CALIDAD', { cache: 'no-store' })
+        .then((r) => (r.ok ? r.json() : []))
+        .then((d) => setCartaCalidadDocs(Array.isArray(d) ? d : []))
+        .catch(() => setCartaCalidadDocs([]));
+    } else {
+      setCartaCalidadDocs([]);
+    }
+  }, [selectedKey]);
 
   async function loadPages() {
     try {
@@ -59,19 +101,32 @@ export default function ElSelloCmsPage() {
       const res = await fetch(`/api/admin/cms/sello/${key}`, { cache: 'no-store' });
       if (!res.ok) throw new Error('Error cargando página');
       const page: SelloPage = await res.json();
-      
+
+      const contenidoRaw = page.contenido || '';
+      const contenido = needsFallback(contenidoRaw, key)
+        ? getDefaultContent(key)
+        : contenidoRaw;
+
       setCurrentPage(page);
       setFormData({
         titulo: page.titulo || '',
         subtitle: page.subtitle || '',
         heroUrl: page.heroUrl || '',
-        contenido: page.contenido || '',
+        contenido,
       });
       setSelectedKey(key);
     } catch (e: any) {
       alert(e?.message ?? 'Error cargando página');
     } finally {
       setLoading(false);
+    }
+  }
+
+  function loadDefaultContent() {
+    if (!selectedKey) return;
+    const def = getDefaultContent(selectedKey);
+    if (def) {
+      setFormData((prev) => ({ ...prev, contenido: def }));
     }
   }
 
@@ -128,6 +183,49 @@ export default function ElSelloCmsPage() {
       alert(e?.message ?? 'Error guardando');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleUploadPdf(file: File) {
+    if (!file || file.type !== 'application/pdf') {
+      alert('Solo se permiten archivos PDF');
+      return;
+    }
+    setUploadingPdf(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', 'documentos-sello');
+
+      const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
+      if (!res.ok) throw new Error('Error subiendo PDF');
+
+      const data = await res.json();
+      const url = data.url || data.publicUrl;
+      setPdfForm((prev) => ({ ...prev, url }));
+
+      const saveRes = await fetch('/api/admin/cms/documentos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          titulo: pdfForm.titulo || 'Carta de Calidad',
+          type: 'CARTA_CALIDAD',
+          url,
+          orden: cartaCalidadDocs.length + 1,
+          publicado: true,
+        }),
+      });
+      if (!saveRes.ok) throw new Error('Error guardando documento');
+
+      alert('PDF subido y guardado correctamente');
+      setPdfForm({ titulo: 'Carta de Calidad', url: '' });
+      const list = await fetch('/api/admin/cms/documentos?type=CARTA_CALIDAD', { cache: 'no-store' });
+      const docs = await list.json();
+      setCartaCalidadDocs(Array.isArray(docs) ? docs : []);
+    } catch (e: any) {
+      alert(e?.message ?? 'Error subiendo PDF');
+    } finally {
+      setUploadingPdf(false);
     }
   }
 
@@ -222,9 +320,19 @@ export default function ElSelloCmsPage() {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                   <label className="block text-sm font-medium">Contenido (Markdown)</label>
-                  {selectedKey === 'SELLO_INTERNACIONAL' && (
+                  <div className="flex gap-2">
+                    {['SELLO_PROCESO', 'SELLO_CRITERIOS', 'SELLO_COMO_SE_OBTIENE'].includes(selectedKey!) && (
+                      <button
+                        type="button"
+                        onClick={loadDefaultContent}
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        📄 Cargar contenido por defecto
+                      </button>
+                    )}
+                    {selectedKey === 'SELLO_INTERNACIONAL' && (
                     <button
                       type="button"
                       onClick={() => {
@@ -352,6 +460,40 @@ link: #
                   </div>
                 )}
               </div>
+
+              {selectedKey === 'SELLO_CRITERIOS' && (
+                <div className="rounded-lg border border-gray-200 bg-gray-50 p-6">
+                  <h3 className="text-lg font-semibold mb-3">Carta de Calidad (PDF)</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Los PDFs subidos aquí se muestran en la página pública de Criterios. También puedes gestionarlos en{' '}
+                    <Link href="/gestion/asociacion/el-sello/documentos" className="text-blue-600 hover:underline">
+                      Documentos
+                    </Link>
+                    .
+                  </p>
+                  {cartaCalidadDocs.filter((d) => d?.url).map((doc) => (
+                    <div key={doc.id} className="flex items-center justify-between rounded border bg-white p-3 mb-2">
+                      <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        📄 {doc.titulo}
+                      </a>
+                      <span className="text-xs text-gray-500">Publicado</span>
+                    </div>
+                  ))}
+                  <label className="mt-4 inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 cursor-pointer disabled:opacity-50">
+                    {uploadingPdf ? 'Subiendo...' : '+ Subir PDF Carta de Calidad'}
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) handleUploadPdf(f);
+                      }}
+                      disabled={uploadingPdf}
+                    />
+                  </label>
+                </div>
+              )}
 
               <div className="flex justify-end">
                 <button
