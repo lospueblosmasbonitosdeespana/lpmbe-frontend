@@ -34,6 +34,16 @@ export default async function DatosAdminPage() {
         </Link>
 
         <Link
+          href="/gestion/asociacion/datos/visitas-web"
+          className="block rounded-lg border border-gray-200 bg-white p-6 transition-shadow hover:shadow-lg"
+        >
+          <h2 className="text-xl font-semibold">🌐 Visitas y datos de la web</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Analytics propio: páginas vistas, sesiones, dispositivos y referrers
+          </p>
+        </Link>
+
+        <Link
           href="/gestion/asociacion/datos/usuarios"
           className="block rounded-lg border border-gray-200 bg-white p-6 transition-shadow hover:shadow-lg"
         >

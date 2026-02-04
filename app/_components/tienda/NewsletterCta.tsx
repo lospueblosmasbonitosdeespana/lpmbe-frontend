@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { trackEvent } from '@/lib/analytics';
 import { Eyebrow, Headline, Body } from '@/app/components/ui/typography';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
@@ -23,6 +24,7 @@ export function NewsletterCta() {
       if (res.ok) {
         setStatus('success');
         setEmail('');
+        trackEvent('newsletter_subscribe', { category: 'conversion', label: 'tienda' });
       } else {
         setStatus('error');
       }
