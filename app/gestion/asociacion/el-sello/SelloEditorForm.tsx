@@ -5,6 +5,8 @@ import TipTapEditor from '@/app/_components/editor/TipTapEditor';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 import type { SelloPageKey } from '@/lib/cms/sello';
 
+type EditorTab = 'edit' | 'html' | 'preview';
+
 export interface SelloEditorFormProps {
   selectedKey: SelloPageKey;
   formData: { titulo: string; subtitle: string; heroUrl: string; contenido: string };
@@ -31,6 +33,7 @@ export function SelloEditorForm({
   onLoadDefaultContent,
 }: SelloEditorFormProps) {
   const [uploadingEditorImage, setUploadingEditorImage] = useState(false);
+  const [editorMode, setEditorMode] = useState<EditorTab>('edit');
 
   const handleUploadEditorImage = async (file: File): Promise<string> => {
     setUploadingEditorImage(true);
@@ -100,21 +103,28 @@ export function SelloEditorForm({
         <div className="flex gap-2 mb-3">
           <button
             type="button"
-            onClick={() => setTab('edit')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${tab === 'edit' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            onClick={() => setEditorMode('edit')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
           >
-            Editar
+            Editor
           </button>
           <button
             type="button"
-            onClick={() => setTab('preview')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${tab === 'preview' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            onClick={() => setEditorMode('html')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'html' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+          >
+            HTML
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditorMode('preview')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'preview' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
           >
             Vista previa
           </button>
         </div>
 
-        {tab === 'edit' ? (
+        {editorMode === 'edit' && (
           <TipTapEditor
             content={formData.contenido}
             onChange={(html) => setFormData((p) => ({ ...p, contenido: html }))}
@@ -122,12 +132,29 @@ export function SelloEditorForm({
             placeholder="Escribe el contenido de la página..."
             minHeight="400px"
           />
-        ) : (
+        )}
+
+        {editorMode === 'html' && (
+          <div className="space-y-2">
+            <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
+              Modo HTML: pega aquí código HTML directamente. Útil para contenido complejo con grids o divs.
+            </p>
+            <textarea
+              value={formData.contenido}
+              onChange={(e) => setFormData((p) => ({ ...p, contenido: e.target.value }))}
+              rows={20}
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-sm"
+              placeholder="<h2>Título</h2>\n<p>Párrafo...</p>"
+            />
+          </div>
+        )}
+
+        {editorMode === 'preview' && (
           <div className="rounded-lg border border-gray-200 bg-white p-6 min-h-[500px]">
             {formData.contenido ? (
               <SafeHtml html={formData.contenido} />
             ) : (
-              <p className="text-gray-400 text-center py-12">Escribe contenido en la pestaña &quot;Editar&quot; para ver la vista previa</p>
+              <p className="text-gray-400 text-center py-12">Escribe contenido para ver la vista previa</p>
             )}
           </div>
         )}
