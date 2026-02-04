@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { SelloEditorForm } from './SelloEditorForm';
 import type { SelloPage, SelloPageKey } from '@/lib/cms/sello';
 import { SELLO_PAGE_LABELS } from '@/lib/cms/sello';
-import { CONTENIDO_PROCESO, CONTENIDO_CRITERIOS, CONTENIDO_COMO_SE_OBTIENE } from '@/lib/cms/sello-content';
+import { CONTENIDO_PROCESO, CONTENIDO_CRITERIOS, CONTENIDO_COMO_SE_OBTIENE, CONTENIDO_INTERNACIONAL } from '@/lib/cms/sello-content';
 
 const PAGES: SelloPageKey[] = [
   'SELLO_HOME',
@@ -27,6 +27,8 @@ function getDefaultContent(key: SelloPageKey): string {
       return CONTENIDO_CRITERIOS;
     case 'SELLO_COMO_SE_OBTIENE':
       return CONTENIDO_COMO_SE_OBTIENE;
+    case 'SELLO_INTERNACIONAL':
+      return CONTENIDO_INTERNACIONAL;
     default:
       return '';
   }

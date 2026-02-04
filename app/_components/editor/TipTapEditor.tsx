@@ -1,10 +1,35 @@
 'use client';
 
 import { useEditor, EditorContent } from '@tiptap/react';
+import { Node } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
+
+const GridPaises = Node.create({
+  name: 'gridPaisesInternacional',
+  content: 'block+',
+  group: 'block',
+  parseHTML() {
+    return [{ tag: 'div.grid-paises-internacional' }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['div', { ...HTMLAttributes, class: 'grid-paises-internacional' }, 0];
+  },
+});
+
+const PaisCard = Node.create({
+  name: 'paisCard',
+  content: 'block+',
+  group: 'block',
+  parseHTML() {
+    return [{ tag: 'div.pais-card' }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['div', { ...HTMLAttributes, class: 'pais-card' }, 0];
+  },
+});
 import { useCallback, useState } from 'react';
 import {
   Bold,
@@ -51,6 +76,8 @@ export default function TipTapEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [2, 3] } }),
+      GridPaises,
+      PaisCard,
       Image.configure({ inline: false, HTMLAttributes: { class: 'editor-image' } }),
       Link.configure({ openOnClick: false, HTMLAttributes: { class: 'text-blue-600 hover:text-blue-700 underline' } }),
       Placeholder.configure({ placeholder }),
