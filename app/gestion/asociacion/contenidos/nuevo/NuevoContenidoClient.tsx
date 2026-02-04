@@ -1,16 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useRef, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import CoverPicker from '@/app/_components/media/CoverPicker';
-import MarkdownEditor from '@/app/_components/editor/MarkdownEditor';
-import ImageManager from '@/app/_components/editor/ImageManager';
+import TipTapEditor from '@/app/_components/editor/TipTapEditor';
+import SafeHtml from '@/app/_components/ui/SafeHtml';
 import { datetimeLocalToIsoUtc } from '@/app/_lib/dates';
 
-type UploadedImage = {
-  url: string;
-  name: string;
-};
+type EditorMode = 'edit' | 'html' | 'preview';
+
 
 type TematicaPage = {
   id: number;
@@ -44,20 +42,18 @@ type Props = {
 
 export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: Props) {
   const router = useRouter();
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [tipo, setTipo] = useState(tipoInicial ?? 'NOTICIA');
   const [categoria, setCategoria] = useState(categoriaInicial ?? '');
   const [titulo, setTitulo] = useState('');
   const [resumen, setResumen] = useState('');
-  const [contenidoMd, setContenidoMd] = useState('');
+  const [contenido, setContenido] = useState('');
   const [estado, setEstado] = useState('BORRADOR');
   const [publishedAt, setPublishedAt] = useState('');
   const [fechaInicioLocal, setFechaInicioLocal] = useState('');
   const [fechaFinLocal, setFechaFinLocal] = useState('');
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [existingPageId, setExistingPageId] = useState<number | null>(null);
 
   const [uploading, setUploading] = useState(false);
@@ -65,6 +61,10 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
   const [deleting, setDeleting] = useState(false);
   const [loadingPage, setLoadingPage] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Sistema de 3 modos: Editor TipTap, HTML directo, Vista previa
+  // Por defecto modo HTML para evitar que TipTap corrompa enlaces externos
+  const [editorMode, setEditorMode] = useState<EditorMode>('html');
 
   // Cargar páginas temáticas cuando tipo=PAGINA
   useEffect(() => {
@@ -86,7 +86,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           setExistingPageId(page.id);
           setTitulo(page.titulo);
           setResumen(page.resumen || '');
-          setContenidoMd(page.contenido);
+          setContenido(page.contenido);
           setCoverUrl(page.coverUrl || null);
           setEstado(page.published ? 'PUBLICADA' : 'BORRADOR');
         } else {
@@ -94,7 +94,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           setExistingPageId(null);
           setTitulo('');
           setResumen('');
-          setContenidoMd('');
+          setContenido('');
           setCoverUrl(null);
           setEstado('PUBLICADA'); // Por defecto publicada para asociación
         }
@@ -108,52 +108,20 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
     loadTematicaPage();
   }, [tipo, categoria]);
 
-  async function handleUploadImages() {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-    fileInput.multiple = true;
-
-    fileInput.onchange = async (e: any) => {
-      const files = Array.from(e.target.files || []) as File[];
-      if (files.length === 0) return;
-
-      const oversized = files.find(f => f.size > 25 * 1024 * 1024);
-      if (oversized) {
-        alert(`La imagen "${oversized.name}" pesa demasiado (máx 25MB).`);
-        return;
-      }
-
-      setUploading(true);
-      try {
-        const fd = new FormData();
-        files.forEach(file => fd.append('files', file));
-        fd.append('folder', 'contenidos');
-
-        const res = await fetch('/api/media/upload-multiple', { method: 'POST', body: fd });
-        if (!res.ok) {
-          const msg = await res.text();
-          alert(`Error subiendo imágenes: ${msg}`);
-          return;
-        }
-
-        const json = await res.json();
-        const images = json?.images ?? [];
-
-        const newImages = images.map((img: any, idx: number) => ({
-          url: img.url,
-          name: files[idx]?.name || `imagen-${idx + 1}`,
-        }));
-
-        setUploadedImages((prev) => [...prev, ...newImages]);
-      } catch (e: any) {
-        alert(e?.message ?? 'Error subiendo imágenes');
-      } finally {
-        setUploading(false);
-      }
-    };
-
-    fileInput.click();
+  // Función para subir imágenes en TipTap
+  async function handleUploadEditorImage(file: File): Promise<string> {
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', 'contenidos');
+      const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
+      if (!res.ok) throw new Error('Error subiendo imagen');
+      const data = await res.json();
+      return data.url || data.publicUrl || '';
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function handleDelete() {
@@ -254,7 +222,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           category: categoria,
           titulo: titulo.trim(),
           resumen: resumen.trim() || null,
-          contenido: contenidoMd,
+          contenido: contenido,
           published: estado === 'PUBLICADA',
         };
         if (coverUrl) payload.coverUrl = coverUrl;
@@ -284,7 +252,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
         tipo,
         titulo: titulo.trim(),
         resumen: resumen.trim() || null,
-        contenidoMd,
+        contenidoMd: contenido,
         estado,
       };
       if (coverUrl) payload.coverUrl = coverUrl;
@@ -496,35 +464,85 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           )}
         </div>
 
-        <MarkdownEditor
-          value={contenidoMd}
-          onChange={setContenidoMd}
-          uploading={uploading}
-          onUploadImages={handleUploadImages}
-          textareaRef={textareaRef}
-        />
+        {/* SISTEMA DE 3 MODOS: Editor, HTML, Vista previa */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">Contenido</label>
+          
+          {/* Botones de modo */}
+          <div className="flex gap-2 mb-3">
+            <button
+              type="button"
+              onClick={() => setEditorMode('edit')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                editorMode === 'edit'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Editor
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditorMode('html')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                editorMode === 'html'
+                  ? 'bg-amber-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              HTML
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditorMode('preview')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                editorMode === 'preview'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Vista previa
+            </button>
+          </div>
 
-        <ImageManager
-          images={uploadedImages}
-          defaultAlt={titulo || 'Imagen'}
-          onInsertAtCursor={(md) => {
-            if (textareaRef.current) {
-              const textarea = textareaRef.current;
-              const start = textarea.selectionStart;
-              const before = contenidoMd.substring(0, start);
-              const after = contenidoMd.substring(textarea.selectionEnd);
-              setContenidoMd(before + md + after);
-              setTimeout(() => {
-                textarea.focus();
-                textarea.selectionStart = textarea.selectionEnd = start + md.length;
-              }, 0);
-            } else {
-              setContenidoMd(contenidoMd + md);
-            }
-          }}
-          onAppendToEnd={(md) => setContenidoMd(contenidoMd + md)}
-          onClear={() => setUploadedImages([])}
-        />
+          {/* Modo Editor - TipTap */}
+          {editorMode === 'edit' && (
+            <TipTapEditor
+              content={contenido}
+              onChange={(html) => setContenido(html)}
+              onUploadImage={handleUploadEditorImage}
+              placeholder="Escribe el contenido..."
+              minHeight="400px"
+            />
+          )}
+
+          {/* Modo HTML - textarea directo */}
+          {editorMode === 'html' && (
+            <div className="space-y-2">
+              <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
+                Modo HTML: pega aquí código HTML directamente. Útil para contenido complejo con grids, tarjetas o enlaces externos.
+              </p>
+              <textarea
+                value={contenido}
+                onChange={(e) => setContenido(e.target.value)}
+                rows={20}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-sm"
+                placeholder="<h2>Título</h2>\n<p>Párrafo...</p>"
+              />
+            </div>
+          )}
+
+          {/* Modo Vista previa */}
+          {editorMode === 'preview' && (
+            <div className="rounded-lg border border-gray-200 bg-white p-6 min-h-[400px]">
+              {contenido ? (
+                <SafeHtml html={contenido} />
+              ) : (
+                <p className="text-gray-400 text-center py-12">Escribe contenido para ver la vista previa</p>
+              )}
+            </div>
+          )}
+        </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
