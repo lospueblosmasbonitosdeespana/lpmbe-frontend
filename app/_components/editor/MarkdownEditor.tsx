@@ -2,6 +2,9 @@
 
 import { useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import SafeHtml from '@/app/_components/ui/SafeHtml';
+
+type EditorMode = 'edit' | 'html' | 'preview';
 
 type MarkdownEditorProps = {
   value: string;
@@ -21,7 +24,9 @@ export default function MarkdownEditor({
   const internalRef = useRef<HTMLTextAreaElement>(null);
   const textareaRef = externalRef || internalRef;
   
-  const [mode, setMode] = useState<'edit' | 'preview'>('edit');
+  // Detectar si el contenido parece HTML para elegir modo por defecto
+  const looksLikeHtml = value.includes('<div') || value.includes('<h2>') || value.includes('<p>') || value.includes('class=');
+  const [mode, setMode] = useState<EditorMode>(looksLikeHtml ? 'html' : 'edit');
   const [advancedMode, setAdvancedMode] = useState(false);
 
   function insertMarkdown(text: string) {
@@ -97,26 +102,37 @@ export default function MarkdownEditor({
         </button>
       </div>
 
-      {/* TABS */}
-      <div className="flex border-b">
+      {/* TABS - 3 modos: Editor, HTML, Vista previa */}
+      <div className="flex gap-2 mb-3">
         <button
           type="button"
           onClick={() => setMode('edit')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 ${
+          className={`px-4 py-2 rounded-lg text-sm font-medium ${
             mode === 'edit'
-              ? 'border-black text-black'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          Editar
+          Editor
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode('html')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium ${
+            mode === 'html'
+              ? 'bg-amber-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          HTML
         </button>
         <button
           type="button"
           onClick={() => setMode('preview')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 ${
+          className={`px-4 py-2 rounded-lg text-sm font-medium ${
             mode === 'preview'
-              ? 'border-black text-black'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              ? 'bg-green-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           Vista previa
@@ -215,10 +231,27 @@ export default function MarkdownEditor({
         </>
       )}
 
+      {/* MODO HTML - textarea directo para HTML */}
+      {mode === 'html' && (
+        <div className="space-y-2">
+          <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
+            Modo HTML: pega aquí código HTML directamente. Útil para contenido complejo con grids, tarjetas o enlaces externos.
+          </p>
+          <textarea
+            ref={textareaRef}
+            className="w-full rounded-md border px-3 py-2 font-mono text-sm"
+            rows={20}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="<h2>Título</h2>\n<p>Párrafo...</p>"
+          />
+        </div>
+      )}
+
       {/* MODO PREVIEW */}
       {mode === 'preview' && (
         <div
-          className="rounded-md border px-4 py-3 min-h-[400px] bg-white markdown-preview"
+          className="rounded-md border px-4 py-3 min-h-[400px] bg-white"
           style={{
             fontSize: '16px',
             lineHeight: '1.8',
@@ -226,7 +259,14 @@ export default function MarkdownEditor({
           }}
         >
           {value.trim() ? (
-            <ReactMarkdown>{value}</ReactMarkdown>
+            // Si parece HTML, usar SafeHtml; si no, usar ReactMarkdown
+            value.includes('<') && (value.includes('<div') || value.includes('<p>') || value.includes('<h2>') || value.includes('<h3>')) ? (
+              <SafeHtml html={value} />
+            ) : (
+              <div className="markdown-preview">
+                <ReactMarkdown>{value}</ReactMarkdown>
+              </div>
+            )
           ) : (
             <p className="text-gray-400 italic">
               Aquí verás cómo quedará tu contenido cuando escribas.
