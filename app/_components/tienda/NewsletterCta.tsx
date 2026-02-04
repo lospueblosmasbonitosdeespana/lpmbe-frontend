@@ -14,10 +14,18 @@ export function NewsletterCta() {
     if (!email.trim()) return;
     setStatus('loading');
     try {
-      // TODO: conectar con endpoint de suscripción cuando exista
-      await new Promise((r) => setTimeout(r, 500));
-      setStatus('success');
-      setEmail('');
+      const res = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setStatus('success');
+        setEmail('');
+      } else {
+        setStatus('error');
+      }
     } catch {
       setStatus('error');
     }
