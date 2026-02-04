@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Breadcrumbs from '@/app/_components/ui/Breadcrumbs';
-import SafeHtml from '@/app/_components/ui/SafeHtml';
+import { EnrichedMarkdown } from '@/lib/cms/enrichedMarkdown';
 import type { SelloPage, CmsDocumento } from '@/lib/cms/sello';
 
 export const dynamic = 'force-dynamic';
@@ -99,7 +99,7 @@ export default async function ElSelloPage() {
 
         {contenido && (
           <div className="mb-8">
-            <SafeHtml html={contenido} />
+            <EnrichedMarkdown content={contenido} />
           </div>
         )}
       </div>
@@ -173,27 +173,6 @@ export default async function ElSelloPage() {
           </div>
         </div>
       )}
-
-      {/* Grid de secciones */}
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {sections.map((section) => (
-          <Link
-            key={section.href}
-            href={section.href}
-            className="group block rounded-lg border border-gray-200 bg-white p-8 transition-all hover:border-gray-300 hover:shadow-lg"
-          >
-            <h2 className="text-2xl font-semibold mb-3 group-hover:text-blue-600">
-              {section.title}
-            </h2>
-            <p className="text-gray-600 leading-relaxed mb-4">
-              {section.description}
-            </p>
-            <span className="text-sm font-medium text-blue-600 group-hover:underline">
-              Más información →
-            </span>
-          </Link>
-        ))}
-      </div>
     </main>
   );
 }
