@@ -62,14 +62,15 @@ const categoryIcons: Record<CategoryType, React.ReactNode> = {
   ),
   family: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-full w-full">
-      <circle cx="12" cy="5" r="3" />
-      <path d="M12 8v4" />
+      <circle cx="6" cy="5" r="2.5" />
+      <circle cx="18" cy="5" r="2.5" />
       <circle cx="6" cy="15" r="2" />
       <circle cx="18" cy="15" r="2" />
+      <path d="M6 7.5v5.5" />
+      <path d="M18 7.5v5.5" />
+      <path d="M6 12.5h12" />
       <path d="M6 17v2" />
       <path d="M18 17v2" />
-      <path d="M9 12h6" />
-      <path d="M12 12v3" />
     </svg>
   ),
   heritage: (
