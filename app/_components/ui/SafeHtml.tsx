@@ -1,6 +1,6 @@
 'use client';
 
-import DOMPurify from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 import { useEffect, useRef } from 'react';
 
 interface SafeHtmlProps {
@@ -12,7 +12,7 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!containerRef.current || typeof window === 'undefined') return;
+    if (!containerRef.current) return;
 
     // Configuración de DOMPurify - permitir style inline para dimensiones de imágenes
     const clean = DOMPurify.sanitize(html, {
