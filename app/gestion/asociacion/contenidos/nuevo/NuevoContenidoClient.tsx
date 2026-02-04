@@ -115,7 +115,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
       const fd = new FormData();
       fd.append('file', file);
       fd.append('folder', 'contenidos');
-      const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
+      const res = await fetch('/api/media/upload', { method: 'POST', body: fd });
       if (!res.ok) throw new Error('Error subiendo imagen');
       const data = await res.json();
       return data.url || data.publicUrl || '';
@@ -442,26 +442,16 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
 
         <div className="space-y-2">
           <label className="block text-sm font-medium">Foto de portada</label>
-          <CoverPicker onFileSelected={(file) => setCoverFile(file)} />
-          
-          {/* Preview de portada existente */}
-          {coverUrl && coverUrl.trim() && (
-            <div className="mt-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={coverUrl.trim()}
-                alt="Portada actual"
-                className="max-w-[240px] rounded border"
-              />
-              <button
-                type="button"
-                onClick={() => setCoverUrl(null)}
-                className="mt-2 text-sm text-red-600 hover:underline"
-              >
-                Quitar portada
-              </button>
-            </div>
-          )}
+          <CoverPicker 
+            currentCoverUrl={coverUrl}
+            onFileSelected={(file) => {
+              setCoverFile(file);
+              // Si se limpia el archivo, también limpiar la URL existente
+              if (file === null) {
+                setCoverUrl(null);
+              }
+            }} 
+          />
         </div>
 
         {/* SISTEMA DE 3 MODOS: Editor, HTML, Vista previa */}
