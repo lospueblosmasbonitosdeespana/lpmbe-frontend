@@ -203,22 +203,31 @@
   margin: 1rem 0;
   display: block;
 }
-.safe-html-content .grid-paises-internacional {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin: 2rem 0;
+/* Grid de países - múltiples selectores para compatibilidad */
+.safe-html-content .grid-paises-internacional,
+.safe-html-content [class*="grid-paises"],
+.safe-html-content div:has(> .pais-card) {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  gap: 1.5rem !important;
+  margin: 2rem 0 !important;
 }
-.safe-html-content .grid-paises-internacional .pais-card {
-  border: 1px solid #e5e5e5;
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  background: white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+
+/* Tarjetas de países */
+.safe-html-content .pais-card,
+.safe-html-content [class*="pais-card"] {
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 0.5rem !important;
+  padding: 1.5rem !important;
+  background: white !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
 }
-.safe-html-content .grid-paises-internacional .pais-card h3 {
-  margin-top: 0;
+.safe-html-content .pais-card h3,
+.safe-html-content [class*="pais-card"] h3 {
+  margin-top: 0 !important;
+  font-size: 1.25rem !important;
 }
-.safe-html-content .grid-paises-internacional .pais-card p:last-child {
-  margin-bottom: 0;
+.safe-html-content .pais-card p:last-child,
+.safe-html-content [class*="pais-card"] p:last-child {
+  margin-bottom: 0 !important;
 }
