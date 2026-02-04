@@ -1,4 +1,4 @@
-import { EnrichedMarkdown } from '@/lib/cms/enrichedMarkdown';
+import SafeHtml from './SafeHtml';
 import Breadcrumbs from './Breadcrumbs';
 
 type BreadcrumbItem = {
@@ -46,7 +46,7 @@ export default function SelloCmsPage({
 
       {contenido && (
         <div className="mb-12">
-          <EnrichedMarkdown content={contenido} />
+          <SafeHtml html={contenido} />
         </div>
       )}
 

@@ -1,74 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { EnrichedMarkdown } from '@/lib/cms/enrichedMarkdown';
+import { useState } from 'react';
+import TipTapEditor from '@/app/_components/editor/TipTapEditor';
+import SafeHtml from '@/app/_components/ui/SafeHtml';
 import type { SelloPageKey, CmsDocumento } from '@/lib/cms/sello';
-import {
-  CONTENIDO_PROCESO,
-  CONTENIDO_CRITERIOS,
-  CONTENIDO_COMO_SE_OBTIENE,
-} from '@/lib/cms/sello-content';
-
-const PLANTILLA_INTERNACIONAL = `La red internacional "The Most Beautiful Villages" coordina las asociaciones nacionales y promueve el intercambio de experiencias.
-
-:::grid-3
-imagen: 🇫🇷
-titulo: Francia
-texto: Les Plus Beaux Villages de France - Desde 1982
-link: https://www.les-plus-beaux-villages-de-france.org
-
----
-
-imagen: 🇮🇹
-titulo: Italia
-texto: I Borghi più belli d'Italia - Desde 2001
-link: https://www.borghipiubelliditalia.it
-
----
-
-imagen: 🇧🇪
-titulo: Bélgica
-texto: Les Plus Beaux Villages de Wallonie - Desde 1994
-link: https://www.beauxvillages.be
-
----
-
-imagen: 🇯🇵
-titulo: Japón
-texto: The Most Beautiful Villages in Japan - Desde 2005
-link: https://utsukushii-mura.jp
-
----
-
-imagen: 🇨🇦
-titulo: Canadá
-texto: Les Plus Beaux Villages du Québec - Desde 1998
-link: https://beauxvillages.qc.ca
-
----
-
-imagen: 🇷🇴
-titulo: Rumanía
-texto: Cele mai frumoase sate din România - Desde 2013
-link: #
-:::
-
-:::callout
-**Nota**: Puedes usar emojis de banderas (🇫🇷) o URLs de imágenes reales en el campo "imagen:".
-:::`;
-
-function getDefaultContent(key: SelloPageKey): string {
-  switch (key) {
-    case 'SELLO_PROCESO':
-      return CONTENIDO_PROCESO;
-    case 'SELLO_CRITERIOS':
-      return CONTENIDO_CRITERIOS;
-    case 'SELLO_COMO_SE_OBTIENE':
-      return CONTENIDO_COMO_SE_OBTIENE;
-    default:
-      return '';
-  }
-}
 
 export interface SelloEditorFormProps {
   selectedKey: SelloPageKey;
@@ -111,6 +47,33 @@ export function SelloEditorForm({
   onSave,
   onLoadDefaultContent,
 }: SelloEditorFormProps) {
+  const [uploadingEditorImage, setUploadingEditorImage] = useState(false);
+
+  // Función para subir imágenes desde el editor
+  const handleUploadEditorImage = async (file: File): Promise<string> => {
+    setUploadingEditorImage(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', 'sello-cms');
+
+      const res = await fetch('/api/admin/uploads', {
+        method: 'POST',
+        body: fd,
+      });
+
+      if (!res.ok) throw new Error('Error subiendo imagen');
+
+      const data = await res.json();
+      return data.url || data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    } finally {
+      setUploadingEditorImage(false);
+    }
+  };
+
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-8 space-y-6">
       <div>
@@ -170,7 +133,7 @@ export function SelloEditorForm({
 
       <div>
         <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-          <label className="block text-sm font-medium">Contenido (Markdown)</label>
+          <label className="block text-sm font-medium">Contenido</label>
           <div className="flex gap-2">
             {['SELLO_PROCESO', 'SELLO_CRITERIOS', 'SELLO_COMO_SE_OBTIENE'].includes(selectedKey) && (
               <button
@@ -179,15 +142,6 @@ export function SelloEditorForm({
                 className="text-xs text-blue-600 hover:underline"
               >
                 📄 Cargar contenido por defecto
-              </button>
-            )}
-            {selectedKey === 'SELLO_INTERNACIONAL' && (
-              <button
-                type="button"
-                onClick={() => setFormData((prev) => ({ ...prev, contenido: PLANTILLA_INTERNACIONAL }))}
-                className="text-xs text-blue-600 hover:underline"
-              >
-                📄 Insertar plantilla (Internacional)
               </button>
             )}
           </div>
@@ -215,36 +169,17 @@ export function SelloEditorForm({
         </div>
 
         {tab === 'edit' ? (
-          <>
-            <textarea
-              value={formData.contenido}
-              onChange={(e) => setFormData((prev) => ({ ...prev, contenido: e.target.value }))}
-              rows={20}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-sm"
-              placeholder="Escribe contenido en Markdown. Usa :::callout, :::grid-2, :::grid-3 para bloques especiales."
-            />
-            <div className="text-xs text-gray-600 mt-3 bg-gray-50 rounded p-3">
-              <p className="font-medium mb-2">Puedes usar Markdown:</p>
-              <ul className="list-disc list-inside space-y-1 mb-3">
-                <li><code>**negrita**</code> y <code>*cursiva*</code></li>
-                <li><code>## Títulos</code> (##, ###, ####)</li>
-                <li><code>- Listas</code> con guiones</li>
-                <li><code>[enlaces](url)</code></li>
-              </ul>
-              <p className="font-medium mb-2">Bloques especiales:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li><code>:::callout</code> → caja destacada</li>
-                <li><code>:::grid-2</code> y <code>:::grid-3</code> → grids de cards</li>
-                <li><code>:::buttons</code> → botones</li>
-              </ul>
-            </div>
-          </>
+          <TipTapEditor
+            content={formData.contenido}
+            onChange={(html) => setFormData((prev) => ({ ...prev, contenido: html }))}
+            onUploadImage={handleUploadEditorImage}
+            placeholder="Escribe el contenido de la página..."
+            minHeight="400px"
+          />
         ) : (
           <div className="rounded-lg border border-gray-200 bg-white p-6 min-h-[500px]">
             {formData.contenido ? (
-              <div className="max-w-none">
-                <EnrichedMarkdown content={formData.contenido} />
-              </div>
+              <SafeHtml html={formData.contenido} />
             ) : (
               <p className="text-gray-400 text-center py-12">
                 Escribe contenido en la pestaña &quot;Editar&quot; para ver la vista previa
