@@ -1,4 +1,5 @@
 'use client';
+// CMS El Sello - Editor con modo HTML para contenido complejo
 
 import { useState } from 'react';
 import TipTapEditor from '@/app/_components/editor/TipTapEditor';
