@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
         hostname: 'media.lospueblosmasbonitosdeespana.org',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        pathname: '/**',
+      },
     ],
   },
 };

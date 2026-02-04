@@ -10,17 +10,20 @@ interface ProductCardProps {
   className?: string;
 }
 
-export function ProductCard({ product, className }: ProductCardProps) {
-  const precioFinal = product.finalPrice ?? product.precio;
-  const hasDiscount = product.discountPercent && product.discountPercent > 0;
-  const precioOriginal = hasDiscount
-    ? product.precio
-    : undefined;
+function toNum(v: unknown): number {
+  if (v == null) return 0;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
 
-  const safeSrc =
-    product.imagenUrl && product.imagenUrl.trim()
-      ? product.imagenUrl.trim()
-      : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"%3E%3Crect fill="%23e5e5e5" width="400" height="400"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%239ca3af" font-family="sans-serif" font-size="14"%3ESin imagen%3C/text%3E%3C/svg%3E';
+export function ProductCard({ product, className }: ProductCardProps) {
+  const precioFinal = toNum(product.finalPrice ?? product.precio);
+  const hasDiscount = product.discountPercent && product.discountPercent > 0;
+  const precioOriginal = hasDiscount ? toNum(product.precio) : undefined;
+
+  const rawImg = product.imagenUrl && String(product.imagenUrl).trim();
+  const safeSrc = rawImg || undefined;
+  const usePlaceholder = !safeSrc;
 
   return (
     <Link
@@ -30,13 +33,20 @@ export function ProductCard({ product, className }: ProductCardProps) {
       <article className="flex flex-col">
         {/* Imagen */}
         <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
-          <Image
-            src={safeSrc}
-            alt={product.nombre}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          />
+          {usePlaceholder ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-muted text-muted-foreground text-sm">
+              Sin imagen
+            </div>
+          ) : (
+            <Image
+              src={safeSrc}
+              alt={product.nombre || 'Producto'}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              unoptimized
+            />
+          )}
           <div className="absolute inset-0 bg-foreground/0 transition-colors duration-300 group-hover:bg-foreground/5" />
 
           {/* Badge Destacado */}
