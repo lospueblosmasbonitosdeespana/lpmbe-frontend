@@ -94,7 +94,7 @@ export default async function MultiexperienciasPage({
               return (
                 <Link
                   key={mx.id}
-                  href={`/experiencias/${mx.slug}/pueblos/${slug}`}
+                  href={`/pueblos/${slug}/experiencias/${mx.slug}`}
                   className="group block"
                 >
                   <article>
