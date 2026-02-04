@@ -34,7 +34,8 @@ export function SelloEditorForm({
   onLoadDefaultContent,
 }: SelloEditorFormProps) {
   const [uploadingEditorImage, setUploadingEditorImage] = useState(false);
-  const [editorMode, setEditorMode] = useState<EditorTab>('edit');
+  // Por defecto modo HTML para evitar que TipTap corrompa enlaces externos
+  const [editorMode, setEditorMode] = useState<EditorTab>('html');
 
   const handleUploadEditorImage = async (file: File): Promise<string> => {
     setUploadingEditorImage(true);
