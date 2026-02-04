@@ -114,17 +114,18 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
     }
   }, [rutaId, initialData]);
 
-  // Paradas - con fallbacks para diferentes formatos del backend
-  const rawStops = (initialData as any)?.pueblos ?? 
-                   (initialData as any)?.rutaPueblos ?? 
-                   (initialData as any)?.ruta_pueblos ?? 
-                   initialData?.paradas ?? 
-                   [];
+  // Paradas - con fallbacks para diferentes formatos del backend (pueblos = RutaPueblo[])
+  const rawStopsRaw = (initialData as any)?.pueblos ?? 
+                      (initialData as any)?.rutaPueblos ?? 
+                      (initialData as any)?.ruta_pueblos ?? 
+                      initialData?.paradas ?? 
+                      [];
+  const rawStops = Array.isArray(rawStopsRaw) ? rawStopsRaw : [];
   
   const [paradas, setParadas] = useState<Parada[]>(
     rawStops
       .map((rp: any, idx: number) => ({
-        tempId: `parada-${rp.id ?? idx}`,
+        tempId: `parada-${rp.puebloId ?? rp.pueblo?.id ?? idx}`,
         orden: rp.orden ?? idx + 1,
         puebloId: rp.puebloId ?? rp.pueblo?.id ?? null,
         puebloNombre: rp.puebloNombre ?? rp.pueblo?.nombre ?? '',
@@ -139,29 +140,30 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
   
   // Actualizar paradas si cambia initialData
   useEffect(() => {
-    const rawStopsUpdated = (initialData as any)?.pueblos ?? 
-                            (initialData as any)?.rutaPueblos ?? 
-                            (initialData as any)?.ruta_pueblos ?? 
-                            initialData?.paradas ?? 
-                            [];
+    const rawStopsUpdatedRaw = (initialData as any)?.pueblos ?? 
+                               (initialData as any)?.rutaPueblos ?? 
+                               (initialData as any)?.ruta_pueblos ?? 
+                               initialData?.paradas ?? 
+                               [];
+    const rawStopsUpdated = Array.isArray(rawStopsUpdatedRaw) ? rawStopsUpdatedRaw : [];
     
-    if (rawStopsUpdated && rawStopsUpdated.length > 0) {
-      setParadas(
-        rawStopsUpdated
-          .map((rp: any, idx: number) => ({
-            tempId: `parada-${rp.id ?? idx}`,
-            orden: rp.orden ?? idx + 1,
-            puebloId: rp.puebloId ?? rp.pueblo?.id ?? null,
-            puebloNombre: rp.puebloNombre ?? rp.pueblo?.nombre ?? '',
-            titulo: rp.titulo ?? '',
-            descripcion: rp.descripcion ?? '',
-            fotoUrl: rp.fotoUrl ?? '',
-            lat: rp.lat ?? null,
-            lng: rp.lng ?? null,
-          }))
-          .sort((a: Parada, b: Parada) => a.orden - b.orden)
-      );
-    }
+    setParadas(
+      rawStopsUpdated.length > 0
+        ? rawStopsUpdated
+            .map((rp: any, idx: number) => ({
+              tempId: `parada-${rp.puebloId ?? rp.pueblo?.id ?? idx}`,
+              orden: rp.orden ?? idx + 1,
+              puebloId: rp.puebloId ?? rp.pueblo?.id ?? null,
+              puebloNombre: rp.puebloNombre ?? rp.pueblo?.nombre ?? '',
+              titulo: rp.titulo ?? '',
+              descripcion: rp.descripcion ?? '',
+              fotoUrl: rp.fotoUrl ?? '',
+              lat: rp.lat ?? null,
+              lng: rp.lng ?? null,
+            }))
+            .sort((a: Parada, b: Parada) => a.orden - b.orden)
+        : []
+    );
   }, [
     (initialData as any)?.pueblos,
     (initialData as any)?.rutaPueblos,
@@ -391,6 +393,21 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
           </p>
         </div>
 
+        {/* Paradas (Pueblos) - visible de inmediato al editar */}
+        <div className="rounded-md border border-amber-200 bg-amber-50/50 p-4">
+          <h2 className="mb-4 text-lg font-semibold">Pueblos de la ruta</h2>
+          
+          <ConvertidorTexto
+            onConvertir={(nuevasParadas) => {
+              setParadas([...paradas, ...nuevasParadas]);
+            }}
+          />
+          
+          <div className="my-6 border-t border-amber-200" />
+          
+          <ParadasEditor paradas={paradas} setParadas={setParadas} />
+        </div>
+
         {/* Foto Portada */}
         <div className="space-y-2">
           <label className="block text-sm font-medium">Foto Portada</label>
@@ -526,22 +543,6 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
           <label htmlFor="activo" className="text-sm">
             Ruta activa (visible públicamente)
           </label>
-        </div>
-
-        {/* Paradas */}
-        <div className="rounded-md border p-4">
-          <h2 className="mb-4 text-lg font-semibold">Paradas (Pueblos)</h2>
-          
-          {/* Convertidor de texto */}
-          <ConvertidorTexto
-            onConvertir={(nuevasParadas) => {
-              setParadas([...paradas, ...nuevasParadas]);
-            }}
-          />
-          
-          <div className="my-6 border-t" />
-          
-          <ParadasEditor paradas={paradas} setParadas={setParadas} />
         </div>
 
         {/* Error */}

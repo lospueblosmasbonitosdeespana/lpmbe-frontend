@@ -17,20 +17,27 @@ type PuebloMultiexperiencia = {
   multiexperiencia: Multiexperiencia
 }
 
+type RutaEnPueblo = {
+  ruta: { id: number; titulo: string; slug: string; foto_portada?: string | null }
+}
+
 interface QueHacerSectionProps {
   puebloNombre: string
   puebloSlug: string
   multiexperiencias: PuebloMultiexperiencia[]
+  rutas?: RutaEnPueblo[]
 }
 
 export function QueHacerSection({
   puebloNombre,
   puebloSlug,
   multiexperiencias,
+  rutas = [],
 }: QueHacerSectionProps) {
   const hasMultiex = multiexperiencias.length > 0
+  const hasRutas = rutas.length > 0
 
-  if (!hasMultiex) return null
+  if (!hasMultiex && !hasRutas) return null
 
   return (
     <Section spacing="md" background="default" id="que-hacer">
@@ -42,17 +49,33 @@ export function QueHacerSection({
           </Body>
         </div>
 
-        {/* MULTIEXPERIENCIAS - diseño V0 (sin tarjeta, imagen + texto abajo, hover zoom) */}
+        {/* MULTIEXPERIENCIAS + Rutas que pasan por el pueblo - diseño V0 */}
         <div>
-          <div className="mb-4 flex items-center justify-between">
-            <Eyebrow className="text-red-600">MULTIEXPERIENCIAS</Eyebrow>
-            <Link
-              href={`/pueblos/${puebloSlug}/multiexperiencias`}
-              className="text-sm font-medium text-primary hover:text-primary/80"
-            >
-              Ver todas
-            </Link>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              {hasMultiex && (
+                <Eyebrow className="text-red-600">MULTIEXPERIENCIAS</Eyebrow>
+              )}
+              {hasRutas && rutas.map(({ ruta }) => (
+                <Link
+                  key={ruta.id}
+                  href={`/rutas/${ruta.slug}`}
+                  className="text-xs font-semibold uppercase tracking-wider text-red-600 hover:text-red-700 hover:underline"
+                >
+                  {ruta.titulo} que pasa por {puebloNombre}
+                </Link>
+              ))}
+            </div>
+            {hasMultiex && (
+              <Link
+                href={`/pueblos/${puebloSlug}/multiexperiencias`}
+                className="text-sm font-medium text-primary hover:text-primary/80"
+              >
+                Ver todas
+              </Link>
+            )}
           </div>
+          {hasMultiex && (
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {multiexperiencias.map(({ multiexperiencia: mx }) => (
               <Link
@@ -88,6 +111,7 @@ export function QueHacerSection({
               </Link>
             ))}
           </div>
+          )}
         </div>
       </Container>
     </Section>

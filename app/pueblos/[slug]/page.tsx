@@ -675,11 +675,12 @@ export default async function PuebloPage({
         </section>
       )}
 
-      {/* Qué hacer en [Pueblo] - Solo Multiexperiencias */}
+      {/* Qué hacer en [Pueblo] - Multiexperiencias + Rutas que pasan por el pueblo */}
       <QueHacerSection
         puebloNombre={puebloSafe.nombre}
         puebloSlug={puebloSafe.slug}
         multiexperiencias={puebloSafe.multiexperiencias ?? []}
+        rutas={puebloSafe.rutas ?? []}
       />
 
       {/* Experiencias por categoría - 6 categorías, colores V0 - enlazan a página de categoría */}
