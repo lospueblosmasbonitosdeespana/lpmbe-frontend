@@ -1,7 +1,7 @@
 'use client';
 
 import DOMPurify from 'isomorphic-dompurify';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 interface SafeHtmlProps {
   html: string;
@@ -11,11 +11,9 @@ interface SafeHtmlProps {
 export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    // Configuración de DOMPurify - permitir style inline para dimensiones de imágenes
-    const clean = DOMPurify.sanitize(html, {
+  // Sanitizar el HTML de forma síncrona para SSR
+  const cleanHtml = useMemo(() => {
+    return DOMPurify.sanitize(html, {
       ALLOWED_TAGS: [
         'p', 'br', 'strong', 'em', 'b', 'i', 'u', 's',
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -32,10 +30,13 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
       ],
       ALLOW_DATA_ATTR: false,
     });
+  }, [html]);
 
-    containerRef.current.innerHTML = clean;
+  // Post-procesamiento en el cliente (enlaces externos e imágenes)
+  useEffect(() => {
+    if (!containerRef.current) return;
 
-    // Añadir target="_blank" a enlaces externos y aplicar clase a imágenes
+    // Añadir target="_blank" a enlaces externos
     const links = containerRef.current.querySelectorAll('a[href]');
     links.forEach((link) => {
       const href = link.getAttribute('href');
@@ -59,11 +60,12 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
         img.style.display = 'block';
       }
     });
-  }, [html]);
+  }, [cleanHtml]);
 
   return (
     <div
       ref={containerRef}
+      dangerouslySetInnerHTML={{ __html: cleanHtml }}
       className={`
         prose prose-lg max-w-none
         prose-headings:font-semibold prose-headings:tracking-tight
