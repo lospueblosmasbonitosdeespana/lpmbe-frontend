@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getApiUrl } from "@/lib/api";
 
+export const dynamic = "force-dynamic";
+
 type Pueblo = {
   id: number;
   nombre: string;

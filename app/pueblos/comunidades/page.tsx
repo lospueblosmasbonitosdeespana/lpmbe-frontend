@@ -3,6 +3,8 @@ import Image from "next/image";
 import { getApiUrl } from "@/lib/api";
 import { CCAA, norm } from "../../_components/pueblos/ccaa.config";
 
+export const dynamic = "force-dynamic";
+
 type Pueblo = {
   id: number;
   nombre: string;
