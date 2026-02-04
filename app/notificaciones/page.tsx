@@ -68,7 +68,7 @@ export default function NotificacionesPage() {
     <div className="mx-auto max-w-5xl px-6 py-10">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="font-display text-4xl font-semibold">Centro de notificaciones</h1>
+          <h1 className="text-4xl font-semibold">Centro de notificaciones</h1>
           <p className="mt-2 text-gray-600">Noticias, alertas y estado de semáforos.</p>
         </div>
         <Link

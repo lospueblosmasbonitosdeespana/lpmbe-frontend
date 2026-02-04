@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className="font-sans antialiased">
+      <body className="antialiased">
         <GoogleAuthProviderWrapper>
           <Header />
           {children}
@@ -25,4 +25,3 @@ export default function RootLayout({
     </html>
   );
 }
-// Vercel trigger: 1770130302

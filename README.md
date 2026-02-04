@@ -29,8 +29,14 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Stripe configuration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+To enable card payments you must provide your live keys both locally and in Vercel:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```env
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_MDVPbMYkQRglPeHqes5L17a7
+NEXT_PUBLIC_API_URL=https://lpbme-backend-production.up.railway.app
+```
+
+Create a `.env.local` file with the values above before running `npm run dev`.  
+Remember to replicate the variables in the Vercel dashboard (`Project Settings → Environment Variables`) for production.

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { CmsDocumento, CmsDocType } from '@/lib/cms/sello';
 import { DOC_TYPE_LABELS } from '@/lib/cms/sello';
 
-const TIPOS: CmsDocType[] = ['ESTATUTOS', 'CARTA_CALIDAD', 'REGLAMENTO', 'MEMORIA', 'OTROS'];
+const TIPOS: CmsDocType[] = ['ESTATUTOS', 'CARTA_CALIDAD', 'REGLAMENTO', 'MEMORIA', 'OTRO'];
 
 export default function DocumentosCmsPage() {
   const router = useRouter();

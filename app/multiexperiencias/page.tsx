@@ -55,7 +55,7 @@ export default async function MultiexperienciasPage() {
   return (
     <main className="mx-auto max-w-7xl px-4 py-12">
       <div className="mb-8">
-        <h1 className="font-display text-3xl font-semibold">Multiexperiencias</h1>
+        <h1 className="text-3xl font-semibold">Multiexperiencias</h1>
         <p className="mt-2 text-gray-600">
           Descubre experiencias únicas en nuestros pueblos
         </p>

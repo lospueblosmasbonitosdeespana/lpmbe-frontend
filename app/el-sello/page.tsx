@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import Breadcrumbs from '@/app/_components/ui/Breadcrumbs';
-import SafeHtml from '@/app/_components/ui/SafeHtml';
-import { DOC_TYPE_LABELS } from '@/lib/cms/sello';
-import type { SelloPage, CmsDocumento, CmsDocType } from '@/lib/cms/sello';
+import { EnrichedMarkdown } from '@/lib/cms/enrichedMarkdown';
+import type { SelloPage, CmsDocumento } from '@/lib/cms/sello';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,34 +46,28 @@ async function getSelloPage(): Promise<SelloPage | null> {
   }
 }
 
-async function getDocumentos(): Promise<CmsDocumento[]> {
+async function getDocumentos(): Promise<{ estatutos: CmsDocumento[]; cartaCalidad: CmsDocumento[] }> {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/public/cms/documentos`,
-      { cache: 'no-store' }
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data) ? data : [];
+    const [resEstatutos, resCarta] = await Promise.all([
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/cms/documentos?type=ESTATUTOS`, { cache: 'no-store' }),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/cms/documentos?type=CARTA_CALIDAD`, { cache: 'no-store' }),
+    ]);
+
+    const estatutos = resEstatutos.ok ? await resEstatutos.json() : [];
+    const cartaCalidad = resCarta.ok ? await resCarta.json() : [];
+
+    return {
+      estatutos: Array.isArray(estatutos) ? estatutos : [],
+      cartaCalidad: Array.isArray(cartaCalidad) ? cartaCalidad : [],
+    };
   } catch {
-    return [];
+    return { estatutos: [], cartaCalidad: [] };
   }
-}
-
-const TIPOS_ORDEN: CmsDocType[] = ['ESTATUTOS', 'CARTA_CALIDAD', 'REGLAMENTO', 'MEMORIA', 'OTROS'];
-
-function agruparPorTipo(docs: CmsDocumento[]): Record<CmsDocType, CmsDocumento[]> {
-  const grupos = {} as Record<CmsDocType, CmsDocumento[]>;
-  for (const t of TIPOS_ORDEN) {
-    grupos[t] = docs.filter((d) => d.type === t);
-  }
-  return grupos;
 }
 
 export default async function ElSelloPage() {
   const page = await getSelloPage();
-  const docs = await getDocumentos();
-  const porTipo = agruparPorTipo(docs);
+  const documentos = await getDocumentos();
 
   const titulo = page?.titulo ?? 'El sello';
   const subtitle = page?.subtitle;
@@ -106,7 +99,7 @@ export default async function ElSelloPage() {
 
         {contenido && (
           <div className="mb-8">
-            <SafeHtml html={contenido} />
+            <EnrichedMarkdown content={contenido} />
           </div>
         )}
       </div>
@@ -132,42 +125,75 @@ export default async function ElSelloPage() {
         ))}
       </div>
 
-      {/* Documentación - todos los PDFs agrupados por tipo */}
-      {docs.length > 0 && (
+      {/* Documentación */}
+      {(documentos.estatutos.length > 0 || documentos.cartaCalidad.length > 0) && (
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-8">
           <h2 className="text-2xl font-semibold mb-6">Documentación</h2>
-          <p className="text-gray-600 mb-6">
-            Descarga los documentos oficiales de la asociación.
-          </p>
 
           <div className="grid gap-8 md:grid-cols-2">
-            {TIPOS_ORDEN.map(
-              (tipo) =>
-                porTipo[tipo].length > 0 && (
-                  <div key={tipo}>
-                    <h3 className="text-lg font-semibold mb-3">
-                      {DOC_TYPE_LABELS[tipo]}
-                    </h3>
-                    <ul className="space-y-2">
-                      {porTipo[tipo].map((doc) => (
-                        <li key={doc.id}>
-                          <a
-                            href={doc.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline flex items-center gap-2"
-                          >
-                            📄 {doc.titulo}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )
+            {documentos.estatutos.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Estatutos</h3>
+                <ul className="space-y-2">
+                  {documentos.estatutos.map((doc) => (
+                    <li key={doc.id}>
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline flex items-center gap-2"
+                      >
+                        📄 {doc.titulo}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {documentos.cartaCalidad.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Carta de Calidad</h3>
+                <ul className="space-y-2">
+                  {documentos.cartaCalidad.map((doc) => (
+                    <li key={doc.id}>
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline flex items-center gap-2"
+                      >
+                        📄 {doc.titulo}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         </div>
       )}
+
+      {/* Grid de secciones */}
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        {sections.map((section) => (
+          <Link
+            key={section.href}
+            href={section.href}
+            className="group block rounded-lg border border-gray-200 bg-white p-8 transition-all hover:border-gray-300 hover:shadow-lg"
+          >
+            <h2 className="text-2xl font-semibold mb-3 group-hover:text-blue-600">
+              {section.title}
+            </h2>
+            <p className="text-gray-600 leading-relaxed mb-4">
+              {section.description}
+            </p>
+            <span className="text-sm font-medium text-blue-600 group-hover:underline">
+              Más información →
+            </span>
+          </Link>
+        ))}
+      </div>
     </main>
   );
 }

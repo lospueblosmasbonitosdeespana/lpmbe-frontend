@@ -15,7 +15,7 @@ export type CmsDocType =
   | 'CARTA_CALIDAD'
   | 'REGLAMENTO'
   | 'MEMORIA'
-  | 'OTROS';
+  | 'OTRO';
 
 export type SelloPage = {
   key: SelloPageKey;
@@ -65,7 +65,7 @@ export const DOC_TYPE_LABELS: Record<CmsDocType, string> = {
   CARTA_CALIDAD: 'Carta de Calidad',
   REGLAMENTO: 'Reglamento',
   MEMORIA: 'Memoria Anual',
-  OTROS: 'Otros',
+  OTRO: 'Otro',
 };
 
 // Helper para obtener la key desde una ruta

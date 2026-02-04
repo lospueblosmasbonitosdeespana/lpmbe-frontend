@@ -11,7 +11,7 @@ type BreadcrumbsProps = {
 
 export default function Breadcrumbs({ items }: BreadcrumbsProps) {
   return (
-    <nav className="font-sans mb-8 flex items-center gap-2 text-sm text-gray-600">
+    <nav className="mb-8 flex items-center gap-2 text-sm text-gray-600">
       <Link href="/" className="hover:text-gray-900">
         Inicio
       </Link>

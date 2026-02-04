@@ -1,10 +1,7 @@
+import Link from "next/link";
 import type { Metadata } from "next";
-import { getRutas, type Ruta } from "@/lib/api";
+import { getRutas } from "@/lib/api";
 import { createExcerpt } from "@/lib/sanitizeHtml";
-import { Section } from "@/app/components/ui/section";
-import { Container } from "@/app/components/ui/container";
-import { Grid } from "@/app/components/ui/grid";
-import { ListingCard } from "@/app/components/ui/listing-card";
 
 export const metadata: Metadata = {
   title: "Rutas – Los Pueblos Más Bonitos de España",
@@ -12,73 +9,91 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+
 export const revalidate = 300;
-
-function mapRutaToCardData(ruta: Ruta) {
-  const metadataParts: string[] = [];
-  if (ruta.dificultad) metadataParts.push(ruta.dificultad);
-  if (ruta.distancia != null) metadataParts.push(`${ruta.distancia} km`);
-  if (ruta.tiempo != null) metadataParts.push(`${ruta.tiempo}h`);
-  if (ruta.tipo) metadataParts.push(ruta.tipo);
-
-  return {
-    title: ruta.titulo,
-    href: `/rutas/${ruta.slug}`,
-    image: ruta.foto_portada || "/hero/1.jpg",
-    imageAlt: ruta.titulo,
-    metadata: metadataParts.length > 0 ? metadataParts.join(" • ") : undefined,
-    description: ruta.descripcion ? createExcerpt(ruta.descripcion, 120) : undefined,
-    badge: ruta.dificultad || undefined,
-    aspect: "landscape" as const,
-  };
-}
 
 export default async function RutasPage() {
   const rutas = await getRutas();
+
+  // Filtrar solo rutas activas
   const rutasActivas = rutas.filter((r) => r.activo);
-  const items = rutasActivas.map(mapRutaToCardData);
 
   return (
-    <main className="min-h-screen" style={{ backgroundColor: "var(--color-bg-section)" }}>
-      {/* Header - diseño V0 (centered, igual que pueblos) */}
-      <section className="bg-white/80 py-12">
-        <div className="mx-auto max-w-3xl px-4 text-center">
-          <p className="text-sm font-medium uppercase tracking-wider text-gray-500">
-            Descubre
-          </p>
-          <h1 className="mt-1 font-display text-3xl font-bold text-gray-900 md:text-4xl">
-            Rutas
-          </h1>
-          <p className="mt-2 text-base text-gray-600">
-            {rutasActivas.length}{" "}
-            {rutasActivas.length === 1 ? "ruta" : "rutas"} para explorar los pueblos más bonitos
-          </p>
-        </div>
-      </section>
+    <main className="mx-auto max-w-7xl px-4 py-12">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Rutas</h1>
+        <p className="mt-2 text-gray-600">
+          Descubre rutas turísticas por los pueblos más bonitos de España
+        </p>
+      </div>
 
-      {/* Grid - preset routes: 3 cols, landscape, con descripción */}
-      <Section background="muted" spacing="lg">
-        <Container>
-          {items.length === 0 ? (
-            <div className="py-16 text-center">
-              <p className="text-muted-foreground">No hay rutas disponibles en este momento.</p>
-            </div>
-          ) : (
-            <Grid columns={3} gap="lg">
-              {items.map((item, index) => (
-                <ListingCard
-                  key={index}
-                  data={item}
-                  layout="vertical"
-                  aspect="landscape"
-                  size="default"
-                  showDescription
-                />
-              ))}
-            </Grid>
-          )}
-        </Container>
-      </Section>
+      {rutasActivas.length === 0 ? (
+        <p className="text-gray-600">No hay rutas disponibles</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {rutasActivas.map((ruta) => (
+            <Link
+              key={ruta.id}
+              href={`/rutas/${ruta.slug}`}
+              className="group block overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
+            >
+              {/* Foto portada */}
+              <div className="relative h-48 w-full overflow-hidden bg-gray-200">
+                {ruta.foto_portada ? (
+                  <img
+                    src={ruta.foto_portada}
+                    alt={ruta.titulo}
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-gray-300">
+                    <span className="text-sm text-gray-500">Sin imagen</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Contenido */}
+              <div className="p-4">
+                <h2 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600">
+                  {ruta.titulo}
+                </h2>
+
+                {/* Metadatos */}
+                <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-600">
+                  {ruta.dificultad && (
+                    <span className="rounded bg-blue-100 px-2 py-1 font-medium text-blue-700">
+                      {ruta.dificultad}
+                    </span>
+                  )}
+                  {ruta.tipo && (
+                    <span className="rounded bg-green-100 px-2 py-1 font-medium text-green-700">
+                      {ruta.tipo}
+                    </span>
+                  )}
+                  {ruta.distancia && (
+                    <span className="rounded bg-gray-100 px-2 py-1 font-medium text-gray-700">
+                      {ruta.distancia} km
+                    </span>
+                  )}
+                  {ruta.tiempo && (
+                    <span className="rounded bg-gray-100 px-2 py-1 font-medium text-gray-700">
+                      {ruta.tiempo}h
+                    </span>
+                  )}
+                </div>
+
+                {/* Descripción */}
+                {ruta.descripcion && (
+                  <p className="mt-2 text-sm text-gray-600 line-clamp-2">
+                    {createExcerpt(ruta.descripcion, 120)}
+                  </p>
+                )}
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </main>
   );
 }

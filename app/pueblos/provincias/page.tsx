@@ -34,8 +34,8 @@ export default async function ProvinciasPage() {
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
       <div className="mb-6">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">Por provincia</h1>
-        <p className="mt-2 text-sm text-black/60 font-sans">
+        <h1 className="text-3xl font-semibold tracking-tight">Por provincia</h1>
+        <p className="mt-2 text-sm text-black/60">
           Elige una provincia para ver sus pueblos.
         </p>
       </div>
@@ -48,13 +48,10 @@ export default async function ProvinciasPage() {
             <Link
               key={p}
               href={`/pueblos?provincia=${encodeURIComponent(p)}`}
-              className="group rounded-xl border border-black/10 bg-neutral-50 px-4 py-4 shadow-sm transition-colors hover:bg-neutral-100"
+              className="rounded-xl border border-black/10 bg-white px-4 py-4 shadow-sm hover:bg-black/[0.02]"
             >
-              <div className="flex items-center justify-between">
-                <div className="font-medium">{p}</div>
-                <div className="text-sm text-black/40 transition-transform group-hover:translate-x-1">→</div>
-              </div>
-              <div className="mt-1 text-sm text-black/60">Ver pueblos</div>
+              <div className="font-medium">{p}</div>
+              <div className="mt-1 text-sm text-black/60">Ver pueblos →</div>
             </Link>
           ))}
         </div>

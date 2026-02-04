@@ -1,25 +1,9 @@
 import Link from 'next/link';
 
-export default function MiCuentaPage({
-  searchParams,
-}: {
-  searchParams?: { msg?: string };
-}) {
-  const showGestionNotice = searchParams?.msg === 'gestion_solo_autorizados';
-
+export default function MiCuentaPage() {
   return (
     <section className="max-w-4xl mx-auto p-6 space-y-6">
-      <h1 className="font-display text-2xl font-semibold">Mi Cuenta</h1>
-
-      {showGestionNotice && (
-        <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
-          <div className="font-medium text-amber-800">Zona restringida</div>
-          <p className="mt-1 text-sm text-amber-700">
-            La gestión de pueblos es solo para alcaldes y administradores autorizados.
-            Esta es tu área personal.
-          </p>
-        </div>
-      )}
+      <h1 className="text-2xl font-semibold">Mi Cuenta</h1>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Link href="/mi-cuenta/puntos" className="p-4 border rounded hover:bg-gray-50 transition">

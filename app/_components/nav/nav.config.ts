@@ -108,7 +108,6 @@ export const navConfig: NavItem[] = [
       {
         title: "El sello",
         links: [
-          { label: "El Sello", href: "/el-sello" },
           { label: "¿Cómo se obtiene el sello?", href: "/el-sello/como-se-obtiene" },
           { label: "Quiénes somos", href: "/el-sello/quienes-somos" },
           { label: "Socios", href: "/el-sello/socios" },

@@ -37,12 +37,6 @@ export type Product = {
   } | null;
   discountPercent?: number | null; // Descuento propio del producto (0-100)
   discountLabel?: string | null; // Etiqueta del descuento propio
-  // Campos para página de producto rica
-  descripcionLarga?: string | null;
-  caracteristicas?: string | null; // JSON stringificado
-  origenPueblo?: string | null;
-  artesano?: string | null;
-  infoAdicional?: string | null;
 };
 
 export type CartItem = {

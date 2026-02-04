@@ -48,8 +48,8 @@ export default async function ComunidadDetallePage({
             ) : null}
           </div>
           <div>
-            <h1 className="font-display text-3xl font-semibold tracking-tight">{ccaa.name}</h1>
-            <p className="mt-1 text-sm text-black/60 font-sans">0 pueblos</p>
+            <h1 className="text-3xl font-semibold tracking-tight">{ccaa.name}</h1>
+            <p className="mt-1 text-sm text-black/60">0 pueblos</p>
           </div>
         </div>
 
@@ -98,8 +98,8 @@ export default async function ComunidadDetallePage({
         </div>
 
         <div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight">{ccaa.name}</h1>
-          <p className="mt-1 text-sm text-black/60 font-sans">{dentro.length} pueblos</p>
+          <h1 className="text-3xl font-semibold tracking-tight">{ccaa.name}</h1>
+          <p className="mt-1 text-sm text-black/60">{dentro.length} pueblos</p>
         </div>
 
         <div className="ml-auto">
@@ -113,7 +113,7 @@ export default async function ComunidadDetallePage({
         {provincias.map(({ provincia, items }) => (
           <section key={provincia}>
             <div className="mb-3 flex items-baseline justify-between">
-              <h2 className="font-display text-xl font-semibold">{provincia}</h2>
+              <h2 className="text-xl font-semibold">{provincia}</h2>
               <span className="text-sm text-black/60">
                 {items.length} pueblo{items.length === 1 ? "" : "s"}
               </span>
@@ -124,13 +124,10 @@ export default async function ComunidadDetallePage({
                 <Link
                   key={p.id}
                   href={`/pueblos/${p.slug}`}
-                  className="group rounded-xl border border-black/10 bg-neutral-50 px-4 py-4 shadow-sm transition-colors hover:bg-neutral-100"
+                  className="rounded-xl border border-black/10 bg-white px-4 py-4 shadow-sm hover:bg-black/[0.02]"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="font-medium">{p.nombre}</div>
-                    <div className="text-sm text-black/40 transition-transform group-hover:translate-x-1">→</div>
-                  </div>
-                  <div className="mt-1 text-sm text-black/60">Ver ficha</div>
+                  <div className="font-medium">{p.nombre}</div>
+                  <div className="mt-1 text-sm text-black/60">Ver ficha →</div>
                 </Link>
               ))}
             </div>

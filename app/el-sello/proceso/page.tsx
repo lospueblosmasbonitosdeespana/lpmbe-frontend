@@ -1,6 +1,5 @@
 import SelloCmsPage from '@/app/_components/ui/SelloCmsPage';
 import type { SelloPage } from '@/lib/cms/sello';
-import { CONTENIDO_PROCESO } from '@/lib/cms/sello-content';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,19 +16,13 @@ async function getPage(): Promise<SelloPage | null> {
   }
 }
 
-function needsFallback(contenido: string): boolean {
-  const c = (contenido ?? '').trim();
-  return c.length < 300 || c.includes('Conoce las etapas del proceso de certificación');
-}
-
 export default async function ProcesoPage() {
   const page = await getPage();
 
   const titulo = page?.titulo ?? 'Proceso de selección';
-  const subtitle = page?.subtitle ?? 'Las tres etapas hasta obtener el Sello';
+  const subtitle = page?.subtitle;
   const heroUrl = page?.heroUrl;
-  const contenidoRaw = page?.contenido ?? '';
-  const contenido = needsFallback(contenidoRaw) ? CONTENIDO_PROCESO : contenidoRaw;
+  const contenido = page?.contenido ?? '';
 
   return (
     <SelloCmsPage

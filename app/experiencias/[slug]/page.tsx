@@ -38,15 +38,9 @@ const CATEGORY_MAP: Record<string, CategoryConfig> = {
   },
   cultura: {
     title: 'Cultura',
-    description: 'Museos y manifestaciones culturales de nuestros pueblos',
+    description: 'Patrimonio cultural e histórico de nuestros pueblos',
     category: 'CULTURA',
     tabSlug: 'cultura',
-  },
-  patrimonio: {
-    title: 'Patrimonio',
-    description: 'Castillos, murallas, iglesias y patrimonio histórico',
-    category: 'PATRIMONIO',
-    tabSlug: 'patrimonio',
   },
   'en-familia': {
     title: 'En familia',

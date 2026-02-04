@@ -38,7 +38,7 @@ export async function ActualidadSection({ limit = 4 }: ActualidadSectionProps) {
     <section className="mx-auto max-w-6xl px-4 py-16">
       <div className="mb-8 flex items-end justify-between gap-6">
         <div>
-          <h2 className="font-display text-2xl font-semibold">Actualidad</h2>
+          <h2 className="text-2xl font-semibold">Actualidad</h2>
           <p className="mt-2 text-sm text-gray-600">
             Noticias y avisos de la Asociación.
           </p>

@@ -31,7 +31,7 @@ export function Hero({ configHero, floating }: HeroProps) {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
 
       <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-center px-4">
-        <h1 className="font-display text-3xl font-semibold text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)] md:text-5xl">
+        <h1 className="text-3xl font-semibold text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)] md:text-5xl">
           {hero?.title ?? "Los Pueblos Más Bonitos de España"}
         </h1>
         <p className="mt-4 max-w-xl text-sm text-white/85 md:text-base">
