@@ -34,6 +34,16 @@ export default async function DatosAdminPage() {
         </Link>
 
         <Link
+          href="/gestion/asociacion/datos/usuarios"
+          className="block rounded-lg border border-gray-200 bg-white p-6 transition-shadow hover:shadow-lg"
+        >
+          <h2 className="text-xl font-semibold">👤 Usuarios</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Gestión completa: ver, editar, cambiar roles y pueblos visitados
+          </p>
+        </Link>
+
+        <Link
           href="/gestion/asociacion/datos/clientes"
           className="block rounded-lg border border-gray-200 bg-white p-6 transition-shadow hover:shadow-lg"
         >

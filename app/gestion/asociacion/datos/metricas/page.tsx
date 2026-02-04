@@ -75,11 +75,16 @@ export default function DatosMetricasPage() {
       )}
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard
-          title="Usuarios totales"
-          value={metricas?.usuarios?.total ?? '—'}
-          subtitle="Registrados en la plataforma"
-        />
+        <Link
+          href="/gestion/asociacion/datos/usuarios"
+          className="block transition-opacity hover:opacity-90"
+        >
+          <MetricCard
+            title="Usuarios totales"
+            value={metricas?.usuarios?.total ?? '—'}
+            subtitle="Registrados en la plataforma — Ver y gestionar"
+          />
+        </Link>
         <MetricCard
           title="Clientes tienda"
           value={metricas?.clientes?.total ?? '—'}
