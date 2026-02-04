@@ -12,9 +12,9 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || typeof window === 'undefined') return;
 
-    // Configuración de DOMPurify
+    // Configuración de DOMPurify - permitir style inline para dimensiones de imágenes
     const clean = DOMPurify.sanitize(html, {
       ALLOWED_TAGS: [
         'p', 'br', 'strong', 'em', 'b', 'i', 'u', 's',
@@ -28,20 +28,35 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
       ALLOWED_ATTR: [
         'href', 'target', 'rel',
         'src', 'alt', 'title', 'width', 'height',
-        'class', 'id',
+        'class', 'style',
       ],
       ALLOW_DATA_ATTR: false,
     });
 
     containerRef.current.innerHTML = clean;
 
-    // Añadir target="_blank" a enlaces externos
+    // Añadir target="_blank" a enlaces externos y aplicar clase a imágenes
     const links = containerRef.current.querySelectorAll('a[href]');
     links.forEach((link) => {
       const href = link.getAttribute('href');
       if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
         link.setAttribute('target', '_blank');
         link.setAttribute('rel', 'noopener noreferrer');
+      }
+    });
+
+    // Asegurar que las imágenes tengan estilos correctos
+    const images = containerRef.current.querySelectorAll('img');
+    images.forEach((img) => {
+      img.classList.add('editor-image');
+      // Forzar estilos si no los tiene
+      if (!img.style.maxWidth) {
+        img.style.maxWidth = '800px';
+        img.style.width = '100%';
+        img.style.height = 'auto';
+        img.style.borderRadius = '0.5rem';
+        img.style.margin = '1rem 0';
+        img.style.display = 'block';
       }
     });
   }, [html]);
@@ -59,7 +74,6 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
         prose-strong:font-semibold prose-strong:text-gray-900
         prose-ul:my-4 prose-ol:my-4
         prose-li:my-1
-        prose-img:rounded-lg prose-img:shadow-sm
         ${className}
       `}
     />

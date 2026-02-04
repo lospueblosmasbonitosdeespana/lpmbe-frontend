@@ -45,8 +45,10 @@ export default function TipTapEditor({
         },
       }),
       Image.configure({
+        inline: false,
         HTMLAttributes: {
-          class: 'max-w-full h-auto rounded-lg my-4',
+          class: 'editor-image',
+          style: 'max-width: 800px; width: 100%; height: auto; border-radius: 0.5rem; margin: 1rem 0;',
         },
       }),
       Link.configure({
@@ -305,7 +307,7 @@ export default function TipTapEditor({
         {onUploadImage && (
           <div className="flex items-center gap-2">
             <Sparkles className="w-3 h-3 text-blue-500" />
-            <span>Arrastra imágenes aquí o pégalas con Ctrl+V</span>
+            <span>Arrastra imágenes aquí o pégalas con Ctrl+V (máx. 800px de ancho)</span>
           </div>
         )}
         <div className="flex items-center gap-2 text-gray-400">
