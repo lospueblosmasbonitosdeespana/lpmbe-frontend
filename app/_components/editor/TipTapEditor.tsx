@@ -4,7 +4,21 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
-import { useCallback } from 'react';
+import Placeholder from '@tiptap/extension-placeholder';
+import { useCallback, useState } from 'react';
+import {
+  Bold,
+  Italic,
+  List,
+  ListOrdered,
+  Heading2,
+  Heading3,
+  LinkIcon,
+  ImageIcon,
+  Undo2,
+  Redo2,
+  Sparkles,
+} from 'lucide-react';
 
 interface TipTapEditorProps {
   content: string;
@@ -18,22 +32,31 @@ export default function TipTapEditor({
   content,
   onChange,
   onUploadImage,
-  placeholder = 'Escribe aquí...',
-  minHeight = '300px',
+  placeholder = 'Escribe algo increíble...',
+  minHeight = '400px',
 }: TipTapEditorProps) {
+  const [isUploading, setIsUploading] = useState(false);
+
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        heading: {
+          levels: [2, 3],
+        },
+      }),
       Image.configure({
         HTMLAttributes: {
-          class: 'max-w-full h-auto rounded-lg',
+          class: 'max-w-full h-auto rounded-lg my-4',
         },
       }),
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-blue-600 hover:underline',
+          class: 'text-blue-600 hover:text-blue-700 underline',
         },
+      }),
+      Placeholder.configure({
+        placeholder,
       }),
     ],
     content,
@@ -42,13 +65,58 @@ export default function TipTapEditor({
     },
     editorProps: {
       attributes: {
-        class: `prose prose-sm sm:prose lg:prose-lg focus:outline-none max-w-none px-4 py-3`,
+        class: `prose prose-sm sm:prose lg:prose-lg focus:outline-none max-w-none px-6 py-4`,
         style: `min-height: ${minHeight}`,
+      },
+      handleDrop: (view, event, slice, moved) => {
+        if (!onUploadImage || !event.dataTransfer?.files?.length) {
+          return false;
+        }
+
+        const file = event.dataTransfer.files[0];
+        if (file.type.startsWith('image/')) {
+          event.preventDefault();
+          handleImageUpload(file);
+          return true;
+        }
+
+        return false;
+      },
+      handlePaste: (view, event) => {
+        if (!onUploadImage || !event.clipboardData?.files?.length) {
+          return false;
+        }
+
+        const file = event.clipboardData.files[0];
+        if (file.type.startsWith('image/')) {
+          event.preventDefault();
+          handleImageUpload(file);
+          return true;
+        }
+
+        return false;
       },
     },
   });
 
-  const handleImageUpload = useCallback(async () => {
+  const handleImageUpload = useCallback(async (file: File) => {
+    if (!onUploadImage || !editor) return;
+
+    setIsUploading(true);
+    try {
+      const url = await onUploadImage(file);
+      if (url) {
+        editor.chain().focus().setImage({ src: url }).run();
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error subiendo imagen');
+    } finally {
+      setIsUploading(false);
+    }
+  }, [editor, onUploadImage]);
+
+  const triggerImageUpload = useCallback(() => {
     if (!onUploadImage || !editor) return;
 
     const input = document.createElement('input');
@@ -57,21 +125,13 @@ export default function TipTapEditor({
     
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-
-      try {
-        const url = await onUploadImage(file);
-        if (url) {
-          editor.chain().focus().setImage({ src: url }).run();
-        }
-      } catch (error) {
-        console.error('Error uploading image:', error);
-        alert('Error subiendo imagen');
+      if (file) {
+        await handleImageUpload(file);
       }
     };
 
     input.click();
-  }, [editor, onUploadImage]);
+  }, [editor, handleImageUpload, onUploadImage]);
 
   const setLink = useCallback(() => {
     if (!editor) return;
@@ -90,128 +150,175 @@ export default function TipTapEditor({
   }, [editor]);
 
   if (!editor) {
-    return <div className="rounded-lg border border-gray-300 p-4 text-gray-400">Cargando editor...</div>;
+    return (
+      <div className="animate-pulse rounded-xl border border-gray-200 bg-gray-50 p-8 text-center">
+        <div className="h-4 bg-gray-200 rounded w-1/3 mx-auto"></div>
+      </div>
+    );
   }
 
+  const ToolbarButton = ({ 
+    onClick, 
+    isActive, 
+    disabled, 
+    children, 
+    title 
+  }: { 
+    onClick: () => void; 
+    isActive?: boolean; 
+    disabled?: boolean; 
+    children: React.ReactNode;
+    title: string;
+  }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={`
+        p-2 rounded-lg transition-all duration-200
+        ${isActive 
+          ? 'bg-blue-600 text-white shadow-sm' 
+          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+        }
+        ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+      `}
+    >
+      {children}
+    </button>
+  );
+
   return (
-    <div className="space-y-2">
-      {/* Barra de herramientas */}
-      <div className="flex flex-wrap gap-1 rounded-t-lg border border-b-0 border-gray-300 bg-gray-50 p-2">
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          disabled={!editor.can().chain().focus().toggleBold().run()}
-          className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
-            editor.isActive('bold')
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          } disabled:opacity-50`}
-        >
-          Negrita
-        </button>
+    <div className="space-y-3">
+      {/* Barra de herramientas fija con gradiente sutil */}
+      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-1 rounded-xl border border-gray-200 bg-gradient-to-r from-white to-gray-50/50 backdrop-blur-sm p-2 shadow-sm">
+        <div className="flex items-center gap-1">
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            isActive={editor.isActive('bold')}
+            disabled={!editor.can().chain().focus().toggleBold().run()}
+            title="Negrita (Ctrl+B)"
+          >
+            <Bold className="w-4 h-4" />
+          </ToolbarButton>
 
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          disabled={!editor.can().chain().focus().toggleItalic().run()}
-          className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
-            editor.isActive('italic')
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          } disabled:opacity-50`}
-        >
-          Cursiva
-        </button>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            isActive={editor.isActive('italic')}
+            disabled={!editor.can().chain().focus().toggleItalic().run()}
+            title="Cursiva (Ctrl+I)"
+          >
+            <Italic className="w-4 h-4" />
+          </ToolbarButton>
+        </div>
 
-        <div className="w-px bg-gray-300" />
+        <div className="w-px h-6 bg-gray-300" />
 
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
-            editor.isActive('heading', { level: 2 })
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          }`}
-        >
-          H2
-        </button>
+        <div className="flex items-center gap-1">
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            isActive={editor.isActive('heading', { level: 2 })}
+            title="Título 2"
+          >
+            <Heading2 className="w-4 h-4" />
+          </ToolbarButton>
 
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
-            editor.isActive('heading', { level: 3 })
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          }`}
-        >
-          H3
-        </button>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            isActive={editor.isActive('heading', { level: 3 })}
+            title="Título 3"
+          >
+            <Heading3 className="w-4 h-4" />
+          </ToolbarButton>
+        </div>
 
-        <div className="w-px bg-gray-300" />
+        <div className="w-px h-6 bg-gray-300" />
 
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
-            editor.isActive('bulletList')
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          }`}
-        >
-          Lista
-        </button>
+        <div className="flex items-center gap-1">
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            isActive={editor.isActive('bulletList')}
+            title="Lista con viñetas"
+          >
+            <List className="w-4 h-4" />
+          </ToolbarButton>
 
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
-            editor.isActive('orderedList')
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          }`}
-        >
-          Numerada
-        </button>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            isActive={editor.isActive('orderedList')}
+            title="Lista numerada"
+          >
+            <ListOrdered className="w-4 h-4" />
+          </ToolbarButton>
+        </div>
 
-        <div className="w-px bg-gray-300" />
+        <div className="w-px h-6 bg-gray-300" />
 
-        <button
-          type="button"
-          onClick={setLink}
-          className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
-            editor.isActive('link')
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          }`}
-        >
-          Enlace
-        </button>
+        <div className="flex items-center gap-1">
+          <ToolbarButton
+            onClick={setLink}
+            isActive={editor.isActive('link')}
+            title="Insertar enlace"
+          >
+            <LinkIcon className="w-4 h-4" />
+          </ToolbarButton>
 
-        {onUploadImage && (
-          <>
-            <div className="w-px bg-gray-300" />
-            <button
-              type="button"
-              onClick={handleImageUpload}
-              className="rounded bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100"
+          {onUploadImage && (
+            <ToolbarButton
+              onClick={triggerImageUpload}
+              disabled={isUploading}
+              title="Insertar imagen"
             >
-              📷 Imagen
-            </button>
-          </>
-        )}
+              <ImageIcon className={`w-4 h-4 ${isUploading ? 'animate-pulse' : ''}`} />
+            </ToolbarButton>
+          )}
+        </div>
+
+        <div className="w-px h-6 bg-gray-300" />
+
+        <div className="flex items-center gap-1">
+          <ToolbarButton
+            onClick={() => editor.chain().focus().undo().run()}
+            disabled={!editor.can().chain().focus().undo().run()}
+            title="Deshacer (Ctrl+Z)"
+          >
+            <Undo2 className="w-4 h-4" />
+          </ToolbarButton>
+
+          <ToolbarButton
+            onClick={() => editor.chain().focus().redo().run()}
+            disabled={!editor.can().chain().focus().redo().run()}
+            title="Rehacer (Ctrl+Shift+Z)"
+          >
+            <Redo2 className="w-4 h-4" />
+          </ToolbarButton>
+        </div>
       </div>
 
-      {/* Editor */}
-      <div className="rounded-b-lg border border-gray-300 bg-white">
+      {/* Editor con diseño más cuidado */}
+      <div className="group rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
         <EditorContent editor={editor} />
       </div>
 
-      {placeholder && !editor.getText() && (
-        <p className="text-xs text-gray-500 italic">
-          Tip: Usa los botones para formatear el texto. Puedes pegar imágenes directamente.
-        </p>
+      {/* Ayuda y feedback */}
+      <div className="flex items-center justify-between text-xs text-gray-500">
+        {onUploadImage && (
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-3 h-3 text-blue-500" />
+            <span>Arrastra imágenes aquí o pégalas con Ctrl+V</span>
+          </div>
+        )}
+        <div className="flex items-center gap-2 text-gray-400">
+          <span>{editor.storage.characterCount?.characters() || 0} caracteres</span>
+        </div>
+      </div>
+
+      {/* Notificación de carga */}
+      {isUploading && (
+        <div className="fixed bottom-4 right-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in slide-in-from-bottom-2">
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <span className="font-medium">Subiendo imagen...</span>
+        </div>
       )}
     </div>
   );
