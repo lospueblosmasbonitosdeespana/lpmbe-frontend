@@ -1,5 +1,6 @@
 import SelloCmsPage from '@/app/_components/ui/SelloCmsPage';
 import type { SelloPage, CmsDocumento } from '@/lib/cms/sello';
+import { CONTENIDO_CRITERIOS } from '@/lib/cms/sello-content';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,19 +25,26 @@ async function getCartaCalidadDocs(): Promise<CmsDocumento[]> {
     );
     if (!res.ok) return [];
     const data = await res.json();
-    return Array.isArray(data) ? data : [];
+    const docs = Array.isArray(data) ? data : [];
+    return docs.filter((d: CmsDocumento) => d?.url && String(d.url).trim().length > 0);
   } catch {
     return [];
   }
+}
+
+function needsFallback(contenido: string): boolean {
+  const c = (contenido ?? '').trim();
+  return c.length < 300 || c.includes('Los criterios que aplicamos para evaluar');
 }
 
 export default async function CriteriosPage() {
   const [page, cartaCalidadDocs] = await Promise.all([getPage(), getCartaCalidadDocs()]);
 
   const titulo = page?.titulo ?? 'Criterios de evaluación';
-  const subtitle = page?.subtitle;
+  const subtitle = page?.subtitle ?? 'Resumen de la Carta de Calidad';
   const heroUrl = page?.heroUrl;
-  const contenido = page?.contenido ?? '';
+  const contenidoRaw = page?.contenido ?? '';
+  const contenido = needsFallback(contenidoRaw) ? CONTENIDO_CRITERIOS : contenidoRaw;
 
   return (
     <SelloCmsPage
@@ -51,27 +59,56 @@ export default async function CriteriosPage() {
       ]}
     >
       {cartaCalidadDocs.length > 0 && (
-        <div className="mt-12 rounded-lg border border-gray-200 bg-gray-50 p-8">
-          <h2 className="text-2xl font-semibold mb-4">Carta de Calidad (PDF)</h2>
-          <p className="text-gray-600 mb-6">
-            Descarga el documento oficial de la Carta de Calidad firmada por los municipios.
+        <div className="mt-12 space-y-8">
+          {cartaCalidadDocs.map((doc) => {
+            const url = String(doc.url).trim();
+            if (!url) return null;
+            return (
+              <div key={doc.id} className="rounded-lg border border-gray-200 bg-gray-50 p-6">
+                <h2 className="text-2xl font-semibold mb-2">{doc.titulo}</h2>
+                <p className="text-gray-600 mb-4">
+                  Documento oficial de la Carta de Calidad firmada por los municipios.
+                </p>
+                <div className="flex flex-wrap gap-3 mb-4">
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+                  >
+                    <span>📄</span>
+                    Abrir PDF en nueva pestaña
+                  </a>
+                  <a
+                    href={url}
+                    download
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Descargar PDF
+                  </a>
+                </div>
+                <p className="text-xs text-gray-500 mb-2">
+                  Si el visor no carga el PDF, usa el botón «Abrir PDF en nueva pestaña».
+                </p>
+                <div className="rounded-lg border border-gray-200 bg-white overflow-hidden" style={{ minHeight: '500px' }}>
+                  <iframe
+                    src={`${url}#toolbar=1&navpanes=1&scrollbar=1`}
+                    title={doc.titulo}
+                    className="w-full h-[600px] border-0"
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {cartaCalidadDocs.length === 0 && (
+        <div className="mt-12 rounded-lg border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
+          <p className="text-gray-600">
+            Para mostrar la Carta de Calidad en PDF, sube el documento en{' '}
+            <strong>Gestión → Asociación → El Sello → Documentos</strong>, tipo «Carta de Calidad».
           </p>
-          <ul className="space-y-3">
-            {cartaCalidadDocs.map((doc) => (
-              <li key={doc.id}>
-                <a
-                  href={doc.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-3 text-blue-600 hover:bg-gray-50 hover:border-gray-300 transition-colors"
-                >
-                  <span className="text-xl">📄</span>
-                  <span className="font-medium">{doc.titulo}</span>
-                  <span className="text-sm text-gray-500">(PDF)</span>
-                </a>
-              </li>
-            ))}
-          </ul>
         </div>
       )}
     </SelloCmsPage>
