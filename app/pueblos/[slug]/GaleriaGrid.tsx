@@ -23,13 +23,23 @@ export default function GaleriaGrid({ fotos, puebloNombre }: GaleriaGridProps) {
         {fotos.map((foto, index) => (
           <div
             key={foto.id}
+            role="button"
+            tabIndex={0}
+            className="touch-manipulation"
             style={{
               aspectRatio: '4 / 3',
               overflow: 'hidden',
               backgroundColor: '#f5f5f5',
               cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
             }}
             onClick={() => setLightboxImage({ url: foto.url, alt: `${puebloNombre} - Foto ${index + 1}` })}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setLightboxImage({ url: foto.url, alt: `${puebloNombre} - Foto ${index + 1}` });
+              }
+            }}
           >
             <img
               src={foto.url}
