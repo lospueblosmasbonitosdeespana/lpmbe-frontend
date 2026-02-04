@@ -208,3 +208,74 @@
 .ProseMirror blockquote {
   @apply border-l-4 border-gray-300 pl-4 italic my-4 text-gray-700;
 }
+
+/* SafeHtml Content Styles - mismos estilos que el editor */
+.safe-html-content {
+  @apply text-base leading-relaxed;
+}
+
+.safe-html-content h2 {
+  @apply text-3xl font-semibold mt-8 mb-4 text-gray-900;
+}
+
+.safe-html-content h3 {
+  @apply text-2xl font-semibold mt-6 mb-3 text-gray-900;
+}
+
+.safe-html-content h4 {
+  @apply text-xl font-semibold mt-4 mb-2 text-gray-900;
+}
+
+.safe-html-content p {
+  @apply mb-4 leading-relaxed text-gray-700;
+}
+
+.safe-html-content ul {
+  @apply pl-6 my-4 list-disc;
+}
+
+.safe-html-content ol {
+  @apply pl-6 my-4 list-decimal;
+}
+
+.safe-html-content li {
+  @apply my-2 text-gray-700;
+}
+
+.safe-html-content a {
+  @apply text-blue-600 hover:text-blue-800 underline;
+}
+
+.safe-html-content strong,
+.safe-html-content b {
+  @apply font-semibold text-gray-900;
+}
+
+.safe-html-content em,
+.safe-html-content i {
+  @apply italic;
+}
+
+.safe-html-content hr {
+  @apply my-8 border-gray-200;
+}
+
+.safe-html-content blockquote {
+  @apply border-l-4 border-gray-300 pl-4 italic my-4 text-gray-600;
+}
+
+.safe-html-content code {
+  @apply bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-sm font-mono;
+}
+
+.safe-html-content pre {
+  @apply bg-gray-900 text-gray-100 p-4 rounded-lg my-4 overflow-x-auto;
+}
+
+.safe-html-content img {
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  display: block;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+}
