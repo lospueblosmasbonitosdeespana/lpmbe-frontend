@@ -40,7 +40,7 @@ export default function RutasList() {
   }, []);
 
   async function eliminarRuta(id: number) {
-    if (!confirm('¿Eliminar esta ruta?')) return;
+    if (!confirm('¿Eliminar esta ruta permanentemente? Esta acción no se puede deshacer.')) return;
     
     setError(null);
     try {
