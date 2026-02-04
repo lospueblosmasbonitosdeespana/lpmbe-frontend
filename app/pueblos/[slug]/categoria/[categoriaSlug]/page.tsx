@@ -149,7 +149,7 @@ export default async function CategoriaPage({
                     {multiexFiltradas.map((m: any) => (
                       <Link
                         key={m.multiexperiencia?.id}
-                        href={`/experiencias/${m.multiexperiencia?.slug}/pueblo/${slug}`}
+                        href={`/pueblos/${slug}/experiencias/${m.multiexperiencia?.slug}`}
                         className="group flex gap-4 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/30"
                       >
                         {m.multiexperiencia?.foto && (
