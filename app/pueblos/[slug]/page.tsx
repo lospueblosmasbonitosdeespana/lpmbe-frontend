@@ -194,21 +194,23 @@ export default async function PuebloPage({
     fetch(`${API_BASE}/public/pueblos/${slug}/pages`, { cache: "no-store" }).catch(() => null),
   ]);
 
-  // Páginas temáticas del pueblo (contenidos temáticos)
+  // Páginas temáticas del pueblo (contenidos temáticos) - ahora son arrays por categoría
   let paginasTematicas: Array<{ id: number; titulo: string; coverUrl: string | null; category: string }> = [];
+  let paginasPorCategoria: Record<string, Array<{ id: number; titulo: string; coverUrl: string | null; category: string }>> = {};
   if (pagesRes?.ok) {
     try {
       const pagesData = await pagesRes.json();
+      // pagesData es un objeto { CATEGORIA: [array de páginas] }
+      paginasPorCategoria = pagesData;
       paginasTematicas = Object.entries(pagesData)
-        .filter(([, v]) => v && typeof v === "object" && "titulo" in v)
-        .map(([cat, p]) => {
-          const page = p as { id: number; titulo: string; coverUrl?: string | null };
-          return {
+        .flatMap(([cat, pages]) => {
+          if (!Array.isArray(pages)) return [];
+          return pages.map((page: any) => ({
             id: page.id,
             titulo: page.titulo,
             coverUrl: page.coverUrl ?? null,
             category: cat,
-          };
+          }));
         });
     } catch {
       // ignorar
@@ -688,42 +690,66 @@ export default async function PuebloPage({
             type: "nature",
             title: "Naturaleza",
             description: "Senderismo, paisajes y espacios naturales",
-            items: [...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "NATURALEZA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))), ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "NATURALEZA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/experiencias/${m.multiexperiencia.slug}/pueblo/${puebloSafe.slug}` }))],
+            items: [
+              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "NATURALEZA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
+              ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "NATURALEZA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
+              ...(paginasPorCategoria["NATURALEZA"] ?? []).map((p) => ({ title: p.titulo, href: `/pueblos/${puebloSafe.slug}/categoria/naturaleza` })),
+            ],
             href: `/pueblos/${puebloSafe.slug}/categoria/naturaleza`,
           },
           {
             type: "culture",
             title: "Cultura",
             description: "Monumentos, museos y patrimonio histórico",
-            items: [...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "CULTURA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))), ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "CULTURA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/experiencias/${m.multiexperiencia.slug}/pueblo/${puebloSafe.slug}` }))],
+            items: [
+              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "CULTURA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
+              ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "CULTURA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
+              ...(paginasPorCategoria["CULTURA"] ?? []).map((p) => ({ title: p.titulo, href: `/pueblos/${puebloSafe.slug}/categoria/cultura` })),
+            ],
             href: `/pueblos/${puebloSafe.slug}/categoria/cultura`,
           },
           {
             type: "family",
             title: "En familia",
             description: "Actividades para todas las edades",
-            items: [...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "EN_FAMILIA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))), ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "EN_FAMILIA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/experiencias/${m.multiexperiencia.slug}/pueblo/${puebloSafe.slug}` }))],
+            items: [
+              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "EN_FAMILIA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
+              ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "EN_FAMILIA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
+              ...(paginasPorCategoria["EN_FAMILIA"] ?? []).map((p) => ({ title: p.titulo, href: `/pueblos/${puebloSafe.slug}/categoria/en-familia` })),
+            ],
             href: `/pueblos/${puebloSafe.slug}/categoria/en-familia`,
           },
           {
             type: "heritage",
             title: "Patrimonio",
             description: "Bienes de interés cultural y arquitectura histórica",
-            items: [...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "PATRIMONIO").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))), ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "PATRIMONIO").map((m) => ({ title: m.multiexperiencia.titulo, href: `/experiencias/${m.multiexperiencia.slug}/pueblo/${puebloSafe.slug}` }))],
+            items: [
+              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "PATRIMONIO").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
+              ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "PATRIMONIO").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
+              ...(paginasPorCategoria["PATRIMONIO"] ?? []).map((p) => ({ title: p.titulo, href: `/pueblos/${puebloSafe.slug}/categoria/patrimonio` })),
+            ],
             href: `/pueblos/${puebloSafe.slug}/categoria/patrimonio`,
           },
           {
             type: "petfriendly",
             title: "Petfriendly",
             description: "Espacios y actividades para ir con tu mascota",
-            items: [...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "PETFRIENDLY").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))), ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "PETFRIENDLY").map((m) => ({ title: m.multiexperiencia.titulo, href: `/experiencias/${m.multiexperiencia.slug}/pueblo/${puebloSafe.slug}` }))],
+            items: [
+              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "PETFRIENDLY").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
+              ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "PETFRIENDLY").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
+              ...(paginasPorCategoria["PETFRIENDLY"] ?? []).map((p) => ({ title: p.titulo, href: `/pueblos/${puebloSafe.slug}/categoria/petfriendly` })),
+            ],
             href: `/pueblos/${puebloSafe.slug}/categoria/petfriendly`,
           },
           {
             type: "gastronomy",
             title: "Gastronomía",
             description: "Restaurantes, productos locales y tradición culinaria",
-            items: [...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "GASTRONOMIA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))), ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "GASTRONOMIA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/experiencias/${m.multiexperiencia.slug}/pueblo/${puebloSafe.slug}` }))],
+            items: [
+              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "GASTRONOMIA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
+              ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "GASTRONOMIA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
+              ...(paginasPorCategoria["GASTRONOMIA"] ?? []).map((p) => ({ title: p.titulo, href: `/pueblos/${puebloSafe.slug}/categoria/gastronomia` })),
+            ],
             href: `/pueblos/${puebloSafe.slug}/categoria/gastronomia`,
           },
         ]}

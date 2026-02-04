@@ -22,6 +22,7 @@ const CATEGORIAS_TEMATICAS = [
   { value: 'CULTURA', label: 'Cultura' },
   { value: 'EN_FAMILIA', label: 'En familia' },
   { value: 'PETFRIENDLY', label: 'Petfriendly' },
+  { value: 'PATRIMONIO', label: 'Patrimonio' },
 ];
 
 export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tipoInicial }: NuevoContenidoPuebloClientProps) {
