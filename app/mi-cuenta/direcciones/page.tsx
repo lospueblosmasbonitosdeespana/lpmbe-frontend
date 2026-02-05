@@ -102,10 +102,10 @@ export default function DireccionesPage() {
         nombre: formData.nombre,
         direccion: formData.direccion,
         ciudad: formData.ciudad,
-        provincia: formData.provincia || undefined,
+        provincia: formData.provincia || '',
         codigoPostal: formData.codigoPostal,
-        pais: formData.pais || 'ES',
-        telefono: formData.telefono || undefined,
+        pais: formData.pais || 'España',
+        telefono: formData.telefono || null,
         esPrincipal: formData.esPrincipal,
       };
 
