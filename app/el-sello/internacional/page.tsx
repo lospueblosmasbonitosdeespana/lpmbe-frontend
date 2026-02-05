@@ -39,7 +39,7 @@ const countries = [
   { flag: "🇮🇹", country: "Italia", associationName: "I Borghi più belli d'Italia", description: "Desde 2001. Una de las redes más extensas con cientos de pueblos certificados.", websiteUrl: "https://borghipiubelliditalia.it" },
   { flag: "🇯🇵", country: "Japón", associationName: "The Most Beautiful Villages in Japan", description: "Desde 2005. La extensión de la red en Asia.", websiteUrl: "https://utsukushii-mura.jp" },
   { flag: "🇪🇸", country: "España", associationName: "Los Pueblos Más Bonitos de España", description: "Formamos parte de la red desde nuestros inicios.", websiteUrl: "https://www.lospueblosmasbonitos.org" },
-  { flag: "🇨🇦", country: "Quebec (Canadá)", associationName: "Les Plus Beaux Villages du Québec", description: "Desde 1998. Los pueblos más bonitos de la provincia canadiense.", websiteUrl: "https://plusbeauxvillages.ca" },
+  { flag: "🇨🇦", country: "Canadá (Quebec)", associationName: "Les Plus Beaux Villages du Québec", description: "Desde 1998. Los pueblos más bonitos de la provincia canadiense.", websiteUrl: "https://www.plusbeauxvillages.ca" },
   { flag: "🇨🇭", country: "Suiza", associationName: "Les Plus Beaux Villages de Suisse", description: "Desde 2015. Municipios pintorescos de Suiza y Liechtenstein.", websiteUrl: "https://swissvillages.org/?lang=fr" },
 ];
 
