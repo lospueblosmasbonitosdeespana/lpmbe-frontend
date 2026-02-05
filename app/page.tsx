@@ -64,7 +64,7 @@ async function getNotifications(): Promise<NotificationItem[]> {
   try {
     const API_BASE = getApiUrl();
     const res = await fetch(
-      `${API_BASE}/public/notificaciones/feed?limit=10&tipos=NOTICIA,EVENTO,ALERTA,ALERTA_PUEBLO,SEMAFORO`,
+      `${API_BASE}/public/notificaciones/feed?limit=10&tipos=NOTICIA,EVENTO,ALERTA,SEMAFORO`,
       { cache: "no-store" }
     );
     if (!res.ok) return [];
