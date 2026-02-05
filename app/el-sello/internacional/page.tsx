@@ -8,7 +8,6 @@ import {
   Title,
   Body,
 } from "@/app/components/ui/typography";
-import SafeHtml from "@/app/_components/ui/SafeHtml";
 import type { SelloPage } from "@/lib/cms/sello";
 
 export const dynamic = "force-dynamic";
@@ -44,10 +43,12 @@ const countries = [
   { flag: "🇨🇭", country: "Suiza", associationName: "Les Plus Beaux Villages de Suisse", description: "Desde 2015. Municipios pintorescos de Suiza y Liechtenstein.", websiteUrl: "https://www.beauxvillages.ch" },
 ];
 
-const observers = [
+const observers: { flag: string; name: string; websiteUrl?: string }[] = [
   { flag: "🇱🇧", name: "Líbano" },
   { flag: "🇷🇺", name: "Rusia" },
   { flag: "🇨🇳", name: "China" },
+  { flag: "🇧🇦", name: "Bosnia-Herzegovina" },
+  { flag: "🇩🇪", name: "Alemania", websiteUrl: "https://www.schoenste-doerfer.de" },
 ];
 
 async function getPage(): Promise<SelloPage | null> {
@@ -67,7 +68,6 @@ export default async function InternacionalPage() {
   const page = await getPage();
   const titulo = page?.titulo ?? "Red Internacional";
   const subtitle = page?.subtitle;
-  const contenido = page?.contenido ?? "";
 
   return (
     <main>
@@ -89,35 +89,25 @@ export default async function InternacionalPage() {
             </div>
             <div>
               <Display className="mb-2 text-balance">{titulo}</Display>
-              <Lead className="text-muted-foreground">{subtitle ?? "Les Plus Beaux Villages"}</Lead>
+              <Lead className="text-muted-foreground">{subtitle ?? "Les plus Beaux Villages de la Terre"}</Lead>
             </div>
           </div>
         </Container>
       </Section>
 
-      {contenido ? (
-        <Section spacing="sm" background="default">
-          <Container>
-            <div className="max-w-4xl safe-html-content prose prose-lg max-w-none">
-              <SafeHtml html={contenido} />
-            </div>
-          </Container>
-        </Section>
-      ) : (
-        <Section spacing="sm" background="default">
-          <Container>
-            <div className="max-w-4xl">
-              <Headline className="mb-6 text-primary">Les Plus Beaux Villages de la Terre</Headline>
-              <Body size="lg" className="mb-6 text-muted-foreground">
-                Formamos parte de la red internacional <strong className="text-foreground">Les Plus Beaux Villages de la Terre</strong>, que agrupa a las asociaciones nacionales de los pueblos más bonitos del mundo y promueve el intercambio de experiencias, la calidad turística y la preservación del patrimonio.
-              </Body>
-              <Body size="lg" className="text-muted-foreground">
-                Actualmente, la red cuenta con <strong className="text-foreground">{countries.length} países miembros oficiales</strong>:
-              </Body>
-            </div>
-          </Container>
-        </Section>
-      )}
+      <Section spacing="sm" background="default">
+        <Container>
+          <div className="max-w-4xl">
+            <Headline className="mb-6 text-primary">Les Plus Beaux Villages de la Terre</Headline>
+            <Body size="lg" className="mb-6 text-muted-foreground">
+              Formamos parte de la red internacional <strong className="text-foreground">Les Plus Beaux Villages de la Terre</strong>, que agrupa a las asociaciones nacionales de los pueblos más bonitos del mundo y promueve el intercambio de experiencias, la calidad turística y la preservación del patrimonio.
+            </Body>
+            <Body size="lg" className="text-muted-foreground">
+              Actualmente, la red cuenta con <strong className="text-foreground">{countries.length} países miembros oficiales</strong>:
+            </Body>
+          </div>
+        </Container>
+      </Section>
 
       <Section spacing="md" background="default">
         <Container>
@@ -154,6 +144,12 @@ export default async function InternacionalPage() {
                 <li key={i} className="flex items-center gap-3">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-card text-lg shadow-sm">{o.flag}</span>
                   <span className="font-medium">{o.name}</span>
+                  {o.websiteUrl && (
+                    <a href={o.websiteUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80">
+                      Web oficial
+                      <ExternalLinkIcon className="h-3.5 w-3.5" />
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
