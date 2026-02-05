@@ -1,12 +1,22 @@
-import SelloCmsPage from '@/app/_components/ui/SelloCmsPage';
+import Link from 'next/link';
+import { Section } from '@/app/components/ui/section';
+import { Container } from '@/app/components/ui/container';
+import {
+  Display,
+  Lead,
+  Headline,
+  Body,
+} from '@/app/components/ui/typography';
 import type { SelloPage } from '@/lib/cms/sello';
 
 export const dynamic = 'force-dynamic';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
+
 async function getPage(): Promise<SelloPage | null> {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/public/cms/sello/SELLO_PROCESO`,
+      `${API_BASE}/public/cms/sello/SELLO_PROCESO`,
       { cache: 'no-store' }
     );
     if (!res.ok) return null;
@@ -16,25 +26,223 @@ async function getPage(): Promise<SelloPage | null> {
   }
 }
 
+function StageCard({
+  number,
+  title,
+  children,
+}: {
+  number: number;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="group relative">
+      <div className="absolute left-8 top-20 hidden h-full w-px bg-gradient-to-b from-primary/30 to-transparent lg:block" />
+
+      <div className="relative rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md sm:p-8">
+        <div className="absolute -left-4 -top-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground shadow-lg sm:h-14 sm:w-14 sm:text-xl">
+          {number}
+        </div>
+
+        <div className="ml-6 sm:ml-8">
+          <Headline as="h3" className="mb-4 text-xl sm:text-2xl">
+            {title}
+          </Headline>
+          <div className="prose prose-sm max-w-none text-muted-foreground">
+            {children}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default async function ProcesoPage() {
   const page = await getPage();
-
   const titulo = page?.titulo ?? 'Proceso de selección';
-  const subtitle = page?.subtitle;
-  const heroUrl = page?.heroUrl;
-  const contenido = page?.contenido ?? '';
+  const subtitle = page?.subtitle ?? 'Etapas y evaluación';
+  const leadText =
+    'El camino que debe recorrer un municipio para obtener el Sello de Los Pueblos más Bonitos de España consta de tres etapas fundamentales. El objetivo es superar la Carta de Calidad que rige la asociación.';
 
   return (
-    <SelloCmsPage
-      titulo={titulo}
-      subtitle={subtitle}
-      heroUrl={heroUrl}
-      contenido={contenido}
-      breadcrumbs={[
-        { label: 'El sello', href: '/el-sello' },
-        { label: '¿Cómo se obtiene?', href: '/el-sello/como-se-obtiene' },
-        { label: 'Proceso' },
-      ]}
-    />
+    <main>
+      {/* Header */}
+      <Section spacing="md" background="default">
+        <Container>
+          <nav className="mb-6">
+            <ol className="flex flex-wrap items-center gap-2 text-sm">
+              <li>
+                <Link
+                  href="/"
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Inicio
+                </Link>
+              </li>
+              <li>
+                <span className="text-muted-foreground/50">/</span>
+              </li>
+              <li>
+                <Link
+                  href="/el-sello"
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  El sello
+                </Link>
+              </li>
+              <li>
+                <span className="text-muted-foreground/50">/</span>
+              </li>
+              <li>
+                <Link
+                  href="/el-sello/como-se-obtiene"
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  ¿Cómo se obtiene?
+                </Link>
+              </li>
+              <li>
+                <span className="text-muted-foreground/50">/</span>
+              </li>
+              <li>
+                <span className="font-medium text-foreground">Proceso</span>
+              </li>
+            </ol>
+          </nav>
+
+          <div className="max-w-3xl">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="h-12 w-1.5 rounded-full bg-primary" />
+              <span className="text-sm font-medium uppercase tracking-widest text-primary">
+                {subtitle}
+              </span>
+            </div>
+
+            <Display className="mb-2 text-balance">{titulo}</Display>
+
+            <Lead className="mb-8 max-w-3xl text-muted-foreground">
+              {leadText}
+            </Lead>
+          </div>
+        </Container>
+      </Section>
+
+      {/* Etapas */}
+      <Section spacing="md" background="muted">
+        <Container size="md">
+          <div className="space-y-12 lg:space-y-16">
+            <StageCard number={1} title="Petición formal">
+              <Body className="text-muted-foreground">
+                El pueblo manifiesta su voluntad de entrar en la asociación
+                mediante una{' '}
+                <strong className="text-foreground">
+                  petición formal aprobada en el pleno municipal
+                </strong>
+                . Es el primer paso obligatorio: el ayuntamiento debe solicitar
+                oficialmente su adhesión.
+              </Body>
+            </StageCard>
+
+            <StageCard number={2} title="Evaluación in situ">
+              <Body className="mb-4 text-muted-foreground">
+                Una vez la asociación recibe la petición formal,{' '}
+                <strong className="text-foreground">
+                  se inicia el proceso de evaluación del pueblo
+                </strong>
+                . Para ello:
+              </Body>
+
+              <ul className="mb-4 space-y-2">
+                <li className="flex items-start gap-3">
+                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                  <span>
+                    Se realiza una{' '}
+                    <strong className="text-foreground">visita física</strong> al
+                    municipio
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                  <span>
+                    Se elabora un{' '}
+                    <strong className="text-foreground">
+                      reportaje videofotográfico
+                    </strong>{' '}
+                    y con drones
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                  <span>
+                    Se mantienen{' '}
+                    <strong className="text-foreground">
+                      entrevistas con el equipo de gobierno
+                    </strong>{' '}
+                    (alcalde y concejales)
+                  </span>
+                </li>
+              </ul>
+
+              <Body className="text-muted-foreground">
+                Con toda esta información se prepara el expediente para la
+                siguiente fase.
+              </Body>
+            </StageCard>
+
+            <StageCard number={3} title="Comisión de Calidad">
+              <Body className="mb-4 text-muted-foreground">
+                En la{' '}
+                <strong className="text-foreground">
+                  reunión de la Comisión de Calidad
+                </strong>
+                , que tiene lugar a{' '}
+                <strong className="text-foreground">finales de año</strong>, se
+                decide qué pueblos pueden pasar el corte y se aprueba la
+                auditoría final.
+              </Body>
+
+              <Body className="text-muted-foreground">
+                La{' '}
+                <strong className="text-foreground">Comisión de Calidad</strong>{' '}
+                está formada por{' '}
+                <strong className="text-foreground">siete personas</strong> y es
+                el órgano que determina, tras analizar todo el expediente, si el
+                pueblo cumple los estándares exigidos por la Carta de Calidad.
+              </Body>
+            </StageCard>
+          </div>
+        </Container>
+      </Section>
+
+      {/* CTA */}
+      <Section spacing="md" background="default">
+        <Container size="sm">
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-8 text-center">
+            <Headline as="h3" className="mb-3">
+              ¿Tu pueblo cumple los requisitos?
+            </Headline>
+            <Body className="mb-6 text-muted-foreground">
+              Consulta los criterios de evaluación y descubre si tu municipio
+              puede formar parte de la red.
+            </Body>
+            <Link
+              href="/el-sello/criterios"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              Ver criterios de evaluación
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+        </Container>
+      </Section>
+    </main>
   );
 }
