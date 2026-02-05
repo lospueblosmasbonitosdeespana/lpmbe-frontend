@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { ImageIcon, Users, FileText } from 'lucide-react';
 import { SelloEditorForm } from './SelloEditorForm';
 import type { SelloPage, SelloPageKey } from '@/lib/cms/sello';
 import { SELLO_PAGE_LABELS } from '@/lib/cms/sello';
@@ -155,14 +156,17 @@ export default function ElSelloCmsPage() {
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <h1 className="text-3xl font-semibold">El Sello (CMS)</h1>
         <div className="flex gap-2">
-          <Link href="/gestion/asociacion/el-sello/imagenes" className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-            🖼️ Imágenes del Sello
+          <Link href="/gestion/asociacion/el-sello/imagenes" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <ImageIcon className="h-4 w-4" />
+            Imágenes del Sello
           </Link>
-          <Link href="/gestion/asociacion/el-sello/socios" className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-            🤝 Socios y colaboradores
+          <Link href="/gestion/asociacion/el-sello/socios" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <Users className="h-4 w-4" />
+            Socios y colaboradores
           </Link>
-          <Link href="/gestion/asociacion/el-sello/documentos" className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-            📄 Gestionar Documentos (PDFs)
+          <Link href="/gestion/asociacion/el-sello/documentos" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <FileText className="h-4 w-4" />
+            Gestionar Documentos (PDFs)
           </Link>
         </div>
       </div>

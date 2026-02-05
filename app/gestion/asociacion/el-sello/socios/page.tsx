@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { ImageIcon, Users, FileText } from 'lucide-react';
 import TipTapEditor from '@/app/_components/editor/TipTapEditor';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 
@@ -249,17 +250,33 @@ export default function SociosAdminPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
-      <div className="mb-8">
-        <Link
-          href="/gestion/asociacion/el-sello"
-          className="mb-2 block text-sm text-gray-600 hover:underline"
-        >
-          ← Volver a El Sello (CMS)
-        </Link>
-        <h1 className="text-2xl font-semibold">Socios y colaboradores</h1>
-        <p className="mt-1 text-sm text-gray-600">
-          Gestiona las instituciones y colaboradores. Añade logos, descripciones y páginas dedicadas con contenido, fotos y editor HTML/TipTap.
-        </p>
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <Link
+            href="/gestion/asociacion/el-sello"
+            className="mb-2 block text-sm text-gray-600 hover:underline"
+          >
+            ← Volver a El Sello (CMS)
+          </Link>
+          <h1 className="text-2xl font-semibold">Socios y colaboradores</h1>
+          <p className="mt-1 text-sm text-gray-600">
+            Gestiona las instituciones y colaboradores. Añade logos, descripciones y páginas dedicadas con contenido, fotos y editor HTML/TipTap.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/gestion/asociacion/el-sello/imagenes" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <ImageIcon className="h-4 w-4" />
+            Imágenes del Sello
+          </Link>
+          <span className="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white">
+            <Users className="h-4 w-4" />
+            Socios y colaboradores
+          </span>
+          <Link href="/gestion/asociacion/el-sello/documentos" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <FileText className="h-4 w-4" />
+            Gestionar Documentos (PDFs)
+          </Link>
+        </div>
       </div>
 
       <div className="mb-6 flex justify-end">

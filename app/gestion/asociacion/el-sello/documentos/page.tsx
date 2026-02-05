@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { ImageIcon, Users, FileText } from 'lucide-react';
 import type { CmsDocumento, CmsDocType } from '@/lib/cms/sello';
 import { DOC_TYPE_LABELS } from '@/lib/cms/sello';
 
@@ -156,7 +158,23 @@ export default function DocumentosCmsPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
-      <h1 className="text-3xl font-semibold mb-8">Documentos (PDFs)</h1>
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-3xl font-semibold">Documentos (PDFs)</h1>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/gestion/asociacion/el-sello/imagenes" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <ImageIcon className="h-4 w-4" />
+            Imágenes del Sello
+          </Link>
+          <Link href="/gestion/asociacion/el-sello/socios" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <Users className="h-4 w-4" />
+            Socios y colaboradores
+          </Link>
+          <span className="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white">
+            <FileText className="h-4 w-4" />
+            Gestionar Documentos (PDFs)
+          </span>
+        </div>
+      </div>
 
       <div className="mb-6 flex items-center justify-between">
         <div>
@@ -246,9 +264,9 @@ export default function DocumentosCmsPage() {
                   href={formData.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-600 hover:underline"
+                  className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
                 >
-                  📄 Ver PDF actual
+                  <FileText className="h-4 w-4 shrink-0" /> Ver PDF actual
                 </a>
                 <button
                   type="button"
