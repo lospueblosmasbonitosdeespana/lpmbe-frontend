@@ -193,13 +193,13 @@ export async function Footer() {
               Contacto
             </h4>
             <ul className="space-y-3">
-              <li className="text-sm text-white/70">
-                <a
-                  href="mailto:info@lospueblosmasbonitosdeespana.org"
-                  className="hover:text-white"
+              <li>
+                <Link
+                  href="/contacto"
+                  className="text-sm text-white/70 transition-colors hover:text-white"
                 >
-                  info@lospueblosmasbonitosdeespana.org
-                </a>
+                  Página de contacto
+                </Link>
               </li>
             </ul>
 
@@ -241,6 +241,12 @@ export async function Footer() {
                 className="text-sm text-white/60 transition-colors hover:text-white"
               >
                 Aviso Legal
+              </Link>
+              <Link
+                href="/cookies"
+                className="text-sm text-white/60 transition-colors hover:text-white"
+              >
+                Cookies
               </Link>
             </div>
           </div>

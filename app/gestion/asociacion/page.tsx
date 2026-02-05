@@ -12,6 +12,7 @@ import {
   IconAjustes,
   IconSello,
   IconDocumentos,
+  IconContacto,
 } from '../_components/GestionIcons';
 
 const ACCESOS = [
@@ -80,6 +81,12 @@ const ACCESOS = [
     title: 'Documentos',
     description: 'PDFs (Estatutos, Carta de Calidad)',
     icon: <IconDocumentos />,
+  },
+  {
+    href: '/gestion/asociacion/contacto-privacidad',
+    title: 'Contacto, privacidad y otros',
+    description: 'Datos de contacto y páginas estáticas (privacidad, aviso legal, cookies)',
+    icon: <IconContacto />,
   },
 ];
 

@@ -14,6 +14,7 @@ type Notificacion = {
   coverUrl?: string | null;
   createdAt?: string;
   updatedAt?: string;
+  pueblo?: { slug: string } | null;
 };
 
 function getEditHref(n: Notificacion): string | null {
@@ -24,6 +25,8 @@ function getEditHref(n: Notificacion): string | null {
       return `/gestion/asociacion/eventos/${n.id}/editar`;
     case 'ALERTA':
       return `/gestion/asociacion/alertas/${n.id}/editar`;
+    case 'SEMAFORO':
+      return n.pueblo?.slug ? `/gestion/pueblos/${n.pueblo.slug}/semaforo` : null;
     default:
       return null;
   }
