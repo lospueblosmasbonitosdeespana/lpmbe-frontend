@@ -44,7 +44,11 @@ export default async function QuienesSomosPage() {
   const page = await getPageContent();
   const titulo = page?.titulo ?? 'Quiénes somos';
   const contenidoCms = page?.contenido?.trim();
-  const contenido = contenidoCms || CONTENIDO_BREVE;
+  // Usar nuestro contenido si el CMS está vacío o es solo un placeholder (muy breve)
+  const contenido =
+    contenidoCms && contenidoCms.length > 200 && !contenidoCms.startsWith('# ')
+      ? contenidoCms
+      : CONTENIDO_BREVE;
 
   return (
     <main>
