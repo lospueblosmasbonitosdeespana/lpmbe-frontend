@@ -1,33 +1,18 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import SafeHtml from '@/app/_components/ui/SafeHtml';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import {
   Display,
+  Lead,
   Headline,
   Body,
   Title,
 } from '@/app/components/ui/typography';
-import type { SelloPage } from '@/lib/cms/sello';
-import { CONTENIDO_SOCIOS } from '@/lib/cms/sello-content';
 
 export const dynamic = 'force-dynamic';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
-
-async function getPage(): Promise<SelloPage | null> {
-  try {
-    const res = await fetch(
-      `${API_BASE}/public/cms/sello/SELLO_SOCIOS`,
-      { cache: 'no-store' }
-    );
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  }
-}
 
 type SelloSocio = {
   id: number;
@@ -128,12 +113,7 @@ function PartnerCard({
 }
 
 export default async function SociosPage() {
-  const [page, socios] = await Promise.all([getPage(), getSocios()]);
-
-  const titulo = page?.titulo ?? 'Socios';
-  const subtitle = page?.subtitle ?? 'Nuestros miembros';
-  const contenido = page?.contenido?.trim() || CONTENIDO_SOCIOS;
-
+  const socios = await getSocios();
   const countInstitucionales = socios.filter(
     (s) => s.tipo === 'INSTITUCIONAL'
   ).length;
@@ -180,15 +160,17 @@ export default async function SociosPage() {
             <div className="mb-4 flex items-center gap-3">
               <div className="h-12 w-1.5 rounded-full bg-primary" />
               <span className="text-sm font-medium uppercase tracking-widest text-primary">
-                {subtitle}
+                Nuestros miembros
               </span>
             </div>
 
-            <Display className="mb-6">{titulo}</Display>
+            <Display className="mb-6">Socios</Display>
 
-            <div className="prose prose-lg max-w-none text-muted-foreground [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline">
-              <SafeHtml html={contenido} />
-            </div>
+            <Lead className="text-muted-foreground">
+              Conoce a las instituciones, colaboradores y entidades que forman
+              parte de nuestro proyecto y contribuyen a la promoción del
+              patrimonio rural español.
+            </Lead>
           </div>
         </Container>
       </Section>
