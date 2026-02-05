@@ -75,11 +75,10 @@ export function QueHacerSection({
               </Link>
             )}
           </div>
-          {hasMultiex && (
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {multiexperiencias.map(({ multiexperiencia: mx }) => (
+            {hasMultiex && multiexperiencias.map(({ multiexperiencia: mx }) => (
               <Link
-                key={mx.id}
+                key={`mx-${mx.id}`}
                 href={`/pueblos/${puebloSlug}/experiencias/${mx.slug}`}
                 className="group block"
               >
@@ -110,8 +109,41 @@ export function QueHacerSection({
                 </div>
               </Link>
             ))}
+            {hasRutas && rutas.map(({ ruta }) => (
+              <Link
+                key={`ruta-${ruta.id}`}
+                href={`/rutas/${ruta.slug}`}
+                className="group block"
+              >
+                {ruta.foto_portada && (
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-muted">
+                    <Image
+                      src={ruta.foto_portada}
+                      alt={ruta.titulo}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                )}
+                {!ruta.foto_portada && (
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-muted flex items-center justify-center">
+                    <span className="text-4xl text-muted-foreground/50">🗺️</span>
+                  </div>
+                )}
+                <div className="mt-3">
+                  <span className="mb-0.5 block text-xs uppercase tracking-wider text-muted-foreground">
+                    RUTA
+                  </span>
+                  <h3 className="font-serif text-lg leading-snug transition-colors group-hover:text-primary">
+                    {ruta.titulo} que pasa por {puebloNombre}
+                  </h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                    Descubre esta ruta y sus pueblos
+                  </p>
+                </div>
+              </Link>
+            ))}
           </div>
-          )}
         </div>
       </Container>
     </Section>
