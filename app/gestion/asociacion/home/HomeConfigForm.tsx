@@ -70,6 +70,21 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
     });
   };
 
+  // Guardar solo themes (tras subir imagen) - evita perder fotos si el usuario no pulsa Guardar
+  async function saveThemesImmediately(cfg: HomeConfig) {
+    try {
+      const resMe = await fetch("/api/auth/me");
+      if (!resMe.ok) return;
+      const meData = await resMe.json();
+      const token = meData.token;
+      await updateHomeConfig(token, { themes: cfg.themes });
+      setMessage({ type: "success", text: "Imagen guardada" });
+      setTimeout(() => setMessage(null), 2000);
+    } catch {
+      setMessage({ type: "error", text: "Error guardando. Pulsa 'Guardar configuración'." });
+    }
+  }
+
   // Guardar configuración
   async function handleSave() {
     setSaving(true);
@@ -292,7 +307,10 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                             const url = await uploadImage(file);
                             const newThemes = [...config.themes];
                             newThemes[idx] = { ...newThemes[idx], image: url };
-                            setConfig({ ...config, themes: newThemes });
+                            const newConfig = { ...config, themes: newThemes };
+                            setConfig(newConfig);
+                            // Guardar automáticamente tras subir (evita perder la foto si no se pulsa Guardar)
+                            await saveThemesImmediately(newConfig);
                           } catch (err) {
                             setMessage({ type: "error", text: (err as Error)?.message ?? "Error subiendo imagen" });
                           }
