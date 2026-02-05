@@ -73,6 +73,8 @@ async function getAdminHomeConfig(token: string): Promise<HomeConfig> {
       actualidad: {
         limit: data.actualidad?.limit ?? 6,
       },
+      mapPreviewImage: typeof data.mapPreviewImage === 'string' ? data.mapPreviewImage : '',
+      shopBannerImage: typeof data.shopBannerImage === 'string' ? data.shopBannerImage : '',
     };
   } catch (err) {
     console.error('[ADMIN HOME] Error cargando config:', err);
@@ -127,6 +129,8 @@ function getFallbackConfig(): HomeConfig {
     actualidad: {
       limit: 6,
     },
+    mapPreviewImage: '',
+    shopBannerImage: '',
   };
 }
 

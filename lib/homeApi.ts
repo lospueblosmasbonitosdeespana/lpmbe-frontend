@@ -31,6 +31,8 @@ export type HomeConfig = {
   actualidad: {
     limit: number;
   };
+  mapPreviewImage?: string;
+  shopBannerImage?: string;
 };
 
 /**
@@ -98,6 +100,8 @@ export async function getHomeConfig(): Promise<HomeConfig> {
       actualidad: {
         limit: data.actualidad?.limit ?? 6,
       },
+      mapPreviewImage: typeof data.mapPreviewImage === 'string' ? data.mapPreviewImage : undefined,
+      shopBannerImage: typeof data.shopBannerImage === 'string' ? data.shopBannerImage : undefined,
     };
   } catch (err) {
     console.error('[HOME] Error cargando config desde backend:', err);

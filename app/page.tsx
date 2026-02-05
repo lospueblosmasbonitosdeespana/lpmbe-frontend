@@ -183,6 +183,8 @@ export default async function HomePage() {
         routes={routes}
         villages={villages}
         news={news}
+        mapPreviewImage={config.mapPreviewImage}
+        shopBannerImage={config.shopBannerImage}
       />
     </main>
   );

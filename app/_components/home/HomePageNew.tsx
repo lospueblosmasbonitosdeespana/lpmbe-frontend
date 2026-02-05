@@ -654,7 +654,7 @@ function MapaSection({ mapPreviewImage }: { mapPreviewImage?: string }) {
         <div className="relative rounded-2xl overflow-hidden">
           <div className="relative h-[280px] md:h-[320px]">
             <Image
-              src={mapPreviewImage || "/images/map-preview.jpg"}
+              src={mapPreviewImage || "/mapa_espana_pueblos.png"}
               alt="Mapa interactivo de España"
               fill
               className="object-cover"
