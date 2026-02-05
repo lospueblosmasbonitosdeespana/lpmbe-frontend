@@ -1,14 +1,68 @@
-import Link from 'next/link';
-import SelloCmsPage from '@/app/_components/ui/SelloCmsPage';
-import type { SelloPage } from '@/lib/cms/sello';
+import Link from "next/link";
+import { Section } from "@/app/components/ui/section";
+import { Container } from "@/app/components/ui/container";
+import { Display, Lead, Title, Body } from "@/app/components/ui/typography";
+import SafeHtml from "@/app/_components/ui/SafeHtml";
+import type { SelloPage } from "@/lib/cms/sello";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
+
+/* ===== ICONS ===== */
+function ProcessIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2v4" />
+      <path d="M12 18v4" />
+      <path d="M4.93 4.93l2.83 2.83" />
+      <path d="M16.24 16.24l2.83 2.83" />
+      <path d="M2 12h4" />
+      <path d="M18 12h4" />
+      <path d="M4.93 19.07l2.83-2.83" />
+      <path d="M16.24 7.76l2.83-2.83" />
+    </svg>
+  );
+}
+
+function CriteriaIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 11l3 3L22 4" />
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+    </svg>
+  );
+}
+
+function ArrowIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" />
+      <path d="m12 5 7 7-7 7" />
+    </svg>
+  );
+}
+
+const cards = [
+  {
+    title: "Proceso de selección",
+    description: "Conoce las etapas que debe superar un municipio desde la solicitud inicial hasta la obtención definitiva del sello de calidad.",
+    linkText: "Ver proceso",
+    linkHref: "/el-sello/proceso",
+    icon: ProcessIcon,
+  },
+  {
+    title: "Criterios de evaluación",
+    description: "Descubre los estándares de calidad en patrimonio, urbanismo, paisaje y gestión que deben cumplir los pueblos candidatos.",
+    linkText: "Ver criterios",
+    linkHref: "/el-sello/criterios",
+    icon: CriteriaIcon,
+  },
+];
 
 async function getPage(): Promise<SelloPage | null> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/public/cms/sello/SELLO_COMO_SE_OBTIENE`,
-      { cache: 'no-store' }
+      { cache: "no-store" }
     );
     if (!res.ok) return null;
     return await res.json();
@@ -19,56 +73,68 @@ async function getPage(): Promise<SelloPage | null> {
 
 export default async function ComoSeObtienePage() {
   const page = await getPage();
-
-  const titulo = page?.titulo ?? '¿Cómo se obtiene el sello?';
+  const titulo = page?.titulo ?? "¿Cómo se obtiene el Sello?";
   const subtitle = page?.subtitle;
-  const heroUrl = page?.heroUrl;
-  const contenido = page?.contenido ?? '';
+  const contenido = page?.contenido ?? "";
 
   return (
-    <SelloCmsPage
-      titulo={titulo}
-      subtitle={subtitle}
-      heroUrl={heroUrl}
-      contenido={contenido}
-      breadcrumbs={[
-        { label: 'El sello', href: '/el-sello' },
-        { label: '¿Cómo se obtiene el sello?' },
-      ]}
-    >
-      <div className="grid gap-8 md:grid-cols-2">
-        <Link
-          href="/el-sello/proceso"
-          className="group block rounded-lg border border-gray-200 bg-white p-8 transition-all hover:border-gray-300 hover:shadow-lg"
-        >
-          <h2 className="text-2xl font-semibold mb-3 group-hover:text-blue-600">
-            Proceso de selección
-          </h2>
-          <p className="text-gray-600 leading-relaxed mb-4">
-            Conoce las etapas que debe superar un municipio desde la solicitud inicial 
-            hasta la obtención definitiva del sello de calidad.
-          </p>
-          <span className="text-sm font-medium text-blue-600 group-hover:underline">
-            Ver proceso →
-          </span>
-        </Link>
+    <main>
+      <Section spacing="md" background="default">
+        <Container>
+          <nav className="mb-8">
+            <ol className="flex flex-wrap items-center gap-2 text-sm">
+              <li><Link href="/" className="text-muted-foreground transition-colors hover:text-primary">Inicio</Link></li>
+              <li><span className="text-muted-foreground/50">/</span></li>
+              <li><Link href="/el-sello" className="text-muted-foreground transition-colors hover:text-primary">El sello</Link></li>
+              <li><span className="text-muted-foreground/50">/</span></li>
+              <li><span className="text-foreground">¿Cómo se obtiene el sello?</span></li>
+            </ol>
+          </nav>
 
-        <Link
-          href="/el-sello/criterios"
-          className="group block rounded-lg border border-gray-200 bg-white p-8 transition-all hover:border-gray-300 hover:shadow-lg"
-        >
-          <h2 className="text-2xl font-semibold mb-3 group-hover:text-blue-600">
-            Criterios de evaluación
-          </h2>
-          <p className="text-gray-600 leading-relaxed mb-4">
-            Descubre los estándares de calidad en patrimonio, urbanismo, paisaje y gestión 
-            que deben cumplir los pueblos candidatos.
-          </p>
-          <span className="text-sm font-medium text-blue-600 group-hover:underline">
-            Ver criterios →
-          </span>
-        </Link>
-      </div>
-    </SelloCmsPage>
+          <div className="relative">
+            <div className="absolute -left-4 top-0 h-full w-1 rounded-full bg-gradient-to-b from-primary to-primary/20" />
+            <Display className="mb-4 text-balance">{titulo}</Display>
+          </div>
+
+          <Lead className="max-w-2xl text-muted-foreground">{subtitle ?? "Proceso de certificación"}</Lead>
+        </Container>
+      </Section>
+
+      {contenido && (
+        <Section spacing="sm" background="default">
+          <Container>
+            <div className="max-w-4xl safe-html-content prose prose-lg max-w-none">
+              <SafeHtml html={contenido} />
+            </div>
+          </Container>
+        </Section>
+      )}
+
+      <Section spacing="lg" background="default">
+        <Container>
+          <div className="grid gap-6 md:grid-cols-2">
+            {cards.map((card, index) => {
+              const IconComponent = card.icon;
+              return (
+              <Link key={index} href={card.linkHref} className="group block">
+                <article className="relative h-full overflow-hidden rounded-xl border border-border bg-card p-8 transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
+                  <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
+                    <IconComponent className="h-7 w-7" />
+                  </div>
+                  <Title as="h3" className="mb-3 text-xl">{card.title}</Title>
+                  <Body className="mb-6 text-muted-foreground">{card.description}</Body>
+                  <span className="inline-flex items-center gap-2 font-medium text-primary transition-colors group-hover:text-primary/80">
+                    {card.linkText}
+                    <ArrowIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </span>
+                </article>
+              </Link>
+            );
+            })}
+          </div>
+        </Container>
+      </Section>
+    </main>
   );
 }
