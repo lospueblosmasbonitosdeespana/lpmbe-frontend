@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { getComunidadFlagSrc } from '@/lib/flags';
+import { Title, Caption } from '@/app/components/ui/typography';
 
 type Pueblo = {
   id: number;
@@ -61,10 +62,10 @@ export default function PueblosPorVisitar({
   };
 
   return (
-    <div className="mt-8">
-      <h2 className="text-xl font-semibold mb-4">
+    <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+      <Title size="lg" className="mb-4">
         Pueblos por visitar ({pueblosPorVisitar.length})
-      </h2>
+      </Title>
 
       {/* Buscador */}
       <div className="mb-4">
@@ -73,89 +74,89 @@ export default function PueblosPorVisitar({
           placeholder="Buscar por nombre, provincia o comunidad..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
         />
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <div className="mb-4 rounded-lg border border-destructive/50 bg-destructive/5 p-3 text-sm text-destructive">
           {error}
         </div>
       )}
 
-      {/* Lista en 2 columnas */}
-      <div className="max-h-[500px] overflow-y-auto border border-gray-200 rounded-lg bg-white">
+      {/* Lista */}
+      <div className="max-h-[500px] overflow-y-auto rounded-lg border border-border bg-muted/20">
         {pueblosFiltrados.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
-            {busqueda
-              ? 'No se encontraron pueblos con ese criterio'
-              : 'Has visitado todos los pueblos'}
+          <div className="p-8 text-center">
+            <Caption>
+              {busqueda
+                ? 'No se encontraron pueblos con ese criterio'
+                : 'Has visitado todos los pueblos'}
+            </Caption>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-px bg-gray-200">
+          <div className="grid grid-cols-1 gap-px bg-border sm:grid-cols-2 lg:grid-cols-4">
             {pueblosFiltrados.map((pueblo) => {
               const flagSrc = getComunidadFlagSrc(pueblo.comunidad);
               return (
-              <div
-                key={pueblo.id}
-                className="flex items-center justify-between gap-3 p-3 bg-white hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 truncate text-sm">
-                    {pueblo.nombre}
-                  </p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-xs text-gray-500 truncate">
-                      {pueblo.provincia}
-                    </p>
-                    {flagSrc && (
-                      <span className="flex-shrink-0" title={pueblo.comunidad ?? undefined}>
-                        <Image
-                          src={flagSrc}
-                          alt={`Bandera de ${pueblo.comunidad ?? ''}`}
-                          width={24}
-                          height={18}
-                          className="rounded-sm object-cover border border-gray-200"
-                        />
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleMarcar(pueblo.id)}
-                  disabled={loadingId === pueblo.id}
-                  className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                <div
+                  key={pueblo.id}
+                  className="flex items-center justify-between gap-3 bg-card p-3 transition-colors hover:bg-muted/30"
                 >
-                  {loadingId === pueblo.id ? (
-                    <span className="flex items-center gap-1.5">
-                      <svg
-                        className="animate-spin h-3 w-3"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      ...
-                    </span>
-                  ) : (
-                    'Marcar'
-                  )}
-                </button>
-              </div>
-            );
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">
+                      {pueblo.nombre}
+                    </p>
+                    <div className="mt-0.5 flex items-center gap-2">
+                      <Caption className="truncate">{pueblo.provincia}</Caption>
+                      {flagSrc && (
+                        <span className="shrink-0" title={pueblo.comunidad ?? undefined}>
+                          <Image
+                            src={flagSrc}
+                            alt={`Bandera de ${pueblo.comunidad ?? ''}`}
+                            width={24}
+                            height={18}
+                            className="rounded-sm border border-border object-cover"
+                          />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleMarcar(pueblo.id)}
+                    disabled={loadingId === pueblo.id}
+                    className="shrink-0 rounded-lg border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {loadingId === pueblo.id ? (
+                      <span className="flex items-center gap-1.5">
+                        <svg
+                          className="h-3 w-3 animate-spin"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                        ...
+                      </span>
+                    ) : (
+                      'Marcar'
+                    )}
+                  </button>
+                </div>
+              );
             })}
           </div>
         )}

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import RatingSelector from './RatingSelector';
 import { getComunidadFlagSrc } from '@/lib/flags';
+import { Caption } from '@/app/components/ui/typography';
 
 type PuebloVisitado = {
   puebloId: number;
@@ -40,35 +41,35 @@ export default function PuebloVisitadoItem({ item, onRatingSaved }: Props) {
   const flagSrc = getComunidadFlagSrc(item.pueblo.comunidad);
 
   return (
-    <li className="border-b border-gray-200 pb-3">
-      <div>
-        <Link
-          href={`/pueblos/${item.pueblo.slug}`}
-          className="text-base font-semibold hover:underline"
-        >
-          {item.pueblo.nombre}
-        </Link>
-        <div className="flex items-center gap-2 mt-0.5">
-          <p className="text-xs text-gray-600">
-            {item.pueblo.provincia} / {item.pueblo.comunidad}
-          </p>
+    <li className="py-4 first:pt-0">
+      <div className="space-y-2">
+        <div className="flex items-start gap-2">
+          <Link
+            href={`/pueblos/${item.pueblo.slug}`}
+            className="font-medium hover:text-primary hover:underline"
+          >
+            {item.pueblo.nombre}
+          </Link>
           {flagSrc && (
-            <span className="flex-shrink-0" title={`Bandera de ${item.pueblo.comunidad}`}>
+            <span className="shrink-0" title={`Bandera de ${item.pueblo.comunidad}`}>
               <Image
                 src={flagSrc}
                 alt={`Bandera de ${item.pueblo.comunidad}`}
-                width={28}
-                height={21}
-                className="rounded-sm object-cover border border-gray-200"
+                width={24}
+                height={18}
+                className="rounded-sm border border-border object-cover"
               />
             </span>
           )}
         </div>
-        <div className="flex gap-3 mt-1 text-xs text-gray-500">
+        <Caption>
+          {item.pueblo.provincia} / {item.pueblo.comunidad}
+        </Caption>
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span>Origen: {item.origen}</span>
           <span>{formatFecha(item.ultima_fecha)}</span>
         </div>
-        <div className="mt-2">
+        <div className="pt-1">
           <RatingSelector
             puebloId={item.pueblo.id}
             initialRating={item.rating ?? null}

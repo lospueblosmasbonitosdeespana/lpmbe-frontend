@@ -49,13 +49,13 @@ export default function RatingSelector({ puebloId, initialRating, onRatingSaved 
     <div className="space-y-2">
       <div className="text-sm">
         {initialRating ? (
-          <span>Valoración: {initialRating}</span>
+          <span className="text-muted-foreground">Valoración: {initialRating}</span>
         ) : (
-          <span>Sin valoración</span>
+          <span className="text-muted-foreground">Sin valoración</span>
         )}{' '}
         <button
           type="button"
-          className="underline"
+          className="font-medium text-primary hover:underline"
           onClick={() => {
             setError(null);
             setIsOpen((v) => !v);
@@ -67,12 +67,16 @@ export default function RatingSelector({ puebloId, initialRating, onRatingSaved 
 
       {isOpen && (
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             {[1, 2, 3, 4, 5].map((n) => (
               <button
                 key={n}
                 type="button"
-                className={`px-3 py-2 border rounded ${selected === n ? 'bg-gray-200' : ''}`}
+                className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50 ${
+                  selected === n
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-input bg-background hover:bg-accent'
+                }`}
                 onClick={() => setSelected(n)}
                 disabled={isSaving}
               >
@@ -83,7 +87,7 @@ export default function RatingSelector({ puebloId, initialRating, onRatingSaved 
 
           <button
             type="button"
-            className="px-4 py-2 border rounded"
+            className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
             onClick={handleSave}
             disabled={isSaving || selected < 1 || selected > 5}
           >
@@ -92,14 +96,14 @@ export default function RatingSelector({ puebloId, initialRating, onRatingSaved 
 
           <button
             type="button"
-            className="px-4 py-2 border rounded"
+            className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
             onClick={() => setIsOpen(false)}
             disabled={isSaving}
           >
             Cancelar
           </button>
 
-          {error && <p className="w-full text-sm text-red-600">{error}</p>}
+          {error && <p className="w-full text-sm text-destructive">{error}</p>}
         </div>
       )}
     </div>

@@ -4,6 +4,9 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import PueblosVisitadosList from './PueblosVisitadosList';
 import PueblosPorVisitar from './PueblosPorVisitar';
 import MapaPueblosVisitados from '../mapa';
+import { Section } from '@/app/components/ui/section';
+import { Container } from '@/app/components/ui/container';
+import { Headline, Caption } from '@/app/components/ui/typography';
 
 type PuebloVisitado = {
   puebloId: number;
@@ -116,66 +119,69 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
 
   return (
     <div style={{ width: '100vw', marginLeft: 'calc(50% - 50vw)' }}>
-      <main className="max-w-[1600px] mx-auto px-4 py-6 space-y-8">
-        <div>
-          <h1 className="text-2xl font-semibold">Mis pueblos visitados</h1>
+      <Section spacing="none" background="default">
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-transparent to-background" />
+          <Container size="full" className="relative max-w-[1600px]">
+            <div className="space-y-6 py-8 lg:py-12">
+              <div>
+                <Headline as="h1">Mis pueblos visitados</Headline>
+                <Caption className="mt-1 block">
+                  Gestiona tus visitas y descubre nuevos pueblos
+                </Caption>
+              </div>
+
+              {/* Mensaje de éxito */}
+              {successMsg && (
+                <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm font-medium text-green-800">
+                  {successMsg}
+                </div>
+              )}
+
+              {/* Contadores */}
+              <div className="grid grid-cols-3 gap-4 sm:max-w-md">
+                <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+                  <Caption>Total</Caption>
+                  <p className="mt-1 font-serif text-2xl font-medium tabular-nums">{data.total}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+                  <Caption>GPS</Caption>
+                  <p className="mt-1 font-serif text-2xl font-medium tabular-nums">{data.gps}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+                  <Caption>Manual</Caption>
+                  <p className="mt-1 font-serif text-2xl font-medium tabular-nums">{data.manual}</p>
+                </div>
+              </div>
+
+              {/* Layout principal: visitados + mapa */}
+              <div className="grid min-h-0 grid-cols-1 gap-4 xl:grid-cols-[1.1fr_1.9fr] xl:gap-6">
+                {/* Columna izquierda: pueblos visitados */}
+                <div className="min-h-0 overflow-y-auto rounded-xl border border-border bg-card p-4 shadow-sm lg:max-h-[70vh] lg:p-6">
+                  <PueblosVisitadosList
+                    items={data.items}
+                    onRatingSaved={handleRatingSaved}
+                  />
+                </div>
+
+                {/* Columna derecha: mapa */}
+                <div className="min-h-0 overflow-hidden rounded-xl border border-border shadow-sm lg:min-h-[70vh]">
+                  <MapaPueblosVisitados pueblos={todosPueblos} visitedIds={visitedIds} />
+                </div>
+              </div>
+
+              {/* Pueblos por visitar */}
+              <div className="pt-4">
+                <PueblosPorVisitar
+                  pueblos={todosPueblos}
+                  visitedIds={visitedIds}
+                  onMarcarVisitado={handleMarcarVisitado}
+                />
+              </div>
+            </div>
+          </Container>
         </div>
-
-        {/* Mensaje de éxito */}
-        {successMsg && (
-          <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm animate-pulse">
-            {successMsg}
-          </div>
-        )}
-
-        {/* Contadores */}
-        <div className="flex gap-6 text-sm">
-          <div>
-            <span className="text-gray-600">Total: </span>
-            <span className="font-semibold">{data.total}</span>
-          </div>
-          <div>
-            <span className="text-gray-600">GPS: </span>
-            <span className="font-semibold">{data.gps}</span>
-          </div>
-          <div>
-            <span className="text-gray-600">Manual: </span>
-            <span className="font-semibold">{data.manual}</span>
-          </div>
-        </div>
-
-        {/* Layout principal: visitados + mapa */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(520px, 1.1fr) minmax(700px, 1.9fr)',
-            gap: 8,
-            alignItems: 'start',
-          }}
-        >
-          {/* Columna izquierda: pueblos visitados (scroll fijo) */}
-          <div style={{ minWidth: 0 }} className="max-h-[70vh] overflow-y-auto">
-            <PueblosVisitadosList
-              items={data.items}
-              onRatingSaved={handleRatingSaved}
-            />
-          </div>
-
-          {/* Columna derecha: mapa */}
-          <div style={{ minWidth: 0 }}>
-            <MapaPueblosVisitados pueblos={todosPueblos} visitedIds={visitedIds} />
-          </div>
-        </div>
-
-        {/* Pueblos por visitar: ancho completo, 4 columnas */}
-        <div className="w-full">
-          <PueblosPorVisitar
-            pueblos={todosPueblos}
-            visitedIds={visitedIds}
-            onMarcarVisitado={handleMarcarVisitado}
-          />
-        </div>
-      </main>
+      </Section>
     </div>
   );
 }

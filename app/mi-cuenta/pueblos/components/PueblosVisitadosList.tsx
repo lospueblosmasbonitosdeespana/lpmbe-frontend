@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import PuebloVisitadoItem from './PuebloVisitadoItem';
+import { Caption } from '@/app/components/ui/typography';
 
 type PuebloVisitado = {
   puebloId: number;
@@ -30,8 +31,10 @@ export default function PueblosVisitadosList({ items, onRatingSaved }: Props) {
 
   if (items.length === 0) {
     return (
-      <div className="text-center text-gray-600 py-8">
-        No has visitado ningún pueblo aún.
+      <div className="py-12 text-center">
+        <Caption className="text-muted-foreground">
+          No has visitado ningún pueblo aún.
+        </Caption>
       </div>
     );
   }
@@ -43,7 +46,7 @@ export default function PueblosVisitadosList({ items, onRatingSaved }: Props) {
 
   return (
     <div>
-      <ul className="space-y-3">
+      <ul className="divide-y divide-border">
         {currentItems.map((item) => (
           <PuebloVisitadoItem
             key={item.puebloId}
@@ -55,23 +58,23 @@ export default function PueblosVisitadosList({ items, onRatingSaved }: Props) {
 
       {/* Paginación */}
       {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-center gap-2">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+            className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
           >
             Anterior
           </button>
 
-          <span className="text-sm text-gray-600">
+          <Caption>
             Página {currentPage} de {totalPages}
-          </span>
+          </Caption>
 
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+            className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
           >
             Siguiente
           </button>

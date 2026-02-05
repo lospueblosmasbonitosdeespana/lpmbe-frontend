@@ -49,14 +49,14 @@ export default function MapaPueblosVisitados({
 
   if (!mounted) {
     return (
-      <div style={{ width: '100%', height: 720, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e5e5e5', borderRadius: 4 }}>
-        <div className="text-sm text-gray-600">Cargando mapa...</div>
+      <div className="flex h-[400px] w-full items-center justify-center border border-border bg-muted/20 lg:h-[720px]">
+        <p className="text-sm text-muted-foreground">Cargando mapa...</p>
       </div>
     );
   }
 
   return (
-    <div style={{ width: '100%', height: 720 }}>
+    <div className="h-[400px] w-full lg:h-[720px]">
       <MapContainer center={center} zoom={6} style={{ width: '100%', height: '100%' }}>
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
