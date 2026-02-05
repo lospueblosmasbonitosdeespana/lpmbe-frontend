@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { headers } from "next/headers";
 
-// RRSS oficiales Los Pueblos Más Bonitos de España (LPBME)
+// RRSS oficiales Los Pueblos Más Bonitos de España
 const RRSS = [
   {
     label: "Instagram",
@@ -19,8 +19,8 @@ const RRSS = [
     ),
   },
   {
-    label: "Twitter",
-    href: "https://twitter.com/lospueblosmasbonitos",
+    label: "X",
+    href: "https://x.com/lospueblosmasbonitosdeespana",
     icon: (
       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     ),
@@ -69,10 +69,8 @@ async function fetchSiteSettings(): Promise<SiteSettings> {
 export async function Footer() {
   const settings = await fetchSiteSettings();
 
-  // En footer usamos variante blanca si existe (para fondo oscuro), sino el logo principal con filter para texto blanco
-  const logoUrl =
-    settings.logoVariantUrl ??
-    (settings.activeLogo !== "text" && settings.logoUrl ? settings.logoUrl : null);
+  // En footer: solo logo variante (letras blancas). Si no existe, texto.
+  const logoUrl = settings.logoVariantUrl;
 
   return (
     <footer className="bg-[#2d1f0f] text-white">
@@ -85,9 +83,9 @@ export async function Footer() {
                 <Image
                   src={logoUrl}
                   alt={settings.logoAlt}
-                  width={180}
-                  height={72}
-                  className="h-16 w-auto object-contain brightness-0 invert"
+                  width={200}
+                  height={80}
+                  className="h-20 w-auto max-w-[200px] object-contain object-left"
                   unoptimized={logoUrl.startsWith("http")}
                 />
               ) : (
