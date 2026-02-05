@@ -43,18 +43,41 @@ interface TitleProps {
   children: React.ReactNode
   className?: string
   as?: "h2" | "h3" | "h4" | "h5" | "h6"
+  size?: "sm" | "base" | "lg" | "xl" | "2xl"
 }
 
-export function Title({ children, className, as: Component = "h3" }: TitleProps) {
+const titleSizeClasses = {
+  sm: "text-sm font-medium",
+  base: "text-base font-medium",
+  lg: "text-lg font-medium sm:text-xl",
+  xl: "text-xl font-medium sm:text-2xl",
+  "2xl": "text-2xl font-medium sm:text-3xl md:text-4xl",
+}
+
+export function Title({ children, className, as: Component = "h3", size = "lg" }: TitleProps) {
   return (
     <Component
       className={cn(
-        "font-serif text-lg font-medium tracking-tight sm:text-xl md:text-2xl",
+        "font-serif tracking-tight text-balance",
+        titleSizeClasses[size],
         className
       )}
     >
       {children}
     </Component>
+  )
+}
+
+interface MutedProps {
+  children: React.ReactNode
+  className?: string
+}
+
+export function Muted({ children, className }: MutedProps) {
+  return (
+    <p className={cn("text-muted-foreground", className)}>
+      {children}
+    </p>
   )
 }
 
