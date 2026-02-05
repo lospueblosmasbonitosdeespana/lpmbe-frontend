@@ -10,6 +10,7 @@ const pathLabels: Record<string, string> = {
   '/mi-cuenta/bandeja': 'Centro de notificaciones',
   '/mi-cuenta/notificaciones': 'Preferencias de notificaciones',
   '/mi-cuenta/perfil': 'Mi perfil',
+  '/mi-cuenta/direcciones': 'Mis direcciones',
   '/mi-cuenta/club': 'Club de Amigos',
   '/mi-cuenta/mapa': 'Mi mapa',
   '/mi-cuenta/club/recursos': 'Recursos',

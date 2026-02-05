@@ -9,6 +9,7 @@ import {
   Settings,
   User,
   Users,
+  Package,
 } from 'lucide-react';
 
 const links = [
@@ -41,6 +42,12 @@ const links = [
     title: 'Mi perfil',
     description: 'Datos personales y seguridad',
     icon: User,
+  },
+  {
+    href: '/mi-cuenta/direcciones',
+    title: 'Mis direcciones',
+    description: 'Direcciones de envío para tus compras',
+    icon: Package,
   },
   {
     href: '/mi-cuenta/club',

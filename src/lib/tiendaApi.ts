@@ -72,6 +72,23 @@ export async function createDireccion(data: Omit<Direccion, 'id'>): Promise<Dire
   return res.json();
 }
 
+export async function updateDireccion(id: number, data: Partial<Omit<Direccion, 'id'>>): Promise<Direccion> {
+  const res = await fetch(`/api/usuarios/me/direcciones/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Error actualizando dirección');
+  return res.json();
+}
+
+export async function deleteDireccion(id: number): Promise<void> {
+  const res = await fetch(`/api/usuarios/me/direcciones/${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Error eliminando dirección');
+}
+
 // ===== PROMOCIONES =====
 
 export async function getActivePromotions(): Promise<Promotion[]> {
