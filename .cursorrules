@@ -305,7 +305,18 @@ BACKEND
 - Sin crash loops
 
 #############################################################
-# 14b. GIT — NORMA BÁSICA
+# 14b. MIGRACIONES A RAILWAY — NORMA OBLIGATORIA
+#############################################################
+
+Cuando crees o modifiques migraciones Prisma (en backend):
+- SIEMPRE las aplicas tú a Railway (no pedir al usuario que lo haga)
+- Conexión pública: postgresql://postgres:qcBdmEnnndcUMfsXjaoRkXXYRwwgqgmV@hopper.proxy.rlwy.net:23359/railway
+- Conexión interna Railway: postgresql://postgres:qcBdmEnnndcUMfsXjaoRkXXYRwwgqgmV@postgres.railway.internal:5432/railway
+
+ORDEN: cd backend && DATABASE_URL="postgresql://postgres:qcBdmEnnndcUMfsXjaoRkXXYRwwgqgmV@hopper.proxy.rlwy.net:23359/railway" npx prisma migrate deploy
+
+#############################################################
+# 14c. GIT — NORMA BÁSICA
 #############################################################
 
 Al subir cambios a git:
