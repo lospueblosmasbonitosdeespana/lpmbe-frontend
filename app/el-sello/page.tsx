@@ -467,7 +467,7 @@ export default async function ElSelloPage() {
 
       {/* Documentación */}
       {(documentos.estatutos.length > 0 || documentos.cartaCalidad.length > 0) && (
-        <Section spacing="lg" background="muted">
+        <Section spacing="lg" background="muted" id="documentacion">
           <Container>
             <div className="mb-12 text-center">
               <Eyebrow className="mb-4">Documentación</Eyebrow>

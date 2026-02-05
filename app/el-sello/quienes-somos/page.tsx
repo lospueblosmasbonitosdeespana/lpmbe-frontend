@@ -29,9 +29,13 @@ async function getPageContent(): Promise<{ titulo?: string; contenido?: string }
 const CONTENIDO_BREVE = `
 <p>La <strong>Asociación Los Pueblos Más Bonitos de España</strong> es una entidad sin ánimo de lucro fundada en 2010 que agrupa a los municipios españoles que destacan por su patrimonio, belleza y singularidad.</p>
 
-<p>Nuestra misión es <strong>promover y preservar</strong> el patrimonio rural español, fomentando un turismo sostenible y de calidad que contribuya al desarrollo de estos enclaves únicos.</p>
+<p>Nuestra misión es <strong>proteger, promover y desarrollar</strong> el patrimonio rural español, fomentando un turismo sostenible y de calidad que contribuya al desarrollo de estos enclaves únicos. La marca "Los Pueblos Más Bonitos de España" distingue a aquellos municipios que cumplen rigurosos criterios recogidos en nuestra Carta de Calidad.</p>
 
-<p>Formamos parte de la red internacional <em>Les Plus Beaux Villages de la Terre</em>, que reúne a asociaciones de Francia, Italia, Bélgica, Japón, Canadá, Suiza y otros países, compartiendo criterios de excelencia y buenas prácticas.</p>
+<p>La asociación está gobernada por una <strong>Comisión de Calidad</strong> formada por siete personas, encargada de evaluar las candidaturas, verificar el cumplimiento de los criterios y velar por el buen uso de la marca. Los pueblos miembros se comprometen a mantener los estándares exigidos y a invertir en la conservación y promoción de su patrimonio.</p>
+
+<p>Formamos parte de la red internacional <em>Les Plus Beaux Villages de la Terre</em>, que reúne a asociaciones de Francia, Italia, Bélgica, Japón, Canadá, Suiza y otros países, compartiendo criterios de excelencia y buenas prácticas en la promoción del patrimonio rural.</p>
+
+<p>Actualmente más de <strong>126 pueblos</strong> en <strong>17 comunidades autónomas</strong> forman parte de nuestra red, generando impacto positivo en la economía local, el turismo y la preservación del patrimonio cultural español.</p>
 
 <p>Si quieres conocer el proceso para que tu municipio obtenga el sello de calidad, consulta nuestra sección de <a href="/el-sello/como-se-obtiene" class="text-primary underline hover:no-underline">cómo se obtiene el sello</a>.</p>
 `;
