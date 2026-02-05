@@ -227,3 +227,75 @@
 .safe-html-content .pais-card p:last-child {
   margin-bottom: 0 !important;
 }
+
+/* Legal / páginas estáticas (privacidad, aviso legal, cookies) - tipografía de la web */
+.legal-prose {
+  font-family: var(--font-sans), 'Source Sans 3', system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--foreground);
+}
+.legal-prose h1 {
+  font-family: var(--font-serif), 'Playfair Display', Georgia, serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+}
+.legal-prose h1:first-child {
+  margin-top: 0;
+}
+.legal-prose h2 {
+  font-family: var(--font-serif), 'Playfair Display', Georgia, serif;
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  margin-top: 2.25rem;
+  margin-bottom: 0.75rem;
+  color: var(--foreground);
+}
+.legal-prose h3 {
+  font-family: var(--font-serif), 'Playfair Display', Georgia, serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+}
+.legal-prose h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+}
+.legal-prose p {
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 1.25rem;
+  color: var(--foreground);
+}
+.legal-prose ul,
+.legal-prose ol {
+  margin: 1.25rem 0;
+  padding-left: 1.5rem;
+}
+.legal-prose li {
+  margin-bottom: 0.5rem;
+  line-height: 1.65;
+}
+.legal-prose a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+.legal-prose a:hover {
+  text-decoration: none;
+}
+.legal-prose strong {
+  font-weight: 600;
+  color: var(--foreground);
+}

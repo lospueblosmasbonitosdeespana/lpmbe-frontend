@@ -67,7 +67,7 @@ export default async function ContactoPage() {
               </Lead>
 
               {hasContactInfo && (
-                <div className="grid w-full max-w-3xl gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid w-full max-w-4xl gap-6 sm:grid-cols-2 lg:grid-cols-4">
                   {address && (
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
@@ -113,8 +113,15 @@ export default async function ContactoPage() {
                     >
                       <Mail className="mb-3 h-8 w-8 text-primary" />
                       <Caption className="mb-1 font-medium">Email</Caption>
-                      <p className="text-center text-sm text-muted-foreground group-hover:text-foreground">
-                        {email}
+                      <p className="min-w-0 text-center text-sm text-muted-foreground group-hover:text-foreground">
+                        {email.includes("@") ? (
+                          <>
+                            {email.split("@")[0]}
+                            <wbr />@{email.split("@").slice(1).join("@")}
+                          </>
+                        ) : (
+                          email
+                        )}
                       </p>
                     </a>
                   )}

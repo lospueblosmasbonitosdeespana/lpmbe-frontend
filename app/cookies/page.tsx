@@ -61,7 +61,7 @@ export default async function CookiesPage() {
       {contenido && (
         <Section spacing="lg" background="default">
           <Container>
-            <div className="prose prose-lg mx-auto max-w-3xl max-w-none text-muted-foreground [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline [&_strong]:text-foreground [&_em]:text-foreground">
+            <div className="legal-prose mx-auto max-w-3xl">
               <SafeHtml html={contenido} />
             </div>
           </Container>

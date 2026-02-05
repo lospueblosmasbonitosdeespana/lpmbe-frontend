@@ -230,7 +230,7 @@ export default function ContactoPrivacidadClient() {
       <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
         <h2 className="mb-4 text-lg font-semibold">Páginas estáticas</h2>
         <p className="mb-6 text-sm text-muted-foreground">
-          Edita el contenido de privacidad, aviso legal y cookies. Soporta HTML.
+          Edita el contenido de privacidad, aviso legal y cookies. Usa H2 para secciones principales (ej. &quot;1. INFORMACIÓN AL USUARIO&quot;) y H3 para subsecciones (ej. &quot;RESPONSABLE DEL TRATAMIENTO&quot;) para una mejor jerarquía visual.
         </p>
 
         <div className="space-y-4">
