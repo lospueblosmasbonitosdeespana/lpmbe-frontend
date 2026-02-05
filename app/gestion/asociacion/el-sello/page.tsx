@@ -144,11 +144,16 @@ export default function ElSelloCmsPage() {
 
   return (
     <main className="mx-auto max-w-7xl px-6 py-12">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <h1 className="text-3xl font-semibold">El Sello (CMS)</h1>
-        <Link href="/gestion/asociacion/el-sello/documentos" className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-          📄 Gestionar Documentos (PDFs)
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/gestion/asociacion/el-sello/imagenes" className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            🖼️ Imágenes del Sello
+          </Link>
+          <Link href="/gestion/asociacion/el-sello/documentos" className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            📄 Gestionar Documentos (PDFs)
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[300px,1fr]">

@@ -108,11 +108,12 @@ const criteriaItems = [
 
 /* ===== WORLD NETWORKS ===== */
 const worldNetworks = [
-  { country: "Francia", name: "Les Plus Beaux Villages de France", villages: 176, href: "/el-sello/internacional" },
-  { country: "Italia", name: "I Borghi più belli d'Italia", villages: 334, href: "/el-sello/internacional" },
-  { country: "Bélgica", name: "Les Plus Beaux Villages de Wallonie", villages: 32, href: "/el-sello/internacional" },
-  { country: "Japón", name: "Les Plus Beaux Villages du Japon", villages: 64, href: "/el-sello/internacional" },
-  { country: "Canadá", name: "Les Plus Beaux Villages du Québec", villages: 43, href: "/el-sello/internacional" },
+  { country: "Francia", flag: "🇫🇷", name: "Les Plus Beaux Villages de France", villages: 176, href: "/el-sello/internacional" },
+  { country: "Italia", flag: "🇮🇹", name: "I Borghi più belli d'Italia", villages: 334, href: "/el-sello/internacional" },
+  { country: "Bélgica", flag: "🇧🇪", name: "Les Plus Beaux Villages de Wallonie", villages: 32, href: "/el-sello/internacional" },
+  { country: "Japón", flag: "🇯🇵", name: "Les Plus Beaux Villages du Japon", villages: 64, href: "/el-sello/internacional" },
+  { country: "Canadá", flag: "🇨🇦", name: "Les Plus Beaux Villages du Québec", villages: 43, href: "/el-sello/internacional" },
+  { country: "Suiza", flag: "🇨🇭", name: "Les Plus Beaux Villages de Suisse", villages: 44, href: "/el-sello/internacional" },
 ];
 
 async function getSelloPage(): Promise<SelloPage | null> {
@@ -125,6 +126,28 @@ async function getSelloPage(): Promise<SelloPage | null> {
     return await res.json();
   } catch {
     return null;
+  }
+}
+
+async function getSiteSettings(): Promise<{
+  logoUrl: string | null;
+  selloSealBadgeUrl: string | null;
+  selloEvaluationImageUrl: string | null;
+  selloTeamImageUrl: string | null;
+}> {
+  try {
+    const base = process.env.NEXT_PUBLIC_API_URL ?? "";
+    const res = await fetch(`${base}/public/site-settings`, { cache: "no-store" });
+    if (!res.ok) return { logoUrl: null, selloSealBadgeUrl: null, selloEvaluationImageUrl: null, selloTeamImageUrl: null };
+    const d = await res.json();
+    return {
+      logoUrl: d.logoUrl ?? null,
+      selloSealBadgeUrl: d.selloSealBadgeUrl ?? null,
+      selloEvaluationImageUrl: d.selloEvaluationImageUrl ?? null,
+      selloTeamImageUrl: d.selloTeamImageUrl ?? null,
+    };
+  } catch {
+    return { logoUrl: null, selloSealBadgeUrl: null, selloEvaluationImageUrl: null, selloTeamImageUrl: null };
   }
 }
 
@@ -146,13 +169,17 @@ async function getDocumentos(): Promise<{ estatutos: CmsDocumento[]; cartaCalida
 }
 
 export default async function ElSelloPage() {
-  const page = await getSelloPage();
-  const documentos = await getDocumentos();
+  const [page, documentos, siteSettings] = await Promise.all([
+    getSelloPage(),
+    getDocumentos(),
+    getSiteSettings(),
+  ]);
 
-  const titulo = page?.titulo ?? "El Sello de Los Pueblos Más Bonitos de España";
   const subtitle = page?.subtitle;
-  const heroUrl = page?.heroUrl?.trim();
   const contenido = page?.contenido ?? "";
+  const sealBadgeUrl = siteSettings.selloSealBadgeUrl || page?.heroUrl?.trim() || "/images/sello/seal-badge.jpg";
+  const evaluationImageUrl = siteSettings.selloEvaluationImageUrl || "/images/sello/evaluation.jpg";
+  const teamImageUrl = siteSettings.selloTeamImageUrl || "/images/sello/team.jpg";
 
   return (
     <main>
@@ -168,20 +195,33 @@ export default async function ElSelloPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-muted via-muted/50 to-background" />
           <Container className="relative">
             <div className="flex flex-col items-center pb-16 pt-8 text-center lg:pb-24 lg:pt-12">
-              {/* Seal Badge - heroUrl del CMS o imagen por defecto */}
+              {/* Logo principal encima */}
+              {siteSettings.logoUrl && (
+                <div className="mb-6">
+                  <Image
+                    src={siteSettings.logoUrl}
+                    alt="Los Pueblos Más Bonitos de España"
+                    width={180}
+                    height={72}
+                    className="h-16 w-auto object-contain lg:h-20"
+                    unoptimized={siteSettings.logoUrl.startsWith("http")}
+                  />
+                </div>
+              )}
+              {/* Badge del sello */}
               <div className="mb-8 h-32 w-32 overflow-hidden rounded-full border-4 border-primary/20 bg-card shadow-xl lg:h-40 lg:w-40">
                 <Image
-                  src={heroUrl || "/images/sello/seal-badge.jpg"}
+                  src={sealBadgeUrl}
                   alt="Sello de Los Pueblos Más Bonitos de España"
                   width={160}
                   height={160}
                   className="h-full w-full object-cover"
-                  unoptimized={!!heroUrl}
+                  unoptimized={sealBadgeUrl.startsWith("http")}
                 />
               </div>
 
               <Eyebrow className="mb-4">Calidad y autenticidad garantizadas</Eyebrow>
-              <Display className="mb-6 max-w-3xl text-balance">{titulo}</Display>
+              <Display className="mb-6 max-w-3xl text-balance">El Sello</Display>
               {subtitle && <Lead className="mb-6 max-w-2xl">{subtitle}</Lead>}
               {!subtitle && (
                 <Lead className="max-w-2xl text-muted-foreground">
@@ -279,10 +319,11 @@ export default async function ElSelloPage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="relative aspect-[4/3] overflow-hidden rounded-lg lg:aspect-auto">
               <Image
-                src="/images/sello/evaluation.jpg"
+                src={evaluationImageUrl}
                 alt="Comité de evaluación"
                 fill
                 className="object-cover"
+                unoptimized={evaluationImageUrl.startsWith("http")}
               />
             </div>
             <div>
@@ -313,11 +354,11 @@ export default async function ElSelloPage() {
                 ))}
               </div>
               <div className="mt-8">
-                <Link
-                  href="/el-sello/como-se-obtiene"
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  Solicitar el sello
+              <Link
+                href="/el-sello/unete"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Solicitar el sello
                   <ArrowRightIcon className="h-4 w-4" />
                 </Link>
               </div>
@@ -369,10 +410,11 @@ export default async function ElSelloPage() {
             </div>
             <div className="relative order-1 aspect-[4/3] overflow-hidden rounded-lg lg:order-2 lg:aspect-auto">
               <Image
-                src="/images/sello/team.jpg"
+                src={teamImageUrl}
                 alt="Equipo de la asociación"
                 fill
                 className="object-cover"
+                unoptimized={teamImageUrl.startsWith("http")}
               />
             </div>
           </div>
@@ -397,10 +439,10 @@ export default async function ElSelloPage() {
                 href={network.href}
                 className="group flex items-center gap-4 rounded-lg border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                  <GlobeIcon className="h-6 w-6 text-muted-foreground" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted text-2xl">
+                  {network.flag}
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <Caption className="text-primary">{network.country}</Caption>
                   <Title as="h4" className="text-base">
                     {network.name}
@@ -492,7 +534,7 @@ export default async function ElSelloPage() {
             </Lead>
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <Link
-                href="/el-sello/como-se-obtiene"
+                href="/el-sello/unete"
                 className="inline-flex items-center gap-2 rounded-lg bg-card px-8 py-4 font-semibold text-foreground transition-colors hover:bg-card/90"
               >
                 Solicitar el sello
@@ -514,7 +556,7 @@ export default async function ElSelloPage() {
         <Container>
           <Grid columns={3} gap="md">
             <Link
-              href="/el-sello/como-se-obtiene"
+              href="/el-sello/unete"
               className="group flex items-start gap-4 rounded-lg border border-border bg-card p-6 transition-all hover:border-primary/30 hover:shadow-md"
             >
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
