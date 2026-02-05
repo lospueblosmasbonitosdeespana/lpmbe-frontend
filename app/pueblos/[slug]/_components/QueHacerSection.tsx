@@ -53,9 +53,6 @@ export function QueHacerSection({
         <div>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-              {hasMultiex && (
-                <Eyebrow className="text-red-600">MULTIEXPERIENCIAS</Eyebrow>
-              )}
               {hasRutas && rutas.map(({ ruta }) => (
                 <Link
                   key={ruta.id}
@@ -65,6 +62,9 @@ export function QueHacerSection({
                   {ruta.titulo} que pasa por {puebloNombre}
                 </Link>
               ))}
+              {hasMultiex && (
+                <Eyebrow className="text-red-600">MULTIEXPERIENCIAS</Eyebrow>
+              )}
             </div>
             {hasMultiex && (
               <Link
@@ -76,39 +76,6 @@ export function QueHacerSection({
             )}
           </div>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {hasMultiex && multiexperiencias.map(({ multiexperiencia: mx }) => (
-              <Link
-                key={`mx-${mx.id}`}
-                href={`/pueblos/${puebloSlug}/experiencias/${mx.slug}`}
-                className="group block"
-              >
-                {mx.foto && (
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-muted">
-                    <Image
-                      src={mx.foto}
-                      alt={mx.titulo}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                )}
-                <div className="mt-3">
-                  <span className="mb-0.5 block text-xs uppercase tracking-wider text-muted-foreground">
-                    EXPERIENCIA
-                  </span>
-                  <h3 className="font-serif text-lg leading-snug transition-colors group-hover:text-primary">
-                    {mx.titulo}
-                  </h3>
-                  {mx.descripcion && (
-                    <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                      {mx.descripcion.length > 120
-                        ? mx.descripcion.substring(0, 120) + "..."
-                        : mx.descripcion}
-                    </p>
-                  )}
-                </div>
-              </Link>
-            ))}
             {hasRutas && rutas.map(({ ruta }) => (
               <Link
                 key={`ruta-${ruta.id}`}
@@ -140,6 +107,39 @@ export function QueHacerSection({
                   <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
                     Descubre esta ruta y sus pueblos
                   </p>
+                </div>
+              </Link>
+            ))}
+            {hasMultiex && multiexperiencias.map(({ multiexperiencia: mx }) => (
+              <Link
+                key={`mx-${mx.id}`}
+                href={`/pueblos/${puebloSlug}/experiencias/${mx.slug}`}
+                className="group block"
+              >
+                {mx.foto && (
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-muted">
+                    <Image
+                      src={mx.foto}
+                      alt={mx.titulo}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                )}
+                <div className="mt-3">
+                  <span className="mb-0.5 block text-xs uppercase tracking-wider text-muted-foreground">
+                    EXPERIENCIA
+                  </span>
+                  <h3 className="font-serif text-lg leading-snug transition-colors group-hover:text-primary">
+                    {mx.titulo}
+                  </h3>
+                  {mx.descripcion && (
+                    <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                      {mx.descripcion.length > 120
+                        ? mx.descripcion.substring(0, 120) + "..."
+                        : mx.descripcion}
+                    </p>
+                  )}
                 </div>
               </Link>
             ))}
