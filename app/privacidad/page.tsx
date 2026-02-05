@@ -1,4 +1,4 @@
-import { headers } from "next/headers";
+import { getApiUrl } from "@/lib/api";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import SafeHtml from "@/app/_components/ui/SafeHtml";
 import { Section } from "@/app/components/ui/section";
@@ -9,15 +9,9 @@ export const dynamic = "force-dynamic";
 
 async function fetchStaticPage(key: string) {
   try {
-    const h = await headers();
-    const host = h.get("host");
-    const proto = h.get("x-forwarded-proto") ?? "http";
-    const baseUrl = `${proto}://${host}`;
-
-    const res = await fetch(`${baseUrl}/api/public/static-pages/${key}`, {
+    const res = await fetch(`${getApiUrl()}/public/static-pages/${encodeURIComponent(key)}`, {
       cache: "no-store",
     });
-
     if (!res.ok) return null;
     return res.json();
   } catch {

@@ -1,5 +1,5 @@
-import { headers } from "next/headers";
 import { MapPin, Phone, Mail, FileText } from "lucide-react";
+import { getApiUrl } from "@/lib/api";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -21,15 +21,9 @@ type SiteSettings = {
 
 async function fetchSiteSettings(): Promise<SiteSettings> {
   try {
-    const h = await headers();
-    const host = h.get("host");
-    const proto = h.get("x-forwarded-proto") ?? "http";
-    const baseUrl = `${proto}://${host}`;
-
-    const res = await fetch(`${baseUrl}/api/public/site-settings`, {
+    const res = await fetch(`${getApiUrl()}/public/site-settings`, {
       cache: "no-store",
     });
-
     if (!res.ok) throw new Error("Settings not available");
     return res.json();
   } catch {
@@ -67,7 +61,7 @@ export default async function ContactoPage() {
               </Lead>
 
               {hasContactInfo && (
-                <div className="grid w-full max-w-4xl gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid w-full max-w-5xl gap-6 sm:grid-cols-2 lg:grid-cols-4">
                   {address && (
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
@@ -109,11 +103,11 @@ export default async function ContactoPage() {
                   {email && (
                     <a
                       href={`mailto:${email}`}
-                      className="group flex flex-col items-center rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
+                      className="group flex min-w-0 flex-col items-center rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md lg:min-w-[240px]"
                     >
-                      <Mail className="mb-3 h-8 w-8 text-primary" />
+                      <Mail className="mb-3 h-8 w-8 shrink-0 text-primary" />
                       <Caption className="mb-1 font-medium">Email</Caption>
-                      <p className="min-w-0 text-center text-sm text-muted-foreground group-hover:text-foreground">
+                      <span className="block min-w-0 px-1 text-center text-xs text-muted-foreground group-hover:text-foreground sm:text-sm" title={email}>
                         {email.includes("@") ? (
                           <>
                             {email.split("@")[0]}
@@ -122,7 +116,7 @@ export default async function ContactoPage() {
                         ) : (
                           email
                         )}
-                      </p>
+                      </span>
                     </a>
                   )}
                 </div>
