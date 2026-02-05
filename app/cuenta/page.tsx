@@ -69,15 +69,22 @@ export default async function CuentaPage() {
 
             {misPueblos.length === 0 ? (
               <div className="mt-2 text-sm text-gray-600">
-                No hay pueblos asociados a este usuario.
+                {me.rol === 'ADMIN' ? 'Todos los pueblos disponibles.' : 'No hay pueblos asociados a este usuario.'}
               </div>
             ) : me.rol === 'ALCALDE' && misPueblos.length === 1 ? (
               <div className="mt-2 text-sm text-gray-600">
+                Usuario asociado a {misPueblos[0].nombre}.
+                <br />
                 <Link className="hover:underline" href={`/pueblos/${misPueblos[0].slug}`}>
                   Ver ficha del pueblo →
                 </Link>
               </div>
-            ) : (
+            ) : me.rol === 'ALCALDE' && misPueblos.length > 1 ? (
+              <div className="mt-2 text-sm text-gray-600">
+                Usuario asociado a {misPueblos.map((p) => p.nombre).join(', ')}.
+              </div>
+            ) : null}
+            {((me.rol === 'ALCALDE' && misPueblos.length > 1) || (me.rol === 'ADMIN' && misPueblos.length > 0)) && (
               <ul className="mt-3 space-y-2">
                 {misPueblos.map((p) => (
                   <li key={p.id}>
