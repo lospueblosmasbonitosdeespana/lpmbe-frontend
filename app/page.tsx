@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { HomePageNew, type NotificationItem, type CategoryCard, type RouteCard, type VillageCard, type NewsItem } from "./_components/home/HomePageNew";
 import { getHomeConfig } from "@/lib/homeApi";
-import { getRutas, getApiUrl, type Pueblo } from "@/lib/api";
+import { getRutas, getApiUrl, getPuebloMainPhoto, type Pueblo } from "@/lib/api";
 
 // Forzar render dinámico para evitar que el build falle si el backend no responde
 export const dynamic = "force-dynamic";
@@ -15,15 +15,11 @@ function formatShortDate(iso?: string): string {
   return d.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
 }
 
-// Fetch featured pueblos (random 4)
+// Fetch featured pueblos (random 4) con fotos desde bulk API
 async function getFeaturedPueblos(): Promise<VillageCard[]> {
+  const API_BASE = getApiUrl();
   try {
-    const h = await headers();
-    const host = h.get("x-forwarded-host") ?? h.get("host");
-    const proto = h.get("x-forwarded-proto") ?? "https";
-    const base = host ? `${proto}://${host}` : "";
-    
-    const res = await fetch(`${base}/api/pueblos`, { cache: "no-store" });
+    const res = await fetch(`${API_BASE}/pueblos`, { cache: "no-store" });
     if (!res.ok) return [];
 
     const data = (await res.json()) as Pueblo[];
@@ -33,13 +29,31 @@ async function getFeaturedPueblos(): Promise<VillageCard[]> {
     const shuffled = [...data].sort(() => Math.random() - 0.5);
     const selected = shuffled.slice(0, 4);
 
-    return selected.map((p) => ({
-      slug: p.slug,
-      name: p.nombre,
-      province: p.provincia,
-      image: p.mainPhotoUrl || "",
-      href: `/pueblos/${p.slug}`,
-    }));
+    // Obtener fotos desde bulk API (incluye fotos de galería cuando foto_destacada es null)
+    let photosById: Record<string, { url?: string }> = {};
+    if (selected.length > 0) {
+      const ids = selected.map((p) => p.id).join(",");
+      const photosRes = await fetch(
+        `${API_BASE}/public/pueblos/photos?ids=${ids}`,
+        { cache: "no-store" }
+      );
+      if (photosRes.ok) {
+        const parsed = (await photosRes.json()) as Record<string, { url?: string }>;
+        photosById = parsed;
+      }
+    }
+
+    return selected.map((p) => {
+      const bulkPhoto = photosById[String(p.id)]?.url;
+      const image = bulkPhoto || getPuebloMainPhoto(p) || "";
+      return {
+        slug: p.slug,
+        name: p.nombre,
+        province: p.provincia,
+        image,
+        href: `/pueblos/${p.slug}`,
+      };
+    });
   } catch {
     return [];
   }
