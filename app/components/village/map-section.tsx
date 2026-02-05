@@ -4,7 +4,7 @@ import React from "react"
 import { cn } from "@/lib/utils"
 import { Section } from "@/app/components/ui/section"
 import { Container } from "@/app/components/ui/container"
-import { Title, Lead, Caption } from "@/app/components/ui/typography"
+import { Title, Lead } from "@/app/components/ui/typography"
 
 interface MapMarker {
   id: string
@@ -104,9 +104,6 @@ export function MapSection({
           </div>
         )}
 
-        {boldestMapId && (
-          <Caption className="mt-2 block">Map ID: {boldestMapId}</Caption>
-        )}
       </Container>
     </Section>
   )

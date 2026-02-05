@@ -1,8 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getApiUrl } from "@/lib/api";
 import { findCcaaBySlug, norm } from "../../../_components/pueblos/ccaa.config";
+import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
+import { Section } from "@/app/components/ui/section";
+import { Container } from "@/app/components/ui/container";
+import { Display, Lead, Title } from "@/app/components/ui/typography";
 
 type Pueblo = {
   id: number;
@@ -28,46 +33,53 @@ export default async function ComunidadDetallePage({
   if (!ccaa) return notFound();
 
   const pueblos = await getPueblos();
-
   const dentro = pueblos.filter((p) => norm(p.comunidad ?? "") === norm(ccaa.name));
 
-  // Murcia (o cualquier CCAA sin pueblos): mensaje "todavía no hay…"
   if (dentro.length === 0) {
     return (
-      <main className="mx-auto max-w-6xl px-6 py-10">
-        <div className="mb-6 flex items-center gap-4">
-          <div className="relative h-10 w-14 overflow-hidden rounded-lg border border-black/10 bg-black/5">
-            {ccaa.flagSrc ? (
-              <Image
-                src={ccaa.flagSrc}
-                alt={`Bandera de ${ccaa.name}`}
-                fill
-                className="object-cover"
-                sizes="56px"
-              />
-            ) : null}
+      <main>
+        <Section spacing="none" background="default">
+          <Container className="pt-4">
+            <Breadcrumbs items={[{ label: "Pueblos", href: "/pueblos" }, { label: "Comunidades", href: "/pueblos/comunidades" }, { label: ccaa.name }]} />
+          </Container>
+        </Section>
+        <Section spacing="lg" background="default">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-b from-muted via-muted/50 to-background" />
+            <Container className="relative">
+              <div className="flex flex-col items-center pb-12 pt-8 text-center lg:pb-16 lg:pt-12">
+                <div className="mb-6 flex items-center justify-center gap-4">
+                  {ccaa.flagSrc && (
+                    <div className="relative h-14 w-20 overflow-hidden rounded-lg border border-border bg-card">
+                      <Image src={ccaa.flagSrc} alt="" fill className="object-cover" sizes="80px" />
+                    </div>
+                  )}
+                  <Display>{ccaa.name}</Display>
+                </div>
+                <Lead className="mb-8 text-muted-foreground">0 pueblos</Lead>
+              </div>
+            </Container>
           </div>
-          <div>
-            <h1 className="font-display text-3xl font-semibold tracking-tight">{ccaa.name}</h1>
-            <p className="mt-1 text-sm text-black/60 font-sans">0 pueblos</p>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-black/10 bg-white p-6">
-          <p className="text-black/70">
-            Todavía no hay pueblos de la Asociación en esta región.
-          </p>
-          <div className="mt-4">
-            <Link className="text-sm font-medium underline" href="/pueblos/comunidades">
-              Volver a comunidades
-            </Link>
-          </div>
-        </div>
+        </Section>
+        <Section spacing="lg" background="default">
+          <Container>
+            <div className="mx-auto max-w-2xl rounded-xl border border-border bg-card p-8 text-center">
+              <p className="text-muted-foreground">
+                Todavía no hay pueblos de la Asociación en esta región.
+              </p>
+              <Link
+                href="/pueblos/comunidades"
+                className="mt-6 inline-block font-medium text-primary hover:underline"
+              >
+                ← Volver a comunidades
+              </Link>
+            </div>
+          </Container>
+        </Section>
       </main>
     );
   }
 
-  // Agrupar por provincia
   const map = new Map<string, Pueblo[]>();
   for (const p of dentro) {
     const prov = (p.provincia ?? "Sin provincia").trim() || "Sin provincia";
@@ -83,60 +95,64 @@ export default async function ComunidadDetallePage({
     .sort((a, b) => a.provincia.localeCompare(b.provincia, "es"));
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10">
-      <div className="mb-8 flex items-center gap-4">
-        <div className="relative h-10 w-14 overflow-hidden rounded-lg border border-black/10 bg-black/5">
-          {ccaa.flagSrc ? (
-            <Image
-              src={ccaa.flagSrc}
-              alt={`Bandera de ${ccaa.name}`}
-              fill
-              className="object-cover"
-              sizes="56px"
-            />
-          ) : null}
-        </div>
-
-        <div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight">{ccaa.name}</h1>
-          <p className="mt-1 text-sm text-black/60 font-sans">{dentro.length} pueblos</p>
-        </div>
-
-        <div className="ml-auto">
-          <Link className="text-sm font-medium underline" href="/pueblos/comunidades">
-            Cambiar comunidad
-          </Link>
-        </div>
-      </div>
-
-      <div className="space-y-8">
-        {provincias.map(({ provincia, items }) => (
-          <section key={provincia}>
-            <div className="mb-3 flex items-baseline justify-between">
-              <h2 className="font-display text-xl font-semibold">{provincia}</h2>
-              <span className="text-sm text-black/60">
-                {items.length} pueblo{items.length === 1 ? "" : "s"}
-              </span>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {items.map((p) => (
-                <Link
-                  key={p.id}
-                  href={`/pueblos/${p.slug}`}
-                  className="group rounded-xl border border-black/10 bg-neutral-50 px-4 py-4 shadow-sm transition-colors hover:bg-neutral-100"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="font-medium">{p.nombre}</div>
-                    <div className="text-sm text-black/40 transition-transform group-hover:translate-x-1">→</div>
+    <main>
+      <Section spacing="none" background="default">
+        <Container className="pt-4">
+          <Breadcrumbs items={[{ label: "Pueblos", href: "/pueblos" }, { label: "Comunidades", href: "/pueblos/comunidades" }, { label: ccaa.name }]} />
+        </Container>
+      </Section>
+      <Section spacing="none" background="default">
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-muted via-muted/50 to-background" />
+          <Container className="relative">
+            <div className="flex flex-col items-center pb-12 pt-8 text-center lg:pb-16 lg:pt-12">
+              <div className="mb-6 flex items-center justify-center gap-4">
+                {ccaa.flagSrc && (
+                  <div className="relative h-14 w-20 overflow-hidden rounded-lg border border-border bg-card">
+                    <Image src={ccaa.flagSrc} alt="" fill className="object-cover" sizes="80px" />
                   </div>
-                  <div className="mt-1 text-sm text-black/60">Ver ficha</div>
-                </Link>
-              ))}
+                )}
+                <Display>{ccaa.name}</Display>
+              </div>
+              <Lead className="mb-4 text-muted-foreground">{dentro.length} pueblos</Lead>
+              <Link
+                href="/pueblos/comunidades"
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                Cambiar comunidad
+              </Link>
             </div>
-          </section>
-        ))}
-      </div>
+          </Container>
+        </div>
+      </Section>
+      <Section spacing="lg" background="default">
+        <Container>
+          <div className="space-y-10">
+            {provincias.map(({ provincia, items }) => (
+              <section key={provincia}>
+                <div className="mb-4 flex items-baseline justify-between">
+                  <Title as="h2">{provincia}</Title>
+                  <span className="text-sm text-muted-foreground">
+                    {items.length} pueblo{items.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {items.map((p) => (
+                    <Link
+                      key={p.id}
+                      href={`/pueblos/${p.slug}`}
+                      className="group flex items-center justify-between rounded-xl border border-border bg-card px-6 py-5 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
+                    >
+                      <div className="font-semibold text-foreground group-hover:text-primary">{p.nombre}</div>
+                      <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        </Container>
+      </Section>
     </main>
   );
 }

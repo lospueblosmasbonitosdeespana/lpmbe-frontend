@@ -5,6 +5,8 @@ import { useState, useMemo, memo } from "react";
 import SemaforoBadge from "../components/pueblos/SemaforoBadge";
 import { type Pueblo } from "@/lib/api";
 import { usePuebloPhotos } from "@/app/hooks/usePuebloPhotos";
+import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
+import { Container } from "@/app/components/ui/container";
 
 type PueblosListProps = {
   pueblos: Pueblo[];
@@ -17,14 +19,14 @@ const norm = (s: string) => s.trim().toLowerCase();
 // Placeholder cuando no hay imagen o falla la carga
 function ImagePlaceholder() {
   return (
-    <div className="flex h-full w-full items-center justify-center bg-gray-200">
+        <div className="flex h-full w-full items-center justify-center bg-muted">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
-        className="h-10 w-10 text-blue-500"
+        className="h-10 w-10 text-primary/50"
       >
         <circle cx="12" cy="12" r="10" />
         <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
@@ -61,10 +63,9 @@ const PuebloCard = memo(function PuebloCard({
       href={`/pueblos/${pueblo.slug}`}
       ref={observe}
       data-pueblo-slug={pueblo.slug}
-      className="group flex flex-col overflow-hidden rounded-lg bg-white shadow-sm transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+      className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all hover:border-primary/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/50"
     >
-      {/* Imagen 16:10 (landscape) - v0 villagesDense */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-200">
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
         {showImage ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
@@ -81,12 +82,11 @@ const PuebloCard = memo(function PuebloCard({
         )}
       </div>
 
-      {/* Contenido compacto */}
       <div className="flex flex-1 flex-col px-3 py-2">
-        <h3 className="font-display text-sm font-medium text-gray-900 line-clamp-2 group-hover:text-blue-700">
+        <h3 className="font-display text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary">
           {pueblo.nombre}
         </h3>
-        <p className="mt-0.5 text-[10px] uppercase tracking-wide text-gray-500">
+        <p className="mt-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
           {pueblo.provincia}, {pueblo.comunidad}
         </p>
         <div className="mt-auto pt-2">
@@ -144,56 +144,73 @@ export default function PueblosList({
   const hasActiveFilters = comunidadNorm || provinciaNorm;
   const { photos, observe } = usePuebloPhotos(pueblosFiltrados);
 
+  const breadcrumbItems = [
+    { label: "Pueblos", href: "/pueblos" },
+    ...(provinciaNorm
+      ? [
+          { label: "Por provincia", href: "/pueblos/provincias" },
+          { label: initialProvincia },
+        ]
+      : comunidadNorm
+        ? [
+            { label: "Comunidades", href: "/pueblos/comunidades" },
+            { label: initialComunidad },
+          ]
+        : []),
+  ];
+
   return (
-    <main
-      className="min-h-screen"
-      style={{ backgroundColor: "var(--color-bg-section)" }}
-    >
-      {/* Page header - v0 centered */}
-      <section className="bg-white/80 py-12">
-        <div className="mx-auto max-w-3xl px-4 text-center">
-          <p className="text-sm font-medium uppercase tracking-wider text-gray-500">
+    <main className="min-h-screen bg-background">
+      {breadcrumbItems.length > 1 && (
+        <div className="border-b border-border bg-background py-4">
+          <Container>
+            <Breadcrumbs items={breadcrumbItems} />
+          </Container>
+        </div>
+      )}
+      {/* Header con diseño 2.0 */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-muted via-muted/50 to-background" />
+        <div className="relative mx-auto max-w-4xl px-4 py-12 text-center md:py-16">
+          <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
             Descubre
           </p>
-          <h1 className="mt-1 font-display text-3xl font-bold text-gray-900 md:text-4xl">
+          <h1 className="mt-2 font-serif text-3xl font-medium tracking-tight text-foreground md:text-4xl">
             Pueblos
           </h1>
-          <p className="mt-2 text-base text-gray-600">
+          <p className="mt-2 text-base text-muted-foreground">
             {pueblosFiltrados.length}{" "}
             {pueblosFiltrados.length === 1 ? "pueblo" : "pueblos"}
           </p>
-
-          {/* Buscador */}
           <div className="mt-6">
             <input
               type="text"
               placeholder="Buscar por nombre, provincia o comunidad..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base shadow-sm transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full max-w-xl rounded-lg border border-input bg-background px-4 py-3 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
         </div>
       </section>
 
-      {/* Filtros activos */}
       {hasActiveFilters && (
-        <div className="mx-auto max-w-6xl px-4 py-3">
-          <div className="flex flex-wrap items-center gap-3 rounded-lg bg-gray-100 px-4 py-3">
+        <div className="mx-auto max-w-6xl px-4 py-4">
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
             <span className="text-sm font-medium">Filtros activos:</span>
             {comunidadNorm && (
-              <span className="text-sm text-gray-600">
-                Comunidad: <strong>{initialComunidad}</strong>
+              <span className="text-sm text-muted-foreground">
+                Comunidad: <strong className="text-foreground">{initialComunidad}</strong>
               </span>
             )}
             {provinciaNorm && (
-              <span className="text-sm text-gray-600">
-                Provincia: <strong>{initialProvincia}</strong>
+              <span className="text-sm text-muted-foreground">
+                Provincia: <strong className="text-foreground">{initialProvincia}</strong>
               </span>
             )}
             <Link
               href="/pueblos"
-              className="ml-auto text-sm text-blue-600 underline hover:text-blue-700"
+              className="ml-auto text-sm font-medium text-primary hover:underline"
             >
               Quitar filtros
             </Link>
@@ -201,7 +218,6 @@ export default function PueblosList({
         </div>
       )}
 
-      {/* Grid - v0 villagesDense: 4 cols desktop, 3 tablet, 2 mobile */}
       <section className="mx-auto max-w-6xl px-4 py-12">
         {pueblosFiltrados.length > 0 ? (
           <div
@@ -225,7 +241,7 @@ export default function PueblosList({
             })}
           </div>
         ) : (
-          <p className="text-center text-gray-600">
+          <p className="text-center text-muted-foreground">
             {searchTerm
               ? "No se encontraron pueblos con ese criterio de búsqueda"
               : "No hay pueblos disponibles"}
