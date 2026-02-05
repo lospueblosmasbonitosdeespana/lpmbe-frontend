@@ -32,7 +32,9 @@ export default async function ProcesoPage() {
   const page = await getPage();
   const titulo = page?.titulo ?? 'Proceso de selección';
   const subtitle = page?.subtitle ?? 'Etapas y evaluación';
-  const contenido = page?.contenido?.trim() || CONTENIDO_PROCESO;
+  const raw = page?.contenido?.trim() ?? '';
+  const isMinimalContent = raw.length < 400 || !raw.includes('Petición formal');
+  const contenido = raw && !isMinimalContent ? raw : CONTENIDO_PROCESO;
 
   return (
     <main>

@@ -132,7 +132,9 @@ export default async function SociosPage() {
 
   const titulo = page?.titulo ?? 'Socios';
   const subtitle = page?.subtitle ?? 'Nuestros miembros';
-  const contenido = page?.contenido?.trim() || CONTENIDO_SOCIOS;
+  const raw = page?.contenido?.trim() ?? '';
+  const isMinimalContent = raw.length < 400 || !raw.includes('instituciones');
+  const contenido = raw && !isMinimalContent ? raw : CONTENIDO_SOCIOS;
 
   const countInstitucionales = socios.filter(
     (s) => s.tipo === 'INSTITUCIONAL'

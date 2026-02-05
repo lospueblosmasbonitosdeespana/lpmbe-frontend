@@ -35,7 +35,9 @@ export default async function InternacionalPage() {
   const page = await getPage();
   const titulo = page?.titulo ?? "Red Internacional";
   const subtitle = page?.subtitle ?? "Les Plus Beaux Villages de la Terre";
-  const contenido = page?.contenido?.trim() || CONTENIDO_INTERNACIONAL;
+  const raw = page?.contenido?.trim() ?? "";
+  const isMinimalContent = raw.length < 400 || !raw.includes("grid-paises-internacional");
+  const contenido = raw && !isMinimalContent ? raw : CONTENIDO_INTERNACIONAL;
 
   return (
     <main>

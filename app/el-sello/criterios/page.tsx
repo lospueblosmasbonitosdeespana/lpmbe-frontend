@@ -48,7 +48,10 @@ export default async function CriteriosPage() {
 
   const titulo = page?.titulo ?? 'Criterios de evaluación';
   const subtitle = page?.subtitle ?? 'Qué valoramos';
-  const contenido = page?.contenido?.trim() || CONTENIDO_CRITERIOS;
+  // Si el CMS tiene contenido mínimo (seed antiguo), usar el completo para que coincida con el admin
+  const raw = page?.contenido?.trim() ?? '';
+  const isMinimalContent = raw.length < 400 || !raw.includes('Requisitos de admisión');
+  const contenido = raw && !isMinimalContent ? raw : CONTENIDO_CRITERIOS;
 
   return (
     <main>
