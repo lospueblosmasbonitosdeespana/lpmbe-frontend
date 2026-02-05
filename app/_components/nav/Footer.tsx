@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { headers } from "next/headers";
 
+// RRSS oficiales Los Pueblos Más Bonitos de España (LPBME)
 const RRSS = [
   {
     label: "Instagram",
@@ -12,14 +13,14 @@ const RRSS = [
   },
   {
     label: "Facebook",
-    href: "https://www.facebook.com/lospueblosmasbonitosdeespana/",
+    href: "https://www.facebook.com/lospueblosmasbonitos/",
     icon: (
       <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
     ),
   },
   {
     label: "Twitter",
-    href: "https://twitter.com/lospueblosbonitos",
+    href: "https://twitter.com/lospueblosmasbonitos",
     icon: (
       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     ),
@@ -68,15 +69,13 @@ async function fetchSiteSettings(): Promise<SiteSettings> {
 export async function Footer() {
   const settings = await fetchSiteSettings();
 
+  // En footer usamos variante blanca si existe (para fondo oscuro), sino el logo principal con filter para texto blanco
   const logoUrl =
-    settings.activeLogo === "variant" && settings.logoVariantUrl
-      ? settings.logoVariantUrl
-      : settings.activeLogo === "default" && settings.logoUrl
-        ? settings.logoUrl
-        : null;
+    settings.logoVariantUrl ??
+    (settings.activeLogo !== "text" && settings.logoUrl ? settings.logoUrl : null);
 
   return (
-    <footer className="bg-foreground text-background">
+    <footer className="bg-[#2d1f0f] text-white">
       <div className="mx-auto max-w-6xl px-4 py-16 lg:py-20">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
           {/* Brand + Logo */}
@@ -88,16 +87,16 @@ export async function Footer() {
                   alt={settings.logoAlt}
                   width={180}
                   height={72}
-                  className="h-16 w-auto object-contain"
+                  className="h-16 w-auto object-contain brightness-0 invert"
                   unoptimized={logoUrl.startsWith("http")}
                 />
               ) : (
-                <span className="font-serif text-xl font-medium text-background">
+                <span className="font-serif text-xl font-medium text-white">
                   {settings.brandName}
                 </span>
               )}
             </Link>
-            <p className="text-sm leading-relaxed text-background/70">
+            <p className="text-sm leading-relaxed text-white/70">
               Asociación dedicada a preservar y promover el patrimonio rural de
               España desde 2011.
             </p>
@@ -105,14 +104,14 @@ export async function Footer() {
 
           {/* Explorar */}
           <div>
-            <h4 className="mb-4 text-sm font-medium tracking-wide text-background">
+            <h4 className="mb-4 text-sm font-medium tracking-wide text-white">
               Explorar
             </h4>
             <ul className="space-y-3">
               <li>
                 <Link
                   href="/pueblos"
-                  className="text-sm text-background/70 transition-colors hover:text-background"
+                  className="text-sm text-white/70 transition-colors hover:text-white"
                 >
                   Todos los pueblos
                 </Link>
@@ -120,7 +119,7 @@ export async function Footer() {
               <li>
                 <Link
                   href="/multiexperiencias"
-                  className="text-sm text-background/70 transition-colors hover:text-background"
+                  className="text-sm text-white/70 transition-colors hover:text-white"
                 >
                   Multiexperiencias
                 </Link>
@@ -128,7 +127,7 @@ export async function Footer() {
               <li>
                 <Link
                   href="/rutas"
-                  className="text-sm text-background/70 transition-colors hover:text-background"
+                  className="text-sm text-white/70 transition-colors hover:text-white"
                 >
                   Rutas
                 </Link>
@@ -138,7 +137,7 @@ export async function Footer() {
                   href="https://maps.lospueblosmasbonitosdeespana.org/es/pueblos"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-background/70 transition-colors hover:text-background"
+                  className="text-sm text-white/70 transition-colors hover:text-white"
                 >
                   Mapa interactivo
                 </Link>
@@ -148,14 +147,14 @@ export async function Footer() {
 
           {/* El sello */}
           <div>
-            <h4 className="mb-4 text-sm font-medium tracking-wide text-background">
+            <h4 className="mb-4 text-sm font-medium tracking-wide text-white">
               El sello
             </h4>
             <ul className="space-y-3">
               <li>
                 <Link
                   href="/el-sello"
-                  className="text-sm text-background/70 transition-colors hover:text-background"
+                  className="text-sm text-white/70 transition-colors hover:text-white"
                 >
                   El Sello
                 </Link>
@@ -163,7 +162,7 @@ export async function Footer() {
               <li>
                 <Link
                   href="/el-sello/como-se-obtiene"
-                  className="text-sm text-background/70 transition-colors hover:text-background"
+                  className="text-sm text-white/70 transition-colors hover:text-white"
                 >
                   ¿Cómo se obtiene?
                 </Link>
@@ -171,7 +170,7 @@ export async function Footer() {
               <li>
                 <Link
                   href="/el-sello/quienes-somos"
-                  className="text-sm text-background/70 transition-colors hover:text-background"
+                  className="text-sm text-white/70 transition-colors hover:text-white"
                 >
                   Quiénes somos
                 </Link>
@@ -179,7 +178,7 @@ export async function Footer() {
               <li>
                 <Link
                   href="/el-sello/unete"
-                  className="text-sm text-background/70 transition-colors hover:text-background"
+                  className="text-sm text-white/70 transition-colors hover:text-white"
                 >
                   Únete
                 </Link>
@@ -189,14 +188,14 @@ export async function Footer() {
 
           {/* Contacto + RRSS */}
           <div>
-            <h4 className="mb-4 text-sm font-medium tracking-wide text-background">
+            <h4 className="mb-4 text-sm font-medium tracking-wide text-white">
               Contacto
             </h4>
             <ul className="space-y-3">
-              <li className="text-sm text-background/70">
+              <li className="text-sm text-white/70">
                 <a
                   href="mailto:info@lospueblosmasbonitosdeespana.org"
-                  className="hover:text-background"
+                  className="hover:text-white"
                 >
                   info@lospueblosmasbonitosdeespana.org
                 </a>
@@ -210,7 +209,7 @@ export async function Footer() {
                   href={r.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-background/70 transition-colors hover:text-background"
+                  className="text-white/70 transition-colors hover:text-white"
                   aria-label={r.label}
                 >
                   <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -223,22 +222,22 @@ export async function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="mt-12 border-t border-background/20 pt-8">
+        <div className="mt-12 border-t border-white/20 pt-8">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <p className="text-sm text-background/60">
+            <p className="text-sm text-white/60">
               © {new Date().getFullYear()} Los Pueblos Más Bonitos de España.
               Todos los derechos reservados.
             </p>
             <div className="flex gap-6">
               <Link
                 href="/privacidad"
-                className="text-sm text-background/60 transition-colors hover:text-background"
+                className="text-sm text-white/60 transition-colors hover:text-white"
               >
                 Privacidad
               </Link>
               <Link
                 href="/aviso-legal"
-                className="text-sm text-background/60 transition-colors hover:text-background"
+                className="text-sm text-white/60 transition-colors hover:text-white"
               >
                 Aviso Legal
               </Link>
