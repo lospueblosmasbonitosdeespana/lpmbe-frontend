@@ -305,6 +305,15 @@ BACKEND
 - Sin crash loops
 
 #############################################################
+# 14b. GIT — NORMA BÁSICA
+#############################################################
+
+Al subir cambios a git:
+- SIEMPRE hacer commit y push en AMBOS repositorios: backend Y frontend
+- Backend y frontend son repos separados (lpmbe-backend, lpmbe-frontend)
+- Si el cambio solo afecta a uno, igualmente verificar el otro (puede haber cambios pendientes)
+
+#############################################################
 # 15. ESTILO VISUAL
 #############################################################
 
