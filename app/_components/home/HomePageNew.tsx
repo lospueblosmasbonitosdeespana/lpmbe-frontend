@@ -224,7 +224,8 @@ function NotificationCenter({
                 : "rounded-2xl hover:shadow-2xl"
             )}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex-1" aria-hidden />
+            <div className="flex items-center justify-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary">
                 <Bell className="h-4 w-4 text-primary-foreground" />
               </div>
@@ -237,12 +238,14 @@ function NotificationCenter({
                 </span>
               )}
             </div>
-            <ChevronDown
-              className={cn(
-                "h-4 w-4 text-muted-foreground transition-transform duration-300",
-                isOpen && "rotate-180"
-              )}
-            />
+            <div className="flex-1 flex justify-end">
+              <ChevronDown
+                className={cn(
+                  "h-4 w-4 text-muted-foreground transition-transform duration-300",
+                  isOpen && "rotate-180"
+                )}
+              />
+            </div>
           </button>
 
           <div
