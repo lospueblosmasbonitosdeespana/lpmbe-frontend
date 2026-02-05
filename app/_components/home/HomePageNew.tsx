@@ -28,6 +28,8 @@ export interface NotificationItem {
   title: string;
   type: "noticia" | "semaforo" | "alerta" | "meteo";
   href: string;
+  /** Mensaje público (ej. para semáforos: motivo público del cambio) */
+  message?: string;
 }
 
 export interface CategoryCard {
@@ -283,9 +285,16 @@ function NotificationCenter({
                     <span className="text-xs text-muted-foreground whitespace-nowrap pt-0.5 w-12 font-medium">
                       {item.date}
                     </span>
-                    <p className="text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 flex-1">
-                      {item.title}
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                        {item.title}
+                      </p>
+                      {item.message && (
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                          {item.message}
+                        </p>
+                      )}
+                    </div>
                     <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-all flex-shrink-0 mt-0.5" />
                   </Link>
                 ))

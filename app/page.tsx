@@ -80,6 +80,7 @@ async function getNotifications(): Promise<NotificationItem[]> {
       href: item.contenidoSlug
         ? `/c/${item.contenidoSlug}`
         : item.url || item.href || "/notificaciones",
+      message: item.motivoPublico?.trim() || undefined,
     }));
   } catch {
     return [];
