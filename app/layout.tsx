@@ -2,6 +2,7 @@ import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import type { Metadata } from "next";
 import { Header } from "./_components/nav/Header";
+import { Footer } from "./_components/nav/Footer";
 import GoogleAuthProviderWrapper from "./components/providers/GoogleAuthProvider";
 import { WebAnalyticsTracker } from "@/components/analytics/WebAnalyticsTracker";
 
@@ -22,6 +23,7 @@ export default function RootLayout({
           <WebAnalyticsTracker />
           <Header />
           {children}
+          <Footer />
         </GoogleAuthProviderWrapper>
       </body>
     </html>
