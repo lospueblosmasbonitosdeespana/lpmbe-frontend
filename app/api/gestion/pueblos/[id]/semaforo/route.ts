@@ -31,13 +31,9 @@ export async function POST(
   const mensajePublico = s(body?.mensajePublico);
   const mensaje = s(body?.mensaje);
 
-  const fechaInicio = s(body?.fechaInicio);
-  const fechaFin = s(body?.fechaFin);
-
-  // Compat: si el form sigue mandando inicioProgramado/finProgramado,
-  // NO los pases tal cual; úsalo solo como fallback a fechaInicio/Fin
-  const fi = fechaInicio || s(body?.inicioProgramado);
-  const ff = fechaFin || s(body?.finProgramado);
+  // Backend espera programadoInicio/programadoFin (no fechaInicio/fechaFin)
+  const inicioRaw = s(body?.programadoInicio) || s(body?.inicioProgramado);
+  const finRaw = s(body?.programadoFin) || s(body?.finProgramado);
 
   // Validar estado
   if (!estado || !['VERDE', 'AMARILLO', 'ROJO'].includes(estado)) {
@@ -47,19 +43,17 @@ export async function POST(
     );
   }
 
-  // Construir payload con allowlist estricta
-  // NO incluir keys con "" (string vacío) ni null
+  // Construir payload con allowlist estricta (nombres que acepta el backend DTO)
   const payload: any = { estado };
 
   if (motivo) payload.motivo = motivo;
   if (mensajePublico) payload.mensajePublico = mensajePublico;
   if (mensaje) payload.mensaje = mensaje;
 
-  // SOLO si fi/ff existen Y son ISO o convertibles (si no, NO enviarlas)
+  // Backend DTO usa programadoInicio/programadoFin
   const isIso = (x: string) => /^\d{4}-\d{2}-\d{2}T/.test(x);
-
-  if (fi && isIso(fi)) payload.fechaInicio = fi;
-  if (ff && isIso(ff)) payload.fechaFin = ff;
+  if (inicioRaw && isIso(inicioRaw)) payload.programadoInicio = inicioRaw;
+  if (finRaw && isIso(finRaw)) payload.programadoFin = finRaw;
 
   const API_BASE = getApiUrl();
 
