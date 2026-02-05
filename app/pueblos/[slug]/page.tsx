@@ -136,6 +136,7 @@ type PuebloSafe = {
   noticias: any[];
   multiexperiencias: any[];
   rutas?: Array<{ ruta: { id: number; titulo: string; slug: string; foto_portada?: string | null } }>;
+  semaforo?: any;
 };
 
 // 🔒 Forzamos render dinámico (no SSG)
@@ -218,6 +219,7 @@ export default async function PuebloPage({
     }
   }
 
+  const rawSemaforo = (pueblo as any).semaforo;
   const puebloSafe: PuebloSafe = {
     id: pueblo.id,
     nombre: pueblo.nombre,
@@ -237,6 +239,7 @@ export default async function PuebloPage({
     noticias: pueblo.noticias ?? [],
     multiexperiencias: (pueblo as any).multiexperiencias ?? [],
     rutas: (pueblo as any).rutas ?? [],
+    semaforo: rawSemaforo,
   };
 
   // Función para deduplicar por URL (no por ID)
@@ -342,12 +345,25 @@ export default async function PuebloPage({
     href: `/noticias/${n.id}`,
   }));
 
-  // Definir semáforo por defecto (VERDE si no existe)
-  const semaforoPueblo = (puebloSafe as any).semaforo ?? {
-    estado: "VERDE" as const,
-    mensaje: null,
-    ultima_actualizacion: null,
-  };
+  // Semáforo: usar datos del API (estado, mensaje_publico, fechas)
+  const s = (puebloSafe as any).semaforo;
+  const semaforoPueblo = s
+    ? {
+        estado: (s.estado ?? "VERDE") as "VERDE" | "AMARILLO" | "ROJO",
+        mensaje: s.mensaje_publico ?? s.mensaje ?? null,
+        ultima_actualizacion: s.ultima_actualizacion ?? null,
+        programado_inicio: s.programado_inicio ?? null,
+        programado_fin: s.programado_fin ?? null,
+        caduca_en: s.caduca_en ?? null,
+      }
+    : {
+        estado: "VERDE" as const,
+        mensaje: null,
+        ultima_actualizacion: null,
+        programado_inicio: null,
+        programado_fin: null,
+        caduca_en: null,
+      };
 
   // Obtener bandera de la comunidad
   const comunidadFlagSrc = getComunidadFlagSrc(puebloSafe.comunidad);
@@ -425,6 +441,9 @@ export default async function PuebloPage({
         semaforoEstado={semaforoPueblo.estado ?? "VERDE"}
         semaforoMensaje={semaforoPueblo.mensaje ?? null}
         semaforoUpdatedAt={semaforoPueblo.ultima_actualizacion ?? null}
+        semaforoProgramadoInicio={semaforoPueblo.programado_inicio ?? null}
+        semaforoProgramadoFin={semaforoPueblo.programado_fin ?? null}
+        semaforoCaducaEn={semaforoPueblo.caduca_en ?? null}
       />
 
       {/* EN CIFRAS - Patrimonio y Tradición (V0 - como captura 1) */}

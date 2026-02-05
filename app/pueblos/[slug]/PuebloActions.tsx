@@ -15,6 +15,9 @@ type PuebloActionsProps = {
   semaforoEstado?: "VERDE" | "AMARILLO" | "ROJO" | null;
   semaforoMensaje?: string | null;
   semaforoUpdatedAt?: string | Date | null;
+  semaforoProgramadoInicio?: string | Date | null;
+  semaforoProgramadoFin?: string | Date | null;
+  semaforoCaducaEn?: string | Date | null;
 };
 
 type ActionBarState = "idle" | "loading" | "success" | "error";
@@ -61,6 +64,19 @@ function formatActualizado(updatedAt: string | Date | null | undefined): string 
   if (diffHours < 24) return `Actualizado: Hace ${diffHours} ${diffHours === 1 ? "hora" : "horas"}`;
   if (diffDays < 7) return `Actualizado: Hace ${diffDays} ${diffDays === 1 ? "día" : "días"}`;
   return `Actualizado: ${d.toLocaleDateString("es-ES", { day: "numeric", month: "short" })}`;
+}
+
+function formatFecha(fecha: string | Date | null | undefined): string | null {
+  if (!fecha) return null;
+  const d = typeof fecha === "string" ? new Date(fecha) : fecha;
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 /* ----- ICONS ----- */
@@ -200,6 +216,9 @@ export default function PuebloActions({
   semaforoEstado,
   semaforoMensaje,
   semaforoUpdatedAt,
+  semaforoProgramadoInicio,
+  semaforoProgramadoFin,
+  semaforoCaducaEn,
 }: PuebloActionsProps) {
   const [shareState, setShareState] = useState<ActionBarState>("idle");
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
@@ -319,6 +338,16 @@ export default function PuebloActions({
                 <p className="mt-0.5 text-sm text-foreground/80">
                   {semaforoMensaje?.trim() || semaforoConfig.mensajeDefault}
                 </p>
+                {(semaforoProgramadoInicio && semaforoProgramadoFin) && (
+                  <span className="mt-1 block text-xs text-muted-foreground">
+                    Programado: {formatFecha(semaforoProgramadoInicio)} – {formatFecha(semaforoProgramadoFin)}
+                  </span>
+                )}
+                {!semaforoProgramadoInicio && semaforoCaducaEn && (
+                  <span className="mt-1 block text-xs text-muted-foreground">
+                    Vigente hasta: {formatFecha(semaforoCaducaEn)}
+                  </span>
+                )}
                 {formatActualizado(semaforoUpdatedAt) && (
                   <span className="mt-1 block text-xs text-muted-foreground">
                     {formatActualizado(semaforoUpdatedAt)}
