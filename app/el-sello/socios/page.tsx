@@ -32,6 +32,7 @@ async function getPage(): Promise<SelloPage | null> {
 type SelloSocio = {
   id: number;
   nombre: string;
+  slug: string | null;
   logoUrl: string | null;
   descripcion: string | null;
   websiteUrl: string | null;
@@ -64,13 +65,14 @@ async function getSocios(): Promise<SelloSocio[]> {
 
 function PartnerCard({
   nombre,
+  slug,
   logoUrl,
   descripcion,
   websiteUrl,
   tipo,
 }: SelloSocio) {
-  return (
-    <div className="group rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
+  const content = (
+    <>
       <div className="mb-4 flex items-start justify-between">
         <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted p-2">
           {logoUrl ? (
@@ -102,27 +104,42 @@ function PartnerCard({
         </Body>
       )}
 
-      {websiteUrl && (
+      {slug ? (
+        <span className="inline-flex items-center gap-1 text-sm font-medium text-primary">
+          Ver más
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </span>
+      ) : websiteUrl ? (
         <a
           href={websiteUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+          onClick={(e) => e.stopPropagation()}
         >
           Visitar web
-          <svg
-            className="h-3.5 w-3.5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
             <polyline points="15 3 21 3 21 9" />
             <line x1="10" y1="14" x2="21" y2="3" />
           </svg>
         </a>
-      )}
+      ) : null}
+    </>
+  );
+
+  return slug ? (
+    <Link
+      href={`/el-sello/socios/${slug}`}
+      className="block rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md h-full group"
+    >
+      {content}
+    </Link>
+  ) : (
+    <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md h-full">
+      {content}
     </div>
   );
 }
