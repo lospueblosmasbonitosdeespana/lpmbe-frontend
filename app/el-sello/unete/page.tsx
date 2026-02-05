@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import SafeHtml from '@/app/_components/ui/SafeHtml';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import {
@@ -9,6 +10,7 @@ import {
   Title,
 } from '@/app/components/ui/typography';
 import type { SelloPage } from '@/lib/cms/sello';
+import { CONTENIDO_UNETE } from '@/lib/cms/sello-content';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,10 +85,11 @@ function BenefitCard({
 export default async function UnetePage() {
   const page = await getPage();
   const titulo = page?.titulo ?? 'Únete a Nosotros';
-  const subtitle = page?.subtitle;
-  const leadText =
-    page?.contenido?.replace(/<[^>]*>/g, '').trim() ||
-    '¿Tu pueblo cumple los requisitos? Descubre cómo unirte a la red de Los Pueblos Más Bonitos de España y formar parte de un proyecto único de promoción del patrimonio rural.';
+  const subtitle = page?.subtitle ?? 'Forma parte del club';
+  const raw = page?.contenido?.trim() ?? '';
+  // Usar contenido del CMS si tiene contenido real
+  const isMinimalContent = raw.length < 100 || raw.startsWith('# ');
+  const contenido = raw && !isMinimalContent ? raw : CONTENIDO_UNETE;
 
   return (
     <main>
@@ -132,10 +135,15 @@ export default async function UnetePage() {
             </div>
 
             <Display className="mb-2 text-balance">{titulo}</Display>
+          </div>
+        </Container>
+      </Section>
 
-            <Lead className="mb-8 max-w-3xl text-muted-foreground">
-              {leadText}
-            </Lead>
+      {/* Contenido editable desde CMS */}
+      <Section spacing="md" background="default">
+        <Container>
+          <div className="prose prose-lg max-w-3xl text-muted-foreground [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline [&_strong]:text-foreground">
+            <SafeHtml html={contenido} />
           </div>
         </Container>
       </Section>

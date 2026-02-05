@@ -15,6 +15,7 @@ import {
   Caption,
 } from "@/app/components/ui/typography";
 import type { SelloPage, CmsDocumento } from "@/lib/cms/sello";
+import { CONTENIDO_SELLO_HOME } from "@/lib/cms/sello-content";
 
 export const dynamic = "force-dynamic";
 
@@ -176,7 +177,10 @@ export default async function ElSelloPage() {
   ]);
 
   const subtitle = page?.subtitle;
-  const contenido = page?.contenido ?? "";
+  const raw = page?.contenido?.trim() ?? '';
+  // Usar contenido del CMS si tiene contenido real
+  const isMinimalContent = raw.length < 200 || raw.startsWith('# ') || raw.startsWith('<h2>Título');
+  const contenido = raw && !isMinimalContent ? raw : CONTENIDO_SELLO_HOME;
   const sealBadgeUrl = siteSettings.selloSealBadgeUrl || page?.heroUrl?.trim() || "/images/sello/seal-badge.jpg";
   const evaluationImageUrl = siteSettings.selloEvaluationImageUrl || "/images/sello/evaluation.jpg";
   const teamImageUrl = siteSettings.selloTeamImageUrl || "/images/sello/team.jpg";
@@ -250,36 +254,20 @@ export default async function ElSelloPage() {
         </div>
       </Section>
 
-      {/* Contenido CMS */}
-      {contenido && (
-        <Section spacing="lg" background="default">
-          <Container>
-            <div className="mx-auto max-w-3xl">
-              <div className="safe-html-content prose prose-lg max-w-none">
-                <SafeHtml html={contenido} />
-              </div>
+      {/* Contenido CMS - Qué es el sello */}
+      <Section spacing="lg" background="default">
+        <Container>
+          <div className="mx-auto max-w-3xl text-center">
+            <Eyebrow className="mb-4">Qué es</Eyebrow>
+            <Headline className="mb-6">Un compromiso con la excelencia</Headline>
+          </div>
+          <div className="mx-auto max-w-3xl">
+            <div className="prose prose-lg max-w-none text-muted-foreground [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline [&_strong]:text-foreground [&_em]:text-foreground">
+              <SafeHtml html={contenido} />
             </div>
-          </Container>
-        </Section>
-      )}
-
-      {/* What is the Seal - solo si no hay contenido CMS */}
-      {!contenido && (
-        <Section spacing="lg" background="default">
-          <Container>
-            <div className="mx-auto max-w-3xl text-center">
-              <Eyebrow className="mb-4">Qué es</Eyebrow>
-              <Headline className="mb-6">Un compromiso con la excelencia</Headline>
-              <Body className="text-lg leading-relaxed text-muted-foreground">
-                El Sello de Los Pueblos Más Bonitos de España es una marca de calidad turística
-                que distingue a aquellos municipios que cumplen con rigurosos criterios de patrimonio,
-                conservación y compromiso con el visitante. Otorgado por nuestra asociación,
-                el sello garantiza una experiencia auténtica en cada pueblo certificado.
-              </Body>
-            </div>
-          </Container>
-        </Section>
-      )}
+          </div>
+        </Container>
+      </Section>
 
       {/* Criteria Section */}
       <Section spacing="lg" background="muted">

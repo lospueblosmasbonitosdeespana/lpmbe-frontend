@@ -8,12 +8,13 @@ import {
   Headline,
   Body,
 } from '@/app/components/ui/typography';
+import { CONTENIDO_QUIENES_SOMOS } from '@/lib/cms/sello-content';
 
 export const dynamic = 'force-dynamic';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
-async function getPageContent(): Promise<{ titulo?: string; contenido?: string } | null> {
+async function getPageContent(): Promise<{ titulo?: string; subtitle?: string; contenido?: string } | null> {
   try {
     const res = await fetch(
       `${API_BASE}/public/cms/sello/SELLO_QUIENES_SOMOS`,
@@ -26,29 +27,14 @@ async function getPageContent(): Promise<{ titulo?: string; contenido?: string }
   }
 }
 
-const CONTENIDO_BREVE = `
-<p>La <strong>Asociación Los Pueblos Más Bonitos de España</strong> es una entidad sin ánimo de lucro fundada en 2010 que agrupa a los municipios españoles que destacan por su patrimonio, belleza y singularidad.</p>
-
-<p>Nuestra misión es <strong>proteger, promover y desarrollar</strong> el patrimonio rural español, fomentando un turismo sostenible y de calidad que contribuya al desarrollo de estos enclaves únicos. La marca "Los Pueblos Más Bonitos de España" distingue a aquellos municipios que cumplen rigurosos criterios recogidos en nuestra Carta de Calidad.</p>
-
-<p>La asociación está gobernada por una <strong>Comisión de Calidad</strong> formada por siete personas, encargada de evaluar las candidaturas, verificar el cumplimiento de los criterios y velar por el buen uso de la marca. Los pueblos miembros se comprometen a mantener los estándares exigidos y a invertir en la conservación y promoción de su patrimonio.</p>
-
-<p>Formamos parte de la red internacional <em>Les Plus Beaux Villages de la Terre</em>, que reúne a asociaciones de Francia, Italia, Bélgica, Japón, Canadá, Suiza y otros países, compartiendo criterios de excelencia y buenas prácticas en la promoción del patrimonio rural.</p>
-
-<p>Actualmente más de <strong>126 pueblos</strong> en <strong>17 comunidades autónomas</strong> forman parte de nuestra red, generando impacto positivo en la economía local, el turismo y la preservación del patrimonio cultural español.</p>
-
-<p>Si quieres conocer el proceso para que tu municipio obtenga el sello de calidad, consulta nuestra sección de <a href="/el-sello/como-se-obtiene" class="text-primary underline hover:no-underline">cómo se obtiene el sello</a>.</p>
-`;
-
 export default async function QuienesSomosPage() {
   const page = await getPageContent();
-  const titulo = page?.titulo ?? 'Quiénes somos';
-  const contenidoCms = page?.contenido?.trim();
-  // Usar nuestro contenido si el CMS está vacío o es solo un placeholder (muy breve)
-  const contenido =
-    contenidoCms && contenidoCms.length > 200 && !contenidoCms.startsWith('# ')
-      ? contenidoCms
-      : CONTENIDO_BREVE;
+  const titulo = page?.titulo ?? 'Quiénes Somos';
+  const subtitle = page?.subtitle ?? 'La asociación';
+  const raw = page?.contenido?.trim() ?? '';
+  // Usar contenido del CMS si tiene contenido real (no placeholder mínimo)
+  const isMinimalContent = raw.length < 200 || raw.startsWith('# ');
+  const contenido = raw && !isMinimalContent ? raw : CONTENIDO_QUIENES_SOMOS;
 
   return (
     <main>
@@ -88,7 +74,7 @@ export default async function QuienesSomosPage() {
             <div className="mb-4 flex items-center gap-3">
               <div className="h-12 w-1.5 rounded-full bg-primary" />
               <span className="text-sm font-medium uppercase tracking-widest text-primary">
-                La asociación
+                {subtitle}
               </span>
             </div>
 

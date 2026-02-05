@@ -188,3 +188,59 @@ export const CONTENIDO_SOCIOS = `
 <p>Conoce a las instituciones, colaboradores y entidades que forman parte de nuestro proyecto y contribuyen a la promoción del patrimonio rural español.</p>
 <p>La asociación cuenta con socios institucionales (municipios certificados) y colaboradores que apoyan nuestra misión de preservar y dar a conocer los pueblos más bonitos de España.</p>
 `;
+
+export const CONTENIDO_QUIENES_SOMOS = `
+<p>La <strong>Asociación Los Pueblos Más Bonitos de España</strong> es una entidad sin ánimo de lucro fundada en 2010 que agrupa a los municipios españoles que destacan por su patrimonio, belleza y singularidad.</p>
+
+<p>Nuestra misión es <strong>proteger, promover y desarrollar</strong> el patrimonio rural español, fomentando un turismo sostenible y de calidad que contribuya al desarrollo de estos enclaves únicos. La marca "Los Pueblos Más Bonitos de España" distingue a aquellos municipios que cumplen rigurosos criterios recogidos en nuestra Carta de Calidad.</p>
+
+<p>La asociación está gobernada por una <strong>Comisión de Calidad</strong> formada por siete personas, encargada de evaluar las candidaturas, verificar el cumplimiento de los criterios y velar por el buen uso de la marca. Los pueblos miembros se comprometen a mantener los estándares exigidos y a invertir en la conservación y promoción de su patrimonio.</p>
+
+<p>Formamos parte de la red internacional <em>Les Plus Beaux Villages de la Terre</em>, que reúne a asociaciones de Francia, Italia, Bélgica, Japón, Canadá, Suiza y otros países, compartiendo criterios de excelencia y buenas prácticas en la promoción del patrimonio rural.</p>
+
+<p>Actualmente más de <strong>126 pueblos</strong> en <strong>17 comunidades autónomas</strong> forman parte de nuestra red, generando impacto positivo en la economía local, el turismo y la preservación del patrimonio cultural español.</p>
+
+<p>Si quieres conocer el proceso para que tu municipio obtenga el sello de calidad, consulta nuestra sección de <a href="/el-sello/como-se-obtiene" class="text-primary underline hover:no-underline">cómo se obtiene el sello</a>.</p>
+`;
+
+export const CONTENIDO_UNETE = `
+<p>¿Tu pueblo cumple los requisitos? Descubre cómo unirte a la red de Los Pueblos Más Bonitos de España y formar parte de un proyecto único de promoción del patrimonio rural.</p>
+
+<p>Si eres <strong>alcalde o representante de un ayuntamiento</strong> y crees que tu municipio cumple con los criterios de calidad, puedes iniciar el proceso de candidatura siguiendo estos pasos:</p>
+
+<ol class="list-decimal pl-6 space-y-2">
+  <li><strong>Consulta los requisitos</strong> — Revisa los criterios de evaluación y la Carta de Calidad.</li>
+  <li><strong>Aprobación en pleno</strong> — El ayuntamiento debe aprobar formalmente la solicitud.</li>
+  <li><strong>Envía la solicitud</strong> — Completa el formulario oficial con la documentación requerida.</li>
+</ol>
+
+<p>Para <strong>empresas, instituciones y organizaciones</strong> que quieran colaborar con la asociación, ofrecemos diferentes modalidades de patrocinio y colaboración:</p>
+
+<ul class="list-disc pl-6 space-y-1">
+  <li>Patrocinio de eventos y actividades</li>
+  <li>Colaboración en proyectos de promoción</li>
+  <li>Acuerdos de visibilidad y comunicación</li>
+  <li>Apoyo a iniciativas de sostenibilidad</li>
+</ul>
+
+<p>Contacta con nosotros para más información sobre cómo participar.</p>
+`;
+
+export const CONTENIDO_SELLO_HOME = `
+<p>El <strong>Sello de Los Pueblos Más Bonitos de España</strong> es una marca de calidad turística que distingue a aquellos municipios que cumplen con rigurosos criterios de patrimonio, conservación y compromiso con el visitante.</p>
+
+<p>Otorgado por nuestra asociación, el sello garantiza una <strong>experiencia auténtica</strong> en cada pueblo certificado. Actualmente, más de <strong>126 pueblos</strong> en <strong>17 comunidades autónomas</strong> lucen este distintivo de excelencia.</p>
+
+<p>Cada pueblo candidato es evaluado según seis pilares fundamentales:</p>
+
+<ul class="list-disc pl-6 space-y-1">
+  <li><strong>Patrimonio arquitectónico</strong> — Conservación del conjunto urbano y edificaciones de valor histórico.</li>
+  <li><strong>Riqueza histórica</strong> — Legado cultural y tradiciones vivas.</li>
+  <li><strong>Entorno natural</strong> — Integración armónica con el paisaje.</li>
+  <li><strong>Vida local</strong> — Población residente y actividad económica.</li>
+  <li><strong>Sostenibilidad</strong> — Políticas de conservación y desarrollo compatible.</li>
+  <li><strong>Acogida al visitante</strong> — Infraestructura turística de calidad.</li>
+</ul>
+
+<p>Formamos parte de la red internacional <em>Les Plus Beaux Villages de la Terre</em>, que agrupa a asociaciones de Francia, Italia, Bélgica, Japón, Canadá, Suiza y otros países.</p>
+`;
