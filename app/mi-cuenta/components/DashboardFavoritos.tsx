@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { Title, Caption } from '@/app/components/ui/typography';
+import { Star } from 'lucide-react';
 
 type Pueblo = {
   id: number;
@@ -20,39 +22,44 @@ export default function DashboardFavoritos({ items }: { items: Item[] }) {
 
   if (favoritos.length === 0) {
     return (
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold">Pueblos favoritos</h2>
-        <p className="mt-2 text-sm text-gray-600">
+      <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <Title size="lg">Pueblos favoritos</Title>
+        <Caption className="mt-2 block">
           Aún no tienes favoritos. Valora con 5 estrellas tus pueblos preferidos y aparecerán aquí.
-        </p>
+        </Caption>
       </section>
     );
   }
 
   return (
-    <section className="mt-10">
-      <h2 className="text-xl font-semibold">Pueblos favoritos</h2>
-      <p className="mt-2 text-sm text-gray-600">
+    <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+      <Title size="lg">Pueblos favoritos</Title>
+      <Caption className="mt-2 block">
         Tus pueblos con valoración de 5 estrellas.
-      </p>
+      </Caption>
 
-      <div className="mt-4 space-y-4">
+      <div className="mt-6 space-y-1 divide-y divide-border">
         {favoritos.map((it) => (
-          <div key={it.puebloId} className="border-b pb-4">
-            <div className="text-lg font-semibold">
-              <Link className="underline" href={`/pueblos/${it.pueblo.slug}`}>
-                {it.pueblo.nombre}
-              </Link>
+          <Link
+            key={it.puebloId}
+            href={`/pueblos/${it.pueblo.slug}`}
+            className="flex items-center justify-between gap-4 py-4 transition-colors first:pt-0 hover:text-primary"
+          >
+            <div>
+              <span className="font-medium">{it.pueblo.nombre}</span>
+              <Caption className="mt-0.5 block">
+                {(it.pueblo.provincia ?? '').trim()}
+                {it.pueblo.provincia && it.pueblo.comunidad ? ' / ' : ''}
+                {(it.pueblo.comunidad ?? '').trim()}
+              </Caption>
             </div>
-            <div className="text-sm text-gray-600">
-              {(it.pueblo.provincia ?? '').trim()}
-              {it.pueblo.provincia && it.pueblo.comunidad ? ' / ' : ''}
-              {(it.pueblo.comunidad ?? '').trim()}
+            <div className="flex shrink-0 items-center gap-1 text-amber-500">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="h-4 w-4 fill-current" />
+              ))}
+              <Caption className="ml-1 text-muted-foreground">(5)</Caption>
             </div>
-            <div className="mt-2 text-sm">
-              {'★★★★★'} <span className="text-gray-600">(5)</span>
-            </div>
-          </div>
+          </Link>
         ))}
       </div>
     </section>

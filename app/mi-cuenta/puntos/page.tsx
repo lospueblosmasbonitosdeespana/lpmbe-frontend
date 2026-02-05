@@ -1,6 +1,8 @@
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 import { redirect } from 'next/navigation';
+import { Section } from '@/app/components/ui/section';
+import { Container } from '@/app/components/ui/container';
 import DashboardResumen from '../components/DashboardResumen';
 import DashboardPuntos from '../components/DashboardPuntos';
 import DashboardFavoritos from '../components/DashboardFavoritos';
@@ -75,17 +77,26 @@ export default async function PuntosPage() {
   const visitadosItems = Array.isArray(visitadosRaw?.items) ? visitadosRaw.items : [];
 
   return (
-    <main className="max-w-5xl mx-auto px-4 py-6 space-y-8">
-      <DashboardResumen
-        nivelActual={data.nivelActual}
-        siguienteNivel={data.siguienteNivel}
-        puntosTotales={data.puntosTotales}
-        progreso={data.progreso}
-      />
+    <main>
+      <Section spacing="none" background="default">
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-muted via-muted/50 to-background" />
+          <Container className="relative py-8 lg:py-12">
+            <div className="space-y-8">
+              <DashboardResumen
+                nivelActual={data.nivelActual}
+                siguienteNivel={data.siguienteNivel}
+                puntosTotales={data.puntosTotales}
+                progreso={data.progreso}
+              />
 
-      <DashboardPuntos puntosPorTipo={data.puntosPorTipo} />
+              <DashboardPuntos puntosPorTipo={data.puntosPorTipo} />
 
-      <DashboardFavoritos items={visitadosItems} />
+              <DashboardFavoritos items={visitadosItems} />
+            </div>
+          </Container>
+        </div>
+      </Section>
     </main>
   );
 }

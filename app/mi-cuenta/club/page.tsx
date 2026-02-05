@@ -1,7 +1,10 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Section } from '@/app/components/ui/section';
+import { Container } from '@/app/components/ui/container';
+import { Headline, Title, Caption } from '@/app/components/ui/typography';
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 
@@ -311,22 +314,28 @@ export default function ClubPage() {
 
   if (loading) {
     return (
-      <section className="max-w-4xl mx-auto p-6 space-y-6">
-        <h1 className="text-2xl font-semibold">Club de Amigos</h1>
-        <div className="p-4 border rounded text-sm text-gray-600">Cargando...</div>
-      </section>
+      <Section spacing="lg" background="default">
+        <Container>
+          <div className="rounded-xl border border-border bg-card p-8 text-center">
+            <p className="text-muted-foreground">Cargando...</p>
+          </div>
+        </Container>
+      </Section>
     );
   }
 
   if (error && !clubMe) {
     return (
-      <section className="max-w-4xl mx-auto p-6 space-y-6">
-        <h1 className="text-2xl font-semibold">Club de Amigos</h1>
-        <div className="p-4 border rounded text-sm text-red-600">{error}</div>
-        <Link href="/mi-cuenta" className="text-sm text-blue-600 hover:underline">
-          ← Volver a Mi Cuenta
-        </Link>
-      </section>
+      <Section spacing="lg" background="default">
+        <Container>
+          <div className="rounded-xl border border-destructive/50 bg-destructive/5 p-6">
+            <p className="text-destructive">{error}</p>
+            <Link href="/mi-cuenta" className="mt-4 inline-block text-sm text-primary hover:underline">
+              ← Volver a Mi Cuenta
+            </Link>
+          </div>
+        </Container>
+      </Section>
     );
   }
 
@@ -336,164 +345,169 @@ export default function ClubPage() {
   // Preview de recursos (máximo 3)
   const recursosPreview = recursosDisponibles.slice(0, 3);
 
+  const cardClass = 'rounded-xl border border-border bg-card p-6 shadow-sm';
+
   return (
-    <section className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Club de Amigos</h1>
-        <Link href="/mi-cuenta" className="text-sm text-gray-600 hover:underline">
-          ← Volver
-        </Link>
-      </div>
-
-      {/* Estado */}
-      <div className="p-4 border rounded space-y-2">
-        <h2 className="font-medium">Estado</h2>
-        <div>
-          <span className="text-sm text-gray-600">Miembro: </span>
-          <span className="font-medium">{clubMe?.isMember ? 'ACTIVO' : 'NO ACTIVO'}</span>
+    <Section spacing="lg" background="default">
+      <Container>
+        <div className="mb-8 flex items-center justify-between">
+          <Headline as="h1">Club de Amigos</Headline>
+          <Link href="/mi-cuenta" className="text-sm text-muted-foreground hover:text-foreground hover:underline">
+            ← Volver
+          </Link>
         </div>
-        <div>
-          <span className="text-sm text-gray-600">Plan: </span>
-          <span className="font-medium">{clubMe?.plan ?? '—'}</span>
-        </div>
-        <div>
-          <span className="text-sm text-gray-600">Status: </span>
-          <span className="font-medium">{clubMe?.status ?? '—'}</span>
-        </div>
-        <div>
-          <span className="text-sm text-gray-600">Válido hasta: </span>
-          <span className="font-medium">{formatFecha(clubMe?.validUntil)}</span>
-        </div>
-      </div>
 
-      {/* Mi QR de identidad (5 min) */}
-      {clubMe?.isMember && (
-        <div className="p-4 border rounded space-y-3 bg-blue-50">
-          <h2 className="font-medium">Mi QR de Identidad</h2>
-          <p className="text-sm text-gray-600">
-            Genera un código QR temporal (válido 5 minutos) para identificarte como miembro del Club.
-          </p>
-          
-          {!qrIdentidad && (
-            <>
-              <button
-                type="button"
-                onClick={handleGenerarQRIdentidad}
-                disabled={generandoIdentidad}
-                className="px-4 py-2 text-sm border rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-              >
-                {generandoIdentidad ? 'Generando…' : 'Generar QR (5 min)'}
-              </button>
-
-              {qrIdentidadError && (
-                <div className="text-sm text-red-600">{qrIdentidadError}</div>
-              )}
-            </>
-          )}
-
-          {qrIdentidad && (
-            <div className="mt-4 p-4 border rounded space-y-3 bg-white">
-              {/* QR visual */}
-              <div className="p-4 border rounded bg-white text-center">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrIdentidad.qrPayload)}`}
-                  alt="Código QR de Identidad"
-                  className="mx-auto"
-                  style={{ maxWidth: '300px', width: '100%', height: 'auto' }}
-                />
+        <div className="space-y-6">
+          {/* Estado */}
+          <div className={cardClass}>
+            <Title size="lg" className="mb-4">Estado</Title>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <Caption>Miembro</Caption>
+                <p className="font-medium">{clubMe?.isMember ? 'ACTIVO' : 'NO ACTIVO'}</p>
               </div>
-              
-              <p className="text-xs text-gray-600 text-center">
-                Muestra este código para identificarte como miembro
-              </p>
+              <div>
+                <Caption>Plan</Caption>
+                <p className="font-medium">{clubMe?.plan ?? '—'}</p>
+              </div>
+              <div>
+                <Caption>Status</Caption>
+                <p className="font-medium">{clubMe?.status ?? '—'}</p>
+              </div>
+              <div>
+                <Caption>Válido hasta</Caption>
+                <p className="font-medium">{formatFecha(clubMe?.validUntil)}</p>
+              </div>
+            </div>
+          </div>
 
-              {tiempoRestanteIdentidad !== null && (
-                <div className="text-sm text-gray-600 text-center">
-                  Expira en: <strong>{formatTiempoRestante(tiempoRestanteIdentidad)}</strong>
+          {/* Mi QR de identidad (5 min) */}
+          {clubMe?.isMember && (
+            <div className={`${cardClass} border-primary/20 bg-primary/5`}>
+              <Title size="lg" className="mb-4">Mi QR de Identidad</Title>
+              <Caption className="block mb-4">
+                Genera un código QR temporal (válido 5 minutos) para identificarte como miembro del Club.
+              </Caption>
+              
+              {!qrIdentidad && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleGenerarQRIdentidad}
+                    disabled={generandoIdentidad}
+                    className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
+                  >
+                    {generandoIdentidad ? 'Generando…' : 'Generar QR (5 min)'}
+                  </button>
+
+                  {qrIdentidadError && (
+                    <p className="mt-2 text-sm text-destructive">{qrIdentidadError}</p>
+                  )}
+                </>
+              )}
+
+              {qrIdentidad && (
+                <div className="mt-4 rounded-lg border border-border bg-card p-4">
+                  <div className="flex justify-center">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrIdentidad.qrPayload)}`}
+                      alt="Código QR de Identidad"
+                      className="max-w-[300px] w-full h-auto"
+                    />
+                  </div>
+                  
+                  <Caption className="mt-3 block text-center">
+                    Muestra este código para identificarte como miembro
+                  </Caption>
+
+                  {tiempoRestanteIdentidad !== null && (
+                    <p className="mt-2 text-center text-sm text-muted-foreground">
+                      Expira en: <strong className="text-foreground">{formatTiempoRestante(tiempoRestanteIdentidad)}</strong>
+                    </p>
+                  )}
                 </div>
               )}
             </div>
           )}
-        </div>
-      )}
 
-      {/* Accesos rápidos */}
-      <div className="p-4 border rounded space-y-3">
-        <h2 className="font-medium">Accesos</h2>
-        <div className="space-y-2">
-          <div>
-            <Link href="/mi-cuenta/club/recursos" className="text-sm text-blue-600 hover:underline">
-              → Descuentos en recursos turísticos
-            </Link>
-            {recursosDisponibles.length > 0 && (
-              <span className="text-xs text-gray-500 ml-2">
-                ({recursosDisponibles.length} recursos)
-              </span>
+          {/* Accesos rápidos */}
+          <div className={cardClass}>
+            <Title size="lg" className="mb-4">Accesos</Title>
+            <div className="space-y-3">
+              <Link
+                href="/mi-cuenta/club/recursos"
+                className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
+              >
+                <span className="font-medium">Descuentos en recursos turísticos</span>
+                {recursosDisponibles.length > 0 && (
+                  <Caption>({recursosDisponibles.length} recursos)</Caption>
+                )}
+              </Link>
+              <Link
+                href="/mi-cuenta/club/visitados"
+                className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
+              >
+                <span className="font-medium">Recursos turísticos visitados</span>
+                {validaciones.filter(v => v.resultado === 'OK').length > 0 && (
+                  <Caption>({validaciones.filter(v => v.resultado === 'OK').length} visitas)</Caption>
+                )}
+              </Link>
+              <Link
+                href="/mi-cuenta/club/validaciones"
+                className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
+              >
+                <span className="font-medium">Historial de validaciones</span>
+                {validaciones.length > 0 && (
+                  <Caption>({validaciones.length} registros)</Caption>
+                )}
+              </Link>
+            </div>
+            
+            {ultimaValidacion && (
+              <div className="mt-4 border-t border-border pt-4">
+                <Caption>
+                  Última validación: {formatFechaHora(ultimaValidacion.scannedAt)} — {ultimaValidacion.puebloNombre || '—'} / {ultimaValidacion.recursoNombre || '—'} — {ultimaValidacion.resultado === 'OK' ? 'OK' : 'NO OK'}
+                </Caption>
+              </div>
             )}
           </div>
-          <div>
-            <Link href="/mi-cuenta/club/visitados" className="text-sm text-blue-600 hover:underline">
-              → Recursos turísticos visitados
-            </Link>
-            {validaciones.filter(v => v.resultado === 'OK').length > 0 && (
-              <span className="text-xs text-gray-500 ml-2">
-                ({validaciones.filter(v => v.resultado === 'OK').length} visitas)
-              </span>
-            )}
-          </div>
-          <div>
-            <Link href="/mi-cuenta/club/validaciones" className="text-sm text-blue-600 hover:underline">
-              → Historial de validaciones
-            </Link>
-            {validaciones.length > 0 && (
-              <span className="text-xs text-gray-500 ml-2">
-                ({validaciones.length} registros)
-              </span>
-            )}
-          </div>
-        </div>
-        
-        {ultimaValidacion && (
-          <div className="mt-4 pt-4 border-t text-xs text-gray-600">
-            Última validación: {formatFechaHora(ultimaValidacion.scannedAt)} — {ultimaValidacion.puebloNombre || '—'} / {ultimaValidacion.recursoNombre || '—'} — {ultimaValidacion.resultado === 'OK' ? 'OK' : 'NO OK'}
-          </div>
-        )}
-      </div>
 
-      {/* Registrar visita (demo) - SOLO DEV */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="p-4 border rounded space-y-3">
-          <h2 className="font-medium">Registrar visita (demo) [SOLO DEV]</h2>
-          <div className="text-xs text-gray-500 mb-2">
-            Esta sección será movida a /validador en el futuro
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Código QR</label>
-            <input
-              type="text"
-              value={codigoQr}
-              onChange={(e) => setCodigoQr(e.target.value)}
-              disabled={registrando}
-              placeholder="Introduce el código QR"
-              className="w-full px-3 py-2 border rounded disabled:opacity-50"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={handleRegistrarVisita}
-            disabled={registrando || !codigoQr.trim()}
-            className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
-          >
-            {registrando ? 'Registrando…' : 'Registrar'}
-          </button>
-          {registroError && (
-            <div className="text-sm text-red-600">{registroError}</div>
-          )}
-          {registroSuccess && (
-            <div className="text-sm text-green-600">{registroSuccess}</div>
+          {/* Registrar visita (demo) - SOLO DEV */}
+          {IS_DEV && (
+            <div className={cardClass}>
+              <Title size="lg" className="mb-4">Registrar visita (demo) [SOLO DEV]</Title>
+              <Caption className="mb-4 block">
+                Esta sección será movida a /validador en el futuro
+              </Caption>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium">Código QR</label>
+                <input
+                  type="text"
+                  value={codigoQr}
+                  onChange={(e) => setCodigoQr(e.target.value)}
+                  disabled={registrando}
+                  placeholder="Introduce el código QR"
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleRegistrarVisita}
+                disabled={registrando || !codigoQr.trim()}
+                className="mt-4 rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
+              >
+                {registrando ? 'Registrando…' : 'Registrar'}
+              </button>
+              {registroError && (
+                <p className="mt-2 text-sm text-destructive">{registroError}</p>
+              )}
+              {registroSuccess && (
+                <p className="mt-2 text-sm text-green-600">{registroSuccess}</p>
+              )}
+            </div>
           )}
         </div>
-      )}
-    </section>
+      </Container>
+    </Section>
   );
 }

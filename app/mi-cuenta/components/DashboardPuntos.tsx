@@ -1,3 +1,5 @@
+import { Title, Caption } from '@/app/components/ui/typography';
+
 type Props = {
   puntosPorTipo?: {
     VISITA?: number;
@@ -11,13 +13,13 @@ export default function DashboardPuntos({ puntosPorTipo }: Props) {
   const visita = puntosPorTipo?.VISITA ?? 0;
 
   return (
-    <section className="space-y-4">
-      <h2 className="text-lg font-semibold">Desglose de puntos</h2>
+    <section className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-sm">
+      <Title size="lg">Desglose de puntos</Title>
 
-      <ul className="space-y-2 text-sm">
-        <li className="flex justify-between">
-          <span>Visitas</span>
-          <span>{visita}</span>
+      <ul className="space-y-3">
+        <li className="flex items-center justify-between rounded-lg bg-muted/50 px-4 py-3">
+          <span className="text-sm font-medium">Visitas</span>
+          <span className="font-semibold tabular-nums">{visita}</span>
         </li>
       </ul>
     </section>

@@ -1,41 +1,90 @@
 import Link from 'next/link';
+import { Section } from '@/app/components/ui/section';
+import { Container } from '@/app/components/ui/container';
+import { Display, Lead, Caption } from '@/app/components/ui/typography';
+import {
+  Trophy,
+  MapPin,
+  Bell,
+  Settings,
+  User,
+  Users,
+} from 'lucide-react';
+
+const links = [
+  {
+    href: '/mi-cuenta/puntos',
+    title: 'Mis puntos',
+    description: 'Nivel, progreso y recompensas',
+    icon: Trophy,
+  },
+  {
+    href: '/mi-cuenta/pueblos',
+    title: 'Pueblos visitados',
+    description: 'Listado y valoraciones',
+    icon: MapPin,
+  },
+  {
+    href: '/mi-cuenta/bandeja',
+    title: 'Centro de notificaciones',
+    description: 'Ver mis notificaciones y alertas',
+    icon: Bell,
+  },
+  {
+    href: '/mi-cuenta/notificaciones',
+    title: 'Preferencias de notificaciones',
+    description: 'Configurar pueblos y tipos',
+    icon: Settings,
+  },
+  {
+    href: '/mi-cuenta/perfil',
+    title: 'Mi perfil',
+    description: 'Datos personales y seguridad',
+    icon: User,
+  },
+  {
+    href: '/mi-cuenta/club',
+    title: 'Club de Amigos',
+    description: 'QR y recursos turísticos visitados',
+    icon: Users,
+  },
+];
 
 export default function MiCuentaPage() {
   return (
-    <section className="max-w-4xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Mi Cuenta</h1>
+    <main>
+      <Section spacing="none" background="default">
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-muted via-muted/50 to-background" />
+          <Container className="relative">
+            <div className="flex flex-col items-center pb-12 pt-8 text-center lg:pb-16 lg:pt-12">
+              <Display className="mb-4">Mi Cuenta</Display>
+              <Lead className="mb-10 max-w-2xl text-muted-foreground">
+                Tu espacio personal para gestionar puntos, pueblos favoritos y preferencias.
+              </Lead>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Link href="/mi-cuenta/puntos" className="p-4 border rounded hover:bg-gray-50 transition">
-          <h2 className="font-medium">Mis puntos</h2>
-          <p className="text-sm text-gray-600">Nivel, progreso y recompensas</p>
-        </Link>
-
-        <Link href="/mi-cuenta/pueblos" className="p-4 border rounded hover:bg-gray-50 transition">
-          <h2 className="font-medium">Pueblos visitados</h2>
-          <p className="text-sm text-gray-600">Listado y valoraciones</p>
-        </Link>
-
-        <Link href="/mi-cuenta/bandeja" className="p-4 border rounded hover:bg-gray-50 transition">
-          <h2 className="font-medium">📬 Centro de notificaciones</h2>
-          <p className="text-sm text-gray-600">Ver mis notificaciones y alertas</p>
-        </Link>
-
-        <Link href="/mi-cuenta/notificaciones" className="p-4 border rounded hover:bg-gray-50 transition">
-          <h2 className="font-medium">⚙️ Preferencias de notificaciones</h2>
-          <p className="text-sm text-gray-600">Configurar pueblos y tipos</p>
-        </Link>
-
-        <Link href="/mi-cuenta/perfil" className="p-4 border rounded hover:bg-gray-50 transition">
-          <h2 className="font-medium">Perfil</h2>
-          <p className="text-sm text-gray-600">Datos personales y seguridad</p>
-        </Link>
-
-        <Link href="/mi-cuenta/club" className="p-4 border rounded hover:bg-gray-50 transition">
-          <h2 className="font-medium">Club de Amigos</h2>
-          <p className="text-sm text-gray-600">QR y recursos turísticos visitados</p>
-        </Link>
-      </div>
-    </section>
+              <div className="grid w-full max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {links.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="group flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
+                    >
+                      <Icon className="mb-3 h-8 w-8 text-primary" />
+                      <Caption className="mb-1 font-medium">{item.title}</Caption>
+                      <p className="text-center text-sm text-muted-foreground group-hover:text-foreground">
+                        {item.description}
+                      </p>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </Container>
+        </div>
+      </Section>
+    </main>
   );
 }

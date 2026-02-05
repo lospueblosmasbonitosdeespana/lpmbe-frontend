@@ -1,4 +1,5 @@
 import NivelIcono from './NivelIcono';
+import { Headline, Caption } from '@/app/components/ui/typography';
 
 type Nivel = {
   nombre: string;
@@ -27,36 +28,38 @@ export default function DashboardResumen({
   const nombreNivel = nivelActual?.nombre ?? 'Nivel inicial';
 
   return (
-    <section className="space-y-4">
-      <div className="flex items-center gap-3">
-        <NivelIcono nombreNivel={nombreNivel} />
+    <section className="space-y-6 rounded-xl border border-border bg-card p-6 shadow-sm">
+      <div className="flex items-center gap-4">
+        <NivelIcono nombreNivel={nombreNivel} className="shrink-0" />
         <div>
-          <h1 className="text-2xl font-semibold">Mi cuenta</h1>
-          <p className="text-sm text-gray-600">{nombreNivel}</p>
+          <Headline as="h1" className="mb-0.5">Mi cuenta</Headline>
+          <Caption>{nombreNivel}</Caption>
         </div>
       </div>
 
       <div>
-        <p className="text-3xl font-bold">{puntosTotales} puntos</p>
+        <p className="font-serif text-3xl font-medium tracking-tight sm:text-4xl">
+          {puntosTotales} puntos
+        </p>
       </div>
 
-      <div className="space-y-1">
-        <div className="h-2 bg-gray-200 rounded">
+      <div className="space-y-2">
+        <div className="h-2.5 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-2 bg-black rounded"
-            style={{ width: `${progreso}%` }}
+            className="h-full rounded-full bg-primary transition-all duration-500"
+            style={{ width: `${Math.min(100, Math.max(0, progreso))}%` }}
           />
         </div>
 
         {siguienteNivel ? (
-          <p className="text-xs text-gray-600">
+          <Caption>
             Próximo nivel: {siguienteNivel.nombre} (
             {siguienteNivel.puntos_necesarios} puntos)
-          </p>
+          </Caption>
         ) : (
-          <p className="text-xs text-gray-600">
+          <Caption>
             Empieza a visitar pueblos para subir de nivel
-          </p>
+          </Caption>
         )}
       </div>
     </section>

@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Section } from '@/app/components/ui/section';
+import { Container } from '@/app/components/ui/container';
+import { Headline, Title, Caption } from '@/app/components/ui/typography';
 
 type Usuario = {
   id: number;
@@ -329,24 +332,28 @@ export default function PerfilPage() {
 
   if (loading) {
     return (
-      <section className="max-w-4xl mx-auto p-6 space-y-6">
-        <h1 className="text-2xl font-semibold">Mi Perfil</h1>
-        <div className="p-4 border rounded text-sm text-gray-600">Cargando...</div>
-      </section>
+      <Section spacing="lg" background="default">
+        <Container>
+          <div className="rounded-xl border border-border bg-card p-8 text-center">
+            <p className="text-muted-foreground">Cargando...</p>
+          </div>
+        </Container>
+      </Section>
     );
   }
 
   if (error || !usuario) {
     return (
-      <section className="max-w-4xl mx-auto p-6 space-y-6">
-        <h1 className="text-2xl font-semibold">Mi Perfil</h1>
-        <div className="p-4 border rounded text-sm text-red-600">
-          {error ?? 'No se pudieron cargar los datos del usuario'}
-        </div>
-        <Link href="/mi-cuenta" className="text-sm text-blue-600 hover:underline">
-          ← Volver a Mi Cuenta
-        </Link>
-      </section>
+      <Section spacing="lg" background="default">
+        <Container>
+          <div className="rounded-xl border border-destructive/50 bg-destructive/5 p-6">
+            <p className="text-destructive">{error ?? 'No se pudieron cargar los datos del usuario'}</p>
+            <Link href="/mi-cuenta" className="mt-4 inline-block text-sm text-primary hover:underline">
+              ← Volver a Mi Cuenta
+            </Link>
+          </div>
+        </Container>
+      </Section>
     );
   }
 
@@ -359,304 +366,307 @@ export default function PerfilPage() {
       : null;
   const initials = getInitials(usuario.nombre, usuario.email);
 
+  const cardClass = 'rounded-xl border border-border bg-card p-6 shadow-sm';
+
   return (
-    <section className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Mi Perfil</h1>
-        <Link href="/mi-cuenta" className="text-sm text-gray-600 hover:underline">
-          ← Volver
-        </Link>
-      </div>
+    <Section spacing="lg" background="default">
+      <Container>
+        <div className="mb-8 flex items-center justify-between">
+          <Headline as="h1">Mi Perfil</Headline>
+          <Link href="/mi-cuenta" className="text-sm text-muted-foreground hover:text-foreground hover:underline">
+            ← Volver
+          </Link>
+        </div>
 
-      {/* Club de Amigos */}
-      <div className="p-4 border rounded space-y-2">
-        <h2 className="font-medium">Club de Amigos</h2>
-        <div>
-          <span className="text-sm text-gray-600">Estado: </span>
-          <span className="font-medium">{getClubEstado(usuario.club)}</span>
-        </div>
-        <div>
-          <span className="text-sm text-gray-600">Plan: </span>
-          <span className="font-medium">{usuario.club?.plan ?? '—'}</span>
-        </div>
-        <div>
-          <span className="text-sm text-gray-600">Válido hasta: </span>
-          <span className="font-medium">
-            {usuario.club?.validoHasta ? formatFechaCorta(usuario.club.validoHasta) : '—'}
-          </span>
-        </div>
-      </div>
+        <div className="space-y-6">
+          {/* Club de Amigos */}
+          <div className={cardClass}>
+            <Title size="lg" className="mb-4">Club de Amigos</Title>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <div>
+                <Caption>Estado</Caption>
+                <p className="font-medium">{getClubEstado(usuario.club)}</p>
+              </div>
+              <div>
+                <Caption>Plan</Caption>
+                <p className="font-medium">{usuario.club?.plan ?? '—'}</p>
+              </div>
+              <div>
+                <Caption>Válido hasta</Caption>
+                <p className="font-medium">
+                  {usuario.club?.validoHasta ? formatFechaCorta(usuario.club.validoHasta) : '—'}
+                </p>
+              </div>
+            </div>
+          </div>
 
-      {/* Avatar */}
-      <div className="p-4 border rounded space-y-4">
-        <h2 className="font-medium">Foto de perfil</h2>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt="Avatar"
-                className="w-20 h-20 rounded-full object-cover border"
-              />
+          {/* Avatar */}
+          <div className={cardClass}>
+            <Title size="lg" className="mb-4">Foto de perfil</Title>
+            <div className="flex flex-wrap items-center gap-6">
+              <div className="relative">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt="Avatar"
+                    className="h-24 w-24 rounded-full border-2 border-border object-cover"
+                  />
+                ) : (
+                  <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-border bg-muted font-semibold text-muted-foreground text-xl">
+                    {initials}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <label className="inline-block">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    disabled={uploadingAvatar || deletingAvatar}
+                    className="hidden"
+                  />
+                  <span className="inline-block cursor-pointer rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50">
+                    {uploadingAvatar ? 'Subiendo…' : 'Cambiar foto'}
+                  </span>
+                </label>
+                {usuario.avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteAvatar}
+                    disabled={uploadingAvatar || deletingAvatar}
+                    className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+                  >
+                    {deletingAvatar ? 'Eliminando…' : 'Eliminar foto'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className={cardClass}>
+            <div className="mb-4 flex items-center justify-between">
+              <Title size="lg">Datos personales</Title>
+              {!isEditing && (
+                <button
+                  type="button"
+                  onClick={handleStartEdit}
+                  className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  Editar datos
+                </button>
+              )}
+            </div>
+
+            {isEditing ? (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium">Nombre</label>
+                  <input
+                  type="text"
+                  value={formNombre}
+                  onChange={(e) => setFormNombre(e.target.value)}
+                  disabled={saving}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium">Apellidos</label>
+                  <input
+                    type="text"
+                    value={formApellidos}
+                    onChange={(e) => setFormApellidos(e.target.value)}
+                    disabled={saving}
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium">Teléfono</label>
+                  <input
+                    type="text"
+                    value={formTelefono}
+                    onChange={(e) => setFormTelefono(e.target.value)}
+                    disabled={saving}
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleSaveEdit}
+                    disabled={saving}
+                    className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
+                  >
+                    {saving ? 'Guardando…' : 'Guardar'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    disabled={saving}
+                    className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+
+                {editError && (
+                  <p className="text-sm text-destructive">{editError}</p>
+                )}
+
+                {editSuccess && (
+                  <p className="text-sm text-green-600">{editSuccess}</p>
+                )}
+              </div>
             ) : (
-              <div className="w-20 h-20 rounded-full bg-gray-200 border flex items-center justify-center text-gray-600 font-semibold text-lg">
-                {initials}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Caption>Nombre</Caption>
+                  <p className="font-medium">{usuario.nombre ?? '(Sin nombre)'}</p>
+                </div>
+                {usuario.apellidos && (
+                  <div>
+                    <Caption>Apellidos</Caption>
+                    <p className="font-medium">{usuario.apellidos}</p>
+                  </div>
+                )}
+                {usuario.telefono && (
+                  <div>
+                    <Caption>Teléfono</Caption>
+                    <p className="font-medium">{usuario.telefono}</p>
+                  </div>
+                )}
+                <div>
+                  <Caption>Email</Caption>
+                  <p className="font-medium">{usuario.email}</p>
+                </div>
+                {usuario.rol && (
+                  <div>
+                    <Caption>Rol</Caption>
+                    <p className="font-medium">{usuario.rol}</p>
+                  </div>
+                )}
+                {fechaAlta && (
+                  <div>
+                    <Caption>Fecha de alta</Caption>
+                    <p className="font-medium">{formatFecha(fechaAlta)}</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
-          <div className="flex gap-2">
-            <label className="inline-block">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                disabled={uploadingAvatar || deletingAvatar}
-                className="hidden"
-              />
-              <span className="px-4 py-2 text-sm border rounded hover:bg-gray-50 cursor-pointer disabled:opacity-50 inline-block">
-                {uploadingAvatar ? 'Subiendo…' : 'Cambiar foto'}
-              </span>
-            </label>
-            {usuario.avatarUrl && (
+
+          <div className={cardClass}>
+            <Title size="lg" className="mb-4">Seguridad</Title>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium">Contraseña actual</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type={showCurrentPassword ? 'text' : 'password'}
+                    value={currentPassword}
+                    onChange={(e) => {
+                      setCurrentPassword(e.target.value);
+                      handlePasswordInputChange();
+                    }}
+                    disabled={savingPassword}
+                    className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+                  >
+                    {showCurrentPassword ? 'Ocultar' : '👁 Mostrar'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium">Nueva contraseña</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => {
+                      setNewPassword(e.target.value);
+                      handlePasswordInputChange();
+                    }}
+                    disabled={savingPassword}
+                    className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+                  >
+                    {showNewPassword ? 'Ocultar' : '👁 Mostrar'}
+                  </button>
+                </div>
+                {newPassword.length > 0 && newPassword.length < 8 && (
+                  <p className="text-xs text-destructive">mínimo 8</p>
+                )}
+                {newPassword.length >= 8 && (
+                  <p className="text-xs text-muted-foreground">Mínimo 8 caracteres</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium">Repetir nueva contraseña</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      handlePasswordInputChange();
+                    }}
+                    disabled={savingPassword}
+                    className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+                  >
+                    {showConfirmPassword ? 'Ocultar' : '👁 Mostrar'}
+                  </button>
+                </div>
+              </div>
+
               <button
                 type="button"
-                onClick={handleDeleteAvatar}
-                disabled={uploadingAvatar || deletingAvatar}
-                className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
+                onClick={handleChangePassword}
+                disabled={savingPassword || !currentPassword || !newPassword || !confirmPassword || newPassword.length < 8}
+                className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
               >
-                {deletingAvatar ? 'Eliminando…' : 'Eliminar foto'}
+                {savingPassword ? 'Guardando…' : 'Guardar'}
               </button>
-            )}
-          </div>
-        </div>
-      </div>
 
-      <div className="p-4 border rounded space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-medium">Datos personales</h2>
-          {!isEditing && (
+              {passwordError && (
+                <p className="text-sm text-destructive">{passwordError}</p>
+              )}
+
+              {passwordSuccess && (
+                <p className="text-sm text-green-600">{passwordSuccess}</p>
+              )}
+            </div>
+          </div>
+
+          <div className={cardClass}>
             <button
               type="button"
-              onClick={handleStartEdit}
-              className="px-4 py-2 text-sm border rounded hover:bg-gray-50"
+              onClick={handleLogout}
+              disabled={logoutLoading}
+              className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-destructive hover:border-destructive hover:text-destructive-foreground disabled:opacity-50"
             >
-              Editar datos
+              {logoutLoading ? 'Cerrando sesión…' : 'Cerrar sesión'}
             </button>
-          )}
+          </div>
         </div>
-
-        {isEditing ? (
-          <>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Nombre</label>
-              <input
-                type="text"
-                value={formNombre}
-                onChange={(e) => setFormNombre(e.target.value)}
-                disabled={saving}
-                className="w-full px-3 py-2 border rounded disabled:opacity-50"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Apellidos</label>
-              <input
-                type="text"
-                value={formApellidos}
-                onChange={(e) => setFormApellidos(e.target.value)}
-                disabled={saving}
-                className="w-full px-3 py-2 border rounded disabled:opacity-50"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Teléfono</label>
-              <input
-                type="text"
-                value={formTelefono}
-                onChange={(e) => setFormTelefono(e.target.value)}
-                disabled={saving}
-                className="w-full px-3 py-2 border rounded disabled:opacity-50"
-              />
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handleSaveEdit}
-                disabled={saving}
-                className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
-              >
-                {saving ? 'Guardando…' : 'Guardar'}
-              </button>
-              <button
-                type="button"
-                onClick={handleCancelEdit}
-                disabled={saving}
-                className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-            </div>
-
-            {editError && (
-              <div className="text-sm text-red-600">{editError}</div>
-            )}
-
-            {editSuccess && (
-              <div className="text-sm text-green-600">{editSuccess}</div>
-            )}
-          </>
-        ) : (
-          <>
-            <div>
-              <span className="text-sm text-gray-600">Nombre</span>
-              <div className="font-medium">{usuario.nombre ?? '(Sin nombre)'}</div>
-            </div>
-
-            {usuario.apellidos && (
-              <div>
-                <span className="text-sm text-gray-600">Apellidos</span>
-                <div className="font-medium">{usuario.apellidos}</div>
-              </div>
-            )}
-
-            {usuario.telefono && (
-              <div>
-                <span className="text-sm text-gray-600">Teléfono</span>
-                <div className="font-medium">{usuario.telefono}</div>
-              </div>
-            )}
-
-            <div>
-              <span className="text-sm text-gray-600">Email</span>
-              <div className="font-medium">{usuario.email}</div>
-            </div>
-
-            {usuario.rol && (
-              <div>
-                <span className="text-sm text-gray-600">Rol</span>
-                <div className="font-medium">{usuario.rol}</div>
-              </div>
-            )}
-
-            {fechaAlta && (
-              <div>
-                <span className="text-sm text-gray-600">Fecha de alta</span>
-                <div className="font-medium">{formatFecha(fechaAlta)}</div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      <div className="p-4 border rounded space-y-4">
-        <h2 className="font-medium">Seguridad</h2>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Contraseña actual</label>
-            <div className="flex items-center gap-2">
-              <input
-                type={showCurrentPassword ? 'text' : 'password'}
-                value={currentPassword}
-                onChange={(e) => {
-                  setCurrentPassword(e.target.value);
-                  handlePasswordInputChange();
-                }}
-                disabled={savingPassword}
-                className="flex-1 px-3 py-2 border rounded disabled:opacity-50"
-              />
-              <button
-                type="button"
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="text-sm text-gray-600 hover:underline"
-              >
-                {showCurrentPassword ? 'Ocultar' : '👁 Mostrar'}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Nueva contraseña</label>
-            <div className="flex items-center gap-2">
-              <input
-                type={showNewPassword ? 'text' : 'password'}
-                value={newPassword}
-                onChange={(e) => {
-                  setNewPassword(e.target.value);
-                  handlePasswordInputChange();
-                }}
-                disabled={savingPassword}
-                className="flex-1 px-3 py-2 border rounded disabled:opacity-50"
-              />
-              <button
-                type="button"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-                className="text-sm text-gray-600 hover:underline"
-              >
-                {showNewPassword ? 'Ocultar' : '👁 Mostrar'}
-              </button>
-            </div>
-            {newPassword.length > 0 && newPassword.length < 8 && (
-              <p className="text-xs text-red-600 mt-1">mínimo 8</p>
-            )}
-            {newPassword.length >= 8 && (
-              <p className="text-xs text-gray-500 mt-1">Mínimo 8 caracteres</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Repetir nueva contraseña</label>
-            <div className="flex items-center gap-2">
-              <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                value={confirmPassword}
-                onChange={(e) => {
-                  setConfirmPassword(e.target.value);
-                  handlePasswordInputChange();
-                }}
-                disabled={savingPassword}
-                className="flex-1 px-3 py-2 border rounded disabled:opacity-50"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="text-sm text-gray-600 hover:underline"
-              >
-                {showConfirmPassword ? 'Ocultar' : '👁 Mostrar'}
-              </button>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleChangePassword}
-            disabled={savingPassword || !currentPassword || !newPassword || !confirmPassword || newPassword.length < 8}
-            className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
-          >
-            {savingPassword ? 'Guardando…' : 'Guardar'}
-          </button>
-
-          {passwordError && (
-            <div className="text-sm text-red-600">{passwordError}</div>
-          )}
-
-          {passwordSuccess && (
-            <div className="text-sm text-green-600">{passwordSuccess}</div>
-          )}
-        </div>
-      </div>
-
-      <div className="p-4 border rounded">
-        <button
-          type="button"
-          onClick={handleLogout}
-          disabled={logoutLoading}
-          className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
-        >
-          {logoutLoading ? 'Cerrando sesión…' : 'Cerrar sesión'}
-        </button>
-      </div>
-    </section>
+      </Container>
+    </Section>
   );
 }
