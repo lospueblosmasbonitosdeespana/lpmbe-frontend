@@ -36,7 +36,7 @@ export default async function InternacionalPage() {
   const titulo = page?.titulo ?? "Red Internacional";
   const subtitle = page?.subtitle ?? "Les Plus Beaux Villages de la Terre";
   const raw = page?.contenido?.trim() ?? "";
-  const isMinimalContent = raw.length < 400 || !raw.includes("grid-paises-internacional");
+  const isMinimalContent = raw.length < 400 || !raw.includes("sm:grid-cols-2");
   const contenido = raw && !isMinimalContent ? raw : CONTENIDO_INTERNACIONAL;
 
   return (
@@ -67,7 +67,7 @@ export default async function InternacionalPage() {
 
       <Section spacing="md" background="default">
         <Container>
-          <div className="prose prose-lg max-w-none [&_.grid-paises-internacional]:grid [&_.grid-paises-internacional]:gap-6 [&_.grid-paises-internacional]:sm:grid-cols-2 [&_.grid-paises-internacional]:lg:grid-cols-3 [&_.pais-card]:rounded-xl [&_.pais-card]:border [&_.pais-card]:border-border [&_.pais-card]:bg-card [&_.pais-card]:p-6 [&_.pais-card]:transition-all [&_.pais-card]:hover:border-primary/30 [&_.pais-card]:hover:shadow-lg [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline">
+          <div className="prose prose-lg max-w-none [&_.text-muted-foreground]:text-muted-foreground [&_.text-foreground]:text-foreground [&_.grid]:grid [&_.grid]:gap-6 [&_.grid]:sm:grid-cols-2 [&_.grid]:lg:grid-cols-3">
             <SafeHtml html={contenido} />
           </div>
         </Container>

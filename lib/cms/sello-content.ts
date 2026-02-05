@@ -130,58 +130,57 @@ export const CONTENIDO_COMO_SE_OBTIENE = `
 `;
 
 export const CONTENIDO_INTERNACIONAL = `
-<h2>Les Plus Beaux Villages de la Terre</h2>
-<p>Formamos parte de la red internacional <strong>Les Plus Beaux Villages de la Terre</strong>, que agrupa a las asociaciones nacionales de los pueblos más bonitos del mundo y promueve el intercambio de experiencias, la calidad turística y la preservación del patrimonio.</p>
-<p>Actualmente, la red cuenta con <strong>7 países miembros oficiales</strong>:</p>
+<p class="text-lg text-muted-foreground">Formamos parte de la red internacional <strong class="text-foreground">Les Plus Beaux Villages de la Terre</strong>, que agrupa a las asociaciones nacionales de los pueblos más bonitos del mundo y promueve el intercambio de experiencias, la calidad turística y la preservación del patrimonio.</p>
+<p class="text-muted-foreground">Actualmente, la red cuenta con <strong class="text-foreground">7 países miembros oficiales</strong>:</p>
 
-<div class="grid-paises-internacional">
-  <div class="pais-card">
-    <h3>🇫🇷 Francia</h3>
-    <p><strong>Les Plus Beaux Villages de France</strong> — Desde 1982. La asociación pionera que dio origen a la red mundial.</p>
-    <p><a href="https://www.les-plus-beaux-villages-de-france.org" target="_blank" rel="noopener noreferrer">Más información →</a></p>
+<div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="group rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
+    <h3 class="mb-3 text-lg font-semibold">🇫🇷 Francia</h3>
+    <p class="mb-4 text-sm text-muted-foreground"><strong class="text-foreground">Les Plus Beaux Villages de France</strong> — Desde 1982. La asociación pionera que dio origen a la red mundial.</p>
+    <p><a href="https://www.les-plus-beaux-villages-de-france.org" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-primary underline hover:no-underline">Más información →</a></p>
   </div>
-  <div class="pais-card">
-    <h3>🇧🇪 Valonia (Bélgica)</h3>
-    <p><strong>Les Plus Beaux Villages de Wallonie</strong> — Desde 1994. Los pueblos con más encanto de la región francófona belga.</p>
-    <p><a href="https://www.beauxvillages.be" target="_blank" rel="noopener noreferrer">Más información →</a></p>
+  <div class="group rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
+    <h3 class="mb-3 text-lg font-semibold">🇧🇪 Valonia (Bélgica)</h3>
+    <p class="mb-4 text-sm text-muted-foreground"><strong class="text-foreground">Les Plus Beaux Villages de Wallonie</strong> — Desde 1994. Los pueblos con más encanto de la región francófona belga.</p>
+    <p><a href="https://www.beauxvillages.be" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-primary underline hover:no-underline">Más información →</a></p>
   </div>
-  <div class="pais-card">
-    <h3>🇮🇹 Italia</h3>
-    <p><strong>I Borghi più belli d'Italia</strong> — Desde 2001. Una de las redes más extensas con cientos de pueblos certificados.</p>
-    <p><a href="https://www.borghipiubelliditalia.it" target="_blank" rel="noopener noreferrer">Más información →</a></p>
+  <div class="group rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
+    <h3 class="mb-3 text-lg font-semibold">🇮🇹 Italia</h3>
+    <p class="mb-4 text-sm text-muted-foreground"><strong class="text-foreground">I Borghi più belli d'Italia</strong> — Desde 2001. Una de las redes más extensas con cientos de pueblos certificados.</p>
+    <p><a href="https://www.borghipiubelliditalia.it" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-primary underline hover:no-underline">Más información →</a></p>
   </div>
-  <div class="pais-card">
-    <h3>🇯🇵 Japón</h3>
-    <p><strong>The Most Beautiful Villages in Japan</strong> — Desde 2005. La extensión de la red en Asia.</p>
-    <p><a href="https://utsukushii-mura.jp" target="_blank" rel="noopener noreferrer">Más información →</a></p>
+  <div class="group rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
+    <h3 class="mb-3 text-lg font-semibold">🇯🇵 Japón</h3>
+    <p class="mb-4 text-sm text-muted-foreground"><strong class="text-foreground">The Most Beautiful Villages in Japan</strong> — Desde 2005. La extensión de la red en Asia.</p>
+    <p><a href="https://utsukushii-mura.jp" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-primary underline hover:no-underline">Más información →</a></p>
   </div>
-  <div class="pais-card">
-    <h3>🇪🇸 España</h3>
-    <p><strong>Los Pueblos Más Bonitos de España</strong> — Formamos parte de la red desde nuestros inicios.</p>
-    <p><a href="/el-sello" target="_blank" rel="noopener noreferrer">Más información →</a></p>
+  <div class="group rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
+    <h3 class="mb-3 text-lg font-semibold">🇪🇸 España</h3>
+    <p class="mb-4 text-sm text-muted-foreground"><strong class="text-foreground">Los Pueblos Más Bonitos de España</strong> — Formamos parte de la red desde nuestros inicios.</p>
+    <p><a href="/el-sello" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-primary underline hover:no-underline">Más información →</a></p>
   </div>
-  <div class="pais-card">
-    <h3>🇨🇦 Quebec (Canadá)</h3>
-    <p><strong>Les Plus Beaux Villages du Québec</strong> — Desde 1998. Los pueblos más bonitos de la provincia canadiense.</p>
-    <p><a href="https://beauxvillages.qc.ca" target="_blank" rel="noopener noreferrer">Más información →</a></p>
+  <div class="group rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
+    <h3 class="mb-3 text-lg font-semibold">🇨🇦 Quebec (Canadá)</h3>
+    <p class="mb-4 text-sm text-muted-foreground"><strong class="text-foreground">Les Plus Beaux Villages du Québec</strong> — Desde 1998. Los pueblos más bonitos de la provincia canadiense.</p>
+    <p><a href="https://beauxvillages.qc.ca" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-primary underline hover:no-underline">Más información →</a></p>
   </div>
-  <div class="pais-card">
-    <h3>🇨🇭 Suiza</h3>
-    <p><strong>Les Plus Beaux Villages de Suisse</strong> — Desde 2015. Municipios pintorescos de Suiza y Liechtenstein con patrimonio excepcional.</p>
-    <p><a href="https://borghisvizzera.ch" target="_blank" rel="noopener noreferrer">Más información →</a></p>
+  <div class="group rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
+    <h3 class="mb-3 text-lg font-semibold">🇨🇭 Suiza</h3>
+    <p class="mb-4 text-sm text-muted-foreground"><strong class="text-foreground">Les Plus Beaux Villages de Suisse</strong> — Desde 2015. Municipios pintorescos de Suiza y Liechtenstein con patrimonio excepcional.</p>
+    <p><a href="https://borghisvizzera.ch" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-primary underline hover:no-underline">Más información →</a></p>
   </div>
 </div>
 
-<p>La red internacional coordina esfuerzos para compartir buenas prácticas, promover el turismo responsable y defender el valor de los pequeños núcleos rurales con patrimonio excepcional.</p>
+<p class="mt-8 text-muted-foreground">La red internacional coordina esfuerzos para compartir buenas prácticas, promover el turismo responsable y defender el valor de los pequeños núcleos rurales con patrimonio excepcional.</p>
 
-<h2>Países observadores</h2>
-<p>Además, varios países participan como <strong>miembros observadores</strong>, en proceso de incorporación a la red:</p>
-<ul>
-  <li>🇱🇧 <strong>Líbano</strong> — <a href="https://www.pbvliban.org/fr/" target="_blank" rel="noopener noreferrer">Web oficial</a></li>
-  <li>🇷🇺 <strong>Rusia</strong> — <a href="https://eng.krasaderevni.ru" target="_blank" rel="noopener noreferrer">Web oficial</a></li>
-  <li>🇨🇳 <strong>China</strong> — <a href="http://www.zmxzchina.com/index.html" target="_blank" rel="noopener noreferrer">Web oficial</a></li>
-  <li>🇧🇦 <strong>Bosnia-Herzegovina</strong> — <a href="https://mbv.ba/en/about-mbv-initiative/" target="_blank" rel="noopener noreferrer">Web oficial</a></li>
-  <li>🇩🇪 <strong>Alemania</strong> — <a href="https://www.schoenste-doerfer.de" target="_blank" rel="noopener noreferrer">Web oficial</a></li>
+<h2 class="mt-10 text-xl font-semibold">Países observadores</h2>
+<p class="text-muted-foreground">Además, varios países participan como <strong class="text-foreground">miembros observadores</strong>, en proceso de incorporación a la red:</p>
+<ul class="mt-4 list-disc space-y-2 pl-6 text-muted-foreground">
+  <li>🇱🇧 <strong class="text-foreground">Líbano</strong> — <a href="https://www.pbvliban.org/fr/" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:no-underline">Web oficial</a></li>
+  <li>🇷🇺 <strong class="text-foreground">Rusia</strong> — <a href="https://eng.krasaderevni.ru" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:no-underline">Web oficial</a></li>
+  <li>🇨🇳 <strong class="text-foreground">China</strong> — <a href="http://www.zmxzchina.com/index.html" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:no-underline">Web oficial</a></li>
+  <li>🇧🇦 <strong class="text-foreground">Bosnia-Herzegovina</strong> — <a href="https://mbv.ba/en/about-mbv-initiative/" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:no-underline">Web oficial</a></li>
+  <li>🇩🇪 <strong class="text-foreground">Alemania</strong> — <a href="https://www.schoenste-doerfer.de" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:no-underline">Web oficial</a></li>
 </ul>
 `;
 
