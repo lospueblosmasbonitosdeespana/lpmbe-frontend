@@ -11,7 +11,7 @@ export function Display({ children, className, as: Component = "h1" }: DisplayPr
   return (
     <Component
       className={cn(
-        "font-serif text-4xl font-medium tracking-tight text-balance sm:text-5xl md:text-6xl lg:text-7xl",
+        "font-serif text-3xl font-medium tracking-tight text-balance sm:text-4xl md:text-5xl lg:text-6xl",
         className
       )}
     >
@@ -30,7 +30,7 @@ export function Headline({ children, className, as: Component = "h2" }: Headline
   return (
     <Component
       className={cn(
-        "font-serif text-2xl font-medium tracking-tight text-balance sm:text-3xl md:text-4xl",
+        "font-serif text-xl font-medium tracking-tight text-balance sm:text-2xl md:text-3xl",
         className
       )}
     >

@@ -81,7 +81,7 @@ export default async function ComoSeObtienePage() {
     <main>
       <Section spacing="md" background="default">
         <Container>
-          <nav className="mb-8">
+          <nav className="mb-6">
             <ol className="flex flex-wrap items-center gap-2 text-sm">
               <li><Link href="/" className="text-muted-foreground transition-colors hover:text-primary">Inicio</Link></li>
               <li><span className="text-muted-foreground/50">/</span></li>
@@ -93,25 +93,17 @@ export default async function ComoSeObtienePage() {
 
           <div className="relative">
             <div className="absolute -left-4 top-0 h-full w-1 rounded-full bg-gradient-to-b from-primary to-primary/20" />
-            <Display className="mb-4 text-balance">{titulo}</Display>
+            <Display className="mb-2 text-balance">{titulo}</Display>
           </div>
 
-          <Lead className="max-w-2xl text-muted-foreground">{subtitle ?? "Proceso de certificación"}</Lead>
-        </Container>
-      </Section>
+          <Lead className="mb-8 max-w-2xl text-muted-foreground">{subtitle ?? "Proceso de certificación"}</Lead>
 
-      {contenido && (
-        <Section spacing="sm" background="default">
-          <Container>
-            <div className="max-w-4xl safe-html-content prose prose-lg max-w-none">
+          {contenido && (
+            <div className="mb-8 max-w-4xl safe-html-content prose prose-lg max-w-none">
               <SafeHtml html={contenido} />
             </div>
-          </Container>
-        </Section>
-      )}
+          )}
 
-      <Section spacing="lg" background="default">
-        <Container>
           <div className="grid gap-6 md:grid-cols-2">
             {cards.map((card, index) => {
               const IconComponent = card.icon;
