@@ -99,7 +99,7 @@ export async function Footer() {
             </Link>
             <p className="text-sm leading-relaxed text-white/70">
               Asociación dedicada a preservar y promover el patrimonio rural de
-              España desde 2011.
+              España desde 2010.
             </p>
           </div>
 
