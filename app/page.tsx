@@ -107,16 +107,22 @@ async function getNews(): Promise<NewsItem[]> {
     const json = await res.json();
     const items = Array.isArray(json) ? json : (json?.items ?? []);
 
-    return items.slice(0, 4).map((item: any) => ({
-      id: item.id ?? item.refId ?? Math.random(),
-      title: item.titulo ?? "(sin título)",
-      type: item.tipo ?? "NOTICIA",
-      href: item.contenidoSlug
-        ? `/c/${item.contenidoSlug}`
-        : item.url || item.href || "/notificaciones",
-      image: item.imagen || item.image || null,
-      date: item.fecha,
-    }));
+    return items.slice(0, 4).map((item: any) => {
+      // Prioridad: contenido enlazado (artículo completo) > anchor en listado
+      const contenidoSlug = item.contenidoSlug ?? item.contenido_slug;
+      const href = contenidoSlug
+        ? `/c/${contenidoSlug}`
+        : item.url || item.href || (item.id ? `/notificaciones#notif-${item.id}` : "/notificaciones");
+
+      return {
+        id: item.id ?? item.refId ?? Math.random(),
+        title: item.titulo ?? "(sin título)",
+        type: item.tipo ?? "NOTICIA",
+        href,
+        image: item.coverUrl ?? item.imagen ?? item.image ?? null,
+        date: item.fecha ?? item.createdAt,
+      };
+    });
   } catch {
     return [];
   }
@@ -159,13 +165,17 @@ export default async function HomePage() {
     href: t.href,
   }));
 
-  // Obtener primera imagen del hero como heroImage
-  const heroImage = config.hero.slides?.[0]?.image || "/hero/1.jpg";
+  // Slides visibles del hero (máx 4) para el carrusel
+  const heroSlides = (config.hero.slides ?? [])
+    .filter((s) => s?.image?.trim() && !s?.hidden)
+    .slice(0, 4)
+    .map((s) => ({ image: s.image, alt: s.alt }));
 
   return (
     <main>
       <HomePageNew
-        heroImage={heroImage}
+        heroSlides={heroSlides}
+        heroIntervalMs={config.hero.intervalMs ?? 4000}
         heroTitle={config.hero.title}
         heroSubtitle={config.hero.subtitle}
         notifications={notifications}

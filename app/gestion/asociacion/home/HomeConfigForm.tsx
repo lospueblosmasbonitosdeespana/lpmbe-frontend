@@ -51,7 +51,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
     }
   }
 
-  // Cambiar número de slides (1-5)
+  // Cambiar número de slides (1-4) - carrusel hero
   const setSlidesCount = (n: number) => {
     setConfig((prev) => {
       const cur = prev.hero?.slides ?? [];
@@ -74,7 +74,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
       // Solo filtrar slides completamente vacíos (sin image)
       const slides = (config.hero.slides ?? [])
         .filter((s) => typeof s?.image === "string" && s.image.trim().length > 0)
-        .slice(0, 5)
+        .slice(0, 4)
         .map((s, i) => ({
           image: s.image.trim(),
           alt: typeof s.alt === "string" ? s.alt : "",
@@ -134,9 +134,12 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
         </div>
       )}
 
-      {/* Hero */}
+      {/* Hero - Carrusel de fotos de fondo */}
       <section className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="text-xl font-semibold mb-4">Hero</h2>
+        <h2 className="text-xl font-semibold mb-4">Hero (fotos de fondo)</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          Las fotos del hero rotan automáticamente cada pocos segundos. Máximo 4 imágenes.
+        </p>
         
         <div className="space-y-4">
           <div>
@@ -171,30 +174,34 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Intervalo de cambio (ms)
+              Intervalo entre fotos (segundos)
             </label>
             <input
               type="number"
-              value={config.hero.intervalMs}
-              onChange={(e) =>
+              min="2"
+              max="15"
+              value={Math.round((config.hero.intervalMs || 4000) / 1000)}
+              onChange={(e) => {
+                const sec = parseInt(e.target.value, 10) || 4;
                 setConfig({
                   ...config,
-                  hero: { ...config.hero, intervalMs: parseInt(e.target.value) || 6000 },
-                })
-              }
+                  hero: { ...config.hero, intervalMs: sec * 1000 },
+                });
+              }}
               className="w-full rounded border border-gray-300 px-3 py-2"
             />
+            <p className="text-xs text-gray-500 mt-1">Cada cuántos segundos cambia la foto (por defecto 4)</p>
           </div>
 
-          {/* Selector de número de imágenes */}
+          {/* Selector de número de imágenes (máx 4) */}
           <div>
-            <label className="block text-sm font-medium mb-1">Número de imágenes</label>
+            <label className="block text-sm font-medium mb-1">Número de imágenes del carrusel (máx. 4)</label>
             <select
-              value={config.hero.slides?.length || 0}
+              value={Math.min(config.hero.slides?.length || 0, 4) || 1}
               onChange={(e) => setSlidesCount(Number(e.target.value))}
               className="w-full rounded border border-gray-300 px-3 py-2"
             >
-              {[1, 2, 3, 4, 5].map((n) => (
+              {[1, 2, 3, 4].map((n) => (
                 <option key={n} value={n}>
                   {n}
                 </option>

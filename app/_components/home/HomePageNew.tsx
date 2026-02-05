@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -62,7 +62,8 @@ export interface NewsItem {
 }
 
 interface HomePageProps {
-  heroImage?: string;
+  heroSlides?: Array<{ image: string; alt?: string }>;
+  heroIntervalMs?: number;
   heroTitle?: string;
   heroSubtitle?: string;
   notifications?: NotificationItem[];
@@ -76,25 +77,63 @@ interface HomePageProps {
 
 /* ----- HERO SECTION ----- */
 function HeroSection({
-  heroImage,
+  heroSlides = [],
+  heroIntervalMs = 4000,
   heroTitle,
   heroSubtitle,
 }: {
-  heroImage?: string;
+  heroSlides?: Array<{ image: string; alt?: string }>;
+  heroIntervalMs?: number;
   heroTitle?: string;
   heroSubtitle?: string;
 }) {
+  const visibleSlides = heroSlides.filter((s) => s?.image?.trim()).slice(0, 4);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    if (activeIndex >= visibleSlides.length && visibleSlides.length > 0) {
+      setActiveIndex(0);
+    }
+  }, [visibleSlides.length, activeIndex]);
+
+  useEffect(() => {
+    if (visibleSlides.length <= 1) return;
+    const timer = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % visibleSlides.length);
+    }, heroIntervalMs);
+    return () => clearInterval(timer);
+  }, [visibleSlides.length, heroIntervalMs]);
+
   return (
     <section className="relative h-[75vh] min-h-[550px] max-h-[800px] overflow-hidden">
       <div className="absolute inset-0">
-        <Image
-          src={heroImage || "/hero/1.jpg"}
-          alt="Los Pueblos Más Bonitos de España"
-          fill
-          priority
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" />
+        {visibleSlides.map((slide, idx) => (
+          <div
+            key={idx}
+            className={cn(
+              "absolute inset-0 transition-opacity duration-1000",
+              idx === activeIndex ? "opacity-100 z-0" : "opacity-0 z-[-1]"
+            )}
+          >
+            <Image
+              src={slide.image}
+              alt={slide.alt || "Los Pueblos Más Bonitos de España"}
+              fill
+              priority={idx === 0}
+              className="object-cover"
+            />
+          </div>
+        ))}
+        {visibleSlides.length === 0 && (
+          <Image
+            src="/hero/1.jpg"
+            alt="Los Pueblos Más Bonitos de España"
+            fill
+            priority
+            className="object-cover"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10 z-[1]" />
       </div>
 
       <Container className="relative h-full flex flex-col justify-end pb-28">
@@ -858,7 +897,8 @@ function SocialMediaSection() {
 
 /* ----- MAIN COMPONENT ----- */
 export function HomePageNew({
-  heroImage,
+  heroSlides = [],
+  heroIntervalMs = 4000,
   heroTitle,
   heroSubtitle,
   notifications = [],
@@ -872,7 +912,8 @@ export function HomePageNew({
   return (
     <div className="min-h-screen">
       <HeroSection
-        heroImage={heroImage}
+        heroSlides={heroSlides}
+        heroIntervalMs={heroIntervalMs}
         heroTitle={heroTitle}
         heroSubtitle={heroSubtitle}
       />

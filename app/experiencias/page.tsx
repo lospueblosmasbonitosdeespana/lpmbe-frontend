@@ -5,24 +5,43 @@ import { getApiUrl } from "@/lib/api";
 import { Container } from "@/app/components/ui/container";
 import { Section } from "@/app/components/ui/section";
 import { Title, Muted, Display } from "@/app/components/ui/typography";
-import { CCAA, norm } from "@/app/_components/pueblos/ccaa.config";
 import { ArrowRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-type Pueblo = {
+type TematicaPage = {
   id: number;
-  nombre: string;
-  slug: string;
-  provincia?: string | null;
-  comunidad?: string | null;
+  titulo: string;
+  resumen?: string | null;
+  coverUrl?: string | null;
+  pueblo?: {
+    id: number;
+    nombre: string;
+    slug: string;
+    provincia?: string;
+    comunidad?: string;
+  };
 };
 
-async function getPueblos(): Promise<Pueblo[]> {
+const CATEGORY_MAP: Record<string, { category: string; title: string }> = {
+  gastronomia: { category: "GASTRONOMIA", title: "Gastronomía" },
+  naturaleza: { category: "NATURALEZA", title: "Naturaleza" },
+  cultura: { category: "CULTURA", title: "Cultura" },
+  "en-familia": { category: "EN_FAMILIA", title: "En familia" },
+  petfriendly: { category: "PETFRIENDLY", title: "Petfriendly" },
+};
+
+async function getPueblosByTematica(
+  category: string
+): Promise<TematicaPage[]> {
   try {
-    const res = await fetch(`${getApiUrl()}/pueblos`, { cache: "no-store" });
+    const res = await fetch(
+      `${getApiUrl()}/public/pages?category=${category}`,
+      { cache: "no-store" }
+    );
     if (!res.ok) return [];
-    return res.json();
+    const data = await res.json();
+    return Array.isArray(data?.pueblos) ? data.pueblos : [];
   } catch {
     return [];
   }
@@ -31,38 +50,24 @@ async function getPueblos(): Promise<Pueblo[]> {
 export const metadata = {
   title: "Experiencias temáticas | Los Pueblos Más Bonitos de España",
   description:
-    "Descubre nuestros pueblos por temática: gastronomía, naturaleza, cultura, en familia, petfriendly. Y explóralos por comunidad autónoma.",
+    "Descubre nuestros pueblos por temática: gastronomía, naturaleza, cultura, en familia, petfriendly.",
 };
 
 export default async function ExperienciasPage() {
-  const [config, pueblos] = await Promise.all([
-    getHomeConfig(),
-    getPueblos(),
-  ]);
-
+  const config = await getHomeConfig();
   const themes = config.themes;
 
-  // Agrupar pueblos por comunidad
-  const byComunidad = pueblos.reduce((acc, p) => {
-    const c = (p.comunidad ?? "").trim();
-    if (!c) return acc;
-    acc[c] = acc[c] || [];
-    acc[c].push(p);
-    return acc;
-  }, {} as Record<string, Pueblo[]>);
-
-  // CCAA con pueblos (orden según config)
-  const visibleCCAA = CCAA.filter((c) => {
-    if (c.slug === "murcia") return true;
-    const total =
-      Array.from(Object.entries(byComunidad)).find(([name]) => norm(name) === norm(c.name))?.[1]
-        ?.length ?? 0;
-    return total > 0;
-  });
+  // Obtener pueblos por temática (solo los que tienen contenido publicado)
+  const pueblosByTematica = await Promise.all(
+    themes.map(async (t) => {
+      const map = CATEGORY_MAP[t.key];
+      const pueblos = map ? await getPueblosByTematica(map.category) : [];
+      return { theme: t, pueblos };
+    })
+  );
 
   return (
     <main className="min-h-screen">
-      {/* Hero / Intro */}
       <Section spacing="lg" background="default">
         <Container>
           <div className="text-center mb-12">
@@ -80,14 +85,12 @@ export default async function ExperienciasPage() {
 
           {/* Temáticas de la asociación */}
           <div className="mb-16">
-            <h2 className="text-xl font-semibold mb-6">Temáticas de la asociación</h2>
+            <Title as="h2" size="xl" className="mb-6">
+              Temáticas de la asociación
+            </Title>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
               {themes.map((t) => (
-                <Link
-                  key={t.key}
-                  href={t.href}
-                  className="group block"
-                >
+                <Link key={t.key} href={t.href} className="group block">
                   <div className="relative aspect-[3/4] rounded-2xl overflow-hidden mb-3 shadow-md group-hover:shadow-xl transition-all duration-500">
                     {t.image ? (
                       <Image
@@ -116,55 +119,69 @@ export default async function ExperienciasPage() {
             </div>
           </div>
 
-          {/* Pueblos por región */}
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Pueblos por comunidad autónoma</h2>
-            <p className="text-muted-foreground text-sm mb-6">
-              Explora nuestros pueblos certificados organizados por región.
-            </p>
+          {/* Pueblos por temática (solo si tienen contenido) */}
+          <div className="space-y-12">
+            <Title as="h2" size="xl" className="mb-6">
+              Pueblos por temática
+            </Title>
+            <Muted className="block mb-8">
+              Solo se muestran los pueblos que han publicado contenido en cada temática.
+            </Muted>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {visibleCCAA.map((c) => {
-                const comunidadMatch = Object.keys(byComunidad).find(
-                  (name) => norm(name) === norm(c.name)
-                );
-                const pueblosCCAA = comunidadMatch ? byComunidad[comunidadMatch] ?? [] : [];
-                const total = pueblosCCAA.length;
-
-                return (
+            {pueblosByTematica.map(({ theme, pueblos }) => (
+              <section key={theme.key}>
+                <div className="flex items-center justify-between gap-4 mb-4">
+                  <h3 className="text-lg font-semibold">{theme.title}</h3>
                   <Link
-                    key={c.slug}
-                    href={`/pueblos/comunidades/${c.slug}`}
-                    className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-muted/50"
+                    href={theme.href}
+                    className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
                   >
-                    <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
-                      {c.flagSrc ? (
-                        <Image
-                          src={c.flagSrc}
-                          alt={`Bandera de ${c.name}`}
-                          fill
-                          className="object-cover"
-                          sizes="64px"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
-                          —
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium">{c.name}</div>
-                      <div className="mt-1 text-sm text-muted-foreground">
-                        {total > 0
-                          ? `${total} pueblo${total === 1 ? "" : "s"} certificado${total === 1 ? "" : "s"}`
-                          : "Todavía sin pueblos"}
-                      </div>
-                    </div>
-                    <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                    Ver temática completa <ArrowRight className="h-4 w-4" />
                   </Link>
-                );
-              })}
-            </div>
+                </div>
+
+                {pueblos.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4">
+                    Ningún pueblo ha publicado contenido en esta temática todavía.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+                    {pueblos.map((item) => {
+                      const href = `/experiencias/${theme.key}/pueblos/${item.pueblo!.slug}`;
+                      return (
+                        <Link
+                          key={item.id}
+                          href={href}
+                          className="block overflow-hidden rounded-lg border border-border bg-card transition-shadow hover:shadow-lg"
+                        >
+                          {item.coverUrl && item.coverUrl.trim() ? (
+                            <div className="h-28 w-full overflow-hidden rounded-t-lg bg-muted">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={item.coverUrl.trim()}
+                                alt={item.titulo}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="h-28 w-full rounded-t-lg bg-muted" />
+                          )}
+                          <div className="p-2.5">
+                            <h4 className="line-clamp-2 text-sm font-semibold leading-snug">
+                              {item.titulo}
+                            </h4>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {item.pueblo!.nombre}
+                              {item.pueblo!.provincia && ` (${item.pueblo!.provincia})`}
+                            </p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            ))}
           </div>
         </Container>
       </Section>

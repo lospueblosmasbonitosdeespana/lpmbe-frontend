@@ -76,7 +76,7 @@ export async function getHomeConfig(): Promise<HomeConfig> {
         subtitle: typeof s?.subtitle === 'string' ? s.subtitle : undefined,
         cta: s?.cta && typeof s.cta === 'object' ? s.cta : undefined,
       }))
-      .slice(0, 5);  // Solo limitar cantidad, NO filtrar por hidden ni por image vacío
+      .slice(0, 4);  // Máximo 4 slides para carrusel hero
     
     // Si el backend no devuelve themes, usar fallback local
     const fallback = getFallbackHomeConfig();
@@ -85,7 +85,7 @@ export async function getHomeConfig(): Promise<HomeConfig> {
       hero: {
         title: hero.title ?? '',
         subtitle: hero.subtitle ?? '',
-        intervalMs: Number(hero.intervalMs) || 6000,
+        intervalMs: Number(hero.intervalMs) || 4000,
         slides,
       },
       themes: Array.isArray(data.themes) && data.themes.length > 0 
@@ -136,7 +136,7 @@ function getFallbackHomeConfig(): HomeConfig {
       title: "Los Pueblos Más Bonitos de España",
       subtitle: "Descubre la esencia de nuestros pueblos",
       slides: [],
-      intervalMs: 6000,
+      intervalMs: 4000,
     },
     themes: [
       {
