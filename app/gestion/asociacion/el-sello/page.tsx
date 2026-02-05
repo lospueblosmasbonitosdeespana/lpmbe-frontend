@@ -150,6 +150,9 @@ export default function ElSelloCmsPage() {
           <Link href="/gestion/asociacion/el-sello/imagenes" className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
             🖼️ Imágenes del Sello
           </Link>
+          <Link href="/gestion/asociacion/el-sello/socios" className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            🤝 Socios y colaboradores
+          </Link>
           <Link href="/gestion/asociacion/el-sello/documentos" className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
             📄 Gestionar Documentos (PDFs)
           </Link>
