@@ -34,6 +34,12 @@ const ACCESOS = [
     icon: <IconContenidos />,
   },
   {
+    href: '/gestion/asociacion/notificaciones',
+    title: 'Notificaciones',
+    description: 'Todas las noticias, eventos y alertas en un solo lugar',
+    icon: <IconContenidos />,
+  },
+  {
     href: '/gestion/asociacion/alertas',
     title: 'Alertas globales',
     description: 'Avisos visibles a nivel nacional',
