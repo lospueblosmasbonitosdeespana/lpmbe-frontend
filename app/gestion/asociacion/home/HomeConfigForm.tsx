@@ -34,18 +34,24 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("folder", "home/themes");
 
       const res = await fetch("/api/admin/uploads", {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
 
+      const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        throw new Error("Error subiendo imagen");
+        const msg = data?.error ?? data?.message ?? `Error ${res.status}`;
+        throw new Error(typeof msg === "string" ? msg : "Error subiendo imagen");
       }
 
-      const data = await res.json();
-      return data.url;
+      const url = data?.url ?? data?.publicUrl;
+      if (!url) throw new Error("La subida no devolvió URL");
+      return url;
     } finally {
       setUploading(false);
     }
@@ -288,7 +294,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                             newThemes[idx] = { ...newThemes[idx], image: url };
                             setConfig({ ...config, themes: newThemes });
                           } catch (err) {
-                            alert("Error subiendo imagen");
+                            setMessage({ type: "error", text: (err as Error)?.message ?? "Error subiendo imagen" });
                           }
 
                           target.value = "";

@@ -19,12 +19,20 @@ export async function POST(req: Request) {
   }
 
   try {
-    const formData = await req.formData();
+    const incomingForm = await req.formData();
+    const file = incomingForm.get('file');
     
-    console.log("[proxy POST uploads] FormData keys:", Array.from(formData.keys()));
+    if (!file || !(file instanceof Blob)) {
+      return NextResponse.json({ error: 'No se recibió ningún archivo' }, { status: 400 });
+    }
+
+    // Crear FormData fresco para reenviar al backend (evita problemas de serialización)
+    const formData = new FormData();
+    formData.append('file', file, file instanceof File ? file.name : 'image');
+    const folder = incomingForm.get('folder');
+    if (folder && typeof folder === 'string') formData.append('folder', folder);
 
     const API_BASE = getApiUrl();
-    // ✅ Usar /media/upload en vez de /admin/uploads (legacy)
     const upstreamUrl = `${API_BASE}/media/upload`;
 
     const upstream = await fetch(upstreamUrl, {
@@ -49,8 +57,9 @@ export async function POST(req: Request) {
     }
 
     if (!upstream.ok) {
+      const errorMsg = data?.message ?? data?.error ?? "Upload falló";
       return NextResponse.json(
-        { error: "Upload falló", status: upstream.status, data },
+        { error: typeof errorMsg === "string" ? errorMsg : "Upload falló", status: upstream.status, data },
         { status: upstream.status }
       );
     }
