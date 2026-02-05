@@ -3,6 +3,18 @@ import { getMisPueblosServer } from '@/lib/misPueblos';
 import { getPuebloBySlug } from '@/lib/api';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import {
+  IconContenidos,
+  IconAlertas,
+  IconSemaforo,
+  IconClub,
+  IconFotos,
+  IconDescripcion,
+  IconCifras,
+  IconPois,
+  IconMultiexperiencias,
+  IconAutorizados,
+} from '../../_components/GestionIcons';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -17,13 +29,13 @@ function GridCard({
   href: string;
   title: string;
   description: string;
-  icon: string;
+  icon: React.ReactNode;
   disabled?: boolean;
 }) {
   if (disabled) {
     return (
       <div className="flex flex-col rounded-xl border border-border bg-muted/50 p-6 opacity-60">
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-muted text-2xl">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-muted text-primary/50">
           {icon}
         </div>
         <h3 className="font-semibold text-foreground">{title}</h3>
@@ -92,63 +104,63 @@ export default async function GestionPuebloPage({
       href: contenidosUrl,
       title: 'Contenidos',
       description: 'Páginas, noticias y eventos del pueblo',
-      icon: '📄',
+      icon: <IconContenidos />,
       disabled: !puebloId,
     },
     {
       href: `${baseUrl}/alertas`,
       title: 'Alertas',
       description: 'Avisos y alertas del municipio',
-      icon: '⚠️',
+      icon: <IconAlertas />,
       disabled: false,
     },
     {
       href: `${baseUrl}/semaforo`,
       title: 'Semáforo',
       description: 'Estado turístico y aforo',
-      icon: '🚦',
+      icon: <IconSemaforo />,
       disabled: false,
     },
     {
       href: `${baseUrl}/club`,
       title: 'Club de Amigos',
       description: 'Métricas y recursos del club',
-      icon: '👥',
+      icon: <IconClub />,
       disabled: false,
     },
     {
       href: `${baseUrl}/fotos`,
       title: 'Fotos del pueblo',
       description: 'Galería e imágenes destacadas',
-      icon: '📷',
+      icon: <IconFotos />,
       disabled: false,
     },
     {
       href: `${baseUrl}/descripcion`,
       title: 'Descripción del pueblo',
       description: 'Textos y descripciones',
-      icon: '📝',
+      icon: <IconDescripcion />,
       disabled: false,
     },
     {
       href: `${baseUrl}/en-cifras`,
       title: 'En cifras',
       description: 'Datos y estadísticas',
-      icon: '📊',
+      icon: <IconCifras />,
       disabled: false,
     },
     {
       href: `${baseUrl}/pois`,
       title: 'POIs',
       description: 'Puntos de interés',
-      icon: '📍',
+      icon: <IconPois />,
       disabled: false,
     },
     {
       href: `${baseUrl}/multiexperiencias`,
       title: 'Multiexperiencias',
       description: 'Rutas y experiencias',
-      icon: '🛤️',
+      icon: <IconMultiexperiencias />,
       disabled: false,
     },
     ...(me.rol === 'ADMIN'
@@ -157,7 +169,7 @@ export default async function GestionPuebloPage({
             href: `${baseUrl}/autorizados`,
             title: 'Autorizados',
             description: 'Usuarios que pueden gestionar el pueblo',
-            icon: '👤',
+            icon: <IconAutorizados />,
             disabled: false,
           },
         ]

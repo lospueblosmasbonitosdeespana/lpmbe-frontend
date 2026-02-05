@@ -1,67 +1,79 @@
 import Link from 'next/link';
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
+import {
+  IconHome,
+  IconRutas,
+  IconContenidos,
+  IconAlertas,
+  IconClub,
+  IconTienda,
+  IconDatos,
+  IconAjustes,
+  IconSello,
+  IconDocumentos,
+} from '../_components/GestionIcons';
 
 const ACCESOS = [
   {
     href: '/gestion/asociacion/home',
     title: 'Configuración del Home',
     description: 'Banners y bloques de la página principal',
-    icon: '🏠',
+    icon: <IconHome />,
   },
   {
     href: '/gestion/asociacion/rutas',
     title: 'Rutas',
     description: 'Multiexperiencias y rutas turísticas',
-    icon: '🛤️',
+    icon: <IconRutas />,
   },
   {
     href: '/gestion/asociacion/contenidos',
     title: 'Contenidos',
     description: 'Páginas, noticias y eventos globales',
-    icon: '📄',
+    icon: <IconContenidos />,
   },
   {
     href: '/gestion/asociacion/alertas',
     title: 'Alertas globales',
     description: 'Avisos visibles a nivel nacional',
-    icon: '⚠️',
+    icon: <IconAlertas />,
   },
   {
     href: '/gestion/asociacion/club',
     title: 'Club de amigos',
     description: 'Configuración del club y socios',
-    icon: '👥',
+    icon: <IconClub />,
   },
   {
     href: '/gestion/asociacion/tienda',
     title: 'Tienda',
     description: 'Productos, pedidos y promociones',
-    icon: '🛒',
+    icon: <IconTienda />,
   },
   {
     href: '/gestion/asociacion/datos',
     title: 'Datos',
     description: 'Métricas, clientes, newsletter',
-    icon: '📊',
+    icon: <IconDatos />,
   },
   {
     href: '/gestion/asociacion/ajustes',
     title: 'Ajustes de marca',
     description: 'Logo y nombre del sitio',
-    icon: '🎨',
+    icon: <IconAjustes />,
   },
   {
     href: '/gestion/asociacion/el-sello',
     title: 'El Sello (CMS)',
     description: 'Páginas y contenidos de El Sello',
-    icon: '🏅',
+    icon: <IconSello />,
   },
   {
     href: '/gestion/asociacion/el-sello/documentos',
     title: 'Documentos',
     description: 'PDFs (Estatutos, Carta de Calidad)',
-    icon: '📑',
+    icon: <IconDocumentos />,
   },
 ];
 
@@ -74,7 +86,7 @@ function GridCard({
   href: string;
   title: string;
   description: string;
-  icon: string;
+  icon: React.ReactNode;
 }) {
   return (
     <Link

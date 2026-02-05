@@ -2,6 +2,7 @@
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { IconMapa, IconAsociacion } from './_components/GestionIcons';
 
 function GridCard({
   href,
@@ -38,22 +39,6 @@ function GridCard({
   );
 }
 
-function MapIcon() {
-  return (
-    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-    </svg>
-  );
-}
-
-function BuildingIcon() {
-  return (
-    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 9h.01M15 9h.01M9 13h.01M15 13h.01" />
-    </svg>
-  );
-}
-
 export default async function GestionPage() {
   const me = await getMeServer();
   if (!me) redirect('/entrar');
@@ -85,7 +70,7 @@ export default async function GestionPage() {
                 ? 'Gestiona los pueblos que tienes asignados'
                 : 'Ver y gestionar todos los pueblos'
             }
-            icon={<MapIcon />}
+            icon={<IconMapa />}
           />
         </div>
       </section>
@@ -101,7 +86,7 @@ export default async function GestionPage() {
               href="/gestion/asociacion"
               title="Asociación"
               description="Configuración global, contenidos, tienda y más"
-              icon={<BuildingIcon />}
+              icon={<IconAsociacion />}
             />
           </div>
         </section>
