@@ -3,6 +3,19 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+/** Formatea fecha para input datetime-local (usa hora local, no UTC) */
+function toDatetimeLocal(isoOrDate: string | Date | null): string {
+  if (!isoOrDate) return '';
+  const d = new Date(isoOrDate);
+  if (isNaN(d.getTime())) return '';
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const h = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${y}-${m}-${day}T${h}:${min}`;
+}
+
 type SemaforoFormProps = {
   puebloId: number;
   slug: string;
@@ -30,10 +43,10 @@ export default function SemaforoForm({
   const [mensajePublico, setMensajePublico] = useState(mensajePublicoActual);
   const [motivo, setMotivo] = useState(motivoActual);
   const [inicioProgramado, setInicioProgramado] = useState(
-    inicioProgramadoActual ? new Date(inicioProgramadoActual).toISOString().slice(0, 16) : ''
+    toDatetimeLocal(inicioProgramadoActual)
   );
   const [finProgramado, setFinProgramado] = useState(
-    finProgramadoActual ? new Date(finProgramadoActual).toISOString().slice(0, 16) : ''
+    toDatetimeLocal(finProgramadoActual)
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,9 +96,18 @@ export default function SemaforoForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    // Validaciones
-    if (estado !== 'VERDE' && !motivo.trim()) {
-      setError('El motivo es obligatorio para estados AMARILLO y ROJO');
+    // Validaciones: ROJO/AMARILLO sin programación requiere mensaje público
+    const hasProgramacion = !!(inicioProgramado && finProgramado);
+    if (estado !== 'VERDE' && !hasProgramacion) {
+      if (!mensajePublico.trim()) {
+        setError('El mensaje público es obligatorio para ROJO/AMARILLO sin programación');
+        return;
+      }
+    }
+
+    // Con programación: motivo obligatorio
+    if (hasProgramacion && estado !== 'VERDE' && !motivo.trim()) {
+      setError('El motivo es obligatorio cuando hay programación');
       return;
     }
 
@@ -156,8 +178,10 @@ export default function SemaforoForm({
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Motivo <span className="text-red-500">*</span>{' '}
-            <span className="text-xs text-gray-500">(obligatorio para AMARILLO/ROJO)</span>
+            Motivo{' '}
+            <span className="text-xs text-gray-500">
+              (obligatorio solo si usas programación de fechas)
+            </span>
           </label>
           <input
             type="text"
@@ -213,7 +237,8 @@ export default function SemaforoForm({
             </div>
           </div>
           <p className="mt-2 text-xs text-gray-500">
-            Si especificas fechas, el semáforo cambiará automáticamente en esos momentos.
+            Sin programación: ROJO/AMARILLO duran máximo 7 días (luego se revierte a VERDE).
+            Con fechas: el semáforo cambia automáticamente en esos momentos.
           </p>
         </div>
       </div>
