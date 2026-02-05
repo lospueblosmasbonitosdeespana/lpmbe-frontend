@@ -8,12 +8,13 @@ import {
   Headline,
   Body,
 } from '@/app/components/ui/typography';
+import type { SelloPage } from '@/lib/cms/sello';
 
 export const dynamic = 'force-dynamic';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
-async function getPageContent(): Promise<{ titulo?: string; contenido?: string } | null> {
+async function getPageContent(): Promise<SelloPage | null> {
   try {
     const res = await fetch(
       `${API_BASE}/public/cms/sello/SELLO_QUIENES_SOMOS`,
@@ -43,12 +44,9 @@ const CONTENIDO_BREVE = `
 export default async function QuienesSomosPage() {
   const page = await getPageContent();
   const titulo = page?.titulo ?? 'Quiénes somos';
+  const subtitle = page?.subtitle ?? 'La asociación';
   const contenidoCms = page?.contenido?.trim();
-  // Usar nuestro contenido si el CMS está vacío o es solo un placeholder (muy breve)
-  const contenido =
-    contenidoCms && contenidoCms.length > 200 && !contenidoCms.startsWith('# ')
-      ? contenidoCms
-      : CONTENIDO_BREVE;
+  const contenido = contenidoCms && contenidoCms.length > 0 ? contenidoCms : CONTENIDO_BREVE;
 
   return (
     <main>
@@ -88,7 +86,7 @@ export default async function QuienesSomosPage() {
             <div className="mb-4 flex items-center gap-3">
               <div className="h-12 w-1.5 rounded-full bg-primary" />
               <span className="text-sm font-medium uppercase tracking-widest text-primary">
-                La asociación
+                {subtitle}
               </span>
             </div>
 

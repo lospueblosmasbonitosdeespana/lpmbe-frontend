@@ -1,62 +1,12 @@
 import Link from "next/link";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
-import { Display, Lead, Title, Body } from "@/app/components/ui/typography";
+import { Display, Lead } from "@/app/components/ui/typography";
 import SafeHtml from "@/app/_components/ui/SafeHtml";
 import type { SelloPage } from "@/lib/cms/sello";
+import { CONTENIDO_COMO_SE_OBTIENE } from "@/lib/cms/sello-content";
 
 export const dynamic = "force-dynamic";
-
-/* ===== ICONS ===== */
-function ProcessIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2v4" />
-      <path d="M12 18v4" />
-      <path d="M4.93 4.93l2.83 2.83" />
-      <path d="M16.24 16.24l2.83 2.83" />
-      <path d="M2 12h4" />
-      <path d="M18 12h4" />
-      <path d="M4.93 19.07l2.83-2.83" />
-      <path d="M16.24 7.76l2.83-2.83" />
-    </svg>
-  );
-}
-
-function CriteriaIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 11l3 3L22 4" />
-      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-    </svg>
-  );
-}
-
-function ArrowIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 12h14" />
-      <path d="m12 5 7 7-7 7" />
-    </svg>
-  );
-}
-
-const cards = [
-  {
-    title: "Proceso de selección",
-    description: "Conoce las etapas que debe superar un municipio desde la solicitud inicial hasta la obtención definitiva del sello de calidad.",
-    linkText: "Ver proceso",
-    linkHref: "/el-sello/proceso",
-    icon: ProcessIcon,
-  },
-  {
-    title: "Criterios de evaluación",
-    description: "Descubre los estándares de calidad en patrimonio, urbanismo, paisaje y gestión que deben cumplir los pueblos candidatos.",
-    linkText: "Ver criterios",
-    linkHref: "/el-sello/criterios",
-    icon: CriteriaIcon,
-  },
-];
 
 async function getPage(): Promise<SelloPage | null> {
   try {
@@ -74,8 +24,8 @@ async function getPage(): Promise<SelloPage | null> {
 export default async function ComoSeObtienePage() {
   const page = await getPage();
   const titulo = page?.titulo ?? "¿Cómo se obtiene el Sello?";
-  const subtitle = page?.subtitle;
-  const contenido = page?.contenido ?? "";
+  const subtitle = page?.subtitle ?? "Proceso de certificación";
+  const contenido = page?.contenido?.trim() || CONTENIDO_COMO_SE_OBTIENE;
 
   return (
     <main>
@@ -96,34 +46,10 @@ export default async function ComoSeObtienePage() {
             <Display className="mb-2 text-balance">{titulo}</Display>
           </div>
 
-          <Lead className="mb-8 max-w-2xl text-muted-foreground">{subtitle ?? "Proceso de certificación"}</Lead>
+          <Lead className="mb-8 max-w-2xl text-muted-foreground">{subtitle}</Lead>
 
-          {contenido && (
-            <div className="mb-8 max-w-4xl safe-html-content prose prose-lg max-w-none">
-              <SafeHtml html={contenido} />
-            </div>
-          )}
-
-          <div className="grid gap-6 md:grid-cols-2">
-            {cards.map((card, index) => {
-              const IconComponent = card.icon;
-              return (
-              <Link key={index} href={card.linkHref} className="group block">
-                <article className="relative h-full overflow-hidden rounded-xl border border-border bg-card p-8 transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
-                  <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
-                    <IconComponent className="h-7 w-7" />
-                  </div>
-                  <Title as="h3" className="mb-3 text-xl">{card.title}</Title>
-                  <Body className="mb-6 text-muted-foreground">{card.description}</Body>
-                  <span className="inline-flex items-center gap-2 font-medium text-primary transition-colors group-hover:text-primary/80">
-                    {card.linkText}
-                    <ArrowIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                  </span>
-                </article>
-              </Link>
-            );
-            })}
+          <div className="max-w-4xl prose prose-lg max-w-none [&_.grid]:grid [&_.grid]:gap-6 [&_.grid]:md:grid-cols-2 [&_a]:no-underline [&_a:hover]:underline [&_article]:rounded-xl [&_article]:border [&_article]:border-border [&_article]:bg-card [&_article]:p-8 [&_article]:transition-all [&_article:hover]:border-primary/30 [&_article:hover]:shadow-lg">
+            <SafeHtml html={contenido} />
           </div>
         </Container>
       </Section>

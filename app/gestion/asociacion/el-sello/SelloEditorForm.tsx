@@ -95,7 +95,7 @@ export function SelloEditorForm({
       <div>
         <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
           <label className="block text-sm font-medium">Contenido</label>
-          {onLoadDefaultContent && ['SELLO_PROCESO', 'SELLO_CRITERIOS', 'SELLO_COMO_SE_OBTIENE', 'SELLO_INTERNACIONAL'].includes(selectedKey) && (
+          {onLoadDefaultContent && ['SELLO_PROCESO', 'SELLO_CRITERIOS', 'SELLO_COMO_SE_OBTIENE', 'SELLO_INTERNACIONAL', 'SELLO_SOCIOS', 'SELLO_UNETE'].includes(selectedKey) && (
             <button type="button" onClick={onLoadDefaultContent} className="text-xs text-blue-600 hover:underline">
               📄 Cargar contenido por defecto
             </button>

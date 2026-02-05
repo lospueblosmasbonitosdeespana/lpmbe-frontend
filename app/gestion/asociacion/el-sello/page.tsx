@@ -6,7 +6,14 @@ import Link from 'next/link';
 import { SelloEditorForm } from './SelloEditorForm';
 import type { SelloPage, SelloPageKey } from '@/lib/cms/sello';
 import { SELLO_PAGE_LABELS } from '@/lib/cms/sello';
-import { CONTENIDO_PROCESO, CONTENIDO_CRITERIOS, CONTENIDO_COMO_SE_OBTIENE, CONTENIDO_INTERNACIONAL } from '@/lib/cms/sello-content';
+import {
+  CONTENIDO_PROCESO,
+  CONTENIDO_CRITERIOS,
+  CONTENIDO_COMO_SE_OBTIENE,
+  CONTENIDO_INTERNACIONAL,
+  CONTENIDO_SOCIOS,
+  CONTENIDO_UNETE,
+} from '@/lib/cms/sello-content';
 
 const PAGES: SelloPageKey[] = [
   'SELLO_HOME',
@@ -29,6 +36,10 @@ function getDefaultContent(key: SelloPageKey): string {
       return CONTENIDO_COMO_SE_OBTIENE;
     case 'SELLO_INTERNACIONAL':
       return CONTENIDO_INTERNACIONAL;
+    case 'SELLO_SOCIOS':
+      return CONTENIDO_SOCIOS;
+    case 'SELLO_UNETE':
+      return CONTENIDO_UNETE;
     default:
       return '';
   }

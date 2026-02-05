@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import SafeHtml from '@/app/_components/ui/SafeHtml';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import {
@@ -8,6 +9,7 @@ import {
   Body,
 } from '@/app/components/ui/typography';
 import type { SelloPage } from '@/lib/cms/sello';
+import { CONTENIDO_PROCESO } from '@/lib/cms/sello-content';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,43 +28,11 @@ async function getPage(): Promise<SelloPage | null> {
   }
 }
 
-function StageCard({
-  number,
-  title,
-  children,
-}: {
-  number: number;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="group relative">
-      <div className="absolute left-8 top-20 hidden h-full w-px bg-gradient-to-b from-primary/30 to-transparent lg:block" />
-
-      <div className="relative rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md sm:p-8">
-        <div className="absolute -left-4 -top-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground shadow-lg sm:h-14 sm:w-14 sm:text-xl">
-          {number}
-        </div>
-
-        <div className="ml-6 sm:ml-8">
-          <Headline as="h3" className="mb-4 text-xl sm:text-2xl">
-            {title}
-          </Headline>
-          <div className="prose prose-sm max-w-none text-muted-foreground">
-            {children}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default async function ProcesoPage() {
   const page = await getPage();
   const titulo = page?.titulo ?? 'Proceso de selección';
   const subtitle = page?.subtitle ?? 'Etapas y evaluación';
-  const leadText =
-    'El camino que debe recorrer un municipio para obtener el Sello de Los Pueblos más Bonitos de España consta de tres etapas fundamentales. El objetivo es superar la Carta de Calidad que rige la asociación.';
+  const contenido = page?.contenido?.trim() || CONTENIDO_PROCESO;
 
   return (
     <main>
@@ -118,98 +88,16 @@ export default async function ProcesoPage() {
               </span>
             </div>
 
-            <Display className="mb-2 text-balance">{titulo}</Display>
-
-            <Lead className="mb-8 max-w-3xl text-muted-foreground">
-              {leadText}
-            </Lead>
+            <Display className="mb-8 text-balance">{titulo}</Display>
           </div>
         </Container>
       </Section>
 
-      {/* Etapas */}
+      {/* Contenido editable desde CMS (intro + etapas) */}
       <Section spacing="md" background="muted">
         <Container size="md">
-          <div className="space-y-12 lg:space-y-16">
-            <StageCard number={1} title="Petición formal">
-              <Body className="text-muted-foreground">
-                El pueblo manifiesta su voluntad de entrar en la asociación
-                mediante una{' '}
-                <strong className="text-foreground">
-                  petición formal aprobada en el pleno municipal
-                </strong>
-                . Es el primer paso obligatorio: el ayuntamiento debe solicitar
-                oficialmente su adhesión.
-              </Body>
-            </StageCard>
-
-            <StageCard number={2} title="Evaluación in situ">
-              <Body className="mb-4 text-muted-foreground">
-                Una vez la asociación recibe la petición formal,{' '}
-                <strong className="text-foreground">
-                  se inicia el proceso de evaluación del pueblo
-                </strong>
-                . Para ello:
-              </Body>
-
-              <ul className="mb-4 space-y-2">
-                <li className="flex items-start gap-3">
-                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                  <span>
-                    Se realiza una{' '}
-                    <strong className="text-foreground">visita física</strong> al
-                    municipio
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                  <span>
-                    Se elabora un{' '}
-                    <strong className="text-foreground">
-                      reportaje videofotográfico
-                    </strong>{' '}
-                    y con drones
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                  <span>
-                    Se mantienen{' '}
-                    <strong className="text-foreground">
-                      entrevistas con el equipo de gobierno
-                    </strong>{' '}
-                    (alcalde y concejales)
-                  </span>
-                </li>
-              </ul>
-
-              <Body className="text-muted-foreground">
-                Con toda esta información se prepara el expediente para la
-                siguiente fase.
-              </Body>
-            </StageCard>
-
-            <StageCard number={3} title="Comisión de Calidad">
-              <Body className="mb-4 text-muted-foreground">
-                En la{' '}
-                <strong className="text-foreground">
-                  reunión de la Comisión de Calidad
-                </strong>
-                , que tiene lugar a{' '}
-                <strong className="text-foreground">finales de año</strong>, se
-                decide qué pueblos pueden pasar el corte y se aprueba la
-                auditoría final.
-              </Body>
-
-              <Body className="text-muted-foreground">
-                La{' '}
-                <strong className="text-foreground">Comisión de Calidad</strong>{' '}
-                está formada por{' '}
-                <strong className="text-foreground">siete personas</strong> y es
-                el órgano que determina, tras analizar todo el expediente, si el
-                pueblo cumple los estándares exigidos por la Carta de Calidad.
-              </Body>
-            </StageCard>
+          <div className="prose prose-lg max-w-none [&_h2]:font-serif [&_h2]:text-xl [&_h3]:font-semibold [&_h3]:text-lg [&_hr]:my-8 [&_p]:text-muted-foreground [&_.lead]:text-lg [&_.lead]:text-muted-foreground">
+            <SafeHtml html={contenido} />
           </div>
         </Container>
       </Section>
