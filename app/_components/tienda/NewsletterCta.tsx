@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { trackEvent } from '@/lib/analytics';
 import { Eyebrow, Headline, Body } from '@/app/components/ui/typography';
 import { Section } from '@/app/components/ui/section';
@@ -18,7 +19,7 @@ export function NewsletterCta() {
       const res = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: email.trim(), origen: 'tienda' }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
@@ -76,6 +77,13 @@ export function NewsletterCta() {
               Ha ocurrido un error. Inténtalo de nuevo.
             </p>
           )}
+
+          <Link
+            href="/newsletter"
+            className="mt-4 inline-block text-sm font-medium text-primary-foreground/90 hover:text-primary-foreground underline underline-offset-2"
+          >
+            Últimas newsletters →
+          </Link>
         </div>
       </Container>
     </Section>

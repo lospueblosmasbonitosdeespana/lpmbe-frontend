@@ -9,6 +9,7 @@ import {
   IconClub,
   IconTienda,
   IconDatos,
+  IconNewsletter,
   IconAjustes,
   IconSello,
   IconDocumentos,
@@ -66,9 +67,15 @@ const ACCESOS = [
     icon: <IconTienda />,
   },
   {
+    href: '/gestion/asociacion/newsletters',
+    title: 'Newsletters',
+    description: 'Ediciones (PDF, Canva) y suscriptores',
+    icon: <IconNewsletter />,
+  },
+  {
     href: '/gestion/asociacion/datos',
     title: 'Datos',
-    description: 'Métricas, clientes, newsletter',
+    description: 'Métricas, clientes, suscriptores newsletter',
     icon: <IconDatos />,
   },
   {

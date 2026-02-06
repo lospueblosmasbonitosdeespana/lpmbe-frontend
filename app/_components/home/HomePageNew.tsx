@@ -971,7 +971,7 @@ function SocialMediaSection() {
           ))}
         </div>
 
-        <div className="text-center">
+        <div className="text-center mb-12">
           <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-5 py-3">
             <span className="text-white/90 text-sm">Comparte con</span>
             <span className="px-4 py-1.5 bg-white text-primary font-bold rounded-full text-sm">
@@ -979,8 +979,86 @@ function SocialMediaSection() {
             </span>
           </div>
         </div>
+
+        <NewsletterSubscribeBlock />
       </Container>
     </section>
+  );
+}
+
+/* ----- NEWSLETTER SUBSCRIBE (dentro de SocialMediaSection) ----- */
+function NewsletterSubscribeBlock() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), origen: "home" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setStatus("success");
+        setEmail("");
+      } else {
+        setStatus("error");
+      }
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  return (
+    <div className="border-t border-white/20 pt-12">
+      <div className="text-center mb-6">
+        <Title as="h3" size="lg" className="text-white mb-2">
+          Suscríbete a nuestra newsletter
+        </Title>
+        <p className="text-white/80 text-sm max-w-md mx-auto">
+          Recibe novedades, eventos y contenidos exclusivos en tu correo.
+        </p>
+      </div>
+      <div className="flex flex-col items-center gap-4">
+        {status === "success" ? (
+          <p className="text-white/90 text-sm font-medium">
+            ¡Gracias! Revisa tu email para confirmar la suscripción.
+          </p>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Tu email"
+              required
+              disabled={status === "loading"}
+              className="flex-1 rounded-lg border-0 bg-white/10 px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 disabled:opacity-70"
+            />
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-primary transition-colors hover:bg-white/90 disabled:opacity-70"
+            >
+              {status === "loading" ? "Enviando..." : "Suscribirme"}
+            </button>
+          </form>
+        )}
+        {status === "error" && (
+          <p className="text-white/80 text-sm">Ha ocurrido un error. Inténtalo de nuevo.</p>
+        )}
+        <Link
+          href="/newsletter"
+          className="text-white/90 text-sm font-medium hover:text-white underline underline-offset-2"
+        >
+          Últimas newsletters →
+        </Link>
+      </div>
+    </div>
   );
 }
 
