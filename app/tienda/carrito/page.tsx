@@ -1,13 +1,16 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/src/store/cart';
 import { formatEUR, toNumber } from '@/src/lib/money';
+import { getShippingConfig, type ShippingConfig } from '@/src/lib/tiendaApi';
 
 export default function CarritoPage() {
   const router = useRouter();
   const { items, removeItem, setQuantity, clear, getItemCount } = useCartStore();
+  const [shippingConfig, setShippingConfig] = useState<ShippingConfig | null>(null);
 
   // ✅ Calcular subtotal usando finalPrice si existe (precio efectivo)
   const subtotal = items.reduce((acc, item) => {
@@ -16,6 +19,20 @@ export default function CarritoPage() {
   }, 0);
 
   const itemCount = getItemCount();
+
+  // Coste de envío (misma lógica que backend)
+  const shippingCost = shippingConfig
+    ? subtotal >= shippingConfig.freeOver
+      ? 0
+      : shippingConfig.flatRate
+    : null;
+  const total = shippingCost !== null ? subtotal + shippingCost : subtotal;
+
+  useEffect(() => {
+    getShippingConfig()
+      .then(setShippingConfig)
+      .catch(() => setShippingConfig(null));
+  }, []);
 
   if (items.length === 0) {
     return (
@@ -172,7 +189,15 @@ export default function CarritoPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span>Envío</span>
-                <span className="text-gray-500">A calcular</span>
+                <span>
+                  {shippingCost === null ? (
+                    <span className="text-gray-500">Calculando...</span>
+                  ) : shippingCost === 0 ? (
+                    <span className="text-green-600 font-medium">Gratis</span>
+                  ) : (
+                    formatEUR(shippingCost) + ' €'
+                  )}
+                </span>
               </div>
             </div>
 
@@ -190,7 +215,7 @@ export default function CarritoPage() {
 
             <div className="flex justify-between text-lg font-bold mt-4 mb-6">
               <span>Total</span>
-              <span>{formatEUR(subtotal)} €</span>
+              <span>{formatEUR(total)} €</span>
             </div>
 
             <button

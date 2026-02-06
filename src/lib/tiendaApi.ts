@@ -97,6 +97,19 @@ export async function getActivePromotions(): Promise<Promotion[]> {
   return res.json();
 }
 
+// ===== ENVÍO =====
+
+export type ShippingConfig = {
+  flatRate: number;
+  freeOver: number;
+};
+
+export async function getShippingConfig(): Promise<ShippingConfig> {
+  const res = await fetch('/api/orders/shipping-config', { cache: 'no-store' });
+  if (!res.ok) throw new Error('Error cargando configuración de envío');
+  return res.json();
+}
+
 // ===== CHECKOUT =====
 
 export type CheckoutPayload = {

@@ -51,6 +51,8 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
 
   const originalTotal = toNumber(checkoutData.originalTotal);
   const finalTotal = toNumber(checkoutData.finalTotal);
+  const shippingCost = toNumber(checkoutData.shippingCost ?? 0);
+  const subtotalBeforeShipping = finalTotal - shippingCost;
   const hasDiscounts = promotions.length > 0 || coupon !== null;
 
   return (
@@ -130,18 +132,28 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
         </div>
       )}
 
-      {/* Subtotal */}
+      {/* Subtotal y envío */}
       <div className="space-y-2 border-b border-gray-200 pb-4 mb-4">
         <div className="flex justify-between text-sm">
           <span>Subtotal</span>
-          {originalTotal !== finalTotal ? (
+          {originalTotal !== subtotalBeforeShipping ? (
             <div>
               <span className="text-gray-400 line-through mr-2">{formatEUR(originalTotal)} €</span>
-              <span className="font-semibold text-green-600">{formatEUR(finalTotal)} €</span>
+              <span className="font-semibold text-green-600">{formatEUR(subtotalBeforeShipping)} €</span>
             </div>
           ) : (
-            <span>{formatEUR(originalTotal)} €</span>
+            <span>{formatEUR(subtotalBeforeShipping)} €</span>
           )}
+        </div>
+        <div className="flex justify-between text-sm">
+          <span>Envío</span>
+          <span>
+            {shippingCost === 0 ? (
+              <span className="text-green-600 font-medium">Gratis</span>
+            ) : (
+              formatEUR(shippingCost) + ' €'
+            )}
+          </span>
         </div>
       </div>
 

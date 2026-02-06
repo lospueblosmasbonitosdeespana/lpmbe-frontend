@@ -154,6 +154,7 @@ export type CheckoutResponse = {
   clientSecret: string;
   originalTotal: number | string;
   finalTotal: number | string;
+  shippingCost?: number | string;
   // ✅ NUEVO: items con precios calculados por el backend
   items: CheckoutItemDetail[];
   // ✅ CRÍTICO: discounts SIEMPRE existe (normalizado en frontend si viene undefined/null)
@@ -171,7 +172,7 @@ export function normalizeCheckoutResponse(data: any): CheckoutResponse {
     ...data,
     discounts: {
       promotions: Array.isArray(data.discounts?.promotions) ? data.discounts.promotions : [],
-      coupon: data.discounts?.coupon ?? null,
+      coupon: data.discounts?.coupon ?? data.coupon ?? null,
     },
   };
 }
