@@ -11,6 +11,7 @@ import {
   Users,
   Package,
 } from 'lucide-react';
+import { LogoutButton } from './components/LogoutButton';
 
 const links = [
   {
@@ -88,6 +89,8 @@ export default function MiCuentaPage() {
                   );
                 })}
               </div>
+
+              <LogoutButton />
             </div>
           </Container>
         </div>
