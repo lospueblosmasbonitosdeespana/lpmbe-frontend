@@ -351,6 +351,73 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
         </div>
       </section>
 
+      {/* Banner de la Tienda */}
+      <section className="rounded-lg border border-gray-200 bg-white p-6">
+        <h2 className="text-xl font-semibold mb-4">Banner de la Tienda</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          Imagen de fondo del banner &quot;La Tienda&quot; que aparece en la home, con el botón &quot;Visita nuestra tienda&quot;.
+        </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+          <div className="flex-shrink-0">
+            {config.shopBannerImage && config.shopBannerImage.trim() ? (
+              <img
+                src={config.shopBannerImage.trim()}
+                alt="Banner tienda"
+                className="h-40 w-64 rounded border object-cover"
+              />
+            ) : (
+              <div className="h-40 w-64 rounded border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center">
+                <span className="text-xs text-gray-400">Sin imagen (se usa imagen por defecto)</span>
+              </div>
+            )}
+          </div>
+          <div className="flex-1 space-y-2">
+            <label className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 cursor-pointer disabled:opacity-50">
+              {config.shopBannerImage ? "Cambiar imagen" : "Subir imagen"}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const target = e.currentTarget;
+                  const file = target.files?.[0];
+                  if (!file) return;
+                  try {
+                    const url = await uploadImage(file, "home/shop");
+                    setConfig((prev) => ({ ...prev, shopBannerImage: url }));
+                    const resMe = await fetch("/api/auth/me");
+                    if (!resMe.ok) return;
+                    const meData = await resMe.json();
+                    const token = meData.token;
+                    await updateHomeConfig(token, { shopBannerImage: url });
+                    setMessage({ type: "success", text: "Imagen de la tienda guardada" });
+                    setTimeout(() => setMessage(null), 2000);
+                  } catch (err) {
+                    setMessage({ type: "error", text: (err as Error)?.message ?? "Error subiendo imagen" });
+                  }
+                  target.value = "";
+                }}
+                disabled={uploading}
+              />
+            </label>
+            {config.shopBannerImage && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm("¿Quitar imagen de la tienda?")) {
+                    setConfig((prev) => ({ ...prev, shopBannerImage: "" }));
+                  }
+                }}
+                disabled={uploading}
+                className="inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Quitar imagen
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
       {/* Mapa interactivo */}
       <section className="rounded-lg border border-gray-200 bg-white p-6">
         <h2 className="text-xl font-semibold mb-4">Mapa interactivo</h2>
