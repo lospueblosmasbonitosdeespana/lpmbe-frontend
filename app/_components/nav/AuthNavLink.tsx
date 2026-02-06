@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { shouldShowGestion, getGestionHref } from '@/lib/auth-nav';
 
 type Me = {
   sub: number;
   email: string;
-  rol: 'USUARIO' | 'ALCALDE' | 'ADMIN';
+  rol: 'USUARIO' | 'ALCALDE' | 'ADMIN' | 'CLIENTE';
   nombre?: string | null;
 };
 
@@ -49,18 +50,29 @@ export default function AuthNavLink() {
     );
   }
 
-  if (me) {
+  if (!me) {
     return (
-      <Link href="/cuenta" className="text-sm font-medium hover:underline">
-        Gestión
+      <Link href="/entrar" className="text-sm font-medium hover:underline">
+        Entrar
       </Link>
     );
   }
 
+  // Logueado: Mi cuenta siempre, Gestión solo para ADMIN/ALCALDE/CLIENTE
+  const showGestion = shouldShowGestion(me.rol);
+  const gestionHref = getGestionHref(me.rol);
+
   return (
-    <Link href="/entrar" className="text-sm font-medium hover:underline">
-      Entrar
-    </Link>
+    <span className="flex items-center gap-4">
+      <Link href="/mi-cuenta" className="text-sm font-medium hover:underline">
+        Mi cuenta
+      </Link>
+      {showGestion && (
+        <Link href={gestionHref} className="text-sm font-medium hover:underline">
+          Gestión
+        </Link>
+      )}
+    </span>
   );
 }
 

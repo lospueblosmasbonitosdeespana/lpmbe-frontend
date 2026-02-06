@@ -56,7 +56,9 @@ export default async function CuentaPage() {
       ? 'bg-primary/15 text-primary border-primary/30'
       : me.rol === 'ALCALDE'
         ? 'bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-400 dark:border-amber-400/30'
-        : 'bg-muted text-muted-foreground border-border';
+        : me.rol === 'CLIENTE'
+          ? 'bg-green-500/15 text-green-700 border-green-500/30 dark:text-green-400 dark:border-green-400/30'
+          : 'bg-muted text-muted-foreground border-border';
 
   return (
     <main className="mx-auto max-w-5xl p-6">
@@ -79,7 +81,7 @@ export default async function CuentaPage() {
                 <span
                   className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium ${rolBadgeClass}`}
                 >
-                  {me.rol === 'ADMIN' ? 'Administrador' : me.rol === 'ALCALDE' ? 'Alcalde' : 'Usuario'}
+                  {me.rol === 'ADMIN' ? 'Administrador' : me.rol === 'ALCALDE' ? 'Alcalde' : me.rol === 'CLIENTE' ? 'Cliente' : 'Usuario'}
                 </span>
                 {me.rol === 'ALCALDE' && misPueblos.length > 0 && (
                   <div className="text-sm font-medium text-foreground">
@@ -97,12 +99,17 @@ export default async function CuentaPage() {
       </section>
 
       <section className="mt-10 space-y-3">
-        {me.rol === 'USUARIO' ? (
+        {(me.rol === 'USUARIO' || me.rol === 'CLIENTE') ? (
           <div className="rounded-xl border border-border bg-card p-4">
             <div className="font-medium">Tu cuenta</div>
             <div className="text-sm text-muted-foreground">
-              Área de usuario básica (seguiremos ampliando).
+              {me.rol === 'CLIENTE'
+                ? 'Accede a Mi cuenta para ver tus pedidos, direcciones y preferencias.'
+                : 'Área de usuario básica (seguiremos ampliando).'}
             </div>
+            <Link href="/mi-cuenta" className="mt-3 inline-block text-sm font-medium text-primary hover:underline">
+              Ir a Mi cuenta →
+            </Link>
           </div>
         ) : null}
 
