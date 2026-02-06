@@ -5,8 +5,8 @@ import { AUTH_COOKIE_NAME, pickToken } from '@/lib/auth';
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? 'http://localhost:3000';
 
-// AJUSTA SOLO si el endpoint real es otro
-const REGISTER_PATH = '/usuarios/register';
+// Registro público (sin auth). /usuarios/register es solo ADMIN.
+const REGISTER_PATH = '/auth/register';
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
