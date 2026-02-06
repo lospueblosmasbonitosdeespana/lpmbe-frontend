@@ -37,9 +37,12 @@ export default function DatosUsuariosPage() {
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState('');
   const [rol, setRol] = useState<string>('');
+  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
+  const [activo, setActivo] = useState<string>('true');
   const [debouncedQ, setDebouncedQ] = useState('');
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(100);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 400);
@@ -48,7 +51,7 @@ export default function DatosUsuariosPage() {
 
   useEffect(() => {
     setPage(0);
-  }, [debouncedQ, rol, limit]);
+  }, [debouncedQ, rol, limit, order, activo]);
 
   useEffect(() => {
     async function load() {
@@ -58,6 +61,8 @@ export default function DatosUsuariosPage() {
         const params = new URLSearchParams();
         params.set('limit', String(limit));
         params.set('offset', String(page * limit));
+        params.set('order', order);
+        if (activo) params.set('activo', activo);
         if (debouncedQ) params.set('q', debouncedQ);
         if (rol) params.set('rol', rol);
         const res = await fetch(`/api/admin/datos/usuarios?${params.toString()}`, {
@@ -77,7 +82,36 @@ export default function DatosUsuariosPage() {
       }
     }
     load();
-  }, [debouncedQ, rol, page, limit]);
+  }, [debouncedQ, rol, page, limit, order, activo]);
+
+  async function handleEliminar(u: Usuario) {
+    if (u.rol === 'ADMIN') return;
+    if (!confirm(`¿Eliminar usuario ${u.email}? Se marcará como inactivo.`)) return;
+    setDeletingId(u.id);
+    try {
+      const res = await fetch(`/api/admin/datos/usuarios/${u.id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setData((prev) =>
+          prev
+            ? {
+                ...prev,
+                items: prev.items.filter((x) => x.id !== u.id),
+                total: Math.max(0, prev.total - 1),
+              }
+            : null
+        );
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setError(err?.message ?? 'Error al eliminar');
+      }
+    } catch {
+      setError('Error al eliminar');
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -119,6 +153,23 @@ export default function DatosUsuariosPage() {
               {l}
             </option>
           ))}
+        </select>
+        <select
+          value={activo}
+          onChange={(e) => setActivo(e.target.value)}
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        >
+          <option value="">Todos</option>
+          <option value="true">Activos</option>
+          <option value="false">Inactivos</option>
+        </select>
+        <select
+          value={order}
+          onChange={(e) => setOrder(e.target.value as 'asc' | 'desc')}
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        >
+          <option value="desc">Últimos primero</option>
+          <option value="asc">Primeros primero</option>
         </select>
         <label className="flex items-center gap-2 text-sm text-gray-600">
           Mostrar
@@ -203,12 +254,24 @@ export default function DatosUsuariosPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <Link
-                          href={`/gestion/asociacion/datos/usuarios/${u.id}`}
-                          className="text-sm font-medium text-blue-600 hover:underline"
-                        >
-                          Ver / Editar
-                        </Link>
+                        <div className="flex items-center gap-3">
+                          <Link
+                            href={`/gestion/asociacion/datos/usuarios/${u.id}`}
+                            className="text-sm font-medium text-blue-600 hover:underline"
+                          >
+                            Ver / Editar
+                          </Link>
+                          {u.rol !== 'ADMIN' && (
+                            <button
+                              type="button"
+                              onClick={() => handleEliminar(u)}
+                              disabled={deletingId === u.id}
+                              className="text-sm font-medium text-red-600 hover:underline disabled:opacity-50"
+                            >
+                              {deletingId === u.id ? 'Eliminando…' : 'Eliminar'}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
