@@ -93,7 +93,8 @@ export default function PedidosAdminClient() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data?.message ?? data?.error ?? "Error preregistrando");
+        const errMsg = data?.message ?? data?.error ?? (typeof data === 'string' ? data : "Error preregistrando");
+        throw new Error(errMsg);
       }
       setSuccess("Envío preregistrado en Correos correctamente");
       await loadOrders();
