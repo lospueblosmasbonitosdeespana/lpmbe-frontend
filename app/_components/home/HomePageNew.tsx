@@ -63,6 +63,14 @@ export interface NewsItem {
   date?: string;
 }
 
+export interface HomeVideoItem {
+  id: number;
+  titulo: string;
+  url: string;
+  tipo?: string;
+  thumbnail?: string | null;
+}
+
 interface HomePageProps {
   heroSlides?: Array<{ image: string; alt?: string }>;
   heroIntervalMs?: number;
@@ -73,6 +81,7 @@ interface HomePageProps {
   routes?: RouteCard[];
   villages?: VillageCard[];
   news?: NewsItem[];
+  videos?: HomeVideoItem[];
   mapPreviewImage?: string;
   shopBannerImage?: string;
 }
@@ -694,6 +703,48 @@ function MapaSection({ mapPreviewImage }: { mapPreviewImage?: string }) {
   );
 }
 
+/* ----- VIDEOS ASOCIACIÓN ----- */
+function VideosAsociacionSection({ videos }: { videos: Array<{ id: number; titulo: string; url: string; tipo?: string; thumbnail?: string | null }> }) {
+  if (!videos || videos.length === 0) return null;
+
+  function getEmbedUrl(url: string): string {
+    const watchMatch = url.match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
+    if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
+    const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+    if (url.includes("/embed/")) return url;
+    return url;
+  }
+
+  return (
+    <Section spacing="md" background="muted">
+      <Container>
+        <Title as="h2" size="xl" className="mb-6">
+          Videos de la asociación
+        </Title>
+        <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2">
+          {videos.slice(0, 2).map((v) => (
+            <div key={v.id} className="overflow-hidden rounded-xl border border-border bg-card">
+              <div className="aspect-video w-full bg-muted">
+                <iframe
+                  src={getEmbedUrl(v.url)}
+                  title={v.titulo}
+                  className="h-full w-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+              <div className="p-4">
+                <h3 className="font-semibold">{v.titulo}</h3>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Container>
+    </Section>
+  );
+}
+
 /* ----- LA TIENDA ----- */
 function TiendaBanner({ shopBannerImage }: { shopBannerImage?: string }) {
   return (
@@ -921,6 +972,7 @@ export function HomePageNew({
   routes = [],
   villages = [],
   news = [],
+  videos = [],
   mapPreviewImage,
   shopBannerImage,
 }: HomePageProps) {
@@ -939,6 +991,7 @@ export function HomePageNew({
       <ActualidadSection news={news} />
       <TiendaBanner shopBannerImage={shopBannerImage} />
       <MapaSection mapPreviewImage={mapPreviewImage} />
+      <VideosAsociacionSection videos={videos} />
       <FinalCTA />
       <SocialMediaSection />
     </div>

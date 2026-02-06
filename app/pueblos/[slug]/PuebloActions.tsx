@@ -100,6 +100,26 @@ function MapIcon({ className }: { className?: string }) {
   );
 }
 
+function VideosIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="23,7 16,12 23,17 23,7" />
+      <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+    </svg>
+  );
+}
+
+function WebcamIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="10" r="8" />
+      <circle cx="12" cy="10" r="3" />
+      <line x1="12" y1="18" x2="12" y2="22" />
+      <line x1="8" y1="22" x2="16" y2="22" />
+    </svg>
+  );
+}
+
 function DirectionsIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -282,6 +302,16 @@ export default function PuebloActions({
               label="Compartir"
               state={shareState}
               onClick={handleShare}
+            />
+            <ActionButton
+              icon={<VideosIcon className="h-5 w-5" />}
+              label="Videos"
+              href={`/pueblos/${puebloSlug}/videos`}
+            />
+            <ActionButton
+              icon={<WebcamIcon className="h-5 w-5" />}
+              label="Webcam"
+              href={`/pueblos/${puebloSlug}/webcam`}
             />
             <ActionButton
               icon={<MapIcon className="h-5 w-5" />}

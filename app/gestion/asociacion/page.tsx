@@ -13,6 +13,7 @@ import {
   IconSello,
   IconDocumentos,
   IconContacto,
+  IconVideos,
 } from '../_components/GestionIcons';
 
 const ACCESOS = [
@@ -21,6 +22,12 @@ const ACCESOS = [
     title: 'Configuración del Home',
     description: 'Banners y bloques de la página principal',
     icon: <IconHome />,
+  },
+  {
+    href: '/gestion/asociacion/videos',
+    title: 'Videos de la asociación',
+    description: 'Videos para la home (YouTube o subidos a R2)',
+    icon: <IconVideos />,
   },
   {
     href: '/gestion/asociacion/rutas',

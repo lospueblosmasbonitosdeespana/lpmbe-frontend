@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { HomePageNew, type NotificationItem, type CategoryCard, type RouteCard, type VillageCard, type NewsItem } from "./_components/home/HomePageNew";
-import { getHomeConfig } from "@/lib/homeApi";
+import { getHomeConfig, getHomeVideos } from "@/lib/homeApi";
 import { getRutas, getApiUrl, getPuebloMainPhoto, type Pueblo } from "@/lib/api";
 
 // Forzar render dinámico para evitar que el build falle si el backend no responde
@@ -150,12 +150,13 @@ async function getRoutesForHome(): Promise<RouteCard[]> {
 
 export default async function HomePage() {
   // Cargar todos los datos en paralelo
-  const [config, villages, notifications, routes, news] = await Promise.all([
+  const [config, villages, notifications, routes, news, videos] = await Promise.all([
     getHomeConfig(),
     getFeaturedPueblos(),
     getNotifications(),
     getRoutesForHome(),
     getNews(),
+    getHomeVideos(),
   ]);
 
   // Mapear themes a categories
@@ -184,6 +185,7 @@ export default async function HomePage() {
         routes={routes}
         villages={villages}
         news={news}
+        videos={videos}
         mapPreviewImage={config.mapPreviewImage}
         shopBannerImage={config.shopBannerImage}
       />

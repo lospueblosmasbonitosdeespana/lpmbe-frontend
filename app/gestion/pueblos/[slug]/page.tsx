@@ -14,6 +14,8 @@ import {
   IconPois,
   IconMultiexperiencias,
   IconAutorizados,
+  IconVideos,
+  IconWebcam,
 } from '../../_components/GestionIcons';
 
 export const dynamic = 'force-dynamic';
@@ -133,6 +135,20 @@ export default async function GestionPuebloPage({
       title: 'Fotos del pueblo',
       description: 'Galería e imágenes destacadas',
       icon: <IconFotos />,
+      disabled: false,
+    },
+    {
+      href: `${baseUrl}/videos`,
+      title: 'Videos',
+      description: 'Enlaces a YouTube y videos del pueblo',
+      icon: <IconVideos />,
+      disabled: false,
+    },
+    {
+      href: `${baseUrl}/webcam`,
+      title: 'Webcam',
+      description: 'Webcams en directo del pueblo',
+      icon: <IconWebcam />,
       disabled: false,
     },
     {

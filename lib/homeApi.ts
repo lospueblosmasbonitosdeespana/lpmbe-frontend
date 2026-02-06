@@ -16,6 +16,14 @@ export type HomeTheme = {
   href: string;
 };
 
+export type HomeVideo = {
+  id: number;
+  titulo: string;
+  url: string;
+  tipo: string;
+  thumbnail?: string | null;
+};
+
 export type HomeConfig = {
   hero: {
     title: string;
@@ -106,6 +114,21 @@ export async function getHomeConfig(): Promise<HomeConfig> {
   } catch (err) {
     console.error('[HOME] Error cargando config desde backend:', err);
     return getFallbackHomeConfig();
+  }
+}
+
+/**
+ * Obtener videos de la asociación para la home (2 por defecto)
+ */
+export async function getHomeVideos(): Promise<HomeVideo[]> {
+  const API_BASE = getApiUrl();
+  try {
+    const res = await fetch(`${API_BASE}/home/videos`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
   }
 }
 
