@@ -463,8 +463,7 @@ export default async function PuebloPage({
 
       {/* TEXTO: Enunciado + Descripción - Diseño tourism-website-design */}
       {(puebloSafe.lead || puebloSafe.descripcion) && (() => {
-        const plainDesc = puebloSafe.descripcion?.replace(/<[^>]*>/g, "").trim() ?? "";
-        const introLead = puebloSafe.lead ?? (plainDesc ? plainDesc.slice(0, 250) + (plainDesc.length > 250 ? "…" : "") : "Descubre este pueblo.");
+        const introLead = puebloSafe.lead?.trim() || "Descubre uno de los pueblos más bonitos de España.";
         return (
           <DetailIntroSection
             lead={introLead}
