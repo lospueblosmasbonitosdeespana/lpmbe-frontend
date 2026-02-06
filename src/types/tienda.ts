@@ -61,7 +61,7 @@ export type Order = {
   userId: number;
   shippingAddressId: number;
   total: number | string; // Decimal viene como string desde backend
-  status: 'PENDING' | 'PAID' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+  status: 'PENDING' | 'PAID' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
   paymentStatus: string;
   stripePaymentIntentId: string | null;
   stripeSessionId: string | null;
@@ -101,6 +101,7 @@ export type OrderItem = {
   productId: number;
   cantidad: number;
   precioUnitario: number | string; // Decimal viene como string desde backend
+  productNombre?: string; // Snapshot del backend
   producto?: Product;
 };
 

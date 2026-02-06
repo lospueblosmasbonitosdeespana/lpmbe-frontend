@@ -6,22 +6,26 @@ import { getAdminOrders, updateOrderStatus } from "@/src/lib/tiendaApi";
 import type { Order } from "@/src/types/tienda";
 import { formatEUR, toNumber } from "@/src/lib/money";
 
-const ESTADOS: Order['status'][] = ['PENDING', 'PAID', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+const ESTADOS: Order['status'][] = ['PENDING', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 
 const ESTADO_COLORS: Record<Order['status'], string> = {
   PENDING: 'bg-yellow-100 text-yellow-800',
   PAID: 'bg-green-100 text-green-800',
-  SHIPPED: 'bg-blue-100 text-blue-800',
+  PROCESSING: 'bg-blue-100 text-blue-800',
+  SHIPPED: 'bg-indigo-100 text-indigo-800',
   DELIVERED: 'bg-gray-100 text-gray-800',
   CANCELLED: 'bg-red-100 text-red-800',
+  REFUNDED: 'bg-orange-100 text-orange-800',
 };
 
 const ESTADO_LABELS: Record<Order['status'], string> = {
   PENDING: 'Pendiente',
   PAID: 'Pagado',
+  PROCESSING: 'En preparación',
   SHIPPED: 'Enviado',
   DELIVERED: 'Entregado',
   CANCELLED: 'Cancelado',
+  REFUNDED: 'Reembolsado',
 };
 
 export default function PedidosAdminClient() {
@@ -34,6 +38,7 @@ export default function PedidosAdminClient() {
   const [editingStatusId, setEditingStatusId] = useState<number | null>(null);
   const [newStatus, setNewStatus] = useState<Order['status'] | ''>('');
   const [trackingNumber, setTrackingNumber] = useState<string>('');
+  const [preregisteringId, setPreregisteringId] = useState<number | null>(null);
 
   async function loadOrders() {
     try {
@@ -77,6 +82,26 @@ export default function PedidosAdminClient() {
     setEditingStatusId(null);
     setNewStatus('');
     setTrackingNumber('');
+  }
+
+  async function preregisterCorreos(orderId: number) {
+    try {
+      setPreregisteringId(orderId);
+      setError(null);
+      const res = await fetch(`/api/admin/correos/orders/${orderId}/preregister`, {
+        method: "POST",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.message ?? data?.error ?? "Error preregistrando");
+      }
+      setSuccess("Envío preregistrado en Correos correctamente");
+      await loadOrders();
+    } catch (e: any) {
+      setError(e?.message ?? "Error preregistrando en Correos");
+    } finally {
+      setPreregisteringId(null);
+    }
   }
 
   async function saveStatus(orderId: number) {
@@ -252,6 +277,15 @@ export default function PedidosAdminClient() {
                     </>
                   ) : (
                     <>
+                      {(pedido.status === "PAID" || pedido.status === "PROCESSING") && (
+                        <button
+                          onClick={() => preregisterCorreos(pedido.id)}
+                          disabled={preregisteringId === pedido.id}
+                          className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+                        >
+                          {preregisteringId === pedido.id ? "Preregistrando…" : "Correos"}
+                        </button>
+                      )}
                       <button
                         onClick={() => startEditStatus(pedido)}
                         className="text-sm text-black hover:underline"
@@ -303,7 +337,7 @@ export default function PedidosAdminClient() {
                           return (
                             <tr key={item.id} className="border-b border-gray-100">
                               <td className="py-2">
-                                {item.producto?.nombre || `Producto ${item.productId}`}
+                                {item.productNombre || item.producto?.nombre || `Producto ${item.productId}`}
                               </td>
                               <td className="py-2 text-right">
                                 {formatEUR(precioUnitarioNum)} €
