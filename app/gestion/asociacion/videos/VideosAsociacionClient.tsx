@@ -22,6 +22,7 @@ export default function VideosAsociacionClient() {
   const [url, setUrl] = useState("");
   const [tipo, setTipo] = useState<"YOUTUBE" | "R2">("YOUTUBE");
   const [guardando, setGuardando] = useState(false);
+  const [subiendo, setSubiendo] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
 
@@ -201,35 +202,97 @@ export default function VideosAsociacionClient() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">URL</label>
-              <input
-                type="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2"
-                placeholder="https://www.youtube.com/watch?v=... o URL de R2"
-                required
-              />
-            </div>
-            <div>
               <label className="mb-1 block text-sm font-medium">Tipo</label>
               <select
                 value={tipo}
-                onChange={(e) => setTipo(e.target.value as "YOUTUBE" | "R2")}
+                onChange={(e) => {
+                  setTipo(e.target.value as "YOUTUBE" | "R2");
+                  if (e.target.value === "YOUTUBE") setUrl("");
+                }}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2"
               >
-                <option value="YOUTUBE">YouTube</option>
-                <option value="R2">R2 (video subido)</option>
+                <option value="YOUTUBE">YouTube (enlace)</option>
+                <option value="R2">R2 (subir video)</option>
               </select>
             </div>
+            {tipo === "YOUTUBE" ? (
+              <div>
+                <label className="mb-1 block text-sm font-medium">URL de YouTube</label>
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  required
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="mb-1 block text-sm font-medium">Video (MP4, WebM o MOV)</label>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <label className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-primary bg-primary/5 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 disabled:opacity-50">
+                    {url ? "Cambiar video" : "Subir video"}
+                    <input
+                      type="file"
+                      accept="video/mp4,video/webm,video/quicktime"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const target = e.currentTarget;
+                        const file = target.files?.[0];
+                        if (!file) return;
+                        setSubiendo(true);
+                        setMensaje(null);
+                        try {
+                          const fd = new FormData();
+                          fd.append("file", file);
+                          fd.append("folder", "home/videos");
+                          const res = await fetch("/api/admin/uploads/video", {
+                            method: "POST",
+                            body: fd,
+                            credentials: "include",
+                          });
+                          const data = await res.json().catch(() => ({}));
+                          if (!res.ok) {
+                            throw new Error(data?.error ?? "Error subiendo video");
+                          }
+                          const videoUrl = data?.url ?? data?.publicUrl;
+                          if (videoUrl) {
+                            setUrl(videoUrl);
+                            setMensaje("Video subido correctamente");
+                            setTimeout(() => setMensaje(null), 3000);
+                          }
+                        } catch (err) {
+                          setMensaje(
+                            err instanceof Error ? err.message : "Error subiendo video"
+                          );
+                        } finally {
+                          setSubiendo(false);
+                          target.value = "";
+                        }
+                      }}
+                      disabled={subiendo}
+                    />
+                  </label>
+                  {url && (
+                    <span className="text-sm text-muted-foreground truncate max-w-xs">
+                      Video subido
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Máx. 100MB. Formatos: MP4, WebM, MOV.
+                </p>
+              </div>
+            )}
           </div>
           <div className="mt-4 flex gap-2">
             <button
               type="submit"
-              disabled={guardando}
+              disabled={guardando || subiendo || (tipo === "R2" && !url.trim())}
               className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {guardando ? "Guardando..." : editId ? "Actualizar" : "Añadir"}
+              {guardando ? "Guardando..." : subiendo ? "Subiendo..." : editId ? "Actualizar" : "Añadir"}
             </button>
             <button
               type="button"

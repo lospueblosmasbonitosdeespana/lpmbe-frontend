@@ -716,6 +716,8 @@ function VideosAsociacionSection({ videos }: { videos: Array<{ id: number; titul
     return url;
   }
 
+  const isR2 = (v: { tipo?: string }) => (v.tipo ?? "").toUpperCase() === "R2";
+
   return (
     <Section spacing="md" background="muted">
       <Container>
@@ -726,19 +728,40 @@ function VideosAsociacionSection({ videos }: { videos: Array<{ id: number; titul
           {videos.slice(0, 2).map((v) => (
             <div key={v.id} className="overflow-hidden rounded-xl border border-border bg-card">
               <div className="aspect-video w-full bg-muted">
-                <iframe
-                  src={getEmbedUrl(v.url)}
-                  title={v.titulo}
-                  className="h-full w-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+                {isR2(v) ? (
+                  <video
+                    src={v.url}
+                    title={v.titulo}
+                    className="h-full w-full object-cover"
+                    controls
+                    playsInline
+                  />
+                ) : (
+                  <iframe
+                    src={getEmbedUrl(v.url)}
+                    title={v.titulo}
+                    className="h-full w-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                )}
               </div>
               <div className="p-4">
                 <h3 className="font-semibold">{v.titulo}</h3>
               </div>
             </div>
           ))}
+        </div>
+        <div className="mt-6 flex justify-center">
+          <Button asChild variant="outline" size="lg" className="rounded-full">
+            <Link
+              href="https://www.youtube.com/@lospueblosmasbonitos"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Ver más en YouTube
+            </Link>
+          </Button>
         </div>
       </Container>
     </Section>
