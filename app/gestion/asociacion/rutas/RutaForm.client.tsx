@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ParadasEditor from './ParadasEditor';
-import ConvertidorTexto from './ConvertidorTexto';
 import { sanitizeRutaDescripcionForTextarea, stripLegacyStops } from '@/lib/rutaHelpers';
 
 // Helper para generar slug automático
@@ -419,18 +418,9 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
           </p>
         </div>
 
-        {/* Paradas (Pueblos) - visible de inmediato al editar */}
+        {/* Paradas de la ruta */}
         <div className="rounded-md border border-amber-200 bg-amber-50/50 p-4">
-          <h2 className="mb-4 text-lg font-semibold">Pueblos de la ruta</h2>
-          
-          <ConvertidorTexto
-            onConvertir={(nuevasParadas) => {
-              setParadas([...paradas, ...nuevasParadas]);
-            }}
-          />
-          
-          <div className="my-6 border-t border-amber-200" />
-          
+          <h2 className="mb-4 text-lg font-semibold">Paradas de la ruta</h2>
           <ParadasEditor paradas={paradas} setParadas={setParadas} />
         </div>
 

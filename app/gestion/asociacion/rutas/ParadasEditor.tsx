@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import TipTapEditor from '@/app/_components/editor/TipTapEditor';
 
 type Parada = {
   tempId: string;
@@ -19,19 +20,60 @@ type ParadasEditorProps = {
   setParadas: (paradas: Parada[]) => void;
 };
 
+function DescripcionEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [mode, setMode] = useState<'edit' | 'html'>('edit');
+  return (
+    <div className="mb-2 space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="block text-xs font-medium">Descripción</label>
+        <div className="flex gap-1">
+          <button
+            type="button"
+            onClick={() => setMode('edit')}
+            className={`rounded px-2 py-1 text-xs ${mode === 'edit' ? 'bg-primary text-primary-foreground' : 'bg-gray-100 hover:bg-gray-200'}`}
+          >
+            Editor
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('html')}
+            className={`rounded px-2 py-1 text-xs ${mode === 'html' ? 'bg-primary text-primary-foreground' : 'bg-gray-100 hover:bg-gray-200'}`}
+          >
+            HTML
+          </button>
+        </div>
+      </div>
+      {mode === 'edit' ? (
+        <TipTapEditor
+          content={value}
+          onChange={onChange}
+          placeholder="Descripción de la parada (negritas, listas, enlaces...)"
+          minHeight="120px"
+        />
+      ) : (
+        <textarea
+          className="w-full rounded border px-2 py-1 font-mono text-xs"
+          rows={6}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="<p>Texto HTML...</p>"
+        />
+      )}
+    </div>
+  );
+}
+
 export default function ParadasEditor({ paradas, setParadas }: ParadasEditorProps) {
   const [busqueda, setBusqueda] = useState('');
   const [resultadosPueblos, setResultadosPueblos] = useState<any[]>([]);
   const [buscando, setBuscando] = useState(false);
-  const [selectedParadaId, setSelectedParadaId] = useState<string | null>(null);
 
-  // Buscar pueblos
-  async function buscarPueblos(query: string) {
+  // Buscar pueblos (debounced)
+  const buscarPueblos = useCallback(async (query: string) => {
     if (!query.trim()) {
       setResultadosPueblos([]);
       return;
     }
-
     setBuscando(true);
     try {
       const res = await fetch(`/api/pueblos?search=${encodeURIComponent(query)}`, {
@@ -44,7 +86,12 @@ export default function ParadasEditor({ paradas, setParadas }: ParadasEditorProp
     } finally {
       setBuscando(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => buscarPueblos(busqueda), 250);
+    return () => clearTimeout(t);
+  }, [busqueda, buscarPueblos]);
 
   function añadirParada(pueblo?: any) {
     const nuevaParada: Parada = {
@@ -52,7 +99,7 @@ export default function ParadasEditor({ paradas, setParadas }: ParadasEditorProp
       orden: paradas.length + 1,
       puebloId: pueblo?.id ?? null,
       puebloNombre: pueblo?.nombre ?? '',
-      titulo: '',
+      titulo: pueblo?.nombre ?? '',
       descripcion: '',
       fotoUrl: '',
       lat: null,
@@ -126,40 +173,50 @@ export default function ParadasEditor({ paradas, setParadas }: ParadasEditorProp
 
   return (
     <div className="space-y-4">
-      {/* Buscador de pueblos */}
+      {/* Añadir parada: buscar pueblo por nombre */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium">Añadir pueblo</label>
-        <div className="flex gap-2">
-          <input
-            className="flex-1 rounded-md border px-3 py-2 text-sm"
-            placeholder="Buscar pueblo..."
-            value={busqueda}
-            onChange={(e) => {
-              setBusqueda(e.target.value);
-              buscarPueblos(e.target.value);
-            }}
-          />
+        <label className="block text-sm font-medium">Añadir parada</label>
+        <p className="text-xs text-gray-600">
+          Escribe el nombre del pueblo para buscarlo y añadirlo como parada. También puedes añadir una parada vacía (útil para puntos de interés que no sean pueblos).
+        </p>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <input
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              placeholder="Escribe el nombre del pueblo..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && resultadosPueblos.length > 0) {
+                  e.preventDefault();
+                  añadirParada(resultadosPueblos[0]);
+                }
+              }}
+            />
+            {buscando && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">Buscando...</span>
+            )}
+          </div>
           <button
             type="button"
-            className="rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
+            className="rounded-md border border-dashed px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
             onClick={() => añadirParada()}
           >
-            + Añadir vacía
+            + Parada vacía
           </button>
         </div>
 
-        {buscando && <p className="text-xs text-gray-500">Buscando...</p>}
-
         {resultadosPueblos.length > 0 && (
-          <div className="max-h-40 space-y-1 overflow-y-auto rounded-md border bg-white p-2">
+          <div className="max-h-48 space-y-1 overflow-y-auto rounded-md border bg-white p-2">
             {resultadosPueblos.map((pueblo) => (
               <button
                 key={pueblo.id}
                 type="button"
-                className="block w-full rounded px-2 py-1 text-left text-sm hover:bg-gray-100"
+                className="flex w-full items-center justify-between rounded px-2 py-2 text-left text-sm hover:bg-primary/5"
                 onClick={() => añadirParada(pueblo)}
               >
-                {pueblo.nombre} ({pueblo.provincia})
+                <span>{pueblo.nombre}</span>
+                <span className="text-xs text-gray-500">{pueblo.provincia}</span>
               </button>
             ))}
           </div>
@@ -182,38 +239,39 @@ export default function ParadasEditor({ paradas, setParadas }: ParadasEditorProp
                     </span>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => moverArriba(parada.tempId)}
-                    className="text-xs text-blue-600 hover:underline disabled:text-gray-400"
+                    className="rounded border px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
                     disabled={idx === 0}
+                    title="Subir"
                   >
                     ↑
                   </button>
                   <button
                     type="button"
                     onClick={() => moverAbajo(parada.tempId)}
-                    className="text-xs text-blue-600 hover:underline disabled:text-gray-400"
+                    className="rounded border px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
                     disabled={idx === paradas.length - 1}
+                    title="Bajar"
                   >
                     ↓
                   </button>
                   <button
                     type="button"
                     onClick={() => eliminarParada(parada.tempId)}
-                    className="text-xs text-red-600 hover:underline"
+                    className="rounded border border-red-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50"
                   >
                     Eliminar
                   </button>
                 </div>
               </div>
 
-              {/* Pueblo no asignado */}
+              {/* Parada vacía (sin pueblo asociado) */}
               {!parada.puebloId && (
-                <div className="mb-2 rounded bg-yellow-50 p-2 text-xs text-yellow-700">
-                  ⚠️ Pueblo no asignado. Usa el buscador de arriba para añadir uno con
-                  pueblo, o edita los campos manualmente.
+                <div className="mb-2 rounded bg-amber-50 p-2 text-xs text-amber-800">
+                  Parada sin pueblo asociado. Puedes buscar un pueblo arriba o usar esta parada para un punto de interés genérico.
                 </div>
               )}
 
@@ -228,18 +286,11 @@ export default function ParadasEditor({ paradas, setParadas }: ParadasEditorProp
                 />
               </div>
 
-              {/* Descripción */}
-              <div className="mb-2 space-y-1">
-                <label className="block text-xs font-medium">Descripción</label>
-                <textarea
-                  className="w-full rounded border px-2 py-1 text-sm"
-                  rows={3}
-                  value={parada.descripcion ?? ''}
-                  onChange={(e) =>
-                    updateParada(parada.tempId, 'descripcion', e.target.value)
-                  }
-                />
-              </div>
+              {/* Descripción: Editor visual o HTML */}
+              <DescripcionEditor
+                value={parada.descripcion ?? ''}
+                onChange={(v) => updateParada(parada.tempId, 'descripcion', v)}
+              />
 
               {/* Foto */}
               <div className="mb-2 space-y-1">
