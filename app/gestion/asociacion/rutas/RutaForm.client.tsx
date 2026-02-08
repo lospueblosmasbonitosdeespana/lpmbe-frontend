@@ -485,28 +485,61 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
 
         {/* Logo de la ruta */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium">Logo</label>
-          <select
-            className="w-full max-w-md rounded-md border px-3 py-2"
-            value={logoId ?? ''}
-            onChange={(e) => {
-              const v = e.target.value;
-              setLogoId(v === '' ? null : parseInt(v, 10));
-            }}
-          >
-            <option value="">Sin logo</option>
-            {logos.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.nombre}
-              </option>
-            ))}
-          </select>
+          <label className="block text-sm font-medium">Logo de la ruta</label>
+          {logos.length === 0 ? (
+            <p className="text-sm text-gray-500">
+              No hay logos disponibles.{' '}
+              <a href="/gestion/asociacion/logos" className="text-primary hover:underline">
+                Añade logos en la biblioteca
+              </a>
+            </p>
+          ) : (
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
+              {/* Opción sin logo */}
+              <button
+                type="button"
+                onClick={() => setLogoId(null)}
+                className={`flex flex-col items-center rounded-lg border-2 p-2 transition ${
+                  logoId === null
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                    : 'border-border hover:border-gray-400'
+                }`}
+              >
+                <div className="flex h-12 w-full items-center justify-center text-gray-400 text-sm">
+                  —
+                </div>
+                <span className="mt-1 text-[10px] font-medium">Sin logo</span>
+              </button>
+              {logos.map((l) => {
+                const isSelected = logoId === l.id;
+                return (
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => setLogoId(l.id)}
+                    className={`flex flex-col items-center rounded-lg border-2 p-2 transition ${
+                      isSelected
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                        : 'border-border hover:border-gray-400'
+                    }`}
+                  >
+                    <div className="flex h-12 w-full items-center justify-center">
+                      <img src={l.url} alt={l.nombre} className="max-h-full max-w-full object-contain" />
+                    </div>
+                    <span className="mt-1 text-[10px] font-medium text-center leading-tight">{l.nombre}</span>
+                    {isSelected && (
+                      <span className="text-[10px] font-semibold text-primary">✓</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           <p className="text-xs text-gray-500">
-            Se muestra a la derecha del título de la ruta. Elige entre los logos de{' '}
+            Se muestra a la derecha del título. Gestiona logos en{' '}
             <a href="/gestion/asociacion/logos" className="text-primary hover:underline">
-              Ajustes de Marca / Logos
+              Biblioteca de logos
             </a>
-            .
           </p>
         </div>
 

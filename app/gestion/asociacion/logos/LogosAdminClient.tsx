@@ -283,10 +283,22 @@ export default function LogosAdminClient() {
         )}
       </div>
 
-      <p className="text-sm text-muted-foreground">
-        Los logos se pueden asignar a rutas desde la edición de cada ruta. El logo
-        aparecerá en la tarjeta del grid y encima del Hero en la página de la ruta.
-      </p>
+      <div className="rounded-md border border-blue-200 bg-blue-50 p-4">
+        <p className="text-sm text-blue-800">
+          Estos logos están disponibles en toda la web:
+        </p>
+        <ul className="mt-2 space-y-1 text-sm text-blue-700">
+          <li>
+            • <strong>Header / Footer</strong> → elige cuál se muestra en{' '}
+            <Link href="/gestion/asociacion/ajustes" className="font-medium underline">
+              Ajustes de marca
+            </Link>
+          </li>
+          <li>
+            • <strong>Rutas</strong> → asigna un logo a cada ruta desde su editor
+          </li>
+        </ul>
+      </div>
     </div>
   );
 }
