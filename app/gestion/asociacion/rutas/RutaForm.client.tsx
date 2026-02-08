@@ -583,16 +583,16 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
                         setTips(next);
                       }}
                     >
-                      <option value="clock">🕐 Duración</option>
-                      <option value="lightbulb">💡 Consejos</option>
-                      <option value="car">🚗 Moverse</option>
-                      <option value="leaf">🌿 Entorno</option>
-                      <option value="calendar">📅 Horarios</option>
-                      <option value="utensils">🍽️ Sabores</option>
-                      <option value="bed">🏨 Alojamiento</option>
-                      <option value="sun">☀️ Época</option>
-                      <option value="backpack">🎒 Equipaje</option>
-                      <option value="info">ℹ️ Otro</option>
+                      <option value="clock">Duración</option>
+                      <option value="lightbulb">Consejos</option>
+                      <option value="car">Moverse</option>
+                      <option value="leaf">Entorno</option>
+                      <option value="calendar">Horarios</option>
+                      <option value="utensils">Sabores</option>
+                      <option value="bed">Alojamiento</option>
+                      <option value="sun">Época</option>
+                      <option value="backpack">Equipaje</option>
+                      <option value="info">Otro</option>
                     </select>
                     <input
                       type="text"

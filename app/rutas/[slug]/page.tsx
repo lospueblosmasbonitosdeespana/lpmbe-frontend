@@ -1,3 +1,4 @@
+import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getRutas, getRutaById, getRutaMapa } from "@/lib/api";
@@ -324,22 +325,82 @@ export default async function RutaPage({
         </section>
       )}
 
-      {/* Tips de la ruta (tarjetas con icono) */}
+      {/* Tips de la ruta (tarjetas con iconos SVG) */}
       {(() => {
         const tips = Array.isArray((ruta as any).tips) ? (ruta as any).tips : [];
         if (tips.length === 0) return null;
 
-        const iconMap: Record<string, string> = {
-          clock: '🕐',
-          lightbulb: '💡',
-          car: '🚗',
-          leaf: '🌿',
-          calendar: '📅',
-          utensils: '🍽️',
-          bed: '🏨',
-          sun: '☀️',
-          backpack: '🎒',
-          info: 'ℹ️',
+        const svgProps = { className: "h-6 w-6", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.75, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+
+        const iconMap: Record<string, React.ReactNode> = {
+          clock: (
+            <svg {...svgProps}>
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          ),
+          lightbulb: (
+            <svg {...svgProps}>
+              <path d="M9 18h6" /><path d="M10 22h4" />
+              <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A7 7 0 1 0 4.5 11.5c.76.76 1.23 1.52 1.41 2.5" />
+            </svg>
+          ),
+          car: (
+            <svg {...svgProps}>
+              <path d="M5 17h14v-5l-2-4H7l-2 4v5z" />
+              <circle cx="7.5" cy="17.5" r="1.5" /><circle cx="16.5" cy="17.5" r="1.5" />
+              <path d="M3 17h2" /><path d="M19 17h2" />
+            </svg>
+          ),
+          leaf: (
+            <svg {...svgProps}>
+              <path d="M11 20A7 7 0 0 1 4 13c0-3.87 3.13-7 7-7 5 0 9 4 9 9a7 7 0 0 1-7 7Z" />
+              <path d="M10 13V7.5" /><path d="M7 10h6" />
+            </svg>
+          ),
+          calendar: (
+            <svg {...svgProps}>
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+          ),
+          utensils: (
+            <svg {...svgProps}>
+              <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+              <path d="M7 2v20" />
+              <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+            </svg>
+          ),
+          bed: (
+            <svg {...svgProps}>
+              <path d="M2 4v16" /><path d="M2 8h18a2 2 0 0 1 2 2v10" />
+              <path d="M2 17h20" /><path d="M6 8v4" />
+            </svg>
+          ),
+          sun: (
+            <svg {...svgProps}>
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+          ),
+          backpack: (
+            <svg {...svgProps}>
+              <path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10H4V10Z" />
+              <path d="M9 6V4a3 3 0 0 1 6 0v2" />
+              <path d="M8 21v-4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4" />
+            </svg>
+          ),
+          info: (
+            <svg {...svgProps}>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+          ),
         };
 
         return (
@@ -349,24 +410,24 @@ export default async function RutaPage({
               {tips.map((tip: any, idx: number) => (
                 <details
                   key={idx}
-                  className="group rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+                  className="group rounded-xl border border-border bg-card shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
                 >
                   <summary className="flex cursor-pointer items-center gap-3 p-4 list-none [&::-webkit-details-marker]:hidden">
-                    <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-amber-50 text-xl">
+                    <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-accent text-primary">
                       {iconMap[tip.icono] ?? iconMap.info}
                     </span>
-                    <span className="flex-1 font-semibold text-gray-900 text-sm leading-tight">
+                    <span className="flex-1 font-medium text-foreground text-sm leading-tight">
                       {tip.titulo}
                     </span>
                     <svg
-                      className="h-5 w-5 flex-shrink-0 text-gray-400 transition-transform group-open:rotate-180"
+                      className="h-4 w-4 flex-shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
                       fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                     </svg>
                   </summary>
-                  <div className="border-t border-gray-100 px-4 pb-4 pt-3">
-                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                  <div className="border-t border-border px-4 pb-4 pt-3">
+                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
                       {tip.contenido}
                     </p>
                   </div>
