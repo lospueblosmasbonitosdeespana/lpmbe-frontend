@@ -20,6 +20,103 @@ type ParadasEditorProps = {
   setParadas: (paradas: Parada[]) => void;
 };
 
+function PuebloAsignar({
+  parada,
+  onAsignar,
+  onQuitar,
+}: {
+  parada: Parada;
+  onAsignar: (pueblo: { id: number; nombre: string; provincia?: string }) => void;
+  onQuitar: () => void;
+}) {
+  const [query, setQuery] = useState('');
+  const [resultados, setResultados] = useState<any[]>([]);
+  const [buscando, setBuscando] = useState(false);
+  const [focused, setFocused] = useState(false);
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setResultados([]);
+      return;
+    }
+    const t = setTimeout(async () => {
+      setBuscando(true);
+      try {
+        const res = await fetch(`/api/pueblos?search=${encodeURIComponent(query)}`, {
+          cache: 'no-store',
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setResultados(Array.isArray(data) ? data : []);
+        }
+      } finally {
+        setBuscando(false);
+      }
+    }, 200);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  if (parada.puebloId && parada.puebloNombre) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-medium text-gray-600">Pueblo:</span>
+        <span className="rounded bg-primary/10 px-2 py-1 text-sm font-medium text-primary">
+          {parada.puebloNombre}
+        </span>
+        <button
+          type="button"
+          onClick={onQuitar}
+          className="text-xs text-gray-500 hover:text-gray-700 hover:underline"
+        >
+          cambiar
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <label className="mb-1 block text-xs font-medium text-gray-700">
+        Pueblo <span className="text-amber-600">*</span>
+      </label>
+      <div className="relative">
+        <input
+          type="text"
+          className="w-full rounded-md border border-amber-200 bg-white px-3 py-2 pr-20 text-sm placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          placeholder="Escribe el nombre del pueblo..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setTimeout(() => setFocused(false), 150)}
+        />
+        {buscando && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">Buscando...</span>
+        )}
+      </div>
+      {focused && resultados.length > 0 && (
+        <div className="absolute z-10 mt-1 max-h-44 w-full overflow-y-auto rounded-md border bg-white shadow-lg">
+          {resultados.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-primary/5"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onAsignar(p);
+                setQuery('');
+                setResultados([]);
+              }}
+            >
+              <span className="font-medium">{p.nombre}</span>
+              <span className="text-xs text-gray-500">{p.provincia}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function DescripcionEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [mode, setMode] = useState<'edit' | 'html'>('edit');
   return (
@@ -268,12 +365,31 @@ export default function ParadasEditor({ paradas, setParadas }: ParadasEditorProp
                 </div>
               </div>
 
-              {/* Parada vacía (sin pueblo asociado) */}
-              {!parada.puebloId && (
-                <div className="mb-2 rounded bg-amber-50 p-2 text-xs text-amber-800">
-                  Parada sin pueblo asociado. Puedes buscar un pueblo arriba o usar esta parada para un punto de interés genérico.
-                </div>
-              )}
+              {/* Asignar pueblo: búsqueda por nombre (prioritario) */}
+              <div className="mb-3">
+                <PuebloAsignar
+                  parada={parada}
+                  onAsignar={(pueblo) => {
+                    setParadas(paradas.map((p) =>
+                      p.tempId === parada.tempId
+                        ? {
+                            ...p,
+                            puebloId: pueblo.id,
+                            puebloNombre: pueblo.nombre,
+                            titulo: p.titulo || pueblo.nombre,
+                          }
+                        : p
+                    ));
+                  }}
+                  onQuitar={() => {
+                    setParadas(paradas.map((p) =>
+                      p.tempId === parada.tempId
+                        ? { ...p, puebloId: null, puebloNombre: '' }
+                        : p
+                    ));
+                  }}
+                />
+              </div>
 
               {/* Título opcional */}
               <div className="mb-2 space-y-1">

@@ -377,12 +377,12 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
   }
 
   return (
-    <main className="mx-auto max-w-3xl p-6">
+    <main className="mx-auto max-w-3xl pb-24 p-6">
       <h1 className="text-2xl font-semibold">
         {rutaId ? 'Editar Ruta' : 'Nueva Ruta'}
       </h1>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+      <form onSubmit={handleSubmit} className="mt-6 space-y-6" id="ruta-form">
         {/* Título */}
         <div className="space-y-2">
           <label className="block text-sm font-medium">Título *</label>
@@ -712,19 +712,44 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
         <div className="flex gap-4">
           <button
             type="submit"
-            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+            className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90"
             disabled={loading}
           >
-            {loading ? 'Guardando...' : rutaId ? 'Actualizar' : 'Crear'}
+            {loading ? 'Guardando...' : rutaId ? 'Guardar cambios' : 'Crear ruta'}
           </button>
           <Link
             href="/gestion/asociacion/rutas"
-            className="rounded-md border px-4 py-2 hover:underline"
+            className="rounded-md border px-4 py-2 hover:bg-gray-50"
           >
             Cancelar
           </Link>
         </div>
       </form>
+
+      {/* Barra fija de guardar (visible al hacer scroll) */}
+      <div className="fixed bottom-0 left-0 right-0 z-20 border-t bg-white/95 px-4 py-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] backdrop-blur-sm">
+        <div className="mx-auto flex max-w-3xl items-center justify-between">
+          <p className="text-sm text-gray-600">
+            Ruta + paradas se guardan juntos
+          </p>
+          <div className="flex gap-2">
+            <Link
+              href="/gestion/asociacion/rutas"
+              className="rounded-md border px-4 py-2 text-sm hover:bg-gray-50"
+            >
+              Cancelar
+            </Link>
+            <button
+              type="submit"
+              form="ruta-form"
+              className="rounded-md bg-primary px-5 py-2 font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+              disabled={loading}
+            >
+              {loading ? 'Guardando...' : 'Guardar ruta'}
+            </button>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }
