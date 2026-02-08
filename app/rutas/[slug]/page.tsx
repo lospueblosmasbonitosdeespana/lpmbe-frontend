@@ -183,6 +183,17 @@ export default async function RutaPage({
         </Link>
       </div>
 
+      {/* Logo encima del Hero */}
+      {(ruta as any).logo?.url && (
+        <div className="mb-6 flex justify-center">
+          <img
+            src={(ruta as any).logo.url}
+            alt={(ruta as any).logo.nombre}
+            className="max-h-24 w-auto object-contain"
+          />
+        </div>
+      )}
+
       {/* Hero */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold">{ruta.titulo}</h1>
@@ -261,8 +272,8 @@ export default async function RutaPage({
         </div>
       )}
 
-      {/* Intro (descripción inicial hasta paradas) */}
-      {introLimpia && (
+      {/* Intro: oculto cuando hay paradas (evita duplicar texto que ya está en cada pueblo) */}
+      {introLimpia && paradas.length === 0 && (
         <section className="mb-8">
           <div 
             className="prose max-w-none text-gray-700 whitespace-pre-line"
@@ -296,12 +307,29 @@ export default async function RutaPage({
 
                   {fotoUrl ? (
                     <div className="mt-4">
-                      <img
-                        src={fotoUrl}
-                        alt={titulo}
-                        className="mt-3 rounded-md border"
-                        style={{ width: 260, height: 'auto' }}
-                      />
+                      {(pueblo as any).slug ? (
+                        <Link
+                          href={`/pueblos/${(pueblo as any).slug}`}
+                          className="block transition hover:opacity-90"
+                        >
+                          <img
+                            src={fotoUrl}
+                            alt={titulo}
+                            className="mt-3 rounded-md border cursor-pointer"
+                            style={{ width: 260, height: 'auto' }}
+                          />
+                          <span className="mt-1 block text-sm text-primary hover:underline">
+                            Ver pueblo →
+                          </span>
+                        </Link>
+                      ) : (
+                        <img
+                          src={fotoUrl}
+                          alt={titulo}
+                          className="mt-3 rounded-md border"
+                          style={{ width: 260, height: 'auto' }}
+                        />
+                      )}
                     </div>
                   ) : null}
 
