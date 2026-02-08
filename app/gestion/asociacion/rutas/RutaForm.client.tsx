@@ -99,6 +99,13 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
     (initialData as any)?.logoId ?? (initialData as any)?.logo?.id ?? null
   );
   const [logos, setLogos] = useState<{ id: number; nombre: string; url: string }[]>([]);
+
+  // Tips de la ruta
+  type Tip = { titulo: string; contenido: string; icono: string };
+  const [tips, setTips] = useState<Tip[]>(() => {
+    const raw = (initialData as any)?.tips;
+    return Array.isArray(raw) ? raw : [];
+  });
   
   // Actualizar descripción si cambia initialData (para evitar loops)
   useEffect(() => {
@@ -272,6 +279,9 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
       } else {
         rutaPayload.logoId = null;
       }
+
+      // Tips
+      rutaPayload.tips = tips.filter((t: Tip) => t.titulo.trim() && t.contenido.trim());
 
       const method = rutaId ? 'PUT' : 'POST';
       const url = rutaId
@@ -540,6 +550,86 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
             <a href="/gestion/asociacion/logos" className="text-primary hover:underline">
               Biblioteca de logos
             </a>
+          </p>
+        </div>
+
+        {/* Tips de la ruta */}
+        <div className="space-y-3 rounded-md border p-4">
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium">Tips de la ruta</label>
+            <button
+              type="button"
+              onClick={() => setTips((prev: Tip[]) => [...prev, { titulo: '', contenido: '', icono: 'info' }])}
+              className="rounded-md border px-3 py-1 text-xs hover:bg-gray-50"
+            >
+              + Añadir tip
+            </button>
+          </div>
+          {tips.length === 0 ? (
+            <p className="text-xs text-gray-500">
+              Sin tips. Añade secciones como &quot;Duración recomendada&quot;, &quot;Consejos&quot;, &quot;Gastronomía&quot;, etc.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {tips.map((tip: Tip, idx: number) => (
+                <div key={idx} className="rounded-md border bg-gray-50 p-3">
+                  <div className="flex items-start gap-2">
+                    <select
+                      className="w-24 rounded border px-2 py-1 text-xs"
+                      value={tip.icono}
+                      onChange={(e) => {
+                        const next = [...tips];
+                        next[idx] = { ...next[idx], icono: e.target.value };
+                        setTips(next);
+                      }}
+                    >
+                      <option value="clock">🕐 Duración</option>
+                      <option value="lightbulb">💡 Consejos</option>
+                      <option value="car">🚗 Moverse</option>
+                      <option value="leaf">🌿 Entorno</option>
+                      <option value="calendar">📅 Horarios</option>
+                      <option value="utensils">🍽️ Sabores</option>
+                      <option value="bed">🏨 Alojamiento</option>
+                      <option value="sun">☀️ Época</option>
+                      <option value="backpack">🎒 Equipaje</option>
+                      <option value="info">ℹ️ Otro</option>
+                    </select>
+                    <input
+                      type="text"
+                      className="flex-1 rounded border px-2 py-1 text-sm"
+                      placeholder="Título del tip"
+                      value={tip.titulo}
+                      onChange={(e) => {
+                        const next = [...tips];
+                        next[idx] = { ...next[idx], titulo: e.target.value };
+                        setTips(next);
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setTips((prev: Tip[]) => prev.filter((_: Tip, i: number) => i !== idx))}
+                      className="text-xs text-red-500 hover:text-red-700"
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                  <textarea
+                    className="mt-2 w-full rounded border px-2 py-1 text-sm"
+                    rows={3}
+                    placeholder="Contenido del tip..."
+                    value={tip.contenido}
+                    onChange={(e) => {
+                      const next = [...tips];
+                      next[idx] = { ...next[idx], contenido: e.target.value };
+                      setTips(next);
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+          <p className="text-xs text-gray-500">
+            Se muestran como tarjetas colapsables debajo de las paradas en la página pública.
           </p>
         </div>
 
