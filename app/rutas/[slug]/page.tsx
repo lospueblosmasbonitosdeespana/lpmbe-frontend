@@ -272,7 +272,19 @@ export default async function RutaPage({
               const orden = Number(p.orden ?? (idx + 1));
               const titulo = (p.titulo?.trim() || pueblo.nombre || `Parada ${orden}`) as string;
 
-              const descripcion = (p.descripcion ?? '').toString().trim();
+              let descripcion = (p.descripcion ?? '').toString().trim();
+              // Si hay tips en JSON, ocultar el bloque TIPS de la descripción (evita duplicado)
+              const tips = Array.isArray((ruta as any).tips) ? (ruta as any).tips : [];
+              if (tips.length > 0 && idx === paradas.length - 1) {
+                const marcadores = ['TIPS DE RUTA', 'Tips de ruta', 'TIPS', 'Tips', 'Duración recomendada'];
+                for (const m of marcadores) {
+                  const i = descripcion.indexOf(m);
+                  if (i !== -1) {
+                    descripcion = descripcion.slice(0, i).trim();
+                    break;
+                  }
+                }
+              }
               const fotoUrl = (p.fotoUrl || '').toString().trim();
 
               return (
