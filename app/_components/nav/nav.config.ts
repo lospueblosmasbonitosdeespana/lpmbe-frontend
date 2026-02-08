@@ -72,7 +72,7 @@ export const navConfig: NavItem[] = [
       {
         title: "Planifica",
         links: [
-          { label: "Fin de semana", href: "/pueblos?tema=findesemana" },
+          { label: "Fin de semana", href: "/planifica/fin-de-semana" },
           { label: "Escapadas", href: "/pueblos?tema=escapadas" },
         ],
       },
