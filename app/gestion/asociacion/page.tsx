@@ -15,6 +15,7 @@ import {
   IconDocumentos,
   IconContacto,
   IconVideos,
+  IconLogos,
 } from '../_components/GestionIcons';
 
 const ACCESOS = [
@@ -77,6 +78,12 @@ const ACCESOS = [
     title: 'Datos',
     description: 'Métricas, clientes, suscriptores newsletter',
     icon: <IconDatos />,
+  },
+  {
+    href: '/gestion/asociacion/logos',
+    title: 'Logos',
+    description: 'Logos reutilizables para rutas, páginas, etc.',
+    icon: <IconLogos />,
   },
   {
     href: '/gestion/asociacion/ajustes',

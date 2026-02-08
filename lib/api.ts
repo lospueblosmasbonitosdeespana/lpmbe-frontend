@@ -154,6 +154,7 @@ export type Ruta = {
   slug: string;
   descripcion: string | null;
   foto_portada: string | null;
+  logo?: { id: number; nombre: string; url: string; etiqueta?: string | null } | null;
   distancia: number | null;
   dificultad: string | null;
   tipo: string | null;

@@ -95,6 +95,10 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
   const [tipo, setTipo] = useState<string>(String(initialData?.tipo ?? ''));
   const [programa, setPrograma] = useState(initialData?.programa ?? '');
   const [activo, setActivo] = useState(initialData?.activo ?? true);
+  const [logoId, setLogoId] = useState<number | null>(
+    (initialData as any)?.logoId ?? (initialData as any)?.logo?.id ?? null
+  );
+  const [logos, setLogos] = useState<{ id: number; nombre: string; url: string }[]>([]);
   
   // Actualizar descripción si cambia initialData (para evitar loops)
   useEffect(() => {
@@ -106,6 +110,13 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
     }
   }, [initialData?.descripcionLarga, initialData?.descripcion]);
   
+  useEffect(() => {
+    fetch('/api/admin/logos', { cache: 'no-store' })
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => setLogos(data))
+      .catch(() => setLogos([]));
+  }, []);
+
   // En modo editar, marcar slug como tocado para no sobrescribirlo
   useEffect(() => {
     const initialId = (initialData as any)?.id;
@@ -255,6 +266,11 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
       }
       if (programa.trim()) {
         rutaPayload.programa = programa.trim();
+      }
+      if (logoId !== null && logoId > 0) {
+        rutaPayload.logoId = logoId;
+      } else {
+        rutaPayload.logoId = null;
       }
 
       const method = rutaId ? 'PUT' : 'POST';
@@ -464,6 +480,33 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
           <p className="text-xs text-gray-500">
             El texto se ha limpiado de HTML. Si ves "¡Empezamos!" puedes eliminar el bloque
             numerado con el botón de arriba.
+          </p>
+        </div>
+
+        {/* Logo de la ruta */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">Logo</label>
+          <select
+            className="w-full max-w-md rounded-md border px-3 py-2"
+            value={logoId ?? ''}
+            onChange={(e) => {
+              const v = e.target.value;
+              setLogoId(v === '' ? null : parseInt(v, 10));
+            }}
+          >
+            <option value="">Sin logo</option>
+            {logos.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.nombre}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500">
+            Se muestra a la derecha del título de la ruta. Elige entre los logos de{' '}
+            <a href="/gestion/asociacion/logos" className="text-primary hover:underline">
+              Ajustes de Marca / Logos
+            </a>
+            .
           </p>
         </div>
 

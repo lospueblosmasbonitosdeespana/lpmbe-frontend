@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   description: "Los Pueblos Más Bonitos de España",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export default function RootLayout({
   children,
 }: {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MegaMenu } from "./MegaMenu";
+import { MobileMenu } from "./MobileMenu";
 import AuthNavLink from "./AuthNavLink";
 import CartIndicatorWrapper from "../tienda/CartIndicatorWrapper";
 import { headers } from "next/headers";
@@ -93,7 +94,8 @@ export async function Header() {
           <MegaMenu />
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
+          <MobileMenu />
           <CartIndicatorWrapper />
           <Link href="/contacto" className="text-sm font-medium hover:underline">
             Contacto

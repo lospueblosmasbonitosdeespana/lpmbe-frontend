@@ -51,6 +51,16 @@ export default async function RutasPage() {
                     <span className="text-sm text-gray-500">Sin imagen</span>
                   </div>
                 )}
+                {/* Logo encima de la foto */}
+                {ruta.logo?.url && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 p-4">
+                    <img
+                      src={ruta.logo.url}
+                      alt={ruta.logo.nombre}
+                      className="max-h-16 max-w-[80%] object-contain drop-shadow-md"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Contenido */}

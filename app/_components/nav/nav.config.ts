@@ -74,6 +74,7 @@ export const navConfig: NavItem[] = [
         links: [
           { label: "Fin de semana", href: "/planifica/fin-de-semana" },
           { label: "Escapadas", href: "/pueblos?tema=escapadas" },
+          { label: "Pirineos", href: "/rutas/mas-bonitos-de-los-pirineos" },
         ],
       },
     ],

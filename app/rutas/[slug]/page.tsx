@@ -183,81 +183,59 @@ export default async function RutaPage({
         </Link>
       </div>
 
-      {/* Logo encima del Hero */}
-      {(ruta as any).logo?.url && (
-        <div className="mb-6 flex justify-center">
-          <img
-            src={(ruta as any).logo.url}
-            alt={(ruta as any).logo.nombre}
-            className="max-h-24 w-auto object-contain"
-          />
+      {/* Hero: título a la izquierda, logo a la derecha (encima del header) */}
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold">{ruta.titulo}</h1>
+          {/* Distancia y Tiempo (compacto) */}
+          {(() => {
+            const km = (ruta as any).distancia_km ?? (ruta as any).distanciaKm;
+            const t = (ruta as any).tiempo_estimado ?? (ruta as any).tiempoEstimado;
+            return (km || t) ? (
+              <div className="mt-2 text-sm text-gray-600">
+                {km ? `${km} km` : null}
+                {km && t ? ' · ' : null}
+                {t ? `${t} h` : null}
+              </div>
+            ) : null;
+          })()}
+          {/* Metadatos */}
+          <div className="mt-4 flex flex-wrap gap-3">
+            {ruta.dificultad && (
+              <div className="rounded-lg bg-blue-50 px-4 py-2">
+                <span className="text-xs font-medium uppercase text-blue-600">Dificultad</span>
+                <p className="mt-1 text-sm font-semibold text-blue-900">{ruta.dificultad}</p>
+              </div>
+            )}
+            {ruta.tipo && (
+              <div className="rounded-lg bg-green-50 px-4 py-2">
+                <span className="text-xs font-medium uppercase text-green-600">Tipo</span>
+                <p className="mt-1 text-sm font-semibold text-green-900">{ruta.tipo}</p>
+              </div>
+            )}
+            {ruta.distancia && (
+              <div className="rounded-lg bg-gray-50 px-4 py-2">
+                <span className="text-xs font-medium uppercase text-gray-600">Distancia</span>
+                <p className="mt-1 text-sm font-semibold text-gray-900">{ruta.distancia} km</p>
+              </div>
+            )}
+            {ruta.tiempo && (
+              <div className="rounded-lg bg-gray-50 px-4 py-2">
+                <span className="text-xs font-medium uppercase text-gray-600">Tiempo estimado</span>
+                <p className="mt-1 text-sm font-semibold text-gray-900">{ruta.tiempo}h</p>
+              </div>
+            )}
+          </div>
         </div>
-      )}
-
-      {/* Hero */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">{ruta.titulo}</h1>
-        
-        {/* Distancia y Tiempo (compacto) */}
-        {(() => {
-          const km = (ruta as any).distancia_km ?? (ruta as any).distanciaKm;
-          const t = (ruta as any).tiempo_estimado ?? (ruta as any).tiempoEstimado;
-          
-          return (km || t) ? (
-            <div className="mt-2 text-sm text-gray-600">
-              {km ? `${km} km` : null}
-              {km && t ? ' · ' : null}
-              {t ? `${t} h` : null}
-            </div>
-          ) : null;
-        })()}
-        
-        {/* Metadatos */}
-        <div className="mt-4 flex flex-wrap gap-3">
-          {ruta.dificultad && (
-            <div className="rounded-lg bg-blue-50 px-4 py-2">
-              <span className="text-xs font-medium uppercase text-blue-600">
-                Dificultad
-              </span>
-              <p className="mt-1 text-sm font-semibold text-blue-900">
-                {ruta.dificultad}
-              </p>
-            </div>
-          )}
-          
-          {ruta.tipo && (
-            <div className="rounded-lg bg-green-50 px-4 py-2">
-              <span className="text-xs font-medium uppercase text-green-600">
-                Tipo
-              </span>
-              <p className="mt-1 text-sm font-semibold text-green-900">
-                {ruta.tipo}
-              </p>
-            </div>
-          )}
-          
-          {ruta.distancia && (
-            <div className="rounded-lg bg-gray-50 px-4 py-2">
-              <span className="text-xs font-medium uppercase text-gray-600">
-                Distancia
-              </span>
-              <p className="mt-1 text-sm font-semibold text-gray-900">
-                {ruta.distancia} km
-              </p>
-            </div>
-          )}
-          
-          {ruta.tiempo && (
-            <div className="rounded-lg bg-gray-50 px-4 py-2">
-              <span className="text-xs font-medium uppercase text-gray-600">
-                Tiempo estimado
-              </span>
-              <p className="mt-1 text-sm font-semibold text-gray-900">
-                {ruta.tiempo}h
-              </p>
-            </div>
-          )}
-        </div>
+        {(ruta as any).logo?.url && (
+          <div className="flex-shrink-0">
+            <img
+              src={(ruta as any).logo.url}
+              alt={(ruta as any).logo.nombre ?? ruta.titulo}
+              className="max-h-24 w-auto object-contain"
+            />
+          </div>
+        )}
       </div>
 
       {/* Foto portada */}
@@ -334,9 +312,10 @@ export default async function RutaPage({
                   ) : null}
 
                   {descripcion ? (
-                    <div className="mt-4 prose prose-gray max-w-none">
-                      <p className="whitespace-pre-line">{descripcion}</p>
-                    </div>
+                    <div
+                      className="mt-4 prose prose-gray max-w-none"
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(descripcion) }}
+                    />
                   ) : null}
                 </article>
               );
