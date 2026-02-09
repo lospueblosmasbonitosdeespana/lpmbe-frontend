@@ -62,6 +62,8 @@ export default function WebcamPuebloClient({
     const trimmed = input.trim();
     const iframeMatch = trimmed.match(/<iframe[^>]+src=["']([^"']+)["']/i);
     if (iframeMatch) return iframeMatch[1];
+    const anchorMatch = trimmed.match(/<a[^>]+href=["']([^"']+)["']/i);
+    if (anchorMatch) return anchorMatch[1];
     if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
     return null;
   }
@@ -71,7 +73,7 @@ export default function WebcamPuebloClient({
     if (!nombre.trim() || !urlEmbed.trim()) return;
     const embedUrl = embedMode === "iframe" ? extractEmbedUrl(urlEmbed) : urlEmbed.trim();
     if (!embedUrl) {
-      setMensaje("URL no válida. Si pegas código iframe, debe contener src=\"...\"");
+      setMensaje("URL no válida. Pega una URL, código iframe (src=\"...\") o enlace (href=\"...\").");
       return;
     }
     setGuardando(true);
@@ -253,7 +255,7 @@ export default function WebcamPuebloClient({
                 </label>
               </div>
               <label className="mb-1 block text-sm font-medium">
-                {embedMode === "url" ? "URL de embed" : "Pega el código iframe completo"}
+                {embedMode === "url" ? "URL de embed" : "Pega código iframe o enlace (iframe, &lt;a href=\"...\"&gt;)"}
               </label>
               {embedMode === "url" ? (
                 <input
@@ -276,7 +278,7 @@ export default function WebcamPuebloClient({
               )}
               {embedMode === "iframe" && (
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Se extraerá la URL del src del iframe automáticamente.
+                  Se extraerá la URL del iframe (src) o del enlace (href) automáticamente.
                 </p>
               )}
             </div>
