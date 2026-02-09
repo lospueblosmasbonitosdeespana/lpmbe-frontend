@@ -1,7 +1,23 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { MediaItem } from "@/src/types/media";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 type PhotoManagerProps = {
   entity: "pueblo" | "poi";
@@ -47,12 +63,168 @@ function clearStoredRotation(id: string | number) {
   }
 }
 
+// Fila arrastrable individual
+function SortablePhotoRow({
+  photo,
+  index,
+  onRotate,
+  onDelete,
+}: {
+  photo: any;
+  index: number;
+  onRotate: (id: number | string) => void;
+  onDelete: (id: number | string) => void;
+}) {
+  const id = photo.id;
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: String(id),
+  });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        ...style,
+        display: "grid",
+        gridTemplateColumns: "44px 120px 1fr auto",
+        gap: "12px",
+        alignItems: "center",
+        padding: "12px",
+        backgroundColor: isDragging ? "#e5e7eb" : "#f9fafb",
+        borderRadius: "8px",
+        border: "1px solid #e5e7eb",
+      }}
+    >
+      {/* Handle de arrastre */}
+      <div
+        {...attributes}
+        {...listeners}
+        style={{
+          cursor: "grab",
+          padding: "8px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          border: "1px solid #d1d5db",
+          borderRadius: "6px",
+          backgroundColor: "white",
+        }}
+        title="Arrastra para reordenar"
+      >
+        <span style={{ fontSize: "16px" }}>⋮⋮</span>
+      </div>
+
+      {/* Thumbnail */}
+      <img
+        src={photo.publicUrl}
+        alt={photo.altText ?? ""}
+        style={{
+          width: "120px",
+          height: "80px",
+          objectFit: "cover",
+          borderRadius: "6px",
+          border: "1px solid #e5e7eb",
+          transform: `rotate(${photo.rotation ?? 0}deg)`,
+        }}
+      />
+
+      {/* Info */}
+      <div style={{ fontSize: "14px" }}>
+        <div style={{ fontWeight: "500", marginBottom: "4px" }}>
+          Foto #{index + 1}
+          {index === 0 && (
+            <span
+              style={{
+                marginLeft: "8px",
+                padding: "2px 8px",
+                backgroundColor: "#dbeafe",
+                color: "#1e40af",
+                borderRadius: "12px",
+                fontSize: "12px",
+                fontWeight: "600",
+              }}
+            >
+              Principal
+            </span>
+          )}
+          {String(photo.id).startsWith("legacy-") && (
+            <span
+              style={{
+                marginLeft: "8px",
+                padding: "2px 8px",
+                backgroundColor: "#fef3c7",
+                color: "#92400e",
+                borderRadius: "12px",
+                fontSize: "12px",
+                fontWeight: "600",
+              }}
+              title="Foto heredada del sistema antiguo. Al editarla se convertirá en nueva."
+            >
+              Legacy
+            </span>
+          )}
+        </div>
+        <div style={{ color: "#6b7280", fontSize: "12px", wordBreak: "break-all" }}>
+          {photo.publicUrl}
+        </div>
+      </div>
+
+      {/* Botones de acción */}
+      <div style={{ display: "flex", gap: "8px" }}>
+        <button
+          onClick={() => onRotate(photo.id)}
+          style={{
+            padding: "8px 12px",
+            backgroundColor: "#e0f2fe",
+            color: "#0369a1",
+            border: "1px solid #bae6fd",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "14px",
+            fontWeight: "500",
+          }}
+          title="Girar 90°"
+        >
+          🔄
+        </button>
+        <button
+          onClick={() => onDelete(photo.id)}
+          style={{
+            padding: "8px 12px",
+            backgroundColor: "#fee2e2",
+            color: "#dc2626",
+            border: "1px solid #fecaca",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "14px",
+            fontWeight: "500",
+          }}
+          title="Eliminar"
+        >
+          🗑️
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function PhotoManager({ entity, entityId, useAdminEndpoint = true }: PhotoManagerProps) {
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const rotationCacheRef = useRef<Map<string, number>>(new Map());
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   // Cargar fotos desde el endpoint apropiado
   async function loadPhotos() {
@@ -203,7 +375,7 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
   }
 
   // Borrar/Desasociar foto
-  async function handleDelete(photoId: number) {
+  async function handleDelete(photoId: number | string) {
     const confirmMessage = useAdminEndpoint && entity === "pueblo"
       ? "¿Desasociar esta foto del pueblo? (la foto no se borrará, solo se quitará de este pueblo)"
       : "¿Eliminar esta foto?";
@@ -315,28 +487,22 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
     }
   }
 
-  // Mover foto arriba (actualiza UI y guarda al instante)
-  async function moveUp(index: number) {
-    if (index === 0) return;
+  // Drag & drop: reordenar y persistir al soltar
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
     setError(null);
+    const oldIndex = photos.findIndex((p) => String(p.id) === String(active.id));
+    const newIndex = photos.findIndex((p) => String(p.id) === String(over.id));
+    if (oldIndex === -1 || newIndex === -1) return;
 
-    const nextPhotos = [...photos];
-    [nextPhotos[index - 1], nextPhotos[index]] = [nextPhotos[index], nextPhotos[index - 1]];
-    const reordered = nextPhotos.map((p, i) => ({ ...p, order: i + 1 }));
+    const reordered = arrayMove(photos, oldIndex, newIndex).map((p, i) => ({ ...p, order: i + 1 }));
     setPhotos(reordered);
-    await persistOrder(reordered);
-  }
 
-  // Mover foto abajo (actualiza UI y guarda al instante)
-  async function moveDown(index: number) {
-    if (index >= photos.length - 1) return;
-    setError(null);
-
-    const nextPhotos = [...photos];
-    [nextPhotos[index], nextPhotos[index + 1]] = [nextPhotos[index + 1], nextPhotos[index]];
-    const reordered = nextPhotos.map((p, i) => ({ ...p, order: i + 1 }));
-    setPhotos(reordered);
-    await persistOrder(reordered);
+    if (useAdminEndpoint) {
+      await persistOrder(reordered);
+    }
   }
 
   // Rotar foto 90 grados (AUTOSAVE inmediato, igual que pueblo)
@@ -473,159 +639,30 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
         </div>
       )}
 
-      {/* Photos grid */}
+      {/* Photos grid - arrastrar y soltar para reordenar */}
       {photos.length === 0 ? (
         <p style={{ color: "#6b7280", fontSize: "14px" }}>
           No hay fotos todavía. Sube la primera.
         </p>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {photos.map((photo, index) => (
-            <div
-              key={photo.id}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "60px 120px 1fr auto",
-                gap: "12px",
-                alignItems: "center",
-                padding: "12px",
-                backgroundColor: "#f9fafb",
-                borderRadius: "8px",
-                border: "1px solid #e5e7eb",
-              }}
-            >
-              {/* Botones arriba/abajo */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                <button
-                  onClick={() => moveUp(index)}
-                  disabled={index === 0}
-                  style={{
-                    padding: "4px 8px",
-                    fontSize: "12px",
-                    cursor: index === 0 ? "not-allowed" : "pointer",
-                    opacity: index === 0 ? 0.4 : 1,
-                    border: "1px solid #d1d5db",
-                    borderRadius: "4px",
-                    backgroundColor: "white",
-                  }}
-                  title="Subir"
-                >
-                  ↑
-                </button>
-                <button
-                  onClick={() => moveDown(index)}
-                  disabled={index === photos.length - 1}
-                  style={{
-                    padding: "4px 8px",
-                    fontSize: "12px",
-                    cursor: index === photos.length - 1 ? "not-allowed" : "pointer",
-                    opacity: index === photos.length - 1 ? 0.4 : 1,
-                    border: "1px solid #d1d5db",
-                    borderRadius: "4px",
-                    backgroundColor: "white",
-                  }}
-                  title="Bajar"
-                >
-                  ↓
-                </button>
-              </div>
-
-              {/* Thumbnail */}
-              <img
-                src={photo.publicUrl}
-                alt={photo.altText ?? ""}
-                style={{
-                  width: "120px",
-                  height: "80px",
-                  objectFit: "cover",
-                  borderRadius: "6px",
-                  border: "1px solid #e5e7eb",
-                  transform: `rotate(${photo.rotation ?? 0}deg)`,
-                }}
-              />
-
-              {/* Info */}
-              <div style={{ fontSize: "14px" }}>
-                <div style={{ fontWeight: "500", marginBottom: "4px" }}>
-                  Foto #{index + 1}
-                  {index === 0 && (
-                    <span
-                      style={{
-                        marginLeft: "8px",
-                        padding: "2px 8px",
-                        backgroundColor: "#dbeafe",
-                        color: "#1e40af",
-                        borderRadius: "12px",
-                        fontSize: "12px",
-                        fontWeight: "600",
-                      }}
-                    >
-                      Principal
-                    </span>
-                  )}
-                  {String(photo.id).startsWith('legacy-') && (
-                    <span
-                      style={{
-                        marginLeft: "8px",
-                        padding: "2px 8px",
-                        backgroundColor: "#fef3c7",
-                        color: "#92400e",
-                        borderRadius: "12px",
-                        fontSize: "12px",
-                        fontWeight: "600",
-                      }}
-                      title="Foto heredada del sistema antiguo. Al editarla se convertirá en nueva."
-                    >
-                      Legacy
-                    </span>
-                  )}
-                </div>
-                <div style={{ color: "#6b7280", fontSize: "12px", wordBreak: "break-all" }}>
-                  {photo.publicUrl}
-                </div>
-              </div>
-
-              {/* Botones de acción */}
-              <div style={{ display: "flex", gap: "8px" }}>
-                {/* Botón rotar */}
-                <button
-                  onClick={() => handleRotate(photo.id)}
-                  style={{
-                    padding: "8px 12px",
-                    backgroundColor: "#e0f2fe",
-                    color: "#0369a1",
-                    border: "1px solid #bae6fd",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                  }}
-                  title="Girar 90°"
-                >
-                  🔄
-                </button>
-
-                {/* Botón borrar */}
-                <button
-                  onClick={() => handleDelete(photo.id)}
-                  style={{
-                    padding: "8px 12px",
-                    backgroundColor: "#fee2e2",
-                    color: "#dc2626",
-                    border: "1px solid #fecaca",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                  }}
-                  title="Eliminar"
-                >
-                  🗑️
-                </button>
-              </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext
+            items={photos.map((p) => String(p.id))}
+            strategy={verticalListSortingStrategy}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {photos.map((photo, index) => (
+                <SortablePhotoRow
+                  key={photo.id}
+                  photo={photo}
+                  index={index}
+                  onRotate={handleRotate}
+                  onDelete={handleDelete}
+                />
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {/* Info */}
@@ -640,7 +677,7 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
           color: "#0c4a6e",
         }}
       >
-        💡 La primera foto (orden #1) se usa como <strong>foto principal</strong> en listados y cards.
+        💡 Arrastra las fotos para cambiar el orden. La primera se usa como <strong>foto principal</strong> en listados y la página pública.
       </div>
       
       {/* Info Legacy */}
