@@ -227,9 +227,9 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
   );
 
   // Cargar fotos desde el endpoint apropiado
-  async function loadPhotos() {
+  async function loadPhotos(clearError = true) {
     setLoading(true);
-    setError(null);
+    if (clearError) setError(null);
     
     try {
       // Usar endpoint entity-specific (NUNCA /api/media genérico)
@@ -456,35 +456,34 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
     }
   }
 
-  // Persistir orden completo en backend (autoguardado al subir/bajar)
-  async function persistOrder(orderedPhotos: any[]) {
-    setError(null);
-    try {
-      const payload = {
-        fotos: orderedPhotos.map((p, idx) => ({
-          id: p.id,
-          orden: idx + 1,
-        })),
-      };
+  const [saving, setSaving] = useState(false);
 
-      const res = await fetch("/api/admin/fotos/reorder", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        credentials: "include",
-      });
+  // Persistir orden completo en backend
+  async function persistOrder(orderedPhotos: any[]): Promise<boolean> {
+    const payload = {
+      fotos: orderedPhotos.map((p, idx) => ({
+        id: p.id,
+        orden: idx + 1,
+      })),
+    };
 
-      if (!res.ok) {
-        const errorText = await res.text().catch(() => "Error desconocido");
-        throw new Error(`Error guardando orden (${res.status}): ${errorText}`);
-      }
+    console.log("[PhotoManager] persistOrder payload:", JSON.stringify(payload));
 
-      // Refrescar para sincronizar con backend (p. ej. IDs canonizados)
-      await loadPhotos();
-    } catch (e: any) {
-      setError(e?.message ?? "Error guardando orden");
-      await loadPhotos();
+    const res = await fetch("/api/admin/fotos/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      credentials: "include",
+    });
+
+    const responseText = await res.text().catch(() => "");
+    console.log("[PhotoManager] persistOrder response:", res.status, responseText);
+
+    if (!res.ok) {
+      throw new Error(`Error guardando orden (${res.status}): ${responseText}`);
     }
+
+    return true;
   }
 
   // Drag & drop: reordenar y persistir al soltar
@@ -492,16 +491,30 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    setError(null);
     const oldIndex = photos.findIndex((p) => String(p.id) === String(active.id));
     const newIndex = photos.findIndex((p) => String(p.id) === String(over.id));
     if (oldIndex === -1 || newIndex === -1) return;
 
+    console.log("[PhotoManager] handleDragEnd:", { oldIndex, newIndex, activeId: active.id, overId: over.id });
+
+    // Actualizar UI inmediatamente
     const reordered = arrayMove(photos, oldIndex, newIndex).map((p, i) => ({ ...p, order: i + 1 }));
     setPhotos(reordered);
+    setError(null);
+    setSaving(true);
 
-    if (useAdminEndpoint) {
+    try {
       await persistOrder(reordered);
+      console.log("[PhotoManager] ✅ Orden guardado correctamente");
+      // Refrescar para sincronizar IDs canonizados
+      await loadPhotos(true);
+    } catch (e: any) {
+      console.error("[PhotoManager] ❌ Error guardando orden:", e);
+      setError(e?.message ?? "Error guardando orden");
+      // Revertir al orden anterior del backend (NO borrar el error)
+      await loadPhotos(false);
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -621,6 +634,24 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
           />
         </label>
       </div>
+
+      {/* Saving indicator */}
+      {saving && (
+        <div
+          style={{
+            padding: "12px",
+            backgroundColor: "#f0fdf4",
+            border: "1px solid #bbf7d0",
+            borderRadius: "6px",
+            color: "#166534",
+            marginBottom: "20px",
+            fontSize: "14px",
+            fontWeight: "500",
+          }}
+        >
+          💾 Guardando nuevo orden...
+        </div>
+      )}
 
       {/* Error */}
       {error && (
