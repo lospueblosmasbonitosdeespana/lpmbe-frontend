@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useMemo, memo } from "react";
 import SemaforoBadge from "../components/pueblos/SemaforoBadge";
-import { type Pueblo } from "@/lib/api";
+import { type Pueblo, getPuebloMainPhoto } from "@/lib/api";
 import { usePuebloPhotos } from "@/app/hooks/usePuebloPhotos";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Container } from "@/app/components/ui/container";
@@ -226,7 +226,8 @@ export default function PueblosList({
           >
             {pueblosFiltrados.map((pueblo, index) => {
               const photoData = photos[String(pueblo.id)];
-              const foto = photoData?.url ?? pueblo.mainPhotoUrl ?? null;
+              // Priorizar foto_destacada (como detalle) para que tarjeta y hero coincidan
+              const foto = getPuebloMainPhoto(pueblo) ?? photoData?.url ?? null;
               const isPriority = index < 8;
 
               return (
