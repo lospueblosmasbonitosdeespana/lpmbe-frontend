@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import R2ImageUploader from '@/app/components/R2ImageUploader';
 
 // ==================== TYPES ====================
 
@@ -370,19 +371,13 @@ export default function GestionPuebloNocheRomanticaPage() {
               placeholder="Describe las actividades que se realizarán en tu pueblo..."
             />
           </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">URL del cartel anunciador</label>
-            <input
-              type="url"
-              className="w-full rounded-md border px-3 py-2 text-sm"
-              value={cartelUrl}
-              onChange={(e) => setCartelUrl(e.target.value)}
-              placeholder="https://..."
-            />
-            {cartelUrl && (
-              <img src={cartelUrl} alt="Cartel" className="mt-2 h-40 rounded object-contain" />
-            )}
-          </div>
+          <R2ImageUploader
+            label="Cartel anunciador"
+            value={cartelUrl || null}
+            onChange={(url) => setCartelUrl(url ?? '')}
+            folder="noche-romantica/pueblos"
+            previewHeight="h-48"
+          />
           <button
             onClick={saveInfo}
             disabled={saving}
@@ -423,22 +418,20 @@ export default function GestionPuebloNocheRomanticaPage() {
               value={newActividad.descripcion}
               onChange={(e) => setNewActividad({ ...newActividad, descripcion: e.target.value })}
             />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <input
-                type="text"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                placeholder="Horario (ej: 20:00 - 23:00)"
-                value={newActividad.horario}
-                onChange={(e) => setNewActividad({ ...newActividad, horario: e.target.value })}
-              />
-              <input
-                type="url"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                placeholder="URL de foto"
-                value={newActividad.fotoUrl}
-                onChange={(e) => setNewActividad({ ...newActividad, fotoUrl: e.target.value })}
-              />
-            </div>
+            <input
+              type="text"
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              placeholder="Horario (ej: 20:00 - 23:00)"
+              value={newActividad.horario}
+              onChange={(e) => setNewActividad({ ...newActividad, horario: e.target.value })}
+            />
+            <R2ImageUploader
+              label="Foto de la actividad"
+              value={newActividad.fotoUrl || null}
+              onChange={(url) => setNewActividad({ ...newActividad, fotoUrl: url ?? '' })}
+              folder="noche-romantica/actividades"
+              previewHeight="h-32"
+            />
             <div className="flex gap-2">
               <button onClick={createActividad} disabled={saving || !newActividad.titulo.trim()} className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
                 Crear
@@ -473,22 +466,20 @@ export default function GestionPuebloNocheRomanticaPage() {
                       value={editActividad.descripcion}
                       onChange={(e) => setEditActividad({ ...editActividad, descripcion: e.target.value })}
                     />
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <input
-                        type="text"
-                        className="w-full rounded-md border px-3 py-2 text-sm"
-                        placeholder="Horario"
-                        value={editActividad.horario}
-                        onChange={(e) => setEditActividad({ ...editActividad, horario: e.target.value })}
-                      />
-                      <input
-                        type="url"
-                        className="w-full rounded-md border px-3 py-2 text-sm"
-                        placeholder="URL de foto"
-                        value={editActividad.fotoUrl}
-                        onChange={(e) => setEditActividad({ ...editActividad, fotoUrl: e.target.value })}
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      className="w-full rounded-md border px-3 py-2 text-sm"
+                      placeholder="Horario"
+                      value={editActividad.horario}
+                      onChange={(e) => setEditActividad({ ...editActividad, horario: e.target.value })}
+                    />
+                    <R2ImageUploader
+                      label="Foto de la actividad"
+                      value={editActividad.fotoUrl || null}
+                      onChange={(url) => setEditActividad({ ...editActividad, fotoUrl: url ?? '' })}
+                      folder="noche-romantica/actividades"
+                      previewHeight="h-32"
+                    />
                     <div className="flex gap-2">
                       <button onClick={() => saveActividad(a.id)} disabled={saving} className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50">
                         Guardar
@@ -586,27 +577,27 @@ export default function GestionPuebloNocheRomanticaPage() {
               value={newNegocio.descripcion}
               onChange={(e) => setNewNegocio({ ...newNegocio, descripcion: e.target.value })}
             />
-            <div className="grid gap-3 sm:grid-cols-3">
-              <input
-                type="text"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                placeholder="Horario"
-                value={newNegocio.horario}
-                onChange={(e) => setNewNegocio({ ...newNegocio, horario: e.target.value })}
+            <input
+              type="text"
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              placeholder="Horario"
+              value={newNegocio.horario}
+              onChange={(e) => setNewNegocio({ ...newNegocio, horario: e.target.value })}
+            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <R2ImageUploader
+                label="Foto del negocio"
+                value={newNegocio.fotoUrl || null}
+                onChange={(url) => setNewNegocio({ ...newNegocio, fotoUrl: url ?? '' })}
+                folder="noche-romantica/negocios"
+                previewHeight="h-28"
               />
-              <input
-                type="url"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                placeholder="URL de foto"
-                value={newNegocio.fotoUrl}
-                onChange={(e) => setNewNegocio({ ...newNegocio, fotoUrl: e.target.value })}
-              />
-              <input
-                type="url"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                placeholder="URL del menú/carta"
-                value={newNegocio.menuUrl}
-                onChange={(e) => setNewNegocio({ ...newNegocio, menuUrl: e.target.value })}
+              <R2ImageUploader
+                label="Carta / Menú (imagen)"
+                value={newNegocio.menuUrl || null}
+                onChange={(url) => setNewNegocio({ ...newNegocio, menuUrl: url ?? '' })}
+                folder="noche-romantica/negocios"
+                previewHeight="h-28"
               />
             </div>
             <div className="flex gap-2">
@@ -660,27 +651,27 @@ export default function GestionPuebloNocheRomanticaPage() {
                             value={editNegocio.descripcion}
                             onChange={(e) => setEditNegocio({ ...editNegocio, descripcion: e.target.value })}
                           />
-                          <div className="grid gap-3 sm:grid-cols-3">
-                            <input
-                              type="text"
-                              className="w-full rounded-md border px-3 py-2 text-sm"
-                              placeholder="Horario"
-                              value={editNegocio.horario}
-                              onChange={(e) => setEditNegocio({ ...editNegocio, horario: e.target.value })}
+                          <input
+                            type="text"
+                            className="w-full rounded-md border px-3 py-2 text-sm"
+                            placeholder="Horario"
+                            value={editNegocio.horario}
+                            onChange={(e) => setEditNegocio({ ...editNegocio, horario: e.target.value })}
+                          />
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <R2ImageUploader
+                              label="Foto del negocio"
+                              value={editNegocio.fotoUrl || null}
+                              onChange={(url) => setEditNegocio({ ...editNegocio, fotoUrl: url ?? '' })}
+                              folder="noche-romantica/negocios"
+                              previewHeight="h-28"
                             />
-                            <input
-                              type="url"
-                              className="w-full rounded-md border px-3 py-2 text-sm"
-                              placeholder="URL de foto"
-                              value={editNegocio.fotoUrl}
-                              onChange={(e) => setEditNegocio({ ...editNegocio, fotoUrl: e.target.value })}
-                            />
-                            <input
-                              type="url"
-                              className="w-full rounded-md border px-3 py-2 text-sm"
-                              placeholder="URL del menú"
-                              value={editNegocio.menuUrl}
-                              onChange={(e) => setEditNegocio({ ...editNegocio, menuUrl: e.target.value })}
+                            <R2ImageUploader
+                              label="Carta / Menú (imagen)"
+                              value={editNegocio.menuUrl || null}
+                              onChange={(url) => setEditNegocio({ ...editNegocio, menuUrl: url ?? '' })}
+                              folder="noche-romantica/negocios"
+                              previewHeight="h-28"
                             />
                           </div>
                           <div className="flex gap-2">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import R2ImageUploader from '@/app/components/R2ImageUploader';
 
 // ==================== TYPES ====================
 
@@ -284,46 +285,20 @@ export default function GestionNocheRomanticaPage() {
           <section className="rounded-lg border p-5">
             <h2 className="mb-4 text-lg font-semibold">Imágenes</h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-sm font-medium">URL del Logo</label>
-                <input
-                  type="url"
-                  className="w-full rounded-md border px-3 py-2 text-sm"
-                  value={config.logoUrl ?? ''}
-                  onChange={(e) =>
-                    setConfig({ ...config, logoUrl: e.target.value || null })
-                  }
-                  placeholder="https://..."
-                />
-                {config.logoUrl && (
-                  <img
-                    src={config.logoUrl}
-                    alt="Logo"
-                    className="mt-2 h-16 object-contain"
-                  />
-                )}
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  URL del Hero/Cartel
-                </label>
-                <input
-                  type="url"
-                  className="w-full rounded-md border px-3 py-2 text-sm"
-                  value={config.heroImageUrl ?? ''}
-                  onChange={(e) =>
-                    setConfig({ ...config, heroImageUrl: e.target.value || null })
-                  }
-                  placeholder="https://..."
-                />
-                {config.heroImageUrl && (
-                  <img
-                    src={config.heroImageUrl}
-                    alt="Hero"
-                    className="mt-2 h-32 w-full rounded object-cover"
-                  />
-                )}
-              </div>
+              <R2ImageUploader
+                label="Logo del evento"
+                value={config.logoUrl}
+                onChange={(url) => setConfig({ ...config, logoUrl: url })}
+                folder="noche-romantica"
+                previewHeight="h-24"
+              />
+              <R2ImageUploader
+                label="Hero / Cartel principal"
+                value={config.heroImageUrl}
+                onChange={(url) => setConfig({ ...config, heroImageUrl: url })}
+                folder="noche-romantica"
+                previewHeight="h-48"
+              />
             </div>
           </section>
 
@@ -389,7 +364,7 @@ export default function GestionNocheRomanticaPage() {
           {/* Video */}
           <section className="rounded-lg border p-5">
             <h2 className="mb-4 text-lg font-semibold">Video</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium">Tipo de video</label>
                 <select
@@ -406,22 +381,29 @@ export default function GestionNocheRomanticaPage() {
                   <option value="R2">Video propio (R2)</option>
                 </select>
               </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">URL del video</label>
-                <input
-                  type="url"
-                  className="w-full rounded-md border px-3 py-2 text-sm"
-                  value={config.videoUrl ?? ''}
-                  onChange={(e) =>
-                    setConfig({ ...config, videoUrl: e.target.value || null })
-                  }
-                  placeholder={
-                    config.videoTipo === 'YOUTUBE'
-                      ? 'https://www.youtube.com/watch?v=...'
-                      : 'https://r2.example.com/video.mp4'
-                  }
+              {config.videoTipo === 'YOUTUBE' ? (
+                <div>
+                  <label className="mb-1 block text-sm font-medium">URL de YouTube</label>
+                  <input
+                    type="url"
+                    className="w-full rounded-md border px-3 py-2 text-sm"
+                    value={config.videoUrl ?? ''}
+                    onChange={(e) =>
+                      setConfig({ ...config, videoUrl: e.target.value || null })
+                    }
+                    placeholder="https://www.youtube.com/watch?v=..."
+                  />
+                </div>
+              ) : (
+                <R2ImageUploader
+                  label="Video (subir a R2)"
+                  value={config.videoUrl}
+                  onChange={(url) => setConfig({ ...config, videoUrl: url })}
+                  folder="noche-romantica/videos"
+                  accept="video/*"
+                  previewHeight="h-32"
                 />
-              </div>
+              )}
             </div>
           </section>
 
