@@ -179,6 +179,13 @@ export default async function GestionPuebloPage({
       icon: <IconMultiexperiencias />,
       disabled: false,
     },
+    {
+      href: `${baseUrl}/noche-romantica`,
+      title: 'La Noche Romántica',
+      description: 'Gestiona tu participación en La Noche Romántica',
+      icon: <span className="text-2xl">❤️</span>,
+      disabled: false,
+    },
     ...(me.rol === 'ADMIN'
       ? [
           {

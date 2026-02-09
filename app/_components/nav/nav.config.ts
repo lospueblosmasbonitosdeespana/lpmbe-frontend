@@ -75,7 +75,7 @@ export const navConfig: NavItem[] = [
           { label: "Fin de semana", href: "/planifica/fin-de-semana" },
           { label: "Escapadas", href: "/pueblos?tema=escapadas" },
           { label: "Los Pueblos más bonitos de los Pirineos", href: "/rutas/mas-bonitos-de-los-pirineos" },
-          { label: "La Noche Romántica", href: "/planifica/la-noche-romantica" },
+          { label: "La Noche Romántica ♥", href: "/noche-romantica" },
         ],
       },
     ],

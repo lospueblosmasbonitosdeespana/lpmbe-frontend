@@ -109,6 +109,12 @@ const ACCESOS = [
     description: 'Datos de contacto y páginas estáticas (privacidad, aviso legal, cookies)',
     icon: <IconContacto />,
   },
+  {
+    href: '/gestion/asociacion/noche-romantica',
+    title: 'La Noche Romántica',
+    description: 'Configuración del evento y pueblos participantes',
+    icon: <span className="text-2xl">❤️</span>,
+  },
 ];
 
 function GridCard({

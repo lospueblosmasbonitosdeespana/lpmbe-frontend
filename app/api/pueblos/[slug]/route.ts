@@ -1,16 +1,18 @@
-import { NextResponse } from "next/server";
-import { getApiUrl } from "@/lib/api";
+import { NextResponse } from 'next/server';
+import { getApiUrl } from '@/lib/api';
 
-export async function GET(_req: Request, ctx: { params: Promise<{ slug: string }> }) {
-  const { slug } = await ctx.params;
-
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ slug: string }> },
+) {
+  const { slug } = await params;
   const API_BASE = getApiUrl();
-  const upstreamUrl = `${API_BASE}/pueblos/${encodeURIComponent(slug)}`;
-  const r = await fetch(upstreamUrl, { cache: "no-store" });
-
-  const text = await r.text();
+  const upstream = await fetch(`${API_BASE}/pueblos/${slug}`, {
+    cache: 'no-store',
+  });
+  const text = await upstream.text();
   return new NextResponse(text, {
-    status: r.status,
-    headers: { "Content-Type": r.headers.get("content-type") ?? "application/json" },
+    status: upstream.status,
+    headers: { 'Content-Type': upstream.headers.get('content-type') || 'application/json' },
   });
 }
