@@ -101,6 +101,14 @@ export default async function WebcamPuebloPage({
                       {webcam.tipo}
                     </p>
                   )}
+                  <a
+                    href={webcam.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                  >
+                    Ver webcam en nueva pestaña ↗
+                  </a>
                 </div>
               </div>
             ))}
