@@ -52,9 +52,12 @@ export default function DatosNewsletterPage() {
   const [items, setItems] = useState<SubItem[]>([]);
   const [total, setTotal] = useState(0);
   const [periodo, setPeriodo] = useState('total');
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   async function loadStats() {
     try {
@@ -67,8 +70,10 @@ export default function DatosNewsletterPage() {
     try {
       setLoading(true);
       setError(null);
+      const params = new URLSearchParams({ periodo, limit: '50000' });
+      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
       const res = await fetch(
-        `/api/admin/newsletter?periodo=${periodo}&limit=50000`,
+        `/api/admin/newsletter?${params.toString()}`,
         { cache: 'no-store' }
       );
       if (res.ok) {
@@ -91,8 +96,32 @@ export default function DatosNewsletterPage() {
   }, []);
 
   useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  useEffect(() => {
     loadList();
-  }, [periodo]);
+  }, [periodo, debouncedSearch]);
+
+  async function handleDelete(item: SubItem) {
+    if (!confirm(`¿Eliminar a ${item.email} de la newsletter?`)) return;
+    try {
+      setDeletingId(item.id);
+      setError(null);
+      const res = await fetch(`/api/admin/newsletter/subscriptions/${encodeURIComponent(item.email)}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.message ?? 'Error al eliminar');
+      await loadList();
+      await loadStats();
+    } catch (e: any) {
+      setError(e?.message ?? 'Error al eliminar');
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   function handleCopy(emails: string) {
     navigator.clipboard.writeText(emails).then(() => {
@@ -172,7 +201,7 @@ export default function DatosNewsletterPage() {
         </div>
       )}
 
-      {/* FILTRO PERIODO + ACCIONES */}
+      {/* FILTRO PERIODO + BÚSQUEDA + ACCIONES */}
       <div className="mb-6 flex flex-wrap items-center gap-4">
         <div>
           <label className="mr-2 text-sm text-gray-600">Período:</label>
@@ -187,6 +216,15 @@ export default function DatosNewsletterPage() {
               </option>
             ))}
           </select>
+        </div>
+        <div className="flex-1 min-w-[200px]">
+          <input
+            type="search"
+            placeholder="Buscar por email..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm"
+          />
         </div>
         <span className="text-sm text-gray-500">
           {items.length} de {total} emails
@@ -252,6 +290,9 @@ export default function DatosNewsletterPage() {
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
                     Fecha
                   </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase text-gray-500">
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -261,6 +302,15 @@ export default function DatosNewsletterPage() {
                     <td className="px-4 py-2 text-sm text-gray-600">{item.origen}</td>
                     <td className="px-4 py-2 text-sm text-gray-500">
                       {new Date(item.createdAt).toLocaleString('es-ES')}
+                    </td>
+                    <td className="px-4 py-2 text-right">
+                      <button
+                        onClick={() => handleDelete(item)}
+                        disabled={deletingId === item.id}
+                        className="text-sm text-red-600 hover:text-red-800 hover:underline disabled:opacity-50"
+                      >
+                        {deletingId === item.id ? 'Eliminando…' : 'Eliminar'}
+                      </button>
                     </td>
                   </tr>
                 ))}
