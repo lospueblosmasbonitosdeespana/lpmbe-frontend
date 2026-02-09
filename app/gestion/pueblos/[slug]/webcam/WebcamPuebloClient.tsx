@@ -27,6 +27,7 @@ export default function WebcamPuebloClient({
   const [nombre, setNombre] = useState("");
   const [urlEmbed, setUrlEmbed] = useState("");
   const [proveedor, setProveedor] = useState("");
+  const [embedMode, setEmbedMode] = useState<"url" | "iframe">("url");
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
@@ -57,15 +58,28 @@ export default function WebcamPuebloClient({
     load();
   }, [puebloId]);
 
+  function extractEmbedUrl(input: string): string | null {
+    const trimmed = input.trim();
+    const iframeMatch = trimmed.match(/<iframe[^>]+src=["']([^"']+)["']/i);
+    if (iframeMatch) return iframeMatch[1];
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
+    return null;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!nombre.trim() || !urlEmbed.trim()) return;
+    const embedUrl = embedMode === "iframe" ? extractEmbedUrl(urlEmbed) : urlEmbed.trim();
+    if (!embedUrl) {
+      setMensaje("URL no válida. Si pegas código iframe, debe contener src=\"...\"");
+      return;
+    }
     setGuardando(true);
     setMensaje(null);
     try {
       const body = {
         nombre: nombre.trim(),
-        url_embed: urlEmbed.trim(),
+        url_embed: embedUrl,
         proveedor: proveedor.trim() || undefined,
         activo: true,
       };
@@ -176,7 +190,7 @@ export default function WebcamPuebloClient({
       </div>
 
       <p className="mb-6 text-sm text-muted-foreground">
-        Añade enlaces a webcams en directo del pueblo (URL de embed).
+        Añade webcams en directo: URL de embed (ej. Albarracín) o pega el código iframe completo (ej. SkylineWebcams).
       </p>
 
       {mensaje && (
@@ -218,15 +232,53 @@ export default function WebcamPuebloClient({
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">URL de embed</label>
-              <input
-                type="url"
-                value={urlEmbed}
-                onChange={(e) => setUrlEmbed(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2"
-                placeholder="https://..."
-                required
-              />
+              <div className="mb-2 flex gap-4">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="embedMode"
+                    checked={embedMode === "url"}
+                    onChange={() => setEmbedMode("url")}
+                  />
+                  URL embed
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="embedMode"
+                    checked={embedMode === "iframe"}
+                    onChange={() => setEmbedMode("iframe")}
+                  />
+                  Código iframe
+                </label>
+              </div>
+              <label className="mb-1 block text-sm font-medium">
+                {embedMode === "url" ? "URL de embed" : "Pega el código iframe completo"}
+              </label>
+              {embedMode === "url" ? (
+                <input
+                  type="text"
+                  value={urlEmbed}
+                  onChange={(e) => setUrlEmbed(e.target.value)}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 font-mono text-sm"
+                  placeholder="https://www.ejemplo.es/directo/embed/"
+                  required
+                />
+              ) : (
+                <textarea
+                  value={urlEmbed}
+                  onChange={(e) => setUrlEmbed(e.target.value)}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 font-mono text-sm"
+                  placeholder='<iframe src="https://embed.ejemplo.com/..." ...></iframe>'
+                  rows={3}
+                  required
+                />
+              )}
+              {embedMode === "iframe" && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Se extraerá la URL del src del iframe automáticamente.
+                </p>
+              )}
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium">Proveedor (opcional)</label>
