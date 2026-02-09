@@ -86,8 +86,8 @@ function MegaPanel({ item }: { item: Extract<NavItem, { type: "mega" }> }) {
   return (
     <div
       className="
-        absolute left-1/2 top-full z-50 mt-4 w-[920px] -translate-x-1/2
-        bg-white shadow-md
+        fixed left-1/2 top-auto z-50 mt-4 w-[920px] -translate-x-1/2
+        rounded-lg border border-gray-100 bg-white shadow-lg
       "
     >
       <div className="grid grid-cols-3 gap-8 px-8 py-7">

@@ -12,6 +12,7 @@ interface GalleryImage {
   src: string
   alt: string
   caption?: string
+  rotation?: number
 }
 
 type GalleryLayout = "grid" | "masonry" | "featured"
@@ -60,27 +61,32 @@ export function DetailGallerySection({
 
   const renderGridLayout = () => (
     <div className={cn("grid gap-4", colsClass[columns])}>
-      {images.map((image, index) => (
-        <button
-          key={index}
-          onClick={() => openLightbox(index)}
-          className="group relative aspect-[4/3] overflow-hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-        >
-          <Image
-            src={image.src || "/placeholder.svg"}
-            alt={image.alt}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-foreground/0 transition-colors group-hover:bg-foreground/10" />
-        </button>
-      ))}
+      {images.map((image, index) => {
+        const rot = image.rotation ?? 0
+        return (
+          <button
+            key={index}
+            onClick={() => openLightbox(index)}
+            className="group relative aspect-[4/3] overflow-hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          >
+            <Image
+              src={image.src || "/placeholder.svg"}
+              alt={image.alt}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              style={rot ? { transform: `rotate(${rot}deg)` } : undefined}
+            />
+            <div className="absolute inset-0 bg-foreground/0 transition-colors group-hover:bg-foreground/10" />
+          </button>
+        )
+      })}
     </div>
   )
 
   const renderFeaturedLayout = () => {
     const [featured, ...rest] = images
     if (!featured) return null
+    const featuredRot = featured.rotation ?? 0
 
     return (
       <div className="grid gap-4 lg:grid-cols-2">
@@ -93,32 +99,37 @@ export function DetailGallerySection({
             alt={featured.alt}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
+            style={featuredRot ? { transform: `rotate(${featuredRot}deg)` } : undefined}
           />
           <div className="absolute inset-0 bg-foreground/0 transition-colors group-hover:bg-foreground/10" />
         </button>
         <div className="grid grid-cols-2 gap-4">
-          {rest.slice(0, 4).map((image, index) => (
-            <button
-              key={index}
-              onClick={() => openLightbox(index + 1)}
-              className="group relative aspect-[4/3] overflow-hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            >
-              <Image
-                src={image.src || "/placeholder.svg"}
-                alt={image.alt}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-foreground/0 transition-colors group-hover:bg-foreground/10" />
-              {index === 3 && rest.length > 4 && (
-                <div className="absolute inset-0 flex items-center justify-center bg-foreground/60">
-                  <span className="text-lg font-medium text-primary-foreground">
-                    +{rest.length - 4}
-                  </span>
-                </div>
-              )}
-            </button>
-          ))}
+          {rest.slice(0, 4).map((image, index) => {
+            const rot = image.rotation ?? 0
+            return (
+              <button
+                key={index}
+                onClick={() => openLightbox(index + 1)}
+                className="group relative aspect-[4/3] overflow-hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                <Image
+                  src={image.src || "/placeholder.svg"}
+                  alt={image.alt}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  style={rot ? { transform: `rotate(${rot}deg)` } : undefined}
+                />
+                <div className="absolute inset-0 bg-foreground/0 transition-colors group-hover:bg-foreground/10" />
+                {index === 3 && rest.length > 4 && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-foreground/60">
+                    <span className="text-lg font-medium text-primary-foreground">
+                      +{rest.length - 4}
+                    </span>
+                  </div>
+                )}
+              </button>
+            )
+          })}
         </div>
       </div>
     )
@@ -180,6 +191,7 @@ export function DetailGallerySection({
               width={1200}
               height={800}
               className="max-h-[85vh] w-auto rounded-sm object-contain"
+              style={images[selectedIndex].rotation ? { transform: `rotate(${images[selectedIndex].rotation}deg)` } : undefined}
             />
             {images[selectedIndex].caption && (
               <p className="mt-4 text-center text-sm text-primary-foreground/80">

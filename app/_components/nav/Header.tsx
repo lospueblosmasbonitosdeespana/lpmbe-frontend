@@ -84,7 +84,7 @@ export async function Header() {
   }
 
   return (
-    <header className="bg-white">
+    <header className="relative z-50 bg-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5">
         <Link href="/" className="block">
           {logoContent}

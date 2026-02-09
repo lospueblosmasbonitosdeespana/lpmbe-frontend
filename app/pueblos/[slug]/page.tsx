@@ -481,6 +481,7 @@ export default async function PuebloPage({
           images={fotosGalería.map((f: FotoPueblo) => ({
             src: f.url,
             alt: `${puebloSafe.nombre} - foto ${f.id}`,
+            rotation: f.rotation ?? 0,
           }))}
           layout="featured"
           background="card"
