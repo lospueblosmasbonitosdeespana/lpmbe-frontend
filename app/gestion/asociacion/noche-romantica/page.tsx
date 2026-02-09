@@ -105,12 +105,32 @@ export default function GestionNocheRomanticaPage() {
     setError(null);
     setSuccess(null);
     try {
+      // Solo enviar los campos que acepta el DTO (evitar 400 por forbidNonWhitelisted)
+      const payload = {
+        edicion: config.edicion,
+        anio: config.anio,
+        fechaEvento: config.fechaEvento || undefined,
+        titulo: config.titulo,
+        subtitulo: config.subtitulo || undefined,
+        descripcion1Titulo: config.descripcion1Titulo || undefined,
+        descripcion1Texto: config.descripcion1Texto || undefined,
+        descripcion2Titulo: config.descripcion2Titulo || undefined,
+        descripcion2Texto: config.descripcion2Texto || undefined,
+        logoUrl: config.logoUrl || undefined,
+        heroImageUrl: config.heroImageUrl || undefined,
+        videoUrl: config.videoUrl || undefined,
+        videoTipo: config.videoTipo,
+        activo: config.activo,
+      };
       const res = await fetch('/api/admin/noche-romantica/config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config),
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('Error guardando configuración');
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || err.error || 'Error guardando configuración');
+      }
       const updated = await res.json();
       setConfig(updated);
       setSuccess('Configuración guardada correctamente');
