@@ -129,7 +129,16 @@ export default function GestionNocheRomanticaPage() {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || err.error || 'Error guardando configuración');
+        let msg = err.message || err.error || 'Error guardando configuración';
+        if (typeof msg === 'string' && msg.startsWith('{')) {
+          try {
+            const parsed = JSON.parse(msg);
+            msg = Array.isArray(parsed.message) ? parsed.message.join('. ') : (parsed.message || msg);
+          } catch { /* keep msg */ }
+        } else if (Array.isArray(err.message)) {
+          msg = err.message.join('. ');
+        }
+        throw new Error(msg);
       }
       const updated = await res.json();
       setConfig(updated);

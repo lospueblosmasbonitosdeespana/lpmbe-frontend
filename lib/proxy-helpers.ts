@@ -46,10 +46,14 @@ export async function proxyToBackend(
     const text = await upstream.text();
 
     if (!upstream.ok) {
-      return NextResponse.json(
-        { error: text },
-        { status: upstream.status },
-      );
+      let errBody: Record<string, unknown> = { error: text };
+      try {
+        const parsed = JSON.parse(text);
+        errBody = typeof parsed === 'object' && parsed !== null
+          ? { ...parsed, error: parsed.error ?? parsed.message ?? text }
+          : errBody;
+      } catch { /* keep errBody */ }
+      return NextResponse.json(errBody, { status: upstream.status });
     }
 
     const data = text ? JSON.parse(text) : {};
