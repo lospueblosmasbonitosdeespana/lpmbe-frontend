@@ -84,8 +84,99 @@ export function DetailGallerySection({
   )
 
   const renderFeaturedLayout = () => {
+    if (images.length === 0) return null
+
+    // 1 foto: mostrar grande a ancho completo
+    if (images.length === 1) {
+      const rot = images[0].rotation ?? 0
+      return (
+        <button
+          onClick={() => openLightbox(0)}
+          className="group relative aspect-[16/9] w-full overflow-hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          <Image
+            src={images[0].src || "/placeholder.svg"}
+            alt={images[0].alt}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            style={rot ? { transform: `rotate(${rot}deg)` } : undefined}
+          />
+          <div className="absolute inset-0 bg-foreground/0 transition-colors group-hover:bg-foreground/10" />
+        </button>
+      )
+    }
+
+    // 2 fotos: dos columnas iguales
+    if (images.length === 2) {
+      return (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {images.map((image, index) => {
+            const rot = image.rotation ?? 0
+            return (
+              <button
+                key={index}
+                onClick={() => openLightbox(index)}
+                className="group relative aspect-[4/3] overflow-hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                <Image
+                  src={image.src || "/placeholder.svg"}
+                  alt={image.alt}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  style={rot ? { transform: `rotate(${rot}deg)` } : undefined}
+                />
+                <div className="absolute inset-0 bg-foreground/0 transition-colors group-hover:bg-foreground/10" />
+              </button>
+            )
+          })}
+        </div>
+      )
+    }
+
+    // 3 fotos: principal grande + 2 pequeñas apiladas
+    if (images.length === 3) {
+      const [featured, ...rest] = images
+      const featuredRot = featured.rotation ?? 0
+      return (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <button
+            onClick={() => openLightbox(0)}
+            className="group relative aspect-[4/3] overflow-hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 lg:row-span-2"
+          >
+            <Image
+              src={featured.src || "/placeholder.svg"}
+              alt={featured.alt}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              style={featuredRot ? { transform: `rotate(${featuredRot}deg)` } : undefined}
+            />
+            <div className="absolute inset-0 bg-foreground/0 transition-colors group-hover:bg-foreground/10" />
+          </button>
+          {rest.map((image, index) => {
+            const rot = image.rotation ?? 0
+            return (
+              <button
+                key={index}
+                onClick={() => openLightbox(index + 1)}
+                className="group relative aspect-[4/3] overflow-hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                <Image
+                  src={image.src || "/placeholder.svg"}
+                  alt={image.alt}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  style={rot ? { transform: `rotate(${rot}deg)` } : undefined}
+                />
+                <div className="absolute inset-0 bg-foreground/0 transition-colors group-hover:bg-foreground/10" />
+              </button>
+            )
+          })}
+        </div>
+      )
+    }
+
+    // 4+ fotos: layout original (principal grande + grid 2x2)
     const [featured, ...rest] = images
-    if (!featured) return null
     const featuredRot = featured.rotation ?? 0
 
     return (
