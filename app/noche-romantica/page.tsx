@@ -7,6 +7,7 @@ export const revalidate = 0;
 interface NRConfig {
   edicion: number;
   anio: number;
+  fechaEvento: string | null;
   titulo: string;
   subtitulo: string | null;
   descripcion1Titulo: string | null;
@@ -18,6 +19,20 @@ interface NRConfig {
   videoUrl: string | null;
   videoTipo: 'YOUTUBE' | 'R2';
   activo: boolean;
+}
+
+function formatFechaEvento(fecha: string | null, edicion: number): string {
+  if (fecha) {
+    const d = new Date(fecha + 'T00:00:00');
+    const formatted = d.toLocaleDateString('es-ES', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    return `${edicion}ª Edición · ${formatted.charAt(0).toUpperCase() + formatted.slice(1)}`;
+  }
+  return `${edicion}ª Edición`;
 }
 
 function getYouTubeEmbedUrl(url: string): string | null {
@@ -102,7 +117,7 @@ export default async function NocheRomanticaPage() {
               </p>
             )}
             <p className="mt-1 text-sm md:text-base drop-shadow-md opacity-90">
-              {config.edicion}ª Edición · {config.anio}
+              {formatFechaEvento(config.fechaEvento, config.edicion)}
             </p>
           </div>
         </section>
@@ -118,7 +133,7 @@ export default async function NocheRomanticaPage() {
             <p className="mt-3 text-lg text-rose-600">{config.subtitulo}</p>
           )}
           <p className="mt-2 text-muted-foreground">
-            {config.edicion}ª Edición · {config.anio}
+            {formatFechaEvento(config.fechaEvento, config.edicion)}
           </p>
         </section>
       )}

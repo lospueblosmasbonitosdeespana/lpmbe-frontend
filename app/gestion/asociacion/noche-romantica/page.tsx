@@ -9,6 +9,7 @@ import R2ImageUploader from '@/app/components/R2ImageUploader';
 interface NRConfig {
   edicion: number;
   anio: number;
+  fechaEvento: string | null;
   titulo: string;
   subtitulo: string | null;
   descripcion1Titulo: string | null;
@@ -235,7 +236,7 @@ export default function GestionNocheRomanticaPage() {
           {/* Básico */}
           <section className="rounded-lg border p-5">
             <h2 className="mb-4 text-lg font-semibold">Datos generales</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
               <div>
                 <label className="mb-1 block text-sm font-medium">Edición</label>
                 <input
@@ -258,7 +259,28 @@ export default function GestionNocheRomanticaPage() {
                   }
                 />
               </div>
-              <div className="sm:col-span-2">
+              <div>
+                <label className="mb-1 block text-sm font-medium">Fecha del evento</label>
+                <input
+                  type="date"
+                  className="w-full rounded-md border px-3 py-2 text-sm"
+                  value={config.fechaEvento ?? ''}
+                  onChange={(e) =>
+                    setConfig({ ...config, fechaEvento: e.target.value || null })
+                  }
+                />
+                {config.fechaEvento && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {new Date(config.fechaEvento + 'T00:00:00').toLocaleDateString('es-ES', {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </p>
+                )}
+              </div>
+              <div className="sm:col-span-3">
                 <label className="mb-1 block text-sm font-medium">Título</label>
                 <input
                   type="text"
@@ -267,7 +289,7 @@ export default function GestionNocheRomanticaPage() {
                   onChange={(e) => setConfig({ ...config, titulo: e.target.value })}
                 />
               </div>
-              <div className="sm:col-span-2">
+              <div className="sm:col-span-3">
                 <label className="mb-1 block text-sm font-medium">Subtítulo</label>
                 <input
                   type="text"

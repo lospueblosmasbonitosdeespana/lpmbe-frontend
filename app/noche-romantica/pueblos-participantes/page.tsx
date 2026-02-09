@@ -24,6 +24,7 @@ interface NRPuebloPublic {
 interface NRConfig {
   anio: number;
   edicion: number;
+  fechaEvento: string | null;
   titulo: string;
   logoUrl: string | null;
 }
@@ -59,7 +60,10 @@ export default async function PueblosParticipantesPage() {
           Pueblos Participantes
         </h1>
         <p className="mt-2 text-muted-foreground">
-          {config?.titulo ?? 'La Noche Romántica'} · {config?.edicion}ª Edición · {config?.anio}
+          {config?.titulo ?? 'La Noche Romántica'} · {config?.edicion}ª Edición
+          {config?.fechaEvento && (
+            <> · {new Date(config.fechaEvento + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</>
+          )}
         </p>
         <Link
           href="/noche-romantica"
