@@ -30,7 +30,8 @@ interface DetailPageHeroProps {
 const overlayClasses: Record<HeroOverlay, string> = {
   dark: "bg-foreground/60",
   light: "bg-background/60",
-  gradient: "bg-gradient-to-t from-foreground/80 via-foreground/40 to-transparent",
+  // Overlay más suave para que la foto luzca más resplandeciente (menos oscuro)
+  gradient: "bg-gradient-to-t from-foreground/55 via-foreground/25 to-transparent",
   none: "",
 }
 
@@ -83,7 +84,15 @@ export function DetailPageHero({
       <section className={cn("relative h-[70vh] min-h-[500px] max-h-[700px]", !hasImage && "bg-muted", className)}>
         {image && (
           <>
-            <Image src={image} alt={imageAlt || title} fill priority className="object-cover" />
+            <Image
+              src={image}
+              alt={imageAlt || title}
+              fill
+              priority
+              className="object-cover"
+              quality={90}
+              sizes="100vw"
+            />
             <div className={cn("absolute inset-0", overlayClasses[overlay])} />
           </>
         )}
@@ -108,7 +117,15 @@ export function DetailPageHero({
     <section className={cn("relative py-16 md:py-20", className)}>
       {image && (
         <>
-          <Image src={image} alt={imageAlt || title} fill priority className="object-cover" />
+          <Image
+            src={image}
+            alt={imageAlt || title}
+            fill
+            priority
+            className="object-cover"
+            quality={90}
+            sizes="100vw"
+          />
           <div className={cn("absolute inset-0", overlayClasses[overlay])} />
         </>
       )}

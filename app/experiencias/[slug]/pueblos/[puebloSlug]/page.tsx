@@ -1,5 +1,5 @@
-import ReactMarkdown from 'react-markdown';
 import Link from 'next/link';
+import SafeHtml from '@/app/_components/ui/SafeHtml';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,7 +44,10 @@ async function getPuebloPage(puebloSlug: string, category: string): Promise<Tema
     }
 
     const data: PuebloPages = await res.json();
-    return data[category as keyof PuebloPages] ?? null;
+    const pages = data[category as keyof PuebloPages];
+    if (Array.isArray(pages) && pages.length > 0) return pages[0];
+    if (pages && !Array.isArray(pages)) return pages as TematicaPage;
+    return null;
   } catch (error) {
     console.error(`[PUEBLO ${puebloSlug} ${category}] Error:`, error);
     return null;
@@ -101,8 +104,8 @@ export default async function PuebloTematicaPage({
           </div>
         )}
 
-        <div className="prose prose-gray prose-lg max-w-none">
-          <ReactMarkdown>{page.contenido}</ReactMarkdown>
+        <div className="prose prose-gray prose-lg max-w-none safe-html-content [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-6">
+          <SafeHtml html={page.contenido || ''} />
         </div>
       </article>
     </main>

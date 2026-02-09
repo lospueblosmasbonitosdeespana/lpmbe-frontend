@@ -189,8 +189,8 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
 
     setSaving(true);
     try {
-      // 1. Subir cover si existe
-      let coverUrl: string | null = null;
+      // 1. Subir cover si hay archivo nuevo; si no, conservar la portada existente
+      let finalCoverUrl: string | null = coverUrl; // Conservar portada actual si no se sube nueva
 
       if (coverFile) {
         if (coverFile.size > 25 * 1024 * 1024) {
@@ -211,7 +211,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           return;
         }
         const upJson = await up.json();
-        coverUrl = upJson?.url ?? upJson?.publicUrl ?? null;
+        finalCoverUrl = upJson?.url ?? upJson?.publicUrl ?? null;
       }
 
       // 2. Si es PÁGINA, usar endpoint /admin/pages con scope ASOCIACION
@@ -224,8 +224,8 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           resumen: resumen.trim() || null,
           contenido: contenido,
           published: estado === 'PUBLICADA',
+          coverUrl: finalCoverUrl ?? null,
         };
-        if (coverUrl) payload.coverUrl = coverUrl;
 
         console.log('[POST /admin/pages ASOCIACION] Payload:', JSON.stringify(payload, null, 2));
 
@@ -255,7 +255,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
         contenidoMd: contenido,
         estado,
       };
-      if (coverUrl) payload.coverUrl = coverUrl;
+      if (finalCoverUrl) payload.coverUrl = finalCoverUrl;
       if (estado === 'PROGRAMADA' && publishedAt) {
         payload.publishedAt = datetimeLocalToIsoUtc(publishedAt);
       }
