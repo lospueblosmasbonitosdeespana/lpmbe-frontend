@@ -102,61 +102,43 @@ export default function ProductGalleryManager({ productId, productNombre }: Prop
       setError(null);
 
       try {
-        console.log('[Gallery] 1. Iniciando upload:', file.name);
-        
-        // 1) Upload
+        // 1) Subir a R2 vía /api/admin/uploads (proxy robusto)
         const fd = new FormData();
         fd.append('file', file);
         fd.append('folder', 'productos');
 
-        const uploadRes = await fetch('/api/media/upload', {
+        const uploadRes = await fetch('/api/admin/uploads', {
           method: 'POST',
           body: fd,
           credentials: 'include',
         });
 
-        console.log('[Gallery] 2. Upload response status:', uploadRes.status);
-
-        const uploadText = await uploadRes.text();
-        let uploadJson: any = null;
-        try { 
-          uploadJson = uploadText ? JSON.parse(uploadText) : null; 
-        } catch {}
-
-        console.log('[Gallery] 2. Upload response data:', uploadJson);
-
+        const uploadJson = await uploadRes.json().catch(() => null);
         if (!uploadRes.ok) {
-          throw new Error(`Upload falló (${uploadRes.status}): ${uploadText}`);
+          const msg = uploadJson?.error ?? uploadJson?.message ?? `Error ${uploadRes.status}`;
+          throw new Error(typeof msg === 'string' ? msg : 'Upload falló');
         }
 
         const uploadedUrl = extractUploadedUrl(uploadJson);
-        console.log('[Gallery] 3. URL extraída:', uploadedUrl);
-
         if (!uploadedUrl) {
-          throw new Error(`Upload OK pero no encuentro URL en respuesta: ${uploadText}`);
+          throw new Error('La subida no devolvió URL válida');
         }
 
         assertMediaDomain(uploadedUrl);
 
-        // 2) Crear ProductImage en backend con alt autogenerado
+        // 2) Crear ProductImage en backend (la web siempre manda; la app lee de la API)
         const nextIndex = images.length + 1;
         const autoAlt = `${productNombre} - Imagen ${nextIndex}`;
-        console.log('[Gallery] 4. Creando imagen en galería con alt:', autoAlt);
         const created = await createProductImage(productId, { url: uploadedUrl, alt: autoAlt });
-        console.log('[Gallery] 4. Imagen creada:', created);
 
-        // 3) Refresco robusto: optimista + loadImages
         setImages((prev) => {
           const next = [...prev, created];
           next.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
           return next;
         });
 
-        console.log('[Gallery] 5. Recargando lista...');
         await loadImages();
-        console.log('[Gallery] 5. Lista recargada');
       } catch (e: any) {
-        console.error('[Gallery] Error en flujo:', e);
         setError(e?.message ?? 'Error subiendo imagen');
       } finally {
         setUploading(false);

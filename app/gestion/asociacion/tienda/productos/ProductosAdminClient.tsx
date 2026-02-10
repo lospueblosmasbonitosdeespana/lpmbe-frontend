@@ -126,17 +126,20 @@ export default function ProductosAdminClient() {
         fd.append('file', file);
         fd.append('folder', 'productos');
 
-        const res = await fetch('/api/media/upload', {
+        const res = await fetch('/api/admin/uploads', {
           method: 'POST',
           body: fd,
+          credentials: 'include',
         });
 
-        if (!res.ok) throw new Error('Error subiendo imagen');
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const msg = data?.error ?? data?.message ?? `Error ${res.status}`;
+          throw new Error(typeof msg === 'string' ? msg : 'Error subiendo imagen');
+        }
 
-        const data = await res.json();
         const url = data?.url ?? data?.publicUrl;
-
-        if (!url) throw new Error('No se recibió URL de la imagen');
+        if (!url || typeof url !== 'string') throw new Error('La subida no devolvió URL');
 
         setForm({ ...form, imagenUrl: url });
       } catch (e: any) {

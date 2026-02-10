@@ -165,15 +165,20 @@ export async function uploadProductImage(file: File): Promise<string> {
   fd.append('file', file);
   fd.append('folder', 'productos');
 
-  const res = await fetch('/api/media/upload', {
+  const res = await fetch('/api/admin/uploads', {
     method: 'POST',
     body: fd,
+    credentials: 'include',
   });
 
-  if (!res.ok) throw new Error('Error subiendo imagen');
-
-  const data = await res.json();
-  return data?.url ?? data?.publicUrl;
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = data?.error ?? data?.message ?? `Error ${res.status}`;
+    throw new Error(typeof msg === 'string' ? msg : 'Error subiendo imagen');
+  }
+  const url = data?.url ?? data?.publicUrl;
+  if (!url) throw new Error('La subida no devolvió URL');
+  return url;
 }
 
 export async function createProduct(data: Partial<Product>): Promise<Product> {
@@ -181,6 +186,7 @@ export async function createProduct(data: Partial<Product>): Promise<Product> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
+    credentials: 'include',
   });
   
   if (!res.ok) {
@@ -196,6 +202,7 @@ export async function updateProduct(id: number, data: Partial<Product>): Promise
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
+    credentials: 'include',
   });
   
   if (!res.ok) {
@@ -418,6 +425,7 @@ export async function deleteCoupon(id: number): Promise<void> {
 export async function listProductImages(productId: number): Promise<ProductImage[]> {
   const res = await fetch(`/api/products/admin/${productId}/images`, {
     cache: 'no-store',
+    credentials: 'include',
   });
   
   if (!res.ok) {
@@ -438,6 +446,7 @@ export async function createProductImage(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
+    credentials: 'include',
   });
   
   if (!res.ok) {
