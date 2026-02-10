@@ -4,13 +4,11 @@ import { getApiUrl } from '@/lib/api';
 
 /**
  * POST /api/admin/uploads
- * Proxy unificado para subida de archivos.
- * Redirige al backend /media/upload que gestiona Cloudflare R2.
- * 
- * FormData esperado:
- * - file: archivo a subir
- * - ownerType: tipo de entidad (pueblo, poi, producto, etc.)
- * - ownerId: ID de la entidad
+ * Proxy de subida: reenvía el body en streaming al backend sin leerlo aquí,
+ * evitando el límite 413 (Payload Too Large) de Next.js/Vercel.
+ * Backend: /media/upload → R2.
+ *
+ * FormData esperado: file (+ opcional folder, ownerType, ownerId).
  */
 export async function POST(req: Request) {
   const token = await getToken();
@@ -18,40 +16,35 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
+  const contentType = req.headers.get('content-type');
+  if (!contentType || !contentType.includes('multipart/form-data')) {
+    return NextResponse.json({ error: 'Se espera multipart/form-data' }, { status: 400 });
+  }
+
   try {
-    const incomingForm = await req.formData();
-    const file = incomingForm.get('file');
-    
-    if (!file || !(file instanceof Blob)) {
-      return NextResponse.json({ error: 'No se recibió ningún archivo' }, { status: 400 });
-    }
-
-    // Crear FormData fresco para reenviar al backend (evita problemas de serialización)
-    const formData = new FormData();
-    formData.append('file', file, file instanceof File ? file.name : 'image');
-    const folder = incomingForm.get('folder');
-    if (folder && typeof folder === 'string') formData.append('folder', folder);
-
     const API_BASE = getApiUrl();
     const upstreamUrl = `${API_BASE}/media/upload`;
 
+    // Reenviar el body en streaming (no llamar a req.formData()) para no topar con límite 413
     const upstream = await fetch(upstreamUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
+        'Content-Type': contentType,
       },
-      body: formData,
+      body: req.body,
+      ...(req.body && { duplex: 'half' } as Record<string, string>),
     });
 
     const raw = await upstream.text();
-    console.log("[proxy POST uploads] upstream status=", upstream.status, "raw=", raw);
+    console.log("[proxy POST uploads] upstream status=", upstream.status, "raw=", raw.slice(0, 200));
 
     let data: any;
     try {
       data = JSON.parse(raw);
     } catch {
       return NextResponse.json(
-        { error: "Upstream no devolvió JSON", raw, status: upstream.status },
+        { error: "Upstream no devolvió JSON", raw: raw.slice(0, 200), status: upstream.status },
         { status: 500 }
       );
     }
@@ -64,8 +57,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Normalizar respuesta del backend
-    // Backend devuelve: { key, url } o { publicUrl }
     const publicUrl = data?.publicUrl ?? data?.url;
     if (!publicUrl || typeof publicUrl !== "string") {
       return NextResponse.json(
@@ -74,11 +65,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // Compatibilidad: devolver tanto 'url' como 'publicUrl'
     return NextResponse.json({
       id: data.id ?? null,
-      url: publicUrl, // ← Para componentes legacy que esperan 'url'
-      publicUrl, // ← Para nuevos componentes
+      url: publicUrl,
+      publicUrl,
       ownerType: data.ownerType ?? null,
       ownerId: data.ownerId ?? null,
       order: data.order ?? 0,

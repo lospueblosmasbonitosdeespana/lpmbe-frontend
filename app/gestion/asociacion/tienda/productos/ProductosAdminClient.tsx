@@ -113,8 +113,10 @@ export default function ProductosAdminClient() {
       const file = e.target.files?.[0];
       if (!file) return;
 
-      if (file.size > 25 * 1024 * 1024) {
-        setError('La imagen pesa demasiado (máx 25MB)');
+      // Límite práctico por proxy/Vercel (~4.5–5 MB); el backend acepta más
+      const maxMb = 5;
+      if (file.size > maxMb * 1024 * 1024) {
+        setError(`La imagen pesa demasiado. Usa una de menos de ${maxMb} MB o comprímela.`);
         return;
       }
 
@@ -134,6 +136,9 @@ export default function ProductosAdminClient() {
 
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
+          if (res.status === 413) {
+            throw new Error('Archivo demasiado grande. Prueba con una imagen menor (p. ej. < 5 MB) o comprímela.');
+          }
           const msg = data?.error ?? data?.message ?? `Error ${res.status}`;
           throw new Error(typeof msg === 'string' ? msg : 'Error subiendo imagen');
         }
@@ -432,7 +437,7 @@ export default function ProductosAdminClient() {
                 </button>
               )}
               <p className="mt-1 text-xs text-gray-500">
-                Solo subida de archivo. Formato: JPG, PNG, WebP (máx 25MB). No se usan URLs externas.
+                Solo subida de archivo. Formato: JPG, PNG, WebP (máx 5 MB). No se usan URLs externas.
               </p>
             </div>
 

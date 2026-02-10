@@ -93,8 +93,10 @@ export default function ProductGalleryManager({ productId, productNombre }: Prop
       const file = e.target?.files?.[0];
       if (!file) return;
 
-      if (file.size > 25 * 1024 * 1024) {
-        setError('La imagen pesa demasiado (máx 25MB)');
+      // Límite práctico: el proxy/Vercel suele tener ~4.5–5 MB; el backend acepta hasta 100 MB
+      const maxMb = 5;
+      if (file.size > maxMb * 1024 * 1024) {
+        setError(`La imagen pesa demasiado. Usa una de menos de ${maxMb} MB o comprímela.`);
         return;
       }
 
@@ -115,6 +117,9 @@ export default function ProductGalleryManager({ productId, productNombre }: Prop
 
         const uploadJson = await uploadRes.json().catch(() => null);
         if (!uploadRes.ok) {
+          if (uploadRes.status === 413) {
+            throw new Error('Archivo demasiado grande. Prueba con una imagen menor (p. ej. < 5 MB) o comprímela.');
+          }
           const msg = uploadJson?.error ?? uploadJson?.message ?? `Error ${uploadRes.status}`;
           throw new Error(typeof msg === 'string' ? msg : 'Upload falló');
         }
