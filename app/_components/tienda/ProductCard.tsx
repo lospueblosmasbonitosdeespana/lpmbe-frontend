@@ -29,7 +29,9 @@ export function ProductCard({ product, className }: ProductCardProps) {
     (precioOriginal > 0 ? Math.round(((precioOriginal - precioFinal) / precioOriginal) * 100) : 0);
   const ahorro = hasDiscount ? precioOriginal - precioFinal : 0;
 
-  const rawImg = product.imagenUrl && String(product.imagenUrl).trim();
+  const rawImg =
+    (product.imagenUrl && String(product.imagenUrl).trim()) ||
+    (product.images?.[0]?.url && String(product.images[0].url).trim());
   const safeSrc = rawImg || undefined;
   const usePlaceholder = !safeSrc;
 
