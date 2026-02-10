@@ -429,7 +429,7 @@ export default function ProductosAdminClient() {
                 </button>
               )}
               <p className="mt-1 text-xs text-gray-500">
-                Formato: JPG, PNG, WebP (máx 25MB)
+                Solo subida de archivo. Formato: JPG, PNG, WebP (máx 25MB). No se usan URLs externas.
               </p>
             </div>
 
