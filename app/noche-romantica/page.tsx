@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/api';
+import CountdownBeso from './CountdownBeso';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -119,6 +120,7 @@ export default async function NocheRomanticaPage() {
             <p className="mt-1 text-sm md:text-base drop-shadow-md opacity-90">
               {formatFechaEvento(config.fechaEvento, config.edicion)}
             </p>
+            <CountdownBeso fechaEvento={config.fechaEvento} light />
           </div>
         </section>
       )}
@@ -135,6 +137,9 @@ export default async function NocheRomanticaPage() {
           <p className="mt-2 text-muted-foreground">
             {formatFechaEvento(config.fechaEvento, config.edicion)}
           </p>
+          <div className="mt-4">
+            <CountdownBeso fechaEvento={config.fechaEvento} />
+          </div>
         </section>
       )}
 
