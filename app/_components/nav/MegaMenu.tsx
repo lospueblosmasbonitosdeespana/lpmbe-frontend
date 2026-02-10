@@ -1,14 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { NavItem } from "./nav.config";
 import { navConfig } from "./nav.config";
+
+const CLOSE_DELAY_MS = 120;
 
 export function MegaMenu() {
   const [openLabel, setOpenLabel] = useState<string | null>(null);
   const items = useMemo(() => navConfig, []);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearCloseTimeout = useCallback(() => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  }, []);
+
+  const scheduleClose = useCallback(() => {
+    clearCloseTimeout();
+    closeTimeoutRef.current = setTimeout(() => {
+      setOpenLabel(null);
+      closeTimeoutRef.current = null;
+    }, CLOSE_DELAY_MS);
+  }, [clearCloseTimeout]);
 
   // Cerrar con ESC
   useEffect(() => {
@@ -31,6 +49,10 @@ export function MegaMenu() {
     document.addEventListener("mousedown", onDocMouseDown);
     return () => document.removeEventListener("mousedown", onDocMouseDown);
   }, [openLabel]);
+
+  useEffect(() => {
+    return () => clearCloseTimeout();
+  }, [clearCloseTimeout]);
 
   return (
     <div ref={rootRef} className="relative">
@@ -55,8 +77,11 @@ export function MegaMenu() {
               <div
                 key={item.label}
                 className="relative"
-                onMouseEnter={() => setOpenLabel(item.label)}
-                onMouseLeave={() => setOpenLabel((prev) => (prev === item.label ? null : prev))}
+                onMouseEnter={() => {
+                  clearCloseTimeout();
+                  setOpenLabel(item.label);
+                }}
+                onMouseLeave={scheduleClose}
               >
                 <button
                   type="button"
@@ -72,7 +97,13 @@ export function MegaMenu() {
                   <div className="absolute left-1/2 top-full h-5 w-[120%] -translate-x-1/2" />
                 )}
 
-                {isOpen && <MegaPanel item={item} />}
+                {isOpen && (
+                  <MegaPanel
+                    item={item}
+                    onMouseEnter={clearCloseTimeout}
+                    onMouseLeave={() => setOpenLabel(null)}
+                  />
+                )}
               </div>
             );
           })}
@@ -82,13 +113,23 @@ export function MegaMenu() {
   );
 }
 
-function MegaPanel({ item }: { item: Extract<NavItem, { type: "mega" }> }) {
+function MegaPanel({
+  item,
+  onMouseEnter,
+  onMouseLeave,
+}: {
+  item: Extract<NavItem, { type: "mega" }>;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+}) {
   return (
     <div
       className="
         fixed left-1/2 top-auto z-50 mt-4 w-[920px] -translate-x-1/2
         rounded-lg border border-gray-100 bg-white shadow-lg
       "
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <div className="grid grid-cols-3 gap-8 px-8 py-7">
         {item.columns.map((col) => (
