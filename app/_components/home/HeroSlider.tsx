@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-type Slide = { image: string; alt?: string };
+type Slide = { image: string; alt?: string; link?: string };
 
 type Props = {
   slides: readonly Slide[];
@@ -84,26 +84,43 @@ export function HeroSlider({
     return null;
   }
 
+  const isExternal = (href: string) => href.startsWith("http://") || href.startsWith("https://");
+
   return (
     <div className="absolute inset-0 z-0 group">
-      {safeSlides.map((s, i) => (
-        <div
-          key={`${s.image}-${i}`}
-          className={`absolute inset-0 transition-opacity duration-700 ${
-            i === index ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={s.image}
-            alt={s.alt ?? ""}
-            className="h-full w-full object-cover"
-            style={{ objectFit: "cover" }}
-            loading={i === 0 ? "eager" : "lazy"}
-            draggable={false}
-          />
-        </div>
-      ))}
+      {safeSlides.map((s, i) => {
+        const visible = i === index;
+        const Wrapper = s.link && s.link.trim() && visible ? "a" : "div";
+        const wrapperProps =
+          Wrapper === "a" && s.link
+            ? {
+                href: s.link.trim(),
+                ...(isExternal(s.link) && { target: "_blank", rel: "noopener noreferrer" }),
+                className: "absolute inset-0 block cursor-pointer transition-opacity duration-700",
+              }
+            : { className: "absolute inset-0 transition-opacity duration-700" };
+
+        return (
+          <Wrapper
+            key={`${s.image}-${i}`}
+            {...wrapperProps}
+            style={{
+              opacity: visible ? 1 : 0,
+              transition: "opacity 700ms",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={s.image}
+              alt={s.alt ?? ""}
+              className="h-full w-full object-cover pointer-events-none"
+              style={{ objectFit: "cover" }}
+              loading={i === 0 ? "eager" : "lazy"}
+              draggable={false}
+            />
+          </Wrapper>
+        );
+      })}
 
       {showControls && safeSlides.length > 1 ? (
         <>

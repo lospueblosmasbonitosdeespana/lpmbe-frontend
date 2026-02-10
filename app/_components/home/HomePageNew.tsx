@@ -72,7 +72,7 @@ export interface HomeVideoItem {
 }
 
 interface HomePageProps {
-  heroSlides?: Array<{ image: string; alt?: string }>;
+  heroSlides?: Array<{ image: string; alt?: string; link?: string }>;
   heroIntervalMs?: number;
   heroTitle?: string;
   heroSubtitle?: string;
@@ -93,7 +93,7 @@ function HeroSection({
   heroTitle,
   heroSubtitle,
 }: {
-  heroSlides?: Array<{ image: string; alt?: string }>;
+  heroSlides?: Array<{ image: string; alt?: string; link?: string }>;
   heroIntervalMs?: number;
   heroTitle?: string;
   heroSubtitle?: string;
@@ -115,26 +115,43 @@ function HeroSection({
     return () => clearInterval(timer);
   }, [visibleSlides.length, heroIntervalMs]);
 
+  const isExternal = (href: string) => href.startsWith("http://") || href.startsWith("https://");
+
   return (
     <section className="relative h-[75vh] min-h-[550px] max-h-[800px] overflow-hidden">
       <div className="absolute inset-0">
-        {visibleSlides.map((slide, idx) => (
-          <div
-            key={idx}
-            className={cn(
-              "absolute inset-0 transition-opacity duration-1000",
-              idx === activeIndex ? "opacity-100 z-0" : "opacity-0 z-[-1]"
-            )}
-          >
-            <Image
-              src={slide.image}
-              alt={slide.alt || "Los Pueblos Más Bonitos de España"}
-              fill
-              priority={idx === 0}
-              className="object-cover"
-            />
-          </div>
-        ))}
+        {visibleSlides.map((slide, idx) => {
+          const visible = idx === activeIndex;
+          const hasLink = visible && slide?.link?.trim();
+          const Wrapper = hasLink ? "a" : "div";
+          const wrapperProps = hasLink && slide.link
+            ? {
+                href: slide.link.trim(),
+                ...(isExternal(slide.link) && { target: "_blank", rel: "noopener noreferrer" }),
+                className: cn(
+                  "absolute inset-0 block transition-opacity duration-1000 cursor-pointer",
+                  visible ? "opacity-100 z-0" : "opacity-0 z-[-1]"
+                ),
+              }
+            : {
+                className: cn(
+                  "absolute inset-0 transition-opacity duration-1000",
+                  visible ? "opacity-100 z-0" : "opacity-0 z-[-1]"
+                ),
+              };
+
+          return (
+            <Wrapper key={idx} {...wrapperProps}>
+              <Image
+                src={slide.image}
+                alt={slide.alt || "Los Pueblos Más Bonitos de España"}
+                fill
+                priority={idx === 0}
+                className="object-cover pointer-events-none"
+              />
+            </Wrapper>
+          );
+        })}
         {visibleSlides.length === 0 && (
           <Image
             src="/hero/1.jpg"

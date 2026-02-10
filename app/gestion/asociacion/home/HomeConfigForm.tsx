@@ -67,7 +67,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
       const cur = prev.hero?.slides ?? [];
       const next = [...cur];
 
-      while (next.length < n) next.push({ image: '', alt: '', hidden: false });
+      while (next.length < n) next.push({ image: '', alt: '', hidden: false, link: '' });
       while (next.length > n) next.pop();
 
       return { ...prev, hero: { ...prev.hero, slides: next } };
@@ -104,6 +104,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
           image: s.image.trim(),
           alt: typeof s.alt === "string" ? s.alt : "",
           hidden: i === 0 ? false : !!s.hidden,  // ← Imagen 1 siempre visible
+          link: typeof s.link === "string" ? s.link.trim() : undefined,
           title: s.title,
           subtitle: s.subtitle,
           cta: s.cta,
@@ -648,6 +649,23 @@ function SlideEditor({
           }}
           disabled={uploading}
         />
+
+        {/* Enlace al hacer clic (opcional) */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Enlace al hacer clic (opcional)
+          </label>
+          <input
+            type="text"
+            placeholder="Ej: /noche-romantica o https://..."
+            value={slide.link ?? ''}
+            onChange={(e) => updateSlide({ ...slide, link: e.target.value.trim() || undefined })}
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Si lo rellenas, al pulsar esta foto en la home el usuario irá a esta URL (ruta interna o externa).
+          </p>
+        </div>
 
         {/* Botones de acción */}
         <div className="flex gap-2">

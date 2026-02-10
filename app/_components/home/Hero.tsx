@@ -16,7 +16,7 @@ export function Hero({ configHero, floating }: HeroProps) {
   // En público el backend ya filtra
   const slides = (hero?.slides || [])
     .filter((s) => typeof s.image === 'string' && s.image.length > 0)
-    .map((s) => ({ image: s.image, alt: s.alt || '' }));
+    .map((s) => ({ image: s.image, alt: s.alt || '', link: (s as { link?: string }).link }));
 
   return (
     <section className="relative h-[420px] md:h-[520px] overflow-hidden">

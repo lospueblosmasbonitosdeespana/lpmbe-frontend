@@ -171,7 +171,7 @@ export default async function HomePage() {
   const heroSlides = (config.hero.slides ?? [])
     .filter((s) => s?.image?.trim() && !s?.hidden)
     .slice(0, 4)
-    .map((s) => ({ image: s.image, alt: s.alt }));
+    .map((s) => ({ image: s.image, alt: s.alt, link: s?.link }));
 
   return (
     <main>

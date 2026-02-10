@@ -3,10 +3,12 @@ import { getApiUrl } from "./api";
 export type HomeSlide = {
   image: string;
   alt?: string;
+  /** Enlace al hacer clic en esta foto del hero (ej. /noche-romantica, /tienda) */
+  link?: string;
   title?: string;
   subtitle?: string;
   cta?: { text: string; href: string };
-  hidden?: boolean; // NUEVO: permite ocultar sin borrar
+  hidden?: boolean;
 };
 
 export type HomeTheme = {
@@ -82,6 +84,7 @@ export async function getHomeConfig(): Promise<HomeConfig> {
         image: typeof s?.image === 'string' ? s.image : '',
         alt: typeof s?.alt === 'string' ? s.alt : '',
         hidden: !!s?.hidden,
+        link: typeof s?.link === 'string' ? s.link.trim() : undefined,
         title: typeof s?.title === 'string' ? s.title : undefined,
         subtitle: typeof s?.subtitle === 'string' ? s.subtitle : undefined,
         cta: s?.cta && typeof s.cta === 'object' ? s.cta : undefined,
