@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getProducts, createProduct, updateProduct, deleteProduct } from "@/src/lib/tiendaApi";
 import type { Product } from "@/src/types/tienda";
 import { formatEUR, toNumber } from "@/src/lib/money";
+import { compressImage } from "@/src/lib/compressImage";
 import ProductGalleryManager from "./ProductGalleryManager";
 
 type FormMode = "create" | "edit" | null;
@@ -113,19 +114,14 @@ export default function ProductosAdminClient() {
       const file = e.target.files?.[0];
       if (!file) return;
 
-      // Límite práctico por proxy/Vercel (~4.5–5 MB); el backend acepta más
-      const maxMb = 5;
-      if (file.size > maxMb * 1024 * 1024) {
-        setError(`La imagen pesa demasiado. Usa una de menos de ${maxMb} MB o comprímela.`);
-        return;
-      }
-
       setUploadingImage(true);
       setError(null);
 
       try {
+        // Comprimir en el navegador para que pase por el proxy de Vercel (~4,5 MB)
+        const compressed = await compressImage(file, { fileName: file.name.replace(/\.[^.]+$/, '') });
         const fd = new FormData();
-        fd.append('file', file);
+        fd.append('file', compressed);
         fd.append('folder', 'productos');
 
         const res = await fetch('/api/admin/uploads', {
@@ -136,9 +132,6 @@ export default function ProductosAdminClient() {
 
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          if (res.status === 413) {
-            throw new Error('Archivo demasiado grande. Prueba con una imagen menor (p. ej. < 5 MB) o comprímela.');
-          }
           const msg = data?.error ?? data?.message ?? `Error ${res.status}`;
           throw new Error(typeof msg === 'string' ? msg : 'Error subiendo imagen');
         }
@@ -437,7 +430,7 @@ export default function ProductosAdminClient() {
                 </button>
               )}
               <p className="mt-1 text-xs text-gray-500">
-                Solo subida de archivo. Formato: JPG, PNG, WebP (máx 5 MB). No se usan URLs externas.
+                Solo subida de archivo. Formato: JPG, PNG, WebP. Se optimiza automáticamente.
               </p>
             </div>
 
