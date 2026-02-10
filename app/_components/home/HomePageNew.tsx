@@ -217,27 +217,25 @@ function NotificationCenter({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "noticias" | "semaforos" | "alertas" | "meteo"
+    "noticias" | "semaforos" | "alertas"
   >("noticias");
 
   const tabs = [
     { id: "noticias", label: "Noticias", icon: Newspaper },
     { id: "semaforos", label: "Semáforos", icon: AlertTriangle },
     { id: "alertas", label: "Alertas", icon: Bell },
-    { id: "meteo", label: "Meteo", icon: Cloud },
   ] as const;
 
-  const filteredNotifications = notifications.filter((n) =>
+  const homeNotifications = notifications.filter((n) => n.type !== "meteo");
+  const filteredNotifications = homeNotifications.filter((n) =>
     activeTab === "noticias"
       ? n.type === "noticia"
       : activeTab === "semaforos"
         ? n.type === "semaforo"
-        : activeTab === "alertas"
-          ? n.type === "alerta"
-          : n.type === "meteo"
+        : n.type === "alerta"
   );
 
-  const notificationCount = notifications.length;
+  const notificationCount = homeNotifications.length;
 
   return (
     <div className="relative z-10 -mt-8">

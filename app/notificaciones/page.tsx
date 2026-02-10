@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Cloud } from "lucide-react";
 import NotificacionesList from "../_components/notificaciones/NotificacionesList";
 
 type NotifItem = {
@@ -73,9 +74,10 @@ export default function NotificacionesPage() {
         </div>
         <Link
           href="/meteo"
-          className="px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition font-medium"
+          className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted/50 transition font-medium text-foreground"
         >
-          🌤️ Alertas Meteo
+          <Cloud className="h-4 w-4" />
+          Alertas Meteo
         </Link>
       </div>
 
