@@ -201,6 +201,17 @@ export default async function GestionPuebloPage({
 
   return (
     <main className="mx-auto max-w-5xl p-6">
+      <div className="mb-4">
+        <Link
+          href="/gestion/mis-pueblos"
+          className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Volver a Todos los pueblos
+        </Link>
+      </div>
       <h1 className="text-2xl font-semibold">Gestión del pueblo</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         Pueblo: <strong>{puebloNombre}</strong>
@@ -223,12 +234,6 @@ export default async function GestionPuebloPage({
             disabled={item.disabled}
           />
         ))}
-      </div>
-
-      <div className="mt-10 text-sm">
-        <Link className="text-muted-foreground hover:text-foreground hover:underline" href="/gestion/mis-pueblos">
-          ← Volver a pueblos
-        </Link>
       </div>
     </main>
   );
