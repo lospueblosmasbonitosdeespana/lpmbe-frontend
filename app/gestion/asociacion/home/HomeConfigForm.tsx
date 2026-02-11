@@ -245,6 +245,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                 slide={slide}
                 idx={idx}
                 uploading={uploading}
+                saving={saving}
                 uploadImage={uploadImage}
                 updateSlide={(updatedSlide) => {
                   setConfig((prev) => {
@@ -253,6 +254,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                     return { ...prev, hero: { ...prev.hero, slides } };
                   });
                 }}
+                onSave={handleSave}
               />
             ))}
           </div>
@@ -577,14 +579,18 @@ function SlideEditor({
   slide,
   idx,
   uploading,
+  saving,
   uploadImage,
   updateSlide,
+  onSave,
 }: {
   slide: HomeSlide;
   idx: number;
   uploading: boolean;
+  saving: boolean;
   uploadImage: (file: File) => Promise<string>;
   updateSlide: (slide: HomeSlide) => void;
+  onSave: () => void;
 }) {
   const fileRef = useRef<HTMLInputElement | null>(null);
 
@@ -655,13 +661,23 @@ function SlideEditor({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Enlace al hacer clic (opcional)
           </label>
-          <input
-            type="text"
-            placeholder="Ej: /noche-romantica o https://..."
-            value={slide.link ?? ''}
-            onChange={(e) => updateSlide({ ...slide, link: e.target.value.trim() || undefined })}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Ej: /noche-romantica o https://..."
+              value={slide.link ?? ''}
+              onChange={(e) => updateSlide({ ...slide, link: e.target.value || undefined })}
+              className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
+            />
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={saving || uploading}
+              className="rounded bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:bg-gray-400 whitespace-nowrap"
+            >
+              {saving ? "Guardando..." : "Guardar enlace"}
+            </button>
+          </div>
           <p className="text-xs text-gray-500 mt-1">
             Si lo rellenas, al pulsar esta foto en la home el usuario irá a esta URL (ruta interna o externa).
           </p>

@@ -147,7 +147,7 @@ function HeroSection({
                 alt={slide.alt || "Los Pueblos Más Bonitos de España"}
                 fill
                 priority={idx === 0}
-                className="object-cover pointer-events-none"
+                className="object-cover"
               />
             </Wrapper>
           );
@@ -161,11 +161,11 @@ function HeroSection({
             className="object-cover"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10 z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10 z-[1] pointer-events-none" />
       </div>
 
-      <Container className="relative z-10 h-full flex flex-col justify-end pb-28">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white/90 text-xs font-medium mb-5 w-fit">
+      <Container className="pointer-events-none relative z-10 h-full flex flex-col justify-end pb-28">
+        <div className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white/90 text-xs font-medium mb-5 w-fit">
           <Sparkles className="h-3 w-3" />
           126 pueblos certificados
         </div>
@@ -177,7 +177,7 @@ function HeroSection({
           {heroSubtitle || "Descubre la esencia de nuestros pueblos"}
         </p>
 
-        <div className="flex flex-wrap gap-4">
+        <div className="pointer-events-auto flex flex-wrap gap-4">
           <Button asChild size="lg" className="rounded-full px-6 shadow-lg">
             <Link href="/pueblos">
               Explorar pueblos <ArrowRight className="ml-2 h-4 w-4" />
