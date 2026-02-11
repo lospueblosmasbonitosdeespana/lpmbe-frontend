@@ -46,6 +46,7 @@ async function getAdminHomeConfig(token: string): Promise<HomeConfig> {
         image: typeof s?.image === 'string' ? s.image : '',
         alt: typeof s?.alt === 'string' ? s.alt : '',
         hidden: !!s?.hidden,
+        link: typeof s?.link === 'string' ? s.link.trim() : undefined,
         title: typeof s?.title === 'string' ? s.title : undefined,
         subtitle: typeof s?.subtitle === 'string' ? s.subtitle : undefined,
         cta: s?.cta && typeof s.cta === 'object' ? s.cta : undefined,
