@@ -326,40 +326,44 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
     setError(null);
 
     try {
-      if (useAdminEndpoint) {
-        // Subir usando endpoint legacy admin
-        const formData = new FormData();
-        formData.append("file", file);
-        
-        const endpoint = entity === "pueblo"
-          ? `/api/admin/pueblos/${entityId}/fotos/upload`
-          : `/api/admin/pois/${entityId}/fotos/upload`;
-        
-        const uploadRes = await fetch(endpoint, {
-          method: "POST",
-          body: formData,
-        });
+      // 1) Subir archivo a R2 vía /api/admin/uploads
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", entity === "pueblo" ? "pueblos" : "pois");
 
-        if (!uploadRes.ok) {
-          const errorData = await uploadRes.json().catch(() => ({}));
-          throw new Error(errorData?.error ?? `Error subiendo archivo (${uploadRes.status})`);
-        }
-      } else {
-        // Usar /media/upload nuevo
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("ownerType", entity);
-        formData.append("ownerId", String(entityId));
+      const uploadRes = await fetch("/api/admin/uploads", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
 
-        const uploadRes = await fetch("/api/media/upload", {
-          method: "POST",
-          body: formData,
-        });
+      if (!uploadRes.ok) {
+        const errorData = await uploadRes.json().catch(() => ({}));
+        throw new Error(errorData?.error ?? errorData?.message ?? `Error subiendo archivo (${uploadRes.status})`);
+      }
 
-        if (!uploadRes.ok) {
-          const errorData = await uploadRes.json().catch(() => ({}));
-          throw new Error(errorData?.error ?? `Error subiendo archivo (${uploadRes.status})`);
-        }
+      const uploadData = await uploadRes.json();
+      const uploadedUrl = uploadData?.url;
+
+      if (!uploadedUrl) {
+        throw new Error("No se recibió la URL del archivo subido");
+      }
+
+      // 2) Asociar la URL al pueblo/POI
+      const attachEndpoint = entity === "pueblo"
+        ? `/api/admin/pueblos/${entityId}/fotos`
+        : `/api/admin/pois/${entityId}/fotos`;
+
+      const attachRes = await fetch(attachEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: uploadedUrl }),
+        credentials: "include",
+      });
+
+      if (!attachRes.ok) {
+        const errorData = await attachRes.json().catch(() => ({}));
+        throw new Error(errorData?.error ?? `Error asociando foto (${attachRes.status})`);
       }
 
       // Recargar lista
@@ -376,38 +380,20 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
 
   // Borrar/Desasociar foto
   async function handleDelete(photoId: number | string) {
-    const confirmMessage = useAdminEndpoint && entity === "pueblo"
-      ? "¿Desasociar esta foto del pueblo? (la foto no se borrará, solo se quitará de este pueblo)"
-      : "¿Eliminar esta foto?";
-    
-    if (!confirm(confirmMessage)) return;
+    if (!confirm("¿Eliminar esta foto?")) return;
 
     setError(null);
 
     try {
-      if (useAdminEndpoint) {
-        // Para pueblos: DETACH (desasociar) en vez de DELETE
-        const endpoint = entity === "pueblo"
-          ? `/api/admin/pueblos/${entityId}/fotos/${photoId}/detach`
-          : `/api/admin/pois/fotos/${photoId}`;
-        
-        const res = await fetch(endpoint, {
-          method: "DELETE",
-          cache: "no-store",
-        });
+      // Usar endpoint genérico de borrado: DELETE /api/admin/fotos/:id
+      const res = await fetch(`/api/admin/fotos/${photoId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData?.error ?? `Error desasociando foto (${res.status})`);
-        }
-      } else {
-        const res = await fetch(`/api/media/${photoId}`, {
-          method: "DELETE",
-        });
-
-        if (!res.ok) {
-          throw new Error(`Error eliminando foto (${res.status})`);
-        }
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData?.error ?? `Error eliminando foto (${res.status})`);
       }
 
       // Refetch inmediato sin caché
