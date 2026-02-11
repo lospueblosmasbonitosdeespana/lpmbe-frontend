@@ -67,6 +67,7 @@ export type Order = {
   stripeSessionId: string | null;
   orderNumber: string;
   trackingNumber: string | null;
+  trackingUrl?: string | null;
   couponCode: string | null;
   discountTotal: number | string; // Decimal viene como string desde backend
   totalBeforeDiscount: number | string; // Decimal viene como string desde backend

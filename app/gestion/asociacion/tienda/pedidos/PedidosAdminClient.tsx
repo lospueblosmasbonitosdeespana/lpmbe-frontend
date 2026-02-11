@@ -39,6 +39,7 @@ export default function PedidosAdminClient() {
   const [newStatus, setNewStatus] = useState<Order['status'] | ''>('');
   const [trackingNumber, setTrackingNumber] = useState<string>('');
   const [preregisteringId, setPreregisteringId] = useState<number | null>(null);
+  const [sendcloudCreatingId, setSendcloudCreatingId] = useState<number | null>(null);
 
   async function loadOrders() {
     try {
@@ -102,6 +103,27 @@ export default function PedidosAdminClient() {
       setError(e?.message ?? "Error preregistrando en Correos");
     } finally {
       setPreregisteringId(null);
+    }
+  }
+
+  async function createSendcloudParcel(orderId: number) {
+    try {
+      setSendcloudCreatingId(orderId);
+      setError(null);
+      const res = await fetch(`/api/admin/sendcloud/orders/${orderId}/create-parcel`, {
+        method: "POST",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const errMsg = data?.message ?? data?.error ?? (typeof data === 'string' ? data : "Error creando envío");
+        throw new Error(errMsg);
+      }
+      setSuccess("Envío creado en Sendcloud correctamente");
+      await loadOrders();
+    } catch (e: any) {
+      setError(e?.message ?? "Error creando envío Sendcloud");
+    } finally {
+      setSendcloudCreatingId(null);
     }
   }
 
@@ -279,13 +301,22 @@ export default function PedidosAdminClient() {
                   ) : (
                     <>
                       {(pedido.status === "PAID" || pedido.status === "PROCESSING") && (
-                        <button
-                          onClick={() => preregisterCorreos(pedido.id)}
-                          disabled={preregisteringId === pedido.id}
-                          className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
-                        >
-                          {preregisteringId === pedido.id ? "Preregistrando…" : "Correos"}
-                        </button>
+                        <>
+                          <button
+                            onClick={() => createSendcloudParcel(pedido.id)}
+                            disabled={sendcloudCreatingId === pedido.id}
+                            className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                          >
+                            {sendcloudCreatingId === pedido.id ? "Creando…" : "Sendcloud"}
+                          </button>
+                          <button
+                            onClick={() => preregisterCorreos(pedido.id)}
+                            disabled={preregisteringId === pedido.id}
+                            className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+                          >
+                            {preregisteringId === pedido.id ? "Preregistrando…" : "Correos"}
+                          </button>
+                        </>
                       )}
                       <button
                         onClick={() => startEditStatus(pedido)}
@@ -404,14 +435,26 @@ export default function PedidosAdminClient() {
                     </div>
                   )}
 
-                  {pedido.trackingNumber && (
+                  {(pedido.trackingNumber || pedido.trackingUrl) && (
                     <div className="mt-3">
                       <h3 className="mb-1 text-sm font-medium text-gray-900">
-                        Número de seguimiento
+                        Seguimiento
                       </h3>
-                      <p className="font-mono text-sm text-gray-700">
-                        {pedido.trackingNumber}
-                      </p>
+                      {pedido.trackingNumber && (
+                        <p className="font-mono text-sm text-gray-700">
+                          {pedido.trackingNumber}
+                        </p>
+                      )}
+                      {pedido.trackingUrl && (
+                        <a
+                          href={pedido.trackingUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-indigo-600 hover:underline"
+                        >
+                          Ver seguimiento →
+                        </a>
+                      )}
                     </div>
                   )}
 
