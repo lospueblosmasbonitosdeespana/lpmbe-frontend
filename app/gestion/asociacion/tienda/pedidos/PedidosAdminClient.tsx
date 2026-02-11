@@ -38,7 +38,6 @@ export default function PedidosAdminClient() {
   const [editingStatusId, setEditingStatusId] = useState<number | null>(null);
   const [newStatus, setNewStatus] = useState<Order['status'] | ''>('');
   const [trackingNumber, setTrackingNumber] = useState<string>('');
-  const [preregisteringId, setPreregisteringId] = useState<number | null>(null);
   const [sendcloudCreatingId, setSendcloudCreatingId] = useState<number | null>(null);
 
   async function loadOrders() {
@@ -83,27 +82,6 @@ export default function PedidosAdminClient() {
     setEditingStatusId(null);
     setNewStatus('');
     setTrackingNumber('');
-  }
-
-  async function preregisterCorreos(orderId: number) {
-    try {
-      setPreregisteringId(orderId);
-      setError(null);
-      const res = await fetch(`/api/admin/correos/orders/${orderId}/preregister`, {
-        method: "POST",
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const errMsg = data?.message ?? data?.error ?? (typeof data === 'string' ? data : "Error preregistrando");
-        throw new Error(errMsg);
-      }
-      setSuccess("Envío preregistrado en Correos correctamente");
-      await loadOrders();
-    } catch (e: any) {
-      setError(e?.message ?? "Error preregistrando en Correos");
-    } finally {
-      setPreregisteringId(null);
-    }
   }
 
   async function createSendcloudParcel(orderId: number) {
@@ -301,22 +279,13 @@ export default function PedidosAdminClient() {
                   ) : (
                     <>
                       {(pedido.status === "PAID" || pedido.status === "PROCESSING") && (
-                        <>
-                          <button
-                            onClick={() => createSendcloudParcel(pedido.id)}
-                            disabled={sendcloudCreatingId === pedido.id}
-                            className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-                          >
-                            {sendcloudCreatingId === pedido.id ? "Creando…" : "Sendcloud"}
-                          </button>
-                          <button
-                            onClick={() => preregisterCorreos(pedido.id)}
-                            disabled={preregisteringId === pedido.id}
-                            className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
-                          >
-                            {preregisteringId === pedido.id ? "Preregistrando…" : "Correos"}
-                          </button>
-                        </>
+                        <button
+                          onClick={() => createSendcloudParcel(pedido.id)}
+                          disabled={sendcloudCreatingId === pedido.id}
+                          className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                        >
+                          {sendcloudCreatingId === pedido.id ? "Creando…" : "Sendcloud"}
+                        </button>
                       )}
                       <button
                         onClick={() => startEditStatus(pedido)}
