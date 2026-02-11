@@ -287,21 +287,28 @@ export default async function MultiexperienciaPage({
               
               return (
                 <article key={key} className="space-y-3">
-                  {/* Foto */}
+                  {/* Foto: proporción 16:9 para no mostrar panorámicas demasiado anchas */}
                   {p.foto ? (
-                    <img
-                      src={p.foto}
-                      alt={p.titulo ?? "Parada"}
+                    <div
                       style={{
-                        maxWidth: "800px",
-                        maxHeight: "600px",
-                        width: "auto",
-                        height: "auto",
-                        objectFit: "contain",
+                        aspectRatio: "16/9",
+                        maxWidth: "100%",
+                        overflow: "hidden",
                         borderRadius: "8px",
+                        backgroundColor: "#f0f0f0",
                       }}
-                      loading="lazy"
-                    />
+                    >
+                      <img
+                        src={p.foto}
+                        alt={p.titulo ?? "Parada"}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                        loading="lazy"
+                      />
+                    </div>
                   ) : null}
 
                   {/* Título */}
