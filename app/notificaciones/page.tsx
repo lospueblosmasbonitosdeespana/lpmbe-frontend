@@ -10,6 +10,8 @@ type NotifItem = {
   tipo?: string;
   titulo?: string;
   mensaje?: string;
+  contenido?: string;
+  motivoPublico?: string;
   createdAt?: string;
   fecha?: string;
   puebloNombre?: string;

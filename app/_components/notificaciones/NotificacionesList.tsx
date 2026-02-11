@@ -7,6 +7,8 @@ type Item = {
   tipo?: string | null;
   titulo?: string | null;
   mensaje?: string | null;
+  contenido?: string | null;
+  motivoPublico?: string | null;
   createdAt?: string | null;
   fecha?: string | null;
   puebloNombre?: string | null;
@@ -65,7 +67,11 @@ export default function NotificacionesList({ items }: { items: Item[] }) {
               {pueblo ? <div style={{ fontSize: 14, color: "#666" }}>Pueblo: {pueblo}</div> : null}
               {fecha ? <div style={{ fontSize: 14, color: "#666" }}>{fecha}</div> : null}
               {it.tipo ? <div style={{ fontSize: 14, color: "#666" }}>Tipo: {it.tipo}</div> : null}
-              {it.mensaje ? <div style={{ fontSize: 14, color: "#666", marginTop: 8 }}>{it.mensaje}</div> : null}
+              {(it.mensaje || it.contenido || it.motivoPublico) ? (
+                <div style={{ fontSize: 14, color: "#666", marginTop: 8 }}>
+                  {it.mensaje || it.contenido || it.motivoPublico}
+                </div>
+              ) : null}
             </Link>
           </div>
         );
