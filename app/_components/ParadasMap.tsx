@@ -76,7 +76,7 @@ export default function ParadasMap({
       return L.divIcon({
         className: 'parada-numbered-marker',
         html: `<div style="
-          background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+          background: linear-gradient(135deg, #5a1520 0%, #7A1C1C 100%);
           color: white;
           border-radius: 50%;
           width: 32px;
@@ -154,7 +154,7 @@ export default function ParadasMap({
                         width: 22,
                         height: 22,
                         borderRadius: '50%',
-                        background: '#1e40af',
+                        background: '#7A1C1C',
                         color: 'white',
                         fontSize: 12,
                         fontWeight: 700,

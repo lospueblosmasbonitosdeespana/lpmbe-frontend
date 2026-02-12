@@ -328,7 +328,7 @@ export default async function MultiexperienciaPage({
                           display: "flex",
                           alignItems: "center",
                           gap: "8px",
-                          background: "rgba(30, 64, 175, 0.9)",
+                          background: "rgba(122, 28, 28, 0.9)",
                           backdropFilter: "blur(4px)",
                           borderRadius: "20px",
                           padding: "6px 14px 6px 6px",
@@ -345,7 +345,7 @@ export default async function MultiexperienciaPage({
                             height: "28px",
                             borderRadius: "50%",
                             background: "white",
-                            color: "#1e40af",
+                            color: "#7A1C1C",
                             fontSize: "14px",
                             fontWeight: 800,
                             flexShrink: 0,
@@ -373,12 +373,12 @@ export default async function MultiexperienciaPage({
                             width: "36px",
                             height: "36px",
                             borderRadius: "50%",
-                            background: "linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)",
+                            background: "linear-gradient(135deg, #5a1520 0%, #7A1C1C 100%)",
                             color: "white",
                             fontSize: "16px",
                             fontWeight: 800,
                             flexShrink: 0,
-                            boxShadow: "0 2px 6px rgba(59,130,246,0.3)",
+                            boxShadow: "0 2px 6px rgba(122,28,28,0.3)",
                           }}
                         >
                           {num}
@@ -387,7 +387,7 @@ export default async function MultiexperienciaPage({
                       {p.titulo ? (
                         <h3 style={{ fontSize: "20px", fontWeight: 600, margin: 0, lineHeight: 1.3 }}>
                           {p.foto && (
-                            <span style={{ color: "#1e40af", fontWeight: 700 }}>{num}. </span>
+                            <span style={{ color: "#7A1C1C", fontWeight: 700 }}>{num}. </span>
                           )}
                           {p.titulo}
                         </h3>
@@ -429,7 +429,7 @@ export default async function MultiexperienciaPage({
                             alignItems: "center",
                             gap: "4px",
                             fontSize: "13px",
-                            color: "#2563eb",
+                            color: "#7A1C1C",
                             textDecoration: "none",
                           }}
                         >
