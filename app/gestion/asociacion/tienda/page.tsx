@@ -62,6 +62,16 @@ export default async function TiendaAdminPage() {
             Gestionar cupones y descuentos
           </p>
         </Link>
+
+        <Link
+          href="/gestion/asociacion/tienda/envio"
+          className="block rounded-lg border border-green-200 bg-green-50 p-6 transition-shadow hover:shadow-lg"
+        >
+          <h2 className="text-xl font-semibold">Envio</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Configurar zonas, tarifas de envio por peso y umbral de envio gratuito (SendCloud)
+          </p>
+        </Link>
       </div>
     </main>
   );

@@ -11,6 +11,12 @@ export default function CarritoPage() {
   const router = useRouter();
   const { items, removeItem, setQuantity, clear, getItemCount } = useCartStore();
   const [shippingConfig, setShippingConfig] = useState<ShippingConfig | null>(null);
+  const [shippingEstimate, setShippingEstimate] = useState<{
+    cost: number;
+    isFree: boolean;
+    zoneName: string | null;
+    totalWeight: number;
+  } | null>(null);
 
   // ✅ Calcular subtotal usando finalPrice si existe (precio efectivo)
   const subtotal = items.reduce((acc, item) => {
@@ -20,19 +26,52 @@ export default function CarritoPage() {
 
   const itemCount = getItemCount();
 
-  // Coste de envío (misma lógica que backend)
-  const shippingCost = shippingConfig
-    ? subtotal >= shippingConfig.freeOver
-      ? 0
-      : shippingConfig.flatRate
-    : null;
+  // Coste de envío: estimación dinámica o fallback a config estática
+  const shippingCost = shippingEstimate
+    ? shippingEstimate.cost
+    : shippingConfig
+      ? subtotal >= shippingConfig.freeOver
+        ? 0
+        : shippingConfig.flatRate
+      : null;
   const total = shippingCost !== null ? subtotal + shippingCost : subtotal;
 
+  // Cargar config de envío
   useEffect(() => {
     getShippingConfig()
       .then(setShippingConfig)
       .catch(() => setShippingConfig(null));
   }, []);
+
+  // Calcular envío dinámico (con CP peninsular por defecto para estimación)
+  useEffect(() => {
+    if (items.length === 0) {
+      setShippingEstimate(null);
+      return;
+    }
+    const calculate = async () => {
+      try {
+        const res = await fetch('/api/shipping/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: items.map((i) => ({
+              productId: i.product.id,
+              cantidad: i.quantity,
+            })),
+            postalCode: '28001', // CP peninsular por defecto para estimación
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setShippingEstimate(data);
+        }
+      } catch {
+        // Fallback silencioso a config estática
+      }
+    };
+    calculate();
+  }, [items]);
 
   if (items.length === 0) {
     return (
@@ -188,17 +227,22 @@ export default function CarritoPage() {
                 <span>{formatEUR(subtotal)} €</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Envío</span>
+                <span>Envio {!shippingEstimate?.isFree && shippingEstimate ? '(estimado)' : ''}</span>
                 <span>
                   {shippingCost === null ? (
                     <span className="text-gray-500">Calculando...</span>
                   ) : shippingCost === 0 ? (
                     <span className="text-green-600 font-medium">Gratis</span>
                   ) : (
-                    formatEUR(shippingCost) + ' €'
+                    formatEUR(shippingCost) + ' \u20AC'
                   )}
                 </span>
               </div>
+              {shippingEstimate && !shippingEstimate.isFree && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Se calculara el coste exacto al elegir direccion de envio
+                </p>
+              )}
             </div>
 
             {/* ✅ Mostrar ahorro si hay descuentos */}

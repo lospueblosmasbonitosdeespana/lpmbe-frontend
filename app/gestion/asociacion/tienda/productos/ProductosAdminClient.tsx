@@ -23,6 +23,10 @@ type ProductForm = {
   imagenUrl: string;
   discountPercent: string; // 0-100
   discountLabel: string;
+  weight: string;
+  width: string;
+  height: string;
+  length: string;
 };
 
 const emptyForm: ProductForm = {
@@ -38,6 +42,10 @@ const emptyForm: ProductForm = {
   imagenUrl: "",
   discountPercent: "",
   discountLabel: "",
+  weight: "",
+  width: "",
+  height: "",
+  length: "",
 };
 
 export default function ProductosAdminClient() {
@@ -92,6 +100,10 @@ export default function ProductosAdminClient() {
       imagenUrl: producto.imagenUrl ?? "",
       discountPercent: producto.discountPercent?.toString() ?? "",
       discountLabel: producto.discountLabel ?? "",
+      weight: producto.weight?.toString() ?? "",
+      width: producto.width?.toString() ?? "",
+      height: producto.height?.toString() ?? "",
+      length: producto.length?.toString() ?? "",
     });
     setError(null);
     setSuccess(null);
@@ -191,6 +203,12 @@ export default function ProductosAdminClient() {
       discountLabel = `Descuento ${discountPercent}%`;
     }
 
+    // Peso y dimensiones (logística)
+    const weight = form.weight.trim() ? toNumber(form.weight) : null;
+    const width = form.width.trim() ? toNumber(form.width) : null;
+    const height = form.height.trim() ? toNumber(form.height) : null;
+    const length = form.length.trim() ? toNumber(form.length) : null;
+
     const payload: Partial<Product> = {
       nombre: form.nombre.trim(),
       slug: form.slug.trim() || undefined,
@@ -204,6 +222,10 @@ export default function ProductosAdminClient() {
       imagenUrl: form.imagenUrl.trim() || null,
       discountPercent,
       discountLabel,
+      weight,
+      width,
+      height,
+      length,
     };
 
     console.log("[ProductosAdmin] Payload a enviar:", payload);
@@ -487,6 +509,75 @@ export default function ProductosAdminClient() {
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* ── Peso y dimensiones (logística) ───────────────── */}
+            <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-4">
+              <h3 className="mb-3 text-sm font-semibold text-gray-700">
+                Peso y dimensiones (logistica)
+              </h3>
+              <div className="grid gap-4 sm:grid-cols-4">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Peso (kg)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.001"
+                    min="0"
+                    value={form.weight}
+                    onChange={(e) => setForm({ ...form, weight: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    placeholder="0.350"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Ancho (cm)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={form.width}
+                    onChange={(e) => setForm({ ...form, width: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    placeholder="30"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Alto (cm)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={form.height}
+                    onChange={(e) => setForm({ ...form, height: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    placeholder="20"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Largo (cm)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={form.length}
+                    onChange={(e) => setForm({ ...form, length: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    placeholder="2"
+                  />
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-gray-500">
+                Si no defines dimensiones, se usaran 30x20x2 cm por defecto para la API de envio.
+                Si no defines peso, se estimaran 0.5 kg por unidad.
+              </p>
             </div>
 
             <div className="flex gap-4">

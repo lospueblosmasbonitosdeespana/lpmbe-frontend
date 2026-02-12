@@ -146,15 +146,26 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
           )}
         </div>
         <div className="flex justify-between text-sm">
-          <span>Envío</span>
+          <span>
+            Envio
+            {checkoutData.shipping?.zone && (
+              <span className="ml-1 text-xs text-gray-400">({checkoutData.shipping.zone})</span>
+            )}
+          </span>
           <span>
             {shippingCost === 0 ? (
               <span className="text-green-600 font-medium">Gratis</span>
             ) : (
-              formatEUR(shippingCost) + ' €'
+              formatEUR(shippingCost) + ' \u20AC'
             )}
           </span>
         </div>
+        {checkoutData.shipping && checkoutData.shipping.totalWeight > 0 && (
+          <div className="flex justify-between text-xs text-gray-400">
+            <span>Peso total</span>
+            <span>{checkoutData.shipping.totalWeight.toFixed(2)} kg</span>
+          </div>
+        )}
       </div>
 
       {/* Descuentos: SOLO mostrar si hay descuentos reales */}

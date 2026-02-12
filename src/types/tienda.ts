@@ -37,6 +37,11 @@ export type Product = {
   } | null;
   discountPercent?: number | null; // Descuento propio del producto (0-100)
   discountLabel?: string | null; // Etiqueta del descuento propio
+  // Peso y dimensiones (logística)
+  weight?: number | null;
+  width?: number | null;
+  height?: number | null;
+  length?: number | null;
 };
 
 export type CartItem = {
@@ -156,6 +161,14 @@ export type CheckoutResponse = {
   originalTotal: number | string;
   finalTotal: number | string;
   shippingCost?: number | string;
+  // Logística dinámica
+  shipping?: {
+    cost: number;
+    zone: string | null;
+    totalWeight: number;
+    isFree: boolean;
+    sendcloudMethodId: number | null;
+  };
   // ✅ NUEVO: items con precios calculados por el backend
   items: CheckoutItemDetail[];
   // ✅ CRÍTICO: discounts SIEMPRE existe (normalizado en frontend si viene undefined/null)
