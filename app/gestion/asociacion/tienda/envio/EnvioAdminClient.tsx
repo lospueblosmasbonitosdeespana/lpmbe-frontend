@@ -261,7 +261,7 @@ export default function EnvioAdminClient() {
                 className="w-full rounded-lg border px-3 py-2"
               />
               <p className="mt-1 text-xs text-gray-500">
-                Si el carrito supera este importe, el envio es gratuito
+                Solo aplica en Península, Baleares, Canarias y Portugal. En Europa y Resto del mundo no hay envio gratis.
               </p>
             </div>
 
@@ -701,11 +701,10 @@ export default function EnvioAdminClient() {
             Al hacer checkout, se suma el peso de todos los productos del carrito + la tara del embalaje.
           </li>
           <li>
-            Si el importe total del carrito &ge; el umbral de envio gratis, el envio es 0 EUR 
-            y se usa el metodo de envio gratis de SendCloud.
+            <strong>Envio gratis solo en Península, Baleares, Canarias y Portugal:</strong> si el carrito supera el umbral, el envio es 0 EUR y se usa el metodo de envio gratis de SendCloud. En Europa y Resto del mundo no hay oferta de envio gratis; siempre se aplica la tarifa por peso.
           </li>
           <li>
-            Si no, se busca la tarifa de la zona correspondiente cuyo rango de peso incluya el peso total.
+            En el resto de casos se busca la tarifa de la zona correspondiente cuyo rango de peso incluya el peso total.
           </li>
           <li>
             Si un producto no tiene peso definido, se estiman 0.5 kg por unidad. Sin dimensiones se usan 30x20x2 cm.
