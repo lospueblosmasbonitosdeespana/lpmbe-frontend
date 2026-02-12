@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import R2ImageUploader from "@/app/components/R2ImageUploader";
+import MapLocationPicker, { type MapMarker } from "@/app/components/MapLocationPicker";
 
 type Multiexperiencia = {
   id: number;
@@ -672,6 +673,66 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                     )}
                   </div>
 
+                  {/* Mapa de paradas */}
+                  <div className="mt-3">
+                    <MapLocationPicker
+                      center={
+                        pueblo?.lat && pueblo?.lng
+                          ? [pueblo.lat, pueblo.lng]
+                          : [40.4168, -3.7038]
+                      }
+                      zoom={14}
+                      existingMarkers={paradas
+                        .filter((p) => p.lat != null && p.lng != null)
+                        .map((p, i) => ({
+                          lat: p.lat!,
+                          lng: p.lng!,
+                          label: `#${i + 1} ${p.titulo} (${p.kind})`,
+                          color: areCoordsPueblo(p.lat, p.lng) ? 'grey' : p.kind === 'LEGACY' ? 'blue' : 'green',
+                          number: i + 1,
+                        }))}
+                      selectedPosition={
+                        showCreateParada && createParadaLat && createParadaLng
+                          ? { lat: parseFloat(createParadaLat), lng: parseFloat(createParadaLng) }
+                          : null
+                      }
+                      onLocationSelect={
+                        showCreateParada
+                          ? (lat, lng, name) => {
+                              if (lat === 0 && lng === 0) {
+                                setCreateParadaLat('');
+                                setCreateParadaLng('');
+                                return;
+                              }
+                              setCreateParadaLat(String(Math.round(lat * 1000000) / 1000000));
+                              setCreateParadaLng(String(Math.round(lng * 1000000) / 1000000));
+                              if (name && !createParadaTitulo.trim()) {
+                                setCreateParadaTitulo(name.split(',')[0]);
+                              }
+                            }
+                          : undefined
+                      }
+                      height="350px"
+                      searchPlaceholder="Buscar lugar para nueva parada..."
+                    />
+                    <div className="mt-1 flex flex-wrap gap-3 text-xs text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-600" /> Legacy
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="inline-block h-2.5 w-2.5 rounded-full bg-green-600" /> Custom
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="inline-block h-2.5 w-2.5 rounded-full bg-gray-400" /> Coords del pueblo
+                      </div>
+                      {showCreateParada && (
+                        <div className="flex items-center gap-1">
+                          <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-600" /> Nueva parada
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   {/* Formulario crear/editar parada */}
                   {showCreateParada && (
                     <div className="mt-4 rounded border border-gray-300 bg-white p-4">
@@ -718,7 +779,6 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                                 if (val) {
                                   const id = parseInt(val, 10);
                                   setSelectedLegacyId(id);
-                                  // Precargar datos de la parada seleccionada
                                   const parada = paradas.find(p => p.legacyLugarId === id);
                                   if (parada) {
                                     setCreateParadaTitulo(parada.titulo);
@@ -783,7 +843,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                               value={createParadaLat}
                               onChange={(e) => setCreateParadaLat(e.target.value)}
                               className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
-                              placeholder="Opcional"
+                              placeholder="Haz clic en el mapa"
                             />
                           </div>
                           <div>
@@ -793,20 +853,14 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                               value={createParadaLng}
                               onChange={(e) => setCreateParadaLng(e.target.value)}
                               className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
-                              placeholder="Opcional"
+                              placeholder="Haz clic en el mapa"
                             />
                           </div>
                         </div>
                         
                         <p className="text-xs text-gray-500">
-                          * Si proporcionas coordenadas, ambas (lat y lng) son obligatorias
+                          Usa el buscador del mapa o haz clic para situar la parada. Si proporcionas coordenadas, ambas son obligatorias.
                         </p>
-                        
-                        {/* Verificación visual de estado */}
-                        <div className="rounded bg-yellow-50 border border-yellow-200 p-2 text-xs font-mono">
-                          <div>Modo actual: <strong>{paradaMode === 'nueva' ? 'CUSTOM' : 'LEGACY'}</strong></div>
-                          <div>selectedLegacyId: <strong>{selectedLegacyId ?? 'null'}</strong></div>
-                        </div>
                         
                         <div className="flex gap-2">
                           <button

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import PhotoManager from "@/app/components/PhotoManager";
 import RotatedImage from "@/app/components/RotatedImage";
+import MapLocationPicker, { type MapMarker } from "@/app/components/MapLocationPicker";
 
 type PoiRow = {
   id: number;
@@ -60,6 +61,36 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     return copy;
   }, [rows]);
 
+  // Marcadores existentes para el mapa
+  const existingMarkers: MapMarker[] = useMemo(() => {
+    return sorted
+      .filter((r) => r.lat != null && r.lng != null)
+      .map((r, i) => ({
+        lat: r.lat!,
+        lng: r.lng!,
+        label: `#${i + 1} ${r.nombre}`,
+        color: editId === r.id ? 'gold' : isSameCoordsAsPueblo(r.lat, r.lng, puebloLat, puebloLng) ? 'grey' : 'blue',
+        number: i + 1,
+      }));
+  }, [sorted, editId, puebloLat, puebloLng]);
+
+  // Posición seleccionada en el mapa (para crear/editar)
+  const selectedMapPosition = useMemo(() => {
+    if (showCreateForm && typeof createLat === "number" && typeof createLng === "number") {
+      return { lat: createLat, lng: createLng };
+    }
+    if (editId != null && typeof editLat === "number" && typeof editLng === "number") {
+      return { lat: editLat, lng: editLng };
+    }
+    return null;
+  }, [showCreateForm, createLat, createLng, editId, editLat, editLng]);
+
+  // Centro del mapa
+  const mapCenter: [number, number] = useMemo(() => {
+    if (puebloLat != null && puebloLng != null) return [puebloLat, puebloLng];
+    return [40.4168, -3.7038]; // Madrid
+  }, [puebloLat, puebloLng]);
+
   async function fetchPuebloId() {
     const r = await fetch(`/api/pueblos/${encodeURIComponent(slug)}`, { cache: "no-store" });
     if (r.status === 401) {
@@ -70,7 +101,6 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     const data = await r.json();
     if (!data?.id) throw new Error("Pueblo sin id");
     
-    // Guardar coordenadas del pueblo para comparación
     setPuebloLat(data.lat ?? null);
     setPuebloLng(data.lng ?? null);
     
@@ -109,12 +139,40 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
+  // Callback del mapa
+  function handleMapLocationSelect(lat: number, lng: number, name?: string) {
+    // Si lat=0, lng=0 → quitar marcador
+    if (lat === 0 && lng === 0) {
+      if (showCreateForm) {
+        setCreateLat("");
+        setCreateLng("");
+      } else if (editId != null) {
+        setEditLat("");
+        setEditLng("");
+      }
+      return;
+    }
+
+    if (showCreateForm) {
+      setCreateLat(Math.round(lat * 1000000) / 1000000);
+      setCreateLng(Math.round(lng * 1000000) / 1000000);
+      // Si viene nombre del buscador y no hay nombre puesto, sugerirlo
+      if (name && !createNombre.trim()) {
+        setCreateNombre(name.split(',')[0]);
+      }
+    } else if (editId != null) {
+      setEditLat(Math.round(lat * 1000000) / 1000000);
+      setEditLng(Math.round(lng * 1000000) / 1000000);
+    }
+  }
+
   function startEdit(row: PoiRow) {
     setEditId(row.id);
     setEditNombre(row.nombre ?? "");
     setEditDescripcion(row.descripcion ?? "");
     setEditLat(row.lat ?? "");
     setEditLng(row.lng ?? "");
+    setShowCreateForm(false);
   }
 
   function cancelEdit() {
@@ -190,17 +248,11 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
 
     setErr(null);
 
-    const latStr = String(createLat ?? "").trim();
-    const lngStr = String(createLng ?? "").trim();
-
-    const latVal = latStr === "" ? null : Number(latStr.replace(",", "."));
-    const lngVal = lngStr === "" ? null : Number(lngStr.replace(",", "."));
-
     const payload = {
       nombre: createNombre.trim(),
       descripcion: createDescripcion.trim() || null,
-      lat: latVal ?? null,
-      lng: lngVal ?? null,
+      lat: typeof createLat === "number" ? createLat : null,
+      lng: typeof createLng === "number" ? createLng : null,
     };
 
     const r = await fetch(`/api/admin/pueblos/${puebloId}/pois`, {
@@ -221,7 +273,6 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
       return;
     }
 
-    // Limpiar formulario
     setCreateNombre("");
     setCreateDescripcion("");
     setCreateLat("");
@@ -266,527 +317,340 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     await swapOrden(sorted[index], sorted[index + 1]);
   }
 
-  if (loading) return <div style={{ padding: 24 }}>Cargando POIs...</div>;
-  if (err) return <div style={{ padding: 24, color: "#d32f2f" }}>Error: {err}</div>;
+  if (loading) return <div className="p-6">Cargando POIs...</div>;
+  if (err) return <div className="p-6 text-red-600">Error: {err}</div>;
 
   return (
-    <main style={{ padding: 24, maxWidth: 1200, margin: "0 auto" }}>
-      <h1 style={{ fontSize: 24, fontWeight: 600 }}>Gestión de POIs</h1>
-      <p style={{ marginTop: 8, fontSize: 14, color: "#666" }}>
+    <main className="mx-auto max-w-5xl p-6">
+      <h1 className="text-2xl font-semibold">Gestión de POIs</h1>
+      <p className="mt-2 text-sm text-gray-600">
         Pueblo: <strong>{slug}</strong>
       </p>
 
+      {/* MAPA */}
+      <div className="mt-6">
+        <div className="mb-2 flex items-center gap-2">
+          <h2 className="text-lg font-semibold">Mapa</h2>
+          <span className="text-xs text-gray-500">
+            {showCreateForm
+              ? "Haz clic en el mapa o busca un lugar para situar el nuevo POI"
+              : editId != null
+                ? "Haz clic en el mapa para mover el POI seleccionado"
+                : "Crea o edita un POI para situar su ubicación en el mapa"}
+          </span>
+        </div>
+        <MapLocationPicker
+          center={mapCenter}
+          zoom={15}
+          existingMarkers={existingMarkers}
+          selectedPosition={selectedMapPosition}
+          onLocationSelect={(showCreateForm || editId != null) ? handleMapLocationSelect : undefined}
+          height="420px"
+          searchPlaceholder="Buscar lugar (ej: Castillo de Ainsa)..."
+        />
+
+        {/* Leyenda */}
+        <div className="mt-2 flex flex-wrap gap-4 text-xs text-gray-600">
+          <div className="flex items-center gap-1">
+            <span className="inline-block h-3 w-3 rounded-full bg-blue-600" /> POI con coordenadas propias
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="inline-block h-3 w-3 rounded-full bg-gray-400" /> POI con coordenadas del pueblo
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="inline-block h-3 w-3 rounded-full bg-yellow-500" /> POI en edición
+          </div>
+          {selectedMapPosition && (
+            <div className="flex items-center gap-1">
+              <span className="inline-block h-3 w-3 rounded-full bg-red-600" /> Posición seleccionada (arrastrable)
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Botón añadir */}
-      <div style={{ marginTop: 24 }}>
+      <div className="mt-6">
         <button
           type="button"
-          onClick={() => setShowCreateForm(!showCreateForm)}
-          style={{
-            padding: "10px 16px",
-            fontSize: 14,
-            backgroundColor: showCreateForm ? "#ccc" : "#1976d2",
-            color: showCreateForm ? "#000" : "#fff",
-            border: "none",
-            borderRadius: 6,
-            cursor: "pointer",
+          onClick={() => {
+            setShowCreateForm(!showCreateForm);
+            if (!showCreateForm) cancelEdit();
           }}
+          className={`rounded-lg px-4 py-2.5 text-sm font-medium ${
+            showCreateForm
+              ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
+              : "bg-blue-600 text-white hover:bg-blue-700"
+          }`}
         >
-          {showCreateForm ? "Cancelar" : "Añadir POI"}
+          {showCreateForm ? "Cancelar" : "+ Añadir POI"}
         </button>
       </div>
 
       {/* Formulario de creación */}
       {showCreateForm && (
-        <div
-          style={{
-            marginTop: 16,
-            padding: 16,
-            border: "1px solid #ddd",
-            borderRadius: 6,
-            backgroundColor: "#f9f9f9",
-          }}
-        >
-          <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Nuevo POI</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-5 space-y-4">
+          <h3 className="text-base font-semibold">Nuevo POI</h3>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Nombre *</label>
+            <input
+              type="text"
+              value={createNombre}
+              onChange={(e) => setCreateNombre(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              placeholder="Ej: Castillo de Ainsa"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label style={{ display: "block", fontSize: 14, marginBottom: 4 }}>
-                Nombre *
-              </label>
+              <label className="mb-1 block text-sm font-medium">Latitud</label>
               <input
-                type="text"
-                value={createNombre}
-                onChange={(e) => setCreateNombre(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: 8,
-                  fontSize: 14,
-                  border: "1px solid #ccc",
-                  borderRadius: 4,
-                }}
+                type="number"
+                step="any"
+                value={createLat}
+                onChange={(e) => setCreateLat(e.target.value ? parseFloat(e.target.value) : "")}
+                placeholder="Selecciona en el mapa"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
               />
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              <div>
-                <label style={{ display: "block", fontSize: 14, marginBottom: 4 }}>
-                  Latitud
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  value={createLat}
-                  onChange={(e) => setCreateLat(e.target.value ? parseFloat(e.target.value) : "")}
-                  placeholder="Opcional"
-                  style={{
-                    width: "100%",
-                    padding: 8,
-                    fontSize: 14,
-                    border: "1px solid #ccc",
-                    borderRadius: 4,
-                  }}
-                />
-              </div>
-              <div>
-                <label style={{ display: "block", fontSize: 14, marginBottom: 4 }}>
-                  Longitud
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  value={createLng}
-                  onChange={(e) => setCreateLng(e.target.value ? parseFloat(e.target.value) : "")}
-                  placeholder="Opcional"
-                  style={{
-                    width: "100%",
-                    padding: 8,
-                    fontSize: 14,
-                    border: "1px solid #ccc",
-                    borderRadius: 4,
-                  }}
-                />
-              </div>
-            </div>
-            
-            {/* Aviso: coordenadas vacías → usará las del pueblo */}
-            {(String(createLat ?? "").trim() === "" && String(createLng ?? "").trim() === "") && (
-              <div
-                style={{
-                  marginTop: 8,
-                  padding: "8px 10px",
-                  backgroundColor: "#ffecec",
-                  color: "#9b1c1c",
-                  borderRadius: 6,
-                  fontSize: 13,
-                  border: "1px solid #f5c2c2",
-                }}
-              >
-                ℹ️ Si dejas la latitud y longitud en blanco, se usarán las coordenadas del pueblo.
-              </div>
-            )}
-            
             <div>
-              <label style={{ display: "block", fontSize: 14, marginBottom: 4 }}>
-                Descripción
-              </label>
-              <textarea
-                value={createDescripcion}
-                onChange={(e) => setCreateDescripcion(e.target.value)}
-                rows={4}
-                style={{
-                  width: "100%",
-                  padding: 8,
-                  fontSize: 14,
-                  border: "1px solid #ccc",
-                  borderRadius: 4,
-                  fontFamily: "inherit",
-                }}
+              <label className="mb-1 block text-sm font-medium">Longitud</label>
+              <input
+                type="number"
+                step="any"
+                value={createLng}
+                onChange={(e) => setCreateLng(e.target.value ? parseFloat(e.target.value) : "")}
+                placeholder="Selecciona en el mapa"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
               />
             </div>
-            
-            {/* Info sobre fotos */}
-            <div
-              style={{
-                marginTop: 20,
-                padding: 12,
-                backgroundColor: "#f0f9ff",
-                border: "1px solid #bae6fd",
-                borderRadius: 6,
-                fontSize: 13,
-                color: "#0c4a6e",
-              }}
+          </div>
+          
+          {(String(createLat ?? "").trim() === "" && String(createLng ?? "").trim() === "") && (
+            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+              Haz clic en el mapa o usa el buscador para situar el POI. Si dejas las coordenadas vacías, se usarán las del pueblo.
+            </div>
+          )}
+          
+          <div>
+            <label className="mb-1 block text-sm font-medium">Descripción</label>
+            <textarea
+              value={createDescripcion}
+              onChange={(e) => setCreateDescripcion(e.target.value)}
+              rows={3}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            />
+          </div>
+          
+          <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-xs text-blue-800">
+            Después de crear el POI podrás subir fotos desde el editor.
+          </div>
+          
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={createPoi}
+              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
             >
-              💡 Después de crear el POI podrás subir fotos desde el editor.
-            </div>
-            
-            <div style={{ display: "flex", gap: 8 }}>
-              <button
-                type="button"
-                onClick={createPoi}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  backgroundColor: "#4caf50",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: 4,
-                  cursor: "pointer",
-                }}
-              >
-                Crear
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowCreateForm(false);
-                  setCreateNombre("");
-                  setCreateDescripcion("");
-                  setCreateLat("");
-                  setCreateLng("");
-                }}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  backgroundColor: "#ccc",
-                  color: "#000",
-                  border: "none",
-                  borderRadius: 4,
-                  cursor: "pointer",
-                }}
-              >
-                Cancelar
-              </button>
-            </div>
+              Crear POI
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowCreateForm(false);
+                setCreateNombre("");
+                setCreateDescripcion("");
+                setCreateLat("");
+                setCreateLng("");
+              }}
+              className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-300"
+            >
+              Cancelar
+            </button>
           </div>
         </div>
       )}
 
       {/* Lista de POIs */}
-      <div style={{ marginTop: 24 }}>
+      <div className="mt-6 space-y-4">
         {sorted.length === 0 ? (
-          <p style={{ fontSize: 14, color: "#666" }}>No hay POIs aún.</p>
+          <p className="text-sm text-gray-500">No hay POIs aún.</p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {sorted.map((row, idx) => {
-              const isEditing = editId === row.id;
+          sorted.map((row, idx) => {
+            const isEditing = editId === row.id;
 
-              return (
-                <div
-                  key={row.id}
-                  style={{
-                    padding: 16,
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    backgroundColor: isEditing ? "#fff8e1" : "#fff",
-                  }}
-                >
-                  {isEditing ? (
-                    // Modo edición
-                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                      <div>
-                        <label style={{ display: "block", fontSize: 14, marginBottom: 4 }}>
-                          Nombre
-                        </label>
-                        <input
-                          type="text"
-                          value={editNombre}
-                          onChange={(e) => setEditNombre(e.target.value)}
-                          style={{
-                            width: "100%",
-                            padding: 8,
-                            fontSize: 14,
-                            border: "1px solid #ccc",
-                            borderRadius: 4,
-                          }}
-                        />
-                      </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                        <div>
-                          <label style={{ display: "block", fontSize: 14, marginBottom: 4 }}>
-                            Latitud
-                          </label>
-                          <input
-                            type="number"
-                            step="any"
-                            value={editLat}
-                            onChange={(e) =>
-                              setEditLat(e.target.value ? parseFloat(e.target.value) : "")
-                            }
-                            style={{
-                              width: "100%",
-                              padding: 8,
-                              fontSize: 14,
-                              border: "1px solid #ccc",
-                              borderRadius: 4,
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <label style={{ display: "block", fontSize: 14, marginBottom: 4 }}>
-                            Longitud
-                          </label>
-                          <input
-                            type="number"
-                            step="any"
-                            value={editLng}
-                            onChange={(e) =>
-                              setEditLng(e.target.value ? parseFloat(e.target.value) : "")
-                            }
-                            style={{
-                              width: "100%",
-                              padding: 8,
-                              fontSize: 14,
-                              border: "1px solid #ccc",
-                              borderRadius: 4,
-                            }}
-                          />
-                        </div>
-                      </div>
-                      
-                      {/* Aviso: Este POI usa coordenadas del pueblo */}
-                      {(() => {
-                        const editLatNum = typeof editLat === "number" ? editLat : null;
-                        const editLngNum = typeof editLng === "number" ? editLng : null;
-                        return puebloLat != null && puebloLng != null && isSameCoordsAsPueblo(editLatNum, editLngNum, puebloLat, puebloLng) && (
-                          <div
-                            style={{
-                              marginTop: 8,
-                              padding: "8px 10px",
-                              backgroundColor: "#ffecec",
-                              color: "#9b1c1c",
-                              borderRadius: 6,
-                              fontSize: 13,
-                              border: "1px solid #f5c2c2",
-                            }}
-                          >
-                            ℹ️ Este POI está usando las coordenadas del pueblo.
-                          </div>
-                        );
-                      })()}
-                      
-                      <div>
-                        <label style={{ display: "block", fontSize: 14, marginBottom: 4 }}>
-                          Descripción
-                        </label>
-                        <textarea
-                          value={editDescripcion}
-                          onChange={(e) => setEditDescripcion(e.target.value)}
-                          rows={4}
-                          style={{
-                            width: "100%",
-                            padding: 8,
-                            fontSize: 14,
-                            border: "1px solid #ccc",
-                            borderRadius: 4,
-                            fontFamily: "inherit",
-                          }}
-                        />
-                      </div>
-                      
-                      {/* Fotos */}
-                      {editId ? (
-                        <div style={{ marginTop: 20 }}>
-                          <h4 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>
-                            Fotos
-                          </h4>
-                          <p style={{ fontSize: 13, color: "#666", marginBottom: 12 }}>
-                            La primera foto (orden #1) es la principal.
-                          </p>
-                          <PhotoManager entity="poi" entityId={editId} />
-                        </div>
-                      ) : (
-                        <div
-                          style={{
-                            marginTop: 20,
-                            padding: 12,
-                            backgroundColor: "#f9fafb",
-                            border: "1px solid #e5e7eb",
-                            borderRadius: 6,
-                            fontSize: 14,
-                            color: "#6b7280",
-                          }}
-                        >
-                          Guarda el POI para poder subir fotos.
-                        </div>
-                      )}
-                      
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button
-                          type="button"
-                          onClick={saveEdit}
-                          style={{
-                            padding: "8px 16px",
-                            fontSize: 14,
-                            backgroundColor: "#4caf50",
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                          }}
-                        >
-                          Guardar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={cancelEdit}
-                          style={{
-                            padding: "8px 16px",
-                            fontSize: 14,
-                            backgroundColor: "#ccc",
-                            color: "#000",
-                            border: "none",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                          }}
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    // Modo vista
+            return (
+              <div
+                key={row.id}
+                className={`rounded-lg border p-4 ${
+                  isEditing ? "border-yellow-300 bg-yellow-50" : "border-gray-200 bg-white"
+                }`}
+              >
+                {isEditing ? (
+                  <div className="space-y-4">
                     <div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                            <span
-                              style={{
-                                display: "inline-block",
-                                minWidth: 28,
-                                padding: "2px 8px",
-                                fontSize: 11,
-                                fontWeight: 600,
-                                color: "#666",
-                                backgroundColor: "#f0f0f0",
-                                borderRadius: 4,
-                                textAlign: "center",
-                              }}
-                            >
-                              #{idx + 1}
-                            </span>
-                            <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>
-                              {row.nombre}
-                            </h3>
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                            <div style={{ fontSize: 13, color: "#666" }}>
-                              Coordenadas: {row.lat ?? "—"}, {row.lng ?? "—"}
-                            </div>
-                            {puebloLat != null && puebloLng != null && isSameCoordsAsPueblo(row.lat, row.lng, puebloLat, puebloLng) && (
-                              <span
-                                style={{
-                                  display: "inline-block",
-                                  padding: "2px 8px",
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: "#9b1c1c",
-                                  backgroundColor: "#ffecec",
-                                  border: "1px solid #f5c2c2",
-                                  borderRadius: 999,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                Coordenadas del pueblo
-                              </span>
-                            )}
-                          </div>
-                          {row.descripcion ? (
-                            <div style={{ fontSize: 13, color: "#555", marginTop: 8 }}>
-                              <strong style={{ fontSize: 12, color: "#999" }}>Descripción:</strong>
-                              <p style={{ marginTop: 4, lineHeight: 1.4 }}>
-                                {row.descripcion.length > 120
-                                  ? `${row.descripcion.slice(0, 120).trim()}...`
-                                  : row.descripcion}
-                              </p>
-                            </div>
-                          ) : (
-                            <div style={{ fontSize: 13, color: "#999", marginTop: 8, fontStyle: "italic" }}>
-                              Sin descripción
-                            </div>
-                          )}
-                          {row.foto && (
-                            <RotatedImage
-                              src={row.foto}
-                              alt={row.nombre}
-                              rotation={row.rotation}
-                              height={150}
-                              width={200}
-                              loading="eager"
-                            />
-                          )}
-                        </div>
-                        <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                          <button
-                            type="button"
-                            onClick={() => moveUp(idx)}
-                            disabled={idx === 0}
-                            style={{
-                              padding: "6px 10px",
-                              fontSize: 14,
-                              backgroundColor: idx === 0 ? "#eee" : "#fff",
-                              border: "1px solid #ddd",
-                              borderRadius: 4,
-                              cursor: idx === 0 ? "not-allowed" : "pointer",
-                            }}
-                          >
-                            ↑
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => moveDown(idx)}
-                            disabled={idx === sorted.length - 1}
-                            style={{
-                              padding: "6px 10px",
-                              fontSize: 14,
-                              backgroundColor: idx === sorted.length - 1 ? "#eee" : "#fff",
-                              border: "1px solid #ddd",
-                              borderRadius: 4,
-                              cursor: idx === sorted.length - 1 ? "not-allowed" : "pointer",
-                            }}
-                          >
-                            ↓
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => startEdit(row)}
-                            style={{
-                              padding: "6px 12px",
-                              fontSize: 14,
-                              backgroundColor: "#1976d2",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: 4,
-                              cursor: "pointer",
-                            }}
-                          >
-                            Editar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => deletePoi(row.id)}
-                            style={{
-                              padding: "6px 12px",
-                              fontSize: 14,
-                              backgroundColor: "#d32f2f",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: 4,
-                              cursor: "pointer",
-                            }}
-                          >
-                            Borrar
-                          </button>
-                        </div>
+                      <label className="mb-1 block text-sm font-medium">Nombre</label>
+                      <input
+                        type="text"
+                        value={editNombre}
+                        onChange={(e) => setEditNombre(e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">Latitud</label>
+                        <input
+                          type="number"
+                          step="any"
+                          value={editLat}
+                          onChange={(e) =>
+                            setEditLat(e.target.value ? parseFloat(e.target.value) : "")
+                          }
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                          placeholder="Haz clic en el mapa"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">Longitud</label>
+                        <input
+                          type="number"
+                          step="any"
+                          value={editLng}
+                          onChange={(e) =>
+                            setEditLng(e.target.value ? parseFloat(e.target.value) : "")
+                          }
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                          placeholder="Haz clic en el mapa"
+                        />
                       </div>
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                    
+                    {(() => {
+                      const editLatNum = typeof editLat === "number" ? editLat : null;
+                      const editLngNum = typeof editLng === "number" ? editLng : null;
+                      return puebloLat != null && puebloLng != null && isSameCoordsAsPueblo(editLatNum, editLngNum, puebloLat, puebloLng) && (
+                        <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-800">
+                          Este POI está usando las coordenadas del pueblo. Usa el mapa para ubicarlo correctamente.
+                        </div>
+                      );
+                    })()}
+                    
+                    <div>
+                      <label className="mb-1 block text-sm font-medium">Descripción</label>
+                      <textarea
+                        value={editDescripcion}
+                        onChange={(e) => setEditDescripcion(e.target.value)}
+                        rows={3}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      />
+                    </div>
+                    
+                    {editId && (
+                      <div className="mt-4">
+                        <h4 className="text-base font-semibold mb-2">Fotos</h4>
+                        <p className="text-xs text-gray-500 mb-3">
+                          La primera foto (orden #1) es la principal.
+                        </p>
+                        <PhotoManager entity="poi" entityId={editId} />
+                      </div>
+                    )}
+                    
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={saveEdit}
+                        className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                      >
+                        Guardar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEdit}
+                        className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-300"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="inline-block min-w-[28px] rounded bg-gray-100 px-2 py-0.5 text-center text-xs font-semibold text-gray-600">
+                            #{idx + 1}
+                          </span>
+                          <h3 className="text-base font-semibold">{row.nombre}</h3>
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs text-gray-500">
+                            Coordenadas: {row.lat?.toFixed(5) ?? "—"}, {row.lng?.toFixed(5) ?? "—"}
+                          </span>
+                          {puebloLat != null && puebloLng != null && isSameCoordsAsPueblo(row.lat, row.lng, puebloLat, puebloLng) && (
+                            <span className="rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-xs font-medium text-red-700">
+                              Coordenadas del pueblo
+                            </span>
+                          )}
+                        </div>
+                        {row.descripcion ? (
+                          <p className="text-sm text-gray-600 line-clamp-2">{row.descripcion}</p>
+                        ) : (
+                          <p className="text-xs text-gray-400 italic">Sin descripción</p>
+                        )}
+                        {row.foto && (
+                          <RotatedImage
+                            src={row.foto}
+                            alt={row.nombre}
+                            rotation={row.rotation}
+                            height={120}
+                            width={160}
+                            loading="eager"
+                          />
+                        )}
+                      </div>
+                      <div className="flex gap-1 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => moveUp(idx)}
+                          disabled={idx === 0}
+                          className="rounded border border-gray-200 bg-white px-2 py-1.5 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveDown(idx)}
+                          disabled={idx === sorted.length - 1}
+                          className="rounded border border-gray-200 bg-white px-2 py-1.5 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          ↓
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => startEdit(row)}
+                          className="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deletePoi(row.id)}
+                          className="rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
+                        >
+                          Borrar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
 
-      <div style={{ marginTop: 32, fontSize: 14 }}>
-        <a href={`/gestion/pueblos/${slug}`} style={{ color: "#1976d2", textDecoration: "none" }}>
+      <div className="mt-8">
+        <a href={`/gestion/pueblos/${slug}`} className="text-sm text-blue-600 hover:underline">
           ← Volver a gestión del pueblo
         </a>
       </div>
