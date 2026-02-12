@@ -86,6 +86,20 @@ export default function UsuarioDetallePage() {
   const [addingVisita, setAddingVisita] = useState(false);
   const [visitaError, setVisitaError] = useState<string | null>(null);
   const [updatingPuebloId, setUpdatingPuebloId] = useState<number | null>(null);
+  const [bulkAdding, setBulkAdding] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState<string | null>(null);
+
+  const PUEBLOS_GPS_LISTA: string[] = [
+    'Betancuria',
+    'Teguise',
+    'Zahara de la Sierra',
+    'Cudillero',
+    'Laguardia',
+    'Tazones',
+    'Llastres',
+    'Anento',
+    'Burgo de Osma',
+  ];
 
   const loadUser = useCallback(async () => {
     if (!id) return;
@@ -234,6 +248,38 @@ export default function UsuarioDetallePage() {
       setVisitaError('Error al eliminar');
     } finally {
       setUpdatingPuebloId(null);
+    }
+  };
+
+  const handleBulkAddVisitasGps = async () => {
+    if (!id) return;
+    setBulkAdding(true);
+    setBulkMessage(null);
+    setVisitaError(null);
+    try {
+      const res = await fetch(`/api/admin/datos/usuarios/${id}/visitas/bulk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          puebloNombres: PUEBLOS_GPS_LISTA,
+          origen: 'GPS',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        const msg = [
+          data.añadidos != null && `Añadidos: ${data.añadidos}`,
+          data.noEncontrados?.length ? `No encontrados: ${data.noEncontrados.join(', ')}` : null,
+        ].filter(Boolean).join('. ');
+        setBulkMessage(msg || 'Listo.');
+        await loadUser();
+      } else {
+        setVisitaError(data?.message ?? data?.error ?? 'Error al añadir visitas');
+      }
+    } catch (e) {
+      setVisitaError('Error al añadir visitas');
+    } finally {
+      setBulkAdding(false);
     }
   };
 
@@ -436,6 +482,24 @@ export default function UsuarioDetallePage() {
         <p className="mb-4 text-sm text-gray-600">
           Total: {user?.pueblosVisitados?.total ?? 0} · GPS: {user?.pueblosVisitados?.gps ?? 0} · Manual: {user?.pueblosVisitados?.manual ?? 0}
         </p>
+
+        {/* Añadir lista fija por GPS */}
+        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-blue-100 bg-blue-50/50 p-3">
+          <span className="text-sm text-gray-700">
+            Añadir como visitados por GPS: Betancuria, Teguise, Zahara de la Sierra, Cudillero, Laguardia, Tazones, Llastres, Anento, Burgo de Osma
+          </span>
+          <button
+            type="button"
+            onClick={handleBulkAddVisitasGps}
+            disabled={bulkAdding}
+            className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            {bulkAdding ? 'Añadiendo…' : 'Añadir todos (GPS)'}
+          </button>
+          {bulkMessage && (
+            <span className="text-sm text-green-700">{bulkMessage}</span>
+          )}
+        </div>
 
         {/* Añadir pueblo */}
         <div className="mb-6">
