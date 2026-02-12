@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PhotoManager from "@/app/components/PhotoManager";
 import RotatedImage from "@/app/components/RotatedImage";
 import MapLocationPicker, { type MapMarker } from "@/app/components/MapLocationPicker";
@@ -55,6 +55,8 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
   const [createLat, setCreateLat] = useState<number | "">("");
   const [createLng, setCreateLng] = useState<number | "">("");
 
+  const mapSectionRef = useRef<HTMLDivElement>(null);
+
   const sorted = useMemo(() => {
     const copy = [...rows];
     copy.sort((a, b) => (a.orden ?? 999999) - (b.orden ?? 999999));
@@ -90,6 +92,25 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     if (puebloLat != null && puebloLng != null) return [puebloLat, puebloLng];
     return [40.4168, -3.7038]; // Madrid
   }, [puebloLat, puebloLng]);
+
+  // flyTo dinámico (para editar POI desde lista o mapa)
+  const [flyToPos, setFlyToPos] = useState<[number, number] | null>(null);
+
+  // Click en marcador existente del mapa → empezar edición
+  const handleExistingMarkerClick = useCallback(
+    (index: number) => {
+      const poi = sorted[index];
+      if (!poi) return;
+      startEdit(poi);
+      // Scroll al formulario de edición (que está en la lista debajo)
+      setTimeout(() => {
+        const el = document.getElementById(`poi-card-${poi.id}`);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sorted],
+  );
 
   async function fetchPuebloId() {
     const r = await fetch(`/api/pueblos/${encodeURIComponent(slug)}`, { cache: "no-store" });
@@ -173,6 +194,14 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     setEditLat(row.lat ?? "");
     setEditLng(row.lng ?? "");
     setShowCreateForm(false);
+    // Fly al POI en el mapa si tiene coordenadas propias (no Madrid)
+    if (row.lat != null && row.lng != null) {
+      setFlyToPos([row.lat, row.lng]);
+    }
+    // Scroll al mapa
+    setTimeout(() => {
+      mapSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   }
 
   function cancelEdit() {
@@ -181,6 +210,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     setEditDescripcion("");
     setEditLat("");
     setEditLng("");
+    setFlyToPos(null);
   }
 
   async function saveEdit() {
@@ -328,25 +358,25 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
       </p>
 
       {/* MAPA */}
-      <div className="mt-6">
-        <div className="mb-2 flex items-center gap-2">
-          <h2 className="text-lg font-semibold">Mapa</h2>
-          <span className="text-xs text-gray-500">
-            {showCreateForm
-              ? "Haz clic en el mapa o busca un lugar para situar el nuevo POI"
-              : editId != null
-                ? "Haz clic en el mapa para mover el POI seleccionado"
-                : "Crea o edita un POI para situar su ubicación en el mapa"}
-          </span>
-        </div>
+      <div className="mt-6" ref={mapSectionRef}>
+        <h2 className="mb-2 text-lg font-semibold">Mapa de POIs</h2>
         <MapLocationPicker
           center={mapCenter}
           zoom={15}
           existingMarkers={existingMarkers}
           selectedPosition={selectedMapPosition}
           onLocationSelect={(showCreateForm || editId != null) ? handleMapLocationSelect : undefined}
+          onExistingMarkerClick={handleExistingMarkerClick}
           height="420px"
-          searchPlaceholder="Buscar lugar (ej: Castillo de Ainsa)..."
+          searchPlaceholder="Buscar lugar (ej: Catedral de Albarracín)..."
+          activeHint={
+            showCreateForm
+              ? "Creando POI: haz clic en el mapa o busca un lugar para ubicarlo. Las coordenadas se rellenarán automáticamente."
+              : editId != null
+                ? `Editando POI "${editNombre}": haz clic en el mapa o busca para cambiar su ubicación.`
+                : undefined
+          }
+          flyTo={flyToPos}
         />
 
         {/* Leyenda */}
@@ -355,7 +385,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
             <span className="inline-block h-3 w-3 rounded-full bg-blue-600" /> POI con coordenadas propias
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-block h-3 w-3 rounded-full bg-gray-400" /> POI con coordenadas del pueblo
+            <span className="inline-block h-3 w-3 rounded-full bg-gray-400" /> POI con coordenadas del pueblo (Madrid = error)
           </div>
           <div className="flex items-center gap-1">
             <span className="inline-block h-3 w-3 rounded-full bg-yellow-500" /> POI en edición
@@ -408,8 +438,8 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                 step="any"
                 value={createLat}
                 onChange={(e) => setCreateLat(e.target.value ? parseFloat(e.target.value) : "")}
-                placeholder="Selecciona en el mapa"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                placeholder="Haz clic en el mapa ↑"
+                className="w-full rounded-lg border border-blue-400 bg-blue-50 px-3 py-2 text-sm font-mono"
               />
             </div>
             <div>
@@ -419,15 +449,29 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                 step="any"
                 value={createLng}
                 onChange={(e) => setCreateLng(e.target.value ? parseFloat(e.target.value) : "")}
-                placeholder="Selecciona en el mapa"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                placeholder="Haz clic en el mapa ↑"
+                className="w-full rounded-lg border border-blue-400 bg-blue-50 px-3 py-2 text-sm font-mono"
               />
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                mapSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="rounded bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
+            >
+              ↑ Ir al mapa para ubicar
+            </button>
+            <span className="text-xs text-gray-400">
+              {typeof createLat === "number" ? `Coordenadas: ${createLat}, ${createLng}` : "Haz clic en el mapa o busca un lugar"}
+            </span>
           </div>
           
           {(String(createLat ?? "").trim() === "" && String(createLng ?? "").trim() === "") && (
             <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
-              Haz clic en el mapa o usa el buscador para situar el POI. Si dejas las coordenadas vacías, se usarán las del pueblo.
+              Haz clic en el mapa arriba o usa el buscador para situar el POI. Si dejas las coordenadas vacías, se usarán las del pueblo.
             </div>
           )}
           
@@ -481,6 +525,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
             return (
               <div
                 key={row.id}
+                id={`poi-card-${row.id}`}
                 className={`rounded-lg border p-4 ${
                   isEditing ? "border-yellow-300 bg-yellow-50" : "border-gray-200 bg-white"
                 }`}
@@ -506,8 +551,8 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                           onChange={(e) =>
                             setEditLat(e.target.value ? parseFloat(e.target.value) : "")
                           }
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                          placeholder="Haz clic en el mapa"
+                          className="w-full rounded-lg border border-blue-400 bg-blue-50 px-3 py-2 text-sm font-mono"
+                          placeholder="Haz clic en el mapa ↑"
                         />
                       </div>
                       <div>
@@ -519,18 +564,30 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                           onChange={(e) =>
                             setEditLng(e.target.value ? parseFloat(e.target.value) : "")
                           }
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                          placeholder="Haz clic en el mapa"
+                          className="w-full rounded-lg border border-blue-400 bg-blue-50 px-3 py-2 text-sm font-mono"
+                          placeholder="Haz clic en el mapa ↑"
                         />
                       </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          mapSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }}
+                        className="rounded bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
+                      >
+                        ↑ Ir al mapa para ubicar
+                      </button>
+                      <span className="text-xs text-gray-400">Haz clic en el mapa o busca un lugar</span>
                     </div>
                     
                     {(() => {
                       const editLatNum = typeof editLat === "number" ? editLat : null;
                       const editLngNum = typeof editLng === "number" ? editLng : null;
                       return puebloLat != null && puebloLng != null && isSameCoordsAsPueblo(editLatNum, editLngNum, puebloLat, puebloLng) && (
-                        <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-800">
-                          Este POI está usando las coordenadas del pueblo. Usa el mapa para ubicarlo correctamente.
+                        <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-800 font-medium">
+                          ⚠ Este POI está usando las coordenadas del pueblo (posiblemente Madrid). ¡Usa el mapa arriba para ubicarlo correctamente!
                         </div>
                       );
                     })()}
@@ -588,7 +645,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                           </span>
                           {puebloLat != null && puebloLng != null && isSameCoordsAsPueblo(row.lat, row.lng, puebloLat, puebloLng) && (
                             <span className="rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-xs font-medium text-red-700">
-                              Coordenadas del pueblo
+                              ⚠ Sin ubicar — Coordenadas del pueblo
                             </span>
                           )}
                         </div>

@@ -713,7 +713,12 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                           : undefined
                       }
                       height="350px"
-                      searchPlaceholder="Buscar lugar para nueva parada..."
+                      searchPlaceholder="Buscar lugar (ej: Catedral de Albarracín)..."
+                      activeHint={
+                        showCreateParada
+                          ? "Creando parada: haz clic en el mapa o busca un lugar. Las coordenadas se rellenarán automáticamente."
+                          : undefined
+                      }
                     />
                     <div className="mt-1 flex flex-wrap gap-3 text-xs text-gray-500">
                       <div className="flex items-center gap-1">
@@ -842,8 +847,8 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                               type="text"
                               value={createParadaLat}
                               onChange={(e) => setCreateParadaLat(e.target.value)}
-                              className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
-                              placeholder="Haz clic en el mapa"
+                              className="mt-1 w-full rounded border border-blue-400 bg-blue-50 px-3 py-2 font-mono text-sm"
+                              placeholder="Haz clic en el mapa ↑"
                             />
                           </div>
                           <div>
@@ -852,14 +857,17 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                               type="text"
                               value={createParadaLng}
                               onChange={(e) => setCreateParadaLng(e.target.value)}
-                              className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
-                              placeholder="Haz clic en el mapa"
+                              className="mt-1 w-full rounded border border-blue-400 bg-blue-50 px-3 py-2 font-mono text-sm"
+                              placeholder="Haz clic en el mapa ↑"
                             />
                           </div>
                         </div>
                         
-                        <p className="text-xs text-gray-500">
-                          Usa el buscador del mapa o haz clic para situar la parada. Si proporcionas coordenadas, ambas son obligatorias.
+                        <p className="text-xs text-blue-600 font-medium">
+                          {createParadaLat && createParadaLng
+                            ? `Coordenadas: ${createParadaLat}, ${createParadaLng}`
+                            : "Haz clic en el mapa arriba o usa el buscador para situar la parada."
+                          }
                         </p>
                         
                         <div className="flex gap-2">
