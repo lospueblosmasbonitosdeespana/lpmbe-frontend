@@ -9,6 +9,7 @@ type SalesRow = {
   fecha: string;
   cliente: string;
   email: string;
+  direccionEntrega: string;
   producto: string;
   cantidad: number;
   precioUnit: number;
@@ -202,7 +203,7 @@ export default function VentasAdminClient() {
             </div>
           </div>
 
-          {/* Tabla detallada */}
+          {/* Tabla: número pedido, nombre y apellidos, dirección entrega, productos, base imponible, IVA producto, precio transporte */}
           {report.rows.length === 0 ? (
             <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-500">
               No hay ventas en el periodo seleccionado.
@@ -212,18 +213,13 @@ export default function VentasAdminClient() {
               <table className="w-full text-sm">
                 <thead className="border-b border-gray-200 bg-gray-50">
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-600">Pedido</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-600">Fecha</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-600">Producto</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-600">Cant.</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-600">Base Prod.</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-600">IVA %</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-600">IVA Prod.</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-600">Subtotal</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-600">Porte Base</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-600">Porte IVA</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-600">Total</th>
-                    <th className="px-3 py-2 text-center text-xs font-medium uppercase text-gray-600">Exento</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-600">Nº pedido</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-600">Nombre y apellidos</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-600">Dirección de entrega</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-600">Productos</th>
+                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-600">Base imponible producto</th>
+                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-600">IVA producto</th>
+                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-600">Precio transporte</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -231,59 +227,34 @@ export default function VentasAdminClient() {
                     const isFirstLine = r.totalPedido !== null;
                     return (
                       <tr key={i} className={isFirstLine ? 'bg-white' : 'bg-gray-50/50'}>
-                        <td className="px-3 py-2 font-mono text-xs">
+                        <td className="px-3 py-2 font-mono text-xs whitespace-nowrap">
                           {isFirstLine ? r.orderNumber : ''}
                         </td>
-                        <td className="px-3 py-2 text-xs text-gray-600">
-                          {isFirstLine ? r.fecha : ''}
+                        <td className="px-3 py-2 text-gray-800 whitespace-nowrap">
+                          {isFirstLine ? r.cliente : ''}
                         </td>
-                        <td className="px-3 py-2 max-w-[200px] truncate" title={r.producto}>
+                        <td className="px-3 py-2 max-w-[280px] text-gray-600" title={r.direccionEntrega}>
+                          {isFirstLine ? r.direccionEntrega : ''}
+                        </td>
+                        <td className="px-3 py-2 max-w-[200px]" title={r.producto}>
                           {r.producto}
+                          {r.cantidad > 1 ? ` (×${r.cantidad})` : ''}
                         </td>
-                        <td className="px-3 py-2 text-right">{r.cantidad}</td>
-                        <td className="px-3 py-2 text-right">{fmt(r.baseImponibleProducto)}</td>
-                        <td className="px-3 py-2 text-right">
-                          <span className={`inline-block rounded px-1.5 py-0.5 text-xs ${
-                            r.exentoIva ? 'bg-amber-100 text-amber-800' :
-                            r.ivaPercentProducto === 4 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {r.exentoIva ? '0%' : `${r.ivaPercentProducto}%`}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2 text-right">{fmt(r.ivaProducto)}</td>
-                        <td className="px-3 py-2 text-right font-medium">{fmt(r.subtotalProducto)}</td>
-                        <td className="px-3 py-2 text-right">
-                          {r.porteBase > 0 ? fmt(r.porteBase) : ''}
-                        </td>
-                        <td className="px-3 py-2 text-right">
-                          {r.porteIva > 0 ? fmt(r.porteIva) : ''}
-                        </td>
-                        <td className="px-3 py-2 text-right font-bold">
-                          {r.totalPedido !== null ? `${fmt(r.totalPedido)} €` : ''}
-                        </td>
-                        <td className="px-3 py-2 text-center">
-                          {r.exentoIva && isFirstLine ? (
-                            <span className="inline-block rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-800">
-                              Canarias
-                            </span>
-                          ) : ''}
+                        <td className="px-3 py-2 text-right whitespace-nowrap">{fmt(r.baseImponibleProducto)} €</td>
+                        <td className="px-3 py-2 text-right whitespace-nowrap">{fmt(r.ivaProducto)} €</td>
+                        <td className="px-3 py-2 text-right whitespace-nowrap">
+                          {isFirstLine ? `${fmt(r.porteTotal)} €` : ''}
                         </td>
                       </tr>
                     );
                   })}
                 </tbody>
-                {/* Fila de totales */}
                 <tfoot className="border-t-2 border-gray-300 bg-gray-100">
                   <tr className="font-bold text-sm">
                     <td colSpan={4} className="px-3 py-3 text-right">TOTALES:</td>
                     <td className="px-3 py-3 text-right">{fmt(globalTotals.base)} €</td>
-                    <td></td>
                     <td className="px-3 py-3 text-right">{fmt(globalTotals.iva)} €</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
                     <td className="px-3 py-3 text-right">{fmt(globalTotals.total)} €</td>
-                    <td></td>
                   </tr>
                 </tfoot>
               </table>
