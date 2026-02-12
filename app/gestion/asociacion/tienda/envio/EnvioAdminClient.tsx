@@ -57,6 +57,13 @@ export default function EnvioAdminClient() {
     precioPvp: 0,
     sendcloudMethodId: '',
   });
+  const [editingTariff, setEditingTariff] = useState<number | null>(null);
+  const [editTariffData, setEditTariffData] = useState({
+    pesoMinKg: 0,
+    pesoMaxKg: 0,
+    precioPvp: 0,
+    sendcloudMethodId: '',
+  });
 
   const [loading, setLoading] = useState(true);
 
@@ -232,6 +239,41 @@ export default function EnvioAdminClient() {
       credentials: 'include',
     });
     if (res.ok) fetchTariffs();
+  };
+
+  const startEditTariff = (t: ShippingTariff) => {
+    setEditingTariff(t.id);
+    setEditTariffData({
+      pesoMinKg: Number(t.pesoMinKg),
+      pesoMaxKg: Number(t.pesoMaxKg),
+      precioPvp: Number(t.precioPvp),
+      sendcloudMethodId: t.sendcloudMethodId ? String(t.sendcloudMethodId) : '',
+    });
+  };
+
+  const saveEditTariff = async () => {
+    if (editingTariff == null) return;
+    const res = await fetch(`/api/admin/shipping/tariffs/${editingTariff}`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pesoMinKg: Number(editTariffData.pesoMinKg),
+        pesoMaxKg: Number(editTariffData.pesoMaxKg),
+        precioPvp: Number(editTariffData.precioPvp),
+        sendcloudMethodId: editTariffData.sendcloudMethodId
+          ? Number(editTariffData.sendcloudMethodId)
+          : null,
+      }),
+    });
+    if (res.ok) {
+      setEditingTariff(null);
+      fetchTariffs();
+    }
+  };
+
+  const cancelEditTariff = () => {
+    setEditingTariff(null);
   };
 
   // ─── Render ─────────────────────────────────────────────────────────
@@ -573,22 +615,105 @@ export default function EnvioAdminClient() {
                     <tbody className="divide-y">
                       {zoneTariffs.map((t) => (
                         <tr key={t.id}>
-                          <td className="px-3 py-2">{t.pesoMinKg}</td>
-                          <td className="px-3 py-2">{t.pesoMaxKg}</td>
-                          <td className="px-3 py-2 font-medium">
-                            {Number(t.precioPvp).toFixed(2)} EUR
-                          </td>
-                          <td className="px-3 py-2 text-gray-600">
-                            {t.sendcloudMethodId ?? '-'}
-                          </td>
-                          <td className="px-3 py-2">
-                            <button
-                              onClick={() => deleteTariff(t.id)}
-                              className="rounded bg-red-500 px-2 py-1 text-xs text-white hover:bg-red-600"
-                            >
-                              Eliminar
-                            </button>
-                          </td>
+                          {editingTariff === t.id ? (
+                            <>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={editTariffData.pesoMinKg}
+                                  onChange={(e) =>
+                                    setEditTariffData({
+                                      ...editTariffData,
+                                      pesoMinKg: Number(e.target.value),
+                                    })
+                                  }
+                                  className="w-20 rounded border px-2 py-1 text-sm"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={editTariffData.pesoMaxKg}
+                                  onChange={(e) =>
+                                    setEditTariffData({
+                                      ...editTariffData,
+                                      pesoMaxKg: Number(e.target.value),
+                                    })
+                                  }
+                                  className="w-20 rounded border px-2 py-1 text-sm"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={editTariffData.precioPvp}
+                                  onChange={(e) =>
+                                    setEditTariffData({
+                                      ...editTariffData,
+                                      precioPvp: Number(e.target.value),
+                                    })
+                                  }
+                                  className="w-20 rounded border px-2 py-1 text-sm"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="number"
+                                  value={editTariffData.sendcloudMethodId}
+                                  onChange={(e) =>
+                                    setEditTariffData({
+                                      ...editTariffData,
+                                      sendcloudMethodId: e.target.value,
+                                    })
+                                  }
+                                  className="w-16 rounded border px-2 py-1 text-sm"
+                                  placeholder="-"
+                                />
+                              </td>
+                              <td className="space-x-2 px-3 py-2">
+                                <button
+                                  onClick={saveEditTariff}
+                                  className="rounded bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700"
+                                >
+                                  Guardar
+                                </button>
+                                <button
+                                  onClick={cancelEditTariff}
+                                  className="rounded bg-gray-400 px-2 py-1 text-xs text-white hover:bg-gray-500"
+                                >
+                                  Cancelar
+                                </button>
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td className="px-3 py-2">{t.pesoMinKg}</td>
+                              <td className="px-3 py-2">{t.pesoMaxKg}</td>
+                              <td className="px-3 py-2 font-medium">
+                                {Number(t.precioPvp).toFixed(2)} EUR
+                              </td>
+                              <td className="px-3 py-2 text-gray-600">
+                                {t.sendcloudMethodId ?? '-'}
+                              </td>
+                              <td className="space-x-2 px-3 py-2">
+                                <button
+                                  onClick={() => startEditTariff(t)}
+                                  className="rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-600"
+                                >
+                                  Editar
+                                </button>
+                                <button
+                                  onClick={() => deleteTariff(t.id)}
+                                  className="rounded bg-red-500 px-2 py-1 text-xs text-white hover:bg-red-600"
+                                >
+                                  Eliminar
+                                </button>
+                              </td>
+                            </>
+                          )}
                         </tr>
                       ))}
                     </tbody>
