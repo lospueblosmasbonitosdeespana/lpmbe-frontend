@@ -37,6 +37,7 @@ export type Product = {
   } | null;
   discountPercent?: number | null; // Descuento propio del producto (0-100)
   discountLabel?: string | null; // Etiqueta del descuento propio
+  ivaPercent?: number; // 4 o 21 (default 21)
   // Peso y dimensiones (logística)
   weight?: number | null;
   width?: number | null;
@@ -155,6 +156,15 @@ export type CouponDiscount = {
   amount: number | string;
 };
 
+export type IvaBreakdown = {
+  exento: boolean;
+  totalBaseImponible: number;
+  totalIva: number;
+  shippingIvaPercent: number;
+  shippingBaseImponible: number;
+  shippingIvaAmount: number;
+};
+
 export type CheckoutResponse = {
   orderId: number;
   clientSecret: string;
@@ -169,9 +179,11 @@ export type CheckoutResponse = {
     isFree: boolean;
     sendcloudMethodId: number | null;
   };
-  // ✅ NUEVO: items con precios calculados por el backend
+  // IVA / Fiscal
+  iva?: IvaBreakdown;
+  // items con precios calculados por el backend
   items: CheckoutItemDetail[];
-  // ✅ CRÍTICO: discounts SIEMPRE existe (normalizado en frontend si viene undefined/null)
+  // discounts SIEMPRE existe (normalizado en frontend si viene undefined/null)
   discounts: {
     promotions: PromotionDiscount[];
     coupon: CouponDiscount | null;
@@ -205,6 +217,10 @@ export type CheckoutItemDetail = {
     label?: string;
     source?: 'PRODUCT' | 'GLOBAL';
   } | null;
+  ivaPercent?: number;
+  baseImponible?: number;
+  ivaAmount?: number;
+  ivaPercentApplied?: number;
 };
 
 // Nuevo tipo para promoción global

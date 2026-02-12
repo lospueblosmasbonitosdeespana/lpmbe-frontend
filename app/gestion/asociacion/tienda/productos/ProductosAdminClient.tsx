@@ -23,6 +23,7 @@ type ProductForm = {
   imagenUrl: string;
   discountPercent: string; // 0-100
   discountLabel: string;
+  ivaPercent: string; // "4" o "21"
   weight: string;
   width: string;
   height: string;
@@ -42,6 +43,7 @@ const emptyForm: ProductForm = {
   imagenUrl: "",
   discountPercent: "",
   discountLabel: "",
+  ivaPercent: "21",
   weight: "",
   width: "",
   height: "",
@@ -100,6 +102,7 @@ export default function ProductosAdminClient() {
       imagenUrl: producto.imagenUrl ?? "",
       discountPercent: producto.discountPercent?.toString() ?? "",
       discountLabel: producto.discountLabel ?? "",
+      ivaPercent: (producto.ivaPercent ?? 21).toString(),
       weight: producto.weight?.toString() ?? "",
       width: producto.width?.toString() ?? "",
       height: producto.height?.toString() ?? "",
@@ -203,13 +206,16 @@ export default function ProductosAdminClient() {
       discountLabel = `Descuento ${discountPercent}%`;
     }
 
+    // IVA
+    const ivaPercent = parseInt(form.ivaPercent) || 21;
+
     // Peso y dimensiones (logística)
     const weight = form.weight.trim() ? toNumber(form.weight) : null;
     const width = form.width.trim() ? toNumber(form.width) : null;
     const height = form.height.trim() ? toNumber(form.height) : null;
     const length = form.length.trim() ? toNumber(form.length) : null;
 
-    const payload: Partial<Product> = {
+    const payload: Partial<Product> & { ivaPercent?: number } = {
       nombre: form.nombre.trim(),
       slug: form.slug.trim() || undefined,
       descripcion: form.descripcion.trim() || null,
@@ -222,6 +228,7 @@ export default function ProductosAdminClient() {
       imagenUrl: form.imagenUrl.trim() || null,
       discountPercent,
       discountLabel,
+      ivaPercent,
       weight,
       width,
       height,
@@ -369,6 +376,23 @@ export default function ProductosAdminClient() {
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
                   required
                 />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  IVA (%)
+                </label>
+                <select
+                  value={form.ivaPercent}
+                  onChange={(e) => setForm({ ...form, ivaPercent: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                >
+                  <option value="21">21% (General)</option>
+                  <option value="4">4% (Reducido: libros, guias, mapas)</option>
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  El precio introducido incluye IVA. Canarias queda exento.
+                </p>
               </div>
 
               <div>
@@ -646,6 +670,9 @@ export default function ProductosAdminClient() {
                   Precio
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
+                  IVA
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
                   Stock
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
@@ -684,6 +711,15 @@ export default function ProductosAdminClient() {
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-900">
                     {formatEUR(p.precio)} €
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900">
+                    <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
+                      (p.ivaPercent ?? 21) === 4
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}>
+                      {p.ivaPercent ?? 21}%
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-900">
                     {p.stock}

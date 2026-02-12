@@ -168,6 +168,54 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
         )}
       </div>
 
+      {/* Desglose IVA */}
+      {checkoutData.iva && (
+        <div className="space-y-1 border-b border-gray-200 pb-4 mb-4">
+          {checkoutData.iva.exento ? (
+            <div className="rounded-md bg-amber-50 border border-amber-200 p-3">
+              <p className="text-xs font-semibold text-amber-800">
+                Envio a Canarias: exento de IVA
+              </p>
+              <p className="text-xs text-amber-700 mt-0.5">
+                Los precios mostrados no incluyen IVA (IGIC no aplicable).
+              </p>
+            </div>
+          ) : (
+            <>
+              <p className="text-xs font-semibold text-gray-600 mb-1">Desglose fiscal (IVA incluido)</p>
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>Base imponible productos</span>
+                <span>{formatEUR(checkoutData.iva.totalBaseImponible - checkoutData.iva.shippingBaseImponible)} €</span>
+              </div>
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>IVA productos</span>
+                <span>{formatEUR(checkoutData.iva.totalIva - checkoutData.iva.shippingIvaAmount)} €</span>
+              </div>
+              {shippingCost > 0 && (
+                <>
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Base imponible envio</span>
+                    <span>{formatEUR(checkoutData.iva.shippingBaseImponible)} €</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>IVA envio ({checkoutData.iva.shippingIvaPercent}%)</span>
+                    <span>{formatEUR(checkoutData.iva.shippingIvaAmount)} €</span>
+                  </div>
+                </>
+              )}
+              <div className="flex justify-between text-xs font-medium text-gray-700 pt-1 border-t border-gray-100">
+                <span>Total base imponible</span>
+                <span>{formatEUR(checkoutData.iva.totalBaseImponible)} €</span>
+              </div>
+              <div className="flex justify-between text-xs font-medium text-gray-700">
+                <span>Total IVA</span>
+                <span>{formatEUR(checkoutData.iva.totalIva)} €</span>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
       {/* Descuentos: SOLO mostrar si hay descuentos reales */}
       {hasDiscounts && (
         <div className="space-y-2 border-b border-gray-200 pb-4 mb-4">

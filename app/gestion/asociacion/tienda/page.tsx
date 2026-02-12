@@ -72,6 +72,16 @@ export default async function TiendaAdminPage() {
             Configurar zonas, tarifas de envio por peso y umbral de envio gratuito (SendCloud)
           </p>
         </Link>
+
+        <Link
+          href="/gestion/asociacion/tienda/ventas"
+          className="block rounded-lg border border-purple-200 bg-purple-50 p-6 transition-shadow hover:shadow-lg"
+        >
+          <h2 className="text-xl font-semibold">Informe de Ventas</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Listado de ventas con desglose fiscal (base imponible, IVA producto, IVA porte) y exportacion CSV
+          </p>
+        </Link>
       </div>
     </main>
   );
