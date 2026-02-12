@@ -161,23 +161,8 @@ export async function createCheckout(payload: CheckoutPayload): Promise<Checkout
 // ===== ADMIN PRODUCTOS =====
 
 export async function uploadProductImage(file: File): Promise<string> {
-  const fd = new FormData();
-  fd.append('file', file);
-  fd.append('folder', 'productos');
-
-  const res = await fetch('/api/admin/uploads', {
-    method: 'POST',
-    body: fd,
-    credentials: 'include',
-  });
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const msg = data?.error ?? data?.message ?? `Error ${res.status}`;
-    throw new Error(typeof msg === 'string' ? msg : 'Error subiendo imagen');
-  }
-  const url = data?.url ?? data?.publicUrl;
-  if (!url) throw new Error('La subida no devolvió URL');
+  const { uploadImageToR2 } = await import('./uploadHelper');
+  const { url } = await uploadImageToR2(file, 'productos');
   return url;
 }
 

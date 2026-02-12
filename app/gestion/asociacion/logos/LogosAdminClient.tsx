@@ -59,13 +59,9 @@ export default function LogosAdminClient() {
   }
 
   async function handleUpload(file: File) {
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('folder', 'logos');
-    const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
-    if (!res.ok) throw new Error('Error subiendo');
-    const data = await res.json();
-    const url = data.url || data.publicUrl;
+    const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+    const { url, warning } = await uploadImageToR2(file, 'logos');
+    if (warning) console.warn("[Logos]", warning);
     setForm((p) => ({ ...p, url }));
   }
 

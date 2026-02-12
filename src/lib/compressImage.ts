@@ -4,13 +4,13 @@
  * - Acepta CUALQUIER tamaño de imagen (30 MB, 50 MB…).
  * - Redimensiona al máximo indicado (por defecto 2560 px de lado).
  * - Exporta como WebP (o JPEG si WebP no disponible) bajando calidad
- *   progresivamente hasta que el resultado cabe en maxBytes (por defecto 3 MB,
- *   seguro para el proxy de Vercel que limita ~4,5 MB).
+ *   progresivamente hasta que el resultado cabe en maxBytes (por defecto 4 MB).
+ *   El proxy de Vercel usa streaming, y el backend optimiza a ≤5 MB en servidor.
  * - Devuelve un File listo para añadir a FormData.
  */
 
 const DEFAULT_MAX_SIDE = 2560;
-const DEFAULT_MAX_BYTES = 3 * 1024 * 1024; // 3 MB — margen para el límite de Vercel
+const DEFAULT_MAX_BYTES = 4 * 1024 * 1024; // 4 MB
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -50,7 +50,7 @@ function canvasToBlob(
 export interface CompressOptions {
   /** Lado máximo en px (ancho o alto). Default 2560 */
   maxSide?: number;
-  /** Tamaño máximo en bytes del resultado. Default 3 MB */
+  /** Tamaño máximo en bytes del resultado. Default 4 MB */
   maxBytes?: number;
   /** Nombre del archivo resultante (se asigna extensión automática) */
   fileName?: string;

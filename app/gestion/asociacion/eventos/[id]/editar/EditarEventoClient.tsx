@@ -67,26 +67,16 @@ export default function EditarEventoClient({ id }: EditarEventoClientProps) {
       let newCoverUrl = coverUrl;
 
       if (file) {
-        // Control de tamaño (max 25MB)
-        if (file.size > 25 * 1024 * 1024) {
-          setError('La imagen pesa demasiado (máx 25MB). Prueba con JPG o reduce tamaño.');
+        try {
+          const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+          const { url, warning } = await uploadImageToR2(file, 'eventos-global', '/api/media/upload');
+          if (warning) console.warn("[EditarEvento]", warning);
+          newCoverUrl = url;
+        } catch (e: any) {
+          setError(`Error subiendo foto: ${e?.message || 'Error desconocido'}`);
           setSaving(false);
           return;
         }
-
-        const fd = new FormData();
-        fd.append('file', file);
-        fd.append('folder', 'eventos-global');
-
-        const up = await fetch('/api/media/upload', { method: 'POST', body: fd });
-        if (!up.ok) {
-          const msg = await up.text();
-          setError(`Error subiendo foto: ${msg}`);
-          setSaving(false);
-          return;
-        }
-        const upJson = await up.json();
-        newCoverUrl = upJson?.url ?? upJson?.publicUrl ?? null;
       }
 
       // 2. Actualizar evento

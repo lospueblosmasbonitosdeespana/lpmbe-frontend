@@ -93,32 +93,17 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
       const files = Array.from(e.target.files || []) as File[];
       if (files.length === 0) return;
 
-      const oversized = files.find(f => f.size > 25 * 1024 * 1024);
-      if (oversized) {
-        alert(`La imagen "${oversized.name}" pesa demasiado (máx 25MB).`);
-        return;
-      }
-
       setUploading(true);
       try {
-        const fd = new FormData();
-        files.forEach(file => fd.append('files', file));
-        fd.append('folder', 'contenidos');
+        const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+        const newImages: { url: string; name: string }[] = [];
 
-        const res = await fetch('/api/media/upload-multiple', { method: 'POST', body: fd });
-        if (!res.ok) {
-          const msg = await res.text();
-          alert(`Error subiendo imágenes: ${msg}`);
-          return;
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i];
+          const { url, warning } = await uploadImageToR2(f, 'contenidos', '/api/media/upload');
+          if (warning) console.warn(`[ImageUpload] ${f.name}:`, warning);
+          newImages.push({ url, name: f.name || `imagen-${i + 1}` });
         }
-
-        const json = await res.json();
-        const images = json?.images ?? [];
-
-        const newImages = images.map((img: any, idx: number) => ({
-          url: img.url,
-          name: files[idx]?.name || `imagen-${idx + 1}`,
-        }));
 
         setUploadedImages((prev) => [...prev, ...newImages]);
       } catch (e: any) {
@@ -168,25 +153,15 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
       let newCoverUrl: string | null = coverUrl;
 
       if (coverFile) {
-        if (coverFile.size > 25 * 1024 * 1024) {
-          setError('La imagen de portada pesa demasiado (máx 25MB)');
+        try {
+          const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+          const { url } = await uploadImageToR2(coverFile, 'contenidos', '/api/media/upload');
+          newCoverUrl = url;
+        } catch (e: any) {
+          setError(`Error subiendo portada: ${e?.message || 'Error desconocido'}`);
           setSaving(false);
           return;
         }
-
-        const fd = new FormData();
-        fd.append('file', coverFile);
-        fd.append('folder', 'contenidos');
-
-        const up = await fetch('/api/media/upload', { method: 'POST', body: fd });
-        if (!up.ok) {
-          const msg = await up.text();
-          setError(`Error subiendo portada: ${msg}`);
-          setSaving(false);
-          return;
-        }
-        const upJson = await up.json();
-        newCoverUrl = upJson?.url ?? upJson?.publicUrl ?? null;
       }
 
       // 2. Actualizar contenido

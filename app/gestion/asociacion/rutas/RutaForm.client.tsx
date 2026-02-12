@@ -198,23 +198,10 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
     setUploadingPortada(true);
     setError(null);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/admin/uploads', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.message || 'Error subiendo foto');
-      }
-
-      const data = await res.json();
-      if (data.url) {
-        setFotoPortada(data.url);
-      }
+      const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+      const { url, warning } = await uploadImageToR2(file, 'rutas');
+      if (warning) console.warn("[RutaForm]", warning);
+      if (url) setFotoPortada(url);
     } catch (e: any) {
       setError(e?.message ?? 'Error subiendo foto');
     } finally {

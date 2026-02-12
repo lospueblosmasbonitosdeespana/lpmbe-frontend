@@ -242,29 +242,16 @@ export default function ParadasEditor({ paradas, setParadas }: ParadasEditorProp
 
   async function uploadFotoParada(tempId: string, file: File) {
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/admin/uploads', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.url) {
-          // Cache-busting para ver cambio al instante
-          const busted = `${data.url}${data.url.includes('?') ? '&' : '?'}v=${Date.now()}`;
-          updateParada(tempId, 'fotoUrl', busted);
-        }
-      } else {
-        const text = await res.text();
-        console.error('Error subiendo foto parada:', text);
-        alert('Error subiendo foto: ' + (text || res.status));
+      const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+      const { url, warning } = await uploadImageToR2(file, 'rutas/paradas');
+      if (warning) console.warn("[ParadasEditor]", warning);
+      if (url) {
+        const busted = `${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}`;
+        updateParada(tempId, 'fotoUrl', busted);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error subiendo foto:', e);
-      alert('Error subiendo foto');
+      alert('Error subiendo foto: ' + (e?.message || 'Error desconocido'));
     }
   }
 

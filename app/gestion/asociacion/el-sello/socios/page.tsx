@@ -86,13 +86,9 @@ export default function SociosAdminPage() {
   async function handleUploadLogo(file: File) {
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('folder', 'sello-socios');
-      const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
-      if (!res.ok) throw new Error('Error subiendo imagen');
-      const data = await res.json();
-      const url = data.url || data.publicUrl;
+      const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+      const { url, warning } = await uploadImageToR2(file, 'sello-socios');
+      if (warning) console.warn("[Socios logo]", warning);
       setFormData((p) => ({ ...p, logoUrl: url }));
     } catch (e: unknown) {
       alert((e as Error)?.message ?? 'Error subiendo');
@@ -105,13 +101,9 @@ export default function SociosAdminPage() {
     if (!editingId) return;
     setUploadingFoto(true);
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('folder', 'sello-socios');
-      const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
-      if (!res.ok) throw new Error('Error subiendo imagen');
-      const data = await res.json();
-      const url = data.url || data.publicUrl;
+      const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+      const { url, warning } = await uploadImageToR2(file, 'sello-socios');
+      if (warning) console.warn("[Socios foto]", warning);
 
       const addRes = await fetch(`/api/admin/sello/socios/${editingId}/fotos`, {
         method: 'POST',
@@ -421,13 +413,9 @@ export default function SociosAdminPage() {
                   content={formData.contenido}
                   onChange={(html) => setFormData((p) => ({ ...p, contenido: html }))}
                   onUploadImage={async (file) => {
-                    const fd = new FormData();
-                    fd.append('file', file);
-                    fd.append('folder', 'sello-socios');
-                    const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
-                    if (!res.ok) throw new Error('Error subiendo');
-                    const d = await res.json();
-                    return d.url || d.publicUrl || '';
+                    const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+                    const { url } = await uploadImageToR2(file, 'sello-socios');
+                    return url;
                   }}
                   placeholder="Escribe el contenido de la página del colaborador..."
                   minHeight="300px"

@@ -4,8 +4,8 @@ import { getApiUrl } from "@/lib/api";
 
 /**
  * POST /api/admin/uploads/video
- * Sube un video a R2 (videos de la asociación).
- * FormData: file (video mp4/webm/mov), folder opcional.
+ * Proxy streaming al backend para subir videos a R2.
+ * Usa streaming para no topar con el límite de body de Vercel.
  */
 export async function POST(req: Request) {
   const token = await getToken();
@@ -13,40 +13,41 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
+  const contentType = req.headers.get("content-type");
+  if (!contentType || !contentType.includes("multipart/form-data")) {
+    return NextResponse.json({ error: "Se espera multipart/form-data" }, { status: 400 });
+  }
+
   try {
-    const formData = await req.formData();
-    const file = formData.get("file");
-
-    if (!file || !(file instanceof Blob)) {
-      return NextResponse.json(
-        { error: "No se recibió ningún archivo" },
-        { status: 400 }
-      );
-    }
-
-    const body = new FormData();
-    body.append("file", file, file instanceof File ? file.name : "video.mp4");
-    const folder = formData.get("folder");
-    if (folder && typeof folder === "string") {
-      body.append("folder", folder);
-    }
-
     const API_BASE = getApiUrl();
-    const res = await fetch(`${API_BASE}/media/upload-video`, {
+    // Streaming: no leer el body para evitar límite de Vercel
+    const upstream = await fetch(`${API_BASE}/media/upload-video`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": contentType,
       },
-      body,
+      body: req.body,
+      ...(req.body && { duplex: "half" } as Record<string, string>),
     });
 
-    const data = await res.json().catch(() => ({}));
+    const raw = await upstream.text();
 
-    if (!res.ok) {
+    let data: any;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      return NextResponse.json(
+        { error: "Backend no devolvió JSON", raw: raw.slice(0, 200) },
+        { status: 500 },
+      );
+    }
+
+    if (!upstream.ok) {
       const msg = data?.message ?? data?.error ?? "Error subiendo video";
       return NextResponse.json(
         { error: typeof msg === "string" ? msg : "Error subiendo video" },
-        { status: res.status }
+        { status: upstream.status },
       );
     }
 
@@ -54,7 +55,7 @@ export async function POST(req: Request) {
     if (!url || typeof url !== "string") {
       return NextResponse.json(
         { error: "Upload OK pero falta URL en respuesta" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -63,7 +64,7 @@ export async function POST(req: Request) {
     console.error("[upload video] error:", err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Error interno" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

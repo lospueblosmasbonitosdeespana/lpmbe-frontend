@@ -326,24 +326,11 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
     setError(null);
 
     try {
-      // 1) Subir archivo a R2 vía /api/admin/uploads
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", entity === "pueblo" ? "pueblos" : "pois");
-
-      const uploadRes = await fetch("/api/admin/uploads", {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
-
-      if (!uploadRes.ok) {
-        const errorData = await uploadRes.json().catch(() => ({}));
-        throw new Error(errorData?.error ?? errorData?.message ?? `Error subiendo archivo (${uploadRes.status})`);
-      }
-
-      const uploadData = await uploadRes.json();
-      const uploadedUrl = uploadData?.url;
+      // Comprimir + subir a R2
+      const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+      const folder = entity === "pueblo" ? "pueblos" : "pois";
+      const { url: uploadedUrl, warning } = await uploadImageToR2(file, folder);
+      if (warning) console.warn("[PhotoManager]", warning);
 
       if (!uploadedUrl) {
         throw new Error("No se recibió la URL del archivo subido");

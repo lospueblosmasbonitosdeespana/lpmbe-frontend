@@ -2,34 +2,32 @@ import { NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 
+/**
+ * POST /api/users/me/avatar
+ * Proxy streaming al backend para subir avatar sin límite de 4.5MB de Vercel.
+ */
 export async function POST(req: Request) {
   const token = await getToken();
   if (!token) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  const formData = await req.formData();
-  const file = formData.get('file') as File | null;
-
-  if (!file) {
-    return NextResponse.json({ message: 'No file provided' }, { status: 400 });
+  const contentType = req.headers.get('content-type');
+  if (!contentType || !contentType.includes('multipart/form-data')) {
+    return NextResponse.json({ error: 'Se espera multipart/form-data' }, { status: 400 });
   }
-
-  // Reenviar usando buffer: el File puede corromperse al reenviar FormData en Node
-  const buffer = await file.arrayBuffer();
-  const blob = new Blob([buffer], { type: file.type });
-  const backendFormData = new FormData();
-  backendFormData.append('file', blob, file.name || 'avatar.jpg');
 
   const API_BASE = getApiUrl();
   try {
+    // Streaming: no leer el body para evitar límite de Vercel
     const upstream = await fetch(`${API_BASE}/usuarios/me/avatar`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
+        'Content-Type': contentType,
       },
-      body: backendFormData,
-      cache: 'no-store',
+      body: req.body,
+      ...(req.body && { duplex: 'half' } as Record<string, string>),
     });
 
     if (!upstream.ok) {
@@ -42,7 +40,7 @@ export async function POST(req: Request) {
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message ?? 'Error interno' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -73,9 +71,7 @@ export async function DELETE() {
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message ?? 'Error interno' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-
-

@@ -59,17 +59,13 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
     setEstado('BORRADOR');
   }, [tipo, categoria]);
 
-  // Función para subir imágenes en TipTap
+  // Función para subir imágenes en TipTap (con compresión automática)
   async function handleUploadEditorImage(file: File): Promise<string> {
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('folder', 'contenidos');
-      const res = await fetch('/api/media/upload', { method: 'POST', body: fd });
-      if (!res.ok) throw new Error('Error subiendo imagen');
-      const data = await res.json();
-      return data.url || data.publicUrl || '';
+      const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+      const { url } = await uploadImageToR2(file, 'contenidos', '/api/media/upload');
+      return url;
     } finally {
       setUploading(false);
     }
@@ -118,25 +114,15 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
       let coverUrl: string | null = null;
 
       if (coverFile) {
-        if (coverFile.size > 25 * 1024 * 1024) {
-          setError('La imagen de portada pesa demasiado (máx 25MB)');
+        try {
+          const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+          const { url } = await uploadImageToR2(coverFile, 'contenidos', '/api/media/upload');
+          coverUrl = url;
+        } catch (e: any) {
+          setError(`Error subiendo portada: ${e?.message || 'Error desconocido'}`);
           setSaving(false);
           return;
         }
-
-        const fd = new FormData();
-        fd.append('file', coverFile);
-        fd.append('folder', 'contenidos');
-
-        const up = await fetch('/api/media/upload', { method: 'POST', body: fd });
-        if (!up.ok) {
-          const msg = await up.text();
-          setError(`Error subiendo portada: ${msg}`);
-          setSaving(false);
-          return;
-        }
-        const upJson = await up.json();
-        coverUrl = upJson?.url ?? upJson?.publicUrl ?? null;
       }
 
       // 2. Si es PÁGINA, usar endpoint /admin/pages

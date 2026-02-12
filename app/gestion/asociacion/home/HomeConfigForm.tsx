@@ -31,30 +31,14 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // Subir imagen a R2
+  // Subir imagen a R2 (con compresión automática)
   async function uploadImage(file: File, folder = "home/themes"): Promise<string> {
     setUploading(true);
     setMessage(null);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", folder);
-
-      const res = await fetch("/api/admin/uploads", {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        const msg = data?.error ?? data?.message ?? `Error ${res.status}`;
-        throw new Error(typeof msg === "string" ? msg : "Error subiendo imagen");
-      }
-
-      const url = data?.url ?? data?.publicUrl;
-      if (!url) throw new Error("La subida no devolvió URL");
+      const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+      const { url, warning } = await uploadImageToR2(file, folder);
+      if (warning) console.warn("[HomeConfig]", warning);
       return url;
     } finally {
       setUploading(false);

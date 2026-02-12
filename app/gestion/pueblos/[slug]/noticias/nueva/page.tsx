@@ -28,23 +28,16 @@ export default function NuevaNoticiaPage() {
       let imagen: string | null = null;
 
       if (file) {
-        if (file.size > 25 * 1024 * 1024) {
-          setError('La imagen pesa demasiado (máx 25MB). Prueba con JPG o reduce tamaño.');
+        try {
+          const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+          const { url, warning } = await uploadImageToR2(file, 'noticias-pueblo', '/api/media/upload');
+          if (warning) console.warn("[Noticias pueblo]", warning);
+          imagen = url;
+        } catch (e: any) {
+          setError(`Error subiendo foto: ${e?.message || 'Error desconocido'}`);
           setLoading(false);
           return;
         }
-        const fd = new FormData();
-        fd.append('file', file);
-        fd.append('folder', 'noticias-pueblo');
-        const up = await fetch('/api/media/upload', { method: 'POST', body: fd });
-        if (!up.ok) {
-          const msg = await up.text();
-          setError(`Error subiendo foto: ${msg}`);
-          setLoading(false);
-          return;
-        }
-        const upJson = await up.json();
-        imagen = upJson?.url ?? upJson?.publicUrl ?? null;
       }
 
       const res = await fetch('/api/gestion/noticias', {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { compressImage } from '@/src/lib/compressImage';
 
 interface R2ImageUploaderProps {
   /** URL actual de la imagen (si ya hay una subida) */
@@ -19,6 +20,8 @@ interface R2ImageUploaderProps {
   className?: string;
 }
 
+const LOW_QUALITY_THRESHOLD = 300 * 1024; // 300 KB
+
 export default function R2ImageUploader({
   value,
   onChange,
@@ -30,14 +33,35 @@ export default function R2ImageUploader({
 }: R2ImageUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = async (file: File) => {
     setUploading(true);
     setError(null);
+    setWarning(null);
+
     try {
+      // Aviso de baja calidad si < 300 KB
+      if (file.size < LOW_QUALITY_THRESHOLD) {
+        setWarning(
+          `La imagen pesa solo ${Math.round(file.size / 1024)} KB. Puede que no se vea con la calidad adecuada.`,
+        );
+      }
+
+      // Comprimir en el navegador: acepta cualquier tamaño, resultado ≤ 4 MB
+      let compressed: File;
+      try {
+        compressed = await compressImage(file, {
+          fileName: file.name.replace(/\.[^.]+$/, ''),
+        });
+      } catch {
+        // Si falla la compresión (ej: GIF animado), enviar original
+        compressed = file;
+      }
+
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressed);
       formData.append('folder', folder);
 
       const res = await fetch('/api/media/upload', {
@@ -71,6 +95,7 @@ export default function R2ImageUploader({
 
   const handleRemove = () => {
     onChange(null);
+    setWarning(null);
   };
 
   return (
@@ -118,7 +143,7 @@ export default function R2ImageUploader({
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
-              Subiendo...
+              Comprimiendo y subiendo...
             </>
           ) : (
             <>
@@ -140,6 +165,11 @@ export default function R2ImageUploader({
         className="hidden"
       />
 
+      {/* Warning baja calidad */}
+      {warning && (
+        <p className="mt-1 text-xs text-amber-600">{warning}</p>
+      )}
+
       {/* Error */}
       {error && (
         <p className="mt-1 text-xs text-red-600">{error}</p>
@@ -147,7 +177,7 @@ export default function R2ImageUploader({
 
       {/* Uploading overlay sobre preview */}
       {uploading && value && (
-        <div className="mt-1 text-xs text-primary font-medium">Subiendo nueva imagen...</div>
+        <div className="mt-1 text-xs text-primary font-medium">Comprimiendo y subiendo nueva imagen...</div>
       )}
     </div>
   );

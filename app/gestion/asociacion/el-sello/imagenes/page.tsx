@@ -56,13 +56,9 @@ export default function ElSelloImagenesPage() {
   async function handleUpload(key: keyof SelloImages, file: File) {
     setUploading(key);
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('folder', 'sello-cms');
-      const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
-      if (!res.ok) throw new Error('Error subiendo imagen');
-      const data = await res.json();
-      const url = data.url || data.publicUrl;
+      const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+      const { url, warning } = await uploadImageToR2(file, 'sello-cms');
+      if (warning) console.warn("[Sello imagenes]", warning);
       setImages((p) => ({ ...p, [key]: url }));
     } catch (e: unknown) {
       alert((e as Error)?.message ?? 'Error subiendo');

@@ -129,12 +129,6 @@ export default function PerfilPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validaciones antes de subir
-    if (file.size > 5 * 1024 * 1024) {
-      alert('El archivo es demasiado grande. Máximo 5MB');
-      return;
-    }
-
     if (!file.type.startsWith('image/')) {
       alert('El archivo debe ser una imagen');
       return;
@@ -147,12 +141,19 @@ export default function PerfilPage() {
     };
     reader.readAsDataURL(file);
 
-    // Subir al servidor
+    // Comprimir + subir al servidor
     setUploadingAvatar(true);
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
+      const { compressImage } = await import("@/src/lib/compressImage");
+      const compressed = await compressImage(file, { maxBytes: 4 * 1024 * 1024 });
+
+      if (compressed.size < 300 * 1024) {
+        console.warn("[Avatar] Imagen de baja calidad:", Math.round(compressed.size / 1024), "KB");
+      }
+
+      const formData = new FormData();
+      formData.append('file', compressed);
+
       const res = await fetch('/api/users/me/avatar', {
         method: 'POST',
         body: formData,

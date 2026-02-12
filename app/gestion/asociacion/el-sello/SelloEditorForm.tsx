@@ -40,13 +40,9 @@ export function SelloEditorForm({
   const handleUploadEditorImage = async (file: File): Promise<string> => {
     setUploadingEditorImage(true);
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('folder', 'sello-cms');
-      const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
-      if (!res.ok) throw new Error('Error subiendo imagen');
-      const data = await res.json();
-      return data.url || data.publicUrl || '';
+      const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+      const { url } = await uploadImageToR2(file, 'sello-cms');
+      return url;
     } finally {
       setUploadingEditorImage(false);
     }
