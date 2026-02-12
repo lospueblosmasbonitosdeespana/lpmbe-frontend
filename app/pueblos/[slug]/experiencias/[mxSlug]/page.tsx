@@ -274,27 +274,38 @@ export default async function MultiexperienciaPage({
 
       {/* Paradas */}
       <section style={{ marginTop: "32px" }}>
-        <h2>Paradas</h2>
+        <h2 style={{ marginBottom: "8px" }}>Paradas</h2>
+        <p style={{ fontSize: "14px", color: "#666", marginBottom: "24px" }}>
+          {paradas.length} {paradas.length === 1 ? "parada" : "paradas"} en esta experiencia
+        </p>
         {paradas.length === 0 ? (
           <p>No hay paradas disponibles</p>
         ) : (
-          <div className="space-y-6">
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
             {paradas.map((p: any, idx: number) => {
-              // Generar key única basada en kind + id
               const key = p.kind === 'LEGACY' 
                 ? `L-${p.legacyLugarId}` 
                 : `C-${p.customId ?? idx}`;
+              const num = idx + 1;
               
               return (
-                <article key={key} className="space-y-3">
-                  {/* Foto: proporción 16:9 para no mostrar panorámicas demasiado anchas */}
+                <article
+                  key={key}
+                  style={{
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                    border: "1px solid #e5e7eb",
+                    background: "#fff",
+                  }}
+                >
+                  {/* Foto */}
                   {p.foto ? (
                     <div
                       style={{
+                        position: "relative",
                         aspectRatio: "16/9",
                         maxWidth: "100%",
                         overflow: "hidden",
-                        borderRadius: "8px",
                         backgroundColor: "#f0f0f0",
                       }}
                     >
@@ -308,29 +319,129 @@ export default async function MultiexperienciaPage({
                         }}
                         loading="lazy"
                       />
+                      {/* Badge número sobre la foto */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "12px",
+                          left: "12px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          background: "rgba(30, 64, 175, 0.9)",
+                          backdropFilter: "blur(4px)",
+                          borderRadius: "20px",
+                          padding: "6px 14px 6px 6px",
+                          color: "white",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                        }}
+                      >
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: "28px",
+                            height: "28px",
+                            borderRadius: "50%",
+                            background: "white",
+                            color: "#1e40af",
+                            fontSize: "14px",
+                            fontWeight: 800,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {num}
+                        </span>
+                        <span style={{ fontSize: "13px", fontWeight: 600 }}>
+                          Parada {num}
+                        </span>
+                      </div>
                     </div>
                   ) : null}
 
-                  {/* Título */}
-                  {p.titulo ? (
-                    <h3 className="text-xl font-semibold">{p.titulo}</h3>
-                  ) : null}
-
-                  {/* Descripción */}
-                  {p.descripcion ? (
-                    <div className="prose max-w-none whitespace-pre-wrap">
-                      {p.descripcion}
+                  {/* Contenido */}
+                  <div style={{ padding: "20px" }}>
+                    {/* Número + Título */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      {!p.foto && (
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: "36px",
+                            height: "36px",
+                            borderRadius: "50%",
+                            background: "linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)",
+                            color: "white",
+                            fontSize: "16px",
+                            fontWeight: 800,
+                            flexShrink: 0,
+                            boxShadow: "0 2px 6px rgba(59,130,246,0.3)",
+                          }}
+                        >
+                          {num}
+                        </span>
+                      )}
+                      {p.titulo ? (
+                        <h3 style={{ fontSize: "20px", fontWeight: 600, margin: 0, lineHeight: 1.3 }}>
+                          {p.foto && (
+                            <span style={{ color: "#1e40af", fontWeight: 700 }}>{num}. </span>
+                          )}
+                          {p.titulo}
+                        </h3>
+                      ) : (
+                        <h3 style={{ fontSize: "20px", fontWeight: 600, margin: 0, color: "#9ca3af" }}>
+                          Parada {num}
+                        </h3>
+                      )}
                     </div>
-                  ) : (
-                    <p className="text-gray-500">Descripción próximamente.</p>
-                  )}
 
-                  {/* Coordenadas */}
-                  {typeof p.lat === "number" && typeof p.lng === "number" ? (
-                    <p className="text-sm text-gray-600">
-                      Coordenadas: {p.lat}, {p.lng}
-                    </p>
-                  ) : null}
+                    {/* Descripción */}
+                    {p.descripcion ? (
+                      <div
+                        style={{
+                          marginTop: "12px",
+                          fontSize: "15px",
+                          lineHeight: 1.7,
+                          color: "#374151",
+                          whiteSpace: "pre-wrap",
+                        }}
+                      >
+                        {p.descripcion}
+                      </div>
+                    ) : (
+                      <p style={{ marginTop: "12px", color: "#9ca3af", fontSize: "14px", fontStyle: "italic" }}>
+                        Descripción próximamente.
+                      </p>
+                    )}
+
+                    {/* Enlace Google Maps */}
+                    {typeof p.lat === "number" && typeof p.lng === "number" ? (
+                      <div style={{ marginTop: "12px" }}>
+                        <a
+                          href={`https://www.google.com/maps?q=${p.lat},${p.lng}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            fontSize: "13px",
+                            color: "#2563eb",
+                            textDecoration: "none",
+                          }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                            <circle cx="12" cy="10" r="3" />
+                          </svg>
+                          Ver en Google Maps
+                        </a>
+                      </div>
+                    ) : null}
+                  </div>
                 </article>
               );
             })}
