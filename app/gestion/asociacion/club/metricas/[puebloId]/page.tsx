@@ -88,6 +88,37 @@ export default function ClubMetricasPuebloPage() {
   const [metricas, setMetricas] = useState<Metricas | null>(null);
   const [puebloNombre, setPuebloNombre] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [seedLoading, setSeedLoading] = useState(false);
+  const [seedMessage, setSeedMessage] = useState<string | null>(null);
+
+  const refetchMetricas = () => {
+    if (!puebloId) return;
+    setLoading(true);
+    fetch(`/api/club/validador/metricas-pueblo?puebloId=${puebloId}&days=7`, { cache: 'no-store', credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Error'))))
+      .then((data) => setMetricas(normalizeMetricas(data)))
+      .catch(() => setError('Error cargando métricas'))
+      .finally(() => setLoading(false));
+  };
+
+  const crearDatosPrueba = async () => {
+    setSeedLoading(true);
+    setSeedMessage(null);
+    try {
+      const res = await fetch('/api/club/admin/seed-prueba-ainsa', { method: 'POST', credentials: 'include' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSeedMessage(data?.error ?? 'Error al crear datos de prueba');
+        return;
+      }
+      setSeedMessage(data?.message ?? 'Datos de prueba creados. Recargando métricas…');
+      refetchMetricas();
+    } catch {
+      setSeedMessage('Error de conexión');
+    } finally {
+      setSeedLoading(false);
+    }
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -100,6 +131,7 @@ export default function ClubMetricasPuebloPage() {
         // Cargar métricas del pueblo
         const res = await fetch(`/api/club/validador/metricas-pueblo?puebloId=${puebloId}&days=7`, {
           cache: 'no-store',
+          credentials: 'include',
         });
 
         if (!res.ok) {
@@ -161,12 +193,46 @@ export default function ClubMetricasPuebloPage() {
         <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
           Métricas · {puebloNombre || `Pueblo ${puebloId}`}
         </h1>
-        <div style={{ fontSize: 14, color: '#666' }}>
+        <div style={{ fontSize: 14, color: '#666', marginBottom: 8 }}>
           <Link href="/gestion/asociacion/club/metricas" style={{ color: '#0066cc', textDecoration: 'none' }}>
             ← Volver a métricas
           </Link>
         </div>
+        {puebloId === '37' && (
+          <div style={{ marginTop: 12 }}>
+            <button
+              type="button"
+              onClick={crearDatosPrueba}
+              disabled={seedLoading}
+              style={{
+                padding: '8px 16px',
+                fontSize: 14,
+                background: seedLoading ? '#ccc' : '#0ea5e9',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 6,
+                cursor: seedLoading ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {seedLoading ? 'Creando…' : 'Crear datos de prueba (2 validaciones Aínsa)'}
+            </button>
+            {seedMessage && (
+              <span style={{ marginLeft: 12, fontSize: 14, color: seedMessage.startsWith('Error') ? '#b91c1c' : '#15803d' }}>
+                {seedMessage}
+              </span>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Aviso si no hay datos (Aínsa) */}
+      {puebloId === '37' && metricas.hoy.total === 0 && metricas.ultimosEscaneos.length === 0 && (
+        <div style={{ marginBottom: 24, padding: 16, background: '#eff6ff', border: '1px solid #3b82f6', borderRadius: 8 }}>
+          <div style={{ fontSize: 14, color: '#1e40af' }}>
+            No hay validaciones todavía. Usa el botón <strong>«Crear datos de prueba (2 validaciones Aínsa)»</strong> de arriba para generar 2 visitas de ejemplo (Castillo y Museo) y comprobar que las métricas se actualizan.
+          </div>
+        </div>
+      )}
 
       {/* HOY */}
       <div style={{ marginBottom: 24 }}>
