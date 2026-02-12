@@ -692,6 +692,12 @@ export default function EnvioAdminClient() {
         <h3 className="mb-2 font-semibold text-blue-900">Como funciona</h3>
         <ul className="list-disc space-y-1 pl-5 text-sm text-blue-800">
           <li>
+            Zonas por defecto: Península (01-50), Baleares (07), Canarias (35, 38), Extranjero (pais distinto de España).
+          </li>
+          <li>
+            Si el pais de la direccion no es España, se usa la zona &quot;Extranjero&quot;. Si es España, la zona se resuelve por los 2 primeros digitos del codigo postal.
+          </li>
+          <li>
             Al hacer checkout, se suma el peso de todos los productos del carrito + la tara del embalaje.
           </li>
           <li>
@@ -699,14 +705,10 @@ export default function EnvioAdminClient() {
             y se usa el metodo de envio gratis de SendCloud.
           </li>
           <li>
-            Si no, se detecta la zona del cliente por su codigo postal (2 primeros digitos) 
-            y se busca la tarifa cuyo rango de peso incluya el peso total.
+            Si no, se busca la tarifa de la zona correspondiente cuyo rango de peso incluya el peso total.
           </li>
           <li>
-            Si un producto no tiene peso definido, se estiman 0.5 kg por unidad.
-          </li>
-          <li>
-            Si un producto no tiene dimensiones, se usan las dimensiones por defecto (sobre).
+            Si un producto no tiene peso definido, se estiman 0.5 kg por unidad. Sin dimensiones se usan 30x20x2 cm.
           </li>
         </ul>
       </section>
