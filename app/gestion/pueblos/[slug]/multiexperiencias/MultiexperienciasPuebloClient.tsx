@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import R2ImageUploader from "@/app/components/R2ImageUploader";
 
 type Multiexperiencia = {
   id: number;
@@ -50,9 +51,6 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
   // Estados para editar foto de multiexperiencia
   const [editingMxFoto, setEditingMxFoto] = useState<number | null>(null);
   const [editMxFotoValue, setEditMxFotoValue] = useState("");
-  
-  // Estados para subir archivos
-  const [uploadingFile, setUploadingFile] = useState(false);
 
   // Cargar pueblo
   useEffect(() => {
@@ -427,29 +425,6 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
     alert("Multiexperiencia eliminada correctamente");
   }
 
-  // Subir imagen y obtener URL
-  async function uploadImage(file: File): Promise<string | null> {
-    setUploadingFile(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/admin/uploads", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) return null;
-
-      const data = await res.json();
-      return data.url;
-    } catch (err) {
-      return null;
-    } finally {
-      setUploadingFile(false);
-    }
-  }
-
   // Helper para detectar coordenadas del pueblo
   function areCoordsPueblo(lat: number | null, lng: number | null): boolean {
     if (lat == null || lng == null || !pueblo?.lat || !pueblo?.lng) return false;
@@ -591,76 +566,34 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                       Slug: {mx.slug} | Activa: {mx.activo ? "Sí" : "No"}
                     </p>
                     
-                    {/* Editar foto de multiexperiencia */}
+                    {/* Editar foto de multiexperiencia (subida a R2) */}
                     {editingMxFoto === mx.id ? (
                       <div className="mt-2 space-y-2">
-                        {/* Pegar URL */}
-                        <input
-                          type="text"
-                          value={editMxFotoValue}
-                          onChange={(e) => setEditMxFotoValue(e.target.value)}
-                          placeholder="Pegar URL (https://...)"
-                          className="w-full rounded border border-gray-300 px-2 py-1 text-sm"
+                        <R2ImageUploader
+                          label="Foto de la multiexperiencia"
+                          value={editMxFotoValue || null}
+                          onChange={(url) => setEditMxFotoValue(url ?? "")}
+                          folder="multiexperiencias/portadas"
+                          previewHeight="h-24"
                         />
-                        
-                        {/* Subir archivo */}
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (!file) return;
-                              
-                              const url = await uploadImage(file);
-                              if (url) {
-                                setEditMxFotoValue(url);
-                              }
-                              
-                              e.target.value = '';
-                            }}
-                            disabled={uploadingFile}
-                            className="text-xs"
-                          />
-                          {uploadingFile && (
-                            <span className="text-xs text-gray-500">Subiendo...</span>
-                          )}
-                        </div>
-                        
-                        {/* Preview */}
-                        {editMxFotoValue && (
-                          <img 
-                            src={editMxFotoValue} 
-                            alt="Preview" 
-                            className="max-w-xs rounded border"
-                            style={{ maxHeight: 100 }}
-                          />
-                        )}
-                        
-                        {/* Botones */}
                         <div className="flex gap-2">
                           <button
                             onClick={async () => {
                               try {
-                                // PROTEGER FOTOS: solo enviar si hay valor real
                                 const fotoTrimmed = editMxFotoValue.trim();
                                 if (!fotoTrimmed) {
-                                  alert("Debes proporcionar una URL de foto o dejar el campo sin cambios");
+                                  alert("Sube una foto o deja el campo vacío sin guardar.");
                                   return;
                                 }
-
-                                const payload: any = { foto: fotoTrimmed };
-
                                 const res = await fetch(`/api/admin/multiexperiencias/${mx.id}`, {
                                   method: "PUT",
                                   headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify(payload),
+                                  body: JSON.stringify({ foto: fotoTrimmed }),
                                 });
                                 if (!res.ok) {
                                   const errorText = await res.text();
                                   throw new Error(errorText);
                                 }
-                                // Refrescar lista
                                 if (pueblo?.id) {
                                   const resRefresh = await fetch(`/api/admin/pueblos/${pueblo.id}/multiexperiencias`, { cache: "no-store" });
                                   if (resRefresh.ok) {
@@ -834,55 +767,13 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                           />
                         </div>
 
-                        <div>
-                          <label className="block text-sm font-medium">Foto</label>
-                          
-                          {/* Opción 1: Pegar URL */}
-                          <input
-                            type="text"
-                            value={createParadaFoto}
-                            onChange={(e) => setCreateParadaFoto(e.target.value)}
-                            className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
-                            placeholder="Pegar URL (https://...)"
-                          />
-                          
-                          {/* Opción 2: Subir archivo */}
-                          <div className="mt-2 flex items-center gap-2">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
-                                
-                                const url = await uploadImage(file);
-                                if (url) {
-                                  setCreateParadaFoto(url);
-                                }
-                                
-                                // Limpiar input
-                                e.target.value = '';
-                              }}
-                              disabled={uploadingFile}
-                              className="text-sm"
-                            />
-                            {uploadingFile && (
-                              <span className="text-xs text-gray-500">Subiendo...</span>
-                            )}
-                          </div>
-                          
-                          {/* Preview de foto */}
-                          {createParadaFoto && (
-                            <div className="mt-2">
-                              <img 
-                                src={createParadaFoto} 
-                                alt="Preview" 
-                                className="max-w-xs rounded border"
-                                style={{ maxHeight: 150 }}
-                              />
-                            </div>
-                          )}
-                        </div>
+                        <R2ImageUploader
+                          label="Foto de la parada (se sube a R2)"
+                          value={createParadaFoto || null}
+                          onChange={(url) => setCreateParadaFoto(url ?? "")}
+                          folder="multiexperiencias/paradas"
+                          previewHeight="h-32"
+                        />
                         
                         <div className="grid grid-cols-2 gap-3">
                           <div>
