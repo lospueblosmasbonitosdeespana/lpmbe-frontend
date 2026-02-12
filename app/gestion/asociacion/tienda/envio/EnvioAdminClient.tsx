@@ -692,10 +692,10 @@ export default function EnvioAdminClient() {
         <h3 className="mb-2 font-semibold text-blue-900">Como funciona</h3>
         <ul className="list-disc space-y-1 pl-5 text-sm text-blue-800">
           <li>
-            Zonas por defecto: Península (01-50), Baleares (07), Canarias (35, 38), Extranjero (pais distinto de España).
+            España: Península (01-50), Baleares (07), Canarias (35, 38). Internacional: Portugal, Europa (UE/EEA/UK/CH), Resto del mundo.
           </li>
           <li>
-            Si el pais de la direccion no es España, se usa la zona &quot;Extranjero&quot;. Si es España, la zona se resuelve por los 2 primeros digitos del codigo postal.
+            Si el pais no es España, se asigna Portugal, Europa o Resto del mundo. Si es España, la zona se resuelve por los 2 primeros digitos del codigo postal.
           </li>
           <li>
             Al hacer checkout, se suma el peso de todos los productos del carrito + la tara del embalaje.
