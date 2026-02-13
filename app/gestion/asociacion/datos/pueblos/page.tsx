@@ -15,6 +15,7 @@ type AuditLog = {
   entityId: string | null;
   entitySlug: string | null;
   puebloId: number | null;
+  puebloNombre?: string | null;
   detalles: Record<string, unknown> | null;
   ip: string | null;
   createdAt: string;
@@ -147,6 +148,9 @@ export default function DatosPueblosPage() {
                   Entidad
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  Pueblo
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Ruta
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -157,7 +161,7 @@ export default function DatosPueblosPage() {
             <tbody className="divide-y divide-gray-200 bg-white">
               {logs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
                     {loading ? 'Cargando...' : 'No hay registros aún. Los movimientos de alcaldes y admins se registrarán automáticamente.'}
                   </td>
                 </tr>
@@ -199,13 +203,13 @@ export default function DatosPueblosPage() {
                           {log.entityId && (
                             <span className="text-gray-400"> #{log.entityId}</span>
                           )}
-                          {log.puebloId && (
-                            <span className="text-gray-400"> · Pueblo {log.puebloId}</span>
-                          )}
                         </>
                       ) : (
                         '—'
                       )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700 font-medium">
+                      {log.puebloNombre ?? '—'}
                     </td>
                     <td className="max-w-xs truncate px-4 py-3 text-xs text-gray-500" title={log.path}>
                       {log.path}
