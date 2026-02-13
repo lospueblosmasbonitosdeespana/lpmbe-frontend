@@ -150,8 +150,8 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
         titulo: rp.titulo ?? '',
         descripcion: rp.descripcion ?? '',
         fotoUrl: rp.fotoUrl ?? '',
-        lat: rp.lat ?? null,
-        lng: rp.lng ?? null,
+        lat: rp.lat ?? rp.pueblo?.lat ?? null,
+        lng: rp.lng ?? rp.pueblo?.lng ?? null,
       }))
       .sort((a: Parada, b: Parada) => a.orden - b.orden)
   );
@@ -176,8 +176,8 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
               titulo: rp.titulo ?? '',
               descripcion: rp.descripcion ?? '',
               fotoUrl: rp.fotoUrl ?? '',
-              lat: rp.lat ?? null,
-              lng: rp.lng ?? null,
+              lat: rp.lat ?? rp.pueblo?.lat ?? null,
+              lng: rp.lng ?? rp.pueblo?.lng ?? null,
             }))
             .sort((a: Parada, b: Parada) => a.orden - b.orden)
         : []

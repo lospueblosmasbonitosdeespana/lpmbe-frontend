@@ -31,6 +31,8 @@ type RutaMapProps = {
   height?: number | string;
   /** Callback fired when OSRM route is calculated with distance/time */
   onRouteCalculated?: (info: RouteInfo) => void;
+  /** Show "Invertir ruta" button (default: true when showNavButtons) */
+  allowReverse?: boolean;
 };
 
 // Brand colors
@@ -44,11 +46,13 @@ export default function RutaMap({
   showNavButtons = true,
   height = 500,
   onRouteCalculated,
+  allowReverse = true,
 }: RutaMapProps) {
   const [mounted, setMounted] = useState(false);
   const [L, setL] = useState<typeof import('leaflet') | null>(null);
   const [RL, setRL] = useState<typeof import('react-leaflet') | null>(null);
   const [routeCoords, setRouteCoords] = useState<[number, number][] | null>(null);
+  const [reversed, setReversed] = useState(false);
   const onRouteCalculatedRef = useRef(onRouteCalculated);
   onRouteCalculatedRef.current = onRouteCalculated;
 
@@ -90,14 +94,22 @@ export default function RutaMap({
       }));
   }, [rawWaypoints]);
 
+  // Orden de paradas: normal o invertido (para mapa y navegación)
+  const displayWaypoints = useMemo<Waypoint[]>(() => {
+    if (!reversed || validWaypoints.length < 2) return validWaypoints;
+    return [...validWaypoints]
+      .reverse()
+      .map((w, idx) => ({ ...w, orden: idx + 1, titulo: w.titulo }));
+  }, [validWaypoints, reversed]);
+
   // ── Fetch OSRM route ────────────────────────────────────────
   useEffect(() => {
-    if (!showRouting || validWaypoints.length < 2) {
+    if (!showRouting || displayWaypoints.length < 2) {
       setRouteCoords(null);
       return;
     }
 
-    const coordsStr = validWaypoints
+    const coordsStr = displayWaypoints
       .map((w) => `${w.lng},${w.lat}`)
       .join(';');
 
@@ -130,7 +142,7 @@ export default function RutaMap({
         } else {
           // Fallback: straight lines
           setRouteCoords(
-            validWaypoints.map((w) => [w.lat, w.lng] as [number, number])
+            displayWaypoints.map((w) => [w.lat, w.lng] as [number, number])
           );
         }
       })
@@ -138,30 +150,30 @@ export default function RutaMap({
         if (err.name !== 'AbortError') {
           console.warn('OSRM route fetch failed, falling back to straight lines:', err);
           setRouteCoords(
-            validWaypoints.map((w) => [w.lat, w.lng] as [number, number])
+            displayWaypoints.map((w) => [w.lat, w.lng] as [number, number])
           );
         }
       });
 
     return () => abortController.abort();
-  }, [showRouting, validWaypoints]);
+  }, [showRouting, displayWaypoints]);
 
   // ── Calculate center ─────────────────────────────────────────
   const center = useMemo<[number, number]>(() => {
-    if (validWaypoints.length === 0) return [40.4168, -3.7038];
-    const sumLat = validWaypoints.reduce((acc, w) => acc + w.lat, 0);
-    const sumLng = validWaypoints.reduce((acc, w) => acc + w.lng, 0);
+    if (displayWaypoints.length === 0) return [40.4168, -3.7038];
+    const sumLat = displayWaypoints.reduce((acc, w) => acc + w.lat, 0);
+    const sumLng = displayWaypoints.reduce((acc, w) => acc + w.lng, 0);
     return [
-      sumLat / validWaypoints.length,
-      sumLng / validWaypoints.length,
+      sumLat / displayWaypoints.length,
+      sumLng / displayWaypoints.length,
     ];
-  }, [validWaypoints]);
+  }, [displayWaypoints]);
 
   // ── Calculate zoom ───────────────────────────────────────────
   const zoom = useMemo(() => {
-    if (validWaypoints.length <= 1) return 13;
-    const lats = validWaypoints.map((w) => w.lat);
-    const lngs = validWaypoints.map((w) => w.lng);
+    if (displayWaypoints.length <= 1) return 13;
+    const lats = displayWaypoints.map((w) => w.lat);
+    const lngs = displayWaypoints.map((w) => w.lng);
     const latSpread = Math.max(...lats) - Math.min(...lats);
     const lngSpread = Math.max(...lngs) - Math.min(...lngs);
     const maxSpread = Math.max(latSpread, lngSpread);
@@ -174,7 +186,7 @@ export default function RutaMap({
     if (maxSpread < 1) return 9;
     if (maxSpread < 2) return 8;
     return 7;
-  }, [validWaypoints]);
+  }, [displayWaypoints]);
 
   // ── Numbered marker icons ────────────────────────────────────
   const createNumberedIcon = useCallback(
@@ -207,39 +219,39 @@ export default function RutaMap({
 
   // ── Navigation URLs ──────────────────────────────────────────
   const googleMapsUrl = useMemo(() => {
-    if (validWaypoints.length === 0) return null;
-    if (validWaypoints.length === 1) {
-      return `https://www.google.com/maps/dir/?api=1&destination=${validWaypoints[0].lat},${validWaypoints[0].lng}&travelmode=driving`;
+    if (displayWaypoints.length === 0) return null;
+    if (displayWaypoints.length === 1) {
+      return `https://www.google.com/maps/dir/?api=1&destination=${displayWaypoints[0].lat},${displayWaypoints[0].lng}&travelmode=driving`;
     }
-    const origin = validWaypoints[0];
-    const dest = validWaypoints[validWaypoints.length - 1];
-    const middle = validWaypoints.slice(1, -1);
+    const origin = displayWaypoints[0];
+    const dest = displayWaypoints[displayWaypoints.length - 1];
+    const middle = displayWaypoints.slice(1, -1);
     let url = `https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lng}&destination=${dest.lat},${dest.lng}&travelmode=driving`;
     if (middle.length > 0) {
       url += `&waypoints=${middle.map((w) => `${w.lat},${w.lng}`).join('|')}`;
     }
     return url;
-  }, [validWaypoints]);
+  }, [displayWaypoints]);
 
   const appleMapsUrl = useMemo(() => {
-    if (validWaypoints.length === 0) return null;
-    const dest = validWaypoints[validWaypoints.length - 1];
+    if (displayWaypoints.length === 0) return null;
+    const dest = displayWaypoints[displayWaypoints.length - 1];
     return `https://maps.apple.com/?daddr=${dest.lat},${dest.lng}&dirflg=d`;
-  }, [validWaypoints]);
+  }, [displayWaypoints]);
 
   const wazeUrl = useMemo(() => {
-    if (validWaypoints.length === 0) return null;
-    const dest = validWaypoints[validWaypoints.length - 1];
+    if (displayWaypoints.length === 0) return null;
+    const dest = displayWaypoints[displayWaypoints.length - 1];
     return `https://waze.com/ul?ll=${dest.lat},${dest.lng}&navigate=yes`;
-  }, [validWaypoints]);
+  }, [displayWaypoints]);
 
   // ── Map key for re-rendering when waypoints change ───────────
   const mapKey = useMemo(
     () =>
-      validWaypoints
+      displayWaypoints
         .map((w) => `${w.orden}-${w.lat.toFixed(4)}-${w.lng.toFixed(4)}`)
         .join('_') || 'empty',
-    [validWaypoints]
+    [displayWaypoints]
   );
 
   // ── Empty state ──────────────────────────────────────────────
@@ -306,9 +318,9 @@ export default function RutaMap({
           )}
 
           {/* Dashed fallback while loading / if routing disabled */}
-          {!routeCoords && validWaypoints.length >= 2 && (
+          {!routeCoords && displayWaypoints.length >= 2 && (
             <Polyline
-              positions={validWaypoints.map(
+              positions={displayWaypoints.map(
                 (w) => [w.lat, w.lng] as [number, number]
               )}
               pathOptions={{
@@ -321,7 +333,7 @@ export default function RutaMap({
           )}
 
           {/* Numbered markers */}
-          {validWaypoints.map((w) => {
+          {displayWaypoints.map((w) => {
             const icon = createNumberedIcon(w.orden);
             return (
               <Marker
@@ -360,9 +372,22 @@ export default function RutaMap({
         </MapContainer>
       </div>
 
-      {/* Navigation buttons */}
+      {/* Invertir ruta + Navigation buttons */}
       {showNavButtons && (
-        <div className="mt-4 flex flex-wrap gap-3">
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          {allowReverse && validWaypoints.length >= 2 && (
+            <button
+              type="button"
+              onClick={() => setReversed((r) => !r)}
+              className="inline-flex items-center gap-2 rounded-lg border border-primary bg-white px-4 py-2.5 text-sm font-medium text-primary shadow-sm transition hover:bg-accent"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 16V4M7 4L3 8M7 4L11 8" />
+                <path d="M17 8v12M17 20l4-4M17 20l-4-4" />
+              </svg>
+              {reversed ? 'Ver ruta normal' : 'Invertir ruta'}
+            </button>
+          )}
           {googleMapsUrl && (
             <a
               href={googleMapsUrl}
