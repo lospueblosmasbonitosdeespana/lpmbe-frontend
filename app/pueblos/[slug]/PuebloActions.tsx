@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -241,8 +241,22 @@ export default function PuebloActions({
   semaforoCaducaEn,
 }: PuebloActionsProps) {
   const [shareState, setShareState] = useState<ActionBarState>("idle");
+  const [shareDropdownOpen, setShareDropdownOpen] = useState(false);
+  const shareDropdownRef = useRef<HTMLDivElement>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [showSuscribirseModal, setShowSuscribirseModal] = useState(false);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (shareDropdownRef.current && !shareDropdownRef.current.contains(event.target as Node)) {
+        setShareDropdownOpen(false);
+      }
+    }
+    if (shareDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [shareDropdownOpen]);
 
   useEffect(() => {
     let mounted = true;
@@ -259,14 +273,14 @@ export default function PuebloActions({
     };
   }, []);
 
-  const handleShare = async () => {
-    const url = typeof window !== "undefined" ? window.location.href : "";
-    const title = `${nombre} | Los Pueblos Más Bonitos de España`;
-    const text = `Descubre ${nombre}`;
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const shareTitle = `${nombre} | Los Pueblos Más Bonitos de España`;
+  const shareText = `Descubre ${nombre}`;
 
+  const handleShareClick = async () => {
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
-        await navigator.share({ title, text, url });
+        await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
         setShareState("success");
         setTimeout(() => setShareState("idle"), 2000);
         return;
@@ -274,15 +288,27 @@ export default function PuebloActions({
         if ((err as Error).name === "AbortError") return;
       }
     }
+    setShareDropdownOpen((open) => !open);
+  };
 
+  const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(shareUrl);
       setShareState("success");
+      setShareDropdownOpen(false);
       setTimeout(() => setShareState("idle"), 2000);
     } catch {
-      prompt("Copia esta URL:", url);
+      if (typeof window !== "undefined") prompt("Copia esta URL:", shareUrl);
     }
   };
+
+  const encodedUrl = typeof window !== "undefined" ? encodeURIComponent(shareUrl) : "";
+  const encodedText = encodeURIComponent(`${shareText} ${shareUrl}`);
+  const shareLinks = [
+    { label: "WhatsApp", href: `https://wa.me/?text=${encodedText}` },
+    { label: "X (Twitter)", href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodedUrl}` },
+    { label: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}` },
+  ];
 
   const tieneCoords = lat !== null && lng !== null;
   const directionsUrl = tieneCoords
@@ -297,12 +323,43 @@ export default function PuebloActions({
       <Section spacing="none" className={cn("border-b border-border")}>
         <Container>
           <div className="flex items-center justify-center gap-8 py-4 sm:gap-12">
-            <ActionButton
-              icon={<ShareIcon className="h-5 w-5" />}
-              label="Compartir"
-              state={shareState}
-              onClick={handleShare}
-            />
+            <div className="relative flex flex-col items-center" ref={shareDropdownRef}>
+              <ActionButton
+                icon={<ShareIcon className="h-5 w-5" />}
+                label="Compartir"
+                state={shareState}
+                onClick={handleShareClick}
+              />
+              {shareDropdownOpen && (
+                <div
+                  className="absolute top-full left-1/2 z-50 mt-2 w-48 -translate-x-1/2 rounded-lg border border-border bg-card py-1 shadow-lg"
+                  role="menu"
+                  aria-label="Compartir en redes sociales"
+                >
+                  {shareLinks.map(({ label, href }) => (
+                    <a
+                      key={label}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted"
+                      role="menuitem"
+                      onClick={() => setShareDropdownOpen(false)}
+                    >
+                      {label}
+                    </a>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-foreground hover:bg-muted"
+                    role="menuitem"
+                  >
+                    Copiar enlace
+                  </button>
+                </div>
+              )}
+            </div>
             <ActionButton
               icon={<VideosIcon className="h-5 w-5" />}
               label="Videos"
