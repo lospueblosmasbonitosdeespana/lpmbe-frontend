@@ -12,6 +12,7 @@ import {
   updateDireccion,
   deleteDireccion,
 } from '@/src/lib/tiendaApi';
+import { PAISES_ENVIO, getCountryLabel, getCountrySelectValue } from '@/src/lib/countries';
 import type { Direccion } from '@/src/types/tienda';
 
 const emptyForm = {
@@ -20,7 +21,8 @@ const emptyForm = {
   ciudad: '',
   provincia: '',
   codigoPostal: '',
-  pais: 'España',
+  pais: 'ES',
+  paisOtro: '',
   telefono: '',
   esPrincipal: false,
 };
@@ -66,13 +68,15 @@ export default function DireccionesPage() {
 
   function handleStartEdit(dir: Direccion) {
     setEditingId(dir.id);
+    const selVal = getCountrySelectValue(dir.pais);
     setFormData({
       nombre: dir.nombre,
       direccion: dir.direccion,
       ciudad: dir.ciudad,
       provincia: dir.provincia ?? '',
       codigoPostal: dir.codigoPostal,
-      pais: dir.pais ?? 'España',
+      pais: selVal,
+      paisOtro: selVal === 'XX' ? (dir.pais ?? '') : '',
       telefono: dir.telefono ?? '',
       esPrincipal: dir.esPrincipal,
     });
@@ -93,6 +97,11 @@ export default function DireccionesPage() {
       setError('Completa los campos obligatorios: nombre, dirección, ciudad y código postal');
       return;
     }
+    const paisFinal = formData.pais === 'XX' ? (formData.paisOtro || 'ES') : formData.pais;
+    if (formData.pais === 'XX' && !formData.paisOtro?.trim()) {
+      setError('Indica el nombre del país');
+      return;
+    }
 
     setSaving(true);
     setError(null);
@@ -104,7 +113,7 @@ export default function DireccionesPage() {
         ciudad: formData.ciudad,
         provincia: formData.provincia || '',
         codigoPostal: formData.codigoPostal,
-        pais: formData.pais || 'España',
+        pais: paisFinal,
         telefono: formData.telefono || null,
         esPrincipal: formData.esPrincipal,
       };
@@ -227,7 +236,7 @@ export default function DireccionesPage() {
                         {dir.codigoPostal} {dir.ciudad}
                         {dir.provincia ? `, ${dir.provincia}` : ''}
                       </p>
-                      <p className="text-sm text-muted-foreground">{dir.pais}</p>
+                      <p className="text-sm text-muted-foreground">{getCountryLabel(dir.pais)}</p>
                       {dir.telefono && (
                         <p className="text-sm text-muted-foreground">Tel: {dir.telefono}</p>
                       )}
@@ -345,12 +354,35 @@ export default function DireccionesPage() {
 
                 <div className="space-y-2">
                   <label className="block text-sm font-medium">País</label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.pais}
-                    onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        pais: e.target.value,
+                        paisOtro: e.target.value === 'XX' ? formData.paisOtro : '',
+                      })
+                    }
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                  />
+                  >
+                    {PAISES_ENVIO.map((p) => (
+                      <option key={p.value} value={p.value}>
+                        {p.label}
+                      </option>
+                    ))}
+                  </select>
+                  {formData.pais === 'XX' && (
+                    <input
+                      type="text"
+                      placeholder="Nombre del país (ej: Francia, México)"
+                      value={formData.paisOtro}
+                      onChange={(e) => setFormData({ ...formData, paisOtro: e.target.value })}
+                      className="mt-2 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                    />
+                  )}
+                  <Caption className="mt-1 block">
+                    Envíos a España, Portugal, Europa y resto del mundo
+                  </Caption>
                 </div>
 
                 <label className="flex items-center gap-2">

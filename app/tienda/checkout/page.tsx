@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useCartStore } from '@/src/store/cart';
-import { getUserDirecciones, createDireccion, createCheckout } from '@/src/lib/tiendaApi';
+import { getUserDirecciones, createDireccion, updateDireccion, createCheckout } from '@/src/lib/tiendaApi';
 import { formatEUR, toNumber } from '@/src/lib/money';
+import { PAISES_ENVIO, getCountryLabel, getCountrySelectValue } from '@/src/lib/countries';
 import type { Direccion, CheckoutResponse } from '@/src/types/tienda';
 import { normalizeCheckoutResponse } from '@/src/types/tienda';
 import StripePaymentClient from './StripePaymentClient';
@@ -19,20 +21,22 @@ export default function CheckoutPage() {
   const [direcciones, setDirecciones] = useState<Direccion[]>([]);
   const [selectedDireccionId, setSelectedDireccionId] = useState<number | null>(null);
   const [showNewDireccion, setShowNewDireccion] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [payment, setPayment] = useState<{ orderId: number; clientSecret: string } | null>(null);
   const [checkoutData, setCheckoutData] = useState<CheckoutResponse | null>(null);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
 
-  // Formulario nueva dirección
+  // Formulario nueva/editar dirección
   const [formData, setFormData] = useState({
     nombre: '',
     direccion: '',
     ciudad: '',
     provincia: '',
     codigoPostal: '',
-    pais: 'España',
+    pais: 'ES',
+    paisOtro: '',
     telefono: '',
     esPrincipal: false,
   });
@@ -74,9 +78,49 @@ export default function CheckoutPage() {
     setLoading(false);
   };
 
-  const handleCreateDireccion = async () => {
+  const emptyForm = () => ({
+    nombre: '',
+    direccion: '',
+    ciudad: '',
+    provincia: '',
+    codigoPostal: '',
+    pais: 'ES',
+    paisOtro: '',
+    telefono: '',
+    esPrincipal: false,
+  });
+
+  const handleStartEdit = (dir: Direccion) => {
+    setEditingId(dir.id);
+    setFormData({
+      nombre: dir.nombre,
+      direccion: dir.direccion,
+      ciudad: dir.ciudad,
+      provincia: dir.provincia ?? '',
+      codigoPostal: dir.codigoPostal,
+      pais: getCountrySelectValue(dir.pais),
+      paisOtro: getCountrySelectValue(dir.pais) === 'XX' ? (dir.pais ?? '') : '',
+      telefono: dir.telefono ?? '',
+      esPrincipal: dir.esPrincipal,
+    });
+    setShowNewDireccion(true);
+    setError(null);
+  };
+
+  const handleCancelForm = () => {
+    setShowNewDireccion(false);
+    setEditingId(null);
+    setFormData(emptyForm());
+  };
+
+  const handleSaveDireccion = async () => {
     if (!formData.nombre || !formData.direccion || !formData.ciudad || !formData.codigoPostal) {
       setError('Completa todos los campos obligatorios');
+      return;
+    }
+    const paisFinal = formData.pais === 'XX' ? (formData.paisOtro || 'ES') : formData.pais;
+    if (formData.pais === 'XX' && !formData.paisOtro?.trim()) {
+      setError('Indica el nombre del país');
       return;
     }
 
@@ -84,27 +128,31 @@ export default function CheckoutPage() {
     setError(null);
 
     try {
-      const newDir = await createDireccion(formData);
-      setDirecciones([...direcciones, newDir]);
-      setSelectedDireccionId(newDir.id);
-      setShowNewDireccion(false);
-      
-      // Reset form
-      setFormData({
-        nombre: '',
-        direccion: '',
-        ciudad: '',
-        provincia: '',
-        codigoPostal: '',
-        pais: 'España',
-        telefono: '',
-        esPrincipal: false,
-      });
-      
-      // Previsualizar checkout tras crear dirección
-      await previewCheckout(newDir.id);
+      const payload = {
+        nombre: formData.nombre,
+        direccion: formData.direccion,
+        ciudad: formData.ciudad,
+        provincia: formData.provincia || '',
+        codigoPostal: formData.codigoPostal,
+        pais: paisFinal,
+        telefono: formData.telefono || null,
+        esPrincipal: formData.esPrincipal,
+      };
+
+      if (editingId) {
+        const updated = await updateDireccion(editingId, payload);
+        setDirecciones(direcciones.map((d) => (d.id === editingId ? updated : d)));
+        setSelectedDireccionId(updated.id);
+        await previewCheckout(updated.id);
+      } else {
+        const newDir = await createDireccion(payload);
+        setDirecciones([...direcciones, newDir]);
+        setSelectedDireccionId(newDir.id);
+        await previewCheckout(newDir.id);
+      }
+      handleCancelForm();
     } catch (e: any) {
-      setError(e?.message ?? 'Error creando dirección');
+      setError(e?.message ?? 'Error guardando dirección');
     } finally {
       setProcessing(false);
     }
@@ -280,54 +328,78 @@ export default function CheckoutPage() {
             {!showNewDireccion && direcciones.length > 0 && (
               <div className="space-y-3">
                 {direcciones.map((dir) => (
-                  <label
+                  <div
                     key={dir.id}
-                    className={`block rounded-lg border p-4 cursor-pointer transition-colors ${
+                    className={`flex items-start gap-3 rounded-lg border p-4 transition-colors ${
                       selectedDireccionId === dir.id
                         ? 'border-blue-600 bg-blue-50'
                         : 'border-gray-200 hover:bg-gray-50'
                     }`}
                   >
-                    <input
-                      type="radio"
-                      name="direccion"
-                      checked={selectedDireccionId === dir.id}
-                      onChange={() => setSelectedDireccionId(dir.id)}
-                      className="mr-3"
-                    />
-                    <strong>{dir.nombre}</strong>
-                    <br />
-                    {dir.direccion}
-                    <br />
-                    {dir.codigoPostal} {dir.ciudad}, {dir.provincia}
-                    <br />
-                    {dir.pais}
-                    {dir.telefono && (
-                      <>
-                        <br />
-                        Tel: {dir.telefono}
-                      </>
-                    )}
-                    {dir.esPrincipal && (
-                      <span className="ml-3 inline-block rounded bg-green-100 px-2 py-1 text-xs text-green-800">
-                        Principal
+                    <label className="flex-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="direccion"
+                        checked={selectedDireccionId === dir.id}
+                        onChange={() => setSelectedDireccionId(dir.id)}
+                        className="mr-3"
+                      />
+                      <strong>{dir.nombre}</strong>
+                      <br />
+                      <span className="text-sm text-gray-700">{dir.direccion}</span>
+                      <br />
+                      <span className="text-sm text-gray-700">
+                        {dir.codigoPostal} {dir.ciudad}
+                        {dir.provincia ? `, ${dir.provincia}` : ''}
                       </span>
-                    )}
-                  </label>
+                      <br />
+                      <span className="text-sm text-gray-700">{getCountryLabel(dir.pais)}</span>
+                      {dir.telefono && (
+                        <>
+                          <br />
+                          <span className="text-sm text-gray-600">Tel: {dir.telefono}</span>
+                        </>
+                      )}
+                      {dir.esPrincipal && (
+                        <span className="ml-2 inline-block rounded bg-green-100 px-2 py-0.5 text-xs text-green-800">
+                          Principal
+                        </span>
+                      )}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => handleStartEdit(dir)}
+                      className="shrink-0 rounded border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      Editar
+                    </button>
+                  </div>
                 ))}
 
-                <button
-                  onClick={() => setShowNewDireccion(true)}
-                  className="text-sm text-blue-600 hover:text-blue-800"
-                >
-                  + Añadir nueva dirección
-                </button>
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => {
+                      setEditingId(null);
+                      setFormData(emptyForm());
+                      setShowNewDireccion(true);
+                    }}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    + Añadir nueva dirección
+                  </button>
+                  <Link
+                    href="/mi-cuenta/direcciones"
+                    className="text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    Gestionar direcciones
+                  </Link>
+                </div>
               </div>
             )}
 
             {(showNewDireccion || direcciones.length === 0) && (
               <div className="rounded-lg border border-gray-200 bg-white p-6 space-y-4">
-                <h3 className="font-semibold">Nueva dirección</h3>
+                <h3 className="font-semibold">{editingId ? 'Editar dirección' : 'Nueva dirección'}</h3>
 
                 <div>
                   <label className="block text-sm font-medium mb-1">
@@ -400,12 +472,38 @@ export default function CheckoutPage() {
                     <label className="block text-sm font-medium mb-1">
                       País
                     </label>
-                    <input
-                      type="text"
+                    <select
                       value={formData.pais}
-                      onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setFormData({
+                          ...formData,
+                          pais: v,
+                          paisOtro: v === 'XX' ? formData.paisOtro : '',
+                        });
+                      }}
                       className="w-full rounded border border-gray-300 px-3 py-2"
-                    />
+                    >
+                      {PAISES_ENVIO.map((p) => (
+                        <option key={p.value} value={p.value}>
+                          {p.label}
+                        </option>
+                      ))}
+                    </select>
+                    {formData.pais === 'XX' && (
+                      <input
+                        type="text"
+                        value={formData.paisOtro}
+                        onChange={(e) =>
+                          setFormData({ ...formData, paisOtro: e.target.value })
+                        }
+                        placeholder="Nombre del país (ej: Francia, México)"
+                        className="mt-2 w-full rounded border border-gray-300 px-3 py-2"
+                      />
+                    )}
+                    <p className="mt-1 text-xs text-gray-500">
+                      Envíos a España, Portugal, Europa y resto del mundo
+                    </p>
                   </div>
                 </div>
 
@@ -434,16 +532,16 @@ export default function CheckoutPage() {
 
                 <div className="flex gap-3 pt-3">
                   <button
-                    onClick={handleCreateDireccion}
+                    onClick={handleSaveDireccion}
                     disabled={processing}
                     className="rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
                   >
-                    {processing ? 'Guardando...' : 'Guardar dirección'}
+                    {processing ? 'Guardando...' : 'Guardar'}
                   </button>
-                  
                   {direcciones.length > 0 && (
                     <button
-                      onClick={() => setShowNewDireccion(false)}
+                      type="button"
+                      onClick={handleCancelForm}
                       className="rounded-lg border border-gray-300 px-6 py-2 hover:bg-gray-50"
                     >
                       Cancelar
