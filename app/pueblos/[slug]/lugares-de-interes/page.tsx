@@ -98,7 +98,7 @@ export default async function LugaresDeInteresPage({
       id: poi.id,
       name: poi.nombre,
       type: CATEGORIA_TEMATICA_LABELS[poi.categoriaTematica ?? ""] ?? poi.categoria ?? "Punto de interés",
-      description: descLimpia || "Sin descripción.",
+      description: descLimpia || "",
       image: poi.foto,
       rotation: poi.rotation,
       href: `/pueblos/${slug}/pois/${poi.id}`,

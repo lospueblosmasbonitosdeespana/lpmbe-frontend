@@ -38,28 +38,18 @@ export function PointsOfInterest({ points, className, maxItems = 6, hideHeader, 
 
   const toShow = maxItems === 0 ? points : points.slice(0, maxItems)
 
-  const headerContent = allHref ? (
-    <Link href={allHref} className="group inline-block">
-      <Headline className="text-2xl sm:text-3xl transition-colors group-hover:text-primary">Lugares de interés</Headline>
-    </Link>
-  ) : (
-    <Headline className="text-2xl sm:text-3xl">Lugares de interés</Headline>
-  )
-
   return (
     <Section spacing="md" className={className} id={id}>
       <Container>
         {!hideHeader && (
-          <div className="mb-6 lg:mb-8">
-            <Eyebrow className="mb-3">Qué ver</Eyebrow>
-            {headerContent}
-            {allHref && (
-              <Link
-                href={allHref}
-                className="mt-3 inline-flex items-center rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-muted hover:border-primary/20"
-              >
-                Todos los lugares de interés
+          <div className="mb-10 max-w-2xl md:mb-12">
+            <Eyebrow className="mb-3 block">Qué ver</Eyebrow>
+            {allHref ? (
+              <Link href={allHref} className="group inline-block">
+                <Headline className="text-2xl sm:text-3xl transition-colors group-hover:text-primary">Lugares de interés</Headline>
               </Link>
+            ) : (
+              <Headline className="text-2xl sm:text-3xl">Lugares de interés</Headline>
             )}
           </div>
         )}
@@ -69,12 +59,24 @@ export function PointsOfInterest({ points, className, maxItems = 6, hideHeader, 
             <PointOfInterestCard key={point.id} point={point} index={index} showFullDescription={showFullDescription} />
           ))}
         </Grid>
+
+        {!hideHeader && allHref && (
+          <div className="mt-6 flex justify-start">
+            <Link
+              href={allHref}
+              className="inline-flex items-center rounded-lg border border-primary/25 bg-primary/10 px-4 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/15 hover:border-primary/35"
+            >
+              Todos los lugares de interés
+            </Link>
+          </div>
+        )}
       </Container>
     </Section>
   )
 }
 
 function PointOfInterestCard({ point, index, showFullDescription }: { point: PointOfInterest; index: number; showFullDescription?: boolean }) {
+  const hasDescription = point.description?.trim() && !/^sin descripción\.?$/i.test(point.description.trim())
   const content = (
     <article
       className={cn(
@@ -104,12 +106,14 @@ function PointOfInterestCard({ point, index, showFullDescription }: { point: Poi
           <h3 className={cn("font-serif text-base font-medium text-foreground sm:text-lg", point.href && "group-hover:text-primary transition-colors")}>
             {point.name}
           </h3>
-          <p className={cn(
-            "text-xs leading-relaxed text-muted-foreground sm:text-sm",
-            !showFullDescription && "line-clamp-2"
-          )}>
-            {point.description}
-          </p>
+          {hasDescription && (
+            <p className={cn(
+              "text-xs leading-relaxed text-muted-foreground sm:text-sm",
+              !showFullDescription && "line-clamp-2"
+            )}>
+              {point.description}
+            </p>
+          )}
         </div>
       </div>
     </article>
