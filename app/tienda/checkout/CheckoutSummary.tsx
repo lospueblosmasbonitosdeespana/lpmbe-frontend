@@ -168,21 +168,10 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
         )}
       </div>
 
-      {/* Desglose IVA */}
-      {checkoutData.iva && (
+      {/* Desglose IVA (solo para Península, Baleares, Europa, Portugal) */}
+      {checkoutData.iva && !checkoutData.iva.exento && (
         <div className="space-y-1 border-b border-gray-200 pb-4 mb-4">
-          {checkoutData.iva.exento ? (
-            <div className="rounded-md bg-amber-50 border border-amber-200 p-3">
-              <p className="text-xs font-semibold text-amber-800">
-                Destino exento de IVA
-              </p>
-              <p className="text-xs text-amber-700 mt-0.5">
-                Los precios mostrados no incluyen IVA.
-                {checkoutData.shipping?.zone === 'Canarias' && ' Impuestos locales (IGIC) no incluidos.'}
-              </p>
-            </div>
-          ) : (
-            <>
+          <>
               <p className="text-xs font-semibold text-gray-600 mb-1">Desglose fiscal (IVA incluido)</p>
               <div className="flex justify-between text-xs text-gray-500">
                 <span>Base imponible productos</span>
@@ -213,7 +202,6 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
                 <span>{formatEUR(checkoutData.iva.totalIva)} €</span>
               </div>
             </>
-          )}
         </div>
       )}
 

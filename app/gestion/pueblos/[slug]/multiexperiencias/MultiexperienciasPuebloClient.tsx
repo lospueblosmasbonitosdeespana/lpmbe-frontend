@@ -12,6 +12,7 @@ type Multiexperiencia = {
   foto: string | null;
   slug: string;
   activo: boolean;
+  legacyId?: number | null;
 };
 
 type Parada = {
@@ -58,6 +59,11 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
   // Editar foto de multiexperiencia
   const [editingMxFoto, setEditingMxFoto] = useState<number | null>(null);
   const [editMxFotoValue, setEditMxFotoValue] = useState("");
+
+  // Editar titulo/descripcion de multiexperiencia
+  const [editingMxMetaId, setEditingMxMetaId] = useState<number | null>(null);
+  const [editMxTitulo, setEditMxTitulo] = useState("");
+  const [editMxDescripcion, setEditMxDescripcion] = useState("");
 
   // flyTo para el mapa
   const [flyToPos, setFlyToPos] = useState<[number, number] | null>(null);
@@ -167,6 +173,40 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
       setCreateMxDescripcion("");
       setShowCreateMx(false);
       alert("Multiexperiencia creada correctamente");
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    }
+  }
+
+  /* ── Actualizar titulo/descripcion multiexperiencia ───────────────── */
+
+  async function handleUpdateMultiexperiencia(mx: Multiexperiencia) {
+    const tituloTrim = editMxTitulo.trim();
+    if (!tituloTrim) {
+      alert("El título no puede estar vacío");
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/multiexperiencias/${mx.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titulo: tituloTrim, descripcion: editMxDescripcion.trim() || null }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text);
+      }
+      if (pueblo?.id) {
+        const resRefresh = await fetch(`/api/admin/pueblos/${pueblo.id}/multiexperiencias`, { cache: "no-store" });
+        if (resRefresh.ok) {
+          const data = await resRefresh.json();
+          setMultiexperiencias(Array.isArray(data) ? data : []);
+        }
+      }
+      setEditingMxMetaId(null);
+      setEditMxTitulo("");
+      setEditMxDescripcion("");
+      alert("Multiexperiencia actualizada");
     } catch (err: any) {
       alert(`Error: ${err.message}`);
     }
@@ -641,9 +681,30 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                 )}
                 <div className="flex-1 flex items-center justify-between">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold">{mx.titulo}</h3>
-                    {mx.descripcion && (
-                      <p className="mt-1 text-sm text-gray-600">{mx.descripcion}</p>
+                    {editingMxMetaId === mx.id ? (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={editMxTitulo}
+                          onChange={(e) => setEditMxTitulo(e.target.value)}
+                          className="w-full rounded border border-gray-300 px-3 py-1.5 text-lg font-semibold"
+                          placeholder="Título"
+                        />
+                        <textarea
+                          value={editMxDescripcion}
+                          onChange={(e) => setEditMxDescripcion(e.target.value)}
+                          className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm"
+                          rows={2}
+                          placeholder="Descripción"
+                        />
+                      </div>
+                    ) : (
+                      <>
+                        <h3 className="text-lg font-semibold">{mx.titulo}</h3>
+                        {mx.descripcion && (
+                          <p className="mt-1 text-sm text-gray-600">{mx.descripcion}</p>
+                        )}
+                      </>
                     )}
                     <p className="mt-1 text-xs text-gray-500">
                       Slug: {mx.slug} | Activa: {mx.activo ? "Sí" : "No"}
@@ -719,14 +780,45 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                       </button>
                     )}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <button
                       onClick={() => toggleExpand(mx.id)}
                       className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white hover:bg-blue-700 whitespace-nowrap"
                     >
                       {expandedMxId === mx.id ? "Cerrar" : "Ver paradas"}
                     </button>
-                    {!("legacyId" in mx) && (
+                    {editingMxMetaId === mx.id ? (
+                      <>
+                        <button
+                          onClick={() => handleUpdateMultiexperiencia(mx)}
+                          className="rounded bg-green-600 px-3 py-1 text-sm font-medium text-white hover:bg-green-700"
+                        >
+                          Guardar
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingMxMetaId(null);
+                            setEditMxTitulo("");
+                            setEditMxDescripcion("");
+                          }}
+                          className="rounded bg-gray-300 px-3 py-1 text-sm font-medium hover:bg-gray-400"
+                        >
+                          Cancelar
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setEditingMxMetaId(mx.id);
+                          setEditMxTitulo(mx.titulo ?? "");
+                          setEditMxDescripcion(mx.descripcion ?? "");
+                        }}
+                        className="rounded bg-amber-600 px-3 py-1 text-sm font-medium text-white hover:bg-amber-700 whitespace-nowrap"
+                      >
+                        Editar
+                      </button>
+                    )}
+                    {mx.legacyId == null && (
                       <button
                         onClick={() => handleDeleteMultiexperiencia(mx)}
                         className="rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700 whitespace-nowrap"
