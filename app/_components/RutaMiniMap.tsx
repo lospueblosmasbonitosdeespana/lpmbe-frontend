@@ -108,7 +108,6 @@ export default function RutaMiniMap({
       touchZoom: false,
       boxZoom: false,
       keyboard: false,
-      tap: false,
     });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
