@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import RutaAdminStatsCells from './RutaAdminStatsCells';
 
 type PuebloEnRuta = {
   orden: number;
@@ -152,12 +153,7 @@ export default function RutasList() {
                        (r as any)._count?.pueblos ??
                        pueblosList.length}
                     </td>
-                    <td className="px-4 py-3 text-center text-gray-600">
-                      {(r as any).distancia_km ?? (r as any).distanciaKm ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 text-center text-gray-600">
-                      {(r as any).tiempo_estimado ?? (r as any).tiempoEstimado ?? '—'}
-                    </td>
+                    <RutaAdminStatsCells rutaId={r.id} />
                     <td className="px-4 py-3 text-center">
                       {r.activo ? (
                         <span className="inline-block rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">
