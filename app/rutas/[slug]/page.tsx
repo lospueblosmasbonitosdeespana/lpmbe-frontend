@@ -184,19 +184,7 @@ export default async function RutaPage({
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex-1">
           <h1 className="text-3xl font-bold">{ruta.titulo}</h1>
-          {/* Distancia y Tiempo (compacto) */}
-          {(() => {
-            const km = (ruta as any).distancia_km ?? (ruta as any).distanciaKm;
-            const t = (ruta as any).tiempo_estimado ?? (ruta as any).tiempoEstimado;
-            return (km || t) ? (
-              <div className="mt-2 text-sm text-gray-600">
-                {km ? `${km} km` : null}
-                {km && t ? ' · ' : null}
-                {t ? `${t} h` : null}
-              </div>
-            ) : null;
-          })()}
-          {/* Metadatos */}
+          {/* Metadatos (sin km/tiempo: se muestran correctamente en el Resumen via OSRM) */}
           <div className="mt-4 flex flex-wrap gap-3">
             {ruta.dificultad && (
               <div className="rounded-lg bg-blue-50 px-4 py-2">
@@ -208,18 +196,6 @@ export default async function RutaPage({
               <div className="rounded-lg bg-green-50 px-4 py-2">
                 <span className="text-xs font-medium uppercase text-green-600">Tipo</span>
                 <p className="mt-1 text-sm font-semibold text-green-900">{ruta.tipo}</p>
-              </div>
-            )}
-            {ruta.distancia && (
-              <div className="rounded-lg bg-gray-50 px-4 py-2">
-                <span className="text-xs font-medium uppercase text-gray-600">Distancia</span>
-                <p className="mt-1 text-sm font-semibold text-gray-900">{ruta.distancia} km</p>
-              </div>
-            )}
-            {ruta.tiempo && (
-              <div className="rounded-lg bg-gray-50 px-4 py-2">
-                <span className="text-xs font-medium uppercase text-gray-600">Tiempo estimado</span>
-                <p className="mt-1 text-sm font-semibold text-gray-900">{ruta.tiempo}h</p>
               </div>
             )}
           </div>

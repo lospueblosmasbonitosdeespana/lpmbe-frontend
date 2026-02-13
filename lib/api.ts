@@ -155,12 +155,14 @@ export type Ruta = {
   descripcion: string | null;
   foto_portada: string | null;
   logo?: { id: number; nombre: string; url: string; etiqueta?: string | null } | null;
-  distancia: number | null;
+  distancia_km: number | null;
   dificultad: string | null;
   tipo: string | null;
-  tiempo: number | null;
+  tiempo_estimado: string | null;
   activo: boolean;
   boldestMapId?: string | null;
+  boldestMapSlug?: string | null;
+  programa?: string | null;
   pueblos?: Array<{
     id: number;
     nombre: string;
