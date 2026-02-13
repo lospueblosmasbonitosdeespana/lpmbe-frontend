@@ -116,7 +116,11 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
       setParadas(Array.isArray(data) ? data : []);
     } catch (err: any) {
       console.error("Error loading paradas:", err);
-      alert(`Error cargando paradas: ${err.message}`);
+      const msg = err?.message?.includes("500")
+        ? "No se pudieron cargar las paradas. Se mostrarán las paradas creadas en el sistema (si hay)."
+        : `Error cargando paradas: ${err.message}`;
+      alert(msg);
+      setParadas([]);
     }
   }
 
