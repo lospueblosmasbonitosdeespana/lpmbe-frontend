@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import RutaAdminStatsCells from './RutaAdminStatsCells';
+import RutaMiniMap from '@/app/_components/RutaMiniMap';
 
 type PuebloEnRuta = {
   orden: number;
@@ -120,7 +121,12 @@ export default function RutasList() {
                 const pueblosList = (r as RutaRow).pueblos ?? [];
                 return (
                   <tr key={r.id} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium">{r.titulo}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <RutaMiniMap rutaId={r.id} width={90} height={55} />
+                        <span className="font-medium">{r.titulo}</span>
+                      </div>
+                    </td>
                     <td className="max-w-xs px-4 py-3">
                       {pueblosList.length === 0 ? (
                         <span className="text-gray-400">—</span>
