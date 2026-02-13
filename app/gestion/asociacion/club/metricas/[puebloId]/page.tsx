@@ -4,6 +4,14 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
+type DiaMetrica = {
+  fecha: string;
+  total: number;
+  ok: number;
+  adultos: number;
+  menores: number;
+};
+
 type Metricas = {
   hoy: {
     total: number;
@@ -12,13 +20,7 @@ type Metricas = {
     adultos: number;
     menores: number;
   };
-  ultimosDias: Array<{
-    fecha: string;
-    total: number;
-    ok: number;
-    adultos: number;
-    menores: number;
-  }>;
+  ultimosDias: Array<DiaMetrica>;
   ultimosEscaneos: Array<{
     hora: string;
     resultado: 'OK' | 'NO_OK';
@@ -32,6 +34,7 @@ type Metricas = {
     ok: number;
     adultos: number;
     menores: number;
+    dias?: Array<DiaMetrica>;
   }>;
 };
 
@@ -77,6 +80,15 @@ const normalizeMetricas = (raw: any): Metricas => {
       ok: Number(r.ok ?? r.validas ?? 0),
       adultos: Number(r.adultos ?? r.adultosUsados ?? 0),
       menores: Number(r.menores ?? r.menoresUsados ?? 0),
+      dias: Array.isArray(r.dias)
+        ? r.dias.map((d: any) => ({
+            fecha: String(d.fecha ?? d.day ?? d.date ?? ''),
+            total: Number(d.total ?? d.count ?? 0),
+            ok: Number(d.ok ?? d.validas ?? 0),
+            adultos: Number(d.adultos ?? d.adultosUsados ?? 0),
+            menores: Number(d.menores ?? d.menoresUsados ?? 0),
+          }))
+        : undefined,
     })),
   };
 };
@@ -88,35 +100,62 @@ export default function ClubMetricasPuebloPage() {
   const [metricas, setMetricas] = useState<Metricas | null>(null);
   const [puebloNombre, setPuebloNombre] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
-  const [seedLoading, setSeedLoading] = useState(false);
-  const [seedMessage, setSeedMessage] = useState<string | null>(null);
+  const [exportLoading, setExportLoading] = useState<string | null>(null);
 
-  const refetchMetricas = () => {
+  const exportarCSV = async (periodo: 'semana' | 'mes' | 'año') => {
     if (!puebloId) return;
-    setLoading(true);
-    fetch(`/api/club/validador/metricas-pueblo?puebloId=${puebloId}&days=7`, { cache: 'no-store', credentials: 'include' })
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Error'))))
-      .then((data) => setMetricas(normalizeMetricas(data)))
-      .catch(() => setError('Error cargando métricas'))
-      .finally(() => setLoading(false));
-  };
+    const days = periodo === 'semana' ? 7 : periodo === 'mes' ? 31 : 365;
+    const to = new Date();
+    const from = new Date();
+    from.setDate(from.getDate() - days);
+    from.setHours(0, 0, 0, 0);
+    to.setHours(23, 59, 59, 999);
+    const fromStr = from.toISOString().split('T')[0];
+    const toStr = to.toISOString().split('T')[0];
 
-  const crearDatosPrueba = async () => {
-    setSeedLoading(true);
-    setSeedMessage(null);
+    setExportLoading(periodo);
     try {
-      const res = await fetch('/api/club/admin/seed-prueba-ainsa', { method: 'POST', credentials: 'include' });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setSeedMessage(data?.error ?? 'Error al crear datos de prueba');
-        return;
+      const url = `/api/club/validador/metricas-pueblo?puebloId=${puebloId}&from=${fromStr}&to=${toStr}`;
+      const res = await fetch(url, { cache: 'no-store', credentials: 'include' });
+      if (!res.ok) throw new Error('Error al cargar datos');
+      const data = await res.json();
+      const m = normalizeMetricas(data);
+
+      const filas: string[] = [];
+      const enc = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
+
+      filas.push('Resumen por día');
+      filas.push('Fecha,Total,OK,Adultos,Menores');
+      for (const d of m.ultimosDias) {
+        filas.push([d.fecha, d.total, d.ok, d.adultos, d.menores].map(enc).join(','));
       }
-      setSeedMessage(data?.message ?? 'Datos de prueba creados. Recargando métricas…');
-      refetchMetricas();
-    } catch {
-      setSeedMessage('Error de conexión');
+      filas.push('');
+
+      if (m.recursos && m.recursos.length > 0) {
+        filas.push('Desglose por recurso y fecha');
+        filas.push('Recurso,Fecha,Total,OK,Adultos,Menores');
+        for (const r of m.recursos) {
+          if (r.dias && r.dias.length > 0) {
+            for (const d of r.dias) {
+              filas.push([r.recursoNombre ?? '', d.fecha, d.total, d.ok, d.adultos, d.menores].map(enc).join(','));
+            }
+          } else {
+            filas.push([r.recursoNombre ?? '', '', r.total, r.ok, r.adultos, r.menores].map(enc).join(','));
+          }
+        }
+      }
+
+      const csv = filas.join('\n');
+      const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `metricas-club-${puebloNombre || puebloId}-${periodo}-${fromStr}_${toStr}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch (e) {
+      setError('Error al exportar CSV');
     } finally {
-      setSeedLoading(false);
+      setExportLoading(null);
     }
   };
 
@@ -198,47 +237,42 @@ export default function ClubMetricasPuebloPage() {
             ← Volver a métricas
           </Link>
         </div>
-        {puebloId === '37' && (
-          <div style={{ marginTop: 12 }}>
-            <button
-              type="button"
-              onClick={crearDatosPrueba}
-              disabled={seedLoading}
-              style={{
-                padding: '8px 16px',
-                fontSize: 14,
-                background: seedLoading ? '#ccc' : '#0ea5e9',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 6,
-                cursor: seedLoading ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {seedLoading ? 'Creando…' : 'Crear datos de prueba (2 validaciones Aínsa)'}
-            </button>
-            {seedMessage && (
-              <span style={{ marginLeft: 12, fontSize: 14, color: seedMessage.startsWith('Error') ? '#b91c1c' : '#15803d' }}>
-                {seedMessage}
-              </span>
-            )}
-          </div>
-        )}
       </div>
-
-      {/* Aviso si no hay datos (Aínsa) */}
-      {puebloId === '37' && metricas.hoy.total === 0 && metricas.ultimosEscaneos.length === 0 && (
-        <div style={{ marginBottom: 24, padding: 16, background: '#eff6ff', border: '1px solid #3b82f6', borderRadius: 8 }}>
-          <div style={{ fontSize: 14, color: '#1e40af' }}>
-            No hay validaciones todavía. Usa el botón <strong>«Crear datos de prueba (2 validaciones Aínsa)»</strong> de arriba para generar 2 visitas de ejemplo (Castillo y Museo) y comprobar que las métricas se actualizan.
-          </div>
-        </div>
-      )}
 
       {/* HOY */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>HOY</div>
         <div style={{ fontSize: 14 }}>
           {metricas.hoy.total} intentos | OK: {metricas.hoy.ok} | NO OK: {metricas.hoy.noOk} | Adultos: {metricas.hoy.adultos} | Menores: {metricas.hoy.menores}
+        </div>
+      </div>
+
+      {/* Exportar CSV */}
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>EXPORTAR DATOS</div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {(['semana', 'mes', 'año'] as const).map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => exportarCSV(p)}
+              disabled={!!exportLoading}
+              style={{
+                padding: '8px 16px',
+                fontSize: 14,
+                background: exportLoading ? '#e5e7eb' : '#059669',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 6,
+                cursor: exportLoading ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {exportLoading === p ? 'Exportando…' : `CSV ${p === 'semana' ? '7 días' : p === 'mes' ? '31 días' : '365 días'}`}
+            </button>
+          ))}
+        </div>
+        <div style={{ fontSize: 12, color: '#666', marginTop: 8 }}>
+          Descarga CSV con resumen por día y desglose por recurso y fecha para análisis y publicación.
         </div>
       </div>
 
@@ -311,6 +345,7 @@ export default function ClubMetricasPuebloPage() {
             <thead>
               <tr style={{ borderBottom: '1px solid #ddd', background: '#f5f5f5' }}>
                 <th style={{ textAlign: 'left', padding: '8px' }}>Recurso</th>
+                <th style={{ textAlign: 'left', padding: '8px' }}>Fecha</th>
                 <th style={{ textAlign: 'center', padding: '8px' }}>Total</th>
                 <th style={{ textAlign: 'center', padding: '8px' }}>OK</th>
                 <th style={{ textAlign: 'center', padding: '8px' }}>Adultos</th>
@@ -318,15 +353,32 @@ export default function ClubMetricasPuebloPage() {
               </tr>
             </thead>
             <tbody>
-              {metricas.recursos.map((recurso, idx) => (
-                <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '8px' }}>{recurso.recursoNombre}</td>
-                  <td style={{ textAlign: 'center', padding: '8px' }}>{recurso.total}</td>
-                  <td style={{ textAlign: 'center', padding: '8px' }}>{recurso.ok}</td>
-                  <td style={{ textAlign: 'center', padding: '8px' }}>{recurso.adultos}</td>
-                  <td style={{ textAlign: 'center', padding: '8px' }}>{recurso.menores}</td>
-                </tr>
-              ))}
+              {metricas.recursos.flatMap((recurso, idx) => {
+                if (recurso.dias && recurso.dias.length > 0) {
+                  return recurso.dias.map((dia, dIdx) => (
+                    <tr key={`${idx}-${dIdx}`} style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: '8px' }}>{recurso.recursoNombre}</td>
+                      <td style={{ padding: '8px' }}>
+                        {dia.fecha ? new Date(dia.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) : '—'}
+                      </td>
+                      <td style={{ textAlign: 'center', padding: '8px' }}>{dia.total}</td>
+                      <td style={{ textAlign: 'center', padding: '8px' }}>{dia.ok}</td>
+                      <td style={{ textAlign: 'center', padding: '8px' }}>{dia.adultos}</td>
+                      <td style={{ textAlign: 'center', padding: '8px' }}>{dia.menores}</td>
+                    </tr>
+                  ));
+                }
+                return (
+                  <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '8px' }}>{recurso.recursoNombre}</td>
+                    <td style={{ padding: '8px', color: '#999' }}>—</td>
+                    <td style={{ textAlign: 'center', padding: '8px' }}>{recurso.total}</td>
+                    <td style={{ textAlign: 'center', padding: '8px' }}>{recurso.ok}</td>
+                    <td style={{ textAlign: 'center', padding: '8px' }}>{recurso.adultos}</td>
+                    <td style={{ textAlign: 'center', padding: '8px' }}>{recurso.menores}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

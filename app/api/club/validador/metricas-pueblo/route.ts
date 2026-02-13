@@ -13,13 +13,22 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const puebloId = searchParams.get('puebloId');
   const days = searchParams.get('days') || '7';
+  const from = searchParams.get('from');
+  const to = searchParams.get('to');
 
   if (!puebloId) {
     return NextResponse.json({ message: 'Bad Request: puebloId requerido' }, { status: 400 });
   }
 
   const API_BASE = getApiUrl();
-  const upstreamUrl = `${API_BASE}/club/validador/metricas-pueblo?puebloId=${encodeURIComponent(puebloId)}&days=${encodeURIComponent(days)}`;
+  const params = new URLSearchParams({ puebloId });
+  if (from && to) {
+    params.set('from', from);
+    params.set('to', to);
+  } else {
+    params.set('days', days);
+  }
+  const upstreamUrl = `${API_BASE}/club/validador/metricas-pueblo?${params.toString()}`;
 
   if (DEV_LOGS) {
     console.error('[club/validador/metricas-pueblo] upstreamUrl:', upstreamUrl);
