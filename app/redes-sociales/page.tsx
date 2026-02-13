@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getApiUrl } from "@/lib/api";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -22,26 +21,12 @@ export const metadata: Metadata = {
     "Síguenos en Instagram, Facebook, X, TikTok y YouTube. Colaboraciones con creadores de contenido e influencers. Únete a nuestra comunidad.",
 };
 
-type SiteSettings = {
-  contactEmail?: string | null;
-};
-
-async function fetchSiteSettings(): Promise<SiteSettings> {
-  try {
-    const res = await fetch(`${getApiUrl()}/public/site-settings`, {
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error("Settings not available");
-    return res.json();
-  } catch {
-    return {};
-  }
-}
+const EMAIL_RRSS = "socialmedia@lospueblosmasbonitosdeespana.org";
 
 const REDES = [
   {
     name: "Instagram",
-    href: "https://www.instagram.com/stories/lospueblosmbe/",
+    href: "https://www.instagram.com/lospueblosmbe/",
     description: "Fotos, Stories y Reels de nuestros pueblos",
     bg: "bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737]",
     icon: (
@@ -86,9 +71,7 @@ const REDES = [
   },
 ];
 
-export default async function RedesSocialesPage() {
-  const settings = await fetchSiteSettings();
-  const email = settings.contactEmail?.trim();
+export default function RedesSocialesPage() {
 
   return (
     <main>
@@ -182,47 +165,25 @@ export default async function RedesSocialesPage() {
               menciones, takeovers, contenido conjunto o visitas a nuestros
               pueblos — estaremos encantados de conocerte.
             </Body>
-            {email ? (
-              <Link
-                href={`mailto:${email}?subject=Colaboración RRSS - Los Pueblos Más Bonitos de España`}
-                className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-6 py-3 font-medium text-primary transition-colors hover:bg-primary/15 hover:border-primary/40"
+            <Link
+              href={`mailto:${EMAIL_RRSS}?subject=Colaboración RRSS - Los Pueblos Más Bonitos de España`}
+              className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-6 py-3 font-medium text-primary transition-colors hover:bg-primary/15 hover:border-primary/40"
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                </svg>
-                Escríbenos a {email}
-              </Link>
-            ) : (
-              <Link
-                href="/contacto"
-                className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-6 py-3 font-medium text-primary transition-colors hover:bg-primary/15 hover:border-primary/40"
-              >
-                Contactar
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M5 12h14M12 5l7 7-7 7"
-                  />
-                </svg>
-              </Link>
-            )}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+              Escríbenos a {EMAIL_RRSS}
+            </Link>
           </div>
         </Container>
       </Section>
