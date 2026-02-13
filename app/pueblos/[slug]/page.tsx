@@ -12,7 +12,10 @@ import { DetailPageHero } from "@/app/components/ui/detail-page-hero";
 import { DetailIntroSection } from "@/app/components/ui/detail-section";
 import { DetailStatsBlock } from "@/app/components/village/detail-stats-block";
 import { CategoryHighlights } from "@/app/components/village/category-highlights";
-import { MapSection } from "@/app/components/village/map-section";
+import { Section } from "@/app/components/ui/section";
+import { Container } from "@/app/components/ui/container";
+import { Title, Lead } from "@/app/components/ui/typography";
+import ParadasMap from "@/app/_components/ParadasMap";
 import { DetailGallerySection } from "@/app/components/ui/detail-gallery-section";
 import { PointsOfInterest } from "@/app/components/pueblos/PointsOfInterest";
 import RotatedImage from "@/app/components/RotatedImage";
@@ -776,35 +779,33 @@ export default async function PuebloPage({
         ]}
       />
 
-      {/* MAPA (Ubicación) - Boldest, encima de pueblos cercanos */}
+      {/* MAPA - POIs del pueblo (Leaflet, mismo que lugares-de-interes) */}
       {puebloSafe.lat != null && puebloSafe.lng != null && (
         <div id="mapa">
-          <MapSection
-            title="Ubicación"
-            description={
-              puebloSafe.lat && puebloSafe.lng
-                ? `${puebloSafe.nombre} se encuentra en ${puebloSafe.provincia}, ${puebloSafe.comunidad}.`
-                : undefined
-            }
-            center={{ lat: puebloSafe.lat, lng: puebloSafe.lng }}
-            markers={poisPOI
-              .filter((p: Poi) => p.lat != null && p.lng != null)
-              .slice(0, 10)
-              .map((p: Poi) => ({
-                id: String(p.id),
-                lat: p.lat!,
-                lng: p.lng!,
-                label: p.nombre,
-              }))}
-            boldestMapUrl={
-              puebloSafe.boldestMapId || puebloSafe.slug
-                ? puebloSafe.boldestMapId?.startsWith("PB-")
-                  ? `https://maps.lospueblosmasbonitosdeespana.org/es/mapas/${puebloSafe.boldestMapId}`
-                  : `https://maps.lospueblosmasbonitosdeespana.org/es/pueblos/resource/${puebloSafe.slug}`
-                : undefined
-            }
-            boldestMapId={puebloSafe.boldestMapId ?? undefined}
-          />
+          <Section spacing="md">
+            <Container>
+              <div className="mb-6">
+                <Title>Ubicación</Title>
+                <Lead className="mt-2">
+                  {puebloSafe.nombre} se encuentra en {puebloSafe.provincia}, {puebloSafe.comunidad}.
+                </Lead>
+              </div>
+              <ParadasMap
+                paradas={
+                  poisPOI.filter((p: Poi) => p.lat != null && p.lng != null).length > 0
+                    ? poisPOI
+                        .filter((p: Poi) => p.lat != null && p.lng != null)
+                        .map((p: Poi) => ({
+                          titulo: p.nombre,
+                          lat: p.lat!,
+                          lng: p.lng!,
+                        }))
+                    : [{ titulo: puebloSafe.nombre, lat: puebloSafe.lat!, lng: puebloSafe.lng! }]
+                }
+                puebloNombre={puebloSafe.nombre}
+              />
+            </Container>
+          </Section>
         </div>
       )}
 
