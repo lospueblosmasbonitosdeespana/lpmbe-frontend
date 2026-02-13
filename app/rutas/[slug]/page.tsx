@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getRutas, getRutaById, getRutaMapa } from "@/lib/api";
 import { sanitizeHtml, createExcerpt } from "@/lib/sanitizeHtml";
-import RutaMap from "@/app/_components/RutaMap";
+import RutaParadasConMapa from "@/app/_components/RutaParadasConMapa";
 
 export const revalidate = 300;
 
@@ -157,21 +157,6 @@ export default async function RutaPage({
   }
 
   const pueblosOrdenados = rutaMapa?.pueblos ?? [];
-
-  // Build waypoints for the map (paradas first, pueblosOrdenados as fallback)
-  const mapWaypoints = paradas.length > 0
-    ? paradas.map((p: any, idx: number) => ({
-        lat: p.lat ?? p.pueblo?.lat ?? null,
-        lng: p.lng ?? p.pueblo?.lng ?? null,
-        titulo: (p.titulo?.trim() || p.pueblo?.nombre || `Parada ${p.orden ?? idx + 1}`) as string,
-        orden: Number(p.orden ?? idx + 1),
-      }))
-    : pueblosOrdenados.map((pueblo: any, idx: number) => ({
-        lat: pueblo.lat ?? null,
-        lng: pueblo.lng ?? null,
-        titulo: (pueblo.nombre ?? `Parada ${idx + 1}`) as string,
-        orden: idx + 1,
-      }));
   
   // Split de descripción (intro/outro)
   const descripcionRaw = ruta.descripcion ?? null;
@@ -272,80 +257,15 @@ export default async function RutaPage({
         </section>
       )}
 
-      {/* Paradas de la ruta */}
+      {/* Paradas + Mapa + Distancias (componente cliente) */}
       {paradas.length > 0 && (
-        <section className="mt-10">
-          <h2 className="text-2xl font-semibold">Paradas de la ruta</h2>
-
-          <div className="mt-4 space-y-6">
-            {paradas.map((p: any, idx: number) => {
-              const pueblo = p.pueblo ?? {};
-              const orden = Number(p.orden ?? (idx + 1));
-              const titulo = (p.titulo?.trim() || pueblo.nombre || `Parada ${orden}`) as string;
-
-              let descripcion = (p.descripcion ?? '').toString().trim();
-              // Si hay tips en JSON, ocultar el bloque TIPS de la descripción (evita duplicado)
-              const tips = Array.isArray((ruta as any).tips) ? (ruta as any).tips : [];
-              if (tips.length > 0 && idx === paradas.length - 1) {
-                const marcadores = ['TIPS DE RUTA', 'Tips de ruta', 'TIPS', 'Tips', 'Duración recomendada'];
-                for (const m of marcadores) {
-                  const i = descripcion.indexOf(m);
-                  if (i !== -1) {
-                    descripcion = descripcion.slice(0, i).trim();
-                    break;
-                  }
-                }
-              }
-              const fotoUrl = (p.fotoUrl || '').toString().trim();
-
-              return (
-                <article key={`${p.puebloId}-${orden}`} className="rounded-lg border p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
-                      {orden}
-                    </div>
-                    <h3 className="text-xl font-semibold">{titulo}</h3>
-                  </div>
-
-                  {fotoUrl ? (
-                    <div className="mt-4">
-                      {(pueblo as any).slug ? (
-                        <Link
-                          href={`/pueblos/${(pueblo as any).slug}`}
-                          className="block transition hover:opacity-90"
-                        >
-                          <img
-                            src={fotoUrl}
-                            alt={titulo}
-                            className="mt-3 rounded-md border cursor-pointer"
-                            style={{ width: 260, height: 'auto' }}
-                          />
-                          <span className="mt-1 block text-sm text-primary hover:underline">
-                            Ver pueblo →
-                          </span>
-                        </Link>
-                      ) : (
-                        <img
-                          src={fotoUrl}
-                          alt={titulo}
-                          className="mt-3 rounded-md border"
-                          style={{ width: 260, height: 'auto' }}
-                        />
-                      )}
-                    </div>
-                  ) : null}
-
-                  {descripcion ? (
-                    <div
-                      className="mt-4 prose prose-gray max-w-none"
-                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(descripcion) }}
-                    />
-                  ) : null}
-                </article>
-              );
-            })}
-          </div>
-        </section>
+        <RutaParadasConMapa
+          paradas={paradas}
+          tips={Array.isArray((ruta as any).tips) ? (ruta as any).tips : []}
+          sanitizeHtml={sanitizeHtml}
+          totalDistanciaKm={(ruta as any).distancia_km ?? (ruta as any).distanciaKm ?? null}
+          totalTiempoEstimado={(ruta as any).tiempo_estimado ?? (ruta as any).tiempoEstimado ?? null}
+        />
       )}
 
       {/* Tips de la ruta (tarjetas con iconos SVG) */}
@@ -487,11 +407,25 @@ export default async function RutaPage({
         </section>
       )}
 
-      {/* Mapa de la ruta */}
-      <section id="mapa" className="mb-8">
-        <h2 className="mb-4 text-2xl font-semibold">Mapa de la ruta</h2>
-        <RutaMap waypoints={mapWaypoints} height={500} />
-      </section>
+      {/* Mapa de la ruta (si no hay paradas, mostrar solo el mapa) */}
+      {paradas.length === 0 && pueblosOrdenados.length > 0 && (
+        <section id="mapa" className="mb-8">
+          <h2 className="mb-4 text-2xl font-semibold">Mapa de la ruta</h2>
+          <RutaParadasConMapa
+            paradas={pueblosOrdenados.map((pueblo: any, idx: number) => ({
+              pueblo,
+              orden: idx + 1,
+              lat: pueblo.lat,
+              lng: pueblo.lng,
+              titulo: pueblo.nombre,
+            }))}
+            tips={[]}
+            sanitizeHtml={sanitizeHtml}
+            totalDistanciaKm={(ruta as any).distancia_km ?? null}
+            totalTiempoEstimado={(ruta as any).tiempo_estimado ?? null}
+          />
+        </section>
+      )}
     </main>
   );
 }

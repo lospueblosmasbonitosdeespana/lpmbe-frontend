@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ParadasEditor from './ParadasEditor';
-import RutaMap from '@/app/_components/RutaMap';
+import RutaMap, { type RouteInfo, type RouteLeg } from '@/app/_components/RutaMap';
 import { sanitizeRutaDescripcionForTextarea, stripLegacyStops } from '@/lib/rutaHelpers';
 
 // Helper para generar slug automático
@@ -99,6 +99,7 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
     (initialData as any)?.logoId ?? (initialData as any)?.logo?.id ?? null
   );
   const [logos, setLogos] = useState<{ id: number; nombre: string; url: string }[]>([]);
+  const [routeLegs, setRouteLegs] = useState<RouteLeg[]>([]);
 
   // Tips de la ruta
   type Tip = { titulo: string; contenido: string; icono: string };
@@ -625,6 +626,7 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
               showRouting={true}
               showNavButtons={false}
               height={400}
+              allowReverse={false}
               onRouteCalculated={(info) => {
                 // Auto-rellenar distancia y tiempo si están vacíos
                 if (!distanciaKm.trim()) {
@@ -633,8 +635,45 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
                 if (!tiempoEstimado.trim()) {
                   setTiempoEstimado(String(info.durationHours));
                 }
+                setRouteLegs(info.legs);
               }}
             />
+
+            {/* Distancias por tramo */}
+            {routeLegs.length > 0 && (
+              <div className="rounded-md bg-gray-50 p-3">
+                <h3 className="text-xs font-semibold uppercase text-gray-500 mb-2">Distancias por tramo</h3>
+                <div className="space-y-1">
+                  {routeLegs.map((leg, idx) => {
+                    const fromName = paradas[leg.fromIndex]?.titulo || paradas[leg.fromIndex]?.puebloNombre || `Parada ${leg.fromIndex + 1}`;
+                    const toName = paradas[leg.toIndex]?.titulo || paradas[leg.toIndex]?.puebloNombre || `Parada ${leg.toIndex + 1}`;
+                    const mins = leg.durationMinutes;
+                    const durStr = mins < 60 ? `${mins} min` : `${Math.floor(mins / 60)} h ${mins % 60 > 0 ? `${mins % 60} min` : ''}`.trim();
+                    return (
+                      <div key={idx} className="flex items-center justify-between text-xs">
+                        <span className="text-gray-700">
+                          {leg.fromIndex + 1}. {fromName} → {leg.toIndex + 1}. {toName}
+                        </span>
+                        <span className="font-medium text-primary whitespace-nowrap ml-2">
+                          {leg.distanceKm} km · {durStr}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <div className="mt-2 flex items-center justify-between border-t pt-2 text-xs font-bold">
+                    <span>Total</span>
+                    <span className="text-primary">
+                      {Math.round(routeLegs.reduce((s, l) => s + l.distanceKm, 0) * 10) / 10} km ·{' '}
+                      {(() => {
+                        const totalMin = routeLegs.reduce((s, l) => s + l.durationMinutes, 0);
+                        return totalMin < 60 ? `${totalMin} min` : `${Math.floor(totalMin / 60)} h ${totalMin % 60 > 0 ? `${totalMin % 60} min` : ''}`.trim();
+                      })()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <p className="text-xs text-gray-500">
               La ruta se calcula automáticamente por carretera. Los marcadores reflejan las paradas en orden.
             </p>

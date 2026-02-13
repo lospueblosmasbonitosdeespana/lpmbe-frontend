@@ -11,9 +11,17 @@ type Waypoint = {
   orden: number;
 };
 
-type RouteInfo = {
+export type RouteLeg = {
+  fromIndex: number;
+  toIndex: number;
+  distanceKm: number;
+  durationMinutes: number;
+};
+
+export type RouteInfo = {
   distanceKm: number;
   durationHours: number;
+  legs: RouteLeg[];
 };
 
 type RutaMapProps = {
@@ -132,11 +140,20 @@ export default function RutaMap({
           );
           setRouteCoords(decoded);
 
-          // Report distance & duration to parent
+          // Report distance, duration & legs to parent
           if (onRouteCalculatedRef.current && route.distance != null && route.duration != null) {
+            const legs: RouteLeg[] = Array.isArray(route.legs)
+              ? route.legs.map((leg: any, i: number) => ({
+                  fromIndex: i,
+                  toIndex: i + 1,
+                  distanceKm: Math.round((leg.distance / 1000) * 10) / 10,
+                  durationMinutes: Math.round(leg.duration / 60),
+                }))
+              : [];
             onRouteCalculatedRef.current({
               distanceKm: Math.round((route.distance / 1000) * 10) / 10,
               durationHours: Math.round((route.duration / 3600) * 10) / 10,
+              legs,
             });
           }
         } else {
