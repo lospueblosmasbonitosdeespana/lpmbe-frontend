@@ -123,7 +123,7 @@ export default function RutasList() {
                   <tr key={r.id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <RutaMiniMap rutaId={r.id} width={90} height={55} />
+                        <RutaMiniMap rutaId={r.id} width={180} height={110} />
                         <span className="font-medium">{r.titulo}</span>
                       </div>
                     </td>
