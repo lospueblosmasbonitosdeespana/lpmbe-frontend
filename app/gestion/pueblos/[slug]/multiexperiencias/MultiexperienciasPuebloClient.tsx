@@ -389,14 +389,14 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
     if (!expandedMxId) return;
     const mensaje =
       parada.kind === "LEGACY"
-        ? "¿Eliminar las personalizaciones de esta parada legacy?"
+        ? "¿Ocultar esta parada de la multiexperiencia? Se puede volver a mostrar editando."
         : "¿Eliminar esta parada custom?";
     if (!confirm(mensaje)) return;
 
     try {
       let url = "";
       if (parada.kind === "LEGACY" && parada.legacyLugarId) {
-        url = `/api/admin/multiexperiencias/paradas/${parada.legacyLugarId}`;
+        url = `/api/admin/multiexperiencias/${expandedMxId}/paradas/legacy/${parada.legacyLugarId}`;
       } else if (parada.kind === "CUSTOM" && parada.customId) {
         url = `/api/admin/multiexperiencias/${expandedMxId}/paradas/${parada.customId}`;
       } else {
@@ -410,7 +410,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
         return;
       }
       await loadParadas(expandedMxId);
-      alert("Parada eliminada correctamente");
+      alert(parada.kind === "LEGACY" ? "Parada ocultada correctamente" : "Parada eliminada correctamente");
     } catch (err: any) {
       alert(`Error inesperado: ${err.message}`);
     }
@@ -1086,14 +1086,12 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                                   >
                                     Editar
                                   </button>
-                                  {parada.kind === "CUSTOM" && (
-                                    <button
-                                      onClick={() => handleDeleteParada(parada)}
-                                      className="rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
-                                    >
-                                      Borrar
-                                    </button>
-                                  )}
+                                  <button
+                                    onClick={() => handleDeleteParada(parada)}
+                                    className="rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
+                                  >
+                                    Eliminar
+                                  </button>
                                 </div>
                               </div>
                             )}
