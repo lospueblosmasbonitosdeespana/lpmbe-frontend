@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import TipTapEditor from '@/app/_components/editor/TipTapEditor';
-import RutaMap from '@/app/_components/RutaMap';
 
 type Parada = {
   tempId: string;
@@ -307,26 +306,6 @@ export default function ParadasEditor({ paradas, setParadas }: ParadasEditorProp
           </div>
         )}
       </div>
-
-      {/* Vista previa del mapa */}
-      {paradas.some((p) => p.lat != null && p.lng != null) && (
-        <div className="rounded-md border bg-white p-3">
-          <label className="mb-2 block text-xs font-medium text-gray-700">
-            Vista previa del mapa
-          </label>
-          <RutaMap
-            waypoints={paradas.map((p) => ({
-              lat: p.lat,
-              lng: p.lng,
-              titulo: p.titulo || p.puebloNombre || `Parada ${p.orden}`,
-              orden: p.orden,
-            }))}
-            showRouting={false}
-            showNavButtons={false}
-            height={280}
-          />
-        </div>
-      )}
 
       {/* Lista de paradas */}
       {paradas.length === 0 ? (

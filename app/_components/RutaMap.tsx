@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
 
 type Waypoint = {
@@ -9,6 +9,11 @@ type Waypoint = {
   lng: number;
   titulo: string;
   orden: number;
+};
+
+type RouteInfo = {
+  distanceKm: number;
+  durationHours: number;
 };
 
 type RutaMapProps = {
@@ -24,18 +29,28 @@ type RutaMapProps = {
   showNavButtons?: boolean;
   /** Map height in px or CSS string (default: 500) */
   height?: number | string;
+  /** Callback fired when OSRM route is calculated with distance/time */
+  onRouteCalculated?: (info: RouteInfo) => void;
 };
+
+// Brand colors
+const COLOR_PRIMARY = '#854d0e';
+const COLOR_PRIMARY_DARK = '#6e3f0b';
+const COLOR_PRIMARY_LIGHT = '#a5650f';
 
 export default function RutaMap({
   waypoints: rawWaypoints,
   showRouting = true,
   showNavButtons = true,
   height = 500,
+  onRouteCalculated,
 }: RutaMapProps) {
   const [mounted, setMounted] = useState(false);
   const [L, setL] = useState<typeof import('leaflet') | null>(null);
   const [RL, setRL] = useState<typeof import('react-leaflet') | null>(null);
   const [routeCoords, setRouteCoords] = useState<[number, number][] | null>(null);
+  const onRouteCalculatedRef = useRef(onRouteCalculated);
+  onRouteCalculatedRef.current = onRouteCalculated;
 
   // Dynamic import of Leaflet + react-leaflet (SSR safe)
   useEffect(() => {
@@ -98,11 +113,20 @@ export default function RutaMap({
           data.code === 'Ok' &&
           data.routes?.[0]?.geometry?.coordinates
         ) {
+          const route = data.routes[0];
           // OSRM returns [lng, lat]; Leaflet expects [lat, lng]
-          const decoded = data.routes[0].geometry.coordinates.map(
+          const decoded = route.geometry.coordinates.map(
             (c: [number, number]) => [c[1], c[0]] as [number, number]
           );
           setRouteCoords(decoded);
+
+          // Report distance & duration to parent
+          if (onRouteCalculatedRef.current && route.distance != null && route.duration != null) {
+            onRouteCalculatedRef.current({
+              distanceKm: Math.round((route.distance / 1000) * 10) / 10,
+              durationHours: Math.round((route.duration / 3600) * 10) / 10,
+            });
+          }
         } else {
           // Fallback: straight lines
           setRouteCoords(
@@ -159,7 +183,7 @@ export default function RutaMap({
       return L.divIcon({
         className: 'ruta-marker',
         html: `<div style="
-          background: linear-gradient(135deg, #5a1520 0%, #7A1C1C 100%);
+          background: linear-gradient(135deg, ${COLOR_PRIMARY} 0%, ${COLOR_PRIMARY_DARK} 100%);
           color: white;
           border-radius: 50%;
           width: 34px;
@@ -274,9 +298,9 @@ export default function RutaMap({
             <Polyline
               positions={routeCoords}
               pathOptions={{
-                color: '#5a1520',
+                color: COLOR_PRIMARY,
                 weight: 4,
-                opacity: 0.8,
+                opacity: 0.85,
               }}
             />
           )}
@@ -288,7 +312,7 @@ export default function RutaMap({
                 (w) => [w.lat, w.lng] as [number, number]
               )}
               pathOptions={{
-                color: '#5a1520',
+                color: COLOR_PRIMARY,
                 weight: 3,
                 opacity: 0.5,
                 dashArray: '10 6',
@@ -316,7 +340,7 @@ export default function RutaMap({
                           width: 22,
                           height: 22,
                           borderRadius: '50%',
-                          background: '#7A1C1C',
+                          background: COLOR_PRIMARY,
                           color: 'white',
                           fontSize: 12,
                           fontWeight: 700,
@@ -344,7 +368,7 @@ export default function RutaMap({
               href={googleMapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg bg-[#4285F4] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#3367D6]"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
@@ -357,7 +381,7 @@ export default function RutaMap({
               href={appleMapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg bg-gray-800 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-gray-900"
+              className="inline-flex items-center gap-2 rounded-lg border border-primary bg-white px-4 py-2.5 text-sm font-medium text-primary shadow-sm transition hover:bg-accent"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
@@ -370,7 +394,7 @@ export default function RutaMap({
               href={wazeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg bg-[#33CCFF] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#00B8E6]"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary/80 px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/70"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />

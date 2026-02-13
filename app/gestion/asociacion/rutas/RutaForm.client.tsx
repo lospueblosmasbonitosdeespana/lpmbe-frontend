@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ParadasEditor from './ParadasEditor';
+import RutaMap from '@/app/_components/RutaMap';
 import { sanitizeRutaDescripcionForTextarea, stripLegacyStops } from '@/lib/rutaHelpers';
 
 // Helper para generar slug automático
@@ -610,12 +611,55 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
           </p>
         </div>
 
-        {/* Campo Boldest eliminado – ahora usamos mapa propio con Leaflet */}
+        {/* Mapa de la ruta (vista previa con routing) */}
+        {paradas.some((p) => p.lat != null && p.lng != null) && (
+          <div className="space-y-3 rounded-md border p-4">
+            <h2 className="text-lg font-semibold">Mapa de la ruta</h2>
+            <RutaMap
+              waypoints={paradas.map((p) => ({
+                lat: p.lat,
+                lng: p.lng,
+                titulo: p.titulo || p.puebloNombre || `Parada ${p.orden}`,
+                orden: p.orden,
+              }))}
+              showRouting={true}
+              showNavButtons={false}
+              height={400}
+              onRouteCalculated={(info) => {
+                // Auto-rellenar distancia y tiempo si están vacíos
+                if (!distanciaKm.trim()) {
+                  setDistanciaKm(String(info.distanceKm));
+                }
+                if (!tiempoEstimado.trim()) {
+                  setTiempoEstimado(String(info.durationHours));
+                }
+              }}
+            />
+            <p className="text-xs text-gray-500">
+              La ruta se calcula automáticamente por carretera. Los marcadores reflejan las paradas en orden.
+            </p>
+          </div>
+        )}
 
-        {/* Metadatos */}
+        {/* Metadatos: distancia y tiempo */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="block text-sm font-medium">Distancia (km)</label>
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium">Distancia (km)</label>
+              {paradas.some((p) => p.lat != null && p.lng != null) && (
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => {
+                    // Forzar recálculo: limpiar campo para que onRouteCalculated lo rellene
+                    setDistanciaKm('');
+                    setTiempoEstimado('');
+                  }}
+                >
+                  Recalcular
+                </button>
+              )}
+            </div>
             <input
               type="number"
               step="0.1"
@@ -633,6 +677,9 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
               value={tiempoEstimado}
               onChange={(e) => setTiempoEstimado(String(e.target.value))}
             />
+            <p className="text-xs text-gray-500">
+              Tiempo de conducción. Añade tiempo extra para las paradas.
+            </p>
           </div>
         </div>
 
