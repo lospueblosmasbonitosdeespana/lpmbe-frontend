@@ -68,14 +68,14 @@ export default function RutasList() {
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-4xl p-6">
+      <main className="mx-auto max-w-[1600px] w-full px-6 py-6">
         <p className="text-sm text-gray-600">Cargando rutas...</p>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-4xl p-6">
+    <main className="mx-auto max-w-[1600px] w-full px-6 py-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Gestión de Rutas</h1>
@@ -101,7 +101,7 @@ export default function RutasList() {
           No hay rutas todavía.
         </div>
       ) : (
-        <div className="mt-6 overflow-x-auto">
+        <div className="mt-6 overflow-x-auto min-w-0">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b bg-gray-50">

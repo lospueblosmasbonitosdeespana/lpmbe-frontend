@@ -14,7 +14,7 @@ export default async function RutasGestionPage() {
   return (
     <>
       <RutasList />
-      <div className="mx-auto max-w-4xl px-6 pb-8">
+      <div className="mx-auto max-w-[1600px] w-full px-6 pb-8">
         <div className="mt-8 text-sm">
           <Link className="hover:underline" href="/gestion/asociacion">
             ← Volver
