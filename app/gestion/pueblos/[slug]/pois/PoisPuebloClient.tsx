@@ -217,11 +217,25 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     if (editId == null) return;
     setErr(null);
 
+    // Parsear lat/lng: aceptar número, string con punto o coma
+    const parsedLat =
+      typeof editLat === "number"
+        ? editLat
+        : typeof editLat === "string" && editLat.trim() !== ""
+          ? parseFloat(editLat.replace(",", "."))
+          : null;
+    const parsedLng =
+      typeof editLng === "number"
+        ? editLng
+        : typeof editLng === "string" && editLng.trim() !== ""
+          ? parseFloat(editLng.replace(",", "."))
+          : null;
+
     const payload: any = {
       nombre: editNombre.trim() || undefined,
       descripcion: editDescripcion.trim() || null,
-      lat: typeof editLat === "number" ? editLat : null,
-      lng: typeof editLng === "number" ? editLng : null,
+      lat: parsedLat != null && !isNaN(parsedLat) ? parsedLat : null,
+      lng: parsedLng != null && !isNaN(parsedLng) ? parsedLng : null,
     };
 
     const r = await fetch(`/api/admin/pois/${editId}`, {
