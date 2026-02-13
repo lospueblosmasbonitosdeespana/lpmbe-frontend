@@ -274,20 +274,9 @@ export default function PuebloActions({
   }, []);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-  const shareTitle = `${nombre} | Los Pueblos Más Bonitos de España`;
   const shareText = `Descubre ${nombre}`;
 
-  const handleShareClick = async () => {
-    if (typeof navigator !== "undefined" && navigator.share) {
-      try {
-        await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
-        setShareState("success");
-        setTimeout(() => setShareState("idle"), 2000);
-        return;
-      } catch (err) {
-        if ((err as Error).name === "AbortError") return;
-      }
-    }
+  const handleShareClick = () => {
     setShareDropdownOpen((open) => !open);
   };
 
