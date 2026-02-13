@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import RutaMap, { type RouteInfo, type RouteLeg } from './RutaMap';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
 type Parada = {
   puebloId?: number;
@@ -18,7 +19,6 @@ type Parada = {
 type Props = {
   paradas: Parada[];
   tips: any[];
-  sanitizeHtml: (html: string) => string;
   /** Total distance from DB (used before OSRM loads) */
   totalDistanciaKm?: number | null;
   /** Total estimated time from DB */
@@ -35,7 +35,6 @@ function formatDuration(minutes: number): string {
 export default function RutaParadasConMapa({
   paradas,
   tips,
-  sanitizeHtml,
   totalDistanciaKm,
   totalTiempoEstimado,
 }: Props) {

@@ -262,7 +262,6 @@ export default async function RutaPage({
         <RutaParadasConMapa
           paradas={paradas}
           tips={Array.isArray((ruta as any).tips) ? (ruta as any).tips : []}
-          sanitizeHtml={sanitizeHtml}
           totalDistanciaKm={(ruta as any).distancia_km ?? (ruta as any).distanciaKm ?? null}
           totalTiempoEstimado={(ruta as any).tiempo_estimado ?? (ruta as any).tiempoEstimado ?? null}
         />
@@ -420,7 +419,6 @@ export default async function RutaPage({
               titulo: pueblo.nombre,
             }))}
             tips={[]}
-            sanitizeHtml={sanitizeHtml}
             totalDistanciaKm={(ruta as any).distancia_km ?? null}
             totalTiempoEstimado={(ruta as any).tiempo_estimado ?? null}
           />
