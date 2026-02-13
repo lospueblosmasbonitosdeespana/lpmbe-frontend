@@ -319,44 +319,6 @@ export default async function MultiexperienciaPage({
                         }}
                         loading="lazy"
                       />
-                      {/* Badge número sobre la foto */}
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: "12px",
-                          left: "12px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          background: "rgba(122, 28, 28, 0.9)",
-                          backdropFilter: "blur(4px)",
-                          borderRadius: "20px",
-                          padding: "6px 14px 6px 6px",
-                          color: "white",
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                        }}
-                      >
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: "28px",
-                            height: "28px",
-                            borderRadius: "50%",
-                            background: "white",
-                            color: "#7A1C1C",
-                            fontSize: "14px",
-                            fontWeight: 800,
-                            flexShrink: 0,
-                          }}
-                        >
-                          {num}
-                        </span>
-                        <span style={{ fontSize: "13px", fontWeight: 600 }}>
-                          Parada {num}
-                        </span>
-                      </div>
                     </div>
                   ) : null}
 
