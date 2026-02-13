@@ -43,6 +43,7 @@ const ENTITY_LABELS: Record<string, string> = {
   semaforo: 'Semáforo',
   recursos: 'Recurso',
   highlights: 'Destacados',
+  media: 'Subida multimedia',
 };
 
 export default function DatosPueblosPage() {
@@ -148,12 +149,15 @@ export default function DatosPueblosPage() {
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Ruta
                 </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  Tamaño
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
               {logs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-4 py-12 text-center text-gray-500">
                     {loading ? 'Cargando...' : 'No hay registros aún. Los movimientos de alcaldes y admins se registrarán automáticamente.'}
                   </td>
                 </tr>
@@ -205,6 +209,19 @@ export default function DatosPueblosPage() {
                     </td>
                     <td className="max-w-xs truncate px-4 py-3 text-xs text-gray-500" title={log.path}>
                       {log.path}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-600">
+                      {log.entityType === 'media' && log.detalles && typeof log.detalles === 'object' ? (
+                        <span title="Original → Guardado en R2 (optimizado)">
+                          {(log.detalles as { originalSizeMB?: string }).originalSizeMB ?? '—'}
+                          {' → '}
+                          <span className="font-medium text-green-700">
+                            {(log.detalles as { optimizedSizeMB?: string }).optimizedSizeMB ?? '—'}
+                          </span>
+                        </span>
+                      ) : (
+                        '—'
+                      )}
                     </td>
                   </tr>
                 ))
