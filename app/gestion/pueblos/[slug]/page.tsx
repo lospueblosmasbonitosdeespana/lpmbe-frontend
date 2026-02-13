@@ -153,8 +153,8 @@ export default async function GestionPuebloPage({
     },
     {
       href: `${baseUrl}/descripcion`,
-      title: 'Descripción del pueblo',
-      description: 'Textos y descripciones',
+      title: 'Información y descripción',
+      description: 'Coordenadas, textos y descripciones',
       icon: <IconDescripcion />,
       disabled: false,
     },

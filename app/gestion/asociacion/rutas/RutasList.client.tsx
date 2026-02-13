@@ -113,14 +113,14 @@ export default function RutasList() {
                 <th className="px-4 py-2 text-center font-medium">Km</th>
                 <th className="px-4 py-2 text-center font-medium">Tiempo</th>
                 <th className="px-4 py-2 text-center font-medium">Activo</th>
-                <th className="px-4 py-2 text-center font-medium">Acciones</th>
+                <th className="sticky right-0 bg-gray-50 px-4 py-2 text-center font-medium shadow-[-4px_0_8px_rgba(0,0,0,0.06)]">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {rutas.map((r) => {
                 const pueblosList = (r as RutaRow).pueblos ?? [];
                 return (
-                  <tr key={r.id} className="border-b hover:bg-gray-50">
+                  <tr key={r.id} className="group border-b hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <RutaMiniMap rutaId={r.id} width={180} height={110} />
@@ -171,7 +171,7 @@ export default function RutasList() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="sticky right-0 bg-white px-4 py-3 text-center shadow-[-4px_0_8px_rgba(0,0,0,0.06)] group-hover:bg-gray-50">
                       <div className="flex items-center justify-center gap-2">
                         <Link
                           href={`/gestion/asociacion/rutas/${r.id}/editar`}

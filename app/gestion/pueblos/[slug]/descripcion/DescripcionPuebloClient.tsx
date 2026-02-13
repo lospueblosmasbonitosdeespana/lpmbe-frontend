@@ -1,7 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { decode as heDecod } from "he";
+import dynamic from "next/dynamic";
+
+const MapLocationPicker = dynamic(
+  () => import("@/app/components/MapLocationPicker").then((m) => m.default),
+  { ssr: false, loading: () => <div className="h-48 flex items-center justify-center bg-gray-100 rounded-lg text-sm text-gray-500">Cargando mapa...</div> }
+);
 
 function stripHtml(input: string) {
   return (input ?? "")
@@ -27,7 +33,10 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
 
   const [descripcion, setDescripcion] = useState("");
   const [lead, setLead] = useState("");
+  const [lat, setLat] = useState<number | null>(null);
+  const [lng, setLng] = useState<number | null>(null);
   const [guardando, setGuardando] = useState(false);
+  const [guardandoCoords, setGuardandoCoords] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
 
   useEffect(() => {
@@ -47,6 +56,10 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
         if (!id) throw new Error("Pueblo sin id");
 
         setPuebloId(id);
+        const pl = pueblo?.lat;
+        const pn = pueblo?.lng;
+        setLat(typeof pl === "number" && Number.isFinite(pl) ? pl : null);
+        setLng(typeof pn === "number" && Number.isFinite(pn) ? pn : null);
 
         // 2) Cargar descripción (admin)
         const res = await fetch(`/api/admin/pueblos/${id}/descripcion`, {
@@ -86,6 +99,44 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
 
     loadDescripcion();
   }, [slug]);
+
+  const handleCoordenadasChange = useCallback(
+    async (newLat: number, newLng: number) => {
+      if (newLat === 0 && newLng === 0) return;
+      setLat(newLat);
+      setLng(newLng);
+      if (!puebloId) return;
+      setGuardandoCoords(true);
+      setMensaje(null);
+      try {
+        const r = await fetch(`/api/admin/pueblos/${puebloId}/coordenadas`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lat: newLat, lng: newLng }),
+          credentials: "include",
+        });
+        if (r.status === 401) {
+          window.location.href = "/entrar";
+          return;
+        }
+        if (r.status === 403) {
+          setMensaje("No tienes permisos para editar coordenadas");
+          return;
+        }
+        if (!r.ok) {
+          const d = await r.json().catch(() => ({}));
+          throw new Error(d?.error ?? d?.message ?? `Error ${r.status}`);
+        }
+        setMensaje("Coordenadas guardadas");
+        setTimeout(() => setMensaje(null), 3000);
+      } catch (e: any) {
+        setMensaje(e?.message ?? "Error al guardar coordenadas");
+      } finally {
+        setGuardandoCoords(false);
+      }
+    },
+    [puebloId]
+  );
 
   async function handleGuardar() {
     if (!puebloId) return;
@@ -143,18 +194,50 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
   if (noPermisos) {
     return (
       <div className="mx-auto max-w-3xl p-6">
-        <h1 className="text-2xl font-semibold">Descripción del pueblo</h1>
+        <h1 className="text-2xl font-semibold">Información y descripción</h1>
         <p className="mt-4 text-red-600">No tienes permisos para editar este pueblo</p>
       </div>
     );
   }
 
+  const coordCenter: [number, number] =
+    lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng)
+      ? [lat, lng]
+      : [40.4168, -3.7038];
+  const selectedPosition =
+    lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng)
+      ? { lat, lng }
+      : null;
+
   return (
     <div className="mx-auto max-w-3xl p-6">
-      <h1 className="text-2xl font-semibold">Descripción del pueblo</h1>
+      <h1 className="text-2xl font-semibold">Información y descripción</h1>
       <p className="mt-2 text-sm text-gray-600">
-        Esta descripción se muestra en la web pública
+        Coordenadas, enunciado y descripción del pueblo para la web pública
       </p>
+
+      {/* Coordenadas y mapa */}
+      <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50/50 p-4">
+        <h2 className="text-sm font-medium text-gray-700">Ubicación del pueblo</h2>
+        <p className="mt-1 text-xs text-gray-500">
+          Busca un lugar o haz clic en el mapa para actualizar las coordenadas. Se guardan automáticamente.
+        </p>
+        <div className="mt-3">
+          <MapLocationPicker
+            center={coordCenter}
+            zoom={selectedPosition ? 14 : 6}
+            selectedPosition={selectedPosition}
+            onLocationSelect={(la, ln) => handleCoordenadasChange(la, ln)}
+            height="240px"
+            searchPlaceholder="Buscar lugar (ej: Plaza Mayor, Berlanga de Duero)..."
+            showSearch={true}
+            activeHint="Busca o haz clic en el mapa para situar el pueblo"
+          />
+        </div>
+        {guardandoCoords && (
+          <p className="mt-2 text-xs text-blue-600">Guardando coordenadas...</p>
+        )}
+      </div>
 
       <div className="mt-6">
         <label className="block text-sm font-medium text-gray-700">
