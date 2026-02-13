@@ -41,6 +41,10 @@ type RutaMapProps = {
   onRouteCalculated?: (info: RouteInfo) => void;
   /** Show "Invertir ruta" button (default: true when showNavButtons) */
   allowReverse?: boolean;
+  /** Controlled reversed state (if provided, component uses this instead of internal state) */
+  reversed?: boolean;
+  /** Callback when reversed state changes (for controlled mode) */
+  onReversedChange?: (reversed: boolean) => void;
 };
 
 // Brand colors
@@ -55,12 +59,23 @@ export default function RutaMap({
   height = 500,
   onRouteCalculated,
   allowReverse = true,
+  reversed: controlledReversed,
+  onReversedChange,
 }: RutaMapProps) {
   const [mounted, setMounted] = useState(false);
   const [L, setL] = useState<typeof import('leaflet') | null>(null);
   const [RL, setRL] = useState<typeof import('react-leaflet') | null>(null);
   const [routeCoords, setRouteCoords] = useState<[number, number][] | null>(null);
-  const [reversed, setReversed] = useState(false);
+  const [internalReversed, setInternalReversed] = useState(false);
+  const reversed = controlledReversed !== undefined ? controlledReversed : internalReversed;
+  const toggleReversed = useCallback(() => {
+    const next = !reversed;
+    if (onReversedChange) {
+      onReversedChange(next);
+    } else {
+      setInternalReversed(next);
+    }
+  }, [reversed, onReversedChange]);
   const onRouteCalculatedRef = useRef(onRouteCalculated);
   onRouteCalculatedRef.current = onRouteCalculated;
 
@@ -299,7 +314,7 @@ export default function RutaMap({
   const { MapContainer, TileLayer, Marker, Popup, Polyline } = RL;
 
   return (
-    <div>
+    <div style={{ position: 'relative', zIndex: 0 }}>
       {/* Map */}
       <div
         style={{
@@ -395,7 +410,7 @@ export default function RutaMap({
           {allowReverse && validWaypoints.length >= 2 && (
             <button
               type="button"
-              onClick={() => setReversed((r) => !r)}
+              onClick={toggleReversed}
               className="inline-flex items-center gap-2 rounded-lg border border-primary bg-white px-4 py-2.5 text-sm font-medium text-primary shadow-sm transition hover:bg-accent"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

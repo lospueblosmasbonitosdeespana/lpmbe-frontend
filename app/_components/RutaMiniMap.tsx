@@ -166,6 +166,8 @@ export default function RutaMiniMap({
         overflow: 'hidden',
         backgroundColor: '#f0ebe3',
         flexShrink: 0,
+        position: 'relative',
+        zIndex: 0,
       }}
     />
   );

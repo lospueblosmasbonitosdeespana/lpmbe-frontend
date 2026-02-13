@@ -122,7 +122,7 @@ export default function ParadasMap({
   const { MapContainer, TileLayer, Marker, Popup } = RL;
 
   return (
-    <div style={{ width: '100%', height: 340, borderRadius: 12, overflow: 'hidden', border: '1px solid #e0e0e0' }}>
+    <div style={{ width: '100%', height: 340, borderRadius: 12, overflow: 'hidden', border: '1px solid #e0e0e0', position: 'relative', zIndex: 0 }}>
       <MapContainer
         center={center}
         zoom={zoom}

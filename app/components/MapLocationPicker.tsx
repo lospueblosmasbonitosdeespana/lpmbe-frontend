@@ -226,7 +226,7 @@ function MapLocationPickerInner({
   const isActive = !!onLocationSelect;
 
   return (
-    <div className="relative" style={{ width: '100%' }}>
+    <div className="relative" style={{ width: '100%', zIndex: 0 }}>
       {/* Hint activo */}
       {isActive && activeHint && (
         <div className="mb-2 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-sm text-blue-800 font-medium">

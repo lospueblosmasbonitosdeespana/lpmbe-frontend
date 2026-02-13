@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import RutaMap, { type RouteInfo, type RouteLeg } from './RutaMap';
 import { sanitizeHtml } from '@/lib/sanitizeHtml';
@@ -39,8 +39,39 @@ export default function RutaParadasConMapa({
   totalTiempoEstimado,
 }: Props) {
   const [routeInfo, setRouteInfo] = useState<RouteInfo | null>(null);
+  const [reversed, setReversed] = useState(false);
 
-  // Build waypoints for the map
+  const handleReversedChange = useCallback((val: boolean) => {
+    setReversed(val);
+    // Clear route info so it recalculates with new order
+    setRouteInfo(null);
+  }, []);
+
+  // Preprocess paradas: strip TIPS from the original last parada
+  const processedParadas = useMemo(() => {
+    return paradas.map((p, idx) => {
+      let descripcion = (p.descripcion ?? '').toString().trim();
+      if (tips.length > 0 && idx === paradas.length - 1) {
+        const marcadores = ['TIPS DE RUTA', 'Tips de ruta', 'TIPS', 'Tips', 'Duración recomendada'];
+        for (const m of marcadores) {
+          const i = descripcion.indexOf(m);
+          if (i !== -1) {
+            descripcion = descripcion.slice(0, i).trim();
+            break;
+          }
+        }
+      }
+      return { ...p, cleanDescripcion: descripcion };
+    });
+  }, [paradas, tips]);
+
+  // Display paradas: normal or reversed order
+  const displayParadas = useMemo(() => {
+    if (!reversed) return processedParadas;
+    return [...processedParadas].reverse();
+  }, [processedParadas, reversed]);
+
+  // Build waypoints for the map (always in original order, RutaMap handles reversal)
   const mapWaypoints = useMemo(
     () =>
       paradas.map((p, idx) => ({
@@ -124,41 +155,37 @@ export default function RutaParadasConMapa({
           waypoints={mapWaypoints}
           height={500}
           onRouteCalculated={setRouteInfo}
+          reversed={reversed}
+          onReversedChange={handleReversedChange}
         />
       </section>
 
       {/* Paradas de la ruta con distancias entre ellas */}
-      {paradas.length > 0 && (
+      {displayParadas.length > 0 && (
         <section className="mt-10">
-          <h2 className="text-2xl font-semibold">Paradas de la ruta</h2>
+          <h2 className="text-2xl font-semibold">
+            Paradas de la ruta
+            {reversed && (
+              <span className="ml-3 text-sm font-normal text-muted-foreground">(ruta invertida)</span>
+            )}
+          </h2>
 
           <div className="mt-4 space-y-0">
-            {paradas.map((p: any, idx: number) => {
+            {displayParadas.map((p: any, idx: number) => {
               const pueblo = p.pueblo ?? {};
-              const orden = Number(p.orden ?? (idx + 1));
-              const titulo = (p.titulo?.trim() || pueblo.nombre || `Parada ${orden}`) as string;
-
-              let descripcion = (p.descripcion ?? '').toString().trim();
-              if (tips.length > 0 && idx === paradas.length - 1) {
-                const marcadores = ['TIPS DE RUTA', 'Tips de ruta', 'TIPS', 'Tips', 'Duración recomendada'];
-                for (const m of marcadores) {
-                  const i = descripcion.indexOf(m);
-                  if (i !== -1) {
-                    descripcion = descripcion.slice(0, i).trim();
-                    break;
-                  }
-                }
-              }
+              const displayOrder = idx + 1;
+              const titulo = (p.titulo?.trim() || pueblo.nombre || `Parada ${displayOrder}`) as string;
+              const descripcion = p.cleanDescripcion ?? '';
               const fotoUrl = (p.fotoUrl || '').toString().trim();
               const leg = idx < legs.length ? legs[idx] : null;
               const accumulated = accumulatedDistances[idx] ?? null;
 
               return (
-                <div key={`${p.puebloId}-${orden}`}>
+                <div key={`${p.puebloId}-${displayOrder}-${reversed ? 'r' : 'n'}`}>
                   <article className="rounded-lg border p-5">
                     <div className="flex items-center gap-3">
                       <div className="h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm">
-                        {orden}
+                        {displayOrder}
                       </div>
                       <div className="flex-1">
                         <h3 className="text-xl font-semibold">{titulo}</h3>

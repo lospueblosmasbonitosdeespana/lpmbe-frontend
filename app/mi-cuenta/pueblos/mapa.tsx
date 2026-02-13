@@ -56,7 +56,7 @@ export default function MapaPueblosVisitados({
   }
 
   return (
-    <div className="h-[400px] w-full lg:h-[720px]">
+    <div className="h-[400px] w-full lg:h-[720px]" style={{ position: 'relative', zIndex: 0 }}>
       <MapContainer center={center} zoom={6} style={{ width: '100%', height: '100%' }}>
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
