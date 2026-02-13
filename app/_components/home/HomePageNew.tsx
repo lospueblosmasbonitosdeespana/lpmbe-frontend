@@ -986,12 +986,23 @@ function SocialMediaSection() {
           ))}
         </div>
 
-        <div className="text-center">
+        <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-5 py-3">
             <span className="text-white/90 text-sm">Comparte con</span>
             <span className="px-4 py-1.5 bg-white text-primary font-bold rounded-full text-sm">
               #LosPueblosMasBonitos
             </span>
+          </div>
+          <div>
+            <Link
+              href="/redes-sociales"
+              className="inline-flex items-center gap-2 text-sm font-medium text-white/90 hover:text-white transition-colors"
+            >
+              Ver página de redes sociales
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
           </div>
         </div>
       </Container>

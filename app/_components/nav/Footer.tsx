@@ -201,6 +201,14 @@ export async function Footer() {
                   Página de contacto
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/redes-sociales"
+                  className="text-sm text-white/70 transition-colors hover:text-white"
+                >
+                  Redes sociales
+                </Link>
+              </li>
             </ul>
 
             <div className="mt-6 flex gap-4">
