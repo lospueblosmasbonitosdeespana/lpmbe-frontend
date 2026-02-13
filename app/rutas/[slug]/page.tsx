@@ -5,7 +5,7 @@ import { getRutas, getRutaById, getRutaMapa } from "@/lib/api";
 import { sanitizeHtml, createExcerpt } from "@/lib/sanitizeHtml";
 import RutaParadasConMapa from "@/app/_components/RutaParadasConMapa";
 
-export const revalidate = 300;
+export const revalidate = 60;
 
 type DescripcionSplit = {
   intro: string | null;
