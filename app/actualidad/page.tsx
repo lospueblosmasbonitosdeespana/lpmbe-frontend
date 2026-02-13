@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
+import ShareButton from '@/app/components/ShareButton';
 
 type Contenido = {
   id: number;
@@ -123,8 +124,9 @@ function ActualidadContent() {
 
             return (
               <article key={item.id} className="border-b pb-6 last:border-0">
-                <Link href={href} className="group block">
-                  {item.coverUrl && item.coverUrl.trim() && (
+                <div className="flex items-start justify-between gap-4">
+                  <Link href={href} className="group flex-1 min-w-0">
+                    {item.coverUrl && item.coverUrl.trim() && (
                     <div className="mb-4 overflow-hidden rounded-lg">
                       <img
                         src={item.coverUrl.trim()}
@@ -158,6 +160,8 @@ function ActualidadContent() {
                     Leer más →
                   </span>
                 </Link>
+                  <ShareButton url={href} title={item.titulo} variant="icon" className="shrink-0 mt-1" />
+                </div>
               </article>
             );
           })}

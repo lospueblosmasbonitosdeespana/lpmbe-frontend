@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 
 type Contenido = {
@@ -44,8 +45,8 @@ export default function ContenidosPuebloSection({
             : '';
 
           return (
+            <div key={contenido.id} style={{ position: 'relative' }} className="contenido-card-link">
             <Link
-              key={contenido.id}
               href={`/c/${contenido.slug}`}
               style={{
                 textDecoration: 'none',
@@ -53,7 +54,6 @@ export default function ContenidosPuebloSection({
                 display: 'block',
                 cursor: 'pointer',
               }}
-              className="contenido-card-link"
             >
               <article
                 style={{
@@ -161,6 +161,10 @@ export default function ContenidosPuebloSection({
                 </div>
               </article>
             </Link>
+            <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10 }}>
+              <ShareButton url={`/c/${contenido.slug}`} title={contenido.titulo} variant="icon" />
+            </div>
+            </div>
           );
         })}
       </div>

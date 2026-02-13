@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ShareButton from "@/app/components/ShareButton";
 
 type FeedItem = {
   id: number | string;
@@ -45,6 +46,7 @@ export default function FeedSection({
                   borderRadius: "8px",
                   padding: "16px",
                   marginBottom: "16px",
+                  position: "relative",
                 }}
               >
                 {item.imagen && (
@@ -93,9 +95,12 @@ export default function FeedSection({
                   </p>
                 )}
 
-                <Link href={item.href} style={{ fontSize: "14px", color: "#0066cc" }}>
-                  Ver más
-                </Link>
+                <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "12px" }}>
+                  <Link href={item.href} style={{ fontSize: "14px", color: "#0066cc" }}>
+                    Ver más
+                  </Link>
+                  <ShareButton url={item.href} title={item.titulo} variant="icon" />
+                </div>
               </div>
             );
           })}

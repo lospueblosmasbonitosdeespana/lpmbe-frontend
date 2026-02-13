@@ -299,6 +299,16 @@ export default function PuebloActions({
     { label: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}` },
   ];
 
+  const handleInstagramShare = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
+      setShareDropdownOpen(false);
+    } catch {
+      window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
+    }
+  };
+
   const tieneCoords = lat !== null && lng !== null;
   const directionsUrl = tieneCoords
     ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
@@ -338,6 +348,14 @@ export default function PuebloActions({
                       {label}
                     </a>
                   ))}
+                  <button
+                    type="button"
+                    onClick={handleInstagramShare}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-foreground hover:bg-muted"
+                    role="menuitem"
+                  >
+                    Instagram
+                  </button>
                   <button
                     type="button"
                     onClick={handleCopyLink}

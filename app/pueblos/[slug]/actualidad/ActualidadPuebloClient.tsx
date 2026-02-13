@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
+import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 
 type Contenido = {
@@ -86,9 +87,10 @@ function TarjetaContenido({
       : '';
 
   return (
+    <div className="relative rounded-lg border border-gray-200 bg-white overflow-hidden transition hover:border-gray-300 hover:shadow-md">
     <Link
       href={href}
-      className="group block rounded-lg border border-gray-200 bg-white overflow-hidden transition hover:border-gray-300 hover:shadow-md"
+      className="group block"
     >
       {item.coverUrl && item.coverUrl.trim() ? (
         <div className="aspect-[16/10] overflow-hidden">
@@ -126,6 +128,10 @@ function TarjetaContenido({
         </span>
       </div>
     </Link>
+    <div className="absolute top-3 right-3 z-10">
+      <ShareButton url={href} title={item.titulo} variant="icon" />
+    </div>
+    </div>
   );
 }
 

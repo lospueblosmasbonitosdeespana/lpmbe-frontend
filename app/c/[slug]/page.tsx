@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
 import BackButton from './BackButton';
+import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 
 export const dynamic = 'force-dynamic';
@@ -152,18 +153,23 @@ export default async function ContenidoPage({
               {tipoBadge[contenido.tipo] || contenido.tipo}
             </div>
 
-            {/* Título */}
-            <h1
-              style={{
-                fontSize: '36px',
-                fontWeight: 700,
-                lineHeight: '1.2',
-                marginBottom: '12px',
-                color: '#111',
-              }}
-            >
-              {contenido.titulo}
-            </h1>
+            {/* Título + Compartir */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '12px' }}>
+              <h1
+                style={{
+                  fontSize: '36px',
+                  fontWeight: 700,
+                  lineHeight: '1.2',
+                  margin: 0,
+                  color: '#111',
+                  flex: 1,
+                  minWidth: 0,
+                }}
+              >
+                {contenido.titulo}
+              </h1>
+              <ShareButton url={`/c/${slug}`} title={contenido.titulo} variant="button" />
+            </div>
 
             {/* Fecha de publicación */}
             {fechaPublicacionFormateada && (
