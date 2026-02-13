@@ -174,10 +174,11 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
           {checkoutData.iva.exento ? (
             <div className="rounded-md bg-amber-50 border border-amber-200 p-3">
               <p className="text-xs font-semibold text-amber-800">
-                Envio a Canarias: exento de IVA
+                Destino exento de IVA
               </p>
               <p className="text-xs text-amber-700 mt-0.5">
-                Los precios mostrados no incluyen IVA (IGIC no aplicable).
+                Los precios mostrados no incluyen IVA.
+                {checkoutData.shipping?.zone === 'Canarias' && ' Impuestos locales (IGIC) no incluidos.'}
               </p>
             </div>
           ) : (

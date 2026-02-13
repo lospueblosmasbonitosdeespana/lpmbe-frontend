@@ -233,7 +233,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
 
     const payload: any = {
       nombre: editNombre.trim() || undefined,
-      descripcion: editDescripcion.trim() || null,
+      descripcion: editDescripcion.trim() || undefined,
       lat: parsedLat != null && !isNaN(parsedLat) ? parsedLat : null,
       lng: parsedLng != null && !isNaN(parsedLng) ? parsedLng : null,
     };

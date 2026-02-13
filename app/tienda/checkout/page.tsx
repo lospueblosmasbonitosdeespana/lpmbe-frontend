@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useCartStore } from '@/src/store/cart';
-import { getUserDirecciones, createDireccion, updateDireccion, createCheckout } from '@/src/lib/tiendaApi';
+import { getUserDirecciones, createDireccion, updateDireccion, deleteDireccion, createCheckout } from '@/src/lib/tiendaApi';
 import { formatEUR, toNumber } from '@/src/lib/money';
 import { PAISES_ENVIO, getCountryLabel, getCountrySelectValue } from '@/src/lib/countries';
 import type { Direccion, CheckoutResponse } from '@/src/types/tienda';
@@ -105,6 +105,25 @@ export default function CheckoutPage() {
     });
     setShowNewDireccion(true);
     setError(null);
+  };
+
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const handleDeleteDireccion = async (id: number) => {
+    if (!confirm('¿Eliminar esta dirección?')) return;
+    try {
+      setDeletingId(id);
+      await deleteDireccion(id);
+      setDirecciones((prev) => prev.filter((d) => d.id !== id));
+      if (selectedDireccionId === id) {
+        const remaining = direcciones.filter((d) => d.id !== id);
+        setSelectedDireccionId(remaining.length > 0 ? remaining[0].id : null);
+      }
+    } catch {
+      setError('No se pudo eliminar la dirección');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const handleCancelForm = () => {
@@ -366,13 +385,23 @@ export default function CheckoutPage() {
                         </span>
                       )}
                     </label>
-                    <button
-                      type="button"
-                      onClick={() => handleStartEdit(dir)}
-                      className="shrink-0 rounded border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                      Editar
-                    </button>
+                    <div className="flex shrink-0 flex-col gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleStartEdit(dir)}
+                        className="rounded border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteDireccion(dir.id)}
+                        disabled={deletingId === dir.id}
+                        className="rounded border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+                      >
+                        {deletingId === dir.id ? 'Eliminando…' : 'Eliminar'}
+                      </button>
+                    </div>
                   </div>
                 ))}
 
