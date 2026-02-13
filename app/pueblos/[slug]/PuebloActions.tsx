@@ -181,20 +181,20 @@ function ActionButton({ icon, label, state = "idle", onClick, href, external, hi
   const isSuccess = state === "success";
 
   const iconClasses = highlighted
-    ? "flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors group-hover:bg-primary/90"
-    : "flex h-10 w-10 items-center justify-center rounded-full bg-muted transition-colors group-hover:bg-primary group-hover:text-primary-foreground";
+    ? "flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors group-hover:bg-primary/90"
+    : "flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-muted transition-colors group-hover:bg-primary group-hover:text-primary-foreground";
 
   const labelClasses = highlighted
-    ? "mt-1.5 text-xs font-semibold text-primary transition-colors group-hover:text-primary/80"
-    : "mt-1.5 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground";
+    ? "mt-1 sm:mt-1.5 text-[10px] sm:text-xs font-semibold text-primary transition-colors group-hover:text-primary/80"
+    : "mt-1 sm:mt-1.5 text-[10px] sm:text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground";
 
   const buttonContent = (
     <>
       <span className={iconClasses}>
         {isLoading ? (
-          <SpinnerIcon className="h-5 w-5" />
+          <SpinnerIcon className="h-4 w-4 sm:h-5 sm:w-5" />
         ) : isSuccess ? (
-          <CheckIcon className="h-5 w-5" />
+          <CheckIcon className="h-4 w-4 sm:h-5 sm:w-5" />
         ) : (
           icon
         )}
@@ -311,10 +311,10 @@ export default function PuebloActions({
     <>
       <Section spacing="none" className={cn("border-b border-border")}>
         <Container>
-          <div className="flex items-center justify-center gap-8 py-4 sm:gap-12">
+          <div className="grid grid-cols-3 gap-3 py-4 sm:flex sm:flex-wrap sm:justify-center sm:gap-6 md:gap-8 lg:gap-12">
             <div className="relative flex flex-col items-center" ref={shareDropdownRef}>
               <ActionButton
-                icon={<ShareIcon className="h-5 w-5" />}
+                icon={<ShareIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
                 label="Compartir"
                 state={shareState}
                 onClick={handleShareClick}
@@ -350,35 +350,35 @@ export default function PuebloActions({
               )}
             </div>
             <ActionButton
-              icon={<VideosIcon className="h-5 w-5" />}
+              icon={<VideosIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
               label="Videos"
               href={`/pueblos/${puebloSlug}/videos`}
             />
             <ActionButton
-              icon={<WebcamIcon className="h-5 w-5" />}
+              icon={<WebcamIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
               label="Webcam"
               href={`/pueblos/${puebloSlug}/webcam`}
             />
             <ActionButton
-              icon={<MapIcon className="h-5 w-5" />}
+              icon={<MapIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
               label="Ver en mapa"
               href={mapUrl}
             />
             <ActionButton
-              icon={<DirectionsIcon className="h-5 w-5" />}
+              icon={<DirectionsIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
               label="Cómo llegar"
               href={directionsUrl ?? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nombre)}`}
               external
             />
             {isLoggedIn !== true && (
               <ActionButton
-                icon={<BellIcon className="h-5 w-5" />}
+                icon={<BellIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
                 label="Suscribirse"
                 onClick={() => setShowSuscribirseModal(true)}
               />
             )}
             <ActionButton
-              icon={<NewsIcon className="h-5 w-5" />}
+              icon={<NewsIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
               label="Actualidad"
               href={`/pueblos/${puebloSlug}/actualidad`}
               highlighted

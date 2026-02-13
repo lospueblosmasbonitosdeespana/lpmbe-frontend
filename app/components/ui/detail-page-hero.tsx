@@ -81,7 +81,7 @@ export function DetailPageHero({
   if (variant === "fullscreen") {
     const hasImage = !!image
     return (
-      <section className={cn("relative h-[70vh] min-h-[500px] max-h-[700px]", !hasImage && "bg-muted", className)}>
+      <section className={cn("relative h-[50vh] min-h-[280px] max-h-[500px] sm:h-[60vh] sm:min-h-[400px] sm:max-h-[600px] md:h-[70vh] md:min-h-[500px] md:max-h-[700px]", !hasImage && "bg-muted", className)}>
         {image && (
           <>
             <Image
