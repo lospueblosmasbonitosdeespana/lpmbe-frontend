@@ -27,12 +27,24 @@ interface PointsOfInterestProps {
   hideHeader?: boolean
   /** Id para anchor (ej. #lugares-de-interes) */
   id?: string
+  /** Enlace a la página "Todos los lugares de interés" (mapa + listado completo) */
+  allHref?: string
+  /** Mostrar descripción completa en lugar de truncar (para página dedicada) */
+  showFullDescription?: boolean
 }
 
-export function PointsOfInterest({ points, className, maxItems = 6, hideHeader, id }: PointsOfInterestProps) {
+export function PointsOfInterest({ points, className, maxItems = 6, hideHeader, id, allHref, showFullDescription }: PointsOfInterestProps) {
   if (points.length === 0) return null
 
   const toShow = maxItems === 0 ? points : points.slice(0, maxItems)
+
+  const headerContent = allHref ? (
+    <Link href={allHref} className="group inline-block">
+      <Headline className="text-2xl sm:text-3xl transition-colors group-hover:text-primary">Lugares de interés</Headline>
+    </Link>
+  ) : (
+    <Headline className="text-2xl sm:text-3xl">Lugares de interés</Headline>
+  )
 
   return (
     <Section spacing="md" className={className} id={id}>
@@ -40,13 +52,21 @@ export function PointsOfInterest({ points, className, maxItems = 6, hideHeader, 
         {!hideHeader && (
           <div className="mb-6 lg:mb-8">
             <Eyebrow className="mb-3">Qué ver</Eyebrow>
-            <Headline className="text-2xl sm:text-3xl">Lugares de interés</Headline>
+            {headerContent}
+            {allHref && (
+              <Link
+                href={allHref}
+                className="mt-3 inline-flex items-center rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-muted hover:border-primary/20"
+              >
+                Todos los lugares de interés
+              </Link>
+            )}
           </div>
         )}
 
         <Grid columns={2} gap="sm">
           {toShow.map((point, index) => (
-            <PointOfInterestCard key={point.id} point={point} index={index} />
+            <PointOfInterestCard key={point.id} point={point} index={index} showFullDescription={showFullDescription} />
           ))}
         </Grid>
       </Container>
@@ -54,7 +74,7 @@ export function PointsOfInterest({ points, className, maxItems = 6, hideHeader, 
   )
 }
 
-function PointOfInterestCard({ point, index }: { point: PointOfInterest; index: number }) {
+function PointOfInterestCard({ point, index, showFullDescription }: { point: PointOfInterest; index: number; showFullDescription?: boolean }) {
   const content = (
     <article
       className={cn(
@@ -84,7 +104,10 @@ function PointOfInterestCard({ point, index }: { point: PointOfInterest; index: 
           <h3 className={cn("font-serif text-base font-medium text-foreground sm:text-lg", point.href && "group-hover:text-primary transition-colors")}>
             {point.name}
           </h3>
-          <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+          <p className={cn(
+            "text-xs leading-relaxed text-muted-foreground sm:text-sm",
+            !showFullDescription && "line-clamp-2"
+          )}>
             {point.description}
           </p>
         </div>

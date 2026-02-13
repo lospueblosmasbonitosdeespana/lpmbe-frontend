@@ -492,6 +492,7 @@ export default async function PuebloPage({
       {poisPOI.length > 0 && (
         <PointsOfInterest
           id="lugares-de-interes"
+          allHref={`/pueblos/${puebloSafe.slug}/lugares-de-interes`}
           points={poisPOI.map((poi: Poi) => ({
             id: poi.id,
             name: poi.nombre,
