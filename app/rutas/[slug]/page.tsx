@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getRutas, getRutaById, getRutaMapa } from "@/lib/api";
 import { sanitizeHtml, createExcerpt } from "@/lib/sanitizeHtml";
+import RutaMap from "@/app/_components/RutaMap";
 
 export const revalidate = 300;
 
@@ -155,12 +156,22 @@ export default async function RutaPage({
     rutaMapa = null;
   }
 
-  // SOLO usar boldestMapSlug (priorizar ruta.boldestMapSlug)
-  const boldestSlug =
-    (ruta as any).boldestMapSlug ??
-    (rutaMapa?.ruta?.boldest?.slug ?? null);
-
   const pueblosOrdenados = rutaMapa?.pueblos ?? [];
+
+  // Build waypoints for the map (paradas first, pueblosOrdenados as fallback)
+  const mapWaypoints = paradas.length > 0
+    ? paradas.map((p: any, idx: number) => ({
+        lat: p.lat ?? p.pueblo?.lat ?? null,
+        lng: p.lng ?? p.pueblo?.lng ?? null,
+        titulo: (p.titulo?.trim() || p.pueblo?.nombre || `Parada ${p.orden ?? idx + 1}`) as string,
+        orden: Number(p.orden ?? idx + 1),
+      }))
+    : pueblosOrdenados.map((pueblo: any, idx: number) => ({
+        lat: pueblo.lat ?? null,
+        lng: pueblo.lng ?? null,
+        titulo: (pueblo.nombre ?? `Parada ${idx + 1}`) as string,
+        orden: idx + 1,
+      }));
   
   // Split de descripción (intro/outro)
   const descripcionRaw = ruta.descripcion ?? null;
@@ -476,25 +487,10 @@ export default async function RutaPage({
         </section>
       )}
 
-      {/* Mapa Boldest */}
+      {/* Mapa de la ruta */}
       <section id="mapa" className="mb-8">
         <h2 className="mb-4 text-2xl font-semibold">Mapa de la ruta</h2>
-
-        {boldestSlug ? (
-          <div style={{ height: "80vh", minHeight: 700, maxHeight: 900 }}>
-            <iframe
-              src={`https://maps.lospueblosmasbonitosdeespana.org/es/${boldestSlug}`}
-              style={{ width: "100%", height: "100%", border: 0, borderRadius: 12 }}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allow="geolocation"
-            />
-          </div>
-        ) : (
-          <div className="rounded-lg border border-dashed p-8 text-center text-gray-600">
-            Mapa pendiente de configurar
-          </div>
-        )}
+        <RutaMap waypoints={mapWaypoints} height={500} />
       </section>
     </main>
   );

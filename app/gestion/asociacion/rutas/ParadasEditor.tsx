@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import TipTapEditor from '@/app/_components/editor/TipTapEditor';
+import RutaMap from '@/app/_components/RutaMap';
 
 type Parada = {
   tempId: string;
@@ -26,7 +27,7 @@ function PuebloAsignar({
   onQuitar,
 }: {
   parada: Parada;
-  onAsignar: (pueblo: { id: number; nombre: string; provincia?: string }) => void;
+  onAsignar: (pueblo: { id: number; nombre: string; provincia?: string; lat?: number; lng?: number }) => void;
   onQuitar: () => void;
 }) {
   const [query, setQuery] = useState('');
@@ -199,8 +200,8 @@ export default function ParadasEditor({ paradas, setParadas }: ParadasEditorProp
       titulo: pueblo?.nombre ?? '',
       descripcion: '',
       fotoUrl: '',
-      lat: null,
-      lng: null,
+      lat: pueblo?.lat ?? null,
+      lng: pueblo?.lng ?? null,
     };
     setParadas([...paradas, nuevaParada]);
     setBusqueda('');
@@ -307,6 +308,26 @@ export default function ParadasEditor({ paradas, setParadas }: ParadasEditorProp
         )}
       </div>
 
+      {/* Vista previa del mapa */}
+      {paradas.some((p) => p.lat != null && p.lng != null) && (
+        <div className="rounded-md border bg-white p-3">
+          <label className="mb-2 block text-xs font-medium text-gray-700">
+            Vista previa del mapa
+          </label>
+          <RutaMap
+            waypoints={paradas.map((p) => ({
+              lat: p.lat,
+              lng: p.lng,
+              titulo: p.titulo || p.puebloNombre || `Parada ${p.orden}`,
+              orden: p.orden,
+            }))}
+            showRouting={false}
+            showNavButtons={false}
+            height={280}
+          />
+        </div>
+      )}
+
       {/* Lista de paradas */}
       {paradas.length === 0 ? (
         <p className="text-sm text-gray-500">No hay paradas todavía.</p>
@@ -364,6 +385,8 @@ export default function ParadasEditor({ paradas, setParadas }: ParadasEditorProp
                             puebloId: pueblo.id,
                             puebloNombre: pueblo.nombre,
                             titulo: p.titulo || pueblo.nombre,
+                            lat: p.lat ?? pueblo.lat ?? null,
+                            lng: p.lng ?? pueblo.lng ?? null,
                           }
                         : p
                     ));

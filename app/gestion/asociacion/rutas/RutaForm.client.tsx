@@ -610,16 +610,7 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
           </p>
         </div>
 
-        {/* Boldest Map Slug */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Boldest Map Slug</label>
-          <input
-            className="w-full rounded-md border px-3 py-2"
-            value={boldestMapSlug}
-            onChange={(e) => setBoldestMapSlug(e.target.value)}
-            placeholder="ej: ruta-de-los-pueblos-mas-bonitos"
-          />
-        </div>
+        {/* Campo Boldest eliminado – ahora usamos mapa propio con Leaflet */}
 
         {/* Metadatos */}
         <div className="grid grid-cols-2 gap-4">
