@@ -8,6 +8,9 @@ import { Headline, Title, Caption } from '@/app/components/ui/typography';
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 
+/** Cuando true, el botón "Unirse al Club" permite el alta (tras establecer precios y pasarela). */
+const CLUB_ALTA_ABIERTO = process.env.NEXT_PUBLIC_CLUB_ALTA_ABIERTO === 'true';
+
 type ClubMe = {
   isMember: boolean;
   plan: string | null;
@@ -93,6 +96,10 @@ export default function ClubPage() {
   const [registrando, setRegistrando] = useState(false);
   const [registroError, setRegistroError] = useState<string | null>(null);
   const [registroSuccess, setRegistroSuccess] = useState<string | null>(null);
+
+  // Alta / activar membresía (preparado para cuando CLUB_ALTA_ABIERTO=true)
+  const [activandoMembresia, setActivandoMembresia] = useState(false);
+  const [activarError, setActivarError] = useState<string | null>(null);
 
   // QR de identidad (5 min)
   const [qrIdentidad, setQrIdentidad] = useState<QrIdentidad | null>(null);
@@ -312,6 +319,27 @@ export default function ClubPage() {
     return `${mins}:${String(secs).padStart(2, '0')}`;
   }
 
+  /** Activar membresía. Solo efectivo cuando CLUB_ALTA_ABIERTO=true y tras configurar precios/pago. */
+  async function handleActivarMembresia(tipo: 'ANUAL' | 'MENSUAL') {
+    if (!CLUB_ALTA_ABIERTO) return;
+    setActivandoMembresia(true);
+    setActivarError(null);
+    try {
+      const res = await fetch('/api/club/suscripcion/activar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo, importeCents: undefined }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error ?? data?.message ?? 'Error al activar');
+      await loadData();
+    } catch (e: any) {
+      setActivarError(e?.message ?? 'Error al activar la membresía');
+    } finally {
+      setActivandoMembresia(false);
+    }
+  }
+
   if (loading) {
     return (
       <Section spacing="lg" background="default">
@@ -380,6 +408,45 @@ export default function ClubPage() {
               </div>
             </div>
           </div>
+
+          {/* Unirse al Club (solo si NO es miembro) */}
+          {!clubMe?.isMember && (
+            <div className={`${cardClass} border-primary/20 bg-primary/5`}>
+              <Title size="lg" className="mb-2">Unirse al Club de Amigos</Title>
+              <Caption className="block mb-4">
+                {CLUB_ALTA_ABIERTO
+                  ? 'Selecciona un plan para activar tu membresía.'
+                  : 'La inscripción al Club de Amigos estará disponible en breve. Descuentos en recursos turísticos, QR de identidad y más beneficios te esperan.'}
+              </Caption>
+              {CLUB_ALTA_ABIERTO ? (
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleActivarMembresia('ANUAL')}
+                    disabled={activandoMembresia}
+                    className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
+                  >
+                    {activandoMembresia ? 'Procesando…' : 'Plan anual'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleActivarMembresia('MENSUAL')}
+                    disabled={activandoMembresia}
+                    className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
+                  >
+                    {activandoMembresia ? 'Procesando…' : 'Plan mensual'}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+                  <span>Próximamente</span>
+                </div>
+              )}
+              {activarError && (
+                <p className="mt-2 text-sm text-destructive">{activarError}</p>
+              )}
+            </div>
+          )}
 
           {/* Mi QR de identidad (5 min) */}
           {clubMe?.isMember && (
