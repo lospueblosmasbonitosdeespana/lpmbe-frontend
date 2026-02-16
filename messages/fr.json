@@ -257,6 +257,57 @@
   "rutas": {
     "title": "Itinéraires",
     "pageDesc": "Découvrez les itinéraires",
-    "noRoutes": "Aucun itinéraire disponible"
+    "noRoutes": "Aucun itinéraire disponible",
+    "routeNotFound": "Itinéraire introuvable",
+    "backToRoutes": "← Retour aux itinéraires"
+  },
+  "puebloPage": {
+    "breadcrumbHome": "Accueil",
+    "breadcrumbPueblos": "Villages",
+    "statsEyebrow": "EN CHIFFRES",
+    "statsTitle": "Patrimoine et tradition",
+    "gallery": "Galerie",
+    "galleryTitle": "Images de {nombre}",
+    "leadFallback": "Découvrez l'un des plus beaux villages d'Espagne.",
+    "experienceStops": "Étapes de l'expérience",
+    "others": "Autres",
+    "noImage": "Pas d'image",
+    "seeDetail": "Voir le détail",
+    "location": "Emplacement",
+    "locationIn": "{nombre} se trouve à {provincia}, {comunidad}.",
+    "pointOfInterest": "Point d'intérêt",
+    "categoryNature": "Nature",
+    "categoryNatureDesc": "Randonnée, paysages et espaces naturels",
+    "categoryCulture": "Culture",
+    "categoryCultureDesc": "Monuments, musées et patrimoine historique",
+    "categoryFamily": "En famille",
+    "categoryFamilyDesc": "Activités pour tous les âges",
+    "categoryHeritage": "Patrimoine",
+    "categoryHeritageDesc": "Sites d'intérêt culturel et architecture historique",
+    "categoryPetfriendly": "Pet-friendly",
+    "categoryPetfriendlyDesc": "Espaces et activités avec votre animal",
+    "categoryGastronomy": "Gastronomie",
+    "categoryGastronomyDesc": "Restaurants, produits locaux et tradition culinaire"
+  },
+  "poiPage": {
+    "backTo": "← Retour à {nombre}",
+    "principal": "Principal",
+    "descriptionComingSoon": "Description à venir."
+  },
+  "meteoPanel": {
+    "titleNow": "Météo actuelle",
+    "statusLabel": "État :",
+    "next3Days": "3 prochains jours",
+    "updatedAt": "Mis à jour :",
+    "unavailable": "Météo indisponible",
+    "clear": "Dégagé",
+    "cloudy": "Nuageux",
+    "fog": "Brouillard",
+    "drizzle": "Bruine",
+    "rain": "Pluie",
+    "snow": "Neige",
+    "showers": "Averses",
+    "storm": "Orage",
+    "weather": "Temps"
   }
 }

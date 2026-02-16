@@ -257,6 +257,57 @@
   "rutas": {
     "title": "Percorsi",
     "pageDesc": "Scopri i percorsi",
-    "noRoutes": "Nessun percorso disponibile"
+    "noRoutes": "Nessun percorso disponibile",
+    "routeNotFound": "Percorso non trovato",
+    "backToRoutes": "← Torna ai percorsi"
+  },
+  "puebloPage": {
+    "breadcrumbHome": "Home",
+    "breadcrumbPueblos": "Borghi",
+    "statsEyebrow": "IN CIFRE",
+    "statsTitle": "Patrimonio e tradizione",
+    "gallery": "Galleria",
+    "galleryTitle": "Immagini di {nombre}",
+    "leadFallback": "Scopri uno dei borghi più belli di Spagna.",
+    "experienceStops": "Tappe dell'esperienza",
+    "others": "Altri",
+    "noImage": "Nessuna immagine",
+    "seeDetail": "Vedi dettaglio",
+    "location": "Posizione",
+    "locationIn": "{nombre} si trova in {provincia}, {comunidad}.",
+    "pointOfInterest": "Punto di interesse",
+    "categoryNature": "Natura",
+    "categoryNatureDesc": "Escursionismo, paesaggi e spazi naturali",
+    "categoryCulture": "Cultura",
+    "categoryCultureDesc": "Monumenti, musei e patrimonio storico",
+    "categoryFamily": "In famiglia",
+    "categoryFamilyDesc": "Attività per tutte le età",
+    "categoryHeritage": "Patrimonio",
+    "categoryHeritageDesc": "Beni culturali e architettura storica",
+    "categoryPetfriendly": "Pet-friendly",
+    "categoryPetfriendlyDesc": "Spazi e attività con il tuo animale",
+    "categoryGastronomy": "Gastronomia",
+    "categoryGastronomyDesc": "Ristoranti, prodotti locali e tradizione culinaria"
+  },
+  "poiPage": {
+    "backTo": "← Torna a {nombre}",
+    "principal": "Principale",
+    "descriptionComingSoon": "Descrizione in arrivo."
+  },
+  "meteoPanel": {
+    "titleNow": "Tempo attuale",
+    "statusLabel": "Stato:",
+    "next3Days": "Prossimi 3 giorni",
+    "updatedAt": "Aggiornato:",
+    "unavailable": "Tempo non disponibile",
+    "clear": "Sereno",
+    "cloudy": "Nuvoloso",
+    "fog": "Nebbia",
+    "drizzle": "Pioggia leggera",
+    "rain": "Pioggia",
+    "snow": "Neve",
+    "showers": "Rovesci",
+    "storm": "Temporale",
+    "weather": "Tempo"
   }
 }

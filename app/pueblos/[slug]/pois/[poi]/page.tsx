@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -87,6 +87,7 @@ export default async function PoiPage({
 }) {
   const { slug: puebloSlug, poi } = await params;
   const locale = await getLocale();
+  const t = await getTranslations("poiPage");
   const data = await fetchPoi(puebloSlug, poi, locale);
   if (!data) notFound();
 
@@ -108,7 +109,7 @@ export default async function PoiPage({
           href={`/pueblos/${puebloSlug}`}
           style={{ color: "#0066cc", textDecoration: "none" }}
         >
-          ← Volver a {puebloNombre}
+          {t("backTo", { nombre: puebloNombre })}
         </Link>
       </div>
 
@@ -213,7 +214,7 @@ export default async function PoiPage({
                         borderRadius: 4,
                       }}
                     >
-                      Principal
+                      {t("principal")}
                     </div>
                   )}
                 </div>
@@ -234,7 +235,7 @@ export default async function PoiPage({
       ) : (
         <section style={{ marginTop: 32 }}>
           <p style={{ color: "#666", fontSize: 14 }}>
-            Descripción próximamente.
+            {t("descriptionComingSoon")}
           </p>
         </section>
       )}

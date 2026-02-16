@@ -257,6 +257,57 @@
   "rutas": {
     "title": "Routen",
     "pageDesc": "Routen entdecken",
-    "noRoutes": "Keine Routen verfügbar"
+    "noRoutes": "Keine Routen verfügbar",
+    "routeNotFound": "Route nicht gefunden",
+    "backToRoutes": "← Zurück zu den Routen"
+  },
+  "puebloPage": {
+    "breadcrumbHome": "Start",
+    "breadcrumbPueblos": "Dörfer",
+    "statsEyebrow": "IN ZAHLEN",
+    "statsTitle": "Erbe und Tradition",
+    "gallery": "Galerie",
+    "galleryTitle": "Bilder von {nombre}",
+    "leadFallback": "Entdecken Sie eines der schönsten Dörfer Spaniens.",
+    "experienceStops": "Erlebnis-Stationen",
+    "others": "Sonstige",
+    "noImage": "Kein Bild",
+    "seeDetail": "Details anzeigen",
+    "location": "Lage",
+    "locationIn": "{nombre} liegt in {provincia}, {comunidad}.",
+    "pointOfInterest": "Sehenswürdigkeit",
+    "categoryNature": "Natur",
+    "categoryNatureDesc": "Wandern, Landschaften und Natur",
+    "categoryCulture": "Kultur",
+    "categoryCultureDesc": "Monumente, Museen und historisches Erbe",
+    "categoryFamily": "Familie",
+    "categoryFamilyDesc": "Aktivitäten für alle Altersstufen",
+    "categoryHeritage": "Erbe",
+    "categoryHeritageDesc": "Kulturdenkmäler und historische Architektur",
+    "categoryPetfriendly": "Haustierfreundlich",
+    "categoryPetfriendlyDesc": "Räume und Aktivitäten mit Ihrem Haustier",
+    "categoryGastronomy": "Gastronomie",
+    "categoryGastronomyDesc": "Restaurants, lokale Produkte und kulinarische Tradition"
+  },
+  "poiPage": {
+    "backTo": "← Zurück zu {nombre}",
+    "principal": "Hauptbild",
+    "descriptionComingSoon": "Beschreibung in Kürze."
+  },
+  "meteoPanel": {
+    "titleNow": "Aktuelles Wetter",
+    "statusLabel": "Zustand:",
+    "next3Days": "Nächste 3 Tage",
+    "updatedAt": "Aktualisiert:",
+    "unavailable": "Wetter nicht verfügbar",
+    "clear": "Klar",
+    "cloudy": "Bewölkt",
+    "fog": "Nebel",
+    "drizzle": "Nieselregen",
+    "rain": "Regen",
+    "snow": "Schnee",
+    "showers": "Schauer",
+    "storm": "Gewitter",
+    "weather": "Wetter"
   }
 }

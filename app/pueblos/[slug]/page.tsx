@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug, getPueblosLite, getApiUrl } from "@/lib/api";
 import PuebloActions from "./PuebloActions";
 import DescripcionPueblo from "./DescripcionPueblo";
@@ -195,6 +195,7 @@ export default async function PuebloPage({
 }) {
   const { slug } = await params;
   const locale = await getLocale();
+  const t = await getTranslations("puebloPage");
   const API_BASE = getApiUrl();
   const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
   const [pueblo, pueblosLite, pagesRes] = await Promise.all([
@@ -405,8 +406,8 @@ export default async function PuebloPage({
   }
 
   const breadcrumbs = [
-    { label: "Inicio", href: "/" },
-    { label: "Pueblos", href: "/pueblos" },
+    { label: t("breadcrumbHome"), href: "/" },
+    { label: t("breadcrumbPueblos"), href: "/pueblos" },
     { label: puebloSafe.nombre, href: `/pueblos/${puebloSafe.slug}` },
   ];
 
@@ -455,8 +456,8 @@ export default async function PuebloPage({
 
       {/* EN CIFRAS - Patrimonio y Tradición (V0 - como captura 1) */}
       <DetailStatsBlock
-        eyebrow="EN CIFRAS"
-        title="Patrimonio y Tradición"
+        eyebrow={t("statsEyebrow")}
+        title={t("statsTitle")}
         stats={(puebloSafe.highlights ?? []).slice(0, 4).map((h) => ({
           value: h.valor,
           label: h.etiqueta,
@@ -470,7 +471,7 @@ export default async function PuebloPage({
 
       {/* TEXTO: Enunciado + Descripción - Diseño tourism-website-design */}
       {(puebloSafe.lead || puebloSafe.descripcion) && (() => {
-        const introLead = puebloSafe.lead?.trim() || "Descubre uno de los pueblos más bonitos de España.";
+        const introLead = puebloSafe.lead?.trim() || t("leadFallback");
         return (
           <DetailIntroSection
             lead={introLead}
@@ -483,8 +484,8 @@ export default async function PuebloPage({
       {/* GALERÍA - Diseño tourism-website-design */}
       {fotosGalería.length > 0 && (
         <DetailGallerySection
-          eyebrow="Galería"
-          title={`Imágenes de ${puebloSafe.nombre}`}
+          eyebrow={t("gallery")}
+          title={t("galleryTitle", { nombre: puebloSafe.nombre })}
           images={fotosGalería.map((f: FotoPueblo) => ({
             src: f.url,
             alt: `${puebloSafe.nombre} - foto ${f.id}`,
@@ -503,7 +504,7 @@ export default async function PuebloPage({
           points={poisPOI.map((poi: Poi) => ({
             id: poi.id,
             name: poi.nombre,
-            type: (CATEGORIA_TEMATICA_LABELS[poi.categoriaTematica ?? ""] ?? poi.categoria ?? "Punto de interés"),
+            type: (CATEGORIA_TEMATICA_LABELS[poi.categoriaTematica ?? ""] ?? poi.categoria ?? t("pointOfInterest")),
             description: poi.descripcion_corta ?? poi.descripcion_larga?.replace(/<[^>]*>/g, "").slice(0, 120) ?? "",
             image: poi.foto,
             rotation: poi.rotation,
@@ -515,7 +516,7 @@ export default async function PuebloPage({
       {/* POIs - Paradas de la experiencia */}
       {poisMultiexperiencia.length > 0 && (
         <section style={{ marginTop: "32px" }}>
-          <h2>Paradas de la experiencia</h2>
+          <h2>{t("experienceStops")}</h2>
           <div
             style={{
               display: "grid",
@@ -560,7 +561,7 @@ export default async function PuebloPage({
                       fontSize: "14px",
                     }}
                   >
-                    Sin imagen
+                    {t("noImage")}
                   </div>
                 )}
 
@@ -598,7 +599,7 @@ export default async function PuebloPage({
                       fontWeight: "500",
                     }}
                   >
-                    Ver detalle →
+                    {t("seeDetail")} →
                   </p>
                 </div>
               </Link>
@@ -610,7 +611,7 @@ export default async function PuebloPage({
       {/* POIs - Otros */}
       {poisOtros.length > 0 && (
         <section style={{ marginTop: "32px" }}>
-          <h2>Otros</h2>
+          <h2>{t("others")}</h2>
           <div
             style={{
               display: "grid",
@@ -655,7 +656,7 @@ export default async function PuebloPage({
                       fontSize: "14px",
                     }}
                   >
-                    Sin imagen
+                    {t("noImage")}
                   </div>
                 )}
 
@@ -693,7 +694,7 @@ export default async function PuebloPage({
                       fontWeight: "500",
                     }}
                   >
-                    Ver detalle →
+                    {t("seeDetail")} →
                   </p>
                 </div>
               </Link>
@@ -716,8 +717,8 @@ export default async function PuebloPage({
         categories={[
           {
             type: "nature",
-            title: "Naturaleza",
-            description: "Senderismo, paisajes y espacios naturales",
+            title: t("categoryNature"),
+            description: t("categoryNatureDesc"),
             items: [
               ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "NATURALEZA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
               ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "NATURALEZA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
@@ -727,8 +728,8 @@ export default async function PuebloPage({
           },
           {
             type: "culture",
-            title: "Cultura",
-            description: "Monumentos, museos y patrimonio histórico",
+            title: t("categoryCulture"),
+            description: t("categoryCultureDesc"),
             items: [
               ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "CULTURA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
               ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "CULTURA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
@@ -738,8 +739,8 @@ export default async function PuebloPage({
           },
           {
             type: "family",
-            title: "En familia",
-            description: "Actividades para todas las edades",
+            title: t("categoryFamily"),
+            description: t("categoryFamilyDesc"),
             items: [
               ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "EN_FAMILIA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
               ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "EN_FAMILIA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
@@ -749,8 +750,8 @@ export default async function PuebloPage({
           },
           {
             type: "heritage",
-            title: "Patrimonio",
-            description: "Bienes de interés cultural y arquitectura histórica",
+            title: t("categoryHeritage"),
+            description: t("categoryHeritageDesc"),
             items: [
               ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "PATRIMONIO").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
               ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "PATRIMONIO").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
@@ -760,8 +761,8 @@ export default async function PuebloPage({
           },
           {
             type: "petfriendly",
-            title: "Petfriendly",
-            description: "Espacios y actividades para ir con tu mascota",
+            title: t("categoryPetfriendly"),
+            description: t("categoryPetfriendlyDesc"),
             items: [
               ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "PETFRIENDLY").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
               ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "PETFRIENDLY").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
@@ -771,8 +772,8 @@ export default async function PuebloPage({
           },
           {
             type: "gastronomy",
-            title: "Gastronomía",
-            description: "Restaurantes, productos locales y tradición culinaria",
+            title: t("categoryGastronomy"),
+            description: t("categoryGastronomyDesc"),
             items: [
               ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "GASTRONOMIA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
               ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "GASTRONOMIA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
@@ -789,9 +790,9 @@ export default async function PuebloPage({
           <Section spacing="md">
             <Container>
               <div className="mb-6">
-                <Title>Ubicación</Title>
+                <Title>{t("location")}</Title>
                 <Lead className="mt-2">
-                  {puebloSafe.nombre} se encuentra en {puebloSafe.provincia}, {puebloSafe.comunidad}.
+                  {t("locationIn", { nombre: puebloSafe.nombre, provincia: puebloSafe.provincia, comunidad: puebloSafe.comunidad })}
                 </Lead>
               </div>
               <ParadasMap

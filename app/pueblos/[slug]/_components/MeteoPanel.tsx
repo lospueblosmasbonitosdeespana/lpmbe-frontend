@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Title, Caption } from "@/app/components/ui/typography";
@@ -31,17 +32,17 @@ type MeteoResponse = {
   generatedAt: string;
 };
 
-function codeToText(code: number | null): string {
-  if (code == null) return "—";
-  if (code === 0) return "Despejado";
-  if ([1, 2, 3].includes(code)) return "Nuboso";
-  if ([45, 48].includes(code)) return "Niebla";
-  if ([51, 53, 55, 56, 57].includes(code)) return "Llovizna";
-  if ([61, 63, 65, 66, 67].includes(code)) return "Lluvia";
-  if ([71, 73, 75, 77].includes(code)) return "Nieve";
-  if ([80, 81, 82].includes(code)) return "Chubascos";
-  if ([95, 96, 99].includes(code)) return "Tormenta";
-  return "Tiempo";
+function weatherCodeToKey(code: number | null): string {
+  if (code == null) return "weather";
+  if (code === 0) return "clear";
+  if ([1, 2, 3].includes(code)) return "cloudy";
+  if ([45, 48].includes(code)) return "fog";
+  if ([51, 53, 55, 56, 57].includes(code)) return "drizzle";
+  if ([61, 63, 65, 66, 67].includes(code)) return "rain";
+  if ([71, 73, 75, 77].includes(code)) return "snow";
+  if ([80, 81, 82].includes(code)) return "showers";
+  if ([95, 96, 99].includes(code)) return "storm";
+  return "weather";
 }
 
 function degToCardinal(deg: number | null): string {
@@ -82,10 +83,12 @@ function DropletIcon({ className }: { className?: string }) {
 }
 
 export default function MeteoPanel({ puebloId }: { puebloId: number }) {
+  const t = useTranslations("meteoPanel");
   const [data, setData] = useState<MeteoResponse | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const codeToText = (code: number | null) => t(weatherCodeToKey(code));
   const next3 = useMemo(() => (data?.daily || []).slice(0, 3), [data]);
 
   useEffect(() => {
@@ -99,7 +102,7 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
         if (!res.ok) throw new Error(body?.error || `Error ${res.status}`);
         if (!cancelled) setData(body);
       } catch (e: unknown) {
-        if (!cancelled) setErr((e as Error)?.message || "Tiempo no disponible");
+        if (!cancelled) setErr((e as Error)?.message || t("unavailable"));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -112,7 +115,7 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
     return (
       <Section spacing="sm" background="card">
         <Container>
-          <Title as="h3" className="mb-3 text-lg">Tiempo ahora</Title>
+          <Title as="h3" className="mb-3 text-lg">{t("titleNow")}</Title>
           <div className="animate-pulse space-y-4">
             <div className="h-4 w-48 rounded bg-muted" />
             <div className="flex gap-4">
@@ -135,7 +138,7 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
       <Section spacing="sm" background="card">
         <Container>
           <div className="py-4 text-center">
-            <p className="text-sm text-muted-foreground">{err || "Tiempo no disponible"}</p>
+            <p className="text-sm text-muted-foreground">{err || t("unavailable")}</p>
           </div>
         </Container>
       </Section>
@@ -150,9 +153,9 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
     <Section spacing="sm" background="card">
       <Container>
         <div className="mb-4">
-          <Title as="h3" className="mb-3 text-lg">Tiempo ahora</Title>
+          <Title as="h3" className="mb-3 text-lg">{t("titleNow")}</Title>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-            <span>Estado: <strong>{codeToText(c.weatherCode)}</strong></span>
+            <span>{t("statusLabel")} <strong>{codeToText(c.weatherCode)}</strong></span>
             <span>Temp: <strong>{c.temperatureC == null ? "—" : `${Math.round(c.temperatureC)}°C`}</strong></span>
             <span>Viento: <strong>{c.windKph == null ? "—" : `${Math.round(c.windKph)} km/h`} {degToCardinal(c.windDirDeg)}</strong></span>
             <span className="flex items-center gap-1">
@@ -163,12 +166,12 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
               <span>{sunsetStr}</span>
             </span>
           </div>
-          <Caption className="mt-2 block">Actualizado: {c.time ? new Date(c.time).toLocaleString("es-ES") : "—"}</Caption>
+          <Caption className="mt-2 block">{t("updatedAt")} {c.time ? new Date(c.time).toLocaleString() : "—"}</Caption>
         </div>
 
         {next3.length > 0 && (
           <div>
-            <Title as="h4" className="mb-3 text-base">Próximos 3 días</Title>
+            <Title as="h4" className="mb-3 text-base">{t("next3Days")}</Title>
             <div className="flex rounded-lg border border-border bg-background">
               {next3.map((d) => (
                 <div key={d.date} className="flex-1 border-l border-border px-4 py-3 first:border-l-0">

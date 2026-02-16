@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getRutas, getRutaById, getRutaMapa } from "@/lib/api";
 import { sanitizeHtml, createExcerpt } from "@/lib/sanitizeHtml";
 import RutaParadasConMapa from "@/app/_components/RutaParadasConMapa";
@@ -120,6 +120,7 @@ export default async function RutaPage({
 }) {
   const { slug } = await params;
   const locale = await getLocale();
+  const t = await getTranslations("rutas");
 
   // 1. Resolver slug → ruta
   const rutas = await getRutas(locale);
@@ -128,9 +129,9 @@ export default async function RutaPage({
   if (!rutaBasica) {
     return (
       <main className="mx-auto max-w-5xl px-4 py-12">
-        <h1 className="text-2xl font-bold text-red-600">Ruta no encontrada</h1>
+        <h1 className="text-2xl font-bold text-red-600">{t("routeNotFound")}</h1>
         <Link href="/rutas" className="mt-4 inline-block text-blue-600 hover:underline">
-          ← Volver a rutas
+          {t("backToRoutes")}
         </Link>
       </main>
     );
@@ -177,7 +178,7 @@ export default async function RutaPage({
       {/* Breadcrumb */}
       <div className="mb-6">
         <Link href="/rutas" className="text-blue-600 hover:underline">
-          ← Volver a rutas
+          {t("backToRoutes")}
         </Link>
       </div>
 

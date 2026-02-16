@@ -257,6 +257,57 @@
   "rutas": {
     "title": "Rotas",
     "pageDesc": "Descubra as rotas",
-    "noRoutes": "Nenhuma rota disponível"
+    "noRoutes": "Nenhuma rota disponível",
+    "routeNotFound": "Rota não encontrada",
+    "backToRoutes": "← Voltar às rotas"
+  },
+  "puebloPage": {
+    "breadcrumbHome": "Início",
+    "breadcrumbPueblos": "Aldeias",
+    "statsEyebrow": "EM NÚMEROS",
+    "statsTitle": "Património e tradição",
+    "gallery": "Galeria",
+    "galleryTitle": "Imagens de {nombre}",
+    "leadFallback": "Descubra uma das aldeias mais bonitas de Espanha.",
+    "experienceStops": "Paragens da experiência",
+    "others": "Outros",
+    "noImage": "Sem imagem",
+    "seeDetail": "Ver detalhe",
+    "location": "Localização",
+    "locationIn": "{nombre} situa-se em {provincia}, {comunidad}.",
+    "pointOfInterest": "Ponto de interesse",
+    "categoryNature": "Natureza",
+    "categoryNatureDesc": "Caminhadas, paisagens e espaços naturais",
+    "categoryCulture": "Cultura",
+    "categoryCultureDesc": "Monumentos, museus e património histórico",
+    "categoryFamily": "Em família",
+    "categoryFamilyDesc": "Atividades para todas as idades",
+    "categoryHeritage": "Património",
+    "categoryHeritageDesc": "Bens de interesse cultural e arquitetura histórica",
+    "categoryPetfriendly": "Pet-friendly",
+    "categoryPetfriendlyDesc": "Espaços e atividades com o seu animal",
+    "categoryGastronomy": "Gastronomia",
+    "categoryGastronomyDesc": "Restaurantes, produtos locais e tradição culinária"
+  },
+  "poiPage": {
+    "backTo": "← Voltar a {nombre}",
+    "principal": "Principal",
+    "descriptionComingSoon": "Descrição em breve."
+  },
+  "meteoPanel": {
+    "titleNow": "Tempo agora",
+    "statusLabel": "Estado:",
+    "next3Days": "Próximos 3 dias",
+    "updatedAt": "Atualizado:",
+    "unavailable": "Tempo indisponível",
+    "clear": "Limpo",
+    "cloudy": "Nublado",
+    "fog": "Nevoeiro",
+    "drizzle": "Chuvisco",
+    "rain": "Chuva",
+    "snow": "Neve",
+    "showers": "Aguaceiros",
+    "storm": "Tempestade",
+    "weather": "Tempo"
   }
 }
