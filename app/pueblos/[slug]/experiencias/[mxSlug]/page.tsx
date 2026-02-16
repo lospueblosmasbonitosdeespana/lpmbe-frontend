@@ -53,6 +53,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, mxSlug } = await params;
   const locale = await getLocale();
+  const t = await getTranslations("mxPage");
   const pueblo = await getLugarLegacyBySlug(slug, locale);
 
   // Buscar la multiexperiencia por slug (soportar formato plano y anidado)
