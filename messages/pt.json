@@ -221,7 +221,10 @@
     "unete": "Junte-se",
     "tienda": "Loja",
     "multiexperiencias": "Experiências",
-    "rutas": "Rotas"
+    "rutas": "Rotas",
+    "myAccount": "A minha conta",
+    "management": "Gestão",
+    "login": "Entrar"
   },
   "footer": {
     "explore": "Explorar",
@@ -621,7 +624,7 @@
   "notifications": {
     "prefsTitle": "Preferências de notificação",
     "viewNotifs": "Ver as minhas notificações",
-    "prefsSubtitle": "Selecione as cidades e os tipos de notificações que pretende receber.",
+    "prefsSubtitle": "Selecione as aldeias e os tipos de notificações que pretende receber.",
     "news": "Notícias",
     "events": "Eventos",
     "semaforos": "Semáforos",
@@ -654,7 +657,7 @@
   },
   "visitedVillages": {
     "title": "As minhas aldeias visitadas",
-    "subtitle": "Gerir as suas visitas e descobrir novas cidades e aldeias",
+    "subtitle": "Gerir as suas visitas e descobrir novas aldeias",
     "markedVisited": "marcado como visitado",
     "pointsLabel": "pontos)",
     "total": "Total",
@@ -667,7 +670,7 @@
     "next": "Seguinte",
     "flagOf": "Bandeira de",
     "origin": "Origem:",
-    "toVisit": "Cidades a visitar",
+    "toVisit": "Aldeias a visitar",
     "searchPlaceholder": "Pesquisa por nome, província ou região...",
     "noSearchResults": "Não foram encontradas aldeias com este critério",
     "allVisited": "Já visitou todas as aldeias",

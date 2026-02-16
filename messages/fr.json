@@ -221,7 +221,10 @@
     "unete": "Rejoindre",
     "tienda": "Boutique",
     "multiexperiencias": "Expériences",
-    "rutas": "Itinéraires"
+    "rutas": "Itinéraires",
+    "myAccount": "Mon compte",
+    "management": "Gestion",
+    "login": "Connexion"
   },
   "footer": {
     "explore": "Explorer",
@@ -621,7 +624,7 @@
   "notifications": {
     "prefsTitle": "Préférences de notification",
     "viewNotifs": "Voir mes notifications",
-    "prefsSubtitle": "Sélectionnez les villes et les types de notifications que vous souhaitez recevoir.",
+    "prefsSubtitle": "Sélectionnez les villages et les types de notifications que vous souhaitez recevoir.",
     "news": "Actualités",
     "events": "Evénements",
     "semaforos": "Feux de circulation",
@@ -654,7 +657,7 @@
   },
   "visitedVillages": {
     "title": "Mes villages visités",
-    "subtitle": "Gérez vos visites et découvrez de nouvelles villes et villages",
+    "subtitle": "Gérez vos visites et découvrez de nouveaux villages",
     "markedVisited": "marqué comme visité",
     "pointsLabel": "points)",
     "total": "Total",
@@ -667,7 +670,7 @@
     "next": "Suivant",
     "flagOf": "Drapeau de",
     "origin": "Origine :",
-    "toVisit": "Villes à visiter",
+    "toVisit": "Villages à visiter",
     "searchPlaceholder": "Recherche par nom, province ou région...",
     "noSearchResults": "Aucun village n'a été trouvé avec ce critère",
     "allVisited": "Vous avez visité tous les villages",

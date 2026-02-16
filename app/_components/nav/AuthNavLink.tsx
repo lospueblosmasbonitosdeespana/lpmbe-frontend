@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { shouldShowGestion, getGestionHref } from '@/lib/auth-nav';
 
 type Me = {
@@ -12,6 +13,7 @@ type Me = {
 };
 
 export default function AuthNavLink() {
+  const t = useTranslations('nav');
   const [loading, setLoading] = useState(true);
   const [me, setMe] = useState<Me | null>(null);
 
@@ -45,7 +47,7 @@ export default function AuthNavLink() {
   if (loading) {
     return (
       <Link href="/entrar" className="text-sm font-medium opacity-70 hover:underline">
-        Entrar
+        {t('login')}
       </Link>
     );
   }
@@ -53,7 +55,7 @@ export default function AuthNavLink() {
   if (!me) {
     return (
       <Link href="/entrar" className="text-sm font-medium hover:underline">
-        Entrar
+        {t('login')}
       </Link>
     );
   }
@@ -65,11 +67,11 @@ export default function AuthNavLink() {
   return (
     <span className="flex items-center gap-4">
       <Link href="/mi-cuenta" className="text-sm font-medium hover:underline">
-        Mi cuenta
+        {t('myAccount')}
       </Link>
       {showGestion && (
         <Link href={gestionHref} className="text-sm font-medium hover:underline">
-          Gestión
+          {t('management')}
         </Link>
       )}
     </span>

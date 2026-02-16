@@ -221,7 +221,10 @@
     "unete": "Unisciti",
     "tienda": "Shop",
     "multiexperiencias": "Esperienze",
-    "rutas": "Percorsi"
+    "rutas": "Percorsi",
+    "myAccount": "Il mio account",
+    "management": "Gestione",
+    "login": "Accedi"
   },
   "footer": {
     "explore": "Esplora",
@@ -621,7 +624,7 @@
   "notifications": {
     "prefsTitle": "Preferenze di notifica",
     "viewNotifs": "Visualizza le mie notifiche",
-    "prefsSubtitle": "Selezionare le città e i tipi di notifiche che si desidera ricevere.",
+    "prefsSubtitle": "Seleziona i borghi e i tipi di notifiche che desideri ricevere.",
     "news": "Notizie",
     "events": "Eventi",
     "semaforos": "Semafori",
@@ -654,7 +657,7 @@
   },
   "visitedVillages": {
     "title": "I miei villaggi visitati",
-    "subtitle": "Gestire le visite e scoprire nuove città e villaggi",
+    "subtitle": "Gestisci le tue visite e scopri nuovi borghi",
     "markedVisited": "contrassegnato come visitato",
     "pointsLabel": "punti)",
     "total": "Totale",
@@ -667,7 +670,7 @@
     "next": "Avanti",
     "flagOf": "Bandiera di",
     "origin": "Origine:",
-    "toVisit": "Città da visitare",
+    "toVisit": "Borghi da visitare",
     "searchPlaceholder": "Cerca per nome, provincia o regione...",
     "noSearchResults": "Non sono stati trovati villaggi con questo criterio",
     "allVisited": "Avete visitato tutti i villaggi",

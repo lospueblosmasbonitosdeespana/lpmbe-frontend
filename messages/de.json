@@ -221,7 +221,10 @@
     "unete": "Mitmachen",
     "tienda": "Shop",
     "multiexperiencias": "Erlebnisse",
-    "rutas": "Routen"
+    "rutas": "Routen",
+    "myAccount": "Mein Konto",
+    "management": "Verwaltung",
+    "login": "Anmelden"
   },
   "footer": {
     "explore": "Entdecken",
