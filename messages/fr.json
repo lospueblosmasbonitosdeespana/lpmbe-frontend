@@ -1,0 +1,110 @@
+{
+  "tabs": {
+    "home": "Accueil",
+    "pueblos": "Villages",
+    "multiexperiencias": "Expériences",
+    "rutas": "Itinéraires",
+    "mapas": "Cartes",
+    "profile": "Mon profil"
+  },
+  "home": {
+    "title1": "Les peuples Plus",
+    "title2": "Bonitos de España",
+    "welcome": "Découvrez la beauté de l'Espagne",
+    "discoverVillages": "Découvrir les villages",
+    "discoverVillagesDesc": "Explorer les plus beaux villages",
+    "latestNews": "Dernières nouvelles",
+    "latestNewsDesc": "Actualités et événements",
+    "shop": "Boutique LPBE",
+    "shopDesc": "Produits exclusifs",
+    "myAccount": "Mon compte",
+    "myAccountDesc": "Accéder à votre profil",
+    "qrScanner": "Lecteur QR",
+    "qrScannerDesc": "Scanner les codes QR",
+    "routes": "Itinéraires",
+    "routesDesc": "Prochainement",
+    "loading": "Chargement..."
+  },
+  "explore": {
+    "title": "Explorer les villages",
+    "searchPlaceholder": "Village de recherche...",
+    "loading": "Chargement des villages...",
+    "noResults": "Aucun village trouvé",
+    "error": "⚠️ Aucun village n'est disponible"
+  },
+  "profile": {
+    "title": "Mon profil",
+    "login": "Connexion",
+    "loginDescription": "Connectez-vous à votre profil pour enregistrer les villages que vous avez visités et gagner des points.",
+    "username": "Utilisateur",
+    "password": "Mot de passe",
+    "visitedPlaces": "Villages visités",
+    "points": "Points",
+    "comingSoon": "Prochainement",
+    "comingSoonDescription": "Vous pouvez y voir les villages que vous avez visités, les médailles que vous avez gagnées et bien d'autres choses encore.",
+    "aboutAssociation": "À propos de l'association",
+    "aboutDescription": "Les plus beaux villages d'Espagne est une association à but non lucratif qui vise à promouvoir le patrimoine culturel, naturel et rural des plus beaux villages d'Espagne.",
+    "scanQR": "Scanner le code QR",
+    "scanQRDescription": "Scannez le code QR dans les villages pour enregistrer votre visite.",
+    "logout": "Se déconnecter",
+    "loginError": "Identifiant ou mot de passe incorrect",
+    "footer": "Association des plus beaux villages d'Espagne"
+  },
+  "pueblo": {
+    "loading": "Chargement...",
+    "notFound": "Village non trouvé",
+    "description": "Description",
+    "readMore": "Voir plus d'informations",
+    "readLess": "Voir moins",
+    "experiences": "Expériences disponibles",
+    "viewOnMap": "Voir sur la carte 🗺️",
+    "trafficLight": {
+      "green": "Visite recommandée",
+      "yellow": "A visiter avec précaution",
+      "red": "Visite déconseillée",
+      "unknown": "Pas d'information"
+    },
+    "weather": {
+      "loading": "Temps de chargement...",
+      "tomorrow": "Demain"
+    },
+    "howToGetThere": "Comment s'y rendre",
+    "openWith": "Ouvrir la navigation avec",
+    "appleMaps": "Apple Maps",
+    "googleMaps": "Google Maps",
+    "waze": "Waze",
+    "noCoords": "Il n'y a pas de coordonnées pour ce village."
+  },
+  "multiexperiencias": {
+    "title": "Multi-expériences",
+    "loading": "Chargement des expériences...",
+    "noResults": "Aucune expérience disponible",
+    "error": "Erreur de chargement des expériences",
+    "searchPlaceholder": "Recherche d'expériences...",
+    "scanQR": "Scanner QR",
+    "pois": "Points de visite"
+  },
+  "mapas": {
+    "title": "Cartes",
+    "loading": "Chargement de la carte...",
+    "description": "Explorer tous les villages sur la carte"
+  },
+  "common": {
+    "back": "Retour",
+    "close": "Fermer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "success": "Succès",
+    "error": "Erreur"
+  },
+  "qr": {
+    "title": "Scanner le code QR",
+    "description": "Pointez votre appareil photo sur le code QR du village.",
+    "permissionDenied": "L'autorisation de la caméra est refusée",
+    "permissionDescription": "Nous devons avoir accès à votre appareil photo pour scanner les codes QR.",
+    "grantPermission": "Octroi de l'autorisation",
+    "visitRegistered": "Visite enregistrée avec succès",
+    "visitError": "❌ Erreur lors de l'enregistrement de la visite",
+    "invalidQR": "❌ Code QR invalide"
+  }
+}

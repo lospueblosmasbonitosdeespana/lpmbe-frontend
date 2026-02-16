@@ -1,0 +1,110 @@
+{
+  "tabs": {
+    "home": "Início",
+    "pueblos": "Aldeias",
+    "multiexperiencias": "Experiências",
+    "rutas": "Rotas",
+    "mapas": "Mapas",
+    "profile": "O meu perfil"
+  },
+  "home": {
+    "title1": "Os Povos Mais",
+    "title2": "Bonitos de Espanha",
+    "welcome": "Descobrir a beleza de Espanha",
+    "discoverVillages": "Descobrir as aldeias",
+    "discoverVillagesDesc": "Explore as mais belas aldeias",
+    "latestNews": "Últimas notícias",
+    "latestNewsDesc": "Notícias e eventos",
+    "shop": "Loja LPBE",
+    "shopDesc": "Produtos exclusivos",
+    "myAccount": "A minha conta",
+    "myAccountDesc": "Aceder ao seu perfil",
+    "qrScanner": "Leitor QR",
+    "qrScannerDesc": "Ler códigos QR",
+    "routes": "Rotas",
+    "routesDesc": "Em breve",
+    "loading": "Carregando..."
+  },
+  "explore": {
+    "title": "Explorar aldeias",
+    "searchPlaceholder": "Procurar aldeia...",
+    "loading": "Carregando aldeias...",
+    "noResults": "Não foram encontradas aldeias",
+    "error": "⚠️ Não foram encontradas aldeias disponíveis"
+  },
+  "profile": {
+    "title": "O meu perfil",
+    "login": "Iniciar sessão",
+    "loginDescription": "Inicie sessão no seu perfil para guardar as aldeias visitadas e ganhar pontos.",
+    "username": "Utilizador",
+    "password": "Palavra-passe",
+    "visitedPlaces": "Aldeias visitadas",
+    "points": "Pontos",
+    "comingSoon": "Em breve",
+    "comingSoonDescription": "Aqui podes ver as aldeias que visitaste, as medalhas que ganhaste e muito mais.",
+    "aboutAssociation": "Sobre a Associação",
+    "aboutDescription": "As Aldeias Mais Bonitas de Espanha são uma associação sem fins lucrativos que visa promover o património cultural, natural e rural das aldeias mais bonitas de Espanha.",
+    "scanQR": "Digitalizar código QR",
+    "scanQRDescription": "Digitalize o código QR nas aldeias para registar a sua visita.",
+    "logout": "Sair do sistema",
+    "loginError": "Início de sessão ou palavra-passe incorrectos",
+    "footer": "© Associação As Aldeias Mais Bonitas de Espanha"
+  },
+  "pueblo": {
+    "loading": "Carregando...",
+    "notFound": "Aldeia não encontrada",
+    "description": "Descrição",
+    "readMore": "Ver mais",
+    "readLess": "Ver menos",
+    "experiences": "Experiências disponíveis",
+    "viewOnMap": "Ver no mapa 🗺️",
+    "trafficLight": {
+      "green": "Visita recomendada",
+      "yellow": "Visitar com precaução",
+      "red": "Visita não recomendada",
+      "unknown": "Nenhuma informação"
+    },
+    "weather": {
+      "loading": "Tempo de carregamento...",
+      "tomorrow": "Amanhã"
+    },
+    "howToGetThere": "Como lá chegar",
+    "openWith": "Abrir a navegação com",
+    "appleMaps": "Mapas da Apple",
+    "googleMaps": "Google Maps",
+    "waze": "Waze",
+    "noCoords": "Não existem coordenadas para esta aldeia."
+  },
+  "multiexperiencias": {
+    "title": "Multi-experiências",
+    "loading": "Carregando experiências...",
+    "noResults": "Não há experiência disponível",
+    "error": "Erro ao carregar experiências",
+    "searchPlaceholder": "Procura de experiências...",
+    "scanQR": "Digitalizar QR",
+    "pois": "Pontos de visita"
+  },
+  "mapas": {
+    "title": "Mapas",
+    "loading": "Carregar mapa...",
+    "description": "Explorar todas as aldeias no mapa"
+  },
+  "common": {
+    "back": "Voltar",
+    "close": "Fechar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "success": "Sucesso",
+    "error": "Erro"
+  },
+  "qr": {
+    "title": "Digitalizar código QR",
+    "description": "Aponte a sua câmara para o código QR da aldeia",
+    "permissionDenied": "Autorização de câmara negada",
+    "permissionDescription": "Precisamos de acesso à sua câmara para ler códigos QR.",
+    "grantPermission": "Concessão de autorização",
+    "visitRegistered": "Visita registada com sucesso",
+    "visitError": "Erro ao registar a visita",
+    "invalidQR": "Código QR inválido"
+  }
+}

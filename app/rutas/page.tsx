@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 import { getRutas } from "@/lib/api";
 import { createExcerpt } from "@/lib/sanitizeHtml";
 import RutaMiniMap from "@/app/_components/RutaMiniMap";
@@ -14,7 +15,8 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function RutasPage() {
-  const rutas = await getRutas();
+  const locale = await getLocale();
+  const rutas = await getRutas(locale);
 
   // Filtrar solo rutas activas
   const rutasActivas = rutas.filter((r) => r.activo);

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 import { getLugarLegacyBySlug, getApiUrl, type Pueblo } from "@/lib/api";
 import ParadasMap from "@/app/_components/ParadasMap";
 
@@ -51,8 +52,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string; mxSlug: string }>;
 }): Promise<Metadata> {
   const { slug, mxSlug } = await params;
-  const pueblo = await getLugarLegacyBySlug(slug);
-  
+  const locale = await getLocale();
+  const pueblo = await getLugarLegacyBySlug(slug, locale);
+
   // Buscar la multiexperiencia por slug (soportar formato plano y anidado)
   const mxItem = (pueblo.multiexperiencias ?? []).find((x: any) => {
     const s = x?.slug ?? x?.multiexperiencia?.slug ?? null;
@@ -104,7 +106,8 @@ export default async function MultiexperienciaPage({
   params: Promise<{ slug: string; mxSlug: string }>;
 }) {
   const { slug, mxSlug } = await params;
-  const pueblo = await getLugarLegacyBySlug(slug);
+  const locale = await getLocale();
+  const pueblo = await getLugarLegacyBySlug(slug, locale);
 
   // Buscar la multiexperiencia por slug (soportar formato plano y anidado)
   const mxItem = (pueblo.multiexperiencias ?? []).find((x: any) => {
@@ -125,8 +128,10 @@ export default async function MultiexperienciaPage({
   if (mx.id) {
     try {
       const apiBase = getApiUrl();
-      const res = await fetch(`${apiBase}/multiexperiencias/${mx.id}/paradas`, {
+      const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
+      const res = await fetch(`${apiBase}/multiexperiencias/${mx.id}/paradas${langQs}`, {
         cache: "no-store",
+        headers: locale ? { "Accept-Language": locale } : undefined,
       });
       
       if (res.ok) {

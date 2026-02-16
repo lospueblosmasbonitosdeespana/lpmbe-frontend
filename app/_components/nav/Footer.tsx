@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { headers } from "next/headers";
+import { LocaleSwitcher } from "./LocaleSwitcher";
 
 // RRSS oficiales Los Pueblos Más Bonitos de España
 const RRSS = [
@@ -66,7 +67,9 @@ async function fetchSiteSettings(): Promise<SiteSettings> {
   }
 }
 
-export async function Footer() {
+type FooterProps = { locale: string };
+
+export async function Footer({ locale }: FooterProps) {
   const settings = await fetchSiteSettings();
 
   // En footer: logo variante (letras blancas) si existe; si no, logo principal con filter; si no, texto
@@ -232,6 +235,9 @@ export async function Footer() {
 
         {/* Bottom */}
         <div className="mt-12 border-t border-white/20 pt-8">
+          <div className="mb-4 flex justify-center">
+            <LocaleSwitcher currentLocale={locale} variant="footer" />
+          </div>
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <p className="text-sm text-white/60">
               © {new Date().getFullYear()} Los Pueblos Más Bonitos de España.

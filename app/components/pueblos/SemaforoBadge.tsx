@@ -25,11 +25,11 @@ function formatFecha(fecha: string | Date | null | undefined): string | null {
 function getEstadoConfig(estado: string | null) {
   switch (estado) {
     case "VERDE":
-      return { texto: "Tranquilo", color: "#28a745", bgColor: "#d4edda" };
+      return { texto: "Ideal para visitar", color: "#28a745", bgColor: "#d4edda" };
     case "AMARILLO":
-      return { texto: "Precaución", color: "#ffc107", bgColor: "#fff3cd" };
+      return { texto: "Alta afluencia de visitantes", color: "#ffc107", bgColor: "#fff3cd" };
     case "ROJO":
-      return { texto: "Alta afluencia", color: "#dc3545", bgColor: "#f8d7da" };
+      return { texto: "No es el momento indicado", color: "#dc3545", bgColor: "#f8d7da" };
     default:
       return null;
   }

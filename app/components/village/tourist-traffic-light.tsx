@@ -22,17 +22,17 @@ const statusConfig: Record<
   { label: string; color: string; icon: string }
 > = {
   green: {
-    label: "Tranquilo",
+    label: "Ideal para una visita tranquila",
     color: "text-green-700",
     icon: "bg-green-500",
   },
   yellow: {
-    label: "Precaución",
+    label: "Alta afluencia de visitantes",
     color: "text-amber-700",
     icon: "bg-amber-500",
   },
   red: {
-    label: "Alta afluencia",
+    label: "No es el momento indicado para visitar",
     color: "text-red-700",
     icon: "bg-red-500",
   },

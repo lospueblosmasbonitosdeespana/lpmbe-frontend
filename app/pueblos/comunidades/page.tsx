@@ -1,29 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import { getApiUrl } from "@/lib/api";
+import { getLocale } from "next-intl/server";
+import { getPueblosLite } from "@/lib/api";
 import { CCAA, norm } from "../../_components/pueblos/ccaa.config";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Display, Lead } from "@/app/components/ui/typography";
 
-type Pueblo = {
-  id: number;
-  nombre: string;
-  slug: string;
-  provincia?: string | null;
-  comunidad?: string | null;
-};
-
-async function getPueblos(): Promise<Pueblo[]> {
-  const res = await fetch(`${getApiUrl()}/pueblos`, { next: { revalidate: 300 } });
-  if (!res.ok) return [];
-  return res.json();
-}
-
 export default async function ComunidadesPage() {
-  const pueblos = await getPueblos();
+  const locale = await getLocale();
+  const pueblos = await getPueblosLite(locale);
 
   const countByComunidad = new Map<string, number>();
   for (const p of pueblos) {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getLocale } from "next-intl/server";
 import { getHomeConfig } from "@/lib/homeApi";
 import { getApiUrl } from "@/lib/api";
 import { Container } from "@/app/components/ui/container";
@@ -32,12 +33,15 @@ const CATEGORY_MAP: Record<string, { category: string; title: string }> = {
 };
 
 async function getPueblosByTematica(
-  category: string
+  category: string,
+  locale?: string
 ): Promise<TematicaPage[]> {
   try {
+    const base = getApiUrl();
+    const qs = locale ? `&lang=${encodeURIComponent(locale)}` : "";
     const res = await fetch(
-      `${getApiUrl()}/public/pages?category=${category}`,
-      { cache: "no-store" }
+      `${base}/public/pages?category=${category}${qs}`,
+      { cache: "no-store", headers: locale ? { "Accept-Language": locale } : undefined }
     );
     if (!res.ok) return [];
     const data = await res.json();
@@ -54,14 +58,14 @@ export const metadata = {
 };
 
 export default async function ExperienciasPage() {
-  const config = await getHomeConfig();
+  const locale = await getLocale();
+  const config = await getHomeConfig(locale);
   const themes = config.themes;
 
-  // Obtener pueblos por temática (solo los que tienen contenido publicado)
   const pueblosByTematica = await Promise.all(
     themes.map(async (t) => {
       const map = CATEGORY_MAP[t.key];
-      const pueblos = map ? await getPueblosByTematica(map.category) : [];
+      const pueblos = map ? await getPueblosByTematica(map.category, locale) : [];
       return { theme: t, pueblos };
     })
   );

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getLocale } from "next-intl/server";
 import { getPuebloBySlug } from "@/lib/api";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -63,7 +64,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, categoriaSlug } = await params;
   if (!CATEGORIA_SLUG_TO_KEY[categoriaSlug]) return { title: "Categoría" };
-  const pueblo = await getPuebloBySlug(slug);
+  const locale = await getLocale();
+  const pueblo = await getPuebloBySlug(slug, locale);
   const label = CATEGORIA_LABELS[categoriaSlug];
   return {
     title: `${label} en ${pueblo.nombre} – Los Pueblos Más Bonitos de España`,
@@ -77,11 +79,11 @@ export default async function CategoriaPage({
   params: Promise<{ slug: string; categoriaSlug: string }>;
 }) {
   const { slug, categoriaSlug } = await params;
-
+  const locale = await getLocale();
   const categoriaKey = CATEGORIA_SLUG_TO_KEY[categoriaSlug];
   if (!categoriaKey) notFound();
 
-  const pueblo = await getPuebloBySlug(slug);
+  const pueblo = await getPuebloBySlug(slug, locale);
   const pois = (pueblo.pois ?? []) as Poi[];
   const multiexperiencias = (pueblo as any).multiexperiencias ?? [];
 

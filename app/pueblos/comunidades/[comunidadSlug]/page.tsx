@@ -2,26 +2,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getApiUrl } from "@/lib/api";
+import { getLocale } from "next-intl/server";
+import { getPueblosLite } from "@/lib/api";
 import { findCcaaBySlug, norm } from "../../../_components/pueblos/ccaa.config";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Display, Lead, Title } from "@/app/components/ui/typography";
-
-type Pueblo = {
-  id: number;
-  nombre: string;
-  slug: string;
-  provincia?: string | null;
-  comunidad?: string | null;
-};
-
-async function getPueblos(): Promise<Pueblo[]> {
-  const res = await fetch(`${getApiUrl()}/pueblos`, { next: { revalidate: 300 } });
-  if (!res.ok) return [];
-  return res.json();
-}
 
 export default async function ComunidadDetallePage({
   params,
@@ -31,8 +18,8 @@ export default async function ComunidadDetallePage({
   const { comunidadSlug } = await params;
   const ccaa = findCcaaBySlug(comunidadSlug);
   if (!ccaa) return notFound();
-
-  const pueblos = await getPueblos();
+  const locale = await getLocale();
+  const pueblos = await getPueblosLite(locale);
   const dentro = pueblos.filter((p) => norm(p.comunidad ?? "") === norm(ccaa.name));
 
   if (dentro.length === 0) {

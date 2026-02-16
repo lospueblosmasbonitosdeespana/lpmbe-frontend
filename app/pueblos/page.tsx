@@ -1,4 +1,5 @@
-import { getApiUrl } from "@/lib/api";
+import { getLocale } from "next-intl/server";
+import { getPueblosLite } from "@/lib/api";
 import PueblosList from "./PueblosList";
 
 // 🔒 Evita SSG / paths raros
@@ -9,26 +10,8 @@ type SearchParams = {
   provincia?: string;
 };
 
-async function getPueblos() {
-  const API_BASE = getApiUrl();
-  
-  const res = await fetch(`${API_BASE}/pueblos`, {
-    cache: 'no-store',
-  });
-
-  if (!res.ok) {
-    throw new Error("Error cargando pueblos");
-  }
-
-  const pueblos = await res.json();
-  
-  if (!Array.isArray(pueblos)) {
-    return [];
-  }
-  
-  // ✅ El backend decide mainPhotoUrl, el frontend NO enriquece
-  // Si no hay mainPhotoUrl, se mostrará "Sin imagen"
-  return pueblos;
+async function getPueblos(locale?: string) {
+  return getPueblosLite(locale);
 }
 
 export default async function PueblosPage({
@@ -37,12 +20,12 @@ export default async function PueblosPage({
   searchParams?: Promise<SearchParams>;
 }) {
   const sp = searchParams ? await searchParams : ({} as SearchParams);
-
+  const locale = await getLocale();
   const comunidad = (sp.comunidad ?? "").trim();
   const provincia = (sp.provincia ?? "").trim();
 
   try {
-    const pueblos = await getPueblos();
+    const pueblos = await getPueblos(locale);
     return (
       <PueblosList
         pueblos={pueblos}

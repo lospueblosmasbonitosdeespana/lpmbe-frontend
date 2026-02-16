@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { getLocale } from "next-intl/server";
 import { getPuebloBySlug } from "@/lib/api";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -14,7 +15,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const pueblo = await getPuebloBySlug(slug);
+  const locale = await getLocale();
+  const pueblo = await getPuebloBySlug(slug, locale);
   return {
     title: `Multiexperiencias en ${pueblo.nombre} – Los Pueblos Más Bonitos de España`,
     description: `Experiencias y actividades para descubrir ${pueblo.nombre}.`,
@@ -27,8 +29,8 @@ export default async function MultiexperienciasPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-
-  const pueblo = await getPuebloBySlug(slug);
+  const locale = await getLocale();
+  const pueblo = await getPuebloBySlug(slug, locale);
   const multiexperiencias = (pueblo as any).multiexperiencias ?? [];
 
   if (multiexperiencias.length === 0) {

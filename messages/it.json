@@ -1,0 +1,110 @@
+{
+  "tabs": {
+    "home": "Casa",
+    "pueblos": "Villaggi",
+    "multiexperiencias": "Esperienze",
+    "rutas": "Percorsi",
+    "mapas": "Mappe",
+    "profile": "Il mio profilo"
+  },
+  "home": {
+    "title1": "Il popolo More",
+    "title2": "Bonitos de España",
+    "welcome": "Scoprite la bellezza della Spagna",
+    "discoverVillages": "Scoprire i villaggi",
+    "discoverVillagesDesc": "Esplorate i villaggi più belli",
+    "latestNews": "Ultime notizie",
+    "latestNewsDesc": "Notizie ed eventi",
+    "shop": "Negozio LPBE",
+    "shopDesc": "Prodotti esclusivi",
+    "myAccount": "Il mio account",
+    "myAccountDesc": "Accedi al tuo profilo",
+    "qrScanner": "Lettore QR",
+    "qrScannerDesc": "Scansione di codici QR",
+    "routes": "Percorsi",
+    "routesDesc": "Prossimamente",
+    "loading": "Caricamento..."
+  },
+  "explore": {
+    "title": "Esplora i villaggi",
+    "searchPlaceholder": "Cerca villaggio...",
+    "loading": "Caricamento villaggi...",
+    "noResults": "Nessun villaggio trovato",
+    "error": "⚠️ Non sono stati trovati villaggi disponibili"
+  },
+  "profile": {
+    "title": "Il mio profilo",
+    "login": "Accesso",
+    "loginDescription": "Accedete al vostro profilo per salvare i villaggi visitati e guadagnare punti.",
+    "username": "Utente",
+    "password": "Password",
+    "visitedPlaces": "Villaggi visitati",
+    "points": "Punti",
+    "comingSoon": "Prossimamente",
+    "comingSoonDescription": "Qui si possono vedere i villaggi visitati, le medaglie guadagnate e molto altro.",
+    "aboutAssociation": "Informazioni sull'Associazione",
+    "aboutDescription": "I Borghi più belli di Spagna è un'associazione senza scopo di lucro che mira a promuovere il patrimonio culturale, naturale e rurale dei borghi più belli della Spagna.",
+    "scanQR": "Scansione del codice QR",
+    "scanQRDescription": "Scansionate il codice QR nei villaggi per registrare la vostra visita.",
+    "logout": "Disconnettersi",
+    "loginError": "Login o password errati",
+    "footer": "© Associazione dei Borghi più belli di Spagna"
+  },
+  "pueblo": {
+    "loading": "Caricamento...",
+    "notFound": "Villaggio non trovato",
+    "description": "Descrizione",
+    "readMore": "Per saperne di più",
+    "readLess": "Vedi di meno",
+    "experiences": "Esperienze disponibili",
+    "viewOnMap": "Vedi sulla mappa 🗺️",
+    "trafficLight": {
+      "green": "Visita consigliata",
+      "yellow": "Visita con cautela",
+      "red": "Visita non raccomandata",
+      "unknown": "Nessuna informazione"
+    },
+    "weather": {
+      "loading": "Tempo di caricamento...",
+      "tomorrow": "Domani"
+    },
+    "howToGetThere": "Come arrivare",
+    "openWith": "Aprire la navigazione con",
+    "appleMaps": "Mappe di Apple",
+    "googleMaps": "Google Maps",
+    "waze": "Waze",
+    "noCoords": "Non ci sono coordinate per questo villaggio."
+  },
+  "multiexperiencias": {
+    "title": "Multiesperienze",
+    "loading": "Caricamento delle esperienze...",
+    "noResults": "Nessuna esperienza disponibile",
+    "error": "Errore nel caricamento delle esperienze",
+    "searchPlaceholder": "Ricerca di esperienze...",
+    "scanQR": "Scansione QR",
+    "pois": "Punti di visita"
+  },
+  "mapas": {
+    "title": "Mappe",
+    "loading": "Caricamento mappa...",
+    "description": "Esplorate tutti i villaggi sulla mappa"
+  },
+  "common": {
+    "back": "Indietro",
+    "close": "Chiudere",
+    "cancel": "Annullamento",
+    "confirm": "Confermare",
+    "success": "Il successo",
+    "error": "Errore"
+  },
+  "qr": {
+    "title": "Scansione del codice QR",
+    "description": "Puntate la macchina fotografica sul codice QR del villaggio",
+    "permissionDenied": "Autorizzazione della telecamera negata",
+    "permissionDescription": "Per scansionare i codici QR è necessario avere accesso alla fotocamera.",
+    "grantPermission": "Concessione del permesso",
+    "visitRegistered": "Visita registrata con successo",
+    "visitError": "❌ Errore durante la registrazione della visita",
+    "invalidQR": "Codice QR non valido"
+  }
+}

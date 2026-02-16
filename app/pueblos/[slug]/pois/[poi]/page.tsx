@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getLocale } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -28,14 +29,16 @@ function pickFotoPrincipal(poi: any): string | null {
   return poi?.fotoUrl ?? poi?.foto ?? poi?.imagen ?? null;
 }
 
-async function fetchPoi(puebloSlug: string, poiParam: string) {
+async function fetchPoi(puebloSlug: string, poiParam: string, locale?: string) {
   const API_BASE = getApiUrl();
-
+  const qs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
   const url = isNumeric(poiParam)
-    ? `${API_BASE}/pueblos/${puebloSlug}/pois/${poiParam}`
-    : `${API_BASE}/pueblos/${puebloSlug}/pois/slug/${poiParam}`;
-
-  const res = await fetch(url, { cache: "no-store" });
+    ? `${API_BASE}/pueblos/${puebloSlug}/pois/${poiParam}${qs}`
+    : `${API_BASE}/pueblos/${puebloSlug}/pois/slug/${poiParam}${qs}`;
+  const res = await fetch(url, {
+    cache: "no-store",
+    headers: locale ? { "Accept-Language": locale } : undefined,
+  });
   if (!res.ok) return null;
   return res.json();
 }
@@ -46,7 +49,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string; poi: string }>;
 }): Promise<Metadata> {
   const { slug, poi } = await params;
-  const data = await fetchPoi(slug, poi);
+  const locale = await getLocale();
+  const data = await fetchPoi(slug, poi, locale);
   if (!data) return {};
 
   const foto = pickFotoPrincipal(data);
@@ -82,8 +86,8 @@ export default async function PoiPage({
   params: Promise<{ slug: string; poi: string }>;
 }) {
   const { slug: puebloSlug, poi } = await params;
-
-  const data = await fetchPoi(puebloSlug, poi);
+  const locale = await getLocale();
+  const data = await fetchPoi(puebloSlug, poi, locale);
   if (!data) notFound();
 
   // Redirect 301 desde URL legacy numérica a URL SEO

@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 import { getRutas, getRutaById, getRutaMapa } from "@/lib/api";
 import { sanitizeHtml, createExcerpt } from "@/lib/sanitizeHtml";
 import RutaParadasConMapa from "@/app/_components/RutaParadasConMapa";
@@ -73,9 +74,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  
-  // Obtener todas las rutas y buscar por slug
-  const rutas = await getRutas();
+  const locale = await getLocale();
+  const rutas = await getRutas(locale);
   const ruta = rutas.find((r) => r.slug === slug);
   
   if (!ruta) {
@@ -119,11 +119,12 @@ export default async function RutaPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  
+  const locale = await getLocale();
+
   // 1. Resolver slug → ruta
-  const rutas = await getRutas();
+  const rutas = await getRutas(locale);
   const rutaBasica = rutas.find((r) => r.slug === slug);
-  
+
   if (!rutaBasica) {
     return (
       <main className="mx-auto max-w-5xl px-4 py-12">
@@ -136,7 +137,7 @@ export default async function RutaPage({
   }
 
   // 2. Obtener detalles completos
-  const ruta = await getRutaById(rutaBasica.id);
+  const ruta = await getRutaById(rutaBasica.id, locale);
   
   // 3. Obtener paradas desde ruta.pueblos (con fallbacks)
   const paradas = Array.isArray((ruta as any)?.pueblos) 
@@ -150,7 +151,7 @@ export default async function RutaPage({
   // 4. Obtener mapa
   let rutaMapa;
   try {
-    rutaMapa = await getRutaMapa(ruta.id);
+    rutaMapa = await getRutaMapa(ruta.id, locale);
   } catch (err) {
     console.error(`Error cargando mapa de ruta ${ruta.id}:`, err);
     rutaMapa = null;

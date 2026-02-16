@@ -46,14 +46,16 @@ export type HomeConfig = {
 };
 
 /**
- * Obtener configuración del home desde el backend
+ * Obtener configuración del home desde el backend.
+ * locale: idioma (opcional; si el backend lo soporta, devuelve títulos traducidos).
  */
-export async function getHomeConfig(): Promise<HomeConfig> {
+export async function getHomeConfig(locale?: string): Promise<HomeConfig> {
   const API_BASE = getApiUrl();
-  
+  const qs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
   try {
-    const res = await fetch(`${API_BASE}/home`, {
+    const res = await fetch(`${API_BASE}/home${qs}`, {
       cache: "no-store",
+      headers: locale ? { "Accept-Language": locale } : undefined,
     });
 
     if (!res.ok) {
@@ -121,12 +123,16 @@ export async function getHomeConfig(): Promise<HomeConfig> {
 }
 
 /**
- * Obtener videos de la asociación para la home (2 por defecto)
+ * Obtener videos de la asociación para la home (2 por defecto).
  */
-export async function getHomeVideos(): Promise<HomeVideo[]> {
+export async function getHomeVideos(locale?: string): Promise<HomeVideo[]> {
   const API_BASE = getApiUrl();
+  const qs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
   try {
-    const res = await fetch(`${API_BASE}/home/videos`, { cache: "no-store" });
+    const res = await fetch(`${API_BASE}/home/videos${qs}`, {
+      cache: "no-store",
+      headers: locale ? { "Accept-Language": locale } : undefined,
+    });
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];

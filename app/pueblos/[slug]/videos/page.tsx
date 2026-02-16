@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -35,9 +36,9 @@ export default async function VideosPuebloPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const locale = await getLocale();
   const API_BASE = getApiUrl();
-
-  const pueblo = await getPuebloBySlug(slug).catch(() => null);
+  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
   if (!pueblo) {
     notFound();
   }

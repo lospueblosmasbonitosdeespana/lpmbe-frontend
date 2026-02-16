@@ -26,22 +26,22 @@ function getSemaforoConfig(estado: string | null) {
   switch (estado) {
     case "VERDE":
       return {
-        label: "Baja afluencia",
+        label: "Ideal para una visita tranquila",
         mensajeDefault: "Momento ideal para visitar. Poca afluencia turística prevista.",
         color: "text-green-700",
         dotClass: "bg-green-500",
       };
     case "AMARILLO":
       return {
-        label: "Afluencia moderada",
-        mensajeDefault: "Afluencia turística moderada. Conviene planificar la visita.",
+        label: "Alta afluencia de visitantes",
+        mensajeDefault: "Hay una alta afluencia de visitantes. Conviene planificar la visita.",
         color: "text-amber-700",
         dotClass: "bg-amber-500",
       };
     case "ROJO":
       return {
-        label: "Alta afluencia",
-        mensajeDefault: "Alta afluencia turística. Se recomienda evitar horas punta.",
+        label: "No es el momento indicado para visitar",
+        mensajeDefault: "No es el momento indicado para visitar este pueblo. Sugerimos visitar otro de nuestros pueblos.",
         color: "text-red-700",
         dotClass: "bg-red-500",
       };

@@ -1,0 +1,110 @@
+{
+  "tabs": {
+    "home": "Inicio",
+    "pueblos": "Pueblos",
+    "multiexperiencias": "Experiencias",
+    "rutas": "Rutas",
+    "mapas": "Mapas",
+    "profile": "Mi Perfil"
+  },
+  "home": {
+    "title1": "Los Pueblos Más",
+    "title2": "Bonitos de España",
+    "welcome": "Descubre la belleza de España",
+    "discoverVillages": "Descubre Pueblos",
+    "discoverVillagesDesc": "Explora los pueblos más bonitos",
+    "latestNews": "Últimas Noticias",
+    "latestNewsDesc": "Novedades y eventos",
+    "shop": "Tienda LPBE",
+    "shopDesc": "Productos exclusivos",
+    "myAccount": "Mi Cuenta",
+    "myAccountDesc": "Accede a tu perfil",
+    "qrScanner": "Lector QR",
+    "qrScannerDesc": "Escanea códigos QR",
+    "routes": "Rutas",
+    "routesDesc": "Próximamente",
+    "loading": "Cargando..."
+  },
+  "explore": {
+    "title": "Explorar Pueblos",
+    "searchPlaceholder": "Buscar pueblo...",
+    "loading": "Cargando pueblos...",
+    "noResults": "No se encontraron pueblos",
+    "error": "⚠️ No se encontraron pueblos disponibles"
+  },
+  "profile": {
+    "title": "Mi Perfil",
+    "login": "Iniciar Sesión",
+    "loginDescription": "Accede a tu perfil para guardar tus pueblos visitados y ganar puntos",
+    "username": "Usuario",
+    "password": "Contraseña",
+    "visitedPlaces": "Pueblos Visitados",
+    "points": "Puntos",
+    "comingSoon": "Próximamente",
+    "comingSoonDescription": "Aquí podrás ver tus pueblos visitados, medallas conseguidas y mucho más",
+    "aboutAssociation": "Acerca de la Asociación",
+    "aboutDescription": "Los Pueblos Más Bonitos de España es una asociación sin ánimo de lucro que tiene como objetivo promocionar el patrimonio cultural, natural y rural de los pueblos más bellos de España.",
+    "scanQR": "Escanear Código QR",
+    "scanQRDescription": "Escanea el código QR en los pueblos para registrar tu visita",
+    "logout": "Cerrar Sesión",
+    "loginError": "Usuario o contraseña incorrectos",
+    "footer": "© Asociación Los Pueblos Más Bonitos de España"
+  },
+  "pueblo": {
+    "loading": "Cargando...",
+    "notFound": "Pueblo no encontrado",
+    "description": "Descripción",
+    "readMore": "Ver más",
+    "readLess": "Ver menos",
+    "experiences": "Experiencias disponibles",
+    "viewOnMap": "Ver en mapa 🗺️",
+    "trafficLight": {
+      "green": "Visita recomendada",
+      "yellow": "Visita con precaución",
+      "red": "Visita no recomendada",
+      "unknown": "Sin información"
+    },
+    "weather": {
+      "loading": "Cargando tiempo...",
+      "tomorrow": "Mañana"
+    },
+    "howToGetThere": "Cómo llegar",
+    "openWith": "Abrir navegación con",
+    "appleMaps": "Apple Maps",
+    "googleMaps": "Google Maps",
+    "waze": "Waze",
+    "noCoords": "No hay coordenadas para este pueblo."
+  },
+  "multiexperiencias": {
+    "title": "Multiexperiencias",
+    "loading": "Cargando experiencias...",
+    "noResults": "No hay experiencias disponibles",
+    "error": "Error al cargar experiencias",
+    "searchPlaceholder": "Buscar experiencias...",
+    "scanQR": "Escanear QR",
+    "pois": "Puntos de Visita"
+  },
+  "mapas": {
+    "title": "Mapas",
+    "loading": "Cargando mapa...",
+    "description": "Explora todos los pueblos en el mapa"
+  },
+  "common": {
+    "back": "Atrás",
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "success": "Éxito",
+    "error": "Error"
+  },
+  "qr": {
+    "title": "Escanear Código QR",
+    "description": "Apunta tu cámara al código QR del pueblo",
+    "permissionDenied": "Permiso de cámara denegado",
+    "permissionDescription": "Necesitamos acceso a tu cámara para escanear códigos QR",
+    "grantPermission": "Conceder Permiso",
+    "visitRegistered": "✅ Visita registrada correctamente",
+    "visitError": "❌ Error al registrar la visita",
+    "invalidQR": "❌ Código QR no válido"
+  }
+}

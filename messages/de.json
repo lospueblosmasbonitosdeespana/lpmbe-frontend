@@ -1,0 +1,110 @@
+{
+  "tabs": {
+    "home": "Startseite",
+    "pueblos": "Dörfer",
+    "multiexperiencias": "Erlebnisse",
+    "rutas": "Routen",
+    "mapas": "Karten",
+    "profile": "Mein Profil"
+  },
+  "home": {
+    "title1": "Die Völker Mehr",
+    "title2": "Bonitos de España",
+    "welcome": "Entdecken Sie die Schönheit Spaniens",
+    "discoverVillages": "Dörfer entdecken",
+    "discoverVillagesDesc": "Erkunden Sie die schönsten Dörfer",
+    "latestNews": "Neueste Nachrichten",
+    "latestNewsDesc": "Nachrichten und Veranstaltungen",
+    "shop": "LPBE Laden",
+    "shopDesc": "Exklusive Produkte",
+    "myAccount": "Mein Konto",
+    "myAccountDesc": "Zugang zu Ihrem Profil",
+    "qrScanner": "QR-Reader",
+    "qrScannerDesc": "QR-Codes scannen",
+    "routes": "Routen",
+    "routesDesc": "Demnächst verfügbar",
+    "loading": "Laden..."
+  },
+  "explore": {
+    "title": "Dörfer erkunden",
+    "searchPlaceholder": "Dorf suchen...",
+    "loading": "Dörfer laden...",
+    "noResults": "Keine Dörfer gefunden",
+    "error": "⚠️ Keine Dörfer verfügbar gefunden"
+  },
+  "profile": {
+    "title": "Mein Profil",
+    "login": "Anmeldung",
+    "loginDescription": "Melden Sie sich in Ihrem Profil an, um Ihre besuchten Dörfer zu speichern und Punkte zu sammeln.",
+    "username": "Benutzer",
+    "password": "Passwort",
+    "visitedPlaces": "Besuchte Dörfer",
+    "points": "Punkte",
+    "comingSoon": "Demnächst verfügbar",
+    "comingSoonDescription": "Hier kannst du deine besuchten Dörfer, verdienten Medaillen und vieles mehr sehen.",
+    "aboutAssociation": "Über die Vereinigung",
+    "aboutDescription": "Die Schönsten Dörfer Spaniens ist ein gemeinnütziger Verein, der sich zum Ziel gesetzt hat, das kulturelle, natürliche und ländliche Erbe der schönsten Dörfer Spaniens zu fördern.",
+    "scanQR": "QR-Code scannen",
+    "scanQRDescription": "Scannen Sie den QR-Code in den Dörfern, um Ihren Besuch zu registrieren.",
+    "logout": "Abmelden",
+    "loginError": "Falsches Login oder Passwort",
+    "footer": "© Verein \"Die schönsten Dörfer Spaniens"
+  },
+  "pueblo": {
+    "loading": "Laden...",
+    "notFound": "Dorf nicht gefunden",
+    "description": "Beschreibung",
+    "readMore": "Mehr sehen",
+    "readLess": "Weniger sehen",
+    "experiences": "Verfügbare Erlebnisse",
+    "viewOnMap": "Siehe auf der Karte 🗺️",
+    "trafficLight": {
+      "green": "Empfohlener Besuch",
+      "yellow": "Besuch mit Vorsicht",
+      "red": "Besuch nicht empfohlen",
+      "unknown": "Keine Informationen"
+    },
+    "weather": {
+      "loading": "Ladezeit...",
+      "tomorrow": "Morgen"
+    },
+    "howToGetThere": "Wie man dorthin kommt",
+    "openWith": "Navigation öffnen mit",
+    "appleMaps": "Apple Karten",
+    "googleMaps": "Google Maps",
+    "waze": "Waze",
+    "noCoords": "Es gibt keine Koordinaten für dieses Dorf."
+  },
+  "multiexperiencias": {
+    "title": "Multierfahrungen",
+    "loading": "Erfahrungen laden...",
+    "noResults": "Keine Erfahrung vorhanden",
+    "error": "Fehler beim Laden von Erfahrungen",
+    "searchPlaceholder": "Suche nach Erfahrungen...",
+    "scanQR": "QR scannen",
+    "pois": "Besuchspunkte"
+  },
+  "mapas": {
+    "title": "Karten",
+    "loading": "Karte laden...",
+    "description": "Entdecke alle Dörfer auf der Karte"
+  },
+  "common": {
+    "back": "Zurück",
+    "close": "Schließen Sie",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen Sie",
+    "success": "Erfolg",
+    "error": "Fehler"
+  },
+  "qr": {
+    "title": "QR-Code scannen",
+    "description": "Richte deine Kamera auf den QR-Code des Dorfes",
+    "permissionDenied": "Kameraerlaubnis verweigert",
+    "permissionDescription": "Wir benötigen Zugang zu Ihrer Kamera, um QR-Codes zu scannen.",
+    "grantPermission": "Erlaubnis erteilen",
+    "visitRegistered": "Besuch erfolgreich registriert",
+    "visitError": "❌ Fehler bei der Registrierung des Besuchs",
+    "invalidQR": "❌ Ungültiger QR-Code"
+  }
+}

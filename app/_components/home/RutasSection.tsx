@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getLocale } from "next-intl/server";
 import { getRutas } from "@/lib/api";
 import RutaMiniMap from "@/app/_components/RutaMiniMap";
 import RutaCardStats from "@/app/_components/RutaCardStats";
@@ -12,9 +13,8 @@ export async function RutasSection({ count = 4, enabled = true }: RutasSectionPr
   if (!enabled) {
     return null;
   }
-
-  // Fetch todas las rutas activas
-  const todasLasRutas = await getRutas();
+  const locale = await getLocale();
+  const todasLasRutas = await getRutas(locale);
   const rutasActivas = todasLasRutas.filter((r) => r.activo);
 
   // Seleccionar N rutas aleatorias

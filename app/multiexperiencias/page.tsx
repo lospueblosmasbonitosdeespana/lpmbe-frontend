@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { getLocale } from 'next-intl/server';
+import { getApiUrl } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -19,10 +21,13 @@ type Multiexperiencia = {
   totalPois?: number;
 };
 
-async function getMultiexperiencias(): Promise<Multiexperiencia[]> {
+async function getMultiexperiencias(locale?: string): Promise<Multiexperiencia[]> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/multiexperiencias`, {
+    const base = getApiUrl();
+    const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
+    const res = await fetch(`${base}/public/multiexperiencias${qs}`, {
       cache: 'no-store',
+      headers: locale ? { 'Accept-Language': locale } : undefined,
     });
 
     if (!res.ok) {
@@ -39,7 +44,8 @@ async function getMultiexperiencias(): Promise<Multiexperiencia[]> {
 }
 
 export default async function MultiexperienciasPage() {
-  const items = await getMultiexperiencias();
+  const locale = await getLocale();
+  const items = await getMultiexperiencias(locale);
 
   // Agrupar por CCAA
   const byCCAA = items.reduce((acc, item) => {

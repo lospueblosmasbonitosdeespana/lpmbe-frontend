@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getLocale } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import { ActualidadItem } from "./ActualidadItem";
 
@@ -12,12 +13,13 @@ type Notificacion = {
   contenidoUrl?: string;
 };
 
-async function getActualidad(limit: number): Promise<Notificacion[]> {
+async function getActualidad(limit: number, locale?: string): Promise<Notificacion[]> {
   const base = getApiUrl();
-
-  const res = await fetch(`${base}/public/notificaciones/feed?limit=${limit}&tipos=NOTICIA,EVENTO`, {
-    next: { revalidate: 120 }, // HOME: cache corta
-    cache: 'no-store',
+  const qs = locale ? `&lang=${encodeURIComponent(locale)}` : "";
+  const res = await fetch(`${base}/public/notificaciones/feed?limit=${limit}&tipos=NOTICIA,EVENTO${qs}`, {
+    next: { revalidate: 120 },
+    cache: "no-store",
+    headers: locale ? { "Accept-Language": locale } : undefined,
   });
 
   if (!res.ok) return [];
@@ -32,7 +34,8 @@ type ActualidadSectionProps = {
 };
 
 export async function ActualidadSection({ limit = 4 }: ActualidadSectionProps) {
-  const items = await getActualidad(limit);
+  const locale = await getLocale();
+  const items = await getActualidad(limit, locale);
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-16">

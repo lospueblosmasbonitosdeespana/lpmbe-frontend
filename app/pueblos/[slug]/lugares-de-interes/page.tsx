@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getLocale } from "next-intl/server";
 import { getPuebloBySlug } from "@/lib/api";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -24,7 +25,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const pueblo = await getPuebloBySlug(slug);
+  const locale = await getLocale();
+  const pueblo = await getPuebloBySlug(slug, locale);
   return {
     title: `Lugares de interés en ${pueblo.nombre} – Los Pueblos Más Bonitos de España`,
     description: `Descubre los puntos de interés y lugares que no te puedes perder en ${pueblo.nombre}.`,
@@ -37,7 +39,8 @@ export default async function LugaresDeInteresPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const pueblo = await getPuebloBySlug(slug);
+  const locale = await getLocale();
+  const pueblo = await getPuebloBySlug(slug, locale);
 
   const pois = (pueblo.pois ?? []).filter((p: { categoria?: string }) => p.categoria === "POI");
 

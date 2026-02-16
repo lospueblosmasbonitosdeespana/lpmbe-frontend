@@ -1,0 +1,110 @@
+{
+  "tabs": {
+    "home": "Home",
+    "pueblos": "Villages",
+    "multiexperiencias": "Experiences",
+    "rutas": "Routes",
+    "mapas": "Maps",
+    "profile": "My Profile"
+  },
+  "home": {
+    "title1": "The Most Popular Towns",
+    "title2": "Beautiful of Spain",
+    "welcome": "Discover the beauty of Spain",
+    "discoverVillages": "Discover Villages",
+    "discoverVillagesDesc": "Explore the most beautiful villages",
+    "latestNews": "Latest News",
+    "latestNewsDesc": "News and events",
+    "shop": "LPBE Store",
+    "shopDesc": "Exclusive products",
+    "myAccount": "My Account",
+    "myAccountDesc": "Access your profile",
+    "qrScanner": "QR reader",
+    "qrScannerDesc": "Scan QR codes",
+    "routes": "Routes",
+    "routesDesc": "Coming soon",
+    "loading": "Loading..."
+  },
+  "explore": {
+    "title": "Explore Villages",
+    "searchPlaceholder": "Search village...",
+    "loading": "Loading villages...",
+    "noResults": "No villages found",
+    "error": "⚠️ No villages found available"
+  },
+  "profile": {
+    "title": "My Profile",
+    "login": "Login",
+    "loginDescription": "Log in to your profile to save your visited villages and earn points",
+    "username": "User",
+    "password": "Password",
+    "visitedPlaces": "Towns Visited",
+    "points": "Points",
+    "comingSoon": "Coming soon",
+    "comingSoonDescription": "Here you will be able to see your visited towns, medals earned and much more.",
+    "aboutAssociation": "About the Association",
+    "aboutDescription": "The Most Beautiful Villages of Spain is a non-profit association that aims to promote the cultural, natural and rural heritage of the most beautiful villages in Spain.",
+    "scanQR": "Scan QR Code",
+    "scanQRDescription": "Scan the QR code in the villages to register your visit",
+    "logout": "Close Session",
+    "loginError": "Incorrect username or password",
+    "footer": "© Association The Most Beautiful Villages of Spain"
+  },
+  "pueblo": {
+    "loading": "Loading...",
+    "notFound": "Town not found",
+    "description": "Description",
+    "readMore": "See more",
+    "readLess": "See less",
+    "experiences": "Experiences available",
+    "viewOnMap": "See on map 🗺️",
+    "trafficLight": {
+      "green": "Recommended visit",
+      "yellow": "Visit with caution",
+      "red": "Visit not recommended",
+      "unknown": "No information"
+    },
+    "weather": {
+      "loading": "Loading time...",
+      "tomorrow": "Tomorrow"
+    },
+    "howToGetThere": "How to get there",
+    "openWith": "Open navigation with",
+    "appleMaps": "Apple Maps",
+    "googleMaps": "Google Maps",
+    "waze": "Waze",
+    "noCoords": "There are no coordinates for this town."
+  },
+  "multiexperiencias": {
+    "title": "Multiexperiences",
+    "loading": "Loading experiences...",
+    "noResults": "No experience available",
+    "error": "Error loading experiences",
+    "searchPlaceholder": "Search for experiences...",
+    "scanQR": "Scan QR",
+    "pois": "Visiting Points"
+  },
+  "mapas": {
+    "title": "Maps",
+    "loading": "Loading map...",
+    "description": "Explore all the towns on the map"
+  },
+  "common": {
+    "back": "Back",
+    "close": "Close",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "success": "Success",
+    "error": "Error"
+  },
+  "qr": {
+    "title": "Scan QR Code",
+    "description": "Point your camera at the QR code of the village",
+    "permissionDenied": "Camera permission denied",
+    "permissionDescription": "We need access to your camera for QR code scanning",
+    "grantPermission": "Grant Permission",
+    "visitRegistered": "✅ Visit successfully registered",
+    "visitError": "❌ Error when registering the visit",
+    "invalidQR": "❌ Invalid QR code"
+  }
+}

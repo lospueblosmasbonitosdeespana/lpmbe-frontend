@@ -3,6 +3,7 @@ import { MegaMenu } from "./MegaMenu";
 import { MobileMenu } from "./MobileMenu";
 import AuthNavLink from "./AuthNavLink";
 import CartIndicatorWrapper from "../tienda/CartIndicatorWrapper";
+import { LocaleSwitcher } from "./LocaleSwitcher";
 import { headers } from "next/headers";
 
 type SiteSettings = {
@@ -38,7 +39,9 @@ async function fetchSiteSettings(): Promise<SiteSettings> {
   }
 }
 
-export async function Header() {
+type HeaderProps = { locale: string };
+
+export async function Header({ locale }: HeaderProps) {
   const settings = await fetchSiteSettings();
 
   // Determinar qué mostrar según activeLogo
@@ -95,6 +98,7 @@ export async function Header() {
         </div>
 
         <div className="flex items-center gap-3 md:gap-4">
+          <LocaleSwitcher currentLocale={locale} variant="header" />
           <MobileMenu />
           <CartIndicatorWrapper />
           <Link href="/contacto" className="text-sm font-medium hover:underline">

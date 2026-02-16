@@ -1,31 +1,19 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { getApiUrl } from "@/lib/api";
+import { getLocale } from "next-intl/server";
+import { getPueblosLite } from "@/lib/api";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Display, Lead } from "@/app/components/ui/typography";
-
-type Pueblo = {
-  id: number;
-  nombre: string;
-  slug: string;
-  provincia?: string | null;
-  comunidad?: string | null;
-};
-
-async function getPueblos(): Promise<Pueblo[]> {
-  const res = await fetch(`${getApiUrl()}/pueblos`, { next: { revalidate: 300 } });
-  if (!res.ok) return [];
-  return res.json();
-}
 
 function normalize(s: string) {
   return s.trim();
 }
 
 export default async function ProvinciasPage() {
-  const pueblos = await getPueblos();
+  const locale = await getLocale();
+  const pueblos = await getPueblosLite(locale);
 
   const provincias = Array.from(
     new Set(

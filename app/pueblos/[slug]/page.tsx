@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 import { getPuebloBySlug, getPueblosLite, getApiUrl } from "@/lib/api";
 import PuebloActions from "./PuebloActions";
 import DescripcionPueblo from "./DescripcionPueblo";
@@ -151,7 +152,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const pueblo = await getPuebloBySlug(slug);
+  const locale = await getLocale();
+  const pueblo = await getPuebloBySlug(slug, locale);
   const fotos = Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [];
   const heroImage = pueblo.foto_destacada ?? fotos[0]?.url ?? null;
   const baseTitle = `${pueblo.nombre} · ${pueblo.provincia} · ${pueblo.comunidad}`;
@@ -192,11 +194,13 @@ export default async function PuebloPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const locale = await getLocale();
   const API_BASE = getApiUrl();
+  const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
   const [pueblo, pueblosLite, pagesRes] = await Promise.all([
-    getPuebloBySlug(slug),
-    getPueblosLite(),
-    fetch(`${API_BASE}/public/pueblos/${slug}/pages`, { cache: "no-store" }).catch(() => null),
+    getPuebloBySlug(slug, locale),
+    getPueblosLite(locale),
+    fetch(`${API_BASE}/public/pueblos/${slug}/pages${langQs}`, { cache: "no-store" }).catch(() => null),
   ]);
 
   // Páginas temáticas del pueblo (contenidos temáticos) - ahora son arrays por categoría

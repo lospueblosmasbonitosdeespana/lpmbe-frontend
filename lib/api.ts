@@ -72,10 +72,13 @@ export function resolvePuebloMainPhotoUrl(pueblo: any): string | null {
   return typeof url === "string" && url.trim() ? url.trim() : null;
 }
 
-export async function getPuebloBySlug(slug: string): Promise<Pueblo> {
+/** locale: idioma para contenido (es, en, fr, de, pt, it). Si no se pasa, el backend devuelve es. */
+export async function getPuebloBySlug(slug: string, locale?: string): Promise<Pueblo> {
   const API_BASE = getApiUrl();
-  const res = await fetch(`${API_BASE}/pueblos/${slug}`, {
+  const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
+  const res = await fetch(`${API_BASE}/pueblos/${slug}${qs}`, {
     cache: 'no-store',
+    headers: locale ? { 'Accept-Language': locale } : undefined,
   });
 
   if (!res.ok) {
@@ -85,9 +88,8 @@ export async function getPuebloBySlug(slug: string): Promise<Pueblo> {
   return await res.json();
 }
 
-export async function getLugarLegacyBySlug(slug: string): Promise<Pueblo> {
-  // Por ahora, usar la misma función
-  return getPuebloBySlug(slug);
+export async function getLugarLegacyBySlug(slug: string, locale?: string): Promise<Pueblo> {
+  return getPuebloBySlug(slug, locale);
 }
 
 /** Listado ligero para cálculos (pueblos cercanos, etc.) */
@@ -102,10 +104,14 @@ export type PuebloLite = {
   foto_destacada?: string | null;
 };
 
-export async function getPueblosLite(): Promise<PuebloLite[]> {
+export async function getPueblosLite(locale?: string): Promise<PuebloLite[]> {
   const API_BASE = getApiUrl();
+  const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
   try {
-    const res = await fetch(`${API_BASE}/pueblos`, { cache: "no-store" });
+    const res = await fetch(`${API_BASE}/pueblos${qs}`, {
+      cache: "no-store",
+      headers: locale ? { 'Accept-Language': locale } : undefined,
+    });
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];
@@ -114,10 +120,12 @@ export async function getPueblosLite(): Promise<PuebloLite[]> {
   }
 }
 
-export async function getPoiById(poiId: string | number) {
+export async function getPoiById(poiId: string | number, locale?: string) {
   const API_BASE = getApiUrl();
-  const res = await fetch(`${API_BASE}/pois/${poiId}`, {
+  const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
+  const res = await fetch(`${API_BASE}/pois/${poiId}${qs}`, {
     cache: "no-store",
+    headers: locale ? { 'Accept-Language': locale } : undefined,
   });
 
   if (!res.ok) {
@@ -190,12 +198,13 @@ export type RutaMapa = {
 };
 
 // Obtener todas las rutas activas
-export async function getRutas(): Promise<Ruta[]> {
+export async function getRutas(locale?: string): Promise<Ruta[]> {
   const API_BASE = getApiUrl();
-  
+  const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
   try {
-    const res = await fetch(`${API_BASE}/rutas`, {
-      cache: "no-store", // no-store para evitar fallos en build
+    const res = await fetch(`${API_BASE}/rutas${qs}`, {
+      cache: "no-store",
+      headers: locale ? { 'Accept-Language': locale } : undefined,
     });
 
     // Si no es OK, devolver array vacío en lugar de lanzar error
@@ -212,10 +221,12 @@ export async function getRutas(): Promise<Ruta[]> {
 }
 
 // Obtener ruta por ID
-export async function getRutaById(id: number): Promise<Ruta> {
+export async function getRutaById(id: number, locale?: string): Promise<Ruta> {
   const API_BASE = getApiUrl();
-  const res = await fetch(`${API_BASE}/rutas/${id}`, {
-    cache: 'no-store', // Sin cache para ver cambios al instante
+  const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
+  const res = await fetch(`${API_BASE}/rutas/${id}${qs}`, {
+    cache: 'no-store',
+    headers: locale ? { 'Accept-Language': locale } : undefined,
   });
 
   if (!res.ok) {
@@ -226,10 +237,12 @@ export async function getRutaById(id: number): Promise<Ruta> {
 }
 
 // Obtener mapa de ruta
-export async function getRutaMapa(id: number): Promise<RutaMapa> {
+export async function getRutaMapa(id: number, locale?: string): Promise<RutaMapa> {
   const API_BASE = getApiUrl();
-  const res = await fetch(`${API_BASE}/rutas/${id}/mapa`, {
+  const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
+  const res = await fetch(`${API_BASE}/rutas/${id}/mapa${qs}`, {
     next: { revalidate: 300 },
+    headers: locale ? { 'Accept-Language': locale } : undefined,
   });
 
   if (!res.ok) {
