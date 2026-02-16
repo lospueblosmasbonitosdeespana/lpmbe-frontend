@@ -201,7 +201,7 @@ export default async function MultiexperienciaPage({
         }}
       >
         <h2 style={{ marginTop: 0, marginBottom: "16px" }}>
-          Resumen de la experiencia
+          {t("experienceSummary")}
         </h2>
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
           <Link
@@ -382,7 +382,7 @@ export default async function MultiexperienciaPage({
                       </div>
                     ) : (
                       <p style={{ marginTop: "12px", color: "#9ca3af", fontSize: "14px", fontStyle: "italic" }}>
-                        Descripción próximamente.
+                        {t("descriptionComingSoon")}
                       </p>
                     )}
 

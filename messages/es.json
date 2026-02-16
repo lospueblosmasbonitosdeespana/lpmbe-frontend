@@ -483,7 +483,9 @@
     "stop": "Parada {num}",
     "viewOnGoogleMaps": "Ver en Google Maps",
     "experienceFallback": "Experiencia",
-    "stopFallback": "Parada"
+    "stopFallback": "Parada",
+    "descriptionComingSoon": "Descripción próximamente.",
+    "experienceSummary": "Resumen de la experiencia"
   },
   "categories": {
     "eyebrow": "Qué hacer",

@@ -486,7 +486,9 @@
     "stop": "Stop {num}",
     "viewOnGoogleMaps": "View on Google Maps",
     "experienceFallback": "Experience",
-    "stopFallback": "Stop"
+    "stopFallback": "Stop",
+    "descriptionComingSoon": "Description coming soon.",
+    "experienceSummary": "Experience summary"
   },
   "categories": {
     "eyebrow": "What to do",

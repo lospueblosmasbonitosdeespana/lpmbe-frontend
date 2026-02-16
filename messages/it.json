@@ -486,7 +486,9 @@
     "stop": "Tappa {num}",
     "viewOnGoogleMaps": "Vedi su Google Maps",
     "experienceFallback": "Esperienza",
-    "stopFallback": "Tappa"
+    "stopFallback": "Tappa",
+    "descriptionComingSoon": "Descrizione in arrivo.",
+    "experienceSummary": "Riepilogo dell'esperienza"
   },
   "categories": {
     "eyebrow": "Cosa fare",

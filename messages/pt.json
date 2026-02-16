@@ -486,7 +486,9 @@
     "stop": "Paragem {num}",
     "viewOnGoogleMaps": "Ver no Google Maps",
     "experienceFallback": "Experiência",
-    "stopFallback": "Paragem"
+    "stopFallback": "Paragem",
+    "descriptionComingSoon": "Descrição em breve.",
+    "experienceSummary": "Resumo da experiência"
   },
   "categories": {
     "eyebrow": "O que fazer",

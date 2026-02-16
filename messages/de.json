@@ -486,7 +486,9 @@
     "stop": "Station {num}",
     "viewOnGoogleMaps": "Auf Google Maps ansehen",
     "experienceFallback": "Erlebnis",
-    "stopFallback": "Station"
+    "stopFallback": "Station",
+    "descriptionComingSoon": "Beschreibung in Kürze.",
+    "experienceSummary": "Erlebnisübersicht"
   },
   "categories": {
     "eyebrow": "Was tun",
