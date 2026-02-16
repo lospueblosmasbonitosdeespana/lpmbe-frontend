@@ -77,7 +77,8 @@
     "viewAllNotifs": "View all notifications",
     "tabNews": "News",
     "tabSemaforos": "Traffic lights",
-    "tabAlertas": "Alerts"
+    "tabAlertas": "Alerts",
+    "meteo": "Weather"
   },
   "explore": {
     "title": "Explore Villages",

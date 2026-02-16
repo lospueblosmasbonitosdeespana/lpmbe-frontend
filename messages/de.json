@@ -77,7 +77,8 @@
     "viewAllNotifs": "Alle Mitteilungen",
     "tabNews": "Nachrichten",
     "tabSemaforos": "Ampeln",
-    "tabAlertas": "Warnungen"
+    "tabAlertas": "Warnungen",
+    "meteo": "Wetter"
   },
   "explore": {
     "title": "Dörfer erkunden",
@@ -208,7 +209,7 @@
     "meteo": "Wetter",
     "content": "Inhalt",
     "noticias": "Nachrichten",
-    "agenda": "Agenda",
+    "agenda": "Tagesordnung",
     "articulos": "Artikel",
     "elSello": "Das Siegel",
     "howToGet": "Wie erhält man das Siegel?",
@@ -247,7 +248,10 @@
     "articles": "Artikel",
     "noContent": "Keine Inhalte verfügbar.",
     "readMore": "Weiterlesen →",
-    "backToHome": "← Zur Startseite"
+    "backToHome": "← Zur Startseite",
+    "pageDesc": "Nachrichten, Veranstaltungen und Artikel aus Die schönsten Dörfer Spaniens",
+    "loading": "Laden...",
+    "error": "Fehler beim Laden des Inhalts"
   },
   "legal": {
     "privacy": "Datenschutz",
@@ -309,5 +313,18 @@
     "showers": "Schauer",
     "storm": "Gewitter",
     "weather": "Wetter"
+  },
+  "tienda": {
+    "title": "Shop",
+    "cart": "Trolley",
+    "checkout": "Kauf abschließen",
+    "addToCart": "In den Warenkorb legen",
+    "shipping": "Senden von",
+    "orderSummary": "Zusammenfassung der Bestellung",
+    "pay": "Bezahlen",
+    "emptyCart": "Ihr Einkaufswagen ist leer",
+    "continueShopping": "Weiter einkaufen",
+    "orderSuccess": "Auftrag erfolgreich erteilt",
+    "backToShop": "Zurück zum Shop"
   }
 }

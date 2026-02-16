@@ -77,7 +77,8 @@
     "viewAllNotifs": "Voir toutes les notifications",
     "tabNews": "Actualités",
     "tabSemaforos": "Feux",
-    "tabAlertas": "Alertes"
+    "tabAlertas": "Alertes",
+    "meteo": "Météo"
   },
   "explore": {
     "title": "Explorer les villages",
@@ -208,7 +209,7 @@
     "meteo": "Météo",
     "content": "Contenu",
     "noticias": "Actualités",
-    "agenda": "Agenda",
+    "agenda": "Ordre du jour",
     "articulos": "Articles",
     "elSello": "Le label",
     "howToGet": "Comment obtenir le label?",
@@ -247,7 +248,10 @@
     "articles": "Articles",
     "noContent": "Aucun contenu disponible.",
     "readMore": "Lire la suite →",
-    "backToHome": "← Retour à l'accueil"
+    "backToHome": "← Retour à l'accueil",
+    "pageDesc": "Nouvelles, événements et articles des Plus beaux villages d'Espagne",
+    "loading": "Chargement...",
+    "error": "Erreur de chargement du contenu"
   },
   "legal": {
     "privacy": "Confidentialité",
@@ -309,5 +313,18 @@
     "showers": "Averses",
     "storm": "Orage",
     "weather": "Temps"
+  },
+  "tienda": {
+    "title": "Boutique",
+    "cart": "Chariot",
+    "checkout": "Finaliser l'achat",
+    "addToCart": "Ajouter au panier",
+    "shipping": "Envoi",
+    "orderSummary": "Résumé de la commande",
+    "pay": "Rémunération",
+    "emptyCart": "Votre panier est vide",
+    "continueShopping": "Poursuivre les achats",
+    "orderSuccess": "Commande passée avec succès",
+    "backToShop": "Retour à la boutique"
   }
 }

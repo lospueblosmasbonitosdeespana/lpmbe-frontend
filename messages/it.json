@@ -77,7 +77,8 @@
     "viewAllNotifs": "Tutte le notifiche",
     "tabNews": "Notizie",
     "tabSemaforos": "Semafori",
-    "tabAlertas": "Avvisi"
+    "tabAlertas": "Avvisi",
+    "meteo": "Il tempo"
   },
   "explore": {
     "title": "Esplora i borghi",
@@ -192,7 +193,7 @@
     "thematics": "Tematiche",
     "gastronomia": "Gastronomia",
     "nature": "Natura",
-    "culture": "Cultura",
+    "culture": "La cultura",
     "family": "Famiglia",
     "petfriendly": "Pet-friendly",
     "planifica": "Pianifica",
@@ -205,10 +206,10 @@
     "viewNotifs": "Vedi notifiche",
     "semaforoChanges": "Cambi semaforo",
     "alertas": "Avvisi",
-    "meteo": "Meteo",
+    "meteo": "Il tempo",
     "content": "Contenuti",
     "noticias": "Notizie",
-    "agenda": "Agenda",
+    "agenda": "Ordine del giorno",
     "articulos": "Articoli",
     "elSello": "Il marchio",
     "howToGet": "Come ottenere il marchio?",
@@ -237,7 +238,7 @@
     "copyright": "© {year} I Borghi Più Belli di Spagna. Tutti i diritti riservati.",
     "privacy": "Privacy",
     "legal": "Note legali",
-    "cookies": "Cookies"
+    "cookies": "Biscotti"
   },
   "actualidad": {
     "title": "Attualità",
@@ -247,12 +248,15 @@
     "articles": "Articoli",
     "noContent": "Nessun contenuto disponibile.",
     "readMore": "Leggi tutto →",
-    "backToHome": "← Torna alla home"
+    "backToHome": "← Torna alla home",
+    "pageDesc": "Notizie, eventi e articoli da I borghi più belli della Spagna",
+    "loading": "Caricamento...",
+    "error": "Errore nel caricamento dei contenuti"
   },
   "legal": {
     "privacy": "Privacy",
     "legal": "Note legali",
-    "cookies": "Cookies"
+    "cookies": "Biscotti"
   },
   "rutas": {
     "title": "Percorsi",
@@ -278,7 +282,7 @@
     "pointOfInterest": "Punto di interesse",
     "categoryNature": "Natura",
     "categoryNatureDesc": "Escursionismo, paesaggi e spazi naturali",
-    "categoryCulture": "Cultura",
+    "categoryCulture": "La cultura",
     "categoryCultureDesc": "Monumenti, musei e patrimonio storico",
     "categoryFamily": "In famiglia",
     "categoryFamilyDesc": "Attività per tutte le età",
@@ -309,5 +313,18 @@
     "showers": "Rovesci",
     "storm": "Temporale",
     "weather": "Tempo"
+  },
+  "tienda": {
+    "title": "Negozio",
+    "cart": "Carrello",
+    "checkout": "Finalizzare l'acquisto",
+    "addToCart": "Aggiungi al carrello",
+    "shipping": "Invio",
+    "orderSummary": "Riepilogo dell'ordine",
+    "pay": "Paga",
+    "emptyCart": "Il carrello è vuoto",
+    "continueShopping": "Continua gli acquisti",
+    "orderSuccess": "Ordine effettuato con successo",
+    "backToShop": "Torna al negozio"
   }
 }

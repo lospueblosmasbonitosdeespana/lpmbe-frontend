@@ -71,13 +71,14 @@
     "sending": "A enviar...",
     "subscribe": "Subscrever",
     "newsletterError": "Ocorreu um erro. Tente novamente.",
-    "latestNewsletters": "Últimas newsletters →",
+    "latestNewsletters": "Boletins informativos mais recentes →",
     "notifCenterTitle": "Centro de notificações",
     "noNotifications": "Sem notificações",
     "viewAllNotifs": "Ver todas as notificações",
     "tabNews": "Notícias",
     "tabSemaforos": "Semáforos",
-    "tabAlertas": "Alertas"
+    "tabAlertas": "Alertas",
+    "meteo": "Tempo"
   },
   "explore": {
     "title": "Explorar aldeias",
@@ -180,7 +181,7 @@
   "nav": {
     "contact": "Contacto",
     "explore": "Explorar",
-    "seeAll": "Ver todos",
+    "seeAll": "Ver tudo",
     "interactiveMap": "Mapa interativo",
     "byTerritory": "Por território",
     "byCommunity": "Por comunidade",
@@ -189,7 +190,7 @@
     "featured": "Em destaque",
     "latestAdditions": "Últimas incorporações",
     "travelIdeas": "Ideias de viagem",
-    "thematics": "Temáticas",
+    "thematics": "Temas",
     "gastronomia": "Gastronomia",
     "nature": "Natureza",
     "culture": "Cultura",
@@ -197,7 +198,7 @@
     "petfriendly": "Pet-friendly",
     "planifica": "Planear",
     "weekend": "Fim de semana",
-    "getaways": "Escapadas",
+    "getaways": "Escapadinhas",
     "pirineos": "As aldeias mais bonitas dos Pirenéus",
     "nocheRomantica": "A Noite Romântica ♥",
     "actualidad": "Atualidade",
@@ -205,7 +206,7 @@
     "viewNotifs": "Ver notificações",
     "semaforoChanges": "Alterações semáforo",
     "alertas": "Alertas",
-    "meteo": "Meteo",
+    "meteo": "Tempo",
     "content": "Conteúdo",
     "noticias": "Notícias",
     "agenda": "Agenda",
@@ -237,7 +238,7 @@
     "copyright": "© {year} As Aldeias Mais Bonitas de Espanha. Todos os direitos reservados.",
     "privacy": "Privacidade",
     "legal": "Aviso legal",
-    "cookies": "Cookies"
+    "cookies": "Biscoitos"
   },
   "actualidad": {
     "title": "Atualidade",
@@ -247,12 +248,15 @@
     "articles": "Artigos",
     "noContent": "Nenhum conteúdo disponível.",
     "readMore": "Ler mais →",
-    "backToHome": "← Voltar ao início"
+    "backToHome": "← Voltar ao início",
+    "pageDesc": "Notícias, eventos e artigos de As mais belas aldeias de Espanha",
+    "loading": "Carregando...",
+    "error": "Erro ao carregar conteúdo"
   },
   "legal": {
     "privacy": "Privacidade",
     "legal": "Aviso legal",
-    "cookies": "Cookies"
+    "cookies": "Biscoitos"
   },
   "rutas": {
     "title": "Rotas",
@@ -309,5 +313,18 @@
     "showers": "Aguaceiros",
     "storm": "Tempestade",
     "weather": "Tempo"
+  },
+  "tienda": {
+    "title": "Loja",
+    "cart": "Trolley",
+    "checkout": "Finalizar a compra",
+    "addToCart": "Adicionar ao carrinho",
+    "shipping": "Envio",
+    "orderSummary": "Resumo da encomenda",
+    "pay": "Pagar",
+    "emptyCart": "O seu carrinho de compras está vazio",
+    "continueShopping": "Continuar a comprar",
+    "orderSuccess": "Encomenda efectuada com sucesso",
+    "backToShop": "Voltar à loja"
   }
 }
