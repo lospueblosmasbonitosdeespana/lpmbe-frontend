@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   ArrowRight,
   Bell,
@@ -100,6 +100,7 @@ function HeroSection({
   heroSubtitle?: string;
 }) {
   const t = useTranslations("home");
+  const locale = useLocale();
   const visibleSlides = heroSlides.filter((s) => s?.image?.trim()).slice(0, 4);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -118,6 +119,9 @@ function HeroSection({
   }, [visibleSlides.length, heroIntervalMs]);
 
   const isExternal = (href: string) => href.startsWith("http://") || href.startsWith("https://");
+
+  const displayTitle = locale === "es" ? (heroTitle || t("heroTitle")) : t("heroTitle");
+  const displaySubtitle = locale === "es" ? (heroSubtitle || t("heroSubtitle")) : t("heroSubtitle");
 
   return (
     <section className="relative h-[75vh] min-h-[550px] max-h-[800px] overflow-hidden">
@@ -146,7 +150,7 @@ function HeroSection({
             <Wrapper key={idx} {...wrapperProps}>
               <Image
                 src={slide.image}
-                alt={slide.alt || "Los Pueblos Más Bonitos de España"}
+                alt={slide.alt || t("heroTitle").replace(/\n/g, " ")}
                 fill
                 priority={idx === 0}
                 className="object-cover"
@@ -157,7 +161,7 @@ function HeroSection({
         {visibleSlides.length === 0 && (
           <Image
             src="/hero/1.jpg"
-            alt="Los Pueblos Más Bonitos de España"
+            alt={t("heroTitle").replace(/\n/g, " ")}
             fill
             priority
             className="object-cover"
@@ -173,10 +177,10 @@ function HeroSection({
         </div>
 
         <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white font-medium tracking-tight mb-4 text-balance max-w-4xl leading-[1.1]">
-          {heroTitle || "Los Pueblos Más Bonitos de España"}
+          {displayTitle}
         </h1>
         <p className="text-lg md:text-xl text-white/80 mb-8 max-w-xl leading-relaxed">
-          {heroSubtitle || t("heroSubtitleFallback")}
+          {displaySubtitle}
         </p>
 
         <div className="pointer-events-auto flex flex-wrap gap-4">
