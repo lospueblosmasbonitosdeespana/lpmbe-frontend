@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 
 type Pueblo = {
   id: number;
@@ -21,14 +22,15 @@ type Props = {
   initial: Suscripcion[];
 };
 
-const TIPOS: Array<{ key: 'NOTICIA' | 'EVENTO' | 'SEMAFORO' | 'METEO'; label: string }> = [
-  { key: 'NOTICIA', label: 'Noticias' },
-  { key: 'EVENTO', label: 'Eventos' },
-  { key: 'SEMAFORO', label: 'Semáforos' },
-  { key: 'METEO', label: 'Meteo' },
-];
-
 export default function PreferenciasNotificaciones({ pueblos, initial }: Props) {
+  const t = useTranslations('notifications');
+
+  const TIPOS: Array<{ key: 'NOTICIA' | 'EVENTO' | 'SEMAFORO' | 'METEO'; label: string }> = [
+    { key: 'NOTICIA', label: t('news') },
+    { key: 'EVENTO', label: t('events') },
+    { key: 'SEMAFORO', label: t('semaforos') },
+    { key: 'METEO', label: t('meteo') },
+  ];
   const [searchTerm, setSearchTerm] = useState('');
   const [saving, setSaving] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +80,7 @@ export default function PreferenciasNotificaciones({ pueblos, initial }: Props) 
 
       if (!res.ok) {
         const text = await res.text();
-        setError(`Error al guardar: ${text}`);
+        setError(`${t('saveError')} ${text}`);
         return;
       }
 
@@ -89,7 +91,7 @@ export default function PreferenciasNotificaciones({ pueblos, initial }: Props) 
         return next;
       });
     } catch (e: any) {
-      setError(`Error al guardar: ${e?.message ?? String(e)}`);
+      setError(`${t('saveError')} ${e?.message ?? String(e)}`);
     } finally {
       setSaving((prev) => {
         const next = new Set(prev);
@@ -103,14 +105,14 @@ export default function PreferenciasNotificaciones({ pueblos, initial }: Props) 
     <div className="space-y-4">
       <div>
         <label htmlFor="search" className="block text-sm font-medium mb-2">
-          Buscar pueblo
+          {t('searchVillage')}
         </label>
         <input
           id="search"
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Nombre, provincia o comunidad..."
+          placeholder={t('searchPlaceholder')}
           className="w-full px-3 py-2 border rounded"
         />
       </div>
@@ -144,7 +146,7 @@ export default function PreferenciasNotificaciones({ pueblos, initial }: Props) 
                     />
                     <span>
                       {tipo.label}
-                      {isSaving && <span className="text-gray-500 ml-1">(Guardando...)</span>}
+                      {isSaving && <span className="text-gray-500 ml-1">({t('savingInline')})</span>}
                     </span>
                   </label>
                 );
@@ -155,7 +157,7 @@ export default function PreferenciasNotificaciones({ pueblos, initial }: Props) 
       </div>
 
       {pueblosFiltrados.length === 0 && (
-        <p className="text-sm text-gray-600">No se encontraron pueblos.</p>
+        <p className="text-sm text-gray-600">{t('noVillagesFound')}</p>
       )}
     </div>
   );

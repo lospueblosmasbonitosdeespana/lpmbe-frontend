@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { useValidacionesClub } from '../_components/useValidacionesClub';
 
 function formatFecha(fecha: string | null | undefined): string {
@@ -25,6 +26,8 @@ function esHoy(fecha: string | null | undefined): boolean {
 }
 
 export default function VisitadosPage() {
+  const t = useTranslations('club');
+  const tAccount = useTranslations('myAccount');
   const { loading, error, data: validaciones, noDisponible } = useValidacionesClub();
 
   // Filtrar solo OK y agrupar por pueblo y recurso
@@ -87,7 +90,7 @@ export default function VisitadosPage() {
   if (loading) {
     return (
       <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-        <div>Cargando...</div>
+        <div>{tAccount('loading')}</div>
       </div>
     );
   }
@@ -98,7 +101,7 @@ export default function VisitadosPage() {
         <div style={{ color: '#ef4444' }}>{error}</div>
         <div style={{ marginTop: 16 }}>
           <Link href="/mi-cuenta/club" style={{ color: '#0066cc', textDecoration: 'none' }}>
-            ← Volver a Club de Amigos
+            ← {t('backToClub')}
           </Link>
         </div>
       </div>
@@ -108,10 +111,10 @@ export default function VisitadosPage() {
   if (noDisponible) {
     return (
       <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ fontSize: 14, color: '#666' }}>Historial no disponible todavía.</div>
+        <div style={{ fontSize: 14, color: '#666' }}>{t('historyUnavailable')}</div>
         <div style={{ marginTop: 16 }}>
           <Link href="/mi-cuenta/club" style={{ color: '#0066cc', textDecoration: 'none' }}>
-            ← Volver a Club de Amigos
+            ← {t('backToClub')}
           </Link>
         </div>
       </div>
@@ -121,16 +124,16 @@ export default function VisitadosPage() {
   return (
     <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Recursos turísticos visitados</h1>
+        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>{t('visitedResourcesTitle')}</h1>
         <div style={{ fontSize: 14, color: '#666' }}>
           <Link href="/mi-cuenta/club" style={{ color: '#0066cc', textDecoration: 'none' }}>
-            ← Volver a Club de Amigos
+            ← {t('backToClub')}
           </Link>
         </div>
       </div>
 
       {visitadosAgrupados.length === 0 ? (
-        <div style={{ fontSize: 14, color: '#666' }}>Aún no has visitado ningún recurso.</div>
+        <div style={{ fontSize: 14, color: '#666' }}>{t('noResourceVisits')}</div>
       ) : (
         <div style={{ display: 'grid', gap: 24 }}>
           {visitadosAgrupados.map((pueblo, idx) => (
@@ -141,9 +144,9 @@ export default function VisitadosPage() {
                   <div key={recurso.recursoId} style={{ fontSize: 14 }}>
                     <span style={{ fontWeight: 500 }}>{recurso.recursoNombre}</span>
                     <span style={{ color: '#666', marginLeft: 8 }}>
-                      — Última visita: {formatFecha(recurso.ultimaFecha)}
+                      — {t('lastVisit')} {formatFecha(recurso.ultimaFecha)}
                       {recurso.esHoy && (
-                        <span style={{ color: '#22c55e', fontWeight: 600, marginLeft: 4 }}>(HOY)</span>
+                        <span style={{ color: '#22c55e', fontWeight: 600, marginLeft: 4 }}>({t('today')})</span>
                       )}
                     </span>
                   </div>

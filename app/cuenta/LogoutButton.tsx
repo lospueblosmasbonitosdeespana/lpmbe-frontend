@@ -2,8 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function LogoutButton() {
+  const t = useTranslations('myAccount');
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +27,7 @@ export default function LogoutButton() {
       disabled={loading}
       type="button"
     >
-      {loading ? 'Cerrando sesión…' : 'Cerrar sesión'}
+      {loading ? t('loggingOut') : t('logout')}
     </button>
   );
 }

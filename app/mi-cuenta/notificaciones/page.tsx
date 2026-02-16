@@ -1,12 +1,17 @@
+'use client';
+
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import NotificacionesPreferencias from './preferencias';
 
 export default function NotificacionesPage() {
+  const t = useTranslations('notifications');
+
   return (
     <section className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Header con link a bandeja */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Preferencias de notificaciones</h1>
+        <h1 className="text-2xl font-semibold">{t('prefsTitle')}</h1>
         <Link
           href="/mi-cuenta/bandeja"
           className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition font-medium"
@@ -17,12 +22,12 @@ export default function NotificacionesPage() {
             <path d="M2 8c0-2.2.7-4.3 2-6" />
             <path d="M22 8c0-2.2-.7-4.3-2-6" />
           </svg>
-          Ver mis notificaciones
+          {t('viewNotifs')}
         </Link>
       </div>
 
       <p className="text-gray-600">
-        Selecciona los pueblos y tipos de notificación que quieres recibir.
+        {t('prefsSubtitle')}
       </p>
 
       <NotificacionesPreferencias />

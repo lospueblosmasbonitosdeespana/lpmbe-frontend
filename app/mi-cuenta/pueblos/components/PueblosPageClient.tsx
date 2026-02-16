@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import PueblosVisitadosList from './PueblosVisitadosList';
 import PueblosPorVisitar from './PueblosPorVisitar';
 import MapaPueblosVisitados from '../mapa';
@@ -43,6 +44,7 @@ type Props = {
 };
 
 export default function PueblosPageClient({ initialData, todosPueblos }: Props) {
+  const t = useTranslations('visitedVillages');
   const [data, setData] = useState(initialData);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
@@ -102,7 +104,7 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
       }));
 
       // Mostrar mensaje de éxito
-      setSuccessMsg(`${pueblo.nombre} marcado como visitado (+${puntosOtorgados} puntos)`);
+      setSuccessMsg(`${pueblo.nombre} ${t('markedVisited')} (+${puntosOtorgados} ${t('pointsLabel')})`);
       setTimeout(() => setSuccessMsg(null), 4000);
     },
     [todosPueblos]
@@ -125,9 +127,9 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
           <Container size="full" className="relative max-w-[1600px]">
             <div className="space-y-6 py-8 lg:py-12">
               <div>
-                <Headline as="h1">Mis pueblos visitados</Headline>
+                <Headline as="h1">{t('title')}</Headline>
                 <Caption className="mt-1 block">
-                  Gestiona tus visitas y descubre nuevos pueblos
+                  {t('subtitle')}
                 </Caption>
               </div>
 
@@ -141,15 +143,15 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
               {/* Contadores */}
               <div className="grid grid-cols-3 gap-4 sm:max-w-md">
                 <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-                  <Caption>Total</Caption>
+                  <Caption>{t('total')}</Caption>
                   <p className="mt-1 font-serif text-2xl font-medium tabular-nums">{data.total}</p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-                  <Caption>GPS</Caption>
+                  <Caption>{t('gps')}</Caption>
                   <p className="mt-1 font-serif text-2xl font-medium tabular-nums">{data.gps}</p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-                  <Caption>Manual</Caption>
+                  <Caption>{t('manual')}</Caption>
                   <p className="mt-1 font-serif text-2xl font-medium tabular-nums">{data.manual}</p>
                 </div>
               </div>

@@ -2,8 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function ProfileForm({ initialNombre }: { initialNombre: string }) {
+  const t = useTranslations('cuenta');
   const router = useRouter();
   const [nombre, setNombre] = useState(initialNombre);
   const [loading, setLoading] = useState(false);
@@ -17,7 +19,7 @@ export default function ProfileForm({ initialNombre }: { initialNombre: string }
 
     const value = nombre.trim();
     if (!value) {
-      setError('El nombre no puede estar vacío');
+      setError(t('nameEmpty'));
       return;
     }
 
@@ -31,11 +33,11 @@ export default function ProfileForm({ initialNombre }: { initialNombre: string }
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data?.message ?? 'No se pudo guardar');
+        setError(data?.message ?? t('saveFailed'));
         return;
       }
 
-      setOk('Guardado');
+      setOk(t('saved'));
       router.refresh();
     } finally {
       setLoading(false);
@@ -44,10 +46,10 @@ export default function ProfileForm({ initialNombre }: { initialNombre: string }
 
   return (
     <form onSubmit={onSave} className="rounded-md border p-4">
-      <div className="font-medium">Perfil</div>
+      <div className="font-medium">{t('profileTitle')}</div>
 
       <div className="mt-3 space-y-2">
-        <label className="block text-sm">Nombre</label>
+        <label className="block text-sm">{t('name')}</label>
         <input
           className="w-full rounded-md border px-3 py-2"
           value={nombre}
@@ -64,7 +66,7 @@ export default function ProfileForm({ initialNombre }: { initialNombre: string }
         type="submit"
         disabled={loading}
       >
-        {loading ? 'Guardando…' : 'Guardar'}
+        {loading ? t('saving') : t('save')}
       </button>
     </form>
   );

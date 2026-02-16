@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import RatingSelector from './RatingSelector';
 import { getComunidadFlagSrc } from '@/lib/flags';
 import { Caption } from '@/app/components/ui/typography';
@@ -38,6 +41,7 @@ function formatFecha(fecha: string): string {
 }
 
 export default function PuebloVisitadoItem({ item, onRatingSaved }: Props) {
+  const t = useTranslations('visitedVillages');
   const flagSrc = getComunidadFlagSrc(item.pueblo.comunidad);
 
   return (
@@ -51,10 +55,10 @@ export default function PuebloVisitadoItem({ item, onRatingSaved }: Props) {
             {item.pueblo.nombre}
           </Link>
           {flagSrc && (
-            <span className="shrink-0" title={`Bandera de ${item.pueblo.comunidad}`}>
+            <span className="shrink-0" title={`${t('flagOf')} ${item.pueblo.comunidad}`}>
               <Image
                 src={flagSrc}
-                alt={`Bandera de ${item.pueblo.comunidad}`}
+                alt={`${t('flagOf')} ${item.pueblo.comunidad}`}
                 width={24}
                 height={18}
                 className="rounded-sm border border-border object-cover"
@@ -66,7 +70,7 @@ export default function PuebloVisitadoItem({ item, onRatingSaved }: Props) {
           {item.pueblo.provincia} / {item.pueblo.comunidad}
         </Caption>
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-          <span>Origen: {item.origen}</span>
+          <span>{t('origin')}: {item.origen}</span>
           <span>{formatFecha(item.ultima_fecha)}</span>
         </div>
         <div className="pt-1">

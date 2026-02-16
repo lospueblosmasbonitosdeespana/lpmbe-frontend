@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import { Headline, Title, Caption } from '@/app/components/ui/typography';
@@ -86,6 +87,8 @@ function formatFechaHora(fecha: string | null | undefined): string {
 }
 
 export default function ClubPage() {
+  const t = useTranslations('club');
+  const tAccount = useTranslations('myAccount');
   const [clubMe, setClubMe] = useState<ClubMe | null>(null);
   const [validaciones, setValidaciones] = useState<ClubValidacion[]>([]);
   const [validacionesNoDisponible, setValidacionesNoDisponible] = useState(false);
@@ -127,16 +130,16 @@ export default function ClubPage() {
       if (meRes.status === 502 || validacionesRes.status === 502 || recursosRes.status === 502) {
         const errorData = await meRes.json().catch(() => validacionesRes.json().catch(() => recursosRes.json().catch(() => null)));
         if (errorData?.error === 'upstream_fetch_failed') {
-          setError(`No se pudo conectar al backend. Verifica que el servidor esté ejecutándose en ${errorData.upstream || 'http://localhost:3000'}`);
+          setError(t('errorBackendConnection', { upstream: errorData.upstream || 'http://localhost:3000' }));
         } else {
-          setError('El backend no está disponible. Verifica que el servidor esté ejecutándose.');
+          setError(t('errorBackendUnavailable'));
         }
         return;
       }
 
       if (!meRes.ok) {
         const errorData = await meRes.json().catch(() => null);
-        const errorText = errorData?.error || errorData?.detail || await meRes.text().catch(() => 'Error cargando datos del club');
+        const errorText = errorData?.error || errorData?.detail || await meRes.text().catch(() => t('errorLoadingClubData'));
         throw new Error(errorText);
       }
 
@@ -169,7 +172,7 @@ export default function ClubPage() {
       setValidaciones(validaciones);
       setRecursosDisponibles(recursos);
     } catch (e: any) {
-      setError(e?.message ?? 'Error desconocido');
+      setError(e?.message ?? t('errorUnknown'));
     } finally {
       setLoading(false);
     }
@@ -206,7 +209,7 @@ export default function ClubPage() {
 
   async function handleRegistrarVisita() {
     if (!codigoQr.trim()) {
-      setRegistroError('El código QR no puede estar vacío');
+      setRegistroError(t('errorQrEmpty'));
       return;
     }
 
@@ -231,9 +234,9 @@ export default function ClubPage() {
       if (res.status === 502) {
         const errorData = await res.json().catch(() => ({}));
         if (errorData?.error === 'upstream_fetch_failed') {
-          setRegistroError(`No se pudo conectar al backend. Verifica que el servidor esté ejecutándose.`);
+          setRegistroError(t('errorBackendConnectionShort'));
         } else {
-          setRegistroError('El backend no está disponible. Verifica que el servidor esté ejecutándose.');
+          setRegistroError(t('errorBackendUnavailable'));
         }
         return;
       }
@@ -241,31 +244,31 @@ export default function ClubPage() {
       const data = await res.json().catch(() => ({}));
 
       if (res.status === 403) {
-        setRegistroError('No eres miembro del Club');
+        setRegistroError(t('errorNotMember'));
         return;
       }
 
       if (res.status === 404) {
-        setRegistroError('QR no encontrado');
+        setRegistroError(t('errorQrNotFound'));
         return;
       }
 
       if (!res.ok) {
-        const errorText = data.error || data.detail || data.message || 'Error al registrar visita';
+        const errorText = data.error || data.detail || data.message || t('errorRegisteringVisit');
         setRegistroError(errorText);
         return;
       }
 
       if (data.duplicated === true) {
-        setRegistroSuccess('Ya estaba registrado');
+        setRegistroSuccess(t('visitAlreadyRegistered'));
       } else {
-        setRegistroSuccess('Visita registrada correctamente');
+        setRegistroSuccess(t('visitRegisteredSuccessfully'));
       }
 
       setCodigoQr('');
       await loadData();
     } catch (e: any) {
-      setRegistroError(e?.message ?? 'Error desconocido');
+      setRegistroError(e?.message ?? t('errorUnknown'));
     } finally {
       setRegistrando(false);
     }
@@ -286,16 +289,16 @@ export default function ClubPage() {
       if (res.status === 502) {
         const errorData = await res.json().catch(() => ({}));
         if (errorData?.error === 'upstream_fetch_failed') {
-          setQrIdentidadError('No se pudo conectar al backend. Verifica que el servidor esté ejecutándose.');
+          setQrIdentidadError(t('errorBackendConnectionShort'));
         } else {
-          setQrIdentidadError('El backend no está disponible.');
+          setQrIdentidadError(t('errorBackendUnavailableShort'));
         }
         return;
       }
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => null);
-        const errorText = errorData?.error || errorData?.detail || await res.text().catch(() => 'Error generando QR de identidad');
+        const errorText = errorData?.error || errorData?.detail || await res.text().catch(() => t('errorGeneratingQr'));
         setQrIdentidadError(errorText);
         return;
       }
@@ -306,14 +309,14 @@ export default function ClubPage() {
         expiresAt: data.expiresAt,
       });
     } catch (e: any) {
-      setQrIdentidadError(e?.message ?? 'Error desconocido');
+      setQrIdentidadError(e?.message ?? t('errorUnknown'));
     } finally {
       setGenerandoIdentidad(false);
     }
   }
 
   function formatTiempoRestante(segundos: number): string {
-    if (segundos <= 0) return 'Caducado';
+    if (segundos <= 0) return t('expired2');
     const mins = Math.floor(segundos / 60);
     const secs = segundos % 60;
     return `${mins}:${String(secs).padStart(2, '0')}`;
@@ -331,10 +334,10 @@ export default function ClubPage() {
         body: JSON.stringify({ tipo, importeCents: undefined }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error ?? data?.message ?? 'Error al activar');
+      if (!res.ok) throw new Error(data?.error ?? data?.message ?? t('errorActivating'));
       await loadData();
     } catch (e: any) {
-      setActivarError(e?.message ?? 'Error al activar la membresía');
+      setActivarError(e?.message ?? t('errorActivatingMembership'));
     } finally {
       setActivandoMembresia(false);
     }
@@ -345,7 +348,7 @@ export default function ClubPage() {
       <Section spacing="lg" background="default">
         <Container>
           <div className="rounded-xl border border-border bg-card p-8 text-center">
-            <p className="text-muted-foreground">Cargando...</p>
+            <p className="text-muted-foreground">{tAccount('loading')}</p>
           </div>
         </Container>
       </Section>
@@ -359,7 +362,7 @@ export default function ClubPage() {
           <div className="rounded-xl border border-destructive/50 bg-destructive/5 p-6">
             <p className="text-destructive">{error}</p>
             <Link href="/mi-cuenta" className="mt-4 inline-block text-sm text-primary hover:underline">
-              ← Volver a Mi Cuenta
+              {tAccount('backToAccount')}
             </Link>
           </div>
         </Container>
@@ -379,31 +382,31 @@ export default function ClubPage() {
     <Section spacing="lg" background="default">
       <Container>
         <div className="mb-8 flex items-center justify-between">
-          <Headline as="h1">Club de Amigos</Headline>
+          <Headline as="h1">{t('title')}</Headline>
           <Link href="/mi-cuenta" className="text-sm text-muted-foreground hover:text-foreground hover:underline">
-            ← Volver
+            {tAccount('back')}
           </Link>
         </div>
 
         <div className="space-y-6">
           {/* Estado */}
           <div className={cardClass}>
-            <Title size="lg" className="mb-4">Estado</Title>
+            <Title size="lg" className="mb-4">{t('status')}</Title>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div>
-                <Caption>Miembro</Caption>
-                <p className="font-medium">{clubMe?.isMember ? 'ACTIVO' : 'NO ACTIVO'}</p>
+                <Caption>{t('member')}</Caption>
+                <p className="font-medium">{clubMe?.isMember ? t('active') : t('inactive')}</p>
               </div>
               <div>
-                <Caption>Plan</Caption>
+                <Caption>{t('plan')}</Caption>
                 <p className="font-medium">{clubMe?.plan ?? '—'}</p>
               </div>
               <div>
-                <Caption>Status</Caption>
+                <Caption>{t('statusLabel')}</Caption>
                 <p className="font-medium">{clubMe?.status ?? '—'}</p>
               </div>
               <div>
-                <Caption>Válido hasta</Caption>
+                <Caption>{t('validUntil')}</Caption>
                 <p className="font-medium">{formatFecha(clubMe?.validUntil)}</p>
               </div>
             </div>
@@ -412,11 +415,11 @@ export default function ClubPage() {
           {/* Unirse al Club (solo si NO es miembro) */}
           {!clubMe?.isMember && (
             <div className={`${cardClass} border-primary/20 bg-primary/5`}>
-              <Title size="lg" className="mb-2">Unirse al Club de Amigos</Title>
+              <Title size="lg" className="mb-2">{t('joinClub')}</Title>
               <Caption className="block mb-4">
                 {CLUB_ALTA_ABIERTO
-                  ? 'Selecciona un plan para activar tu membresía.'
-                  : 'La inscripción al Club de Amigos estará disponible en breve. Descuentos en recursos turísticos, QR de identidad y más beneficios te esperan.'}
+                  ? t('joinClubDesc')
+                  : t('joinClubSoon')}
               </Caption>
               {CLUB_ALTA_ABIERTO ? (
                 <div className="flex flex-wrap gap-3">
@@ -426,7 +429,7 @@ export default function ClubPage() {
                     disabled={activandoMembresia}
                     className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
                   >
-                    {activandoMembresia ? 'Procesando…' : 'Plan anual'}
+                    {activandoMembresia ? t('processing') : t('annualPlan')}
                   </button>
                   <button
                     type="button"
@@ -434,12 +437,12 @@ export default function ClubPage() {
                     disabled={activandoMembresia}
                     className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
                   >
-                    {activandoMembresia ? 'Procesando…' : 'Plan mensual'}
+                    {activandoMembresia ? t('processing') : t('monthlyPlan')}
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-                  <span>Próximamente</span>
+                  <span>{t('comingSoon')}</span>
                 </div>
               )}
               {activarError && (
@@ -451,9 +454,9 @@ export default function ClubPage() {
           {/* Mi QR de identidad (5 min) */}
           {clubMe?.isMember && (
             <div className={`${cardClass} border-primary/20 bg-primary/5`}>
-              <Title size="lg" className="mb-4">Mi QR de Identidad</Title>
+              <Title size="lg" className="mb-4">{t('qrTitle')}</Title>
               <Caption className="block mb-4">
-                Genera un código QR temporal (válido 5 minutos) para identificarte como miembro del Club.
+                {t('qrDesc')}
               </Caption>
               
               {!qrIdentidad && (
@@ -464,7 +467,7 @@ export default function ClubPage() {
                     disabled={generandoIdentidad}
                     className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
                   >
-                    {generandoIdentidad ? 'Generando…' : 'Generar QR (5 min)'}
+                    {generandoIdentidad ? t('generating') : t('generateQr')}
                   </button>
 
                   {qrIdentidadError && (
@@ -478,18 +481,18 @@ export default function ClubPage() {
                   <div className="flex justify-center">
                     <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrIdentidad.qrPayload)}`}
-                      alt="Código QR de Identidad"
+                      alt={t('qrIdentity')}
                       className="max-w-[300px] w-full h-auto"
                     />
                   </div>
                   
                   <Caption className="mt-3 block text-center">
-                    Muestra este código para identificarte como miembro
+                    {t('qrShowCode')}
                   </Caption>
 
                   {tiempoRestanteIdentidad !== null && (
                     <p className="mt-2 text-center text-sm text-muted-foreground">
-                      Expira en: <strong className="text-foreground">{formatTiempoRestante(tiempoRestanteIdentidad)}</strong>
+                      {t('expiresIn')} <strong className="text-foreground">{formatTiempoRestante(tiempoRestanteIdentidad)}</strong>
                     </p>
                   )}
                 </div>
@@ -499,33 +502,33 @@ export default function ClubPage() {
 
           {/* Accesos rápidos */}
           <div className={cardClass}>
-            <Title size="lg" className="mb-4">Accesos</Title>
+            <Title size="lg" className="mb-4">{t('access')}</Title>
             <div className="space-y-3">
               <Link
                 href="/mi-cuenta/club/recursos"
                 className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
               >
-                <span className="font-medium">Descuentos en recursos turísticos</span>
+                <span className="font-medium">{t('discountsOnResources')}</span>
                 {recursosDisponibles.length > 0 && (
-                  <Caption>({recursosDisponibles.length} recursos)</Caption>
+                  <Caption>({recursosDisponibles.length} {t('resources')})</Caption>
                 )}
               </Link>
               <Link
                 href="/mi-cuenta/club/visitados"
                 className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
               >
-                <span className="font-medium">Recursos turísticos visitados</span>
+                <span className="font-medium">{t('visitedResources')}</span>
                 {validaciones.filter(v => v.resultado === 'OK').length > 0 && (
-                  <Caption>({validaciones.filter(v => v.resultado === 'OK').length} visitas)</Caption>
+                  <Caption>({validaciones.filter(v => v.resultado === 'OK').length} {t('visits')})</Caption>
                 )}
               </Link>
               <Link
                 href="/mi-cuenta/club/validaciones"
                 className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
               >
-                <span className="font-medium">Historial de validaciones</span>
+                <span className="font-medium">{t('validationHistory')}</span>
                 {validaciones.length > 0 && (
-                  <Caption>({validaciones.length} registros)</Caption>
+                  <Caption>({validaciones.length} {t('records')})</Caption>
                 )}
               </Link>
             </div>
@@ -533,7 +536,7 @@ export default function ClubPage() {
             {ultimaValidacion && (
               <div className="mt-4 border-t border-border pt-4">
                 <Caption>
-                  Última validación: {formatFechaHora(ultimaValidacion.scannedAt)} — {ultimaValidacion.puebloNombre || '—'} / {ultimaValidacion.recursoNombre || '—'} — {ultimaValidacion.resultado === 'OK' ? 'OK' : 'NO OK'}
+                  {t('lastValidation')} {formatFechaHora(ultimaValidacion.scannedAt)} — {ultimaValidacion.puebloNombre || '—'} / {ultimaValidacion.recursoNombre || '—'} — {ultimaValidacion.resultado === 'OK' ? t('ok') : t('notOk')}
                 </Caption>
               </div>
             )}
@@ -542,18 +545,18 @@ export default function ClubPage() {
           {/* Registrar visita (demo) - SOLO DEV */}
           {IS_DEV && (
             <div className={cardClass}>
-              <Title size="lg" className="mb-4">Registrar visita (demo) [SOLO DEV]</Title>
+              <Title size="lg" className="mb-4">{t('registerVisitDev')}</Title>
               <Caption className="mb-4 block">
-                Esta sección será movida a /validador en el futuro
+                {t('registerVisitNote')}
               </Caption>
               <div className="space-y-2">
-                <label className="block text-sm font-medium">Código QR</label>
+                <label className="block text-sm font-medium">{t('qrCode')}</label>
                 <input
                   type="text"
                   value={codigoQr}
                   onChange={(e) => setCodigoQr(e.target.value)}
                   disabled={registrando}
-                  placeholder="Introduce el código QR"
+                  placeholder={t('enterQrCode')}
                   className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
                 />
               </div>
@@ -563,7 +566,7 @@ export default function ClubPage() {
                 disabled={registrando || !codigoQr.trim()}
                 className="mt-4 rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
               >
-                {registrando ? 'Registrando…' : 'Registrar'}
+                {registrando ? t('registering') : t('register')}
               </button>
               {registroError && (
                 <p className="mt-2 text-sm text-destructive">{registroError}</p>

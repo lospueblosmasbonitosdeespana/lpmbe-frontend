@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 type NotificacionItem = {
   id: number;
@@ -21,15 +22,6 @@ type FilterType = 'TODAS' | 'NOTICIA' | 'EVENTO' | 'ALERTA' | 'SEMAFORO' | 'METE
 
 const MAX_ITEMS = 150;
 
-const FILTERS: Array<{ key: FilterType; label: string }> = [
-  { key: 'TODAS', label: 'Todas' },
-  { key: 'NOTICIA', label: 'Noticias' },
-  { key: 'EVENTO', label: 'Eventos' },
-  { key: 'ALERTA', label: 'Alertas' },
-  { key: 'SEMAFORO', label: 'Semáforos' },
-  { key: 'METEO', label: 'Meteo' },
-];
-
 function formatFecha(fecha?: string | null) {
   if (!fecha) return '';
   const d = new Date(fecha);
@@ -44,10 +36,20 @@ function formatFecha(fecha?: string | null) {
 }
 
 export default function BandejaNotificaciones() {
+  const t = useTranslations('notifications');
   const [items, setItems] = useState<NotificacionItem[]>([]);
   const [pueblos, setPueblos] = useState<PuebloItem[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [filter, setFilter] = useState<FilterType>('TODAS');
+
+  const FILTERS: Array<{ key: FilterType; label: string }> = [
+    { key: 'TODAS', label: t('all') },
+    { key: 'NOTICIA', label: t('news') },
+    { key: 'EVENTO', label: t('events') },
+    { key: 'ALERTA', label: t('alerts') },
+    { key: 'SEMAFORO', label: t('semaforos') },
+    { key: 'METEO', label: t('meteo') },
+  ];
 
   // Cargar pueblos una sola vez
   useEffect(() => {
@@ -91,9 +93,9 @@ export default function BandejaNotificaciones() {
   if (!items.length) {
     return (
       <div className="p-6 border rounded-lg text-center text-gray-600">
-        <p className="text-lg mb-2">No tienes notificaciones activas.</p>
+        <p className="text-lg mb-2">{t('noActiveNotifs')}</p>
         <p className="text-sm">
-          Configura tus preferencias para empezar a recibir notificaciones.
+          {t('configurePrefs')}
         </p>
       </div>
     );
@@ -122,7 +124,7 @@ export default function BandejaNotificaciones() {
       <div className="border rounded-lg divide-y">
         {itemsFiltrados.length === 0 ? (
           <div className="p-6 text-center text-gray-600">
-            No hay notificaciones de tipo "{filter}".
+            {t('noNotifsOfType')} "{FILTERS.find(f => f.key === filter)?.label ?? filter}".
           </div>
         ) : (
           itemsFiltrados.map(n => {
@@ -174,12 +176,12 @@ export default function BandejaNotificaciones() {
       {/* Contador */}
       {totalItems === MAX_ITEMS && (
         <p className="text-sm text-gray-600 text-center">
-          Mostrando las últimas {MAX_ITEMS} notificaciones.
+          {t('showingLatest')} {MAX_ITEMS} {t('notifications')}.
         </p>
       )}
       {totalItems < MAX_ITEMS && totalItems > 0 && (
         <p className="text-sm text-gray-500 text-center">
-          {totalItems} {totalItems === 1 ? 'notificación' : 'notificaciones'}
+          {totalItems} {totalItems === 1 ? t('notification') : t('notifications')}
         </p>
       )}
     </div>

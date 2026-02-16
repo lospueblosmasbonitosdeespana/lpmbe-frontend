@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Title, Caption } from '@/app/components/ui/typography';
 import { Star } from 'lucide-react';
@@ -18,14 +21,15 @@ type Item = {
 };
 
 export default function DashboardFavoritos({ items }: { items: Item[] }) {
+  const t = useTranslations('points');
   const favoritos = items.filter((it) => (it.rating ?? 0) === 5);
 
   if (favoritos.length === 0) {
     return (
       <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
-        <Title size="lg">Pueblos favoritos</Title>
+        <Title size="lg">{t('favorites')}</Title>
         <Caption className="mt-2 block">
-          Aún no tienes favoritos. Valora con 5 estrellas tus pueblos preferidos y aparecerán aquí.
+          {t('noFavorites')}
         </Caption>
       </section>
     );
@@ -33,9 +37,9 @@ export default function DashboardFavoritos({ items }: { items: Item[] }) {
 
   return (
     <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
-      <Title size="lg">Pueblos favoritos</Title>
+      <Title size="lg">{t('favorites')}</Title>
       <Caption className="mt-2 block">
-        Tus pueblos con valoración de 5 estrellas.
+        {t('favoritesDesc')}
       </Caption>
 
       <div className="mt-6 space-y-1 divide-y divide-border">

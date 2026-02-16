@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import NivelIcono from './NivelIcono';
 import { Headline, Caption } from '@/app/components/ui/typography';
 
@@ -25,21 +28,22 @@ export default function DashboardResumen({
   puntosTotales,
   progreso,
 }: Props) {
-  const nombreNivel = nivelActual?.nombre ?? 'Nivel inicial';
+  const t = useTranslations('points');
+  const nombreNivel = nivelActual?.nombre ?? t('initialLevel');
 
   return (
     <section className="space-y-6 rounded-xl border border-border bg-card p-6 shadow-sm">
       <div className="flex items-center gap-4">
         <NivelIcono nombreNivel={nombreNivel} className="shrink-0" />
         <div>
-          <Headline as="h1" className="mb-0.5">Mi cuenta</Headline>
+          <Headline as="h1" className="mb-0.5">{t('myAccount')}</Headline>
           <Caption>{nombreNivel}</Caption>
         </div>
       </div>
 
       <div>
         <p className="font-serif text-3xl font-medium tracking-tight sm:text-4xl">
-          {puntosTotales} puntos
+          {puntosTotales} {t('pointsLabel')}
         </p>
       </div>
 
@@ -53,12 +57,12 @@ export default function DashboardResumen({
 
         {siguienteNivel ? (
           <Caption>
-            Próximo nivel: {siguienteNivel.nombre} (
-            {siguienteNivel.puntos_necesarios} puntos)
+            {t('nextLevel')} {siguienteNivel.nombre} (
+            {siguienteNivel.puntos_necesarios} {t('pointsNeeded')})
           </Caption>
         ) : (
           <Caption>
-            Empieza a visitar pueblos para subir de nivel
+            {t('startVisiting')}
           </Caption>
         )}
       </div>

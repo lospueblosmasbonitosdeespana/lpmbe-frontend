@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import PuebloVisitadoItem from './PuebloVisitadoItem';
 import { Caption } from '@/app/components/ui/typography';
 
@@ -27,13 +28,14 @@ type Props = {
 const ITEMS_PER_PAGE = 15;
 
 export default function PueblosVisitadosList({ items, onRatingSaved }: Props) {
+  const t = useTranslations('visitedVillages');
   const [currentPage, setCurrentPage] = useState(1);
 
   if (items.length === 0) {
     return (
       <div className="py-12 text-center">
         <Caption className="text-muted-foreground">
-          No has visitado ningún pueblo aún.
+          {t('noVisits')}
         </Caption>
       </div>
     );
@@ -64,11 +66,11 @@ export default function PueblosVisitadosList({ items, onRatingSaved }: Props) {
             disabled={currentPage === 1}
             className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Anterior
+            {t('previous')}
           </button>
 
           <Caption>
-            Página {currentPage} de {totalPages}
+            {t('page')} {currentPage} {t('of')} {totalPages}
           </Caption>
 
           <button
@@ -76,7 +78,7 @@ export default function PueblosVisitadosList({ items, onRatingSaved }: Props) {
             disabled={currentPage === totalPages}
             className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Siguiente
+            {t('next')}
           </button>
         </div>
       )}

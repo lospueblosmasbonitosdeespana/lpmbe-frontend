@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 type Pueblo = {
   id: number;
@@ -16,15 +17,16 @@ type Suscripcion = {
   enabled: boolean;
 };
 
-const TIPOS: Array<{ key: 'NOTICIA' | 'EVENTO' | 'SEMAFORO' | 'METEO' | 'ALERTA_PUEBLO'; label: string }> = [
-  { key: 'NOTICIA', label: 'Noticias' },
-  { key: 'EVENTO', label: 'Eventos' },
-  { key: 'SEMAFORO', label: 'Semáforos' },
-  { key: 'METEO', label: 'Meteo' },
-  { key: 'ALERTA_PUEBLO', label: 'Alertas' },
-];
-
 export default function NotificacionesPreferencias() {
+  const t = useTranslations('notifications');
+
+  const TIPOS: Array<{ key: 'NOTICIA' | 'EVENTO' | 'SEMAFORO' | 'METEO' | 'ALERTA_PUEBLO'; label: string }> = [
+    { key: 'NOTICIA', label: t('news') },
+    { key: 'EVENTO', label: t('events') },
+    { key: 'SEMAFORO', label: t('semaforos') },
+    { key: 'METEO', label: t('meteo') },
+    { key: 'ALERTA_PUEBLO', label: t('alerts') },
+  ];
   const [pueblos, setPueblos] = useState<Pueblo[]>([]);
   const [suscripciones, setSuscripciones] = useState<Suscripcion[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -121,7 +123,7 @@ export default function NotificacionesPreferencias() {
 
       if (!res.ok) {
         const text = await res.text();
-        setError(`Error al guardar: ${text}`);
+        setError(`${t('saveError')} ${text}`);
         // Revertir actualización optimista
         setEstadoLocal((prev) => {
           const next = new Set(prev);
@@ -152,7 +154,7 @@ export default function NotificacionesPreferencias() {
           .catch(() => {});
       }
     } catch (e: any) {
-      setError(`Error al guardar: ${e?.message ?? String(e)}`);
+      setError(`${t('saveError')} ${e?.message ?? String(e)}`);
       // Revertir actualización optimista
       setEstadoLocal((prev) => {
         const next = new Set(prev);
@@ -250,7 +252,7 @@ export default function NotificacionesPreferencias() {
       // Limpiar mensaje después de 5 segundos
       setTimeout(() => setSelectAllStatus(null), 5000);
     } catch (e: any) {
-      setError(`Error al guardar: ${e?.message ?? String(e)}`);
+      setError(`${t('saveError')} ${e?.message ?? String(e)}`);
       // Re-cargar suscripciones para dejar estado real
       fetch('/api/suscripciones/me')
         .then((r) => (r.ok ? r.json() : []))
@@ -274,14 +276,14 @@ export default function NotificacionesPreferencias() {
 
   return (
     <div className="p-4 border rounded space-y-4">
-      <h2 className="font-medium mb-2">Preferencias</h2>
+      <h2 className="font-medium mb-2">{t('preferences')}</h2>
       <p className="text-sm text-gray-600">
-        Selecciona pueblos y tipos de notificación.
+        {t('prefsDesc')}
       </p>
 
       {/* Select-all por tipo */}
       <div className="border-b pb-3 mb-3">
-        <div className="text-sm font-medium mb-2">Seleccionar todo / Deseleccionar todo:</div>
+        <div className="text-sm font-medium mb-2">{t('selectAll')}</div>
         <div className="flex flex-wrap gap-3">
           {TIPOS.map((tipo) => {
             const allOn = pueblos.length > 0 && pueblos.every((p) => estadoLocal.has(`${p.id}:${tipo.key}`));
@@ -295,28 +297,28 @@ export default function NotificacionesPreferencias() {
                 disabled={isSaving || pueblos.length === 0}
                 className="px-3 py-1 text-sm border rounded disabled:opacity-50"
               >
-                {isSaving ? 'Guardando...' : allOn ? `Desmarcar ${tipo.label}` : `Marcar ${tipo.label}`}
+                {isSaving ? t('saving') : allOn ? `${t('uncheck')} ${tipo.label}` : `${t('check')} ${tipo.label}`}
               </button>
             );
           })}
         </div>
         {selectAllStatus && (
           <div className="mt-2 text-sm text-gray-600">
-            Hecho (ok {selectAllStatus.ok} / fallos {selectAllStatus.fallos})
+            {t('doneOk')} {selectAllStatus.ok} {t('failures')} {selectAllStatus.fallos})
           </div>
         )}
       </div>
 
       <div>
         <label htmlFor="search" className="block text-sm font-medium mb-2">
-          Buscar pueblo
+          {t('searchVillage')}
         </label>
         <input
           id="search"
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Nombre, provincia o comunidad..."
+          placeholder={t('searchPlaceholder')}
           className="w-full px-3 py-2 border rounded"
         />
       </div>
@@ -350,7 +352,7 @@ export default function NotificacionesPreferencias() {
                     />
                     <span>
                       {tipo.label}
-                      {isSaving && <span className="text-gray-500 ml-1">(Guardando...)</span>}
+                      {isSaving && <span className="text-gray-500 ml-1">({t('savingInline')})</span>}
                     </span>
                   </label>
                 );
@@ -361,7 +363,7 @@ export default function NotificacionesPreferencias() {
       </div>
 
       {pueblosFiltrados.length === 0 && (
-        <p className="text-sm text-gray-600">No se encontraron pueblos.</p>
+        <p className="text-sm text-gray-600">{t('noVillagesFound')}</p>
       )}
     </div>
   );

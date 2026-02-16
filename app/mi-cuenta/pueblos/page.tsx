@@ -1,6 +1,7 @@
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import PueblosPageClient from './components/PueblosPageClient';
 
 export const dynamic = 'force-dynamic';
@@ -38,6 +39,7 @@ type Pueblo = {
 
 async function getPueblosVisitados(): Promise<PueblosVisitadosResponse> {
   const token = await getToken();
+  const tVisited = await getTranslations('visitedVillages');
 
   if (!token) {
     redirect('/entrar');
@@ -57,13 +59,14 @@ async function getPueblosVisitados(): Promise<PueblosVisitadosResponse> {
   }
 
   if (!res.ok) {
-    throw new Error('Error cargando pueblos visitados');
+    throw new Error(tVisited('loadError'));
   }
 
   return res.json();
 }
 
 async function getAllPueblos(): Promise<Pueblo[]> {
+  const tVisited = await getTranslations('visitedVillages');
   const API_BASE = getApiUrl();
 
   const res = await fetch(`${API_BASE}/pueblos`, {
@@ -71,7 +74,7 @@ async function getAllPueblos(): Promise<Pueblo[]> {
   });
 
   if (!res.ok) {
-    throw new Error('Error cargando pueblos');
+    throw new Error(tVisited('loadErrorGeneric'));
   }
 
   const pueblos = await res.json();

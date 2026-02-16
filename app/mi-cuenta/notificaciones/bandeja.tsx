@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 type NotificacionItem = {
   id: number;
@@ -27,6 +28,7 @@ function formatFecha(fecha?: string | null) {
 }
 
 export default function NotificacionesBandeja({ refreshKey = 0 }: { refreshKey?: number }) {
+  const t = useTranslations('notifications');
   const [items, setItems] = useState<NotificacionItem[]>([]);
   const [pueblos, setPueblos] = useState<PuebloItem[]>([]);
   const [totalItems, setTotalItems] = useState(0);
@@ -63,14 +65,14 @@ export default function NotificacionesBandeja({ refreshKey = 0 }: { refreshKey?:
   if (!items.length) {
     return (
       <div className="p-4 border rounded text-sm text-gray-600">
-        No tienes notificaciones activas.
+        {t('noActiveNotifs')}
       </div>
     );
   }
 
   return (
     <div className="p-4 border rounded space-y-4">
-      <h2 className="font-medium">Bandeja</h2>
+      <h2 className="font-medium">{t('inbox')}</h2>
 
       {items.map(n => {
         const rawTipo = (n.tipo ?? n.notificacionTipo ?? n.type ?? 'NOTIFICACION').toString().toUpperCase();
@@ -88,7 +90,7 @@ export default function NotificacionesBandeja({ refreshKey = 0 }: { refreshKey?:
 
                 {puebloNombre && (
                   <div className="text-sm text-gray-600">
-                    Pueblo: <span className="font-medium text-gray-800">{puebloNombre}</span>
+                    {t('village')} <span className="font-medium text-gray-800">{puebloNombre}</span>
                   </div>
                 )}
 
@@ -105,7 +107,7 @@ export default function NotificacionesBandeja({ refreshKey = 0 }: { refreshKey?:
 
       {totalItems > MAX_ITEMS && (
         <p className="text-sm text-gray-600 mt-3">
-          Mostrando las últimas {MAX_ITEMS} notificaciones.
+          {t('showingLatest')} {MAX_ITEMS} {t('notifications')}.
         </p>
       )}
     </div>

@@ -1,6 +1,7 @@
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import DashboardResumen from '../components/DashboardResumen';
@@ -11,6 +12,7 @@ export const dynamic = 'force-dynamic';
 
 async function getDashboardData() {
   const token = await getToken();
+  const t = await getTranslations('points');
 
   if (!token) {
     redirect('/entrar');
@@ -30,7 +32,7 @@ async function getDashboardData() {
   }
 
   if (!res.ok) {
-    throw new Error('Error cargando dashboard del usuario');
+    throw new Error(t('dashboardError'));
   }
 
   const raw = await res.json();

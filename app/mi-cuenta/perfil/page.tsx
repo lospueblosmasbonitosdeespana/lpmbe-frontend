@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import { Headline, Title, Caption } from '@/app/components/ui/typography';
@@ -73,6 +74,8 @@ function getInitials(nombre?: string | null, email?: string): string {
 
 export default function PerfilPage() {
   const router = useRouter();
+  const t = useTranslations('myProfile');
+  const tAccount = useTranslations('myAccount');
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -107,7 +110,7 @@ export default function PerfilPage() {
         return;
       }
       if (!r.ok) {
-        throw new Error('Error al cargar datos del usuario');
+        throw new Error(t('loadUserError'));
       }
       const data = await r.json();
       setUsuario(data);
@@ -116,7 +119,7 @@ export default function PerfilPage() {
       setFormApellidos(data.apellidos ?? '');
       setFormTelefono(data.telefono ?? '');
     } catch (e: any) {
-      setError(e?.message ?? 'Error desconocido');
+      setError(e?.message ?? t('unknownError'));
     }
   }
 
@@ -130,7 +133,7 @@ export default function PerfilPage() {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert('El archivo debe ser una imagen');
+      alert(t('fileMustBeImage'));
       return;
     }
 
@@ -160,7 +163,7 @@ export default function PerfilPage() {
       });
 
       if (!res.ok) {
-        const errorText = await res.text().catch(() => 'Error al subir avatar');
+        const errorText = await res.text().catch(() => t('uploadError'));
         alert(`Error: ${errorText}`);
         setAvatarPreview(null);
         return;
@@ -172,7 +175,7 @@ export default function PerfilPage() {
       // Cache-buster para forzar recarga de la imagen
       setAvatarVersion((v) => v + 1);
     } catch (e: any) {
-      alert(`Error: ${e?.message ?? 'Error desconocido'}`);
+      alert(`Error: ${e?.message ?? t('unknownError')}`);
       setAvatarPreview(null);
     } finally {
       setUploadingAvatar(false);
@@ -190,12 +193,12 @@ export default function PerfilPage() {
       });
 
       if (res.status === 404 || res.status === 501) {
-        alert('Función pendiente');
+        alert(t('functionPending'));
         return;
       }
 
       if (!res.ok) {
-        const errorText = await res.text().catch(() => 'Error al eliminar avatar');
+        const errorText = await res.text().catch(() => t('deleteAvatarError'));
         alert(`Error: ${errorText}`);
         return;
       }
@@ -206,7 +209,7 @@ export default function PerfilPage() {
       // Cache-buster para forzar recarga de la imagen
       setAvatarVersion((v) => v + 1);
     } catch (e: any) {
-      alert(`Error: ${e?.message ?? 'Error desconocido'}`);
+      alert(`Error: ${e?.message ?? t('unknownError')}`);
     } finally {
       setDeletingAvatar(false);
     }
@@ -252,16 +255,16 @@ export default function PerfilPage() {
       });
 
       if (!res.ok) {
-        const errorText = await res.text().catch(() => 'Error al guardar datos');
+        const errorText = await res.text().catch(() => t('saveDataError'));
         setEditError(errorText);
         return;
       }
 
-      setEditSuccess('Datos actualizados correctamente');
+      setEditSuccess(t('dataUpdated'));
       setIsEditing(false);
       await loadUsuario();
     } catch (e: any) {
-      setEditError(e?.message ?? 'Error desconocido');
+      setEditError(e?.message ?? t('unknownError'));
     } finally {
       setSaving(false);
     }
@@ -278,12 +281,12 @@ export default function PerfilPage() {
 
     // Validaciones frontend
     if (newPassword !== confirmPassword) {
-      setPasswordError('Las contraseñas no coinciden');
+      setPasswordError(t('passwordMismatch'));
       return;
     }
 
     if (newPassword.length < 8) {
-      setPasswordError('La nueva contraseña debe tener al menos 8 caracteres');
+      setPasswordError(t('passwordTooShort'));
       return;
     }
 
@@ -302,17 +305,17 @@ export default function PerfilPage() {
       });
 
       if (!res.ok) {
-        const errorText = await res.text().catch(() => 'Error al cambiar contraseña');
+        const errorText = await res.text().catch(() => t('changePasswordError'));
         setPasswordError(errorText);
         return;
       }
 
-      setPasswordSuccess('Contraseña actualizada correctamente');
+      setPasswordSuccess(t('passwordUpdated'));
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (e: any) {
-      setPasswordError(e?.message ?? 'Error desconocido');
+      setPasswordError(e?.message ?? t('unknownError'));
     } finally {
       setSavingPassword(false);
     }
@@ -336,7 +339,7 @@ export default function PerfilPage() {
       <Section spacing="lg" background="default">
         <Container>
           <div className="rounded-xl border border-border bg-card p-8 text-center">
-            <p className="text-muted-foreground">Cargando...</p>
+            <p className="text-muted-foreground">{tAccount('loading')}</p>
           </div>
         </Container>
       </Section>
@@ -348,9 +351,9 @@ export default function PerfilPage() {
       <Section spacing="lg" background="default">
         <Container>
           <div className="rounded-xl border border-destructive/50 bg-destructive/5 p-6">
-            <p className="text-destructive">{error ?? 'No se pudieron cargar los datos del usuario'}</p>
+            <p className="text-destructive">{error ?? tAccount('errorLoadingUser')}</p>
             <Link href="/mi-cuenta" className="mt-4 inline-block text-sm text-primary hover:underline">
-              ← Volver a Mi Cuenta
+              {tAccount('backToAccount')}
             </Link>
           </div>
         </Container>
@@ -373,27 +376,27 @@ export default function PerfilPage() {
     <Section spacing="lg" background="default">
       <Container>
         <div className="mb-8 flex items-center justify-between">
-          <Headline as="h1">Mi Perfil</Headline>
+          <Headline as="h1">{t('title')}</Headline>
           <Link href="/mi-cuenta" className="text-sm text-muted-foreground hover:text-foreground hover:underline">
-            ← Volver
+            {tAccount('back')}
           </Link>
         </div>
 
         <div className="space-y-6">
           {/* Club de Amigos */}
           <div className={cardClass}>
-            <Title size="lg" className="mb-4">Club de Amigos</Title>
+            <Title size="lg" className="mb-4">{t('clubTitle')}</Title>
             <div className="grid gap-2 sm:grid-cols-3">
               <div>
-                <Caption>Estado</Caption>
+                <Caption>{t('status')}</Caption>
                 <p className="font-medium">{getClubEstado(usuario.club)}</p>
               </div>
               <div>
-                <Caption>Plan</Caption>
+                <Caption>{t('plan')}</Caption>
                 <p className="font-medium">{usuario.club?.plan ?? '—'}</p>
               </div>
               <div>
-                <Caption>Válido hasta</Caption>
+                <Caption>{t('validUntil')}</Caption>
                 <p className="font-medium">
                   {usuario.club?.validoHasta ? formatFechaCorta(usuario.club.validoHasta) : '—'}
                 </p>
@@ -403,13 +406,13 @@ export default function PerfilPage() {
 
           {/* Avatar */}
           <div className={cardClass}>
-            <Title size="lg" className="mb-4">Foto de perfil</Title>
+            <Title size="lg" className="mb-4">{t('profilePhoto')}</Title>
             <div className="flex flex-wrap items-center gap-6">
               <div className="relative">
                 {avatarUrl ? (
                   <img
                     src={avatarUrl}
-                    alt="Avatar"
+                    alt={t('avatar')}
                     className="h-24 w-24 rounded-full border-2 border-border object-cover"
                   />
                 ) : (
@@ -428,7 +431,7 @@ export default function PerfilPage() {
                     className="hidden"
                   />
                   <span className="inline-block cursor-pointer rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50">
-                    {uploadingAvatar ? 'Subiendo…' : 'Cambiar foto'}
+                    {uploadingAvatar ? t('uploading') : t('changePhoto')}
                   </span>
                 </label>
                 {usuario.avatarUrl && (
@@ -438,7 +441,7 @@ export default function PerfilPage() {
                     disabled={uploadingAvatar || deletingAvatar}
                     className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
                   >
-                    {deletingAvatar ? 'Eliminando…' : 'Eliminar foto'}
+                    {deletingAvatar ? t('deleting') : t('deletePhoto')}
                   </button>
                 )}
               </div>
@@ -447,14 +450,14 @@ export default function PerfilPage() {
 
           <div className={cardClass}>
             <div className="mb-4 flex items-center justify-between">
-              <Title size="lg">Datos personales</Title>
+              <Title size="lg">{t('personalData')}</Title>
               {!isEditing && (
                 <button
                   type="button"
                   onClick={handleStartEdit}
                   className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
                 >
-                  Editar datos
+                  {t('editData')}
                 </button>
               )}
             </div>
@@ -462,7 +465,7 @@ export default function PerfilPage() {
             {isEditing ? (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium">Nombre</label>
+                  <label className="block text-sm font-medium">{t('name')}</label>
                   <input
                   type="text"
                   value={formNombre}
@@ -473,7 +476,7 @@ export default function PerfilPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium">Apellidos</label>
+                  <label className="block text-sm font-medium">{t('surname')}</label>
                   <input
                     type="text"
                     value={formApellidos}
@@ -484,7 +487,7 @@ export default function PerfilPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium">Teléfono</label>
+                  <label className="block text-sm font-medium">{t('phone')}</label>
                   <input
                     type="text"
                     value={formTelefono}
@@ -501,7 +504,7 @@ export default function PerfilPage() {
                     disabled={saving}
                     className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
                   >
-                    {saving ? 'Guardando…' : 'Guardar'}
+                    {saving ? t('saving') : t('save')}
                   </button>
                   <button
                     type="button"
@@ -509,7 +512,7 @@ export default function PerfilPage() {
                     disabled={saving}
                     className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
                   >
-                    Cancelar
+                    {t('cancel')}
                   </button>
                 </div>
 
@@ -524,34 +527,34 @@ export default function PerfilPage() {
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <Caption>Nombre</Caption>
-                  <p className="font-medium">{usuario.nombre ?? '(Sin nombre)'}</p>
+                  <Caption>{t('name')}</Caption>
+                  <p className="font-medium">{usuario.nombre ?? t('noName')}</p>
                 </div>
                 {usuario.apellidos && (
                   <div>
-                    <Caption>Apellidos</Caption>
+                    <Caption>{t('surname')}</Caption>
                     <p className="font-medium">{usuario.apellidos}</p>
                   </div>
                 )}
                 {usuario.telefono && (
                   <div>
-                    <Caption>Teléfono</Caption>
+                    <Caption>{t('phone')}</Caption>
                     <p className="font-medium">{usuario.telefono}</p>
                   </div>
                 )}
                 <div>
-                  <Caption>Email</Caption>
+                  <Caption>{t('email')}</Caption>
                   <p className="font-medium">{usuario.email}</p>
                 </div>
                 {usuario.rol && (
                   <div>
-                    <Caption>Rol</Caption>
+                    <Caption>{t('role')}</Caption>
                     <p className="font-medium">{usuario.rol}</p>
                   </div>
                 )}
                 {fechaAlta && (
                   <div>
-                    <Caption>Fecha de alta</Caption>
+                    <Caption>{t('registrationDate')}</Caption>
                     <p className="font-medium">{formatFecha(fechaAlta)}</p>
                   </div>
                 )}
@@ -560,10 +563,10 @@ export default function PerfilPage() {
           </div>
 
           <div className={cardClass}>
-            <Title size="lg" className="mb-4">Seguridad</Title>
+            <Title size="lg" className="mb-4">{t('security')}</Title>
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="block text-sm font-medium">Contraseña actual</label>
+                <label className="block text-sm font-medium">{t('currentPassword')}</label>
                 <div className="flex items-center gap-2">
                   <input
                     type={showCurrentPassword ? 'text' : 'password'}
@@ -580,13 +583,13 @@ export default function PerfilPage() {
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                     className="text-sm text-muted-foreground hover:text-foreground hover:underline"
                   >
-                    {showCurrentPassword ? 'Ocultar' : '👁 Mostrar'}
+                    {showCurrentPassword ? t('hide') : '👁 ' + t('show')}
                   </button>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium">Nueva contraseña</label>
+                <label className="block text-sm font-medium">{t('newPassword')}</label>
                 <div className="flex items-center gap-2">
                   <input
                     type={showNewPassword ? 'text' : 'password'}
@@ -603,19 +606,19 @@ export default function PerfilPage() {
                     onClick={() => setShowNewPassword(!showNewPassword)}
                     className="text-sm text-muted-foreground hover:text-foreground hover:underline"
                   >
-                    {showNewPassword ? 'Ocultar' : '👁 Mostrar'}
+                    {showNewPassword ? t('hide') : '👁 ' + t('show')}
                   </button>
                 </div>
                 {newPassword.length > 0 && newPassword.length < 8 && (
-                  <p className="text-xs text-destructive">mínimo 8</p>
+                  <p className="text-xs text-destructive">{t('minChars')}</p>
                 )}
                 {newPassword.length >= 8 && (
-                  <p className="text-xs text-muted-foreground">Mínimo 8 caracteres</p>
+                  <p className="text-xs text-muted-foreground">{t('minCharsLong')}</p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium">Repetir nueva contraseña</label>
+                <label className="block text-sm font-medium">{t('repeatPassword')}</label>
                 <div className="flex items-center gap-2">
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
@@ -632,7 +635,7 @@ export default function PerfilPage() {
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="text-sm text-muted-foreground hover:text-foreground hover:underline"
                   >
-                    {showConfirmPassword ? 'Ocultar' : '👁 Mostrar'}
+                    {showConfirmPassword ? t('hide') : '👁 ' + t('show')}
                   </button>
                 </div>
               </div>
@@ -643,7 +646,7 @@ export default function PerfilPage() {
                 disabled={savingPassword || !currentPassword || !newPassword || !confirmPassword || newPassword.length < 8}
                 className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
               >
-                {savingPassword ? 'Guardando…' : 'Guardar'}
+                {savingPassword ? t('saving') : t('save')}
               </button>
 
               {passwordError && (
@@ -663,7 +666,7 @@ export default function PerfilPage() {
               disabled={logoutLoading}
               className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-destructive hover:border-destructive hover:text-destructive-foreground disabled:opacity-50"
             >
-              {logoutLoading ? 'Cerrando sesión…' : 'Cerrar sesión'}
+              {logoutLoading ? t('loggingOut') : t('logout')}
             </button>
           </div>
         </div>

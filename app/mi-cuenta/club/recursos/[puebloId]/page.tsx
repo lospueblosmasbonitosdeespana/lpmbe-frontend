@@ -2,6 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useRecursosDisponibles, RecursoDisponible } from '../../_components/useRecursosDisponibles';
 import { useValidacionesClub } from '../../_components/useValidacionesClub';
 
@@ -24,6 +25,8 @@ function esRecursoVisitado(validaciones: any[], recursoId: number): { visitado: 
 }
 
 export default function RecursosPuebloPage() {
+  const t = useTranslations('club');
+  const tAccount = useTranslations('myAccount');
   const params = useParams();
   const puebloId = params?.puebloId as string;
   const { loading: loadingRecursos, error: errorRecursos, data: recursos } = useRecursosDisponibles();
@@ -34,7 +37,7 @@ export default function RecursosPuebloPage() {
   if (loadingRecursos || loadingValidaciones) {
     return (
       <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-        <div>Cargando...</div>
+        <div>{tAccount('loading')}</div>
       </div>
     );
   }
@@ -45,7 +48,7 @@ export default function RecursosPuebloPage() {
         <div style={{ color: '#ef4444' }}>{errorRecursos}</div>
         <div style={{ marginTop: 16 }}>
           <Link href="/mi-cuenta/club/recursos" style={{ color: '#0066cc', textDecoration: 'none' }}>
-            ← Volver a lista de pueblos
+            ← {t('backToTownList')}
           </Link>
         </div>
       </div>
@@ -60,17 +63,17 @@ export default function RecursosPuebloPage() {
     <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
-          Recursos turísticos — {puebloNombre}
+          {t('touristResources')} — {puebloNombre}
         </h1>
         <div style={{ fontSize: 14, color: '#666' }}>
           <Link href="/mi-cuenta/club/recursos" style={{ color: '#0066cc', textDecoration: 'none' }}>
-            ← Volver a lista de pueblos
+            ← {t('backToTownList')}
           </Link>
         </div>
       </div>
 
       {recursosDelPueblo.length === 0 ? (
-        <div style={{ fontSize: 14, color: '#666' }}>Este pueblo no tiene recursos disponibles.</div>
+        <div style={{ fontSize: 14, color: '#666' }}>{t('townNoResources')}</div>
       ) : (
         <div style={{ display: 'grid', gap: 16 }}>
           {recursosDelPueblo.map((r) => {
@@ -81,18 +84,18 @@ export default function RecursosPuebloPage() {
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>{r.nombre}</div>
                     <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>
-                      Tipo: {r.tipo || '—'}
+                      {t('type')}: {r.tipo || '—'}
                     </div>
                     <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>
-                      Precio: {r.precioCents ? `${(r.precioCents / 100).toFixed(2)} €` : '—'}
+                      {t('price')}: {r.precioCents ? `${(r.precioCents / 100).toFixed(2)} €` : '—'}
                     </div>
                     {r.descuentoPorcentaje && r.precioCents && (
                       <div style={{ fontSize: 14, color: '#22c55e', fontWeight: 600, marginBottom: 4 }}>
-                        Con descuento: {((r.precioCents / 100) * (1 - r.descuentoPorcentaje / 100)).toFixed(2)} €
+                        {t('withDiscount')}: {((r.precioCents / 100) * (1 - r.descuentoPorcentaje / 100)).toFixed(2)} €
                       </div>
                     )}
                     <div style={{ fontSize: 14, color: '#666' }}>
-                      Descuento: {r.descuentoPorcentaje !== null && r.descuentoPorcentaje !== undefined
+                      {t('discount')}: {r.descuentoPorcentaje !== null && r.descuentoPorcentaje !== undefined
                         ? `${r.descuentoPorcentaje}%`
                         : '—'}
                     </div>
@@ -107,7 +110,7 @@ export default function RecursosPuebloPage() {
                         background: hoy ? '#dcfce7' : '#dbeafe',
                         color: hoy ? '#166534' : '#1e40af'
                       }}>
-                        {hoy ? 'VISITADO HOY' : 'VISITADO'}
+                        {hoy ? t('visitedToday') : t('visited')}
                       </span>
                     </div>
                   )}

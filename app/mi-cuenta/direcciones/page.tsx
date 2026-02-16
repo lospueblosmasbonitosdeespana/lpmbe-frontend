@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import { Headline, Title, Caption } from '@/app/components/ui/typography';
@@ -29,6 +30,8 @@ const emptyForm = {
 
 export default function DireccionesPage() {
   const router = useRouter();
+  const t = useTranslations('addresses');
+  const tAccount = useTranslations('myAccount');
   const [direcciones, setDirecciones] = useState<Direccion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +51,7 @@ export default function DireccionesPage() {
         router.push('/entrar');
         return;
       }
-      setError('Error cargando direcciones');
+      setError(t('loadError'));
     } finally {
       setLoading(false);
     }
@@ -94,12 +97,12 @@ export default function DireccionesPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!formData.nombre || !formData.direccion || !formData.ciudad || !formData.codigoPostal) {
-      setError('Completa los campos obligatorios: nombre, dirección, ciudad y código postal');
+      setError(t('requiredFields'));
       return;
     }
     const paisFinal = formData.pais === 'XX' ? (formData.paisOtro || 'ES') : formData.pais;
     if (formData.pais === 'XX' && !formData.paisOtro?.trim()) {
-      setError('Indica el nombre del país');
+      setError(t('enterCountryName'));
       return;
     }
 
@@ -120,35 +123,35 @@ export default function DireccionesPage() {
 
       if (editingId) {
         await updateDireccion(editingId, payload);
-        setSuccess('Dirección actualizada');
+        setSuccess(t('addressUpdated'));
       } else {
         await createDireccion(payload);
-        setSuccess('Dirección añadida');
+        setSuccess(t('addressAdded'));
       }
 
       await loadDirecciones();
       handleCancel();
       setTimeout(() => setSuccess(null), 3000);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error guardando');
+      setError(e instanceof Error ? e.message : t('saveError'));
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(id: number) {
-    if (!confirm('¿Eliminar esta dirección?')) return;
+    if (!confirm(t('confirmDelete'))) return;
 
     setDeletingId(id);
     setError(null);
 
     try {
       await deleteDireccion(id);
-      setSuccess('Dirección eliminada');
+      setSuccess(t('addressDeleted'));
       await loadDirecciones();
       setTimeout(() => setSuccess(null), 3000);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error eliminando');
+      setError(e instanceof Error ? e.message : t('deleteError'));
     } finally {
       setDeletingId(null);
     }
@@ -160,11 +163,11 @@ export default function DireccionesPage() {
 
     try {
       await updateDireccion(id, { esPrincipal: true });
-      setSuccess('Dirección principal actualizada');
+      setSuccess(t('principalUpdated'));
       await loadDirecciones();
       setTimeout(() => setSuccess(null), 3000);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error actualizando');
+      setError(e instanceof Error ? e.message : t('updateError'));
     } finally {
       setSaving(false);
     }
@@ -175,7 +178,7 @@ export default function DireccionesPage() {
       <Section spacing="lg" background="default">
         <Container>
           <div className="rounded-xl border border-border bg-card p-8 text-center">
-            <p className="text-muted-foreground">Cargando...</p>
+            <p className="text-muted-foreground">{tAccount('loading')}</p>
           </div>
         </Container>
       </Section>
@@ -189,16 +192,16 @@ export default function DireccionesPage() {
       <Container>
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <Headline as="h1">Mis direcciones</Headline>
+            <Headline as="h1">{t('title')}</Headline>
             <Caption className="mt-1 block">
-              Gestiona tus direcciones de envío para compras en la tienda
+              {t('subtitle')}
             </Caption>
           </div>
           <Link
             href="/mi-cuenta"
             className="text-sm text-muted-foreground hover:text-foreground hover:underline"
           >
-            ← Volver
+            {tAccount('back')}
           </Link>
         </div>
 
@@ -219,7 +222,7 @@ export default function DireccionesPage() {
           {direcciones.length > 0 && (
             <div className={cardClass}>
               <Title size="lg" className="mb-4">
-                Direcciones guardadas ({direcciones.length})
+                {t('savedAddresses')} ({direcciones.length})
               </Title>
               <div className="space-y-4">
                 {direcciones.map((dir) => (
@@ -242,7 +245,7 @@ export default function DireccionesPage() {
                       )}
                       {dir.esPrincipal && (
                         <span className="mt-2 inline-block rounded bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
-                          Principal
+                          {t('principal')}
                         </span>
                       )}
                     </div>
@@ -254,7 +257,7 @@ export default function DireccionesPage() {
                           disabled={saving}
                           className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
                         >
-                          Marcar principal
+                          {t('setPrincipal')}
                         </button>
                       )}
                       <button
@@ -263,7 +266,7 @@ export default function DireccionesPage() {
                         disabled={saving}
                         className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
                       >
-                        Editar
+                        {t('edit')}
                       </button>
                       <button
                         type="button"
@@ -271,7 +274,7 @@ export default function DireccionesPage() {
                         disabled={deletingId === dir.id}
                         className="rounded-lg border border-destructive/50 bg-destructive/5 px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
                       >
-                        {deletingId === dir.id ? 'Eliminando…' : 'Eliminar'}
+                        {deletingId === dir.id ? t('deleting') : t('delete')}
                       </button>
                     </div>
                   </div>
@@ -284,12 +287,12 @@ export default function DireccionesPage() {
           {showForm ? (
             <div className={cardClass}>
               <Title size="lg" className="mb-4">
-                {editingId ? 'Editar dirección' : 'Nueva dirección'}
+                {editingId ? t('editAddress') : t('newAddress')}
               </Title>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium">Nombre completo *</label>
+                    <label className="block text-sm font-medium">{t('fullName')}</label>
                     <input
                       type="text"
                       value={formData.nombre}
@@ -299,7 +302,7 @@ export default function DireccionesPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium">Teléfono</label>
+                    <label className="block text-sm font-medium">{t('phone')}</label>
                     <input
                       type="tel"
                       value={formData.telefono}
@@ -310,7 +313,7 @@ export default function DireccionesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium">Dirección *</label>
+                  <label className="block text-sm font-medium">{t('address')}</label>
                   <input
                     type="text"
                     value={formData.direccion}
@@ -322,7 +325,7 @@ export default function DireccionesPage() {
 
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium">Código postal *</label>
+                    <label className="block text-sm font-medium">{t('postalCode')}</label>
                     <input
                       type="text"
                       value={formData.codigoPostal}
@@ -332,7 +335,7 @@ export default function DireccionesPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium">Ciudad *</label>
+                    <label className="block text-sm font-medium">{t('city')}</label>
                     <input
                       type="text"
                       value={formData.ciudad}
@@ -342,7 +345,7 @@ export default function DireccionesPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium">Provincia</label>
+                    <label className="block text-sm font-medium">{t('province')}</label>
                     <input
                       type="text"
                       value={formData.provincia}
@@ -353,7 +356,7 @@ export default function DireccionesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium">País</label>
+                  <label className="block text-sm font-medium">{t('country')}</label>
                   <select
                     value={formData.pais}
                     onChange={(e) =>
@@ -374,14 +377,14 @@ export default function DireccionesPage() {
                   {formData.pais === 'XX' && (
                     <input
                       type="text"
-                      placeholder="Nombre del país (ej: Francia, México)"
+                      placeholder={t('countryPlaceholder')}
                       value={formData.paisOtro}
                       onChange={(e) => setFormData({ ...formData, paisOtro: e.target.value })}
                       className="mt-2 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
                     />
                   )}
                   <Caption className="mt-1 block">
-                    Envíos a España, Portugal, Europa y resto del mundo
+                    {t('shippingWorldwide')}
                   </Caption>
                 </div>
 
@@ -392,7 +395,7 @@ export default function DireccionesPage() {
                     onChange={(e) => setFormData({ ...formData, esPrincipal: e.target.checked })}
                     className="rounded border-input"
                   />
-                  <span className="text-sm font-medium">Usar como dirección principal</span>
+                  <span className="text-sm font-medium">{t('setAsPrincipal')}</span>
                 </label>
 
                 <div className="flex gap-2 pt-2">
@@ -401,7 +404,7 @@ export default function DireccionesPage() {
                     disabled={saving}
                     className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
                   >
-                    {saving ? 'Guardando…' : 'Guardar'}
+                    {saving ? t('saving') : t('save')}
                   </button>
                   <button
                     type="button"
@@ -409,7 +412,7 @@ export default function DireccionesPage() {
                     disabled={saving}
                     className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
                   >
-                    Cancelar
+                    {t('cancel')}
                   </button>
                 </div>
               </form>
@@ -422,10 +425,10 @@ export default function DireccionesPage() {
                 className="flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-border py-8 transition-colors hover:border-primary/50 hover:bg-muted/30"
               >
                 <span className="text-lg font-medium text-muted-foreground">
-                  + Añadir dirección de envío
+                  {t('addAddress')}
                 </span>
                 <Caption className="mt-1">
-                  Guarda una dirección para agilizar tus compras en la tienda
+                  {t('addAddressHint')}
                 </Caption>
               </button>
             </div>

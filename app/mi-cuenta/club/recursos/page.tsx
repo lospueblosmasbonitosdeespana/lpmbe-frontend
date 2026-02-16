@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useRecursosDisponibles } from '../_components/useRecursosDisponibles';
 
 function getPuebloNombre(r: any): string | null {
@@ -9,6 +10,8 @@ function getPuebloNombre(r: any): string | null {
 }
 
 export default function RecursosPage() {
+  const t = useTranslations('club');
+  const tAccount = useTranslations('myAccount');
   const { loading, error, data: recursos } = useRecursosDisponibles();
   const [pueblosMap, setPueblosMap] = useState<Record<number, string>>({});
   const [loadingPueblos, setLoadingPueblos] = useState(false);
@@ -76,7 +79,7 @@ export default function RecursosPage() {
   if (loading || loadingPueblos) {
     return (
       <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-        <div>Cargando...</div>
+        <div>{tAccount('loading')}</div>
       </div>
     );
   }
@@ -87,7 +90,7 @@ export default function RecursosPage() {
         <div style={{ color: '#ef4444' }}>{error}</div>
         <div style={{ marginTop: 16 }}>
           <Link href="/mi-cuenta/club" style={{ color: '#0066cc', textDecoration: 'none' }}>
-            ← Volver a Club de Amigos
+            ← {t('backToClub')}
           </Link>
         </div>
       </div>
@@ -97,23 +100,23 @@ export default function RecursosPage() {
   return (
     <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Descuentos en recursos turísticos</h1>
+        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>{t('discountsOnResources')}</h1>
         <div style={{ fontSize: 14, color: '#666' }}>
           <Link href="/mi-cuenta/club" style={{ color: '#0066cc', textDecoration: 'none' }}>
-            ← Volver a Club de Amigos
+            ← {t('backToClub')}
           </Link>
         </div>
       </div>
 
       {pueblosConRecursos.length === 0 ? (
-        <div style={{ fontSize: 14, color: '#666' }}>No hay recursos disponibles.</div>
+        <div style={{ fontSize: 14, color: '#666' }}>{t('noResourcesAvailable')}</div>
       ) : (
         <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse', border: '1px solid #ddd' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid #ddd', background: '#f5f5f5' }}>
-              <th style={{ textAlign: 'left', padding: '8px' }}>Pueblo</th>
-              <th style={{ textAlign: 'center', padding: '8px' }}>Nº recursos</th>
-              <th style={{ textAlign: 'center', padding: '8px' }}>Ver</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>{t('town')}</th>
+              <th style={{ textAlign: 'center', padding: '8px' }}>{t('numResources')}</th>
+              <th style={{ textAlign: 'center', padding: '8px' }}>{t('view')}</th>
             </tr>
           </thead>
           <tbody>
@@ -126,7 +129,7 @@ export default function RecursosPage() {
                     href={`/mi-cuenta/club/recursos/${p.id}`}
                     style={{ color: '#0066cc', textDecoration: 'none' }}
                   >
-                    Ver
+                    {t('view')}
                   </Link>
                 </td>
               </tr>

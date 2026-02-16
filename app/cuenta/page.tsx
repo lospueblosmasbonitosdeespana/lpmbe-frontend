@@ -5,17 +5,20 @@ import { getMisPueblosServer } from '@/lib/misPueblos';
 import LogoutButton from './LogoutButton';
 import Link from 'next/link';
 import { IconMapa, IconAsociacion } from '@/app/gestion/_components/GestionIcons';
+import { getTranslations } from 'next-intl/server';
 
 function GridCard({
   href,
   title,
   description,
   icon,
+  loginText,
 }: {
   href: string;
   title: string;
   description: string;
   icon: React.ReactNode;
+  loginText: string;
 }) {
   return (
     <Link
@@ -30,7 +33,7 @@ function GridCard({
       </h3>
       <p className="mt-1 text-sm text-muted-foreground">{description}</p>
       <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
-        Acceder
+        {loginText}
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M5 12h14M12 5l7 7-7 7" />
         </svg>
@@ -40,6 +43,7 @@ function GridCard({
 }
 
 export default async function CuentaPage() {
+  const t = await getTranslations('cuenta');
   const me = await getMeServer();
 
   if (!me) {
@@ -62,26 +66,26 @@ export default async function CuentaPage() {
 
   return (
     <main className="mx-auto max-w-5xl p-6">
-      <h1 className="text-2xl font-semibold">Cuenta</h1>
+      <h1 className="text-2xl font-semibold">{t('account')}</h1>
 
       <section className="mt-6">
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           <div className="space-y-4">
             <div>
               <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Email
+                {t('email')}
               </span>
               <div className="mt-1 font-medium text-foreground">{me.email}</div>
             </div>
             <div>
               <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Rol
+                {t('role')}
               </span>
               <div className="mt-2 space-y-1">
                 <span
                   className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium ${rolBadgeClass}`}
                 >
-                  {me.rol === 'ADMIN' ? 'Administrador' : me.rol === 'ALCALDE' ? 'Alcalde' : me.rol === 'CLIENTE' ? 'Cliente' : 'Usuario'}
+                  {me.rol === 'ADMIN' ? t('admin') : me.rol === 'ALCALDE' ? t('mayor') : me.rol === 'CLIENTE' ? t('client') : t('user')}
                 </span>
                 {me.rol === 'ALCALDE' && misPueblos.length > 0 && (
                   <div className="text-sm font-medium text-foreground">
@@ -101,14 +105,14 @@ export default async function CuentaPage() {
       <section className="mt-10 space-y-3">
         {(me.rol === 'USUARIO' || me.rol === 'CLIENTE') ? (
           <div className="rounded-xl border border-border bg-card p-4">
-            <div className="font-medium">Tu cuenta</div>
+            <div className="font-medium">{t('yourAccount')}</div>
             <div className="text-sm text-muted-foreground">
               {me.rol === 'CLIENTE'
-                ? 'Accede a Mi cuenta para ver tus pedidos, direcciones y preferencias.'
-                : 'Área de usuario básica (seguiremos ampliando).'}
+                ? t('accountDesc')
+                : t('basicArea')}
             </div>
             <Link href="/mi-cuenta" className="mt-3 inline-block text-sm font-medium text-primary hover:underline">
-              Ir a Mi cuenta →
+              {t('goToAccount')}
             </Link>
           </div>
         ) : null}
@@ -116,7 +120,7 @@ export default async function CuentaPage() {
         {(me.rol === 'ALCALDE' || me.rol === 'ADMIN') ? (
           <div>
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Gestión
+              {t('management')}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <GridCard
@@ -125,26 +129,28 @@ export default async function CuentaPage() {
                   me.rol === 'ALCALDE' && misPueblos.length === 1
                     ? misPueblos[0].nombre
                     : me.rol === 'ADMIN'
-                      ? 'Gestión de pueblos'
-                      : 'Mis pueblos'
+                      ? t('villageManagement')
+                      : t('myVillages')
                 }
                 description={
                   me.rol === 'ALCALDE'
                     ? misPueblos.length === 0
-                      ? 'No hay pueblos asociados.'
+                      ? t('noVillages')
                       : misPueblos.length === 1
-                        ? `Gestiona ${misPueblos[0].nombre}`
-                        : `Gestiona tus ${misPueblos.length} pueblos`
-                    : 'Todos los pueblos disponibles.'
+                        ? `${t('manage')} ${misPueblos[0].nombre}`
+                        : `${t('manageYour')} ${misPueblos.length} ${t('villages')}`
+                    : t('allVillages')
                 }
                 icon={<IconMapa />}
+                loginText={t('login')}
               />
               {me.rol === 'ADMIN' && (
                 <GridCard
                   href="/gestion/asociacion"
-                  title="Asociación"
-                  description="Configuración global, contenidos, tienda y más"
+                  title={t('association')}
+                  description={t('associationDesc')}
                   icon={<IconAsociacion />}
+                  loginText={t('login')}
                 />
               )}
             </div>
@@ -154,7 +160,7 @@ export default async function CuentaPage() {
                   href={`/pueblos/${misPueblos[0].slug}`}
                   className="text-primary hover:underline"
                 >
-                  Ver ficha del pueblo →
+                  {t('viewVillage')}
                 </Link>
               </p>
             )}

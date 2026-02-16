@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 
 type Pueblo = {
   id: number;
@@ -38,6 +39,7 @@ export default function MapaPueblosVisitados({
   pueblos: Pueblo[];
   visitedIds: Set<number>;
 }) {
+  const t = useTranslations('visitedVillages');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -50,7 +52,7 @@ export default function MapaPueblosVisitados({
   if (!mounted) {
     return (
       <div className="flex h-[400px] w-full items-center justify-center border border-border bg-muted/20 lg:h-[720px]">
-        <p className="text-sm text-muted-foreground">Cargando mapa...</p>
+        <p className="text-sm text-muted-foreground">{t('mapLoading')}</p>
       </div>
     );
   }
@@ -84,7 +86,7 @@ export default function MapaPueblosVisitados({
                     {(p.provincia || '') + (p.comunidad ? ` / ${p.comunidad}` : '')}
                   </div>
                   <div style={{ marginTop: 6, fontSize: 12 }}>
-                    Estado: <b>{isVisited ? 'Visitado' : 'No visitado'}</b>
+                    {t('mapStatus')}: <b>{isVisited ? t('mapVisited') : t('mapNotVisited')}</b>
                   </div>
                 </div>
               </Popup>

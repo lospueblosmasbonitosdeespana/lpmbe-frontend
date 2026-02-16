@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { getComunidadFlagSrc } from '@/lib/flags';
 import { Title, Caption } from '@/app/components/ui/typography';
@@ -25,6 +26,7 @@ export default function PueblosPorVisitar({
   visitedIds,
   onMarcarVisitado,
 }: Props) {
+  const t = useTranslations('visitedVillages');
   const [busqueda, setBusqueda] = useState('');
   const [loadingId, setLoadingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -64,14 +66,14 @@ export default function PueblosPorVisitar({
   return (
     <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
       <Title size="lg" className="mb-4">
-        Pueblos por visitar ({pueblosPorVisitar.length})
+        {t('toVisit')} ({pueblosPorVisitar.length})
       </Title>
 
       {/* Buscador */}
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Buscar por nombre, provincia o comunidad..."
+          placeholder={t('searchPlaceholder')}
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
           className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
@@ -90,8 +92,8 @@ export default function PueblosPorVisitar({
           <div className="p-8 text-center">
             <Caption>
               {busqueda
-                ? 'No se encontraron pueblos con ese criterio'
-                : 'Has visitado todos los pueblos'}
+                ? t('noSearchResults')
+                : t('allVisited')}
             </Caption>
           </div>
         ) : (
@@ -113,7 +115,7 @@ export default function PueblosPorVisitar({
                         <span className="shrink-0" title={pueblo.comunidad ?? undefined}>
                           <Image
                             src={flagSrc}
-                            alt={`Bandera de ${pueblo.comunidad ?? ''}`}
+                            alt={`${t('flagOf')} ${pueblo.comunidad ?? ''}`}
                             width={24}
                             height={18}
                             className="rounded-sm border border-border object-cover"
@@ -152,7 +154,7 @@ export default function PueblosPorVisitar({
                         ...
                       </span>
                     ) : (
-                      'Marcar'
+                      t('mark')
                     )}
                   </button>
                 </div>

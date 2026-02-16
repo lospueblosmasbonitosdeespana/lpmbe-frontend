@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   puebloId: number;
@@ -10,6 +11,7 @@ type Props = {
 };
 
 export default function RatingSelector({ puebloId, initialRating, onRatingSaved }: Props) {
+  const t = useTranslations('visitedVillages');
   const router = useRouter();
   const [selected, setSelected] = useState<number>(initialRating ?? 0);
   const [isOpen, setIsOpen] = useState(false);
@@ -31,7 +33,7 @@ export default function RatingSelector({ puebloId, initialRating, onRatingSaved 
 
       if (!res.ok) {
         const text = await res.text();
-        setError(`Error al guardar valoración: ${text}`);
+        setError(`${t('ratingError')} ${text}`);
         return;
       }
 
@@ -39,7 +41,7 @@ export default function RatingSelector({ puebloId, initialRating, onRatingSaved 
       setIsOpen(false);
       router.refresh();
     } catch (e: any) {
-      setError(`Error al guardar valoración: ${e?.message ?? String(e)}`);
+      setError(`${t('ratingError')} ${e?.message ?? String(e)}`);
     } finally {
       setIsSaving(false);
     }
@@ -49,9 +51,9 @@ export default function RatingSelector({ puebloId, initialRating, onRatingSaved 
     <div className="space-y-2">
       <div className="text-sm">
         {initialRating ? (
-          <span className="text-muted-foreground">Valoración: {initialRating}</span>
+          <span className="text-muted-foreground">{t('rating')}: {initialRating}</span>
         ) : (
-          <span className="text-muted-foreground">Sin valoración</span>
+          <span className="text-muted-foreground">{t('noRating')}</span>
         )}{' '}
         <button
           type="button"
@@ -61,7 +63,7 @@ export default function RatingSelector({ puebloId, initialRating, onRatingSaved 
             setIsOpen((v) => !v);
           }}
         >
-          {initialRating ? 'Editar valoración' : 'Valorar'}
+          {initialRating ? t('editRating') : t('rate')}
         </button>
       </div>
 
@@ -91,7 +93,7 @@ export default function RatingSelector({ puebloId, initialRating, onRatingSaved 
             onClick={handleSave}
             disabled={isSaving || selected < 1 || selected > 5}
           >
-            {isSaving ? 'Guardando...' : 'Guardar'}
+            {isSaving ? t('savingRating') : t('saveRating')}
           </button>
 
           <button
@@ -100,7 +102,7 @@ export default function RatingSelector({ puebloId, initialRating, onRatingSaved 
             onClick={() => setIsOpen(false)}
             disabled={isSaving}
           >
-            Cancelar
+            {t('cancelRating')}
           </button>
 
           {error && <p className="w-full text-sm text-destructive">{error}</p>}
