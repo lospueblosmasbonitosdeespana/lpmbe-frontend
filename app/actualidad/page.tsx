@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
+import { useTranslations } from 'next-intl';
 import ShareButton from '@/app/components/ShareButton';
 
 type Contenido = {
@@ -16,16 +17,16 @@ type Contenido = {
   createdAt?: string;
 };
 
-const TIPOS = [
-  { key: 'TODOS', label: 'Todos' },
-  { key: 'NOTICIA', label: 'Noticias' },
-  { key: 'EVENTO', label: 'Eventos' },
-  { key: 'ARTICULO', label: 'Artículos' },
-];
-
 function ActualidadContent() {
+  const t = useTranslations('actualidad');
   const searchParams = useSearchParams();
   const tipoParam = searchParams.get('tipo') ?? 'TODOS';
+  const TIPOS = [
+    { key: 'TODOS', label: t('all') },
+    { key: 'NOTICIA', label: t('news') },
+    { key: 'EVENTO', label: t('events') },
+    { key: 'ARTICULO', label: t('articles') },
+  ];
   
   const [items, setItems] = useState<Contenido[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,9 +82,9 @@ function ActualidadContent() {
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
       <div className="mb-8">
-        <h1 className="text-4xl font-semibold">Actualidad</h1>
+        <h1 className="text-4xl font-semibold">{t('title')}</h1>
         <p className="mt-2 text-gray-600">
-          Noticias, eventos y artículos de Los Pueblos Más Bonitos de España
+          {t('pageDesc')}
         </p>
       </div>
 
@@ -104,10 +105,10 @@ function ActualidadContent() {
       </div>
 
       {loading ? (
-        <div className="text-gray-600">Cargando...</div>
+        <div className="text-gray-600">{t('loading')}</div>
       ) : items.length === 0 ? (
         <div className="rounded-md border p-6 text-gray-600">
-          No hay contenido disponible.
+          {t('noContent')}
         </div>
       ) : (
         <div className="space-y-6">
@@ -157,7 +158,7 @@ function ActualidadContent() {
                   )}
 
                   <span className="mt-3 inline-block text-sm font-medium text-blue-600 group-hover:underline">
-                    Leer más →
+                    {t('readMore')}
                   </span>
                 </Link>
                   <ShareButton url={href} title={item.titulo} variant="icon" className="shrink-0 mt-1" />
@@ -170,7 +171,7 @@ function ActualidadContent() {
 
       <div className="mt-10">
         <Link href="/" className="text-sm hover:underline">
-          ← Volver al inicio
+          {t('backToHome')}
         </Link>
       </div>
     </main>
@@ -179,7 +180,7 @@ function ActualidadContent() {
 
 export default function ActualidadPage() {
   return (
-    <Suspense fallback={<div className="mx-auto max-w-4xl px-6 py-10 text-gray-600">Cargando...</div>}>
+    <Suspense fallback={<div className="mx-auto max-w-4xl px-6 py-10 text-gray-600">...</div>}>
       <ActualidadContent />
     </Suspense>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { setLocale } from '@/app/actions/locale';
 
@@ -17,6 +17,7 @@ type Props = { currentLocale: string; variant?: 'footer' | 'header' };
 
 export function LocaleSwitcher({ currentLocale, variant = 'footer' }: Props) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const handleChange = (code: string) => {
@@ -25,7 +26,9 @@ export function LocaleSwitcher({ currentLocale, variant = 'footer' }: Props) {
       const form = new FormData();
       form.set('locale', code);
       form.set('path', pathname ?? '/');
-      setLocale(form);
+      setLocale(form).then(() => {
+        router.refresh();
+      });
     });
   };
 

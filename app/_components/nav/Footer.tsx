@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 
 // RRSS oficiales Los Pueblos Más Bonitos de España
@@ -70,6 +71,7 @@ async function fetchSiteSettings(): Promise<SiteSettings> {
 type FooterProps = { locale: string };
 
 export async function Footer({ locale }: FooterProps) {
+  const t = await getTranslations("footer");
   const settings = await fetchSiteSettings();
 
   // En footer: logo variante (letras blancas) si existe; si no, logo principal con filter; si no, texto
@@ -101,15 +103,13 @@ export async function Footer({ locale }: FooterProps) {
               )}
             </Link>
             <p className="text-sm leading-relaxed text-white/70">
-              Asociación dedicada a preservar y promover el patrimonio rural de
-              España desde 2010.
+              {t("aboutText")}
             </p>
           </div>
 
-          {/* Explorar */}
           <div>
             <h4 className="mb-4 text-sm font-medium tracking-wide text-white">
-              Explorar
+              {t("explore")}
             </h4>
             <ul className="space-y-3">
               <li>
@@ -117,7 +117,7 @@ export async function Footer({ locale }: FooterProps) {
                   href="/pueblos"
                   className="text-sm text-white/70 transition-colors hover:text-white"
                 >
-                  Todos los pueblos
+                  {t("allVillages")}
                 </Link>
               </li>
               <li>
@@ -125,7 +125,7 @@ export async function Footer({ locale }: FooterProps) {
                   href="/multiexperiencias"
                   className="text-sm text-white/70 transition-colors hover:text-white"
                 >
-                  Multiexperiencias
+                  {t("multiexperiencias")}
                 </Link>
               </li>
               <li>
@@ -133,7 +133,7 @@ export async function Footer({ locale }: FooterProps) {
                   href="/rutas"
                   className="text-sm text-white/70 transition-colors hover:text-white"
                 >
-                  Rutas
+                  {t("rutas")}
                 </Link>
               </li>
               <li>
@@ -143,16 +143,15 @@ export async function Footer({ locale }: FooterProps) {
                   rel="noopener noreferrer"
                   className="text-sm text-white/70 transition-colors hover:text-white"
                 >
-                  Mapa interactivo
+                  {t("interactiveMap")}
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* El sello */}
           <div>
             <h4 className="mb-4 text-sm font-medium tracking-wide text-white">
-              El sello
+              {t("theStamp")}
             </h4>
             <ul className="space-y-3">
               <li>
@@ -160,7 +159,7 @@ export async function Footer({ locale }: FooterProps) {
                   href="/el-sello"
                   className="text-sm text-white/70 transition-colors hover:text-white"
                 >
-                  El Sello
+                  {t("theStamp")}
                 </Link>
               </li>
               <li>
@@ -168,7 +167,7 @@ export async function Footer({ locale }: FooterProps) {
                   href="/el-sello/como-se-obtiene"
                   className="text-sm text-white/70 transition-colors hover:text-white"
                 >
-                  ¿Cómo se obtiene?
+                  {t("howToGet")}
                 </Link>
               </li>
               <li>
@@ -176,7 +175,7 @@ export async function Footer({ locale }: FooterProps) {
                   href="/el-sello/quienes-somos"
                   className="text-sm text-white/70 transition-colors hover:text-white"
                 >
-                  Quiénes somos
+                  {t("whoWeAre")}
                 </Link>
               </li>
               <li>
@@ -184,16 +183,15 @@ export async function Footer({ locale }: FooterProps) {
                   href="/el-sello/unete"
                   className="text-sm text-white/70 transition-colors hover:text-white"
                 >
-                  Únete
+                  {t("unete")}
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Contacto + RRSS */}
           <div>
             <h4 className="mb-4 text-sm font-medium tracking-wide text-white">
-              Contacto
+              {t("contact")}
             </h4>
             <ul className="space-y-3">
               <li>
@@ -201,7 +199,7 @@ export async function Footer({ locale }: FooterProps) {
                   href="/contacto"
                   className="text-sm text-white/70 transition-colors hover:text-white"
                 >
-                  Página de contacto
+                  {t("contactPage")}
                 </Link>
               </li>
               <li>
@@ -209,7 +207,7 @@ export async function Footer({ locale }: FooterProps) {
                   href="/redes-sociales"
                   className="text-sm text-white/70 transition-colors hover:text-white"
                 >
-                  Redes sociales
+                  {t("socialNetworks")}
                 </Link>
               </li>
             </ul>
@@ -240,27 +238,26 @@ export async function Footer({ locale }: FooterProps) {
           </div>
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <p className="text-sm text-white/60">
-              © {new Date().getFullYear()} Los Pueblos Más Bonitos de España.
-              Todos los derechos reservados.
+              {t("copyright", { year: new Date().getFullYear() })}
             </p>
             <div className="flex gap-6">
               <Link
                 href="/privacidad"
                 className="text-sm text-white/60 transition-colors hover:text-white"
               >
-                Privacidad
+                {t("privacy")}
               </Link>
               <Link
                 href="/aviso-legal"
                 className="text-sm text-white/60 transition-colors hover:text-white"
               >
-                Aviso Legal
+                {t("legal")}
               </Link>
               <Link
                 href="/cookies"
                 className="text-sm text-white/60 transition-colors hover:text-white"
               >
-                Cookies
+                {t("cookies")}
               </Link>
             </div>
           </div>

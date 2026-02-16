@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { MegaMenu } from "./MegaMenu";
 import { MobileMenu } from "./MobileMenu";
 import AuthNavLink from "./AuthNavLink";
@@ -42,6 +43,7 @@ async function fetchSiteSettings(): Promise<SiteSettings> {
 type HeaderProps = { locale: string };
 
 export async function Header({ locale }: HeaderProps) {
+  const t = await getTranslations("nav");
   const settings = await fetchSiteSettings();
 
   // Determinar qué mostrar según activeLogo
@@ -102,7 +104,7 @@ export async function Header({ locale }: HeaderProps) {
           <MobileMenu />
           <CartIndicatorWrapper />
           <Link href="/contacto" className="text-sm font-medium hover:underline">
-            Contacto
+            {t("contact")}
           </Link>
           <AuthNavLink />
         </div>

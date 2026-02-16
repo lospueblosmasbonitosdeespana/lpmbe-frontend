@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useMemo, memo } from "react";
+import { useTranslations } from "next-intl";
 import SemaforoBadge from "../components/pueblos/SemaforoBadge";
 import { type Pueblo, getPuebloMainPhoto } from "@/lib/api";
 import { usePuebloPhotos } from "@/app/hooks/usePuebloPhotos";
@@ -141,19 +142,21 @@ export default function PueblosList({
     return filtered;
   }, [pueblosOrdenados, comunidadNorm, provinciaNorm, searchTerm]);
 
+  const t = useTranslations("explore");
+  const tTabs = useTranslations("tabs");
   const hasActiveFilters = comunidadNorm || provinciaNorm;
   const { photos, observe } = usePuebloPhotos(pueblosFiltrados);
 
   const breadcrumbItems = [
-    { label: "Pueblos", href: "/pueblos" },
+    { label: tTabs("pueblos"), href: "/pueblos" },
     ...(provinciaNorm
       ? [
-          { label: "Por provincia", href: "/pueblos/provincias" },
+          { label: t("byProvince"), href: "/pueblos/provincias" },
           { label: initialProvincia },
         ]
       : comunidadNorm
         ? [
-            { label: "Comunidades", href: "/pueblos/comunidades" },
+            { label: t("communities"), href: "/pueblos/comunidades" },
             { label: initialComunidad },
           ]
         : []),
@@ -173,19 +176,19 @@ export default function PueblosList({
         <div className="absolute inset-0 bg-gradient-to-b from-muted via-muted/50 to-background" />
         <div className="relative mx-auto max-w-4xl px-4 py-12 text-center md:py-16">
           <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            Descubre
+            {t("discover")}
           </p>
           <h1 className="mt-2 font-serif text-3xl font-medium tracking-tight text-foreground md:text-4xl">
-            Pueblos
+            {tTabs("pueblos")}
           </h1>
           <p className="mt-2 text-base text-muted-foreground">
             {pueblosFiltrados.length}{" "}
-            {pueblosFiltrados.length === 1 ? "pueblo" : "pueblos"}
+            {pueblosFiltrados.length === 1 ? t("village") : t("villages")}
           </p>
           <div className="mt-6">
             <input
               type="text"
-              placeholder="Buscar por nombre, provincia o comunidad..."
+              placeholder={t("searchPlaceholderExtended")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full max-w-xl rounded-lg border border-input bg-background px-4 py-3 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -197,22 +200,22 @@ export default function PueblosList({
       {hasActiveFilters && (
         <div className="mx-auto max-w-6xl px-4 py-4">
           <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
-            <span className="text-sm font-medium">Filtros activos:</span>
+            <span className="text-sm font-medium">{t("activeFilters")}</span>
             {comunidadNorm && (
               <span className="text-sm text-muted-foreground">
-                Comunidad: <strong className="text-foreground">{initialComunidad}</strong>
+                {t("community")} <strong className="text-foreground">{initialComunidad}</strong>
               </span>
             )}
             {provinciaNorm && (
               <span className="text-sm text-muted-foreground">
-                Provincia: <strong className="text-foreground">{initialProvincia}</strong>
+                {t("province")} <strong className="text-foreground">{initialProvincia}</strong>
               </span>
             )}
             <Link
               href="/pueblos"
               className="ml-auto text-sm font-medium text-primary hover:underline"
             >
-              Quitar filtros
+              {t("clearFilters")}
             </Link>
           </div>
         </div>
@@ -244,8 +247,8 @@ export default function PueblosList({
         ) : (
           <p className="text-center text-muted-foreground">
             {searchTerm
-              ? "No se encontraron pueblos con ese criterio de búsqueda"
-              : "No hay pueblos disponibles"}
+              ? t("noResultsSearch")
+              : t("noVillages")}
           </p>
         )}
       </section>

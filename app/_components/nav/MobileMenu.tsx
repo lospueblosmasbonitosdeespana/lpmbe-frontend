@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import type { NavItem } from "./nav.config";
 import { navConfig } from "./nav.config";
@@ -43,8 +44,14 @@ function NavLinkItem({
 }
 
 export function MobileMenu() {
+  const tTabs = useTranslations("tabs");
+  const tNav = useTranslations("nav");
+  const tCommon = useTranslations("common");
   const [open, setOpen] = useState(false);
   const [expandedLabel, setExpandedLabel] = useState<string | null>(null);
+
+  const getItemLabel = (item: NavItem) =>
+    item.labelNs === "tabs" ? tTabs(item.labelKey) : tNav(item.labelKey);
 
   const close = () => {
     setOpen(false);
@@ -76,7 +83,7 @@ export function MobileMenu() {
         type="button"
         onClick={() => setOpen(!open)}
         className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-transparent p-2"
-        aria-label={open ? "Cerrar menú" : "Abrir menú"}
+        aria-label={open ? tCommon("closeMenu") : tCommon("openMenu")}
         aria-expanded={open}
       >
         <svg
@@ -122,13 +129,13 @@ export function MobileMenu() {
             <div className="flex flex-col px-6 py-6">
               <div className="mb-6 flex items-center justify-between">
                 <span className="text-sm font-semibold text-muted-foreground">
-                  Menú
+                  {tCommon("menu")}
                 </span>
                 <button
                   type="button"
                   onClick={close}
                   className="flex h-10 w-10 items-center justify-center rounded-md border border-border"
-                  aria-label="Cerrar"
+                  aria-label={tCommon("close")}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -147,30 +154,31 @@ export function MobileMenu() {
 
               <nav className="space-y-2">
                 {navConfig.map((item) => {
+                  const itemLabel = getItemLabel(item);
                   if (item.type === "link") {
                     return (
                       <NavLinkItem
-                        key={item.label}
-                        label={item.label}
+                        key={item.labelKey}
+                        label={itemLabel}
                         href={item.href}
                         onClick={close}
                       />
                     );
                   }
 
-                  const isExpanded = expandedLabel === item.label;
+                  const isExpanded = expandedLabel === itemLabel;
 
                   return (
-                    <div key={item.label} className="border-b border-border">
+                    <div key={item.labelKey} className="border-b border-border">
                       <button
                         type="button"
                         onClick={() =>
-                          setExpandedLabel(isExpanded ? null : item.label)
+                          setExpandedLabel(isExpanded ? null : itemLabel)
                         }
                         className="flex w-full items-center justify-between py-3 text-left text-base font-medium text-foreground hover:text-primary"
                         aria-expanded={isExpanded}
                       >
-                        {item.label}
+                        {itemLabel}
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="20"
@@ -187,15 +195,15 @@ export function MobileMenu() {
                       {isExpanded && (
                         <div className="space-y-1 pb-4 pl-3">
                           {item.columns.map((col) => (
-                            <div key={col.title}>
+                            <div key={col.titleKey}>
                               <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                {col.title}
+                                {tNav(col.titleKey)}
                               </span>
                               <ul className="mt-2 space-y-1">
                                 {col.links.map((l) => (
                                   <li key={l.href}>
                                     <NavLinkItem
-                                      label={l.label}
+                                      label={tNav(l.labelKey)}
                                       href={l.href}
                                       onClick={close}
                                       compact
@@ -214,7 +222,7 @@ export function MobileMenu() {
 
               <div className="mt-6 space-y-2 border-t border-border pt-6">
                 <NavLinkItem
-                  label="Contacto"
+                  label={tNav("contact")}
                   href="/contacto"
                   onClick={close}
                 />

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { NavItem } from "./nav.config";
 import { navConfig } from "./nav.config";
@@ -8,9 +9,14 @@ import { navConfig } from "./nav.config";
 const CLOSE_DELAY_MS = 120;
 
 export function MegaMenu() {
+  const tTabs = useTranslations("tabs");
+  const tNav = useTranslations("nav");
   const [openLabel, setOpenLabel] = useState<string | null>(null);
   const items = useMemo(() => navConfig, []);
   const rootRef = useRef<HTMLDivElement | null>(null);
+
+  const getItemLabel = (item: NavItem) =>
+    item.labelNs === "tabs" ? tTabs(item.labelKey) : tNav(item.labelKey);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearCloseTimeout = useCallback(() => {
@@ -59,27 +65,28 @@ export function MegaMenu() {
       <nav className="relative">
         <div className="flex items-center gap-8">
           {items.map((item) => {
+            const label = getItemLabel(item);
             if (item.type === "link") {
               return (
                 <Link
-                  key={item.label}
+                  key={item.labelKey}
                   href={item.href}
                   className="text-sm font-medium hover:underline"
                 >
-                  {item.label}
+                  {label}
                 </Link>
               );
             }
 
-            const isOpen = openLabel === item.label;
+            const isOpen = openLabel === label;
 
             return (
               <div
-                key={item.label}
+                key={item.labelKey}
                 className="relative"
                 onMouseEnter={() => {
                   clearCloseTimeout();
-                  setOpenLabel(item.label);
+                  setOpenLabel(label);
                 }}
                 onMouseLeave={scheduleClose}
               >
@@ -89,7 +96,7 @@ export function MegaMenu() {
                   aria-haspopup="true"
                   aria-expanded={isOpen}
                 >
-                  {item.label}
+                  {label}
                 </button>
 
                 {/* Puente invisible para que no se cierre al bajar el ratón */}
@@ -102,6 +109,7 @@ export function MegaMenu() {
                     item={item}
                     onMouseEnter={clearCloseTimeout}
                     onMouseLeave={() => setOpenLabel(null)}
+                    tNav={tNav}
                   />
                 )}
               </div>
@@ -117,10 +125,12 @@ function MegaPanel({
   item,
   onMouseEnter,
   onMouseLeave,
+  tNav,
 }: {
   item: Extract<NavItem, { type: "mega" }>;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
+  tNav: (key: string) => string;
 }) {
   return (
     <div
@@ -133,13 +143,14 @@ function MegaPanel({
     >
       <div className="grid grid-cols-3 gap-8 px-8 py-7">
         {item.columns.map((col) => (
-          <div key={col.title}>
+          <div key={col.titleKey}>
             <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-              {col.title}
+              {tNav(col.titleKey)}
             </div>
             <ul className="mt-3 space-y-2">
               {col.links.map((l) => {
                 const isExternal = l.href.startsWith("http");
+                const linkLabel = tNav(l.labelKey);
                 if (isExternal) {
                   return (
                     <li key={l.href}>
@@ -149,7 +160,7 @@ function MegaPanel({
                         rel="noopener noreferrer"
                         className="text-sm hover:underline"
                       >
-                        {l.label}
+                        {linkLabel}
                       </a>
                     </li>
                   );
@@ -157,7 +168,7 @@ function MegaPanel({
                 return (
                   <li key={l.href}>
                     <Link href={l.href} className="text-sm hover:underline">
-                      {l.label}
+                      {linkLabel}
                     </Link>
                   </li>
                 );

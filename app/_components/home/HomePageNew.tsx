@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import {
   ArrowRight,
   Bell,
@@ -98,6 +99,7 @@ function HeroSection({
   heroTitle?: string;
   heroSubtitle?: string;
 }) {
+  const t = useTranslations("home");
   const visibleSlides = heroSlides.filter((s) => s?.image?.trim()).slice(0, 4);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -167,20 +169,20 @@ function HeroSection({
       <Container className="pointer-events-none relative z-10 h-full flex flex-col justify-end pb-28">
         <div className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white/90 text-xs font-medium mb-5 w-fit">
           <Sparkles className="h-3 w-3" />
-          126 pueblos certificados
+          {t("heroBadge")}
         </div>
 
         <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white font-medium tracking-tight mb-4 text-balance max-w-4xl leading-[1.1]">
           {heroTitle || "Los Pueblos Más Bonitos de España"}
         </h1>
         <p className="text-lg md:text-xl text-white/80 mb-8 max-w-xl leading-relaxed">
-          {heroSubtitle || "Descubre la esencia de nuestros pueblos"}
+          {heroSubtitle || t("heroSubtitleFallback")}
         </p>
 
         <div className="pointer-events-auto flex flex-wrap gap-4">
           <Button asChild size="lg" className="rounded-full px-6 shadow-lg">
             <Link href="/pueblos">
-              Explorar pueblos <ArrowRight className="ml-2 h-4 w-4" />
+              {t("exploreVillages")} <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
           <Button
@@ -215,15 +217,16 @@ function NotificationCenter({
 }: {
   notifications: NotificationItem[];
 }) {
+  const t = useTranslations("home");
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "noticias" | "semaforos" | "alertas"
   >("noticias");
 
   const tabs = [
-    { id: "noticias", label: "Noticias", icon: Newspaper },
-    { id: "semaforos", label: "Semáforos", icon: AlertTriangle },
-    { id: "alertas", label: "Alertas", icon: Bell },
+    { id: "noticias", label: t("tabNews"), icon: Newspaper },
+    { id: "semaforos", label: t("tabSemaforos"), icon: AlertTriangle },
+    { id: "alertas", label: t("tabAlertas"), icon: Bell },
   ] as const;
 
   const homeNotifications = notifications.filter((n) => n.type !== "meteo");
@@ -256,7 +259,7 @@ function NotificationCenter({
                 <Bell className="h-4 w-4 text-primary-foreground" />
               </div>
               <span className="font-semibold text-sm">
-                Centro de notificaciones
+                {t("notifCenterTitle")}
               </span>
               {notificationCount > 0 && (
                 <span className="px-2 py-0.5 text-xs font-bold bg-primary text-primary-foreground rounded-full">
@@ -324,7 +327,7 @@ function NotificationCenter({
                 ))
               ) : (
                 <div className="p-6 text-center text-sm text-muted-foreground">
-                  No hay notificaciones
+                  {t("noNotifications")}
                 </div>
               )}
             </div>
@@ -334,7 +337,7 @@ function NotificationCenter({
                 href="/notificaciones"
                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
               >
-                Ver todas las notificaciones <ArrowRight className="h-4 w-4" />
+                {t("viewAllNotifs")} <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </div>
@@ -346,6 +349,7 @@ function NotificationCenter({
 
 /* ----- IDEAS PARA TU VIAJE ----- */
 function IdeasSection({ categories = [] }: { categories: CategoryCard[] }) {
+  const t = useTranslations("home");
   if (categories.length === 0) return null;
 
   return (
@@ -353,17 +357,13 @@ function IdeasSection({ categories = [] }: { categories: CategoryCard[] }) {
       <Container>
         <div className="text-center mb-10">
           <Title as="h2" size="2xl" className="mb-3">
-            Descubre{" "}
-            <span className="text-primary">nuestros viajes temáticos</span>
+            {t("ideasTitle")}
           </Title>
           <Muted className="text-base max-w-2xl mx-auto">
-            Los pueblos según tus deseos. En familia, para escapadas
-            gastronómicas, para descubrir la naturaleza o el patrimonio -
-            encuentra tu experiencia ideal.
+            {t("ideasDesc")}
           </Muted>
         </div>
 
-        {/* Horizontal scroll cards */}
         <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 lg:grid-cols-6 md:overflow-visible scrollbar-hide">
           {categories.map((cat) => (
             <Link
@@ -382,7 +382,7 @@ function IdeasSection({ categories = [] }: { categories: CategoryCard[] }) {
                 ) : (
                   <div className="absolute inset-0 bg-muted flex items-center justify-center">
                     <span className="text-xs text-muted-foreground">
-                      Sin imagen
+                      {t("noImage")}
                     </span>
                   </div>
                 )}
@@ -398,7 +398,7 @@ function IdeasSection({ categories = [] }: { categories: CategoryCard[] }) {
                 </div>
               </div>
               <p className="text-center text-xs text-primary font-medium group-hover:underline">
-                Para saber más
+                {t("learnMore")}
               </p>
             </Link>
           ))}
@@ -407,7 +407,7 @@ function IdeasSection({ categories = [] }: { categories: CategoryCard[] }) {
         <div className="text-center mt-8">
           <Button asChild variant="outline" className="rounded-full bg-transparent">
             <Link href="/experiencias">
-              Ver todas las temáticas <ArrowRight className="ml-2 h-4 w-4" />
+              {t("seeAllThematics")} <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         </div>
@@ -422,6 +422,7 @@ function PueblosDestacadosSection({
 }: {
   villages: VillageCard[];
 }) {
+  const t = useTranslations("home");
   if (villages.length === 0) return null;
 
   const featured = villages.slice(0, 4);
@@ -431,15 +432,15 @@ function PueblosDestacadosSection({
       <Container>
         <div className="text-center mb-3">
           <p className="text-sm font-semibold text-primary uppercase tracking-wider">
-            Destacados del momento
+            {t("featuredMoment")}
           </p>
         </div>
         <div className="text-center mb-10">
           <Title as="h2" size="2xl">
-            Los pueblos que no te puedes perder
+            {t("villagesNotToMiss")}
           </Title>
           <Muted className="mt-3 max-w-2xl mx-auto">
-            Os proponemos descubrir los pueblos más bonitos de España.
+            {t("featuredDesc")}
           </Muted>
         </div>
 
@@ -461,7 +462,7 @@ function PueblosDestacadosSection({
                 ) : (
                   <div className="absolute inset-0 bg-muted flex items-center justify-center">
                     <span className="text-xs text-muted-foreground">
-                      Sin imagen
+                      {t("noImage")}
                     </span>
                   </div>
                 )}
@@ -475,7 +476,7 @@ function PueblosDestacadosSection({
               </Title>
               <Muted className="text-sm">{village.province}</Muted>
               <p className="text-primary text-sm font-medium mt-2 group-hover:underline">
-                Descubrir <ArrowRight className="inline h-3 w-3 ml-1" />
+                {t("discover")} <ArrowRight className="inline h-3 w-3 ml-1" />
               </p>
             </Link>
           ))}
@@ -484,7 +485,7 @@ function PueblosDestacadosSection({
         <div className="text-center mt-10">
           <Button asChild className="rounded-full">
             <Link href="/pueblos">
-              Ver todos los pueblos <ArrowRight className="ml-2 h-4 w-4" />
+              {t("seeAllVillages")} <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         </div>
@@ -495,24 +496,22 @@ function PueblosDestacadosSection({
 
 /* ----- RUTAS ----- */
 function RutasSection({ routes = [] }: { routes: RouteCard[] }) {
+  const t = useTranslations("home");
   if (routes.length === 0) return null;
 
   return (
     <Section spacing="lg" background="default">
       <Container>
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left - Text content */}
           <div>
             <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
-              Itinerarios
+              {t("itineraries")}
             </p>
             <Title as="h2" size="2xl" className="mb-4">
-              Descubre nuestras rutas
+              {t("discoverRoutes")}
             </Title>
             <Muted className="text-base mb-8">
-              Itinerarios diseñados para recorrer los pueblos más bonitos de
-              España. Desde los Pirineos hasta Andalucía, encuentra tu ruta
-              perfecta.
+              {t("routesDescLong")}
             </Muted>
 
             <ul className="space-y-4">
@@ -554,17 +553,16 @@ function RutasSection({ routes = [] }: { routes: RouteCard[] }) {
                 href="/rutas"
                 className="inline-flex items-center gap-2 text-primary font-semibold hover:underline"
               >
-                Ver todas las rutas <ArrowRight className="h-4 w-4" />
+                {t("seeAllRoutes")} <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </div>
 
-          {/* Right - Featured image */}
           <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
             {routes[0]?.image ? (
               <Image
                 src={routes[0].image}
-                alt="Rutas destacadas"
+                alt={t("featuredRoute")}
                 fill
                 className="object-cover"
               />
@@ -573,7 +571,7 @@ function RutasSection({ routes = [] }: { routes: RouteCard[] }) {
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
             <div className="absolute bottom-6 left-6 right-6">
-              <p className="text-white/80 text-sm mb-2">Ruta destacada</p>
+              <p className="text-white/80 text-sm mb-2">{t("featuredRoute")}</p>
               <Title as="h3" size="lg" className="text-white">
                 {routes[0]?.name}
               </Title>
@@ -587,6 +585,7 @@ function RutasSection({ routes = [] }: { routes: RouteCard[] }) {
 
 /* ----- ACTUALIDAD ----- */
 function ActualidadSection({ news = [] }: { news: NewsItem[] }) {
+  const t = useTranslations("home");
   if (news.length === 0) return null;
 
   return (
@@ -594,11 +593,10 @@ function ActualidadSection({ news = [] }: { news: NewsItem[] }) {
       <Container>
         <div className="text-center mb-10">
           <Title as="h2" size="2xl" className="uppercase tracking-wide mb-3">
-            Nuestras Actualidades
+            {t("ourActualities")}
           </Title>
           <Muted className="text-base max-w-2xl mx-auto">
-            Un nuevo pueblo certificado, un evento, la salida de la última
-            edición de la guía oficial... Os lo contamos todo aquí.
+            {t("actualidadDesc")}
           </Muted>
         </div>
 
@@ -674,7 +672,7 @@ function ActualidadSection({ news = [] }: { news: NewsItem[] }) {
             href="/notificaciones"
             className="inline-flex items-center gap-2 text-primary font-semibold hover:underline"
           >
-            Ver todo <span className="w-8 h-px bg-primary" />
+            {t("seeAllShort")} <span className="w-8 h-px bg-primary" />
           </Link>
         </div>
       </Container>
@@ -684,6 +682,8 @@ function ActualidadSection({ news = [] }: { news: NewsItem[] }) {
 
 /* ----- MAPA INTERACTIVO ----- */
 function MapaSection({ mapPreviewImage }: { mapPreviewImage?: string }) {
+  const t = useTranslations("home");
+  const tMapas = useTranslations("mapas");
   return (
     <Section spacing="md" background="default">
       <Container>
@@ -691,7 +691,7 @@ function MapaSection({ mapPreviewImage }: { mapPreviewImage?: string }) {
           <div className="relative h-[280px] md:h-[320px]">
             <Image
               src={mapPreviewImage || "/mapa_espana_pueblos.png"}
-              alt="Mapa interactivo de España"
+              alt={tMapas("alt")}
               fill
               className="object-cover"
             />
@@ -700,15 +700,14 @@ function MapaSection({ mapPreviewImage }: { mapPreviewImage?: string }) {
 
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
             <Title as="h2" size="2xl" className="text-white uppercase tracking-wide mb-6">
-              Mapa Interactivo
+              {t("mapTitle")}
             </Title>
             <Muted className="text-white/80 mb-6">
-              Descubre todos los pueblos sobre el mapa y planifica tu próxima
-              escapada.
+              {t("mapDesc")}
             </Muted>
             <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90">
               <Link href="https://maps.lospueblosmasbonitosdeespana.org/es/pueblos">
-                Descubrir nuestros pueblos
+                {t("discoverVillagesMap")}
               </Link>
             </Button>
           </div>
@@ -720,6 +719,7 @@ function MapaSection({ mapPreviewImage }: { mapPreviewImage?: string }) {
 
 /* ----- VIDEOS ASOCIACIÓN ----- */
 function VideosAsociacionSection({ videos }: { videos: Array<{ id: number; titulo: string; url: string; tipo?: string; thumbnail?: string | null }> }) {
+  const t = useTranslations("home");
   if (!videos || videos.length === 0) return null;
 
   function getEmbedUrl(url: string): string {
@@ -737,7 +737,7 @@ function VideosAsociacionSection({ videos }: { videos: Array<{ id: number; titul
     <Section spacing="md" background="muted">
       <Container>
         <Title as="h2" size="xl" className="mb-6">
-          Videos de la asociación
+          {t("associationVideos")}
         </Title>
         <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2">
           {videos.slice(0, 2).map((v) => (
@@ -774,7 +774,7 @@ function VideosAsociacionSection({ videos }: { videos: Array<{ id: number; titul
               target="_blank"
               rel="noopener noreferrer"
             >
-              Ver más en YouTube
+              {t("seeMoreYouTube")}
             </Link>
           </Button>
         </div>
@@ -785,6 +785,7 @@ function VideosAsociacionSection({ videos }: { videos: Array<{ id: number; titul
 
 /* ----- LA TIENDA ----- */
 function TiendaBanner({ shopBannerImage }: { shopBannerImage?: string }) {
+  const t = useTranslations("home");
   return (
     <Section spacing="lg" background="muted">
       <Container>
@@ -792,7 +793,7 @@ function TiendaBanner({ shopBannerImage }: { shopBannerImage?: string }) {
           <div className="relative aspect-[21/9] md:aspect-[3/1]">
             <Image
               src={shopBannerImage || "/hero/2.jpg"}
-              alt="La Tienda"
+              alt={t("theShop")}
               fill
               className="object-cover"
             />
@@ -803,13 +804,13 @@ function TiendaBanner({ shopBannerImage }: { shopBannerImage?: string }) {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-medium mb-3">
                 <Store className="h-3 w-3" />
-                Tienda oficial
+                {t("officialShop")}
               </div>
               <Title as="h2" size="2xl" className="text-white mb-2">
-                La Tienda
+                {t("theShop")}
               </Title>
               <p className="text-white/80 max-w-md">
-                Guías oficiales, mapas, merchandising y productos exclusivos.
+                {t("shopDescLong")}
               </p>
             </div>
             <Button
@@ -819,7 +820,7 @@ function TiendaBanner({ shopBannerImage }: { shopBannerImage?: string }) {
               className="rounded-full hidden md:inline-flex"
             >
               <Link href="/tienda">
-                Visita nuestra tienda <ArrowRight className="ml-2 h-4 w-4" />
+                {t("visitShop")} <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </div>
@@ -831,22 +832,24 @@ function TiendaBanner({ shopBannerImage }: { shopBannerImage?: string }) {
 
 /* ----- FINAL CTA ----- */
 function FinalCTA() {
+  const t = useTranslations("home");
+  const tNav = useTranslations("nav");
   const links = [
     {
-      label: "Ver todos los pueblos",
-      description: "Listado completo",
+      label: t("seeAllVillages"),
+      description: t("fullList"),
       href: "/pueblos",
       icon: MapPin,
     },
     {
-      label: "Centro de notificaciones",
-      description: "Noticias y avisos",
+      label: t("notifCenterTitle"),
+      description: t("newsAndNotices"),
       href: "/notificaciones",
       icon: Bell,
     },
     {
-      label: "Mapa interactivo",
-      description: "Explorar por ubicación",
+      label: tNav("interactiveMap"),
+      description: t("exploreByLocation"),
       href: "https://maps.lospueblosmasbonitosdeespana.org/es/pueblos",
       icon: Map,
     },
@@ -857,11 +860,10 @@ function FinalCTA() {
       <Container>
         <div className="bg-card rounded-3xl p-8 md:p-12 shadow-sm border border-border">
           <Title as="h2" size="xl" className="mb-2">
-            Empieza a planificar tu próxima escapada
+            {t("planNextGetaway")}
           </Title>
           <Muted className="mb-8">
-            Explora los pueblos, consulta la actualidad y descubre el mapa
-            interactivo.
+            {t("planDesc")}
           </Muted>
 
           <div className="grid md:grid-cols-3 gap-4">
@@ -889,6 +891,7 @@ function FinalCTA() {
 
 /* ----- SOCIAL MEDIA SECTION ----- */
 function SocialMediaSection() {
+  const t = useTranslations("home");
   const socialLinks = [
     {
       name: "Instagram",
@@ -951,14 +954,13 @@ function SocialMediaSection() {
       <Container className="relative z-10">
         <div className="text-center mb-10">
           <p className="text-white/70 text-sm uppercase tracking-wider mb-2">
-            Síguenos en redes
+            {t("followUs")}
           </p>
           <Title as="h2" size="2xl" className="text-white mb-4">
-            Únete a nuestra comunidad
+            {t("joinCommunity")}
           </Title>
           <p className="text-white/80 max-w-xl mx-auto">
-            Fotos, actualidad, eventos... Compartimos todo contigo en nuestras
-            redes sociales.
+            {t("socialDesc")}
           </p>
         </div>
 
@@ -988,7 +990,7 @@ function SocialMediaSection() {
 
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-5 py-3">
-            <span className="text-white/90 text-sm">Comparte con</span>
+            <span className="text-white/90 text-sm">{t("shareWith")}</span>
             <span className="px-4 py-1.5 bg-white text-primary font-bold rounded-full text-sm">
               #LosPueblosMasBonitos
             </span>
@@ -998,7 +1000,7 @@ function SocialMediaSection() {
               href="/redes-sociales"
               className="inline-flex items-center gap-2 text-sm font-medium text-white/90 hover:text-white transition-colors"
             >
-              Ver página de redes sociales
+              {t("viewSocialPage")}
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M12 5l7 7-7 7" />
               </svg>
@@ -1012,6 +1014,7 @@ function SocialMediaSection() {
 
 /* ----- NEWSLETTER SUBSCRIBE (sección aparte, beige claro) ----- */
 function NewsletterSubscribeBlock() {
+  const t = useTranslations("home");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
@@ -1042,16 +1045,16 @@ function NewsletterSubscribeBlock() {
       <Container className="relative z-10">
         <div className="text-center mb-6">
           <Title as="h3" size="lg" className="text-foreground mb-2">
-            Suscríbete a nuestra newsletter
+            {t("newsletterTitle")}
           </Title>
           <p className="text-muted-foreground text-sm max-w-md mx-auto">
-            Recibe novedades, eventos y contenidos exclusivos en tu correo.
+            {t("newsletterDesc")}
           </p>
         </div>
         <div className="flex flex-col items-center gap-4">
           {status === "success" ? (
             <p className="text-foreground text-sm font-medium">
-              ¡Gracias! Revisa tu email para confirmar la suscripción.
+              {t("thanksNewsletter")}
             </p>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
@@ -1059,7 +1062,7 @@ function NewsletterSubscribeBlock() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Tu email"
+                placeholder={t("yourEmail")}
                 required
                 disabled={status === "loading"}
                 className="flex-1 rounded-lg border border-input bg-card px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-70"
@@ -1069,18 +1072,18 @@ function NewsletterSubscribeBlock() {
                 disabled={status === "loading"}
                 className="rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-70"
               >
-                {status === "loading" ? "Enviando..." : "Suscribirme"}
+                {status === "loading" ? t("sending") : t("subscribe")}
               </button>
             </form>
           )}
           {status === "error" && (
-            <p className="text-muted-foreground text-sm">Ha ocurrido un error. Inténtalo de nuevo.</p>
+            <p className="text-muted-foreground text-sm">{t("newsletterError")}</p>
           )}
           <Link
             href="/newsletter"
             className="text-foreground text-sm font-medium hover:text-primary underline underline-offset-2"
           >
-            Últimas newsletters →
+            {t("latestNewsletters")}
           </Link>
         </div>
       </Container>

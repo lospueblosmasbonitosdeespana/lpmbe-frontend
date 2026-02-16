@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getRutas } from "@/lib/api";
 import { createExcerpt } from "@/lib/sanitizeHtml";
 import RutaMiniMap from "@/app/_components/RutaMiniMap";
@@ -16,22 +16,23 @@ export const revalidate = 0;
 
 export default async function RutasPage() {
   const locale = await getLocale();
+  const t = await getTranslations("rutas");
+  const tHome = await getTranslations("home");
   const rutas = await getRutas(locale);
 
-  // Filtrar solo rutas activas
   const rutasActivas = rutas.filter((r) => r.activo);
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-12">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Rutas</h1>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
         <p className="mt-2 text-gray-600">
-          Descubre rutas turísticas por los pueblos más bonitos de España
+          {t("pageDesc")}
         </p>
       </div>
 
       {rutasActivas.length === 0 ? (
-        <p className="text-gray-600">No hay rutas disponibles</p>
+        <p className="text-gray-600">{t("noRoutes")}</p>
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {rutasActivas.map((ruta) => (
@@ -51,7 +52,7 @@ export default async function RutasPage() {
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-accent">
-                    <span className="text-sm text-muted-foreground">Sin imagen</span>
+                    <span className="text-sm text-muted-foreground">{tHome("noImage")}</span>
                   </div>
                 )}
                 {/* Logo overlay */}
