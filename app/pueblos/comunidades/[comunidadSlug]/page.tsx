@@ -3,7 +3,7 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
-import { getPueblosLite } from "@/lib/api";
+import { getPueblosLite, type PuebloLite } from "@/lib/api";
 import { findCcaaBySlug, norm } from "../../../_components/pueblos/ccaa.config";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Section } from "@/app/components/ui/section";
@@ -67,7 +67,7 @@ export default async function ComunidadDetallePage({
     );
   }
 
-  const map = new Map<string, Pueblo[]>();
+  const map = new Map<string, PuebloLite[]>();
   for (const p of dentro) {
     const prov = (p.provincia ?? "Sin provincia").trim() || "Sin provincia";
     if (!map.has(prov)) map.set(prov, []);
