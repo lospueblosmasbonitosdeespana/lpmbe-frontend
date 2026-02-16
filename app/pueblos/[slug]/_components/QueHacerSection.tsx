@@ -3,6 +3,7 @@ import Link from "next/link"
 import { Section } from "@/app/components/ui/section"
 import { Container } from "@/app/components/ui/container"
 import { Title, Body, Eyebrow } from "@/app/components/ui/typography"
+import { getTranslations } from "next-intl/server"
 
 type Multiexperiencia = {
   id: number
@@ -28,12 +29,13 @@ interface QueHacerSectionProps {
   rutas?: RutaEnPueblo[]
 }
 
-export function QueHacerSection({
+export async function QueHacerSection({
   puebloNombre,
   puebloSlug,
   multiexperiencias,
   rutas = [],
 }: QueHacerSectionProps) {
+  const t = await getTranslations("queHacer")
   const hasMultiex = multiexperiencias.length > 0
   const hasRutas = rutas.length > 0
 
@@ -43,13 +45,12 @@ export function QueHacerSection({
     <Section spacing="md" background="default" id="que-hacer">
       <Container>
         <div className="mb-6">
-          <Title as="h2">Qué hacer en {puebloNombre}</Title>
+          <Title as="h2">{t("title", { nombre: puebloNombre })}</Title>
           <Body className="mt-2 text-muted-foreground">
-            Rutas, experiencias y actividades para descubrir el pueblo.
+            {t("subtitle")}
           </Body>
         </div>
 
-        {/* MULTIEXPERIENCIAS + Rutas que pasan por el pueblo - diseño V0 */}
         <div>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -59,11 +60,11 @@ export function QueHacerSection({
                   href={`/rutas/${ruta.slug}`}
                   className="text-xs font-semibold uppercase tracking-wider text-red-600 hover:text-red-700 hover:underline"
                 >
-                  {ruta.titulo} que pasa por {puebloNombre}
+                  {t("routeThrough", { titulo: ruta.titulo, nombre: puebloNombre })}
                 </Link>
               ))}
               {hasMultiex && (
-                <Eyebrow className="text-red-600">MULTIEXPERIENCIAS</Eyebrow>
+                <Eyebrow className="text-red-600">{t("multiexperiencias").toUpperCase()}</Eyebrow>
               )}
             </div>
             {hasMultiex && (
@@ -71,7 +72,7 @@ export function QueHacerSection({
                 href={`/pueblos/${puebloSlug}/multiexperiencias`}
                 className="text-sm font-medium text-primary hover:text-primary/80"
               >
-                Ver todas
+                {t("viewAll")}
               </Link>
             )}
           </div>
@@ -99,13 +100,13 @@ export function QueHacerSection({
                 )}
                 <div className="mt-3">
                   <span className="mb-0.5 block text-xs uppercase tracking-wider text-muted-foreground">
-                    RUTA
+                    {t("route").toUpperCase()}
                   </span>
                   <h3 className="font-serif text-lg leading-snug transition-colors group-hover:text-primary">
-                    {ruta.titulo} que pasa por {puebloNombre}
+                    {t("routeThrough", { titulo: ruta.titulo, nombre: puebloNombre })}
                   </h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                    Descubre esta ruta y sus pueblos
+                    {t("discoverRoute")}
                   </p>
                 </div>
               </Link>
@@ -128,7 +129,7 @@ export function QueHacerSection({
                 )}
                 <div className="mt-3">
                   <span className="mb-0.5 block text-xs uppercase tracking-wider text-muted-foreground">
-                    EXPERIENCIA
+                    {t("experience").toUpperCase()}
                   </span>
                   <h3 className="font-serif text-lg leading-snug transition-colors group-hover:text-primary">
                     {mx.titulo}

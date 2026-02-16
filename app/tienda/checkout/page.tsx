@@ -11,8 +11,10 @@ import type { Direccion, CheckoutResponse } from '@/src/types/tienda';
 import { normalizeCheckoutResponse } from '@/src/types/tienda';
 import StripePaymentClient from './StripePaymentClient';
 import CheckoutSummary from './CheckoutSummary';
+import { useTranslations } from 'next-intl';
 
 export default function CheckoutPage() {
+  const t = useTranslations('tienda');
   const router = useRouter();
   const { items, clear, getTotal } = useCartStore();
   
@@ -301,7 +303,7 @@ export default function CheckoutPage() {
   if (loading) {
     return (
       <main className="mx-auto max-w-7xl px-6 py-12">
-        <p>Cargando...</p>
+        <p>{t('loadingText')}</p>
       </main>
     );
   }
@@ -310,18 +312,18 @@ export default function CheckoutPage() {
   if (!isLoggedIn) {
     return (
       <main className="mx-auto max-w-7xl px-6 py-12">
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('checkoutTitle')}</h1>
         
         <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-8 text-center">
-          <h2 className="text-xl font-semibold mb-3">Login requerido</h2>
+          <h2 className="text-xl font-semibold mb-3">{t('loginRequired')}</h2>
           <p className="text-gray-700 mb-6">
-            Debes iniciar sesión para completar tu compra
+            {t('loginRequiredDesc')}
           </p>
           <button
             onClick={() => router.push('/entrar?redirect=/tienda/checkout')}
             className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
           >
-            Iniciar sesión
+            {t('loginButton')}
           </button>
         </div>
       </main>
@@ -330,7 +332,7 @@ export default function CheckoutPage() {
 
   return (
     <main className="mx-auto max-w-7xl px-6 py-12">
-      <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+      <h1 className="text-3xl font-bold mb-8">{t('checkoutTitle')}</h1>
 
       {error && (
         <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-red-800">
@@ -342,7 +344,7 @@ export default function CheckoutPage() {
         {/* Direcciones */}
         <div className="lg:col-span-2 space-y-6">
           <div>
-            <h2 className="text-xl font-semibold mb-4">Dirección de envío</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('shippingAddress')}</h2>
 
             {!showNewDireccion && direcciones.length > 0 && (
               <div className="space-y-3">
@@ -381,7 +383,7 @@ export default function CheckoutPage() {
                       )}
                       {dir.esPrincipal && (
                         <span className="ml-2 inline-block rounded bg-green-100 px-2 py-0.5 text-xs text-green-800">
-                          Principal
+                          {t('principal')}
                         </span>
                       )}
                     </label>
@@ -391,7 +393,7 @@ export default function CheckoutPage() {
                         onClick={() => handleStartEdit(dir)}
                         className="rounded border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
                       >
-                        Editar
+                        {t('edit')}
                       </button>
                       <button
                         type="button"
@@ -399,7 +401,7 @@ export default function CheckoutPage() {
                         disabled={deletingId === dir.id}
                         className="rounded border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
                       >
-                        {deletingId === dir.id ? 'Eliminando…' : 'Eliminar'}
+                        {deletingId === dir.id ? t('deleting') : t('delete')}
                       </button>
                     </div>
                   </div>
@@ -414,13 +416,13 @@ export default function CheckoutPage() {
                     }}
                     className="text-sm text-blue-600 hover:text-blue-800"
                   >
-                    + Añadir nueva dirección
+                    {t('addNewAddress')}
                   </button>
                   <Link
                     href="/mi-cuenta/direcciones"
                     className="text-sm text-gray-500 hover:text-gray-700"
                   >
-                    Gestionar direcciones
+                    {t('manageAddresses')}
                   </Link>
                 </div>
               </div>
@@ -428,11 +430,11 @@ export default function CheckoutPage() {
 
             {(showNewDireccion || direcciones.length === 0) && (
               <div className="rounded-lg border border-gray-200 bg-white p-6 space-y-4">
-                <h3 className="font-semibold">{editingId ? 'Editar dirección' : 'Nueva dirección'}</h3>
+                <h3 className="font-semibold">{editingId ? t('editAddress') : t('newAddress')}</h3>
 
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Nombre completo *
+                    {t('fullName')}
                   </label>
                   <input
                     type="text"
@@ -445,7 +447,7 @@ export default function CheckoutPage() {
 
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Dirección *
+                    {t('address')}
                   </label>
                   <input
                     type="text"
@@ -459,7 +461,7 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Ciudad *
+                      {t('city')}
                     </label>
                     <input
                       type="text"
@@ -472,7 +474,7 @@ export default function CheckoutPage() {
 
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Provincia
+                      {t('province')}
                     </label>
                     <input
                       type="text"
@@ -486,7 +488,7 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Código Postal *
+                      {t('postalCode')}
                     </label>
                     <input
                       type="text"
@@ -499,7 +501,7 @@ export default function CheckoutPage() {
 
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      País
+                      {t('country')}
                     </label>
                     <select
                       value={formData.pais}
@@ -526,19 +528,19 @@ export default function CheckoutPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, paisOtro: e.target.value })
                         }
-                        placeholder="Nombre del país (ej: Francia, México)"
+                        placeholder={t('countryOtherPlaceholder')}
                         className="mt-2 w-full rounded border border-gray-300 px-3 py-2"
                       />
                     )}
                     <p className="mt-1 text-xs text-gray-500">
-                      Envíos a España, Portugal, Europa y resto del mundo
+                      {t('shippingWorldwide')}
                     </p>
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Teléfono
+                    {t('phone')}
                   </label>
                   <input
                     type="tel"
@@ -556,7 +558,7 @@ export default function CheckoutPage() {
                       setFormData({ ...formData, esPrincipal: e.target.checked })
                     }
                   />
-                  <span className="text-sm">Establecer como principal</span>
+                  <span className="text-sm">{t('setAsPrincipal')}</span>
                 </label>
 
                 <div className="flex gap-3 pt-3">
@@ -565,7 +567,7 @@ export default function CheckoutPage() {
                     disabled={processing}
                     className="rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
                   >
-                    {processing ? 'Guardando...' : 'Guardar'}
+                    {processing ? t('saving') : t('save')}
                   </button>
                   {direcciones.length > 0 && (
                     <button
@@ -573,7 +575,7 @@ export default function CheckoutPage() {
                       onClick={handleCancelForm}
                       className="rounded-lg border border-gray-300 px-6 py-2 hover:bg-gray-50"
                     >
-                      Cancelar
+                      {t('cancel')}
                     </button>
                   )}
                 </div>
@@ -604,7 +606,7 @@ export default function CheckoutPage() {
                 disabled={processing || !selectedDireccionId || !checkoutData?.stripeConfigured}
                 className="mt-4 w-full rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {processing ? 'Procesando...' : 'Realizar pedido'}
+                {processing ? t('processing') : t('placeOrder')}
               </button>
             )}
           </div>

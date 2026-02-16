@@ -7,6 +7,7 @@ import { Section } from "@/app/components/ui/section"
 import { Container } from "@/app/components/ui/container"
 import { Grid } from "@/app/components/ui/grid"
 import { Title, Eyebrow, Body } from "@/app/components/ui/typography"
+import { useTranslations } from "next-intl"
 
 type CategoryType =
   | "nature"
@@ -146,9 +147,7 @@ function CategoryCard({ category }: { category: CategoryData }) {
                 </li>
               ))}
               {category.items.length > 3 && (
-                <li className="text-sm text-muted-foreground">
-                  +{category.items.length - 3} más
-                </li>
+                <CategoryMoreLabel count={category.items.length - 3} />
               )}
             </ul>
           )}
@@ -164,18 +163,24 @@ function CategoryCard({ category }: { category: CategoryData }) {
   return content
 }
 
+function CategoryMoreLabel({ count }: { count: number }) {
+  const t = useTranslations("categories")
+  return <li className="text-sm text-muted-foreground">{t("more", { count })}</li>
+}
+
 export function CategoryHighlights({
   categories,
   layout = "cards",
   className,
   id,
 }: CategoryHighlightsProps) {
+  const t = useTranslations("categories")
   return (
     <Section spacing="md" className={className} id={id}>
       <Container>
         <div className="mb-6">
-          <Eyebrow>Qué hacer</Eyebrow>
-          <Title className="mt-2">Experiencias por categoría</Title>
+          <Eyebrow>{t("eyebrow")}</Eyebrow>
+          <Title className="mt-2">{t("title")}</Title>
         </div>
 
         {layout === "cards" && (

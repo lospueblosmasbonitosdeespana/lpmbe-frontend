@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/src/types/tienda';
+import { useTranslations } from 'next-intl';
 
 interface ProductCardProps {
   product: Product;
@@ -17,6 +18,7 @@ function toNum(v: unknown): number {
 }
 
 export function ProductCard({ product, className }: ProductCardProps) {
+  const t = useTranslations('tienda');
   const precioOriginal = toNum(product.precio);
   const precioFinal = toNum(product.finalPrice ?? product.precio);
   const hasDiscount =
@@ -45,7 +47,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
         <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
           {usePlaceholder ? (
             <div className="absolute inset-0 flex items-center justify-center bg-muted text-muted-foreground text-sm">
-              Sin imagen
+              {t('noImage')}
             </div>
           ) : (
             <Image
@@ -62,7 +64,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           {/* Badge Destacado (top-left) */}
           {product.destacado && (
             <span className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
-              Destacado
+              {t('featured')}
             </span>
           )}
 
@@ -76,7 +78,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           {/* Botón agregar al carrito (hover) */}
           <div className="absolute bottom-3 left-3 right-3 translate-y-2 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
             <span className="block rounded-md bg-card/95 px-4 py-2.5 text-center text-sm font-medium text-foreground backdrop-blur-sm transition-colors hover:bg-card">
-              Ver producto
+              {t('viewProduct')}
             </span>
           </div>
         </div>
@@ -84,7 +86,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
         {/* Info */}
         <div className="mt-3 flex flex-col gap-1">
           <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
-            {product.categoria || 'Producto'}
+            {product.categoria || t('product')}
           </span>
           <h3 className="font-serif text-base font-medium leading-snug transition-colors group-hover:text-primary">
             {product.nombre}
@@ -106,14 +108,14 @@ export function ProductCard({ product, className }: ProductCardProps) {
                 </span>
               )}
               {product.stock <= 0 ? (
-                <span className="text-xs text-destructive">Agotado</span>
+                <span className="text-xs text-destructive">{t('outOfStock')}</span>
               ) : (
-                <span className="text-xs text-green-600">En stock</span>
+                <span className="text-xs text-green-600">{t('inStock')}</span>
               )}
             </div>
             {hasDiscount && ahorro > 0 && (
               <span className="text-xs font-medium text-green-600">
-                Ahorro: {ahorro.toFixed(2)} €
+                {t('savings', { amount: ahorro.toFixed(2) })}
               </span>
             )}
           </div>

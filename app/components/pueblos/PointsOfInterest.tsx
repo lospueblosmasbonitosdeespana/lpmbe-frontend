@@ -7,6 +7,7 @@ import { Section } from "@/app/components/ui/section"
 import { Container } from "@/app/components/ui/container"
 import { Grid } from "@/app/components/ui/grid"
 import { Headline, Eyebrow } from "@/app/components/ui/typography"
+import { useTranslations } from "next-intl"
 
 interface PointOfInterest {
   id: number
@@ -34,6 +35,7 @@ interface PointsOfInterestProps {
 }
 
 export function PointsOfInterest({ points, className, maxItems = 6, hideHeader, id, allHref, showFullDescription }: PointsOfInterestProps) {
+  const t = useTranslations("poi")
   if (points.length === 0) return null
 
   const toShow = maxItems === 0 ? points : points.slice(0, maxItems)
@@ -43,13 +45,13 @@ export function PointsOfInterest({ points, className, maxItems = 6, hideHeader, 
       <Container>
         {!hideHeader && (
           <div className="mb-10 max-w-2xl md:mb-12">
-            <Eyebrow className="mb-3 block">Qué ver</Eyebrow>
+            <Eyebrow className="mb-3 block">{t("eyebrow")}</Eyebrow>
             {allHref ? (
               <Link href={allHref} className="group inline-block">
-                <Headline className="text-2xl sm:text-3xl transition-colors group-hover:text-primary">Lugares de interés</Headline>
+                <Headline className="text-2xl sm:text-3xl transition-colors group-hover:text-primary">{t("title")}</Headline>
               </Link>
             ) : (
-              <Headline className="text-2xl sm:text-3xl">Lugares de interés</Headline>
+              <Headline className="text-2xl sm:text-3xl">{t("title")}</Headline>
             )}
           </div>
         )}
@@ -66,7 +68,7 @@ export function PointsOfInterest({ points, className, maxItems = 6, hideHeader, 
               href={allHref}
               className="inline-flex items-center rounded-lg border border-primary/25 bg-primary/10 px-4 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/15 hover:border-primary/35"
             >
-              Todos los lugares de interés
+              {t("viewAll")}
             </Link>
           </div>
         )}
