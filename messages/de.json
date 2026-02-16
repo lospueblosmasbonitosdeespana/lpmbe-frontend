@@ -80,7 +80,11 @@
     "tabNews": "Nachrichten",
     "tabSemaforos": "Ampeln",
     "tabAlertas": "Warnungen",
-    "meteo": "Wetter"
+    "meteo": "Wetter",
+    "actualidadTitle": "Aktuelles",
+    "actualidadSubtitle": "Nachrichten und Hinweise des Vereins.",
+    "seeAllActualidad": "Alle Meldungen anzeigen",
+    "noRecentContent": "Keine aktuellen Inhalte."
   },
   "explore": {
     "title": "Dörfer erkunden",
@@ -99,7 +103,9 @@
     "province": "Provinz:",
     "clearFilters": "Filter löschen",
     "byProvince": "Nach Provinz",
-    "communities": "Regionen"
+    "communities": "Regionen",
+    "loadError": "Fehler beim Laden der Dörfer. Bitte versuchen Sie es später erneut.",
+    "loadingMap": "Karte wird geladen..."
   },
   "profile": {
     "title": "Mein Profil",
@@ -128,11 +134,26 @@
     "experiences": "Verfügbare Erlebnisse",
     "viewOnMap": "Siehe auf der Karte 🗺️",
     "trafficLight": {
-      "green": "Empfohlener Besuch",
-      "yellow": "Besuch mit Vorsicht",
-      "red": "Besuch nicht empfohlen",
-      "unknown": "Keine Informationen"
+      "green": "Ideal zu besuchen",
+      "yellow": "Hoher Besucheraufkommen",
+      "red": "Nicht der richtige Zeitpunkt",
+      "unknown": "Keine Informationen",
+      "labelGreen": "Ideal für einen ruhigen Besuch",
+      "labelYellow": "Hoher Besucheraufkommen",
+      "labelRed": "Nicht der richtige Zeitpunkt für einen Besuch",
+      "mensajeVerde": "Idealer Zeitpunkt für einen Besuch. Geringer Andrang erwartet.",
+      "mensajeAmarillo": "Hoher Besucheraufkommen. Planen Sie Ihren Besuch im Voraus.",
+      "mensajeRojo": "Nicht der richtige Zeitpunkt für dieses Dorf. Besuchen Sie eines unserer anderen Dörfer."
     },
+    "semaforoTuristico": "Touristen-Ampel",
+    "semaforoNoDisponible": "Ampel nicht verfügbar",
+    "semaforoUpdated": "Aktualisiert",
+    "semaforoScheduled": "Geplant",
+    "semaforoValidUntil": "Gültig bis",
+    "semaforoUpdatedNow": "Gerade eben",
+    "semaforoUpdatedMin": "Vor {n} Min.",
+    "semaforoUpdatedHours": "Vor {n} Std.",
+    "semaforoUpdatedDays": "Vor {n} Tag(en)",
     "weather": {
       "loading": "Ladezeit...",
       "tomorrow": "Morgen"
@@ -622,6 +643,7 @@
     "principalUpdated": "Hauptadresse aktualisiert"
   },
   "notifications": {
+    "all": "Alle",
     "prefsTitle": "Einstellungen für Benachrichtigungen",
     "viewNotifs": "Meine Benachrichtigungen anzeigen",
     "prefsSubtitle": "Wählen Sie die Städte und Arten von Benachrichtigungen aus, die Sie erhalten möchten.",
@@ -645,7 +667,18 @@
     "savingInline": "(Sparen...)",
     "centerTitle": "Benachrichtigungszentrale",
     "prefsLink": "Präferenzen",
-    "all": "Alle",
+    "noTitle": "Ohne Titel",
+    "loading": "Laden...",
+    "noNotifications": "Keine Benachrichtigungen anzuzeigen.",
+    "motivo": "Grund:",
+    "dateUnavailable": "Datum nicht verfügbar",
+    "dateInvalid": "Ungültiges Datum",
+    "alertaPueblo": "Dorfwarnung",
+    "semaforoPuebloIs": "{pueblo} ist {status}",
+    "semaforoPuebloUpdated": "{pueblo} hat seinen Status aktualisiert",
+    "semaforoStatusGreen": "grün",
+    "semaforoStatusYellow": "gelb",
+    "semaforoStatusRed": "rot",
     "noActiveNotifs": "Sie haben keine aktiven Benachrichtigungen.",
     "configurePrefs": "Legen Sie Ihre Einstellungen fest, um Benachrichtigungen zu erhalten.",
     "noNotifsOfType": "Keine Benachrichtigungen der Art",
@@ -653,7 +686,19 @@
     "notifications": "Benachrichtigungen",
     "notification": "Meldung",
     "village": "Dorf:",
-    "inbox": "Tablett"
+    "inbox": "Tablett",
+    "loadErrorFeed": "Fehler beim Laden der Benachrichtigungen.",
+    "noNotificationsNow": "Derzeit keine Benachrichtigungen.",
+    "noMeteoAlertsNow": "Derzeit keine Wetterwarnungen.",
+    "noItemsNow": "Derzeit keine {type}.",
+    "viewAll": "Alle anzeigen",
+    "open": "Öffnen",
+    "alertFallback": "Warnung",
+    "actualidadFallback": "Aktuelles",
+    "pageSubtitle": "Nachrichten, Warnungen und Ampeln.",
+    "meteoAlerts": "Wetterwarnungen",
+    "retry": "Erneut versuchen",
+    "loadCenterError": "Benachrichtigungszentrum konnte nicht geladen werden."
   },
   "visitedVillages": {
     "title": "Meine besuchten Dörfer",

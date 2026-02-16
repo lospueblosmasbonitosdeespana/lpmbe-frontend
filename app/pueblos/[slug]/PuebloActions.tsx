@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -22,26 +23,29 @@ type PuebloActionsProps = {
 
 type ActionBarState = "idle" | "loading" | "success" | "error";
 
-function getSemaforoConfig(estado: string | null) {
+function getSemaforoConfig(
+  estado: string | null,
+  t: (key: string) => string
+): { label: string; mensajeDefault: string; color: string; dotClass: string } | null {
   switch (estado) {
     case "VERDE":
       return {
-        label: "Ideal para una visita tranquila",
-        mensajeDefault: "Momento ideal para visitar. Poca afluencia turística prevista.",
+        label: t("trafficLight.labelGreen"),
+        mensajeDefault: t("trafficLight.mensajeVerde"),
         color: "text-green-700",
         dotClass: "bg-green-500",
       };
     case "AMARILLO":
       return {
-        label: "Alta afluencia de visitantes",
-        mensajeDefault: "Hay una alta afluencia de visitantes. Conviene planificar la visita.",
+        label: t("trafficLight.labelYellow"),
+        mensajeDefault: t("trafficLight.mensajeAmarillo"),
         color: "text-amber-700",
         dotClass: "bg-amber-500",
       };
     case "ROJO":
       return {
-        label: "No es el momento indicado para visitar",
-        mensajeDefault: "No es el momento indicado para visitar este pueblo. Sugerimos visitar otro de nuestros pueblos.",
+        label: t("trafficLight.labelRed"),
+        mensajeDefault: t("trafficLight.mensajeRojo"),
         color: "text-red-700",
         dotClass: "bg-red-500",
       };
@@ -50,7 +54,10 @@ function getSemaforoConfig(estado: string | null) {
   }
 }
 
-function formatActualizado(updatedAt: string | Date | null | undefined): string | null {
+function formatActualizado(
+  updatedAt: string | Date | null | undefined,
+  t: (key: string, values?: Record<string, number>) => string
+): string | null {
   if (!updatedAt) return null;
   const d = typeof updatedAt === "string" ? new Date(updatedAt) : updatedAt;
   if (isNaN(d.getTime())) return null;
@@ -59,18 +66,20 @@ function formatActualizado(updatedAt: string | Date | null | undefined): string 
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
-  if (diffMins < 1) return "Actualizado: Ahora mismo";
-  if (diffMins < 60) return `Actualizado: Hace ${diffMins} min`;
-  if (diffHours < 24) return `Actualizado: Hace ${diffHours} ${diffHours === 1 ? "hora" : "horas"}`;
-  if (diffDays < 7) return `Actualizado: Hace ${diffDays} ${diffDays === 1 ? "día" : "días"}`;
-  return `Actualizado: ${d.toLocaleDateString("es-ES", { day: "numeric", month: "short" })}`;
+  const prefix = `${t("semaforoUpdated")}: `;
+  if (diffMins < 1) return prefix + t("semaforoUpdatedNow");
+  if (diffMins < 60) return prefix + t("semaforoUpdatedMin", { n: diffMins });
+  if (diffHours < 24) return prefix + t("semaforoUpdatedHours", { n: diffHours });
+  if (diffDays < 7) return prefix + t("semaforoUpdatedDays", { n: diffDays });
+  return prefix + d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
 }
 
-function formatFecha(fecha: string | Date | null | undefined): string | null {
+function formatFecha(fecha: string | Date | null | undefined, locale: string): string | null {
   if (!fecha) return null;
   const d = typeof fecha === "string" ? new Date(fecha) : fecha;
   if (isNaN(d.getTime())) return null;
-  return d.toLocaleDateString("es-ES", {
+  const loc = locale === "es" ? "es-ES" : locale;
+  return d.toLocaleDateString(loc, {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -240,6 +249,8 @@ export default function PuebloActions({
   semaforoProgramadoFin,
   semaforoCaducaEn,
 }: PuebloActionsProps) {
+  const t = useTranslations("pueblo");
+  const locale = useLocale();
   const [shareState, setShareState] = useState<ActionBarState>("idle");
   const [shareDropdownOpen, setShareDropdownOpen] = useState(false);
   const shareDropdownRef = useRef<HTMLDivElement>(null);
@@ -315,7 +326,7 @@ export default function PuebloActions({
     : undefined;
   const mapUrl = `#${mapAnchorId}`;
 
-  const semaforoConfig = semaforoEstado ? getSemaforoConfig(semaforoEstado) : null;
+  const semaforoConfig = semaforoEstado ? getSemaforoConfig(semaforoEstado, t) : null;
 
   return (
     <>
@@ -434,17 +445,17 @@ export default function PuebloActions({
                 </p>
                 {(semaforoProgramadoInicio && semaforoProgramadoFin) && (
                   <span className="mt-1 block text-xs text-muted-foreground">
-                    Programado: {formatFecha(semaforoProgramadoInicio)} – {formatFecha(semaforoProgramadoFin)}
+                    {t("semaforoScheduled")}: {formatFecha(semaforoProgramadoInicio, locale)} – {formatFecha(semaforoProgramadoFin, locale)}
                   </span>
                 )}
                 {!semaforoProgramadoInicio && semaforoCaducaEn && (
                   <span className="mt-1 block text-xs text-muted-foreground">
-                    Vigente hasta: {formatFecha(semaforoCaducaEn)}
+                    {t("semaforoValidUntil")}: {formatFecha(semaforoCaducaEn, locale)}
                   </span>
                 )}
-                {formatActualizado(semaforoUpdatedAt) && (
+                {formatActualizado(semaforoUpdatedAt, t) && (
                   <span className="mt-1 block text-xs text-muted-foreground">
-                    {formatActualizado(semaforoUpdatedAt)}
+                    {formatActualizado(semaforoUpdatedAt, t)}
                   </span>
                 )}
               </div>

@@ -80,7 +80,11 @@
     "tabNews": "News",
     "tabSemaforos": "Traffic lights",
     "tabAlertas": "Alerts",
-    "meteo": "Weather"
+    "meteo": "Weather",
+    "actualidadTitle": "News & Updates",
+    "actualidadSubtitle": "Association news and notices.",
+    "seeAllActualidad": "View all updates",
+    "noRecentContent": "No recent content."
   },
   "explore": {
     "title": "Explore Villages",
@@ -99,7 +103,9 @@
     "province": "Province:",
     "clearFilters": "Clear filters",
     "byProvince": "By province",
-    "communities": "Regions"
+    "communities": "Regions",
+    "loadError": "Error loading villages. Please try again later.",
+    "loadingMap": "Loading map..."
   },
   "profile": {
     "title": "My Profile",
@@ -128,11 +134,26 @@
     "experiences": "Experiences available",
     "viewOnMap": "See on map 🗺️",
     "trafficLight": {
-      "green": "Recommended visit",
-      "yellow": "Visit with caution",
-      "red": "Visit not recommended",
-      "unknown": "No information"
+      "green": "Ideal to visit",
+      "yellow": "High visitor numbers",
+      "red": "Not the right time to visit",
+      "unknown": "No information",
+      "labelGreen": "Ideal for a quiet visit",
+      "labelYellow": "High visitor numbers",
+      "labelRed": "Not the right time to visit",
+      "mensajeVerde": "Ideal time to visit. Low tourist numbers expected.",
+      "mensajeAmarillo": "High visitor numbers. Plan your visit in advance.",
+      "mensajeRojo": "Not the right time to visit this village. We suggest visiting another of our villages."
     },
+    "semaforoTuristico": "Tourist traffic light",
+    "semaforoNoDisponible": "Traffic light unavailable",
+    "semaforoUpdated": "Updated",
+    "semaforoScheduled": "Scheduled",
+    "semaforoValidUntil": "Valid until",
+    "semaforoUpdatedNow": "Just now",
+    "semaforoUpdatedMin": "{n} min ago",
+    "semaforoUpdatedHours": "{n} hour(s) ago",
+    "semaforoUpdatedDays": "{n} day(s) ago",
     "weather": {
       "loading": "Loading time...",
       "tomorrow": "Tomorrow"
@@ -622,6 +643,7 @@
     "principalUpdated": "Main address updated"
   },
   "notifications": {
+    "all": "All",
     "prefsTitle": "Notification preferences",
     "viewNotifs": "View my notifications",
     "prefsSubtitle": "Select the villages and types of notifications you want to receive.",
@@ -645,7 +667,18 @@
     "savingInline": "(Saving...)",
     "centerTitle": "Notification center",
     "prefsLink": "Preferences",
-    "all": "All",
+    "noTitle": "No title",
+    "loading": "Loading...",
+    "noNotifications": "No notifications to show.",
+    "motivo": "Reason:",
+    "dateUnavailable": "Date unavailable",
+    "dateInvalid": "Invalid date",
+    "alertaPueblo": "Village alert",
+    "semaforoPuebloIs": "{pueblo} is {status}",
+    "semaforoPuebloUpdated": "{pueblo} updated its status",
+    "semaforoStatusGreen": "green",
+    "semaforoStatusYellow": "yellow",
+    "semaforoStatusRed": "red",
     "noActiveNotifs": "You have no active notifications.",
     "configurePrefs": "Set your preferences to start receiving notifications.",
     "noNotifsOfType": "There are no notifications of type",
@@ -653,7 +686,19 @@
     "notifications": "notifications",
     "notification": "notification",
     "village": "Village:",
-    "inbox": "Tray"
+    "inbox": "Tray",
+    "loadErrorFeed": "Error loading notifications.",
+    "noNotificationsNow": "No notifications right now.",
+    "noMeteoAlertsNow": "No weather alerts right now.",
+    "noItemsNow": "No {type} right now.",
+    "viewAll": "View all",
+    "open": "Open",
+    "alertFallback": "Alert",
+    "actualidadFallback": "News",
+    "pageSubtitle": "News, alerts and traffic light status.",
+    "meteoAlerts": "Weather Alerts",
+    "retry": "Retry",
+    "loadCenterError": "Could not load the notification center."
   },
   "visitedVillages": {
     "title": "My visited villages",

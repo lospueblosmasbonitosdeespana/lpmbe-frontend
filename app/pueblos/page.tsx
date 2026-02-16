@@ -1,4 +1,4 @@
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getPueblosLite } from "@/lib/api";
 import PueblosList from "./PueblosList";
 
@@ -21,6 +21,7 @@ export default async function PueblosPage({
 }) {
   const sp = searchParams ? await searchParams : ({} as SearchParams);
   const locale = await getLocale();
+  const t = await getTranslations("explore");
   const comunidad = (sp.comunidad ?? "").trim();
   const provincia = (sp.provincia ?? "").trim();
 
@@ -36,9 +37,9 @@ export default async function PueblosPage({
   } catch {
     return (
       <main style={{ padding: "24px" }}>
-        <h1>Pueblos</h1>
+        <h1>{t("title")}</h1>
         <p style={{ marginTop: "24px", color: "#d32f2f" }}>
-          Error al cargar los pueblos. Por favor, intenta de nuevo más tarde.
+          {t("loadError")}
         </p>
       </main>
     );

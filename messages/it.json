@@ -80,7 +80,11 @@
     "tabNews": "Notizie",
     "tabSemaforos": "Semafori",
     "tabAlertas": "Avvisi",
-    "meteo": "Il tempo"
+    "meteo": "Il tempo",
+    "actualidadTitle": "Attualità",
+    "actualidadSubtitle": "Notizie e avvisi dell'Associazione.",
+    "seeAllActualidad": "Vedi tutta l'attualità",
+    "noRecentContent": "Nessun contenuto recente."
   },
   "explore": {
     "title": "Esplora i borghi",
@@ -99,7 +103,9 @@
     "province": "Provincia:",
     "clearFilters": "Cancella filtri",
     "byProvince": "Per provincia",
-    "communities": "Regioni"
+    "communities": "Regioni",
+    "loadError": "Errore nel caricamento dei borghi. Riprova più tardi.",
+    "loadingMap": "Caricamento mappa..."
   },
   "profile": {
     "title": "Il mio profilo",
@@ -128,11 +134,26 @@
     "experiences": "Esperienze disponibili",
     "viewOnMap": "Vedi sulla mappa 🗺️",
     "trafficLight": {
-      "green": "Visita consigliata",
-      "yellow": "Visita con cautela",
-      "red": "Visita non raccomandata",
-      "unknown": "Nessuna informazione"
+      "green": "Ideale da visitare",
+      "yellow": "Alta affluenza di visitatori",
+      "red": "Non è il momento indicato",
+      "unknown": "Nessuna informazione",
+      "labelGreen": "Ideale per una visita tranquilla",
+      "labelYellow": "Alta affluenza di visitatori",
+      "labelRed": "Non è il momento indicato per visitare",
+      "mensajeVerde": "Momento ideale per visitare. Bassa affluenza prevista.",
+      "mensajeAmarillo": "Alta affluenza di visitatori. Conviene pianificare la visita.",
+      "mensajeRojo": "Non è il momento indicato per visitare questo borgo. Suggeriamo un altro dei nostri borghi."
     },
+    "semaforoTuristico": "Semaforo turistico",
+    "semaforoNoDisponible": "Semaforo non disponibile",
+    "semaforoUpdated": "Aggiornato",
+    "semaforoScheduled": "Programmato",
+    "semaforoValidUntil": "Valido fino al",
+    "semaforoUpdatedNow": "Proprio ora",
+    "semaforoUpdatedMin": "{n} min fa",
+    "semaforoUpdatedHours": "{n} ora/e fa",
+    "semaforoUpdatedDays": "{n} giorno/i fa",
     "weather": {
       "loading": "Tempo di caricamento...",
       "tomorrow": "Domani"
@@ -622,6 +643,7 @@
     "principalUpdated": "Indirizzo principale aggiornato"
   },
   "notifications": {
+    "all": "Tutte",
     "prefsTitle": "Preferenze di notifica",
     "viewNotifs": "Visualizza le mie notifiche",
     "prefsSubtitle": "Seleziona i borghi e i tipi di notifiche che desideri ricevere.",
@@ -645,7 +667,18 @@
     "savingInline": "(Risparmio...)",
     "centerTitle": "Centro notifiche",
     "prefsLink": "Preferenze",
-    "all": "Tutti",
+    "noTitle": "Senza titolo",
+    "loading": "Caricamento...",
+    "noNotifications": "Nessuna notifica da mostrare.",
+    "motivo": "Motivo:",
+    "dateUnavailable": "Data non disponibile",
+    "dateInvalid": "Data non valida",
+    "alertaPueblo": "Allerta villaggio",
+    "semaforoPuebloIs": "{pueblo} è {status}",
+    "semaforoPuebloUpdated": "{pueblo} ha aggiornato il suo stato",
+    "semaforoStatusGreen": "verde",
+    "semaforoStatusYellow": "giallo",
+    "semaforoStatusRed": "rosso",
     "noActiveNotifs": "Non ci sono notifiche attive.",
     "configurePrefs": "Impostate le vostre preferenze per iniziare a ricevere le notifiche.",
     "noNotifsOfType": "Nessuna notifica di tipo",
@@ -653,7 +686,19 @@
     "notifications": "notifiche",
     "notification": "notifica",
     "village": "Villaggio:",
-    "inbox": "Vassoio"
+    "inbox": "Vassoio",
+    "loadErrorFeed": "Errore nel caricamento delle notifiche.",
+    "noNotificationsNow": "Nessuna notifica al momento.",
+    "noMeteoAlertsNow": "Nessun allarme meteorologico al momento.",
+    "noItemsNow": "Nessun {type} al momento.",
+    "viewAll": "Vedi tutto",
+    "open": "Apri",
+    "alertFallback": "Avviso",
+    "actualidadFallback": "Attualità",
+    "pageSubtitle": "Notizie, avvisi e stato dei semafori.",
+    "meteoAlerts": "Avvisi Meteo",
+    "retry": "Riprova",
+    "loadCenterError": "Impossibile caricare il centro notifiche."
   },
   "visitedVillages": {
     "title": "I miei villaggi visitati",

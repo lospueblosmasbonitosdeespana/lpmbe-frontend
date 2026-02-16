@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { homeConfig } from "./home.config";
 
 type TabKey = (typeof homeConfig.notificaciones.tabs)[number]["key"];
@@ -21,43 +22,62 @@ type Notificacion = {
   motivoPublico?: string | null;
 };
 
-function formatDate(iso?: string) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
-}
-
-// Función para obtener el título del item en Home
-function getHomeItemTitle(item: Notificacion): string {
+// Título del item traducido (semáforo usa i18n; el resto usa titulo/texto del backend o fallback)
+function getHomeItemTitle(
+  item: Notificacion,
+  tNotif: (key: string, values?: Record<string, string>) => string
+): string {
   if (item.tipo === "SEMAFORO") {
     const puebloNombre = item.pueblo?.nombre ?? "Pueblo";
     if (item.estado) {
       const estado = item.estado.toUpperCase();
-      let color = "";
-      if (estado === "VERDE") color = "verde";
-      else if (estado === "AMARILLO") color = "amarillo";
-      else if (estado === "ROJO") color = "rojo";
-      
-      if (color) {
-        return `${puebloNombre} está en ${color}`;
+      const statusKey =
+        estado === "VERDE"
+          ? "semaforoStatusGreen"
+          : estado === "AMARILLO"
+            ? "semaforoStatusYellow"
+            : estado === "ROJO"
+              ? "semaforoStatusRed"
+              : null;
+      if (statusKey) {
+        return tNotif("semaforoPuebloIs", {
+          pueblo: puebloNombre,
+          status: tNotif(statusKey),
+        });
       }
     }
-    return `${puebloNombre} actualizó su semáforo`;
+    return tNotif("semaforoPuebloUpdated", { pueblo: puebloNombre });
   }
-  
   if (item.tipo === "ALERTA" || item.tipo === "ALERTA_PUEBLO") {
-    return item.titulo ?? item.texto ?? "Alerta";
+    return (item.titulo || item.texto) || tNotif("alertFallback");
   }
-  
-  // NOTICIA o EVENTO
-  return item.titulo ?? item.texto ?? "Actualidad";
+  return (item.titulo || item.texto) || tNotif("actualidadFallback");
 }
 
 export function NotificacionesFloating() {
-  const [active, setActive] = useState<TabKey>("NACIONAL"); // "NACIONAL" = "Noticias"
+  const locale = useLocale();
+  const tHome = useTranslations("home");
+  const tNotif = useTranslations("notifications");
+  const [active, setActive] = useState<TabKey>("NACIONAL");
   const [items, setItems] = useState<Notificacion[]>([]);
   const [loading, setLoading] = useState(true);
+
+  function formatDate(iso?: string) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleDateString(locale, { day: "2-digit", month: "short" });
+  }
+
+  const tabLabels: Record<TabKey, string> = useMemo(
+    () => ({
+      NACIONAL: tHome("tabNews"),
+      SEMAFORO: tHome("tabSemaforos"),
+      ALERTA: tHome("tabAlertas"),
+      METEO: tHome("meteo"),
+    }),
+    [tHome]
+  );
 
   const maxItems = 2; // Máximo 2 items visibles
 
@@ -69,12 +89,12 @@ export function NotificacionesFloating() {
         setLoading(true);
 
         // Endpoint corregido con tipos explícitos
-        const res = await fetch("/api/public/notificaciones/feed?limit=10&tipos=NOTICIA,EVENTO,ALERTA,ALERTA_PUEBLO,SEMAFORO", {
+        const res = await fetch(`/api/public/notificaciones/feed?limit=10&tipos=NOTICIA,EVENTO,ALERTA,ALERTA_PUEBLO,SEMAFORO&lang=${encodeURIComponent(locale)}`, {
           credentials: "include",
           cache: "no-store",
         });
 
-        if (!res.ok) throw new Error("Error cargando notificaciones");
+        if (!res.ok) throw new Error(tNotif("loadErrorFeed"));
 
         const data = await res.json();
         // CRÍTICO: el backend devuelve { items: [...] }
@@ -84,7 +104,7 @@ export function NotificacionesFloating() {
           // Mapear al formato esperado por el widget
           const mapped: Notificacion[] = rawItems.map((item: any) => ({
             id: item.id ?? item.refId ?? Math.random(),
-            titulo: item.titulo ?? "(sin título)",
+            titulo: item.titulo ?? "",
             tipo: item.tipo ?? "NOTICIA",
             texto: item.texto ?? "",
             fecha: item.fecha ?? new Date().toISOString(),
@@ -135,7 +155,7 @@ export function NotificacionesFloating() {
                 href="/notificaciones"
                 className="text-base font-semibold hover:underline"
               >
-                {homeConfig.notificaciones.title}
+                {tHome("notifCenterTitle")}
               </Link>
             </div>
 
@@ -150,7 +170,7 @@ export function NotificacionesFloating() {
                       : "bg-black/5 text-black hover:bg-black/10"
                   }`}
                 >
-                  {t.label}
+                  {tabLabels[t.key]}
                 </button>
               ))}
             </div>
@@ -158,16 +178,16 @@ export function NotificacionesFloating() {
 
           <div className="mt-3">
             {loading ? (
-              <div className="text-sm text-gray-500">Cargando…</div>
+              <div className="text-sm text-gray-500">{tNotif("loading")}</div>
             ) : items.length === 0 ? (
               <div className="text-sm text-gray-500">
-                No hay notificaciones ahora mismo.
+                {tNotif("noNotificationsNow")}
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-sm text-gray-500">
-                {active === "METEO" 
-                  ? "No hay alertas meteorológicas ahora mismo."
-                  : `No hay ${homeConfig.notificaciones.tabs.find(t => t.key === active)?.label.toLowerCase()} ahora mismo.`}
+                {active === "METEO"
+                  ? tNotif("noMeteoAlertsNow")
+                  : tNotif("noItemsNow", { type: tabLabels[active].toLowerCase() })}
               </div>
             ) : (
               <ul className="space-y-2">
@@ -188,7 +208,7 @@ export function NotificacionesFloating() {
                     href = homeConfig.notificaciones.allHref;
                   }
 
-                  const titulo = getHomeItemTitle(n);
+                  const titulo = getHomeItemTitle(n, tNotif);
                   const motivo = n.tipo === "SEMAFORO" && n.motivoPublico?.trim() 
                     ? n.motivoPublico.trim() 
                     : null;
@@ -207,7 +227,7 @@ export function NotificacionesFloating() {
                         </Link>
                         {motivo && (
                           <div className="text-xs text-gray-500 mt-0.5">
-                            Motivo: {motivo}
+                            {tNotif("motivo")} {motivo}
                           </div>
                         )}
                       </div>
@@ -223,7 +243,7 @@ export function NotificacionesFloating() {
               href={homeConfig.notificaciones.allHref}
               className="text-sm font-medium hover:underline"
             >
-              Ver todas →
+              {tNotif("viewAll")} →
             </Link>
           </div>
         </div>
@@ -234,7 +254,7 @@ export function NotificacionesFloating() {
             href={active === "METEO" ? "/meteo" : homeConfig.notificaciones.allHref}
             className="flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700 h-14 md:h-16"
           >
-            Abrir
+            {tNotif("open")}
           </Link>
         </div>
       </div>

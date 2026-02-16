@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { Section } from "@/app/components/ui/section"
 import { Container } from "@/app/components/ui/container"
@@ -17,25 +18,15 @@ interface TouristTrafficLightProps {
   className?: string
 }
 
-const statusConfig: Record<
-  TrafficStatus,
-  { label: string; color: string; icon: string }
-> = {
-  green: {
-    label: "Ideal para una visita tranquila",
-    color: "text-green-700",
-    icon: "bg-green-500",
-  },
-  yellow: {
-    label: "Alta afluencia de visitantes",
-    color: "text-amber-700",
-    icon: "bg-amber-500",
-  },
-  red: {
-    label: "No es el momento indicado para visitar",
-    color: "text-red-700",
-    icon: "bg-red-500",
-  },
+const statusKeys: Record<TrafficStatus, "labelGreen" | "labelYellow" | "labelRed"> = {
+  green: "labelGreen",
+  yellow: "labelYellow",
+  red: "labelRed",
+}
+const statusStyles: Record<TrafficStatus, { color: string; icon: string }> = {
+  green: { color: "text-green-700", icon: "bg-green-500" },
+  yellow: { color: "text-amber-700", icon: "bg-amber-500" },
+  red: { color: "text-red-700", icon: "bg-red-500" },
 }
 
 function TrafficLightIndicator({ status }: { status: TrafficStatus }) {
@@ -70,7 +61,9 @@ export function TouristTrafficLight({
   state = "idle",
   className,
 }: TouristTrafficLightProps) {
-  const config = statusConfig[status]
+  const t = useTranslations("pueblo")
+  const label = t(`trafficLight.${statusKeys[status]}`)
+  const style = statusStyles[status]
 
   if (state === "loading") {
     return (
@@ -99,14 +92,14 @@ export function TouristTrafficLight({
           <TrafficLightIndicator status={status} />
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <span className={cn("text-sm font-semibold", config.color)}>
-                Semáforo turístico · {config.label}
+              <span className={cn("text-sm font-semibold", style.color)}>
+                {t("semaforoTuristico")} · {label}
               </span>
-              <span className={cn("h-2 w-2 rounded-full", config.icon)} />
+              <span className={cn("h-2 w-2 rounded-full", style.icon)} />
             </div>
             <p className="mt-0.5 text-sm text-foreground/80">{message}</p>
             {lastUpdated && (
-              <Caption className="mt-1 block">Actualizado: {lastUpdated}</Caption>
+              <Caption className="mt-1 block">{t("semaforoUpdated")}: {lastUpdated}</Caption>
             )}
           </div>
         </div>

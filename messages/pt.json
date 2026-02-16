@@ -80,7 +80,11 @@
     "tabNews": "Notícias",
     "tabSemaforos": "Semáforos",
     "tabAlertas": "Alertas",
-    "meteo": "Tempo"
+    "meteo": "Tempo",
+    "actualidadTitle": "Atualidade",
+    "actualidadSubtitle": "Notícias e avisos da Associação.",
+    "seeAllActualidad": "Ver toda a atualidade",
+    "noRecentContent": "Sem conteúdo recente."
   },
   "explore": {
     "title": "Explorar aldeias",
@@ -99,7 +103,9 @@
     "province": "Província:",
     "clearFilters": "Limpar filtros",
     "byProvince": "Por província",
-    "communities": "Regiões"
+    "communities": "Regiões",
+    "loadError": "Erro ao carregar as aldeias. Por favor, tente mais tarde.",
+    "loadingMap": "A carregar mapa..."
   },
   "profile": {
     "title": "O meu perfil",
@@ -128,11 +134,26 @@
     "experiences": "Experiências disponíveis",
     "viewOnMap": "Ver no mapa 🗺️",
     "trafficLight": {
-      "green": "Visita recomendada",
-      "yellow": "Visitar com precaução",
-      "red": "Visita não recomendada",
-      "unknown": "Nenhuma informação"
+      "green": "Ideal para visitar",
+      "yellow": "Alta afluência de visitantes",
+      "red": "Não é o momento indicado",
+      "unknown": "Nenhuma informação",
+      "labelGreen": "Ideal para uma visita tranquila",
+      "labelYellow": "Alta afluência de visitantes",
+      "labelRed": "Não é o momento indicado para visitar",
+      "mensajeVerde": "Momento ideal para visitar. Pouca afluência prevista.",
+      "mensajeAmarillo": "Alta afluência de visitantes. Convém planear a visita.",
+      "mensajeRojo": "Não é o momento indicado para visitar esta aldeia. Sugerimos outra das nossas aldeias."
     },
+    "semaforoTuristico": "Semáforo turístico",
+    "semaforoNoDisponible": "Semáforo não disponível",
+    "semaforoUpdated": "Atualizado",
+    "semaforoScheduled": "Programado",
+    "semaforoValidUntil": "Válido até",
+    "semaforoUpdatedNow": "Agora mesmo",
+    "semaforoUpdatedMin": "Há {n} min",
+    "semaforoUpdatedHours": "Há {n} hora(s)",
+    "semaforoUpdatedDays": "Há {n} dia(s)",
     "weather": {
       "loading": "Tempo de carregamento...",
       "tomorrow": "Amanhã"
@@ -622,6 +643,7 @@
     "principalUpdated": "Endereço principal atualizado"
   },
   "notifications": {
+    "all": "Todas",
     "prefsTitle": "Preferências de notificação",
     "viewNotifs": "Ver as minhas notificações",
     "prefsSubtitle": "Selecione as aldeias e os tipos de notificações que pretende receber.",
@@ -645,7 +667,18 @@
     "savingInline": "(Salvar...)",
     "centerTitle": "Centro de notificações",
     "prefsLink": "Preferências",
-    "all": "Todos",
+    "noTitle": "Sem título",
+    "loading": "A carregar...",
+    "noNotifications": "Não há notificações para mostrar.",
+    "motivo": "Motivo:",
+    "dateUnavailable": "Data não disponível",
+    "dateInvalid": "Data inválida",
+    "alertaPueblo": "Alerta aldeia",
+    "semaforoPuebloIs": "{pueblo} está {status}",
+    "semaforoPuebloUpdated": "{pueblo} atualizou o seu estado",
+    "semaforoStatusGreen": "verde",
+    "semaforoStatusYellow": "amarelo",
+    "semaforoStatusRed": "vermelho",
     "noActiveNotifs": "Não tem notificações activas.",
     "configurePrefs": "Defina as suas preferências para começar a receber notificações.",
     "noNotifsOfType": "Nenhuma notificação do tipo",
@@ -653,7 +686,19 @@
     "notifications": "notificações",
     "notification": "notificação",
     "village": "Aldeia:",
-    "inbox": "Tabuleiro"
+    "inbox": "Tabuleiro",
+    "loadErrorFeed": "Erro ao carregar notificações.",
+    "noNotificationsNow": "Não há notificações de momento.",
+    "noMeteoAlertsNow": "Não há alertas meteorológicos de momento.",
+    "noItemsNow": "Não há {type} de momento.",
+    "viewAll": "Ver tudo",
+    "open": "Abrir",
+    "alertFallback": "Alerta",
+    "actualidadFallback": "Atualidade",
+    "pageSubtitle": "Notícias, alertas e estado dos semáforos.",
+    "meteoAlerts": "Alertas Meteo",
+    "retry": "Tentar novamente",
+    "loadCenterError": "Não foi possível carregar o centro de notificações."
   },
   "visitedVillages": {
     "title": "As minhas aldeias visitadas",

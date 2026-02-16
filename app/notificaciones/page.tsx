@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { Cloud } from "lucide-react";
 import NotificacionesList from "../_components/notificaciones/NotificacionesList";
 
@@ -32,6 +33,9 @@ function normalizeFeed(data: any): NotifItem[] {
 }
 
 export default function NotificacionesPage() {
+  const locale = useLocale();
+  const t = useTranslations("notifications");
+  const tHome = useTranslations("home");
   const [items, setItems] = useState<NotifItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -42,7 +46,7 @@ export default function NotificacionesPage() {
       try {
         setLoading(true);
         setErr(null);
-        const res = await fetch("/api/public/notificaciones/feed", { cache: "no-store" });
+        const res = await fetch(`/api/public/notificaciones/feed?lang=${encodeURIComponent(locale)}`, { cache: "no-store" });
         const data = await res.json().catch(() => null);
         const normalized = normalizeFeed(data);
         if (alive) {
@@ -59,32 +63,32 @@ export default function NotificacionesPage() {
           }
         }
       } catch (e: any) {
-        if (alive) setErr("No se pudo cargar el centro de notificaciones.");
+        if (alive) setErr(t("loadCenterError"));
       } finally {
         if (alive) setLoading(false);
       }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [locale]);
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-4xl font-semibold">Centro de notificaciones</h1>
-          <p className="mt-2 text-gray-600">Noticias, alertas y estado de semáforos.</p>
+          <h1 className="text-4xl font-semibold">{tHome("notifCenterTitle")}</h1>
+          <p className="mt-2 text-gray-600">{t("pageSubtitle")}</p>
         </div>
         <Link
           href="/meteo"
           className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted/50 transition font-medium text-foreground"
         >
           <Cloud className="h-4 w-4" />
-          Alertas Meteo
+          {t("meteoAlerts")}
         </Link>
       </div>
 
       {loading ? (
-        <p className="mt-8">Cargando...</p>
+        <p className="mt-8">{t("loading")}</p>
       ) : err ? (
         <div className="mt-8">
           <p className="text-red-600">{err}</p>
@@ -92,7 +96,7 @@ export default function NotificacionesPage() {
             className="mt-4 rounded px-4 py-2 border"
             onClick={() => window.location.reload()}
           >
-            Reintentar
+            {t("retry")}
           </button>
         </div>
       ) : (

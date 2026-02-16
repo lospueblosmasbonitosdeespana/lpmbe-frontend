@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 
 type FeedItem = {
   id: string | number;
@@ -48,19 +49,28 @@ function getSemaforoColor(item: FeedItem): string | null {
   return null;
 }
 
-// Generar título para semáforo
-function getSemaforoTitulo(item: FeedItem): string {
+// Generar título para semáforo (traducido)
+function getSemaforoTitulo(
+  item: FeedItem,
+  t: (key: string, values?: Record<string, string>) => string
+): string {
   const color = getSemaforoColor(item);
   const puebloNombre = item.pueblo?.nombre ?? "Pueblo";
 
-  // SIEMPRE usar formato con color si existe
   if (color) {
-    return `${puebloNombre} está en ${color}`;
+    const statusKey =
+      color === "verde"
+        ? "semaforoStatusGreen"
+        : color === "amarillo"
+          ? "semaforoStatusYellow"
+          : "semaforoStatusRed";
+    return t("semaforoPuebloIs", {
+      pueblo: puebloNombre,
+      status: t(statusKey),
+    });
   }
 
-  // Si no hay color, el problema es que el backend no lo manda
-  // Fallback temporal (debería desaparecer cuando backend mande estado)
-  return `${puebloNombre} actualizó su semáforo`;
+  return t("semaforoPuebloUpdated", { pueblo: puebloNombre });
 }
 
 // Generar href según tipo
@@ -73,6 +83,8 @@ function getItemHref(item: FeedItem): string | null {
 }
 
 export default function NotificacionesFeed() {
+  const t = useTranslations("notifications");
+  const locale = useLocale();
   const [items, setItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +96,7 @@ export default function NotificacionesFeed() {
         setLoading(true);
         setError(null);
 
-        const res = await fetch("/api/public/notificaciones/feed", {
+        const res = await fetch(`/api/public/notificaciones/feed?lang=${encodeURIComponent(locale)}`, {
           credentials: "include",
           cache: "no-store",
         });
@@ -115,7 +127,7 @@ export default function NotificacionesFeed() {
             // Título
             let titulo = item.titulo ?? "";
             if (!titulo) {
-              titulo = "(sin título)";
+              titulo = ""; // Se mostrará traducido en UI con t('noTitle')
             }
 
             return {
@@ -165,17 +177,17 @@ export default function NotificacionesFeed() {
   function getTipoLabel(tipo: FeedItem["tipo"]): string {
     switch (tipo) {
       case "NOTICIA":
-        return "Noticia";
+        return t("news");
       case "EVENTO":
-        return "Evento";
+        return t("events");
       case "ALERTA":
-        return "Alerta";
+        return t("alerts");
       case "ALERTA_PUEBLO":
-        return "Alerta pueblo";
+        return t("alertaPueblo");
       case "SEMAFORO":
-        return "Semáforo";
+        return t("semaforos");
       case "METEO":
-        return "Meteo";
+        return t("meteo");
       default:
         return tipo;
     }
@@ -183,11 +195,10 @@ export default function NotificacionesFeed() {
 
   function formatFecha(fecha: string): string {
     const ms = toMs(fecha);
-    if (ms === 0) return "Fecha no disponible";
-    
+    if (ms === 0) return t("dateUnavailable");
     try {
       const d = new Date(ms);
-      return d.toLocaleDateString("es-ES", {
+      return d.toLocaleDateString(locale, {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -195,17 +206,16 @@ export default function NotificacionesFeed() {
         minute: "2-digit",
       });
     } catch {
-      return "Fecha inválida";
+      return t("dateInvalid");
     }
   }
 
   function renderTitulo(item: FeedItem) {
     let tituloTexto: string;
-    
     if (item.tipo === "SEMAFORO") {
-      tituloTexto = getSemaforoTitulo(item);
+      tituloTexto = getSemaforoTitulo(item, t);
     } else {
-      tituloTexto = item.titulo || "(sin título)";
+      tituloTexto = item.titulo || t("noTitle");
     }
 
     const href = getItemHref(item);
@@ -241,12 +251,12 @@ export default function NotificacionesFeed() {
   }
 
   if (loading) {
-    return <div style={{ padding: "1rem" }}>Cargando...</div>;
+    return <div style={{ padding: "1rem" }}>{t("loading")}</div>;
   }
 
   return (
     <div>
-      {/* Pestañas de filtro en español */}
+      {/* Pestañas de filtro traducidas */}
       <div
         style={{
           display: "flex",
@@ -259,12 +269,12 @@ export default function NotificacionesFeed() {
         }}
       >
         {([
-          { key: "TODAS", label: "Todas" },
-          { key: "NOTICIA", label: "Noticias" },
-          { key: "EVENTO", label: "Eventos" },
-          { key: "ALERTA", label: "Alertas" },
-          { key: "SEMAFORO", label: "Semáforos" },
-        ] as { key: FilterType; label: string }[]).map(({ key, label }) => (
+          { key: "TODAS", labelKey: "all" },
+          { key: "NOTICIA", labelKey: "news" },
+          { key: "EVENTO", labelKey: "events" },
+          { key: "ALERTA", labelKey: "alerts" },
+          { key: "SEMAFORO", labelKey: "semaforos" },
+        ] as { key: FilterType; labelKey: string }[]).map(({ key, labelKey }) => (
           <button
             key={key}
             onClick={() => setFilter(key)}
@@ -277,7 +287,7 @@ export default function NotificacionesFeed() {
               textDecoration: "underline",
             }}
           >
-            {label}
+            {t(labelKey)}
           </button>
         ))}
       </div>
@@ -285,7 +295,7 @@ export default function NotificacionesFeed() {
       {/* Lista de items - visual plano */}
       {filteredItems.length === 0 ? (
         <div style={{ padding: "1rem", color: "#666" }}>
-          No hay notificaciones para mostrar.
+          {t("noNotifications")}
         </div>
       ) : (
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
@@ -302,7 +312,7 @@ export default function NotificacionesFeed() {
                   {/* Línea meta (pequeña) */}
                   <div style={{ fontSize: "0.75rem", color: "#666", marginBottom: "0.5rem" }}>
                     {formatFecha(item.fecha)} · {getTipoLabel(item.tipo)}
-                    {item.pueblo && ` · Pueblo: ${item.pueblo.nombre || item.pueblo.slug}`}
+                    {item.pueblo && ` · ${t("village")} ${item.pueblo.nombre || item.pueblo.slug}`}
                   </div>
 
                   {/* Título (grande) */}
@@ -320,7 +330,7 @@ export default function NotificacionesFeed() {
                       if (motivo && !esGenerico) {
                         return (
                           <div style={{ fontSize: "0.875rem", color: "#666", lineHeight: "1.5", marginTop: "0.25rem" }}>
-                            Motivo: {motivo}
+                            {t("motivo")} {motivo}
                           </div>
                         );
                       }

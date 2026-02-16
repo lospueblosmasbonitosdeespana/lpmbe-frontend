@@ -1,3 +1,10 @@
+'use client';
+
+import { useTranslations, useLocale } from 'next-intl';
+
+// El backend solo envía estado: "VERDE" | "AMARILLO" | "ROJO". La etiqueta visible
+// se obtiene siempre por i18n (trafficLight.green/yellow/red), así que cualquier
+// semáforo nuevo se verá traducido según el idioma del usuario.
 type SemaforoBadgeProps = {
   estado: "VERDE" | "AMARILLO" | "ROJO" | null;
   mensaje?: string | null;
@@ -5,12 +12,12 @@ type SemaforoBadgeProps = {
   variant?: "badge" | "panel";
 };
 
-function formatFecha(fecha: string | Date | null | undefined): string | null {
+function formatFecha(fecha: string | Date | null | undefined, locale: string): string | null {
   if (!fecha) return null;
   try {
     const d = typeof fecha === "string" ? new Date(fecha) : fecha;
     if (Number.isNaN(d.getTime())) return null;
-    return d.toLocaleDateString("es-ES", {
+    return d.toLocaleDateString(locale === 'es' ? 'es-ES' : locale, {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -22,30 +29,32 @@ function formatFecha(fecha: string | Date | null | undefined): string | null {
   }
 }
 
-function getEstadoConfig(estado: string | null) {
-  switch (estado) {
-    case "VERDE":
-      return { texto: "Ideal para visitar", color: "#28a745", bgColor: "#d4edda" };
-    case "AMARILLO":
-      return { texto: "Alta afluencia de visitantes", color: "#ffc107", bgColor: "#fff3cd" };
-    case "ROJO":
-      return { texto: "No es el momento indicado", color: "#dc3545", bgColor: "#f8d7da" };
-    default:
-      return null;
-  }
-}
-
 export default function SemaforoBadge({
   estado,
   mensaje,
   updatedAt,
   variant = "badge",
 }: SemaforoBadgeProps) {
-  const config = estado ? getEstadoConfig(estado) : null;
-  const fechaFormateada = formatFecha(updatedAt);
+  const t = useTranslations('pueblo');
+  const locale = useLocale();
+
+  const getTexto = () => {
+    if (estado === "VERDE") return t('trafficLight.green');
+    if (estado === "AMARILLO") return t('trafficLight.yellow');
+    if (estado === "ROJO") return t('trafficLight.red');
+    return null;
+  };
+
+  const colors: Record<string, { color: string; bgColor: string }> = {
+    VERDE: { color: "#28a745", bgColor: "#d4edda" },
+    AMARILLO: { color: "#ffc107", bgColor: "#fff3cd" },
+    ROJO: { color: "#dc3545", bgColor: "#f8d7da" },
+  };
+  const config = estado ? { texto: getTexto(), ...colors[estado] } : null;
+  const fechaFormateada = formatFecha(updatedAt, locale);
 
   if (variant === "badge") {
-    if (!estado || !config) return null;
+    if (!estado || !config?.texto) return null;
     return (
       <span
         style={{
@@ -65,8 +74,7 @@ export default function SemaforoBadge({
   }
 
   // Panel variant - siempre se muestra
-  if (!estado || !config) {
-    // Fallback cuando no hay estado
+  if (!estado || !config?.texto) {
     return (
       <div
         style={{
@@ -77,16 +85,15 @@ export default function SemaforoBadge({
         }}
       >
         <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", fontWeight: 600 }}>
-          Semáforo turístico
+          {t('semaforoTuristico')}
         </h3>
         <p style={{ margin: 0, fontSize: "14px", color: "#666" }}>
-          Semáforo no disponible
+          {t('semaforoNoDisponible')}
         </p>
       </div>
     );
   }
 
-  // Panel con estado
   return (
     <div
       style={{
@@ -97,7 +104,7 @@ export default function SemaforoBadge({
       }}
     >
       <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", fontWeight: 600 }}>
-        Semáforo turístico
+        {t('semaforoTuristico')}
       </h3>
       <div
         style={{
@@ -117,13 +124,7 @@ export default function SemaforoBadge({
             flexShrink: 0,
           }}
         />
-        <span
-          style={{
-            fontSize: "15px",
-            fontWeight: "600",
-            color: config.color,
-          }}
-        >
+        <span style={{ fontSize: "15px", fontWeight: "600", color: config.color }}>
           {config.texto}
         </span>
       </div>
@@ -134,7 +135,7 @@ export default function SemaforoBadge({
       )}
       {fechaFormateada && (
         <p style={{ margin: 0, fontSize: "12px", color: "#666" }}>
-          Actualizado: {fechaFormateada}
+          {t('semaforoUpdated')}: {fechaFormateada}
         </p>
       )}
     </div>

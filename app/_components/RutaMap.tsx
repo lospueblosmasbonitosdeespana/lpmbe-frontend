@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import 'leaflet/dist/leaflet.css';
 
 type Waypoint = {
@@ -62,6 +63,7 @@ export default function RutaMap({
   reversed: controlledReversed,
   onReversedChange,
 }: RutaMapProps) {
+  const t = useTranslations("explore");
   const [mounted, setMounted] = useState(false);
   const [L, setL] = useState<typeof import('leaflet') | null>(null);
   const [RL, setRL] = useState<typeof import('react-leaflet') | null>(null);
@@ -312,7 +314,7 @@ export default function RutaMap({
         }}
         className="flex items-center justify-center rounded-xl border bg-gray-50"
       >
-        <div className="text-sm text-gray-500">Cargando mapa...</div>
+        <div className="text-sm text-gray-500">{t("loadingMap")}</div>
       </div>
     );
   }

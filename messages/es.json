@@ -80,7 +80,11 @@
     "tabNews": "Noticias",
     "tabSemaforos": "Semáforos",
     "tabAlertas": "Alertas",
-    "meteo": "Meteo"
+    "meteo": "Meteo",
+    "actualidadTitle": "Actualidad",
+    "actualidadSubtitle": "Noticias y avisos de la Asociación.",
+    "seeAllActualidad": "Ver toda la actualidad",
+    "noRecentContent": "No hay contenido reciente."
   },
   "explore": {
     "title": "Explorar Pueblos",
@@ -99,7 +103,9 @@
     "province": "Provincia:",
     "clearFilters": "Quitar filtros",
     "byProvince": "Por provincia",
-    "communities": "Comunidades"
+    "communities": "Comunidades",
+    "loadError": "Error al cargar los pueblos. Por favor, intenta de nuevo más tarde.",
+    "loadingMap": "Cargando mapa..."
   },
   "profile": {
     "title": "Mi Perfil",
@@ -128,11 +134,26 @@
     "experiences": "Experiencias disponibles",
     "viewOnMap": "Ver en mapa 🗺️",
     "trafficLight": {
-      "green": "Visita recomendada",
-      "yellow": "Visita con precaución",
-      "red": "Visita no recomendada",
-      "unknown": "Sin información"
+      "green": "Ideal para visitar",
+      "yellow": "Alta afluencia de visitantes",
+      "red": "No es el momento indicado",
+      "unknown": "Sin información",
+      "labelGreen": "Ideal para una visita tranquila",
+      "labelYellow": "Alta afluencia de visitantes",
+      "labelRed": "No es el momento indicado para visitar",
+      "mensajeVerde": "Momento ideal para visitar. Poca afluencia turística prevista.",
+      "mensajeAmarillo": "Hay una alta afluencia de visitantes. Conviene planificar la visita.",
+      "mensajeRojo": "No es el momento indicado para visitar este pueblo. Sugerimos visitar otro de nuestros pueblos."
     },
+    "semaforoTuristico": "Semáforo turístico",
+    "semaforoNoDisponible": "Semáforo no disponible",
+    "semaforoUpdated": "Actualizado",
+    "semaforoScheduled": "Programado",
+    "semaforoValidUntil": "Vigente hasta",
+    "semaforoUpdatedNow": "Ahora mismo",
+    "semaforoUpdatedMin": "Hace {n} min",
+    "semaforoUpdatedHours": "Hace {n} hora(s)",
+    "semaforoUpdatedDays": "Hace {n} día(s)",
     "weather": {
       "loading": "Cargando tiempo...",
       "tomorrow": "Mañana"
@@ -624,6 +645,7 @@
     "principalUpdated": "Dirección principal actualizada"
   },
   "notifications": {
+    "all": "Todas",
     "prefsTitle": "Preferencias de notificaciones",
     "viewNotifs": "Ver mis notificaciones",
     "prefsSubtitle": "Selecciona los pueblos y tipos de notificación que quieres recibir.",
@@ -647,7 +669,18 @@
     "savingInline": "(Guardando...)",
     "centerTitle": "Centro de notificaciones",
     "prefsLink": "Preferencias",
-    "all": "Todas",
+    "noTitle": "Sin título",
+    "loading": "Cargando...",
+    "noNotifications": "No hay notificaciones para mostrar.",
+    "motivo": "Motivo:",
+    "dateUnavailable": "Fecha no disponible",
+    "dateInvalid": "Fecha inválida",
+    "alertaPueblo": "Alerta pueblo",
+    "semaforoPuebloIs": "{pueblo} está {status}",
+    "semaforoPuebloUpdated": "{pueblo} actualizó su semáforo",
+    "semaforoStatusGreen": "en verde",
+    "semaforoStatusYellow": "en amarillo",
+    "semaforoStatusRed": "en rojo",
     "noActiveNotifs": "No tienes notificaciones activas.",
     "configurePrefs": "Configura tus preferencias para empezar a recibir notificaciones.",
     "noNotifsOfType": "No hay notificaciones de tipo",
@@ -655,7 +688,19 @@
     "notifications": "notificaciones",
     "notification": "notificación",
     "village": "Pueblo:",
-    "inbox": "Bandeja"
+    "inbox": "Bandeja",
+    "loadErrorFeed": "Error cargando notificaciones.",
+    "noNotificationsNow": "No hay notificaciones ahora mismo.",
+    "noMeteoAlertsNow": "No hay alertas meteorológicas ahora mismo.",
+    "noItemsNow": "No hay {type} ahora mismo.",
+    "viewAll": "Ver todas",
+    "open": "Abrir",
+    "alertFallback": "Alerta",
+    "actualidadFallback": "Actualidad",
+    "pageSubtitle": "Noticias, alertas y estado de semáforos.",
+    "meteoAlerts": "Alertas Meteo",
+    "retry": "Reintentar",
+    "loadCenterError": "No se pudo cargar el centro de notificaciones."
   },
   "visitedVillages": {
     "title": "Mis pueblos visitados",
