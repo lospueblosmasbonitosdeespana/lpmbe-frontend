@@ -291,12 +291,20 @@
     "categoryPetfriendly": "Pet-friendly",
     "categoryPetfriendlyDesc": "Espaces et activités avec votre animal",
     "categoryGastronomy": "Gastronomie",
-    "categoryGastronomyDesc": "Restaurants, produits locaux et tradition culinaire"
+    "categoryGastronomyDesc": "Restaurants, produits locaux et tradition culinaire",
+    "nearbyEyebrow": "Découvrir plus",
+    "nearbyTitle": "Villages proches",
+    "coordinates": "Coordonnées : {lat}, {lng}",
+    "viewOnGoogleMaps": "Voir sur Google Maps"
   },
   "poiPage": {
     "backTo": "← Retour à {nombre}",
     "principal": "Principal",
-    "descriptionComingSoon": "Description à venir."
+    "descriptionComingSoon": "Description à venir.",
+    "location": "Emplacement",
+    "coordinates": "Coordonnées : {lat}, {lng}",
+    "viewOnGoogleMaps": "Voir sur Google Maps",
+    "gallery": "Galerie"
   },
   "meteoPanel": {
     "titleNow": "Météo actuelle",
@@ -325,7 +333,7 @@
     "emptyCart": "Votre panier est vide",
     "continueShopping": "Poursuivre les achats",
     "orderSuccess": "Commande passée avec succès",
-    "backToShop": "Retour à la boutique",
+    "backToShop": "← Retour à la boutique",
     "heroEyebrow": "Boutique officielle",
     "heroTitle": "Produits avec l'âme du village",
     "heroDesc": "Produits officiels des Plus Beaux Villages d'Espagne. Découvrez l'artisanat, la gastronomie et la culture des plus beaux coins.",
@@ -438,7 +446,20 @@
     "vatShipping": "TVA livraison ({percent}%)",
     "totalTaxBase": "Total base imposable",
     "totalVat": "Total TVA",
-    "totalWeight": "Poids total"
+    "totalWeight": "Poids total",
+    "loadingProductError": "Erreur de chargement du produit",
+    "discountApplied": "Remise appliquée",
+    "featuredBadge": "En vedette",
+    "savingsDetail": "Économie : {amount} €",
+    "discountAutoApplied": "✓ Remise appliquée automatiquement : {label}",
+    "sourceProduct": "Produit",
+    "sourceGlobal": "Globale",
+    "description": "Description",
+    "quantityLabel": "Quantité",
+    "addedToCart": "✓ Ajouté au panier",
+    "viewCart": "Voir le panier",
+    "productUnavailable": "Produit indisponible",
+    "principalImage": "Principale"
   },
   "poi": {
     "eyebrow": "À voir",
@@ -454,6 +475,18 @@
     "route": "Route",
     "discoverRoute": "Découvrez cette route et ses villages",
     "experience": "Expérience"
+  },
+  "mxPage": {
+    "backTo": "← Retour à {nombre}",
+    "backToVillage": "Retour au village",
+    "viewVillageMap": "Voir la carte du village",
+    "stops": "Arrêts",
+    "stopsCount": "{count} arrêt(s) dans cette expérience",
+    "noStops": "Aucun arrêt disponible",
+    "stop": "Arrêt {num}",
+    "viewOnGoogleMaps": "Voir sur Google Maps",
+    "experienceFallback": "Expérience",
+    "stopFallback": "Arrêt"
   },
   "categories": {
     "eyebrow": "Que faire",

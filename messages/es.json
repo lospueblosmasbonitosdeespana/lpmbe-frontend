@@ -286,12 +286,20 @@
     "categoryPetfriendly": "Petfriendly",
     "categoryPetfriendlyDesc": "Espacios y actividades para ir con tu mascota",
     "categoryGastronomy": "Gastronomía",
-    "categoryGastronomyDesc": "Restaurantes, productos locales y tradición culinaria"
+    "categoryGastronomyDesc": "Restaurantes, productos locales y tradición culinaria",
+    "nearbyEyebrow": "Descubre más",
+    "nearbyTitle": "Pueblos Cercanos",
+    "coordinates": "Coordenadas: {lat}, {lng}",
+    "viewOnGoogleMaps": "Ver en Google Maps"
   },
   "poiPage": {
     "backTo": "← Volver a {nombre}",
     "principal": "Principal",
-    "descriptionComingSoon": "Descripción próximamente."
+    "descriptionComingSoon": "Descripción próximamente.",
+    "location": "Ubicación",
+    "coordinates": "Coordenadas: {lat}, {lng}",
+    "viewOnGoogleMaps": "Ver en Google Maps",
+    "gallery": "Galería"
   },
   "meteoPanel": {
     "titleNow": "Tiempo ahora",
@@ -433,7 +441,22 @@
     "vatShipping": "IVA envío ({percent}%)",
     "totalTaxBase": "Total base imponible",
     "totalVat": "Total IVA",
-    "totalWeight": "Peso total"
+    "totalWeight": "Peso total",
+    "backToShop": "← Volver a la tienda",
+    "loadingProductError": "Error cargando producto",
+    "discountApplied": "Descuento aplicado",
+    "featuredBadge": "Destacado",
+    "savingsDetail": "Ahorro: {amount} €",
+    "discountAutoApplied": "✓ Descuento aplicado automáticamente: {label}",
+    "sourceProduct": "Producto",
+    "sourceGlobal": "Global",
+    "description": "Descripción",
+    "quantityLabel": "Cantidad",
+    "addedToCart": "✓ Añadido al carrito",
+    "addToCart": "Añadir al carrito",
+    "viewCart": "Ver carrito",
+    "productUnavailable": "Producto no disponible",
+    "principalImage": "Principal"
   },
   "poi": {
     "eyebrow": "Qué ver",
@@ -449,6 +472,18 @@
     "route": "Ruta",
     "discoverRoute": "Descubre esta ruta y sus pueblos",
     "experience": "Experiencia"
+  },
+  "mxPage": {
+    "backTo": "← Volver a {nombre}",
+    "backToVillage": "Volver al pueblo",
+    "viewVillageMap": "Ver mapa del pueblo",
+    "stops": "Paradas",
+    "stopsCount": "{count} parada(s) en esta experiencia",
+    "noStops": "No hay paradas disponibles",
+    "stop": "Parada {num}",
+    "viewOnGoogleMaps": "Ver en Google Maps",
+    "experienceFallback": "Experiencia",
+    "stopFallback": "Parada"
   },
   "categories": {
     "eyebrow": "Qué hacer",

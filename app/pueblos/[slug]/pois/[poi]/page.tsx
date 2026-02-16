@@ -125,7 +125,7 @@ export default async function PoiPage({
 
       {data.categoria && (
         <p style={{ fontSize: 14, color: "#888", margin: "8px 0" }}>
-          Categoría: {data.categoria}
+          {data.categoria}
         </p>
       )}
 
@@ -165,7 +165,7 @@ export default async function PoiPage({
         return (
           <section style={{ marginTop: 32 }}>
             <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 16 }}>
-              Galería
+              {t("gallery")}
             </h2>
             <div
               style={{
@@ -244,10 +244,10 @@ export default async function PoiPage({
       {data.lat && data.lng && (
         <section style={{ marginTop: 32 }}>
           <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 16 }}>
-            Ubicación
+            {t("location")}
           </h2>
           <p style={{ fontSize: 14, color: "#666", marginBottom: 12 }}>
-            Coordenadas: {data.lat}, {data.lng}
+            {t("coordinates", { lat: data.lat, lng: data.lng })}
           </p>
           <a
             href={`https://www.google.com/maps?q=${data.lat},${data.lng}`}
@@ -264,7 +264,7 @@ export default async function PoiPage({
               color: "#333",
             }}
           >
-            Ver en Google Maps
+            {t("viewOnGoogleMaps")}
           </a>
         </section>
       )}

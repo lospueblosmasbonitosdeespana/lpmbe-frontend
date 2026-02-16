@@ -291,12 +291,20 @@
     "categoryPetfriendly": "Pet-friendly",
     "categoryPetfriendlyDesc": "Spazi e attività con il tuo animale",
     "categoryGastronomy": "Gastronomia",
-    "categoryGastronomyDesc": "Ristoranti, prodotti locali e tradizione culinaria"
+    "categoryGastronomyDesc": "Ristoranti, prodotti locali e tradizione culinaria",
+    "nearbyEyebrow": "Scopri di più",
+    "nearbyTitle": "Borghi Vicini",
+    "coordinates": "Coordinate: {lat}, {lng}",
+    "viewOnGoogleMaps": "Vedi su Google Maps"
   },
   "poiPage": {
     "backTo": "← Torna a {nombre}",
     "principal": "Principale",
-    "descriptionComingSoon": "Descrizione in arrivo."
+    "descriptionComingSoon": "Descrizione in arrivo.",
+    "location": "Posizione",
+    "coordinates": "Coordinate: {lat}, {lng}",
+    "viewOnGoogleMaps": "Vedi su Google Maps",
+    "gallery": "Galleria"
   },
   "meteoPanel": {
     "titleNow": "Tempo attuale",
@@ -325,7 +333,7 @@
     "emptyCart": "Il carrello è vuoto",
     "continueShopping": "Continua gli acquisti",
     "orderSuccess": "Ordine effettuato con successo",
-    "backToShop": "Torna al negozio",
+    "backToShop": "← Torna al negozio",
     "heroEyebrow": "Negozio ufficiale",
     "heroTitle": "Prodotti con anima di villaggio",
     "heroDesc": "Prodotti ufficiali dei Borghi Più Belli di Spagna. Scopri artigianato, gastronomia e cultura degli angoli più belli.",
@@ -438,7 +446,20 @@
     "vatShipping": "IVA spedizione ({percent}%)",
     "totalTaxBase": "Base imponibile totale",
     "totalVat": "IVA totale",
-    "totalWeight": "Peso totale"
+    "totalWeight": "Peso totale",
+    "loadingProductError": "Errore nel caricamento del prodotto",
+    "discountApplied": "Sconto applicato",
+    "featuredBadge": "In evidenza",
+    "savingsDetail": "Risparmio: {amount} €",
+    "discountAutoApplied": "✓ Sconto applicato automaticamente: {label}",
+    "sourceProduct": "Prodotto",
+    "sourceGlobal": "Globale",
+    "description": "Descrizione",
+    "quantityLabel": "Quantità",
+    "addedToCart": "✓ Aggiunto al carrello",
+    "viewCart": "Vedi carrello",
+    "productUnavailable": "Prodotto non disponibile",
+    "principalImage": "Principale"
   },
   "poi": {
     "eyebrow": "Cosa vedere",
@@ -454,6 +475,18 @@
     "route": "Percorso",
     "discoverRoute": "Scopri questo percorso e i suoi borghi",
     "experience": "Esperienza"
+  },
+  "mxPage": {
+    "backTo": "← Torna a {nombre}",
+    "backToVillage": "Torna al borgo",
+    "viewVillageMap": "Vedi mappa del borgo",
+    "stops": "Tappe",
+    "stopsCount": "{count} tappa/e in questa esperienza",
+    "noStops": "Nessuna tappa disponibile",
+    "stop": "Tappa {num}",
+    "viewOnGoogleMaps": "Vedi su Google Maps",
+    "experienceFallback": "Esperienza",
+    "stopFallback": "Tappa"
   },
   "categories": {
     "eyebrow": "Cosa fare",

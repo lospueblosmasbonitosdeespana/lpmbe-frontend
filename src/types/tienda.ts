@@ -43,6 +43,10 @@ export type Product = {
   width?: number | null;
   height?: number | null;
   length?: number | null;
+  // i18n
+  nombre_i18n?: Record<string, string> | null;
+  descripcion_i18n?: Record<string, string> | null;
+  categoria_i18n?: Record<string, string> | null;
 };
 
 export type CartItem = {

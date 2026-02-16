@@ -286,12 +286,20 @@
     "categoryPetfriendly": "Pet-friendly",
     "categoryPetfriendlyDesc": "Spaces and activities with your pet",
     "categoryGastronomy": "Gastronomy",
-    "categoryGastronomyDesc": "Restaurants, local products and culinary tradition"
+    "categoryGastronomyDesc": "Restaurants, local products and culinary tradition",
+    "nearbyEyebrow": "Discover more",
+    "nearbyTitle": "Nearby Villages",
+    "coordinates": "Coordinates: {lat}, {lng}",
+    "viewOnGoogleMaps": "View on Google Maps"
   },
   "poiPage": {
     "backTo": "← Back to {nombre}",
     "principal": "Main",
-    "descriptionComingSoon": "Description coming soon."
+    "descriptionComingSoon": "Description coming soon.",
+    "location": "Location",
+    "coordinates": "Coordinates: {lat}, {lng}",
+    "viewOnGoogleMaps": "View on Google Maps",
+    "gallery": "Gallery"
   },
   "meteoPanel": {
     "titleNow": "Weather now",
@@ -320,7 +328,7 @@
     "emptyCart": "Your cart is empty",
     "continueShopping": "Continue shopping",
     "orderSuccess": "Order placed successfully",
-    "backToShop": "Back to shop",
+    "backToShop": "← Back to shop",
     "heroEyebrow": "Official shop",
     "heroTitle": "Products with village soul",
     "heroDesc": "Official products from The Most Beautiful Villages of Spain. Discover crafts, gastronomy and culture from the most beautiful corners.",
@@ -433,7 +441,20 @@
     "vatShipping": "VAT shipping ({percent}%)",
     "totalTaxBase": "Total tax base",
     "totalVat": "Total VAT",
-    "totalWeight": "Total weight"
+    "totalWeight": "Total weight",
+    "loadingProductError": "Error loading product",
+    "discountApplied": "Discount applied",
+    "featuredBadge": "Featured",
+    "savingsDetail": "Savings: {amount} €",
+    "discountAutoApplied": "✓ Discount automatically applied: {label}",
+    "sourceProduct": "Product",
+    "sourceGlobal": "Global",
+    "description": "Description",
+    "quantityLabel": "Quantity",
+    "addedToCart": "✓ Added to cart",
+    "viewCart": "View cart",
+    "productUnavailable": "Product unavailable",
+    "principalImage": "Main"
   },
   "legal": {
     "privacy": "Privacy",
@@ -454,6 +475,18 @@
     "route": "Route",
     "discoverRoute": "Discover this route and its villages",
     "experience": "Experience"
+  },
+  "mxPage": {
+    "backTo": "← Back to {nombre}",
+    "backToVillage": "Back to village",
+    "viewVillageMap": "View village map",
+    "stops": "Stops",
+    "stopsCount": "{count} stop(s) in this experience",
+    "noStops": "No stops available",
+    "stop": "Stop {num}",
+    "viewOnGoogleMaps": "View on Google Maps",
+    "experienceFallback": "Experience",
+    "stopFallback": "Stop"
   },
   "categories": {
     "eyebrow": "What to do",

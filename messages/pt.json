@@ -291,12 +291,20 @@
     "categoryPetfriendly": "Pet-friendly",
     "categoryPetfriendlyDesc": "Espaços e atividades com o seu animal",
     "categoryGastronomy": "Gastronomia",
-    "categoryGastronomyDesc": "Restaurantes, produtos locais e tradição culinária"
+    "categoryGastronomyDesc": "Restaurantes, produtos locais e tradição culinária",
+    "nearbyEyebrow": "Descubra mais",
+    "nearbyTitle": "Aldeias Próximas",
+    "coordinates": "Coordenadas: {lat}, {lng}",
+    "viewOnGoogleMaps": "Ver no Google Maps"
   },
   "poiPage": {
     "backTo": "← Voltar a {nombre}",
     "principal": "Principal",
-    "descriptionComingSoon": "Descrição em breve."
+    "descriptionComingSoon": "Descrição em breve.",
+    "location": "Localização",
+    "coordinates": "Coordenadas: {lat}, {lng}",
+    "viewOnGoogleMaps": "Ver no Google Maps",
+    "gallery": "Galeria"
   },
   "meteoPanel": {
     "titleNow": "Tempo agora",
@@ -325,7 +333,7 @@
     "emptyCart": "O seu carrinho de compras está vazio",
     "continueShopping": "Continuar a comprar",
     "orderSuccess": "Encomenda efectuada com sucesso",
-    "backToShop": "Voltar à loja",
+    "backToShop": "← Voltar à loja",
     "heroEyebrow": "Loja oficial",
     "heroTitle": "Produtos com alma de aldeia",
     "heroDesc": "Produtos oficiais das Aldeias Mais Bonitas de Espanha. Descubra artesanato, gastronomia e cultura dos recantos mais belos.",
@@ -438,7 +446,20 @@
     "vatShipping": "IVA envio ({percent}%)",
     "totalTaxBase": "Total base tributável",
     "totalVat": "Total IVA",
-    "totalWeight": "Peso total"
+    "totalWeight": "Peso total",
+    "loadingProductError": "Erro ao carregar produto",
+    "discountApplied": "Desconto aplicado",
+    "featuredBadge": "Destaque",
+    "savingsDetail": "Economia: {amount} €",
+    "discountAutoApplied": "✓ Desconto aplicado automaticamente: {label}",
+    "sourceProduct": "Produto",
+    "sourceGlobal": "Global",
+    "description": "Descrição",
+    "quantityLabel": "Quantidade",
+    "addedToCart": "✓ Adicionado ao carrinho",
+    "viewCart": "Ver carrinho",
+    "productUnavailable": "Produto indisponível",
+    "principalImage": "Principal"
   },
   "poi": {
     "eyebrow": "O que ver",
@@ -454,6 +475,18 @@
     "route": "Rota",
     "discoverRoute": "Descubra esta rota e as suas aldeias",
     "experience": "Experiência"
+  },
+  "mxPage": {
+    "backTo": "← Voltar a {nombre}",
+    "backToVillage": "Voltar à aldeia",
+    "viewVillageMap": "Ver mapa da aldeia",
+    "stops": "Paragens",
+    "stopsCount": "{count} paragem(ns) nesta experiência",
+    "noStops": "Nenhuma paragem disponível",
+    "stop": "Paragem {num}",
+    "viewOnGoogleMaps": "Ver no Google Maps",
+    "experienceFallback": "Experiência",
+    "stopFallback": "Paragem"
   },
   "categories": {
     "eyebrow": "O que fazer",

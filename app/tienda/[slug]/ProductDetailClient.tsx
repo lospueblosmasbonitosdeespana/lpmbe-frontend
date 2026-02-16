@@ -5,6 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/src/store/cart';
 import { formatEUR } from '@/src/lib/money';
 import type { Product } from '@/src/types/tienda';
+import { useTranslations, useLocale } from 'next-intl';
+
+function localized(field: string | null | undefined, i18n: Record<string, string> | null | undefined, locale: string): string {
+  if (locale !== 'es' && i18n && i18n[locale]) return i18n[locale];
+  return field ?? '';
+}
 
 type ProductDetailClientProps = {
   product: Product;
@@ -17,9 +23,15 @@ function toTime(v?: string) {
 
 export default function ProductDetailClient({ product }: ProductDetailClientProps) {
   const router = useRouter();
+  const t = useTranslations('tienda');
+  const locale = useLocale();
   const addItem = useCartStore((state) => state.addItem);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+
+  const productName = localized(product.nombre, product.nombre_i18n, locale);
+  const productDesc = localized(product.descripcion, product.descripcion_i18n, locale);
+  const productCat = localized(product.categoria, product.categoria_i18n, locale);
 
   // 1) Imagen principal por defecto: product.imagenUrl
   const mainDefaultUrl = product?.imagenUrl?.trim() || null;
@@ -58,7 +70,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     
     // Añadir principal si existe
     if (mainDefaultUrl) {
-      thumbs.push({ url: mainDefaultUrl, type: 'main', alt: product?.nombre });
+      thumbs.push({ url: mainDefaultUrl, type: 'main', alt: productName });
     }
     
     // Añadir galería (evitar duplicados con principal)
@@ -69,7 +81,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     });
     
     return thumbs;
-  }, [mainDefaultUrl, galleryImages, product?.nombre]);
+  }, [mainDefaultUrl, galleryImages, productName]);
 
   const hasThumbs = allThumbs.length > 0;
 
@@ -92,7 +104,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
         onClick={() => router.back()}
         className="mb-6 text-sm text-gray-600 hover:text-gray-900"
       >
-        ← Volver a la tienda
+        {t('backToShop')}
       </button>
 
       <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
@@ -102,12 +114,12 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             {mainUrl ? (
               <img
                 src={mainUrl}
-                alt={product?.nombre || "Producto"}
+                alt={productName || t('product')}
                 className="h-full w-full object-contain"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-sm text-gray-500">
-                Sin imagen
+                {t('noImage')}
               </div>
             )}
           </div>
@@ -126,16 +138,16 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     className={`h-20 w-20 flex-shrink-0 overflow-hidden rounded border ${
                       active ? "border-blue-600" : "border-gray-200"
                     } bg-gray-100 relative`}
-                    aria-label="Ver imagen"
+                    aria-label={t('viewProduct')}
                   >
                     <img 
                       src={img.url} 
-                      alt={img.alt || product?.nombre || "Producto"} 
+                      alt={img.alt || productName || t('product')} 
                       className="h-full w-full object-cover" 
                     />
                     {isMain && (
                       <span className="absolute bottom-0 left-0 right-0 bg-blue-600 text-white text-xs text-center py-0.5">
-                        Principal
+                        {t('principalImage')}
                       </span>
                     )}
                   </button>
@@ -151,21 +163,21 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           <div className="flex gap-2 mb-3">
             {hasDiscount && discountInfo && (
               <span className="inline-block rounded bg-red-100 px-3 py-1 text-sm font-medium text-red-800">
-                🔥 {discountInfo.label || 'Descuento aplicado'}
+                🔥 {discountInfo.label || t('discountApplied')}
                 {discountInfo.percent > 0 && ` −${discountInfo.percent}%`}
               </span>
             )}
             {product.destacado && (
               <span className="inline-block rounded bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
-                ⭐ Destacado
+                ⭐ {t('featuredBadge')}
               </span>
             )}
           </div>
 
-          <h1 className="text-3xl font-bold">{product.nombre}</h1>
+          <h1 className="text-3xl font-bold">{productName}</h1>
 
-          {product.categoria && (
-            <p className="mt-2 text-sm text-gray-500">{product.categoria}</p>
+          {productCat && (
+            <p className="mt-2 text-sm text-gray-500">{productCat}</p>
           )}
 
           {/* Precio con descuento del backend */}
@@ -177,13 +189,13 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   <span className="text-xl text-gray-400 line-through">{formatEUR(product.precio)} €</span>
                 </div>
                 <p className="mt-1 text-sm text-gray-600">
-                  Ahorro: {formatEUR(product.precio - displayPrice)} €
+                  {t('savingsDetail', { amount: formatEUR(product.precio - displayPrice) })}
                 </p>
                 <p className="mt-2 text-sm text-green-700 font-medium">
-                  ✓ Descuento aplicado automáticamente: {discountInfo?.label || 'Descuento'}
+                  {t('discountAutoApplied', { label: discountInfo?.label || t('discountApplied') })}
                   {discountInfo?.source && (
                     <span className="ml-1 text-xs text-gray-600">
-                      ({discountInfo.source === 'PRODUCT' ? 'Producto' : 'Global'})
+                      ({discountInfo.source === 'PRODUCT' ? t('sourceProduct') : t('sourceGlobal')})
                     </span>
                   )}
                 </p>
@@ -196,18 +208,18 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           {/* Stock */}
           <div className="mt-4">
             {product.stock <= 0 ? (
-              <span className="text-red-600 font-medium">Agotado</span>
+              <span className="text-red-600 font-medium">{t('outOfStock')}</span>
             ) : (
-              <span className="text-green-600">En stock</span>
+              <span className="text-green-600">{t('inStock')}</span>
             )}
           </div>
 
           {/* Descripción */}
-          {product.descripcion && (
+          {productDesc && (
             <div className="mt-8">
-              <h2 className="text-lg font-semibold mb-2">Descripción</h2>
+              <h2 className="text-lg font-semibold mb-2">{t('description')}</h2>
               <p className="text-gray-700 whitespace-pre-line">
-                {product.descripcion}
+                {productDesc}
               </p>
             </div>
           )}
@@ -217,7 +229,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             <div className="mt-8 space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Cantidad
+                  {t('quantityLabel')}
                 </label>
                 <div className="flex items-center gap-3">
                   <button
@@ -255,21 +267,21 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                {added ? '✓ Añadido al carrito' : 'Añadir al carrito'}
+                {added ? t('addedToCart') : t('addToCart')}
               </button>
 
               <button
                 onClick={() => router.push('/tienda/carrito')}
                 className="w-full rounded-lg border border-gray-300 py-3 px-6 font-semibold hover:bg-gray-50"
               >
-                Ver carrito
+                {t('viewCart')}
               </button>
             </div>
           )}
 
           {!product.activo && (
             <div className="mt-8 rounded-lg bg-gray-50 p-4 text-center">
-              <p className="text-gray-600">Producto no disponible</p>
+              <p className="text-gray-600">{t('productUnavailable')}</p>
             </div>
           )}
         </div>

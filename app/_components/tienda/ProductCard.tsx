@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/src/types/tienda';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface ProductCardProps {
   product: Product;
@@ -17,8 +17,14 @@ function toNum(v: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+function localized(field: string | null | undefined, i18n: Record<string, string> | null | undefined, locale: string): string | null {
+  if (locale !== 'es' && i18n && i18n[locale]) return i18n[locale];
+  return field ?? null;
+}
+
 export function ProductCard({ product, className }: ProductCardProps) {
   const t = useTranslations('tienda');
+  const locale = useLocale();
   const precioOriginal = toNum(product.precio);
   const precioFinal = toNum(product.finalPrice ?? product.precio);
   const hasDiscount =
@@ -52,7 +58,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           ) : (
             <Image
               src={safeSrc}
-              alt={product.nombre || 'Producto'}
+              alt={localized(product.nombre, product.nombre_i18n, locale) || 'Producto'}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
@@ -86,10 +92,10 @@ export function ProductCard({ product, className }: ProductCardProps) {
         {/* Info */}
         <div className="mt-3 flex flex-col gap-1">
           <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
-            {product.categoria || t('product')}
+            {localized(product.categoria, product.categoria_i18n, locale) || t('product')}
           </span>
           <h3 className="font-serif text-base font-medium leading-snug transition-colors group-hover:text-primary">
-            {product.nombre}
+            {localized(product.nombre, product.nombre_i18n, locale)}
           </h3>
           <div className="mt-1 flex flex-col gap-0.5">
             <div className="flex items-center justify-between gap-2">

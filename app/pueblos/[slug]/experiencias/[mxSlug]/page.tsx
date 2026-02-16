@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getLugarLegacyBySlug, getApiUrl, type Pueblo } from "@/lib/api";
 import ParadasMap from "@/app/_components/ParadasMap";
 
@@ -64,7 +64,7 @@ export async function generateMetadata({
   // Normalizar: si viene anidada, usa x.multiexperiencia; si viene plana, usa x
   const mx = (mxItem?.multiexperiencia ?? mxItem ?? null) as Multiexperiencia | null;
   
-  const expTitle = mx?.titulo ?? "Experiencia";
+  const expTitle = mx?.titulo ?? t("experienceFallback");
   const title = `${expTitle} – ${pueblo.nombre} – Los Pueblos Más Bonitos de España`;
   const heroImage =
     mx?.foto ??
@@ -107,6 +107,7 @@ export default async function MultiexperienciaPage({
 }) {
   const { slug, mxSlug } = await params;
   const locale = await getLocale();
+  const t = await getTranslations("mxPage");
   const pueblo = await getLugarLegacyBySlug(slug, locale);
 
   // Buscar la multiexperiencia por slug (soportar formato plano y anidado)
@@ -153,7 +154,7 @@ export default async function MultiexperienciaPage({
           href={`/pueblos/${pueblo.slug}`}
           style={{ color: "#0066cc", textDecoration: "none" }}
         >
-          ← Volver a {pueblo.nombre}
+          {t("backTo", { nombre: pueblo.nombre })}
         </Link>
       </div>
 
@@ -215,7 +216,7 @@ export default async function MultiexperienciaPage({
               display: "inline-block",
             }}
           >
-            Volver al pueblo
+            {t("backToVillage")}
           </Link>
           <Link
             href={`/pueblos/${pueblo.slug}#mapa`}
@@ -230,7 +231,7 @@ export default async function MultiexperienciaPage({
               display: "inline-block",
             }}
           >
-            Ver mapa del pueblo
+            {t("viewVillageMap")}
           </Link>
           {pueblo.lat && pueblo.lng ? (
             <a
@@ -279,12 +280,12 @@ export default async function MultiexperienciaPage({
 
       {/* Paradas */}
       <section style={{ marginTop: "32px" }}>
-        <h2 style={{ marginBottom: "8px" }}>Paradas</h2>
+        <h2 style={{ marginBottom: "8px" }}>{t("stops")}</h2>
         <p style={{ fontSize: "14px", color: "#666", marginBottom: "24px" }}>
-          {paradas.length} {paradas.length === 1 ? "parada" : "paradas"} en esta experiencia
+          {t("stopsCount", { count: paradas.length })}
         </p>
         {paradas.length === 0 ? (
-          <p>No hay paradas disponibles</p>
+          <p>{t("noStops")}</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
             {paradas.map((p: any, idx: number) => {
@@ -316,7 +317,7 @@ export default async function MultiexperienciaPage({
                     >
                       <img
                         src={p.foto}
-                        alt={p.titulo ?? "Parada"}
+                        alt={p.titulo ?? t("stopFallback")}
                         style={{
                           width: "100%",
                           height: "100%",
@@ -360,7 +361,7 @@ export default async function MultiexperienciaPage({
                         </h3>
                       ) : (
                         <h3 style={{ fontSize: "20px", fontWeight: 600, margin: 0, color: "#9ca3af" }}>
-                          Parada {num}
+                          {t("stop", { num })}
                         </h3>
                       )}
                     </div>
@@ -404,7 +405,7 @@ export default async function MultiexperienciaPage({
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                             <circle cx="12" cy="10" r="3" />
                           </svg>
-                          Ver en Google Maps
+                          {t("viewOnGoogleMaps")}
                         </a>
                       </div>
                     ) : null}

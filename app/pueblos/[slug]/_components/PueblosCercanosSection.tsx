@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getPuebloMainPhoto } from "@/lib/api";
 import type { PuebloLite } from "@/lib/api";
+import { getTranslations } from "next-intl/server";
 
 /** Distancia Haversine en km */
 function haversineKm(
@@ -30,12 +31,13 @@ type Props = {
   limit?: number;
 };
 
-export default function PueblosCercanosSection({
+export default async function PueblosCercanosSection({
   puebloActual,
   pueblos,
   photosByPuebloId,
   limit = 4,
 }: Props) {
+  const t = await getTranslations("puebloPage");
   const { lat, lng } = puebloActual;
   if (lat == null || lng == null) return null;
 
@@ -60,10 +62,10 @@ export default function PueblosCercanosSection({
     >
       <div className="mx-auto max-w-6xl px-4">
         <p className="text-sm font-medium uppercase tracking-wider text-amber-700/90">
-          Descubre más
+          {t("nearbyEyebrow")}
         </p>
         <h2 className="mt-1 font-display text-2xl font-bold text-gray-900 md:text-3xl">
-          Pueblos Cercanos
+          {t("nearbyTitle")}
         </h2>
 
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
