@@ -265,10 +265,16 @@ export default function RutaMap({
     return url;
   }, [displayWaypoints]);
 
+  // Apple Maps: múltiples paradas con saddr (origen) + varios daddr (destinos en orden)
   const appleMapsUrl = useMemo(() => {
     if (displayWaypoints.length === 0) return null;
-    const dest = displayWaypoints[displayWaypoints.length - 1];
-    return `https://maps.apple.com/?daddr=${dest.lat},${dest.lng}&dirflg=d`;
+    if (displayWaypoints.length === 1) {
+      return `https://maps.apple.com/?daddr=${displayWaypoints[0].lat},${displayWaypoints[0].lng}&dirflg=d`;
+    }
+    const origin = displayWaypoints[0];
+    const destinations = displayWaypoints.slice(1);
+    const daddrParams = destinations.map((w) => `daddr=${w.lat},${w.lng}`).join('&');
+    return `https://maps.apple.com/?dirflg=d&saddr=${origin.lat},${origin.lng}&${daddrParams}`;
   }, [displayWaypoints]);
 
   const wazeUrl = useMemo(() => {
@@ -451,6 +457,7 @@ export default function RutaMap({
               href={wazeUrl}
               target="_blank"
               rel="noopener noreferrer"
+              title={displayWaypoints.length > 1 ? 'Waze solo permite un destino por enlace; se abre con el punto final de la ruta.' : undefined}
               className="inline-flex items-center gap-2 rounded-lg bg-primary/80 px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/70"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
