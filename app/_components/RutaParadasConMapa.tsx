@@ -49,19 +49,47 @@ export default function RutaParadasConMapa({
     setRouteInfo(null);
   }, []);
 
-  // Preprocess paradas: strip TIPS from the original last parada
+  // Preprocess paradas: strip TIPS block from the last parada so it only appears in the cards
   const processedParadas = useMemo(() => {
+    const tipsBlockMarkers = [
+      'TIPS DE RUTA',
+      'Tips de ruta',
+      'TIPS',
+      'Tips',
+      'Duración recomendada',
+      'Recommended duration',
+      'Travel tips',
+      'Consejos para el viaje',
+      'Durée conseillée',
+      'Conseils pour votre voyage',
+      'Conseils pour le voyage',
+      'Empfohlene Dauer',
+      'Reisetipps',
+      'Duração recomendada',
+      'Dicas de viagem',
+      'Durata consigliata',
+      'Suggerimenti per il viaggio',
+      "TIPS DE L'ITINÉRAIRE",
+      'TIENS DE L\'ITINÉRAIRE',
+      'Comment se déplacer',
+      'How to get around',
+      'Respect de l\'environnement',
+      'Respect for the environment',
+      'Horaires et visites',
+      'Schedules and visits',
+      'Saveurs de la ROUTE',
+      'Flavors of the Route',
+      'Sabores de la RUTA',
+    ];
     return paradas.map((p, idx) => {
       let descripcion = (p.descripcion ?? '').toString().trim();
       if (tips.length > 0 && idx === paradas.length - 1) {
-        const marcadores = ['TIPS DE RUTA', 'Tips de ruta', 'TIPS', 'Tips', 'Duración recomendada'];
-        for (const m of marcadores) {
+        let cutIndex = -1;
+        for (const m of tipsBlockMarkers) {
           const i = descripcion.indexOf(m);
-          if (i !== -1) {
-            descripcion = descripcion.slice(0, i).trim();
-            break;
-          }
+          if (i !== -1 && (cutIndex === -1 || i < cutIndex)) cutIndex = i;
         }
+        if (cutIndex !== -1) descripcion = descripcion.slice(0, cutIndex).trim();
       }
       return { ...p, cleanDescripcion: descripcion };
     });

@@ -312,7 +312,8 @@
     "routeStopsReversed": "(rota invertida)",
     "viewVillage": "Ver aldeia →",
     "kmFromStart": "{km} km desde o início",
-    "stopN": "Paragem {n}"
+    "stopN": "Paragem {n}",
+    "tipsTitle": "Dicas da rota"
   },
   "puebloPage": {
     "breadcrumbHome": "Início",

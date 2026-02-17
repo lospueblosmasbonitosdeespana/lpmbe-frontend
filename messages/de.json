@@ -312,7 +312,8 @@
     "routeStopsReversed": "(umgekehrte Route)",
     "viewVillage": "Dorf anzeigen →",
     "kmFromStart": "{km} km vom Start",
-    "stopN": "Haltepunkt {n}"
+    "stopN": "Haltepunkt {n}",
+    "tipsTitle": "Tipps für die Route"
   },
   "puebloPage": {
     "breadcrumbHome": "Start",

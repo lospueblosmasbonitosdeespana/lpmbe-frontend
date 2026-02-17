@@ -325,7 +325,7 @@ export default async function RutaPage({
 
         return (
           <section className="mt-12 mb-8">
-            <h2 className="text-2xl font-semibold mb-6">Tips de la ruta</h2>
+            <h2 className="text-2xl font-semibold mb-6">{t("tipsTitle")}</h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {tips.map((tip: any, idx: number) => (
                 <details

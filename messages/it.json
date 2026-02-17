@@ -312,7 +312,8 @@
     "routeStopsReversed": "(percorso invertito)",
     "viewVillage": "Vedi borgo →",
     "kmFromStart": "{km} km dall'inizio",
-    "stopN": "Tappa {n}"
+    "stopN": "Tappa {n}",
+    "tipsTitle": "Suggerimenti per il percorso"
   },
   "puebloPage": {
     "breadcrumbHome": "Home",

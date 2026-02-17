@@ -312,7 +312,8 @@
     "routeStopsReversed": "(itinéraire inversé)",
     "viewVillage": "Voir le village →",
     "kmFromStart": "{km} km depuis le départ",
-    "stopN": "Étape {n}"
+    "stopN": "Étape {n}",
+    "tipsTitle": "Conseils pour l'itinéraire"
   },
   "puebloPage": {
     "breadcrumbHome": "Accueil",

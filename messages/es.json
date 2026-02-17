@@ -300,7 +300,8 @@
     "routeStopsReversed": "(ruta invertida)",
     "viewVillage": "Ver pueblo →",
     "kmFromStart": "km {km} desde el inicio",
-    "stopN": "Parada {n}"
+    "stopN": "Parada {n}",
+    "tipsTitle": "Tips de la ruta"
   },
   "puebloPage": {
     "breadcrumbHome": "Inicio",
