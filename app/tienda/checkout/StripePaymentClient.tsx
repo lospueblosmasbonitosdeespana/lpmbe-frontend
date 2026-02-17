@@ -50,7 +50,7 @@ function PaymentForm({ orderId }: { orderId: number }) {
       <PaymentElement
         options={{
           layout: { type: 'tabs', defaultCollapsed: false },
-          paymentMethodOrder: ['card', 'paypal'],
+          paymentMethodOrder: ['card', 'paypal', 'apple_pay', 'google_pay'],
         }}
       />
       <p className="text-xs text-gray-500 mt-2">
