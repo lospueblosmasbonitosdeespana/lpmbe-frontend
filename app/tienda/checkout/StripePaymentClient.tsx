@@ -47,7 +47,15 @@ function PaymentForm({ orderId }: { orderId: number }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement />
+      <PaymentElement
+        options={{
+          layout: { type: 'tabs', defaultCollapsed: false },
+          paymentMethodOrder: ['card', 'paypal'],
+        }}
+      />
+      <p className="text-xs text-gray-500 mt-2">
+        Selecciona Tarjeta o PayPal y pulsa Pagar. Con PayPal serás redirigido.
+      </p>
       {error && (
         <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-red-800 text-sm">
           {error}
@@ -77,6 +85,7 @@ export default function StripePaymentClient({ clientSecret, orderId }: StripePay
 
   const options = {
     clientSecret,
+    locale: 'es' as const,
     appearance: {
       theme: 'stripe' as const,
     },
