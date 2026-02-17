@@ -284,6 +284,13 @@
     "legal": "Impressum",
     "cookies": "Cookies"
   },
+  "theme": {
+    "label": "Darstellung",
+    "description": "Automatisch (System), hell oder dunkel.",
+    "system": "Automatisch",
+    "light": "Hell",
+    "dark": "Dunkel"
+  },
   "rutas": {
     "title": "Routen",
     "pageDesc": "Routen entdecken",

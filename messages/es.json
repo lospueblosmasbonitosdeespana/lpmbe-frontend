@@ -541,6 +541,13 @@
     "legal": "Aviso Legal",
     "cookies": "Cookies"
   },
+  "theme": {
+    "label": "Apariencia",
+    "description": "Automático (según el sistema), claro u oscuro.",
+    "system": "Automático",
+    "light": "Claro",
+    "dark": "Oscuro"
+  },
   "myAccount": {
     "title": "Mi Cuenta",
     "subtitle": "Tu espacio personal para gestionar puntos, pueblos favoritos y preferencias.",

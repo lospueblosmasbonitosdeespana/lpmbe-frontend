@@ -284,6 +284,13 @@
     "legal": "Mentions légales",
     "cookies": "Cookies"
   },
+  "theme": {
+    "label": "Apparence",
+    "description": "Automatique (système), clair ou sombre.",
+    "system": "Automatique",
+    "light": "Clair",
+    "dark": "Sombre"
+  },
   "rutas": {
     "title": "Itinéraires",
     "pageDesc": "Découvrez les itinéraires",

@@ -284,6 +284,13 @@
     "legal": "Note legali",
     "cookies": "Biscotti"
   },
+  "theme": {
+    "label": "Aspetto",
+    "description": "Automatico (sistema), chiaro o scuro.",
+    "system": "Automatico",
+    "light": "Chiaro",
+    "dark": "Scuro"
+  },
   "rutas": {
     "title": "Percorsi",
     "pageDesc": "Scopri i percorsi",

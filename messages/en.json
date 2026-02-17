@@ -503,6 +503,13 @@
     "legal": "Legal notice",
     "cookies": "Cookies"
   },
+  "theme": {
+    "label": "Appearance",
+    "description": "Automatic (system), light or dark.",
+    "system": "Automatic",
+    "light": "Light",
+    "dark": "Dark"
+  },
   "poi": {
     "eyebrow": "What to see",
     "title": "Points of interest",

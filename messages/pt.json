@@ -284,6 +284,13 @@
     "legal": "Aviso legal",
     "cookies": "Biscoitos"
   },
+  "theme": {
+    "label": "Aparência",
+    "description": "Automático (sistema), claro ou escuro.",
+    "system": "Automático",
+    "light": "Claro",
+    "dark": "Escuro"
+  },
   "rutas": {
     "title": "Rotas",
     "pageDesc": "Descubra as rotas",

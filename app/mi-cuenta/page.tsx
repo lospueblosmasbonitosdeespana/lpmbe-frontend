@@ -13,6 +13,7 @@ import {
   Package,
 } from 'lucide-react';
 import { LogoutButton } from './components/LogoutButton';
+import ThemeSelector from '@/app/cuenta/ThemeSelector';
 
 export default async function MiCuentaPage() {
   const t = await getTranslations('myAccount');
@@ -69,9 +70,13 @@ export default async function MiCuentaPage() {
           <Container className="relative">
             <div className="flex flex-col items-center pb-12 pt-8 text-center lg:pb-16 lg:pt-12">
               <Display className="mb-4">{t('title')}</Display>
-              <Lead className="mb-10 max-w-2xl text-muted-foreground">
+              <Lead className="mb-6 max-w-2xl text-muted-foreground">
                 {t('subtitle')}
               </Lead>
+
+              <div className="mb-10 w-full max-w-4xl">
+                <ThemeSelector />
+              </div>
 
               <div className="grid w-full max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {links.map((item) => {

@@ -6,6 +6,7 @@ import { getLocale, getMessages } from "next-intl/server";
 import { Header } from "./_components/nav/Header";
 import { Footer } from "./_components/nav/Footer";
 import GoogleAuthProviderWrapper from "./components/providers/GoogleAuthProvider";
+import { ThemeProvider } from "./components/providers/ThemeProvider";
 import { WebAnalyticsTracker } from "@/components/analytics/WebAnalyticsTracker";
 
 export const metadata: Metadata = {
@@ -28,16 +29,18 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
       <body className="antialiased">
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <GoogleAuthProviderWrapper>
-            <WebAnalyticsTracker />
-            <Header locale={locale} />
-            {children}
-            <Footer locale={locale} />
-          </GoogleAuthProviderWrapper>
-        </NextIntlClientProvider>
+        <ThemeProvider>
+          <NextIntlClientProvider locale={locale} messages={messages}>
+            <GoogleAuthProviderWrapper>
+              <WebAnalyticsTracker />
+              <Header locale={locale} />
+              {children}
+              <Footer locale={locale} />
+            </GoogleAuthProviderWrapper>
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getMeServer } from '@/lib/me';
 import { getMisPueblosServer } from '@/lib/misPueblos';
 import LogoutButton from './LogoutButton';
+import ThemeSelector from './ThemeSelector';
 import Link from 'next/link';
 import { IconMapa, IconAsociacion } from '@/app/gestion/_components/GestionIcons';
 import { getTranslations } from 'next-intl/server';
@@ -69,6 +70,9 @@ export default async function CuentaPage() {
       <h1 className="text-2xl font-semibold">{t('account')}</h1>
 
       <section className="mt-6">
+        <div className="mb-6">
+          <ThemeSelector />
+        </div>
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           <div className="space-y-4">
             <div>
