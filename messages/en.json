@@ -522,6 +522,8 @@
     "backTo": "← Back to {nombre}",
     "backToVillage": "Back to village",
     "viewVillageMap": "View village map",
+    "howToGetThere": "How to get there",
+    "routeMap": "Route map",
     "stops": "Stops",
     "stopsCount": "{count} stop(s) in this experience",
     "noStops": "No stops available",

@@ -522,6 +522,8 @@
     "backTo": "← Retour à {nombre}",
     "backToVillage": "Retour au village",
     "viewVillageMap": "Voir la carte du village",
+    "howToGetThere": "Comment s'y rendre",
+    "routeMap": "Carte de l'itinéraire",
     "stops": "Arrêts",
     "stopsCount": "{count} arrêt(s) dans cette expérience",
     "noStops": "Aucun arrêt disponible",

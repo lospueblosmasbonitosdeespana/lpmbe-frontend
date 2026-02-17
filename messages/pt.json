@@ -522,6 +522,8 @@
     "backTo": "← Voltar a {nombre}",
     "backToVillage": "Voltar à aldeia",
     "viewVillageMap": "Ver mapa da aldeia",
+    "howToGetThere": "Como chegar",
+    "routeMap": "Mapa da rota",
     "stops": "Paragens",
     "stopsCount": "{count} paragem(ns) nesta experiência",
     "noStops": "Nenhuma paragem disponível",

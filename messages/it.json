@@ -522,6 +522,8 @@
     "backTo": "← Torna a {nombre}",
     "backToVillage": "Torna al borgo",
     "viewVillageMap": "Vedi mappa del borgo",
+    "howToGetThere": "Come arrivare",
+    "routeMap": "Mappa del percorso",
     "stops": "Tappe",
     "stopsCount": "{count} tappa/e in questa esperienza",
     "noStops": "Nessuna tappa disponibile",

@@ -250,7 +250,7 @@ export default async function MultiexperienciaPage({
                 display: "inline-block",
               }}
             >
-              Cómo llegar
+              {t("howToGetThere")}
             </a>
           ) : (
             <button
@@ -265,7 +265,7 @@ export default async function MultiexperienciaPage({
                 color: "#999",
               }}
             >
-              Cómo llegar
+              {t("howToGetThere")}
             </button>
           )}
         </div>
@@ -273,7 +273,7 @@ export default async function MultiexperienciaPage({
         {/* Mapa de paradas */}
         <div style={{ marginTop: "20px" }}>
           <h3 style={{ marginBottom: "12px", fontSize: "16px", fontWeight: 500 }}>
-            Mapa de la ruta
+            {t("routeMap")}
           </h3>
           <ParadasMap paradas={paradas} puebloNombre={pueblo.nombre} />
         </div>

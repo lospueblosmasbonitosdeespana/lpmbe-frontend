@@ -522,6 +522,8 @@
     "backTo": "← Zurück zu {nombre}",
     "backToVillage": "Zurück zum Dorf",
     "viewVillageMap": "Dorfkarte ansehen",
+    "howToGetThere": "Anfahrt",
+    "routeMap": "Routenkarte",
     "stops": "Stationen",
     "stopsCount": "{count} Station(en) in diesem Erlebnis",
     "noStops": "Keine Stationen verfügbar",

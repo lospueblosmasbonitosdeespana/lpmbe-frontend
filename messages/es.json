@@ -519,6 +519,8 @@
     "backTo": "← Volver a {nombre}",
     "backToVillage": "Volver al pueblo",
     "viewVillageMap": "Ver mapa del pueblo",
+    "howToGetThere": "Cómo llegar",
+    "routeMap": "Mapa de la ruta",
     "stops": "Paradas",
     "stopsCount": "{count} parada(s) en esta experiencia",
     "noStops": "No hay paradas disponibles",
