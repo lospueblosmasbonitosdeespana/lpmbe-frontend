@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 
 export const dynamic = 'force-dynamic';
@@ -12,16 +12,16 @@ type TematicaPage = {
 };
 
 type CategoryConfig = {
-  title: string;
+  titleKey: string;
   category: string;
 };
 
 const CATEGORY_MAP: Record<string, CategoryConfig> = {
-  gastronomia: { title: 'Gastronomía', category: 'GASTRONOMIA' },
-  naturaleza: { title: 'Naturaleza', category: 'NATURALEZA' },
-  cultura: { title: 'Cultura', category: 'CULTURA' },
-  'en-familia': { title: 'En familia', category: 'EN_FAMILIA' },
-  petfriendly: { title: 'Petfriendly', category: 'PETFRIENDLY' },
+  gastronomia: { titleKey: 'titleGastronomia', category: 'GASTRONOMIA' },
+  naturaleza: { titleKey: 'titleNaturaleza', category: 'NATURALEZA' },
+  cultura: { titleKey: 'titleCultura', category: 'CULTURA' },
+  'en-familia': { titleKey: 'titleEnFamilia', category: 'EN_FAMILIA' },
+  petfriendly: { titleKey: 'titlePetfriendly', category: 'PETFRIENDLY' },
 };
 
 async function getAsociacionPage(category: string, locale?: string): Promise<TematicaPage | null> {
@@ -53,12 +53,14 @@ export default async function AsociacionTematicaPage({
 }) {
   const { slug } = await params;
   const locale = await getLocale();
+  const t = await getTranslations('experienciasPage');
   const config = CATEGORY_MAP[slug];
+  const title = config ? t(config.titleKey) : '';
 
   if (!config) {
     return (
       <main className="mx-auto max-w-7xl px-4 py-12">
-        <p className="text-gray-600">Categoría no encontrada</p>
+        <p className="text-gray-600">{t('categoryNotFound')}</p>
       </main>
     );
   }
@@ -69,9 +71,9 @@ export default async function AsociacionTematicaPage({
     return (
       <main className="mx-auto max-w-7xl px-4 py-12">
         <Link href={`/experiencias/${slug}`} className="text-sm text-blue-600 hover:underline">
-          ← Volver
+          {t('back')}
         </Link>
-        <p className="mt-4 text-gray-600">Contenido no disponible</p>
+        <p className="mt-4 text-gray-600">{t('contentUnavailable')}</p>
       </main>
     );
   }
@@ -79,12 +81,12 @@ export default async function AsociacionTematicaPage({
   return (
     <main className="mx-auto max-w-4xl px-4 py-12">
       <Link href={`/experiencias/${slug}`} className="text-sm text-blue-600 hover:underline">
-        ← Volver a {config.title}
+        {t('backTo', { title })}
       </Link>
 
       <article className="mt-8">
         <div className="mb-2 inline-block rounded-md bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
-          Asociación
+          {t('association')}
         </div>
         
         <h1 className="mt-2 text-4xl font-semibold">{page.titulo}</h1>

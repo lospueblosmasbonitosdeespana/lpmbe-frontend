@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,43 +18,18 @@ type TematicaPage = {
 };
 
 type CategoryConfig = {
-  title: string;
-  description: string;
+  titleKey: string;
+  descKey: string;
   category: string;
   tabSlug: string;
 };
 
 const CATEGORY_MAP: Record<string, CategoryConfig> = {
-  gastronomia: {
-    title: 'Gastronomía',
-    description: 'Descubre la riqueza culinaria de nuestros pueblos',
-    category: 'GASTRONOMIA',
-    tabSlug: 'gastronomia',
-  },
-  naturaleza: {
-    title: 'Naturaleza',
-    description: 'Experiencias en entornos naturales únicos',
-    category: 'NATURALEZA',
-    tabSlug: 'naturaleza',
-  },
-  cultura: {
-    title: 'Cultura',
-    description: 'Patrimonio cultural e histórico de nuestros pueblos',
-    category: 'CULTURA',
-    tabSlug: 'cultura',
-  },
-  'en-familia': {
-    title: 'En familia',
-    description: 'Actividades y experiencias para disfrutar en familia',
-    category: 'EN_FAMILIA',
-    tabSlug: 'en-familia',
-  },
-  petfriendly: {
-    title: 'Petfriendly',
-    description: 'Pueblos y experiencias que dan la bienvenida a tus mascotas',
-    category: 'PETFRIENDLY',
-    tabSlug: 'petfriendly',
-  },
+  gastronomia: { titleKey: 'titleGastronomia', descKey: 'descGastronomia', category: 'GASTRONOMIA', tabSlug: 'gastronomia' },
+  naturaleza: { titleKey: 'titleNaturaleza', descKey: 'descNaturaleza', category: 'NATURALEZA', tabSlug: 'naturaleza' },
+  cultura: { titleKey: 'titleCultura', descKey: 'descCultura', category: 'CULTURA', tabSlug: 'cultura' },
+  'en-familia': { titleKey: 'titleEnFamilia', descKey: 'descEnFamilia', category: 'EN_FAMILIA', tabSlug: 'en-familia' },
+  petfriendly: { titleKey: 'titlePetfriendly', descKey: 'descPetfriendly', category: 'PETFRIENDLY', tabSlug: 'petfriendly' },
 };
 
 async function getTematicaPages(category: string, locale?: string): Promise<{ asociacion: TematicaPage | null; pueblos: TematicaPage[] }> {
@@ -91,17 +66,20 @@ export default async function TematicaPage({
 }) {
   const { slug } = await params;
   const locale = await getLocale();
+  const t = await getTranslations('experienciasPage');
   const config = CATEGORY_MAP[slug];
 
   if (!config) {
     return (
       <main className="mx-auto max-w-7xl px-4 py-12">
-        <p className="text-gray-600">Categoría no encontrada</p>
+        <p className="text-gray-600">{t('categoryNotFound')}</p>
       </main>
     );
   }
 
   const { asociacion, pueblos } = await getTematicaPages(config.category, locale);
+  const title = t(config.titleKey);
+  const description = t(config.descKey);
 
   // Agrupar pueblos por CCAA
   const byCCAA = pueblos.reduce((acc, item) => {
@@ -112,27 +90,27 @@ export default async function TematicaPage({
   }, {} as Record<string, TematicaPage[]>);
 
   // Ordenar comunidades alfabéticamente
-  const comunidades = Object.keys(byCCAA).sort((a, b) => a.localeCompare(b, 'es'));
+  const comunidades = Object.keys(byCCAA).sort((a, b) => a.localeCompare(b, locale || 'es'));
 
   const isEmpty = !asociacion && pueblos.length === 0;
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-12">
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold">{config.title}</h1>
-        <p className="mt-2 text-gray-600">{config.description}</p>
+        <h1 className="text-3xl font-semibold">{title}</h1>
+        <p className="mt-2 text-gray-600">{description}</p>
       </div>
 
       {isEmpty ? (
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
-          <p className="text-gray-600">No hay experiencias disponibles en esta categoría</p>
+          <p className="text-gray-600">{t('noExperiences')}</p>
         </div>
       ) : (
         <div className="space-y-12">
           {/* Bloque ASOCIACIÓN (si existe) */}
           {asociacion && (
             <section>
-              <h2 className="mb-4 text-xl font-semibold text-gray-800">Asociación</h2>
+              <h2 className="mb-4 text-xl font-semibold text-gray-800">{t('association')}</h2>
               
               <Link
                 href={`/experiencias/${slug}/asociacion`}
@@ -154,7 +132,7 @@ export default async function TematicaPage({
                   {asociacion.resumen && (
                     <p className="mt-2 text-gray-600">{asociacion.resumen}</p>
                   )}
-                  <p className="mt-4 text-sm text-blue-600">Leer más →</p>
+                  <p className="mt-4 text-sm text-blue-600">{t('readMore')}</p>
                 </div>
               </Link>
             </section>

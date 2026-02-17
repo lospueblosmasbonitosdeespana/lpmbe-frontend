@@ -413,6 +413,25 @@
     "viewOnGoogleMaps": "Ver en Google Maps",
     "gallery": "Galería"
   },
+  "experienciasPage": {
+    "titleGastronomia": "Gastronomía",
+    "descGastronomia": "Descubre la riqueza culinaria de nuestros pueblos",
+    "titleNaturaleza": "Naturaleza",
+    "descNaturaleza": "Experiencias en entornos naturales únicos",
+    "titleCultura": "Cultura",
+    "descCultura": "Patrimonio cultural e histórico de nuestros pueblos",
+    "titleEnFamilia": "En familia",
+    "descEnFamilia": "Actividades y experiencias para disfrutar en familia",
+    "titlePetfriendly": "Petfriendly",
+    "descPetfriendly": "Pueblos y experiencias que dan la bienvenida a tus mascotas",
+    "association": "Asociación",
+    "readMore": "Leer más →",
+    "categoryNotFound": "Categoría no encontrada",
+    "noExperiences": "No hay experiencias disponibles en esta categoría",
+    "contentUnavailable": "Contenido no disponible",
+    "back": "← Volver",
+    "backTo": "← Volver a {title}"
+  },
   "meteoPanel": {
     "titleNow": "Tiempo ahora",
     "statusLabel": "Estado:",

@@ -425,6 +425,25 @@
     "viewOnGoogleMaps": "Ver no Google Maps",
     "gallery": "Galeria"
   },
+  "experienciasPage": {
+    "titleGastronomia": "Gastronomia",
+    "descGastronomia": "Descubra a riqueza culinária das nossas aldeias",
+    "titleNaturaleza": "Natureza",
+    "descNaturaleza": "Experiências em ambientes naturais únicos",
+    "titleCultura": "Cultura",
+    "descCultura": "Património cultural e histórico das nossas aldeias",
+    "titleEnFamilia": "Em família",
+    "descEnFamilia": "Atividades e experiências para disfrutar em família",
+    "titlePetfriendly": "Pet-friendly",
+    "descPetfriendly": "Aldeias e experiências que acolhem os seus animais",
+    "association": "Associação",
+    "readMore": "Ler mais →",
+    "categoryNotFound": "Categoria não encontrada",
+    "noExperiences": "Não há experiências disponíveis nesta categoria",
+    "contentUnavailable": "Conteúdo indisponível",
+    "back": "← Voltar",
+    "backTo": "← Voltar a {title}"
+  },
   "meteoPanel": {
     "titleNow": "Tempo agora",
     "statusLabel": "Estado:",

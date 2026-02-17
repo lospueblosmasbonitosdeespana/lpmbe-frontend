@@ -425,6 +425,25 @@
     "viewOnGoogleMaps": "Auf Google Maps ansehen",
     "gallery": "Galerie"
   },
+  "experienciasPage": {
+    "titleGastronomia": "Gastronomie",
+    "descGastronomia": "Entdecken Sie den kulinarischen Reichtum unserer Dörfer",
+    "titleNaturaleza": "Natur",
+    "descNaturaleza": "Erlebnisse in einzigartigen Naturlandschaften",
+    "titleCultura": "Kultur",
+    "descCultura": "Kulturelles und historisches Erbe unserer Dörfer",
+    "titleEnFamilia": "Familie",
+    "descEnFamilia": "Aktivitäten und Erlebnisse für die ganze Familie",
+    "titlePetfriendly": "Haustierfreundlich",
+    "descPetfriendly": "Dörfer und Erlebnisse, die Ihre Haustiere willkommen heißen",
+    "association": "Verein",
+    "readMore": "Weiterlesen →",
+    "categoryNotFound": "Kategorie nicht gefunden",
+    "noExperiences": "In dieser Kategorie sind keine Erlebnisse verfügbar",
+    "contentUnavailable": "Inhalt nicht verfügbar",
+    "back": "← Zurück",
+    "backTo": "← Zurück zu {title}"
+  },
   "meteoPanel": {
     "titleNow": "Aktuelles Wetter",
     "statusLabel": "Zustand:",

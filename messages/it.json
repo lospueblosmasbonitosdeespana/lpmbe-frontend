@@ -425,6 +425,25 @@
     "viewOnGoogleMaps": "Vedi su Google Maps",
     "gallery": "Galleria"
   },
+  "experienciasPage": {
+    "titleGastronomia": "Gastronomia",
+    "descGastronomia": "Scopri la ricchezza culinaria dei nostri borghi",
+    "titleNaturaleza": "Natura",
+    "descNaturaleza": "Esperienze in ambienti naturali unici",
+    "titleCultura": "Cultura",
+    "descCultura": "Patrimonio culturale e storico dei nostri borghi",
+    "titleEnFamilia": "In famiglia",
+    "descEnFamilia": "Attività ed esperienze da vivere in famiglia",
+    "titlePetfriendly": "Pet-friendly",
+    "descPetfriendly": "Borghi ed esperienze che accolgono i vostri animali",
+    "association": "Associazione",
+    "readMore": "Leggi tutto →",
+    "categoryNotFound": "Categoria non trovata",
+    "noExperiences": "Nessuna esperienza disponibile in questa categoria",
+    "contentUnavailable": "Contenuto non disponibile",
+    "back": "← Indietro",
+    "backTo": "← Torna a {title}"
+  },
   "meteoPanel": {
     "titleNow": "Tempo attuale",
     "statusLabel": "Stato:",
