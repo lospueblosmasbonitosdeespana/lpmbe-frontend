@@ -64,6 +64,7 @@ export default function RutaMap({
   onReversedChange,
 }: RutaMapProps) {
   const t = useTranslations("explore");
+  const tRutas = useTranslations("rutas");
   const [mounted, setMounted] = useState(false);
   const [L, setL] = useState<typeof import('leaflet') | null>(null);
   const [RL, setRL] = useState<typeof import('react-leaflet') | null>(null);
@@ -425,7 +426,7 @@ export default function RutaMap({
                 <path d="M7 16V4M7 4L3 8M7 4L11 8" />
                 <path d="M17 8v12M17 20l4-4M17 20l-4-4" />
               </svg>
-              {reversed ? 'Ver ruta normal' : 'Invertir ruta'}
+              {reversed ? tRutas('viewNormalRoute') : tRutas('invertRoute')}
             </button>
           )}
           {googleMapsUrl && (
@@ -438,7 +439,7 @@ export default function RutaMap({
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
               </svg>
-              Abrir en Google Maps
+              {tRutas('openInGoogleMaps')}
             </a>
           )}
           {appleMapsUrl && (
@@ -451,7 +452,7 @@ export default function RutaMap({
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
               </svg>
-              Abrir en Apple Maps
+              {tRutas('openInAppleMaps')}
             </a>
           )}
           {wazeUrl && (
@@ -459,13 +460,13 @@ export default function RutaMap({
               href={wazeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              title={displayWaypoints.length > 1 ? 'Waze solo permite un destino por enlace; se abre con el punto final de la ruta.' : undefined}
+              title={displayWaypoints.length > 1 ? tRutas('wazeMultiDestinationNote') : undefined}
               className="inline-flex items-center gap-2 rounded-lg bg-primary/80 px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/70"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
               </svg>
-              Abrir en Waze
+              {tRutas('openInWaze')}
             </a>
           )}
         </div>

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import RutaMap, { type RouteInfo, type RouteLeg } from './RutaMap';
 import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
@@ -38,6 +39,7 @@ export default function RutaParadasConMapa({
   totalDistanciaKm,
   totalTiempoEstimado,
 }: Props) {
+  const t = useTranslations('rutas');
   const [routeInfo, setRouteInfo] = useState<RouteInfo | null>(null);
   const [reversed, setReversed] = useState(false);
 
@@ -74,13 +76,16 @@ export default function RutaParadasConMapa({
   // Build waypoints for the map (always in original order, RutaMap handles reversal)
   const mapWaypoints = useMemo(
     () =>
-      paradas.map((p, idx) => ({
-        lat: p.lat ?? p.pueblo?.lat ?? null,
-        lng: p.lng ?? p.pueblo?.lng ?? null,
-        titulo: (p.titulo?.trim() || p.pueblo?.nombre || `Parada ${p.orden ?? idx + 1}`) as string,
-        orden: Number(p.orden ?? idx + 1),
-      })),
-    [paradas]
+      paradas.map((p, idx) => {
+        const n = p.orden ?? idx + 1;
+        return {
+          lat: p.lat ?? p.pueblo?.lat ?? null,
+          lng: p.lng ?? p.pueblo?.lng ?? null,
+          titulo: (p.titulo?.trim() || p.pueblo?.nombre || t('stopN', { n })) as string,
+          orden: Number(n),
+        };
+      }),
+    [paradas, t]
   );
 
   // Use OSRM data if available, otherwise DB data
@@ -107,7 +112,7 @@ export default function RutaParadasConMapa({
       {/* Resumen total de la ruta */}
       {(displayDistance || displayDuration) && (
         <div className="mb-8 rounded-xl border bg-accent/50 p-5">
-          <h3 className="text-lg font-semibold text-foreground mb-3">Resumen de la ruta</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-3">{t('routeSummary')}</h3>
           <div className="flex flex-wrap gap-6">
             {displayDistance && (
               <div className="flex items-center gap-2">
@@ -116,7 +121,7 @@ export default function RutaParadasConMapa({
                   <circle cx="12" cy="10" r="3" />
                 </svg>
                 <div>
-                  <span className="text-xs font-medium uppercase text-muted-foreground">Distancia total</span>
+                  <span className="text-xs font-medium uppercase text-muted-foreground">{t('totalDistance')}</span>
                   <p className="text-lg font-bold text-foreground">{displayDistance} km</p>
                 </div>
               </div>
@@ -128,7 +133,7 @@ export default function RutaParadasConMapa({
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
                 <div>
-                  <span className="text-xs font-medium uppercase text-muted-foreground">Tiempo en coche</span>
+                  <span className="text-xs font-medium uppercase text-muted-foreground">{t('driveTime')}</span>
                   <p className="text-lg font-bold text-foreground">{displayDuration}</p>
                 </div>
               </div>
@@ -139,7 +144,7 @@ export default function RutaParadasConMapa({
                   <path d="M3 6h18" /><path d="M3 12h18" /><path d="M3 18h18" />
                 </svg>
                 <div>
-                  <span className="text-xs font-medium uppercase text-muted-foreground">Paradas</span>
+                  <span className="text-xs font-medium uppercase text-muted-foreground">{t('stops')}</span>
                   <p className="text-lg font-bold text-foreground">{paradas.length}</p>
                 </div>
               </div>
@@ -150,7 +155,7 @@ export default function RutaParadasConMapa({
 
       {/* Mapa de la ruta (ANTES de las paradas) */}
       <section id="mapa" className="mb-8">
-        <h2 className="mb-4 text-2xl font-semibold">Mapa de la ruta</h2>
+        <h2 className="mb-4 text-2xl font-semibold">{t('routeMap')}</h2>
         <RutaMap
           waypoints={mapWaypoints}
           height={500}
@@ -164,9 +169,9 @@ export default function RutaParadasConMapa({
       {displayParadas.length > 0 && (
         <section className="mt-10">
           <h2 className="text-2xl font-semibold">
-            Paradas de la ruta
+            {t('routeStops')}
             {reversed && (
-              <span className="ml-3 text-sm font-normal text-muted-foreground">(ruta invertida)</span>
+              <span className="ml-3 text-sm font-normal text-muted-foreground">{t('routeStopsReversed')}</span>
             )}
           </h2>
 
@@ -174,7 +179,7 @@ export default function RutaParadasConMapa({
             {displayParadas.map((p: any, idx: number) => {
               const pueblo = p.pueblo ?? {};
               const displayOrder = idx + 1;
-              const titulo = (p.titulo?.trim() || pueblo.nombre || `Parada ${displayOrder}`) as string;
+              const titulo = (p.titulo?.trim() || pueblo.nombre || t('stopN', { n: displayOrder })) as string;
               const descripcion = p.cleanDescripcion ?? '';
               const fotoUrl = (p.fotoUrl || '').toString().trim();
               const leg = idx < legs.length ? legs[idx] : null;
@@ -191,7 +196,7 @@ export default function RutaParadasConMapa({
                         <h3 className="text-xl font-semibold">{titulo}</h3>
                         {accumulated != null && accumulated > 0 && (
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            km {accumulated} desde el inicio
+                            {t('kmFromStart', { km: accumulated })}
                           </p>
                         )}
                       </div>
@@ -211,7 +216,7 @@ export default function RutaParadasConMapa({
                               style={{ width: 260, height: 'auto' }}
                             />
                             <span className="mt-1 block text-sm text-primary hover:underline">
-                              Ver pueblo →
+                              {t('viewVillage')}
                             </span>
                           </Link>
                         ) : (
