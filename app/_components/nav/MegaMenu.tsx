@@ -71,7 +71,7 @@ export function MegaMenu() {
                 <Link
                   key={item.labelKey}
                   href={item.href}
-                  className="text-sm font-medium hover:underline"
+                  className="text-sm font-medium text-foreground hover:underline hover:text-primary"
                 >
                   {label}
                 </Link>
@@ -92,7 +92,7 @@ export function MegaMenu() {
               >
                 <button
                   type="button"
-                  className="text-sm font-medium hover:underline"
+                  className="text-sm font-medium text-foreground hover:underline hover:text-primary"
                   aria-haspopup="true"
                   aria-expanded={isOpen}
                 >
@@ -137,6 +137,7 @@ function MegaPanel({
       className="
         fixed left-1/2 top-auto z-50 mt-4 w-[920px] -translate-x-1/2
         rounded-lg border border-gray-100 bg-white shadow-lg
+        dark:border-border dark:bg-card dark:shadow-xl dark:shadow-black/30
       "
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -144,7 +145,7 @@ function MegaPanel({
       <div className="grid grid-cols-3 gap-8 px-8 py-7">
         {item.columns.map((col) => (
           <div key={col.titleKey}>
-            <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {tNav(col.titleKey)}
             </div>
             <ul className="mt-3 space-y-2">
@@ -158,7 +159,7 @@ function MegaPanel({
                         href={l.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm hover:underline"
+                        className="text-sm text-foreground hover:underline hover:text-primary"
                       >
                         {linkLabel}
                       </a>
@@ -167,7 +168,7 @@ function MegaPanel({
                 }
                 return (
                   <li key={l.href}>
-                    <Link href={l.href} className="text-sm hover:underline">
+                    <Link href={l.href} className="text-sm text-foreground hover:underline hover:text-primary">
                       {linkLabel}
                     </Link>
                   </li>

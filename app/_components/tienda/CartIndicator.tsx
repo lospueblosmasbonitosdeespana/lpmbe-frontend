@@ -22,7 +22,7 @@ export default function CartIndicator() {
   return (
     <Link
       href="/tienda/carrito"
-      className="relative text-gray-700 hover:text-gray-900"
+      className="relative text-gray-700 hover:text-gray-900 dark:text-foreground dark:hover:text-primary"
       title={title}
     >
       <svg

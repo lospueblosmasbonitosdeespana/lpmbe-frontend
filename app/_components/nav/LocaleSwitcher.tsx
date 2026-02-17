@@ -42,7 +42,7 @@ export function LocaleSwitcher({ currentLocale, variant = 'footer' }: Props) {
           value={currentLocale}
           onChange={(e) => handleChange(e.target.value)}
           disabled={isPending}
-          className="rounded border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          className="rounded border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-border dark:bg-card dark:text-foreground"
           aria-label="Idioma"
         >
           {LOCALES.map(({ code, label }) => (

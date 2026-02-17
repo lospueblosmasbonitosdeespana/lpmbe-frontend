@@ -89,9 +89,9 @@ export async function Header({ locale }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm">
+    <header className="sticky top-0 z-50 bg-white shadow-sm dark:bg-card dark:border-b dark:border-border dark:shadow-none">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5">
-        <Link href="/" className="block">
+        <Link href="/" className="block text-foreground">
           {logoContent}
         </Link>
 
@@ -99,7 +99,7 @@ export async function Header({ locale }: HeaderProps) {
           <MegaMenu />
         </div>
 
-        <div className="flex items-center gap-3 md:gap-4">
+        <div className="flex items-center gap-3 md:gap-4 text-foreground">
           <LocaleSwitcher currentLocale={locale} variant="header" />
           <MobileMenu />
           <CartIndicatorWrapper />
