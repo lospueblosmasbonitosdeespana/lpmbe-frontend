@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useLocale } from 'next-intl';
 import ReactMarkdown from 'react-markdown';
 import Link from 'next/link';
 
@@ -50,6 +51,7 @@ type Props = {
 };
 
 export default function TematicasPuebloTabs({ puebloSlug, pois = [] }: Props) {
+  const locale = useLocale();
   const [tematicas, setTematicas] = useState<TematicasPueblo | null>(null);
   const [activeTab, setActiveTab] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -68,7 +70,7 @@ export default function TematicasPuebloTabs({ puebloSlug, pois = [] }: Props) {
   useEffect(() => {
     async function loadTematicas() {
       try {
-        const res = await fetch(`/api/public/pueblos/${puebloSlug}/pages`, {
+        const res = await fetch(`/api/public/pueblos/${puebloSlug}/pages?lang=${encodeURIComponent(locale)}`, {
           cache: 'no-store',
         });
 
@@ -88,7 +90,7 @@ export default function TematicasPuebloTabs({ puebloSlug, pois = [] }: Props) {
     }
 
     loadTematicas();
-  }, [puebloSlug]);
+  }, [puebloSlug, locale]);
 
   // Determinar tabs disponibles: páginas temáticas O POIs con esa categoría
   const availableTabs = TABS.filter((tab) => {

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getLocale } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,11 +57,13 @@ const CATEGORY_MAP: Record<string, CategoryConfig> = {
   },
 };
 
-async function getTematicaPages(category: string): Promise<{ asociacion: TematicaPage | null; pueblos: TematicaPage[] }> {
+async function getTematicaPages(category: string, locale?: string): Promise<{ asociacion: TematicaPage | null; pueblos: TematicaPage[] }> {
   try {
+    const qs = new URLSearchParams({ category });
+    if (locale) qs.set('lang', locale);
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/public/pages?category=${category}`,
-      { cache: 'no-store' }
+      `${process.env.NEXT_PUBLIC_API_URL}/public/pages?${qs.toString()}`,
+      { cache: 'no-store', headers: locale ? { 'Accept-Language': locale } : undefined }
     );
 
     if (!res.ok) {
@@ -87,6 +90,7 @@ export default async function TematicaPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const locale = await getLocale();
   const config = CATEGORY_MAP[slug];
 
   if (!config) {
@@ -97,7 +101,7 @@ export default async function TematicaPage({
     );
   }
 
-  const { asociacion, pueblos } = await getTematicaPages(config.category);
+  const { asociacion, pueblos } = await getTematicaPages(config.category, locale);
 
   // Agrupar pueblos por CCAA
   const byCCAA = pueblos.reduce((acc, item) => {

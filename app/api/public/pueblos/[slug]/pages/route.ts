@@ -8,11 +8,15 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
+  const { searchParams } = new URL(request.url);
+  const lang = searchParams.get('lang') ?? request.headers.get('accept-language')?.split(',')[0]?.trim()?.slice(0, 2);
   const API_BASE = getApiUrl();
-  
+  const qs = lang ? `?lang=${encodeURIComponent(lang)}` : '';
+
   try {
-    const res = await fetch(`${API_BASE}/public/pueblos/${slug}/pages`, {
+    const res = await fetch(`${API_BASE}/public/pueblos/${slug}/pages${qs}`, {
       cache: 'no-store',
+      headers: lang ? { 'Accept-Language': lang } : undefined,
     });
 
     const text = await res.text();

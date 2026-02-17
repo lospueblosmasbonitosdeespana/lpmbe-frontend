@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getLocale } from 'next-intl/server';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 
 export const dynamic = 'force-dynamic';
@@ -31,11 +32,12 @@ type PuebloPages = {
   PETFRIENDLY?: TematicaPage;
 };
 
-async function getPuebloPage(puebloSlug: string, category: string): Promise<TematicaPage | null> {
+async function getPuebloPage(puebloSlug: string, category: string, locale?: string): Promise<TematicaPage | null> {
   try {
+    const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/public/pueblos/${puebloSlug}/pages`,
-      { cache: 'no-store' }
+      `${process.env.NEXT_PUBLIC_API_URL}/public/pueblos/${puebloSlug}/pages${qs}`,
+      { cache: 'no-store', headers: locale ? { 'Accept-Language': locale } : undefined }
     );
 
     if (!res.ok) {
@@ -60,6 +62,7 @@ export default async function PuebloTematicaPage({
   params: Promise<{ slug: string; puebloSlug: string }>;
 }) {
   const { slug, puebloSlug } = await params;
+  const locale = await getLocale();
   const config = CATEGORY_MAP[slug];
 
   if (!config) {
@@ -70,7 +73,7 @@ export default async function PuebloTematicaPage({
     );
   }
 
-  const page = await getPuebloPage(puebloSlug, config.category);
+  const page = await getPuebloPage(puebloSlug, config.category, locale);
 
   if (!page) {
     return (

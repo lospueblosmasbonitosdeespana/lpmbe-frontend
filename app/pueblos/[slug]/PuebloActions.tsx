@@ -336,7 +336,7 @@ export default function PuebloActions({
             <div className="relative flex flex-col items-center" ref={shareDropdownRef}>
               <ActionButton
                 icon={<ShareIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
-                label="Compartir"
+                label={t("actionShare")}
                 state={shareState}
                 onClick={handleShareClick}
               />
@@ -344,7 +344,7 @@ export default function PuebloActions({
                 <div
                   className="absolute top-full left-1/2 z-50 mt-2 w-48 -translate-x-1/2 rounded-lg border border-border bg-card py-1 shadow-lg"
                   role="menu"
-                  aria-label="Compartir en redes sociales"
+                  aria-label={t("shareMenuAria")}
                 >
                   {shareLinks.map(({ label, href }) => (
                     <a
@@ -373,42 +373,42 @@ export default function PuebloActions({
                     className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-foreground hover:bg-muted"
                     role="menuitem"
                   >
-                    Copiar enlace
+                    {t("copyLink")}
                   </button>
                 </div>
               )}
             </div>
             <ActionButton
               icon={<VideosIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
-              label="Videos"
+              label={t("actionVideos")}
               href={`/pueblos/${puebloSlug}/videos`}
             />
             <ActionButton
               icon={<WebcamIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
-              label="Webcam"
+              label={t("actionWebcam")}
               href={`/pueblos/${puebloSlug}/webcam`}
             />
             <ActionButton
               icon={<MapIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
-              label="Ver en mapa"
+              label={t("actionViewOnMap")}
               href={mapUrl}
             />
             <ActionButton
               icon={<DirectionsIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
-              label="Cómo llegar"
+              label={t("howToGetThere")}
               href={directionsUrl ?? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nombre)}`}
               external
             />
             {isLoggedIn !== true && (
               <ActionButton
                 icon={<BellIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
-                label="Suscribirse"
+                label={t("actionSubscribe")}
                 onClick={() => setShowSuscribirseModal(true)}
               />
             )}
             <ActionButton
               icon={<NewsIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
-              label="Actualidad"
+              label={t("actionActualidad")}
               href={`/pueblos/${puebloSlug}/actualidad`}
               highlighted
             />

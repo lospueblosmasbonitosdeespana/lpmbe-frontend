@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getLocale } from 'next-intl/server';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 
 export const dynamic = 'force-dynamic';
@@ -23,11 +24,13 @@ const CATEGORY_MAP: Record<string, CategoryConfig> = {
   petfriendly: { title: 'Petfriendly', category: 'PETFRIENDLY' },
 };
 
-async function getAsociacionPage(category: string): Promise<TematicaPage | null> {
+async function getAsociacionPage(category: string, locale?: string): Promise<TematicaPage | null> {
   try {
+    const qs = new URLSearchParams({ category });
+    if (locale) qs.set('lang', locale);
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/public/pages?category=${category}`,
-      { cache: 'no-store' }
+      `${process.env.NEXT_PUBLIC_API_URL}/public/pages?${qs.toString()}`,
+      { cache: 'no-store', headers: locale ? { 'Accept-Language': locale } : undefined }
     );
 
     if (!res.ok) {
@@ -49,6 +52,7 @@ export default async function AsociacionTematicaPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const locale = await getLocale();
   const config = CATEGORY_MAP[slug];
 
   if (!config) {
@@ -59,7 +63,7 @@ export default async function AsociacionTematicaPage({
     );
   }
 
-  const page = await getAsociacionPage(config.category);
+  const page = await getAsociacionPage(config.category, locale);
 
   if (!page) {
     return (
