@@ -215,13 +215,13 @@ export default function RutaParadasConMapa({
 
               return (
                 <div key={`${p.puebloId}-${displayOrder}-${reversed ? 'r' : 'n'}`}>
-                  <article className="rounded-lg border p-5">
+                  <article className="rounded-lg border border-border bg-card p-5">
                     <div className="flex items-center gap-3">
                       <div className="h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm">
                         {displayOrder}
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-xl font-semibold">{titulo}</h3>
+                        <h3 className="text-xl font-semibold text-foreground">{titulo}</h3>
                         {accumulated != null && accumulated > 0 && (
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {t('kmFromStart', { km: accumulated })}
@@ -260,7 +260,7 @@ export default function RutaParadasConMapa({
 
                     {descripcion ? (
                       <div
-                        className="mt-4 prose prose-gray max-w-none"
+                        className="mt-4 prose prose-gray dark:prose-invert max-w-none text-foreground"
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(descripcion) }}
                       />
                     ) : null}

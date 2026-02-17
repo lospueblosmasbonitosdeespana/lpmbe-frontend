@@ -692,30 +692,14 @@ export default async function PuebloPage({
 
       {/* POIs - Otros */}
       {poisOtros.length > 0 && (
-        <section style={{ marginTop: "32px" }}>
-          <h2>{t("others")}</h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-              gap: "20px",
-              marginTop: "16px",
-            }}
-          >
+        <section className="mt-8">
+          <h2 className="text-foreground font-semibold">{t("others")}</h2>
+          <div className="grid gap-5 mt-4 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
             {poisOtros.map((poi: Poi) => (
               <Link
                 key={`${puebloSafe.id}-otros-${poi.id}`}
                 href={`/pueblos/${puebloSafe.slug}/pois/${poi.id}`}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  overflow: "hidden",
-                  textDecoration: "none",
-                  color: "inherit",
-                  display: "flex",
-                  flexDirection: "column",
-                  transition: "box-shadow 0.2s",
-                }}
+                className="flex flex-col overflow-hidden rounded-lg border border-border dark:border-border bg-card no-underline text-inherit transition-shadow hover:shadow-md"
               >
                 {poi.foto ? (
                   <RotatedImage
@@ -726,56 +710,23 @@ export default async function PuebloPage({
                     loading="lazy"
                   />
                 ) : (
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "200px",
-                      backgroundColor: "#f0f0f0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#999",
-                      fontSize: "14px",
-                    }}
-                  >
+                  <div className="w-full h-[200px] flex items-center justify-center bg-muted text-muted-foreground text-sm">
                     {t("noImage")}
                   </div>
                 )}
 
-                <div style={{ padding: "16px" }}>
+                <div className="p-4">
                   {poi.categoria && (
-                    <p
-                      style={{
-                        margin: "0 0 8px 0",
-                        fontSize: "12px",
-                        color: "#666",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                      }}
-                    >
+                    <p className="m-0 mb-2 text-xs text-muted-foreground uppercase tracking-wider">
                       {poi.categoria}
                     </p>
                   )}
 
-                  <h3
-                    style={{
-                      margin: "0",
-                      fontSize: "18px",
-                      fontWeight: "600",
-                      lineHeight: "1.4",
-                    }}
-                  >
+                  <h3 className="m-0 text-lg font-semibold leading-snug text-foreground">
                     {poi.nombre}
                   </h3>
 
-                  <p
-                    style={{
-                      margin: "12px 0 0 0",
-                      fontSize: "14px",
-                      color: "#0066cc",
-                      fontWeight: "500",
-                    }}
-                  >
+                  <p className="mt-3 text-sm text-primary font-medium">
                     {t("seeDetail")} →
                   </p>
                 </div>

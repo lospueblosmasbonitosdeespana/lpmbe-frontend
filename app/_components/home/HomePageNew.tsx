@@ -953,9 +953,9 @@ function SocialMediaSection() {
 
   return (
     <section className="relative py-20 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary to-primary/80" />
-      <div className="absolute top-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary to-primary/80 dark:from-amber-900/95 dark:via-amber-900 dark:to-amber-950" />
+      <div className="absolute top-0 left-0 w-96 h-96 bg-white/10 dark:bg-white/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/10 dark:bg-white/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
 
       <Container className="relative z-10">
         <div className="text-center mb-10">
@@ -995,7 +995,7 @@ function SocialMediaSection() {
         </div>
 
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-5 py-3">
+          <div className="inline-flex items-center gap-3 bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-full px-5 py-3">
             <span className="text-white/90 text-sm">{t("shareWith")}</span>
             <span className="px-4 py-1.5 bg-white text-primary font-bold rounded-full text-sm">
               #LosPueblosMasBonitos

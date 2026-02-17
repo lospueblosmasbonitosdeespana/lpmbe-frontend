@@ -152,89 +152,58 @@ export default async function MultiexperienciaPage({
   }
 
   return (
-    <main style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
+    <main className="mx-auto max-w-[1200px] px-6 py-8 bg-background">
       {/* Breadcrumb */}
-      <div style={{ marginBottom: "24px" }}>
+      <div className="mb-6">
         <Link
           href={`/pueblos/${pueblo.slug}`}
-          style={{ color: "#0066cc", textDecoration: "none" }}
+          className="text-primary hover:underline"
         >
           {t("backTo", { nombre: pueblo.nombre })}
         </Link>
       </div>
 
       {/* Título */}
-      <h1>{mx.titulo}</h1>
+      <h1 className="text-foreground text-3xl font-bold">{mx.titulo}</h1>
 
       {/* Información del pueblo */}
-      <p style={{ marginTop: "8px", fontSize: "14px", color: "#666" }}>
+      <p className="mt-2 text-sm text-muted-foreground">
         {pueblo.nombre} · {pueblo.provincia} · {pueblo.comunidad}
       </p>
 
       {/* Foto padre */}
       {mx.foto && (
-        <div style={{ marginTop: "24px" }}>
+        <div className="mt-6">
           <img
             src={mx.foto}
             alt={mx.titulo}
-            style={{
-              width: "100%",
-              maxHeight: "400px",
-              objectFit: "cover",
-              borderRadius: "8px",
-            }}
+            className="w-full max-h-[400px] object-cover rounded-lg"
           />
         </div>
       )}
 
       {/* Descripción */}
-      <section style={{ marginTop: "32px" }}>
-        <p>
+      <section className="mt-8">
+        <p className="text-foreground">
           {mx.descripcion ?? "Descripción próximamente."}
         </p>
       </section>
 
       {/* Resumen de la experiencia */}
-      <section
-        style={{
-          marginTop: "32px",
-          padding: "20px",
-          backgroundColor: "#f9f9f9",
-          borderRadius: "8px",
-          border: "1px solid #e0e0e0",
-        }}
-      >
-        <h2 style={{ marginTop: 0, marginBottom: "16px" }}>
+      <section className="mt-8 p-5 rounded-lg border border-border bg-muted/50 dark:bg-card">
+        <h2 className="mt-0 mb-4 text-foreground font-semibold">
           {t("experienceSummary")}
         </h2>
-        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+        <div className="flex flex-wrap gap-3">
           <Link
             href={`/pueblos/${pueblo.slug}`}
-            style={{
-              padding: "10px 16px",
-              fontSize: "14px",
-              border: "1px solid #ddd",
-              borderRadius: "6px",
-              backgroundColor: "#fff",
-              textDecoration: "none",
-              color: "#333",
-              display: "inline-block",
-            }}
+            className="inline-block px-4 py-2.5 text-sm rounded-md border border-border bg-background text-foreground hover:bg-muted"
           >
             {t("backToVillage")}
           </Link>
           <Link
             href={`/pueblos/${pueblo.slug}#mapa`}
-            style={{
-              padding: "10px 16px",
-              fontSize: "14px",
-              border: "1px solid #ddd",
-              borderRadius: "6px",
-              backgroundColor: "#fff",
-              textDecoration: "none",
-              color: "#333",
-              display: "inline-block",
-            }}
+            className="inline-block px-4 py-2.5 text-sm rounded-md border border-border bg-background text-foreground hover:bg-muted"
           >
             {t("viewVillageMap")}
           </Link>
@@ -243,31 +212,14 @@ export default async function MultiexperienciaPage({
               href={`https://www.google.com/maps/dir/?api=1&destination=${pueblo.lat},${pueblo.lng}`}
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                padding: "10px 16px",
-                fontSize: "14px",
-                border: "1px solid #ddd",
-                borderRadius: "6px",
-                backgroundColor: "#fff",
-                textDecoration: "none",
-                color: "#333",
-                display: "inline-block",
-              }}
+              className="inline-block px-4 py-2.5 text-sm rounded-md border border-border bg-background text-foreground hover:bg-muted"
             >
               {t("howToGetThere")}
             </a>
           ) : (
             <button
               disabled
-              style={{
-                padding: "10px 16px",
-                fontSize: "14px",
-                border: "1px solid #ddd",
-                borderRadius: "6px",
-                backgroundColor: "#f5f5f5",
-                cursor: "not-allowed",
-                color: "#999",
-              }}
+              className="inline-block px-4 py-2.5 text-sm rounded-md border border-border bg-muted cursor-not-allowed text-muted-foreground"
             >
               {t("howToGetThere")}
             </button>
@@ -275,8 +227,8 @@ export default async function MultiexperienciaPage({
         </div>
 
         {/* Mapa de paradas */}
-        <div style={{ marginTop: "20px" }}>
-          <h3 style={{ marginBottom: "12px", fontSize: "16px", fontWeight: 500 }}>
+        <div className="mt-5">
+          <h3 className="mb-3 text-base font-medium text-foreground">
             {t("routeMap")}
           </h3>
           <ParadasMap paradas={paradas} puebloNombre={pueblo.nombre} />
@@ -284,15 +236,15 @@ export default async function MultiexperienciaPage({
       </section>
 
       {/* Paradas */}
-      <section style={{ marginTop: "32px" }}>
-        <h2 style={{ marginBottom: "8px" }}>{t("stops")}</h2>
-        <p style={{ fontSize: "14px", color: "#666", marginBottom: "24px" }}>
+      <section className="mt-8">
+        <h2 className="mb-2 text-foreground font-semibold">{t("stops")}</h2>
+        <p className="text-sm text-muted-foreground mb-6">
           {t("stopsCount", { count: paradas.length })}
         </p>
         {paradas.length === 0 ? (
           <p>{t("noStops")}</p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          <div className="flex flex-col gap-6">
             {paradas.map((p: any, idx: number) => {
               const key = p.kind === 'LEGACY' 
                 ? `L-${p.legacyLugarId}` 
@@ -302,24 +254,11 @@ export default async function MultiexperienciaPage({
               return (
                 <article
                   key={key}
-                  style={{
-                    borderRadius: "12px",
-                    overflow: "hidden",
-                    border: "1px solid #e5e7eb",
-                    background: "#fff",
-                  }}
+                  className="rounded-xl overflow-hidden border border-border bg-card dark:bg-card"
                 >
                   {/* Foto */}
                   {p.foto ? (
-                    <div
-                      style={{
-                        position: "relative",
-                        aspectRatio: "16/9",
-                        maxWidth: "100%",
-                        overflow: "hidden",
-                        backgroundColor: "#f0f0f0",
-                      }}
-                    >
+                    <div className="relative aspect-video w-full overflow-hidden bg-muted">
                       <img
                         src={p.foto}
                         alt={p.titulo ?? t("stopFallback")}
@@ -334,38 +273,23 @@ export default async function MultiexperienciaPage({
                   ) : null}
 
                   {/* Contenido */}
-                  <div style={{ padding: "20px" }}>
+                  <div className="p-5">
                     {/* Número + Título */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div className="flex items-center gap-3">
                       {!p.foto && (
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: "36px",
-                            height: "36px",
-                            borderRadius: "50%",
-                            background: "linear-gradient(135deg, #5a1520 0%, #7A1C1C 100%)",
-                            color: "white",
-                            fontSize: "16px",
-                            fontWeight: 800,
-                            flexShrink: 0,
-                            boxShadow: "0 2px 6px rgba(122,28,28,0.3)",
-                          }}
-                        >
+                        <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-primary text-primary-foreground text-base font-extrabold shrink-0 shadow-sm">
                           {num}
                         </span>
                       )}
                       {p.titulo ? (
-                        <h3 style={{ fontSize: "20px", fontWeight: 600, margin: 0, lineHeight: 1.3 }}>
+                        <h3 className="text-xl font-semibold text-foreground leading-tight m-0">
                           {p.foto && (
-                            <span style={{ color: "#7A1C1C", fontWeight: 700 }}>{num}. </span>
+                            <span className="text-primary font-bold">{num}. </span>
                           )}
                           {p.titulo}
                         </h3>
                       ) : (
-                        <h3 style={{ fontSize: "20px", fontWeight: 600, margin: 0, color: "#9ca3af" }}>
+                        <h3 className="text-xl font-semibold text-muted-foreground m-0">
                           {t("stop", { num })}
                         </h3>
                       )}
@@ -373,38 +297,23 @@ export default async function MultiexperienciaPage({
 
                     {/* Descripción */}
                     {p.descripcion ? (
-                      <div
-                        style={{
-                          marginTop: "12px",
-                          fontSize: "15px",
-                          lineHeight: 1.7,
-                          color: "#374151",
-                          whiteSpace: "pre-wrap",
-                        }}
-                      >
+                      <div className="mt-3 text-[15px] leading-relaxed text-foreground dark:text-card-foreground whitespace-pre-wrap">
                         {p.descripcion}
                       </div>
                     ) : (
-                      <p style={{ marginTop: "12px", color: "#9ca3af", fontSize: "14px", fontStyle: "italic" }}>
+                      <p className="mt-3 text-muted-foreground text-sm italic">
                         {t("descriptionComingSoon")}
                       </p>
                     )}
 
                     {/* Enlace Google Maps */}
                     {typeof p.lat === "number" && typeof p.lng === "number" ? (
-                      <div style={{ marginTop: "12px" }}>
+                      <div className="mt-3">
                         <a
                           href={`https://www.google.com/maps?q=${p.lat},${p.lng}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            fontSize: "13px",
-                            color: "#7A1C1C",
-                            textDecoration: "none",
-                          }}
+                          className="inline-flex items-center gap-1 text-[13px] text-primary hover:underline"
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />

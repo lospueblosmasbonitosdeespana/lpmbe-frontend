@@ -57,14 +57,13 @@ export default async function PueblosCercanosSection({
 
   return (
     <section
-      className="mt-16 py-16"
-      style={{ backgroundColor: "var(--color-bg-section)" }}
+      className="mt-16 py-16 bg-[var(--color-bg-section)]"
     >
       <div className="mx-auto max-w-6xl px-4">
-        <p className="text-sm font-medium uppercase tracking-wider text-amber-700/90">
+        <p className="text-sm font-medium uppercase tracking-wider text-amber-700/90 dark:text-amber-400/90">
           {t("nearbyEyebrow")}
         </p>
-        <h2 className="mt-1 font-display text-2xl font-bold text-gray-900 md:text-3xl">
+        <h2 className="mt-1 font-display text-2xl font-bold text-gray-900 dark:text-foreground md:text-3xl">
           {t("nearbyTitle")}
         </h2>
 
@@ -78,9 +77,9 @@ export default async function PueblosCercanosSection({
               <Link
                 key={pueblo.id}
                 href={`/pueblos/${pueblo.slug}`}
-                className="group block overflow-hidden rounded-lg bg-white shadow-sm transition-shadow hover:shadow-md"
+                className="group block overflow-hidden rounded-lg bg-white dark:bg-card shadow-sm transition-shadow hover:shadow-md border border-transparent dark:border-border"
               >
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-200">
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-200 dark:bg-muted">
                   {foto ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
@@ -89,18 +88,18 @@ export default async function PueblosCercanosSection({
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-gray-300">
-                      <span className="text-sm text-gray-500">
+                    <div className="flex h-full w-full items-center justify-center bg-gray-300 dark:bg-muted">
+                      <span className="text-sm text-gray-500 dark:text-muted-foreground">
                         {pueblo.nombre}
                       </span>
                     </div>
                   )}
                 </div>
                 <div className="px-4 py-3">
-                  <p className="text-xs font-medium uppercase tracking-wide text-amber-800/80">
+                  <p className="text-xs font-medium uppercase tracking-wide text-amber-800/80 dark:text-amber-400/80">
                     {pueblo.provincia}
                   </p>
-                  <p className="mt-0.5 font-display text-lg font-semibold text-gray-900 group-hover:text-amber-800">
+                  <p className="mt-0.5 font-display text-lg font-semibold text-gray-900 dark:text-foreground group-hover:text-amber-800 dark:group-hover:text-amber-400">
                     {pueblo.nombre}
                   </p>
                 </div>

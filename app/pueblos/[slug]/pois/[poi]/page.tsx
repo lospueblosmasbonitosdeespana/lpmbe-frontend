@@ -107,28 +107,25 @@ export default async function PoiPage({
   const puebloComunidad = data.pueblo?.comunidad ?? null;
 
   return (
-    <main style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
-      <div style={{ marginBottom: 24 }}>
-        <Link
-          href={`/pueblos/${puebloSlug}`}
-          style={{ color: "#0066cc", textDecoration: "none" }}
-        >
+    <main className="mx-auto max-w-[1200px] px-6 py-8 bg-background">
+      <div className="mb-6">
+        <Link href={`/pueblos/${puebloSlug}`} className="text-primary hover:underline">
           {t("backTo", { nombre: puebloNombre })}
         </Link>
       </div>
 
-      <h1 style={{ fontSize: 32, fontWeight: 700, margin: "16px 0" }}>
+      <h1 className="text-3xl font-bold text-foreground my-4">
         {data.nombre}
       </h1>
 
-      <p style={{ fontSize: 14, color: "#666", margin: "8px 0" }}>
+      <p className="text-sm text-muted-foreground my-2">
         {puebloNombre}
         {puebloProvincia ? ` · ${puebloProvincia}` : ""}
         {puebloComunidad ? ` · ${puebloComunidad}` : ""}
       </p>
 
       {data.categoria && (
-        <p style={{ fontSize: 14, color: "#888", margin: "8px 0" }}>
+        <p className="text-sm text-muted-foreground my-2">
           {data.categoria}
         </p>
       )}
@@ -230,15 +227,15 @@ export default async function PoiPage({
 
       {/* DESCRIPCIÓN */}
       {descripcionHtml ? (
-        <section style={{ marginTop: 32 }}>
+        <section className="mt-8">
           <div
-            className="prose max-w-none"
+            className="prose prose-gray dark:prose-invert max-w-none text-foreground"
             dangerouslySetInnerHTML={{ __html: descripcionHtml }}
           />
         </section>
       ) : (
-        <section style={{ marginTop: 32 }}>
-          <p style={{ color: "#666", fontSize: 14 }}>
+        <section className="mt-8">
+          <p className="text-muted-foreground text-sm">
             {t("descriptionComingSoon")}
           </p>
         </section>
@@ -246,27 +243,18 @@ export default async function PoiPage({
 
       {/* UBICACIÓN */}
       {data.lat && data.lng && (
-        <section style={{ marginTop: 32 }}>
-          <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 16 }}>
+        <section className="mt-8">
+          <h2 className="text-2xl font-semibold text-foreground mb-4">
             {t("location")}
           </h2>
-          <p style={{ fontSize: 14, color: "#666", marginBottom: 12 }}>
+          <p className="text-sm text-muted-foreground mb-3">
             {t("coordinates", { lat: data.lat, lng: data.lng })}
           </p>
           <a
             href={`https://www.google.com/maps?q=${data.lat},${data.lng}`}
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              display: "inline-block",
-              padding: "10px 16px",
-              fontSize: 14,
-              border: "1px solid #ddd",
-              borderRadius: 6,
-              backgroundColor: "#fff",
-              textDecoration: "none",
-              color: "#333",
-            }}
+            className="inline-block px-4 py-2.5 text-sm rounded-md border border-border bg-card text-foreground hover:bg-muted"
           >
             {t("viewOnGoogleMaps")}
           </a>

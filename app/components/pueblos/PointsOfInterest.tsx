@@ -82,12 +82,12 @@ function PointOfInterestCard({ point, index, showFullDescription }: { point: Poi
   const content = (
     <article
       className={cn(
-        "flex gap-3 rounded-lg border border-border/60 bg-white/60 p-3 transition-colors sm:gap-4 sm:p-4",
-        point.href && "cursor-pointer hover:border-primary/20 hover:bg-white/80"
+        "flex flex-col sm:flex-row gap-3 rounded-lg border border-border/60 bg-white/60 dark:bg-card p-3 transition-colors sm:gap-4 sm:p-4",
+        point.href && "cursor-pointer hover:border-primary/20 hover:bg-white/80 dark:hover:bg-card/90"
       )}
     >
       {point.image && (
-        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-sm bg-muted/50 sm:h-20 sm:w-20">
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-sm bg-muted/50 sm:h-20 sm:w-20 self-start">
           <Image
             src={point.image}
             alt={point.name}
@@ -97,11 +97,11 @@ function PointOfInterestCard({ point, index, showFullDescription }: { point: Poi
         </div>
       )}
 
-      <div className="flex flex-1 items-start gap-2 min-w-0">
-        <span className="font-serif text-2xl font-medium leading-none text-primary/25 sm:text-3xl">
+      <div className="flex flex-1 items-start gap-2 min-w-0 w-full">
+        <span className="font-serif text-2xl font-medium leading-none text-primary/25 dark:text-primary/40 sm:text-3xl shrink-0">
           {String(index + 1).padStart(2, "0")}
         </span>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 overflow-hidden">
           <span className="mb-0.5 block text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
             {point.type}
           </span>
@@ -110,7 +110,7 @@ function PointOfInterestCard({ point, index, showFullDescription }: { point: Poi
           </h3>
           {hasDescription && (
             <p className={cn(
-              "text-xs leading-relaxed text-muted-foreground sm:text-sm",
+              "text-xs leading-relaxed text-foreground/90 dark:text-muted-foreground sm:text-sm mt-0.5",
               !showFullDescription && "line-clamp-2"
             )}>
               {point.description}
