@@ -73,6 +73,83 @@ type Poi = {
   puebloId: number;
 };
 
+/** Normaliza etiqueta para lookup: mayúsculas, sin acentos, espacios simples */
+function normalizeStatEtiqueta(s: string): string {
+  return (s ?? "")
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/\s+/g, " ");
+}
+
+/** Mapeo etiqueta normalizada (ES) → clave i18n puebloPage.stats.* (para traducir en cada idioma) */
+const STAT_ETIQUETA_TO_KEY: Record<string, string> = {
+  ALTITUD: "altitud",
+  HABITANTES: "habitantes",
+  PUENTE: "puente",
+  "IGLESIA ROMANICA": "iglesiaRomanica",
+  IGLESIA: "iglesia",
+  IGLESIAS: "iglesias",
+  FUNDACION: "fundacion",
+  CASTILLO: "castillo",
+  MURALLAS: "murallas",
+  COLEGIATA: "colegiata",
+  "PLAZA MAYOR": "plazaMayor",
+  AYUNTAMIENTO: "ayuntamiento",
+  ROMANICO: "romanico",
+  PALACIOS: "palacios",
+  "CONJUNTO HISTORICO": "conjuntoHistorico",
+  "PLAZAS MEDIEVALES": "plazasMedievales",
+  "MONUMENTO NACIONAL": "monumentoNacional",
+  MEZQUITA: "mezquita",
+  "TORRES MEDIEVALES": "torresMedievales",
+  CATEDRAL: "catedral",
+  VALLES: "valles",
+  "CORRAL COMEDIAS": "corralComedias",
+  "CUEVAS EXCAVADAS": "cuevasExcavadas",
+  TORREON: "torreon",
+  CASONAS: "casonas",
+  COMARCA: "comarca",
+  FUNICULAR: "funicular",
+  "STO. DOMINGO": "stoDomingo",
+  "CASAS TIPICAS": "casasTipicas",
+  BATANES: "batanes",
+  TEMPLARIOS: "templarios",
+  SANTIAGO: "santiago",
+  UNESCO: "unesco",
+  PATRIMONIO: "patrimonio",
+  UNIVERSIDAD: "universidad",
+  "CAPRICHO GAUDI": "caprichoGaudi",
+  NATURAL: "natural",
+  TRAZADO: "trazado",
+  ERUPCION: "erupcion",
+  CONVENTO: "convento",
+  VALLE: "valle",
+  "AL AIRE LIBRE": "museoAireLibre",
+  "LLUVIA/AÑO": "lluviaAno",
+  "LLUVIA/ANO": "lluviaAno",
+  MONASTERIO: "monasterio",
+  ARCIPRESTE: "arcipreste",
+  "MONUMENTO NAC.": "monumentoNac",
+  PLAZA: "plaza",
+  BODEGAS: "bodegas",
+  "TERMAS ROMANAS": "termasRomanas",
+  "PALACIO DUCAL": "palacioDucal",
+  CONVENTOS: "conventos",
+  "FABRICA CAÑONES": "fabricaCanones",
+  "FABRICA CANONES": "fabricaCanones",
+  CIUDAD: "ciudad",
+  PALACIO: "palacio",
+  ARQUITECTURA: "arquitectura",
+  CULTURA: "cultura",
+  "PUERTO PESQUERO": "pesquero",
+  PESQUERO: "pesquero",
+  MUSEOS: "museos",
+  "UNESCO TRAMUNTANA": "tramuntana",
+  "MUSEO ETH CORRAU": "museos",
+};
+
 // Mapeo de categorías temáticas a labels en español
 const CATEGORIA_TEMATICA_LABELS: Record<string, string> = {
   GASTRONOMIA: 'Gastronomía',
@@ -458,10 +535,11 @@ export default async function PuebloPage({
       <DetailStatsBlock
         eyebrow={t("statsEyebrow")}
         title={t("statsTitle")}
-        stats={(puebloSafe.highlights ?? []).slice(0, 4).map((h) => ({
-          value: h.valor,
-          label: h.etiqueta,
-        }))}
+        stats={(puebloSafe.highlights ?? []).slice(0, 4).map((h) => {
+          const key = STAT_ETIQUETA_TO_KEY[normalizeStatEtiqueta(h.etiqueta)];
+          const label = key ? t(`stats.${key}`) : h.etiqueta;
+          return { value: h.valor, label };
+        })}
         columns={4}
         background="default"
       />
