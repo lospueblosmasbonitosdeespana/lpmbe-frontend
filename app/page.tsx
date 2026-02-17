@@ -1,11 +1,29 @@
+import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { HomePageNew, type NotificationItem, type CategoryCard, type RouteCard, type VillageCard, type NewsItem } from "./_components/home/HomePageNew";
 import { getHomeConfig, getHomeVideos } from "@/lib/homeApi";
 import { getRutas, getApiUrl, getPueblosLite, getPuebloMainPhoto, type Pueblo } from "@/lib/api";
+import { getCanonicalUrl, getLocaleAlternates, DEFAULT_DESCRIPTION, SITE_NAME } from "@/lib/seo";
 
 // Forzar render dinámico para evitar que el build falle si el backend no responde
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const path = "/";
+  return {
+    title: `${SITE_NAME} – Pueblos, rutas y experiencias`,
+    description: DEFAULT_DESCRIPTION,
+    alternates: {
+      canonical: getCanonicalUrl(path),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title: `${SITE_NAME} – Pueblos, rutas y experiencias`,
+      description: DEFAULT_DESCRIPTION,
+    },
+  };
+}
 
 // Helper para formatear fecha corta
 function formatShortDate(iso?: string): string {

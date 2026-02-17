@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -64,11 +65,14 @@ export async function generateMetadata({
     description: descripcionHtml
       ? descripcionHtml.replace(/<[^>]*>/g, "").slice(0, 160)
       : `Información sobre ${data.nombre}${puebloNombre ? ` en ${puebloNombre}` : ""}.`,
-    alternates: { canonical: path },
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
     robots: { index: true, follow: true },
     openGraph: {
       title,
-      url: path,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
       type: "article",
       images: foto ? [{ url: foto, alt: data.nombre }] : undefined,
     },

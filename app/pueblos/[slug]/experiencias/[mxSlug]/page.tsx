@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getLugarLegacyBySlug, getApiUrl, type Pueblo } from "@/lib/api";
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
 import ParadasMap from "@/app/_components/ParadasMap";
 
 // Helpers para SEO
@@ -81,12 +82,15 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: path },
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
     robots: { index: true, follow: true },
     openGraph: {
       title,
       description,
-      url: path,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
       type: "article",
       images: heroImage
         ? [{ url: heroImage, alt: `${expTitle} – ${pueblo.nombre}` }]

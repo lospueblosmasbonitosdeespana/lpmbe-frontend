@@ -1,7 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { getHomeConfig } from "@/lib/homeApi";
+import { getCanonicalUrl, getLocaleAlternates, SITE_NAME } from "@/lib/seo";
 import { getApiUrl } from "@/lib/api";
 import { Container } from "@/app/components/ui/container";
 import { Section } from "@/app/components/ui/section";
@@ -51,11 +53,19 @@ async function getPueblosByTematica(
   }
 }
 
-export const metadata = {
-  title: "Experiencias temáticas | Los Pueblos Más Bonitos de España",
-  description:
-    "Descubre nuestros pueblos por temática: gastronomía, naturaleza, cultura, en familia, petfriendly.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const path = "/experiencias";
+  return {
+    title: `Experiencias temáticas – ${SITE_NAME}`,
+    description:
+      "Descubre nuestros pueblos por temática: gastronomía, naturaleza, cultura, en familia, petfriendly.",
+    alternates: {
+      canonical: getCanonicalUrl(path),
+      languages: getLocaleAlternates(path),
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 export default async function ExperienciasPage() {
   const locale = await getLocale();

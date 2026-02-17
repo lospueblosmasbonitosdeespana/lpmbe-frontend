@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug, getPueblosLite, getApiUrl } from "@/lib/api";
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
 import PuebloActions from "./PuebloActions";
 import DescripcionPueblo from "./DescripcionPueblo";
 import MeteoPanel from "./_components/MeteoPanel";
@@ -247,12 +248,15 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: path },
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
     robots: { index: true, follow: true },
     openGraph: {
       title,
       description,
-      url: path,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
       type: "article",
       images: heroImage ? [{ url: heroImage, alt: baseTitle }] : undefined,
     },

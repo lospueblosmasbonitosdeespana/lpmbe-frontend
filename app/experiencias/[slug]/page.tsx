@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
+import { getCanonicalUrl, getLocaleAlternates, SITE_NAME, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,6 +59,38 @@ async function getTematicaPages(category: string, locale?: string): Promise<{ as
     console.error(`[TEMATICA ${category}] Error:`, error);
     return { asociacion: null, pueblos: [] };
   }
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const locale = await getLocale() as SupportedLocale;
+  const t = await getTranslations('experienciasPage');
+  const config = CATEGORY_MAP[slug];
+  if (!config) {
+    return { title: `${SITE_NAME}` };
+  }
+  const title = `${t(config.titleKey)} – ${SITE_NAME}`;
+  const description = t(config.descKey);
+  const path = `/experiencias/${slug}`;
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    robots: { index: true, follow: true },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      type: 'website',
+    },
+  };
 }
 
 export default async function TematicaPage({

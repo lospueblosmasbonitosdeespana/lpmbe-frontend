@@ -26,8 +26,11 @@ export function LocaleSwitcher({ currentLocale, variant = 'footer' }: Props) {
       const form = new FormData();
       form.set('locale', code);
       form.set('path', pathname ?? '/');
-      setLocale(form).then(() => {
-        router.refresh();
+        setLocale(form).then(() => {
+        // SEO: actualizar URL con ?lang= para que la URL sea la versión indexable del idioma
+        const pathWithoutQuery = (pathname ?? '/').replace(/\?.*$/, '');
+        const search = code === 'es' ? '' : `?lang=${code}`;
+        router.push(pathWithoutQuery + search);
       });
     });
   };

@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getRutas, getRutaById, getRutaMapa } from "@/lib/api";
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
 import { sanitizeHtml, createExcerpt } from "@/lib/sanitizeHtml";
 import RutaParadasConMapa from "@/app/_components/RutaParadasConMapa";
 
@@ -93,12 +94,15 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: path },
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
     robots: { index: true, follow: true },
     openGraph: {
       title,
       description,
-      url: path,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
       type: "article",
       images: ruta.foto_portada
         ? [{ url: ruta.foto_portada, alt: ruta.titulo }]
