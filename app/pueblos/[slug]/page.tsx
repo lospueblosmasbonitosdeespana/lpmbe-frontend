@@ -529,7 +529,6 @@ export default async function PuebloPage({
         lng={puebloSafe.lng}
         semaforoEstado={semaforoPueblo.estado ?? "VERDE"}
         semaforoMensaje={semaforoPueblo.mensaje ?? null}
-        semaforoUpdatedAt={semaforoPueblo.ultima_actualizacion ?? null}
         semaforoProgramadoInicio={semaforoPueblo.programado_inicio ?? null}
         semaforoProgramadoFin={semaforoPueblo.programado_fin ?? null}
         semaforoCaducaEn={semaforoPueblo.caduca_en ?? null}

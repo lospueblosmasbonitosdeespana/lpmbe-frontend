@@ -15,7 +15,6 @@ type PuebloActionsProps = {
   mapAnchorId?: string;
   semaforoEstado?: "VERDE" | "AMARILLO" | "ROJO" | null;
   semaforoMensaje?: string | null;
-  semaforoUpdatedAt?: string | Date | null;
   semaforoProgramadoInicio?: string | Date | null;
   semaforoProgramadoFin?: string | Date | null;
   semaforoCaducaEn?: string | Date | null;
@@ -52,26 +51,6 @@ function getSemaforoConfig(
     default:
       return null;
   }
-}
-
-function formatActualizado(
-  updatedAt: string | Date | null | undefined,
-  t: (key: string, values?: Record<string, number>) => string
-): string | null {
-  if (!updatedAt) return null;
-  const d = typeof updatedAt === "string" ? new Date(updatedAt) : updatedAt;
-  if (isNaN(d.getTime())) return null;
-  const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-  const prefix = `${t("semaforoUpdated")}: `;
-  if (diffMins < 1) return prefix + t("semaforoUpdatedNow");
-  if (diffMins < 60) return prefix + t("semaforoUpdatedMin", { n: diffMins });
-  if (diffHours < 24) return prefix + t("semaforoUpdatedHours", { n: diffHours });
-  if (diffDays < 7) return prefix + t("semaforoUpdatedDays", { n: diffDays });
-  return prefix + d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
 }
 
 function formatFecha(fecha: string | Date | null | undefined, locale: string): string | null {
@@ -244,7 +223,6 @@ export default function PuebloActions({
   mapAnchorId = "mapa",
   semaforoEstado,
   semaforoMensaje,
-  semaforoUpdatedAt,
   semaforoProgramadoInicio,
   semaforoProgramadoFin,
   semaforoCaducaEn,
@@ -451,11 +429,6 @@ export default function PuebloActions({
                 {!semaforoProgramadoInicio && semaforoCaducaEn && (
                   <span className="mt-1 block text-xs text-muted-foreground">
                     {t("semaforoValidUntil")}: {formatFecha(semaforoCaducaEn, locale)}
-                  </span>
-                )}
-                {formatActualizado(semaforoUpdatedAt, t) && (
-                  <span className="mt-1 block text-xs text-muted-foreground">
-                    {formatActualizado(semaforoUpdatedAt, t)}
                   </span>
                 )}
               </div>

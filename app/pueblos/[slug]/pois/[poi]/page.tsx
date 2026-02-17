@@ -132,27 +132,23 @@ export default async function PoiPage({
 
       {/* FOTO PRINCIPAL */}
       {foto ? (
-        <section style={{ marginTop: 32 }}>
-          <img
-            src={foto}
-            alt={data?.nombre ?? "POI"}
-            style={{
-              maxWidth: "800px",
-              maxHeight: "600px",
-              width: "auto",
-              height: "auto",
-              objectFit: "contain",
-              borderRadius: 8,
-              // Aplicar rotación de la foto principal si existe
-              transform: (() => {
-                const fotos = Array.isArray(data?.fotosPoi) ? data.fotosPoi : [];
-                const principal = fotos.find((f: any) => f?.orden === 1) ?? fotos[0];
-                const rotation = principal?.rotation ?? 0;
-                return rotation !== 0 ? `rotate(${rotation}deg)` : undefined;
-              })(),
-            }}
-            loading="eager"
-          />
+        <section className="mt-8">
+          <div className="relative aspect-[4/3] w-full max-w-3xl overflow-hidden rounded-xl bg-muted">
+            <img
+              src={foto}
+              alt={data?.nombre ?? "POI"}
+              className="h-full w-full object-cover"
+              style={{
+                transform: (() => {
+                  const fotos = Array.isArray(data?.fotosPoi) ? data.fotosPoi : [];
+                  const principal = fotos.find((f: any) => f?.orden === 1) ?? fotos[0];
+                  const rotation = principal?.rotation ?? 0;
+                  return rotation !== 0 ? `rotate(${rotation}deg)` : undefined;
+                })(),
+              }}
+              loading="eager"
+            />
+          </div>
         </section>
       ) : null}
 
@@ -164,59 +160,29 @@ export default async function PoiPage({
         if (fotosSorted.length <= 1) return null;
         
         return (
-          <section style={{ marginTop: 32 }}>
-            <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 16 }}>
+          <section className="mt-8">
+            <h2 className="text-2xl font-semibold text-foreground mb-4">
               {t("gallery")}
             </h2>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                gap: 16,
-              }}
-            >
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {fotosSorted.map((foto: any, idx: number) => (
                 <div
                   key={foto.id ?? idx}
-                  style={{
-                    position: "relative",
-                    paddingTop: "75%",
-                    overflow: "hidden",
-                    borderRadius: 8,
-                    backgroundColor: "#f5f5f5",
-                  }}
+                  className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted"
                 >
                   <img
                     src={foto.url}
                     alt={foto.alt ?? `${data.nombre} - Foto ${idx + 1}`}
+                    className="absolute inset-0 h-full w-full object-cover"
                     style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      // IMPORTANTE: Aplicar rotación desde el dato
                       transform: foto.rotation ? `rotate(${foto.rotation}deg)` : undefined,
                     }}
                     loading="lazy"
                   />
                   {foto.orden === 1 && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: 8,
-                        left: 8,
-                        padding: "4px 8px",
-                        backgroundColor: "rgba(33, 150, 243, 0.9)",
-                        color: "white",
-                        fontSize: 11,
-                        fontWeight: 600,
-                        borderRadius: 4,
-                      }}
-                    >
+                    <span className="absolute top-2 left-2 rounded-md bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground">
                       {t("principal")}
-                    </div>
+                    </span>
                   )}
                 </div>
               ))}
@@ -229,7 +195,7 @@ export default async function PoiPage({
       {descripcionHtml ? (
         <section className="mt-8">
           <div
-            className="prose prose-gray dark:prose-invert max-w-none text-foreground"
+            className="prose prose-gray dark:prose-invert prose-lg max-w-none text-foreground [&_p]:leading-relaxed [&_p]:text-foreground [&_h2]:text-foreground [&_h3]:text-foreground [&_li]:text-foreground [&_strong]:text-foreground"
             dangerouslySetInnerHTML={{ __html: descripcionHtml }}
           />
         </section>
@@ -247,14 +213,11 @@ export default async function PoiPage({
           <h2 className="text-2xl font-semibold text-foreground mb-4">
             {t("location")}
           </h2>
-          <p className="text-sm text-muted-foreground mb-3">
-            {t("coordinates", { lat: data.lat, lng: data.lng })}
-          </p>
           <a
             href={`https://www.google.com/maps?q=${data.lat},${data.lng}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block px-4 py-2.5 text-sm rounded-md border border-border bg-card text-foreground hover:bg-muted"
+            className="inline-block px-4 py-2.5 text-sm rounded-lg border border-border bg-card text-foreground hover:bg-muted transition-colors"
           >
             {t("viewOnGoogleMaps")}
           </a>

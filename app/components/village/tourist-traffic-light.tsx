@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { Section } from "@/app/components/ui/section"
 import { Container } from "@/app/components/ui/container"
-import { Caption } from "@/app/components/ui/typography"
 
 type TrafficStatus = "green" | "yellow" | "red"
 type ComponentState = "idle" | "loading" | "error"
@@ -13,7 +12,6 @@ type ComponentState = "idle" | "loading" | "error"
 interface TouristTrafficLightProps {
   status: TrafficStatus
   message: string
-  lastUpdated?: string
   state?: ComponentState
   className?: string
 }
@@ -57,7 +55,6 @@ function TrafficLightIndicator({ status }: { status: TrafficStatus }) {
 export function TouristTrafficLight({
   status,
   message,
-  lastUpdated,
   state = "idle",
   className,
 }: TouristTrafficLightProps) {
@@ -98,9 +95,6 @@ export function TouristTrafficLight({
               <span className={cn("h-2 w-2 rounded-full", style.icon)} />
             </div>
             <p className="mt-0.5 text-sm text-foreground/80">{message}</p>
-            {lastUpdated && (
-              <Caption className="mt-1 block">{t("semaforoUpdated")}: {lastUpdated}</Caption>
-            )}
           </div>
         </div>
       </Container>

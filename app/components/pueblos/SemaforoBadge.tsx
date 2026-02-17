@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 // El backend solo envía estado: "VERDE" | "AMARILLO" | "ROJO". La etiqueta visible
 // se obtiene siempre por i18n (trafficLight.green/yellow/red), así que cualquier
@@ -8,35 +8,15 @@ import { useTranslations, useLocale } from 'next-intl';
 type SemaforoBadgeProps = {
   estado: "VERDE" | "AMARILLO" | "ROJO" | null;
   mensaje?: string | null;
-  updatedAt?: string | Date | null;
   variant?: "badge" | "panel";
 };
-
-function formatFecha(fecha: string | Date | null | undefined, locale: string): string | null {
-  if (!fecha) return null;
-  try {
-    const d = typeof fecha === "string" ? new Date(fecha) : fecha;
-    if (Number.isNaN(d.getTime())) return null;
-    return d.toLocaleDateString(locale === 'es' ? 'es-ES' : locale, {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return null;
-  }
-}
 
 export default function SemaforoBadge({
   estado,
   mensaje,
-  updatedAt,
   variant = "badge",
 }: SemaforoBadgeProps) {
   const t = useTranslations('pueblo');
-  const locale = useLocale();
 
   const getTexto = () => {
     if (estado === "VERDE") return t('trafficLight.green');
@@ -51,7 +31,6 @@ export default function SemaforoBadge({
     ROJO: { color: "#dc3545", bgColor: "#f8d7da" },
   };
   const config = estado ? { texto: getTexto(), ...colors[estado] } : null;
-  const fechaFormateada = formatFecha(updatedAt, locale);
 
   if (variant === "badge") {
     if (!estado || !config?.texto) return null;
@@ -131,11 +110,6 @@ export default function SemaforoBadge({
       {mensaje && (
         <p style={{ margin: "0 0 6px 0", fontSize: "14px", color: "#333" }}>
           {mensaje}
-        </p>
-      )}
-      {fechaFormateada && (
-        <p style={{ margin: 0, fontSize: "12px", color: "#666" }}>
-          {t('semaforoUpdated')}: {fechaFormateada}
         </p>
       )}
     </div>
