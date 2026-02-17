@@ -33,12 +33,12 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
 
   if (!checkoutData) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="text-xl font-bold mb-4">{t('orderSummaryTitle')}</h2>
+      <div className="rounded-lg border border-gray-200 dark:border-border bg-white dark:bg-card p-6">
+        <h2 className="text-xl font-bold mb-4 text-foreground">{t('orderSummaryTitle')}</h2>
         <div className="flex items-center justify-center py-8">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-3"></div>
-            <p className="text-sm text-gray-500">{t('calculatingPrices')}</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-foreground mx-auto mb-3"></div>
+            <p className="text-sm text-gray-500 dark:text-muted-foreground">{t('calculatingPrices')}</p>
           </div>
         </div>
       </div>
@@ -58,12 +58,12 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
   const hasDiscounts = promotions.length > 0 || coupon !== null;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6">
-      <h2 className="text-xl font-bold mb-4">{t('orderSummaryTitle')}</h2>
+    <div className="rounded-lg border border-gray-200 dark:border-border bg-white dark:bg-card p-6">
+      <h2 className="text-xl font-bold mb-4 text-foreground">{t('orderSummaryTitle')}</h2>
 
       {checkoutData.items && checkoutData.items.length > 0 && (
-        <div className="space-y-3 border-b border-gray-200 pb-4 mb-4">
-          <p className="text-sm font-semibold text-gray-700">{t('productsLabel')}</p>
+        <div className="space-y-3 border-b border-gray-200 dark:border-border pb-4 mb-4">
+          <p className="text-sm font-semibold text-gray-700 dark:text-foreground">{t('productsLabel')}</p>
           {checkoutData.items.map((item) => {
             const unitOriginal = toNumber(item.unitOriginalPrice);
             const unitFinal = toNumber(item.unitFinalPrice);
@@ -76,43 +76,43 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
               <div key={item.productId} className="text-sm">
                 <div className="flex justify-between items-start mb-1">
                   <div className="flex-1">
-                    <div className="font-medium text-gray-900">{item.nombre}</div>
-                    <div className="text-xs text-gray-500">{t('quantity', { count: item.cantidad })}</div>
+                    <div className="font-medium text-gray-900 dark:text-foreground">{item.nombre}</div>
+                    <div className="text-xs text-gray-500 dark:text-muted-foreground">{t('quantity', { count: item.cantidad })}</div>
                   </div>
                   <div className="text-right">
                     {hasItemDiscount ? (
                       <div>
-                        <div className="font-semibold text-green-600">
+                        <div className="font-semibold text-green-600 dark:text-green-400">
                           {formatEUR(lineFinal)} €
                         </div>
-                        <div className="text-xs text-gray-400 line-through">
+                        <div className="text-xs text-gray-400 dark:text-muted-foreground line-through">
                           {formatEUR(lineOriginal)} €
                         </div>
                       </div>
                     ) : (
-                      <div className="font-semibold">{formatEUR(lineFinal)} €</div>
+                      <div className="font-semibold text-foreground">{formatEUR(lineFinal)} €</div>
                     )}
                   </div>
                 </div>
 
                 {/* Detalle de precio unitario y descuento */}
                 {hasItemDiscount && (
-                  <div className="ml-2 text-xs text-gray-600 space-y-0.5">
+                  <div className="ml-2 text-xs text-gray-600 dark:text-muted-foreground space-y-0.5">
                     <div className="flex justify-between">
                       <span>{t('unitPrice')}</span>
                       <span>
-                        <span className="text-green-600 font-medium">{formatEUR(unitFinal)} €</span>
+                        <span className="text-green-600 dark:text-green-400 font-medium">{formatEUR(unitFinal)} €</span>
                         {' '}
-                        <span className="line-through text-gray-400">{formatEUR(unitOriginal)} €</span>
+                        <span className="line-through text-gray-400 dark:text-muted-foreground">{formatEUR(unitOriginal)} €</span>
                       </span>
                     </div>
                     {item.discount && (
-                      <div className="flex justify-between text-green-700">
+                      <div className="flex justify-between text-green-700 dark:text-green-400">
                         <span>✓ {item.discount.label || t('discount')}:</span>
                         <span>
                           −{item.discount.percent}%
                           {item.discount.source && (
-                            <span className="ml-1 text-gray-500">
+                            <span className="ml-1 text-gray-500 dark:text-muted-foreground">
                               ({item.discount.source === 'PRODUCT' ? t('productSource') : t('globalSource')})
                             </span>
                           )}
@@ -120,7 +120,7 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
                       </div>
                     )}
                     {itemSavings > 0 && (
-                      <div className="flex justify-between text-green-600">
+                      <div className="flex justify-between text-green-600 dark:text-green-400">
                         <span>{t('savingsLabel')}</span>
                         <span className="font-medium">−{formatEUR(itemSavings)} €</span>
                       </div>
@@ -134,35 +134,35 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
       )}
 
       {/* Subtotal y envío */}
-      <div className="space-y-2 border-b border-gray-200 pb-4 mb-4">
-        <div className="flex justify-between text-sm">
+      <div className="space-y-2 border-b border-gray-200 dark:border-border pb-4 mb-4">
+        <div className="flex justify-between text-sm text-foreground">
           <span>{t('subtotal')}</span>
           {originalTotal !== subtotalBeforeShipping ? (
             <div>
-              <span className="text-gray-400 line-through mr-2">{formatEUR(originalTotal)} €</span>
-              <span className="font-semibold text-green-600">{formatEUR(subtotalBeforeShipping)} €</span>
+              <span className="text-gray-400 dark:text-muted-foreground line-through mr-2">{formatEUR(originalTotal)} €</span>
+              <span className="font-semibold text-green-600 dark:text-green-400">{formatEUR(subtotalBeforeShipping)} €</span>
             </div>
           ) : (
             <span>{formatEUR(subtotalBeforeShipping)} €</span>
           )}
         </div>
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-sm text-foreground">
           <span>
             {t('shippingLabel')}
             {checkoutData.shipping?.zone && (
-              <span className="ml-1 text-xs text-gray-400">({checkoutData.shipping.zone})</span>
+              <span className="ml-1 text-xs text-gray-400 dark:text-muted-foreground">({checkoutData.shipping.zone})</span>
             )}
           </span>
           <span>
             {shippingCost === 0 ? (
-              <span className="text-green-600 font-medium">{t('free')}</span>
+              <span className="text-green-600 dark:text-green-400 font-medium">{t('free')}</span>
             ) : (
               formatEUR(shippingCost) + ' \u20AC'
             )}
           </span>
         </div>
         {checkoutData.shipping && checkoutData.shipping.totalWeight > 0 && (
-          <div className="flex justify-between text-xs text-gray-400">
+          <div className="flex justify-between text-xs text-gray-400 dark:text-muted-foreground">
             <span>{t('totalWeight')}</span>
             <span>{checkoutData.shipping.totalWeight.toFixed(2)} kg</span>
           </div>
@@ -171,34 +171,34 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
 
       {/* Desglose IVA (solo para Península, Baleares, Europa, Portugal) */}
       {checkoutData.iva && !checkoutData.iva.exento && (
-        <div className="space-y-1 border-b border-gray-200 pb-4 mb-4">
+        <div className="space-y-1 border-b border-gray-200 dark:border-border pb-4 mb-4">
           <>
-              <p className="text-xs font-semibold text-gray-600 mb-1">{t('taxBreakdown')}</p>
-              <div className="flex justify-between text-xs text-gray-500">
+              <p className="text-xs font-semibold text-gray-600 dark:text-foreground mb-1">{t('taxBreakdown')}</p>
+              <div className="flex justify-between text-xs text-gray-500 dark:text-muted-foreground">
                 <span>{t('taxBaseProducts')}</span>
                 <span>{formatEUR(checkoutData.iva.totalBaseImponible - checkoutData.iva.shippingBaseImponible)} €</span>
               </div>
-              <div className="flex justify-between text-xs text-gray-500">
+              <div className="flex justify-between text-xs text-gray-500 dark:text-muted-foreground">
                 <span>{t('vatProducts')}</span>
                 <span>{formatEUR(checkoutData.iva.totalIva - checkoutData.iva.shippingIvaAmount)} €</span>
               </div>
               {shippingCost > 0 && (
                 <>
-                  <div className="flex justify-between text-xs text-gray-500">
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-muted-foreground">
                     <span>{t('taxBaseShipping')}</span>
                     <span>{formatEUR(checkoutData.iva.shippingBaseImponible)} €</span>
                   </div>
-                  <div className="flex justify-between text-xs text-gray-500">
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-muted-foreground">
                     <span>{t('vatShipping', { percent: checkoutData.iva.shippingIvaPercent })}</span>
                     <span>{formatEUR(checkoutData.iva.shippingIvaAmount)} €</span>
                   </div>
                 </>
               )}
-              <div className="flex justify-between text-xs font-medium text-gray-700 pt-1 border-t border-gray-100">
+              <div className="flex justify-between text-xs font-medium text-gray-700 dark:text-foreground pt-1 border-t border-gray-100 dark:border-border">
                 <span>{t('totalTaxBase')}</span>
                 <span>{formatEUR(checkoutData.iva.totalBaseImponible)} €</span>
               </div>
-              <div className="flex justify-between text-xs font-medium text-gray-700">
+              <div className="flex justify-between text-xs font-medium text-gray-700 dark:text-foreground">
                 <span>{t('totalVat')}</span>
                 <span>{formatEUR(checkoutData.iva.totalIva)} €</span>
               </div>
@@ -208,14 +208,14 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
 
       {/* Descuentos: SOLO mostrar si hay descuentos reales */}
       {hasDiscounts && (
-        <div className="space-y-2 border-b border-gray-200 pb-4 mb-4">
-          <p className="text-sm font-semibold text-gray-700">{t('discountsAppliedLabel')}</p>
+        <div className="space-y-2 border-b border-gray-200 dark:border-border pb-4 mb-4">
+          <p className="text-sm font-semibold text-gray-700 dark:text-foreground">{t('discountsAppliedLabel')}</p>
           
           {/* Promociones automáticas */}
           {promotions.map((promo) => {
             const promoName = promo.promotionName?.trim() || t('autoPromotion');
             return (
-              <div key={promo.promotionId} className="flex justify-between text-sm text-green-700">
+              <div key={promo.promotionId} className="flex justify-between text-sm text-green-700 dark:text-green-400">
                 <span className="flex items-center gap-1">
                   <span className="text-lg">✓</span>
                   {promoName}
@@ -227,7 +227,7 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
 
           {/* Cupón manual */}
           {coupon && (
-            <div className="flex justify-between text-sm text-blue-700">
+            <div className="flex justify-between text-sm text-blue-700 dark:text-blue-400">
               <span className="flex items-center gap-1">
                 <span className="text-lg">🎟️</span>
                 {t('couponLabel', { code: coupon.couponCode })}
@@ -240,8 +240,8 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
 
       {/* Campo de cupón */}
       {checkoutData.couponsAllowed ? (
-        <div className="border-b border-gray-200 pb-4 mb-4">
-          <label className="block text-sm font-medium mb-2">{t('couponCodeLabel')}</label>
+        <div className="border-b border-gray-200 dark:border-border pb-4 mb-4">
+          <label className="block text-sm font-medium mb-2 text-foreground">{t('couponCodeLabel')}</label>
           <div className="flex gap-2">
             <input
               type="text"
@@ -251,13 +251,13 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
                 setCouponError(null);
               }}
               placeholder={t('couponPlaceholder')}
-              className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
+              className="flex-1 rounded border border-gray-300 dark:border-border bg-background px-3 py-2 text-sm text-foreground"
               disabled={applying || coupon !== null}
             />
             <button
               onClick={handleApplyCoupon}
               disabled={applying || !couponCode.trim() || coupon !== null}
-              className="rounded bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded bg-gray-900 dark:bg-foreground px-4 py-2 text-sm font-semibold text-white dark:text-background hover:bg-gray-800 dark:hover:bg-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {applying ? t('applying') : t('apply')}
             </button>
@@ -270,9 +270,9 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
           )}
         </div>
       ) : (
-        <div className="border-b border-gray-200 pb-4 mb-4">
-          <div className="rounded-md bg-yellow-50 border border-yellow-200 p-3">
-            <p className="text-xs text-yellow-800">
+        <div className="border-b border-gray-200 dark:border-border pb-4 mb-4">
+          <div className="rounded-md bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3">
+            <p className="text-xs text-yellow-800 dark:text-yellow-300">
               {t('couponsNotAllowed')}
             </p>
           </div>
@@ -280,26 +280,26 @@ export default function CheckoutSummary({ checkoutData, onApplyCoupon, applying 
       )}
 
       {/* Total final */}
-      <div className="flex justify-between text-lg font-bold mb-4">
+      <div className="flex justify-between text-lg font-bold mb-4 text-foreground">
         <span>{t('total')}</span>
-        <span className={hasDiscounts ? 'text-green-600' : ''}>
+        <span className={hasDiscounts ? 'text-green-600 dark:text-green-400' : ''}>
           {formatEUR(finalTotal)} €
         </span>
       </div>
 
       {hasDiscounts && (
-        <p className="text-xs text-gray-600 mb-4">
+        <p className="text-xs text-gray-600 dark:text-muted-foreground mb-4">
           {t('totalSavings', { amount: formatEUR(originalTotal - finalTotal) })}
         </p>
       )}
 
       {/* Stripe warning */}
       {!checkoutData.stripeConfigured && (
-        <div className="rounded-md border border-yellow-200 bg-yellow-50 p-3 mb-4">
-          <p className="text-sm font-semibold text-yellow-800 mb-1">
+        <div className="rounded-md border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20 p-3 mb-4">
+          <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300 mb-1">
             {t('paymentsDisabled')}
           </p>
-          <p className="text-xs text-yellow-700">
+          <p className="text-xs text-yellow-700 dark:text-yellow-400">
             {t('paymentsDisabledDesc')}
           </p>
         </div>

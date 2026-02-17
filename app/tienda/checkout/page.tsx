@@ -314,9 +314,9 @@ export default function CheckoutPage() {
       <main className="mx-auto max-w-7xl px-6 py-12">
         <h1 className="text-3xl font-bold mb-8">{t('checkoutTitle')}</h1>
         
-        <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-8 text-center">
-          <h2 className="text-xl font-semibold mb-3">{t('loginRequired')}</h2>
-          <p className="text-gray-700 mb-6">
+        <div className="rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-8 text-center">
+          <h2 className="text-xl font-semibold mb-3 text-foreground">{t('loginRequired')}</h2>
+          <p className="text-gray-700 dark:text-muted-foreground mb-6">
             {t('loginRequiredDesc')}
           </p>
           <button
@@ -335,7 +335,7 @@ export default function CheckoutPage() {
       <h1 className="text-3xl font-bold mb-8">{t('checkoutTitle')}</h1>
 
       {error && (
-        <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-red-800">
+        <div className="mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 text-red-800 dark:text-red-300">
           {error}
         </div>
       )}
@@ -353,8 +353,8 @@ export default function CheckoutPage() {
                     key={dir.id}
                     className={`flex items-start gap-3 rounded-lg border p-4 transition-colors ${
                       selectedDireccionId === dir.id
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-200 hover:bg-gray-50'
+                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-600'
+                        : 'border-gray-200 dark:border-border hover:bg-gray-50 dark:hover:bg-muted'
                     }`}
                   >
                     <label className="flex-1 cursor-pointer">
@@ -367,22 +367,22 @@ export default function CheckoutPage() {
                       />
                       <strong>{dir.nombre}</strong>
                       <br />
-                      <span className="text-sm text-gray-700">{dir.direccion}</span>
+                      <span className="text-sm text-gray-700 dark:text-foreground">{dir.direccion}</span>
                       <br />
-                      <span className="text-sm text-gray-700">
+                      <span className="text-sm text-gray-700 dark:text-foreground">
                         {dir.codigoPostal} {dir.ciudad}
                         {dir.provincia ? `, ${dir.provincia}` : ''}
                       </span>
                       <br />
-                      <span className="text-sm text-gray-700">{getCountryLabel(dir.pais)}</span>
+                      <span className="text-sm text-gray-700 dark:text-foreground">{getCountryLabel(dir.pais)}</span>
                       {dir.telefono && (
                         <>
                           <br />
-                          <span className="text-sm text-gray-600">Tel: {dir.telefono}</span>
+                          <span className="text-sm text-gray-600 dark:text-muted-foreground">Tel: {dir.telefono}</span>
                         </>
                       )}
                       {dir.esPrincipal && (
-                        <span className="ml-2 inline-block rounded bg-green-100 px-2 py-0.5 text-xs text-green-800">
+                        <span className="ml-2 inline-block rounded bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs text-green-800 dark:text-green-300">
                           {t('principal')}
                         </span>
                       )}
@@ -391,7 +391,7 @@ export default function CheckoutPage() {
                       <button
                         type="button"
                         onClick={() => handleStartEdit(dir)}
-                        className="rounded border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        className="rounded border border-gray-300 dark:border-border px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-foreground hover:bg-gray-50 dark:hover:bg-muted"
                       >
                         {t('edit')}
                       </button>
@@ -420,7 +420,7 @@ export default function CheckoutPage() {
                   </button>
                   <Link
                     href="/mi-cuenta/direcciones"
-                    className="text-sm text-gray-500 hover:text-gray-700"
+                    className="text-sm text-gray-500 dark:text-muted-foreground hover:text-gray-700 dark:hover:text-foreground"
                   >
                     {t('manageAddresses')}
                   </Link>
@@ -429,78 +429,78 @@ export default function CheckoutPage() {
             )}
 
             {(showNewDireccion || direcciones.length === 0) && (
-              <div className="rounded-lg border border-gray-200 bg-white p-6 space-y-4">
-                <h3 className="font-semibold">{editingId ? t('editAddress') : t('newAddress')}</h3>
+              <div className="rounded-lg border border-gray-200 dark:border-border bg-white dark:bg-card p-6 space-y-4">
+                <h3 className="font-semibold text-foreground">{editingId ? t('editAddress') : t('newAddress')}</h3>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="block text-sm font-medium mb-1 text-foreground">
                     {t('fullName')}
                   </label>
                   <input
                     type="text"
                     value={formData.nombre}
                     onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                    className="w-full rounded border border-gray-300 px-3 py-2"
+                    className="w-full rounded border border-gray-300 dark:border-border bg-background px-3 py-2 text-foreground"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="block text-sm font-medium mb-1 text-foreground">
                     {t('address')}
                   </label>
                   <input
                     type="text"
                     value={formData.direccion}
                     onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
-                    className="w-full rounded border border-gray-300 px-3 py-2"
+                    className="w-full rounded border border-gray-300 dark:border-border bg-background px-3 py-2 text-foreground"
                     required
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">
+                    <label className="block text-sm font-medium mb-1 text-foreground">
                       {t('city')}
                     </label>
                     <input
                       type="text"
                       value={formData.ciudad}
                       onChange={(e) => setFormData({ ...formData, ciudad: e.target.value })}
-                      className="w-full rounded border border-gray-300 px-3 py-2"
+                      className="w-full rounded border border-gray-300 dark:border-border bg-background px-3 py-2 text-foreground"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">
+                    <label className="block text-sm font-medium mb-1 text-foreground">
                       {t('province')}
                     </label>
                     <input
                       type="text"
                       value={formData.provincia}
                       onChange={(e) => setFormData({ ...formData, provincia: e.target.value })}
-                      className="w-full rounded border border-gray-300 px-3 py-2"
+                      className="w-full rounded border border-gray-300 dark:border-border bg-background px-3 py-2 text-foreground"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">
+                    <label className="block text-sm font-medium mb-1 text-foreground">
                       {t('postalCode')}
                     </label>
                     <input
                       type="text"
                       value={formData.codigoPostal}
                       onChange={(e) => setFormData({ ...formData, codigoPostal: e.target.value })}
-                      className="w-full rounded border border-gray-300 px-3 py-2"
+                      className="w-full rounded border border-gray-300 dark:border-border bg-background px-3 py-2 text-foreground"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">
+                    <label className="block text-sm font-medium mb-1 text-foreground">
                       {t('country')}
                     </label>
                     <select
@@ -513,7 +513,7 @@ export default function CheckoutPage() {
                           paisOtro: v === 'XX' ? formData.paisOtro : '',
                         });
                       }}
-                      className="w-full rounded border border-gray-300 px-3 py-2"
+                      className="w-full rounded border border-gray-300 dark:border-border bg-background px-3 py-2 text-foreground"
                     >
                       {PAISES_ENVIO.map((p) => (
                         <option key={p.value} value={p.value}>
@@ -529,28 +529,28 @@ export default function CheckoutPage() {
                           setFormData({ ...formData, paisOtro: e.target.value })
                         }
                         placeholder={t('countryOtherPlaceholder')}
-                        className="mt-2 w-full rounded border border-gray-300 px-3 py-2"
+                        className="mt-2 w-full rounded border border-gray-300 dark:border-border bg-background px-3 py-2 text-foreground"
                       />
                     )}
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-gray-500 dark:text-muted-foreground">
                       {t('shippingWorldwide')}
                     </p>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="block text-sm font-medium mb-1 text-foreground">
                     {t('phone')}
                   </label>
                   <input
                     type="tel"
                     value={formData.telefono}
                     onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                    className="w-full rounded border border-gray-300 px-3 py-2"
+                    className="w-full rounded border border-gray-300 dark:border-border bg-background px-3 py-2 text-foreground"
                   />
                 </div>
 
-                <label className="flex items-center gap-2">
+                <label className="flex items-center gap-2 text-foreground">
                   <input
                     type="checkbox"
                     checked={formData.esPrincipal}
@@ -573,7 +573,7 @@ export default function CheckoutPage() {
                     <button
                       type="button"
                       onClick={handleCancelForm}
-                      className="rounded-lg border border-gray-300 px-6 py-2 hover:bg-gray-50"
+                      className="rounded-lg border border-gray-300 dark:border-border px-6 py-2 hover:bg-gray-50 dark:hover:bg-muted text-foreground"
                     >
                       {t('cancel')}
                     </button>

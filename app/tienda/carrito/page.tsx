@@ -80,8 +80,8 @@ export default function CarritoPage() {
       <main className="mx-auto max-w-7xl px-6 py-12">
         <h1 className="text-3xl font-bold mb-8">{t('cartTitle')}</h1>
         
-        <div className="rounded-lg bg-gray-50 p-12 text-center">
-          <p className="text-gray-600 mb-4">{t('emptyCartMsg')}</p>
+        <div className="rounded-lg bg-gray-50 dark:bg-card p-12 text-center">
+          <p className="text-gray-600 dark:text-muted-foreground mb-4">{t('emptyCartMsg')}</p>
           <Link
             href="/tienda"
             className="inline-block rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
@@ -123,10 +123,10 @@ export default function CarritoPage() {
             return (
               <div
                 key={item.product.id}
-                className="flex gap-4 rounded-lg border border-gray-200 bg-white p-4"
+                className="flex gap-4 rounded-lg border border-gray-200 dark:border-border bg-white dark:bg-card p-4"
               >
                 {/* Imagen */}
-                <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded bg-gray-100">
+                <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded bg-gray-100 dark:bg-muted">
                   {safeSrc ? (
                     <img
                       src={safeSrc}
@@ -135,16 +135,16 @@ export default function CarritoPage() {
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">
-                      <span className="text-xs text-gray-400">{t('noImageSmall')}</span>
+                      <span className="text-xs text-gray-400 dark:text-muted-foreground">{t('noImageSmall')}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Info */}
                 <div className="flex flex-1 flex-col">
-                  <h3 className="font-semibold">{item.product.nombre}</h3>
+                  <h3 className="font-semibold text-foreground">{item.product.nombre}</h3>
                   {item.product.categoria && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-muted-foreground mt-1">
                       {item.product.categoria}
                     </p>
                   )}
@@ -152,7 +152,7 @@ export default function CarritoPage() {
                   {/* Badge de descuento si existe */}
                   {hasDiscount && item.product.discount && (
                     <div className="mt-1">
-                      <span className="inline-block rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                      <span className="inline-block rounded bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-800 dark:text-green-300">
                         {item.product.discount.label || t('discount')} −{item.product.discount.percent}%
                       </span>
                     </div>
@@ -163,15 +163,15 @@ export default function CarritoPage() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setQuantity(item.product.id, item.quantity - 1)}
-                        className="h-8 w-8 rounded border border-gray-300 hover:bg-gray-50"
+                        className="h-8 w-8 rounded border border-gray-300 dark:border-border hover:bg-gray-50 dark:hover:bg-muted text-foreground"
                       >
                         −
                       </button>
-                      <span className="w-12 text-center">{item.quantity}</span>
+                      <span className="w-12 text-center text-foreground">{item.quantity}</span>
                       <button
                         onClick={() => setQuantity(item.product.id, item.quantity + 1)}
                         disabled={item.quantity >= item.product.stock}
-                        className="h-8 w-8 rounded border border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="h-8 w-8 rounded border border-gray-300 dark:border-border hover:bg-gray-50 dark:hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 text-foreground"
                       >
                         +
                       </button>
@@ -179,18 +179,18 @@ export default function CarritoPage() {
 
                     {/* Precio con descuento si aplica */}
                     <div className="text-right">
-                      <p className="font-bold">
+                      <p className="font-bold text-foreground">
                         {formatEUR(lineTotal)} €
                       </p>
                       {hasDiscount ? (
-                        <p className="text-xs text-gray-500">
-                          <span className="text-green-600 font-medium">{formatEUR(effectiveUnitPrice)} €</span>
+                        <p className="text-xs text-gray-500 dark:text-muted-foreground">
+                          <span className="text-green-600 dark:text-green-400 font-medium">{formatEUR(effectiveUnitPrice)} €</span>
                           {' '}
-                          <span className="line-through text-gray-400">{formatEUR(originalPrice)} €</span>
+                          <span className="line-through text-gray-400 dark:text-muted-foreground">{formatEUR(originalPrice)} €</span>
                           {' / ud'}
                         </p>
                       ) : (
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-muted-foreground">
                           {formatEUR(effectiveUnitPrice)} € / ud
                         </p>
                       )}
@@ -208,7 +208,7 @@ export default function CarritoPage() {
                 {/* Eliminar */}
                 <button
                   onClick={() => removeItem(item.product.id)}
-                  className="text-gray-400 hover:text-red-600"
+                  className="text-gray-400 dark:text-muted-foreground hover:text-red-600 dark:hover:text-red-400"
                   title={t('remove')}
                 >
                   ×
@@ -220,45 +220,45 @@ export default function CarritoPage() {
 
         {/* Resumen */}
         <div className="lg:col-span-1">
-          <div className="rounded-lg border border-gray-200 bg-white p-6 sticky top-6">
-            <h2 className="text-xl font-bold mb-4">{t('summary')}</h2>
+          <div className="rounded-lg border border-gray-200 dark:border-border bg-white dark:bg-card p-6 sticky top-6">
+            <h2 className="text-xl font-bold mb-4 text-foreground">{t('summary')}</h2>
 
-            <div className="space-y-2 border-b border-gray-200 pb-4">
-              <div className="flex justify-between text-sm">
+            <div className="space-y-2 border-b border-gray-200 dark:border-border pb-4">
+              <div className="flex justify-between text-sm text-foreground">
                 <span>{t('subtotal')}</span>
                 <span>{formatEUR(subtotal)} €</span>
               </div>
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-sm text-foreground">
                 <span>{t('shippingLabel')} {!shippingEstimate?.isFree && shippingEstimate ? t('estimated') : ''}</span>
                 <span>
                   {shippingCost === null ? (
-                    <span className="text-gray-500">{t('calculating')}</span>
+                    <span className="text-gray-500 dark:text-muted-foreground">{t('calculating')}</span>
                   ) : shippingCost === 0 ? (
-                    <span className="text-green-600 font-medium">{t('free')}</span>
+                    <span className="text-green-600 dark:text-green-400 font-medium">{t('free')}</span>
                   ) : (
                     formatEUR(shippingCost) + ' \u20AC'
                   )}
                 </span>
               </div>
               {shippingEstimate && !shippingEstimate.isFree && (
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-400 dark:text-muted-foreground mt-1">
                   {t('shippingCalcNote')}
                 </p>
               )}
             </div>
 
             {items.some(item => item.product.finalPrice && item.product.finalPrice < item.product.precio) && (
-              <div className="mt-3 mb-3 rounded-md bg-green-50 border border-green-200 p-3">
-                <p className="text-xs text-green-800 font-medium">
+              <div className="mt-3 mb-3 rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-3">
+                <p className="text-xs text-green-800 dark:text-green-300 font-medium">
                   ✓ {t('discountsApplied')}
                 </p>
-                <p className="text-xs text-green-700 mt-1">
+                <p className="text-xs text-green-700 dark:text-green-400 mt-1">
                   {t('discountTotal', { amount: formatEUR(subtotal) })}
                 </p>
               </div>
             )}
 
-            <div className="flex justify-between text-lg font-bold mt-4 mb-6">
+            <div className="flex justify-between text-lg font-bold mt-4 mb-6 text-foreground">
               <span>{t('total')}</span>
               <span>{formatEUR(total)} €</span>
             </div>
@@ -272,7 +272,7 @@ export default function CarritoPage() {
 
             <Link
               href="/tienda"
-              className="mt-3 block text-center text-sm text-gray-600 hover:text-gray-900"
+              className="mt-3 block text-center text-sm text-gray-600 dark:text-muted-foreground hover:text-gray-900 dark:hover:text-foreground"
             >
               {t('continueShopping2')}
             </Link>
