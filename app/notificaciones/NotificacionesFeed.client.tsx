@@ -321,7 +321,8 @@ export default function NotificacionesFeed() {
                   {/* Texto/Motivo (normal, opcional) */}
                   {item.tipo === "SEMAFORO" ? (
                     (() => {
-                      const motivo = (item.motivoPublico ?? '').trim();
+                      // Motivo: usar texto (contenido traducido del backend) para semáforos
+                      const motivo = (item.texto ?? item.motivoPublico ?? '').trim();
                       const textoGen = (item.texto ?? '').trim();
                       const esGenerico = textoGen.toLowerCase().includes('cambio de estado') || 
                                         textoGen.toLowerCase().includes('actualizó');

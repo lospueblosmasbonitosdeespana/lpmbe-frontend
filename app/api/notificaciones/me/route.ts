@@ -10,10 +10,14 @@ export async function GET(req: Request) {
 
   const API_BASE = getApiUrl();
   
-  // Leer query params
+  // Leer query params (lang para traducción de semáforos en el feed del usuario)
   const { searchParams } = new URL(req.url);
   const limit = searchParams.get('limit');
-  const queryString = limit ? `?limit=${encodeURIComponent(limit)}` : '';
+  const lang = searchParams.get('lang');
+  const params = new URLSearchParams();
+  if (limit) params.set('limit', limit);
+  if (lang) params.set('lang', lang);
+  const queryString = params.toString() ? `?${params.toString()}` : '';
 
   // Intentar /notificaciones/me primero, luego /notificaciones como fallback
   let upstream = await fetch(`${API_BASE}/notificaciones/me${queryString}`, {

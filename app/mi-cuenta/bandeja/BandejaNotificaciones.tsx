@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 type NotificacionItem = {
   id: number;
@@ -36,6 +36,7 @@ function formatFecha(fecha?: string | null) {
 }
 
 export default function BandejaNotificaciones() {
+  const locale = useLocale();
   const t = useTranslations('notifications');
   const [items, setItems] = useState<NotificacionItem[]>([]);
   const [pueblos, setPueblos] = useState<PuebloItem[]>([]);
@@ -59,9 +60,9 @@ export default function BandejaNotificaciones() {
       .catch(() => setPueblos([]));
   }, []);
 
-  // Cargar notificaciones
+  // Cargar notificaciones (lang para semáforos traducidos; METEO se deja en español)
   useEffect(() => {
-    fetch(`/api/notificaciones/me?limit=${MAX_ITEMS}`)
+    fetch(`/api/notificaciones/me?limit=${MAX_ITEMS}&lang=${encodeURIComponent(locale)}`)
       .then(r => (r.ok ? r.json() : []))
       .then(data => {
         const allItems = Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : []);
@@ -72,7 +73,7 @@ export default function BandejaNotificaciones() {
         setTotalItems(0);
         setItems([]);
       });
-  }, []);
+  }, [locale]);
 
   const puebloNombreById = useMemo(() => {
     const m = new Map<number, string>();

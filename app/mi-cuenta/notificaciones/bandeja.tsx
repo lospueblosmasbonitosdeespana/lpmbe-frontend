@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 type NotificacionItem = {
   id: number;
@@ -28,6 +28,7 @@ function formatFecha(fecha?: string | null) {
 }
 
 export default function NotificacionesBandeja({ refreshKey = 0 }: { refreshKey?: number }) {
+  const locale = useLocale();
   const t = useTranslations('notifications');
   const [items, setItems] = useState<NotificacionItem[]>([]);
   const [pueblos, setPueblos] = useState<PuebloItem[]>([]);
@@ -41,9 +42,9 @@ export default function NotificacionesBandeja({ refreshKey = 0 }: { refreshKey?:
       .catch(() => setPueblos([]));
   }, []);
 
-  // Cargar notificaciones cuando cambie refreshKey
+  // Cargar notificaciones cuando cambie refreshKey (lang para semáforos traducidos)
   useEffect(() => {
-    fetch('/api/notificaciones/me')
+    fetch(`/api/notificaciones/me?lang=${encodeURIComponent(locale)}`)
       .then(r => (r.ok ? r.json() : []))
       .then(data => {
         const allItems = Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : []);
@@ -54,7 +55,7 @@ export default function NotificacionesBandeja({ refreshKey = 0 }: { refreshKey?:
         setTotalItems(0);
         setItems([]);
       });
-  }, [refreshKey]);
+  }, [refreshKey, locale]);
 
   const puebloNombreById = useMemo(() => {
     const m = new Map<number, string>();

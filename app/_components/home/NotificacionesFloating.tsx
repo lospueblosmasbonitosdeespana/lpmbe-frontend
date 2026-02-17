@@ -12,6 +12,7 @@ type Notificacion = {
   titulo: string;
   tipo: string; // "NOTICIA" | "EVENTO" | "ALERTA" | "ALERTA_PUEBLO" | "SEMAFORO"
   texto?: string;
+  contenido?: string; // cuerpo traducido del backend
   fecha: string; // ISO
   pueblo?: {
     id: number;
@@ -106,7 +107,8 @@ export function NotificacionesFloating() {
             id: item.id ?? item.refId ?? Math.random(),
             titulo: item.titulo ?? "",
             tipo: item.tipo ?? "NOTICIA",
-            texto: item.texto ?? "",
+            texto: item.contenido ?? item.texto ?? "",
+            contenido: item.contenido ?? item.texto ?? null,
             fecha: item.fecha ?? new Date().toISOString(),
             pueblo: item.pueblo ?? null,
             estado: item.estado ?? null,
@@ -209,9 +211,10 @@ export function NotificacionesFloating() {
                   }
 
                   const titulo = getHomeItemTitle(n, tNotif);
-                  const motivo = n.tipo === "SEMAFORO" && n.motivoPublico?.trim() 
-                    ? n.motivoPublico.trim() 
-                    : null;
+                  // Para semáforos usar contenido (traducido); resto motivoPublico
+                  const motivo = n.tipo === "SEMAFORO"
+                    ? (n.contenido ?? n.motivoPublico)?.trim() || null
+                    : (n.motivoPublico?.trim() || null);
 
                   return (
                     <li key={n.id} className="flex items-start gap-3">
