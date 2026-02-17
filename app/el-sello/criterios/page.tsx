@@ -91,7 +91,7 @@ export default async function CriteriosPage() {
 
             <Display className="mb-2 text-balance">{titulo}</Display>
 
-            <Lead className="mb-8 max-w-3xl text-muted-foreground">
+            <Lead className="mb-8 max-w-3xl text-muted-foreground dark:text-foreground/90">
               Resumen de los criterios recogidos en nuestra{' '}
               <strong className="text-foreground">Carta de Calidad</strong>. Todo
               municipio candidato debe satisfacer estos requisitos para obtener
@@ -103,7 +103,7 @@ export default async function CriteriosPage() {
 
       <Section spacing="md" background="muted">
         <Container>
-          <div className="prose prose-sm max-w-none [&_.text-muted-foreground]:text-muted-foreground [&_.grid]:grid [&_.grid]:gap-6 [&_.grid]:sm:grid-cols-2 [&_.grid]:lg:grid-cols-3">
+          <div className="prose prose-gray dark:prose-invert prose-sm max-w-none text-foreground/90 [&_p]:text-foreground/90 [&_li]:text-foreground/90 [&_.text-muted-foreground]:text-foreground/90 [&_.grid]:grid [&_.grid]:gap-6 [&_.grid]:sm:grid-cols-2 [&_.grid]:lg:grid-cols-3">
             <SafeHtml html={contenido} />
           </div>
         </Container>
@@ -115,7 +115,7 @@ export default async function CriteriosPage() {
             <Headline as="h3" className="mb-4">
               La Carta de Calidad
             </Headline>
-            <Body className="mb-4 text-muted-foreground">
+            <Body className="mb-4 text-muted-foreground dark:text-foreground/90">
               Todos los criterios detallados, el procedimiento de instrucción, los
               modos de utilización de la marca y las obligaciones de los pueblos
               miembros están recogidos en la{' '}

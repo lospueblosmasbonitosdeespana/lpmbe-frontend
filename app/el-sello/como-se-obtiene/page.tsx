@@ -96,10 +96,10 @@ export default async function ComoSeObtienePage() {
             <Display className="mb-2 text-balance">{titulo}</Display>
           </div>
 
-          <Lead className="mb-8 max-w-2xl text-muted-foreground">{subtitle ?? "Proceso de certificación"}</Lead>
+          <Lead className="mb-8 max-w-2xl text-muted-foreground dark:text-foreground/90">{subtitle ?? "Proceso de certificación"}</Lead>
 
           {contenido && (
-            <div className="mb-8 max-w-4xl safe-html-content prose prose-lg max-w-none">
+            <div className="mb-8 max-w-4xl safe-html-content prose prose-gray dark:prose-invert prose-lg max-w-none">
               <SafeHtml html={contenido} />
             </div>
           )}
@@ -115,7 +115,7 @@ export default async function ComoSeObtienePage() {
                     <IconComponent className="h-7 w-7" />
                   </div>
                   <Title as="h3" className="mb-3 text-xl">{card.title}</Title>
-                  <Body className="mb-6 text-muted-foreground">{card.description}</Body>
+                  <Body className="mb-6 text-muted-foreground dark:text-foreground/90">{card.description}</Body>
                   <span className="inline-flex items-center gap-2 font-medium text-primary transition-colors group-hover:text-primary/80">
                     {card.linkText}
                     <ArrowIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />

@@ -204,6 +204,14 @@
   margin: 1rem 0;
   display: block;
 }
+/* Dark mode: safe-html-content usa foreground para legibilidad */
+.dark .safe-html-content h2,
+.dark .safe-html-content h3,
+.dark .safe-html-content strong { color: var(--foreground); }
+.dark .safe-html-content p,
+.dark .safe-html-content li { color: oklch(0.92 0 0); }
+.dark .safe-html-content a { color: var(--primary); }
+.dark .safe-html-content hr { border-color: oklch(1 0 0 / 0.15); }
 /* Grid de países - contenedor */
 .safe-html-content .grid-paises-internacional {
   display: grid !important;

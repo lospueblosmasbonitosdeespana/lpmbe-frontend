@@ -50,7 +50,7 @@ function StepCard({
         <Title as="h3" className="mb-1">
           {title}
         </Title>
-        <Body size="sm" className="text-muted-foreground">
+        <Body size="sm" className="text-muted-foreground dark:text-foreground/90">
           {description}
         </Body>
       </div>
@@ -75,7 +75,7 @@ function BenefitCard({
       <Title as="h3" className="mb-2">
         {title}
       </Title>
-      <Body size="sm" className="text-muted-foreground">
+      <Body size="sm" className="text-muted-foreground dark:text-foreground/90">
         {description}
       </Body>
     </div>
@@ -142,7 +142,7 @@ export default async function UnetePage() {
       {/* Contenido editable desde CMS */}
       <Section spacing="md" background="default">
         <Container>
-          <div className="prose prose-lg max-w-3xl text-muted-foreground [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline [&_strong]:text-foreground">
+          <div className="prose prose-gray dark:prose-invert prose-lg max-w-3xl text-foreground/90 [&_p]:text-foreground/90 [&_li]:text-foreground/90 [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline [&_strong]:text-foreground">
             <SafeHtml html={contenido} />
           </div>
         </Container>
@@ -175,7 +175,7 @@ export default async function UnetePage() {
               <Headline as="h2" className="mb-3">
                 Para municipios
               </Headline>
-              <Body className="mb-6 text-muted-foreground">
+              <Body className="mb-6 text-muted-foreground dark:text-foreground/90">
                 Si eres alcalde o representante de un ayuntamiento y crees que tu
                 pueblo cumple con los criterios de calidad, puedes iniciar el
                 proceso de candidatura.
@@ -244,7 +244,7 @@ export default async function UnetePage() {
               <Headline as="h2" className="mb-3">
                 Para colaboradores
               </Headline>
-              <Body className="mb-6 text-muted-foreground">
+              <Body className="mb-6 text-muted-foreground dark:text-foreground/90">
                 Empresas, instituciones y organizaciones pueden colaborar con la
                 asociación a través de diferentes modalidades de patrocinio y
                 colaboración.
@@ -267,7 +267,7 @@ export default async function UnetePage() {
                     >
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
-                    <span className="text-muted-foreground">{item}</span>
+                    <span className="text-muted-foreground dark:text-foreground/90">{item}</span>
                   </li>
                 ))}
               </ul>
@@ -299,7 +299,7 @@ export default async function UnetePage() {
             <Headline as="h2" className="mb-3">
               Beneficios de pertenecer a la red
             </Headline>
-            <Body className="mx-auto max-w-2xl text-muted-foreground">
+            <Body className="mx-auto max-w-2xl text-muted-foreground dark:text-foreground/90">
               Formar parte de Los Pueblos Más Bonitos de España ofrece múltiples
               ventajas para el desarrollo local.
             </Body>

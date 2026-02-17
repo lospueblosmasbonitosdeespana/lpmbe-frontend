@@ -59,7 +59,7 @@ export default async function InternacionalPage() {
             </div>
             <div>
               <Display className="mb-2 text-balance">{titulo}</Display>
-              <Lead className="text-muted-foreground">{subtitle}</Lead>
+              <Lead className="text-muted-foreground dark:text-foreground/90">{subtitle}</Lead>
             </div>
           </div>
         </Container>
@@ -67,7 +67,7 @@ export default async function InternacionalPage() {
 
       <Section spacing="md" background="default">
         <Container>
-          <div className="prose prose-lg max-w-none [&_.text-muted-foreground]:text-muted-foreground [&_.text-foreground]:text-foreground [&_.grid]:grid [&_.grid]:gap-6 [&_.grid]:sm:grid-cols-2 [&_.grid]:lg:grid-cols-3">
+          <div className="prose prose-gray dark:prose-invert prose-lg max-w-none text-foreground/90 [&_p]:text-foreground/90 [&_li]:text-foreground/90 [&_a]:text-primary [&_.text-muted-foreground]:text-foreground/90 [&_.text-foreground]:text-foreground [&_.grid]:grid [&_.grid]:gap-6 [&_.grid]:sm:grid-cols-2 [&_.grid]:lg:grid-cols-3">
             <SafeHtml html={contenido} />
           </div>
         </Container>

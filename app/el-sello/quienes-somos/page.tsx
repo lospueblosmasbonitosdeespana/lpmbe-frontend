@@ -80,7 +80,7 @@ export default async function QuienesSomosPage() {
 
             <Display className="mb-6">{titulo}</Display>
 
-            <Lead className="text-muted-foreground">
+            <Lead className="text-muted-foreground dark:text-foreground/90">
               Conoce la asociación que promueve y preserva el patrimonio de los
               pueblos más bonitos de España.
             </Lead>
@@ -90,7 +90,7 @@ export default async function QuienesSomosPage() {
 
       <Section spacing="lg" background="default">
         <Container>
-          <div className="prose prose-lg max-w-none text-foreground prose-headings:font-serif prose-headings:tracking-tight prose-a:text-primary prose-a:no-underline hover:prose-a:underline">
+          <div className="prose prose-gray dark:prose-invert prose-lg max-w-none text-foreground [&_p]:text-foreground/90 [&_li]:text-foreground/90 prose-headings:font-serif prose-headings:tracking-tight prose-headings:text-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline">
             <SafeHtml html={contenido} />
           </div>
         </Container>
@@ -116,7 +116,7 @@ export default async function QuienesSomosPage() {
               <Headline as="h3" className="mb-2">
                 ¿Quieres que tu pueblo forme parte?
               </Headline>
-              <Body size="sm" className="text-muted-foreground">
+              <Body size="sm" className="text-muted-foreground dark:text-foreground/90">
                 Descubre el proceso de admisión y los criterios que deben cumplir
                 los municipios candidatos al sello de calidad.
               </Body>

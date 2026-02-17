@@ -97,7 +97,7 @@ export default async function SocioPage({
             <div>
               <Display className="mb-2">{socio.nombre}</Display>
               {socio.descripcion && (
-                <Lead className="text-muted-foreground">{socio.descripcion}</Lead>
+                <Lead className="text-muted-foreground dark:text-foreground/90">{socio.descripcion}</Lead>
               )}
               {socio.websiteUrl && (
                 <a
@@ -122,7 +122,7 @@ export default async function SocioPage({
       {socio.contenido && (
         <Section spacing="md" background="muted">
           <Container>
-            <div className="prose prose-lg max-w-none text-muted-foreground [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline [&_strong]:text-foreground">
+            <div className="prose prose-gray dark:prose-invert prose-lg max-w-none text-foreground/90 [&_p]:text-foreground/90 [&_li]:text-foreground/90 [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline [&_strong]:text-foreground">
               <SafeHtml html={socio.contenido} />
             </div>
           </Container>

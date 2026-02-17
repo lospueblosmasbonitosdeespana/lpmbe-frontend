@@ -89,7 +89,7 @@ function PartnerCard({
           )}
         </div>
         <span
-          className={`rounded-full px-3 py-1 text-xs font-medium ${categoryColors[tipo] ?? 'bg-muted text-muted-foreground'}`}
+          className={`rounded-full px-3 py-1 text-xs font-medium ${categoryColors[tipo] ?? 'bg-muted text-muted-foreground dark:text-foreground/90'}`}
         >
           {categoryLabels[tipo] ?? tipo}
         </span>
@@ -99,7 +99,7 @@ function PartnerCard({
         {nombre}
       </Title>
       {descripcion && (
-        <Body size="sm" className="mb-4 text-muted-foreground">
+        <Body size="sm" className="mb-4 text-muted-foreground dark:text-foreground/90">
           {descripcion}
         </Body>
       )}
@@ -205,7 +205,7 @@ export default async function SociosPage() {
 
             <Display className="mb-6">{titulo}</Display>
 
-            <div className="prose prose-lg max-w-none text-muted-foreground [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline">
+            <div className="prose prose-gray dark:prose-invert prose-lg max-w-none text-foreground/90 [&_p]:text-foreground/90 [&_li]:text-foreground/90 [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline">
               <SafeHtml html={contenido} />
             </div>
           </div>
@@ -220,7 +220,7 @@ export default async function SociosPage() {
               <div className="font-serif text-3xl font-bold text-primary sm:text-4xl">
                 126
               </div>
-              <div className="mt-1 text-sm text-muted-foreground">
+              <div className="mt-1 text-sm text-muted-foreground dark:text-foreground/90">
                 Municipios socios
               </div>
             </div>
@@ -228,7 +228,7 @@ export default async function SociosPage() {
               <div className="font-serif text-3xl font-bold text-primary sm:text-4xl">
                 17
               </div>
-              <div className="mt-1 text-sm text-muted-foreground">
+              <div className="mt-1 text-sm text-muted-foreground dark:text-foreground/90">
                 Comunidades
               </div>
             </div>
@@ -236,7 +236,7 @@ export default async function SociosPage() {
               <div className="font-serif text-3xl font-bold text-primary sm:text-4xl">
                 {countInstitucionales}
               </div>
-              <div className="mt-1 text-sm text-muted-foreground">
+              <div className="mt-1 text-sm text-muted-foreground dark:text-foreground/90">
                 Socios institucionales
               </div>
             </div>
@@ -244,7 +244,7 @@ export default async function SociosPage() {
               <div className="font-serif text-3xl font-bold text-primary sm:text-4xl">
                 {countColaboradores}
               </div>
-              <div className="mt-1 text-sm text-muted-foreground">
+              <div className="mt-1 text-sm text-muted-foreground dark:text-foreground/90">
                 Colaboradores
               </div>
             </div>
@@ -260,7 +260,7 @@ export default async function SociosPage() {
           </Headline>
 
           {socios.length === 0 ? (
-            <div className="rounded-xl border border-border bg-card p-12 text-center text-muted-foreground">
+            <div className="rounded-xl border border-border bg-card p-12 text-center text-muted-foreground dark:text-foreground/90">
               Próximamente se mostrarán aquí las instituciones y colaboradores
               de la asociación.
             </div>
@@ -281,7 +281,7 @@ export default async function SociosPage() {
             <Headline as="h3" className="mb-3">
               Proceso de admisión
             </Headline>
-            <Body className="mb-6 text-muted-foreground">
+            <Body className="mb-6 text-muted-foreground dark:text-foreground/90">
               Si tu municipio quiere solicitar el sello de calidad, consulta el
               proceso completo de admisión y los criterios de evaluación.
             </Body>
@@ -311,7 +311,7 @@ export default async function SociosPage() {
             <Headline as="h3" className="mb-3">
               Pueblos miembros
             </Headline>
-            <Body className="mb-6 text-muted-foreground">
+            <Body className="mb-6 text-muted-foreground dark:text-foreground/90">
               Descubre los 126 municipios que forman parte de la asociación y
               lucen con orgullo el sello de calidad.
             </Body>
@@ -356,7 +356,7 @@ export default async function SociosPage() {
               <Title as="h3" className="mb-2">
                 ¿Quieres ser socio colaborador?
               </Title>
-              <Body size="sm" className="text-muted-foreground">
+              <Body size="sm" className="text-muted-foreground dark:text-foreground/90">
                 Si tu empresa u organización quiere colaborar con la asociación,
                 solicita información sobre las opciones de patrocinio y
                 colaboración.

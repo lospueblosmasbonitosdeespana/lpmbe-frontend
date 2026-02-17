@@ -98,7 +98,7 @@ export default async function ProcesoPage() {
       {/* Contenido editable desde CMS */}
       <Section spacing="md" background="muted">
         <Container size="md">
-          <div className="prose prose-lg max-w-none [&_.text-muted-foreground]:text-muted-foreground [&_.text-foreground]:text-foreground">
+          <div className="prose prose-gray dark:prose-invert prose-lg max-w-none text-foreground/90 [&_p]:text-foreground/90 [&_li]:text-foreground/90 [&_.text-muted-foreground]:text-foreground/90 [&_.text-foreground]:text-foreground">
             <SafeHtml html={contenido} />
           </div>
         </Container>
@@ -111,7 +111,7 @@ export default async function ProcesoPage() {
             <Headline as="h3" className="mb-3">
               ¿Tu pueblo cumple los requisitos?
             </Headline>
-            <Body className="mb-6 text-muted-foreground">
+            <Body className="mb-6 text-muted-foreground dark:text-foreground/90">
               Consulta los criterios de evaluación y descubre si tu municipio
               puede formar parte de la red.
             </Body>

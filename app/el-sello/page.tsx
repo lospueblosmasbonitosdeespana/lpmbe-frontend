@@ -228,7 +228,7 @@ export default async function ElSelloPage() {
               <Display className="mb-6 max-w-3xl text-balance">El Sello</Display>
               {subtitle && <Lead className="mb-6 max-w-2xl">{subtitle}</Lead>}
               {!subtitle && (
-                <Lead className="max-w-2xl text-muted-foreground">
+                <Lead className="max-w-2xl text-muted-foreground dark:text-foreground/90">
                   Un distintivo de excelencia que reconoce la belleza, el patrimonio y el compromiso
                   de los municipios que preservan la esencia de la España rural.
                 </Lead>
@@ -258,11 +258,11 @@ export default async function ElSelloPage() {
       <Section spacing="lg" background="default">
         <Container>
           <div className="mx-auto max-w-3xl text-center">
-            <Eyebrow className="mb-4">Qué es</Eyebrow>
-            <Headline className="mb-6">Un compromiso con la excelencia</Headline>
+            <Eyebrow className="mb-4 text-foreground/80">Qué es</Eyebrow>
+            <Headline className="mb-6 text-foreground">Un compromiso con la excelencia</Headline>
           </div>
           <div className="mx-auto max-w-3xl">
-            <div className="prose prose-lg max-w-none text-muted-foreground [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline [&_strong]:text-foreground [&_em]:text-foreground">
+            <div className="prose prose-gray dark:prose-invert prose-lg max-w-none text-foreground/90 [&_p]:text-foreground/90 [&_li]:text-foreground/90 [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline [&_strong]:text-foreground [&_em]:text-foreground">
               <SafeHtml html={contenido} />
             </div>
           </div>
@@ -275,7 +275,7 @@ export default async function ElSelloPage() {
           <div className="mb-12 text-center">
             <Eyebrow className="mb-4">Criterios de evaluación</Eyebrow>
             <Headline className="mb-4">¿Qué valoramos?</Headline>
-            <Lead className="mx-auto max-w-2xl text-muted-foreground">
+                <Lead className="mx-auto max-w-2xl text-muted-foreground dark:text-foreground/90">
               Cada pueblo candidato es evaluado según seis pilares fundamentales
               que garantizan su autenticidad y calidad.
             </Lead>
@@ -292,7 +292,7 @@ export default async function ElSelloPage() {
                 <Title as="h4" className="mb-2 text-lg">
                   {item.title}
                 </Title>
-                <Body size="sm" className="text-muted-foreground">
+                <Body size="sm" className="text-muted-foreground dark:text-foreground/90">
                   {item.description}
                 </Body>
               </div>
@@ -317,7 +317,7 @@ export default async function ElSelloPage() {
             <div>
               <Eyebrow className="mb-4">Proceso de admisión</Eyebrow>
               <Headline className="mb-6">¿Cómo se obtiene el sello?</Headline>
-              <Body className="mb-8 text-muted-foreground">
+              <Body className="mb-8 text-muted-foreground dark:text-foreground/90">
                 El proceso de certificación es riguroso y transparente, diseñado para
                 garantizar que solo los pueblos más excepcionales reciban el distintivo.
               </Body>
@@ -336,7 +336,7 @@ export default async function ElSelloPage() {
                       <Title as="h4" className="mb-1 text-lg">
                         {step.title}
                       </Title>
-                      <Body className="text-muted-foreground">{step.desc}</Body>
+                      <Body className="text-muted-foreground dark:text-foreground/90">{step.desc}</Body>
                     </div>
                   </div>
                 ))}
@@ -362,11 +362,11 @@ export default async function ElSelloPage() {
             <div className="order-2 lg:order-1">
               <Eyebrow className="mb-4">Quiénes somos</Eyebrow>
               <Headline className="mb-6">La Asociación</Headline>
-              <Body className="mb-6 text-muted-foreground">
+              <Body className="mb-6 text-muted-foreground dark:text-foreground/90">
                 Los Pueblos Más Bonitos de España es una asociación sin ánimo de lucro fundada en 2010
                 por un grupo de alcaldes comprometidos con la preservación y promoción del patrimonio rural español.
               </Body>
-              <Body className="mb-8 text-muted-foreground">
+              <Body className="mb-8 text-muted-foreground dark:text-foreground/90">
                 Nuestra misión es dar a conocer estos rincones excepcionales, fomentar un turismo
                 sostenible y respetuoso, y apoyar a las comunidades locales en la conservación de
                 su legado histórico y cultural.
@@ -415,7 +415,7 @@ export default async function ElSelloPage() {
           <div className="mb-12 text-center">
             <Eyebrow className="mb-4">Red internacional</Eyebrow>
             <Headline className="mb-4">El sello en el mundo</Headline>
-            <Lead className="mx-auto max-w-2xl text-muted-foreground">
+                <Lead className="mx-auto max-w-2xl text-muted-foreground dark:text-foreground/90">
               Formamos parte de una red global de asociaciones que promueven
               los pueblos más bellos de sus respectivos países.
             </Lead>
@@ -555,7 +555,7 @@ export default async function ElSelloPage() {
                   Solicitar el sello
                   <ArrowRightIcon className="h-4 w-4 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
                 </Title>
-                <Body size="sm" className="text-muted-foreground">
+                <Body size="sm" className="text-muted-foreground dark:text-foreground/90">
                   Inicia el proceso de candidatura para tu municipio.
                 </Body>
               </div>
@@ -572,7 +572,7 @@ export default async function ElSelloPage() {
                   Quiénes somos
                   <ArrowRightIcon className="h-4 w-4 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
                 </Title>
-                <Body size="sm" className="text-muted-foreground">
+                <Body size="sm" className="text-muted-foreground dark:text-foreground/90">
                   Conoce al equipo y la historia de la asociación.
                 </Body>
               </div>
@@ -589,7 +589,7 @@ export default async function ElSelloPage() {
                   Socios y colaboradores
                   <ArrowRightIcon className="h-4 w-4 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
                 </Title>
-                <Body size="sm" className="text-muted-foreground">
+                <Body size="sm" className="text-muted-foreground dark:text-foreground/90">
                   Entidades que apoyan nuestra misión.
                 </Body>
               </div>
