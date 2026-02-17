@@ -198,12 +198,6 @@ export default async function RutaPage({
                 <p className="mt-1 text-sm font-semibold text-blue-900">{ruta.dificultad}</p>
               </div>
             )}
-            {ruta.tipo && (
-              <div className="rounded-lg bg-green-50 px-4 py-2">
-                <span className="text-xs font-medium uppercase text-green-600">Tipo</span>
-                <p className="mt-1 text-sm font-semibold text-green-900">{ruta.tipo}</p>
-              </div>
-            )}
           </div>
         </div>
         {(ruta as any).logo?.url && (

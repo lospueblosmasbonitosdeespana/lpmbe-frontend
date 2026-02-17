@@ -84,11 +84,6 @@ export default async function RutasPage() {
 
                 {/* Badges */}
                 <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
-                  {ruta.tipo && (
-                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 font-medium text-primary">
-                      {ruta.tipo}
-                    </span>
-                  )}
                   {ruta.dificultad && (
                     <span className="rounded-full bg-accent px-2.5 py-0.5 font-medium text-accent-foreground">
                       {ruta.dificultad}
