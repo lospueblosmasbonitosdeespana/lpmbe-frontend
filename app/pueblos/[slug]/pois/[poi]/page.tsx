@@ -130,10 +130,10 @@ export default async function PoiPage({
         </p>
       )}
 
-      {/* FOTO PRINCIPAL */}
+      {/* FOTO PRINCIPAL Y DESCRIPCIÓN: mismo ancho para alinear */}
       {foto ? (
-        <section className="mt-8">
-          <div className="relative aspect-[4/3] w-full max-w-3xl overflow-hidden rounded-xl bg-muted">
+        <section className="mt-8 w-full max-w-3xl">
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-muted">
             <img
               src={foto}
               alt={data?.nombre ?? "POI"}
@@ -160,7 +160,7 @@ export default async function PoiPage({
         if (fotosSorted.length <= 1) return null;
         
         return (
-          <section className="mt-8">
+          <section className="mt-8 w-full max-w-3xl">
             <h2 className="text-2xl font-semibold text-foreground mb-4">
               {t("gallery")}
             </h2>
@@ -191,16 +191,16 @@ export default async function PoiPage({
         );
       })()}
 
-      {/* DESCRIPCIÓN */}
+      {/* DESCRIPCIÓN: mismo ancho que la foto para alinear texto e imagen */}
       {descripcionHtml ? (
-        <section className="mt-8">
+        <section className="mt-8 w-full max-w-3xl">
           <div
-            className="prose prose-gray dark:prose-invert prose-lg max-w-none text-foreground [&_p]:leading-relaxed [&_p]:text-foreground [&_h2]:text-foreground [&_h3]:text-foreground [&_li]:text-foreground [&_strong]:text-foreground"
+            className="prose prose-gray dark:prose-invert prose-lg max-w-none text-foreground [&_p]:leading-relaxed [&_p]:text-foreground [&_h2]:text-foreground [&_h3]:text-foreground [&_li]:text-foreground [&_strong]:text-foreground [&_p]:max-w-none"
             dangerouslySetInnerHTML={{ __html: descripcionHtml }}
           />
         </section>
       ) : (
-        <section className="mt-8">
+        <section className="mt-8 w-full max-w-3xl">
           <p className="text-muted-foreground text-sm">
             {t("descriptionComingSoon")}
           </p>
