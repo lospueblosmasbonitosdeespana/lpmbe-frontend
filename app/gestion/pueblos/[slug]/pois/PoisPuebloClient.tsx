@@ -84,20 +84,20 @@ function FixInvalidCoordsButton({ onFixed }: { onFixed?: () => void }) {
   }
 
   return (
-    <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50/50 p-3 text-sm">
+    <div className="mt-4 rounded border border-amber-200/80 bg-amber-50/40 px-3 py-2 text-xs text-amber-800">
+      <span className="mr-2">Herramienta admin (futuro):</span>
       <button
         type="button"
         onClick={run}
         disabled={loading}
-        className="rounded bg-amber-600 px-3 py-1.5 text-white hover:bg-amber-700 disabled:opacity-50"
+        className="rounded bg-amber-500/80 px-2 py-1 text-white hover:bg-amber-600 disabled:opacity-50"
       >
-        {loading ? "Ejecutando…" : "Corregir coordenadas inválidas (todos los POIs)"}
+        {loading ? "…" : "Corregir coordenadas inválidas (todos los POIs)"}
       </button>
-      <span className="ml-2 text-amber-800">Solo ADMIN. Corrige ej. Ampudia.</span>
       {result != null && result.fixed > 0 && (
-        <p className="mt-2 text-green-700">Corregidos {result.fixed} POI(s).</p>
+        <span className="ml-2 text-green-700">Corregidos {result.fixed}.</span>
       )}
-      {error && <p className="mt-2 text-red-600">{error}</p>}
+      {error && <span className="ml-2 text-red-600">{error}</span>}
     </div>
   );
 }
@@ -179,17 +179,22 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     return copy;
   }, [rows]);
 
-  // Marcadores existentes para el mapa (solo coords válidas; las corruptas no se dibujan)
+  // Marcadores: todos los POIs. Con coords válidas → su posición (azul/dorado); sin coords o inválidas → centro del pueblo (gris) para que el mapa no quede vacío
   const existingMarkers: MapMarker[] = useMemo(() => {
-    return sorted
-      .filter((r) => isValidCoord(r.lat, r.lng))
-      .map((r, i) => ({
-        lat: r.lat!,
-        lng: r.lng!,
+    const hasPuebloCenter = puebloLat != null && puebloLng != null;
+    return sorted.map((r, i) => {
+      const useOwnCoords = isValidCoord(r.lat, r.lng);
+      const lat = useOwnCoords ? r.lat! : (hasPuebloCenter ? puebloLat! : 40.4168);
+      const lng = useOwnCoords ? r.lng! : (hasPuebloCenter ? puebloLng! : -3.7038);
+      const isAtPueblo = !useOwnCoords || isSameCoordsAsPueblo(r.lat, r.lng, puebloLat, puebloLng);
+      return {
+        lat,
+        lng,
         label: `#${i + 1} ${r.nombre}`,
-        color: editId === r.id ? 'gold' : isSameCoordsAsPueblo(r.lat, r.lng, puebloLat, puebloLng) ? 'grey' : 'blue',
+        color: editId === r.id ? 'gold' : isAtPueblo ? 'grey' : 'blue',
         number: i + 1,
-      }));
+      };
+    });
   }, [sorted, editId, puebloLat, puebloLng]);
 
   // Posición seleccionada en el mapa (para crear/editar)
