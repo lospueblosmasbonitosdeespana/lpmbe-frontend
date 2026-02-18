@@ -36,6 +36,13 @@ type PoiRow = {
 // Helpers para comparar coordenadas con tolerancia (~5m)
 const EPS = 0.00005;
 
+/** Coordenadas válidas: lat [-90,90], lng [-180,180]. Evita datos corruptos que rompen el mapa (ej. Ampudia). */
+function isValidCoord(lat: number | null | undefined, lng: number | null | undefined): boolean {
+  if (lat == null || lng == null) return false;
+  if (typeof lat !== "number" || typeof lng !== "number" || Number.isNaN(lat) || Number.isNaN(lng)) return false;
+  return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+}
+
 function nearlyEqual(a: number | null | undefined, b: number | null | undefined, eps = EPS) {
   if (a == null || b == null) return false;
   return Math.abs(a - b) <= eps;
@@ -48,6 +55,51 @@ function isSameCoordsAsPueblo(
   puebloLng: number | null | undefined
 ) {
   return nearlyEqual(poiLat, puebloLat) && nearlyEqual(poiLng, puebloLng);
+}
+
+function FixInvalidCoordsButton({ onFixed }: { onFixed?: () => void }) {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{ fixed: number; ids: number[] } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function run() {
+    if (!confirm("¿Corregir coordenadas inválidas en todos los POIs? (Solo ADMIN). Se pondrán lat/lng a null para que usen las del pueblo.")) return;
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    try {
+      const r = await fetch("/api/admin/pois/actions/fix-invalid-coords", { method: "POST", credentials: "include" });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        setError(data?.error ?? data?.message ?? `Error ${r.status}`);
+        return;
+      }
+      setResult({ fixed: data.fixed ?? 0, ids: data.ids ?? [] });
+      onFixed?.();
+    } catch (e: any) {
+      setError(e?.message ?? "Error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50/50 p-3 text-sm">
+      <button
+        type="button"
+        onClick={run}
+        disabled={loading}
+        className="rounded bg-amber-600 px-3 py-1.5 text-white hover:bg-amber-700 disabled:opacity-50"
+      >
+        {loading ? "Ejecutando…" : "Corregir coordenadas inválidas (todos los POIs)"}
+      </button>
+      <span className="ml-2 text-amber-800">Solo ADMIN. Corrige ej. Ampudia.</span>
+      {result != null && result.fixed > 0 && (
+        <p className="mt-2 text-green-700">Corregidos {result.fixed} POI(s).</p>
+      )}
+      {error && <p className="mt-2 text-red-600">{error}</p>}
+    </div>
+  );
 }
 
 function SortablePoiCard({
@@ -127,10 +179,10 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     return copy;
   }, [rows]);
 
-  // Marcadores existentes para el mapa
+  // Marcadores existentes para el mapa (solo coords válidas; las corruptas no se dibujan)
   const existingMarkers: MapMarker[] = useMemo(() => {
     return sorted
-      .filter((r) => r.lat != null && r.lng != null)
+      .filter((r) => isValidCoord(r.lat, r.lng))
       .map((r, i) => ({
         lat: r.lat!,
         lng: r.lng!,
@@ -255,14 +307,14 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     setEditId(row.id);
     setEditNombre(row.nombre ?? "");
     setEditDescripcion(row.descripcion ?? "");
-    setEditLat(row.lat ?? "");
-    setEditLng(row.lng ?? "");
+    setEditLat(isValidCoord(row.lat, row.lng) ? (row.lat ?? "") : "");
+    setEditLng(isValidCoord(row.lat, row.lng) ? (row.lng ?? "") : "");
     setShowCreateForm(false);
-    // Fly al POI en el mapa si tiene coordenadas propias (no Madrid)
-    if (row.lat != null && row.lng != null) {
-      setFlyToPos([row.lat, row.lng]);
+    if (isValidCoord(row.lat, row.lng)) {
+      setFlyToPos([row.lat!, row.lng!]);
+    } else {
+      setFlyToPos(null);
     }
-    // Scroll al mapa
     setTimeout(() => {
       mapSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 50);
@@ -295,11 +347,14 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
           ? parseFloat(editLng.replace(",", "."))
           : null;
 
+    const finalLat = parsedLat != null && !Number.isNaN(parsedLat) && isValidCoord(parsedLat, parsedLng ?? null) ? parsedLat : null;
+    const finalLng = parsedLng != null && !Number.isNaN(parsedLng) && isValidCoord(parsedLat ?? null, parsedLng) ? parsedLng : null;
+
     const payload: any = {
       nombre: editNombre.trim() || undefined,
       descripcion: editDescripcion.trim() || undefined,
-      lat: parsedLat != null && !isNaN(parsedLat) ? parsedLat : null,
-      lng: parsedLng != null && !isNaN(parsedLng) ? parsedLng : null,
+      lat: finalLat,
+      lng: finalLng,
     };
 
     const r = await fetch(`/api/admin/pois/${editId}`, {
@@ -596,6 +651,9 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
         </div>
       )}
 
+      {/* Acción admin: corregir coordenadas inválidas en todos los POIs (ej. Ampudia) */}
+      <FixInvalidCoordsButton onFixed={() => refresh()} />
+
       {/* Lista de POIs — arrastra para reordenar; el mapa refleja siempre el orden actual */}
       <div className="mt-6">
         {sorted.length > 0 && (
@@ -679,9 +737,18 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                     </div>
                     
                     {(() => {
+                      const editingRow = editId ? sorted.find((r) => r.id === editId) : null;
+                      return editingRow && !isValidCoord(editingRow.lat, editingRow.lng) ? (
+                      <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+                        Este POI tenía coordenadas inválidas. Haz clic en el mapa o busca un lugar y guarda para corregirlo.
+                      </div>
+                      ) : null;
+                    })()}
+                    
+                    {(() => {
                       const editLatNum = typeof editLat === "number" ? editLat : null;
                       const editLngNum = typeof editLng === "number" ? editLng : null;
-                      return puebloLat != null && puebloLng != null && isSameCoordsAsPueblo(editLatNum, editLngNum, puebloLat, puebloLng) && (
+                      return puebloLat != null && puebloLng != null && isValidCoord(editLatNum, editLngNum) && isSameCoordsAsPueblo(editLatNum, editLngNum, puebloLat, puebloLng) && (
                         <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-800 font-medium">
                           ⚠ Este POI está usando las coordenadas del pueblo (posiblemente Madrid). ¡Usa el mapa arriba para ubicarlo correctamente!
                         </div>
@@ -737,9 +804,16 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                         </div>
                         <div className="flex items-center gap-2 mb-2">
                           <span className="text-xs text-gray-500">
-                            Coordenadas: {row.lat?.toFixed(5) ?? "—"}, {row.lng?.toFixed(5) ?? "—"}
+                            {isValidCoord(row.lat, row.lng)
+                              ? `Coordenadas: ${row.lat!.toFixed(5)}, ${row.lng!.toFixed(5)}`
+                              : "Coordenadas inválidas (usa el mapa al editar para ubicar)"}
                           </span>
-                          {puebloLat != null && puebloLng != null && isSameCoordsAsPueblo(row.lat, row.lng, puebloLat, puebloLng) && (
+                          {!isValidCoord(row.lat, row.lng) && (
+                            <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-xs font-medium text-amber-800">
+                              Corregir ubicación
+                            </span>
+                          )}
+                          {puebloLat != null && puebloLng != null && isValidCoord(row.lat, row.lng) && isSameCoordsAsPueblo(row.lat, row.lng, puebloLat, puebloLng) && (
                             <span className="rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-xs font-medium text-red-700">
                               ⚠ Sin ubicar — Coordenadas del pueblo
                             </span>
