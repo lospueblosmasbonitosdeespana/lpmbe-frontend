@@ -527,9 +527,6 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
             <span className="inline-block h-3 w-3 rounded-full bg-blue-600" /> POI con coordenadas propias
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-block h-3 w-3 rounded-full bg-gray-400" /> POI con coordenadas del pueblo (Madrid = error)
-          </div>
-          <div className="flex items-center gap-1">
             <span className="inline-block h-3 w-3 rounded-full bg-yellow-500" /> POI en edición
           </div>
           {selectedMapPosition && (
@@ -754,8 +751,8 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                       const editLatNum = typeof editLat === "number" ? editLat : null;
                       const editLngNum = typeof editLng === "number" ? editLng : null;
                       return puebloLat != null && puebloLng != null && isValidCoord(editLatNum, editLngNum) && isSameCoordsAsPueblo(editLatNum, editLngNum, puebloLat, puebloLng) && (
-                        <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-800 font-medium">
-                          ⚠ Este POI está usando las coordenadas del pueblo (posiblemente Madrid). ¡Usa el mapa arriba para ubicarlo correctamente!
+                        <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800 font-medium">
+                          Este POI está usando las coordenadas del pueblo. Usa el mapa arriba para ubicarlo correctamente si quieres coordenadas propias.
                         </div>
                       );
                     })()}
