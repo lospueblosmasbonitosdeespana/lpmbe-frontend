@@ -85,14 +85,20 @@ export default async function GestionPuebloPage({
     if (!allowed) redirect('/gestion/mis-pueblos');
   }
 
-  // Resolver pueblo real
+  // Resolver pueblo real (reintento una vez si falla por red/backend puntual)
   let puebloNombre = slug;
   let puebloId: number | null = null;
   try {
-    const pueblo = await getPuebloBySlug(slug);
-    puebloNombre = pueblo.nombre ?? slug;
-    puebloId = pueblo.id;
-  } catch (e) {
+    let pueblo;
+    try {
+      pueblo = await getPuebloBySlug(slug);
+    } catch (first) {
+      await new Promise((r) => setTimeout(r, 800));
+      pueblo = await getPuebloBySlug(slug);
+    }
+    puebloNombre = pueblo?.nombre ?? slug;
+    puebloId = pueblo?.id ?? null;
+  } catch (_e) {
     puebloNombre = slug;
   }
 
