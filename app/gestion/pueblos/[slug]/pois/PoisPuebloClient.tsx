@@ -1,6 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import PhotoManager from "@/app/components/PhotoManager";
 import RotatedImage from "@/app/components/RotatedImage";
 import MapLocationPicker, { type MapMarker } from "@/app/components/MapLocationPicker";
@@ -33,6 +50,48 @@ function isSameCoordsAsPueblo(
   return nearlyEqual(poiLat, puebloLat) && nearlyEqual(poiLng, puebloLng);
 }
 
+function SortablePoiCard({
+  row,
+  index,
+  isEditing,
+  children,
+}: {
+  row: PoiRow;
+  index: number;
+  isEditing: boolean;
+  children: React.ReactNode;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: String(row.id),
+  });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      id={`poi-card-${row.id}`}
+      className={`relative rounded-lg border p-4 pl-10 ${
+        isEditing ? "border-yellow-300 bg-yellow-50" : "border-gray-200 bg-white"
+      } ${isDragging ? "opacity-60 shadow-lg z-10" : ""}`}
+    >
+      {!isEditing && (
+        <div
+          className="absolute left-2 top-4 cursor-grab active:cursor-grabbing touch-none rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+          {...listeners}
+          {...attributes}
+          title="Arrastra para reordenar"
+        >
+          <span className="inline-block text-lg leading-none">⋮⋮</span>
+        </div>
+      )}
+      {children}
+    </div>
+  );
+}
+
 export default function PoisPuebloClient({ slug }: { slug: string }) {
   const [puebloId, setPuebloId] = useState<number | null>(null);
   const [puebloLat, setPuebloLat] = useState<number | null>(null);
@@ -59,7 +118,12 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
 
   const sorted = useMemo(() => {
     const copy = [...rows];
-    copy.sort((a, b) => (a.orden ?? 999999) - (b.orden ?? 999999));
+    copy.sort((a, b) => {
+      const oa = a.orden ?? 999999;
+      const ob = b.orden ?? 999999;
+      if (oa !== ob) return oa - ob;
+      return a.id - b.id;
+    });
     return copy;
   }, [rows]);
 
@@ -326,40 +390,44 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     await refresh();
   }
 
-  async function swapOrden(curr: PoiRow, other: PoiRow) {
-    if (!puebloId) return;
+  async function reorderPois(poiIds: number[]) {
+    if (!puebloId || poiIds.length === 0) return;
     setErr(null);
-
-    const r = await fetch(`/api/admin/pueblos/${puebloId}/pois/swap`, {
-      method: "POST",
+    const r = await fetch(`/api/admin/pueblos/${puebloId}/pois/reorder`, {
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ aId: Number(curr.id), bId: Number(other.id) }),
+      body: JSON.stringify({ poiIds }),
     });
-
     if (r.status === 401) {
       window.location.href = "/entrar";
       return;
     }
-
     const text = await r.text();
     if (!r.ok) {
       alert(`Error ${r.status}: ${text}`);
       return;
     }
-
     await refresh();
   }
 
-  async function moveUp(index: number) {
-    if (index <= 0) return;
-    await swapOrden(sorted[index], sorted[index - 1]);
-  }
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      const oldIndex = sorted.findIndex((r) => String(r.id) === String(active.id));
+      const newIndex = sorted.findIndex((r) => String(r.id) === String(over.id));
+      if (oldIndex === -1 || newIndex === -1) return;
+      const newOrderIds = arrayMove(sorted.map((r) => r.id), oldIndex, newIndex);
+      reorderPois(newOrderIds);
+    },
+    [sorted, puebloId],
+  );
 
-  async function moveDown(index: number) {
-    if (index >= sorted.length - 1) return;
-    await swapOrden(sorted[index], sorted[index + 1]);
-  }
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   if (loading) return <div className="p-6">Cargando POIs...</div>;
   if (err) return <div className="p-6 text-red-600">Error: {err}</div>;
@@ -528,22 +596,36 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
         </div>
       )}
 
-      {/* Lista de POIs */}
-      <div className="mt-6 space-y-4">
+      {/* Lista de POIs — arrastra para reordenar; el mapa refleja siempre el orden actual */}
+      <div className="mt-6">
+        {sorted.length > 0 && (
+          <p className="mb-2 text-sm text-gray-500">
+            Arrastra las filas (⋮⋮) para reordenar. Los números del mapa se actualizan con el orden guardado.
+          </p>
+        )}
+        <div className="space-y-4">
         {sorted.length === 0 ? (
           <p className="text-sm text-gray-500">No hay POIs aún.</p>
         ) : (
-          sorted.map((row, idx) => {
-            const isEditing = editId === row.id;
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={sorted.map((r) => String(r.id))}
+              strategy={verticalListSortingStrategy}
+            >
+              {sorted.map((row, idx) => {
+                const isEditing = editId === row.id;
 
-            return (
-              <div
-                key={row.id}
-                id={`poi-card-${row.id}`}
-                className={`rounded-lg border p-4 ${
-                  isEditing ? "border-yellow-300 bg-yellow-50" : "border-gray-200 bg-white"
-                }`}
-              >
+                return (
+                  <SortablePoiCard
+                    key={row.id}
+                    row={row}
+                    index={idx}
+                    isEditing={isEditing}
+                  >
                 {isEditing ? (
                   <div className="space-y-4">
                     <div>
@@ -682,22 +764,6 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                       <div className="flex gap-1 flex-shrink-0">
                         <button
                           type="button"
-                          onClick={() => moveUp(idx)}
-                          disabled={idx === 0}
-                          className="rounded border border-gray-200 bg-white px-2 py-1.5 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => moveDown(idx)}
-                          disabled={idx === sorted.length - 1}
-                          className="rounded border border-gray-200 bg-white px-2 py-1.5 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          ↓
-                        </button>
-                        <button
-                          type="button"
                           onClick={() => startEdit(row)}
                           className="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
                         >
@@ -714,10 +780,13 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                     </div>
                   </div>
                 )}
-              </div>
-            );
-          })
+                  </SortablePoiCard>
+                );
+              })}
+            </SortableContext>
+          </DndContext>
         )}
+        </div>
       </div>
 
       <div className="mt-8">
