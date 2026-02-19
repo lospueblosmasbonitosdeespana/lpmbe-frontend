@@ -10,6 +10,7 @@ type Recurso = {
   descuentoPorcentaje?: number | null;
   precioCents?: number | null;
   activo: boolean;
+  esExterno?: boolean;
   codigoQr: string;
   puebloId: number;
 };
@@ -27,6 +28,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
   const [nuevoDescuento, setNuevoDescuento] = useState('');
   const [nuevoPrecio, setNuevoPrecio] = useState('');
   const [nuevoActivo, setNuevoActivo] = useState(true);
+  const [nuevoEsExterno, setNuevoEsExterno] = useState(false);
   const [creando, setCreando] = useState(false);
 
   // Edición
@@ -36,9 +38,9 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
   const [editDescuento, setEditDescuento] = useState('');
   const [editPrecio, setEditPrecio] = useState('');
   const [editActivo, setEditActivo] = useState(false);
+  const [editEsExterno, setEditEsExterno] = useState(false);
   const [guardando, setGuardando] = useState(false);
 
-  // Cargar recursos
   async function loadRecursos() {
     setLoading(true);
     setError(null);
@@ -106,6 +108,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
         nombre: nuevoNombre.trim(),
         tipo: nuevoTipo.trim() || null,
         activo: nuevoActivo,
+        esExterno: nuevoEsExterno,
       };
 
       if (nuevoDescuento) {
@@ -136,6 +139,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
       setNuevoDescuento('');
       setNuevoPrecio('');
       setNuevoActivo(true);
+      setNuevoEsExterno(false);
       setShowForm(false);
       await loadRecursos();
     } catch (e: any) {
@@ -152,6 +156,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
     setEditDescuento(r.descuentoPorcentaje?.toString() || '');
     setEditPrecio(r.precioCents ? (r.precioCents / 100).toString() : '');
     setEditActivo(r.activo);
+    setEditEsExterno(r.esExterno === true);
   }
 
   function handleCancelarEdicion() {
@@ -161,6 +166,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
     setEditDescuento('');
     setEditPrecio('');
     setEditActivo(false);
+    setEditEsExterno(false);
   }
 
   async function handleGuardar(id: number) {
@@ -187,6 +193,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
         nombre: editNombre.trim(),
         tipo: editTipo.trim() || null,
         activo: editActivo,
+        esExterno: editEsExterno,
       };
 
       if (editDescuento) {
@@ -316,6 +323,35 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
             />
           </div>
           <div>
+            <label className="block text-sm text-gray-600 mb-2">Gestión del recurso</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setNuevoEsExterno(false)}
+                disabled={creando}
+                className={`px-3 py-1.5 text-sm rounded border transition-colors ${
+                  !nuevoEsExterno
+                    ? 'bg-green-50 border-green-300 text-green-700 font-medium'
+                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                Municipal (pueblo)
+              </button>
+              <button
+                type="button"
+                onClick={() => setNuevoEsExterno(true)}
+                disabled={creando}
+                className={`px-3 py-1.5 text-sm rounded border transition-colors ${
+                  nuevoEsExterno
+                    ? 'bg-orange-50 border-orange-300 text-orange-700 font-medium'
+                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                Externo (colaborador)
+              </button>
+            </div>
+          </div>
+          <div>
             <label className="block text-sm text-gray-600 mb-1">Descuento (%)</label>
             <input
               type="number"
@@ -368,6 +404,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                 setNuevoDescuento('');
                 setNuevoPrecio('');
                 setNuevoActivo(true);
+                setNuevoEsExterno(false);
               }}
               disabled={creando}
               className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
@@ -408,6 +445,35 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                       disabled={guardando}
                       className="w-full px-3 py-2 border rounded disabled:opacity-50"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-2">Gestión del recurso</label>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setEditEsExterno(false)}
+                        disabled={guardando}
+                        className={`px-3 py-1.5 text-sm rounded border transition-colors ${
+                          !editEsExterno
+                            ? 'bg-green-50 border-green-300 text-green-700 font-medium'
+                            : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        Municipal (pueblo)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditEsExterno(true)}
+                        disabled={guardando}
+                        className={`px-3 py-1.5 text-sm rounded border transition-colors ${
+                          editEsExterno
+                            ? 'bg-orange-50 border-orange-300 text-orange-700 font-medium'
+                            : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        Externo (colaborador)
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Descuento (%)</label>
@@ -467,7 +533,18 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                 <>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="font-medium">{r.nombre}</div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium">{r.nombre}</span>
+                        <span
+                          className={`inline-block px-2 py-0.5 text-xs font-semibold rounded ${
+                            r.esExterno
+                              ? 'bg-orange-50 text-orange-700 border border-orange-200'
+                              : 'bg-green-50 text-green-700 border border-green-200'
+                          }`}
+                        >
+                          {r.esExterno ? 'Externo' : 'Municipal'}
+                        </span>
+                      </div>
                       <div className="text-sm text-gray-600">Tipo: {r.tipo || '—'}</div>
                       <div className="text-sm text-gray-600">
                         Precio: {r.precioCents ? `${(r.precioCents / 100).toFixed(2)} €` : '—'}
@@ -488,7 +565,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2 mt-3">
+                  <div className="flex gap-2 mt-3 flex-wrap">
                     <button
                       type="button"
                       onClick={() => handleIniciarEdicion(r)}
@@ -520,6 +597,12 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                         Validador
                       </a>
                     )}
+                    <a
+                      href={`/gestion/asociacion/club/metricas/${puebloId}`}
+                      className="px-3 py-1 text-sm border rounded hover:bg-blue-50 text-blue-600 border-blue-200 inline-block text-center"
+                    >
+                      Métricas
+                    </a>
                   </div>
                 </>
               )}
@@ -530,11 +613,3 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
     </>
   );
 }
-
-
-
-
-
-
-
-
