@@ -192,17 +192,13 @@ export default async function GestionPuebloPage({
       icon: <span className="text-2xl">❤️</span>,
       disabled: false,
     },
-    ...(me.rol === 'ADMIN'
-      ? [
-          {
-            href: `${baseUrl}/autorizados`,
-            title: 'Autorizados',
-            description: 'Usuarios que pueden gestionar el pueblo',
-            icon: <IconAutorizados />,
-            disabled: false,
-          },
-        ]
-      : []),
+    {
+      href: `${baseUrl}/autorizados`,
+      title: 'Autorizados',
+      description: 'Usuarios que pueden gestionar el pueblo',
+      icon: <IconAutorizados />,
+      disabled: false,
+    },
   ];
 
   return (
