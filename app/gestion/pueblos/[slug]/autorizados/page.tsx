@@ -15,9 +15,8 @@ export default async function AutorizadosPage({
   const { slug } = await params;
   const me = await getMeServer();
 
-  // Solo ADMIN puede acceder a esta página
   if (!me) redirect('/entrar');
-  if (me.rol !== 'ADMIN') redirect('/gestion');
+  if (me.rol !== 'ADMIN' && me.rol !== 'ALCALDE') redirect('/gestion');
 
   // Resolver pueblo
   let puebloNombre = slug;

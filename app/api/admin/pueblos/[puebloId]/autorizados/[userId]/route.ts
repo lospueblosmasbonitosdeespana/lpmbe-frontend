@@ -15,8 +15,11 @@ export async function DELETE(
   }
 
   const { puebloId, userId } = await params;
+  const url = new URL(req.url);
+  const recursoId = url.searchParams.get('recursoId');
   const API_BASE = getApiUrl();
-  const upstreamUrl = `${API_BASE}/admin/pueblos/${puebloId}/autorizados/${userId}`;
+  const qs = recursoId ? `?recursoId=${recursoId}` : '';
+  const upstreamUrl = `${API_BASE}/admin/pueblos/${puebloId}/autorizados/${userId}${qs}`;
 
   if (DEV_LOGS) {
     console.error('[admin/pueblos/autorizados DELETE] upstreamUrl:', upstreamUrl);

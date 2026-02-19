@@ -75,7 +75,7 @@ export async function POST(
 
   if (DEV_LOGS) {
     console.error('[admin/pueblos/autorizados POST] upstreamUrl:', upstreamUrl);
-    console.error('[admin/pueblos/autorizados POST] body:', { ...body, password: body.password ? '***' : undefined });
+    console.error('[admin/pueblos/autorizados POST] body:', { ...body, password: body.password ? '***' : undefined, rol: body.rol, recursoId: body.recursoId });
   }
 
   try {
