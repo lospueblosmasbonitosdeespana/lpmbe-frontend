@@ -43,7 +43,7 @@ export default async function GestionPage() {
   const me = await getMeServer();
   if (!me) redirect('/entrar');
 
-  if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN') {
+  if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN' && me.rol !== 'COLABORADOR') {
     redirect('/cuenta');
   }
 
@@ -51,31 +51,52 @@ export default async function GestionPage() {
     <main className="mx-auto max-w-5xl p-6">
       <h1 className="text-2xl font-semibold">Gestión</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        {me.rol === 'ALCALDE'
-          ? 'Gestiona los contenidos de tus pueblos asignados.'
-          : 'Gestión de contenidos y configuración global.'}
+        {me.rol === 'COLABORADOR'
+          ? 'Gestiona el recurso turístico que tienes asignado.'
+          : me.rol === 'ALCALDE'
+            ? 'Gestiona los contenidos de tus pueblos asignados.'
+            : 'Gestión de contenidos y configuración global.'}
       </p>
 
-      {/* Grid para alcaldes */}
-      <section className="mt-8">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Mis pueblos
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <GridCard
-            href="/gestion/mis-pueblos"
-            title="Mis pueblos"
-            description={
-              me.rol === 'ALCALDE'
-                ? 'Gestiona los pueblos que tienes asignados'
-                : 'Ver y gestionar todos los pueblos'
-            }
-            icon={<IconMapa />}
-          />
-        </div>
-      </section>
+      {/* Colaborador: solo Mis recursos */}
+      {me.rol === 'COLABORADOR' && (
+        <section className="mt-8">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Mi recurso
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <GridCard
+              href="/colaborador"
+              title="Mis recursos"
+              description="Ver métricas y validar QRs del recurso asignado"
+              icon={<IconMapa />}
+            />
+          </div>
+        </section>
+      )}
 
-      {/* Grid para admins (Asociación) */}
+      {/* Grid para alcaldes y admin */}
+      {(me.rol === 'ALCALDE' || me.rol === 'ADMIN') && (
+        <section className="mt-8">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Mis pueblos
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <GridCard
+              href="/gestion/mis-pueblos"
+              title="Mis pueblos"
+              description={
+                me.rol === 'ALCALDE'
+                  ? 'Gestiona los pueblos que tienes asignados'
+                  : 'Ver y gestionar todos los pueblos'
+              }
+              icon={<IconMapa />}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* Grid para admins (Asociación) - no para colaborador */}
       {me.rol === 'ADMIN' && (
         <section className="mt-10">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">

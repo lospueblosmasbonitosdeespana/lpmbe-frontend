@@ -8,7 +8,7 @@ import { shouldShowGestion, getGestionHref } from '@/lib/auth-nav';
 type Me = {
   sub: number;
   email: string;
-  rol: 'USUARIO' | 'ALCALDE' | 'ADMIN' | 'CLIENTE';
+  rol: 'USUARIO' | 'ALCALDE' | 'ADMIN' | 'CLIENTE' | 'COLABORADOR';
   nombre?: string | null;
 };
 
@@ -60,7 +60,7 @@ export default function AuthNavLink() {
     );
   }
 
-  // Logueado: Mi cuenta siempre, Gestión solo para ADMIN/ALCALDE/CLIENTE
+  // Logueado: Mi cuenta siempre, Gestión para ADMIN/ALCALDE/CLIENTE/COLABORADOR
   const showGestion = shouldShowGestion(me.rol);
   const gestionHref = getGestionHref(me.rol);
 

@@ -61,9 +61,11 @@ export default async function CuentaPage() {
       ? 'bg-primary/15 text-primary border-primary/30'
       : me.rol === 'ALCALDE'
         ? 'bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-400 dark:border-amber-400/30'
-        : me.rol === 'CLIENTE'
-          ? 'bg-green-500/15 text-green-700 border-green-500/30 dark:text-green-400 dark:border-green-400/30'
-          : 'bg-muted text-muted-foreground border-border';
+        : me.rol === 'COLABORADOR'
+          ? 'bg-blue-500/15 text-blue-700 border-blue-500/30 dark:text-blue-400 dark:border-blue-400/30'
+          : me.rol === 'CLIENTE'
+            ? 'bg-green-500/15 text-green-700 border-green-500/30 dark:text-green-400 dark:border-green-400/30'
+            : 'bg-muted text-muted-foreground border-border';
 
   return (
     <main className="mx-auto max-w-5xl p-6">
@@ -89,7 +91,7 @@ export default async function CuentaPage() {
                 <span
                   className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium ${rolBadgeClass}`}
                 >
-                  {me.rol === 'ADMIN' ? t('admin') : me.rol === 'ALCALDE' ? t('mayor') : me.rol === 'CLIENTE' ? t('client') : t('user')}
+                  {me.rol === 'ADMIN' ? t('admin') : me.rol === 'ALCALDE' ? t('mayor') : me.rol === 'COLABORADOR' ? t('collaborator') : me.rol === 'CLIENTE' ? t('client') : t('user')}
                 </span>
                 {me.rol === 'ALCALDE' && misPueblos.length > 0 && (
                   <div className="text-sm font-medium text-foreground">
@@ -118,6 +120,23 @@ export default async function CuentaPage() {
             <Link href="/mi-cuenta" className="mt-3 inline-block text-sm font-medium text-primary hover:underline">
               {t('goToAccount')}
             </Link>
+          </div>
+        ) : null}
+
+        {me.rol === 'COLABORADOR' ? (
+          <div>
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              {t('management')}
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <GridCard
+                href="/colaborador"
+                title={t('myResources')}
+                description={t('myResourcesDesc')}
+                icon={<IconMapa />}
+                loginText={t('login')}
+              />
+            </div>
           </div>
         ) : null}
 

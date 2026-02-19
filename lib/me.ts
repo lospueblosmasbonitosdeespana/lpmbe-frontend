@@ -5,7 +5,7 @@ export type Usuario = {
   id: number;
   email: string;
   nombre?: string | null;
-  rol: 'ADMIN' | 'ALCALDE' | 'USUARIO' | 'CLIENTE';
+  rol: 'ADMIN' | 'ALCALDE' | 'COLABORADOR' | 'USUARIO' | 'CLIENTE';
 };
 
 export async function getMeServer(): Promise<Usuario | null> {
