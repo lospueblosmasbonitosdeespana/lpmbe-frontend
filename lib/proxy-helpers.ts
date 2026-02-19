@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
+import { fetchWithTimeout } from '@/lib/fetch-safe';
 
 /**
  * Helper genérico para proxy de API: reenvía la petición al backend y devuelve la respuesta.
+ * Incluye timeout de 15 s y 1 retry automático en 502/503/504 o error de red.
  */
 export async function proxyToBackend(
   req: Request,
@@ -36,7 +38,7 @@ export async function proxyToBackend(
     };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const upstream = await fetch(upstreamUrl, {
+    const upstream = await fetchWithTimeout(upstreamUrl, {
       method,
       headers,
       body,
@@ -59,6 +61,12 @@ export async function proxyToBackend(
     const data = text ? JSON.parse(text) : {};
     return NextResponse.json(data, { status: upstream.status });
   } catch (error: any) {
+    if (error?.name === 'AbortError') {
+      return NextResponse.json(
+        { error: 'upstream_timeout', upstream: upstreamUrl, detail: 'La petición al backend superó el tiempo de espera' },
+        { status: 504 },
+      );
+    }
     if (error?.name === 'TypeError' && error?.message?.includes('fetch failed')) {
       return NextResponse.json(
         { error: 'upstream_fetch_failed', upstream: upstreamUrl, detail: error?.message },

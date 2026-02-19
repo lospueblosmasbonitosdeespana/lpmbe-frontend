@@ -1,4 +1,5 @@
 import type { MediaItem } from '@/src/types/media';
+import { fetchWithTimeout } from '@/lib/fetch-safe';
 
 export function getApiUrl(): string {
   return (
@@ -76,13 +77,13 @@ export function resolvePuebloMainPhotoUrl(pueblo: any): string | null {
 export async function getPuebloBySlug(slug: string, locale?: string): Promise<Pueblo> {
   const API_BASE = getApiUrl();
   const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
-  const res = await fetch(`${API_BASE}/pueblos/${slug}${qs}`, {
+  const res = await fetchWithTimeout(`${API_BASE}/pueblos/${slug}${qs}`, {
     cache: 'no-store',
     headers: locale ? { 'Accept-Language': locale } : undefined,
   });
 
   if (!res.ok) {
-    throw new Error(`Error cargando pueblo: ${res.status}`);
+    throw new Error(`Error cargando pueblo (${res.status})`);
   }
 
   return await res.json();
@@ -108,7 +109,7 @@ export async function getPueblosLite(locale?: string): Promise<PuebloLite[]> {
   const API_BASE = getApiUrl();
   const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
   try {
-    const res = await fetch(`${API_BASE}/pueblos${qs}`, {
+    const res = await fetchWithTimeout(`${API_BASE}/pueblos${qs}`, {
       cache: "no-store",
       headers: locale ? { 'Accept-Language': locale } : undefined,
     });
@@ -123,7 +124,7 @@ export async function getPueblosLite(locale?: string): Promise<PuebloLite[]> {
 export async function getPoiById(poiId: string | number, locale?: string) {
   const API_BASE = getApiUrl();
   const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
-  const res = await fetch(`${API_BASE}/pois/${poiId}${qs}`, {
+  const res = await fetchWithTimeout(`${API_BASE}/pois/${poiId}${qs}`, {
     cache: "no-store",
     headers: locale ? { 'Accept-Language': locale } : undefined,
   });
@@ -202,7 +203,7 @@ export async function getRutas(locale?: string): Promise<Ruta[]> {
   const API_BASE = getApiUrl();
   const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
   try {
-    const res = await fetch(`${API_BASE}/rutas${qs}`, {
+    const res = await fetchWithTimeout(`${API_BASE}/rutas${qs}`, {
       cache: "no-store",
       headers: locale ? { 'Accept-Language': locale } : undefined,
     });
@@ -224,7 +225,7 @@ export async function getRutas(locale?: string): Promise<Ruta[]> {
 export async function getRutaById(id: number, locale?: string): Promise<Ruta> {
   const API_BASE = getApiUrl();
   const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
-  const res = await fetch(`${API_BASE}/rutas/${id}${qs}`, {
+  const res = await fetchWithTimeout(`${API_BASE}/rutas/${id}${qs}`, {
     cache: 'no-store',
     headers: locale ? { 'Accept-Language': locale } : undefined,
   });
@@ -240,7 +241,7 @@ export async function getRutaById(id: number, locale?: string): Promise<Ruta> {
 export async function getRutaMapa(id: number, locale?: string): Promise<RutaMapa> {
   const API_BASE = getApiUrl();
   const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
-  const res = await fetch(`${API_BASE}/rutas/${id}/mapa${qs}`, {
+  const res = await fetchWithTimeout(`${API_BASE}/rutas/${id}/mapa${qs}`, {
     next: { revalidate: 300 },
     headers: locale ? { 'Accept-Language': locale } : undefined,
   });

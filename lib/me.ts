@@ -1,5 +1,6 @@
 import { getToken } from './auth';
 import { getApiUrl } from './api';
+import { fetchWithTimeout } from './fetch-safe';
 
 export type Usuario = {
   id: number;
@@ -14,7 +15,7 @@ export async function getMeServer(): Promise<Usuario | null> {
 
   const API_BASE = getApiUrl();
   try {
-    const res = await fetch(`${API_BASE}/usuarios/me`, {
+    const res = await fetchWithTimeout(`${API_BASE}/usuarios/me`, {
       method: 'GET',
       headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',

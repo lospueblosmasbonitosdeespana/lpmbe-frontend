@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
+import { fetchWithTimeout } from '@/lib/fetch-safe';
 
 const DEV_LOGS = process.env.NODE_ENV === 'development';
 
@@ -23,7 +24,7 @@ export async function GET(
   }
 
   try {
-    const upstream = await fetch(upstreamUrl, {
+    const upstream = await fetchWithTimeout(upstreamUrl, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -79,7 +80,7 @@ export async function POST(
   }
 
   try {
-    const upstream = await fetch(upstreamUrl, {
+    const upstream = await fetchWithTimeout(upstreamUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,

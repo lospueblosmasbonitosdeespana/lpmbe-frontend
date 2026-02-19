@@ -1,5 +1,6 @@
 import { getToken } from './auth';
 import { getApiUrl } from './api';
+import { fetchWithTimeout } from './fetch-safe';
 
 export type PuebloBasico = {
   id: number;
@@ -13,7 +14,7 @@ export async function getMisPueblosServer(): Promise<PuebloBasico[]> {
 
   const API_BASE = getApiUrl();
   try {
-    const res = await fetch(`${API_BASE}/usuarios/me/pueblos`, {
+    const res = await fetchWithTimeout(`${API_BASE}/usuarios/me/pueblos`, {
       method: 'GET',
       headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',
