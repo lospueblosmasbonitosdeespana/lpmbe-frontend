@@ -109,8 +109,7 @@ export default function AjustesClient() {
     }
   }
 
-  async function handleCreateLogo(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleCreateLogo() {
     if (!newLogoUrl.trim()) {
       setError('Primero sube una imagen');
       return;
@@ -136,27 +135,29 @@ export default function AjustesClient() {
 
       const createdUrl = newLogoUrl.trim();
 
-      if (newLogoDestino === 'header' || newLogoDestino === 'ambos') {
-        setLogoUrl(createdUrl);
-        setActiveLogo('default');
-      }
-      if (newLogoDestino === 'footer' || newLogoDestino === 'ambos') {
-        setLogoVariantUrl(createdUrl);
-      }
+      const newLogoUrlValue = (newLogoDestino === 'header' || newLogoDestino === 'ambos') ? createdUrl : logoUrl;
+      const newVariantValue = (newLogoDestino === 'footer' || newLogoDestino === 'ambos') ? createdUrl : logoVariantUrl;
+      const newActiveLogoValue = (newLogoDestino === 'header' || newLogoDestino === 'ambos') ? 'default' as const : activeLogo;
 
-      // Auto-guardar los ajustes
-      const payload: Settings = {
+      const patchPayload: Settings = {
         brandName: brandName.trim() || 'LPBME',
-        activeLogo: (newLogoDestino === 'header' || newLogoDestino === 'ambos') ? 'default' : activeLogo,
-        logoUrl: (newLogoDestino === 'header' || newLogoDestino === 'ambos') ? createdUrl : logoUrl,
+        activeLogo: newActiveLogoValue,
+        logoUrl: newLogoUrlValue,
         logoAlt: logoAlt.trim() || 'Logo',
-        logoVariantUrl: (newLogoDestino === 'footer' || newLogoDestino === 'ambos') ? createdUrl : logoVariantUrl,
+        logoVariantUrl: newVariantValue,
       };
-      await fetch('/api/admin/site-settings', {
+      const patchRes = await fetch('/api/admin/site-settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(patchPayload),
       });
+      if (!patchRes.ok) {
+        throw new Error('Error al guardar los ajustes del logo');
+      }
+
+      setLogoUrl(newLogoUrlValue);
+      setLogoVariantUrl(newVariantValue);
+      setActiveLogo(newActiveLogoValue);
 
       setShowNewLogoForm(false);
       setNewLogoNombre('');
@@ -323,7 +324,7 @@ export default function AjustesClient() {
               </button>
             </div>
 
-            <form onSubmit={handleCreateLogo} className="space-y-4">
+            <div className="space-y-4">
               {/* Paso 1: Imagen */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -438,15 +439,16 @@ export default function AjustesClient() {
                   </div>
 
                   <button
-                    type="submit"
+                    type="button"
                     disabled={creatingLogo || !newLogoNombre.trim()}
+                    onClick={handleCreateLogo}
                     className="rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                   >
                     {creatingLogo ? 'Creando y asignando...' : `Crear logo y asignar a ${newLogoDestino === 'ambos' ? 'Header y Footer' : newLogoDestino === 'header' ? 'Header' : 'Footer'}`}
                   </button>
                 </>
               )}
-            </form>
+            </div>
           </div>
         )}
       </div>
