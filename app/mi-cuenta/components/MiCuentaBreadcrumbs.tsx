@@ -24,11 +24,14 @@ export default function MiCuentaBreadcrumbs() {
   };
   
   const segments = pathname.split('/').filter(Boolean);
-  const items = segments.map((seg, i) => {
-    const href = '/' + segments.slice(0, i + 1).join('/');
-    const label = pathLabels[href] ?? seg;
-    const isLast = i === segments.length - 1;
-    return { label, href: isLast ? undefined : href };
-  });
+  const items = segments
+    .map((seg, i) => {
+      const href = '/' + segments.slice(0, i + 1).join('/');
+      const label = pathLabels[href] ?? (/^\d+$/.test(seg) ? null : seg);
+      if (label === null) return null;
+      const isLast = i === segments.length - 1;
+      return { label, href: isLast ? undefined : href };
+    })
+    .filter(Boolean) as { label: string; href?: string }[];
   return <Breadcrumbs items={items} />;
 }
