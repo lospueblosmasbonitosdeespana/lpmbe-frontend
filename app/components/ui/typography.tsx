@@ -42,7 +42,7 @@ export function Headline({ children, className, as: Component = "h2" }: Headline
 interface TitleProps {
   children: React.ReactNode
   className?: string
-  as?: "h2" | "h3" | "h4" | "h5" | "h6"
+  as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
   size?: "sm" | "base" | "lg" | "xl" | "2xl"
 }
 
