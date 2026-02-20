@@ -53,7 +53,7 @@ export default async function PueblosParticipantesPage() {
           <img
             src={config.logoUrl}
             alt="La Noche Romántica"
-            className="mx-auto mb-4 h-16 object-contain"
+            className="mx-auto mb-6 h-40 md:h-48 object-contain"
           />
         )}
         <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
