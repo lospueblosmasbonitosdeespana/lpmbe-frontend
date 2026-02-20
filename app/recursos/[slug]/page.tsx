@@ -203,14 +203,14 @@ export default async function RecursoDetailPage({
       <Section spacing="sm">
         <Container size="md">
           {heroImage && (
-            <div className="relative mb-6 overflow-hidden rounded-xl bg-muted">
+            <div className="relative mb-6 max-h-[320px] overflow-hidden rounded-xl bg-muted">
               <Image
                 src={heroImage}
                 alt={recurso.nombre}
-                width={800}
-                height={450}
+                width={768}
+                height={432}
                 priority
-                className="h-auto w-full rounded-xl"
+                className="h-auto max-h-[320px] w-full rounded-xl object-contain"
                 quality={85}
                 sizes="(max-width: 768px) 100vw, 768px"
               />

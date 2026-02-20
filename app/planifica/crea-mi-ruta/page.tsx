@@ -546,11 +546,11 @@ export default function CreaMiRutaPage() {
         <section className="mx-auto max-w-5xl px-4 pt-12">
           {/* Summary + Route info */}
           <div className="mb-6 flex flex-wrap items-center gap-3 text-sm">
-            <span className="rounded-full bg-blue-100 px-3 py-1 font-semibold text-blue-800">
+            <span className="rounded-full bg-primary/15 px-3 py-1 font-semibold text-primary">
               {result.totalPueblos}{" "}
               {result.totalPueblos === 1 ? "pueblo" : "pueblos"}
             </span>
-            <span className="rounded-full bg-amber-100 px-3 py-1 font-semibold text-amber-800">
+            <span className="rounded-full bg-amber-100/80 px-3 py-1 font-semibold text-amber-800">
               {result.totalRecursos}{" "}
               {result.totalRecursos === 1 ? "recurso turístico" : "recursos turísticos"}
             </span>
@@ -637,8 +637,7 @@ export default function CreaMiRutaPage() {
                 <button
                   type="button"
                   onClick={openGoogleMaps}
-                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90"
-                  style={{ backgroundColor: "#4285F4" }}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
                   Google Maps
@@ -654,8 +653,7 @@ export default function CreaMiRutaPage() {
                 <button
                   type="button"
                   onClick={openWaze}
-                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90"
-                  style={{ backgroundColor: "#33CCFF" }}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-stone-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.54 6.63C19.14 4.02 16.32 2 12.05 2 6.53 2 2.03 6.26 2 11.76c-.01 2.11.66 4.07 1.81 5.68l-.59 2.18a1.5 1.5 0 001.83 1.83l2.18-.59c1.42 1.02 3.09 1.64 4.89 1.72.26.01.52.02.78.02 5.74 0 10.08-4.75 10.08-10.44 0-2.2-.68-4.04-2.44-5.53zM8.5 12a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm7 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg>
                   Waze
@@ -687,7 +685,7 @@ export default function CreaMiRutaPage() {
                     >
                       <span
                         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${
-                          item.type === "pueblo" ? "bg-blue-600" : "bg-amber-600"
+                          item.type === "pueblo" ? "bg-primary" : "bg-amber-600"
                         }`}
                       >
                         {idx + 1}
@@ -726,7 +724,7 @@ export default function CreaMiRutaPage() {
                         <button
                           type="button"
                           onClick={() => removeFromRoute(key)}
-                          className="rounded p-1 text-muted-foreground transition hover:bg-red-50 hover:text-red-600"
+                          className="rounded p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
                           aria-label="Quitar de la ruta"
                           title="Quitar de la ruta"
                         >
@@ -780,8 +778,8 @@ export default function CreaMiRutaPage() {
                         <span
                           className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white ${
                             isChecked
-                              ? item.type === "pueblo" ? "bg-blue-600" : "bg-amber-600"
-                              : "bg-gray-400"
+                              ? item.type === "pueblo" ? "bg-primary" : "bg-amber-600"
+                              : "bg-stone-400"
                           }`}
                         >
                           {isChecked && position >= 0 ? (

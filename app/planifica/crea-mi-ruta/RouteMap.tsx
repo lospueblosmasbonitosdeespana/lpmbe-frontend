@@ -63,7 +63,9 @@ function makeUnselectedIcon(color: string, svgPath: string) {
 }
 
 const PUEBLO_SVG = '<path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/>';
-const PUEBLO_COLOR = "#1d4ed8";
+const PUEBLO_COLOR = "#854d0e";
+const ORIGIN_COLOR = "#713f12";
+const DEST_COLOR = "#57534e";
 
 const endpointIcon = (label: string, color: string) =>
   L.divIcon({
@@ -113,13 +115,13 @@ export default function RouteMap({
     }).addTo(map);
 
     L.marker([origin.lat, origin.lng], {
-      icon: endpointIcon("A", "#16a34a"),
+      icon: endpointIcon("A", ORIGIN_COLOR),
     })
       .addTo(map)
       .bindPopup("<strong>Origen</strong>");
 
     L.marker([destination.lat, destination.lng], {
-      icon: endpointIcon("B", "#dc2626"),
+      icon: endpointIcon("B", DEST_COLOR),
     })
       .addTo(map)
       .bindPopup("<strong>Destino</strong>");
