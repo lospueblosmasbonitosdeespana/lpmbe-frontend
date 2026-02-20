@@ -7,7 +7,7 @@ const LEAFLET_CDN =
   "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images";
 
 function fixLeafletIcons() {
-  delete (L.Icon.Default.prototype as Record<string, unknown>)._getIconUrl;
+  delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
   L.Icon.Default.mergeOptions({
     iconRetinaUrl: `${LEAFLET_CDN}/marker-icon-2x.png`,
     iconUrl: `${LEAFLET_CDN}/marker-icon.png`,
