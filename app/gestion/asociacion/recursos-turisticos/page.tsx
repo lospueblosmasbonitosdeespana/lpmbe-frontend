@@ -9,7 +9,7 @@ export const revalidate = 0;
 export default async function RecursosTuristicosPage() {
   const me = await getMeServer();
   if (!me) redirect('/entrar');
-  if (me.rol !== 'ADMIN') redirect('/cuenta');
+  if (me.rol !== 'ADMIN') redirect('/mi-cuenta');
 
   return (
     <main className="mx-auto max-w-5xl p-6">
