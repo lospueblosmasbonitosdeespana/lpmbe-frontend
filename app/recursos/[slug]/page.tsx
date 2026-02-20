@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { getApiUrl } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
 import { getLocale } from "next-intl/server";
-import { DetailPageHero } from "@/app/components/ui/detail-page-hero";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Title, Lead, Headline } from "@/app/components/ui/typography";
@@ -167,45 +166,100 @@ export default async function RecursoDetailPage({
 
   return (
     <main className="bg-background">
-      <DetailPageHero
-        title={recurso.nombre}
-        eyebrow={provCom || recurso.tipo}
-        metadata={heroMetadata}
-        image={heroImage}
-        imageAlt={recurso.nombre}
-        breadcrumbs={breadcrumbs}
-        backLink={{ label: "Volver a Recursos", href: "/recursos" }}
-        variant="compact"
-        overlay="gradient"
-      />
-
-      {/* Badges: Cerrado temporal / Descuento Club */}
+      {/* Breadcrumbs + back link */}
       <div className="border-b border-border bg-card">
-        <Container size="lg">
-          <div className="flex flex-wrap items-center gap-3 py-3">
-            {recurso.cerradoTemporal && (
-              <span className="rounded-full bg-amber-500/90 px-3 py-1 text-sm font-medium text-white">
-                Cerrado temporalmente
-              </span>
-            )}
-            {recurso.descuentoPorcentaje != null &&
-              recurso.descuentoPorcentaje > 0 && (
-                <span className="rounded-full bg-primary px-3 py-1 text-sm font-medium text-primary-foreground">
-                  Descuento Club de Amigos: −{recurso.descuentoPorcentaje}%
-                </span>
-              )}
-            {recurso.descuentoPorcentaje != null &&
-              recurso.descuentoPorcentaje > 0 && (
-                <Link
-                  href="/club"
-                  className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-                >
-                  Únete al Club →
-                </Link>
-              )}
+        <Container size="md">
+          <div className="pb-2 pt-6">
+            <nav aria-label="Breadcrumb" className="mb-2">
+              <ol className="flex flex-wrap items-center gap-2 text-sm">
+                {breadcrumbs.map((item, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <Link
+                      href={item.href}
+                      className="text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {item.label}
+                    </Link>
+                    {index < breadcrumbs.length - 1 && (
+                      <span className="text-muted-foreground/70">/</span>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </nav>
+            <Link
+              href="/recursos"
+              className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Volver a Recursos
+            </Link>
           </div>
         </Container>
       </div>
+
+      {/* Contained hero image + title */}
+      <Section spacing="sm">
+        <Container size="md">
+          {heroImage && (
+            <div className="relative mb-6 h-[220px] overflow-hidden rounded-xl sm:h-[280px]">
+              <Image
+                src={heroImage}
+                alt={recurso.nombre}
+                fill
+                priority
+                className="object-cover"
+                quality={85}
+                sizes="(max-width: 768px) 100vw, 768px"
+              />
+            </div>
+          )}
+          <div>
+            {(provCom || recurso.tipo) && (
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {provCom || recurso.tipo}
+              </p>
+            )}
+            <h1 className="font-serif text-2xl font-bold text-foreground sm:text-3xl">
+              {recurso.nombre}
+            </h1>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              {heroMetadata}
+            </div>
+          </div>
+        </Container>
+      </Section>
+
+      {/* Badges: Cerrado temporal / Descuento Club */}
+      {(recurso.cerradoTemporal ||
+        (recurso.descuentoPorcentaje != null && recurso.descuentoPorcentaje > 0)) && (
+        <div className="border-b border-border bg-card">
+          <Container size="md">
+            <div className="flex flex-wrap items-center gap-3 py-3">
+              {recurso.cerradoTemporal && (
+                <span className="rounded-full bg-amber-500/90 px-3 py-1 text-sm font-medium text-white">
+                  Cerrado temporalmente
+                </span>
+              )}
+              {recurso.descuentoPorcentaje != null &&
+                recurso.descuentoPorcentaje > 0 && (
+                  <span className="rounded-full bg-primary px-3 py-1 text-sm font-medium text-primary-foreground">
+                    Descuento Club de Amigos: −{recurso.descuentoPorcentaje}%
+                  </span>
+                )}
+              {recurso.descuentoPorcentaje != null &&
+                recurso.descuentoPorcentaje > 0 && (
+                  <Link
+                    href="/club"
+                    className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                  >
+                    Únete al Club →
+                  </Link>
+                )}
+            </div>
+          </Container>
+        </div>
+      )}
 
       {/* Pueblo asociado */}
       {recurso.pueblo && (
@@ -309,18 +363,6 @@ export default async function RecursoDetailPage({
         </Section>
       )}
 
-      {/* Back link */}
-      <Section spacing="sm">
-        <Container size="lg">
-          <Link
-            href="/recursos"
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Volver al listado de recursos
-          </Link>
-        </Container>
-      </Section>
     </main>
   );
 }
