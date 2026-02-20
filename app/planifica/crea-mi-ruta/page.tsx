@@ -38,6 +38,42 @@ interface RouteResponse {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Helpers                                                            */
+/* ------------------------------------------------------------------ */
+
+function formatDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.round((seconds % 3600) / 60);
+  if (h === 0) return `${m} min`;
+  return m > 0 ? `${h} h ${m} min` : `${h} h`;
+}
+
+async function fetchOsrmRoute(
+  coords: Array<{ lat: number; lng: number }>,
+): Promise<{ routeCoords: [number, number][]; durationSec: number; distanceKm: number } | null> {
+  if (coords.length < 2) return null;
+  const coordStr = coords.map((c) => `${c.lng},${c.lat}`).join(";");
+  try {
+    const res = await fetch(
+      `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`,
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const route = data?.routes?.[0];
+    if (!route?.geometry?.coordinates) return null;
+    return {
+      routeCoords: route.geometry.coordinates.map(
+        (c: [number, number]) => [c[1], c[0]] as [number, number],
+      ),
+      durationSec: route.duration ?? 0,
+      distanceKm: Math.round((route.distance ?? 0) / 100) / 10,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /*  Nominatim autocomplete hook                                        */
 /* ------------------------------------------------------------------ */
 
@@ -195,11 +231,64 @@ export default function CreaMiRutaPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<RouteResponse | null>(null);
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [linkCopied, setLinkCopied] = useState(false);
 
+  const [displayRoute, setDisplayRoute] = useState<[number, number][]>([]);
+  const [routeDuration, setRouteDuration] = useState<number | null>(null);
+  const [routeDistance, setRouteDistance] = useState<number | null>(null);
+  const [routeLoading, setRouteLoading] = useState(false);
+
+  const osrmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const selectedItems =
     result?.items.filter((i) => selectedIds.has(`${i.type}-${i.id}`)) ?? [];
+
+  // Recalculate route via OSRM when selection changes
+  useEffect(() => {
+    if (!result) return;
+
+    if (osrmTimerRef.current) clearTimeout(osrmTimerRef.current);
+
+    const waypoints = selectedItems
+      .filter((i) => i.lat && i.lng)
+      .map((i) => ({ lat: i.lat, lng: i.lng }));
+
+    const allCoords = [
+      result.origin,
+      ...waypoints,
+      result.destination,
+    ];
+
+    if (allCoords.length < 2) {
+      setDisplayRoute(result.routeCoords);
+      setRouteDuration(null);
+      setRouteDistance(null);
+      return;
+    }
+
+    setRouteLoading(true);
+
+    osrmTimerRef.current = setTimeout(async () => {
+      const osrm = await fetchOsrmRoute(allCoords);
+      if (osrm) {
+        setDisplayRoute(osrm.routeCoords);
+        setRouteDuration(osrm.durationSec);
+        setRouteDistance(osrm.distanceKm);
+      } else {
+        setDisplayRoute(result.routeCoords);
+        setRouteDuration(null);
+        setRouteDistance(null);
+      }
+      setRouteLoading(false);
+    }, 400);
+
+    return () => {
+      if (osrmTimerRef.current) clearTimeout(osrmTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedIds, result]);
 
   function toggleItem(key: string) {
     setSelectedIds((prev) => {
@@ -233,8 +322,10 @@ export default function CreaMiRutaPage() {
       .join("\n");
     const originLabel = originHook.selected?.label ?? "Origen";
     const destLabel = destHook.selected?.label ?? "Destino";
+    const timeStr = routeDuration ? `\n⏱️ Tiempo estimado: ${formatDuration(routeDuration)}` : "";
+    const distStr = routeDistance ? ` · ${routeDistance} km` : "";
     const gmapsUrl = buildGoogleMapsUrl();
-    const text = `🗺️ Mi ruta por los Pueblos Más Bonitos\n\nDe: ${originLabel} → ${destLabel}\n\n📍 Paradas:\n${stops}\n\n🗺️ Abrir en Google Maps:\n${gmapsUrl}`;
+    const text = `🗺️ Mi ruta por los Pueblos Más Bonitos\n\nDe: ${originLabel} → ${destLabel}${timeStr}${distStr}\n\n📍 Paradas:\n${stops}\n\n🗺️ Abrir en Google Maps:\n${gmapsUrl}`;
     window.open(
       `https://wa.me/?text=${encodeURIComponent(text)}`,
       "_blank",
@@ -255,7 +346,13 @@ export default function CreaMiRutaPage() {
 
   function openAppleMaps() {
     if (!result) return;
-    const url = `https://maps.apple.com/?saddr=${result.origin.lat},${result.origin.lng}&daddr=${result.destination.lat},${result.destination.lng}&dirflg=d`;
+    const waypointStr = selectedItems.length > 0
+      ? selectedItems.map((i) => `${i.lat},${i.lng}`).join("+to:")
+      : "";
+    const daddr = waypointStr
+      ? `${waypointStr}+to:${result.destination.lat},${result.destination.lng}`
+      : `${result.destination.lat},${result.destination.lng}`;
+    const url = `https://maps.apple.com/?saddr=${result.origin.lat},${result.origin.lng}&daddr=${daddr}&dirflg=d`;
     window.open(url, "_blank");
   }
 
@@ -302,7 +399,17 @@ export default function CreaMiRutaPage() {
 
       const data: RouteResponse = await res.json();
       setResult(data);
-      setSelectedIds(new Set(data.items.map((i) => `${i.type}-${i.id}`)));
+      setSelectedIds(new Set());
+      setDisplayRoute(data.routeCoords);
+
+      const baseOsrm = await fetchOsrmRoute([data.origin, data.destination]);
+      if (baseOsrm) {
+        setRouteDuration(baseOsrm.durationSec);
+        setRouteDistance(baseOsrm.distanceKm);
+      } else {
+        setRouteDuration(null);
+        setRouteDistance(null);
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Error generando la ruta.",
@@ -341,7 +448,6 @@ export default function CreaMiRutaPage() {
             />
           </div>
 
-          {/* Distance slider */}
           <div>
             <label className="mb-1.5 block text-sm font-semibold text-foreground/80">
               Distancia máxima desde la ruta:{" "}
@@ -380,16 +486,7 @@ export default function CreaMiRutaPage() {
               </>
             ) : (
               <>
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8" />
                   <path d="M21 21l-4.35-4.35" />
                 </svg>
@@ -403,7 +500,7 @@ export default function CreaMiRutaPage() {
       {/* Results */}
       {result && (
         <section className="mx-auto max-w-5xl px-4 pt-12">
-          {/* Summary */}
+          {/* Summary + Route info */}
           <div className="mb-6 flex flex-wrap items-center gap-3 text-sm">
             <span className="rounded-full bg-blue-100 px-3 py-1 font-semibold text-blue-800">
               {result.totalPueblos}{" "}
@@ -411,14 +508,47 @@ export default function CreaMiRutaPage() {
             </span>
             <span className="rounded-full bg-amber-100 px-3 py-1 font-semibold text-amber-800">
               {result.totalRecursos}{" "}
-              {result.totalRecursos === 1
-                ? "recurso turístico"
-                : "recursos turísticos"}
+              {result.totalRecursos === 1 ? "recurso turístico" : "recursos turísticos"}
             </span>
             <span className="text-muted-foreground">en tu ruta</span>
           </div>
 
-          {/* Select controls */}
+          {/* Duration / distance bar */}
+          <div className="mb-4 flex flex-wrap items-center gap-4 rounded-xl border border-border bg-white px-4 py-3">
+            {routeLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                Calculando ruta…
+              </div>
+            ) : (
+              <>
+                {routeDuration != null && (
+                  <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    {formatDuration(routeDuration)}
+                  </span>
+                )}
+                {routeDistance != null && (
+                  <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                    {routeDistance} km
+                  </span>
+                )}
+                {selectedIds.size > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    · {selectedIds.size} parada{selectedIds.size !== 1 && "s"} seleccionada{selectedIds.size !== 1 && "s"}
+                  </span>
+                )}
+                {selectedIds.size === 0 && routeDuration != null && (
+                  <span className="text-sm text-muted-foreground">
+                    · Ruta directa A → B · Selecciona paradas para personalizar
+                  </span>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Select controls + action bar */}
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <button
               type="button"
@@ -434,18 +564,12 @@ export default function CreaMiRutaPage() {
             >
               Deseleccionar todos
             </button>
-            {selectedIds.size > 0 && (
-              <span className="text-xs text-muted-foreground">
-                {selectedIds.size} de {result.items.length} seleccionados
-              </span>
-            )}
           </div>
 
-          {/* Action bar */}
           {selectedIds.size > 0 && (
             <div className="sticky top-20 z-30 mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
               <span className="text-sm font-semibold text-foreground">
-                {selectedIds.size} seleccionado{selectedIds.size !== 1 && "s"}
+                {selectedIds.size} parada{selectedIds.size !== 1 && "s"}
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -462,7 +586,8 @@ export default function CreaMiRutaPage() {
                   onClick={copyLink}
                   className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-accent"
                 >
-                  📋 {linkCopied ? "¡Copiado!" : "Copiar enlace"}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                  {linkCopied ? "¡Copiado!" : "Copiar enlace"}
                 </button>
                 <button
                   type="button"
@@ -478,7 +603,8 @@ export default function CreaMiRutaPage() {
                   onClick={openAppleMaps}
                   className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 bg-gray-800"
                 >
-                  🍎 Apple Maps
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                  Apple Maps
                 </button>
                 <button
                   type="button"
@@ -495,10 +621,11 @@ export default function CreaMiRutaPage() {
 
           {/* Map */}
           <RouteMap
-            routeCoords={result.routeCoords}
+            routeCoords={displayRoute}
             items={result.items}
             origin={result.origin}
             destination={result.destination}
+            selectedIds={selectedIds}
           />
 
           {/* Items list */}
@@ -506,12 +633,13 @@ export default function CreaMiRutaPage() {
             <ul className="mt-8 divide-y divide-border">
               {result.items.map((item) => {
                 const key = `${item.type}-${item.id}`;
+                const isChecked = selectedIds.has(key);
                 return (
                   <li key={key} className="py-4">
                     <div className="flex items-start gap-3">
                       <input
                         type="checkbox"
-                        checked={selectedIds.has(key)}
+                        checked={isChecked}
                         onChange={() => toggleItem(key)}
                         className="mt-3 h-4 w-4 shrink-0 cursor-pointer rounded border-border text-primary accent-primary"
                       />
@@ -521,39 +649,21 @@ export default function CreaMiRutaPage() {
                             ? `/pueblos/${item.slug}`
                             : `/recursos/${item.slug}`
                         }
-                        className="group flex flex-1 items-start gap-4"
+                        className={`group flex flex-1 items-start gap-4 transition-opacity ${isChecked ? "opacity-100" : "opacity-50"}`}
                       >
                         <span
                           className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white ${
-                            item.type === "pueblo" ? "bg-blue-600" : "bg-amber-600"
+                            isChecked
+                              ? item.type === "pueblo" ? "bg-blue-600" : "bg-amber-600"
+                              : "bg-gray-400"
                           }`}
                         >
                           {item.type === "pueblo" ? (
-                            <svg
-                              width="18"
-                              height="18"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <path d="M3 21h18" />
-                              <path d="M5 21V7l7-4 7 4v14" />
-                              <path d="M9 21v-4h6v4" />
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M3 21h18" /><path d="M5 21V7l7-4 7 4v14" /><path d="M9 21v-4h6v4" />
                             </svg>
                           ) : (
-                            <svg
-                              width="18"
-                              height="18"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
                             </svg>
                           )}
@@ -573,19 +683,13 @@ export default function CreaMiRutaPage() {
                           <p className="mt-0.5 text-sm text-muted-foreground">
                             {item.provincia}
                             {item.tipo && (
-                              <span className="ml-1.5 text-xs opacity-70">
-                                · {item.tipo}
-                              </span>
+                              <span className="ml-1.5 text-xs opacity-70">· {item.tipo}</span>
                             )}
-                            <span className="ml-1.5">
-                              · a {item.distKm.toFixed(1)} km de la ruta
-                            </span>
+                            <span className="ml-1.5">· a {item.distKm.toFixed(1)} km de la ruta</span>
                           </p>
                         </div>
 
-                        <span className="mt-2 text-muted-foreground opacity-0 transition group-hover:opacity-100">
-                          →
-                        </span>
+                        <span className="mt-2 text-muted-foreground opacity-0 transition group-hover:opacity-100">→</span>
                       </a>
                     </div>
                   </li>
