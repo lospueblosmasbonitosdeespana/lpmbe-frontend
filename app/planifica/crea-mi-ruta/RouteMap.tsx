@@ -38,10 +38,22 @@ interface RouteMapProps {
   selectedIds?: Set<string>;
 }
 
-function makeIcon(bg: string, svgPath: string, opacity = 1) {
+function makeSelectedIcon(bg: string, svgPath: string) {
   return L.divIcon({
-    html: `<div style="background:${bg};width:28px;height:28px;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.35);opacity:${opacity}">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${svgPath}</svg>
+    html: `<div style="background:${bg};width:32px;height:32px;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.4)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${svgPath}</svg>
+    </div>`,
+    className: "",
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -18],
+  });
+}
+
+function makeUnselectedIcon(color: string, svgPath: string) {
+  return L.divIcon({
+    html: `<div style="background:#fff;width:28px;height:28px;border-radius:50%;border:2.5px solid ${color};display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${svgPath}</svg>
     </div>`,
     className: "",
     iconSize: [28, 28],
@@ -115,9 +127,12 @@ export default function RouteMap({
       const key = `${item.type}-${item.id}`;
       const isSelected = !selectedIds || selectedIds.has(key);
 
-      const icon = item.type === "pueblo"
-        ? makeIcon(isSelected ? "#1d4ed8" : "#9ca3af", PUEBLO_SVG, isSelected ? 1 : 0.5)
-        : makeIcon(isSelected ? "#b45309" : "#9ca3af", RECURSO_SVG, isSelected ? 1 : 0.5);
+      const puebloColor = "#1d4ed8";
+      const recursoColor = "#b45309";
+
+      const icon = isSelected
+        ? (item.type === "pueblo" ? makeSelectedIcon(puebloColor, PUEBLO_SVG) : makeSelectedIcon(recursoColor, RECURSO_SVG))
+        : (item.type === "pueblo" ? makeUnselectedIcon(puebloColor, PUEBLO_SVG) : makeUnselectedIcon(recursoColor, RECURSO_SVG));
 
       const detailUrl =
         item.type === "pueblo"

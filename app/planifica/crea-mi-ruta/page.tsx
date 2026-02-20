@@ -310,10 +310,12 @@ export default function CreaMiRutaPage() {
 
   function buildGoogleMapsUrl() {
     if (!result) return "";
-    const waypoints = selectedItems
-      .map((i) => `${i.lat},${i.lng}`)
-      .join("|");
-    return `https://www.google.com/maps/dir/?api=1&origin=${result.origin.lat},${result.origin.lng}&destination=${result.destination.lat},${result.destination.lng}${waypoints ? `&waypoints=${waypoints}` : ""}&travelmode=driving`;
+    const points = [
+      `${result.origin.lat},${result.origin.lng}`,
+      ...selectedItems.map((i) => `${i.lat},${i.lng}`),
+      `${result.destination.lat},${result.destination.lng}`,
+    ];
+    return `https://www.google.com/maps/dir/${points.join("/")}`;
   }
 
   function shareWhatsApp() {
@@ -358,8 +360,10 @@ export default function CreaMiRutaPage() {
 
   function openWaze() {
     if (!result) return;
-    const dest = result.destination;
-    const url = `https://waze.com/ul?ll=${dest.lat},${dest.lng}&navigate=yes`;
+    const target = selectedItems.length > 0
+      ? selectedItems[0]
+      : { lat: result.destination.lat, lng: result.destination.lng };
+    const url = `https://www.waze.com/ul?ll=${target.lat}%2C${target.lng}&navigate=yes&zoom=17`;
     window.open(url, "_blank");
   }
 
