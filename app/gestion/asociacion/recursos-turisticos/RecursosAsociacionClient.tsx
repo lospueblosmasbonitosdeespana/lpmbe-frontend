@@ -1,6 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import dynamic from 'next/dynamic';
+
+const MapLocationPicker = dynamic(
+  () => import('@/app/components/MapLocationPicker'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[420px] w-full animate-pulse rounded-lg bg-gray-100" />
+    ),
+  },
+);
 
 const TIPOS = [
   'CASTILLO',
@@ -147,8 +158,24 @@ function RecursoForm({
   saving: boolean;
   submitLabel: string;
 }) {
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const set = (key: keyof FormData, val: string | boolean) =>
     onChange({ ...data, [key]: val });
+
+  async function handlePhotoUpload(file: File) {
+    setUploading(true);
+    try {
+      const { uploadImageToR2 } = await import('@/src/lib/uploadHelper');
+      const { url } = await uploadImageToR2(file, 'recursos-asociacion');
+      onChange({ ...data, fotoUrl: url });
+    } catch {
+      // silently fail — user can retry
+    } finally {
+      setUploading(false);
+    }
+  }
 
   return (
     <div className="space-y-3">
@@ -281,15 +308,63 @@ function RecursoForm({
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-gray-600">Foto URL</label>
+          <label className="mb-1 block text-sm text-gray-600">Foto</label>
           <input
-            type="text"
-            value={data.fotoUrl}
-            onChange={(e) => set('fotoUrl', e.target.value)}
-            disabled={saving}
-            className="w-full rounded border px-3 py-2 disabled:opacity-50"
-            placeholder="https://..."
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handlePhotoUpload(file);
+            }}
           />
+          {data.fotoUrl ? (
+            <div className="flex items-center gap-3">
+              <img
+                src={data.fotoUrl}
+                alt="Preview"
+                className="h-12 w-12 rounded border object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={saving || uploading}
+                className="rounded border px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50"
+              >
+                {uploading ? (
+                  <span className="flex items-center gap-1.5">
+                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Subiendo…
+                  </span>
+                ) : (
+                  'Cambiar'
+                )}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={saving || uploading}
+              className="w-full rounded border border-dashed px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+            >
+              {uploading ? (
+                <span className="flex items-center justify-center gap-1.5">
+                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Subiendo…
+                </span>
+              ) : (
+                'Subir foto'
+              )}
+            </button>
+          )}
         </div>
       </div>
 
@@ -517,6 +592,68 @@ export default function RecursosAsociacionClient() {
 
   const [expandedColab, setExpandedColab] = useState<number | null>(null);
 
+  const [flyToPos, setFlyToPos] = useState<[number, number] | null>(null);
+
+  const recursoRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+
+  const isFormActive = showCreate || editId !== null;
+
+  const existingMarkers = recursos
+    .filter((r) => r.lat && r.lng)
+    .map((r) => ({
+      lat: r.lat,
+      lng: r.lng,
+      label: r.nombre,
+      color: r.activo ? 'blue' : 'grey',
+    }));
+
+  const selectedMapPosition = (() => {
+    const form = showCreate ? createForm : editId !== null ? editForm : null;
+    if (!form || !form.lat || !form.lng) return null;
+    const lat = Number(form.lat);
+    const lng = Number(form.lng);
+    if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return null;
+    return { lat, lng };
+  })();
+
+  const activeHint = showCreate
+    ? 'Haz clic en el mapa para ubicar el nuevo recurso'
+    : editId !== null
+      ? 'Haz clic en el mapa para cambiar la ubicación del recurso'
+      : undefined;
+
+  function handleMapLocationSelect(lat: number, lng: number) {
+    const rounded = {
+      lat: Math.round(lat * 1e6) / 1e6,
+      lng: Math.round(lng * 1e6) / 1e6,
+    };
+    if (showCreate) {
+      setCreateForm((prev) => ({
+        ...prev,
+        lat: rounded.lat.toString(),
+        lng: rounded.lng.toString(),
+      }));
+    } else if (editId !== null) {
+      setEditForm((prev) => ({
+        ...prev,
+        lat: rounded.lat.toString(),
+        lng: rounded.lng.toString(),
+      }));
+    }
+  }
+
+  function handleExistingMarkerClick(index: number) {
+    const withCoords = recursos.filter((r) => r.lat && r.lng);
+    const recurso = withCoords[index];
+    if (!recurso) return;
+    const el = recursoRefs.current.get(recurso.id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('ring-2', 'ring-blue-400');
+      setTimeout(() => el.classList.remove('ring-2', 'ring-blue-400'), 2000);
+    }
+  }
+
   // ---- Load ----
 
   const loadRecursos = useCallback(async () => {
@@ -581,11 +718,15 @@ export default function RecursosAsociacionClient() {
   function startEdit(r: RecursoAsociacion) {
     setEditId(r.id);
     setEditForm(recursoToForm(r));
+    if (r.lat && r.lng) {
+      setFlyToPos([r.lat, r.lng]);
+    }
   }
 
   function cancelEdit() {
     setEditId(null);
     setEditForm({ ...EMPTY_FORM });
+    setFlyToPos(null);
   }
 
   async function handleSave(id: number) {
@@ -668,6 +809,22 @@ export default function RecursosAsociacionClient() {
         </div>
       )}
 
+      {/* Mapa interactivo */}
+      <div className="mt-4">
+        <MapLocationPicker
+          center={[40.0, -3.7]}
+          zoom={6}
+          existingMarkers={existingMarkers}
+          selectedPosition={selectedMapPosition}
+          onLocationSelect={isFormActive ? handleMapLocationSelect : undefined}
+          onExistingMarkerClick={handleExistingMarkerClick}
+          height="420px"
+          searchPlaceholder="Buscar ubicación (ej: Castillo de Loarre)..."
+          activeHint={activeHint}
+          flyTo={flyToPos}
+        />
+      </div>
+
       {/* Botón / formulario de creación */}
       {!showCreate ? (
         <div className="mt-6">
@@ -706,7 +863,14 @@ export default function RecursosAsociacionClient() {
           </p>
         ) : (
           recursos.map((r) => (
-            <div key={r.id} className="rounded border p-4">
+            <div
+              key={r.id}
+              ref={(el) => {
+                if (el) recursoRefs.current.set(r.id, el);
+                else recursoRefs.current.delete(r.id);
+              }}
+              className="rounded border p-4 transition-shadow"
+            >
               {editId === r.id ? (
                 <div>
                   <h3 className="mb-3 font-medium">Editar recurso</h3>

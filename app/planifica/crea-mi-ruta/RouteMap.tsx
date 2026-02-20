@@ -152,7 +152,7 @@ export default function RouteMap({
   return (
     <div
       ref={mapRef}
-      className="h-[500px] w-full rounded-xl border border-border shadow-sm"
+      className="relative z-0 h-[500px] w-full rounded-xl border border-border shadow-sm"
     />
   );
 }
