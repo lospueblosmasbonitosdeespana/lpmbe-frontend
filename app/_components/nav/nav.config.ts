@@ -32,7 +32,7 @@ export const navConfig: NavItem[] = [
         titleKey: "explore",
         links: [
           { labelKey: "seeAll", href: "/pueblos" },
-          { labelKey: "interactiveMap", href: "https://maps.lospueblosmasbonitosdeespana.org/es/pueblos" },
+          { labelKey: "interactiveMap", href: "/mapa" },
         ],
       },
       {
