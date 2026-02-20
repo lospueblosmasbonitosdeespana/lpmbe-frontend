@@ -10,6 +10,7 @@ import {
 } from "react";
 import dynamic from "next/dynamic";
 import type { RouteItem } from "./RouteMap";
+import { getResourceLabel } from "@/lib/resource-types";
 
 const RouteMap = dynamic(() => import("./RouteMap"), { ssr: false });
 
@@ -810,7 +811,7 @@ export default function CreaMiRutaPage() {
                           <p className="mt-0.5 text-sm text-muted-foreground">
                             {item.provincia}
                             {item.tipo && (
-                              <span className="ml-1.5 text-xs opacity-70">· {item.tipo}</span>
+                              <span className="ml-1.5 text-xs opacity-70">· {getResourceLabel(item.tipo)}</span>
                             )}
                             <span className="ml-1.5">· a {item.distKm.toFixed(1)} km de la ruta</span>
                           </p>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import L from "leaflet";
+import { getResourceColor, getResourceSvg } from "@/lib/resource-types";
 
 const LEAFLET_CDN =
   "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images";
@@ -62,7 +63,7 @@ function makeUnselectedIcon(color: string, svgPath: string) {
 }
 
 const PUEBLO_SVG = '<path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/>';
-const RECURSO_SVG = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/>';
+const PUEBLO_COLOR = "#1d4ed8";
 
 const endpointIcon = (label: string, color: string) =>
   L.divIcon({
@@ -133,14 +134,18 @@ export default function RouteMap({
       const isSelected = !selectedIds || selectedIds.has(key);
       const position = orderMap.get(key);
 
-      const puebloColor = "#1d4ed8";
-      const recursoColor = "#b45309";
+      const itemColor = item.type === "pueblo"
+        ? PUEBLO_COLOR
+        : getResourceColor(item.tipo ?? "OTRO");
+      const itemSvg = item.type === "pueblo"
+        ? PUEBLO_SVG
+        : getResourceSvg(item.tipo ?? "OTRO");
 
       const icon = isSelected && position
-        ? makeNumberedIcon(item.type === "pueblo" ? puebloColor : recursoColor, position)
+        ? makeNumberedIcon(itemColor, position)
         : isSelected
-          ? makeNumberedIcon(item.type === "pueblo" ? puebloColor : recursoColor, 0)
-          : (item.type === "pueblo" ? makeUnselectedIcon(puebloColor, PUEBLO_SVG) : makeUnselectedIcon(recursoColor, RECURSO_SVG));
+          ? makeNumberedIcon(itemColor, 0)
+          : makeUnselectedIcon(itemColor, itemSvg);
 
       const detailUrl =
         item.type === "pueblo"

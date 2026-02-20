@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import { RESOURCE_TYPES, RESOURCE_TYPE_LABELS } from '@/lib/resource-types';
 
 const MapLocationPicker = dynamic(
   () => import('@/app/components/MapLocationPicker'),
@@ -13,23 +14,8 @@ const MapLocationPicker = dynamic(
   },
 );
 
-const TIPOS = [
-  'CASTILLO',
-  'MONASTERIO',
-  'MUSEO',
-  'BODEGA',
-  'PARQUE_NATURAL',
-  'OTRO',
-] as const;
-
-const TIPO_LABELS: Record<string, string> = {
-  CASTILLO: 'Castillo',
-  MONASTERIO: 'Monasterio',
-  MUSEO: 'Museo',
-  BODEGA: 'Bodega',
-  PARQUE_NATURAL: 'Parque natural',
-  OTRO: 'Otro',
-};
+const TIPOS = RESOURCE_TYPES;
+const TIPO_LABELS = RESOURCE_TYPE_LABELS;
 
 type RecursoAsociacion = {
   id: number;

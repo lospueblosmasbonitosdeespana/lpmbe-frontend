@@ -10,6 +10,7 @@ import { Container } from "@/app/components/ui/container";
 import { Title, Lead, Headline } from "@/app/components/ui/typography";
 import ParadasMap from "@/app/_components/ParadasMap";
 import { ChevronLeft } from "lucide-react";
+import { getResourceLabel } from "@/lib/resource-types";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -136,7 +137,7 @@ export default async function RecursoDetailPage({
   const provCom = [recurso.provincia, recurso.comunidad].filter(Boolean).join(" / ");
   const paradas =
     recurso.lat != null && recurso.lng != null
-      ? [{ titulo: recurso.nombre, lat: recurso.lat, lng: recurso.lng }]
+      ? [{ titulo: recurso.nombre, lat: recurso.lat, lng: recurso.lng, tipo: recurso.tipo }]
       : [];
 
   const breadcrumbs = [
@@ -156,7 +157,7 @@ export default async function RecursoDetailPage({
       )}
       <span aria-hidden="true">·</span>
       <span className="rounded-md bg-primary/20 px-2 py-0.5 text-sm font-medium">
-        {recurso.tipo}
+        {getResourceLabel(recurso.tipo)}
       </span>
     </div>
   );
@@ -202,13 +203,14 @@ export default async function RecursoDetailPage({
       <Section spacing="sm">
         <Container size="md">
           {heroImage && (
-            <div className="relative mb-6 h-[220px] overflow-hidden rounded-xl sm:h-[280px]">
+            <div className="relative mb-6 overflow-hidden rounded-xl bg-muted">
               <Image
                 src={heroImage}
                 alt={recurso.nombre}
-                fill
+                width={800}
+                height={450}
                 priority
-                className="object-cover"
+                className="h-auto w-full rounded-xl"
                 quality={85}
                 sizes="(max-width: 768px) 100vw, 768px"
               />
@@ -357,7 +359,7 @@ export default async function RecursoDetailPage({
               </Lead>
             </div>
             <div className="overflow-hidden rounded-xl border border-border [&>div]:!h-[260px]">
-              <ParadasMap paradas={paradas} puebloNombre={recurso.nombre} />
+              <ParadasMap paradas={paradas} puebloNombre={recurso.nombre} resourceTipo={recurso.tipo} />
             </div>
           </Container>
         </Section>

@@ -3,20 +3,24 @@
 import * as React from 'react';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import 'leaflet/dist/leaflet.css';
+import { getResourceColor, getResourceSvg } from '@/lib/resource-types';
 
 type Parada = {
   titulo?: string | null;
   lat?: number | null;
   lng?: number | null;
   orden?: number | null;
+  tipo?: string | null;
 };
 
 export default function ParadasMap({
   paradas,
   puebloNombre,
+  resourceTipo,
 }: {
   paradas: Parada[];
   puebloNombre?: string;
+  resourceTipo?: string | null;
 }) {
   const [mounted, setMounted] = useState(false);
   const [L, setL] = useState<typeof import('leaflet') | null>(null);
@@ -24,7 +28,6 @@ export default function ParadasMap({
 
   useEffect(() => {
     Promise.all([import('leaflet'), import('react-leaflet')]).then(([leaflet, rl]) => {
-      // Fix iconos Leaflet en Next.js
       delete (leaflet.Icon.Default.prototype as any)._getIconUrl;
       leaflet.Icon.Default.mergeOptions({
         iconRetinaUrl:
@@ -40,13 +43,11 @@ export default function ParadasMap({
     });
   }, []);
 
-  // Filtrar solo paradas con coordenadas válidas
   const paradasConCoords = useMemo(
     () => paradas.filter((p) => typeof p.lat === 'number' && typeof p.lng === 'number'),
     [paradas],
   );
 
-  // Calcular centro del mapa
   const center = useMemo<[number, number]>(() => {
     if (paradasConCoords.length === 0) return [40.4168, -3.7038];
     const sumLat = paradasConCoords.reduce((acc, p) => acc + (p.lat as number), 0);
@@ -54,7 +55,6 @@ export default function ParadasMap({
     return [sumLat / paradasConCoords.length, sumLng / paradasConCoords.length];
   }, [paradasConCoords]);
 
-  // Calcular zoom
   const zoom = useMemo(() => {
     if (paradasConCoords.length <= 1) return 15;
     const lats = paradasConCoords.map((p) => p.lat as number);
@@ -69,7 +69,33 @@ export default function ParadasMap({
     return 12;
   }, [paradasConCoords]);
 
-  // Crear iconos numerados
+  const createResourceIcon = useCallback(
+    (tipo: string) => {
+      if (!L) return undefined;
+      const color = getResourceColor(tipo);
+      const svgPath = getResourceSvg(tipo);
+      return L.divIcon({
+        className: '',
+        html: `<div style="
+          background: ${color};
+          color: white;
+          border-radius: 50%;
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 3px solid white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+        "><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${svgPath}</svg></div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        popupAnchor: [0, -20],
+      });
+    },
+    [L],
+  );
+
   const createNumberedIcon = useCallback(
     (num: number) => {
       if (!L) return undefined;
@@ -135,8 +161,11 @@ export default function ParadasMap({
         />
 
         {paradasConCoords.map((p, idx) => {
-          const num = idx + 1;
-          const icon = createNumberedIcon(num);
+          const tipo = p.tipo ?? resourceTipo;
+          const icon = tipo
+            ? createResourceIcon(tipo)
+            : createNumberedIcon(idx + 1);
+
           return (
             <Marker
               key={`parada-${idx}`}
@@ -146,24 +175,6 @@ export default function ParadasMap({
               <Popup>
                 <div style={{ lineHeight: 1.4 }}>
                   <div style={{ fontWeight: 700, fontSize: 14 }}>
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: 22,
-                        height: 22,
-                        borderRadius: '50%',
-                        background: '#7A1C1C',
-                        color: 'white',
-                        fontSize: 12,
-                        fontWeight: 700,
-                        marginRight: 6,
-                        verticalAlign: 'middle',
-                      }}
-                    >
-                      {num}
-                    </span>
                     {p.titulo ?? 'Parada'}
                   </div>
                   {puebloNombre && (
