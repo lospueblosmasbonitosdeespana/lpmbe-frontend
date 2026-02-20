@@ -341,14 +341,20 @@ export default function CreaMiRutaPage() {
 
   /* ----- Share helpers ----- */
 
+  function itemLabel(item: RouteItem) {
+    return `${item.nombre}, ${item.provincia}, España`;
+  }
+
   function buildGoogleMapsUrl() {
     if (!result) return "";
+    const originLabel = originHook.selected?.label ?? `${result.origin.lat},${result.origin.lng}`;
+    const destLabel = destHook.selected?.label ?? `${result.destination.lat},${result.destination.lng}`;
     const points = [
-      `${result.origin.lat},${result.origin.lng}`,
-      ...selectedItems.map((i) => `${i.lat},${i.lng}`),
-      `${result.destination.lat},${result.destination.lng}`,
+      originLabel,
+      ...selectedItems.map((i) => itemLabel(i)),
+      destLabel,
     ];
-    return `https://www.google.com/maps/dir/${points.join("/")}`;
+    return `https://www.google.com/maps/dir/${points.map((p) => encodeURIComponent(p)).join("/")}`;
   }
 
   function shareWhatsApp() {
