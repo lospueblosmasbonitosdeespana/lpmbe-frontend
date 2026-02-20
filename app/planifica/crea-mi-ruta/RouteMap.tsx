@@ -36,13 +36,12 @@ interface RouteMapProps {
   origin: { lat: number; lng: number };
   destination: { lat: number; lng: number };
   selectedIds?: Set<string>;
+  orderedSelection?: string[];
 }
 
-function makeSelectedIcon(bg: string, svgPath: string) {
+function makeNumberedIcon(bg: string, num: number) {
   return L.divIcon({
-    html: `<div style="background:${bg};width:32px;height:32px;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.4)">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${svgPath}</svg>
-    </div>`,
+    html: `<div style="background:${bg};width:32px;height:32px;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.4);color:#fff;font-weight:700;font-size:13px">${num}</div>`,
     className: "",
     iconSize: [32, 32],
     iconAnchor: [16, 16],
@@ -80,6 +79,7 @@ export default function RouteMap({
   origin,
   destination,
   selectedIds,
+  orderedSelection,
 }: RouteMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -123,16 +123,24 @@ export default function RouteMap({
       .addTo(map)
       .bindPopup("<strong>Destino</strong>");
 
+    const orderMap = new Map<string, number>();
+    if (orderedSelection) {
+      orderedSelection.forEach((key, idx) => orderMap.set(key, idx + 1));
+    }
+
     items.forEach((item) => {
       const key = `${item.type}-${item.id}`;
       const isSelected = !selectedIds || selectedIds.has(key);
+      const position = orderMap.get(key);
 
       const puebloColor = "#1d4ed8";
       const recursoColor = "#b45309";
 
-      const icon = isSelected
-        ? (item.type === "pueblo" ? makeSelectedIcon(puebloColor, PUEBLO_SVG) : makeSelectedIcon(recursoColor, RECURSO_SVG))
-        : (item.type === "pueblo" ? makeUnselectedIcon(puebloColor, PUEBLO_SVG) : makeUnselectedIcon(recursoColor, RECURSO_SVG));
+      const icon = isSelected && position
+        ? makeNumberedIcon(item.type === "pueblo" ? puebloColor : recursoColor, position)
+        : isSelected
+          ? makeNumberedIcon(item.type === "pueblo" ? puebloColor : recursoColor, 0)
+          : (item.type === "pueblo" ? makeUnselectedIcon(puebloColor, PUEBLO_SVG) : makeUnselectedIcon(recursoColor, RECURSO_SVG));
 
       const detailUrl =
         item.type === "pueblo"
@@ -144,9 +152,11 @@ export default function RouteMap({
           ? `<br/><span style="color:#b45309;font-weight:600">🎫 Club ${item.descuentoClub}% dto.</span>`
           : "";
 
+      const posLabel = position ? `<span style="color:#854d0e;font-weight:700">Parada ${position}</span><br/>` : "";
+
       const popup = `
         <div style="min-width:160px">
-          <strong>${item.nombre}</strong><br/>
+          ${posLabel}<strong>${item.nombre}</strong><br/>
           <span style="color:#666;font-size:13px">${item.provincia} · a ${item.distKm.toFixed(1)} km</span>
           ${descuento}
           <br/><a href="${detailUrl}" style="color:#854d0e;font-weight:600;font-size:13px">Ver detalle →</a>
@@ -165,7 +175,7 @@ export default function RouteMap({
       map.remove();
       mapInstanceRef.current = null;
     };
-  }, [routeCoords, items, origin, destination, selectedIds]);
+  }, [routeCoords, items, origin, destination, selectedIds, orderedSelection]);
 
   return (
     <div

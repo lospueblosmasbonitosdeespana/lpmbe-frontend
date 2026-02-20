@@ -5,6 +5,7 @@ import {
   useRef,
   useCallback,
   useEffect,
+  useMemo,
   type FormEvent,
 } from "react";
 import dynamic from "next/dynamic";
@@ -232,7 +233,7 @@ export default function CreaMiRutaPage() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<RouteResponse | null>(null);
 
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [orderedSelection, setOrderedSelection] = useState<string[]>([]);
   const [linkCopied, setLinkCopied] = useState(false);
 
   const [displayRoute, setDisplayRoute] = useState<[number, number][]>([]);
@@ -242,10 +243,16 @@ export default function CreaMiRutaPage() {
 
   const osrmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const selectedItems =
-    result?.items.filter((i) => selectedIds.has(`${i.type}-${i.id}`)) ?? [];
+  const selectedIds = useMemo(() => new Set(orderedSelection), [orderedSelection]);
 
-  // Recalculate route via OSRM when selection changes
+  const selectedItems = useMemo(
+    () =>
+      orderedSelection
+        .map((key) => result?.items.find((i) => `${i.type}-${i.id}` === key))
+        .filter(Boolean) as RouteItem[],
+    [orderedSelection, result],
+  );
+
   useEffect(() => {
     if (!result) return;
 
@@ -288,25 +295,51 @@ export default function CreaMiRutaPage() {
       if (osrmTimerRef.current) clearTimeout(osrmTimerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedIds, result]);
+  }, [orderedSelection, result]);
+
+  /* ----- Selection helpers ----- */
 
   function toggleItem(key: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
+    setOrderedSelection((prev) => {
+      if (prev.includes(key)) return prev.filter((k) => k !== key);
+      return [...prev, key];
     });
   }
 
   function selectAll() {
     if (!result) return;
-    setSelectedIds(new Set(result.items.map((i) => `${i.type}-${i.id}`)));
+    setOrderedSelection(result.items.map((i) => `${i.type}-${i.id}`));
   }
 
   function deselectAll() {
-    setSelectedIds(new Set());
+    setOrderedSelection([]);
   }
+
+  /* ----- Reorder helpers ----- */
+
+  function moveUp(idx: number) {
+    if (idx <= 0) return;
+    setOrderedSelection((prev) => {
+      const next = [...prev];
+      [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+      return next;
+    });
+  }
+
+  function moveDown(idx: number) {
+    setOrderedSelection((prev) => {
+      if (idx >= prev.length - 1) return prev;
+      const next = [...prev];
+      [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+      return next;
+    });
+  }
+
+  function removeFromRoute(key: string) {
+    setOrderedSelection((prev) => prev.filter((k) => k !== key));
+  }
+
+  /* ----- Share helpers ----- */
 
   function buildGoogleMapsUrl() {
     if (!result) return "";
@@ -320,7 +353,7 @@ export default function CreaMiRutaPage() {
 
   function shareWhatsApp() {
     const stops = selectedItems
-      .map((i) => `- ${i.nombre} (${i.provincia})`)
+      .map((i, idx) => `${idx + 1}. ${i.nombre} (${i.provincia})`)
       .join("\n");
     const originLabel = originHook.selected?.label ?? "Origen";
     const destLabel = destHook.selected?.label ?? "Destino";
@@ -403,7 +436,7 @@ export default function CreaMiRutaPage() {
 
       const data: RouteResponse = await res.json();
       setResult(data);
-      setSelectedIds(new Set());
+      setOrderedSelection([]);
       setDisplayRoute(data.routeCoords);
 
       const baseOsrm = await fetchOsrmRoute([data.origin, data.destination]);
@@ -538,12 +571,12 @@ export default function CreaMiRutaPage() {
                     {routeDistance} km
                   </span>
                 )}
-                {selectedIds.size > 0 && (
+                {orderedSelection.length > 0 && (
                   <span className="text-sm text-muted-foreground">
-                    · {selectedIds.size} parada{selectedIds.size !== 1 && "s"} seleccionada{selectedIds.size !== 1 && "s"}
+                    · {orderedSelection.length} parada{orderedSelection.length !== 1 && "s"} seleccionada{orderedSelection.length !== 1 && "s"}
                   </span>
                 )}
-                {selectedIds.size === 0 && routeDuration != null && (
+                {orderedSelection.length === 0 && routeDuration != null && (
                   <span className="text-sm text-muted-foreground">
                     · Ruta directa A → B · Selecciona paradas para personalizar
                   </span>
@@ -552,7 +585,7 @@ export default function CreaMiRutaPage() {
             )}
           </div>
 
-          {/* Select controls + action bar */}
+          {/* Select controls */}
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <button
               type="button"
@@ -570,10 +603,11 @@ export default function CreaMiRutaPage() {
             </button>
           </div>
 
-          {selectedIds.size > 0 && (
+          {/* Sticky action bar */}
+          {orderedSelection.length > 0 && (
             <div className="sticky top-20 z-30 mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
               <span className="text-sm font-semibold text-foreground">
-                {selectedIds.size} parada{selectedIds.size !== 1 && "s"}
+                {orderedSelection.length} parada{orderedSelection.length !== 1 && "s"}
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -623,6 +657,85 @@ export default function CreaMiRutaPage() {
             </div>
           )}
 
+          {/* "Tu ruta" - Ordered route section */}
+          {orderedSelection.length > 0 && (
+            <div className="mb-4 rounded-xl border border-primary/30 bg-primary/5 p-4">
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="8 12 12 16 16 12" />
+                  <line x1="12" y1="8" x2="12" y2="16" />
+                </svg>
+                Tu ruta ({orderedSelection.length} parada{orderedSelection.length !== 1 && "s"})
+              </h3>
+              <div className="space-y-1">
+                {selectedItems.map((item, idx) => {
+                  const key = `${item.type}-${item.id}`;
+                  const isFirst = idx === 0;
+                  const isLast = idx === selectedItems.length - 1;
+                  return (
+                    <div
+                      key={key}
+                      className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 shadow-sm"
+                    >
+                      <span
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${
+                          item.type === "pueblo" ? "bg-blue-600" : "bg-amber-600"
+                        }`}
+                      >
+                        {idx + 1}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+                        {item.nombre}
+                        <span className="ml-1 text-xs font-normal text-muted-foreground">
+                          ({item.provincia})
+                        </span>
+                      </span>
+                      <div className="flex shrink-0 items-center gap-0.5">
+                        <button
+                          type="button"
+                          onClick={() => moveUp(idx)}
+                          disabled={isFirst}
+                          className="rounded p-1 text-muted-foreground transition hover:bg-accent hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
+                          aria-label="Subir"
+                          title="Subir"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="18 15 12 9 6 15" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveDown(idx)}
+                          disabled={isLast}
+                          className="rounded p-1 text-muted-foreground transition hover:bg-accent hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
+                          aria-label="Bajar"
+                          title="Bajar"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeFromRoute(key)}
+                          className="rounded p-1 text-muted-foreground transition hover:bg-red-50 hover:text-red-600"
+                          aria-label="Quitar de la ruta"
+                          title="Quitar de la ruta"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Map */}
           <RouteMap
             routeCoords={displayRoute}
@@ -630,6 +743,7 @@ export default function CreaMiRutaPage() {
             origin={result.origin}
             destination={result.destination}
             selectedIds={selectedIds}
+            orderedSelection={orderedSelection}
           />
 
           {/* Items list */}
@@ -638,6 +752,7 @@ export default function CreaMiRutaPage() {
               {result.items.map((item) => {
                 const key = `${item.type}-${item.id}`;
                 const isChecked = selectedIds.has(key);
+                const position = orderedSelection.indexOf(key);
                 return (
                   <li key={key} className="py-4">
                     <div className="flex items-start gap-3">
@@ -662,7 +777,9 @@ export default function CreaMiRutaPage() {
                               : "bg-gray-400"
                           }`}
                         >
-                          {item.type === "pueblo" ? (
+                          {isChecked && position >= 0 ? (
+                            <span className="text-sm font-bold">{position + 1}</span>
+                          ) : item.type === "pueblo" ? (
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M3 21h18" /><path d="M5 21V7l7-4 7 4v14" /><path d="M9 21v-4h6v4" />
                             </svg>
