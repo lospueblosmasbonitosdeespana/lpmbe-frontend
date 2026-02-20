@@ -175,22 +175,22 @@ export default async function RecursoDetailPage({
         imageAlt={recurso.nombre}
         breadcrumbs={breadcrumbs}
         backLink={{ label: "Volver a Recursos", href: "/recursos" }}
-        variant="fullscreen"
+        variant="compact"
         overlay="gradient"
       />
 
       {/* Badges: Cerrado temporal / Descuento Club */}
       <div className="border-b border-border bg-card">
-        <Container>
-          <div className="flex flex-wrap items-center gap-3 py-4">
+        <Container size="lg">
+          <div className="flex flex-wrap items-center gap-3 py-3">
             {recurso.cerradoTemporal && (
-              <span className="rounded-full bg-amber-500/90 px-3 py-1.5 text-sm font-medium text-white">
+              <span className="rounded-full bg-amber-500/90 px-3 py-1 text-sm font-medium text-white">
                 Cerrado temporalmente
               </span>
             )}
             {recurso.descuentoPorcentaje != null &&
               recurso.descuentoPorcentaje > 0 && (
-                <span className="rounded-full bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground">
+                <span className="rounded-full bg-primary px-3 py-1 text-sm font-medium text-primary-foreground">
                   Descuento Club de Amigos: −{recurso.descuentoPorcentaje}%
                 </span>
               )}
@@ -210,7 +210,7 @@ export default async function RecursoDetailPage({
       {/* Pueblo asociado */}
       {recurso.pueblo && (
         <Section spacing="sm" background="muted">
-          <Container>
+          <Container size="lg">
             <p className="text-sm text-muted-foreground">
               Ubicado en{" "}
               <Link
@@ -226,12 +226,12 @@ export default async function RecursoDetailPage({
 
       {/* Descripción */}
       {hasDescripcion && (
-        <Section spacing="md">
-          <Container size="lg">
-            <Headline as="h2" className="mb-6">
+        <Section spacing="sm">
+          <Container size="md">
+            <Headline as="h2" className="mb-4">
               Descripción
             </Headline>
-            <div className="prose max-w-none space-y-4 text-muted-foreground">
+            <div className="prose max-w-none space-y-3 text-muted-foreground">
               {parrafos.map((p, i) => (
                 <p key={i} className="leading-relaxed">
                   {p}
@@ -244,9 +244,9 @@ export default async function RecursoDetailPage({
 
       {/* Horarios */}
       {recurso.horarios && recurso.horarios.trim() && (
-        <Section spacing="md">
-          <Container size="lg">
-            <Headline as="h2" className="mb-4">
+        <Section spacing="sm">
+          <Container size="md">
+            <Headline as="h2" className="mb-3">
               Horarios
             </Headline>
             <div className="whitespace-pre-wrap rounded-lg border border-border bg-muted/50 px-4 py-3 font-mono text-sm text-foreground">
@@ -258,12 +258,12 @@ export default async function RecursoDetailPage({
 
       {/* Contacto y web */}
       {(recurso.contacto || recurso.web) && (
-        <Section spacing="md" background="muted">
-          <Container size="lg">
-            <Headline as="h2" className="mb-4">
+        <Section spacing="sm" background="muted">
+          <Container size="md">
+            <Headline as="h2" className="mb-3">
               Contacto
             </Headline>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {recurso.contacto && (
                 <div>
                   <span className="text-sm font-medium text-muted-foreground">
@@ -294,22 +294,24 @@ export default async function RecursoDetailPage({
 
       {/* Mapa */}
       {paradas.length > 0 && (
-        <Section spacing="md" id="mapa">
-          <Container>
-            <div className="mb-6">
+        <Section spacing="sm" id="mapa">
+          <Container size="md">
+            <div className="mb-4">
               <Title>Ubicación</Title>
-              <Lead className="mt-2">
+              <Lead className="mt-1 text-sm">
                 {recurso.nombre} en {recurso.provincia ?? recurso.comunidad ?? "España"}
               </Lead>
             </div>
-            <ParadasMap paradas={paradas} puebloNombre={recurso.nombre} />
+            <div className="overflow-hidden rounded-xl border border-border [&>div]:!h-[260px]">
+              <ParadasMap paradas={paradas} puebloNombre={recurso.nombre} />
+            </div>
           </Container>
         </Section>
       )}
 
       {/* Back link */}
       <Section spacing="sm">
-        <Container>
+        <Container size="lg">
           <Link
             href="/recursos"
             className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
