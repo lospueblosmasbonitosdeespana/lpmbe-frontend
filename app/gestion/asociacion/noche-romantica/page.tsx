@@ -21,6 +21,7 @@ interface NRConfig {
   videoUrl: string | null;
   videoTipo: 'YOUTUBE' | 'R2';
   activo: boolean;
+  activaEnApp: boolean;
 }
 
 interface NRPueblo {
@@ -121,6 +122,7 @@ export default function GestionNocheRomanticaPage() {
         videoUrl: config.videoUrl || undefined,
         videoTipo: config.videoTipo,
         activo: config.activo,
+        activaEnApp: config.activaEnApp,
       };
       const res = await fetch('/api/admin/noche-romantica/config', {
         method: 'PUT',
@@ -460,15 +462,37 @@ export default function GestionNocheRomanticaPage() {
 
           {/* Estado */}
           <section className="rounded-lg border p-5">
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                checked={config.activo}
-                onChange={(e) => setConfig({ ...config, activo: e.target.checked })}
-                className="h-4 w-4 rounded border-gray-300"
-              />
-              <span className="text-sm font-medium">Evento activo</span>
-            </label>
+            <h2 className="mb-4 text-lg font-semibold">Estado</h2>
+            <div className="space-y-3">
+              <label className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={config.activo}
+                  onChange={(e) => setConfig({ ...config, activo: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <span className="text-sm font-medium">Evento activo (web)</span>
+              </label>
+              <label className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={config.activaEnApp}
+                  onChange={(e) => setConfig({ ...config, activaEnApp: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300 accent-rose-600"
+                />
+                <div>
+                  <span className="text-sm font-medium">Activar La Noche Romántica en la App</span>
+                  <p className="text-xs text-muted-foreground">
+                    Muestra el logo del evento en la ficha de los pueblos participantes dentro de la app móvil
+                  </p>
+                </div>
+              </label>
+              {config.activaEnApp && (
+                <div className="ml-7 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                  ❤️ La Noche Romántica se muestra actualmente en la app para {pueblos.length} pueblo{pueblos.length !== 1 ? 's' : ''} participante{pueblos.length !== 1 ? 's' : ''}
+                </div>
+              )}
+            </div>
           </section>
 
           <button
