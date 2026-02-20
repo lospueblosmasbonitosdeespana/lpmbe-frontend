@@ -219,16 +219,12 @@ export default function CreaMiRutaPage() {
     setSelectedIds(new Set());
   }
 
-  function buildShareUrl() {
-    if (typeof window === "undefined") return "";
-    const url = new URL(window.location.href);
-    if (originHook.selected) {
-      url.searchParams.set("origin", originHook.selected.label);
-    }
-    if (destHook.selected) {
-      url.searchParams.set("dest", destHook.selected.label);
-    }
-    return url.toString();
+  function buildGoogleMapsUrl() {
+    if (!result) return "";
+    const waypoints = selectedItems
+      .map((i) => `${i.lat},${i.lng}`)
+      .join("|");
+    return `https://www.google.com/maps/dir/?api=1&origin=${result.origin.lat},${result.origin.lng}&destination=${result.destination.lat},${result.destination.lng}${waypoints ? `&waypoints=${waypoints}` : ""}&travelmode=driving`;
   }
 
   function shareWhatsApp() {
@@ -237,7 +233,8 @@ export default function CreaMiRutaPage() {
       .join("\n");
     const originLabel = originHook.selected?.label ?? "Origen";
     const destLabel = destHook.selected?.label ?? "Destino";
-    const text = `🗺️ Mi ruta por los Pueblos Más Bonitos\n\nDe: ${originLabel} → ${destLabel}\n\n📍 Paradas:\n${stops}\n\n🔗 ${buildShareUrl()}`;
+    const gmapsUrl = buildGoogleMapsUrl();
+    const text = `🗺️ Mi ruta por los Pueblos Más Bonitos\n\nDe: ${originLabel} → ${destLabel}\n\n📍 Paradas:\n${stops}\n\n🗺️ Abrir en Google Maps:\n${gmapsUrl}`;
     window.open(
       `https://wa.me/?text=${encodeURIComponent(text)}`,
       "_blank",
@@ -245,19 +242,15 @@ export default function CreaMiRutaPage() {
   }
 
   function copyLink() {
-    navigator.clipboard.writeText(buildShareUrl()).then(() => {
+    navigator.clipboard.writeText(buildGoogleMapsUrl()).then(() => {
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     });
   }
 
   function openGoogleMaps() {
-    if (!result) return;
-    const waypoints = selectedItems
-      .map((i) => `${i.lat},${i.lng}`)
-      .join("|");
-    const url = `https://www.google.com/maps/dir/?api=1&origin=${result.origin.lat},${result.origin.lng}&destination=${result.destination.lat},${result.destination.lng}&waypoints=${waypoints}&travelmode=driving`;
-    window.open(url, "_blank");
+    const url = buildGoogleMapsUrl();
+    if (url) window.open(url, "_blank");
   }
 
   function openAppleMaps() {
