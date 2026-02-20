@@ -53,7 +53,12 @@ export default function RecursosPage() {
     }
   }, [recursos, loading, pueblosMap]);
 
-  // Agrupar por pueblo
+  // Separar recursos de asociación y de pueblo
+  const recursosAsociacion = useMemo(() => {
+    return recursos.filter((r: any) => r.scope === 'ASOCIACION' || !r.puebloId);
+  }, [recursos]);
+
+  // Agrupar por pueblo (solo recursos con puebloId)
   const pueblosConRecursos = useMemo(() => {
     const map = new Map<number, { nombre: string; count: number }>();
     
@@ -108,6 +113,54 @@ export default function RecursosPage() {
         </div>
       </div>
 
+      {/* Recursos de asociación */}
+      {recursosAsociacion.length > 0 && (
+        <div style={{ marginBottom: 32 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Recursos de la Asociación</h2>
+          <p style={{ fontSize: 13, color: '#666', marginBottom: 12 }}>
+            Castillos, monasterios y otros recursos turísticos con descuento exclusivo para miembros del Club.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+            {recursosAsociacion.map((r: any) => (
+              <Link
+                key={r.id}
+                href={r.slug ? `/recursos/${r.slug}` : '#'}
+                style={{
+                  display: 'block',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: 8,
+                  padding: 16,
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  transition: 'box-shadow 0.2s',
+                }}
+              >
+                <div style={{ fontWeight: 600, fontSize: 15 }}>{r.nombre}</div>
+                <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>
+                  {r.tipo} · {r.provincia || r.comunidad || ''}
+                </div>
+                {r.descuentoPorcentaje != null && r.descuentoPorcentaje > 0 && (
+                  <div style={{
+                    marginTop: 8,
+                    display: 'inline-block',
+                    background: '#dcfce7',
+                    color: '#166534',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    padding: '2px 8px',
+                    borderRadius: 12,
+                  }}>
+                    −{r.descuentoPorcentaje}% Club
+                  </div>
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recursos por pueblo */}
+      <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Recursos en Pueblos</h2>
       {pueblosConRecursos.length === 0 ? (
         <div style={{ fontSize: 14, color: '#666' }}>{t('noResourcesAvailable')}</div>
       ) : (

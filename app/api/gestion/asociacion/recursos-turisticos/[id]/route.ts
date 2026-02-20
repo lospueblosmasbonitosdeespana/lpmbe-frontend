@@ -25,15 +25,12 @@ export async function PATCH(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { message: 'Cuerpo JSON inválido' },
-      { status: 400 }
-    );
+    return NextResponse.json({ message: 'Cuerpo JSON inválido' }, { status: 400 });
   }
 
   const apiUrl = getApiUrl();
   try {
-    const res = await fetch(`${apiUrl}/club/recursos/${id}`, {
+    const res = await fetch(`${apiUrl}/club/recursos/asociacion/${id}`, {
       method: 'PATCH',
       cache: 'no-store',
       headers: {
@@ -46,7 +43,42 @@ export async function PATCH(
     const data = await res.json().catch(() => ({}));
     return NextResponse.json(data, { status: res.status });
   } catch (err) {
-    console.error('[API proxy] PATCH club/recursos:', err);
+    console.error('[API proxy] PATCH recursos-turisticos:', err);
+    return NextResponse.json(
+      { message: 'Error de conexión con el servidor' },
+      { status: 502 }
+    );
+  }
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const token = await getToken();
+  if (!token) {
+    return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+  }
+
+  const { id } = await params;
+  if (!id) {
+    return NextResponse.json({ message: 'ID requerido' }, { status: 400 });
+  }
+
+  const apiUrl = getApiUrl();
+  try {
+    const res = await fetch(`${apiUrl}/club/recursos/asociacion/${id}`, {
+      method: 'DELETE',
+      cache: 'no-store',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json().catch(() => ({}));
+    return NextResponse.json(data, { status: res.status });
+  } catch (err) {
+    console.error('[API proxy] DELETE recursos-turisticos:', err);
     return NextResponse.json(
       { message: 'Error de conexión con el servidor' },
       { status: 502 }

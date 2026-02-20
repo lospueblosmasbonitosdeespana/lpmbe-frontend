@@ -21,7 +21,7 @@ export async function PATCH(
     return NextResponse.json({ message: 'ID requerido' }, { status: 400 });
   }
 
-  let body: unknown;
+  let body: { cerradoTemporal?: boolean };
   try {
     body = await request.json();
   } catch {
@@ -33,7 +33,7 @@ export async function PATCH(
 
   const apiUrl = getApiUrl();
   try {
-    const res = await fetch(`${apiUrl}/club/recursos/${id}`, {
+    const res = await fetch(`${apiUrl}/club/recursos/${id}/cerrado-temporal`, {
       method: 'PATCH',
       cache: 'no-store',
       headers: {
@@ -46,7 +46,7 @@ export async function PATCH(
     const data = await res.json().catch(() => ({}));
     return NextResponse.json(data, { status: res.status });
   } catch (err) {
-    console.error('[API proxy] PATCH club/recursos:', err);
+    console.error('[API proxy] PATCH cerrado-temporal:', err);
     return NextResponse.json(
       { message: 'Error de conexión con el servidor' },
       { status: 502 }

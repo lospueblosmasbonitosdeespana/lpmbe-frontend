@@ -16,6 +16,7 @@ import {
   IconContacto,
   IconVideos,
   IconLogos,
+  IconPois,
 } from '../_components/GestionIcons';
 
 const ACCESOS = [
@@ -60,6 +61,12 @@ const ACCESOS = [
     title: 'Club de amigos',
     description: 'Configuración del club y socios',
     icon: <IconClub />,
+  },
+  {
+    href: '/gestion/asociacion/recursos-turisticos',
+    title: 'Recursos turísticos',
+    description: 'Castillos, monasterios y otros recursos de la asociación',
+    icon: <IconPois />,
   },
   {
     href: '/gestion/asociacion/tienda',

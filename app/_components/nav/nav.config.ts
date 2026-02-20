@@ -61,6 +61,7 @@ export const navConfig: NavItem[] = [
         links: [
           { labelKey: "multiexperiencias", href: "/multiexperiencias" },
           { labelKey: "rutas", href: "/rutas" },
+          { labelKey: "recursosTuristicos", href: "/recursos" },
         ],
       },
       {
@@ -76,6 +77,7 @@ export const navConfig: NavItem[] = [
       {
         titleKey: "planifica",
         links: [
+          { labelKey: "createRoute", href: "/planifica/crea-mi-ruta" },
           { labelKey: "weekend", href: "/planifica/fin-de-semana" },
           { labelKey: "getaways", href: "/pueblos?tema=escapadas" },
           { labelKey: "pirineos", href: "/rutas/mas-bonitos-de-los-pirineos" },
