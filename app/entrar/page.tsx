@@ -21,7 +21,7 @@ function EntrarForm() {
         const res = await fetch('/api/auth/me', { cache: 'no-store' });
         if (!mounted) return;
         if (res.ok) {
-          router.replace('/cuenta');
+          router.replace('/mi-cuenta');
         }
       } catch {
         // ignore
@@ -53,7 +53,7 @@ function EntrarForm() {
 
       // Respetar redirect si existe
       const redirect = searchParams.get('redirect');
-      router.push(redirect || '/cuenta');
+      router.push(redirect || '/mi-cuenta');
       router.refresh();
     } finally {
       setLoading(false);

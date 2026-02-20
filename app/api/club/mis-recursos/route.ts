@@ -1,10 +1,11 @@
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { getApiUrl } from '@/lib/api';
+import { AUTH_COOKIE_NAME } from '@/lib/auth';
 
 async function getToken() {
   const store = await cookies();
-  return store.get('token')?.value ?? null;
+  return store.get(AUTH_COOKIE_NAME)?.value ?? null;
 }
 
 export async function GET(_request: NextRequest) {
