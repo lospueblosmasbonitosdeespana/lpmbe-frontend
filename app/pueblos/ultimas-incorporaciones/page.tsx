@@ -9,44 +9,48 @@ import { Container } from "@/app/components/ui/container";
 import { Display, Lead } from "@/app/components/ui/typography";
 
 export const metadata: Metadata = {
-  title: "Últimas incorporaciones | Los Pueblos Más Bonitos de España",
+  title: "Incorporaciones por año | Los Pueblos Más Bonitos de España",
   description:
     "Descubre todos los pueblos que se han incorporado a la red de Los Pueblos Más Bonitos de España, año por año, desde 2013.",
 };
 
-type PuebloIncorporacion = {
+type PuebloDTO = {
   id: number;
   nombre: string;
   slug: string;
   provincia: string;
   comunidad: string;
   foto: string | null;
-  expulsado: boolean;
-  anioExpulsion: number | null;
 };
 
 type YearGroup = {
   anio: number;
-  pueblos: PuebloIncorporacion[];
+  incorporaciones: PuebloDTO[];
+  expulsiones: PuebloDTO[];
+  reincorporaciones: PuebloDTO[];
 };
 
-async function getIncorporaciones(): Promise<YearGroup[]> {
+type APIResponse = {
+  totalActivos: number;
+  years: YearGroup[];
+};
+
+async function getIncorporaciones(): Promise<APIResponse> {
   const API_BASE = getApiUrl();
   try {
     const res = await fetchWithTimeout(
       `${API_BASE}/public/pueblos/incorporaciones`,
       { cache: "no-store" }
     );
-    if (!res.ok) return [];
+    if (!res.ok) return { totalActivos: 0, years: [] };
     return res.json();
   } catch {
-    return [];
+    return { totalActivos: 0, years: [] };
   }
 }
 
 export default async function UltimasIncorporacionesPage() {
-  const yearGroups = await getIncorporaciones();
-  const currentYear = new Date().getFullYear();
+  const { totalActivos, years } = await getIncorporaciones();
 
   return (
     <main>
@@ -70,66 +74,99 @@ export default async function UltimasIncorporacionesPage() {
             </Display>
             <Lead className="mx-auto mt-4 max-w-2xl">
               Cada año nuevos pueblos se suman a la red de Los Pueblos Más
-              Bonitos de España. Aquí puedes ver la historia completa de
-              incorporaciones desde 2013.
+              Bonitos de España.
             </Lead>
+
+            {totalActivos > 0 && (
+              <div className="mx-auto mt-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-6 py-3">
+                <span className="text-3xl font-bold text-primary">
+                  {totalActivos}
+                </span>
+                <span className="text-sm font-medium text-muted-foreground">
+                  pueblos en la red
+                </span>
+              </div>
+            )}
           </Container>
         </div>
       </Section>
 
       <Section spacing="md" background="default">
         <Container>
-          {yearGroups.length === 0 ? (
+          {years.length === 0 ? (
             <p className="text-center text-muted-foreground">
               No hay datos de incorporaciones disponibles.
             </p>
           ) : (
             <div className="space-y-10">
-              {yearGroups.map((group) => {
-                const isNew = group.anio === currentYear;
-                const activos = group.pueblos.filter((p) => !p.expulsado);
-                const expulsados = group.pueblos.filter((p) => p.expulsado);
+              {years.map((group) => {
+                const numIncorporaciones = group.incorporaciones.length;
+                const numExpulsiones = group.expulsiones.length;
+                const numReincorporaciones = group.reincorporaciones.length;
 
                 return (
                   <div key={group.anio} id={`anio-${group.anio}`}>
-                    <div className="mb-4 flex items-center gap-3">
+                    {/* Year header */}
+                    <div className="mb-4 flex flex-wrap items-center gap-3">
                       <h2 className="text-2xl font-bold tracking-tight">
                         {group.anio}
                       </h2>
-                      <span className="rounded-full bg-primary/10 px-3 py-0.5 text-sm font-medium text-primary">
-                        {activos.length} pueblo{activos.length !== 1 ? "s" : ""}
-                      </span>
-                      {isNew && (
-                        <span className="rounded-full bg-green-100 px-3 py-0.5 text-xs font-semibold text-green-700">
-                          Nuevos
+                      {numIncorporaciones > 0 && (
+                        <span className="rounded-full bg-primary/10 px-3 py-0.5 text-sm font-medium text-primary">
+                          {numIncorporaciones} pueblo
+                          {numIncorporaciones !== 1 ? "s" : ""}
+                        </span>
+                      )}
+                      {numExpulsiones > 0 && (
+                        <span className="rounded-full bg-destructive/10 px-3 py-0.5 text-sm font-medium text-destructive">
+                          −{numExpulsiones} pueblo
+                          {numExpulsiones !== 1 ? "s" : ""}
+                        </span>
+                      )}
+                      {numReincorporaciones > 0 && (
+                        <span className="rounded-full bg-emerald-500/10 px-3 py-0.5 text-sm font-medium text-emerald-700">
+                          +{numReincorporaciones} reincorporación
+                          {numReincorporaciones !== 1 ? "es" : ""}
                         </span>
                       )}
                     </div>
 
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                      {activos.map((pueblo) => (
-                        <PuebloRow key={pueblo.id} pueblo={pueblo} />
-                      ))}
-                    </div>
-
-                    {expulsados.length > 0 && (
-                      <div className="mt-4">
-                        <p className="mb-2 text-sm font-medium text-red-600">
-                          Expulsiones en {group.anio === expulsados[0]?.anioExpulsion ? group.anio : "este periodo"}:
-                        </p>
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                          {expulsados.map((pueblo) => (
-                            <PuebloRow
-                              key={pueblo.id}
-                              pueblo={pueblo}
-                              isExpulsado
-                            />
-                          ))}
-                        </div>
+                    {/* Incorporaciones */}
+                    {numIncorporaciones > 0 && (
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        {group.incorporaciones.map((pueblo) => (
+                          <PuebloCard key={`inc-${pueblo.id}`} pueblo={pueblo} />
+                        ))}
                       </div>
                     )}
 
-                    <div className="mt-4 border-b border-border" />
+                    {/* Reincorporaciones */}
+                    {numReincorporaciones > 0 && (
+                      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        {group.reincorporaciones.map((pueblo) => (
+                          <PuebloCard
+                            key={`reinc-${pueblo.id}`}
+                            pueblo={pueblo}
+                            variant="reincorporacion"
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Expulsiones / salidas */}
+                    {numExpulsiones > 0 && (
+                      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        {group.expulsiones.map((pueblo) => (
+                          <PuebloCard
+                            key={`exp-${pueblo.id}`}
+                            pueblo={pueblo}
+                            variant="expulsado"
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="mt-6 border-b border-border" />
                   </div>
                 );
               })}
@@ -137,13 +174,13 @@ export default async function UltimasIncorporacionesPage() {
           )}
 
           {/* Navegación rápida por años */}
-          {yearGroups.length > 0 && (
+          {years.length > 0 && (
             <nav className="sticky bottom-4 z-10 mt-8">
               <div className="mx-auto flex max-w-fit flex-wrap items-center justify-center gap-1.5 rounded-full border bg-background/95 px-4 py-2 shadow-lg backdrop-blur-sm">
                 <span className="mr-1 text-xs font-medium text-muted-foreground">
                   Ir a:
                 </span>
-                {yearGroups.map((g) => (
+                {years.map((g) => (
                   <a
                     key={g.anio}
                     href={`#anio-${g.anio}`}
@@ -161,22 +198,29 @@ export default async function UltimasIncorporacionesPage() {
   );
 }
 
-function PuebloRow({
+function PuebloCard({
   pueblo,
-  isExpulsado = false,
+  variant = "normal",
 }: {
-  pueblo: PuebloIncorporacion;
-  isExpulsado?: boolean;
+  pueblo: PuebloDTO;
+  variant?: "normal" | "expulsado" | "reincorporacion";
 }) {
-  return (
-    <Link
-      href={`/pueblos/${pueblo.slug}`}
-      className={`group flex items-center gap-3 rounded-lg border p-2.5 transition-colors hover:bg-muted/50 ${
-        isExpulsado
-          ? "border-red-200 bg-red-50/30"
-          : "border-border"
+  const isExpulsado = variant === "expulsado";
+  const isReincorporacion = variant === "reincorporacion";
+
+  const borderClass = isExpulsado
+    ? "border-destructive/20 bg-destructive/5"
+    : isReincorporacion
+      ? "border-emerald-500/20 bg-emerald-50/50"
+      : "border-border";
+
+  const content = (
+    <div
+      className={`flex items-center gap-3 rounded-lg border p-2.5 transition-colors ${borderClass} ${
+        isExpulsado ? "opacity-75" : "group hover:bg-muted/50"
       }`}
     >
+      {/* Foto */}
       {pueblo.foto ? (
         <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded">
           <Image
@@ -192,23 +236,84 @@ function PuebloRow({
           {pueblo.nombre.charAt(0)}
         </div>
       )}
+
+      {/* Info */}
       <div className="min-w-0 flex-1">
-        <p
-          className={`truncate text-sm font-medium group-hover:text-primary ${
-            isExpulsado ? "line-through text-red-600" : "text-foreground"
-          }`}
-        >
-          {pueblo.nombre}
-        </p>
+        <div className="flex items-center gap-1.5">
+          <p
+            className={`truncate text-sm font-medium ${
+              isExpulsado
+                ? "text-muted-foreground line-through"
+                : "text-foreground group-hover:text-primary"
+            }`}
+          >
+            {pueblo.nombre}
+          </p>
+
+          {/* X roja para expulsados */}
+          {isExpulsado && (
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              className="flex-shrink-0 text-destructive"
+            >
+              <path
+                d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          )}
+
+          {/* Flecha verde circular para reincorporaciones */}
+          {isReincorporacion && (
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              className="flex-shrink-0 text-emerald-600"
+            >
+              <path
+                d="M2.5 8a5.5 5.5 0 0 1 9.68-3.5M13.5 8a5.5 5.5 0 0 1-9.68 3.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M12.18 2v2.5H9.68"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M3.82 14v-2.5H6.32"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        </div>
         <p className="truncate text-xs text-muted-foreground">
           {pueblo.provincia}
-          {isExpulsado && pueblo.anioExpulsion && (
-            <span className="ml-1 text-red-500">
-              · Expulsado {pueblo.anioExpulsion}
-            </span>
-          )}
         </p>
       </div>
+    </div>
+  );
+
+  if (isExpulsado) {
+    return <div className="cursor-default">{content}</div>;
+  }
+
+  return (
+    <Link href={`/pueblos/${pueblo.slug}`} className="group">
+      {content}
     </Link>
   );
 }

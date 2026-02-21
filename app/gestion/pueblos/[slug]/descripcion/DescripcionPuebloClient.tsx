@@ -37,6 +37,7 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
   const [lng, setLng] = useState<number | null>(null);
   const [anioIncorporacion, setAnioIncorporacion] = useState<string>("");
   const [anioExpulsion, setAnioExpulsion] = useState<string>("");
+  const [anioReincorporacion, setAnioReincorporacion] = useState<string>("");
   const [userRol, setUserRol] = useState<string>("");
   const [guardando, setGuardando] = useState(false);
   const [guardandoCoords, setGuardandoCoords] = useState(false);
@@ -66,6 +67,7 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
         setLng(typeof pn === "number" && Number.isFinite(pn) ? pn : null);
         if (pueblo?.anioIncorporacion) setAnioIncorporacion(String(pueblo.anioIncorporacion));
         if (pueblo?.anioExpulsion) setAnioExpulsion(String(pueblo.anioExpulsion));
+        if (pueblo?.anioReincorporacion) setAnioReincorporacion(String(pueblo.anioReincorporacion));
 
         // 2) Cargar descripción (admin)
         const res = await fetch(`/api/admin/pueblos/${id}/descripcion`, {
@@ -164,6 +166,7 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
         body: JSON.stringify({
           anioIncorporacion: anioIncorporacion ? parseInt(anioIncorporacion, 10) : null,
           anioExpulsion: anioExpulsion ? parseInt(anioExpulsion, 10) : null,
+          anioReincorporacion: anioReincorporacion ? parseInt(anioReincorporacion, 10) : null,
         }),
         credentials: "include",
       });
@@ -303,7 +306,7 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-medium text-gray-600">Año de expulsión (si aplica)</label>
+              <label className="block text-xs font-medium text-gray-600">Año de expulsión/salida</label>
               <input
                 type="number"
                 min="2011"
@@ -311,7 +314,19 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
                 value={anioExpulsion}
                 onChange={(e) => setAnioExpulsion(e.target.value)}
                 className="mt-1 w-full rounded border border-gray-300 p-2 text-sm focus:border-red-500 focus:outline-none"
-                placeholder="Dejar vacío si sigue activo"
+                placeholder="Vacío si sigue activo"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-gray-600">Año de reincorporación</label>
+              <input
+                type="number"
+                min="2011"
+                max="2099"
+                value={anioReincorporacion}
+                onChange={(e) => setAnioReincorporacion(e.target.value)}
+                className="mt-1 w-full rounded border border-gray-300 p-2 text-sm focus:border-green-500 focus:outline-none"
+                placeholder="Solo si se reincorporó"
               />
             </div>
           </div>
@@ -325,7 +340,7 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
             </button>
             {anioExpulsion && (
               <button
-                onClick={() => { setAnioExpulsion(""); }}
+                onClick={() => { setAnioExpulsion(""); setAnioReincorporacion(""); }}
                 className="text-xs text-red-600 hover:underline"
               >
                 Quitar expulsión
