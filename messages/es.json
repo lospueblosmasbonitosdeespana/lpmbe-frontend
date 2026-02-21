@@ -313,6 +313,14 @@
     "stopN": "Parada {n}",
     "tipsTitle": "Tips de la ruta"
   },
+  "recursos": {
+    "eyebrow": "Club de Amigos",
+    "title": "Recursos turísticos",
+    "description": "Experiencias y lugares únicos que no te puedes perder cuando hagas rutas por nuestros pueblos. Los socios del Club de Amigos disfrutan de descuentos exclusivos.",
+    "noRecursos": "No hay recursos turísticos disponibles en este momento.",
+    "noRecursosHint": "Vuelve a consultar más adelante.",
+    "cerradoTemporal": "Cerrado temporalmente"
+  },
   "puebloPage": {
     "breadcrumbHome": "Inicio",
     "breadcrumbPueblos": "Pueblos",

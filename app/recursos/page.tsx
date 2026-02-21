@@ -1,9 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import { Container } from "@/app/components/ui/container";
 import { Section } from "@/app/components/ui/section";
 import { Title, Lead, Eyebrow } from "@/app/components/ui/typography";
+import { getResourceLabel } from "@/lib/resource-types";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -11,11 +13,11 @@ export const revalidate = 0;
 export const metadata: Metadata = {
   title: "Recursos turísticos | Los Pueblos Más Bonitos de España",
   description:
-    "Descubre alojamientos, restaurantes y experiencias recomendadas por la Asociación con descuentos para socios del Club de Amigos.",
+    "Experiencias y lugares únicos que no te puedes perder cuando hagas rutas por nuestros pueblos. Los socios del Club de Amigos disfrutan de descuentos exclusivos.",
   openGraph: {
     title: "Recursos turísticos | Los Pueblos Más Bonitos de España",
     description:
-      "Descubre alojamientos, restaurantes y experiencias recomendadas por la Asociación con descuentos para socios del Club de Amigos.",
+      "Experiencias y lugares únicos que no te puedes perder cuando hagas rutas por nuestros pueblos. Los socios del Club de Amigos disfrutan de descuentos exclusivos.",
   },
 };
 
@@ -56,7 +58,13 @@ async function getRecursos(): Promise<RecursoListItem[]> {
   return Array.isArray(data) ? data : [];
 }
 
-function RecursoCard({ r }: { r: RecursoListItem }) {
+function RecursoCard({
+  r,
+  cerradoTemporalLabel,
+}: {
+  r: RecursoListItem;
+  cerradoTemporalLabel: string;
+}) {
   const photoUrl = r.fotoUrl?.trim() || null;
   const slug = r.slug || `recurso-${r.id}`;
   const provCom = [r.provincia, r.comunidad].filter(Boolean).join(", ");
@@ -94,7 +102,7 @@ function RecursoCard({ r }: { r: RecursoListItem }) {
         <div className="absolute right-2 top-2 flex flex-wrap gap-1">
           {r.cerradoTemporal && (
             <span className="rounded bg-amber-500/90 px-2 py-0.5 text-xs font-medium text-white">
-              Cerrado temporalmente
+              {cerradoTemporalLabel}
             </span>
           )}
           {r.descuentoPorcentaje != null && r.descuentoPorcentaje > 0 && (
@@ -106,7 +114,7 @@ function RecursoCard({ r }: { r: RecursoListItem }) {
       </div>
       <div className="flex flex-1 flex-col px-4 py-3">
         <span className="mb-1 inline-block w-fit rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {r.tipo}
+          {getResourceLabel(r.tipo)}
         </span>
         <h3 className="font-display text-base font-semibold text-foreground line-clamp-2 group-hover:text-primary">
           {r.nombre}
@@ -124,20 +132,23 @@ function RecursoCard({ r }: { r: RecursoListItem }) {
   );
 }
 
-function EmptyState() {
+function EmptyState({
+  noRecursos,
+  noRecursosHint,
+}: {
+  noRecursos: string;
+  noRecursosHint: string;
+}) {
   return (
     <div className="rounded-xl border border-dashed border-border bg-muted/30 px-8 py-16 text-center">
-      <p className="text-muted-foreground">
-        No hay recursos turísticos disponibles en este momento.
-      </p>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Vuelve a consultar más adelante.
-      </p>
+      <p className="text-muted-foreground">{noRecursos}</p>
+      <p className="mt-2 text-sm text-muted-foreground">{noRecursosHint}</p>
     </div>
   );
 }
 
 export default async function RecursosPage() {
+  const t = await getTranslations("recursos");
   const recursos = await getRecursos();
 
   return (
@@ -145,23 +156,28 @@ export default async function RecursosPage() {
       <Section spacing="md">
         <Container>
           <div className="mb-8 md:mb-10">
-            <Eyebrow>Club de Amigos</Eyebrow>
+            <Eyebrow>{t("eyebrow")}</Eyebrow>
             <Title as="h1" size="2xl" className="mt-2">
-              Recursos turísticos
+              {t("title")}
             </Title>
             <Lead className="mt-4 max-w-2xl text-muted-foreground">
-              Alojamientos, restaurantes y experiencias recomendadas por la
-              Asociación en los pueblos más bonitos. Los socios del Club de
-              Amigos disfrutan de descuentos exclusivos.
+              {t("description")}
             </Lead>
           </div>
 
           {recursos.length === 0 ? (
-            <EmptyState />
+            <EmptyState
+              noRecursos={t("noRecursos")}
+              noRecursosHint={t("noRecursosHint")}
+            />
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {recursos.map((r) => (
-                <RecursoCard key={r.id} r={r} />
+                <RecursoCard
+                  key={r.id}
+                  r={r}
+                  cerradoTemporalLabel={t("cerradoTemporal")}
+                />
               ))}
             </div>
           )}

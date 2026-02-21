@@ -325,6 +325,14 @@
     "stopN": "Paragem {n}",
     "tipsTitle": "Dicas da rota"
   },
+  "recursos": {
+    "eyebrow": "Clube de Amigos",
+    "title": "Recursos turísticos",
+    "description": "Experiências e lugares únicos que não pode perder ao fazer rotas pelas nossas aldeias. Os sócios do Clube de Amigos beneficiam de descontos exclusivos.",
+    "noRecursos": "Não há recursos turísticos disponíveis no momento.",
+    "noRecursosHint": "Por favor, volte a consultar mais tarde.",
+    "cerradoTemporal": "Encerrado temporariamente"
+  },
   "puebloPage": {
     "breadcrumbHome": "Início",
     "breadcrumbPueblos": "Aldeias",

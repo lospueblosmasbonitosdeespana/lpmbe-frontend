@@ -325,6 +325,14 @@
     "stopN": "Tappa {n}",
     "tipsTitle": "Suggerimenti per il percorso"
   },
+  "recursos": {
+    "eyebrow": "Club degli Amici",
+    "title": "Risorse turistiche",
+    "description": "Esperienze e luoghi unici da non perdere quando esplori le strade dei nostri villaggi. I soci del Club degli Amici godono di sconti esclusivi.",
+    "noRecursos": "Nessuna risorsa turistica disponibile al momento.",
+    "noRecursosHint": "Si prega di riprovare più tardi.",
+    "cerradoTemporal": "Chiuso temporaneamente"
+  },
   "puebloPage": {
     "breadcrumbHome": "Home",
     "breadcrumbPueblos": "Borghi",

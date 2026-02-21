@@ -325,6 +325,14 @@
     "stopN": "Étape {n}",
     "tipsTitle": "Conseils pour l'itinéraire"
   },
+  "recursos": {
+    "eyebrow": "Club des Amis",
+    "title": "Ressources touristiques",
+    "description": "Expériences et lieux uniques à ne pas manquer lors de vos escapades dans nos villages. Les membres du Club des Amis bénéficient de réductions exclusives.",
+    "noRecursos": "Aucune ressource touristique disponible pour le moment.",
+    "noRecursosHint": "Veuillez réessayer plus tard.",
+    "cerradoTemporal": "Fermé temporairement"
+  },
   "puebloPage": {
     "breadcrumbHome": "Accueil",
     "breadcrumbPueblos": "Villages",

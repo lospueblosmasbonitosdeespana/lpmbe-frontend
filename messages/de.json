@@ -325,6 +325,14 @@
     "stopN": "Haltepunkt {n}",
     "tipsTitle": "Tipps für die Route"
   },
+  "recursos": {
+    "eyebrow": "Freundeskreis",
+    "title": "Touristische Ressourcen",
+    "description": "Einzigartige Erlebnisse und Orte, die Sie auf Strecken durch unsere Dörfer nicht verpassen dürfen. Mitglieder des Freundeskreises genießen exklusive Rabatte.",
+    "noRecursos": "Derzeit sind keine touristischen Ressourcen verfügbar.",
+    "noRecursosHint": "Bitte versuchen Sie es später erneut.",
+    "cerradoTemporal": "Vorübergehend geschlossen"
+  },
   "puebloPage": {
     "breadcrumbHome": "Start",
     "breadcrumbPueblos": "Dörfer",

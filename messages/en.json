@@ -313,6 +313,14 @@
     "stopN": "Stop {n}",
     "tipsTitle": "Route tips"
   },
+  "recursos": {
+    "eyebrow": "Friends Club",
+    "title": "Tourist resources",
+    "description": "Unique experiences and places you cannot miss when exploring routes through our villages. Friends Club members enjoy exclusive discounts.",
+    "noRecursos": "No tourist resources available at the moment.",
+    "noRecursosHint": "Please check again later.",
+    "cerradoTemporal": "Temporarily closed"
+  },
   "puebloPage": {
     "breadcrumbHome": "Home",
     "breadcrumbPueblos": "Villages",
