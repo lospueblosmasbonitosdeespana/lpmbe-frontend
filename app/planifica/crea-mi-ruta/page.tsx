@@ -8,6 +8,8 @@ import {
   useMemo,
   type FormEvent,
 } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import type { RouteItem } from "./RouteMap";
 import { getResourceLabel } from "@/lib/resource-types";
@@ -143,7 +145,14 @@ function useGeoAutocomplete() {
     setOpen(false);
   }, []);
 
-  return { query, results, selected, open, loading, onInputChange, onSelect, clear, setOpen };
+  const setValue = useCallback((value: LocationValue | null) => {
+    setSelected(value);
+    setQuery(value?.label ?? "");
+    setResults([]);
+    setOpen(false);
+  }, []);
+
+  return { query, results, selected, open, loading, onInputChange, onSelect, clear, setOpen, setValue };
 }
 
 /* ------------------------------------------------------------------ */
@@ -227,6 +236,7 @@ function LocationInput({
 /* ------------------------------------------------------------------ */
 
 export default function CreaMiRutaPage() {
+  const searchParams = useSearchParams();
   const originHook = useGeoAutocomplete();
   const destHook = useGeoAutocomplete();
   const [maxDist, setMaxDist] = useState(30);
@@ -243,6 +253,7 @@ export default function CreaMiRutaPage() {
   const [routeLoading, setRouteLoading] = useState(false);
 
   const osrmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rutaIdLoadedRef = useRef(false);
 
   const selectedIds = useMemo(() => new Set(orderedSelection), [orderedSelection]);
 
@@ -253,6 +264,87 @@ export default function CreaMiRutaPage() {
         .filter(Boolean) as RouteItem[],
     [orderedSelection, result],
   );
+
+  useEffect(() => {
+    const rutaId = searchParams.get("rutaId");
+    if (!rutaId || rutaIdLoadedRef.current) return;
+    rutaIdLoadedRef.current = true;
+    setError(null);
+    setLoading(true);
+    (async () => {
+      try {
+        const res = await fetch(`/api/rutas-guardadas/${rutaId}`, {
+          credentials: "include",
+        });
+        if (!res.ok) {
+          if (res.status === 401) {
+            const redirect = encodeURIComponent(
+              window.location.pathname + window.location.search
+            );
+            window.location.href = `/entrar?redirect=${redirect}`;
+            return;
+          }
+          throw new Error("Ruta no encontrada");
+        }
+        const ruta = await res.json();
+        originHook.setValue({
+          label: ruta.originLabel ?? `${ruta.originLat},${ruta.originLng}`,
+          lat: ruta.originLat,
+          lng: ruta.originLng,
+        });
+        destHook.setValue({
+          label: ruta.destLabel ?? `${ruta.destLat},${ruta.destLng}`,
+          lat: ruta.destLat,
+          lng: ruta.destLng,
+        });
+        setMaxDist(ruta.maxDistKm ?? 30);
+        const genRes = await fetch("/api/public/rutas/generar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            originLat: ruta.originLat,
+            originLng: ruta.originLng,
+            destLat: ruta.destLat,
+            destLng: ruta.destLng,
+            maxDistKm: ruta.maxDistKm ?? 30,
+          }),
+        });
+        if (!genRes.ok) {
+          const data = await genRes.json().catch(() => ({}));
+          throw new Error(data.message ?? "Error generando la ruta");
+        }
+        const data: RouteResponse = await genRes.json();
+        setResult(data);
+        setDisplayRoute(data.routeCoords);
+        const paradas = Array.isArray(ruta.paradas) ? ruta.paradas : [];
+        const keys: string[] = [];
+        for (const p of paradas) {
+          const key = `${p.type}-${p.id}`;
+          const found = data.items.some(
+            (i: RouteItem) => `${i.type}-${i.id}` === key
+          );
+          if (found) keys.push(key);
+        }
+        setOrderedSelection(keys);
+        const baseOsrm = await fetchOsrmRoute([data.origin, data.destination]);
+        if (baseOsrm) {
+          setRouteDuration(baseOsrm.durationSec);
+          setRouteDistance(baseOsrm.distanceKm);
+        } else {
+          setRouteDuration(null);
+          setRouteDistance(null);
+        }
+        window.history.replaceState({}, "", "/planifica/crea-mi-ruta");
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Error al cargar la ruta guardada"
+        );
+      } finally {
+        setLoading(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   useEffect(() => {
     if (!result) return;
@@ -407,6 +499,57 @@ export default function CreaMiRutaPage() {
     window.open(url, "_blank");
   }
 
+  const [savingRuta, setSavingRuta] = useState(false);
+  const [guardarError, setGuardarError] = useState<string | null>(null);
+  const [guardadaOk, setGuardadaOk] = useState(false);
+
+  async function guardarRuta() {
+    if (!result || !originHook.selected || !destHook.selected) return;
+    setGuardarError(null);
+    const meRes = await fetch("/api/auth/me", { credentials: "include" });
+    if (!meRes.ok) {
+      const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = `/entrar?redirect=${redirect}`;
+      return;
+    }
+    const nombre = window.prompt(
+      "Nombre para esta ruta (ej: Fin de semana por Aragón):",
+      `Mi ruta ${originHook.selected.label?.split(",")[0] ?? "Origen"} → ${destHook.selected.label?.split(",")[0] ?? "Destino"}`
+    );
+    if (!nombre?.trim()) return;
+    setSavingRuta(true);
+    try {
+      const res = await fetch("/api/rutas-guardadas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          nombre: nombre.trim(),
+          originLat: result.origin.lat,
+          originLng: result.origin.lng,
+          originLabel: originHook.selected?.label ?? null,
+          destLat: result.destination.lat,
+          destLng: result.destination.lng,
+          destLabel: destHook.selected?.label ?? null,
+          maxDistKm: maxDist,
+          paradas: selectedItems.map((i) => ({ type: i.type, id: i.id })),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setGuardarError(data?.message ?? "Error al guardar");
+        return;
+      }
+      setGuardarError(null);
+      setGuardadaOk(true);
+      setTimeout(() => setGuardadaOk(false), 3000);
+    } catch (err) {
+      setGuardarError(err instanceof Error ? err.message : "Error al guardar");
+    } finally {
+      setSavingRuta(false);
+    }
+  }
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -474,6 +617,12 @@ export default function CreaMiRutaPage() {
           Introduce un origen y un destino y descubre qué pueblos de la
           asociación y recursos turísticos encontrarás por el camino.
         </p>
+        <Link
+          href="/planifica/mis-rutas"
+          className="mt-4 inline-block text-sm font-medium text-primary hover:underline"
+        >
+          Ver mis rutas guardadas
+        </Link>
       </section>
 
       {/* Form */}
@@ -590,7 +739,32 @@ export default function CreaMiRutaPage() {
                 )}
               </>
             )}
+            <span className="ml-auto">
+              <button
+                type="button"
+                onClick={guardarRuta}
+                disabled={savingRuta}
+                className="inline-flex items-center gap-1.5 rounded-full border border-primary bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {savingRuta ? (
+                  <>
+                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    Guardando…
+                  </>
+                ) : guardadaOk ? (
+                  <>✓ Guardada</>
+                ) : (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Guardar para más tarde
+                  </>
+                )}
+              </button>
+            </span>
           </div>
+          {guardarError && (
+            <p className="mb-4 text-sm text-red-600">{guardarError}</p>
+          )}
 
           {/* Select controls */}
           <div className="mb-4 flex flex-wrap items-center gap-2">
