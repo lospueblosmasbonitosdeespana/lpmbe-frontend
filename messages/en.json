@@ -652,6 +652,8 @@
     "subtitle": "Your personal space to manage points, favorite villages and preferences.",
     "points": "My points",
     "pointsDesc": "Level, progress and rewards",
+    "rutasGuardadas": "Saved routes",
+    "rutasGuardadasDesc": "Routes you created to retrieve later",
     "visitedVillages": "Villages visited",
     "visitedVillagesDesc": "Listings and ratings",
     "notifCenter": "Notification center",

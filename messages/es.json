@@ -654,6 +654,8 @@
     "subtitle": "Tu espacio personal para gestionar puntos, pueblos favoritos y preferencias.",
     "points": "Mis puntos",
     "pointsDesc": "Nivel, progreso y recompensas",
+    "rutasGuardadas": "Rutas guardadas",
+    "rutasGuardadasDesc": "Rutas que has creado para recuperar más tarde",
     "visitedVillages": "Pueblos visitados",
     "visitedVillagesDesc": "Listado y valoraciones",
     "notifCenter": "Centro de notificaciones",

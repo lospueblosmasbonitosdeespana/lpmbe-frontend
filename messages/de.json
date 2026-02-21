@@ -652,6 +652,8 @@
     "subtitle": "Ihr persönlicher Bereich zur Verwaltung von Punkten, Lieblingsorten und Vorlieben.",
     "points": "Meine Punkte",
     "pointsDesc": "Level, Fortschritt und Belohnungen",
+    "rutasGuardadas": "Gespeicherte Routen",
+    "rutasGuardadasDesc": "Routen, die Sie erstellt haben, um sie später abzurufen",
     "visitedVillages": "Besuchte Dörfer",
     "visitedVillagesDesc": "Inserate und Bewertungen",
     "notifCenter": "Benachrichtigungszentrale",

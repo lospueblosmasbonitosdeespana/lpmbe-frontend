@@ -11,6 +11,7 @@ import {
   User,
   Users,
   Package,
+  Bookmark,
 } from 'lucide-react';
 import { LogoutButton } from './components/LogoutButton';
 import ThemeSelector from '@/app/cuenta/ThemeSelector';
@@ -24,6 +25,12 @@ export default async function MiCuentaPage() {
       title: t('points'),
       description: t('pointsDesc'),
       icon: Trophy,
+    },
+    {
+      href: '/planifica/mis-rutas',
+      title: t('rutasGuardadas'),
+      description: t('rutasGuardadasDesc'),
+      icon: Bookmark,
     },
     {
       href: '/mi-cuenta/pueblos',

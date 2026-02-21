@@ -78,7 +78,6 @@ export const navConfig: NavItem[] = [
         titleKey: "planifica",
         links: [
           { labelKey: "createRoute", href: "/planifica/crea-mi-ruta" },
-          { labelKey: "misRutas", href: "/planifica/mis-rutas" },
           { labelKey: "weekend", href: "/planifica/fin-de-semana" },
           { labelKey: "pirineos", href: "/rutas/mas-bonitos-de-los-pirineos" },
           { labelKey: "nocheRomantica", href: "/noche-romantica" },

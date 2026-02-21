@@ -652,6 +652,8 @@
     "subtitle": "Il vostro spazio personale per gestire punti, villaggi preferiti e preferenze.",
     "points": "I miei punti",
     "pointsDesc": "Livello, progressi e premi",
+    "rutasGuardadas": "Itinerari salvati",
+    "rutasGuardadasDesc": "Itinerari creati per recuperarli in seguito",
     "visitedVillages": "Villaggi visitati",
     "visitedVillagesDesc": "Annunci e valutazioni",
     "notifCenter": "Centro notifiche",

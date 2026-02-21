@@ -8,7 +8,6 @@ import {
   useMemo,
   type FormEvent,
 } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import type { RouteItem } from "./RouteMap";
@@ -617,12 +616,6 @@ export default function CreaMiRutaPage() {
           Introduce un origen y un destino y descubre qué pueblos de la
           asociación y recursos turísticos encontrarás por el camino.
         </p>
-        <Link
-          href="/planifica/mis-rutas"
-          className="mt-4 inline-block text-sm font-medium text-primary hover:underline"
-        >
-          Ver mis rutas guardadas
-        </Link>
       </section>
 
       {/* Form */}
