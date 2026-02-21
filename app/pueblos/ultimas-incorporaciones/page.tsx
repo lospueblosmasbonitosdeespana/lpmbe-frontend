@@ -21,6 +21,7 @@ type PuebloDTO = {
   provincia: string;
   comunidad: string;
   foto: string | null;
+  expulsado: boolean;
 };
 
 type YearGroup = {
@@ -307,7 +308,7 @@ function PuebloCard({
     </div>
   );
 
-  if (isExpulsado) {
+  if (isExpulsado || pueblo.expulsado) {
     return <div className="cursor-default">{content}</div>;
   }
 
