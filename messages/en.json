@@ -873,6 +873,12 @@
     "pointsBreakdown": "Breakdown of points",
     "visits": "Visit"
   },
+  "clubLanding": {
+    "title": "The Friends Club will soon be a reality",
+    "description": "In the meantime, subscribe to the association's newsletter and news so you don't miss a thing.",
+    "newsletterTitle": "Subscribe to our newsletter",
+    "newsletterDesc": "Receive news, events and exclusive content in your inbox."
+  },
   "club": {
     "title": "Friends Club",
     "status": "State",

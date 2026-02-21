@@ -103,6 +103,8 @@ export type PuebloLite = {
   lat: number;
   lng: number;
   foto_destacada?: string | null;
+  anioIncorporacion?: number | null;
+  anioExpulsion?: number | null;
 };
 
 export async function getPueblosLite(locale?: string): Promise<PuebloLite[]> {

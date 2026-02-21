@@ -203,7 +203,7 @@ export default async function RecursoDetailPage({
       <Section spacing="sm">
         <Container size="md">
           {heroImage && (
-            <div className="relative mb-6 h-[480px] w-full overflow-hidden rounded-xl bg-muted sm:h-[560px] md:h-[640px]">
+            <div className="relative mb-6 h-[480px] w-full overflow-hidden rounded-xl bg-background sm:h-[560px] md:h-[640px]">
               <Image
                 src={heroImage}
                 alt={recurso.nombre}

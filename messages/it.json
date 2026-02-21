@@ -873,6 +873,12 @@
     "pointsBreakdown": "Ripartizione dei punti",
     "visits": "Visita"
   },
+  "clubLanding": {
+    "title": "Presto il Club degli Amici sarà una realtà",
+    "description": "Nel frattempo, iscriviti alla newsletter e alle notizie dell'associazione per non perdere nulla.",
+    "newsletterTitle": "Iscriviti alla newsletter",
+    "newsletterDesc": "Ricevi notizie, eventi e contenuti esclusivi via email."
+  },
   "club": {
     "title": "Club degli amici",
     "status": "Stato",

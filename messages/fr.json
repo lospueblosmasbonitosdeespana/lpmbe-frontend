@@ -873,6 +873,12 @@
     "pointsBreakdown": "Répartition des points",
     "visits": "Visiter"
   },
+  "clubLanding": {
+    "title": "Le Club des Amis sera bientôt une réalité",
+    "description": "En attendant, abonnez-vous à la newsletter et aux actualités de l'association pour ne rien manquer.",
+    "newsletterTitle": "Abonnez-vous à la newsletter",
+    "newsletterDesc": "Recevez actualités, événements et contenus exclusifs par e-mail."
+  },
   "club": {
     "title": "Club des amis",
     "status": "État",

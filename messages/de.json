@@ -873,6 +873,12 @@
     "pointsBreakdown": "Aufschlüsselung der Punkte",
     "visits": "Besuchen Sie"
   },
+  "clubLanding": {
+    "title": "Der Freundeskreis wird bald Wirklichkeit",
+    "description": "Abonnieren Sie in der Zwischenzeit den Newsletter und die Neuigkeiten des Vereins, um nichts zu verpassen.",
+    "newsletterTitle": "Newsletter abonnieren",
+    "newsletterDesc": "Erhalten Sie Neuigkeiten, Veranstaltungen und exklusive Inhalte per E-Mail."
+  },
   "club": {
     "title": "Club der Freunde",
     "status": "Staat",

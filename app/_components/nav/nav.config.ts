@@ -45,8 +45,8 @@ export const navConfig: NavItem[] = [
       {
         titleKey: "popular",
         links: [
-          { labelKey: "featured", href: "/pueblos?filtro=destacados" },
-          { labelKey: "latestAdditions", href: "/pueblos?filtro=nuevos" },
+          { labelKey: "createRoute", href: "/planifica/crea-mi-ruta" },
+          { labelKey: "latestAdditions", href: "/pueblos/ultimas-incorporaciones" },
         ],
       },
     ],

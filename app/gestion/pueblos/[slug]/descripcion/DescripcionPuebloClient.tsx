@@ -35,8 +35,12 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
   const [lead, setLead] = useState("");
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
+  const [anioIncorporacion, setAnioIncorporacion] = useState<string>("");
+  const [anioExpulsion, setAnioExpulsion] = useState<string>("");
+  const [userRol, setUserRol] = useState<string>("");
   const [guardando, setGuardando] = useState(false);
   const [guardandoCoords, setGuardandoCoords] = useState(false);
+  const [guardandoAnio, setGuardandoAnio] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,6 +64,8 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
         const pn = pueblo?.lng;
         setLat(typeof pl === "number" && Number.isFinite(pl) ? pl : null);
         setLng(typeof pn === "number" && Number.isFinite(pn) ? pn : null);
+        if (pueblo?.anioIncorporacion) setAnioIncorporacion(String(pueblo.anioIncorporacion));
+        if (pueblo?.anioExpulsion) setAnioExpulsion(String(pueblo.anioExpulsion));
 
         // 2) Cargar descripción (admin)
         const res = await fetch(`/api/admin/pueblos/${id}/descripcion`, {
@@ -89,6 +95,15 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
         const clean = normalizeDescripcion(text3);
         setDescripcion(clean);
         setLead(data?.lead ?? "");
+
+        // Obtener rol del usuario
+        try {
+          const meRes = await fetch("/api/auth/me", { credentials: "include" });
+          if (meRes.ok) {
+            const me = await meRes.json();
+            setUserRol(me?.rol ?? "");
+          }
+        } catch { /* ignore */ }
       } catch (e: any) {
         console.error(e);
         setErr(e?.message ?? "Load failed");
@@ -137,6 +152,34 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
     },
     [puebloId]
   );
+
+  async function handleGuardarAnio() {
+    if (!puebloId) return;
+    setGuardandoAnio(true);
+    setMensaje(null);
+    try {
+      const r = await fetch(`/api/admin/pueblos/${puebloId}/incorporacion`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          anioIncorporacion: anioIncorporacion ? parseInt(anioIncorporacion, 10) : null,
+          anioExpulsion: anioExpulsion ? parseInt(anioExpulsion, 10) : null,
+        }),
+        credentials: "include",
+      });
+      if (r.status === 401) { window.location.href = "/entrar"; return; }
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        throw new Error(d?.message ?? `Error ${r.status}`);
+      }
+      setMensaje("Año de incorporación guardado");
+      setTimeout(() => setMensaje(null), 3000);
+    } catch (e: any) {
+      setMensaje(e?.message ?? "Error al guardar año");
+    } finally {
+      setGuardandoAnio(false);
+    }
+  }
 
   async function handleGuardar() {
     if (!puebloId) return;
@@ -238,6 +281,59 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
           <p className="mt-2 text-xs text-blue-600">Guardando coordenadas...</p>
         )}
       </div>
+
+      {/* Año de incorporación - solo ADMIN */}
+      {userRol === "ADMIN" && (
+        <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50/50 p-4">
+          <h2 className="text-sm font-medium text-gray-700">Incorporación a la red</h2>
+          <p className="mt-1 text-xs text-gray-500">
+            Año en que el pueblo se incorporó a Los Pueblos Más Bonitos de España. Si fue expulsado, indicar el año.
+          </p>
+          <div className="mt-3 flex gap-4">
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-gray-600">Año de incorporación</label>
+              <input
+                type="number"
+                min="2011"
+                max="2099"
+                value={anioIncorporacion}
+                onChange={(e) => setAnioIncorporacion(e.target.value)}
+                className="mt-1 w-full rounded border border-gray-300 p-2 text-sm focus:border-amber-500 focus:outline-none"
+                placeholder="Ej: 2013"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-gray-600">Año de expulsión (si aplica)</label>
+              <input
+                type="number"
+                min="2011"
+                max="2099"
+                value={anioExpulsion}
+                onChange={(e) => setAnioExpulsion(e.target.value)}
+                className="mt-1 w-full rounded border border-gray-300 p-2 text-sm focus:border-red-500 focus:outline-none"
+                placeholder="Dejar vacío si sigue activo"
+              />
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <button
+              onClick={handleGuardarAnio}
+              disabled={guardandoAnio}
+              className="rounded bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 disabled:bg-gray-400"
+            >
+              {guardandoAnio ? "Guardando..." : "Guardar año"}
+            </button>
+            {anioExpulsion && (
+              <button
+                onClick={() => { setAnioExpulsion(""); }}
+                className="text-xs text-red-600 hover:underline"
+              >
+                Quitar expulsión
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="mt-6">
         <label className="block text-sm font-medium text-gray-700">

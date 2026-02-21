@@ -873,6 +873,12 @@
     "pointsBreakdown": "Repartição dos pontos",
     "visits": "Visitar"
   },
+  "clubLanding": {
+    "title": "Em breve o Clube de Amigos será uma realidade",
+    "description": "Entretanto, subscreva a newsletter e notícias da associação para não perder nada.",
+    "newsletterTitle": "Subscreva a nossa newsletter",
+    "newsletterDesc": "Receba novidades, eventos e conteúdos exclusivos no seu correio."
+  },
   "club": {
     "title": "Clube de amigos",
     "status": "Estado",
