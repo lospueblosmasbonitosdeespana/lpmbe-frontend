@@ -46,7 +46,7 @@ export const navConfig: NavItem[] = [
         titleKey: "popular",
         links: [
           { labelKey: "createRoute", href: "/planifica/crea-mi-ruta" },
-          { labelKey: "latestAdditions", href: "/pueblos/ultimas-incorporaciones" },
+          { labelKey: "certificationsByYear", href: "/pueblos/ultimas-incorporaciones" },
         ],
       },
     ],

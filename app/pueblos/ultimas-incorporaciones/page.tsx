@@ -9,9 +9,9 @@ import { Container } from "@/app/components/ui/container";
 import { Display, Lead } from "@/app/components/ui/typography";
 
 export const metadata: Metadata = {
-  title: "Incorporaciones por año | Los Pueblos Más Bonitos de España",
+  title: "Certificaciones por año | Los Pueblos Más Bonitos de España",
   description:
-    "Descubre todos los pueblos que se han incorporado a la red de Los Pueblos Más Bonitos de España, año por año, desde 2013.",
+    "Descubre todos los pueblos certificados por la red de Los Pueblos Más Bonitos de España, año por año, desde 2013.",
 };
 
 type PuebloDTO = {
@@ -59,7 +59,7 @@ export default async function UltimasIncorporacionesPage() {
           <Breadcrumbs
             items={[
               { label: "Pueblos", href: "/pueblos" },
-              { label: "Incorporaciones por año" },
+              { label: "Certificaciones por año" },
             ]}
           />
         </Container>
@@ -70,11 +70,11 @@ export default async function UltimasIncorporacionesPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-muted via-muted/50 to-background" />
           <Container className="relative py-12 text-center">
             <Display className="text-3xl md:text-4xl">
-              Incorporaciones por año
+              Certificaciones por año
             </Display>
             <Lead className="mx-auto mt-4 max-w-2xl">
-              Cada año nuevos pueblos se suman a la red de Los Pueblos Más
-              Bonitos de España.
+              Cada año nuevos pueblos obtienen la certificación de Los Pueblos
+              Más Bonitos de España.
             </Lead>
 
             {totalActivos > 0 && (
