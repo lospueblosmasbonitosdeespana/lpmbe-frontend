@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import { Headline, Title, Caption } from '@/app/components/ui/typography';
+import { ClubShield, getMemberYear } from '@/app/_components/club/ClubShield';
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 
@@ -391,23 +392,40 @@ export default function ClubPage() {
         <div className="space-y-6">
           {/* Estado */}
           <div className={cardClass}>
-            <Title size="lg" className="mb-4">{t('status')}</Title>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div>
-                <Caption>{t('member')}</Caption>
-                <p className="font-medium">{clubMe?.isMember ? t('active') : t('inactive')}</p>
-              </div>
-              <div>
-                <Caption>{t('plan')}</Caption>
-                <p className="font-medium">{clubMe?.plan ?? '—'}</p>
-              </div>
-              <div>
-                <Caption>{t('statusLabel')}</Caption>
-                <p className="font-medium">{clubMe?.status ?? '—'}</p>
-              </div>
-              <div>
-                <Caption>{t('validUntil')}</Caption>
-                <p className="font-medium">{formatFecha(clubMe?.validUntil)}</p>
+            <div className="flex flex-col sm:flex-row gap-6 items-start">
+              {/* Escudo del Club (solo miembros) */}
+              {clubMe?.isMember && (
+                <div className="flex flex-col items-center gap-2 sm:flex-shrink-0">
+                  <ClubShield
+                    year={getMemberYear(clubMe.validUntil, clubMe.plan)}
+                    size={160}
+                  />
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                    {t('member')}
+                  </span>
+                </div>
+              )}
+              {/* Info de membresía */}
+              <div className="flex-1">
+                <Title size="lg" className="mb-4">{t('status')}</Title>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <Caption>{t('member')}</Caption>
+                    <p className="font-medium">{clubMe?.isMember ? t('active') : t('inactive')}</p>
+                  </div>
+                  <div>
+                    <Caption>{t('plan')}</Caption>
+                    <p className="font-medium">{clubMe?.plan ?? '—'}</p>
+                  </div>
+                  <div>
+                    <Caption>{t('statusLabel')}</Caption>
+                    <p className="font-medium">{clubMe?.status ?? '—'}</p>
+                  </div>
+                  <div>
+                    <Caption>{t('validUntil')}</Caption>
+                    <p className="font-medium">{formatFecha(clubMe?.validUntil)}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
