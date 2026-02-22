@@ -300,17 +300,22 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
                   )}
                 </div>
 
-                {/* Alertas */}
+              </div>
+
+              {/* Derecha: estado + hora + alertas */}
+              <div className="flex-shrink-0 text-right text-sm min-w-[110px]">
+                <div className="text-[#60524d] text-sm">{getWeatherText(c.weatherCode)}</div>
+                <div className="text-[#a09490] text-xs mt-0.5">{formatTime(c.time)}</div>
                 {alertas.length > 0 && (
-                  <div className="mt-1.5 space-y-0.5">
+                  <div className="mt-1 space-y-0.5">
                     {alertas.map((a, idx) => {
                       const label = getAlertLabel(a.kind);
                       const textRaw = (a.title ?? a.detail ?? label).trim();
                       const main = textRaw.toLowerCase().startsWith(label.toLowerCase()) ? textRaw : `${label}: ${textRaw}`;
                       const window = formatWindow(a.windowStart, a.windowEnd);
                       return (
-                        <div key={`${a.kind}-${idx}`} className="leading-tight">
-                          <span className="text-red-700 font-semibold leading-tight">
+                        <div key={`${a.kind}-${idx}`} className="leading-tight text-right">
+                          <span className="text-red-700 font-semibold text-xs leading-tight">
                             {main}
                             {window && <span className="text-red-600 font-normal text-xs ml-1">({window})</span>}
                           </span>
@@ -320,14 +325,6 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
                   </div>
                 )}
               </div>
-
-              {/* Derecha: estado + hora */}
-              {alertas.length === 0 && (
-                <div className="flex-shrink-0 text-right text-sm min-w-[90px]">
-                  <div className="text-[#60524d] text-sm">{getWeatherText(c.weatherCode)}</div>
-                  <div className="text-[#a09490] text-xs mt-0.5">{formatTime(c.time)}</div>
-                </div>
-              )}
             </div>
           );
         })}
