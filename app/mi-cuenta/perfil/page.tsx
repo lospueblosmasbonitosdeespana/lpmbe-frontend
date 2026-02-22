@@ -18,11 +18,23 @@ type Usuario = {
   createdAt?: string | null;
   fechaAlta?: string | null;
   avatarUrl?: string | null;
+  // Campos que devuelve /usuarios/me del backend
   club?: {
-    activo?: boolean;
+    isMember?: boolean;
+    activo?: boolean;       // legacy, puede no venir
     plan?: string | null;
-    validoHasta?: string | null;
+    status?: string | null;
+    validUntil?: string | null;
+    validoHasta?: string | null; // legacy, puede no venir
   } | null;
+};
+
+type ClubMe = {
+  isMember: boolean;
+  plan: string | null;
+  status: string | null;
+  validUntil: string | null;
+  qrToken?: string | null;
 };
 
 function formatFecha(fecha?: string | null) {
@@ -42,20 +54,26 @@ function formatFechaCorta(fecha?: string | null) {
   return `${day}/${month}/${year}`;
 }
 
-function getClubEstado(club?: { activo?: boolean; validoHasta?: string | null } | null): string {
-  if (!club) return 'NO ACTIVO';
-  if (club.validoHasta) {
-    const fechaFin = new Date(club.validoHasta);
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-    if (fechaFin < hoy) {
-      return 'CADUCADO';
-    }
-  }
-  if (club.activo) {
-    return 'ACTIVO';
-  }
-  return 'NO ACTIVO';
+function getClubEsMiembro(club?: Usuario['club'] | null, clubMe?: ClubMe | null): boolean {
+  if (clubMe) return clubMe.isMember;
+  if (!club) return false;
+  // El backend devuelve isMember (nuevo) o activo (legacy)
+  if (typeof club.isMember === 'boolean') return club.isMember;
+  if (club.activo) return true;
+  // Comprobar validUntil / validoHasta
+  const fecha = club.validUntil ?? club.validoHasta;
+  if (fecha) return new Date(fecha) > new Date();
+  return false;
+}
+
+function getClubValidUntil(club?: Usuario['club'] | null, clubMe?: ClubMe | null): string | null {
+  if (clubMe?.validUntil) return clubMe.validUntil;
+  return club?.validUntil ?? club?.validoHasta ?? null;
+}
+
+function getClubPlan(club?: Usuario['club'] | null, clubMe?: ClubMe | null): string | null {
+  if (clubMe?.plan) return clubMe.plan;
+  return club?.plan ?? null;
 }
 
 function getInitials(nombre?: string | null, email?: string): string {
@@ -100,26 +118,63 @@ export default function PerfilPage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [avatarVersion, setAvatarVersion] = useState(0);
-
+  const [clubMe, setClubMe] = useState<ClubMe | null>(null);
+  const [cancelandoRenovacion, setCancelandoRenovacion] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
 
   async function loadUsuario() {
     try {
-      const r = await fetch('/api/auth/me');
-      if (r.status === 401) {
+      const [meRes, clubRes] = await Promise.all([
+        fetch('/api/auth/me'),
+        fetch('/api/club/me', { cache: 'no-store' }),
+      ]);
+
+      if (meRes.status === 401) {
         router.push('/entrar');
         return;
       }
-      if (!r.ok) {
+      if (!meRes.ok) {
         throw new Error(t('loadUserError'));
       }
-      const data = await r.json();
+      const data = await meRes.json();
       setUsuario(data);
-      // Inicializar formulario con datos actuales
       setFormNombre(data.nombre ?? '');
       setFormApellidos(data.apellidos ?? '');
       setFormTelefono(data.telefono ?? '');
+
+      // Cargar estado del Club desde /club/me (fuente canónica)
+      if (clubRes.ok) {
+        const clubData = await clubRes.json().catch(() => null);
+        if (clubData) setClubMe(clubData);
+      }
     } catch (e: any) {
       setError(e?.message ?? t('unknownError'));
+    }
+  }
+
+  async function handleCancelarRenovacion() {
+    if (!confirm('¿Seguro que quieres cancelar la renovación automática? La membresía seguirá activa hasta la fecha de expiración.')) return;
+    setCancelandoRenovacion(true);
+    setCancelError(null);
+    setCancelSuccess(null);
+    try {
+      const res = await fetch('/api/club/suscripcion/cancelar', { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 501) {
+        setCancelError('La cancelación de renovación estará disponible cuando se activen los pagos automáticos.');
+        return;
+      }
+      if (!res.ok) {
+        setCancelError(data?.error ?? data?.message ?? 'Error al cancelar la renovación.');
+        return;
+      }
+      setCancelSuccess('Renovación automática cancelada. Tu membresía seguirá activa hasta la fecha de expiración.');
+      await loadUsuario();
+    } catch {
+      setCancelError('Error al conectar con el servidor.');
+    } finally {
+      setCancelandoRenovacion(false);
     }
   }
 
@@ -383,26 +438,108 @@ export default function PerfilPage() {
         </div>
 
         <div className="space-y-6">
-          {/* Club de Amigos */}
-          <div className={cardClass}>
-            <Title size="lg" className="mb-4">{t('clubTitle')}</Title>
-            <div className="grid gap-2 sm:grid-cols-3">
-              <div>
-                <Caption>{t('status')}</Caption>
-                <p className="font-medium">{getClubEstado(usuario.club)}</p>
+          {/* Estado de Membresía — Club de Amigos */}
+          {(() => {
+            const esMiembro = getClubEsMiembro(usuario.club, clubMe);
+            const validUntil = getClubValidUntil(usuario.club, clubMe);
+            const plan = getClubPlan(usuario.club, clubMe);
+            const status = clubMe?.status ?? (esMiembro ? 'ACTIVA' : null);
+
+            return (
+              <div className={cardClass}>
+                <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+                  <Title size="lg">{t('clubTitle')}</Title>
+                  <Link
+                    href="/mi-cuenta/club"
+                    className="text-sm text-primary hover:underline font-medium"
+                  >
+                    Ver detalle →
+                  </Link>
+                </div>
+
+                {esMiembro ? (
+                  <>
+                    {/* Badge activo */}
+                    <div className="mb-5 flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-800">
+                        <span className="h-2 w-2 rounded-full bg-green-500" />
+                        ACTIVO
+                      </span>
+                      {plan && (
+                        <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                          Plan {plan}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      {status && (
+                        <div>
+                          <Caption>Estado</Caption>
+                          <p className="font-medium">{status}</p>
+                        </div>
+                      )}
+                      <div>
+                        <Caption>{t('validUntil')}</Caption>
+                        <p className="font-medium">
+                          {validUntil ? formatFechaCorta(validUntil) : '—'}
+                        </p>
+                      </div>
+                      {plan && (
+                        <div>
+                          <Caption>{t('plan')}</Caption>
+                          <p className="font-medium">{plan}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Cancelar renovación — preparado para Stripe */}
+                    <div className="mt-5 rounded-lg border border-border bg-muted/30 p-4">
+                      <p className="text-sm font-medium text-foreground mb-1">Renovación automática</p>
+                      <p className="text-xs text-muted-foreground mb-3">
+                        Tu membresía se renueva automáticamente.
+                        Si la cancelas, seguirá activa hasta el{' '}
+                        <strong>{validUntil ? formatFechaCorta(validUntil) : '—'}</strong>.
+                      </p>
+                      {cancelSuccess ? (
+                        <p className="text-sm text-green-700 font-medium">{cancelSuccess}</p>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleCancelarRenovacion}
+                          disabled={cancelandoRenovacion}
+                          className="rounded-lg border border-destructive/40 bg-background px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground disabled:opacity-50"
+                        >
+                          {cancelandoRenovacion ? 'Cancelando…' : 'Cancelar renovación automática'}
+                        </button>
+                      )}
+                      {cancelError && (
+                        <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">{cancelError}</p>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+                        <span className="h-2 w-2 rounded-full bg-muted-foreground/50" />
+                        NO ACTIVO
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Únete al Club de Amigos para acceder a descuentos exclusivos en recursos turísticos de los pueblos.
+                    </p>
+                    <Link
+                      href="/mi-cuenta/club"
+                      className="inline-block w-fit rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90"
+                    >
+                      Ver Club de Amigos
+                    </Link>
+                  </div>
+                )}
               </div>
-              <div>
-                <Caption>{t('plan')}</Caption>
-                <p className="font-medium">{usuario.club?.plan ?? '—'}</p>
-              </div>
-              <div>
-                <Caption>{t('validUntil')}</Caption>
-                <p className="font-medium">
-                  {usuario.club?.validoHasta ? formatFechaCorta(usuario.club.validoHasta) : '—'}
-                </p>
-              </div>
-            </div>
-          </div>
+            );
+          })()}
 
           {/* Avatar */}
           <div className={cardClass}>
