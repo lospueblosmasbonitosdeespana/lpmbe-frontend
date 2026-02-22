@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { Suspense } from "react";
+import {
+  Sun, CloudSun, Cloud, Cloudy, CloudFog,
+  CloudDrizzle, CloudRain, CloudSnow, CloudLightning,
+} from "lucide-react";
 import { getComunidadFlagSrc } from "@/lib/flags";
 import { SortBar } from "./SortBar";
 
@@ -67,15 +71,18 @@ function n(v: number | null | undefined, digits = 0) {
   return v.toFixed(digits);
 }
 
-function getWeatherIcon(code: number | null): string {
-  if (code === null) return "—";
-  if (code === 0) return "☀️";
-  if ([1, 2, 3].includes(code)) return "⛅";
-  if ([45, 48].includes(code)) return "🌫️";
-  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "🌧️";
-  if ([71, 73, 75, 77, 85, 86].includes(code)) return "❄️";
-  if ([95, 96, 99].includes(code)) return "⛈️";
-  return "🌤️";
+type WIconCfg = { Icon: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>; cls: string };
+
+function getWeatherIconCfg(code: number | null): WIconCfg {
+  if (code === null || code === 0) return { Icon: Sun, cls: "text-amber-500" };
+  if (code === 1) return { Icon: CloudSun, cls: "text-stone-400" };
+  if ([2, 3].includes(code)) return { Icon: Cloudy, cls: "text-stone-400" };
+  if ([45, 48].includes(code)) return { Icon: CloudFog, cls: "text-stone-400" };
+  if ([51, 53, 55, 56, 57].includes(code)) return { Icon: CloudDrizzle, cls: "text-slate-400" };
+  if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return { Icon: CloudRain, cls: "text-slate-500" };
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return { Icon: CloudSnow, cls: "text-sky-400" };
+  if ([95, 96, 99].includes(code)) return { Icon: CloudLightning, cls: "text-violet-500" };
+  return { Icon: Cloud, cls: "text-stone-400" };
 }
 
 function getWeatherText(code: number | null): string {
@@ -208,7 +215,7 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
           return (
             <div
               key={it.pueblo.id}
-              className="flex items-start gap-4 px-4 py-3 border rounded-lg hover:bg-[#efe2d8]/40 transition bg-[#faf4ef]/60"
+              className="flex items-start gap-4 px-4 py-3 border border-[#e2d5cb] rounded-lg hover:bg-[#efe2d8]/50 transition bg-[#fefbf8]"
             >
               {/* Temperatura + máx/mín */}
               <div className="flex-shrink-0 w-20 text-center">
@@ -225,8 +232,8 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
               </div>
 
               {/* Icono */}
-              <div className="flex-shrink-0 text-3xl pt-0.5" title={getWeatherText(c.weatherCode)}>
-                {getWeatherIcon(c.weatherCode)}
+              <div className="flex-shrink-0 pt-0.5" title={getWeatherText(c.weatherCode)}>
+                {(() => { const { Icon, cls } = getWeatherIconCfg(c.weatherCode); return <Icon size={28} className={cls} strokeWidth={1.5} />; })()}
               </div>
 
               {/* Info central */}
@@ -246,23 +253,27 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
                 {/* Pills: lluvia, nieve, viento, prob precipitación */}
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {lluvia24h > 0 && (
-                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                      💧 {n(lluvia24h, 1)} mm (24h)
+                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#efe2d8] text-[#60524d] border border-[#e2d5cb]">
+                      <CloudRain size={11} className="text-slate-500" strokeWidth={1.5} />
+                      {n(lluvia24h, 1)} mm (24h)
                     </span>
                   )}
                   {nieve24h > 0 && (
-                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
-                      ❄️ {n(nieve24h, 1)} cm nieve (24h)
+                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#efe2d8] text-[#60524d] border border-[#e2d5cb]">
+                      <CloudSnow size={11} className="text-sky-400" strokeWidth={1.5} />
+                      {n(nieve24h, 1)} cm nieve (24h)
                     </span>
                   )}
                   {c.windKph !== null && c.windKph > 0 && (
-                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 border border-neutral-200">
-                      💨 {n(c.windKph, 0)} km/h
+                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#efe2d8] text-[#60524d] border border-[#e2d5cb]">
+                      <CloudFog size={11} className="text-stone-400" strokeWidth={1.5} />
+                      {n(c.windKph, 0)} km/h viento
                     </span>
                   )}
                   {d0?.precipProbPct != null && d0.precipProbPct > 10 && (
-                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 border border-neutral-200">
-                      ☂️ {n(d0.precipProbPct, 0)}% prob.
+                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#efe2d8] text-[#60524d] border border-[#e2d5cb]">
+                      <CloudDrizzle size={11} className="text-slate-400" strokeWidth={1.5} />
+                      {n(d0.precipProbPct, 0)}% prob. lluvia
                     </span>
                   )}
                   {aqi !== null && (
@@ -286,9 +297,9 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
 
               {/* Derecha: estado + hora */}
               {alertas.length === 0 && (
-                <div className="flex-shrink-0 text-right text-sm min-w-[100px]">
-                  <div className="text-neutral-600">{getWeatherText(c.weatherCode)}</div>
-                  <div className="text-neutral-500 text-xs">{formatTime(c.time)}</div>
+                <div className="flex-shrink-0 text-right text-sm min-w-[90px]">
+                  <div className="text-[#60524d] text-sm">{getWeatherText(c.weatherCode)}</div>
+                  <div className="text-[#a09490] text-xs mt-0.5">{formatTime(c.time)}</div>
                 </div>
               )}
             </div>
