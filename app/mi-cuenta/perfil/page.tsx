@@ -34,6 +34,7 @@ type ClubMe = {
   plan: string | null;
   status: string | null;
   validUntil: string | null;
+  cancelAtPeriodEnd?: boolean;
   qrToken?: string | null;
 };
 
@@ -150,7 +151,13 @@ export default function PerfilPage() {
       // Cargar estado del Club desde /club/me (fuente canónica)
       if (clubRes.ok) {
         const clubData = await clubRes.json().catch(() => null);
-        if (clubData) setClubMe(clubData);
+        if (clubData) {
+          setClubMe(clubData);
+          // Sincronizar estado de cancelación con lo que dice el backend
+          if (clubData.cancelAtPeriodEnd === true) {
+            setCancelado(true);
+          }
+        }
       }
     } catch (e: any) {
       setError(e?.message ?? t('unknownError'));
@@ -163,13 +170,6 @@ export default function PerfilPage() {
     try {
       const res = await fetch('/api/club/suscripcion/cancelar', { method: 'POST' });
       const data = await res.json().catch(() => ({}));
-      if (res.status === 501) {
-        // Pagos no activados aún: marcamos igual como cancelado en UI
-        // (cuando Stripe esté activo, el backend lo procesará)
-        setCancelado(true);
-        setConfirmCancelar(false);
-        return;
-      }
       if (!res.ok) {
         setCancelError(data?.error ?? data?.message ?? 'Error al cancelar la renovación.');
         return;
@@ -188,14 +188,10 @@ export default function PerfilPage() {
     setReactivando(true);
     setReactivarError(null);
     try {
-      const res = await fetch('/api/club/suscripcion/activar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo: clubMe?.plan ?? 'ANUAL' }),
-      });
+      const res = await fetch('/api/club/suscripcion/reactivar', { method: 'POST' });
       const data = await res.json().catch(() => ({}));
-      if (res.status === 501 || !res.ok) {
-        setReactivarError('La reactivación estará disponible cuando se activen los pagos automáticos.');
+      if (!res.ok) {
+        setReactivarError(data?.error ?? data?.message ?? 'Error al reactivar la suscripción.');
         return;
       }
       setCancelado(false);

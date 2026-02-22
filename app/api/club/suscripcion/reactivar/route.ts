@@ -3,9 +3,9 @@ import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 
 /**
- * POST /api/club/suscripcion/cancelar
- * Cancela la renovación automática de la membresía del Club de Amigos.
- * La membresía sigue activa hasta la fecha de expiración actual.
+ * POST /api/club/suscripcion/reactivar
+ * Reactiva la renovación automática de la membresía del Club de Amigos
+ * (deshace una cancelación pendiente antes de que expire el período).
  */
 export async function POST() {
   const token = await getToken();
@@ -14,7 +14,7 @@ export async function POST() {
   }
 
   const API_BASE = getApiUrl();
-  const upstreamUrl = `${API_BASE}/club/suscripcion/cancelar`;
+  const upstreamUrl = `${API_BASE}/club/suscripcion/reactivar`;
 
   try {
     const upstream = await fetch(upstreamUrl, {
