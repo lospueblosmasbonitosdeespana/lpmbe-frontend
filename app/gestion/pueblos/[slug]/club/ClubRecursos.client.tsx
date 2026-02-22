@@ -13,7 +13,20 @@ type Recurso = {
   esExterno?: boolean;
   codigoQr: string;
   puebloId: number;
+  maxAdultos: number;
+  maxMenores: number;
+  edadMaxMenor: number;
 };
+
+function formatCondiciones(r: Recurso): string {
+  const adultos = r.maxAdultos ?? 1;
+  const menores = r.maxMenores ?? 0;
+  const edad = r.edadMaxMenor ?? 12;
+  if (adultos === 1 && menores === 0) return 'Solo titular';
+  let txt = `${adultos} adulto${adultos > 1 ? 's' : ''}`;
+  if (menores > 0) txt += ` + ${menores} menor${menores > 1 ? 'es' : ''} (hasta ${edad} años)`;
+  return txt;
+}
 
 export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slug: string }) {
   const router = useRouter();
@@ -29,6 +42,9 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
   const [nuevoPrecio, setNuevoPrecio] = useState('');
   const [nuevoActivo, setNuevoActivo] = useState(true);
   const [nuevoEsExterno, setNuevoEsExterno] = useState(false);
+  const [nuevoMaxAdultos, setNuevoMaxAdultos] = useState('1');
+  const [nuevoMaxMenores, setNuevoMaxMenores] = useState('0');
+  const [nuevoEdadMaxMenor, setNuevoEdadMaxMenor] = useState('12');
   const [creando, setCreando] = useState(false);
 
   // Edición
@@ -39,6 +55,9 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
   const [editPrecio, setEditPrecio] = useState('');
   const [editActivo, setEditActivo] = useState(false);
   const [editEsExterno, setEditEsExterno] = useState(false);
+  const [editMaxAdultos, setEditMaxAdultos] = useState('1');
+  const [editMaxMenores, setEditMaxMenores] = useState('0');
+  const [editEdadMaxMenor, setEditEdadMaxMenor] = useState('12');
   const [guardando, setGuardando] = useState(false);
 
   async function loadRecursos() {
@@ -109,6 +128,9 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
         tipo: nuevoTipo.trim() || null,
         activo: nuevoActivo,
         esExterno: nuevoEsExterno,
+        maxAdultos: Math.max(1, Number(nuevoMaxAdultos) || 1),
+        maxMenores: Math.max(0, Number(nuevoMaxMenores) || 0),
+        edadMaxMenor: Math.max(0, Number(nuevoEdadMaxMenor) || 12),
       };
 
       if (nuevoDescuento) {
@@ -140,6 +162,9 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
       setNuevoPrecio('');
       setNuevoActivo(true);
       setNuevoEsExterno(false);
+      setNuevoMaxAdultos('1');
+      setNuevoMaxMenores('0');
+      setNuevoEdadMaxMenor('12');
       setShowForm(false);
       await loadRecursos();
     } catch (e: any) {
@@ -157,6 +182,9 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
     setEditPrecio(r.precioCents ? (r.precioCents / 100).toString() : '');
     setEditActivo(r.activo);
     setEditEsExterno(r.esExterno === true);
+    setEditMaxAdultos(String(r.maxAdultos ?? 1));
+    setEditMaxMenores(String(r.maxMenores ?? 0));
+    setEditEdadMaxMenor(String(r.edadMaxMenor ?? 12));
   }
 
   function handleCancelarEdicion() {
@@ -194,6 +222,9 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
         tipo: editTipo.trim() || null,
         activo: editActivo,
         esExterno: editEsExterno,
+        maxAdultos: Math.max(1, Number(editMaxAdultos) || 1),
+        maxMenores: Math.max(0, Number(editMaxMenores) || 0),
+        edadMaxMenor: Math.max(0, Number(editEdadMaxMenor) || 12),
       };
 
       if (editDescuento) {
@@ -376,6 +407,44 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
               placeholder="0.00"
             />
           </div>
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded space-y-2">
+            <label className="block text-sm font-medium text-blue-800">Condiciones del descuento</label>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className="block text-xs text-blue-600 mb-1">Máx. adultos</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={nuevoMaxAdultos}
+                  onChange={(e) => setNuevoMaxAdultos(e.target.value)}
+                  disabled={creando}
+                  className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-blue-600 mb-1">Máx. menores</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={nuevoMaxMenores}
+                  onChange={(e) => setNuevoMaxMenores(e.target.value)}
+                  disabled={creando}
+                  className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-blue-600 mb-1">Edad máx. menor</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={nuevoEdadMaxMenor}
+                  onChange={(e) => setNuevoEdadMaxMenor(e.target.value)}
+                  disabled={creando}
+                  className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50"
+                />
+              </div>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -405,6 +474,9 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                 setNuevoPrecio('');
                 setNuevoActivo(true);
                 setNuevoEsExterno(false);
+                setNuevoMaxAdultos('1');
+                setNuevoMaxMenores('0');
+                setNuevoEdadMaxMenor('12');
               }}
               disabled={creando}
               className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
@@ -500,6 +572,44 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                       placeholder="0.00"
                     />
                   </div>
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded space-y-2">
+                    <label className="block text-sm font-medium text-blue-800">Condiciones del descuento</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="block text-xs text-blue-600 mb-1">Máx. adultos</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={editMaxAdultos}
+                          onChange={(e) => setEditMaxAdultos(e.target.value)}
+                          disabled={guardando}
+                          className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-blue-600 mb-1">Máx. menores</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={editMaxMenores}
+                          onChange={(e) => setEditMaxMenores(e.target.value)}
+                          disabled={guardando}
+                          className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-blue-600 mb-1">Edad máx. menor</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={editEdadMaxMenor}
+                          onChange={(e) => setEditEdadMaxMenor(e.target.value)}
+                          disabled={guardando}
+                          className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50"
+                        />
+                      </div>
+                    </div>
+                  </div>
                   <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
@@ -556,6 +666,9 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                       )}
                       <div className="text-sm text-gray-600">
                         Descuento: {r.descuentoPorcentaje !== null && r.descuentoPorcentaje !== undefined ? `${r.descuentoPorcentaje}%` : '—'}
+                      </div>
+                      <div className="text-sm text-blue-700 font-medium">
+                        Condiciones: {formatCondiciones(r)}
                       </div>
                       <div className="text-sm text-gray-600">
                         Activo: <strong>{r.activo ? 'Sí' : 'No'}</strong>

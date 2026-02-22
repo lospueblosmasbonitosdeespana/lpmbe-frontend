@@ -12,6 +12,9 @@ export type RecursoDisponible = {
   puebloId?: number | null;
   puebloNombre?: string | null;
   activo?: boolean;
+  maxAdultos?: number;
+  maxMenores?: number;
+  edadMaxMenor?: number;
 };
 
 export function useRecursosDisponibles() {

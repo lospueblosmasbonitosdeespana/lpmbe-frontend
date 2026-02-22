@@ -99,6 +99,22 @@ export default function RecursosPuebloPage() {
                         ? `${r.descuentoPorcentaje}%`
                         : '—'}
                     </div>
+                    {r.maxAdultos != null && (
+                      <div style={{
+                        marginTop: 6,
+                        fontSize: 13,
+                        color: '#1d4ed8',
+                        background: '#eff6ff',
+                        display: 'inline-block',
+                        padding: '3px 10px',
+                        borderRadius: 8,
+                        fontWeight: 500,
+                      }}>
+                        {r.maxAdultos === 1 && (r.maxMenores ?? 0) === 0
+                          ? 'Descuento solo para el titular'
+                          : `Hasta ${r.maxAdultos} adulto${r.maxAdultos > 1 ? 's' : ''}${(r.maxMenores ?? 0) > 0 ? ` + ${r.maxMenores} menor${(r.maxMenores ?? 0) > 1 ? 'es' : ''} (hasta ${r.edadMaxMenor ?? 12} años)` : ''}`}
+                      </div>
+                    )}
                   </div>
                   {visitado && (
                     <div style={{ marginLeft: 16 }}>

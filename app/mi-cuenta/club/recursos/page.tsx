@@ -153,6 +153,17 @@ export default function RecursosPage() {
                     −{r.descuentoPorcentaje}% Club
                   </div>
                 )}
+                {r.maxAdultos != null && (
+                  <div style={{
+                    marginTop: 4,
+                    fontSize: 11,
+                    color: '#1d4ed8',
+                  }}>
+                    {r.maxAdultos === 1 && (r.maxMenores ?? 0) === 0
+                      ? 'Solo titular'
+                      : `${r.maxAdultos} adulto${r.maxAdultos > 1 ? 's' : ''}${(r.maxMenores ?? 0) > 0 ? ` + ${r.maxMenores} menor${(r.maxMenores ?? 0) > 1 ? 'es' : ''} (<${r.edadMaxMenor ?? 12} años)` : ''}`}
+                  </div>
+                )}
               </Link>
             ))}
           </div>
