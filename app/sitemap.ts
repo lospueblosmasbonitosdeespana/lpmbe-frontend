@@ -1,7 +1,5 @@
 import type { MetadataRoute } from "next";
 import { getBaseUrl, pathForLocale, SUPPORTED_LOCALES } from "@/lib/seo";
-import { getPueblosLite } from "@/lib/api";
-import { getRutas } from "@/lib/api";
 
 /** Rutas estáticas que se incluyen en el sitemap (sin segmentos dinámicos). */
 const STATIC_PATHS = [
@@ -45,6 +43,37 @@ function expandPathByLocales(path: string): string[] {
   });
 }
 
+/** Fetch con caché de 24h, compatible con generación estática del sitemap */
+async function fetchForSitemap<T>(fetcher: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await fetcher();
+  } catch {
+    return fallback;
+  }
+}
+
+async function getPueblosSitemap(): Promise<Array<{ slug: string }>> {
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://lpmbe-backend-production.up.railway.app';
+  const res = await fetch(`${backendUrl}/pueblos?lang=es`, {
+    next: { revalidate: 86400 }, // 24h
+  }).catch(() => null);
+  if (!res?.ok) return [];
+  const data = await res.json().catch(() => []);
+  return Array.isArray(data) ? data : [];
+}
+
+async function getRutasSitemap(): Promise<Array<{ slug: string }>> {
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://lpmbe-backend-production.up.railway.app';
+  const res = await fetch(`${backendUrl}/rutas?lang=es`, {
+    next: { revalidate: 86400 }, // 24h
+  }).catch(() => null);
+  if (!res?.ok) return [];
+  const data = await res.json().catch(() => []);
+  return Array.isArray(data) ? data : [];
+}
+
+export const revalidate = 86400; // regenerar sitemap cada 24h
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [];
 
@@ -58,12 +87,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // 2) Pueblos: /pueblos/[slug] × 6 idiomas
-  let pueblos: Array<{ slug: string }> = [];
-  try {
-    pueblos = await getPueblosLite("es");
-  } catch {
-    // ignore
-  }
+  const pueblos = await fetchForSitemap(getPueblosSitemap, []);
   for (const pueblo of pueblos) {
     const pathBase = `/pueblos/${pueblo.slug}`;
     const paths = expandPathByLocales(pathBase);
@@ -73,12 +97,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // 3) Rutas: /rutas/[slug] × 6 idiomas
-  let rutas: Array<{ slug: string }> = [];
-  try {
-    rutas = await getRutas("es");
-  } catch {
-    // ignore
-  }
+  const rutas = await fetchForSitemap(getRutasSitemap, []);
   for (const r of rutas) {
     const pathBase = `/rutas/${r.slug}`;
     const paths = expandPathByLocales(pathBase);
