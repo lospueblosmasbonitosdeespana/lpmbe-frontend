@@ -49,6 +49,8 @@ type MeteoItem = {
   acumulados?: {
     lluviaHoyMm?: number | null;
     nieveHoyCm?: number | null;
+    lluvia24hMm?: number | null;
+    nieve24hCm?: number | null;
   } | null;
   airQuality?: {
     europeanAqi: number | null;
@@ -150,8 +152,8 @@ function sortItems(items: MeteoItem[], mode: SortMode): MeteoItem[] {
     case "temp_desc": return arr.sort((a, b) => (b.meteo.current.temperatureC ?? -9999) - (a.meteo.current.temperatureC ?? -9999));
     case "alpha": return arr.sort((a, b) => a.pueblo.nombre.localeCompare(b.pueblo.nombre, "es"));
     case "rain_desc": return arr.sort((a, b) => {
-      const ra = a.acumulados?.lluviaHoyMm ?? a.meteo.daily?.[0]?.precipitationMm ?? 0;
-      const rb = b.acumulados?.lluviaHoyMm ?? b.meteo.daily?.[0]?.precipitationMm ?? 0;
+      const ra = a.acumulados?.lluvia24hMm ?? a.acumulados?.lluviaHoyMm ?? 0;
+      const rb = b.acumulados?.lluvia24hMm ?? b.acumulados?.lluviaHoyMm ?? 0;
       return (rb ?? 0) - (ra ?? 0);
     });
     case "wind_desc": return arr.sort((a, b) => (b.meteo.current.windKph ?? 0) - (a.meteo.current.windKph ?? 0));
@@ -198,8 +200,8 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
           const d0 = it.meteo.daily?.[0];
           const alertas = it.alertas ?? [];
           const flagSrc = getComunidadFlagSrc(it.pueblo.comunidad);
-          const lluviaHoy = it.acumulados?.lluviaHoyMm ?? d0?.precipitationMm ?? 0;
-          const nieveHoy = it.acumulados?.nieveHoyCm ?? 0;
+          const lluvia24h = it.acumulados?.lluvia24hMm ?? it.acumulados?.lluviaHoyMm ?? 0;
+          const nieve24h = it.acumulados?.nieve24hCm ?? it.acumulados?.nieveHoyCm ?? 0;
           const aqi = it.airQuality?.europeanAqi ?? null;
           const aqiInfo = getAqiInfo(aqi);
 
@@ -243,14 +245,14 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
 
                 {/* Pills: lluvia, nieve, viento, prob precipitación */}
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  {lluviaHoy > 0 && (
+                  {lluvia24h > 0 && (
                     <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                      💧 {n(lluviaHoy, 1)} mm lluvia
+                      💧 {n(lluvia24h, 1)} mm (24h)
                     </span>
                   )}
-                  {nieveHoy > 0 && (
+                  {nieve24h > 0 && (
                     <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
-                      ❄️ {n(nieveHoy, 1)} cm nieve
+                      ❄️ {n(nieve24h, 1)} cm nieve (24h)
                     </span>
                   )}
                   {c.windKph !== null && c.windKph > 0 && (
