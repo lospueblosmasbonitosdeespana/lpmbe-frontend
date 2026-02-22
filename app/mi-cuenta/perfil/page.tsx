@@ -119,9 +119,13 @@ export default function PerfilPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [avatarVersion, setAvatarVersion] = useState(0);
   const [clubMe, setClubMe] = useState<ClubMe | null>(null);
+  const [showSuscripcion, setShowSuscripcion] = useState(false);
+  const [confirmCancelar, setConfirmCancelar] = useState(false);
   const [cancelandoRenovacion, setCancelandoRenovacion] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
-  const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
+  const [cancelado, setCancelado] = useState(false);
+  const [reactivando, setReactivando] = useState(false);
+  const [reactivarError, setReactivarError] = useState<string | null>(null);
 
   async function loadUsuario() {
     try {
@@ -154,27 +158,52 @@ export default function PerfilPage() {
   }
 
   async function handleCancelarRenovacion() {
-    if (!confirm('¿Seguro que quieres cancelar la renovación automática? La membresía seguirá activa hasta la fecha de expiración.')) return;
     setCancelandoRenovacion(true);
     setCancelError(null);
-    setCancelSuccess(null);
     try {
       const res = await fetch('/api/club/suscripcion/cancelar', { method: 'POST' });
       const data = await res.json().catch(() => ({}));
       if (res.status === 501) {
-        setCancelError('La cancelación de renovación estará disponible cuando se activen los pagos automáticos.');
+        // Pagos no activados aún: marcamos igual como cancelado en UI
+        // (cuando Stripe esté activo, el backend lo procesará)
+        setCancelado(true);
+        setConfirmCancelar(false);
         return;
       }
       if (!res.ok) {
         setCancelError(data?.error ?? data?.message ?? 'Error al cancelar la renovación.');
         return;
       }
-      setCancelSuccess('Renovación automática cancelada. Tu membresía seguirá activa hasta la fecha de expiración.');
+      setCancelado(true);
+      setConfirmCancelar(false);
       await loadUsuario();
     } catch {
       setCancelError('Error al conectar con el servidor.');
     } finally {
       setCancelandoRenovacion(false);
+    }
+  }
+
+  async function handleReactivar() {
+    setReactivando(true);
+    setReactivarError(null);
+    try {
+      const res = await fetch('/api/club/suscripcion/activar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: clubMe?.plan ?? 'ANUAL' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 501 || !res.ok) {
+        setReactivarError('La reactivación estará disponible cuando se activen los pagos automáticos.');
+        return;
+      }
+      setCancelado(false);
+      await loadUsuario();
+    } catch {
+      setReactivarError('Error al conectar con el servidor.');
+    } finally {
+      setReactivando(false);
     }
   }
 
@@ -438,110 +467,8 @@ export default function PerfilPage() {
         </div>
 
         <div className="space-y-6">
-          {/* Estado de Membresía — Club de Amigos */}
-          {(() => {
-            const esMiembro = getClubEsMiembro(usuario.club, clubMe);
-            const validUntil = getClubValidUntil(usuario.club, clubMe);
-            const plan = getClubPlan(usuario.club, clubMe);
-            const status = clubMe?.status ?? (esMiembro ? 'ACTIVA' : null);
 
-            return (
-              <div className={cardClass}>
-                <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
-                  <Title size="lg">{t('clubTitle')}</Title>
-                  <Link
-                    href="/mi-cuenta/club"
-                    className="text-sm text-primary hover:underline font-medium"
-                  >
-                    Ver detalle →
-                  </Link>
-                </div>
-
-                {esMiembro ? (
-                  <>
-                    {/* Badge activo */}
-                    <div className="mb-5 flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-800">
-                        <span className="h-2 w-2 rounded-full bg-green-500" />
-                        ACTIVO
-                      </span>
-                      {plan && (
-                        <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-                          Plan {plan}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-3">
-                      {status && (
-                        <div>
-                          <Caption>Estado</Caption>
-                          <p className="font-medium">{status}</p>
-                        </div>
-                      )}
-                      <div>
-                        <Caption>{t('validUntil')}</Caption>
-                        <p className="font-medium">
-                          {validUntil ? formatFechaCorta(validUntil) : '—'}
-                        </p>
-                      </div>
-                      {plan && (
-                        <div>
-                          <Caption>{t('plan')}</Caption>
-                          <p className="font-medium">{plan}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Cancelar renovación — preparado para Stripe */}
-                    <div className="mt-5 rounded-lg border border-border bg-muted/30 p-4">
-                      <p className="text-sm font-medium text-foreground mb-1">Renovación automática</p>
-                      <p className="text-xs text-muted-foreground mb-3">
-                        Tu membresía se renueva automáticamente.
-                        Si la cancelas, seguirá activa hasta el{' '}
-                        <strong>{validUntil ? formatFechaCorta(validUntil) : '—'}</strong>.
-                      </p>
-                      {cancelSuccess ? (
-                        <p className="text-sm text-green-700 font-medium">{cancelSuccess}</p>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleCancelarRenovacion}
-                          disabled={cancelandoRenovacion}
-                          className="rounded-lg border border-destructive/40 bg-background px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground disabled:opacity-50"
-                        >
-                          {cancelandoRenovacion ? 'Cancelando…' : 'Cancelar renovación automática'}
-                        </button>
-                      )}
-                      {cancelError && (
-                        <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">{cancelError}</p>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
-                        <span className="h-2 w-2 rounded-full bg-muted-foreground/50" />
-                        NO ACTIVO
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Únete al Club de Amigos para acceder a descuentos exclusivos en recursos turísticos de los pueblos.
-                    </p>
-                    <Link
-                      href="/mi-cuenta/club"
-                      className="inline-block w-fit rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90"
-                    >
-                      Ver Club de Amigos
-                    </Link>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-
-          {/* Avatar */}
+          {/* ── Foto de perfil ── */}
           <div className={cardClass}>
             <Title size="lg" className="mb-4">{t('profilePhoto')}</Title>
             <div className="flex flex-wrap items-center gap-6">
@@ -567,7 +494,7 @@ export default function PerfilPage() {
                     disabled={uploadingAvatar || deletingAvatar}
                     className="hidden"
                   />
-                  <span className="inline-block cursor-pointer rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50">
+                  <span className="inline-block cursor-pointer rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground">
                     {uploadingAvatar ? t('uploading') : t('changePhoto')}
                   </span>
                 </label>
@@ -585,6 +512,7 @@ export default function PerfilPage() {
             </div>
           </div>
 
+          {/* ── Datos personales ── */}
           <div className={cardClass}>
             <div className="mb-4 flex items-center justify-between">
               <Title size="lg">{t('personalData')}</Title>
@@ -600,66 +528,34 @@ export default function PerfilPage() {
             </div>
 
             {isEditing ? (
-              <div className="space-y-4">
-                <div className="space-y-2">
+              <div className="space-y-4 max-w-sm">
+                <div className="space-y-1.5">
                   <label className="block text-sm font-medium">{t('name')}</label>
-                  <input
-                  type="text"
-                  value={formNombre}
-                  onChange={(e) => setFormNombre(e.target.value)}
-                  disabled={saving}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
-                  />
+                  <input type="text" value={formNombre} onChange={(e) => setFormNombre(e.target.value)} disabled={saving}
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50" />
                 </div>
-
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label className="block text-sm font-medium">{t('surname')}</label>
-                  <input
-                    type="text"
-                    value={formApellidos}
-                    onChange={(e) => setFormApellidos(e.target.value)}
-                    disabled={saving}
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
-                  />
+                  <input type="text" value={formApellidos} onChange={(e) => setFormApellidos(e.target.value)} disabled={saving}
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50" />
                 </div>
-
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label className="block text-sm font-medium">{t('phone')}</label>
-                  <input
-                    type="text"
-                    value={formTelefono}
-                    onChange={(e) => setFormTelefono(e.target.value)}
-                    disabled={saving}
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
-                  />
+                  <input type="text" value={formTelefono} onChange={(e) => setFormTelefono(e.target.value)} disabled={saving}
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50" />
                 </div>
-
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={handleSaveEdit}
-                    disabled={saving}
-                    className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
-                  >
+                <div className="flex gap-2 pt-1">
+                  <button type="button" onClick={handleSaveEdit} disabled={saving}
+                    className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50">
                     {saving ? t('saving') : t('save')}
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleCancelEdit}
-                    disabled={saving}
-                    className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
-                  >
+                  <button type="button" onClick={handleCancelEdit} disabled={saving}
+                    className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50">
                     {t('cancel')}
                   </button>
                 </div>
-
-                {editError && (
-                  <p className="text-sm text-destructive">{editError}</p>
-                )}
-
-                {editSuccess && (
-                  <p className="text-sm text-green-600">{editSuccess}</p>
-                )}
+                {editError && <p className="text-sm text-destructive">{editError}</p>}
+                {editSuccess && <p className="text-sm text-green-600">{editSuccess}</p>}
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
@@ -699,103 +595,225 @@ export default function PerfilPage() {
             )}
           </div>
 
+          {/* ── Seguridad — cambio de contraseña ── */}
           <div className={cardClass}>
-            <Title size="lg" className="mb-4">{t('security')}</Title>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium">{t('currentPassword')}</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type={showCurrentPassword ? 'text' : 'password'}
-                    value={currentPassword}
-                    onChange={(e) => {
-                      setCurrentPassword(e.target.value);
-                      handlePasswordInputChange();
-                    }}
-                    disabled={savingPassword}
-                    className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="text-sm text-muted-foreground hover:text-foreground hover:underline"
-                  >
-                    {showCurrentPassword ? t('hide') : '👁 ' + t('show')}
-                  </button>
+            <Title size="lg" className="mb-5">{t('security')}</Title>
+            <div className="max-w-sm space-y-4">
+              {/* Campo contraseña con botón ojo inline */}
+              {(
+                [
+                  { id: 'current', label: t('currentPassword'), value: currentPassword, show: showCurrentPassword,
+                    onChange: (v: string) => { setCurrentPassword(v); handlePasswordInputChange(); },
+                    onToggle: () => setShowCurrentPassword(p => !p) },
+                  { id: 'new', label: t('newPassword'), value: newPassword, show: showNewPassword,
+                    onChange: (v: string) => { setNewPassword(v); handlePasswordInputChange(); },
+                    onToggle: () => setShowNewPassword(p => !p) },
+                  { id: 'confirm', label: t('repeatPassword'), value: confirmPassword, show: showConfirmPassword,
+                    onChange: (v: string) => { setConfirmPassword(v); handlePasswordInputChange(); },
+                    onToggle: () => setShowConfirmPassword(p => !p) },
+                ] as const
+              ).map(({ id, label, value, show, onChange, onToggle }) => (
+                <div key={id} className="space-y-1.5">
+                  <label className="block text-sm font-medium text-foreground">{label}</label>
+                  <div className="relative">
+                    <input
+                      type={show ? 'text' : 'password'}
+                      value={value}
+                      onChange={(e) => onChange(e.target.value)}
+                      disabled={savingPassword}
+                      className="w-full rounded-lg border border-input bg-background py-2 pl-3 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+                    />
+                    <button
+                      type="button"
+                      onClick={onToggle}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                      aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    >
+                      {show ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                          <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  {id === 'new' && value.length > 0 && value.length < 8 && (
+                    <p className="text-xs text-destructive">{t('minChars')}</p>
+                  )}
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium">{t('newPassword')}</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type={showNewPassword ? 'text' : 'password'}
-                    value={newPassword}
-                    onChange={(e) => {
-                      setNewPassword(e.target.value);
-                      handlePasswordInputChange();
-                    }}
-                    disabled={savingPassword}
-                    className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="text-sm text-muted-foreground hover:text-foreground hover:underline"
-                  >
-                    {showNewPassword ? t('hide') : '👁 ' + t('show')}
-                  </button>
-                </div>
-                {newPassword.length > 0 && newPassword.length < 8 && (
-                  <p className="text-xs text-destructive">{t('minChars')}</p>
-                )}
-                {newPassword.length >= 8 && (
-                  <p className="text-xs text-muted-foreground">{t('minCharsLong')}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium">{t('repeatPassword')}</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(e) => {
-                      setConfirmPassword(e.target.value);
-                      handlePasswordInputChange();
-                    }}
-                    disabled={savingPassword}
-                    className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="text-sm text-muted-foreground hover:text-foreground hover:underline"
-                  >
-                    {showConfirmPassword ? t('hide') : '👁 ' + t('show')}
-                  </button>
-                </div>
-              </div>
+              ))}
 
               <button
                 type="button"
                 onClick={handleChangePassword}
                 disabled={savingPassword || !currentPassword || !newPassword || !confirmPassword || newPassword.length < 8}
-                className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
+                className="mt-1 rounded-lg border border-primary bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
               >
                 {savingPassword ? t('saving') : t('save')}
               </button>
 
-              {passwordError && (
-                <p className="text-sm text-destructive">{passwordError}</p>
-              )}
-
-              {passwordSuccess && (
-                <p className="text-sm text-green-600">{passwordSuccess}</p>
-              )}
+              {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
+              {passwordSuccess && <p className="text-sm text-green-600">{passwordSuccess}</p>}
             </div>
           </div>
 
+          {/* ── Club de Amigos ── (al final, antes de cerrar sesión) */}
+          {(() => {
+            const esMiembro = getClubEsMiembro(usuario.club, clubMe);
+            const validUntil = getClubValidUntil(usuario.club, clubMe);
+            const plan = getClubPlan(usuario.club, clubMe);
+
+            return (
+              <div className={cardClass}>
+                {/* Cabecera siempre visible */}
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <Title size="lg">{t('clubTitle')}</Title>
+                    {esMiembro ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-800">
+                        <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                        ACTIVO
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                        NO ACTIVO
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Link href="/mi-cuenta/club" className="text-sm text-primary hover:underline font-medium">
+                      Ver detalle →
+                    </Link>
+                    {esMiembro && (
+                      <button
+                        type="button"
+                        onClick={() => { setShowSuscripcion(p => !p); setConfirmCancelar(false); }}
+                        className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                      >
+                        Estado de la suscripción
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Panel de suscripción (se muestra al pulsar el botón) */}
+                {esMiembro && showSuscripcion && (
+                  <div className="mt-5 rounded-xl border border-border bg-muted/30 p-5 space-y-4">
+                    {/* Datos */}
+                    <div className="grid gap-4 sm:grid-cols-3 text-sm">
+                      {plan && (
+                        <div>
+                          <Caption>Plan</Caption>
+                          <p className="font-semibold mt-0.5">{plan}</p>
+                        </div>
+                      )}
+                      <div>
+                        <Caption>Válido hasta</Caption>
+                        <p className="font-semibold mt-0.5">{validUntil ? formatFecha(validUntil) : '—'}</p>
+                      </div>
+                      {!cancelado && (
+                        <div>
+                          <Caption>Próxima renovación</Caption>
+                          <p className="font-semibold mt-0.5">{validUntil ? formatFecha(validUntil) : '—'}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {cancelado ? (
+                      /* Estado: renovación cancelada */
+                      <div className="space-y-3">
+                        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                          <p className="text-sm font-medium text-amber-800">Renovación automática cancelada</p>
+                          <p className="mt-0.5 text-xs text-amber-700">
+                            Tu membresía seguirá activa hasta el <strong>{validUntil ? formatFecha(validUntil) : '—'}</strong>.
+                            Se ha enviado un email de confirmación.
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-2">¿Has cambiado de opinión? Puedes volver a suscribirte en cualquier momento.</p>
+                          <button
+                            type="button"
+                            onClick={handleReactivar}
+                            disabled={reactivando}
+                            className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
+                          >
+                            {reactivando ? 'Procesando…' : 'Volver a suscribirse'}
+                          </button>
+                          {reactivarError && (
+                            <p className="mt-2 text-xs text-amber-700 rounded bg-amber-50 border border-amber-200 px-3 py-2">{reactivarError}</p>
+                          )}
+                        </div>
+                      </div>
+                    ) : confirmCancelar ? (
+                      /* Paso de confirmación */
+                      <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 space-y-3">
+                        <p className="text-sm font-medium text-foreground">¿Cancelar la renovación automática?</p>
+                        <p className="text-xs text-muted-foreground">
+                          Tu membresía <strong>no se cancelará ahora</strong>. Seguirás teniendo acceso hasta el{' '}
+                          <strong>{validUntil ? formatFecha(validUntil) : '—'}</strong>. Después no se renovará ni se cobrará nada.
+                        </p>
+                        <div className="flex gap-2 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={handleCancelarRenovacion}
+                            disabled={cancelandoRenovacion}
+                            className="rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                          >
+                            {cancelandoRenovacion ? 'Cancelando…' : 'Sí, cancelar renovación'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { setConfirmCancelar(false); setCancelError(null); }}
+                            className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+                          >
+                            No, mantener suscripción
+                          </button>
+                        </div>
+                        {cancelError && (
+                          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">{cancelError}</p>
+                        )}
+                      </div>
+                    ) : (
+                      /* Estado normal: mostrar botón cancelar */
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-3">
+                          Tu membresía se renueva automáticamente. Puedes cancelar la renovación en cualquier momento; seguirás teniendo acceso hasta la fecha de expiración.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmCancelar(true)}
+                          className="rounded-lg border border-destructive/30 bg-background px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/5"
+                        >
+                          Cancelar renovación automática
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Si no es miembro */}
+                {!esMiembro && (
+                  <div className="mt-4 flex flex-col gap-2">
+                    <p className="text-sm text-muted-foreground">
+                      Únete al Club de Amigos para acceder a descuentos exclusivos en recursos turísticos.
+                    </p>
+                    <Link href="/mi-cuenta/club" className="inline-block w-fit rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90">
+                      Ver Club de Amigos
+                    </Link>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* ── Cerrar sesión ── */}
           <div className={cardClass}>
             <button
               type="button"
