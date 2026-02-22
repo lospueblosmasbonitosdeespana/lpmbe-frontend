@@ -159,9 +159,10 @@ function sortItems(items: MeteoItem[], mode: SortMode): MeteoItem[] {
     case "temp_desc": return arr.sort((a, b) => (b.meteo.current.temperatureC ?? -9999) - (a.meteo.current.temperatureC ?? -9999));
     case "alpha": return arr.sort((a, b) => a.pueblo.nombre.localeCompare(b.pueblo.nombre, "es"));
     case "rain_desc": return arr.sort((a, b) => {
-      const ra = a.acumulados?.lluvia24hMm ?? a.acumulados?.lluviaHoyMm ?? 0;
-      const rb = b.acumulados?.lluvia24hMm ?? b.acumulados?.lluviaHoyMm ?? 0;
-      return (rb ?? 0) - (ra ?? 0);
+      const ra = a.acumulados?.lluvia24hMm ?? 0;
+      const rb = b.acumulados?.lluvia24hMm ?? 0;
+      if (rb !== ra) return rb - ra;
+      return a.pueblo.nombre.localeCompare(b.pueblo.nombre, "es");
     });
     case "wind_desc": return arr.sort((a, b) => (b.meteo.current.windKph ?? 0) - (a.meteo.current.windKph ?? 0));
     case "aqi_asc": return arr.sort((a, b) => (a.airQuality?.europeanAqi ?? 9999) - (b.airQuality?.europeanAqi ?? 9999));
@@ -252,9 +253,9 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
 
                 {/* Pills: lluvia, nieve, viento, prob precipitación */}
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  {lluvia24h > 0 && (
-                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#efe2d8] text-[#60524d] border border-[#e2d5cb]">
-                      <CloudRain size={11} className="text-slate-500" strokeWidth={1.5} />
+                  {lluvia24h != null && (
+                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${lluvia24h === 0 ? "bg-[#efe2d8]/50 text-[#a09490] border-[#e2d5cb]" : "bg-[#efe2d8] text-[#60524d] border-[#e2d5cb]"}`}>
+                      <CloudRain size={11} className={lluvia24h === 0 ? "text-stone-300" : "text-slate-500"} strokeWidth={1.5} />
                       {n(lluvia24h, 1)} mm (24h)
                     </span>
                   )}
