@@ -691,33 +691,52 @@ function MapaSection({ mapPreviewImage }: { mapPreviewImage?: string }) {
   const t = useTranslations("home");
   const tMapas = useTranslations("mapas");
   return (
-    <Section spacing="md" background="default">
+    <Section spacing="lg" background="default">
       <Container>
-        <div className="relative rounded-2xl overflow-hidden">
+        {/* Cabecera de sección */}
+        <div className="mb-8 flex items-end justify-between">
+          <div>
+            <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
+              {t("mapTitle")}
+            </p>
+            <Title as="h2" size="2xl" className="mb-2">
+              {t("discoverVillagesMap")}
+            </Title>
+            <Muted className="text-base max-w-lg">
+              {t("mapDesc")}
+            </Muted>
+          </div>
+          <Button asChild size="lg" className="rounded-full hidden md:inline-flex">
+            <Link href="https://maps.lospueblosmasbonitosdeespana.org/es/pueblos">
+              {t("discoverVillagesMap")} <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+
+        {/* Imagen del mapa */}
+        <Link
+          href="https://maps.lospueblosmasbonitosdeespana.org/es/pueblos"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group relative block rounded-2xl overflow-hidden"
+          aria-label={t("mapTitle")}
+        >
           <div className="relative h-[280px] md:h-[320px]">
             <Image
               src={mapPreviewImage || "/mapa_espana_pueblos.png"}
               alt={tMapas("alt")}
               fill
-              className="object-cover"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-black/20" />
+            <div className="absolute inset-0 bg-black/15 group-hover:bg-black/10 transition" />
           </div>
-
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-            <Title as="h2" size="2xl" className="text-white uppercase tracking-wide mb-6">
-              {t("mapTitle")}
-            </Title>
-            <Muted className="text-white/80 mb-6">
-              {t("mapDesc")}
-            </Muted>
-            <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90">
-              <Link href="https://maps.lospueblosmasbonitosdeespana.org/es/pueblos">
-                {t("discoverVillagesMap")}
-              </Link>
-            </Button>
+          {/* CTA mobile */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 md:hidden">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg">
+              {t("discoverVillagesMap")} <ArrowRight className="h-3.5 w-3.5" />
+            </span>
           </div>
-        </div>
+        </Link>
       </Container>
     </Section>
   );
@@ -795,42 +814,51 @@ function TiendaBanner({ shopBannerImage }: { shopBannerImage?: string }) {
   return (
     <Section spacing="lg" background="muted">
       <Container>
-        <div className="relative rounded-3xl overflow-hidden">
+        {/* Cabecera de sección */}
+        <div className="mb-8 flex items-end justify-between">
+          <div>
+            <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
+              {t("officialShop")}
+            </p>
+            <Title as="h2" size="2xl" className="mb-2">
+              {t("theShop")}
+            </Title>
+            <Muted className="text-base max-w-lg">
+              {t("shopDescLong")}
+            </Muted>
+          </div>
+          <Button
+            asChild
+            size="lg"
+            className="rounded-full hidden md:inline-flex"
+          >
+            <Link href="/tienda">
+              {t("visitShop")} <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+
+        {/* Banner imagen */}
+        <Link
+          href="/tienda"
+          className="group relative block rounded-3xl overflow-hidden"
+        >
           <div className="relative aspect-[21/9] md:aspect-[3/1]">
             <Image
               src={shopBannerImage || "/hero/2.jpg"}
               alt={t("theShop")}
               fill
-              className="object-cover"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-primary/40" />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/60 via-primary/30 to-transparent" />
           </div>
-
-          <div className="absolute inset-0 flex items-center justify-between p-8 md:p-12">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-medium mb-3">
-                <Store className="h-3 w-3" />
-                {t("officialShop")}
-              </div>
-              <Title as="h2" size="2xl" className="text-white mb-2">
-                {t("theShop")}
-              </Title>
-              <p className="text-white/80 max-w-md">
-                {t("shopDescLong")}
-              </p>
-            </div>
-            <Button
-              asChild
-              size="lg"
-              variant="secondary"
-              className="rounded-full hidden md:inline-flex"
-            >
-              <Link href="/tienda">
-                {t("visitShop")} <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+          {/* CTA mobile */}
+          <div className="absolute bottom-4 left-4 md:hidden">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
+              {t("visitShop")} <ArrowRight className="h-3.5 w-3.5" />
+            </span>
           </div>
-        </div>
+        </Link>
       </Container>
     </Section>
   );
