@@ -9,6 +9,14 @@ type ClubConfig = {
   inscripcionesAbiertas: boolean;
   precioAnualCents: number;
   precioMensualCents: number;
+  oferta: {
+    activa: boolean;
+    vigente: boolean;
+    descuento: number;
+    tipo: string;
+    expiraEn: string | null;
+    texto: string | null;
+  };
 };
 
 type ClubStats = {
@@ -96,6 +104,14 @@ export default function ClubAdminClient() {
   // Uso recursos days
   const [usosDays, setUsosDays] = useState(30);
 
+  // Oferta
+  const [ofertaDescuento, setOfertaDescuento] = useState('');
+  const [ofertaTipo, setOfertaTipo] = useState('AMBOS');
+  const [ofertaExpiraEn, setOfertaExpiraEn] = useState('');
+  const [ofertaTexto, setOfertaTexto] = useState('');
+  const [savingOferta, setSavingOferta] = useState(false);
+  const [ofertaMsg, setOfertaMsg] = useState<string | null>(null);
+
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -111,6 +127,11 @@ export default function ClubAdminClient() {
         setConfig(cfg);
         setPrecioAnual((cfg.precioAnualCents / 100).toFixed(2));
         setPrecioMensual((cfg.precioMensualCents / 100).toFixed(2));
+        // Oferta
+        setOfertaDescuento(String(cfg.oferta?.descuento ?? 0));
+        setOfertaTipo(cfg.oferta?.tipo ?? 'AMBOS');
+        setOfertaExpiraEn(cfg.oferta?.expiraEn ? cfg.oferta.expiraEn.slice(0, 16) : '');
+        setOfertaTexto(cfg.oferta?.texto ?? '');
       }
       if (statsRes.ok) setStats(await statsRes.json());
       if (usoRes.ok) setUsoRecursos(await usoRes.json());
@@ -176,6 +197,56 @@ export default function ClubAdminClient() {
       setConfigMsg('Error al guardar los precios.');
     }
     setSavingConfig(false);
+  }
+
+  async function toggleOferta() {
+    if (!config) return;
+    setSavingOferta(true);
+    setOfertaMsg(null);
+    const next = !config.oferta.activa;
+    const res = await fetch('/api/club/admin/config', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ofertaActiva: next }),
+    });
+    if (res.ok) {
+      const updated: ClubConfig = await res.json();
+      setConfig(updated);
+      setOfertaMsg(next ? 'Oferta activada.' : 'Oferta desactivada.');
+    } else {
+      setOfertaMsg('Error al actualizar.');
+    }
+    setSavingOferta(false);
+  }
+
+  async function saveOferta() {
+    setSavingOferta(true);
+    setOfertaMsg(null);
+    const desc = parseInt(ofertaDescuento, 10);
+    if (isNaN(desc) || desc < 0 || desc > 100) {
+      setOfertaMsg('El descuento debe ser entre 0 y 100.');
+      setSavingOferta(false);
+      return;
+    }
+    const body: Record<string, unknown> = {
+      ofertaDescuento: desc,
+      ofertaTipo,
+      ofertaTexto: ofertaTexto || null,
+      ofertaExpiraEn: ofertaExpiraEn ? new Date(ofertaExpiraEn).toISOString() : null,
+    };
+    const res = await fetch('/api/club/admin/config', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) {
+      const updated: ClubConfig = await res.json();
+      setConfig(updated);
+      setOfertaMsg('Oferta guardada correctamente.');
+    } else {
+      setOfertaMsg('Error al guardar la oferta.');
+    }
+    setSavingOferta(false);
   }
 
   if (loading) return <div className="py-12 text-center text-sm text-gray-500">Cargando...</div>;
@@ -263,6 +334,142 @@ export default function ClubAdminClient() {
           {configMsg && (
             <span className={`text-sm ${configMsg.startsWith('Error') ? 'text-red-600' : 'text-green-600'}`}>
               {configMsg}
+            </span>
+          )}
+        </div>
+      </section>
+
+      {/* ── OFERTA / PROMOCIÓN ──────────────────────────────────────── */}
+      <section className="rounded-xl border bg-white p-5 shadow-sm">
+        <h2 className="mb-4 text-base font-semibold text-gray-800">Oferta / Promoción</h2>
+
+        {/* Toggle activa */}
+        <div className="mb-5 flex items-center justify-between rounded-lg border p-4">
+          <div>
+            <div className="font-medium text-gray-800">Oferta</div>
+            <div className="mt-0.5 text-sm text-gray-500">
+              {config?.oferta?.activa ? (
+                config?.oferta?.vigente ? (
+                  <span className="text-green-600 font-medium">
+                    Activa — {config.oferta.descuento}% descuento
+                    {config.oferta.tipo !== 'AMBOS' ? ` (solo ${config.oferta.tipo === 'ANUAL' ? 'anual' : 'mensual'})` : ''}
+                    {config.oferta.expiraEn && (
+                      <span className="text-gray-500 font-normal">
+                        {' '}· Expira {new Date(config.oferta.expiraEn).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  <span className="text-amber-600 font-medium">Activada pero expirada — los usuarios no ven descuento</span>
+                )
+              ) : (
+                'Desactivada — no se aplica descuento.'
+              )}
+            </div>
+          </div>
+          <button
+            onClick={toggleOferta}
+            disabled={savingOferta}
+            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 ${
+              config?.oferta?.activa ? 'bg-green-500' : 'bg-gray-300'
+            }`}
+            title={config?.oferta?.activa ? 'Desactivar oferta' : 'Activar oferta'}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                config?.oferta?.activa ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* Configuración de la oferta */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Descuento (%)</label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="1"
+              value={ofertaDescuento}
+              onChange={(e) => setOfertaDescuento(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              placeholder="20"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Aplica a</label>
+            <select
+              value={ofertaTipo}
+              onChange={(e) => setOfertaTipo(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="AMBOS">Anual y Mensual</option>
+              <option value="ANUAL">Solo Anual</option>
+              <option value="MENSUAL">Solo Mensual</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Expira el</label>
+            <input
+              type="datetime-local"
+              value={ofertaExpiraEn}
+              onChange={(e) => setOfertaExpiraEn(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+            <p className="mt-1 text-[11px] text-gray-400">Vacío = sin fecha límite</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Texto promocional</label>
+            <input
+              type="text"
+              value={ofertaTexto}
+              onChange={(e) => setOfertaTexto(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              placeholder="Ej: ¡Oferta de lanzamiento!"
+            />
+          </div>
+        </div>
+
+        {/* Preview del precio con descuento */}
+        {config && parseInt(ofertaDescuento) > 0 && (
+          <div className="mt-4 rounded-lg border border-dashed border-green-300 bg-green-50 p-3">
+            <div className="text-xs font-medium text-green-700 mb-1">Vista previa del precio con descuento:</div>
+            <div className="flex flex-wrap gap-4 text-sm">
+              {(ofertaTipo === 'AMBOS' || ofertaTipo === 'ANUAL') && (
+                <div>
+                  <span className="text-gray-500">Anual: </span>
+                  <span className="line-through text-gray-400 mr-1">{euros(config.precioAnualCents)}</span>
+                  <span className="font-bold text-green-700">
+                    {euros(Math.round(config.precioAnualCents * (1 - parseInt(ofertaDescuento) / 100)))}
+                  </span>
+                </div>
+              )}
+              {(ofertaTipo === 'AMBOS' || ofertaTipo === 'MENSUAL') && (
+                <div>
+                  <span className="text-gray-500">Mensual: </span>
+                  <span className="line-through text-gray-400 mr-1">{euros(config.precioMensualCents)}</span>
+                  <span className="font-bold text-green-700">
+                    {euros(Math.round(config.precioMensualCents * (1 - parseInt(ofertaDescuento) / 100)))}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-3 flex items-center gap-3">
+          <button
+            onClick={saveOferta}
+            disabled={savingOferta}
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+          >
+            {savingOferta ? 'Guardando...' : 'Guardar oferta'}
+          </button>
+          {ofertaMsg && (
+            <span className={`text-sm ${ofertaMsg.startsWith('Error') ? 'text-red-600' : 'text-green-600'}`}>
+              {ofertaMsg}
             </span>
           )}
         </div>

@@ -18,10 +18,15 @@ type ClubMe = {
   cancelAtPeriodEnd?: boolean;
   qrToken?: string | null;
   qrPayload?: string | null;
-  // Configuración del club (devuelta por /club/me)
   inscripcionesAbiertas?: boolean;
   precioAnualCents?: number;
   precioMensualCents?: number;
+  oferta?: {
+    descuento: number;
+    tipo: string;
+    expiraEn: string | null;
+    texto: string | null;
+  } | null;
 };
 
 type ClubValidacion = {
@@ -443,28 +448,29 @@ export default function ClubPage() {
               </Caption>
               {clubMe?.inscripcionesAbiertas ? (
                 <div className="space-y-4">
+                  {/* Banner de oferta */}
+                  {clubMe.oferta && clubMe.oferta.descuento > 0 && (
+                    <OfertaBanner oferta={clubMe.oferta} />
+                  )}
                   {/* Tarjetas de precio */}
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-lg border border-primary/30 bg-white p-4">
-                      <div className="text-sm font-semibold text-gray-700 mb-1">Plan Anual</div>
-                      {clubMe.precioAnualCents !== undefined && (
-                        <div className="text-2xl font-bold text-primary">
-                          {(clubMe.precioAnualCents / 100).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
-                          <span className="ml-1 text-sm font-normal text-gray-500">/ año</span>
-                        </div>
-                      )}
-                      <p className="mt-1 text-xs text-gray-400">Descuentos en todos los recursos del club</p>
-                    </div>
-                    <div className="rounded-lg border border-border bg-white p-4">
-                      <div className="text-sm font-semibold text-gray-700 mb-1">Plan Mensual</div>
-                      {clubMe.precioMensualCents !== undefined && (
-                        <div className="text-2xl font-bold text-gray-700">
-                          {(clubMe.precioMensualCents / 100).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
-                          <span className="ml-1 text-sm font-normal text-gray-500">/ mes</span>
-                        </div>
-                      )}
-                      <p className="mt-1 text-xs text-gray-400">Cancela cuando quieras</p>
-                    </div>
+                    <PrecioCard
+                      titulo="Plan Anual"
+                      precioCents={clubMe.precioAnualCents ?? 0}
+                      periodo="/ año"
+                      subtitulo="Descuentos en todos los recursos del club"
+                      oferta={clubMe.oferta}
+                      tipoOferta="ANUAL"
+                      destacado
+                    />
+                    <PrecioCard
+                      titulo="Plan Mensual"
+                      precioCents={clubMe.precioMensualCents ?? 0}
+                      periodo="/ mes"
+                      subtitulo="Cancela cuando quieras"
+                      oferta={clubMe.oferta}
+                      tipoOferta="MENSUAL"
+                    />
                   </div>
                   <div className="flex flex-wrap gap-3">
                     <button
@@ -625,5 +631,116 @@ export default function ClubPage() {
         </div>
       </Container>
     </Section>
+  );
+}
+
+// ─── Componentes de oferta ────────────────────────────────────────────────
+
+type Oferta = { descuento: number; tipo: string; expiraEn: string | null; texto: string | null };
+
+function OfertaBanner({ oferta }: { oferta: Oferta }) {
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    if (!oferta.expiraEn) return;
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, [oferta.expiraEn]);
+
+  const expira = oferta.expiraEn ? new Date(oferta.expiraEn).getTime() : null;
+  const restante = expira ? Math.max(0, expira - now) : null;
+
+  function fmtCountdown(ms: number) {
+    const totalSecs = Math.floor(ms / 1000);
+    const d = Math.floor(totalSecs / 86400);
+    const h = Math.floor((totalSecs % 86400) / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = totalSecs % 60;
+    if (d > 0) return `${d}d ${h}h ${m}m`;
+    if (h > 0) return `${h}h ${m}m ${s}s`;
+    return `${m}m ${s}s`;
+  }
+
+  return (
+    <div className="rounded-lg border-2 border-green-400 bg-gradient-to-r from-green-50 to-emerald-50 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center rounded-full bg-green-600 px-2.5 py-0.5 text-xs font-bold text-white">
+              -{oferta.descuento}%
+            </span>
+            <span className="text-sm font-semibold text-green-800">
+              {oferta.texto ?? '¡Oferta especial!'}
+            </span>
+          </div>
+          <p className="text-xs text-green-700">
+            {oferta.tipo === 'ANUAL' && 'Descuento en el plan anual.'}
+            {oferta.tipo === 'MENSUAL' && 'Descuento en el plan mensual.'}
+            {oferta.tipo === 'AMBOS' && 'Descuento en todos los planes.'}
+          </p>
+        </div>
+        {restante !== null && restante > 0 && (
+          <div className="text-right shrink-0">
+            <div className="text-[10px] uppercase tracking-wider text-green-600 font-medium">Termina en</div>
+            <div className="text-lg font-bold text-green-800 tabular-nums">{fmtCountdown(restante)}</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PrecioCard({
+  titulo,
+  precioCents,
+  periodo,
+  subtitulo,
+  oferta,
+  tipoOferta,
+  destacado,
+}: {
+  titulo: string;
+  precioCents: number;
+  periodo: string;
+  subtitulo: string;
+  oferta?: Oferta | null;
+  tipoOferta: 'ANUAL' | 'MENSUAL';
+  destacado?: boolean;
+}) {
+  const tieneDescuento =
+    oferta &&
+    oferta.descuento > 0 &&
+    (oferta.tipo === 'AMBOS' || oferta.tipo === tipoOferta);
+
+  const precioFinal = tieneDescuento
+    ? Math.round(precioCents * (1 - oferta!.descuento / 100))
+    : precioCents;
+
+  const fmtPrice = (cents: number) =>
+    (cents / 100).toLocaleString('es-ES', { minimumFractionDigits: 2 });
+
+  return (
+    <div className={`rounded-lg border p-4 ${destacado ? 'border-primary/30 bg-white' : 'border-border bg-white'}`}>
+      <div className="text-sm font-semibold text-gray-700 mb-1">{titulo}</div>
+      <div className="flex items-baseline gap-2">
+        {tieneDescuento ? (
+          <>
+            <span className="text-lg text-gray-400 line-through">{fmtPrice(precioCents)} €</span>
+            <span className="text-2xl font-bold text-green-700">{fmtPrice(precioFinal)} €</span>
+          </>
+        ) : (
+          <span className={`text-2xl font-bold ${destacado ? 'text-primary' : 'text-gray-700'}`}>
+            {fmtPrice(precioFinal)} €
+          </span>
+        )}
+        <span className="text-sm font-normal text-gray-500">{periodo}</span>
+      </div>
+      {tieneDescuento && (
+        <span className="mt-1 inline-block rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium text-green-700">
+          Ahorras {fmtPrice(precioCents - precioFinal)} €
+        </span>
+      )}
+      <p className="mt-1 text-xs text-gray-400">{subtitulo}</p>
+    </div>
   );
 }
