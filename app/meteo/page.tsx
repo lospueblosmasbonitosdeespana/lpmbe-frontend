@@ -216,7 +216,7 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
           return (
             <div
               key={it.pueblo.id}
-              className="flex items-start gap-4 px-4 py-3 border border-[#e2d5cb] rounded-lg hover:bg-[#efe2d8]/50 transition bg-[#fefbf8]"
+              className="flex items-start gap-4 px-4 py-3 border border-[#e2d5cb] rounded-lg hover:bg-[#e8d9cd] transition bg-[#efe2d8]"
             >
               {/* Temperatura + máx/mín */}
               <div className="flex-shrink-0 w-20 text-center">
