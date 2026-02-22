@@ -478,8 +478,8 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
           {logos.length === 0 ? (
             <p className="text-sm text-gray-500">
               No hay logos disponibles.{' '}
-              <a href="/gestion/asociacion/logos" className="text-primary hover:underline">
-                Añade logos en la biblioteca
+              <a href="/gestion/asociacion/ajustes" className="text-primary hover:underline">
+                Añade logos en Ajustes de marca
               </a>
             </p>
           ) : (
@@ -526,8 +526,8 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
           )}
           <p className="text-xs text-gray-500">
             Se muestra a la derecha del título. Gestiona logos en{' '}
-            <a href="/gestion/asociacion/logos" className="text-primary hover:underline">
-              Biblioteca de logos
+            <a href="/gestion/asociacion/ajustes" className="text-primary hover:underline">
+              Ajustes de marca y logos
             </a>
           </p>
         </div>

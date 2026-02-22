@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Trash2 } from 'lucide-react';
+import { Pencil, Trash2, X, Check, Upload } from 'lucide-react';
 
 type Settings = {
   brandName: string;
@@ -18,15 +17,18 @@ type Logo = {
   nombre: string;
   url: string;
   etiqueta: string | null;
+  orden?: number;
+  _count?: { rutas: number };
 };
 
 export default function AjustesClient() {
   const router = useRouter();
 
+  // --- Brand settings ---
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+  const [settingsSuccess, setSettingsSuccess] = useState(false);
 
   const [brandName, setBrandName] = useState('');
   const [activeLogo, setActiveLogo] = useState<'default' | 'variant' | 'text'>('text');
@@ -34,28 +36,27 @@ export default function AjustesClient() {
   const [logoAlt, setLogoAlt] = useState('');
   const [logoVariantUrl, setLogoVariantUrl] = useState<string | null>(null);
 
-  // Biblioteca de logos
+  // --- Logo library ---
   const [logos, setLogos] = useState<Logo[]>([]);
+  const [libError, setLibError] = useState<string | null>(null);
 
-  // Crear logo (formulario inline)
-  const [showNewLogoForm, setShowNewLogoForm] = useState(false);
-  const [newLogoNombre, setNewLogoNombre] = useState('');
-  const [newLogoUrl, setNewLogoUrl] = useState('');
-  const [newLogoEtiqueta, setNewLogoEtiqueta] = useState('');
-  const [newLogoDestino, setNewLogoDestino] = useState<'header' | 'footer' | 'ambos'>('header');
-  const [creatingLogo, setCreatingLogo] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
+  // Form: new/edit logo
+  const [editingId, setEditingId] = useState<number | null>(null); // -1 = new
+  const [form, setForm] = useState({ nombre: '', url: '', etiqueta: '' });
+  const [libSaving, setLibSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  // Quick-assign feedback
+  const [assigningId, setAssigningId] = useState<number | null>(null);
 
   const loadLogos = useCallback(async () => {
     try {
-      const logosRes = await fetch('/api/admin/logos', { cache: 'no-store' });
-      if (logosRes.ok) {
-        const logosData = await logosRes.json();
-        setLogos(Array.isArray(logosData) ? logosData : []);
+      const res = await fetch('/api/admin/logos', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        setLogos(Array.isArray(data) ? data : []);
       }
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   }, []);
 
   useEffect(() => {
@@ -70,7 +71,7 @@ export default function AjustesClient() {
           window.location.href = '/entrar';
           return;
         }
-        if (!settingsRes.ok) throw new Error('Error cargando ajustes');
+        if (!settingsRes.ok) throw new Error(`Error cargando ajustes (${settingsRes.status})`);
 
         const data: Settings = await settingsRes.json();
         setBrandName(data.brandName);
@@ -84,7 +85,7 @@ export default function AjustesClient() {
           setLogos(Array.isArray(logosData) ? logosData : []);
         }
       } catch (e: any) {
-        setError(e?.message ?? 'Error al cargar');
+        setSettingsError(e?.message ?? 'Error al cargar');
       } finally {
         setLoading(false);
       }
@@ -92,544 +93,454 @@ export default function AjustesClient() {
     load();
   }, []);
 
-  async function handleUploadLogo(file: File) {
-    setUploadingLogo(true);
-    setError(null);
-    try {
-      const { uploadImageToR2 } = await import('@/src/lib/uploadHelper');
-      const { url } = await uploadImageToR2(file, 'logos');
-      setNewLogoUrl(url);
-      if (!newLogoNombre.trim()) {
-        setNewLogoNombre(file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '));
-      }
-    } catch (e: any) {
-      setError(e?.message ?? 'Error subiendo imagen a R2');
-    } finally {
-      setUploadingLogo(false);
-    }
-  }
-
-  async function handleCreateLogo() {
-    if (!newLogoUrl.trim()) {
-      setError('Primero sube una imagen');
-      return;
-    }
-    if (!newLogoNombre.trim()) {
-      setError('El nombre del logo es obligatorio');
-      return;
-    }
-    setCreatingLogo(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/admin/logos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre: newLogoNombre.trim(),
-          url: newLogoUrl.trim(),
-          etiqueta: newLogoEtiqueta.trim() || null,
-        }),
-      });
-      if (!res.ok) throw new Error('Error creando logo');
-      await loadLogos();
-
-      const createdUrl = newLogoUrl.trim();
-
-      const newLogoUrlValue = (newLogoDestino === 'header' || newLogoDestino === 'ambos') ? createdUrl : logoUrl;
-      const newVariantValue = (newLogoDestino === 'footer' || newLogoDestino === 'ambos') ? createdUrl : logoVariantUrl;
-      const newActiveLogoValue = (newLogoDestino === 'header' || newLogoDestino === 'ambos') ? 'default' as const : activeLogo;
-
-      const patchPayload: Settings = {
-        brandName: brandName.trim() || 'LPBME',
-        activeLogo: newActiveLogoValue,
-        logoUrl: newLogoUrlValue,
-        logoAlt: logoAlt.trim() || 'Logo',
-        logoVariantUrl: newVariantValue,
-      };
-      const patchRes = await fetch('/api/admin/site-settings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patchPayload),
-      });
-      if (!patchRes.ok) {
-        throw new Error('Error al guardar los ajustes del logo');
-      }
-
-      setLogoUrl(newLogoUrlValue);
-      setLogoVariantUrl(newVariantValue);
-      setActiveLogo(newActiveLogoValue);
-
-      setShowNewLogoForm(false);
-      setNewLogoNombre('');
-      setNewLogoUrl('');
-      setNewLogoEtiqueta('');
-      setNewLogoDestino('header');
-      setSuccess(true);
-    } catch (e: any) {
-      setError(e?.message ?? 'Error al crear logo');
-    } finally {
-      setCreatingLogo(false);
-    }
-  }
-
-  async function handleDeleteLogo(logo: Logo, e: React.MouseEvent) {
+  // ---- Brand settings save ----
+  async function handleSaveSettings(e: React.FormEvent) {
     e.preventDefault();
-    e.stopPropagation();
-    if (!confirm(`¿Eliminar el logo "${logo.nombre}"?`)) return;
-    try {
-      const res = await fetch(`/api/admin/logos/${logo.id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Error eliminando logo');
-      if (logoUrl === logo.url) setLogoUrl(null);
-      if (logoVariantUrl === logo.url) setLogoVariantUrl(null);
-      await loadLogos();
-    } catch (e: any) {
-      setError(e?.message ?? 'Error al eliminar');
-    }
-  }
-
-  async function handleSave(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setSuccess(false);
-
-    if (!brandName.trim()) {
-      setError('El nombre es requerido');
-      return;
-    }
-
+    if (!brandName.trim()) { setSettingsError('El nombre es requerido'); return; }
+    setSettingsError(null);
+    setSettingsSuccess(false);
     setSaving(true);
     try {
-      const payload: Settings = {
-        brandName: brandName.trim(),
-        activeLogo,
-        logoUrl,
-        logoAlt: logoAlt.trim() || 'Logo',
-        logoVariantUrl,
-      };
-
       const res = await fetch('/api/admin/site-settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ brandName: brandName.trim(), activeLogo, logoUrl, logoAlt: logoAlt.trim() || 'Logo', logoVariantUrl } as Settings),
       });
-
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.message ?? 'Error guardando');
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d?.message ?? 'Error guardando');
       }
-
-      setSuccess(true);
-      setTimeout(() => {
-        router.refresh();
-      }, 500);
+      setSettingsSuccess(true);
+      setTimeout(() => { router.refresh(); }, 600);
     } catch (e: any) {
-      setError(e?.message ?? 'Error al guardar');
+      setSettingsError(e?.message ?? 'Error al guardar');
     } finally {
       setSaving(false);
     }
   }
 
-  if (loading) {
-    return <div className="mt-6 text-gray-600">Cargando...</div>;
+  // ---- Quick assign (header / footer) ----
+  async function assignLogo(logo: Logo, target: 'header' | 'footer') {
+    setAssigningId(logo.id);
+    try {
+      const newLogoUrl = target === 'header' ? logo.url : logoUrl;
+      const newVariantUrl = target === 'footer' ? logo.url : logoVariantUrl;
+      const newActive = target === 'header' ? 'default' as const : activeLogo;
+      const res = await fetch('/api/admin/site-settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brandName, activeLogo: newActive, logoUrl: newLogoUrl, logoAlt: logoAlt || 'Logo', logoVariantUrl: newVariantUrl }),
+      });
+      if (!res.ok) throw new Error('Error asignando');
+      setLogoUrl(newLogoUrl);
+      setLogoVariantUrl(newVariantUrl);
+      setActiveLogo(newActive);
+    } catch (e: any) {
+      setSettingsError(e?.message ?? 'Error asignando logo');
+    } finally {
+      setAssigningId(null);
+    }
   }
 
-  const selectedHeaderLogo = logos.find((l) => l.url === logoUrl);
-  const selectedFooterLogo = logos.find((l) => l.url === logoVariantUrl);
+  async function unassignLogo(target: 'header' | 'footer') {
+    const newLogoUrl = target === 'header' ? null : logoUrl;
+    const newVariantUrl = target === 'footer' ? null : logoVariantUrl;
+    const newActive = target === 'header' ? 'text' as const : activeLogo;
+    const res = await fetch('/api/admin/site-settings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ brandName, activeLogo: newActive, logoUrl: newLogoUrl, logoAlt: logoAlt || 'Logo', logoVariantUrl: newVariantUrl }),
+    });
+    if (res.ok) {
+      setLogoUrl(newLogoUrl);
+      setLogoVariantUrl(newVariantUrl);
+      setActiveLogo(newActive);
+    }
+  }
+
+  // ---- Logo library CRUD ----
+  function startNew() {
+    setEditingId(-1);
+    setForm({ nombre: '', url: '', etiqueta: '' });
+    setLibError(null);
+  }
+
+  function startEdit(logo: Logo) {
+    setEditingId(logo.id);
+    setForm({ nombre: logo.nombre, url: logo.url, etiqueta: logo.etiqueta ?? '' });
+    setLibError(null);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setForm({ nombre: '', url: '', etiqueta: '' });
+    setLibError(null);
+  }
+
+  async function handleUploadFile(file: File) {
+    setUploading(true);
+    setLibError(null);
+    try {
+      const { uploadImageToR2 } = await import('@/src/lib/uploadHelper');
+      const { url, warning } = await uploadImageToR2(file, 'logos');
+      if (warning) console.warn('[Logos]', warning);
+      setForm((p) => ({ ...p, url }));
+      if (!form.nombre.trim()) {
+        setForm((p) => ({ ...p, nombre: file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ') }));
+      }
+    } catch (e: any) {
+      setLibError(e?.message ?? 'Error subiendo imagen');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleSaveLogo() {
+    if (!form.url.trim()) { setLibError('Sube o introduce una URL'); return; }
+    if (!form.nombre.trim()) { setLibError('El nombre es obligatorio'); return; }
+    setLibSaving(true);
+    setLibError(null);
+    try {
+      const body = { nombre: form.nombre.trim(), url: form.url.trim(), etiqueta: form.etiqueta.trim() || null };
+      if (editingId === -1) {
+        const res = await fetch('/api/admin/logos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (!res.ok) throw new Error('Error creando logo');
+      } else {
+        const res = await fetch(`/api/admin/logos/${editingId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (!res.ok) throw new Error('Error actualizando logo');
+      }
+      await loadLogos();
+      cancelEdit();
+    } catch (e: any) {
+      setLibError(e?.message ?? 'Error al guardar');
+    } finally {
+      setLibSaving(false);
+    }
+  }
+
+  async function handleDeleteLogo(logo: Logo) {
+    if (!confirm(`¿Eliminar el logo "${logo.nombre}"?`)) return;
+    try {
+      const res = await fetch(`/api/admin/logos/${logo.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Error eliminando');
+      if (logoUrl === logo.url) { setLogoUrl(null); }
+      if (logoVariantUrl === logo.url) { setLogoVariantUrl(null); }
+      await loadLogos();
+      if (editingId === logo.id) cancelEdit();
+    } catch (e: any) {
+      setLibError(e?.message ?? 'Error al eliminar');
+    }
+  }
+
+  if (loading) return <div className="mt-6 text-gray-600">Cargando...</div>;
+
+  const headerLogo = logos.find((l) => l.url === logoUrl);
+  const footerLogo = logos.find((l) => l.url === logoVariantUrl);
 
   return (
-    <form onSubmit={handleSave} className="mt-6 space-y-6">
-      {error && (
-        <div className="rounded-md bg-red-50 p-4 text-sm text-red-800">
-          {error}
-        </div>
-      )}
+    <div className="mt-6 space-y-10">
 
-      {success && (
-        <div className="rounded-md bg-green-50 p-4 text-sm text-green-800">
-          Ajustes guardados correctamente
-        </div>
-      )}
+      {/* ── SECCIÓN 1: Ajustes de marca ── */}
+      <section>
+        <h2 className="text-lg font-semibold">Identidad de marca</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Nombre, logo activo y texto alternativo.</p>
 
-      {/* Nombre de marca */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">Nombre de marca</label>
-        <input
-          type="text"
-          className="w-full rounded-md border px-3 py-2"
-          value={brandName}
-          onChange={(e) => setBrandName(e.target.value)}
-          placeholder="LPBME"
-          required
-        />
-        <p className="text-xs text-gray-500">
-          Nombre que aparece cuando el logo está en modo texto
-        </p>
-      </div>
+        <form onSubmit={handleSaveSettings} className="mt-4 space-y-4 rounded-xl border p-5">
+          {settingsError && (
+            <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{settingsError}</div>
+          )}
+          {settingsSuccess && (
+            <div className="rounded-md bg-green-50 p-3 text-sm text-green-800">Ajustes guardados correctamente</div>
+          )}
 
-      {/* ALT del logo */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">Texto alternativo (ALT)</label>
-        <input
-          type="text"
-          className="w-full rounded-md border px-3 py-2"
-          value={logoAlt}
-          onChange={(e) => setLogoAlt(e.target.value)}
-          placeholder="Los Pueblos Más Bonitos de España"
-        />
-        <p className="text-xs text-gray-500">
-          Descripción del logo para accesibilidad y SEO
-        </p>
-      </div>
-
-      {/* Modo de logo del header */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">Modo de logo (Header)</label>
-        <select
-          className="w-full rounded-md border px-3 py-2"
-          value={activeLogo}
-          onChange={(e) => setActiveLogo(e.target.value as any)}
-        >
-          <option value="text">Texto (nombre de marca)</option>
-          <option value="default">Logo principal (Header)</option>
-          <option value="variant">Logo variante (Footer)</option>
-        </select>
-      </div>
-
-      {/* Crear nuevo logo (sube a R2) */}
-      <div className="space-y-3 rounded-md border border-dashed border-gray-300 bg-gray-50/50 p-4">
-        {!showNewLogoForm ? (
-          <button
-            type="button"
-            onClick={() => setShowNewLogoForm(true)}
-            className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            + Subir nuevo logo
-          </button>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="font-medium">Subir nuevo logo</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowNewLogoForm(false);
-                  setNewLogoNombre('');
-                  setNewLogoUrl('');
-                  setNewLogoEtiqueta('');
-                  setNewLogoDestino('header');
-                }}
-                className="text-xs text-gray-500 hover:underline"
-              >
-                Cancelar
-              </button>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium">Nombre de marca</label>
+              <input
+                type="text"
+                className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+                value={brandName}
+                onChange={(e) => setBrandName(e.target.value)}
+                placeholder="LPBME"
+                required
+              />
+              <p className="mt-1 text-xs text-gray-500">Se muestra cuando el logo está en modo texto</p>
             </div>
+            <div>
+              <label className="block text-sm font-medium">Texto alternativo (ALT)</label>
+              <input
+                type="text"
+                className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+                value={logoAlt}
+                onChange={(e) => setLogoAlt(e.target.value)}
+                placeholder="Los Pueblos Más Bonitos de España"
+              />
+              <p className="mt-1 text-xs text-gray-500">Para accesibilidad y SEO</p>
+            </div>
+          </div>
 
-            <div className="space-y-4">
-              {/* Paso 1: Imagen */}
+          <div>
+            <label className="block text-sm font-medium">Logo activo en el Header</label>
+            <select
+              className="mt-1 rounded-md border px-3 py-2 text-sm"
+              value={activeLogo}
+              onChange={(e) => setActiveLogo(e.target.value as 'default' | 'variant' | 'text')}
+            >
+              <option value="text">Texto (nombre de marca)</option>
+              <option value="default">Logo principal (Header asignado)</option>
+              <option value="variant">Logo variante (Footer asignado)</option>
+            </select>
+          </div>
+
+          {/* Resumen de logos asignados */}
+          <div className="flex flex-wrap gap-4">
+            <div className="flex items-center gap-3 rounded-lg border bg-muted/40 px-4 py-3 text-sm">
+              <span className="font-medium text-muted-foreground">Header:</span>
+              {headerLogo ? (
+                <>
+                  <img src={headerLogo.url} alt={headerLogo.nombre} className="h-8 max-w-[80px] object-contain" />
+                  <span>{headerLogo.nombre}</span>
+                  <button type="button" onClick={() => unassignLogo('header')} className="text-xs text-destructive hover:underline">Quitar</button>
+                </>
+              ) : (
+                <span className="text-muted-foreground italic">Sin logo asignado</span>
+              )}
+            </div>
+            <div className="flex items-center gap-3 rounded-lg border bg-muted/40 px-4 py-3 text-sm">
+              <span className="font-medium text-muted-foreground">Footer:</span>
+              {footerLogo ? (
+                <>
+                  <img src={footerLogo.url} alt={footerLogo.nombre} className="h-8 max-w-[80px] object-contain" />
+                  <span>{footerLogo.nombre}</span>
+                  <button type="button" onClick={() => unassignLogo('footer')} className="text-xs text-destructive hover:underline">Quitar</button>
+                </>
+              ) : (
+                <span className="text-muted-foreground italic">Sin logo asignado</span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-1">
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {saving ? 'Guardando…' : 'Guardar ajustes'}
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/gestion/asociacion')}
+              className="rounded-md border px-6 py-2 text-sm hover:bg-muted"
+            >
+              Volver
+            </button>
+          </div>
+        </form>
+      </section>
+
+      {/* ── SECCIÓN 2: Biblioteca de logos ── */}
+      <section>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">Biblioteca de logos</h2>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Gestiona todos los logos. Asígnalos al Header/Footer o úsalos en rutas.
+            </p>
+          </div>
+          {editingId === null ? (
+            <button
+              type="button"
+              onClick={startNew}
+              className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              <Upload className="h-4 w-4" />
+              Nuevo logo
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="flex items-center gap-1.5 rounded-md border px-4 py-2 text-sm hover:bg-muted"
+            >
+              <X className="h-4 w-4" /> Cancelar
+            </button>
+          )}
+        </div>
+
+        {libError && (
+          <div className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-800">{libError}</div>
+        )}
+
+        {/* Formulario nuevo/editar logo */}
+        {editingId !== null && (
+          <div className="mt-4 rounded-xl border bg-card p-5 shadow-sm">
+            <h3 className="font-medium">{editingId === -1 ? 'Nuevo logo' : 'Editar logo'}</h3>
+            <div className="mt-4 space-y-4">
+              {/* Imagen */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  1. Selecciona la imagen
-                </label>
-                {!newLogoUrl ? (
-                  <label className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition ${
-                    uploadingLogo ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-primary hover:bg-gray-50'
-                  }`}>
-                    {uploadingLogo ? (
-                      <div className="text-center">
-                        <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                        <p className="text-sm text-primary">Subiendo a R2...</p>
-                      </div>
-                    ) : (
-                      <div className="text-center">
-                        <svg className="mx-auto mb-2 h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 16v-8m0 0-3 3m3-3 3 3M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5" />
-                        </svg>
-                        <p className="text-sm font-medium text-gray-600">Haz clic para seleccionar imagen</p>
-                        <p className="text-xs text-gray-400 mt-1">PNG, JPG, SVG, WebP</p>
-                      </div>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      disabled={uploadingLogo}
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) handleUploadLogo(f);
-                      }}
-                    />
+                <label className="block text-sm font-medium text-muted-foreground">Imagen</label>
+                <div className="mt-1 flex gap-2">
+                  <input
+                    type="text"
+                    value={form.url}
+                    onChange={(e) => setForm((p) => ({ ...p, url: e.target.value }))}
+                    className="flex-1 rounded-md border px-3 py-2 text-sm"
+                    placeholder="URL o sube una imagen →"
+                  />
+                  <label className={`cursor-pointer rounded-md border px-4 py-2 text-sm transition hover:bg-muted ${uploading ? 'opacity-50' : ''}`}>
+                    {uploading ? 'Subiendo…' : 'Subir archivo'}
+                    <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUploadFile(f); }} />
                   </label>
-                ) : (
-                  <div className="relative flex items-center gap-4 rounded-lg border bg-white p-4">
-                    <div className="flex h-20 w-28 shrink-0 items-center justify-center rounded border bg-gray-50 p-2">
-                      <img src={newLogoUrl} alt="Preview" className="max-h-full max-w-full object-contain" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-green-700">Imagen subida correctamente</p>
-                      <p className="text-xs text-gray-400 truncate mt-1">{newLogoUrl}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setNewLogoUrl('')}
-                      className="shrink-0 rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
-                      title="Cambiar imagen"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                </div>
+                {form.url && (
+                  <div className="mt-2 flex h-16 w-32 items-center justify-center rounded-lg border bg-muted p-2">
+                    <img src={form.url} alt="Preview" className="max-h-full max-w-full object-contain" />
                   </div>
                 )}
               </div>
 
-              {/* Paso 2: Nombre y etiqueta */}
-              {newLogoUrl && (
-                <>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        2. Nombre del logo
-                      </label>
-                      <input
-                        type="text"
-                        value={newLogoNombre}
-                        onChange={(e) => setNewLogoNombre(e.target.value)}
-                        className="w-full rounded-md border px-3 py-2 text-sm"
-                        placeholder="Ej: Logo principal"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Etiqueta (opcional)
-                      </label>
-                      <input
-                        type="text"
-                        value={newLogoEtiqueta}
-                        onChange={(e) => setNewLogoEtiqueta(e.target.value)}
-                        className="w-full rounded-md border px-3 py-2 text-sm"
-                        placeholder="transparente, principal..."
-                      />
-                    </div>
-                  </div>
+              {/* Nombre */}
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Nombre</label>
+                <input
+                  type="text"
+                  value={form.nombre}
+                  onChange={(e) => setForm((p) => ({ ...p, nombre: e.target.value }))}
+                  className="mt-1 w-full max-w-md rounded-md border px-3 py-2 text-sm"
+                  placeholder="Ej: Logotipo original"
+                />
+              </div>
 
-                  {/* Paso 3: Destino */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      3. ¿Dónde quieres usarlo?
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {([
-                        { value: 'header' as const, label: 'Header (navegación)' },
-                        { value: 'footer' as const, label: 'Footer (pie de página)' },
-                        { value: 'ambos' as const, label: 'Header y Footer' },
-                      ]).map((opt) => (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() => setNewLogoDestino(opt.value)}
-                          className={`rounded-full border px-4 py-1.5 text-sm transition ${
-                            newLogoDestino === opt.value
-                              ? 'border-primary bg-primary text-white'
-                              : 'border-gray-300 bg-white text-gray-700 hover:border-primary'
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+              {/* Etiqueta */}
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Etiqueta (opcional)</label>
+                <input
+                  type="text"
+                  value={form.etiqueta}
+                  onChange={(e) => setForm((p) => ({ ...p, etiqueta: e.target.value }))}
+                  className="mt-1 w-full max-w-md rounded-md border px-3 py-2 text-sm"
+                  placeholder="transparente, color, versión…"
+                />
+              </div>
 
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleSaveLogo}
+                  disabled={libSaving}
+                  className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {libSaving ? 'Guardando…' : editingId === -1 ? 'Crear logo' : 'Guardar cambios'}
+                </button>
+                {editingId !== -1 && (
                   <button
                     type="button"
-                    disabled={creatingLogo || !newLogoNombre.trim()}
-                    onClick={handleCreateLogo}
-                    className="rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                    onClick={() => editingId > 0 && handleDeleteLogo(logos.find((l) => l.id === editingId)!)}
+                    className="rounded-md border border-destructive px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10"
                   >
-                    {creatingLogo ? 'Creando y asignando...' : `Crear logo y asignar a ${newLogoDestino === 'ambos' ? 'Header y Footer' : newLogoDestino === 'header' ? 'Header' : 'Footer'}`}
+                    Eliminar
                   </button>
-                </>
-              )}
+                )}
+                <button type="button" onClick={cancelEdit} className="rounded-md border px-4 py-2 text-sm hover:bg-muted">
+                  Cancelar
+                </button>
+              </div>
             </div>
           </div>
         )}
-      </div>
 
-      {/* Selector de logo Header */}
-      <div className="space-y-3 rounded-md border p-4">
-        <label className="block text-sm font-medium">Logo del Header</label>
-        <p className="text-xs text-gray-500">
-          Aparece en la barra de navegación principal
-        </p>
-
+        {/* Grid de logos */}
         {logos.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            No hay logos. Usa &quot;Añadir logo nuevo&quot; arriba o{' '}
-            <Link href="/gestion/asociacion/logos" className="text-primary hover:underline">
-              Biblioteca de logos
-            </Link>
-          </p>
+          <p className="mt-4 text-sm text-muted-foreground">No hay logos todavía. Crea el primero con el botón de arriba.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {logos.map((logo) => {
-              const isSelected = logo.url === logoUrl;
+              const isHeader = logo.url === logoUrl;
+              const isFooter = logo.url === logoVariantUrl;
+              const isAssigning = assigningId === logo.id;
               return (
                 <div
                   key={logo.id}
-                  className={`relative flex flex-col items-center rounded-lg border-2 p-3 transition ${
-                    isSelected
-                      ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                      : 'border-border hover:border-gray-400'
+                  className={`relative flex flex-col overflow-hidden rounded-xl border-2 bg-card transition ${
+                    isHeader || isFooter ? 'border-primary/60' : 'border-border'
                   }`}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setLogoUrl(logo.url)}
-                    className="flex w-full flex-col items-center"
-                  >
-                    <div className="flex h-16 w-full items-center justify-center">
-                      <img
-                        src={logo.url}
-                        alt={logo.nombre}
-                        className="max-h-full max-w-full object-contain"
-                      />
+                  {/* Preview */}
+                  <div className="flex h-24 items-center justify-center bg-muted p-3">
+                    <img src={logo.url} alt={logo.nombre} className="max-h-full max-w-full object-contain" />
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex flex-1 flex-col p-3">
+                    <p className="text-sm font-medium leading-tight">{logo.nombre}</p>
+                    {logo.etiqueta && <p className="mt-0.5 text-xs text-muted-foreground">{logo.etiqueta}</p>}
+                    {logo._count && logo._count.rutas > 0 && (
+                      <p className="mt-0.5 text-xs text-muted-foreground">Usado en {logo._count.rutas} ruta(s)</p>
+                    )}
+
+                    {/* Badges de asignación */}
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {isHeader && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                          <Check className="h-3 w-3" /> Header
+                        </span>
+                      )}
+                      {isFooter && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                          <Check className="h-3 w-3" /> Footer
+                        </span>
+                      )}
                     </div>
-                    <span className="mt-2 text-xs font-medium text-center leading-tight">
-                      {logo.nombre}
-                    </span>
-                    {logo.etiqueta && (
-                      <span className="mt-0.5 text-[10px] text-gray-400">{logo.etiqueta}</span>
-                    )}
-                    {isSelected && (
-                      <span className="mt-1 text-[10px] font-semibold text-primary">✓ Header</span>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => handleDeleteLogo(logo, e)}
-                    className="absolute right-2 top-2 rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
-                    title="Eliminar logo"
-                    aria-label="Eliminar logo"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+
+                    {/* Acciones de asignación */}
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {!isHeader && (
+                        <button
+                          type="button"
+                          disabled={isAssigning}
+                          onClick={() => assignLogo(logo, 'header')}
+                          className="rounded border px-2 py-1 text-[11px] font-medium hover:bg-primary hover:text-primary-foreground disabled:opacity-40 transition"
+                        >
+                          → Header
+                        </button>
+                      )}
+                      {!isFooter && (
+                        <button
+                          type="button"
+                          disabled={isAssigning}
+                          onClick={() => assignLogo(logo, 'footer')}
+                          className="rounded border px-2 py-1 text-[11px] font-medium hover:bg-primary hover:text-primary-foreground disabled:opacity-40 transition"
+                        >
+                          → Footer
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Editar / Eliminar */}
+                    <div className="mt-2 flex gap-2 border-t pt-2">
+                      <button
+                        type="button"
+                        onClick={() => startEdit(logo)}
+                        className="flex items-center gap-1 text-xs text-primary hover:underline"
+                      >
+                        <Pencil className="h-3 w-3" /> Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteLogo(logo)}
+                        className="flex items-center gap-1 text-xs text-destructive hover:underline"
+                      >
+                        <Trash2 className="h-3 w-3" /> Eliminar
+                      </button>
+                    </div>
+                  </div>
                 </div>
               );
             })}
           </div>
         )}
-      </div>
-
-      {/* Selector de logo Footer / variante */}
-      <div className="space-y-3 rounded-md border p-4">
-        <label className="block text-sm font-medium">Logo del Footer (variante)</label>
-        <p className="text-xs text-gray-500">
-          Aparece en el pie de página. Puede ser el mismo o uno diferente.
-        </p>
-
-        {logos.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            No hay logos. Usa &quot;Añadir logo nuevo&quot; arriba o{' '}
-            <Link href="/gestion/asociacion/logos" className="text-primary hover:underline">
-              Biblioteca de logos
-            </Link>
-          </p>
-        ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <button
-              type="button"
-              onClick={() => setLogoVariantUrl(null)}
-              className={`flex flex-col items-center rounded-lg border-2 p-3 transition ${
-                !logoVariantUrl
-                  ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                  : 'border-border hover:border-gray-400'
-              }`}
-            >
-              <div className="flex h-16 w-full items-center justify-center text-gray-400">
-                —
-              </div>
-              <span className="mt-2 text-xs font-medium">Sin logo</span>
-              {!logoVariantUrl && (
-                <span className="mt-1 text-[10px] font-semibold text-primary">✓ Footer</span>
-              )}
-            </button>
-            {logos.map((logo) => {
-              const isSelected = logo.url === logoVariantUrl;
-              return (
-                <div
-                  key={logo.id}
-                  className={`relative flex flex-col items-center rounded-lg border-2 p-3 transition ${
-                    isSelected
-                      ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                      : 'border-border hover:border-gray-400'
-                  }`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setLogoVariantUrl(logo.url)}
-                    className="flex w-full flex-col items-center"
-                  >
-                    <div className="flex h-16 w-full items-center justify-center">
-                      <img
-                        src={logo.url}
-                        alt={logo.nombre}
-                        className="max-h-full max-w-full object-contain"
-                      />
-                    </div>
-                    <span className="mt-2 text-xs font-medium text-center leading-tight">
-                      {logo.nombre}
-                    </span>
-                    {logo.etiqueta && (
-                      <span className="mt-0.5 text-[10px] text-gray-400">{logo.etiqueta}</span>
-                    )}
-                    {isSelected && (
-                      <span className="mt-1 text-[10px] font-semibold text-primary">✓ Footer</span>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => handleDeleteLogo(logo, e)}
-                    className="absolute right-2 top-2 rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
-                    title="Eliminar logo"
-                    aria-label="Eliminar logo"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Enlace a biblioteca de logos */}
-      <div className="rounded-md border border-blue-200 bg-blue-50 p-4">
-        <p className="text-sm text-blue-800">
-          <strong>¿Necesitas más logos?</strong>{' '}
-          Añade, edita o elimina logos desde la{' '}
-          <Link href="/gestion/asociacion/logos" className="font-medium underline">
-            Biblioteca de logos
-          </Link>
-          . Todos los logos que añadas allí estarán disponibles aquí y en las rutas.
-        </p>
-      </div>
-
-      {/* Botones */}
-      <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={saving}
-          className="rounded-md bg-black px-6 py-2 text-sm font-medium text-white hover:bg-black/90 disabled:opacity-50"
-        >
-          {saving ? 'Guardando...' : 'Guardar ajustes'}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => router.push('/gestion/asociacion')}
-          className="rounded-md border px-6 py-2 text-sm hover:bg-gray-50"
-        >
-          Cancelar
-        </button>
-      </div>
-    </form>
+      </section>
+    </div>
   );
 }

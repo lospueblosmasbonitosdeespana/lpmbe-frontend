@@ -15,7 +15,6 @@ import {
   IconDocumentos,
   IconContacto,
   IconVideos,
-  IconLogos,
   IconPois,
 } from '../_components/GestionIcons';
 
@@ -87,15 +86,9 @@ const ACCESOS = [
     icon: <IconDatos />,
   },
   {
-    href: '/gestion/asociacion/logos',
-    title: 'Logos',
-    description: 'Logos reutilizables para rutas, páginas, etc.',
-    icon: <IconLogos />,
-  },
-  {
     href: '/gestion/asociacion/ajustes',
-    title: 'Ajustes de marca',
-    description: 'Logo y nombre del sitio',
+    title: 'Ajustes de marca y logos',
+    description: 'Logo del header/footer, nombre del sitio y biblioteca de logos',
     icon: <IconAjustes />,
   },
   {

@@ -10,10 +10,10 @@ export default async function AjustesPage() {
   if (me.rol !== 'ADMIN') redirect('/cuenta');
 
   return (
-    <main className="mx-auto max-w-3xl p-6">
-      <h1 className="text-2xl font-semibold">Ajustes de marca</h1>
+    <main className="mx-auto max-w-4xl p-6">
+      <h1 className="text-2xl font-semibold">Ajustes de marca y logos</h1>
       <p className="mt-1 text-sm text-gray-600">
-        Configuración del logo y nombre de la web
+        Logo del header y footer, nombre del sitio y biblioteca de logos
       </p>
 
       <AjustesClient />
