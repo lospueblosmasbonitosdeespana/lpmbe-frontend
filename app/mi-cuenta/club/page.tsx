@@ -10,16 +10,18 @@ import { ClubShield, getMemberYear } from '@/app/_components/club/ClubShield';
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 
-/** Cuando true, el botón "Unirse al Club" permite el alta (tras establecer precios y pasarela). */
-const CLUB_ALTA_ABIERTO = process.env.NEXT_PUBLIC_CLUB_ALTA_ABIERTO === 'true';
-
 type ClubMe = {
   isMember: boolean;
   plan: string | null;
   status: string | null;
   validUntil: string | null;
+  cancelAtPeriodEnd?: boolean;
   qrToken?: string | null;
   qrPayload?: string | null;
+  // Configuración del club (devuelta por /club/me)
+  inscripcionesAbiertas?: boolean;
+  precioAnualCents?: number;
+  precioMensualCents?: number;
 };
 
 type ClubValidacion = {
@@ -323,9 +325,9 @@ export default function ClubPage() {
     return `${mins}:${String(secs).padStart(2, '0')}`;
   }
 
-  /** Activar membresía. Solo efectivo cuando CLUB_ALTA_ABIERTO=true y tras configurar precios/pago. */
+  /** Activar membresía cuando las inscripciones están abiertas. */
   async function handleActivarMembresia(tipo: 'ANUAL' | 'MENSUAL') {
-    if (!CLUB_ALTA_ABIERTO) return;
+    if (!clubMe?.inscripcionesAbiertas) return;
     setActivandoMembresia(true);
     setActivarError(null);
     try {
@@ -435,32 +437,58 @@ export default function ClubPage() {
             <div className={`${cardClass} border-primary/20 bg-primary/5`}>
               <Title size="lg" className="mb-2">{t('joinClub')}</Title>
               <Caption className="block mb-4">
-                {CLUB_ALTA_ABIERTO
+                {clubMe?.inscripcionesAbiertas
                   ? t('joinClubDesc')
                   : t('joinClubSoon')}
               </Caption>
-              {CLUB_ALTA_ABIERTO ? (
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={() => handleActivarMembresia('ANUAL')}
-                    disabled={activandoMembresia}
-                    className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
-                  >
-                    {activandoMembresia ? t('processing') : t('annualPlan')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleActivarMembresia('MENSUAL')}
-                    disabled={activandoMembresia}
-                    className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
-                  >
-                    {activandoMembresia ? t('processing') : t('monthlyPlan')}
-                  </button>
+              {clubMe?.inscripcionesAbiertas ? (
+                <div className="space-y-4">
+                  {/* Tarjetas de precio */}
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-lg border border-primary/30 bg-white p-4">
+                      <div className="text-sm font-semibold text-gray-700 mb-1">Plan Anual</div>
+                      {clubMe.precioAnualCents !== undefined && (
+                        <div className="text-2xl font-bold text-primary">
+                          {(clubMe.precioAnualCents / 100).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+                          <span className="ml-1 text-sm font-normal text-gray-500">/ año</span>
+                        </div>
+                      )}
+                      <p className="mt-1 text-xs text-gray-400">Descuentos en todos los recursos del club</p>
+                    </div>
+                    <div className="rounded-lg border border-border bg-white p-4">
+                      <div className="text-sm font-semibold text-gray-700 mb-1">Plan Mensual</div>
+                      {clubMe.precioMensualCents !== undefined && (
+                        <div className="text-2xl font-bold text-gray-700">
+                          {(clubMe.precioMensualCents / 100).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+                          <span className="ml-1 text-sm font-normal text-gray-500">/ mes</span>
+                        </div>
+                      )}
+                      <p className="mt-1 text-xs text-gray-400">Cancela cuando quieras</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleActivarMembresia('ANUAL')}
+                      disabled={activandoMembresia}
+                      className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
+                    >
+                      {activandoMembresia ? t('processing') : t('annualPlan')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleActivarMembresia('MENSUAL')}
+                      disabled={activandoMembresia}
+                      className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
+                    >
+                      {activandoMembresia ? t('processing') : t('monthlyPlan')}
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-                  <span>{t('comingSoon')}</span>
+                <div className="rounded-lg border border-border bg-muted/30 px-5 py-4 text-sm text-muted-foreground">
+                  <p className="font-medium text-gray-700 mb-1">🔜 Próximamente</p>
+                  <p>{t('comingSoon')}</p>
                 </div>
               )}
               {activarError && (
