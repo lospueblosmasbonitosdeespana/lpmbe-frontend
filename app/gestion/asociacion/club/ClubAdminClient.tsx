@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -47,7 +48,9 @@ type Suscriptor = {
   startsAt: string;
   expiresAt: string;
   importeCents: number | null;
+  userId: number;
   user: { id: number; nombre: string | null; email: string };
+  totalValidaciones?: number;
 };
 
 type SuscriptoresPage = {
@@ -340,8 +343,10 @@ export default function ClubAdminClient() {
                 ) : stats.ultimas10.map((s) => (
                   <tr key={s.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-gray-800">{s.user.nombre || '—'}</div>
-                      <div className="text-xs text-gray-400">{s.user.email}</div>
+                      <Link href={`/gestion/asociacion/club/usuario/${s.user.id}`} className="group">
+                        <div className="font-medium text-gray-800 group-hover:text-primary group-hover:underline">{s.user.nombre || '—'}</div>
+                        <div className="text-xs text-gray-400">{s.user.email}</div>
+                      </Link>
                     </td>
                     <td className="px-4 py-3">
                       <PlanBadge plan={s.tipo} />
@@ -390,6 +395,7 @@ export default function ClubAdminClient() {
                   <th className="px-4 py-3 text-left">Plan</th>
                   <th className="px-4 py-3 text-left">Alta</th>
                   <th className="px-4 py-3 text-left">Expira</th>
+                  <th className="px-4 py-3 text-center">Validaciones</th>
                   <th className="px-4 py-3 text-right">Importe</th>
                   <th className="px-4 py-3 text-center">Estado</th>
                 </tr>
@@ -397,17 +403,24 @@ export default function ClubAdminClient() {
               <tbody className="divide-y divide-gray-100">
                 {!suscriptores || suscriptores.items.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-gray-400">Sin resultados</td>
+                    <td colSpan={7} className="px-4 py-8 text-center text-gray-400">Sin resultados</td>
                   </tr>
                 ) : suscriptores.items.map((s) => (
                   <tr key={s.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-gray-800">{s.user.nombre || '—'}</div>
-                      <div className="text-xs text-gray-400">{s.user.email}</div>
+                      <Link href={`/gestion/asociacion/club/usuario/${s.user.id}`} className="group">
+                        <div className="font-medium text-gray-800 group-hover:text-primary group-hover:underline">{s.user.nombre || '—'}</div>
+                        <div className="text-xs text-gray-400">{s.user.email}</div>
+                      </Link>
                     </td>
                     <td className="px-4 py-3"><PlanBadge plan={s.tipo} /></td>
                     <td className="px-4 py-3 text-gray-600">{fmtDate(s.startsAt)}</td>
                     <td className="px-4 py-3 text-gray-600">{fmtDate(s.expiresAt)}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`font-semibold ${(s.totalValidaciones ?? 0) > 0 ? 'text-primary' : 'text-gray-300'}`}>
+                        {s.totalValidaciones ?? 0}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 text-right font-medium">
                       {s.importeCents != null ? euros(s.importeCents) : '—'}
                     </td>
