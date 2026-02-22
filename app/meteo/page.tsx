@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { headers } from "next/headers";
+import { Suspense } from "react";
 import { getComunidadFlagSrc } from "@/lib/flags";
+import { SortBar } from "./SortBar";
 
 type MeteoAlerta = {
   kind: "RAIN" | "SNOW" | "WIND" | "FROST" | "HEAT" | string;
@@ -48,27 +50,32 @@ type MeteoItem = {
     lluviaHoyMm?: number | null;
     nieveHoyCm?: number | null;
   } | null;
+  airQuality?: {
+    europeanAqi: number | null;
+    pm10: number | null;
+    pm25: number | null;
+  } | null;
   alertas?: MeteoAlerta[] | null;
 };
+
+type SortMode = "temp_asc" | "temp_desc" | "alpha" | "rain_desc" | "wind_desc" | "aqi_asc";
 
 function n(v: number | null | undefined, digits = 0) {
   if (v === null || v === undefined || Number.isNaN(v)) return null;
   return v.toFixed(digits);
 }
 
-// Mapping weatherCode -> emoji
 function getWeatherIcon(code: number | null): string {
   if (code === null) return "—";
-  if (code === 0) return "☀️"; // Despejado
-  if ([1, 2, 3].includes(code)) return "☁️"; // Nuboso
-  if ([45, 48].includes(code)) return "🌫️"; // Niebla
-  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "🌧️"; // Lluvia
-  if ([71, 73, 75, 77, 85, 86].includes(code)) return "❄️"; // Nieve
-  if ([95, 96, 99].includes(code)) return "⛈️"; // Tormenta
-  return "🌤️"; // Default
+  if (code === 0) return "☀️";
+  if ([1, 2, 3].includes(code)) return "⛅";
+  if ([45, 48].includes(code)) return "🌫️";
+  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "🌧️";
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return "❄️";
+  if ([95, 96, 99].includes(code)) return "⛈️";
+  return "🌤️";
 }
 
-// Mapping weatherCode -> texto
 function getWeatherText(code: number | null): string {
   if (code === null) return "—";
   if (code === 0) return "Despejado";
@@ -82,114 +89,74 @@ function getWeatherText(code: number | null): string {
   return "Tiempo";
 }
 
-// Formatear hora
 function formatTime(isoTime: string | null): string {
   if (!isoTime) return "—";
   try {
-    return new Date(isoTime).toLocaleString("es-ES", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return "—";
-  }
+    return new Date(isoTime).toLocaleString("es-ES", { hour: "2-digit", minute: "2-digit" });
+  } catch { return "—"; }
 }
 
-// Formatear ventana temporal (Hoy 22:00 → Mañana 10:00)
-function formatWindow(
-  start: string | null | undefined,
-  end: string | null | undefined
-): string | null {
+function formatWindow(start?: string | null, end?: string | null): string | null {
   if (!start && !end) return null;
-
   try {
     const now = new Date();
-
-    const fmtHM = (d: Date) =>
-      d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
-
-    const fmtDM = (d: Date) =>
-      d.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit" });
-
-    const sameDay = (a: Date, b: Date) =>
-      a.getFullYear() === b.getFullYear() &&
-      a.getMonth() === b.getMonth() &&
-      a.getDate() === b.getDate();
-
+    const fmtHM = (d: Date) => d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+    const fmtDM = (d: Date) => d.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit" });
+    const sameDay = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
     const labelDay = (d: Date) => {
       if (sameDay(d, now)) return "Hoy";
-      const tomorrow = new Date(now);
-      tomorrow.setDate(now.getDate() + 1);
+      const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
       if (sameDay(d, tomorrow)) return "Mañana";
-      const yesterday = new Date(now);
-      yesterday.setDate(now.getDate() - 1);
+      const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
       if (sameDay(d, yesterday)) return "Ayer";
       return fmtDM(d);
     };
-
     const ds = start ? new Date(start) : null;
     const de = end ? new Date(end) : null;
-
-    if (ds && de) {
-      return `${labelDay(ds)} ${fmtHM(ds)} → ${labelDay(de)} ${fmtHM(de)}`;
-    }
+    if (ds && de) return `${labelDay(ds)} ${fmtHM(ds)} → ${labelDay(de)} ${fmtHM(de)}`;
     if (ds) return `desde ${labelDay(ds)} ${fmtHM(ds)}`;
     if (de) return `hasta ${labelDay(de)} ${fmtHM(de)}`;
-  } catch {
-    return null;
-  }
-
+  } catch { return null; }
   return null;
 }
 
-// Componente inline de alerta (rojo, a la derecha)
-function AlertInline({
-  a,
-}: {
-  a: { 
-    kind: string; 
-    title: string | null; 
-    detail: string | null;
-    windowStart?: string | null;
-    windowEnd?: string | null;
-  };
-}) {
-  const label =
-    a.kind === "SNOW"
-      ? "Nieve"
-      : a.kind === "RAIN"
-      ? "Lluvia"
-      : a.kind === "WIND"
-      ? "Viento"
-      : a.kind === "FROST"
-      ? "Helada"
-      : a.kind === "HEAT"
-      ? "Calor"
-      : a.kind;
-
+function AlertInline({ a }: { a: MeteoAlerta }) {
+  const label = a.kind === "SNOW" ? "Nieve" : a.kind === "RAIN" ? "Lluvia" : a.kind === "WIND" ? "Viento" : a.kind === "FROST" ? "Helada" : a.kind === "HEAT" ? "Calor" : a.kind;
   const textRaw = (a.title ?? a.detail ?? label).trim();
-
-  const textLower = textRaw.toLowerCase();
-  const labelLower = label.toLowerCase();
-
-  const main =
-    textLower.startsWith(labelLower) ? textRaw : `${label}: ${textRaw}`;
-
+  const main = textRaw.toLowerCase().startsWith(label.toLowerCase()) ? textRaw : `${label}: ${textRaw}`;
   const window = formatWindow(a.windowStart, a.windowEnd);
-
-  // Color más fuerte para HEAT
-  const colorClass = a.kind === "HEAT" ? "text-red-800" : "text-red-700";
-
   return (
-    <span className={`${colorClass} font-semibold leading-tight`} title={a.detail ?? ""}>
+    <span className="text-red-700 font-semibold leading-tight">
       {main}
-      {window ? (
-        <span className="text-red-600 font-normal text-xs ml-1">
-          ({window})
-        </span>
-      ) : null}
+      {window && <span className="text-red-600 font-normal text-xs ml-1">({window})</span>}
     </span>
   );
+}
+
+function getAqiInfo(aqi: number | null): { label: string; cls: string } {
+  if (aqi === null) return { label: "—", cls: "bg-gray-100 text-gray-500" };
+  if (aqi <= 20) return { label: "Buena", cls: "bg-green-100 text-green-800" };
+  if (aqi <= 40) return { label: "Aceptable", cls: "bg-lime-100 text-lime-800" };
+  if (aqi <= 60) return { label: "Moderada", cls: "bg-yellow-100 text-yellow-800" };
+  if (aqi <= 80) return { label: "Mala", cls: "bg-orange-100 text-orange-800" };
+  if (aqi <= 100) return { label: "Muy mala", cls: "bg-red-100 text-red-800" };
+  return { label: "Pésima", cls: "bg-red-200 text-red-900" };
+}
+
+function sortItems(items: MeteoItem[], mode: SortMode): MeteoItem[] {
+  const arr = [...items];
+  switch (mode) {
+    case "temp_asc": return arr.sort((a, b) => (a.meteo.current.temperatureC ?? 9999) - (b.meteo.current.temperatureC ?? 9999));
+    case "temp_desc": return arr.sort((a, b) => (b.meteo.current.temperatureC ?? -9999) - (a.meteo.current.temperatureC ?? -9999));
+    case "alpha": return arr.sort((a, b) => a.pueblo.nombre.localeCompare(b.pueblo.nombre, "es"));
+    case "rain_desc": return arr.sort((a, b) => {
+      const ra = a.acumulados?.lluviaHoyMm ?? a.meteo.daily?.[0]?.precipitationMm ?? 0;
+      const rb = b.acumulados?.lluviaHoyMm ?? b.meteo.daily?.[0]?.precipitationMm ?? 0;
+      return (rb ?? 0) - (ra ?? 0);
+    });
+    case "wind_desc": return arr.sort((a, b) => (b.meteo.current.windKph ?? 0) - (a.meteo.current.windKph ?? 0));
+    case "aqi_asc": return arr.sort((a, b) => (a.airQuality?.europeanAqi ?? 9999) - (b.airQuality?.europeanAqi ?? 9999));
+  }
 }
 
 async function getOrigin() {
@@ -202,23 +169,28 @@ async function getOrigin() {
 
 export const dynamic = "force-dynamic";
 
-export default async function MeteoPage() {
+export default async function MeteoPage(props: { searchParams: Promise<{ sort?: string }> }) {
+  const searchParams = await props.searchParams;
+  const sortMode = (searchParams.sort ?? "temp_asc") as SortMode;
+
   const origin = await getOrigin();
   const res = await fetch(`${origin}/api/meteo/pueblos`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Meteo agregada: HTTP ${res.status}`);
 
   const items: MeteoItem[] = await res.json();
-
-  const sorted = items
-    .slice()
-    .sort((a, b) => (a.meteo.current.temperatureC ?? 9999) - (b.meteo.current.temperatureC ?? 9999));
+  const sorted = sortItems(items, sortMode);
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-7xl">
       <h1 className="text-3xl font-semibold tracking-tight">Meteo</h1>
       <p className="mt-2 text-neutral-600">
-        Ordenado de temperatura más baja a más alta · {sorted.length} pueblos
+        {sorted.length} pueblos
       </p>
+
+      {/* Controles de orden */}
+      <Suspense fallback={null}>
+        <SortBar currentSort={sortMode} />
+      </Suspense>
 
       <div className="mt-6 space-y-2">
         {sorted.map((it) => {
@@ -226,96 +198,97 @@ export default async function MeteoPage() {
           const d0 = it.meteo.daily?.[0];
           const alertas = it.alertas ?? [];
           const flagSrc = getComunidadFlagSrc(it.pueblo.comunidad);
-
-          // Usar acumulados si existen, sino calcular fallback
           const lluviaHoy = it.acumulados?.lluviaHoyMm ?? d0?.precipitationMm ?? 0;
           const nieveHoy = it.acumulados?.nieveHoyCm ?? 0;
+          const aqi = it.airQuality?.europeanAqi ?? null;
+          const aqiInfo = getAqiInfo(aqi);
 
           return (
             <div
               key={it.pueblo.id}
-              className="flex items-center gap-4 px-4 py-3 border rounded-lg hover:bg-gray-50 transition"
+              className="flex items-start gap-4 px-4 py-3 border rounded-lg hover:bg-[#efe2d8]/40 transition bg-[#faf4ef]/60"
             >
-              {/* Temperatura grande */}
+              {/* Temperatura + máx/mín */}
               <div className="flex-shrink-0 w-20 text-center">
-                <div className="text-3xl font-bold">
+                <div className="text-3xl font-bold leading-none">
                   {c.temperatureC === null ? "—" : `${n(c.temperatureC, 0)}°`}
                 </div>
+                {d0 && (d0.tMaxC !== null || d0.tMinC !== null) && (
+                  <div className="text-xs text-neutral-500 mt-1">
+                    {d0.tMaxC !== null && <span className="text-red-500">↑{n(d0.tMaxC, 0)}°</span>}
+                    {d0.tMaxC !== null && d0.tMinC !== null && " "}
+                    {d0.tMinC !== null && <span className="text-blue-500">↓{n(d0.tMinC, 0)}°</span>}
+                  </div>
+                )}
               </div>
 
-              {/* Icono estado */}
-              <div className="flex-shrink-0 text-3xl" title={getWeatherText(c.weatherCode)}>
+              {/* Icono */}
+              <div className="flex-shrink-0 text-3xl pt-0.5" title={getWeatherText(c.weatherCode)}>
                 {getWeatherIcon(c.weatherCode)}
               </div>
 
-              {/* Pueblo + Provincia/CCAA */}
+              {/* Info central */}
               <div className="flex-1 min-w-0">
-                {/* Línea 1: Nombre + ubicación */}
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={`/pueblos/${it.pueblo.slug}`}
-                    className="text-lg font-semibold hover:underline"
-                  >
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Link href={`/pueblos/${it.pueblo.slug}`} className="text-lg font-semibold hover:underline">
                     {it.pueblo.nombre}
                   </Link>
                   <div className="flex items-center gap-1.5 text-sm text-neutral-600">
                     {flagSrc && (
-                      <img
-                        src={flagSrc}
-                        alt={`Bandera de ${it.pueblo.comunidad}`}
-                        className="h-4 w-6 rounded-sm object-cover"
-                      />
+                      <img src={flagSrc} alt={`Bandera de ${it.pueblo.comunidad}`} className="h-4 w-6 rounded-sm object-cover" />
                     )}
-                    <span>
-                      {it.pueblo.provincia} · {it.pueblo.comunidad}
-                    </span>
+                    <span>{it.pueblo.provincia} · {it.pueblo.comunidad}</span>
                   </div>
                 </div>
 
-                {/* Línea 2: Lluvia, viento */}
-                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-600">
-                  {/* Lluvia hoy */}
+                {/* Pills: lluvia, nieve, viento, prob precipitación */}
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {lluviaHoy > 0 && (
-                    <span>
-                      Lluvia hoy: <strong>{n(lluviaHoy, 0)} mm</strong>
+                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                      💧 {n(lluviaHoy, 1)} mm lluvia
                     </span>
                   )}
-
-                  {/* Nieve hoy */}
                   {nieveHoy > 0 && (
-                    <span>
-                      Nieve hoy: <strong>{n(nieveHoy, 1)} cm</strong>
+                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
+                      ❄️ {n(nieveHoy, 1)} cm nieve
                     </span>
                   )}
-
-                  {/* Viento */}
                   {c.windKph !== null && c.windKph > 0 && (
-                    <span>
-                      Viento: <strong>{n(c.windKph, 0)} km/h</strong>
+                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 border border-neutral-200">
+                      💨 {n(c.windKph, 0)} km/h
+                    </span>
+                  )}
+                  {d0?.precipProbPct != null && d0.precipProbPct > 10 && (
+                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 border border-neutral-200">
+                      ☂️ {n(d0.precipProbPct, 0)}% prob.
+                    </span>
+                  )}
+                  {aqi !== null && (
+                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${aqiInfo.cls}`}>
+                      🍃 Aire: {aqiInfo.label} ({aqi})
                     </span>
                   )}
                 </div>
-              </div>
 
-              {/* Estado y tiempo O alertas (derecha) */}
-              <div className="flex-shrink-0 text-right text-sm min-w-[320px]">
-                {alertas && alertas.length > 0 ? (
-                  <div className="space-y-1">
+                {/* Alertas */}
+                {alertas.length > 0 && (
+                  <div className="mt-1.5 space-y-0.5">
                     {alertas.map((a, idx) => (
                       <div key={`${a.kind}-${idx}`} className="leading-tight">
                         <AlertInline a={a} />
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <>
-                    <div className="text-neutral-600">{getWeatherText(c.weatherCode)}</div>
-                    <div className="text-neutral-500 text-xs">
-                      {formatTime(c.time)}
-                    </div>
-                  </>
                 )}
               </div>
+
+              {/* Derecha: estado + hora */}
+              {alertas.length === 0 && (
+                <div className="flex-shrink-0 text-right text-sm min-w-[100px]">
+                  <div className="text-neutral-600">{getWeatherText(c.weatherCode)}</div>
+                  <div className="text-neutral-500 text-xs">{formatTime(c.time)}</div>
+                </div>
+              )}
             </div>
           );
         })}
