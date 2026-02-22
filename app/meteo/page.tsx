@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { Suspense } from "react";
+import { getTranslations, getLocale } from "next-intl/server";
 import {
   Sun, CloudSun, Cloud, Cloudy, CloudFog,
   CloudDrizzle, CloudRain, CloudSnow, CloudLightning,
@@ -85,73 +86,6 @@ function getWeatherIconCfg(code: number | null): WIconCfg {
   return { Icon: Cloud, cls: "text-stone-400" };
 }
 
-function getWeatherText(code: number | null): string {
-  if (code === null) return "—";
-  if (code === 0) return "Despejado";
-  if ([1, 2, 3].includes(code)) return "Nuboso";
-  if ([45, 48].includes(code)) return "Niebla";
-  if ([51, 53, 55, 56, 57].includes(code)) return "Llovizna";
-  if ([61, 63, 65, 66, 67].includes(code)) return "Lluvia";
-  if ([71, 73, 75, 77].includes(code)) return "Nieve";
-  if ([80, 81, 82].includes(code)) return "Chubascos";
-  if ([95, 96, 99].includes(code)) return "Tormenta";
-  return "Tiempo";
-}
-
-function formatTime(isoTime: string | null): string {
-  if (!isoTime) return "—";
-  try {
-    return new Date(isoTime).toLocaleString("es-ES", { hour: "2-digit", minute: "2-digit" });
-  } catch { return "—"; }
-}
-
-function formatWindow(start?: string | null, end?: string | null): string | null {
-  if (!start && !end) return null;
-  try {
-    const now = new Date();
-    const fmtHM = (d: Date) => d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
-    const fmtDM = (d: Date) => d.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit" });
-    const sameDay = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-    const labelDay = (d: Date) => {
-      if (sameDay(d, now)) return "Hoy";
-      const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
-      if (sameDay(d, tomorrow)) return "Mañana";
-      const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
-      if (sameDay(d, yesterday)) return "Ayer";
-      return fmtDM(d);
-    };
-    const ds = start ? new Date(start) : null;
-    const de = end ? new Date(end) : null;
-    if (ds && de) return `${labelDay(ds)} ${fmtHM(ds)} → ${labelDay(de)} ${fmtHM(de)}`;
-    if (ds) return `desde ${labelDay(ds)} ${fmtHM(ds)}`;
-    if (de) return `hasta ${labelDay(de)} ${fmtHM(de)}`;
-  } catch { return null; }
-  return null;
-}
-
-function AlertInline({ a }: { a: MeteoAlerta }) {
-  const label = a.kind === "SNOW" ? "Nieve" : a.kind === "RAIN" ? "Lluvia" : a.kind === "WIND" ? "Viento" : a.kind === "FROST" ? "Helada" : a.kind === "HEAT" ? "Calor" : a.kind;
-  const textRaw = (a.title ?? a.detail ?? label).trim();
-  const main = textRaw.toLowerCase().startsWith(label.toLowerCase()) ? textRaw : `${label}: ${textRaw}`;
-  const window = formatWindow(a.windowStart, a.windowEnd);
-  return (
-    <span className="text-red-700 font-semibold leading-tight">
-      {main}
-      {window && <span className="text-red-600 font-normal text-xs ml-1">({window})</span>}
-    </span>
-  );
-}
-
-function getAqiInfo(aqi: number | null): { label: string; cls: string } {
-  if (aqi === null) return { label: "—", cls: "bg-gray-100 text-gray-500" };
-  if (aqi <= 20) return { label: "Buena", cls: "bg-green-100 text-green-800" };
-  if (aqi <= 40) return { label: "Aceptable", cls: "bg-lime-100 text-lime-800" };
-  if (aqi <= 60) return { label: "Moderada", cls: "bg-yellow-100 text-yellow-800" };
-  if (aqi <= 80) return { label: "Mala", cls: "bg-orange-100 text-orange-800" };
-  if (aqi <= 100) return { label: "Muy mala", cls: "bg-red-100 text-red-800" };
-  return { label: "Pésima", cls: "bg-red-200 text-red-900" };
-}
-
 function sortItems(items: MeteoItem[], mode: SortMode): MeteoItem[] {
   const arr = [...items];
   switch (mode) {
@@ -183,6 +117,88 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
   const searchParams = await props.searchParams;
   const sortMode = (searchParams.sort ?? "temp_asc") as SortMode;
 
+  const [t, tPanel, locale] = await Promise.all([
+    getTranslations("meteoPage"),
+    getTranslations("meteoPanel"),
+    getLocale(),
+  ]);
+
+  // Helper: weather text from meteoPanel translations (existing keys)
+  function getWeatherText(code: number | null): string {
+    if (code === null) return "—";
+    if (code === 0) return tPanel("clear");
+    if ([1, 2, 3].includes(code)) return tPanel("cloudy");
+    if ([45, 48].includes(code)) return tPanel("fog");
+    if ([51, 53, 55, 56, 57].includes(code)) return tPanel("drizzle");
+    if ([61, 63, 65, 66, 67].includes(code)) return tPanel("rain");
+    if ([71, 73, 75, 77].includes(code)) return tPanel("snow");
+    if ([80, 81, 82].includes(code)) return tPanel("showers");
+    if ([95, 96, 99].includes(code)) return tPanel("storm");
+    return tPanel("weather");
+  }
+
+  function getAqiInfo(aqi: number | null): { label: string; cls: string } {
+    if (aqi === null) return { label: "—", cls: "bg-gray-100 text-gray-500" };
+    if (aqi <= 20) return { label: t("aqiGood"), cls: "bg-green-100 text-green-800" };
+    if (aqi <= 40) return { label: t("aqiFair"), cls: "bg-lime-100 text-lime-800" };
+    if (aqi <= 60) return { label: t("aqiModerate"), cls: "bg-yellow-100 text-yellow-800" };
+    if (aqi <= 80) return { label: t("aqiPoor"), cls: "bg-orange-100 text-orange-800" };
+    if (aqi <= 100) return { label: t("aqiVeryPoor"), cls: "bg-red-100 text-red-800" };
+    return { label: t("aqiExtreme"), cls: "bg-red-200 text-red-900" };
+  }
+
+  function getAlertLabel(kind: string): string {
+    const map: Record<string, string> = {
+      SNOW: t("alertSnow"),
+      RAIN: t("alertRain"),
+      WIND: t("alertWind"),
+      FROST: t("alertFrost"),
+      HEAT: t("alertHeat"),
+    };
+    return map[kind] ?? kind;
+  }
+
+  function formatTime(isoTime: string | null): string {
+    if (!isoTime) return "—";
+    try {
+      return new Date(isoTime).toLocaleString(locale, { hour: "2-digit", minute: "2-digit" });
+    } catch { return "—"; }
+  }
+
+  function formatWindow(start?: string | null, end?: string | null): string | null {
+    if (!start && !end) return null;
+    try {
+      const now = new Date();
+      const fmtHM = (d: Date) => d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+      const fmtDM = (d: Date) => d.toLocaleDateString(locale, { day: "2-digit", month: "2-digit" });
+      const sameDay = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+      const labelDay = (d: Date) => {
+        if (sameDay(d, now)) return t("today");
+        const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
+        if (sameDay(d, tomorrow)) return t("tomorrow");
+        const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+        if (sameDay(d, yesterday)) return t("yesterday");
+        return fmtDM(d);
+      };
+      const ds = start ? new Date(start) : null;
+      const de = end ? new Date(end) : null;
+      if (ds && de) return `${labelDay(ds)} ${fmtHM(ds)} → ${labelDay(de)} ${fmtHM(de)}`;
+      if (ds) return `${t("labelFrom")} ${labelDay(ds)} ${fmtHM(ds)}`;
+      if (de) return `${t("labelUntil")} ${labelDay(de)} ${fmtHM(de)}`;
+    } catch { return null; }
+    return null;
+  }
+
+  // Labels para SortBar (client component)
+  const sortLabels: Record<SortMode, string> = {
+    temp_asc: t("sortColdest"),
+    temp_desc: t("sortHottest"),
+    alpha: t("sortAlpha"),
+    rain_desc: t("sortRain"),
+    wind_desc: t("sortWind"),
+    aqi_asc: t("sortAir"),
+  };
+
   const origin = await getOrigin();
   const res = await fetch(`${origin}/api/meteo/pueblos`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Meteo agregada: HTTP ${res.status}`);
@@ -192,14 +208,14 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-7xl">
-      <h1 className="text-3xl font-semibold tracking-tight">Meteo</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
       <p className="mt-2 text-neutral-600">
-        {sorted.length} pueblos
+        {t("villagesCount", { count: sorted.length })}
       </p>
 
       {/* Controles de orden */}
       <Suspense fallback={null}>
-        <SortBar currentSort={sortMode} />
+        <SortBar currentSort={sortMode} labels={sortLabels} />
       </Suspense>
 
       <div className="mt-6 space-y-2">
@@ -256,30 +272,30 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
                   {lluvia24h != null && (
                     <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${lluvia24h === 0 ? "bg-[#efe2d8]/50 text-[#a09490] border-[#e2d5cb]" : "bg-[#efe2d8] text-[#60524d] border-[#e2d5cb]"}`}>
                       <CloudRain size={11} className={lluvia24h === 0 ? "text-stone-300" : "text-slate-500"} strokeWidth={1.5} />
-                      {n(lluvia24h, 1)} mm (24h)
+                      {n(lluvia24h, 1)} {t("mm24h")}
                     </span>
                   )}
                   {nieve24h > 0 && (
                     <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#efe2d8] text-[#60524d] border border-[#e2d5cb]">
                       <CloudSnow size={11} className="text-sky-400" strokeWidth={1.5} />
-                      {n(nieve24h, 1)} cm nieve (24h)
+                      {n(nieve24h, 1)} {t("snowCm24h")}
                     </span>
                   )}
                   {c.windKph !== null && c.windKph > 0 && (
                     <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#efe2d8] text-[#60524d] border border-[#e2d5cb]">
                       <CloudFog size={11} className="text-stone-400" strokeWidth={1.5} />
-                      {n(c.windKph, 0)} km/h viento
+                      {n(c.windKph, 0)} {t("windKph")}
                     </span>
                   )}
                   {d0?.precipProbPct != null && d0.precipProbPct > 10 && (
                     <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#efe2d8] text-[#60524d] border border-[#e2d5cb]">
                       <CloudDrizzle size={11} className="text-slate-400" strokeWidth={1.5} />
-                      {n(d0.precipProbPct, 0)}% prob. lluvia
+                      {n(d0.precipProbPct, 0)}{t("rainProbPct")}
                     </span>
                   )}
                   {aqi !== null && (
                     <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${aqiInfo.cls}`}>
-                      🍃 Aire: {aqiInfo.label} ({aqi})
+                      🍃 {t("aqiLabel")}: {aqiInfo.label} ({aqi})
                     </span>
                   )}
                 </div>
@@ -287,11 +303,20 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
                 {/* Alertas */}
                 {alertas.length > 0 && (
                   <div className="mt-1.5 space-y-0.5">
-                    {alertas.map((a, idx) => (
-                      <div key={`${a.kind}-${idx}`} className="leading-tight">
-                        <AlertInline a={a} />
-                      </div>
-                    ))}
+                    {alertas.map((a, idx) => {
+                      const label = getAlertLabel(a.kind);
+                      const textRaw = (a.title ?? a.detail ?? label).trim();
+                      const main = textRaw.toLowerCase().startsWith(label.toLowerCase()) ? textRaw : `${label}: ${textRaw}`;
+                      const window = formatWindow(a.windowStart, a.windowEnd);
+                      return (
+                        <div key={`${a.kind}-${idx}`} className="leading-tight">
+                          <span className="text-red-700 font-semibold leading-tight">
+                            {main}
+                            {window && <span className="text-red-600 font-normal text-xs ml-1">({window})</span>}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

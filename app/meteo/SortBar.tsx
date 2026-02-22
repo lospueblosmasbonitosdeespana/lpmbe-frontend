@@ -11,22 +11,33 @@ import {
 
 type SortMode = "temp_asc" | "temp_desc" | "alpha" | "rain_desc" | "wind_desc" | "aqi_asc";
 
-type SortOption = {
-  key: SortMode;
-  label: string;
-  Icon: React.ComponentType<{ size: number; className?: string }>;
+const ICONS: Record<SortMode, React.ComponentType<{ size: number; className?: string }>> = {
+  temp_asc: ThermometerSnowflake,
+  temp_desc: ThermometerSun,
+  alpha: ArrowDownAZ,
+  rain_desc: CloudRain,
+  wind_desc: Wind,
+  aqi_asc: Leaf,
 };
 
-const OPTIONS: SortOption[] = [
-  { key: "temp_asc", label: "Más frío", Icon: ThermometerSnowflake },
-  { key: "temp_desc", label: "Más calor", Icon: ThermometerSun },
-  { key: "alpha", label: "A → Z", Icon: ArrowDownAZ },
-  { key: "rain_desc", label: "Más lluvia", Icon: CloudRain },
-  { key: "wind_desc", label: "Más viento", Icon: Wind },
-  { key: "aqi_asc", label: "Aire limpio", Icon: Leaf },
-];
+const SORT_KEYS: SortMode[] = ["temp_asc", "temp_desc", "alpha", "rain_desc", "wind_desc", "aqi_asc"];
 
-export function SortBar({ currentSort }: { currentSort: string }) {
+const FALLBACK_LABELS: Record<SortMode, string> = {
+  temp_asc: "Más frío",
+  temp_desc: "Más calor",
+  alpha: "A → Z",
+  rain_desc: "Más lluvia",
+  wind_desc: "Más viento",
+  aqi_asc: "Aire limpio",
+};
+
+export function SortBar({
+  currentSort,
+  labels,
+}: {
+  currentSort: string;
+  labels?: Record<SortMode, string>;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -38,8 +49,10 @@ export function SortBar({ currentSort }: { currentSort: string }) {
 
   return (
     <div className="flex flex-wrap gap-2 mt-4">
-      {OPTIONS.map(({ key, label, Icon }) => {
+      {SORT_KEYS.map((key) => {
         const active = currentSort === key;
+        const Icon = ICONS[key];
+        const label = labels?.[key] ?? FALLBACK_LABELS[key];
         return (
           <button
             key={key}
