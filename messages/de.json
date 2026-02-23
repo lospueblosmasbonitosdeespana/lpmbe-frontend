@@ -327,6 +327,31 @@
     "stopN": "Haltepunkt {n}",
     "tipsTitle": "Tipps für die Route"
   },
+  "certificationsByYear": {
+    "subtitle": "Jedes Jahr erhalten neue Dörfer die Zertifizierung der Schönsten Dörfer Spaniens.",
+    "pueblosEnLaRed": "Dörfer im Netzwerk",
+    "noData": "Keine Einbindungsdaten verfügbar.",
+    "pueblo": "Dorf",
+    "pueblos": "Dörfer",
+    "reincorporacion": "Wiedereingliederung",
+    "reincorporaciones": "Wiedereingliederungen",
+    "goTo": "Gehe zu:",
+    "breadcrumbPueblos": "Dörfer"
+  },
+  "planifica": {
+    "creaRuta": {
+      "title": "Erstellen Sie Ihre Route",
+      "description": "Geben Sie einen Ausgangs- und Zielort ein und entdecken Sie, welche Dörfer des Verbands und touristischen Ressourcen Sie unterwegs finden.",
+      "originLabel": "Ausgangspunkt",
+      "destLabel": "Zielpunkt",
+      "originPlaceholder": "z. B.: Madrid, Bilbao, Salamanca…",
+      "destPlaceholder": "z. B.: Sevilla, Barcelona, Cáceres…",
+      "maxDistLabel": "Maximale Entfernung von der Route:",
+      "searchButton": "Route suchen",
+      "selectOrigin": "Wählen Sie einen Ausgangspunkt aus der Vorschlagsliste.",
+      "selectDest": "Wählen Sie einen Zielpunkt aus der Vorschlagsliste."
+    }
+  },
   "recursos": {
     "eyebrow": "Freundeskreis",
     "title": "Touristische Ressourcen",
@@ -817,6 +842,7 @@
     "inbox": "Tablett",
     "loadErrorFeed": "Fehler beim Laden der Benachrichtigungen.",
     "noNotificationsNow": "Derzeit keine Benachrichtigungen.",
+    "noNotificationsYet": "Sie haben noch keine Benachrichtigungen.",
     "noMeteoAlertsNow": "Derzeit keine Wetterwarnungen.",
     "noItemsNow": "Derzeit keine {type}.",
     "viewAll": "Alle anzeigen",

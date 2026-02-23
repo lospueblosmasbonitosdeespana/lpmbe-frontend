@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 type Item = {
   id?: string | number;
@@ -26,8 +27,9 @@ function formatFecha(it: Item) {
 }
 
 export default function NotificacionesList({ items }: { items: Item[] }) {
+  const t = useTranslations("notifications");
   if (!items || items.length === 0) {
-    return <p>No tienes notificaciones todavía.</p>;
+    return <p>{t("noNotificationsYet")}</p>;
   }
 
   return (

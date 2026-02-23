@@ -327,6 +327,31 @@
     "stopN": "Paragem {n}",
     "tipsTitle": "Dicas da rota"
   },
+  "certificationsByYear": {
+    "subtitle": "Cada ano, novas aldeias obtêm a certificação das Aldeias Mais Bonitas de Espanha.",
+    "pueblosEnLaRed": "aldeias na rede",
+    "noData": "Sem dados de incorporação disponíveis.",
+    "pueblo": "aldeia",
+    "pueblos": "aldeias",
+    "reincorporacion": "reincorporação",
+    "reincorporaciones": "reincorporações",
+    "goTo": "Ir para:",
+    "breadcrumbPueblos": "Aldeias"
+  },
+  "planifica": {
+    "creaRuta": {
+      "title": "Crie a sua rota",
+      "description": "Introduza uma origem e um destino e descubra que aldeias da associação e recursos turísticos encontrará pelo caminho.",
+      "originLabel": "Ponto de origem",
+      "destLabel": "Ponto de destino",
+      "originPlaceholder": "Ex.: Madrid, Bilbao, Salamanca…",
+      "destPlaceholder": "Ex.: Sevilha, Barcelona, Cáceres…",
+      "maxDistLabel": "Distância máxima da rota:",
+      "searchButton": "Pesquisar rota",
+      "selectOrigin": "Selecione um ponto de origem na lista de sugestões.",
+      "selectDest": "Selecione um ponto de destino na lista de sugestões."
+    }
+  },
   "recursos": {
     "eyebrow": "Clube de Amigos",
     "title": "Recursos turísticos",
@@ -817,6 +842,7 @@
     "inbox": "Tabuleiro",
     "loadErrorFeed": "Erro ao carregar notificações.",
     "noNotificationsNow": "Não há notificações de momento.",
+    "noNotificationsYet": "Ainda não tem notificações.",
     "noMeteoAlertsNow": "Não há alertas meteorológicos de momento.",
     "noItemsNow": "Não há {type} de momento.",
     "viewAll": "Ver tudo",

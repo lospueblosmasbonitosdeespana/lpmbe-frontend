@@ -327,6 +327,31 @@
     "stopN": "Tappa {n}",
     "tipsTitle": "Suggerimenti per il percorso"
   },
+  "certificationsByYear": {
+    "subtitle": "Ogni anno nuovi villaggi ottengono la certificazione dei Borghi più Belli di Spagna.",
+    "pueblosEnLaRed": "borghi nella rete",
+    "noData": "Nessun dato di incorporazione disponibile.",
+    "pueblo": "borgo",
+    "pueblos": "borghi",
+    "reincorporacion": "reincorporazione",
+    "reincorporaciones": "reincorporazioni",
+    "goTo": "Vai a:",
+    "breadcrumbPueblos": "Borghi"
+  },
+  "planifica": {
+    "creaRuta": {
+      "title": "Crea il tuo itinerario",
+      "description": "Inserisci un'origine e una destinazione e scopri quali borghi dell'associazione e risorse turistiche troverai lungo il percorso.",
+      "originLabel": "Punto di partenza",
+      "destLabel": "Punto di destinazione",
+      "originPlaceholder": "Es.: Madrid, Bilbao, Salamanca…",
+      "destPlaceholder": "Es.: Siviglia, Barcellona, Cáceres…",
+      "maxDistLabel": "Distanza massima dal percorso:",
+      "searchButton": "Cerca itinerario",
+      "selectOrigin": "Seleziona un punto di partenza dall'elenco dei suggerimenti.",
+      "selectDest": "Seleziona un punto di destinazione dall'elenco dei suggerimenti."
+    }
+  },
   "recursos": {
     "eyebrow": "Club degli Amici",
     "title": "Risorse turistiche",
@@ -817,6 +842,7 @@
     "inbox": "Vassoio",
     "loadErrorFeed": "Errore nel caricamento delle notifiche.",
     "noNotificationsNow": "Nessuna notifica al momento.",
+    "noNotificationsYet": "Non hai ancora notifiche.",
     "noMeteoAlertsNow": "Nessun allarme meteorologico al momento.",
     "noItemsNow": "Nessun {type} al momento.",
     "viewAll": "Vedi tutto",

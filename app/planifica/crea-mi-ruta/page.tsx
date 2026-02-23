@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
 import type { RouteItem } from "./RouteMap";
 import { getResourceLabel } from "@/lib/resource-types";
 
@@ -235,6 +236,7 @@ function LocationInput({
 /* ------------------------------------------------------------------ */
 
 export default function CreaMiRutaPage() {
+  const t = useTranslations("planifica.creaRuta");
   const searchParams = useSearchParams();
   const originHook = useGeoAutocomplete();
   const destHook = useGeoAutocomplete();
@@ -554,11 +556,11 @@ export default function CreaMiRutaPage() {
     setError(null);
 
     if (!originHook.selected) {
-      setError("Selecciona un punto de origen de la lista de sugerencias.");
+      setError(t("selectOrigin"));
       return;
     }
     if (!destHook.selected) {
-      setError("Selecciona un punto de destino de la lista de sugerencias.");
+      setError(t("selectDest"));
       return;
     }
 
@@ -610,11 +612,10 @@ export default function CreaMiRutaPage() {
       {/* Header */}
       <section className="border-b border-border bg-white/60 px-4 py-12 text-center md:py-16">
         <h1 className="font-serif text-3xl font-bold text-foreground md:text-4xl lg:text-5xl">
-          Crea tu ruta
+          {t("title")}
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
-          Introduce un origen y un destino y descubre qué pueblos de la
-          asociación y recursos turísticos encontrarás por el camino.
+          {t("description")}
         </p>
       </section>
 
@@ -623,20 +624,20 @@ export default function CreaMiRutaPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-wrap gap-4">
             <LocationInput
-              label="Punto de origen"
-              placeholder="Ej: Madrid, Bilbao, Salamanca…"
+              label={t("originLabel")}
+              placeholder={t("originPlaceholder")}
               hook={originHook}
             />
             <LocationInput
-              label="Punto de destino"
-              placeholder="Ej: Sevilla, Barcelona, Cáceres…"
+              label={t("destLabel")}
+              placeholder={t("destPlaceholder")}
               hook={destHook}
             />
           </div>
 
           <div>
             <label className="mb-1.5 block text-sm font-semibold text-foreground/80">
-              Distancia máxima desde la ruta:{" "}
+              {t("maxDistLabel")}{" "}
               <span className="text-primary">{maxDist} km</span>
             </label>
             <input
@@ -676,7 +677,7 @@ export default function CreaMiRutaPage() {
                   <circle cx="11" cy="11" r="8" />
                   <path d="M21 21l-4.35-4.35" />
                 </svg>
-                Buscar ruta
+                {t("searchButton")}
               </>
             )}
           </button>

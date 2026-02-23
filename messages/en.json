@@ -315,6 +315,31 @@
     "stopN": "Stop {n}",
     "tipsTitle": "Route tips"
   },
+  "certificationsByYear": {
+    "subtitle": "Each year new villages obtain the certification of The Most Beautiful Villages of Spain.",
+    "pueblosEnLaRed": "villages in the network",
+    "noData": "No incorporation data available.",
+    "pueblo": "village",
+    "pueblos": "villages",
+    "reincorporacion": "reincorporation",
+    "reincorporaciones": "reincorporations",
+    "goTo": "Go to:",
+    "breadcrumbPueblos": "Villages"
+  },
+  "planifica": {
+    "creaRuta": {
+      "title": "Create your route",
+      "description": "Enter an origin and a destination and discover which association villages and tourist resources you will find along the way.",
+      "originLabel": "Point of origin",
+      "destLabel": "Point of destination",
+      "originPlaceholder": "E.g.: Madrid, Bilbao, Salamanca…",
+      "destPlaceholder": "E.g.: Seville, Barcelona, Cáceres…",
+      "maxDistLabel": "Maximum distance from route:",
+      "searchButton": "Search route",
+      "selectOrigin": "Select a point of origin from the suggestions list.",
+      "selectDest": "Select a point of destination from the suggestions list."
+    }
+  },
   "recursos": {
     "eyebrow": "Friends Club",
     "title": "Tourist resources",
@@ -817,6 +842,7 @@
     "inbox": "Tray",
     "loadErrorFeed": "Error loading notifications.",
     "noNotificationsNow": "No notifications right now.",
+    "noNotificationsYet": "You have no notifications yet.",
     "noMeteoAlertsNow": "No weather alerts right now.",
     "noItemsNow": "No {type} right now.",
     "viewAll": "View all",

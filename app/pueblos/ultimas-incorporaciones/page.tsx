@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import { fetchWithTimeout } from "@/lib/fetch-safe";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
@@ -52,6 +53,8 @@ async function getIncorporaciones(): Promise<APIResponse> {
 
 export default async function UltimasIncorporacionesPage() {
   const { totalActivos, years } = await getIncorporaciones();
+  const t = await getTranslations("certificationsByYear");
+  const tExplore = await getTranslations("explore");
 
   return (
     <main>
@@ -59,8 +62,8 @@ export default async function UltimasIncorporacionesPage() {
         <Container className="pt-4">
           <Breadcrumbs
             items={[
-              { label: "Pueblos", href: "/pueblos" },
-              { label: "Certificaciones por año" },
+              { label: t("breadcrumbPueblos"), href: "/pueblos" },
+              { label: tExplore("certificationsByYear") },
             ]}
           />
         </Container>
@@ -71,11 +74,10 @@ export default async function UltimasIncorporacionesPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-muted via-muted/50 to-background" />
           <Container className="relative py-12 text-center">
             <Display className="text-3xl md:text-4xl">
-              Certificaciones por año
+              {tExplore("certificationsByYear")}
             </Display>
             <Lead className="mx-auto mt-4 max-w-2xl">
-              Cada año nuevos pueblos obtienen la certificación de Los Pueblos
-              Más Bonitos de España.
+              {t("subtitle")}
             </Lead>
 
             {totalActivos > 0 && (
@@ -84,7 +86,7 @@ export default async function UltimasIncorporacionesPage() {
                   {totalActivos}
                 </span>
                 <span className="text-sm font-medium text-muted-foreground">
-                  pueblos en la red
+                  {t("pueblosEnLaRed")}
                 </span>
               </div>
             )}
@@ -96,7 +98,7 @@ export default async function UltimasIncorporacionesPage() {
         <Container>
           {years.length === 0 ? (
             <p className="text-center text-muted-foreground">
-              No hay datos de incorporaciones disponibles.
+              {t("noData")}
             </p>
           ) : (
             <div className="space-y-10">
@@ -114,20 +116,17 @@ export default async function UltimasIncorporacionesPage() {
                       </h2>
                       {numIncorporaciones > 0 && (
                         <span className="rounded-full bg-primary/10 px-3 py-0.5 text-sm font-medium text-primary">
-                          {numIncorporaciones} pueblo
-                          {numIncorporaciones !== 1 ? "s" : ""}
+                          {numIncorporaciones} {numIncorporaciones !== 1 ? t("pueblos") : t("pueblo")}
                         </span>
                       )}
                       {numExpulsiones > 0 && (
                         <span className="rounded-full bg-destructive/10 px-3 py-0.5 text-sm font-medium text-destructive">
-                          −{numExpulsiones} pueblo
-                          {numExpulsiones !== 1 ? "s" : ""}
+                          −{numExpulsiones} {numExpulsiones !== 1 ? t("pueblos") : t("pueblo")}
                         </span>
                       )}
                       {numReincorporaciones > 0 && (
                         <span className="rounded-full bg-emerald-500/10 px-3 py-0.5 text-sm font-medium text-emerald-700">
-                          +{numReincorporaciones} reincorporación
-                          {numReincorporaciones !== 1 ? "es" : ""}
+                          +{numReincorporaciones} {numReincorporaciones !== 1 ? t("reincorporaciones") : t("reincorporacion")}
                         </span>
                       )}
                     </div>
@@ -179,7 +178,7 @@ export default async function UltimasIncorporacionesPage() {
             <nav className="sticky bottom-4 z-10 mt-8">
               <div className="mx-auto flex max-w-fit flex-wrap items-center justify-center gap-1.5 rounded-full border bg-background/95 px-4 py-2 shadow-lg backdrop-blur-sm">
                 <span className="mr-1 text-xs font-medium text-muted-foreground">
-                  Ir a:
+                  {t("goTo")}
                 </span>
                 {years.map((g) => (
                   <a

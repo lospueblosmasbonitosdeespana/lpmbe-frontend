@@ -315,6 +315,31 @@
     "stopN": "Parada {n}",
     "tipsTitle": "Tips de la ruta"
   },
+  "certificationsByYear": {
+    "subtitle": "Cada año nuevos pueblos obtienen la certificación de Los Pueblos Más Bonitos de España.",
+    "pueblosEnLaRed": "pueblos en la red",
+    "noData": "No hay datos de incorporaciones disponibles.",
+    "pueblo": "pueblo",
+    "pueblos": "pueblos",
+    "reincorporacion": "reincorporación",
+    "reincorporaciones": "reincorporaciones",
+    "goTo": "Ir a:",
+    "breadcrumbPueblos": "Pueblos"
+  },
+  "planifica": {
+    "creaRuta": {
+      "title": "Crea tu ruta",
+      "description": "Introduce un origen y un destino y descubre qué pueblos de la asociación y recursos turísticos encontrarás por el camino.",
+      "originLabel": "Punto de origen",
+      "destLabel": "Punto de destino",
+      "originPlaceholder": "Ej: Madrid, Bilbao, Salamanca…",
+      "destPlaceholder": "Ej: Sevilla, Barcelona, Cáceres…",
+      "maxDistLabel": "Distancia máxima desde la ruta:",
+      "searchButton": "Buscar ruta",
+      "selectOrigin": "Selecciona un punto de origen de la lista de sugerencias.",
+      "selectDest": "Selecciona un punto de destino de la lista de sugerencias."
+    }
+  },
   "recursos": {
     "eyebrow": "Club de Amigos",
     "title": "Recursos turísticos",
@@ -819,6 +844,7 @@
     "inbox": "Bandeja",
     "loadErrorFeed": "Error cargando notificaciones.",
     "noNotificationsNow": "No hay notificaciones ahora mismo.",
+    "noNotificationsYet": "No tienes notificaciones todavía.",
     "noMeteoAlertsNow": "No hay alertas meteorológicas ahora mismo.",
     "noItemsNow": "No hay {type} ahora mismo.",
     "viewAll": "Ver todas",

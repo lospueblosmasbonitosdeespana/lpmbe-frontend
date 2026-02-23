@@ -327,6 +327,31 @@
     "stopN": "Étape {n}",
     "tipsTitle": "Conseils pour l'itinéraire"
   },
+  "certificationsByYear": {
+    "subtitle": "Chaque année, de nouveaux villages obtiennent la certification des Plus Beaux Villages d'Espagne.",
+    "pueblosEnLaRed": "villages dans le réseau",
+    "noData": "Aucune donnée d'incorporation disponible.",
+    "pueblo": "village",
+    "pueblos": "villages",
+    "reincorporacion": "réintégration",
+    "reincorporaciones": "réintégrations",
+    "goTo": "Aller à :",
+    "breadcrumbPueblos": "Villages"
+  },
+  "planifica": {
+    "creaRuta": {
+      "title": "Créez votre itinéraire",
+      "description": "Indiquez une origine et une destination et découvrez quels villages de l'association et ressources touristiques vous trouverez en chemin.",
+      "originLabel": "Point d'origine",
+      "destLabel": "Point de destination",
+      "originPlaceholder": "Ex. : Madrid, Bilbao, Salamanque…",
+      "destPlaceholder": "Ex. : Séville, Barcelone, Cáceres…",
+      "maxDistLabel": "Distance maximale depuis l'itinéraire :",
+      "searchButton": "Rechercher l'itinéraire",
+      "selectOrigin": "Sélectionnez un point d'origine dans la liste des suggestions.",
+      "selectDest": "Sélectionnez un point de destination dans la liste des suggestions."
+    }
+  },
   "recursos": {
     "eyebrow": "Club des Amis",
     "title": "Ressources touristiques",
@@ -817,6 +842,7 @@
     "inbox": "Plateau",
     "loadErrorFeed": "Erreur lors du chargement des notifications.",
     "noNotificationsNow": "Aucune notification pour le moment.",
+    "noNotificationsYet": "Vous n'avez pas encore de notifications.",
     "noMeteoAlertsNow": "Aucune alerte météo pour le moment.",
     "noItemsNow": "Aucun {type} pour le moment.",
     "viewAll": "Voir tout",
