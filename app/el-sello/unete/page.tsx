@@ -11,6 +11,7 @@ import {
 } from '@/app/components/ui/typography';
 import type { SelloPage } from '@/lib/cms/sello';
 import { CONTENIDO_UNETE } from '@/lib/cms/sello-content';
+import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,9 +84,10 @@ function BenefitCard({
 }
 
 export default async function UnetePage() {
+  const t = await getTranslations('sello');
   const page = await getPage();
-  const titulo = page?.titulo ?? 'Únete a Nosotros';
-  const subtitle = page?.subtitle ?? 'Forma parte del club';
+  const titulo = page?.titulo ?? t('uneteTitle');
+  const subtitle = page?.subtitle ?? t('uneteSubtitle');
   const raw = page?.contenido?.trim() ?? '';
   // Usar contenido del CMS si tiene contenido real
   const isMinimalContent = raw.length < 100 || raw.startsWith('# ');
@@ -103,7 +105,7 @@ export default async function UnetePage() {
                   href="/"
                   className="text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Inicio
+                  {t('breadcrumbHome')}
                 </Link>
               </li>
               <li>
@@ -114,14 +116,14 @@ export default async function UnetePage() {
                   href="/el-sello"
                   className="text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  El sello
+                  {t('breadcrumbSello')}
                 </Link>
               </li>
               <li>
                 <span className="text-muted-foreground/50">/</span>
               </li>
               <li>
-                <span className="font-medium text-foreground">Únete</span>
+                <span className="font-medium text-foreground">{t('breadcrumbJoin')}</span>
               </li>
             </ol>
           </nav>
@@ -130,7 +132,7 @@ export default async function UnetePage() {
             <div className="mb-4 flex items-center gap-3">
               <div className="h-12 w-1.5 rounded-full bg-primary" />
               <span className="text-sm font-medium uppercase tracking-widest text-primary">
-                {subtitle ?? 'Forma parte del club'}
+                {subtitle ?? t('uneteSubtitle')}
               </span>
             </div>
 
@@ -173,29 +175,27 @@ export default async function UnetePage() {
               </div>
 
               <Headline as="h2" className="mb-3">
-                Para municipios
+                {t('uneteForMunicipalities')}
               </Headline>
               <Body className="mb-6 text-muted-foreground dark:text-foreground/90">
-                Si eres alcalde o representante de un ayuntamiento y crees que tu
-                pueblo cumple con los criterios de calidad, puedes iniciar el
-                proceso de candidatura.
+                {t('uneteForMunicipalitiesBody')}
               </Body>
 
               <div className="mb-6 space-y-1">
                 <StepCard
                   number={1}
-                  title="Consulta los requisitos"
-                  description="Revisa los criterios de evaluación y la Carta de Calidad."
+                  title={t('uneteStep1Title')}
+                  description={t('uneteStep1Desc')}
                 />
                 <StepCard
                   number={2}
-                  title="Aprobación en pleno"
-                  description="El ayuntamiento debe aprobar formalmente la solicitud."
+                  title={t('uneteStep2Title')}
+                  description={t('uneteStep2Desc')}
                 />
                 <StepCard
                   number={3}
-                  title="Envía la solicitud"
-                  description="Completa el formulario oficial con la documentación requerida."
+                  title={t('uneteStep3Title')}
+                  description={t('uneteStep3Desc')}
                 />
               </div>
 
@@ -204,7 +204,7 @@ export default async function UnetePage() {
                   href="/el-sello/proceso"
                   className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
-                  Ver proceso completo
+                  {t('viewFullProcess')}
                   <svg
                     className="h-4 w-4"
                     viewBox="0 0 24 24"
@@ -219,7 +219,7 @@ export default async function UnetePage() {
                   href="/contacto"
                   className="inline-flex items-center gap-2 rounded-lg border border-border bg-transparent px-5 py-2.5 font-medium transition-colors hover:bg-muted"
                 >
-                  Contactar
+                  {t('contact')}
                 </Link>
               </div>
             </div>
@@ -242,20 +242,18 @@ export default async function UnetePage() {
               </div>
 
               <Headline as="h2" className="mb-3">
-                Para colaboradores
+                {t('uneteForPartners')}
               </Headline>
               <Body className="mb-6 text-muted-foreground dark:text-foreground/90">
-                Empresas, instituciones y organizaciones pueden colaborar con la
-                asociación a través de diferentes modalidades de patrocinio y
-                colaboración.
+                {t('uneteForPartnersBody')}
               </Body>
 
               <ul className="mb-6 space-y-3">
                 {[
-                  'Patrocinio de eventos y actividades',
-                  'Colaboración en proyectos de promoción',
-                  'Acuerdos de visibilidad y comunicación',
-                  'Apoyo a iniciativas de sostenibilidad',
+                  t('unetePartner1'),
+                  t('unetePartner2'),
+                  t('unetePartner3'),
+                  t('unetePartner4'),
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3">
                     <svg
@@ -276,7 +274,7 @@ export default async function UnetePage() {
                 href="/contacto"
                 className="inline-flex items-center gap-2 rounded-lg border border-border bg-transparent px-5 py-2.5 font-medium transition-colors hover:bg-muted"
               >
-                Solicitar información
+                {t('requestInfo')}
                 <svg
                   className="h-4 w-4"
                   viewBox="0 0 24 24"
@@ -297,11 +295,10 @@ export default async function UnetePage() {
         <Container>
           <div className="mb-10 text-center">
             <Headline as="h2" className="mb-3">
-              Beneficios de pertenecer a la red
+              {t('benefitsTitle')}
             </Headline>
             <Body className="mx-auto max-w-2xl text-muted-foreground dark:text-foreground/90">
-              Formar parte de Los Pueblos Más Bonitos de España ofrece múltiples
-              ventajas para el desarrollo local.
+              {t('benefitsLead')}
             </Body>
           </div>
 
@@ -319,8 +316,8 @@ export default async function UnetePage() {
                   <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
                 </svg>
               }
-              title="Visibilidad"
-              description="Promoción en medios nacionales e internacionales y presencia en ferias de turismo."
+              title={t('benefitVisibility')}
+              description={t('benefitVisibilityDesc')}
             />
             <BenefitCard
               icon={
@@ -337,8 +334,8 @@ export default async function UnetePage() {
                   <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                 </svg>
               }
-              title="Turismo"
-              description="Incremento significativo de visitantes y pernoctaciones en el municipio."
+              title={t('benefitTourism')}
+              description={t('benefitTourismDesc')}
             />
             <BenefitCard
               icon={
@@ -354,8 +351,8 @@ export default async function UnetePage() {
                   <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                 </svg>
               }
-              title="Red internacional"
-              description="Pertenencia a la red mundial de pueblos más bonitos con presencia en varios países."
+              title={t('benefitNetwork')}
+              description={t('benefitNetworkDesc')}
             />
             <BenefitCard
               icon={
@@ -369,8 +366,8 @@ export default async function UnetePage() {
                   <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                 </svg>
               }
-              title="Desarrollo económico"
-              description="Impulso a la economía local con nuevos negocios y oportunidades de empleo."
+              title={t('benefitEconomic')}
+              description={t('benefitEconomicDesc')}
             />
           </div>
         </Container>
@@ -381,17 +378,16 @@ export default async function UnetePage() {
         <Container size="md">
           <div className="text-center">
             <Headline as="h2" className="mb-4 text-primary-foreground">
-              ¿Tienes dudas?
+              {t('anyQuestions')}
             </Headline>
             <Body className="mb-6 text-primary-foreground/80">
-              Nuestro equipo estará encantado de resolver cualquier pregunta
-              sobre el proceso de adhesión.
+              {t('anyQuestionsBody')}
             </Body>
             <Link
               href="/contacto"
               className="inline-flex items-center gap-2 rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-background/90"
             >
-              Contacta con nosotros
+              {t('contactUsButton')}
               <svg
                 className="h-4 w-4"
                 viewBox="0 0 24 24"

@@ -10,6 +10,7 @@ import {
 } from '@/app/components/ui/typography';
 import type { SelloPage } from '@/lib/cms/sello';
 import { CONTENIDO_CRITERIOS } from '@/lib/cms/sello-content';
+import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,10 +45,11 @@ async function getCartaCalidad(): Promise<{ titulo: string; url: string } | null
 }
 
 export default async function CriteriosPage() {
+  const t = await getTranslations('sello');
   const [page, cartaDoc] = await Promise.all([getPage(), getCartaCalidad()]);
 
-  const titulo = page?.titulo ?? 'Criterios de evaluación';
-  const subtitle = page?.subtitle ?? 'Qué valoramos';
+  const titulo = page?.titulo ?? t('criteriaEyebrow');
+  const subtitle = page?.subtitle ?? t('criteriaTitle');
   // Si el CMS tiene contenido mínimo (seed antiguo), usar el completo para que coincida con el admin
   const raw = page?.contenido?.trim() ?? '';
   const isMinimalContent = raw.length < 400 || !raw.includes('Requisitos de admisión');
@@ -61,23 +63,23 @@ export default async function CriteriosPage() {
             <ol className="flex flex-wrap items-center gap-2 text-sm">
               <li>
                 <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">
-                  Inicio
+                  {t('breadcrumbHome')}
                 </Link>
               </li>
               <li><span className="text-muted-foreground/50">/</span></li>
               <li>
                 <Link href="/el-sello" className="text-muted-foreground transition-colors hover:text-foreground">
-                  El sello
+                  {t('breadcrumbSello')}
                 </Link>
               </li>
               <li><span className="text-muted-foreground/50">/</span></li>
               <li>
                 <Link href="/el-sello/como-se-obtiene" className="text-muted-foreground transition-colors hover:text-foreground">
-                  ¿Cómo se obtiene?
+                  {t('breadcrumbHowToGet')}
                 </Link>
               </li>
               <li><span className="text-muted-foreground/50">/</span></li>
-              <li><span className="font-medium text-foreground">Criterios</span></li>
+              <li><span className="font-medium text-foreground">{t('breadcrumbCriteria')}</span></li>
             </ol>
           </nav>
 
@@ -92,10 +94,7 @@ export default async function CriteriosPage() {
             <Display className="mb-2 text-balance">{titulo}</Display>
 
             <Lead className="mb-8 max-w-3xl text-muted-foreground dark:text-foreground/90">
-              Resumen de los criterios recogidos en nuestra{' '}
-              <strong className="text-foreground">Carta de Calidad</strong>. Todo
-              municipio candidato debe satisfacer estos requisitos para obtener
-              el sello de Los Pueblos Más Bonitos de España.
+              {t('criteriaLeadText')}
             </Lead>
           </div>
         </Container>
@@ -113,14 +112,10 @@ export default async function CriteriosPage() {
         <Container size="md">
           <div className="rounded-xl border border-border bg-card p-8">
             <Headline as="h3" className="mb-4">
-              La Carta de Calidad
+              {t('qualityCharterTitle')}
             </Headline>
             <Body className="mb-4 text-muted-foreground dark:text-foreground/90">
-              Todos los criterios detallados, el procedimiento de instrucción, los
-              modos de utilización de la marca y las obligaciones de los pueblos
-              miembros están recogidos en la{' '}
-              <strong className="text-foreground">Carta de Calidad</strong>, el
-              documento oficial que rige la asociación.
+              {t('qualityCharterBody')}
             </Body>
             <div className="flex flex-wrap gap-4">
               {cartaDoc ? (
@@ -143,14 +138,14 @@ export default async function CriteriosPage() {
                   href="/el-sello#documentacion"
                   className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
-                  Ver documentación
+                  {t('viewDoc')}
                 </Link>
               )}
               <Link
                 href="/el-sello/proceso"
                 className="inline-flex items-center gap-2 rounded-lg border border-border bg-transparent px-5 py-2.5 font-medium transition-colors hover:bg-muted"
               >
-                Ver proceso de selección
+                {t('viewProcess')}
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>

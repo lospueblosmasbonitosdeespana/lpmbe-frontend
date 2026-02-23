@@ -4,6 +4,7 @@ import SafeHtml from '@/app/_components/ui/SafeHtml';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import { Display, Headline, Body, Lead } from '@/app/components/ui/typography';
+import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,6 +48,7 @@ export default async function SocioPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const t = await getTranslations('sello');
   const socio = await getSocioBySlug(slug);
 
   if (!socio) notFound();
@@ -62,7 +64,7 @@ export default async function SocioPage({
                   href="/"
                   className="text-muted-foreground transition-colors hover:text-primary"
                 >
-                  Inicio
+                  {t('breadcrumbHome')}
                 </Link>
               </li>
               <li><span className="text-muted-foreground/50">/</span></li>
@@ -71,7 +73,7 @@ export default async function SocioPage({
                   href="/el-sello"
                   className="text-muted-foreground transition-colors hover:text-primary"
                 >
-                  El sello
+                  {t('breadcrumbSello')}
                 </Link>
               </li>
               <li><span className="text-muted-foreground/50">/</span></li>
@@ -80,7 +82,7 @@ export default async function SocioPage({
                   href="/el-sello/socios"
                   className="text-muted-foreground transition-colors hover:text-primary"
                 >
-                  Socios
+                  {t('breadcrumbPartners')}
                 </Link>
               </li>
               <li><span className="text-muted-foreground/50">/</span></li>
@@ -111,7 +113,7 @@ export default async function SocioPage({
                   rel="noopener noreferrer"
                   className="mt-4 inline-flex items-center gap-2 text-primary underline hover:no-underline"
                 >
-                  Visitar web
+                  {t('visitWeb')}
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                     <polyline points="15 3 21 3 21 9" />
@@ -138,7 +140,7 @@ export default async function SocioPage({
         <Section spacing="md" background="default">
           <Container>
             <Headline as="h2" className="mb-6">
-              Galería
+              {t('gallery')}
             </Headline>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {socio.fotos.map((foto) => (
@@ -165,7 +167,7 @@ export default async function SocioPage({
             href="/el-sello/socios"
             className="inline-flex items-center gap-2 text-primary hover:underline"
           >
-            ← Volver a Socios y colaboradores
+            ← {t('backToPartners')}
           </Link>
         </Container>
       </Section>

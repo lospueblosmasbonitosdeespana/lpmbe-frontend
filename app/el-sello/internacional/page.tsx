@@ -5,6 +5,7 @@ import { Container } from "@/app/components/ui/container";
 import { Display, Lead } from "@/app/components/ui/typography";
 import type { SelloPage } from "@/lib/cms/sello";
 import { CONTENIDO_INTERNACIONAL } from "@/lib/cms/sello-content";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -32,9 +33,10 @@ async function getPage(): Promise<SelloPage | null> {
 }
 
 export default async function InternacionalPage() {
+  const t = await getTranslations("sello");
   const page = await getPage();
-  const titulo = page?.titulo ?? "Red Internacional";
-  const subtitle = page?.subtitle ?? "Les Plus Beaux Villages de la Terre";
+  const titulo = page?.titulo ?? t("worldTitle");
+  const subtitle = page?.subtitle ?? t("worldLead");
   const raw = page?.contenido?.trim() ?? "";
   const isMinimalContent = raw.length < 400 || !raw.includes("sm:grid-cols-2");
   const contenido = raw && !isMinimalContent ? raw : CONTENIDO_INTERNACIONAL;
@@ -45,11 +47,11 @@ export default async function InternacionalPage() {
         <Container>
           <nav className="mb-8">
             <ol className="flex flex-wrap items-center gap-2 text-sm">
-              <li><Link href="/" className="text-muted-foreground transition-colors hover:text-primary">Inicio</Link></li>
+              <li><Link href="/" className="text-muted-foreground transition-colors hover:text-primary">{t("breadcrumbHome")}</Link></li>
               <li><span className="text-muted-foreground/50">/</span></li>
-              <li><Link href="/el-sello" className="text-muted-foreground transition-colors hover:text-primary">El sello</Link></li>
+              <li><Link href="/el-sello" className="text-muted-foreground transition-colors hover:text-primary">{t("breadcrumbSello")}</Link></li>
               <li><span className="text-muted-foreground/50">/</span></li>
-              <li><span className="text-foreground">El sello en el mundo</span></li>
+              <li><span className="text-foreground">{t("breadcrumbWorld")}</span></li>
             </ol>
           </nav>
 

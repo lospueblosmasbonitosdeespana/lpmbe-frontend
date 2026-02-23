@@ -10,6 +10,7 @@ import {
 } from '@/app/components/ui/typography';
 import type { SelloPage } from '@/lib/cms/sello';
 import { CONTENIDO_PROCESO } from '@/lib/cms/sello-content';
+import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,9 +30,10 @@ async function getPage(): Promise<SelloPage | null> {
 }
 
 export default async function ProcesoPage() {
+  const t = await getTranslations('sello');
   const page = await getPage();
-  const titulo = page?.titulo ?? 'Proceso de selección';
-  const subtitle = page?.subtitle ?? 'Etapas y evaluación';
+  const titulo = page?.titulo ?? t('processTitle');
+  const subtitle = page?.subtitle ?? t('processPageSubtitle');
   const raw = page?.contenido?.trim() ?? '';
   const isMinimalContent = raw.length < 400 || !raw.includes('Petición formal');
   const contenido = raw && !isMinimalContent ? raw : CONTENIDO_PROCESO;
@@ -48,7 +50,7 @@ export default async function ProcesoPage() {
                   href="/"
                   className="text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Inicio
+                  {t('breadcrumbHome')}
                 </Link>
               </li>
               <li>
@@ -59,7 +61,7 @@ export default async function ProcesoPage() {
                   href="/el-sello"
                   className="text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  El sello
+                  {t('breadcrumbSello')}
                 </Link>
               </li>
               <li>
@@ -70,14 +72,14 @@ export default async function ProcesoPage() {
                   href="/el-sello/como-se-obtiene"
                   className="text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  ¿Cómo se obtiene?
+                  {t('breadcrumbHowToGet')}
                 </Link>
               </li>
               <li>
                 <span className="text-muted-foreground/50">/</span>
               </li>
               <li>
-                <span className="font-medium text-foreground">Proceso</span>
+                <span className="font-medium text-foreground">{t('breadcrumbProcess')}</span>
               </li>
             </ol>
           </nav>
@@ -109,17 +111,16 @@ export default async function ProcesoPage() {
         <Container size="sm">
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-8 text-center">
             <Headline as="h3" className="mb-3">
-              ¿Tu pueblo cumple los requisitos?
+              {t('processCtaTitle')}
             </Headline>
             <Body className="mb-6 text-muted-foreground dark:text-foreground/90">
-              Consulta los criterios de evaluación y descubre si tu municipio
-              puede formar parte de la red.
+              {t('processCtaBody')}
             </Body>
             <Link
               href="/el-sello/criterios"
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              Ver criterios de evaluación
+              {t('viewCriteria')}
               <svg
                 className="h-4 w-4"
                 viewBox="0 0 24 24"

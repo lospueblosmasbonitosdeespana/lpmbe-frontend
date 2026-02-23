@@ -9,6 +9,7 @@ import {
   Body,
 } from '@/app/components/ui/typography';
 import { CONTENIDO_QUIENES_SOMOS } from '@/lib/cms/sello-content';
+import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,9 +29,10 @@ async function getPageContent(): Promise<{ titulo?: string; subtitle?: string; c
 }
 
 export default async function QuienesSomosPage() {
+  const t = await getTranslations('sello');
   const page = await getPageContent();
-  const titulo = page?.titulo ?? 'Quiénes Somos';
-  const subtitle = page?.subtitle ?? 'La asociación';
+  const titulo = page?.titulo ?? t('aboutTitle');
+  const subtitle = page?.subtitle ?? t('aboutEyebrow');
   const raw = page?.contenido?.trim() ?? '';
   // Usar contenido del CMS si tiene contenido real (no placeholder mínimo)
   const isMinimalContent = raw.length < 200 || raw.startsWith('# ');
@@ -47,7 +49,7 @@ export default async function QuienesSomosPage() {
                   href="/"
                   className="text-muted-foreground transition-colors hover:text-primary"
                 >
-                  Inicio
+                  {t('breadcrumbHome')}
                 </Link>
               </li>
               <li>
@@ -58,14 +60,14 @@ export default async function QuienesSomosPage() {
                   href="/el-sello"
                   className="text-muted-foreground transition-colors hover:text-primary"
                 >
-                  El sello
+                  {t('breadcrumbSello')}
                 </Link>
               </li>
               <li>
                 <span className="text-muted-foreground/50">/</span>
               </li>
               <li>
-                <span className="text-foreground">Quiénes somos</span>
+                <span className="text-foreground">{t('breadcrumbWhoWeAre')}</span>
               </li>
             </ol>
           </nav>
@@ -81,8 +83,7 @@ export default async function QuienesSomosPage() {
             <Display className="mb-6">{titulo}</Display>
 
             <Lead className="text-muted-foreground dark:text-foreground/90">
-              Conoce la asociación que promueve y preserva el patrimonio de los
-              pueblos más bonitos de España.
+              {t('whoLead')}
             </Lead>
           </div>
         </Container>
@@ -114,18 +115,17 @@ export default async function QuienesSomosPage() {
             </div>
             <div className="flex-1">
               <Headline as="h3" className="mb-2">
-                ¿Quieres que tu pueblo forme parte?
+                {t('whoCtaTitle')}
               </Headline>
               <Body size="sm" className="text-muted-foreground dark:text-foreground/90">
-                Descubre el proceso de admisión y los criterios que deben cumplir
-                los municipios candidatos al sello de calidad.
+                {t('whoCtaBody')}
               </Body>
             </div>
             <Link
               href="/el-sello/unete"
               className="shrink-0 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              Solicitar información
+              {t('requestInfo')}
             </Link>
           </div>
         </Container>

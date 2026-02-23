@@ -10,6 +10,7 @@ import {
 } from '@/app/components/ui/typography';
 import type { SelloPage } from '@/lib/cms/sello';
 import { CONTENIDO_SOCIOS } from '@/lib/cms/sello-content';
+import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,17 +39,21 @@ type SelloSocio = {
   tipo: 'INSTITUCIONAL' | 'COLABORADOR' | 'PATROCINADOR';
 };
 
-const categoryLabels: Record<string, string> = {
-  INSTITUCIONAL: 'Institucional',
-  COLABORADOR: 'Colaborador',
-  PATROCINADOR: 'Patrocinador',
-};
-
 const categoryColors: Record<string, string> = {
   INSTITUCIONAL: 'bg-primary/10 text-primary',
   COLABORADOR: 'bg-accent/30 text-accent-foreground',
   PATROCINADOR: 'bg-amber-100 text-amber-800',
 };
+
+function getCategoryLabel(
+  tipo: string,
+  t: (key: string) => string
+): string {
+  if (tipo === 'INSTITUCIONAL') return t('institucional');
+  if (tipo === 'COLABORADOR') return t('colaborador');
+  if (tipo === 'PATROCINADOR') return t('patrocinador');
+  return tipo;
+}
 
 async function getSocios(): Promise<SelloSocio[]> {
   try {
@@ -69,7 +74,10 @@ function PartnerCard({
   descripcion,
   websiteUrl,
   tipo,
-}: SelloSocio) {
+  categoryLabel,
+  seeMoreLabel,
+  visitWebLabel,
+}: SelloSocio & { categoryLabel: string; seeMoreLabel: string; visitWebLabel: string }) {
   const content = (
     <>
       <div className="mb-4 flex items-start justify-between">
@@ -88,7 +96,7 @@ function PartnerCard({
         <span
           className={`rounded-full px-3 py-1 text-xs font-medium ${categoryColors[tipo] ?? 'bg-muted text-muted-foreground dark:text-foreground/90'}`}
         >
-          {categoryLabels[tipo] ?? tipo}
+          {categoryLabel}
         </span>
       </div>
 
@@ -103,7 +111,7 @@ function PartnerCard({
 
       {slug ? (
         <span className="inline-flex items-center gap-1 text-sm font-medium text-primary">
-          Ver más
+          {seeMoreLabel}
           <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
@@ -116,7 +124,7 @@ function PartnerCard({
           className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80"
           onClick={(e) => e.stopPropagation()}
         >
-          Visitar web
+          {visitWebLabel}
           <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
             <polyline points="15 3 21 3 21 9" />
@@ -142,10 +150,11 @@ function PartnerCard({
 }
 
 export default async function SociosPage() {
+  const t = await getTranslations('sello');
   const [page, socios] = await Promise.all([getPage(), getSocios()]);
 
-  const titulo = page?.titulo ?? 'Socios';
-  const subtitle = page?.subtitle ?? 'Nuestros miembros';
+  const titulo = page?.titulo ?? t('sociosTitle');
+  const subtitle = page?.subtitle ?? t('sociosSubtitle');
   const raw = page?.contenido?.trim() ?? '';
   const isMinimalContent = raw.length < 400 || !raw.includes('instituciones');
   const contenido = raw && !isMinimalContent ? raw : CONTENIDO_SOCIOS;
@@ -169,7 +178,7 @@ export default async function SociosPage() {
                   href="/"
                   className="text-muted-foreground transition-colors hover:text-primary"
                 >
-                  Inicio
+                  {t('breadcrumbHome')}
                 </Link>
               </li>
               <li>
@@ -180,14 +189,14 @@ export default async function SociosPage() {
                   href="/el-sello"
                   className="text-muted-foreground transition-colors hover:text-primary"
                 >
-                  El sello
+                  {t('breadcrumbSello')}
                 </Link>
               </li>
               <li>
                 <span className="text-muted-foreground/50">/</span>
               </li>
               <li>
-                <span className="text-foreground">Socios</span>
+                <span className="text-foreground">{t('breadcrumbPartners')}</span>
               </li>
             </ol>
           </nav>
@@ -218,7 +227,7 @@ export default async function SociosPage() {
                 126
               </div>
               <div className="mt-1 text-sm text-muted-foreground dark:text-foreground/90">
-                Municipios socios
+                {t('municipiosSocios')}
               </div>
             </div>
             <div className="text-center">
@@ -226,7 +235,7 @@ export default async function SociosPage() {
                 17
               </div>
               <div className="mt-1 text-sm text-muted-foreground dark:text-foreground/90">
-                Comunidades
+                {t('comunidades')}
               </div>
             </div>
             <div className="text-center">
@@ -234,7 +243,7 @@ export default async function SociosPage() {
                 {countInstitucionales}
               </div>
               <div className="mt-1 text-sm text-muted-foreground dark:text-foreground/90">
-                Socios institucionales
+                {t('sociosInstitucionales')}
               </div>
             </div>
             <div className="text-center">
@@ -242,7 +251,7 @@ export default async function SociosPage() {
                 {countColaboradores}
               </div>
               <div className="mt-1 text-sm text-muted-foreground dark:text-foreground/90">
-                Colaboradores
+                {t('colaboradoresLabel')}
               </div>
             </div>
           </div>
@@ -253,18 +262,23 @@ export default async function SociosPage() {
       <Section spacing="lg" background="muted">
         <Container>
           <Headline as="h2" className="mb-8">
-            Instituciones y colaboradores
+            {t('institucionesYColaboradores')}
           </Headline>
 
           {socios.length === 0 ? (
             <div className="rounded-xl border border-border bg-card p-12 text-center text-muted-foreground dark:text-foreground/90">
-              Próximamente se mostrarán aquí las instituciones y colaboradores
-              de la asociación.
+              {t('proximamenteSocios')}
             </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {socios.map((s) => (
-                <PartnerCard key={s.id} {...s} />
+                <PartnerCard
+                  key={s.id}
+                  {...s}
+                  categoryLabel={getCategoryLabel(s.tipo, t)}
+                  seeMoreLabel={t('seeMore')}
+                  visitWebLabel={t('visitWeb')}
+                />
               ))}
             </div>
           )}
@@ -276,17 +290,16 @@ export default async function SociosPage() {
         <Container>
           <div className="rounded-xl border border-border bg-card p-8 text-center">
             <Headline as="h3" className="mb-3">
-              Proceso de admisión
+              {t('processAdmissionTitle')}
             </Headline>
             <Body className="mb-6 text-muted-foreground dark:text-foreground/90">
-              Si tu municipio quiere solicitar el sello de calidad, consulta el
-              proceso completo de admisión y los criterios de evaluación.
+              {t('processAdmissionBody')}
             </Body>
             <Link
               href="/el-sello/proceso"
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              Ver proceso completo
+              {t('viewFullProcess')}
               <svg
                 className="h-4 w-4"
                 viewBox="0 0 24 24"
@@ -306,17 +319,16 @@ export default async function SociosPage() {
         <Container size="md">
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-8 text-center">
             <Headline as="h3" className="mb-3">
-              Pueblos miembros
+              {t('pueblosMiembrosTitle')}
             </Headline>
             <Body className="mb-6 text-muted-foreground dark:text-foreground/90">
-              Descubre los 126 municipios que forman parte de la asociación y
-              lucen con orgullo el sello de calidad.
+              {t('pueblosMiembrosBody')}
             </Body>
             <Link
               href="/pueblos"
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              Ver todos los pueblos
+              {t('viewAllVillages')}
               <svg
                 className="h-4 w-4"
                 viewBox="0 0 24 24"
@@ -351,19 +363,17 @@ export default async function SociosPage() {
             </div>
             <div className="flex-1">
               <Title as="h3" className="mb-2">
-                ¿Quieres ser socio colaborador?
+                {t('wantToBePartner')}
               </Title>
               <Body size="sm" className="text-muted-foreground dark:text-foreground/90">
-                Si tu empresa u organización quiere colaborar con la asociación,
-                solicita información sobre las opciones de patrocinio y
-                colaboración.
+                {t('wantToBePartnerBody')}
               </Body>
             </div>
             <Link
               href="/el-sello/unete"
               className="shrink-0 rounded-lg border border-border bg-transparent px-5 py-2.5 font-medium transition-colors hover:bg-muted"
             >
-              Solicitar información
+              {t('requestInfo')}
             </Link>
           </div>
         </Container>

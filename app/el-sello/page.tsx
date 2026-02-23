@@ -16,6 +16,7 @@ import {
 } from "@/app/components/ui/typography";
 import type { SelloPage, CmsDocumento } from "@/lib/cms/sello";
 import { CONTENIDO_SELLO_HOME } from "@/lib/cms/sello-content";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -97,15 +98,16 @@ function GlobeIcon({ className }: { className?: string }) {
   );
 }
 
-/* ===== CRITERIA DATA ===== */
-const criteriaItems = [
-  { icon: ArchitectureIcon, title: "Patrimonio arquitectónico", description: "Conservación del conjunto urbano, monumentos y edificaciones tradicionales de valor histórico." },
-  { icon: HeritageIcon, title: "Riqueza histórica", description: "Legado cultural, tradiciones vivas y elementos inmateriales que definen la identidad del pueblo." },
-  { icon: NatureIcon, title: "Entorno natural", description: "Integración armónica con el paisaje y respeto por el medio ambiente circundante." },
-  { icon: CommunityIcon, title: "Vida local", description: "Población residente, servicios básicos y actividad económica que mantengan vivo el pueblo." },
-  { icon: SustainabilityIcon, title: "Sostenibilidad", description: "Políticas de conservación, mantenimiento y desarrollo compatible con los valores del pueblo." },
-  { icon: TourismIcon, title: "Acogida al visitante", description: "Infraestructura turística de calidad y compromiso con la experiencia del viajero." },
-];
+const CRITERIA_ICONS = [ArchitectureIcon, HeritageIcon, NatureIcon, CommunityIcon, SustainabilityIcon, TourismIcon];
+/* ===== CRITERIA DATA (titles/descriptions from t in component) ===== */
+const CRITERIA_KEYS = [
+  { titleKey: "criteria1Title", descKey: "criteria1Desc" },
+  { titleKey: "criteria2Title", descKey: "criteria2Desc" },
+  { titleKey: "criteria3Title", descKey: "criteria3Desc" },
+  { titleKey: "criteria4Title", descKey: "criteria4Desc" },
+  { titleKey: "criteria5Title", descKey: "criteria5Desc" },
+  { titleKey: "criteria6Title", descKey: "criteria6Desc" },
+] as const;
 
 /* ===== WORLD NETWORKS ===== */
 const worldNetworks = [
@@ -170,6 +172,7 @@ async function getDocumentos(): Promise<{ estatutos: CmsDocumento[]; cartaCalida
 }
 
 export default async function ElSelloPage() {
+  const t = await getTranslations("sello");
   const [page, documentos, siteSettings] = await Promise.all([
     getSelloPage(),
     getDocumentos(),
@@ -185,11 +188,17 @@ export default async function ElSelloPage() {
   const evaluationImageUrl = siteSettings.selloEvaluationImageUrl || "/images/sello/evaluation.jpg";
   const teamImageUrl = siteSettings.selloTeamImageUrl || "/images/sello/team.jpg";
 
+  const criteriaItems = CRITERIA_KEYS.map((keys, i) => ({
+    icon: CRITERIA_ICONS[i],
+    title: t(keys.titleKey),
+    description: t(keys.descKey),
+  }));
+
   return (
     <main>
       <Section spacing="none" background="default">
         <Container className="pt-4">
-          <Breadcrumbs items={[{ label: "El sello" }]} />
+          <Breadcrumbs items={[{ label: t("breadcrumbSello") }]} />
         </Container>
       </Section>
 
@@ -224,13 +233,12 @@ export default async function ElSelloPage() {
                 />
               </div>
 
-              <Eyebrow className="mb-4">Calidad y autenticidad garantizadas</Eyebrow>
-              <Display className="mb-6 max-w-3xl text-balance">El Sello</Display>
+              <Eyebrow className="mb-4">{t("heroEyebrow")}</Eyebrow>
+              <Display className="mb-6 max-w-3xl text-balance">{t("heroTitle")}</Display>
               {subtitle && <Lead className="mb-6 max-w-2xl">{subtitle}</Lead>}
               {!subtitle && (
                 <Lead className="max-w-2xl text-muted-foreground dark:text-foreground/90">
-                  Un distintivo de excelencia que reconoce la belleza, el patrimonio y el compromiso
-                  de los municipios que preservan la esencia de la España rural.
+                  {t("heroSubtitle")}
                 </Lead>
               )}
 
@@ -238,15 +246,15 @@ export default async function ElSelloPage() {
               <div className="mt-12 flex flex-wrap justify-center gap-8 lg:gap-16">
                 <div className="text-center">
                   <div className="font-serif text-4xl font-semibold text-primary lg:text-5xl">126</div>
-                  <Caption className="mt-1">Pueblos certificados</Caption>
+                  <Caption className="mt-1">{t("statVillages")}</Caption>
                 </div>
                 <div className="text-center">
                   <div className="font-serif text-4xl font-semibold text-primary lg:text-5xl">17</div>
-                  <Caption className="mt-1">Comunidades autónomas</Caption>
+                  <Caption className="mt-1">{t("statRegions")}</Caption>
                 </div>
                 <div className="text-center">
                   <div className="font-serif text-4xl font-semibold text-primary lg:text-5xl">2010</div>
-                  <Caption className="mt-1">Año de fundación</Caption>
+                  <Caption className="mt-1">{t("statYear")}</Caption>
                 </div>
               </div>
             </div>
@@ -258,8 +266,8 @@ export default async function ElSelloPage() {
       <Section spacing="lg" background="default">
         <Container>
           <div className="mx-auto max-w-3xl text-center">
-            <Eyebrow className="mb-4 text-foreground/80">Qué es</Eyebrow>
-            <Headline className="mb-6 text-foreground">Un compromiso con la excelencia</Headline>
+            <Eyebrow className="mb-4 text-foreground/80">{t("whatIsEyebrow")}</Eyebrow>
+            <Headline className="mb-6 text-foreground">{t("whatIsTitle")}</Headline>
           </div>
           <div className="mx-auto max-w-3xl">
             <div className="prose prose-gray dark:prose-invert prose-lg max-w-none text-foreground/90 [&_p]:text-foreground/90 [&_li]:text-foreground/90 [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline [&_strong]:text-foreground [&_em]:text-foreground">
@@ -273,11 +281,10 @@ export default async function ElSelloPage() {
       <Section spacing="lg" background="muted">
         <Container>
           <div className="mb-12 text-center">
-            <Eyebrow className="mb-4">Criterios de evaluación</Eyebrow>
-            <Headline className="mb-4">¿Qué valoramos?</Headline>
+            <Eyebrow className="mb-4">{t("criteriaEyebrow")}</Eyebrow>
+            <Headline className="mb-4">{t("criteriaTitle")}</Headline>
                 <Lead className="mx-auto max-w-2xl text-muted-foreground dark:text-foreground/90">
-              Cada pueblo candidato es evaluado según seis pilares fundamentales
-              que garantizan su autenticidad y calidad.
+              {t("criteriaLead")}
             </Lead>
           </div>
           <Grid columns={3} gap="md">
@@ -308,25 +315,24 @@ export default async function ElSelloPage() {
             <div className="relative aspect-[4/3] overflow-hidden rounded-lg lg:aspect-auto">
               <Image
                 src={evaluationImageUrl}
-                alt="Comité de evaluación"
+                alt={t("evaluationCommittee")}
                 fill
                 className="object-cover"
                 unoptimized={evaluationImageUrl.startsWith("http")}
               />
             </div>
             <div>
-              <Eyebrow className="mb-4">Proceso de admisión</Eyebrow>
-              <Headline className="mb-6">¿Cómo se obtiene el sello?</Headline>
+              <Eyebrow className="mb-4">{t("processEyebrow")}</Eyebrow>
+              <Headline className="mb-6">{t("processTitle")}</Headline>
               <Body className="mb-8 text-muted-foreground dark:text-foreground/90">
-                El proceso de certificación es riguroso y transparente, diseñado para
-                garantizar que solo los pueblos más excepcionales reciban el distintivo.
+                {t("processBody")}
               </Body>
               <div className="space-y-6">
                 {[
-                  { n: 1, title: "Solicitud inicial", desc: "El municipio presenta su candidatura con documentación sobre su patrimonio, historia y servicios." },
-                  { n: 2, title: "Evaluación técnica", desc: "Un comité de expertos analiza el cumplimiento de los criterios establecidos." },
-                  { n: 3, title: "Visita de verificación", desc: "Inspección in situ para comprobar el estado real del pueblo y sus recursos." },
-                  { n: 4, title: "Decisión del comité", desc: "El Comité de Calidad emite su veredicto y, si es favorable, otorga el sello." },
+                  { n: 1, titleKey: "step1Title" as const, descKey: "step1Desc" as const },
+                  { n: 2, titleKey: "step2Title" as const, descKey: "step2Desc" as const },
+                  { n: 3, titleKey: "step3Title" as const, descKey: "step3Desc" as const },
+                  { n: 4, titleKey: "step4Title" as const, descKey: "step4Desc" as const },
                 ].map((step) => (
                   <div key={step.n} className="flex gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">
@@ -334,9 +340,9 @@ export default async function ElSelloPage() {
                     </div>
                     <div>
                       <Title as="h4" className="mb-1 text-lg">
-                        {step.title}
+                        {t(step.titleKey)}
                       </Title>
-                      <Body className="text-muted-foreground dark:text-foreground/90">{step.desc}</Body>
+                      <Body className="text-muted-foreground dark:text-foreground/90">{t(step.descKey)}</Body>
                     </div>
                   </div>
                 ))}
@@ -346,7 +352,7 @@ export default async function ElSelloPage() {
                 href="/el-sello/unete"
                 className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
-                Solicitar el sello
+                {t("requestSeal")}
                   <ArrowRightIcon className="h-4 w-4" />
                 </Link>
               </div>
@@ -360,24 +366,16 @@ export default async function ElSelloPage() {
         <Container>
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="order-2 lg:order-1">
-              <Eyebrow className="mb-4">Quiénes somos</Eyebrow>
-              <Headline className="mb-6">La Asociación</Headline>
+              <Eyebrow className="mb-4">{t("aboutEyebrow")}</Eyebrow>
+              <Headline className="mb-6">{t("aboutTitle")}</Headline>
               <Body className="mb-6 text-muted-foreground dark:text-foreground/90">
-                Los Pueblos Más Bonitos de España es una asociación sin ánimo de lucro fundada en 2010
-                por un grupo de alcaldes comprometidos con la preservación y promoción del patrimonio rural español.
+                {t("aboutBody1")}
               </Body>
               <Body className="mb-8 text-muted-foreground dark:text-foreground/90">
-                Nuestra misión es dar a conocer estos rincones excepcionales, fomentar un turismo
-                sostenible y respetuoso, y apoyar a las comunidades locales en la conservación de
-                su legado histórico y cultural.
+                {t("aboutBody2")}
               </Body>
               <div className="space-y-3">
-                {[
-                  "Promoción del turismo rural de calidad",
-                  "Conservación del patrimonio arquitectónico",
-                  "Apoyo al desarrollo local sostenible",
-                  "Red de colaboración entre municipios",
-                ].map((item, index) => (
+                {[t("aboutItem1"), t("aboutItem2"), t("aboutItem3"), t("aboutItem4")].map((item, index) => (
                   <div key={index} className="flex items-center gap-3">
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-accent-foreground">
                       <CheckIcon className="h-4 w-4" />
@@ -391,7 +389,7 @@ export default async function ElSelloPage() {
                   href="/el-sello/quienes-somos"
                   className="inline-flex items-center gap-2 text-primary hover:underline"
                 >
-                  Conocer al equipo
+                  {t("meetTeam")}
                   <ArrowRightIcon className="h-4 w-4" />
                 </Link>
               </div>
@@ -399,7 +397,7 @@ export default async function ElSelloPage() {
             <div className="relative order-1 aspect-[4/3] overflow-hidden rounded-lg lg:order-2 lg:aspect-auto">
               <Image
                 src={teamImageUrl}
-                alt="Equipo de la asociación"
+                alt={t("teamImageAlt")}
                 fill
                 className="object-cover"
                 unoptimized={teamImageUrl.startsWith("http")}
@@ -413,11 +411,10 @@ export default async function ElSelloPage() {
       <Section spacing="lg" background="default">
         <Container>
           <div className="mb-12 text-center">
-            <Eyebrow className="mb-4">Red internacional</Eyebrow>
-            <Headline className="mb-4">El sello en el mundo</Headline>
+            <Eyebrow className="mb-4">{t("worldEyebrow")}</Eyebrow>
+            <Headline className="mb-4">{t("worldTitle")}</Headline>
                 <Lead className="mx-auto max-w-2xl text-muted-foreground dark:text-foreground/90">
-              Formamos parte de una red global de asociaciones que promueven
-              los pueblos más bellos de sus respectivos países.
+              {t("worldLead")}
             </Lead>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -435,7 +432,7 @@ export default async function ElSelloPage() {
                   <Title as="h4" className="text-base">
                     {network.name}
                   </Title>
-                  <Caption>{network.villages} pueblos</Caption>
+                  <Caption>{network.villages} {t("villagesCount")}</Caption>
                 </div>
                 <ArrowRightIcon className="h-4 w-4 text-muted-foreground opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
               </Link>
@@ -446,7 +443,7 @@ export default async function ElSelloPage() {
               href="/el-sello/internacional"
               className="inline-flex items-center gap-2 text-primary hover:underline"
             >
-              Ver todas las redes asociadas
+              {t("viewAllNetworks")}
               <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </div>
@@ -458,14 +455,14 @@ export default async function ElSelloPage() {
         <Section spacing="lg" background="muted" id="documentacion">
           <Container>
             <div className="mb-12 text-center">
-              <Eyebrow className="mb-4">Documentación</Eyebrow>
-              <Headline className="mb-4">Estatutos y Carta de Calidad</Headline>
+              <Eyebrow className="mb-4">{t("docEyebrow")}</Eyebrow>
+              <Headline className="mb-4">{t("docTitle")}</Headline>
             </div>
             <div className="grid gap-8 md:grid-cols-2">
               {documentos.estatutos.length > 0 && (
                 <div className="rounded-lg border border-border bg-card p-6">
                   <Title as="h3" className="mb-4">
-                    Estatutos
+                    {t("statutes")}
                   </Title>
                   <ul className="space-y-2">
                     {documentos.estatutos.map((doc) => (
@@ -486,7 +483,7 @@ export default async function ElSelloPage() {
               {documentos.cartaCalidad.length > 0 && (
                 <div className="rounded-lg border border-border bg-card p-6">
                   <Title as="h3" className="mb-4">
-                    Carta de Calidad
+                    {t("qualityCharter")}
                   </Title>
                   <ul className="space-y-2">
                     {documentos.cartaCalidad.map((doc) => (
@@ -514,25 +511,24 @@ export default async function ElSelloPage() {
         <Container>
           <div className="mx-auto max-w-3xl text-center">
             <Headline className="mb-6 text-primary-foreground">
-              ¿Tu municipio quiere formar parte?
+              {t("ctaTitle")}
             </Headline>
             <Lead className="mb-8 text-primary-foreground/80">
-              Si crees que tu pueblo cumple con los requisitos para recibir el Sello de
-              Los Pueblos Más Bonitos de España, te invitamos a iniciar el proceso de candidatura.
+              {t("ctaLead")}
             </Lead>
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <Link
                 href="/el-sello/unete"
                 className="inline-flex items-center gap-2 rounded-lg bg-card px-8 py-4 font-semibold text-foreground transition-colors hover:bg-card/90"
               >
-                Solicitar el sello
+                {t("requestSeal")}
                 <ArrowRightIcon className="h-4 w-4" />
               </Link>
               <Link
                 href="/el-sello/unete"
                 className="inline-flex items-center gap-2 rounded-lg border-2 border-primary-foreground/30 px-8 py-4 font-semibold text-primary-foreground transition-colors hover:border-primary-foreground hover:bg-primary-foreground/10"
               >
-                Contactar con nosotros
+                {t("contactUs")}
               </Link>
             </div>
           </div>
@@ -552,11 +548,11 @@ export default async function ElSelloPage() {
               </div>
               <div className="flex-1">
                 <Title as="h4" className="mb-1 flex items-center gap-2 text-lg">
-                  Solicitar el sello
+                  {t("quickRequestSeal")}
                   <ArrowRightIcon className="h-4 w-4 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
                 </Title>
                 <Body size="sm" className="text-muted-foreground dark:text-foreground/90">
-                  Inicia el proceso de candidatura para tu municipio.
+                  {t("quickRequestDesc")}
                 </Body>
               </div>
             </Link>
@@ -569,11 +565,11 @@ export default async function ElSelloPage() {
               </div>
               <div className="flex-1">
                 <Title as="h4" className="mb-1 flex items-center gap-2 text-lg">
-                  Quiénes somos
+                  {t("quickWhoWeAre")}
                   <ArrowRightIcon className="h-4 w-4 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
                 </Title>
                 <Body size="sm" className="text-muted-foreground dark:text-foreground/90">
-                  Conoce al equipo y la historia de la asociación.
+                  {t("quickWhoDesc")}
                 </Body>
               </div>
             </Link>
@@ -586,11 +582,11 @@ export default async function ElSelloPage() {
               </div>
               <div className="flex-1">
                 <Title as="h4" className="mb-1 flex items-center gap-2 text-lg">
-                  Socios y colaboradores
+                  {t("quickPartners")}
                   <ArrowRightIcon className="h-4 w-4 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
                 </Title>
                 <Body size="sm" className="text-muted-foreground dark:text-foreground/90">
-                  Entidades que apoyan nuestra misión.
+                  {t("quickPartnersDesc")}
                 </Body>
               </div>
             </Link>
