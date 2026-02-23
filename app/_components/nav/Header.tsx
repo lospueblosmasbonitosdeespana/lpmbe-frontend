@@ -76,26 +76,12 @@ export async function Header({ locale }: HeaderProps) {
           <img
             src={settings.logoUrl}
             alt={settings.logoAlt}
-            className="dark:hidden"
-            style={{
-              height: '96px',
-              maxHeight: '96px',
-              width: 'auto',
-              display: 'block',
-              objectFit: 'contain',
-            }}
+            className="block h-24 max-h-24 w-auto object-contain dark:hidden"
           />
           <img
             src={settings.logoVariantUrl}
             alt={settings.logoAlt}
-            className="hidden dark:block"
-            style={{
-              height: '96px',
-              maxHeight: '96px',
-              width: 'auto',
-              display: 'block',
-              objectFit: 'contain',
-            }}
+            className="hidden h-24 max-h-24 w-auto object-contain dark:block"
           />
         </>
       );
