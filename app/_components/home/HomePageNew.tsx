@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useTranslations, useLocale } from "next-intl";
 import {
   ArrowRight,
@@ -21,6 +22,15 @@ import { Container } from "@/app/components/ui/container";
 import { Section } from "@/app/components/ui/section";
 import { Title, Muted } from "@/app/components/ui/typography";
 import { Button } from "@/app/components/ui/button";
+
+const PueblosMap = dynamic(() => import("@/app/_components/map/PueblosMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[280px] md:h-[340px] items-center justify-center rounded-2xl bg-muted">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+    </div>
+  ),
+});
 
 /* ----- TYPES ----- */
 export interface NotificationItem {
@@ -687,13 +697,11 @@ function ActualidadSection({ news = [] }: { news: NewsItem[] }) {
 }
 
 /* ----- MAPA INTERACTIVO ----- */
-function MapaSection({ mapPreviewImage }: { mapPreviewImage?: string }) {
+function MapaSection() {
   const t = useTranslations("home");
-  const tMapas = useTranslations("mapas");
   return (
     <Section spacing="lg" background="default">
       <Container>
-        {/* Cabecera de sección */}
         <div className="mb-8 flex items-end justify-between">
           <div>
             <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
@@ -707,36 +715,22 @@ function MapaSection({ mapPreviewImage }: { mapPreviewImage?: string }) {
             </Muted>
           </div>
           <Button asChild size="lg" className="rounded-full hidden md:inline-flex">
-            <Link href="https://maps.lospueblosmasbonitosdeespana.org/es/pueblos">
+            <Link href="/mapa">
               {t("discoverVillagesMap")} <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         </div>
 
-        {/* Imagen del mapa */}
-        <Link
-          href="https://maps.lospueblosmasbonitosdeespana.org/es/pueblos"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group relative block rounded-2xl overflow-hidden"
-          aria-label={t("mapTitle")}
-        >
-          <div className="relative h-[280px] md:h-[320px]">
-            <Image
-              src={mapPreviewImage || "/mapa_espana_pueblos.png"}
-              alt={tMapas("alt")}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-black/15 group-hover:bg-black/10 transition" />
+        <div className="relative">
+          <PueblosMap compact />
+          <div className="absolute bottom-4 left-1/2 z-[500] -translate-x-1/2 md:hidden">
+            <Button asChild size="sm" className="rounded-full shadow-lg">
+              <Link href="/mapa">
+                {t("discoverVillagesMap")} <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              </Link>
+            </Button>
           </div>
-          {/* CTA mobile */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 md:hidden">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg">
-              {t("discoverVillagesMap")} <ArrowRight className="h-3.5 w-3.5" />
-            </span>
-          </div>
-        </Link>
+        </div>
       </Container>
     </Section>
   );
@@ -1137,7 +1131,6 @@ export function HomePageNew({
   villages = [],
   news = [],
   videos = [],
-  mapPreviewImage,
   shopBannerImage,
 }: HomePageProps) {
   return (
@@ -1154,7 +1147,7 @@ export function HomePageNew({
       <RutasSection routes={routes} />
       <ActualidadSection news={news} />
       <TiendaBanner shopBannerImage={shopBannerImage} />
-      <MapaSection mapPreviewImage={mapPreviewImage} />
+      <MapaSection />
       <VideosAsociacionSection videos={videos} />
       <FinalCTA />
       <SocialMediaSection />
