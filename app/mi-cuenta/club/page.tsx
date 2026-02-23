@@ -455,21 +455,23 @@ export default function ClubPage() {
                   {/* Tarjetas de precio */}
                   <div className="grid gap-3 sm:grid-cols-2">
                     <PrecioCard
-                      titulo="Plan Anual"
+                      titulo={t('planAnualTitulo')}
                       precioCents={clubMe.precioAnualCents ?? 0}
-                      periodo="/ año"
-                      subtitulo="Descuentos en todos los recursos del club"
+                      periodo={t('planAnualPeriodo')}
+                      subtitulo={t('planAnualSubtitulo')}
                       oferta={clubMe.oferta}
                       tipoOferta="ANUAL"
+                      ahorrasLabel={t('ahorras', { amount: '0' })}
                       destacado
                     />
                     <PrecioCard
-                      titulo="Plan Mensual"
+                      titulo={t('planMensualTitulo')}
                       precioCents={clubMe.precioMensualCents ?? 0}
-                      periodo="/ mes"
-                      subtitulo="Cancela cuando quieras"
+                      periodo={t('planMensualPeriodo')}
+                      subtitulo={t('planMensualSubtitulo')}
                       oferta={clubMe.oferta}
                       tipoOferta="MENSUAL"
+                      ahorrasLabel={t('ahorras', { amount: '0' })}
                     />
                   </div>
                   <div className="flex flex-wrap gap-3">
@@ -493,7 +495,7 @@ export default function ClubPage() {
                 </div>
               ) : (
                 <div className="rounded-lg border border-border bg-muted/30 px-5 py-4 text-sm text-muted-foreground">
-                  <p className="font-medium text-gray-700 mb-1">🔜 Próximamente</p>
+                  <p className="font-medium text-gray-700 mb-1">🔜 {t('comingSoonTitle')}</p>
                   <p>{t('comingSoon')}</p>
                 </div>
               )}
@@ -639,6 +641,7 @@ export default function ClubPage() {
 type Oferta = { descuento: number; tipo: string; expiraEn: string | null; texto: string | null };
 
 function OfertaBanner({ oferta }: { oferta: Oferta }) {
+  const t = useTranslations('club');
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -670,18 +673,18 @@ function OfertaBanner({ oferta }: { oferta: Oferta }) {
               -{oferta.descuento}%
             </span>
             <span className="text-sm font-semibold text-green-800">
-              {oferta.texto ?? '¡Oferta especial!'}
+              {oferta.texto ?? t('ofertaEspecial')}
             </span>
           </div>
           <p className="text-xs text-green-700">
-            {oferta.tipo === 'ANUAL' && 'Descuento en el plan anual.'}
-            {oferta.tipo === 'MENSUAL' && 'Descuento en el plan mensual.'}
-            {oferta.tipo === 'AMBOS' && 'Descuento en todos los planes.'}
+            {oferta.tipo === 'ANUAL' && t('descuentoPlanAnual')}
+            {oferta.tipo === 'MENSUAL' && t('descuentoPlanMensual')}
+            {oferta.tipo === 'AMBOS' && t('descuentoTodosPlanes')}
           </p>
         </div>
         {restante !== null && restante > 0 && (
           <div className="text-right shrink-0">
-            <div className="text-[10px] uppercase tracking-wider text-green-600 font-medium">Termina en</div>
+            <div className="text-[10px] uppercase tracking-wider text-green-600 font-medium">{t('terminaEn')}</div>
             <div className="text-lg font-bold text-green-800 tabular-nums">{fmtCountdown(restante)}</div>
           </div>
         )}
@@ -697,6 +700,7 @@ function PrecioCard({
   subtitulo,
   oferta,
   tipoOferta,
+  ahorrasLabel,
   destacado,
 }: {
   titulo: string;
@@ -705,6 +709,7 @@ function PrecioCard({
   subtitulo: string;
   oferta?: Oferta | null;
   tipoOferta: 'ANUAL' | 'MENSUAL';
+  ahorrasLabel: string;
   destacado?: boolean;
 }) {
   const tieneDescuento =
@@ -737,7 +742,7 @@ function PrecioCard({
       </div>
       {tieneDescuento && (
         <span className="mt-1 inline-block rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium text-green-700">
-          Ahorras {fmtPrice(precioCents - precioFinal)} €
+          {ahorrasLabel.replace('0', fmtPrice(precioCents - precioFinal))}
         </span>
       )}
       <p className="mt-1 text-xs text-gray-400">{subtitulo}</p>

@@ -1052,7 +1052,20 @@
     "discountOnlyHolder": "Rabatt nur für Karteninhaber",
     "upToAdults": "Bis zu {Zahl} Erwachsene{plural}",
     "plusMinors": " + {Zahl} minderjährig{plural} (bis zu {Alter} Jahre)",
-    "village": "Dorf"
+    "village": "Dorf",
+    "ofertaEspecial": "Sonderangebot!",
+    "descuentoPlanAnual": "Rabatt auf den Jahresplan.",
+    "descuentoPlanMensual": "Rabatt auf den Monatsplan.",
+    "descuentoTodosPlanes": "Rabatt auf alle Pläne.",
+    "terminaEn": "Endet in",
+    "planAnualTitulo": "Jahresplan",
+    "planAnualPeriodo": "/ Jahr",
+    "planAnualSubtitulo": "Ermäßigungen auf alle Clubressourcen",
+    "planMensualTitulo": "Monatlicher Plan",
+    "planMensualPeriodo": "/ Monat",
+    "planMensualSubtitulo": "Jederzeit abbrechen",
+    "ahorras": "Sie sparen {Betrag} €",
+    "comingSoonTitle": "Demnächst verfügbar"
   },
   "cuenta": {
     "login": "Zugang",

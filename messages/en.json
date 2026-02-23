@@ -1052,7 +1052,20 @@
     "discountOnlyHolder": "Discount for cardholder only",
     "upToAdults": "Up to {count} adult{plural}",
     "plusMinors": " + {count} minor{plural} (up to {age} years)",
-    "village": "Town"
+    "village": "Town",
+    "ofertaEspecial": "Special offer!",
+    "descuentoPlanAnual": "Discount on the annual plan.",
+    "descuentoPlanMensual": "Discount on the monthly plan.",
+    "descuentoTodosPlanes": "Discount on all plans.",
+    "terminaEn": "Ends in",
+    "planAnualTitulo": "Annual Plan",
+    "planAnualPeriodo": "/ year",
+    "planAnualSubtitulo": "Discounts on all club resources",
+    "planMensualTitulo": "Monthly Plan",
+    "planMensualPeriodo": "/ month",
+    "planMensualSubtitulo": "Cancel at any time",
+    "ahorras": "You save {amount} €",
+    "comingSoonTitle": "Coming soon"
   },
   "cuenta": {
     "login": "Access",

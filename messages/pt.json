@@ -1052,7 +1052,20 @@
     "discountOnlyHolder": "Desconto apenas para o titular do cartão",
     "upToAdults": "Até {count} adulto{plural}",
     "plusMinors": " + {count} menor{plural} (até {idade} anos)",
-    "village": "Aldeia"
+    "village": "Aldeia",
+    "ofertaEspecial": "Oferta especial!",
+    "descuentoPlanAnual": "Desconto no plano anual.",
+    "descuentoPlanMensual": "Desconto no plano mensal.",
+    "descuentoTodosPlanes": "Desconto em todos os planos.",
+    "terminaEn": "Termina em",
+    "planAnualTitulo": "Plano anual",
+    "planAnualPeriodo": "/ ano",
+    "planAnualSubtitulo": "Descontos em todos os recursos do clube",
+    "planMensualTitulo": "Plano mensal",
+    "planMensualPeriodo": "/ mês",
+    "planMensualSubtitulo": "Cancelar em qualquer altura",
+    "ahorras": "Poupa {montante} €",
+    "comingSoonTitle": "Em breve"
   },
   "cuenta": {
     "login": "Acesso",

@@ -1052,7 +1052,20 @@
     "discountOnlyHolder": "Sconto solo per i titolari di carta",
     "upToAdults": "Fino a {conteggio} adulti{plurale}",
     "plusMinors": " + {conteggio} minore{plurale} (fino a {età} anni)",
-    "village": "Villaggio"
+    "village": "Villaggio",
+    "ofertaEspecial": "Offerta speciale!",
+    "descuentoPlanAnual": "Sconto sul piano annuale.",
+    "descuentoPlanMensual": "Sconto sul piano mensile.",
+    "descuentoTodosPlanes": "Sconto su tutti i piani.",
+    "terminaEn": "Termina in",
+    "planAnualTitulo": "Piano annuale",
+    "planAnualPeriodo": "/ anno",
+    "planAnualSubtitulo": "Sconti su tutte le risorse del club",
+    "planMensualTitulo": "Piano mensile",
+    "planMensualPeriodo": "/ mese",
+    "planMensualSubtitulo": "Annullamento in qualsiasi momento",
+    "ahorras": "Risparmiate {importo} €",
+    "comingSoonTitle": "Prossimamente"
   },
   "cuenta": {
     "login": "Accesso",
