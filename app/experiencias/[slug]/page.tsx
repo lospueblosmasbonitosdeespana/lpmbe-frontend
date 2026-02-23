@@ -106,7 +106,7 @@ export default async function TematicaPage({
   if (!config) {
     return (
       <main className="mx-auto max-w-7xl px-4 py-12">
-        <p className="text-gray-600">{t('categoryNotFound')}</p>
+        <p className="text-gray-600 dark:text-neutral-400">{t('categoryNotFound')}</p>
       </main>
     );
   }
@@ -131,27 +131,27 @@ export default async function TematicaPage({
   return (
     <main className="mx-auto max-w-7xl px-4 py-12">
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold">{title}</h1>
-        <p className="mt-2 text-gray-600">{description}</p>
+        <h1 className="text-3xl font-semibold text-foreground">{title}</h1>
+        <p className="mt-2 text-gray-600 dark:text-neutral-400">{description}</p>
       </div>
 
       {isEmpty ? (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
-          <p className="text-gray-600">{t('noExperiences')}</p>
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center dark:border-neutral-700 dark:bg-neutral-800">
+          <p className="text-gray-600 dark:text-neutral-400">{t('noExperiences')}</p>
         </div>
       ) : (
         <div className="space-y-12">
           {/* Bloque ASOCIACIÓN (si existe) */}
           {asociacion && (
             <section>
-              <h2 className="mb-4 text-xl font-semibold text-gray-800">{t('association')}</h2>
+              <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-neutral-200">{t('association')}</h2>
               
               <Link
                 href={`/experiencias/${slug}/asociacion`}
-                className="block overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-lg"
+                className="block overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-lg dark:bg-neutral-800 dark:border-neutral-700"
               >
                 {asociacion.coverUrl && asociacion.coverUrl.trim() && (
-                  <div className="h-64 w-full overflow-hidden rounded-t-lg bg-gray-100">
+                  <div className="h-64 w-full overflow-hidden rounded-t-lg bg-gray-100 dark:bg-neutral-700">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={asociacion.coverUrl.trim()}
@@ -162,11 +162,11 @@ export default async function TematicaPage({
                 )}
                 
                 <div className="p-6">
-                  <h3 className="text-2xl font-semibold">{asociacion.titulo}</h3>
+                  <h3 className="text-2xl font-semibold text-gray-900 dark:text-neutral-100">{asociacion.titulo}</h3>
                   {asociacion.resumen && (
-                    <p className="mt-2 text-gray-600">{asociacion.resumen}</p>
+                    <p className="mt-2 text-gray-600 dark:text-neutral-400">{asociacion.resumen}</p>
                   )}
-                  <p className="mt-4 text-sm text-blue-600">{t('readMore')}</p>
+                  <p className="mt-4 text-sm text-blue-600 dark:text-blue-400">{t('readMore')}</p>
                 </div>
               </Link>
             </section>
@@ -178,7 +178,7 @@ export default async function TematicaPage({
 
             return (
               <section key={ccaa}>
-                <h2 className="mb-4 text-xl font-semibold text-gray-800">{ccaa}</h2>
+                <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-neutral-200">{ccaa}</h2>
 
                 {/* Grid de cards - 5 cols desktop, 6 en 2xl */}
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
@@ -189,11 +189,11 @@ export default async function TematicaPage({
                       <Link
                         key={item.id}
                         href={href}
-                        className="block overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-lg"
+                        className="block overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-lg dark:bg-neutral-800 dark:border-neutral-700"
                       >
                         {/* Imagen */}
                         {item.coverUrl && item.coverUrl.trim() ? (
-                          <div className="h-28 w-full overflow-hidden rounded-t-lg bg-gray-100">
+                          <div className="h-28 w-full overflow-hidden rounded-t-lg bg-gray-100 dark:bg-neutral-700">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={item.coverUrl.trim()}
@@ -202,16 +202,16 @@ export default async function TematicaPage({
                             />
                           </div>
                         ) : (
-                          <div className="h-28 w-full rounded-t-lg bg-gray-200" />
+                          <div className="h-28 w-full rounded-t-lg bg-gray-200 dark:bg-neutral-700" />
                         )}
 
                         {/* Contenido */}
                         <div className="p-2.5">
-                          <h3 className="line-clamp-2 text-sm font-semibold leading-snug">
+                          <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-gray-900 dark:text-neutral-100">
                             {item.titulo}
                           </h3>
 
-                          <p className="mt-1 text-xs text-gray-600">
+                          <p className="mt-1 text-xs text-gray-600 dark:text-neutral-400">
                             {item.pueblo!.nombre}
                             {item.pueblo!.provincia && ` (${item.pueblo!.provincia})`}
                           </p>

@@ -232,7 +232,7 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
           return (
             <div
               key={it.pueblo.id}
-              className="flex items-start gap-4 px-4 py-3 border border-[#e2d5cb] rounded-lg hover:bg-[#e8d9cd] transition bg-[#efe2d8] dark:bg-neutral-800 dark:border-neutral-700 dark:hover:bg-neutral-700"
+              className="flex flex-wrap items-start gap-4 px-4 py-3 border border-[#e2d5cb] rounded-lg hover:bg-[#e8d9cd] transition bg-[#efe2d8] dark:bg-neutral-800 dark:border-neutral-700 dark:hover:bg-neutral-700"
             >
               {/* Temperatura + máx/mín */}
               <div className="flex-shrink-0 w-20 text-center">
@@ -259,7 +259,7 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
                   <Link href={`/pueblos/${it.pueblo.slug}`} className="text-lg font-semibold hover:underline">
                     {it.pueblo.nombre}
                   </Link>
-                  <div className="flex items-center gap-1.5 text-sm text-neutral-600">
+                  <div className="flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-400">
                     {flagSrc && (
                       <img src={flagSrc} alt={`Bandera de ${it.pueblo.comunidad}`} className="h-4 w-6 rounded-sm object-cover" />
                     )}
@@ -302,8 +302,8 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
 
               </div>
 
-              {/* Derecha: estado + hora + alertas */}
-              <div className="flex-shrink-0 text-right text-sm min-w-[110px]">
+              {/* Derecha: estado + hora + alertas — en móvil va a línea nueva para no montarse sobre provincia */}
+              <div className="flex-shrink-0 text-right text-sm w-full min-w-0 sm:w-auto sm:min-w-[110px]">
                 <div className="text-[#60524d] text-sm dark:text-neutral-400">{getWeatherText(c.weatherCode)}</div>
                 <div className="text-[#a09490] text-xs mt-0.5 dark:text-neutral-500">{formatTime(c.time)}</div>
                 {alertas.length > 0 && (
