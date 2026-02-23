@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { ImageIcon, Users, FileText } from 'lucide-react';
 import TipTapEditor from '@/app/_components/editor/TipTapEditor';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
@@ -379,7 +378,7 @@ export default function SociosAdminPage() {
                 <label className="mb-1 block text-sm font-medium">Logo</label>
                 {formData.logoUrl && (
                   <div className="mb-2 flex items-center gap-3">
-                    <Image src={formData.logoUrl} alt="Logo" width={64} height={64} className="h-16 w-16 object-contain rounded border" />
+                    <img src={formData.logoUrl} alt="Logo" className="h-16 w-16 object-contain rounded border" />
                     <button type="button" onClick={() => setFormData({ ...formData, logoUrl: '' })} className="text-sm text-red-600 hover:underline">Quitar logo</button>
                   </div>
                 )}
@@ -448,7 +447,7 @@ export default function SociosAdminPage() {
                 <div className="mb-3 flex flex-wrap gap-2">
                   {editingFotos.map((f) => (
                     <div key={f.id} className="relative group">
-                      <Image src={f.url} alt={f.alt || ''} width={80} height={60} className="rounded border object-cover h-16 w-20" unoptimized />
+                      <img src={f.url} alt={f.alt || ''} className="rounded border object-cover h-16 w-20" />
                       <button
                         type="button"
                         onClick={() => handleRemoveFoto(f.id)}
@@ -488,7 +487,7 @@ export default function SociosAdminPage() {
             <div key={s.id} className={`flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 ${!s.activo ? 'opacity-60' : ''}`}>
               <div className="flex flex-1 items-center gap-4">
                 {s.logoUrl ? (
-                  <Image src={s.logoUrl} alt={s.nombre} width={48} height={48} className="h-12 w-12 object-contain rounded" />
+                  <img src={s.logoUrl} alt={s.nombre} className="h-12 w-12 object-contain rounded" />
                 ) : (
                   <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-100 text-gray-400">?</div>
                 )}

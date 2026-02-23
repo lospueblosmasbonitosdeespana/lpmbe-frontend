@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
@@ -76,13 +75,11 @@ function PartnerCard({
       <div className="mb-4 flex items-start justify-between">
         <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted p-2">
           {logoUrl ? (
-            <Image
+            <img
               src={logoUrl}
-              alt={nombre}
-              width={64}
-              height={64}
-              className="h-auto max-h-12 w-auto object-contain"
-              unoptimized
+              alt={`Logo ${nombre}`}
+              className="h-auto max-h-12 w-auto max-w-full object-contain"
+              loading="lazy"
             />
           ) : (
             <span className="text-2xl text-muted-foreground">?</span>
