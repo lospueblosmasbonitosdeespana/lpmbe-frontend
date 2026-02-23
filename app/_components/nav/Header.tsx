@@ -47,6 +47,7 @@ export async function Header({ locale }: HeaderProps) {
   const settings = await fetchSiteSettings();
 
   // Determinar qué mostrar según activeLogo
+  // En dark mode usamos el mismo logo blanco que el footer (logoVariantUrl) si existe
   let logoContent: React.ReactNode;
 
   if (settings.activeLogo === 'text') {
@@ -68,19 +69,51 @@ export async function Header({ locale }: HeaderProps) {
       />
     );
   } else if (settings.activeLogo === 'default' && settings.logoUrl) {
-    logoContent = (
-      <img
-        src={settings.logoUrl}
-        alt={settings.logoAlt}
-        style={{
-          height: '96px',
-          maxHeight: '96px',
-          width: 'auto',
-          display: 'block',
-          objectFit: 'contain',
-        }}
-      />
-    );
+    if (settings.logoVariantUrl) {
+      // Dos logos: normal en claro, variante blanca en dark (mismo que footer)
+      logoContent = (
+        <>
+          <img
+            src={settings.logoUrl}
+            alt={settings.logoAlt}
+            className="dark:hidden"
+            style={{
+              height: '96px',
+              maxHeight: '96px',
+              width: 'auto',
+              display: 'block',
+              objectFit: 'contain',
+            }}
+          />
+          <img
+            src={settings.logoVariantUrl}
+            alt={settings.logoAlt}
+            className="hidden dark:block"
+            style={{
+              height: '96px',
+              maxHeight: '96px',
+              width: 'auto',
+              display: 'block',
+              objectFit: 'contain',
+            }}
+          />
+        </>
+      );
+    } else {
+      logoContent = (
+        <img
+          src={settings.logoUrl}
+          alt={settings.logoAlt}
+          style={{
+            height: '96px',
+            maxHeight: '96px',
+            width: 'auto',
+            display: 'block',
+            objectFit: 'contain',
+          }}
+        />
+      );
+    }
   } else {
     // Fallback: texto
     logoContent = (
@@ -91,7 +124,7 @@ export async function Header({ locale }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm dark:bg-card dark:border-b dark:border-border dark:shadow-none">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5">
-        <Link href="/" className="block text-foreground dark:text-white [&_img]:dark:invert">
+        <Link href="/" className="block text-foreground dark:text-white">
           {logoContent}
         </Link>
 
