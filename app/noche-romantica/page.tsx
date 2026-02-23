@@ -92,7 +92,7 @@ export default async function NocheRomanticaPage() {
     <main>
       {/* Logo */}
       {config.logoUrl && (
-        <div className="flex justify-center py-8 bg-white">
+        <div className="flex justify-center py-8 bg-white dark:bg-neutral-900">
           <img
             src={config.logoUrl}
             alt={config.titulo}
@@ -129,7 +129,7 @@ export default async function NocheRomanticaPage() {
 
       {/* Si no hay hero, titulo simple */}
       {!config.heroImageUrl && (
-        <section className="bg-gradient-to-b from-rose-50 to-white py-16 text-center">
+        <section className="bg-gradient-to-b from-rose-50 to-white py-16 text-center dark:from-rose-950/40 dark:to-neutral-900">
           <h1 className="text-4xl md:text-5xl font-bold text-rose-800">
             {config.titulo}
           </h1>
@@ -162,7 +162,7 @@ export default async function NocheRomanticaPage() {
       {(config.descripcion1Titulo || config.descripcion1Texto) && (
         <section className="mx-auto max-w-4xl px-4 py-12">
           {config.descripcion1Titulo && (
-            <h2 className="mb-4 text-2xl md:text-3xl font-bold text-center text-gray-800">
+            <h2 className="mb-4 text-2xl md:text-3xl font-bold text-center text-gray-800 dark:text-neutral-100">
               {config.descripcion1Titulo}
             </h2>
           )}
@@ -176,11 +176,11 @@ export default async function NocheRomanticaPage() {
 
       {/* Descripción 2 */}
       {(config.descripcion2Titulo || config.descripcion2Texto) && (
-        <section className="bg-rose-50 py-12">
+        <section className="bg-rose-50 py-12 dark:bg-rose-950/30">
           <div className="mx-auto max-w-4xl px-4">
             {config.descripcion2Titulo && (
-              <h2 className="mb-4 text-2xl md:text-3xl font-bold text-center text-gray-800">
-                {config.descripcion2Titulo}
+            <h2 className="mb-4 text-2xl md:text-3xl font-bold text-center text-gray-800 dark:text-neutral-100">
+              {config.descripcion2Titulo}
               </h2>
             )}
             {config.descripcion2Texto && (

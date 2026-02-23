@@ -37,7 +37,7 @@ export function NewsletterCta() {
   };
 
   return (
-    <Section spacing="lg" background="primary" className="text-primary-foreground">
+    <Section spacing="lg" background="primary" className="text-primary-foreground dark:bg-stone-900 dark:text-neutral-100">
       <Container>
         <div className="mx-auto max-w-2xl text-center">
           <Eyebrow className="mb-4 text-primary-foreground/70">Newsletter</Eyebrow>

@@ -13,7 +13,7 @@ const PueblosMap = dynamic(
 export default function MapaPageClient() {
   return (
     <main>
-      <Section spacing="md" background="default">
+      <Section spacing="md" background="default" className="dark:bg-neutral-950">
         <Container>
           <div className="mb-6 text-center">
             <Display className="mb-2">Mapa interactivo</Display>

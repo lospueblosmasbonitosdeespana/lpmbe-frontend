@@ -192,7 +192,7 @@ function LocationInput({
           onChange={(e) => hook.onInputChange(e.target.value)}
           onFocus={() => hook.results.length > 0 && hook.setOpen(true)}
           placeholder={placeholder}
-          className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-sm text-foreground shadow-sm transition placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-sm text-foreground shadow-sm transition placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-400 dark:border-neutral-600"
         />
         {hook.loading && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -212,13 +212,13 @@ function LocationInput({
       </div>
 
       {hook.open && hook.results.length > 0 && (
-        <ul className="absolute z-50 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-border bg-white shadow-lg">
+        <ul className="absolute z-50 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-border bg-white shadow-lg dark:bg-neutral-800 dark:border-neutral-600">
           {hook.results.map((r, i) => (
             <li key={`${r.lat}-${r.lon}-${i}`}>
               <button
                 type="button"
                 onClick={() => hook.onSelect(r)}
-                className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-accent transition-colors"
+                className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-accent transition-colors dark:text-neutral-100 dark:hover:bg-neutral-700"
               >
                 <span className="mr-2 text-primary">📍</span>
                 {r.display_name}
@@ -610,7 +610,7 @@ export default function CreaMiRutaPage() {
   return (
     <main className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <section className="border-b border-border bg-white/60 px-4 py-12 text-center md:py-16">
+      <section className="border-b border-border bg-white/60 px-4 py-12 text-center md:py-16 dark:bg-neutral-900/80">
         <h1 className="font-serif text-3xl font-bold text-foreground md:text-4xl lg:text-5xl">
           {t("title")}
         </h1>
@@ -701,7 +701,7 @@ export default function CreaMiRutaPage() {
           </div>
 
           {/* Duration / distance bar */}
-          <div className="mb-4 flex flex-wrap items-center gap-4 rounded-xl border border-border bg-white px-4 py-3">
+          <div className="mb-4 flex flex-wrap items-center gap-4 rounded-xl border border-border bg-white px-4 py-3 dark:bg-neutral-900 dark:border-neutral-700">
             {routeLoading ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -780,7 +780,7 @@ export default function CreaMiRutaPage() {
 
           {/* Sticky action bar */}
           {orderedSelection.length > 0 && (
-            <div className="sticky top-20 z-30 mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
+            <div className="sticky top-20 z-30 mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-white/95 px-4 py-3 shadow-lg backdrop-blur dark:bg-neutral-900/95 dark:border-neutral-700">
               <span className="text-sm font-semibold text-foreground">
                 {orderedSelection.length} parada{orderedSelection.length !== 1 && "s"}
               </span>
@@ -849,7 +849,7 @@ export default function CreaMiRutaPage() {
                   return (
                     <div
                       key={key}
-                      className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 shadow-sm"
+                      className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 shadow-sm dark:bg-neutral-800"
                     >
                       <span
                         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${
@@ -991,7 +991,7 @@ export default function CreaMiRutaPage() {
               })}
             </ul>
           ) : (
-            <div className="mt-8 rounded-lg border border-border bg-white p-8 text-center text-muted-foreground">
+            <div className="mt-8 rounded-lg border border-border bg-white p-8 text-center text-muted-foreground dark:bg-neutral-900 dark:border-neutral-700">
               No se han encontrado pueblos ni recursos turísticos cerca de esta
               ruta. Prueba a aumentar la distancia máxima.
             </div>

@@ -166,7 +166,7 @@ export default async function ExperienciasPage() {
                         <Link
                           key={item.id}
                           href={href}
-                          className="block overflow-hidden rounded-lg border border-border bg-card transition-shadow hover:shadow-lg"
+                          className="block overflow-hidden rounded-lg border border-border bg-card transition-shadow hover:shadow-lg dark:bg-neutral-800 dark:border-neutral-700"
                         >
                           {item.coverUrl && item.coverUrl.trim() ? (
                             <div className="h-28 w-full overflow-hidden rounded-t-lg bg-muted">

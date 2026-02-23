@@ -79,7 +79,7 @@ export default async function MultiexperienciasPage() {
             return (
               <section key={ccaa}>
                 {/* Heading por CCAA */}
-                <h2 className="mb-4 text-xl font-semibold text-gray-800">
+                <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-neutral-200">
                   {ccaa}
                 </h2>
 
@@ -115,7 +115,7 @@ export default async function MultiexperienciasPage() {
                           </h3>
                           
                           {item.pueblo && (
-                            <p className="mt-1 text-xs text-gray-600">
+                            <p className="mt-1 text-xs text-gray-600 dark:text-neutral-400">
                               {item.pueblo.nombre}
                               {item.pueblo.provincia && ` (${item.pueblo.provincia})`}
                             </p>
@@ -127,7 +127,7 @@ export default async function MultiexperienciasPage() {
                     return (
                       <div
                         key={item.id}
-                        className="overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-lg"
+                        className="overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-lg dark:border-neutral-700 dark:bg-neutral-800"
                       >
                         {href ? (
                           <Link href={href} className="block">

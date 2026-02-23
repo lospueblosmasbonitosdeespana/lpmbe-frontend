@@ -101,7 +101,7 @@ export default function MisRutasPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-background pb-20">
-        <section className="border-b border-border bg-white/60 px-4 py-12 text-center md:py-16">
+        <section className="border-b border-border bg-white/60 px-4 py-12 text-center md:py-16 dark:bg-neutral-900/80">
           <h1 className="font-serif text-3xl font-bold text-foreground">
             {t("title")}
           </h1>
@@ -118,7 +118,7 @@ export default function MisRutasPage() {
 
   return (
     <main className="min-h-screen bg-background pb-20">
-      <section className="border-b border-border bg-white/60 px-4 py-12 text-center md:py-16">
+      <section className="border-b border-border bg-white/60 px-4 py-12 text-center md:py-16 dark:bg-neutral-900/80">
         <h1 className="font-serif text-3xl font-bold text-foreground md:text-4xl">
           {t("title")}
         </h1>
@@ -146,7 +146,7 @@ export default function MisRutasPage() {
         </Link>
 
         {rutas.length === 0 ? (
-          <div className="rounded-xl border border-border bg-white p-8 text-center">
+          <div className="rounded-xl border border-border bg-white p-8 text-center dark:bg-neutral-800">
             <p className="text-muted-foreground">
               {t("noRoutes")}
             </p>
@@ -162,7 +162,7 @@ export default function MisRutasPage() {
             {rutas.map((r) => (
               <div
                 key={r.id}
-                className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between dark:bg-neutral-800 dark:border-neutral-700"
               >
                 <div className="min-w-0 flex-1">
                   {editingId === r.id ? (

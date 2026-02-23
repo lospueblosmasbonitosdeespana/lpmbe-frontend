@@ -83,18 +83,18 @@ export default function RecursosPage() {
 
   if (loading || loadingPueblos) {
     return (
-      <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-        <div>{tAccount('loading')}</div>
+      <div className="mx-auto max-w-6xl px-6 py-6">
+        <div className="text-foreground">{tAccount('loading')}</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ color: '#ef4444' }}>{error}</div>
-        <div style={{ marginTop: 16 }}>
-          <Link href="/mi-cuenta/club" style={{ color: '#0066cc', textDecoration: 'none' }}>
+      <div className="mx-auto max-w-6xl px-6 py-6">
+        <div className="text-red-500">{error}</div>
+        <div className="mt-4">
+          <Link href="/mi-cuenta/club" className="text-primary hover:underline">
             ← {t('backToClub')}
           </Link>
         </div>
@@ -103,11 +103,11 @@ export default function RecursosPage() {
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>{t('discountsOnResources')}</h1>
-        <div style={{ fontSize: 14, color: '#666' }}>
-          <Link href="/mi-cuenta/club" style={{ color: '#0066cc', textDecoration: 'none' }}>
+    <div className="mx-auto max-w-6xl px-6 py-6">
+      <div className="mb-6">
+        <h1 className="mb-2 text-2xl font-bold text-foreground">{t('discountsOnResources')}</h1>
+        <div className="text-sm text-muted-foreground">
+          <Link href="/mi-cuenta/club" className="text-primary hover:underline">
             ← {t('backToClub')}
           </Link>
         </div>
@@ -115,50 +115,29 @@ export default function RecursosPage() {
 
       {/* Recursos de asociación */}
       {recursosAsociacion.length > 0 && (
-        <div style={{ marginBottom: 32 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>{t('associationResources')}</h2>
-          <p style={{ fontSize: 13, color: '#666', marginBottom: 12 }}>
+        <div className="mb-8">
+          <h2 className="mb-3 text-lg font-semibold text-foreground">{t('associationResources')}</h2>
+          <p className="mb-3 text-sm text-muted-foreground">
             {t('associationResourcesDesc')}
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+          <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
             {recursosAsociacion.map((r: any) => (
               <Link
                 key={r.id}
                 href={r.slug ? `/recursos/${r.slug}` : '#'}
-                style={{
-                  display: 'block',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: 8,
-                  padding: 16,
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  transition: 'box-shadow 0.2s',
-                }}
+                className="block rounded-lg border border-border bg-card p-4 text-foreground transition hover:shadow-md dark:bg-neutral-800 dark:border-neutral-700"
               >
-                <div style={{ fontWeight: 600, fontSize: 15 }}>{r.nombre}</div>
-                <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>
+                <div className="font-semibold text-sm text-foreground">{r.nombre}</div>
+                <div className="mt-1 text-xs text-muted-foreground">
                   {r.tipo} · {r.provincia || r.comunidad || ''}
                 </div>
                 {r.descuentoPorcentaje != null && r.descuentoPorcentaje > 0 && (
-                  <div style={{
-                    marginTop: 8,
-                    display: 'inline-block',
-                    background: '#dcfce7',
-                    color: '#166534',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    padding: '2px 8px',
-                    borderRadius: 12,
-                  }}>
+                  <div className="mt-2 inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800 dark:bg-green-900/40 dark:text-green-300">
                     −{r.descuentoPorcentaje}% Club
                   </div>
                 )}
-                  {r.maxAdultos != null && (
-                  <div style={{
-                    marginTop: 4,
-                    fontSize: 11,
-                    color: '#1d4ed8',
-                  }}>
+                {r.maxAdultos != null && (
+                  <div className="mt-1 text-xs text-blue-700 dark:text-blue-400">
                     {r.maxAdultos === 1 && (r.maxMenores ?? 0) === 0
                       ? t('onlyHolder')
                       : `${r.maxAdultos} adulto${r.maxAdultos > 1 ? 's' : ''}${(r.maxMenores ?? 0) > 0 ? ` + ${r.maxMenores} menor${(r.maxMenores ?? 0) > 1 ? 'es' : ''} (<${r.edadMaxMenor ?? 12} años)` : ''}`}
@@ -171,27 +150,27 @@ export default function RecursosPage() {
       )}
 
       {/* Recursos por pueblo */}
-      <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>{t('resourcesInVillages')}</h2>
+      <h2 className="mb-3 text-lg font-semibold text-foreground">{t('resourcesInVillages')}</h2>
       {pueblosConRecursos.length === 0 ? (
-        <div style={{ fontSize: 14, color: '#666' }}>{t('noResourcesAvailable')}</div>
+        <div className="text-sm text-muted-foreground">{t('noResourcesAvailable')}</div>
       ) : (
-        <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse', border: '1px solid #ddd' }}>
+        <table className="w-full border-collapse rounded-lg border border-border text-sm dark:border-neutral-700">
           <thead>
-            <tr style={{ borderBottom: '1px solid #ddd', background: '#f5f5f5' }}>
-              <th style={{ textAlign: 'left', padding: '8px' }}>{t('town')}</th>
-              <th style={{ textAlign: 'center', padding: '8px' }}>{t('numResources')}</th>
-              <th style={{ textAlign: 'center', padding: '8px' }}>{t('view')}</th>
+            <tr className="border-b border-border bg-muted text-foreground dark:bg-neutral-800 dark:border-neutral-700">
+              <th className="px-3 py-2 text-left">{t('town')}</th>
+              <th className="px-3 py-2 text-center">{t('numResources')}</th>
+              <th className="px-3 py-2 text-center">{t('view')}</th>
             </tr>
           </thead>
           <tbody>
             {pueblosConRecursos.map((p) => (
-              <tr key={p.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '8px' }}>{p.nombre}</td>
-                <td style={{ textAlign: 'center', padding: '8px' }}>{p.count}</td>
-                <td style={{ textAlign: 'center', padding: '8px' }}>
+              <tr key={p.id} className="border-b border-border dark:border-neutral-700">
+                <td className="px-3 py-2 text-foreground">{p.nombre}</td>
+                <td className="px-3 py-2 text-center text-foreground">{p.count}</td>
+                <td className="px-3 py-2 text-center">
                   <Link
                     href={`/mi-cuenta/club/recursos/${p.id}`}
-                    style={{ color: '#0066cc', textDecoration: 'none' }}
+                    className="text-primary hover:underline"
                   >
                     {t('view')}
                   </Link>

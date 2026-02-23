@@ -50,7 +50,7 @@ export default async function PueblosParticipantesPage() {
   return (
     <main className="min-h-screen">
       {/* Header */}
-      <section className="bg-gradient-to-b from-rose-50 to-white py-12 text-center">
+      <section className="bg-gradient-to-b from-rose-50 to-white py-12 text-center dark:from-rose-950/40 dark:to-neutral-900">
         {config?.logoUrl && (
           <img
             src={config.logoUrl}
@@ -96,7 +96,7 @@ export default async function PueblosParticipantesPage() {
                 <Link
                   key={np.id}
                   href={`/noche-romantica/pueblos-participantes/${np.pueblo.slug}`}
-                  className="group overflow-hidden rounded-xl border bg-white shadow-sm transition hover:shadow-lg"
+                  className="group overflow-hidden rounded-xl border bg-white shadow-sm transition hover:shadow-lg dark:bg-neutral-800 dark:border-neutral-700"
                 >
                   {/* Imagen */}
                   <div className="relative h-56 overflow-hidden bg-gray-100">
@@ -121,7 +121,7 @@ export default async function PueblosParticipantesPage() {
 
                   {/* Info */}
                   <div className="p-4">
-                    <h2 className="text-lg font-semibold text-gray-800 group-hover:text-rose-600">
+                    <h2 className="text-lg font-semibold text-gray-800 group-hover:text-rose-600 dark:text-neutral-100">
                       {np.pueblo.nombre}
                     </h2>
                     <p className="text-sm text-muted-foreground">
