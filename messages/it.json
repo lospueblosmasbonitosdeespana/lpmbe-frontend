@@ -350,6 +350,28 @@
       "searchButton": "Cerca itinerario",
       "selectOrigin": "Seleziona un punto di partenza dall'elenco dei suggerimenti.",
       "selectDest": "Seleziona un punto di destinazione dall'elenco dei suggerimenti."
+    },
+    "misRutas": {
+      "title": "I miei percorsi salvati",
+      "subtitle": "Qui è possibile visualizzare, modificare e richiamare i percorsi salvati. Fare clic su \"Apri\" per caricare il percorso ed eseguirlo in seguito.",
+      "loading": "Caricamento dei percorsi...",
+      "createNewRoute": "Creare un nuovo percorso",
+      "noRoutes": "Non ci sono ancora percorsi salvati. Creare un percorso e fare clic su \"Salva per dopo\" per visualizzarlo qui.",
+      "goCreateRoute": "Andare a creare il percorso",
+      "origin": "Origine",
+      "destination": "Destinazione",
+      "stop": "fermarsi",
+      "stops": "fermate",
+      "open": "Aperto",
+      "editName": "Modifica nome",
+      "save": "Risparmiare",
+      "cancel": "Annullamento",
+      "delete": "Cancellare",
+      "deleting": "Eliminare...",
+      "confirmDelete": "Cancellare il percorso \"{nome}\"?",
+      "errorLoading": "Errore nel caricamento dei percorsi",
+      "errorUpdating": "Errore nell'aggiornamento",
+      "errorDeleting": "Errore durante l'eliminazione"
     }
   },
   "recursos": {
@@ -1022,7 +1044,15 @@
     "errorBackendUnavailableShort": "Backend non disponibile",
     "errorGeneratingQr": "Errore nella generazione del QR di identità",
     "errorActivating": "Errore di attivazione",
-    "errorActivatingMembership": "Errore nell'attivazione dell'iscrizione"
+    "errorActivatingMembership": "Errore nell'attivazione dell'iscrizione",
+    "associationResources": "Risorse dell'Associazione",
+    "associationResourcesDesc": "Castelli, monasteri e altre risorse turistiche con sconti esclusivi per i soci del Club.",
+    "resourcesInVillages": "Risorse nei villaggi",
+    "onlyHolder": "Solo titolo",
+    "discountOnlyHolder": "Sconto solo per i titolari di carta",
+    "upToAdults": "Fino a {conteggio} adulti{plurale}",
+    "plusMinors": " + {conteggio} minore{plurale} (fino a {età} anni)",
+    "village": "Villaggio"
   },
   "cuenta": {
     "login": "Accesso",

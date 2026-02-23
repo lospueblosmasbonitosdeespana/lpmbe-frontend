@@ -350,6 +350,28 @@
       "searchButton": "Rechercher l'itinéraire",
       "selectOrigin": "Sélectionnez un point d'origine dans la liste des suggestions.",
       "selectDest": "Sélectionnez un point de destination dans la liste des suggestions."
+    },
+    "misRutas": {
+      "title": "Mes itinéraires enregistrés",
+      "subtitle": "Vous pouvez ici visualiser, modifier et rappeler les itinéraires que vous avez enregistrés. Cliquez sur \"Ouvrir\" pour charger l'itinéraire et le refaire plus tard.",
+      "loading": "Chargement de vos itinéraires...",
+      "createNewRoute": "Créer un nouvel itinéraire",
+      "noRoutes": "Vous n'avez pas encore d'itinéraires enregistrés. Créez un itinéraire et cliquez sur \"Enregistrer pour plus tard\" pour l'afficher ici.",
+      "goCreateRoute": "Aller à la création d'un itinéraire",
+      "origin": "Origine",
+      "destination": "Destination",
+      "stop": "arrêter",
+      "stops": "arrêts",
+      "open": "Ouvrir",
+      "editName": "Modifier le nom",
+      "save": "Économiser",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "deleting": "Éliminer...",
+      "confirmDelete": "Supprimer le chemin \"{nom}\" ?",
+      "errorLoading": "Erreur de chargement des itinéraires",
+      "errorUpdating": "Erreur de mise à jour",
+      "errorDeleting": "Erreur lors de la suppression"
     }
   },
   "recursos": {
@@ -1022,7 +1044,15 @@
     "errorBackendUnavailableShort": "Backend indisponible",
     "errorGeneratingQr": "Erreur lors de la génération du QR d'identité",
     "errorActivating": "Erreur d'activation",
-    "errorActivatingMembership": "Erreur lors de l'activation de l'adhésion"
+    "errorActivatingMembership": "Erreur lors de l'activation de l'adhésion",
+    "associationResources": "Ressources de l'association",
+    "associationResourcesDesc": "Châteaux, monastères et autres ressources touristiques avec une réduction exclusive pour les membres du Club.",
+    "resourcesInVillages": "Ressources dans les villages",
+    "onlyHolder": "Titre uniquement",
+    "discountOnlyHolder": "Réduction pour le titulaire de la carte uniquement",
+    "upToAdults": "Jusqu'à {count} adulte{pluriel}",
+    "plusMinors": " + {count} mineur{pluriel} (jusqu'à {âge} ans)",
+    "village": "Village"
   },
   "cuenta": {
     "login": "Accès",

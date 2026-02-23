@@ -111,8 +111,8 @@ export default function RecursosPuebloPage() {
                         fontWeight: 500,
                       }}>
                         {r.maxAdultos === 1 && (r.maxMenores ?? 0) === 0
-                          ? 'Descuento solo para el titular'
-                          : `Hasta ${r.maxAdultos} adulto${r.maxAdultos > 1 ? 's' : ''}${(r.maxMenores ?? 0) > 0 ? ` + ${r.maxMenores} menor${(r.maxMenores ?? 0) > 1 ? 'es' : ''} (hasta ${r.edadMaxMenor ?? 12} años)` : ''}`}
+                          ? t('discountOnlyHolder')
+                          : `${t('upToAdults', { count: r.maxAdultos, plural: r.maxAdultos > 1 ? 's' : '' })}${(r.maxMenores ?? 0) > 0 ? t('plusMinors', { count: r.maxMenores, plural: (r.maxMenores ?? 0) > 1 ? 'es' : '', age: r.edadMaxMenor ?? 12 }) : ''}`}
                       </div>
                     )}
                   </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 interface RutaGuardada {
   id: number;
@@ -14,6 +15,7 @@ interface RutaGuardada {
 }
 
 export default function MisRutasPage() {
+  const t = useTranslations("planifica.misRutas");
   const [rutas, setRutas] = useState<RutaGuardada[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,14 +39,14 @@ export default function MisRutasPage() {
           return;
         }
         const data = await res.json().catch(() => ({}));
-        setError(data?.message ?? "Error al cargar las rutas");
+        setError(data?.message ?? t("errorLoading"));
         setRutas([]);
         return;
       }
       const data = await res.json();
       setRutas(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al cargar");
+      setError(err instanceof Error ? err.message : t("errorLoading"));
       setRutas([]);
     } finally {
       setLoading(false);
@@ -62,14 +64,14 @@ export default function MisRutasPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data?.message ?? "Error al actualizar");
+        throw new Error(data?.message ?? t("errorUpdating"));
       }
       setRutas((prev) =>
         prev.map((r) => (r.id === id ? { ...r, nombre } : r))
       );
       setEditingId(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al actualizar");
+      setError(err instanceof Error ? err.message : t("errorUpdating"));
     }
   }
 
@@ -83,11 +85,11 @@ export default function MisRutasPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data?.message ?? "Error al eliminar");
+        throw new Error(data?.message ?? t("errorDeleting"));
       }
       setRutas((prev) => prev.filter((r) => r.id !== id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al eliminar");
+      setError(err instanceof Error ? err.message : t("errorDeleting"));
     } finally {
       setDeletingId(null);
     }
@@ -101,13 +103,13 @@ export default function MisRutasPage() {
       <main className="min-h-screen bg-background pb-20">
         <section className="border-b border-border bg-white/60 px-4 py-12 text-center md:py-16">
           <h1 className="font-serif text-3xl font-bold text-foreground">
-            Mis rutas guardadas
+            {t("title")}
           </h1>
         </section>
         <section className="mx-auto max-w-2xl px-4 py-12 text-center">
           <div className="inline-flex h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           <p className="mt-4 text-sm text-muted-foreground">
-            Cargando tus rutas…
+            {t("loading")}
           </p>
         </section>
       </main>
@@ -118,11 +120,10 @@ export default function MisRutasPage() {
     <main className="min-h-screen bg-background pb-20">
       <section className="border-b border-border bg-white/60 px-4 py-12 text-center md:py-16">
         <h1 className="font-serif text-3xl font-bold text-foreground md:text-4xl">
-          Mis rutas guardadas
+          {t("title")}
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground">
-          Aquí puedes ver, editar y recuperar las rutas que has guardado. Haz
-          clic en &quot;Abrir&quot; para cargar la ruta y hacerla más tarde.
+          {t("subtitle")}
         </p>
       </section>
 
@@ -141,20 +142,19 @@ export default function MisRutasPage() {
             <circle cx="11" cy="11" r="8" />
             <path d="M21 21l-4.35-4.35" />
           </svg>
-          Crear nueva ruta
+          {t("createNewRoute")}
         </Link>
 
         {rutas.length === 0 ? (
           <div className="rounded-xl border border-border bg-white p-8 text-center">
             <p className="text-muted-foreground">
-              Aún no tienes rutas guardadas. Crea una ruta y pulsa
-              &quot;Guardar para más tarde&quot; para verla aquí.
+              {t("noRoutes")}
             </p>
             <Link
               href="/planifica/crea-mi-ruta"
               className="mt-4 inline-block text-sm font-semibold text-primary hover:underline"
             >
-              Ir a crear ruta
+              {t("goCreateRoute")}
             </Link>
           </div>
         ) : (
@@ -184,7 +184,7 @@ export default function MisRutasPage() {
                         type="submit"
                         className="rounded bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground"
                       >
-                        Guardar
+                        {t("save")}
                       </button>
                       <button
                         type="button"
@@ -194,18 +194,17 @@ export default function MisRutasPage() {
                         }}
                         className="rounded border px-2 py-1 text-xs"
                       >
-                        Cancelar
+                        {t("cancel")}
                       </button>
                     </form>
                   ) : (
                     <h3 className="font-semibold text-foreground">{r.nombre}</h3>
                   )}
                   <p className="mt-0.5 truncate text-sm text-muted-foreground">
-                    {r.originLabel ?? "Origen"} → {r.destLabel ?? "Destino"}
+                    {r.originLabel ?? t("origin")} → {r.destLabel ?? t("destination")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {paradasCount(r.paradas)} parada
-                    {paradasCount(r.paradas) !== 1 && "s"} · {r.maxDistKm} km
+                    {paradasCount(r.paradas)} {paradasCount(r.paradas) !== 1 ? t("stops") : t("stop")} · {r.maxDistKm} km
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-wrap gap-2">
@@ -213,7 +212,7 @@ export default function MisRutasPage() {
                     href={`/planifica/crea-mi-ruta?rutaId=${r.id}`}
                     className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
                   >
-                    Abrir
+                    {t("open")}
                   </Link>
                   <button
                     type="button"
@@ -224,19 +223,19 @@ export default function MisRutasPage() {
                     disabled={editingId !== null && editingId !== r.id}
                     className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground transition hover:bg-accent disabled:opacity-50"
                   >
-                    Editar nombre
+                    {t("editName")}
                   </button>
                   <button
                     type="button"
                     onClick={() => {
-                      if (window.confirm(`¿Eliminar la ruta "${r.nombre}"?`)) {
+                      if (window.confirm(t("confirmDelete", { name: r.nombre }))) {
                         deleteRuta(r.id);
                       }
                     }}
                     disabled={deletingId === r.id}
                     className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50"
                   >
-                    {deletingId === r.id ? "Eliminando…" : "Borrar"}
+                    {deletingId === r.id ? t("deleting") : t("delete")}
                   </button>
                 </div>
               </div>

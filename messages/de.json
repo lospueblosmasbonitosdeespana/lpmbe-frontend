@@ -350,6 +350,28 @@
       "searchButton": "Route suchen",
       "selectOrigin": "Wählen Sie einen Ausgangspunkt aus der Vorschlagsliste.",
       "selectDest": "Wählen Sie einen Zielpunkt aus der Vorschlagsliste."
+    },
+    "misRutas": {
+      "title": "Meine gespeicherten Routen",
+      "subtitle": "Hier können Sie die von Ihnen gespeicherten Routen anzeigen, bearbeiten und abrufen. Klicken Sie auf \"Öffnen\", um die Route zu laden und sie später zu bearbeiten.",
+      "loading": "Laden Sie Ihre Routen...",
+      "createNewRoute": "Neue Route erstellen",
+      "noRoutes": "Sie haben noch keine Routen gespeichert. Erstellen Sie eine Route und klicken Sie auf \"Für später speichern\", um sie hier anzuzeigen.",
+      "goCreateRoute": "Gehe zu Route erstellen",
+      "origin": "Herkunft",
+      "destination": "Reiseziel",
+      "stop": "stoppen",
+      "stops": "stoppt",
+      "open": "Öffnen Sie",
+      "editName": "Name bearbeiten",
+      "save": "Speichern Sie",
+      "cancel": "Abbrechen",
+      "delete": "Löschen",
+      "deleting": "Eliminieren...",
+      "confirmDelete": "Den Pfad \"{Name}\" löschen?",
+      "errorLoading": "Fehler beim Laden von Routen",
+      "errorUpdating": "Fehler beim Aktualisieren",
+      "errorDeleting": "Fehler beim Löschen"
     }
   },
   "recursos": {
@@ -1022,7 +1044,15 @@
     "errorBackendUnavailableShort": "Backend nicht verfügbar",
     "errorGeneratingQr": "Fehler bei der QR-Generierung",
     "errorActivating": "Aktivierungsfehler",
-    "errorActivatingMembership": "Fehler bei der Mitgliedschaftsaktivierung"
+    "errorActivatingMembership": "Fehler bei der Mitgliedschaftsaktivierung",
+    "associationResources": "Ressourcen der Vereinigung",
+    "associationResourcesDesc": "Schlösser, Klöster und andere touristische Einrichtungen mit exklusiven Rabatten für Clubmitglieder.",
+    "resourcesInVillages": "Ressourcen in Dörfern",
+    "onlyHolder": "Nur Überschrift",
+    "discountOnlyHolder": "Rabatt nur für Karteninhaber",
+    "upToAdults": "Bis zu {Zahl} Erwachsene{plural}",
+    "plusMinors": " + {Zahl} minderjährig{plural} (bis zu {Alter} Jahre)",
+    "village": "Dorf"
   },
   "cuenta": {
     "login": "Zugang",

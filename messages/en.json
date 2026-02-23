@@ -338,6 +338,28 @@
       "searchButton": "Search route",
       "selectOrigin": "Select a point of origin from the suggestions list.",
       "selectDest": "Select a point of destination from the suggestions list."
+    },
+    "misRutas": {
+      "title": "My saved routes",
+      "subtitle": "Here you can view, edit and recall the routes you have saved. Click \"Open\" to load the route and do it later.",
+      "loading": "Loading your routes...",
+      "createNewRoute": "Create new route",
+      "noRoutes": "You have no saved routes yet. Create a route and click \"Save for later\" to view it here.",
+      "goCreateRoute": "Go to create route",
+      "origin": "Origin",
+      "destination": "Destination",
+      "stop": "stop",
+      "stops": "stops",
+      "open": "Open",
+      "editName": "Edit name",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Eliminating...",
+      "confirmDelete": "Delete the path \"{name}\"?",
+      "errorLoading": "Error loading routes",
+      "errorUpdating": "Error while updating",
+      "errorDeleting": "Error when deleting"
     }
   },
   "recursos": {
@@ -1022,7 +1044,15 @@
     "errorBackendUnavailableShort": "Backend unavailable",
     "errorGeneratingQr": "Error generating identity QR",
     "errorActivating": "Error activating",
-    "errorActivatingMembership": "Error activating membership"
+    "errorActivatingMembership": "Error activating membership",
+    "associationResources": "Association Resources",
+    "associationResourcesDesc": "Castles, monasteries and other tourist resources with exclusive discount for Club members.",
+    "resourcesInVillages": "Resources in Villages",
+    "onlyHolder": "Headline only",
+    "discountOnlyHolder": "Discount for cardholder only",
+    "upToAdults": "Up to {count} adult{plural}",
+    "plusMinors": " + {count} minor{plural} (up to {age} years)",
+    "village": "Town"
   },
   "cuenta": {
     "login": "Access",

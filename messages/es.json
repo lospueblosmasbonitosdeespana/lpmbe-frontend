@@ -338,6 +338,28 @@
       "searchButton": "Buscar ruta",
       "selectOrigin": "Selecciona un punto de origen de la lista de sugerencias.",
       "selectDest": "Selecciona un punto de destino de la lista de sugerencias."
+    },
+    "misRutas": {
+      "title": "Mis rutas guardadas",
+      "subtitle": "Aquí puedes ver, editar y recuperar las rutas que has guardado. Haz clic en \"Abrir\" para cargar la ruta y hacerla más tarde.",
+      "loading": "Cargando tus rutas…",
+      "createNewRoute": "Crear nueva ruta",
+      "noRoutes": "Aún no tienes rutas guardadas. Crea una ruta y pulsa \"Guardar para más tarde\" para verla aquí.",
+      "goCreateRoute": "Ir a crear ruta",
+      "origin": "Origen",
+      "destination": "Destino",
+      "stop": "parada",
+      "stops": "paradas",
+      "open": "Abrir",
+      "editName": "Editar nombre",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "delete": "Borrar",
+      "deleting": "Eliminando…",
+      "confirmDelete": "¿Eliminar la ruta \"{name}\"?",
+      "errorLoading": "Error al cargar las rutas",
+      "errorUpdating": "Error al actualizar",
+      "errorDeleting": "Error al eliminar"
     }
   },
   "recursos": {
@@ -1024,7 +1046,15 @@
     "errorBackendUnavailableShort": "Backend no disponible",
     "errorGeneratingQr": "Error generando QR de identidad",
     "errorActivating": "Error al activar",
-    "errorActivatingMembership": "Error al activar la membresía"
+    "errorActivatingMembership": "Error al activar la membresía",
+    "associationResources": "Recursos de la Asociación",
+    "associationResourcesDesc": "Castillos, monasterios y otros recursos turísticos con descuento exclusivo para miembros del Club.",
+    "resourcesInVillages": "Recursos en Pueblos",
+    "onlyHolder": "Solo titular",
+    "discountOnlyHolder": "Descuento solo para el titular",
+    "upToAdults": "Hasta {count} adulto{plural}",
+    "plusMinors": " + {count} menor{plural} (hasta {age} años)",
+    "village": "Pueblo"
   },
   "cuenta": {
     "login": "Acceder",

@@ -116,9 +116,9 @@ export default function RecursosPage() {
       {/* Recursos de asociación */}
       {recursosAsociacion.length > 0 && (
         <div style={{ marginBottom: 32 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Recursos de la Asociación</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>{t('associationResources')}</h2>
           <p style={{ fontSize: 13, color: '#666', marginBottom: 12 }}>
-            Castillos, monasterios y otros recursos turísticos con descuento exclusivo para miembros del Club.
+            {t('associationResourcesDesc')}
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
             {recursosAsociacion.map((r: any) => (
@@ -153,14 +153,14 @@ export default function RecursosPage() {
                     −{r.descuentoPorcentaje}% Club
                   </div>
                 )}
-                {r.maxAdultos != null && (
+                  {r.maxAdultos != null && (
                   <div style={{
                     marginTop: 4,
                     fontSize: 11,
                     color: '#1d4ed8',
                   }}>
                     {r.maxAdultos === 1 && (r.maxMenores ?? 0) === 0
-                      ? 'Solo titular'
+                      ? t('onlyHolder')
                       : `${r.maxAdultos} adulto${r.maxAdultos > 1 ? 's' : ''}${(r.maxMenores ?? 0) > 0 ? ` + ${r.maxMenores} menor${(r.maxMenores ?? 0) > 1 ? 'es' : ''} (<${r.edadMaxMenor ?? 12} años)` : ''}`}
                   </div>
                 )}
@@ -171,7 +171,7 @@ export default function RecursosPage() {
       )}
 
       {/* Recursos por pueblo */}
-      <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Recursos en Pueblos</h2>
+      <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>{t('resourcesInVillages')}</h2>
       {pueblosConRecursos.length === 0 ? (
         <div style={{ fontSize: 14, color: '#666' }}>{t('noResourcesAvailable')}</div>
       ) : (

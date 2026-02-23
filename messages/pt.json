@@ -350,6 +350,28 @@
       "searchButton": "Pesquisar rota",
       "selectOrigin": "Selecione um ponto de origem na lista de sugestões.",
       "selectDest": "Selecione um ponto de destino na lista de sugestões."
+    },
+    "misRutas": {
+      "title": "Os meus itinerários guardados",
+      "subtitle": "Aqui pode ver, editar e recuperar as rotas que guardou. Clique em \"Abrir\" para carregar o itinerário e fazê-lo mais tarde.",
+      "loading": "Carregar os seus itinerários...",
+      "createNewRoute": "Criar nova rota",
+      "noRoutes": "Ainda não tem nenhum itinerário guardado. Crie um itinerário e clique em \"Guardar para mais tarde\" para o visualizar aqui.",
+      "goCreateRoute": "Ir para criar rota",
+      "origin": "Origem",
+      "destination": "Destino",
+      "stop": "paragem",
+      "stops": "paragens",
+      "open": "Aberto",
+      "editName": "Editar nome",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "delete": "Eliminar",
+      "deleting": "Eliminar...",
+      "confirmDelete": "Eliminar o caminho \"{nome}\"?",
+      "errorLoading": "Erro ao carregar rotas",
+      "errorUpdating": "Erro na atualização",
+      "errorDeleting": "Erro ao eliminar"
     }
   },
   "recursos": {
@@ -1022,7 +1044,15 @@
     "errorBackendUnavailableShort": "Backend indisponível",
     "errorGeneratingQr": "Erro ao gerar QR de identidade",
     "errorActivating": "Erro de ativação",
-    "errorActivatingMembership": "Erro ao ativar a adesão"
+    "errorActivatingMembership": "Erro ao ativar a adesão",
+    "associationResources": "Recursos da Associação",
+    "associationResourcesDesc": "Castelos, mosteiros e outros recursos turísticos com desconto exclusivo para os membros do Clube.",
+    "resourcesInVillages": "Recursos em aldeias",
+    "onlyHolder": "Apenas o título",
+    "discountOnlyHolder": "Desconto apenas para o titular do cartão",
+    "upToAdults": "Até {count} adulto{plural}",
+    "plusMinors": " + {count} menor{plural} (até {idade} anos)",
+    "village": "Aldeia"
   },
   "cuenta": {
     "login": "Acesso",
