@@ -95,6 +95,7 @@ interface HomePageProps {
   videos?: HomeVideoItem[];
   mapPreviewImage?: string;
   shopBannerImage?: string;
+
 }
 
 /* ----- HERO SECTION ----- */
@@ -697,8 +698,9 @@ function ActualidadSection({ news = [] }: { news: NewsItem[] }) {
 }
 
 /* ----- MAPA INTERACTIVO ----- */
-function MapaSection() {
+function MapaSection({ mapPreviewImage }: { mapPreviewImage?: string }) {
   const t = useTranslations("home");
+  const tMapas = useTranslations("mapas");
   return (
     <Section spacing="lg" background="default">
       <Container>
@@ -721,16 +723,26 @@ function MapaSection() {
           </Button>
         </div>
 
-        <div className="relative">
-          <PueblosMap compact />
-          <div className="absolute bottom-4 left-1/2 z-[500] -translate-x-1/2 md:hidden">
-            <Button asChild size="sm" className="rounded-full shadow-lg">
-              <Link href="/mapa">
-                {t("discoverVillagesMap")} <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-              </Link>
-            </Button>
+        <Link
+          href="/mapa"
+          className="group relative block rounded-2xl overflow-hidden"
+          aria-label={t("mapTitle")}
+        >
+          <div className="relative h-[280px] md:h-[320px]">
+            <Image
+              src={mapPreviewImage || "/mapa_espana_pueblos.png"}
+              alt={tMapas("alt")}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-black/15 group-hover:bg-black/10 transition" />
           </div>
-        </div>
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 md:hidden">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg">
+              {t("discoverVillagesMap")} <ArrowRight className="h-3.5 w-3.5" />
+            </span>
+          </div>
+        </Link>
       </Container>
     </Section>
   );
@@ -1131,6 +1143,7 @@ export function HomePageNew({
   villages = [],
   news = [],
   videos = [],
+  mapPreviewImage,
   shopBannerImage,
 }: HomePageProps) {
   return (
@@ -1147,7 +1160,7 @@ export function HomePageNew({
       <RutasSection routes={routes} />
       <ActualidadSection news={news} />
       <TiendaBanner shopBannerImage={shopBannerImage} />
-      <MapaSection />
+      <MapaSection mapPreviewImage={mapPreviewImage} />
       <VideosAsociacionSection videos={videos} />
       <FinalCTA />
       <SocialMediaSection />
