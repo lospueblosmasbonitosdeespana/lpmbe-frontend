@@ -534,7 +534,7 @@
     "outOfStock": "Esaurito",
     "inStock": "Disponibile",
     "savings": "Risparmio: {amount} €",
-    "newsletterTitle": "10% di sconto sul primo acquisto",
+    "newsletterTitle": "Iscriviti alla nostra newsletter",
     "newsletterDesc": "Iscriviti alla newsletter e ricevi un codice sconto esclusivo e novità sui prodotti artigianali.",
     "newsletterSuccess": "Grazie! Controlla la tua email per confermare l'iscrizione.",
     "newsletterEmail": "La tua email",
