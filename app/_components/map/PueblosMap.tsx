@@ -22,7 +22,7 @@ const LABEL_ZOOM = 9;
 
 function makePuebloIcon() {
   return L.divIcon({
-    html: `<div style="width:40px;height:40px;border-radius:50%;background:var(--background);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.25);border:2px solid ${TERRACOTTA};overflow:hidden"><img src="${LOGO_MARKER_URL}" alt="" style="width:26px;height:26px;object-fit:contain;pointer-events:none;mix-blend-mode:multiply" /></div>`,
+    html: `<div style="width:40px;height:40px;border-radius:50%;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.3)"><img src="${LOGO_MARKER_URL}" alt="" style="width:40px;height:40px;object-fit:cover;pointer-events:none;display:block" /></div>`,
     className: "pueblo-marker",
     iconSize: [40, 40],
     iconAnchor: [20, 20],
