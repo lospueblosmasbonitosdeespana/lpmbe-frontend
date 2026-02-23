@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 import { Section } from '@/app/components/ui/section';
@@ -84,13 +83,11 @@ export default async function SocioPage({
           <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
             {socio.logoUrl && (
               <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-card p-4">
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={socio.logoUrl}
-                  alt={socio.nombre}
-                  width={96}
-                  height={96}
+                  alt={`Logo ${socio.nombre}`}
                   className="h-auto max-h-16 w-auto object-contain"
-                  unoptimized
                 />
               </div>
             )}
@@ -141,13 +138,11 @@ export default async function SocioPage({
                   key={foto.id}
                   className="relative aspect-[4/3] overflow-hidden rounded-xl border border-border bg-muted"
                 >
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={foto.url}
                     alt={foto.alt || socio.nombre}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="absolute inset-0 h-full w-full object-cover"
                   />
                 </div>
               ))}
