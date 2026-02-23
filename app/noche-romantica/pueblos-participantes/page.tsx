@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { getApiUrl } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
@@ -43,6 +44,7 @@ async function fetchData() {
 }
 
 export default async function PueblosParticipantesPage() {
+  const t = await getTranslations('nocheRomantica');
   const { pueblos, config } = await fetchData();
 
   return (
@@ -52,15 +54,15 @@ export default async function PueblosParticipantesPage() {
         {config?.logoUrl && (
           <img
             src={config.logoUrl}
-            alt="La Noche Romántica"
+            alt={t('title')}
             className="mx-auto mb-6 h-40 md:h-48 object-contain"
           />
         )}
         <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
-          Pueblos Participantes
+          {t('pueblosParticipantes')}
         </h1>
         <p className="mt-2 text-muted-foreground">
-          {config?.titulo ?? 'La Noche Romántica'} · {config?.edicion}ª Edición
+          {config?.titulo ?? t('title')} · {config?.edicion}ª {t('edition')}
           {config?.fechaEvento && (
             <> · {new Date(config.fechaEvento + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</>
           )}
@@ -69,7 +71,7 @@ export default async function PueblosParticipantesPage() {
           href="/noche-romantica"
           className="mt-4 inline-block text-sm text-rose-600 hover:underline"
         >
-          ← Volver a La Noche Romántica
+          {t('backToNocheRomantica')}
         </Link>
       </section>
 
@@ -78,10 +80,10 @@ export default async function PueblosParticipantesPage() {
         {pueblos.length === 0 ? (
           <div className="py-20 text-center">
             <p className="text-xl text-muted-foreground">
-              Aún no hay pueblos participantes este año.
+              {t('noPueblosThisYear')}
             </p>
             <p className="mt-2 text-muted-foreground">
-              Vuelve pronto para ver las novedades.
+              {t('comeBackSoon')}
             </p>
           </div>
         ) : (
@@ -132,10 +134,10 @@ export default async function PueblosParticipantesPage() {
                     )}
                     <div className="mt-3 flex gap-3 text-xs text-muted-foreground">
                       {np.actividades.length > 0 && (
-                        <span>{np.actividades.length} actividades</span>
+                        <span>{np.actividades.length} {t('actividades')}</span>
                       )}
                       {np.negocios.length > 0 && (
-                        <span>{np.negocios.length} negocios</span>
+                        <span>{np.negocios.length} {t('negocios')}</span>
                       )}
                     </div>
                   </div>

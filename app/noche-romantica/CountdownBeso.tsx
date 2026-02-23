@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 /**
  * Cuenta atrás hasta las 0:00h del día siguiente a fechaEvento (el beso es a medianoche del día después).
- * Muestra: "Quedan xx días y xx horas para el beso más bonito del mundo"
  */
 export default function CountdownBeso({
   fechaEvento,
@@ -14,6 +14,7 @@ export default function CountdownBeso({
   /** true = texto blanco para usar sobre hero/fondo oscuro */
   light?: boolean;
 }) {
+  const t = useTranslations('nocheRomantica');
   const [text, setText] = useState<string>('');
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export default function CountdownBeso({
       const diff = target - now;
 
       if (diff <= 0) {
-        setText('¡Ha llegado la noche del beso más bonito del mundo!');
+        setText(t('countdownBesoDone'));
         return;
       }
 
@@ -44,14 +45,16 @@ export default function CountdownBeso({
       const hours = totalHours % 24;
 
       setText(
-        `Quedan ${days} día${days !== 1 ? 's' : ''} y ${hours} hora${hours !== 1 ? 's' : ''} para el beso más bonito del mundo`
+        t('countdownBeso')
+          .replace('{days}', String(days))
+          .replace('{hours}', String(hours))
       );
     };
 
     update();
     const interval = setInterval(update, 60 * 1000);
     return () => clearInterval(interval);
-  }, [fechaEvento]);
+  }, [fechaEvento, t]);
 
   if (!text) return null;
 

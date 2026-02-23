@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { getApiUrl } from '@/lib/api';
 import CountdownBeso from './CountdownBeso';
 
@@ -22,7 +23,7 @@ interface NRConfig {
   activo: boolean;
 }
 
-function formatFechaEvento(fecha: string | null, edicion: number): string {
+function formatFechaEvento(fecha: string | null, edicion: number, editionLabel: string): string {
   if (fecha) {
     const d = new Date(fecha + 'T00:00:00');
     const formatted = d.toLocaleDateString('es-ES', {
@@ -31,9 +32,9 @@ function formatFechaEvento(fecha: string | null, edicion: number): string {
       month: 'long',
       year: 'numeric',
     });
-    return `${edicion}ª Edición · ${formatted.charAt(0).toUpperCase() + formatted.slice(1)}`;
+    return `${edicion}ª ${editionLabel} · ${formatted.charAt(0).toUpperCase() + formatted.slice(1)}`;
   }
-  return `${edicion}ª Edición`;
+  return `${edicion}ª ${editionLabel}`;
 }
 
 function getYouTubeEmbedUrl(url: string): string | null {
@@ -69,13 +70,14 @@ async function fetchConfig(): Promise<NRConfig | null> {
 }
 
 export default async function NocheRomanticaPage() {
+  const t = await getTranslations('nocheRomantica');
   const config = await fetchConfig();
 
   if (!config || !config.activo) {
     return (
       <main className="mx-auto max-w-4xl px-4 py-20 text-center">
-        <h1 className="text-3xl font-bold">La Noche Romántica</h1>
-        <p className="mt-4 text-muted-foreground">Próximamente...</p>
+        <h1 className="text-3xl font-bold">{t('title')}</h1>
+        <p className="mt-4 text-muted-foreground">{t('comingSoon')}</p>
       </main>
     );
   }
@@ -104,7 +106,7 @@ export default async function NocheRomanticaPage() {
         <section className="relative w-full">
           <img
             src={config.heroImageUrl}
-            alt={`${config.titulo} - Edición ${config.edicion}`}
+            alt={`${config.titulo} - ${t('edition')} ${config.edicion}`}
             className="w-full max-h-[70vh] object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
@@ -118,7 +120,7 @@ export default async function NocheRomanticaPage() {
               </p>
             )}
             <p className="mt-1 text-sm md:text-base drop-shadow-md opacity-90">
-              {formatFechaEvento(config.fechaEvento, config.edicion)}
+              {formatFechaEvento(config.fechaEvento, config.edicion, t('edition'))}
             </p>
             <CountdownBeso fechaEvento={config.fechaEvento} light />
           </div>
@@ -135,7 +137,7 @@ export default async function NocheRomanticaPage() {
             <p className="mt-3 text-lg text-rose-600">{config.subtitulo}</p>
           )}
           <p className="mt-2 text-muted-foreground">
-            {formatFechaEvento(config.fechaEvento, config.edicion)}
+            {formatFechaEvento(config.fechaEvento, config.edicion, t('edition'))}
           </p>
           <div className="mt-4">
             <CountdownBeso fechaEvento={config.fechaEvento} />
@@ -152,7 +154,7 @@ export default async function NocheRomanticaPage() {
           <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
           </svg>
-          Pueblos Participantes
+          {t('pueblosParticipantes')}
         </Link>
       </div>
 
@@ -197,7 +199,7 @@ export default async function NocheRomanticaPage() {
             <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
               <iframe
                 src={embedUrl}
-                title="La Noche Romántica - Video"
+                title={t('videoTitle')}
                 className="absolute inset-0 h-full w-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
