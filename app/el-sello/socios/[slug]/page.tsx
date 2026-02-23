@@ -9,6 +9,14 @@ export const dynamic = 'force-dynamic';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
+function fixContenidoLogos(html: string, logoUrl: string | null): string {
+  if (!logoUrl) return html;
+  return html.replace(
+    /(<img\b[^>]*)\bsrc="[^"]*"([^>]*>)/gi,
+    `$1src="${logoUrl}"$2`,
+  );
+}
+
 type SelloSocioDetalle = {
   id: number;
   nombre: string;
@@ -119,20 +127,8 @@ export default async function SocioPage({
       {socio.contenido && (
         <Section spacing="md" background="muted">
           <Container>
-            <div className="flex flex-col gap-8 rounded-xl border border-border bg-card p-6 shadow-sm sm:flex-row sm:items-start">
-              <div className="min-w-0 flex-1 prose prose-gray dark:prose-invert prose-lg max-w-none text-foreground/90 [&_p]:text-foreground/90 [&_li]:text-foreground/90 [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline [&_strong]:text-foreground">
-                <SafeHtml html={socio.contenido} />
-              </div>
-              {socio.logoUrl && (
-                <div className="flex shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 p-4 sm:w-40">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={socio.logoUrl}
-                    alt={`Logo ${socio.nombre}`}
-                    className="h-auto max-h-24 w-full max-w-32 object-contain"
-                  />
-                </div>
-              )}
+            <div className="prose prose-gray dark:prose-invert prose-lg max-w-none text-foreground/90 [&_p]:text-foreground/90 [&_li]:text-foreground/90 [&_a]:text-primary [&_a]:underline hover:[&_a]:no-underline [&_strong]:text-foreground">
+              <SafeHtml html={fixContenidoLogos(socio.contenido, socio.logoUrl)} />
             </div>
           </Container>
         </Section>
