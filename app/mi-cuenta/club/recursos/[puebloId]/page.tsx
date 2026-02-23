@@ -112,7 +112,7 @@ export default function RecursosPuebloPage() {
                       }}>
                         {r.maxAdultos === 1 && (r.maxMenores ?? 0) === 0
                           ? t('discountOnlyHolder')
-                          : `${t('upToAdults', { count: r.maxAdultos, plural: r.maxAdultos > 1 ? 's' : '' })}${(r.maxMenores ?? 0) > 0 ? t('plusMinors', { count: r.maxMenores, plural: (r.maxMenores ?? 0) > 1 ? 'es' : '', age: r.edadMaxMenor ?? 12 }) : ''}`}
+                          : `${t('upToAdults', { count: r.maxAdultos, plural: r.maxAdultos > 1 ? 's' : '' })}${(r.maxMenores ?? 0) > 0 ? t('plusMinors', { count: r.maxMenores ?? 0, plural: (r.maxMenores ?? 0) > 1 ? 'es' : '', age: r.edadMaxMenor ?? 12 }) : ''}`}
                       </div>
                     )}
                   </div>
