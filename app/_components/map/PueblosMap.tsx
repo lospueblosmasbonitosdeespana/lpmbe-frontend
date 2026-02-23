@@ -17,24 +17,15 @@ type PuebloMapa = {
   lng: number;
 };
 
-const ROSE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="20" height="20">
-  <g fill="#fff">
-    <ellipse cx="50" cy="42" rx="12" ry="18" transform="rotate(0 50 50)" opacity=".95"/>
-    <ellipse cx="50" cy="42" rx="12" ry="18" transform="rotate(72 50 50)" opacity=".85"/>
-    <ellipse cx="50" cy="42" rx="12" ry="18" transform="rotate(144 50 50)" opacity=".80"/>
-    <ellipse cx="50" cy="42" rx="12" ry="18" transform="rotate(216 50 50)" opacity=".85"/>
-    <ellipse cx="50" cy="42" rx="12" ry="18" transform="rotate(288 50 50)" opacity=".90"/>
-    <circle cx="50" cy="50" r="8" opacity="1"/>
-  </g>
-</svg>`;
+const LOGO_MARKER_URL = "/brand/logo-mapa-marker.png";
 
 function makePuebloIcon() {
   return L.divIcon({
-    html: `<div style="width:36px;height:36px;border-radius:50%;background:${TERRACOTTA};display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.35);border:2.5px solid #fff;transition:transform .15s">${ROSE_SVG}</div>`,
+    html: `<div style="width:40px;height:40px;border-radius:50%;background:${TERRACOTTA};display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.35);border:2.5px solid #fff"><img src="${LOGO_MARKER_URL}" alt="" style="width:24px;height:24px;object-fit:contain;pointer-events:none" /></div>`,
     className: "pueblo-marker",
-    iconSize: [36, 36],
-    iconAnchor: [18, 18],
-    popupAnchor: [0, -20],
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
+    popupAnchor: [0, -22],
   });
 }
 
