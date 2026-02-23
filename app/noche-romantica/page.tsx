@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, getLocale } from 'next-intl/server';
 import { getApiUrl } from '@/lib/api';
 import CountdownBeso from './CountdownBeso';
 
@@ -56,12 +56,11 @@ function getYouTubeEmbedUrl(url: string): string | null {
   }
 }
 
-async function fetchConfig(): Promise<NRConfig | null> {
+async function fetchConfig(locale: string): Promise<NRConfig | null> {
   try {
     const API_BASE = getApiUrl();
-    const res = await fetch(`${API_BASE}/noche-romantica/config`, {
-      cache: 'no-store',
-    });
+    const url = locale && locale !== 'es' ? `${API_BASE}/noche-romantica/config?lang=${locale}` : `${API_BASE}/noche-romantica/config`;
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -71,7 +70,8 @@ async function fetchConfig(): Promise<NRConfig | null> {
 
 export default async function NocheRomanticaPage() {
   const t = await getTranslations('nocheRomantica');
-  const config = await fetchConfig();
+  const locale = await getLocale();
+  const config = await fetchConfig(locale);
 
   if (!config || !config.activo) {
     return (
