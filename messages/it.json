@@ -1181,7 +1181,8 @@
     "whereSleep": "Dove dormire",
     "whereShop": "Dove acquistare",
     "others": "Altro",
-    "viewMenu": "Vedi menu / menu"
+    "viewMenu": "Vedi menu / menu",
+    "backToPueblosParticipantes": "← Torna ai villaggi partecipanti"
   },
   "sello": {
     "breadcrumbHome": "Casa",

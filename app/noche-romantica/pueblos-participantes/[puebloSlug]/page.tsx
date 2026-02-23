@@ -1,6 +1,9 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getApiUrl } from '@/lib/api';
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
+import { Clock } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -40,17 +43,18 @@ interface NRPuebloDetail {
   negocios: Negocio[];
 }
 
-const NEGOCIO_LABEL: Record<string, { title: string; icon: string }> = {
-  HOTEL: { title: 'Dónde dormir', icon: '🏨' },
-  RESTAURANTE: { title: 'Dónde comer', icon: '🍽️' },
-  COMERCIO: { title: 'Dónde comprar', icon: '🛍️' },
-  OTRO: { title: 'Otros servicios', icon: '📍' },
-};
+interface NRConfig {
+  logoUrl?: string;
+  fechaEvento?: string;
+  titulo?: string;
+  activa?: boolean;
+}
 
-async function fetchPueblo(slug: string): Promise<NRPuebloDetail | null> {
+async function fetchPueblo(slug: string, lang?: string): Promise<NRPuebloDetail | null> {
   try {
     const API_BASE = getApiUrl();
-    const res = await fetch(`${API_BASE}/noche-romantica/pueblos/${slug}`, {
+    const langParam = lang && lang !== 'es' ? `?lang=${lang}` : '';
+    const res = await fetch(`${API_BASE}/noche-romantica/pueblos/${slug}${langParam}`, {
       cache: 'no-store',
     });
     if (!res.ok) return null;
@@ -60,13 +64,39 @@ async function fetchPueblo(slug: string): Promise<NRPuebloDetail | null> {
   }
 }
 
+async function fetchNRConfig(): Promise<NRConfig> {
+  try {
+    const API_BASE = getApiUrl();
+    const res = await fetch(`${API_BASE}/noche-romantica/app-status`, {
+      cache: 'no-store',
+    });
+    if (!res.ok) return {};
+    return await res.json();
+  } catch {
+    return {};
+  }
+}
+
+function formatFechaEuropea(fecha: string): string {
+  if (!fecha) return fecha;
+  if (fecha.includes('-')) {
+    return fecha.split('-').reverse().join('/');
+  }
+  return fecha;
+}
+
 export default async function PuebloNocheRomanticaPage({
   params,
 }: {
   params: Promise<{ puebloSlug: string }>;
 }) {
   const { puebloSlug } = await params;
-  const data = await fetchPueblo(puebloSlug);
+  const t = await getTranslations('nocheRomantica');
+
+  const [data, nrConfig] = await Promise.all([
+    fetchPueblo(puebloSlug),
+    fetchNRConfig(),
+  ]);
 
   if (!data) notFound();
 
@@ -79,12 +109,20 @@ export default async function PuebloNocheRomanticaPage({
     {} as Record<string, Negocio[]>,
   );
 
+  const NEGOCIO_LABEL: Record<string, { title: string; icon: string }> = {
+    HOTEL: { title: t('whereSleep'), icon: '🏨' },
+    RESTAURANTE: { title: t('whereEat'), icon: '🍽️' },
+    COMERCIO: { title: t('whereShop'), icon: '🛍️' },
+    OTRO: { title: t('others'), icon: '📍' },
+  };
+
   const heroImage = data.cartelUrl || data.pueblo.foto_destacada;
+  const hasContent = data.actividades.length > 0 || Object.keys(negociosByType).length > 0;
 
   return (
     <main className="min-h-screen">
-      {/* Hero / Cartel */}
-      {heroImage && (
+      {/* Hero / Cartel con imagen */}
+      {heroImage ? (
         <section className="relative w-full bg-gray-100">
           <img
             src={heroImage}
@@ -93,7 +131,7 @@ export default async function PuebloNocheRomanticaPage({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white">
-            <p className="text-sm opacity-80">La Noche Romántica</p>
+            <p className="text-sm opacity-80">{t('title')}</p>
             <h1 className="text-3xl md:text-4xl font-bold drop-shadow-lg">
               {data.pueblo.nombre}
             </h1>
@@ -102,12 +140,9 @@ export default async function PuebloNocheRomanticaPage({
             </p>
           </div>
         </section>
-      )}
-
-      {/* Sin hero */}
-      {!heroImage && (
+      ) : (
         <section className="bg-gradient-to-b from-rose-50 to-white py-12 text-center">
-          <p className="text-sm text-rose-600">La Noche Romántica</p>
+          <p className="text-sm text-rose-600">{t('title')}</p>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
             {data.pueblo.nombre}
           </h1>
@@ -121,20 +156,20 @@ export default async function PuebloNocheRomanticaPage({
         {/* Breadcrumbs */}
         <nav className="mb-8 flex items-center gap-2 text-sm text-muted-foreground">
           <Link href="/noche-romantica" className="hover:text-rose-600 hover:underline">
-            La Noche Romántica
+            {t('title')}
           </Link>
           <span>/</span>
           <Link
             href="/noche-romantica/pueblos-participantes"
             className="hover:text-rose-600 hover:underline"
           >
-            Pueblos Participantes
+            {t('pueblosParticipantes')}
           </Link>
           <span>/</span>
           <span className="text-foreground font-medium">{data.pueblo.nombre}</span>
         </nav>
 
-        {/* Título y descripción */}
+        {/* Título y descripción del evento */}
         {data.titulo && (
           <h2 className="mb-4 text-2xl font-bold text-gray-800">{data.titulo}</h2>
         )}
@@ -144,11 +179,40 @@ export default async function PuebloNocheRomanticaPage({
           </p>
         )}
 
-        {/* Actividades */}
+        {/* Bloque "Próximamente" cuando no hay contenido — igual que en la app */}
+        {!hasContent && (
+          <div className="mx-auto max-w-lg rounded-2xl border border-rose-200 bg-rose-50/70 px-8 py-10 text-center shadow-sm">
+            {nrConfig?.logoUrl ? (
+              <img
+                src={nrConfig.logoUrl}
+                alt={t('title')}
+                className="mx-auto mb-6 h-24 w-auto object-contain"
+              />
+            ) : (
+              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-rose-100 text-3xl">
+                💕
+              </div>
+            )}
+            <h3 className="mb-3 font-serif text-2xl font-bold text-rose-800">
+              {t('comingSoonExclaim')}
+            </h3>
+            <p className="text-sm leading-relaxed text-gray-600">
+              {t('emptyMessagePueblo', { pueblo: data.pueblo.nombre })}
+            </p>
+            {nrConfig?.fechaEvento && (
+              <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700">
+                <Clock className="h-4 w-4" />
+                {formatFechaEuropea(nrConfig.fechaEvento)}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Programa de actividades */}
         {data.actividades.length > 0 && (
           <section className="mb-10">
             <h2 className="mb-6 text-xl font-bold text-gray-800 flex items-center gap-2">
-              <span>🎭</span> Programa de actividades
+              <span>🎭</span> {t('programActivities')}
             </h2>
             <div className="space-y-4">
               {data.actividades.map((a) => (
@@ -192,14 +256,11 @@ export default async function PuebloNocheRomanticaPage({
         {Object.keys(negociosByType).length > 0 && (
           <section className="mb-10">
             <h2 className="mb-6 text-xl font-bold text-gray-800">
-              Dónde comer, dormir y comprar
+              {t('whereEatSleepShop')}
             </h2>
             <div className="space-y-8">
               {Object.entries(negociosByType).map(([tipo, negocios]) => {
-                const meta = NEGOCIO_LABEL[tipo] ?? {
-                  title: tipo,
-                  icon: '📍',
-                };
+                const meta = NEGOCIO_LABEL[tipo] ?? { title: tipo, icon: '📍' };
                 return (
                   <div key={tipo}>
                     <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-700">
@@ -239,7 +300,7 @@ export default async function PuebloNocheRomanticaPage({
                                 rel="noopener noreferrer"
                                 className="mt-2 inline-block text-sm text-rose-600 hover:underline"
                               >
-                                📋 Ver carta / menú
+                                📋 {t('viewMenu')}
                               </a>
                             )}
                           </div>
@@ -259,7 +320,7 @@ export default async function PuebloNocheRomanticaPage({
             href="/noche-romantica/pueblos-participantes"
             className="text-rose-600 hover:underline"
           >
-            ← Volver a Pueblos Participantes
+            {t('backToPueblosParticipantes')}
           </Link>
         </div>
       </div>
