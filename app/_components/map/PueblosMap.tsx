@@ -22,11 +22,11 @@ const LABEL_ZOOM = 9;
 
 function makePuebloIcon() {
   return L.divIcon({
-    html: `<div style="width:40px;height:40px;border-radius:50%;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.3)"><img src="${LOGO_MARKER_URL}" alt="" style="width:40px;height:40px;object-fit:cover;pointer-events:none;display:block" /></div>`,
+    html: `<div style="width:42px;height:42px;border-radius:50%;background:#fff;border:2px solid rgba(124,45,52,0.35);box-shadow:0 2px 8px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;overflow:hidden"><img src="${LOGO_MARKER_URL}" alt="" style="width:32px;height:32px;object-fit:contain;pointer-events:none;display:block" /></div>`,
     className: "pueblo-marker",
-    iconSize: [40, 40],
-    iconAnchor: [20, 20],
-    popupAnchor: [0, -22],
+    iconSize: [42, 42],
+    iconAnchor: [21, 21],
+    popupAnchor: [0, -23],
   });
 }
 
