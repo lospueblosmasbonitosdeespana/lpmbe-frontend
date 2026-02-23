@@ -18,10 +18,11 @@ type PuebloMapa = {
 };
 
 const LOGO_MARKER_URL = "/brand/logo-mapa-marker.png";
+const LABEL_ZOOM = 9;
 
 function makePuebloIcon() {
   return L.divIcon({
-    html: `<div style="width:40px;height:40px;border-radius:50%;background:${TERRACOTTA};display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.35);border:2.5px solid #fff"><img src="${LOGO_MARKER_URL}" alt="" style="width:24px;height:24px;object-fit:contain;pointer-events:none" /></div>`,
+    html: `<div style="width:40px;height:40px;border-radius:50%;background:${TERRACOTTA};display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.35);border:2.5px solid #fff"><img src="${LOGO_MARKER_URL}" alt="" style="width:24px;height:24px;object-fit:contain;pointer-events:none;mix-blend-mode:lighten" /></div>`,
     className: "pueblo-marker",
     iconSize: [40, 40],
     iconAnchor: [20, 20],
@@ -34,11 +35,35 @@ interface PueblosMapProps {
   compact?: boolean;
 }
 
+const LABEL_STYLES = `
+  .pueblo-label {
+    background: rgba(255,255,255,0.92) !important;
+    border: none !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,.18) !important;
+    border-radius: 6px !important;
+    padding: 2px 7px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: #1a1a1a !important;
+    white-space: nowrap !important;
+    pointer-events: none !important;
+  }
+  .pueblo-label::before { display:none !important; }
+`;
+
 export default function PueblosMap({ className, compact }: PueblosMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const [pueblos, setPueblos] = useState<PuebloMapa[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (document.getElementById("pueblo-label-styles")) return;
+    const style = document.createElement("style");
+    style.id = "pueblo-label-styles";
+    style.textContent = LABEL_STYLES;
+    document.head.appendChild(style);
+  }, []);
 
   useEffect(() => {
     const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
@@ -85,6 +110,7 @@ export default function PueblosMap({ className, compact }: PueblosMapProps) {
     ).addTo(map);
 
     const icon = makePuebloIcon();
+    const markers: L.Marker[] = [];
 
     pueblos.forEach((p) => {
       const popup = `
@@ -96,8 +122,35 @@ export default function PueblosMap({ className, compact }: PueblosMapProps) {
           </a>
         </div>`;
 
-      L.marker([p.lat, p.lng], { icon }).addTo(map).bindPopup(popup);
+      const marker = L.marker([p.lat, p.lng], { icon })
+        .addTo(map)
+        .bindPopup(popup)
+        .bindTooltip(p.nombre, {
+          permanent: true,
+          direction: "bottom",
+          offset: [0, 4],
+          className: "pueblo-label",
+          opacity: 1,
+        });
+
+      markers.push(marker);
     });
+
+    const updateLabels = () => {
+      const zoom = map.getZoom();
+      markers.forEach((m) => {
+        const tooltip = m.getTooltip();
+        if (!tooltip) return;
+        const el = tooltip.getElement();
+        if (el) {
+          el.style.display = zoom >= LABEL_ZOOM ? "" : "none";
+        }
+      });
+    };
+
+    map.on("zoomend", updateLabels);
+    // Apply initial state after tiles load
+    map.whenReady(updateLabels);
 
     if (pueblos.length > 0) {
       const bounds = L.latLngBounds(
