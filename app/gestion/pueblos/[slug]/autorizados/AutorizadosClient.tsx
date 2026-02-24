@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
+type ColaboradorPermiso = 'SOLO_METRICAS' | 'EDITAR_INFO' | 'EDITAR_TODO';
+
 interface Autorizado {
   userId: number;
   email: string;
@@ -13,6 +15,7 @@ interface Autorizado {
   activo: boolean;
   userActivo: boolean;
   asignadoEn: string;
+  permisos?: ColaboradorPermiso | null;
 }
 
 interface RecursoOption {
@@ -27,6 +30,24 @@ interface AutorizadosData {
   autorizados: Autorizado[];
   recursos: RecursoOption[];
 }
+
+const PERMISOS_LABELS: Record<ColaboradorPermiso, { label: string; desc: string; color: string }> = {
+  SOLO_METRICAS: {
+    label: 'Solo métricas',
+    desc: 'Puede ver estadísticas de validaciones de su recurso, sin editar nada.',
+    color: 'bg-gray-100 text-gray-700 border-gray-300',
+  },
+  EDITAR_INFO: {
+    label: 'Editar información',
+    desc: 'Puede ver métricas y editar nombre, descripción, horarios, foto, contacto y web.',
+    color: 'bg-blue-100 text-blue-700 border-blue-300',
+  },
+  EDITAR_TODO: {
+    label: 'Editar todo',
+    desc: 'Acceso completo: métricas, información y precios/descuentos del Club.',
+    color: 'bg-green-100 text-green-700 border-green-300',
+  },
+};
 
 export default function AutorizadosClient({
   puebloSlug,
@@ -45,10 +66,18 @@ export default function AutorizadosClient({
   const [showForm, setShowForm] = useState(false);
   const [formEmail, setFormEmail] = useState('');
   const [formNombre, setFormNombre] = useState('');
-  const [formPassword, setFormPassword] = useState('');
   const [formRol, setFormRol] = useState<'ALCALDE' | 'COLABORADOR'>('ALCALDE');
   const [formRecursoId, setFormRecursoId] = useState<number | ''>('');
+  const [formPermisos, setFormPermisos] = useState<ColaboradorPermiso>('EDITAR_TODO');
   const [submitting, setSubmitting] = useState(false);
+
+  // Edición de permisos inline
+  const [editandoPermisos, setEditandoPermisos] = useState<{
+    userId: number;
+    recursoId: number;
+    permisos: ColaboradorPermiso;
+  } | null>(null);
+  const [guardandoPermisos, setGuardandoPermisos] = useState(false);
 
   const fetchAutorizados = async () => {
     setLoading(true);
@@ -83,11 +112,11 @@ export default function AutorizadosClient({
       const payload: Record<string, any> = {
         email: formEmail.trim(),
         nombre: formNombre.trim() || undefined,
-        password: formPassword.trim() || undefined,
         rol: formRol,
       };
       if (formRol === 'COLABORADOR' && formRecursoId) {
         payload.recursoId = Number(formRecursoId);
+        payload.permisos = formPermisos;
       }
 
       const res = await fetch(`/api/admin/pueblos/${puebloId}/autorizados`, {
@@ -104,9 +133,9 @@ export default function AutorizadosClient({
 
       setFormEmail('');
       setFormNombre('');
-      setFormPassword('');
       setFormRol('ALCALDE');
       setFormRecursoId('');
+      setFormPermisos('EDITAR_TODO');
       setShowForm(false);
       await fetchAutorizados();
     } catch (e: any) {
@@ -117,29 +146,53 @@ export default function AutorizadosClient({
   };
 
   const handleRemove = async (a: Autorizado) => {
-    const label = a.tipoAsignacion === 'RECURSO'
-      ? `¿Quitar a ${a.email} del recurso "${a.recursoNombre}"?`
-      : `¿Eliminar a ${a.email} de los autorizados de ${puebloNombre}?`;
-    if (!confirm(label)) {
-      return;
-    }
+    const label =
+      a.tipoAsignacion === 'RECURSO'
+        ? `¿Quitar a ${a.email} del recurso "${a.recursoNombre}"?`
+        : `¿Eliminar a ${a.email} de los autorizados de ${puebloNombre}?`;
+    if (!confirm(label)) return;
 
     setError(null);
     try {
       const qs = a.recursoId ? `?recursoId=${a.recursoId}` : '';
-      const res = await fetch(`/api/admin/pueblos/${puebloId}/autorizados/${a.userId}${qs}`, {
-        method: 'DELETE',
-      });
+      const res = await fetch(
+        `/api/admin/pueblos/${puebloId}/autorizados/${a.userId}${qs}`,
+        { method: 'DELETE' },
+      );
 
       const json = await res.json();
-
-      if (!res.ok) {
-        throw new Error(json.message || 'Error al eliminar autorizado');
-      }
+      if (!res.ok) throw new Error(json.message || 'Error al eliminar autorizado');
 
       await fetchAutorizados();
     } catch (e: any) {
       setError(e.message);
+    }
+  };
+
+  const handleGuardarPermisos = async () => {
+    if (!editandoPermisos) return;
+    setGuardandoPermisos(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/admin/pueblos/${puebloId}/autorizados/${editandoPermisos.userId}/permisos`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recursoId: editandoPermisos.recursoId,
+            permisos: editandoPermisos.permisos,
+          }),
+        },
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'Error actualizando permisos');
+      setEditandoPermisos(null);
+      await fetchAutorizados();
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setGuardandoPermisos(false);
     }
   };
 
@@ -170,53 +223,130 @@ export default function AutorizadosClient({
             No hay usuarios autorizados para este pueblo.
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left">
-              <tr>
-                <th className="px-4 py-2 font-medium">Email</th>
-                <th className="px-4 py-2 font-medium">Nombre</th>
-                <th className="px-4 py-2 font-medium">Rol</th>
-                <th className="px-4 py-2 font-medium">Recurso</th>
-                <th className="px-4 py-2 font-medium">Asignado</th>
-                <th className="px-4 py-2 font-medium">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {autorizadosActivos.map((a, idx) => (
-                <tr key={`${a.userId}-${a.recursoId ?? 'p'}-${idx}`} className={!a.userActivo ? 'bg-gray-100 opacity-60' : ''}>
-                  <td className="px-4 py-2">{a.email}</td>
-                  <td className="px-4 py-2">{a.nombre || '-'}</td>
-                  <td className="px-4 py-2">
-                    <span
-                      className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
-                        a.rol === 'ADMIN'
-                          ? 'bg-purple-100 text-purple-700'
-                          : a.rol === 'COLABORADOR'
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'bg-green-100 text-green-700'
-                      }`}
-                    >
-                      {a.rol}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-gray-500 text-xs">
-                    {a.recursoNombre ?? '-'}
-                  </td>
-                  <td className="px-4 py-2 text-gray-500">
-                    {new Date(a.asignadoEn).toLocaleDateString('es-ES')}
-                  </td>
-                  <td className="px-4 py-2">
-                    <button
-                      onClick={() => handleRemove(a)}
-                      className="text-red-600 hover:underline"
-                    >
-                      Quitar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="divide-y">
+            {autorizadosActivos.map((a, idx) => {
+              const permInfo = a.permisos ? PERMISOS_LABELS[a.permisos] : null;
+              const isEditingThis =
+                editandoPermisos?.userId === a.userId &&
+                editandoPermisos?.recursoId === a.recursoId;
+
+              return (
+                <div
+                  key={`${a.userId}-${a.recursoId ?? 'p'}-${idx}`}
+                  className={`px-4 py-3 ${!a.userActivo ? 'opacity-60 bg-gray-50' : ''}`}
+                >
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-sm">{a.email}</span>
+                        <span
+                          className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
+                            a.rol === 'ADMIN'
+                              ? 'bg-purple-100 text-purple-700'
+                              : a.rol === 'COLABORADOR'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'bg-green-100 text-green-700'
+                          }`}
+                        >
+                          {a.rol}
+                        </span>
+                        {a.tipoAsignacion === 'RECURSO' && a.recursoNombre && (
+                          <span className="text-xs text-gray-500">
+                            → {a.recursoNombre}
+                          </span>
+                        )}
+                      </div>
+                      {a.nombre && (
+                        <p className="text-xs text-gray-500 mt-0.5">{a.nombre}</p>
+                      )}
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Asignado {new Date(a.asignadoEn).toLocaleDateString('es-ES')}
+                      </p>
+
+                      {/* Permisos actuales (solo colaboradores de recurso) */}
+                      {a.tipoAsignacion === 'RECURSO' && permInfo && !isEditingThis && (
+                        <div className={`mt-1.5 inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-xs ${permInfo.color}`}>
+                          <span className="font-medium">{permInfo.label}</span>
+                        </div>
+                      )}
+
+                      {/* Editor de permisos inline */}
+                      {a.tipoAsignacion === 'RECURSO' && isEditingThis && (
+                        <div className="mt-2 space-y-2">
+                          <p className="text-xs font-medium text-gray-700">Nivel de acceso:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {(Object.keys(PERMISOS_LABELS) as ColaboradorPermiso[]).map((p) => (
+                              <button
+                                key={p}
+                                type="button"
+                                onClick={() =>
+                                  setEditandoPermisos((prev) =>
+                                    prev ? { ...prev, permisos: p } : prev,
+                                  )
+                                }
+                                className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${
+                                  editandoPermisos.permisos === p
+                                    ? PERMISOS_LABELS[p].color
+                                    : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                                }`}
+                              >
+                                {PERMISOS_LABELS[p].label}
+                              </button>
+                            ))}
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            {PERMISOS_LABELS[editandoPermisos.permisos].desc}
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={handleGuardarPermisos}
+                              disabled={guardandoPermisos}
+                              className="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                            >
+                              {guardandoPermisos ? 'Guardando...' : 'Guardar'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditandoPermisos(null)}
+                              disabled={guardandoPermisos}
+                              className="rounded border px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {a.tipoAsignacion === 'RECURSO' && a.recursoId && !isEditingThis && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setEditandoPermisos({
+                              userId: a.userId,
+                              recursoId: a.recursoId!,
+                              permisos: a.permisos ?? 'EDITAR_TODO',
+                            })
+                          }
+                          className="rounded border border-blue-200 bg-blue-50 px-2 py-1 text-xs text-blue-700 hover:bg-blue-100"
+                        >
+                          Permisos
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleRemove(a)}
+                        className="rounded border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-600 hover:bg-red-100"
+                      >
+                        Quitar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
 
@@ -243,7 +373,10 @@ export default function AutorizadosClient({
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => { setFormRol('ALCALDE'); setFormRecursoId(''); }}
+                onClick={() => {
+                  setFormRol('ALCALDE');
+                  setFormRecursoId('');
+                }}
                 className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
                   formRol === 'ALCALDE'
                     ? 'border-green-500 bg-green-50 text-green-700'
@@ -267,36 +400,66 @@ export default function AutorizadosClient({
             <p className="mt-1 text-xs text-gray-500">
               {formRol === 'ALCALDE'
                 ? 'Tendrá acceso completo al pueblo: fotos, semáforos, contenidos, club, etc.'
-                : 'Solo podrá validar QRs y ver métricas del recurso turístico asignado.'}
+                : 'Accederá a su recurso turístico con el nivel de permisos que establezcas.'}
             </p>
           </div>
 
           {/* Selector de recurso (solo COLABORADOR) */}
           {formRol === 'COLABORADOR' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Recurso turístico *
-              </label>
-              {(data?.recursos?.length ?? 0) === 0 ? (
-                <p className="text-sm text-amber-600">
-                  No hay recursos turísticos en este pueblo. Crea uno primero en el Club de Amigos.
-                </p>
-              ) : (
-                <select
-                  value={formRecursoId}
-                  onChange={(e) => setFormRecursoId(e.target.value ? Number(e.target.value) : '')}
-                  className="w-full rounded-md border px-3 py-2 text-sm"
-                  required
-                >
-                  <option value="">Selecciona un recurso...</option>
-                  {data?.recursos?.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.nombre} {!r.activo ? '(inactivo)' : ''}
-                    </option>
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Recurso turístico *
+                </label>
+                {(data?.recursos?.length ?? 0) === 0 ? (
+                  <p className="text-sm text-amber-600">
+                    No hay recursos turísticos en este pueblo. Crea uno primero en el Club de Amigos.
+                  </p>
+                ) : (
+                  <select
+                    value={formRecursoId}
+                    onChange={(e) =>
+                      setFormRecursoId(e.target.value ? Number(e.target.value) : '')
+                    }
+                    className="w-full rounded-md border px-3 py-2 text-sm"
+                    required
+                  >
+                    <option value="">Selecciona un recurso...</option>
+                    {data?.recursos?.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.nombre} {!r.activo ? '(inactivo)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {/* Selector de permisos */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nivel de acceso *
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {(Object.keys(PERMISOS_LABELS) as ColaboradorPermiso[]).map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setFormPermisos(p)}
+                      className={`rounded border px-3 py-2 text-sm font-medium transition-colors ${
+                        formPermisos === p
+                          ? PERMISOS_LABELS[p].color
+                          : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      {PERMISOS_LABELS[p].label}
+                    </button>
                   ))}
-                </select>
-              )}
-            </div>
+                </div>
+                <p className="mt-1.5 text-xs text-gray-500">
+                  {PERMISOS_LABELS[formPermisos].desc}
+                </p>
+              </div>
+            </>
           )}
 
           <div>
@@ -308,11 +471,17 @@ export default function AutorizadosClient({
               value={formEmail}
               onChange={(e) => setFormEmail(e.target.value)}
               className="w-full rounded-md border px-3 py-2 text-sm"
-              placeholder={formRol === 'COLABORADOR' ? 'empresa@ejemplo.com' : 'alcalde@pueblo.es'}
+              placeholder={
+                formRol === 'COLABORADOR'
+                  ? 'empresa@ejemplo.com'
+                  : 'alcalde@pueblo.es'
+              }
               required
             />
             <p className="mt-1 text-xs text-gray-500">
-              Si el usuario ya existe, se le asignará directamente.
+              {formRol === 'COLABORADOR'
+                ? 'Si el usuario no existe, se crea automáticamente y se le envía un email con sus credenciales.'
+                : 'Si el usuario ya existe, se le asignará directamente.'}
             </p>
           </div>
 
@@ -329,26 +498,14 @@ export default function AutorizadosClient({
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Contraseña (solo si es usuario nuevo)
-            </label>
-            <input
-              type="password"
-              value={formPassword}
-              onChange={(e) => setFormPassword(e.target.value)}
-              className="w-full rounded-md border px-3 py-2 text-sm"
-              placeholder="••••••••"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Requerida si el email no está registrado. Mínimo 6 caracteres.
-            </p>
-          </div>
-
           <div className="flex gap-3">
             <button
               type="submit"
-              disabled={submitting || !formEmail.trim() || (formRol === 'COLABORADOR' && !formRecursoId)}
+              disabled={
+                submitting ||
+                !formEmail.trim() ||
+                (formRol === 'COLABORADOR' && !formRecursoId)
+              }
               className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
             >
               {submitting ? 'Guardando...' : 'Guardar'}
@@ -359,9 +516,9 @@ export default function AutorizadosClient({
                 setShowForm(false);
                 setFormEmail('');
                 setFormNombre('');
-                setFormPassword('');
                 setFormRol('ALCALDE');
                 setFormRecursoId('');
+                setFormPermisos('EDITAR_TODO');
               }}
               className="rounded-md border px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
