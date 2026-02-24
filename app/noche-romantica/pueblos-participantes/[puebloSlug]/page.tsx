@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getApiUrl } from '@/lib/api';
 import { notFound } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, getLocale } from 'next-intl/server';
 import { Clock } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -92,9 +92,10 @@ export default async function PuebloNocheRomanticaPage({
 }) {
   const { puebloSlug } = await params;
   const t = await getTranslations('nocheRomantica');
+  const locale = await getLocale();
 
   const [data, nrConfig] = await Promise.all([
-    fetchPueblo(puebloSlug),
+    fetchPueblo(puebloSlug, locale),
     fetchNRConfig(),
   ]);
 

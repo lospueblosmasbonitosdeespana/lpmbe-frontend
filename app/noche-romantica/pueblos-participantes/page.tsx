@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, getLocale } from 'next-intl/server';
 import { getApiUrl } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
@@ -30,11 +30,12 @@ interface NRConfig {
   logoUrl: string | null;
 }
 
-async function fetchData() {
+async function fetchData(locale: string) {
   const API_BASE = getApiUrl();
+  const langParam = locale && locale !== 'es' ? `?lang=${locale}` : '';
   const [pueblosRes, configRes] = await Promise.all([
-    fetch(`${API_BASE}/noche-romantica/pueblos`, { cache: 'no-store' }),
-    fetch(`${API_BASE}/noche-romantica/config`, { cache: 'no-store' }),
+    fetch(`${API_BASE}/noche-romantica/pueblos${langParam}`, { cache: 'no-store' }),
+    fetch(`${API_BASE}/noche-romantica/config${langParam}`, { cache: 'no-store' }),
   ]);
 
   const pueblos: NRPuebloPublic[] = pueblosRes.ok ? await pueblosRes.json() : [];
@@ -45,7 +46,8 @@ async function fetchData() {
 
 export default async function PueblosParticipantesPage() {
   const t = await getTranslations('nocheRomantica');
-  const { pueblos, config } = await fetchData();
+  const locale = await getLocale();
+  const { pueblos, config } = await fetchData(locale);
 
   return (
     <main className="min-h-screen">
