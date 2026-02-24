@@ -1,10 +1,18 @@
-import { headers } from 'next/headers';
+import { headers, cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
 import BackButton from './BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
+
+const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it'] as const;
+type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
+
+function isHtmlContent(content: string): boolean {
+  const trimmed = content.trimStart();
+  return trimmed.startsWith('<') && /<[a-z][\s\S]*>/i.test(trimmed);
+}
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -30,7 +38,11 @@ async function fetchContenido(slug: string): Promise<Contenido | null> {
   const proto = h.get('x-forwarded-proto') ?? 'http';
   const baseUrl = `${proto}://${host}`;
 
-  const res = await fetch(`${baseUrl}/api/public/contenidos/${slug}`, {
+  const cookieStore = await cookies();
+  const locale = cookieStore.get('NEXT_LOCALE')?.value;
+  const lang = locale && SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? locale : 'es';
+
+  const res = await fetch(`${baseUrl}/api/public/contenidos/${slug}?lang=${lang}`, {
     cache: 'no-store',
   });
 
@@ -218,7 +230,7 @@ export default async function ContenidoPage({
             )}
           </header>
 
-          {/* CONTENIDO MARKDOWN */}
+          {/* CONTENIDO (HTML o Markdown) */}
           {contenido.contenidoMd && (
             <div
               style={{
@@ -228,7 +240,11 @@ export default async function ContenidoPage({
               }}
               className="prose-contenido"
             >
-              <ReactMarkdown>{contenido.contenidoMd}</ReactMarkdown>
+              {isHtmlContent(contenido.contenidoMd) ? (
+                <div dangerouslySetInnerHTML={{ __html: contenido.contenidoMd }} />
+              ) : (
+                <ReactMarkdown>{contenido.contenidoMd}</ReactMarkdown>
+              )}
             </div>
           )}
 
