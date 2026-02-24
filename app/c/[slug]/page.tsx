@@ -1,10 +1,11 @@
-import { headers, cookies } from 'next/headers';
+import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
 import BackButton from './BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
+import { getApiUrl } from '@/lib/api';
 
 const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it'] as const;
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
@@ -33,17 +34,14 @@ type Contenido = {
 };
 
 async function fetchContenido(slug: string): Promise<Contenido | null> {
-  const h = await headers();
-  const host = h.get('host');
-  const proto = h.get('x-forwarded-proto') ?? 'http';
-  const baseUrl = `${proto}://${host}`;
-
   const cookieStore = await cookies();
   const locale = cookieStore.get('NEXT_LOCALE')?.value;
   const lang = locale && SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? locale : 'es';
 
-  const res = await fetch(`${baseUrl}/api/public/contenidos/${slug}?lang=${lang}`, {
+  const API_BASE = getApiUrl();
+  const res = await fetch(`${API_BASE}/public/contenidos/${slug}?lang=${lang}`, {
     cache: 'no-store',
+    headers: { 'Accept-Language': lang },
   });
 
   if (!res.ok) return null;
@@ -98,9 +96,13 @@ export default async function ContenidoPage({
     notFound();
   }
 
+  // Leer locale para formateo de fechas
+  const cookieStore = await cookies();
+  const locale = cookieStore.get('NEXT_LOCALE')?.value ?? 'es';
+
   // Determinar fecha de publicación
   const fechaPublicacion = contenido.publishedAt ?? contenido.createdAt;
-  const fechaPublicacionFormateada = fechaPublicacion ? formatDateTimeEs(fechaPublicacion) : '';
+  const fechaPublicacionFormateada = fechaPublicacion ? formatDateTimeEs(fechaPublicacion, locale) : '';
 
   // Formatear fechas del evento si es EVENTO
   const esEvento = contenido.tipo === 'EVENTO';
@@ -210,7 +212,7 @@ export default async function ContenidoPage({
                   borderRadius: '4px',
                 }}
               >
-                <strong>Evento:</strong> {formatEventoRangeEs(fechaInicioEvento, contenido.fechaFin)}
+                <strong>Evento:</strong> {formatEventoRangeEs(fechaInicioEvento, contenido.fechaFin, locale)}
               </p>
             )}
 

@@ -29,30 +29,32 @@ export function datetimeLocalToIsoUtc(value: string): string {
  * Formatea fecha con hora para mostrar al usuario
  * Ejemplo: "15 ene 2026 · 10:00"
  */
-export function formatDateTimeEs(iso: string): string {
+export function formatDateTimeEs(iso: string, locale = 'es'): string {
   const d = new Date(iso);
-  const date = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-  const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const bcp47 = localeToBcp47(locale);
+  const date = d.toLocaleDateString(bcp47, { day: '2-digit', month: 'short', year: 'numeric' });
+  const time = d.toLocaleTimeString(bcp47, { hour: '2-digit', minute: '2-digit' });
   return `${date} · ${time}`;
 }
 
 /**
- * Formatea rango de fechas para eventos
- * - Mismo día: "15 ene 2026 · 10:00 — 20:00"
- * - Varios días: "15 ene 2026 · 10:00 — 17 ene 2026 · 20:00"
- * - Solo inicio: "15 ene 2026 · 10:00"
+ * Formatea rango de fechas para eventos en el locale del usuario.
+ * - Mismo día: "28 Feb 2026 · 17:00 — 20:00"
+ * - Varios días: "11 Apr 2026 · 07:00 — 12 Apr 2026 · 16:00"
+ * - Solo inicio: "28 Feb 2026 · 17:00"
  */
-export function formatEventoRangeEs(fechaInicioIso: string, fechaFinIso?: string | null): string {
+export function formatEventoRangeEs(fechaInicioIso: string, fechaFinIso?: string | null, locale = 'es'): string {
   const ini = new Date(fechaInicioIso);
   const fin = fechaFinIso ? new Date(fechaFinIso) : null;
+  const bcp47 = localeToBcp47(locale);
 
-  const iniDate = ini.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-  const iniTime = ini.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const iniDate = ini.toLocaleDateString(bcp47, { day: '2-digit', month: 'short', year: 'numeric' });
+  const iniTime = ini.toLocaleTimeString(bcp47, { hour: '2-digit', minute: '2-digit' });
 
   if (!fin) return `${iniDate} · ${iniTime}`;
 
-  const finDate = fin.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-  const finTime = fin.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const finDate = fin.toLocaleDateString(bcp47, { day: '2-digit', month: 'short', year: 'numeric' });
+  const finTime = fin.toLocaleTimeString(bcp47, { hour: '2-digit', minute: '2-digit' });
 
   const sameDay =
     ini.getFullYear() === fin.getFullYear() &&
@@ -61,4 +63,13 @@ export function formatEventoRangeEs(fechaInicioIso: string, fechaFinIso?: string
 
   if (sameDay) return `${iniDate} · ${iniTime} — ${finTime}`;
   return `${iniDate} · ${iniTime} — ${finDate} · ${finTime}`;
+}
+
+/** Convierte nuestros locales internos a BCP-47 que entiende Intl */
+function localeToBcp47(locale: string): string {
+  const map: Record<string, string> = {
+    es: 'es-ES', en: 'en-GB', fr: 'fr-FR',
+    de: 'de-DE', pt: 'pt-PT', it: 'it-IT',
+  };
+  return map[locale] ?? 'es-ES';
 }
