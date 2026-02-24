@@ -3,6 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import TipTapEditor from "@/app/_components/editor/TipTapEditor";
+import SafeHtml from "@/app/_components/ui/SafeHtml";
+
+type EditorMode = "edit" | "html" | "preview";
 
 type Notificacion = {
   id: number;
@@ -27,6 +31,7 @@ export default function EditarAlertaPage() {
 
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
+  const [editorMode, setEditorMode] = useState<EditorMode>("edit");
 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -45,26 +50,17 @@ export default function EditarAlertaPage() {
         setLoading(true);
         setLoadError(null);
 
-        // OJO: usamos el listado (que sí existe) para encontrar el item por id.
-        const res = await fetch("/api/gestion/asociacion/alertas", {
+        const res = await fetch(`/api/gestion/asociacion/notificaciones/${id}`, {
           cache: "no-store",
+          credentials: "include",
         });
 
         if (!res.ok) {
           const txt = await res.text().catch(() => "");
-          throw new Error(txt || `Error cargando alertas (${res.status})`);
+          throw new Error(txt || `Error cargando alerta (${res.status})`);
         }
 
-        const data = await res.json();
-        const items: Notificacion[] = Array.isArray(data)
-          ? data
-          : data.items ?? data.data ?? [];
-
-        const item = items.find((x) => x.id === id);
-
-        if (!item) {
-          throw new Error(`No se encontró la alerta con id=${id}`);
-        }
+        const item: Notificacion = await res.json();
 
         if (!cancelled) {
           setTitulo(item.titulo ?? "");
@@ -92,9 +88,10 @@ export default function EditarAlertaPage() {
       setSaving(true);
       setSaveError(null);
 
-      const res = await fetch(`/api/notificaciones/${id}`, {
-        method: "PATCH",
+      const res = await fetch(`/api/gestion/asociacion/notificaciones/${id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           titulo: titulo.trim(),
           contenido: contenido.trim() || null,
@@ -153,12 +150,56 @@ export default function EditarAlertaPage() {
 
         <div>
           <label className="block text-sm font-semibold">Contenido</label>
-          <textarea
-            className="mt-1 w-full rounded border px-3 py-2"
-            rows={6}
-            value={contenido}
-            onChange={(e) => setContenido(e.target.value)}
-          />
+          <div className="mt-1 flex gap-2 mb-3">
+            <button
+              type="button"
+              onClick={() => setEditorMode("edit")}
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === "edit" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+            >
+              Editor
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditorMode("html")}
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === "html" ? "bg-amber-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+            >
+              HTML
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditorMode("preview")}
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === "preview" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+            >
+              Vista previa
+            </button>
+          </div>
+
+          {editorMode === "edit" && (
+            <TipTapEditor
+              content={contenido}
+              onChange={setContenido}
+              placeholder="Escribe el contenido de la alerta..."
+              minHeight="200px"
+            />
+          )}
+          {editorMode === "html" && (
+            <textarea
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-sm"
+              rows={12}
+              value={contenido}
+              onChange={(e) => setContenido(e.target.value)}
+              placeholder="<p>Contenido HTML...</p>"
+            />
+          )}
+          {editorMode === "preview" && (
+            <div className="rounded-lg border border-gray-200 bg-white p-6 min-h-[150px]">
+              {contenido ? (
+                <SafeHtml html={contenido} />
+              ) : (
+                <p className="text-gray-400 text-center py-6">Sin contenido</p>
+              )}
+            </div>
+          )}
         </div>
 
         {saveError ? <p className="text-red-600">{saveError}</p> : null}
@@ -167,20 +208,26 @@ export default function EditarAlertaPage() {
           <button
             type="submit"
             disabled={saving}
-            className="underline"
+            className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            {saving ? "Guardando..." : "Guardar"}
+            {saving ? "Guardando..." : "Guardar cambios"}
           </button>
 
           <button
             type="button"
             onClick={() => router.back()}
-            className="underline"
+            className="rounded-md border px-4 py-2 text-sm hover:bg-gray-50"
           >
             Cancelar
           </button>
         </div>
       </form>
+
+      <div className="mt-6 text-sm">
+        <Link href="/gestion/asociacion/alertas" className="hover:underline">
+          ← Volver a alertas
+        </Link>
+      </div>
     </main>
   );
 }

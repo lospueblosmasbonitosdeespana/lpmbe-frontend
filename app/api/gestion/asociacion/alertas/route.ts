@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { AUTH_COOKIE_NAME } from '@/lib/auth';
-
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? 'http://localhost:3000';
+import { getApiUrl } from '@/lib/api';
 
 async function getToken(): Promise<string | null> {
   const store = await cookies();
@@ -14,6 +12,7 @@ export async function GET() {
   const token = await getToken();
   if (!token) return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
 
+  const API_BASE = getApiUrl();
   const upstream = await fetch(`${API_BASE}/notificaciones`, {
     method: 'GET',
     headers: { Authorization: `Bearer ${token}` },
@@ -49,6 +48,7 @@ export async function POST(req: Request) {
 
   if (!titulo) return NextResponse.json({ message: 'titulo requerido' }, { status: 400 });
 
+  const API_BASE = getApiUrl();
   const upstream = await fetch(`${API_BASE}/notificaciones`, {
     method: 'POST',
     headers: {
