@@ -2,6 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import TipTapEditor from '@/app/_components/editor/TipTapEditor';
+import SafeHtml from '@/app/_components/ui/SafeHtml';
+
+type EditorMode = 'edit' | 'html' | 'preview';
 
 type EditarNoticiaClientProps = {
   id: string;
@@ -17,6 +21,8 @@ export default function EditarNoticiaClient({ id }: EditarNoticiaClientProps) {
   const [contenido, setContenido] = useState('');
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [editorMode, setEditorMode] = useState<EditorMode>('edit');
 
   useEffect(() => {
     (async () => {
@@ -122,13 +128,37 @@ export default function EditarNoticiaClient({ id }: EditarNoticiaClientProps) {
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm">Contenido</label>
-          <textarea
-            className="w-full rounded-md border px-3 py-2"
-            rows={10}
-            value={contenido}
-            onChange={(e) => setContenido(e.target.value)}
-          />
+          <label className="block text-sm font-medium">Contenido</label>
+          <div className="flex gap-2 mb-3">
+            <button type="button" onClick={() => setEditorMode('edit')}
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              Editor
+            </button>
+            <button type="button" onClick={() => setEditorMode('html')}
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'html' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              HTML
+            </button>
+            <button type="button" onClick={() => setEditorMode('preview')}
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'preview' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              Vista previa
+            </button>
+            {uploading && <span className="text-sm text-gray-500 self-center">Subiendo…</span>}
+          </div>
+          {editorMode === 'edit' && (
+            <TipTapEditor content={contenido} onChange={setContenido}
+              onUploadImage={async (f) => { setUploading(true); try { const { uploadImageToR2 } = await import('@/src/lib/uploadHelper'); const { url } = await uploadImageToR2(f, 'noticias-global', '/api/media/upload'); return url; } finally { setUploading(false); } }}
+              placeholder="Escribe el contenido..." minHeight="300px" />
+          )}
+          {editorMode === 'html' && (
+            <textarea className="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-sm"
+              rows={15} value={contenido} onChange={(e) => setContenido(e.target.value)}
+              placeholder="<p>Contenido HTML...</p>" />
+          )}
+          {editorMode === 'preview' && (
+            <div className="rounded-lg border border-gray-200 bg-white p-6 min-h-[200px]">
+              {contenido ? <SafeHtml html={contenido} /> : <p className="text-gray-400 text-center py-8">Sin contenido</p>}
+            </div>
+          )}
         </div>
 
         {coverUrl && coverUrl.trim() && !file && (

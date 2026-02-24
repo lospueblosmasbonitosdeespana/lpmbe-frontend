@@ -1,26 +1,22 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import CoverPicker from '@/app/_components/media/CoverPicker';
-import MarkdownEditor from '@/app/_components/editor/MarkdownEditor';
-import ImageManager from '@/app/_components/editor/ImageManager';
+import TipTapEditor from '@/app/_components/editor/TipTapEditor';
+import SafeHtml from '@/app/_components/ui/SafeHtml';
 import { toDatetimeLocal, datetimeLocalToIsoUtc } from '@/app/_lib/dates';
+
+type EditorMode = 'edit' | 'html' | 'preview';
 
 type EditarContenidoClientProps = {
   id: string;
-};
-
-type UploadedImage = {
-  url: string;
-  name: string;
 };
 
 export default function EditarContenidoClient({ id }: EditarContenidoClientProps) {
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,9 +30,8 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
   const [fechaFinLocal, setFechaFinLocal] = useState('');
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
-
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [editorMode, setEditorMode] = useState<EditorMode>('edit');
 
   useEffect(() => {
     (async () => {
@@ -76,37 +71,15 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
     })();
   }, [id]);
 
-  async function handleUploadImages() {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-    fileInput.multiple = true;
-
-    fileInput.onchange = async (e: any) => {
-      const files = Array.from(e.target.files || []) as File[];
-      if (files.length === 0) return;
-
-      setUploading(true);
-      try {
-        const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
-        const newImages: { url: string; name: string }[] = [];
-
-        for (let i = 0; i < files.length; i++) {
-          const f = files[i];
-          const { url, warning } = await uploadImageToR2(f, 'contenidos', '/api/media/upload');
-          if (warning) console.warn(`[ImageUpload] ${f.name}:`, warning);
-          newImages.push({ url, name: f.name || `imagen-${i + 1}` });
-        }
-
-        setUploadedImages((prev) => [...prev, ...newImages]);
-      } catch (e: any) {
-        alert(e?.message ?? 'Error subiendo imágenes');
-      } finally {
-        setUploading(false);
-      }
-    };
-
-    fileInput.click();
+  async function handleUploadEditorImage(file: File): Promise<string> {
+    setUploading(true);
+    try {
+      const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+      const { url } = await uploadImageToR2(file, 'contenidos', '/api/media/upload');
+      return url;
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -344,22 +317,76 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
           onFileSelected={(file) => setCoverFile(file)}
         />
 
-        <MarkdownEditor
-          value={contenidoMd}
-          onChange={setContenidoMd}
-          uploading={uploading}
-          onUploadImages={handleUploadImages}
-        />
+        {/* SISTEMA DE 3 MODOS: Editor TipTap, HTML directo, Vista previa */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">Contenido</label>
 
-        <ImageManager
-          images={uploadedImages}
-          defaultAlt={titulo || 'Imagen'}
-          onInsertAtCursor={(md) => {
-            setContenidoMd((prev) => prev + md);
-          }}
-          onAppendToEnd={(md) => setContenidoMd(contenidoMd + md)}
-          onClear={() => setUploadedImages([])}
-        />
+          <div className="flex gap-2 mb-3">
+            <button
+              type="button"
+              onClick={() => setEditorMode('edit')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                editorMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Editor
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditorMode('html')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                editorMode === 'html' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              HTML
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditorMode('preview')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                editorMode === 'preview' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Vista previa
+            </button>
+            {uploading && <span className="text-sm text-gray-500 self-center">Subiendo imagen…</span>}
+          </div>
+
+          {editorMode === 'edit' && (
+            <TipTapEditor
+              content={contenidoMd}
+              onChange={(html) => setContenidoMd(html)}
+              onUploadImage={handleUploadEditorImage}
+              placeholder="Escribe el contenido..."
+              minHeight="400px"
+            />
+          )}
+
+          {editorMode === 'html' && (
+            <div className="space-y-2">
+              <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
+                Modo HTML: edita o pega código HTML directamente.
+              </p>
+              <textarea
+                value={contenidoMd}
+                onChange={(e) => setContenidoMd(e.target.value)}
+                rows={20}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-sm"
+                placeholder="<h2>Título</h2>\n<p>Párrafo...</p>"
+              />
+            </div>
+          )}
+
+          {editorMode === 'preview' && (
+            <div className="rounded-lg border border-gray-200 bg-white p-6 min-h-[400px]">
+              {contenidoMd ? (
+                <SafeHtml html={contenidoMd} />
+              ) : (
+                <p className="text-gray-400 text-center py-12">Escribe contenido para ver la vista previa</p>
+              )}
+            </div>
+          )}
+        </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

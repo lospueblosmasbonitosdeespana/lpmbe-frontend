@@ -2,6 +2,10 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useState } from 'react';
+import TipTapEditor from '@/app/_components/editor/TipTapEditor';
+import SafeHtml from '@/app/_components/ui/SafeHtml';
+
+type EditorMode = 'edit' | 'html' | 'preview';
 
 export default function NuevoEventoPage() {
   const params = useParams<{ slug: string }>();
@@ -16,6 +20,8 @@ export default function NuevoEventoPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [editorMode, setEditorMode] = useState<EditorMode>('edit');
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -90,14 +96,37 @@ export default function NuevoEventoPage() {
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm">Descripción</label>
-          <textarea
-            className="w-full rounded-md border px-3 py-2"
-            rows={6}
-            value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
-            required
-          />
+          <label className="block text-sm font-medium">Descripción</label>
+          <div className="flex gap-2 mb-3">
+            <button type="button" onClick={() => setEditorMode('edit')}
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              Editor
+            </button>
+            <button type="button" onClick={() => setEditorMode('html')}
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'html' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              HTML
+            </button>
+            <button type="button" onClick={() => setEditorMode('preview')}
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'preview' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              Vista previa
+            </button>
+            {uploading && <span className="text-sm text-gray-500 self-center">Subiendo…</span>}
+          </div>
+          {editorMode === 'edit' && (
+            <TipTapEditor content={descripcion} onChange={setDescripcion}
+              onUploadImage={async (f) => { setUploading(true); try { const { uploadImageToR2 } = await import('@/src/lib/uploadHelper'); const { url } = await uploadImageToR2(f, 'eventos-pueblo', '/api/media/upload'); return url; } finally { setUploading(false); } }}
+              placeholder="Describe el evento..." minHeight="250px" />
+          )}
+          {editorMode === 'html' && (
+            <textarea className="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-sm"
+              rows={10} value={descripcion} onChange={(e) => setDescripcion(e.target.value)}
+              placeholder="<p>Descripción HTML...</p>" />
+          )}
+          {editorMode === 'preview' && (
+            <div className="rounded-lg border border-gray-200 bg-white p-6 min-h-[150px]">
+              {descripcion ? <SafeHtml html={descripcion} /> : <p className="text-gray-400 text-center py-8">Sin descripción</p>}
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">
