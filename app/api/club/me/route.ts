@@ -1,17 +1,22 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
+import { cookies } from 'next/headers';
 
 const DEV_LOGS = process.env.NODE_ENV === 'development';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const token = await getToken();
   if (!token) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
+  // Leer locale de la cookie NEXT_LOCALE para pasar al backend
+  const cookieStore = await cookies();
+  const locale = cookieStore.get('NEXT_LOCALE')?.value ?? 'es';
+
   const API_BASE = getApiUrl();
-  const upstreamUrl = `${API_BASE}/club/me`;
+  const upstreamUrl = `${API_BASE}/club/me?lang=${locale}`;
 
   if (DEV_LOGS) {
     console.error('[club/me] upstreamUrl:', upstreamUrl);
