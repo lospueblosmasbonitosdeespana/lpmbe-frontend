@@ -6,6 +6,7 @@ import BackButton from '@/app/c/[slug]/BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
+import SmartCoverImage from '@/app/components/SmartCoverImage';
 
 const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it'] as const;
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
@@ -89,13 +90,7 @@ export default async function EventoPage({
     <main style={{ padding: '40px 20px' }}>
       <article>
         {evento.coverUrl && evento.coverUrl.trim() && (
-          <div style={{ maxWidth: '1200px', margin: '0 auto 48px', overflow: 'hidden', borderRadius: '8px' }}>
-            <img
-              src={evento.coverUrl.trim()}
-              alt={evento.titulo}
-              style={{ width: '100%', height: 'auto', maxHeight: '500px', objectFit: 'cover', display: 'block' }}
-            />
-          </div>
+          <SmartCoverImage src={evento.coverUrl.trim()} alt={evento.titulo} />
         )}
 
         <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 20px' }}>

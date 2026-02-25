@@ -6,6 +6,7 @@ import BackButton from './BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
+import SmartCoverImage from '@/app/components/SmartCoverImage';
 
 const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it'] as const;
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
@@ -121,26 +122,7 @@ export default async function ContenidoPage({
       <article>
         {/* IMAGEN DE PORTADA (si existe) */}
         {contenido.coverUrl && contenido.coverUrl.trim() && (
-          <div
-            style={{
-              maxWidth: '1200px',
-              margin: '0 auto 48px',
-              overflow: 'hidden',
-              borderRadius: '8px',
-            }}
-          >
-            <img
-              src={contenido.coverUrl.trim()}
-              alt={contenido.titulo}
-              style={{
-                width: '100%',
-                height: 'auto',
-                maxHeight: '500px',
-                objectFit: 'cover',
-                display: 'block',
-              }}
-            />
-          </div>
+          <SmartCoverImage src={contenido.coverUrl.trim()} alt={contenido.titulo} />
         )}
 
         {/* CONTENEDOR DE LECTURA */}
