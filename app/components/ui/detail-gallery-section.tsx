@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { Container } from "@/app/components/ui/container"
@@ -57,6 +57,29 @@ export function DetailGallerySection({
   const goToNext = () => {
     if (selectedIndex === null) return
     setSelectedIndex(selectedIndex === images.length - 1 ? 0 : selectedIndex + 1)
+  }
+
+  // Swipe táctil para Safari móvil
+  const touchStartX = useRef<number | null>(null)
+  const touchStartY = useRef<number | null>(null)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+    touchStartY.current = e.touches[0].clientY
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    const dy = e.changedTouches[0].clientY - touchStartY.current
+    // Swipe horizontal con al menos 40px y más horizontal que vertical
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      e.preventDefault()
+      if (dx < 0) goToNext()
+      else goToPrevious()
+    }
+    touchStartX.current = null
+    touchStartY.current = null
   }
 
   const renderGridLayout = () => (
@@ -244,10 +267,12 @@ export function DetailGallerySection({
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/95 p-4"
           onClick={closeLightbox}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
         >
           <button
             onClick={closeLightbox}
-            className="absolute right-4 top-4 rounded-full p-2 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground transition-colors"
+            className="absolute right-4 top-4 rounded-full p-3 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground transition-colors"
             aria-label="Cerrar"
           >
             <X className="h-6 w-6" />
@@ -255,19 +280,22 @@ export function DetailGallerySection({
 
           {images.length > 1 && (
             <>
+              {/* Botones más grandes y con área táctil amplia para móvil */}
               <button
                 onClick={(e) => { e.stopPropagation(); goToPrevious() }}
-                className="absolute left-4 rounded-full p-2 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground transition-colors"
+                className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-3 text-white hover:bg-black/60 transition-colors active:bg-black/70 touch-manipulation"
                 aria-label="Anterior"
+                style={{ minWidth: 48, minHeight: 48 }}
               >
-                <ChevronLeft className="h-8 w-8" />
+                <ChevronLeft className="h-7 w-7" />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); goToNext() }}
-                className="absolute right-4 rounded-full p-2 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground transition-colors"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-3 text-white hover:bg-black/60 transition-colors active:bg-black/70 touch-manipulation"
                 aria-label="Siguiente"
+                style={{ minWidth: 48, minHeight: 48 }}
               >
-                <ChevronRight className="h-8 w-8" />
+                <ChevronRight className="h-7 w-7" />
               </button>
             </>
           )}
