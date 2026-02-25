@@ -1157,16 +1157,15 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
           </Muted>
         </div>
 
-        {/* 5 columnas iguales de ancho, la primera el doble de alta */}
+        {/* Todas la misma altura; la primera (Último) el doble de ancha */}
         <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:overflow-visible scrollbar-hide justify-center">
-          <div className="flex gap-4 items-start w-full max-w-5xl">
-
-            {/* Tarjeta destacada: mismo ancho, doble de alta */}
+          <div className="flex gap-4 items-stretch w-full max-w-5xl min-w-0">
+            {/* Tarjeta destacada: doble de ancho */}
             <Link
               href={latest.href || "/actualidad"}
-              className="group flex-shrink-0 w-[160px] md:flex-1"
+              className="group flex-shrink-0 w-[320px] md:flex-[2] min-w-0"
             >
-              <div className="relative rounded-2xl overflow-hidden mb-3 shadow-md group-hover:shadow-xl transition-all duration-500" style={{ aspectRatio: "3/8" }}>
+              <div className="relative h-[213px] rounded-2xl overflow-hidden mb-3 shadow-md group-hover:shadow-xl transition-all duration-500">
                 {latest.image ? (
                   <Image
                     src={latest.image}
@@ -1179,12 +1178,10 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
                     <Newspaper className="h-10 w-10 text-muted-foreground/40" />
                   </div>
                 )}
-                {/* Badge ÚLTIMO en rojo */}
                 <span className="absolute top-2 left-2 rounded-full bg-red-600 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow">
                   Último
                 </span>
-                {/* Badge tipo */}
-                <span className="absolute top-8 left-2 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                <span className="absolute top-2 left-14 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
                   {BADGE_LABELS[latest.type?.toUpperCase()] ?? latest.type}
                 </span>
               </div>
@@ -1198,14 +1195,14 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
               </p>
             </Link>
 
-            {/* 4 tarjetas normales */}
+            {/* 4 tarjetas: mitad de ancho cada una, misma altura */}
             {rest.map((item) => (
               <Link
                 key={item.id}
                 href={item.href || "/actualidad"}
-                className="group flex-shrink-0 w-[160px] md:flex-1"
+                className="group flex-shrink-0 w-[160px] md:flex-[1] min-w-0"
               >
-                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden mb-3 shadow-md group-hover:shadow-xl transition-all duration-500">
+                <div className="relative h-[213px] rounded-2xl overflow-hidden mb-3 shadow-md group-hover:shadow-xl transition-all duration-500">
                   {item.image ? (
                     <Image
                       src={item.image}
@@ -1218,7 +1215,6 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
                       <Newspaper className="h-8 w-8 text-muted-foreground/40" />
                     </div>
                   )}
-                  {/* Badge tipo */}
                   <span className="absolute top-2 left-2 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
                     {BADGE_LABELS[item.type?.toUpperCase()] ?? item.type}
                   </span>
