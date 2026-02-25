@@ -20,6 +20,8 @@ type Recurso = {
   descripcion?: string | null;
   horarios?: string | null;
   contacto?: string | null;
+  telefono?: string | null;
+  email?: string | null;
   web?: string | null;
   fotoUrl?: string | null;
   lat?: number | null;
@@ -325,6 +327,8 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
     descripcion: recurso.descripcion ?? '',
     horarios: recurso.horarios ?? '',
     contacto: recurso.contacto ?? '',
+    telefono: (recurso as any).telefono ?? '',
+    email: (recurso as any).email ?? '',
     web: recurso.web ?? '',
     fotoUrl: recurso.fotoUrl ?? '',
     lat: recurso.lat?.toString() ?? '',
@@ -387,6 +391,8 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
       else body.descripcion = null;
       if (form.horarios.trim()) body.horarios = form.horarios.trim();
       if (form.contacto.trim()) body.contacto = form.contacto.trim();
+      body.telefono = (form as any).telefono?.trim() || null;
+      body.email = (form as any).email?.trim() || null;
       if (form.web.trim()) body.web = form.web.trim();
       if (form.fotoUrl.trim()) body.fotoUrl = form.fotoUrl.trim();
 
@@ -468,10 +474,15 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Contacto</label>
-          <input value={form.contacto} onChange={(e) => set('contacto', e.target.value)}
+          <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+          <input value={(form as any).telefono ?? ''} onChange={(e) => set('telefono' as any, e.target.value)}
+            placeholder="+34 900 000 000" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input type="email" value={(form as any).email ?? ''} onChange={(e) => set('email' as any, e.target.value)}
             placeholder="info@ejemplo.com" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
         </div>
         <div>

@@ -35,6 +35,8 @@ type RecursoAsociacion = {
   comunidad: string;
   descuentoPorcentaje?: number | null;
   precioCents?: number | null;
+  telefono?: string | null;
+  email?: string | null;
   activo: boolean;
   cerradoTemporal?: boolean;
   codigoQr?: string;
@@ -71,6 +73,8 @@ type FormData = {
   comunidad: string;
   descuentoPorcentaje: string;
   precioCents: string;
+  telefono: string;
+  email: string;
   activo: boolean;
   cerradoTemporal: boolean;
   maxAdultos: string;
@@ -92,6 +96,8 @@ const EMPTY_FORM: FormData = {
   comunidad: '',
   descuentoPorcentaje: '',
   precioCents: '',
+  telefono: '',
+  email: '',
   activo: true,
   cerradoTemporal: false,
   maxAdultos: '1',
@@ -120,6 +126,8 @@ function formToBody(f: FormData, horariosSemana?: HorarioDia[], cierresEspeciale
   else body.descripcion = null;
   if (f.horarios.trim()) body.horarios = f.horarios.trim();
   if (f.contacto.trim()) body.contacto = f.contacto.trim();
+  body.telefono = f.telefono.trim() || null;
+  body.email = f.email.trim() || null;
   if (f.web.trim()) body.web = f.web.trim();
   if (f.fotoUrl.trim()) body.fotoUrl = f.fotoUrl.trim();
 
@@ -147,6 +155,8 @@ function recursoToForm(r: RecursoAsociacion): FormData {
     comunidad: r.comunidad || '',
     descuentoPorcentaje: r.descuentoPorcentaje?.toString() || '',
     precioCents: r.precioCents ? (r.precioCents / 100).toString() : '',
+    telefono: r.telefono || '',
+    email: r.email || '',
     activo: r.activo,
     cerradoTemporal: r.cerradoTemporal ?? false,
     maxAdultos: r.maxAdultos?.toString() ?? '1',
@@ -258,10 +268,15 @@ function RecursoForm({
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-3">
         <div>
-          <label className="mb-1 block text-sm text-gray-600">Contacto</label>
-          <input type="text" value={data.contacto} onChange={(e) => set('contacto', e.target.value)}
+          <label className="mb-1 block text-sm text-gray-600">Teléfono</label>
+          <input type="text" value={data.telefono} onChange={(e) => set('telefono', e.target.value)}
+            disabled={saving} placeholder="+34 900 000 000" className="w-full rounded border px-3 py-2 disabled:opacity-50" />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm text-gray-600">Email</label>
+          <input type="email" value={data.email} onChange={(e) => set('email', e.target.value)}
             disabled={saving} placeholder="info@ejemplo.com" className="w-full rounded border px-3 py-2 disabled:opacity-50" />
         </div>
         <div>
@@ -269,6 +284,12 @@ function RecursoForm({
           <input type="text" value={data.web} onChange={(e) => set('web', e.target.value)}
             disabled={saving} placeholder="https://..." className="w-full rounded border px-3 py-2 disabled:opacity-50" />
         </div>
+      </div>
+      <div>
+        <label className="mb-1 block text-sm text-gray-600">Contacto (texto libre, opcional)</label>
+        <input type="text" value={data.contacto} onChange={(e) => set('contacto', e.target.value)}
+          disabled={saving} placeholder="Texto libre de contacto adicional" className="w-full rounded border px-3 py-2 disabled:opacity-50" />
+        <p className="mt-0.5 text-xs text-gray-400">Usa los campos separados arriba. Este campo es adicional.</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">

@@ -52,6 +52,8 @@ type RecursoDetail = {
   horariosSemana: HorarioDia[];
   cierresEspeciales: CierreEspecial[];
   contacto: string | null;
+  telefono: string | null;
+  email: string | null;
   web: string | null;
   fotoUrl: string | null;
   lat: number | null;
@@ -241,8 +243,10 @@ export default async function RecursoDetailPage({
   const horarioRows = buildHorarioRows(recurso.horariosSemana ?? []);
   const hasHorarios = horarioRows.length > 0 || (recurso.horarios && recurso.horarios.trim());
   const hasCierres = (recurso.cierresEspeciales ?? []).length > 0;
-  const contacto = parseContacto(recurso.contacto ?? null);
-  const hasContacto = !!(contacto.email || contacto.telefono || recurso.web);
+  const contactoParsed = parseContacto(recurso.contacto ?? null);
+  const telefono = recurso.telefono || contactoParsed.telefono;
+  const email = recurso.email || contactoParsed.email;
+  const hasContacto = !!(email || telefono || recurso.web);
   const hasDescuento = recurso.descuentoPorcentaje != null && recurso.descuentoPorcentaje > 0;
   const hasPrecio = recurso.precioCents != null && recurso.precioCents > 0;
   const hasCapacidad = recurso.maxAdultos > 1 || recurso.maxMenores > 0;
@@ -564,22 +568,22 @@ export default async function RecursoDetailPage({
               Contacto
             </Headline>
             <div className="flex flex-col gap-3">
-              {contacto.telefono && (
+              {telefono && (
                 <a
-                  href={`tel:${contacto.telefono.replace(/\s/g, "")}`}
+                  href={`tel:${telefono.replace(/\s/g, "")}`}
                   className="inline-flex items-center gap-3 rounded-xl border border-border bg-card px-5 py-3 text-sm text-foreground transition hover:border-primary/40 hover:bg-primary/5"
                 >
                   <Phone className="h-4 w-4 shrink-0 text-primary" />
-                  <span>{contacto.telefono}</span>
+                  <span>{telefono}</span>
                 </a>
               )}
-              {contacto.email && (
+              {email && (
                 <a
-                  href={`mailto:${contacto.email}`}
+                  href={`mailto:${email}`}
                   className="inline-flex items-center gap-3 rounded-xl border border-border bg-card px-5 py-3 text-sm text-foreground transition hover:border-primary/40 hover:bg-primary/5"
                 >
                   <Mail className="h-4 w-4 shrink-0 text-primary" />
-                  <span>{contacto.email}</span>
+                  <span>{email}</span>
                 </a>
               )}
               {recurso.web && (
