@@ -1165,7 +1165,7 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
               href={latest.href || "/actualidad"}
               className="group flex-shrink-0 w-[320px] md:flex-[2] min-w-0"
             >
-              <div className="relative h-[213px] rounded-2xl overflow-hidden mb-3 shadow-md group-hover:shadow-xl transition-all duration-500">
+              <div className="relative h-[260px] rounded-2xl overflow-hidden mb-3 shadow-md group-hover:shadow-xl transition-all duration-500">
                 {latest.image ? (
                   <Image
                     src={latest.image}
@@ -1190,7 +1190,7 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
                   {new Date(latest.date).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
                 </p>
               )}
-              <p className="text-center text-sm font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+              <p className="text-center text-sm font-semibold leading-snug line-clamp-3 group-hover:text-primary transition-colors">
                 {latest.title}
               </p>
             </Link>
@@ -1202,7 +1202,7 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
                 href={item.href || "/actualidad"}
                 className="group flex-shrink-0 w-[160px] md:flex-[1] min-w-0"
               >
-                <div className="relative h-[213px] rounded-2xl overflow-hidden mb-3 shadow-md group-hover:shadow-xl transition-all duration-500">
+                <div className="relative h-[260px] rounded-2xl overflow-hidden mb-3 shadow-md group-hover:shadow-xl transition-all duration-500">
                   {item.image ? (
                     <Image
                       src={item.image}
@@ -1224,7 +1224,7 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
                     {new Date(item.date).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
                   </p>
                 )}
-                <p className="text-center text-sm font-medium leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                <p className="text-center text-sm font-medium leading-snug line-clamp-3 group-hover:text-primary transition-colors">
                   {item.title}
                 </p>
               </Link>
