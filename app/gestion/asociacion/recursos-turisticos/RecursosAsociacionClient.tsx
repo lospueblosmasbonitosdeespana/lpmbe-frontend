@@ -919,7 +919,7 @@ export default function RecursosAsociacionClient() {
                               const esHoy = fecha.toDateString() === hoy.toDateString();
                               const esPasado = fecha < hoy && !esHoy;
                               return (
-                                <li key={c.id ?? c.fecha.toString()}
+                                <li key={c.fecha.toString()}
                                   className={`text-xs ${esHoy ? 'font-semibold text-red-600' : esPasado ? 'text-gray-400' : 'text-amber-700'}`}>
                                   {fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                                   {c.motivo ? ` — ${c.motivo}` : ''}
