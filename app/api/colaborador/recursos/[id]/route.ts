@@ -10,9 +10,16 @@ export async function PATCH(
   if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
+  // El query param ?scope=PUEBLO indica recurso de pueblo; por defecto asociación
+  const scope = req.nextUrl.searchParams.get('scope');
   const body = await req.text();
 
-  const upstream = await fetch(`${getApiUrl()}/club/recursos/asociacion/${id}`, {
+  // Para recursos de pueblo usamos /club/recursos/:id; para asociación /club/recursos/asociacion/:id
+  const endpoint = scope === 'PUEBLO'
+    ? `${getApiUrl()}/club/recursos/${id}`
+    : `${getApiUrl()}/club/recursos/asociacion/${id}`;
+
+  const upstream = await fetch(endpoint, {
     method: 'PATCH',
     headers: {
       Authorization: `Bearer ${token}`,
