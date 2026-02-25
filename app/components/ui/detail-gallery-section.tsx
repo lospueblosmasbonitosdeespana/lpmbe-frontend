@@ -90,6 +90,7 @@ export function DetailGallerySection({
           <button
             key={index}
             onClick={() => openLightbox(index)}
+            aria-label={`Ver foto: ${image.alt}`}
             className="group relative aspect-[4/3] overflow-hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
             <Image
@@ -115,6 +116,7 @@ export function DetailGallerySection({
       return (
         <button
           onClick={() => openLightbox(0)}
+          aria-label={`Ver foto: ${images[0].alt}`}
           className="group relative aspect-[16/9] w-full overflow-hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         >
           <Image
@@ -139,6 +141,7 @@ export function DetailGallerySection({
               <button
                 key={index}
                 onClick={() => openLightbox(index)}
+                aria-label={`Ver foto: ${image.alt}`}
                 className="group relative aspect-[4/3] overflow-hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 <Image
@@ -164,6 +167,7 @@ export function DetailGallerySection({
         <div className="grid gap-4 lg:grid-cols-2">
           <button
             onClick={() => openLightbox(0)}
+            aria-label={`Ver foto: ${featured.alt}`}
             className="group relative aspect-[4/3] overflow-hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 lg:row-span-2"
           >
             <Image
@@ -181,6 +185,7 @@ export function DetailGallerySection({
               <button
                 key={index}
                 onClick={() => openLightbox(index + 1)}
+                aria-label={`Ver foto: ${image.alt}`}
                 className="group relative aspect-[4/3] overflow-hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 <Image
@@ -206,6 +211,7 @@ export function DetailGallerySection({
       <div className="grid gap-4 lg:grid-cols-2">
         <button
           onClick={() => openLightbox(0)}
+          aria-label={`Ver foto: ${featured.alt}`}
           className="group relative aspect-[4/3] overflow-hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 lg:aspect-auto lg:row-span-2"
         >
           <Image
@@ -224,6 +230,7 @@ export function DetailGallerySection({
               <button
                 key={index}
                 onClick={() => openLightbox(index + 1)}
+                aria-label={`Ver foto: ${image.alt}`}
                 className="group relative aspect-[4/3] overflow-hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 <Image

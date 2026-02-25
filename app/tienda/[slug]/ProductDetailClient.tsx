@@ -234,6 +234,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    aria-label="Reducir cantidad"
                     className="h-10 w-10 rounded border border-gray-300 hover:bg-gray-50"
                   >
                     −
@@ -251,6 +252,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   />
                   <button
                     onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                    aria-label="Aumentar cantidad"
                     className="h-10 w-10 rounded border border-gray-300 hover:bg-gray-50"
                   >
                     +
