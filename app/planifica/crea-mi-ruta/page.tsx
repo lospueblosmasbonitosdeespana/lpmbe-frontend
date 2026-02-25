@@ -204,7 +204,7 @@ function LocationInput({
             type="button"
             onClick={hook.clear}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            aria-label="Borrar"
+            aria-label={t("clear")}
           >
             ✕
           </button>
@@ -455,12 +455,18 @@ export default function CreaMiRutaPage() {
     const stops = selectedItems
       .map((i, idx) => `${idx + 1}. ${i.nombre} (${i.provincia})`)
       .join("\n");
-    const originLabel = originHook.selected?.label ?? "Origen";
-    const destLabel = destHook.selected?.label ?? "Destino";
-    const timeStr = routeDuration ? `\n⏱️ Tiempo estimado: ${formatDuration(routeDuration)}` : "";
+    const originLabel = originHook.selected?.label ?? t("origin");
+    const destLabel = destHook.selected?.label ?? t("destination");
+    const timeStr = routeDuration ? `\n⏱️ ${t("estimatedTime").replace("{time}", formatDuration(routeDuration))}` : "";
     const distStr = routeDistance ? ` · ${routeDistance} km` : "";
     const gmapsUrl = buildGoogleMapsUrl();
-    const text = `🗺️ Mi ruta por los Pueblos Más Bonitos\n\nDe: ${originLabel} → ${destLabel}${timeStr}${distStr}\n\n📍 Paradas:\n${stops}\n\n🗺️ Abrir en Google Maps:\n${gmapsUrl}`;
+    const text = t("shareText")
+      .replace("{origin}", originLabel)
+      .replace("{dest}", destLabel)
+      .replace("{time}", timeStr)
+      .replace("{dist}", distStr)
+      .replace("{stops}", stops)
+      .replace("{url}", gmapsUrl);
     window.open(
       `https://wa.me/?text=${encodeURIComponent(text)}`,
       "_blank",
@@ -513,10 +519,10 @@ export default function CreaMiRutaPage() {
       window.location.href = `/entrar?redirect=${redirect}`;
       return;
     }
-    const nombre = window.prompt(
-      "Nombre para esta ruta (ej: Fin de semana por Aragón):",
-      `Mi ruta ${originHook.selected.label?.split(",")[0] ?? "Origen"} → ${destHook.selected.label?.split(",")[0] ?? "Destino"}`
-    );
+    const defaultName = t("defaultRouteName")
+      .replace("{origin}", originHook.selected.label?.split(",")[0] ?? t("origin"))
+      .replace("{dest}", destHook.selected.label?.split(",")[0] ?? t("destination"));
+    const nombre = window.prompt(t("saveRoutePrompt"), defaultName);
     if (!nombre?.trim()) return;
     setSavingRuta(true);
     try {
@@ -538,14 +544,14 @@ export default function CreaMiRutaPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setGuardarError(data?.message ?? "Error al guardar");
+        setGuardarError(data?.message ?? t("saveError"));
         return;
       }
       setGuardarError(null);
       setGuardadaOk(true);
       setTimeout(() => setGuardadaOk(false), 3000);
     } catch (err) {
-      setGuardarError(err instanceof Error ? err.message : "Error al guardar");
+      setGuardarError(err instanceof Error ? err.message : t("saveError"));
     } finally {
       setSavingRuta(false);
     }
@@ -600,7 +606,7 @@ export default function CreaMiRutaPage() {
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Error generando la ruta.",
+        err instanceof Error ? err.message : t("errorGenerating"),
       );
     } finally {
       setLoading(false);
@@ -669,7 +675,7 @@ export default function CreaMiRutaPage() {
             {loading ? (
               <>
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                Calculando ruta…
+                {t("calculating")}
               </>
             ) : (
               <>
@@ -691,13 +697,13 @@ export default function CreaMiRutaPage() {
           <div className="mb-6 flex flex-wrap items-center gap-3 text-sm">
             <span className="rounded-full bg-primary/15 px-3 py-1 font-semibold text-primary">
               {result.totalPueblos}{" "}
-              {result.totalPueblos === 1 ? "pueblo" : "pueblos"}
+              {result.totalPueblos === 1 ? t("village") : t("villages")}
             </span>
             <span className="rounded-full bg-amber-100/80 px-3 py-1 font-semibold text-amber-800">
               {result.totalRecursos}{" "}
-              {result.totalRecursos === 1 ? "recurso turístico" : "recursos turísticos"}
+              {result.totalRecursos === 1 ? t("resource") : t("resources")}
             </span>
-            <span className="text-muted-foreground">en tu ruta</span>
+            <span className="text-muted-foreground">{t("inYourRoute")}</span>
           </div>
 
           {/* Duration / distance bar */}
@@ -705,7 +711,7 @@ export default function CreaMiRutaPage() {
             {routeLoading ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                Calculando ruta…
+                {t("calculating")}
               </div>
             ) : (
               <>
@@ -723,12 +729,12 @@ export default function CreaMiRutaPage() {
                 )}
                 {orderedSelection.length > 0 && (
                   <span className="text-sm text-muted-foreground">
-                    · {orderedSelection.length} parada{orderedSelection.length !== 1 && "s"} seleccionada{orderedSelection.length !== 1 && "s"}
+                    · {orderedSelection.length} {orderedSelection.length !== 1 ? t("stops") : t("stop")} {orderedSelection.length !== 1 ? t("stopsSelected") : t("stopSelected")}
                   </span>
                 )}
                 {orderedSelection.length === 0 && routeDuration != null && (
                   <span className="text-sm text-muted-foreground">
-                    · Ruta directa A → B · Selecciona paradas para personalizar
+                    · {t("directRoute")}
                   </span>
                 )}
               </>
@@ -743,14 +749,14 @@ export default function CreaMiRutaPage() {
                 {savingRuta ? (
                   <>
                     <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                    Guardando…
+                    {t("saving")}
                   </>
                 ) : guardadaOk ? (
-                  <>✓ Guardada</>
+                  <>{t("saved")}</>
                 ) : (
                   <>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                    Guardar para más tarde
+                    {t("saveForLater")}
                   </>
                 )}
               </button>
@@ -767,14 +773,14 @@ export default function CreaMiRutaPage() {
               onClick={selectAll}
               className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-accent"
             >
-              Seleccionar todos
+              {t("selectAll")}
             </button>
             <button
               type="button"
               onClick={deselectAll}
               className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-accent"
             >
-              Deseleccionar todos
+              {t("deselectAll")}
             </button>
           </div>
 
@@ -782,7 +788,7 @@ export default function CreaMiRutaPage() {
           {orderedSelection.length > 0 && (
             <div className="sticky top-20 z-30 mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-white/95 px-4 py-3 shadow-lg backdrop-blur dark:bg-neutral-900/95 dark:border-neutral-700">
               <span className="text-sm font-semibold text-foreground">
-                {orderedSelection.length} parada{orderedSelection.length !== 1 && "s"}
+                {orderedSelection.length} {orderedSelection.length !== 1 ? t("stops") : t("stop")}
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -800,7 +806,7 @@ export default function CreaMiRutaPage() {
                   className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-accent"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                  {linkCopied ? "¡Copiado!" : "Copiar enlace"}
+                  {linkCopied ? t("copied") : t("copyLink")}
                 </button>
                 <button
                   type="button"
@@ -839,7 +845,7 @@ export default function CreaMiRutaPage() {
                   <polyline points="8 12 12 16 16 12" />
                   <line x1="12" y1="8" x2="12" y2="16" />
                 </svg>
-                Tu ruta ({orderedSelection.length} parada{orderedSelection.length !== 1 && "s"})
+                {t("yourRoute")} ({orderedSelection.length} {orderedSelection.length !== 1 ? t("stops") : t("stop")})
               </h3>
               <div className="space-y-1">
                 {selectedItems.map((item, idx) => {
@@ -870,8 +876,8 @@ export default function CreaMiRutaPage() {
                           onClick={() => moveUp(idx)}
                           disabled={isFirst}
                           className="rounded p-1 text-muted-foreground transition hover:bg-accent hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
-                          aria-label="Subir"
-                          title="Subir"
+                          aria-label={t("moveUp")}
+                          title={t("moveUp")}
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="18 15 12 9 6 15" />
@@ -882,8 +888,8 @@ export default function CreaMiRutaPage() {
                           onClick={() => moveDown(idx)}
                           disabled={isLast}
                           className="rounded p-1 text-muted-foreground transition hover:bg-accent hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
-                          aria-label="Bajar"
-                          title="Bajar"
+                          aria-label={t("moveDown")}
+                          title={t("moveDown")}
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="6 9 12 15 18 9" />
@@ -893,8 +899,8 @@ export default function CreaMiRutaPage() {
                           type="button"
                           onClick={() => removeFromRoute(key)}
                           className="rounded p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                          aria-label="Quitar de la ruta"
-                          title="Quitar de la ruta"
+                          aria-label={t("removeFromRoute")}
+                          title={t("removeFromRoute")}
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18" />
@@ -979,7 +985,7 @@ export default function CreaMiRutaPage() {
                             {item.tipo && (
                               <span className="ml-1.5 text-xs opacity-70">· {getResourceLabel(item.tipo)}</span>
                             )}
-                            <span className="ml-1.5">· a {item.distKm.toFixed(1)} km de la ruta</span>
+                            <span className="ml-1.5">· {item.distKm.toFixed(1)} km</span>
                           </p>
                         </div>
 
@@ -992,8 +998,7 @@ export default function CreaMiRutaPage() {
             </ul>
           ) : (
             <div className="mt-8 rounded-lg border border-border bg-white p-8 text-center text-muted-foreground dark:bg-neutral-900 dark:border-neutral-700">
-              No se han encontrado pueblos ni recursos turísticos cerca de esta
-              ruta. Prueba a aumentar la distancia máxima.
+              {t("noResultsNearby")}
             </div>
           )}
         </section>
