@@ -106,7 +106,7 @@ export function NotificacionesFloating() {
         const feedData = resFeed.ok ? await resFeed.json().catch(() => []) : [];
         const feedItems: any[] = Array.isArray(feedData) ? feedData : (feedData?.items ?? []);
 
-        const mapItem = (item: any, tipo: string): Notificacion => ({
+        const mapItem = (item: any, tipo: string): Notificacion & { slug?: string; contenidoSlug?: string } => ({
           id: item.id ?? Math.random(),
           titulo: item.titulo ?? "",
           tipo,
@@ -116,6 +116,8 @@ export function NotificacionesFloating() {
           pueblo: item.pueblo ?? null,
           estado: item.estado ?? null,
           motivoPublico: item.motivoPublico ?? null,
+          slug: item.slug ?? null,
+          contenidoSlug: item.contenidoSlug ?? null,
         });
 
         const mapped: Notificacion[] = [
@@ -205,16 +207,15 @@ export function NotificacionesFloating() {
                 {filtered.slice(0, maxItems).map((n) => {
                   const date = formatDate(n.fecha);
                   
-                  // Generar href: prioridad contenidoSlug, luego url/href del backend, luego tipo específico, luego fallback
                   let href: string;
                   if ((n as any).contenidoSlug) {
                     href = `/c/${(n as any).contenidoSlug}`;
+                  } else if ((n as any).slug && (n.tipo === "NOTICIA" || n.tipo === "EVENTO")) {
+                    href = `/${n.tipo === "NOTICIA" ? "noticias" : "eventos"}/${(n as any).slug}`;
                   } else if ((n as any).url || (n as any).href) {
                     href = (n as any).url || (n as any).href;
                   } else if (n.tipo === "SEMAFORO" && n.pueblo?.slug) {
                     href = `/pueblos/${n.pueblo.slug}`;
-                  } else if (n.id) {
-                    href = `/notificaciones#notif-${n.id}`;
                   } else {
                     href = homeConfig.notificaciones.allHref;
                   }

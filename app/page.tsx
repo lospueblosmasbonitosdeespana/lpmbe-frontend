@@ -98,7 +98,16 @@ async function getNotifications(locale?: string): Promise<NotificationItem[]> {
       date: formatShortDate(item.fechaInicio ?? item.fecha ?? item.createdAt),
       title: item.titulo ?? "(sin título)",
       type: mapNotificationType(tipo),
-      href: item.contenidoSlug ?? item.slug ? `/c/${item.contenidoSlug ?? item.slug}` : item.url || "/notificaciones",
+      href: (() => {
+        if (item.contenidoSlug) return `/c/${item.contenidoSlug}`;
+        if (item.slug) {
+          const t = (tipo || '').toUpperCase();
+          if (t === 'NOTICIA') return `/noticias/${item.slug}`;
+          if (t === 'EVENTO') return `/eventos/${item.slug}`;
+          return `/c/${item.slug}`;
+        }
+        return item.url || "/notificaciones";
+      })(),
       message: (item.motivoPublico?.trim() || item.contenido?.trim()) || undefined,
     });
 
@@ -158,15 +167,20 @@ async function getNews(locale?: string): Promise<NewsItem[]> {
     });
 
     return all.slice(0, 4).map((item: any) => {
-      const contenidoSlug = item.contenidoSlug ?? item.slug;
-      const href = contenidoSlug
-        ? `/c/${contenidoSlug}`
-        : "/notificaciones";
+      const tipo = (item._tipo ?? 'NOTICIA').toUpperCase();
+      let href: string;
+      if (item.contenidoSlug) {
+        href = `/c/${item.contenidoSlug}`;
+      } else if (item.slug) {
+        href = tipo === 'EVENTO' ? `/eventos/${item.slug}` : `/noticias/${item.slug}`;
+      } else {
+        href = "/notificaciones";
+      }
 
       return {
         id: item.id ?? Math.random(),
         title: item.titulo ?? "(sin título)",
-        type: item._tipo ?? "NOTICIA",
+        type: tipo,
         href,
         image: item.coverUrl ?? item.imagen ?? null,
         date: item.fechaInicio ?? item.createdAt,

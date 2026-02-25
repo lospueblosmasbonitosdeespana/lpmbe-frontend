@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
 type NotificacionItem = {
@@ -8,9 +9,14 @@ type NotificacionItem = {
   tipo?: string;
   notificacionTipo?: string;
   type?: string;
+  titulo?: string | null;
   contenido?: string | null;
-  createdAt?: string | null;
+  slug?: string | null;
+  contenidoSlug?: string | null;
+  enlace?: string | null;
   puebloId?: number | null;
+  pueblo?: { id: number; nombre?: string; slug?: string } | null;
+  createdAt?: string | null;
 };
 
 type PuebloItem = {
@@ -133,10 +139,9 @@ export default function BandejaNotificaciones() {
             const tipoLabel = rawTipo === 'ALERTA_PUEBLO' ? 'ALERTA' : rawTipo;
             const puebloNombre =
               typeof n.puebloId === 'number'
-                ? (puebloNombreById.get(n.puebloId) ?? `#${n.puebloId}`)
+                ? (n.pueblo?.nombre ?? puebloNombreById.get(n.puebloId) ?? `#${n.puebloId}`)
                 : null;
 
-            // Color del badge según tipo
             const badgeColor =
               tipoLabel === 'ALERTA' ? 'bg-red-100 text-red-700' :
               tipoLabel === 'SEMAFORO' ? 'bg-yellow-100 text-yellow-700' :
@@ -144,30 +149,57 @@ export default function BandejaNotificaciones() {
               tipoLabel === 'EVENTO' ? 'bg-green-100 text-green-700' :
               'bg-gray-100 text-gray-700';
 
-            return (
-              <div key={n.id} className="p-4 hover:bg-gray-50 transition">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded ${badgeColor}`}>
-                        {tipoLabel}
-                      </span>
-                      {puebloNombre && (
-                        <span className="text-sm text-gray-600">
-                          📍 {puebloNombre}
-                        </span>
-                      )}
-                    </div>
+            let href: string | null = null;
+            if (n.enlace) {
+              href = n.enlace;
+            } else if (n.contenidoSlug) {
+              href = `/c/${n.contenidoSlug}`;
+            } else if (n.slug && (rawTipo === 'NOTICIA' || rawTipo === 'EVENTO')) {
+              href = `/${rawTipo === 'NOTICIA' ? 'noticias' : 'eventos'}/${n.slug}`;
+            } else if (rawTipo === 'SEMAFORO' && n.pueblo?.slug) {
+              href = `/pueblos/${n.pueblo.slug}`;
+            }
 
-                    {n.contenido && (
-                      <p className="text-sm text-gray-800 whitespace-pre-line">{n.contenido}</p>
+            const inner = (
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`px-2 py-1 text-xs font-semibold rounded ${badgeColor}`}>
+                      {tipoLabel}
+                    </span>
+                    {puebloNombre && (
+                      <span className="text-sm text-gray-600">
+                        📍 {puebloNombre}
+                      </span>
                     )}
                   </div>
 
-                  <div className="text-xs text-gray-500 whitespace-nowrap">
-                    {formatFecha(n.createdAt)}
-                  </div>
+                  {n.titulo && (
+                    <p className="text-sm font-semibold text-gray-900 mb-1">{n.titulo}</p>
+                  )}
+
+                  {n.contenido && (
+                    <p className="text-sm text-gray-800 whitespace-pre-line">{n.contenido}</p>
+                  )}
+
+                  {href && (
+                    <span className="text-xs text-blue-600 mt-1 inline-block">Ver detalle →</span>
+                  )}
                 </div>
+
+                <div className="text-xs text-gray-500 whitespace-nowrap">
+                  {formatFecha(n.createdAt)}
+                </div>
+              </div>
+            );
+
+            return href ? (
+              <Link key={n.id} href={href} className="block p-4 hover:bg-gray-50 transition">
+                {inner}
+              </Link>
+            ) : (
+              <div key={n.id} className="p-4 hover:bg-gray-50 transition">
+                {inner}
               </div>
             );
           })

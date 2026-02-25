@@ -10,13 +10,16 @@ type FeedItem = {
   titulo: string;
   texto: string;
   fecha: string;
+  slug?: string | null;
+  contenidoSlug?: string | null;
+  contenidoUrl?: string | null;
   pueblo?: {
     id: number;
     nombre: string;
     slug: string;
   } | null;
-  estado?: string | null; // Para SEMAFORO
-  motivoPublico?: string | null; // Para SEMAFORO: motivo público del cambio
+  estado?: string | null;
+  motivoPublico?: string | null;
 };
 
 type FilterType = "TODAS" | "NOTICIA" | "ALERTA" | "SEMAFORO" | "EVENTO";
@@ -73,12 +76,14 @@ function getSemaforoTitulo(
   return t("semaforoPuebloUpdated", { pueblo: puebloNombre });
 }
 
-// Generar href según tipo
 function getItemHref(item: FeedItem): string | null {
-  if (item.tipo === "SEMAFORO" && item.pueblo?.slug) {
-    return `/pueblos/${item.pueblo.slug}`;
+  if (item.contenidoSlug) return `/c/${item.contenidoSlug}`;
+  if (item.contenidoUrl) return item.contenidoUrl;
+  if (item.slug) {
+    if (item.tipo === "NOTICIA") return `/noticias/${item.slug}`;
+    if (item.tipo === "EVENTO") return `/eventos/${item.slug}`;
   }
-  // Para otros tipos, no linkear todavía
+  if (item.tipo === "SEMAFORO" && item.pueblo?.slug) return `/pueblos/${item.pueblo.slug}`;
   return null;
 }
 
@@ -136,6 +141,9 @@ export default function NotificacionesFeed() {
               titulo: titulo,
               texto: String(texto),
               fecha: fechaISO,
+              slug: item.slug ?? null,
+              contenidoSlug: item.contenidoSlug ?? null,
+              contenidoUrl: item.contenidoUrl ?? null,
               pueblo: item.pueblo ?? null,
               estado: item.estado ?? null,
               motivoPublico: item.motivoPublico ?? null,
@@ -301,60 +309,63 @@ export default function NotificacionesFeed() {
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {filteredItems.map((item, idx) => {
             const href = getItemHref(item);
-            const color = item.tipo === "SEMAFORO" ? getSemaforoColor(item) : null;
+
+            const inner = (
+              <>
+                <div style={{ fontSize: "0.75rem", color: "#666", marginBottom: "0.5rem" }}>
+                  {formatFecha(item.fecha)} · {getTipoLabel(item.tipo)}
+                  {item.pueblo && ` · ${t("village")} ${item.pueblo.nombre || item.pueblo.slug}`}
+                </div>
+
+                {renderTitulo(item)}
+
+                {item.tipo === "SEMAFORO" ? (
+                  (() => {
+                    const motivo = (item.texto ?? item.motivoPublico ?? '').trim();
+                    const textoGen = (item.texto ?? '').trim();
+                    const esGenerico = textoGen.toLowerCase().includes('cambio de estado') || 
+                                      textoGen.toLowerCase().includes('actualizó');
+                    
+                    if (motivo && !esGenerico) {
+                      return (
+                        <div style={{ fontSize: "0.875rem", color: "#666", lineHeight: "1.5", marginTop: "0.25rem" }}>
+                          {t("motivo")} {motivo}
+                        </div>
+                      );
+                    }
+                    
+                    if (textoGen && !esGenerico && textoGen !== motivo) {
+                      return (
+                        <div style={{ fontSize: "0.875rem", color: "#666", lineHeight: "1.5", marginTop: "0.25rem" }}>
+                          {textoGen}
+                        </div>
+                      );
+                    }
+                    
+                    return null;
+                  })()
+                ) : (
+                  item.texto && item.texto.trim() && (
+                    <div style={{ fontSize: "0.875rem", color: "#666", lineHeight: "1.5", marginTop: "0.25rem" }}>
+                      {item.texto}
+                    </div>
+                  )
+                )}
+              </>
+            );
 
             return (
               <li key={item.id}>
                 {idx > 0 && (
                   <hr style={{ border: "none", borderTop: "1px solid #e5e5e5", margin: 0 }} />
                 )}
-                <div style={{ padding: "1rem 0" }}>
-                  {/* Línea meta (pequeña) */}
-                  <div style={{ fontSize: "0.75rem", color: "#666", marginBottom: "0.5rem" }}>
-                    {formatFecha(item.fecha)} · {getTipoLabel(item.tipo)}
-                    {item.pueblo && ` · ${t("village")} ${item.pueblo.nombre || item.pueblo.slug}`}
-                  </div>
-
-                  {/* Título (grande) */}
-                  {renderTitulo(item)}
-
-                  {/* Texto/Motivo (normal, opcional) */}
-                  {item.tipo === "SEMAFORO" ? (
-                    (() => {
-                      // Motivo: usar texto (contenido traducido del backend) para semáforos
-                      const motivo = (item.texto ?? item.motivoPublico ?? '').trim();
-                      const textoGen = (item.texto ?? '').trim();
-                      const esGenerico = textoGen.toLowerCase().includes('cambio de estado') || 
-                                        textoGen.toLowerCase().includes('actualizó');
-                      
-                      // Si hay motivoPublico y no es genérico, mostrar "Motivo: {motivo}"
-                      if (motivo && !esGenerico) {
-                        return (
-                          <div style={{ fontSize: "0.875rem", color: "#666", lineHeight: "1.5", marginTop: "0.25rem" }}>
-                            {t("motivo")} {motivo}
-                          </div>
-                        );
-                      }
-                      
-                      // Si no hay motivo pero hay texto útil (y no es genérico), mostrarlo sin prefijo
-                      if (textoGen && !esGenerico && textoGen !== motivo) {
-                        return (
-                          <div style={{ fontSize: "0.875rem", color: "#666", lineHeight: "1.5", marginTop: "0.25rem" }}>
-                            {textoGen}
-                          </div>
-                        );
-                      }
-                      
-                      return null;
-                    })()
-                  ) : (
-                    item.texto && item.texto.trim() && (
-                      <div style={{ fontSize: "0.875rem", color: "#666", lineHeight: "1.5", marginTop: "0.25rem" }}>
-                        {item.texto}
-                      </div>
-                    )
-                  )}
-                </div>
+                {href ? (
+                  <Link href={href} style={{ display: "block", padding: "1rem 0", textDecoration: "none", color: "inherit" }}>
+                    {inner}
+                  </Link>
+                ) : (
+                  <div style={{ padding: "1rem 0" }}>{inner}</div>
+                )}
               </li>
             );
           })}

@@ -81,16 +81,22 @@ function ActualidadContent() {
             const key = item.slug ?? `id-${item.id}`;
             if (seenIds.has(key)) continue;
             seenIds.add(key);
+            const tipoItem = (item.tipo ?? item._tipo ?? 'NOTICIA').toUpperCase();
+            let itemSlug = item.slug ?? item.contenidoSlug ?? null;
+            if (!itemSlug) itemSlug = null;
+
             allItems.push({
               id: item.id,
               titulo: item.titulo ?? '(sin título)',
-              slug: item.slug ?? item.contenidoSlug ?? `notif-${item.id}`,
+              slug: itemSlug ?? `_no-slug-${item.id}`,
               resumen: item.resumen ?? item.contenido ?? undefined,
               coverUrl: item.coverUrl ?? undefined,
-              tipo: item.tipo ?? item._tipo ?? 'NOTICIA',
+              tipo: tipoItem,
               publishedAt: item.publishedAt ?? item.fechaInicio ?? undefined,
               createdAt: item.createdAt ?? undefined,
-            });
+              _hasContenidoSlug: !!item.contenidoSlug,
+              _rawSlug: item.slug ?? null,
+            } as any);
           }
         }
 
@@ -149,7 +155,18 @@ function ActualidadContent() {
       ) : (
         <div className="space-y-6">
           {items.map((item) => {
-            const href = `/c/${item.slug}`;
+            const ext = item as any;
+            let href: string;
+            if (ext._hasContenidoSlug) {
+              href = `/c/${item.slug}`;
+            } else if (item.slug && !item.slug.startsWith('_no-slug-')) {
+              const t = item.tipo.toUpperCase();
+              if (t === 'NOTICIA') href = `/noticias/${item.slug}`;
+              else if (t === 'EVENTO') href = `/eventos/${item.slug}`;
+              else href = `/c/${item.slug}`;
+            } else {
+              href = '/notificaciones';
+            }
             const fecha = item.publishedAt ?? item.createdAt;
             const fechaFormateada = fecha
               ? new Date(fecha).toLocaleDateString('es-ES', {
