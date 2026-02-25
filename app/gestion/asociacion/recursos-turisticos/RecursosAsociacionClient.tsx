@@ -39,8 +39,14 @@ type RecursoAsociacion = {
 
 type Colaborador = {
   id: number;
-  email: string;
-  nombre?: string | null;
+  activo: boolean;
+  user: {
+    id: number;
+    email: string;
+    nombre?: string | null;
+    apellidos?: string | null;
+    rol: string;
+  };
 };
 
 type FormData = {
@@ -523,11 +529,13 @@ function ColaboradoresSection({ recursoId }: { recursoId: number }) {
               className="flex items-center justify-between rounded bg-gray-50 px-2 py-1 text-sm"
             >
               <span>
-                {c.nombre ? `${c.nombre} (${c.email})` : c.email}
+                {c.user.nombre
+                  ? `${c.user.nombre} (${c.user.email})`
+                  : c.user.email}
               </span>
               <button
                 type="button"
-                onClick={() => handleRevoke(c.id)}
+                onClick={() => handleRevoke(c.user.id)}
                 className="text-xs text-red-600 hover:underline"
               >
                 Revocar
