@@ -33,8 +33,6 @@ export async function POST(req: Request) {
     );
   }
 
-  console.log('[api/auth/google] API_BASE =', API_BASE);
-
   let body: GoogleAuthBody = {};
   try {
     body = await req.json();
@@ -49,8 +47,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'idToken o accessToken requerido' }, { status: 400 });
   }
 
-  console.log('[api/auth/google] idToken =', !!idToken, ', accessToken =', !!accessToken);
-
   // Construir payload para el backend
   const payload = idToken
     ? { idToken }
@@ -64,20 +60,18 @@ export async function POST(req: Request) {
       body: JSON.stringify(payload),
     });
   } catch (err) {
-    console.error('[api/auth/google] fetch error:', err);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[api/auth/google] fetch error:', err);
+    }
     return NextResponse.json(
       { message: 'No se pudo conectar al backend' },
       { status: 502 }
     );
   }
 
-  console.log('[api/auth/google] backend status =', upstream.status);
-
   const data = await upstream.json().catch(() => ({}));
-  console.log('[api/auth/google] backend response keys =', Object.keys(data));
 
   if (!upstream.ok) {
-    console.log('[api/auth/google] backend error:', data?.message ?? data);
     return NextResponse.json(
       data?.message ? { message: data.message } : data,
       { status: upstream.status }
@@ -86,7 +80,6 @@ export async function POST(req: Request) {
 
   const token = pickToken(data);
   if (!token) {
-    console.log('[api/auth/google] backend OK pero no vino token');
     return NextResponse.json(
       { message: 'Google OK pero no vino access_token' },
       { status: 500 }
@@ -102,8 +95,6 @@ export async function POST(req: Request) {
     path: '/',
     maxAge: 60 * 60 * 24 * 7,
   });
-
-  console.log('[api/auth/google] cookie seteada =', AUTH_COOKIE_NAME);
 
   return res;
 }

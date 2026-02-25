@@ -864,7 +864,7 @@ export default function RecursosAsociacionClient() {
                         )}
                         {r.contacto && <span>✉ {r.contacto}</span>}
                         {r.web && (
-                          <a href={r.web} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
+                          <a href={r.web} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                             🌐 Web
                           </a>
                         )}

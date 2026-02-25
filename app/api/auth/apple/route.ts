@@ -24,9 +24,6 @@ export async function POST(req: Request) {
     );
   }
 
-  const backendDomain = new URL(API_BASE).hostname;
-  console.log('[api/auth/apple] backend url (dominio):', backendDomain);
-
   let body: { idToken?: string } = {};
   try {
     body = await req.json();
@@ -44,9 +41,6 @@ export async function POST(req: Request) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ idToken }),
   });
-
-  const status = upstream.status;
-  console.log('[api/auth/apple] backend status:', status);
 
   const data = await upstream.json().catch(() => ({}));
 
