@@ -15,6 +15,7 @@ type Contenido = {
   tipo: string;
   publishedAt?: string;
   createdAt?: string;
+  _source: 'contenido' | 'notificacion';
 };
 
 function ActualidadContent() {
@@ -38,43 +39,48 @@ function ActualidadContent() {
       try {
         setLoading(true);
         
-        // Una sola fuente por tipo para evitar duplicados:
-        // NOTICIA → /public/noticias
-        // EVENTO  → /public/eventos
-        // ARTICULO → /public/contenidos (scope=ASOCIACION&tipo=ARTICULO)
-        const fetches: { url: string; tipo: string }[] = [];
+        // Buscar en AMBAS tablas: Contenido (/contenidos) y Notificacion (/noticias, /eventos)
+        // Los contenidos van a /c/[slug], las notificaciones a /noticias/[slug] o /eventos/[slug]
+        const fetches: { url: string; tipo: string; source: 'contenido' | 'notificacion' }[] = [];
 
         if (tipoParam === 'TODOS' || tipoParam === 'NOTICIA') {
-          fetches.push({ url: '/api/public/noticias?limit=50', tipo: 'NOTICIA' });
+          fetches.push({ url: '/api/public/contenidos?scope=ASOCIACION&tipo=NOTICIA&limit=50', tipo: 'NOTICIA', source: 'contenido' });
+          fetches.push({ url: '/api/public/noticias?limit=50', tipo: 'NOTICIA', source: 'notificacion' });
         }
         if (tipoParam === 'TODOS' || tipoParam === 'EVENTO') {
-          fetches.push({ url: '/api/public/eventos?limit=50', tipo: 'EVENTO' });
+          fetches.push({ url: '/api/public/contenidos?scope=ASOCIACION&tipo=EVENTO&limit=50', tipo: 'EVENTO', source: 'contenido' });
+          fetches.push({ url: '/api/public/eventos?limit=50', tipo: 'EVENTO', source: 'notificacion' });
         }
         if (tipoParam === 'TODOS' || tipoParam === 'ARTICULO') {
-          fetches.push({ url: '/api/public/contenidos?scope=ASOCIACION&tipo=ARTICULO&limit=50', tipo: 'ARTICULO' });
+          fetches.push({ url: '/api/public/contenidos?scope=ASOCIACION&tipo=ARTICULO&limit=50', tipo: 'ARTICULO', source: 'contenido' });
         }
 
-        const responses = await Promise.all(fetches.map(f => fetch(f.url, { cache: 'no-store' }).then(r => ({ r, tipo: f.tipo }))));
+        const responses = await Promise.all(fetches.map(f => fetch(f.url, { cache: 'no-store' }).then(r => ({ r, tipo: f.tipo, source: f.source }))));
         const allItems: Contenido[] = [];
-        const seenIds = new Set<string>();
+        const seenSlugs = new Set<string>();
 
-        for (const { r, tipo } of responses) {
+        // Priorizar contenidos (tienen contenido completo) sobre notificaciones
+        const sorted = [...responses].sort((a, b) => (a.source === 'contenido' ? -1 : 1) - (b.source === 'contenido' ? -1 : 1));
+
+        for (const { r, tipo, source } of sorted) {
           if (!r.ok) continue;
           const json = await r.json().catch(() => []);
           const arr = Array.isArray(json) ? json : (json?.items ?? []);
           for (const item of arr) {
-            const key = item.slug ?? `id-${item.id}`;
-            if (seenIds.has(key)) continue;
-            seenIds.add(key);
+            const slug = item.slug ?? null;
+            const dedupeKey = slug ?? `${source}-${item.id}`;
+            if (seenSlugs.has(dedupeKey)) continue;
+            seenSlugs.add(dedupeKey);
             allItems.push({
               id: item.id,
               titulo: item.titulo ?? '(sin título)',
-              slug: item.slug ?? `_no-slug-${item.id}`,
-              resumen: item.resumen ?? item.contenido ?? undefined,
+              slug: slug ?? `_no-slug-${item.id}`,
+              resumen: item.resumen ?? item.contenidoMd ?? item.contenido ?? undefined,
               coverUrl: item.coverUrl ?? undefined,
               tipo: (item.tipo ?? tipo).toUpperCase(),
               publishedAt: item.publishedAt ?? item.fechaInicio ?? undefined,
               createdAt: item.createdAt ?? undefined,
+              _source: source,
             });
           }
         }
@@ -135,10 +141,14 @@ function ActualidadContent() {
           {items.map((item) => {
             let href: string;
             if (item.slug && !item.slug.startsWith('_no-slug-')) {
-              const tipo = item.tipo.toUpperCase();
-              if (tipo === 'NOTICIA') href = `/noticias/${item.slug}`;
-              else if (tipo === 'EVENTO') href = `/eventos/${item.slug}`;
-              else href = `/c/${item.slug}`;
+              if (item._source === 'contenido') {
+                href = `/c/${item.slug}`;
+              } else {
+                const tipo = item.tipo.toUpperCase();
+                if (tipo === 'NOTICIA') href = `/noticias/${item.slug}`;
+                else if (tipo === 'EVENTO') href = `/eventos/${item.slug}`;
+                else href = `/c/${item.slug}`;
+              }
             } else {
               href = '/actualidad';
             }

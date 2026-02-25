@@ -191,34 +191,42 @@ async function getNews(locale?: string): Promise<NewsItem[]> {
   }
 }
 
-// Fetch galería de asociación: noticias + eventos + artículos, mezclados por fecha, máx 6
+// Fetch galería de asociación: busca en AMBAS tablas (Contenido + Notificacion)
 async function getGaleriaAsociacion(locale?: string): Promise<NewsItem[]> {
   try {
     const API_BASE = getApiUrl();
     const qs = locale ? `&lang=${encodeURIComponent(locale)}` : "";
     const headers = locale ? { "Accept-Language": locale } : undefined;
+    const opts = { cache: "no-store" as const, headers };
 
-    const [resNoticias, resEventos, resArticulos] = await Promise.all([
-      fetch(`${API_BASE}/public/noticias?limit=6${qs}`, { cache: "no-store", headers }),
-      fetch(`${API_BASE}/public/eventos?limit=6${qs}`, { cache: "no-store", headers }),
-      fetch(`${API_BASE}/public/contenidos?scope=ASOCIACION&tipo=ARTICULO&limit=6${qs}`, { cache: "no-store", headers }),
+    // Buscar en ambas tablas para cada tipo
+    const [resContNot, resContEv, resContArt, resNotif, resEvt] = await Promise.all([
+      fetch(`${API_BASE}/public/contenidos?scope=ASOCIACION&tipo=NOTICIA&limit=6${qs}`, opts),
+      fetch(`${API_BASE}/public/contenidos?scope=ASOCIACION&tipo=EVENTO&limit=6${qs}`, opts),
+      fetch(`${API_BASE}/public/contenidos?scope=ASOCIACION&tipo=ARTICULO&limit=6${qs}`, opts),
+      fetch(`${API_BASE}/public/noticias?limit=6${qs}`, opts),
+      fetch(`${API_BASE}/public/eventos?limit=6${qs}`, opts),
     ]);
 
-    const noticias: any[] = resNoticias.ok ? await resNoticias.json().catch(() => []) : [];
-    const eventos: any[] = resEventos.ok ? await resEventos.json().catch(() => []) : [];
-    const articulosRaw = resArticulos.ok ? await resArticulos.json().catch(() => []) : [];
-    const articulos: any[] = Array.isArray(articulosRaw) ? articulosRaw : (articulosRaw?.items ?? []);
+    const parse = async (r: Response) => {
+      if (!r.ok) return [];
+      const j = await r.json().catch(() => []);
+      return Array.isArray(j) ? j : (j?.items ?? []);
+    };
 
-    const all = [
-      ...noticias.map((i: any) => ({ ...i, _tipo: "NOTICIA" })),
-      ...eventos.map((i: any) => ({ ...i, _tipo: "EVENTO" })),
-      ...articulos.map((i: any) => ({ ...i, _tipo: "ARTICULO" })),
+    // source:'contenido' → /c/slug, source:'notificacion' → /noticias/slug o /eventos/slug
+    const all: any[] = [
+      ...(await parse(resContNot)).map((i: any) => ({ ...i, _tipo: "NOTICIA", _src: "contenido" })),
+      ...(await parse(resContEv)).map((i: any) => ({ ...i, _tipo: "EVENTO", _src: "contenido" })),
+      ...(await parse(resContArt)).map((i: any) => ({ ...i, _tipo: "ARTICULO", _src: "contenido" })),
+      ...(await parse(resNotif)).map((i: any) => ({ ...i, _tipo: "NOTICIA", _src: "notificacion" })),
+      ...(await parse(resEvt)).map((i: any) => ({ ...i, _tipo: "EVENTO", _src: "notificacion" })),
     ];
 
-    // Deduplicar por slug
+    // Deduplicar por slug, priorizar contenido (tiene texto completo)
     const seen = new Set<string>();
     const deduped = all.filter((i) => {
-      const key = i.slug ?? `id-${i.id}`;
+      const key = i.slug ?? `${i._src}-${i.id}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -233,12 +241,10 @@ async function getGaleriaAsociacion(locale?: string): Promise<NewsItem[]> {
     return deduped.slice(0, 6).map((item: any) => {
       const tipo = (item._tipo ?? "NOTICIA").toUpperCase();
       let href: string;
-      if (item.contenidoSlug) {
-        href = `/c/${item.contenidoSlug}`;
+      if (item._src === "contenido") {
+        href = `/c/${item.slug}`;
       } else if (item.slug) {
-        if (tipo === "EVENTO") href = `/eventos/${item.slug}`;
-        else if (tipo === "ARTICULO") href = `/c/${item.slug}`;
-        else href = `/noticias/${item.slug}`;
+        href = tipo === "EVENTO" ? `/eventos/${item.slug}` : `/noticias/${item.slug}`;
       } else {
         href = "/actualidad";
       }
