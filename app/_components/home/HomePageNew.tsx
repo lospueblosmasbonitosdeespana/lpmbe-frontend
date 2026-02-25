@@ -1143,7 +1143,7 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
   };
 
   const latest = news[0];
-  const rest = news.slice(1);
+  const rest = news.slice(1, 5);
 
   return (
     <Section spacing="lg" background="default">
@@ -1157,81 +1157,84 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
           </Muted>
         </div>
 
-        {/* Grid: primera tarjeta doble de ancha + resto */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full max-w-5xl mx-auto">
+        {/* 5 columnas iguales de ancho, la primera el doble de alta */}
+        <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:overflow-visible scrollbar-hide justify-center">
+          <div className="flex gap-4 items-start w-full max-w-5xl">
 
-          {/* Tarjeta destacada: ocupa 2 columnas */}
-          <Link
-            href={latest.href || "/actualidad"}
-            className="group col-span-2"
-          >
-            <div className="relative aspect-[3/4] rounded-2xl overflow-hidden mb-3 shadow-md group-hover:shadow-xl transition-all duration-500">
-              {latest.image ? (
-                <Image
-                  src={latest.image}
-                  alt={latest.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-              ) : (
-                <div className="absolute inset-0 bg-muted flex items-center justify-center">
-                  <Newspaper className="h-10 w-10 text-muted-foreground/40" />
-                </div>
-              )}
-              {/* Badge ÚLTIMO en rojo */}
-              <span className="absolute top-2 left-2 rounded-full bg-red-600 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow">
-                Último
-              </span>
-              {/* Badge tipo */}
-              <span className="absolute top-2 left-[4.5rem] rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                {BADGE_LABELS[latest.type?.toUpperCase()] ?? latest.type}
-              </span>
-            </div>
-            {latest.date && (
-              <p className="text-center text-xs text-muted-foreground mb-1">
-                {new Date(latest.date).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
-              </p>
-            )}
-            <p className="text-center text-sm font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-              {latest.title}
-            </p>
-          </Link>
-
-          {/* Resto de tarjetas: 1 columna cada una */}
-          {rest.map((item) => (
+            {/* Tarjeta destacada: mismo ancho, doble de alta */}
             <Link
-              key={item.id}
-              href={item.href || "/actualidad"}
-              className="group col-span-1"
+              href={latest.href || "/actualidad"}
+              className="group flex-shrink-0 w-[160px] md:flex-1"
             >
-              <div className="relative aspect-[3/4] rounded-2xl overflow-hidden mb-3 shadow-md group-hover:shadow-xl transition-all duration-500">
-                {item.image ? (
+              <div className="relative rounded-2xl overflow-hidden mb-3 shadow-md group-hover:shadow-xl transition-all duration-500" style={{ aspectRatio: "3/8" }}>
+                {latest.image ? (
                   <Image
-                    src={item.image}
-                    alt={item.title}
+                    src={latest.image}
+                    alt={latest.title}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 ) : (
                   <div className="absolute inset-0 bg-muted flex items-center justify-center">
-                    <Newspaper className="h-8 w-8 text-muted-foreground/40" />
+                    <Newspaper className="h-10 w-10 text-muted-foreground/40" />
                   </div>
                 )}
+                {/* Badge ÚLTIMO en rojo */}
+                <span className="absolute top-2 left-2 rounded-full bg-red-600 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow">
+                  Último
+                </span>
                 {/* Badge tipo */}
-                <span className="absolute top-2 left-2 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                  {BADGE_LABELS[item.type?.toUpperCase()] ?? item.type}
+                <span className="absolute top-8 left-2 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                  {BADGE_LABELS[latest.type?.toUpperCase()] ?? latest.type}
                 </span>
               </div>
-              {item.date && (
+              {latest.date && (
                 <p className="text-center text-xs text-muted-foreground mb-1">
-                  {new Date(item.date).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                  {new Date(latest.date).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
                 </p>
               )}
-              <p className="text-center text-sm font-medium leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-                {item.title}
+              <p className="text-center text-sm font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                {latest.title}
               </p>
             </Link>
-          ))}
+
+            {/* 4 tarjetas normales */}
+            {rest.map((item) => (
+              <Link
+                key={item.id}
+                href={item.href || "/actualidad"}
+                className="group flex-shrink-0 w-[160px] md:flex-1"
+              >
+                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden mb-3 shadow-md group-hover:shadow-xl transition-all duration-500">
+                  {item.image ? (
+                    <Image
+                      src={item.image}
+                      alt={item.title}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-muted flex items-center justify-center">
+                      <Newspaper className="h-8 w-8 text-muted-foreground/40" />
+                    </div>
+                  )}
+                  {/* Badge tipo */}
+                  <span className="absolute top-2 left-2 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                    {BADGE_LABELS[item.type?.toUpperCase()] ?? item.type}
+                  </span>
+                </div>
+                {item.date && (
+                  <p className="text-center text-xs text-muted-foreground mb-1">
+                    {new Date(item.date).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                  </p>
+                )}
+                <p className="text-center text-sm font-medium leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                  {item.title}
+                </p>
+              </Link>
+            ))}
+
+          </div>
         </div>
 
         <div className="text-center mt-8">
