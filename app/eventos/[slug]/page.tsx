@@ -126,22 +126,22 @@ export default async function EventoPage({
               </p>
             )}
 
-            {evento.resumen && (
-              <p style={{ fontSize: '18px', lineHeight: '1.6', color: '#444', marginTop: '24px', fontWeight: 400 }}>
-                {evento.resumen}
-              </p>
-            )}
           </header>
 
-          {evento.contenido && (
+          {/* Mostrar contenido. Si contenido está vacío, usar resumen como fallback */}
+          {(() => {
+            const texto = evento.contenido?.trim() || evento.resumen?.trim() || '';
+            if (!texto) return null;
+            return (
             <div style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }} className="prose-contenido">
-              {isHtmlContent(evento.contenido) ? (
-                <div dangerouslySetInnerHTML={{ __html: evento.contenido }} />
+              {isHtmlContent(texto) ? (
+                <div dangerouslySetInnerHTML={{ __html: texto }} />
               ) : (
-                <ReactMarkdown>{evento.contenido}</ReactMarkdown>
+                <ReactMarkdown>{texto}</ReactMarkdown>
               )}
             </div>
-          )}
+            );
+          })()}
 
           <div style={{ marginTop: '60px', paddingTop: '24px', borderTop: '1px solid #e5e5e5' }}>
             <BackButton />

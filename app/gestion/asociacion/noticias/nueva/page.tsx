@@ -10,7 +10,6 @@ type EditorMode = 'edit' | 'html' | 'preview';
 export default function NuevaNoticiaGlobalPage() {
   const router = useRouter();
   const [titulo, setTitulo] = useState('');
-  const [subtitulo, setSubtitulo] = useState('');
   const [contenido, setContenido] = useState('');
   const [coverUrl, setCoverUrl] = useState('');
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -46,7 +45,7 @@ export default function NuevaNoticiaGlobalPage() {
       const res = await fetch('/api/gestion/asociacion/noticias', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ titulo: t, resumen: subtitulo.trim() || null, contenido, coverUrl: coverUrl || null }),
+        body: JSON.stringify({ titulo: t, contenido, coverUrl: coverUrl || null }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -74,18 +73,6 @@ export default function NuevaNoticiaGlobalPage() {
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Subtítulo o entradilla (opcional)</label>
-          <p className="text-xs text-gray-500">Frase corta que aparece destacada debajo del título. No sustituye al contenido principal.</p>
-          <textarea
-            className="w-full rounded-md border px-3 py-2"
-            rows={2}
-            value={subtitulo}
-            onChange={(e) => setSubtitulo(e.target.value)}
-            placeholder="Ej: La asociación anuncia nuevas incorporaciones para este año."
           />
         </div>
 
