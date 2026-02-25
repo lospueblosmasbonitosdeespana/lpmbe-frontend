@@ -38,34 +38,70 @@ function ActualidadContent() {
       try {
         setLoading(true);
         
-        let url: string;
-        
-        // Usar endpoints específicos para noticias y eventos (solo Asociación)
-        if (tipoParam === 'NOTICIA') {
-          url = '/api/public/noticias?limit=50';
-        } else if (tipoParam === 'EVENTO') {
-          url = '/api/public/eventos?limit=50';
-        } else {
-          // Para TODOS o ARTICULO, usar contenidos con scope
-          const params = new URLSearchParams();
-          params.set('scope', 'ASOCIACION');
-          if (tipoParam !== 'TODOS') params.set('tipo', tipoParam);
-          params.set('limit', '50');
-          url = `/api/public/contenidos?${params.toString()}`;
+        if (tipoParam === 'ARTICULO') {
+          // Artículos solo están en la tabla Contenido
+          const res = await fetch('/api/public/contenidos?scope=ASOCIACION&tipo=ARTICULO&limit=50', { cache: 'no-store' });
+          if (!res.ok) throw new Error('Error cargando contenidos');
+          const json = await res.json();
+          if (!cancelled) setItems(Array.isArray(json) ? json : (json?.items ?? []));
+          return;
         }
-        
-        const res = await fetch(url, {
-          cache: 'no-store',
+
+        // Para TODOS, NOTICIA, EVENTO: combinar Contenidos + Noticias/Eventos directos
+        const fetches: Promise<Response>[] = [];
+
+        if (tipoParam === 'TODOS' || tipoParam === 'NOTICIA') {
+          fetches.push(
+            fetch('/api/public/contenidos?scope=ASOCIACION&tipo=NOTICIA&limit=50', { cache: 'no-store' }),
+            fetch('/api/public/noticias?limit=50', { cache: 'no-store' }),
+          );
+        }
+        if (tipoParam === 'TODOS' || tipoParam === 'EVENTO') {
+          fetches.push(
+            fetch('/api/public/contenidos?scope=ASOCIACION&tipo=EVENTO&limit=50', { cache: 'no-store' }),
+            fetch('/api/public/eventos?limit=50', { cache: 'no-store' }),
+          );
+        }
+        if (tipoParam === 'TODOS') {
+          fetches.push(
+            fetch('/api/public/contenidos?scope=ASOCIACION&tipo=ARTICULO&limit=50', { cache: 'no-store' }),
+          );
+        }
+
+        const responses = await Promise.all(fetches);
+        const allItems: Contenido[] = [];
+        const seenIds = new Set<string>();
+
+        for (const res of responses) {
+          if (!res.ok) continue;
+          const json = await res.json().catch(() => []);
+          const arr = Array.isArray(json) ? json : (json?.items ?? []);
+          for (const item of arr) {
+            // Deduplicar por slug o id
+            const key = item.slug ?? `id-${item.id}`;
+            if (seenIds.has(key)) continue;
+            seenIds.add(key);
+            allItems.push({
+              id: item.id,
+              titulo: item.titulo ?? '(sin título)',
+              slug: item.slug ?? item.contenidoSlug ?? `notif-${item.id}`,
+              resumen: item.resumen ?? item.contenido ?? undefined,
+              coverUrl: item.coverUrl ?? undefined,
+              tipo: item.tipo ?? item._tipo ?? 'NOTICIA',
+              publishedAt: item.publishedAt ?? item.fechaInicio ?? undefined,
+              createdAt: item.createdAt ?? undefined,
+            });
+          }
+        }
+
+        // Ordenar por fecha desc
+        allItems.sort((a, b) => {
+          const da = new Date(a.publishedAt ?? a.createdAt ?? 0).getTime();
+          const db = new Date(b.publishedAt ?? b.createdAt ?? 0).getTime();
+          return db - da;
         });
 
-        if (!res.ok) throw new Error('Error cargando contenidos');
-
-        const json = await res.json();
-        const data = Array.isArray(json) ? json : (json?.items ?? []);
-        
-        if (!cancelled) {
-          setItems(data);
-        }
+        if (!cancelled) setItems(allItems.slice(0, 50));
       } catch {
         if (!cancelled) setItems([]);
       } finally {
