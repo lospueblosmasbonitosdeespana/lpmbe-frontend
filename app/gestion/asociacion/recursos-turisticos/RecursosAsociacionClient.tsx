@@ -134,8 +134,10 @@ function formToBody(f: FormData, horariosSemana?: HorarioDia[], cierresEspeciale
   body.descuentoPorcentaje = f.descuentoPorcentaje ? Number(f.descuentoPorcentaje) : null;
   body.precioCents = f.precioCents ? Math.round(Number(f.precioCents) * 100) : null;
 
-  if (horariosSemana !== undefined) body.horariosSemana = horariosSemana;
-  if (cierresEspeciales !== undefined) body.cierresEspeciales = cierresEspeciales;
+  if (horariosSemana !== undefined)
+    body.horariosSemana = horariosSemana.map(({ diaSemana, abierto, horaAbre, horaCierra }) => ({ diaSemana, abierto, horaAbre, horaCierra }));
+  if (cierresEspeciales !== undefined)
+    body.cierresEspeciales = cierresEspeciales.map(({ fecha, motivo }) => ({ fecha, motivo }));
 
   return body;
 }

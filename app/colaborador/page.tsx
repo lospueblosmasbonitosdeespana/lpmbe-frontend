@@ -384,8 +384,8 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
         edadMaxMenor: form.edadMaxMenor,
         descuentoPorcentaje: form.descuentoPorcentaje ? Number(form.descuentoPorcentaje) : null,
         precioCents: form.precioCents ? Math.round(Number(form.precioCents) * 100) : null,
-        horariosSemana,
-        cierresEspeciales,
+        horariosSemana: horariosSemana.map(({ diaSemana, abierto, horaAbre, horaCierra }: any) => ({ diaSemana, abierto, horaAbre, horaCierra })),
+        cierresEspeciales: cierresEspeciales.map(({ fecha, motivo }: any) => ({ fecha, motivo })),
       };
       if (form.descripcion.trim()) body.descripcion = form.descripcion.trim();
       else body.descripcion = null;

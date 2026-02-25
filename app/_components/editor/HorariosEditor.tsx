@@ -40,14 +40,20 @@ function normalizarHorarios(raw?: HorarioDia[]): HorarioDia[] {
   const base = buildDefaultHorarios();
   if (!raw || raw.length === 0) return base;
   const map = new Map(raw.map((h) => [h.diaSemana, h]));
-  return base.map((d) => map.get(d.diaSemana) ?? d);
+  return base.map((d) => {
+    const r = map.get(d.diaSemana);
+    if (!r) return d;
+    return { diaSemana: r.diaSemana, abierto: r.abierto, horaAbre: r.horaAbre, horaCierra: r.horaCierra };
+  });
 }
 
 // ─── Componente ───────────────────────────────────────────────────────────────
 
 export default function HorariosEditor({ horariosSemana, cierresEspeciales, onChange, readOnly }: Props) {
   const [horarios, setHorarios] = useState<HorarioDia[]>(() => normalizarHorarios(horariosSemana));
-  const [cierres, setCierres] = useState<CierreEspecial[]>(cierresEspeciales ?? []);
+  const [cierres, setCierres] = useState<CierreEspecial[]>(
+    (cierresEspeciales ?? []).map(({ fecha, motivo }) => ({ fecha: typeof fecha === 'string' ? fecha.slice(0, 10) : fecha, motivo }))
+  );
   const [nuevaFecha, setNuevaFecha] = useState('');
   const [nuevoMotivo, setNuevoMotivo] = useState('');
 
