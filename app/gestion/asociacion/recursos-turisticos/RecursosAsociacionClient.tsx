@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { RESOURCE_TYPES, RESOURCE_TYPE_LABELS } from '@/lib/resource-types';
+import HorariosEditor, { HorarioDia, CierreEspecial } from '@/app/_components/editor/HorariosEditor';
 
 const MapLocationPicker = dynamic(
   () => import('@/app/components/MapLocationPicker'),
@@ -34,7 +35,13 @@ type RecursoAsociacion = {
   descuentoPorcentaje?: number | null;
   precioCents?: number | null;
   activo: boolean;
+  cerradoTemporal?: boolean;
   codigoQr?: string;
+  maxAdultos?: number | null;
+  maxMenores?: number | null;
+  edadMaxMenor?: number | null;
+  horariosSemana?: HorarioDia[];
+  cierresEspeciales?: CierreEspecial[];
 };
 
 type Colaborador = {
@@ -64,6 +71,10 @@ type FormData = {
   descuentoPorcentaje: string;
   precioCents: string;
   activo: boolean;
+  cerradoTemporal: boolean;
+  maxAdultos: string;
+  maxMenores: string;
+  edadMaxMenor: string;
 };
 
 const EMPTY_FORM: FormData = {
@@ -81,33 +92,41 @@ const EMPTY_FORM: FormData = {
   descuentoPorcentaje: '',
   precioCents: '',
   activo: true,
+  cerradoTemporal: false,
+  maxAdultos: '1',
+  maxMenores: '0',
+  edadMaxMenor: '12',
 };
 
 const API_BASE = '/api/gestion/asociacion/recursos-turisticos';
 
-function formToBody(f: FormData) {
+function formToBody(f: FormData, horariosSemana?: HorarioDia[], cierresEspeciales?: CierreEspecial[]) {
   const body: Record<string, unknown> = {
     nombre: f.nombre.trim(),
     tipo: f.tipo,
     activo: f.activo,
+    cerradoTemporal: f.cerradoTemporal,
     provincia: f.provincia.trim(),
     comunidad: f.comunidad.trim(),
     lat: f.lat ? Number(f.lat) : 0,
     lng: f.lng ? Number(f.lng) : 0,
+    maxAdultos: f.maxAdultos ? Math.max(1, Number(f.maxAdultos)) : 1,
+    maxMenores: f.maxMenores ? Math.max(0, Number(f.maxMenores)) : 0,
+    edadMaxMenor: f.edadMaxMenor ? Math.max(0, Number(f.edadMaxMenor)) : 12,
   };
 
   if (f.descripcion.trim()) body.descripcion = f.descripcion.trim();
+  else body.descripcion = null;
   if (f.horarios.trim()) body.horarios = f.horarios.trim();
   if (f.contacto.trim()) body.contacto = f.contacto.trim();
   if (f.web.trim()) body.web = f.web.trim();
   if (f.fotoUrl.trim()) body.fotoUrl = f.fotoUrl.trim();
 
-  if (f.descuentoPorcentaje) {
-    body.descuentoPorcentaje = Number(f.descuentoPorcentaje);
-  }
-  if (f.precioCents) {
-    body.precioCents = Math.round(Number(f.precioCents) * 100);
-  }
+  body.descuentoPorcentaje = f.descuentoPorcentaje ? Number(f.descuentoPorcentaje) : null;
+  body.precioCents = f.precioCents ? Math.round(Number(f.precioCents) * 100) : null;
+
+  if (horariosSemana !== undefined) body.horariosSemana = horariosSemana;
+  if (cierresEspeciales !== undefined) body.cierresEspeciales = cierresEspeciales;
 
   return body;
 }
@@ -128,6 +147,10 @@ function recursoToForm(r: RecursoAsociacion): FormData {
     descuentoPorcentaje: r.descuentoPorcentaje?.toString() || '',
     precioCents: r.precioCents ? (r.precioCents / 100).toString() : '',
     activo: r.activo,
+    cerradoTemporal: r.cerradoTemporal ?? false,
+    maxAdultos: r.maxAdultos?.toString() ?? '1',
+    maxMenores: r.maxMenores?.toString() ?? '0',
+    edadMaxMenor: r.edadMaxMenor?.toString() ?? '12',
   };
 }
 
@@ -142,6 +165,9 @@ function RecursoForm({
   onCancel,
   saving,
   submitLabel,
+  horariosSemana,
+  cierresEspeciales,
+  onHorariosChange,
 }: {
   data: FormData;
   onChange: (d: FormData) => void;
@@ -149,6 +175,9 @@ function RecursoForm({
   onCancel: () => void;
   saving: boolean;
   submitLabel: string;
+  horariosSemana: HorarioDia[];
+  cierresEspeciales: CierreEspecial[];
+  onHorariosChange: (h: HorarioDia[], c: CierreEspecial[]) => void;
 }) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -170,254 +199,159 @@ function RecursoForm({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      {/* Foto */}
+      <div>
+        <label className="mb-1 block text-sm text-gray-600">Foto</label>
+        <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePhotoUpload(f); }} />
+        {data.fotoUrl ? (
+          <div className="flex items-center gap-3">
+            <img src={data.fotoUrl} alt="Preview" className="h-20 w-28 rounded-lg border object-cover" />
+            <button type="button" onClick={() => fileInputRef.current?.click()} disabled={saving || uploading}
+              className="rounded border px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50">
+              {uploading ? 'Subiendo…' : 'Cambiar foto'}
+            </button>
+          </div>
+        ) : (
+          <button type="button" onClick={() => fileInputRef.current?.click()} disabled={saving || uploading}
+            className="flex h-20 w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-300 text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+            {uploading ? 'Subiendo…' : '+ Subir foto'}
+          </button>
+        )}
+      </div>
+
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className="mb-1 block text-sm text-gray-600">Nombre *</label>
-          <input
-            type="text"
-            value={data.nombre}
-            onChange={(e) => set('nombre', e.target.value)}
-            disabled={saving}
-            className="w-full rounded border px-3 py-2 disabled:opacity-50"
-          />
+          <input type="text" value={data.nombre} onChange={(e) => set('nombre', e.target.value)}
+            disabled={saving} className="w-full rounded border px-3 py-2 disabled:opacity-50" />
+          <p className="mt-0.5 text-xs text-gray-400">Se traducirá a 6 idiomas automáticamente.</p>
         </div>
         <div>
           <label className="mb-1 block text-sm text-gray-600">Tipo *</label>
-          <select
-            value={data.tipo}
-            onChange={(e) => set('tipo', e.target.value)}
-            disabled={saving}
-            className="w-full rounded border px-3 py-2 disabled:opacity-50"
-          >
-            {TIPOS.map((t) => (
-              <option key={t} value={t}>
-                {TIPO_LABELS[t]}
-              </option>
-            ))}
+          <select value={data.tipo} onChange={(e) => set('tipo', e.target.value)}
+            disabled={saving} className="w-full rounded border px-3 py-2 disabled:opacity-50">
+            {TIPOS.map((t) => <option key={t} value={t}>{TIPO_LABELS[t]}</option>)}
           </select>
         </div>
       </div>
 
       <div>
         <label className="mb-1 block text-sm text-gray-600">Descripción</label>
-        <textarea
-          value={data.descripcion}
-          onChange={(e) => set('descripcion', e.target.value)}
-          disabled={saving}
-          rows={3}
-          className="w-full rounded border px-3 py-2 disabled:opacity-50"
-        />
+        <textarea value={data.descripcion} onChange={(e) => set('descripcion', e.target.value)}
+          disabled={saving} rows={3} className="w-full rounded border px-3 py-2 disabled:opacity-50" />
+        <p className="mt-0.5 text-xs text-gray-400">Se traducirá a 6 idiomas automáticamente.</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className="mb-1 block text-sm text-gray-600">Provincia *</label>
-          <input
-            type="text"
-            value={data.provincia}
-            onChange={(e) => set('provincia', e.target.value)}
-            disabled={saving}
-            className="w-full rounded border px-3 py-2 disabled:opacity-50"
-          />
+          <input type="text" value={data.provincia} onChange={(e) => set('provincia', e.target.value)}
+            disabled={saving} className="w-full rounded border px-3 py-2 disabled:opacity-50" />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-gray-600">
-            Comunidad autónoma *
-          </label>
-          <input
-            type="text"
-            value={data.comunidad}
-            onChange={(e) => set('comunidad', e.target.value)}
-            disabled={saving}
-            className="w-full rounded border px-3 py-2 disabled:opacity-50"
-          />
+          <label className="mb-1 block text-sm text-gray-600">Comunidad autónoma *</label>
+          <input type="text" value={data.comunidad} onChange={(e) => set('comunidad', e.target.value)}
+            disabled={saving} className="w-full rounded border px-3 py-2 disabled:opacity-50" />
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className="mb-1 block text-sm text-gray-600">Contacto</label>
+          <input type="text" value={data.contacto} onChange={(e) => set('contacto', e.target.value)}
+            disabled={saving} placeholder="info@ejemplo.com" className="w-full rounded border px-3 py-2 disabled:opacity-50" />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm text-gray-600">Web</label>
+          <input type="text" value={data.web} onChange={(e) => set('web', e.target.value)}
+            disabled={saving} placeholder="https://..." className="w-full rounded border px-3 py-2 disabled:opacity-50" />
         </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className="mb-1 block text-sm text-gray-600">Latitud</label>
-          <input
-            type="number"
-            step="any"
-            value={data.lat}
-            onChange={(e) => set('lat', e.target.value)}
-            disabled={saving}
-            className="w-full rounded border px-3 py-2 disabled:opacity-50"
-            placeholder="42.1234"
-          />
+          <input type="number" step="any" value={data.lat} onChange={(e) => set('lat', e.target.value)}
+            disabled={saving} placeholder="42.1234" className="w-full rounded border px-3 py-2 disabled:opacity-50" />
         </div>
         <div>
           <label className="mb-1 block text-sm text-gray-600">Longitud</label>
-          <input
-            type="number"
-            step="any"
-            value={data.lng}
-            onChange={(e) => set('lng', e.target.value)}
-            disabled={saving}
-            className="w-full rounded border px-3 py-2 disabled:opacity-50"
-            placeholder="-3.5678"
-          />
+          <input type="number" step="any" value={data.lng} onChange={(e) => set('lng', e.target.value)}
+            disabled={saving} placeholder="-3.5678" className="w-full rounded border px-3 py-2 disabled:opacity-50" />
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-sm text-gray-600">Horarios</label>
-          <input
-            type="text"
-            value={data.horarios}
-            onChange={(e) => set('horarios', e.target.value)}
-            disabled={saving}
-            className="w-full rounded border px-3 py-2 disabled:opacity-50"
-            placeholder="L-V 10:00-18:00"
-          />
+      {/* Precios, descuento y condiciones */}
+      <div className="rounded-lg border border-blue-200 bg-blue-50/40 p-4">
+        <h4 className="mb-3 text-sm font-semibold text-blue-800">Precios y condiciones del Club</h4>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm text-gray-600">Precio (€)</label>
+            <input type="number" min="0" step="0.01" value={data.precioCents}
+              onChange={(e) => set('precioCents', e.target.value)} disabled={saving}
+              placeholder="0.00" className="w-full rounded border px-3 py-2 disabled:opacity-50" />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm text-gray-600">Descuento Club (%)</label>
+            <input type="number" min="0" max="100" value={data.descuentoPorcentaje}
+              onChange={(e) => set('descuentoPorcentaje', e.target.value)} disabled={saving}
+              className="w-full rounded border px-3 py-2 disabled:opacity-50" />
+          </div>
         </div>
-        <div>
-          <label className="mb-1 block text-sm text-gray-600">Contacto</label>
-          <input
-            type="text"
-            value={data.contacto}
-            onChange={(e) => set('contacto', e.target.value)}
-            disabled={saving}
-            className="w-full rounded border px-3 py-2 disabled:opacity-50"
-            placeholder="info@ejemplo.com"
-          />
-        </div>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-sm text-gray-600">Web</label>
-          <input
-            type="text"
-            value={data.web}
-            onChange={(e) => set('web', e.target.value)}
-            disabled={saving}
-            className="w-full rounded border px-3 py-2 disabled:opacity-50"
-            placeholder="https://..."
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm text-gray-600">Foto</label>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handlePhotoUpload(file);
-            }}
-          />
-          {data.fotoUrl ? (
-            <div className="flex items-center gap-3">
-              <img
-                src={data.fotoUrl}
-                alt="Preview"
-                className="h-12 w-12 rounded border object-cover"
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={saving || uploading}
-                className="rounded border px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50"
-              >
-                {uploading ? (
-                  <span className="flex items-center gap-1.5">
-                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Subiendo…
-                  </span>
-                ) : (
-                  'Cambiar'
-                )}
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={saving || uploading}
-              className="w-full rounded border border-dashed px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-            >
-              {uploading ? (
-                <span className="flex items-center justify-center gap-1.5">
-                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  Subiendo…
-                </span>
-              ) : (
-                'Subir foto'
-              )}
-            </button>
-          )}
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <div>
+            <label className="mb-1 block text-sm text-gray-600">Máx. adultos</label>
+            <input type="number" min="1" max="20" value={data.maxAdultos}
+              onChange={(e) => set('maxAdultos', e.target.value)} disabled={saving}
+              className="w-full rounded border px-3 py-2 disabled:opacity-50" />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm text-gray-600">Máx. menores</label>
+            <input type="number" min="0" max="10" value={data.maxMenores}
+              onChange={(e) => set('maxMenores', e.target.value)} disabled={saving}
+              className="w-full rounded border px-3 py-2 disabled:opacity-50" />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm text-gray-600">Edad máx. menor</label>
+            <input type="number" min="0" max="18" value={data.edadMaxMenor}
+              onChange={(e) => set('edadMaxMenor', e.target.value)} disabled={saving}
+              className="w-full rounded border px-3 py-2 disabled:opacity-50" />
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-sm text-gray-600">
-            Descuento (%)
-          </label>
-          <input
-            type="number"
-            min="0"
-            max="100"
-            value={data.descuentoPorcentaje}
-            onChange={(e) => set('descuentoPorcentaje', e.target.value)}
-            disabled={saving}
-            className="w-full rounded border px-3 py-2 disabled:opacity-50"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm text-gray-600">
-            Precio (€)
-          </label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={data.precioCents}
-            onChange={(e) => set('precioCents', e.target.value)}
-            disabled={saving}
-            className="w-full rounded border px-3 py-2 disabled:opacity-50"
-            placeholder="0.00"
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={data.activo}
-          onChange={(e) => set('activo', e.target.checked)}
-          disabled={saving}
-          className="disabled:opacity-50"
+      {/* Horarios y cierres especiales */}
+      <div className="rounded-lg border border-gray-200 bg-gray-50/40 p-4">
+        <h4 className="mb-3 text-sm font-semibold text-gray-700">Horarios y cierres especiales</h4>
+        <HorariosEditor
+          horariosSemana={horariosSemana}
+          cierresEspeciales={cierresEspeciales}
+          onChange={onHorariosChange}
         />
-        <label className="text-sm text-gray-600">Activo</label>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-4">
+        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+          <input type="checkbox" checked={data.activo} onChange={(e) => set('activo', e.target.checked)}
+            disabled={saving} className="rounded disabled:opacity-50" />
+          Activo
+        </label>
+        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+          <input type="checkbox" checked={data.cerradoTemporal} onChange={(e) => set('cerradoTemporal', e.target.checked)}
+            disabled={saving} className="rounded disabled:opacity-50" />
+          Cerrado temporalmente
+        </label>
       </div>
 
       <div className="flex gap-2 pt-1">
-        <button
-          type="button"
-          onClick={onSubmit}
-          disabled={saving || !data.nombre.trim()}
-          className="rounded border px-4 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
-        >
+        <button type="button" onClick={onSubmit} disabled={saving || !data.nombre.trim()}
+          className="rounded border px-4 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50">
           {saving ? 'Guardando…' : submitLabel}
         </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={saving}
-          className="rounded border px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50"
-        >
+        <button type="button" onClick={onCancel} disabled={saving}
+          className="rounded border px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50">
           Cancelar
         </button>
       </div>
@@ -578,10 +512,14 @@ export default function RecursosAsociacionClient() {
 
   const [showCreate, setShowCreate] = useState(false);
   const [createForm, setCreateForm] = useState<FormData>({ ...EMPTY_FORM });
+  const [createHorarios, setCreateHorarios] = useState<HorarioDia[]>([]);
+  const [createCierres, setCreateCierres] = useState<CierreEspecial[]>([]);
   const [creating, setCreating] = useState(false);
 
   const [editId, setEditId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<FormData>({ ...EMPTY_FORM });
+  const [editHorarios, setEditHorarios] = useState<HorarioDia[]>([]);
+  const [editCierres, setEditCierres] = useState<CierreEspecial[]>([]);
   const [saving, setSaving] = useState(false);
 
   const [expandedColab, setExpandedColab] = useState<number | null>(null);
@@ -690,7 +628,7 @@ export default function RecursosAsociacionClient() {
       const res = await fetch(API_BASE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formToBody(createForm)),
+        body: JSON.stringify(formToBody(createForm, createHorarios, createCierres)),
       });
       if (!res.ok) {
         const d = await res.json().catch(() => null);
@@ -698,6 +636,8 @@ export default function RecursosAsociacionClient() {
         return;
       }
       setCreateForm({ ...EMPTY_FORM });
+      setCreateHorarios([]);
+      setCreateCierres([]);
       setShowCreate(false);
       await loadRecursos();
     } catch (e: unknown) {
@@ -712,6 +652,8 @@ export default function RecursosAsociacionClient() {
   function startEdit(r: RecursoAsociacion) {
     setEditId(r.id);
     setEditForm(recursoToForm(r));
+    setEditHorarios(r.horariosSemana ?? []);
+    setEditCierres(r.cierresEspeciales ?? []);
     if (r.lat && r.lng) {
       setFlyToPos([r.lat, r.lng]);
     }
@@ -720,6 +662,8 @@ export default function RecursosAsociacionClient() {
   function cancelEdit() {
     setEditId(null);
     setEditForm({ ...EMPTY_FORM });
+    setEditHorarios([]);
+    setEditCierres([]);
     setFlyToPos(null);
   }
 
@@ -731,14 +675,10 @@ export default function RecursosAsociacionClient() {
     setSaving(true);
     setError(null);
     try {
-      const body = formToBody(editForm);
-      if (!editForm.descuentoPorcentaje) body.descuentoPorcentaje = null;
-      if (!editForm.precioCents) body.precioCents = null;
-
       const res = await fetch(`${API_BASE}/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(formToBody(editForm, editHorarios, editCierres)),
       });
       if (!res.ok) {
         const d = await res.json().catch(() => null);
@@ -840,9 +780,14 @@ export default function RecursosAsociacionClient() {
             onCancel={() => {
               setShowCreate(false);
               setCreateForm({ ...EMPTY_FORM });
+              setCreateHorarios([]);
+              setCreateCierres([]);
             }}
             saving={creating}
             submitLabel="Crear"
+            horariosSemana={createHorarios}
+            cierresEspeciales={createCierres}
+            onHorariosChange={(h, c) => { setCreateHorarios(h); setCreateCierres(c); }}
           />
         </div>
       )}
@@ -875,6 +820,9 @@ export default function RecursosAsociacionClient() {
                     onCancel={cancelEdit}
                     saving={saving}
                     submitLabel="Guardar"
+                    horariosSemana={editHorarios}
+                    cierresEspeciales={editCierres}
+                    onHorariosChange={(h, c) => { setEditHorarios(h); setEditCierres(c); }}
                   />
                 </div>
               ) : (
@@ -909,26 +857,79 @@ export default function RecursosAsociacionClient() {
 
                       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
                         {r.precioCents != null && r.precioCents > 0 && (
-                          <span>
-                            Precio: {(r.precioCents / 100).toFixed(2)} €
-                          </span>
+                          <span>Precio: {(r.precioCents / 100).toFixed(2)} €</span>
                         )}
-                        {r.descuentoPorcentaje != null &&
-                          r.descuentoPorcentaje > 0 && (
-                            <span>Descuento: {r.descuentoPorcentaje}%</span>
-                          )}
-                        {r.horarios && <span>Horarios: {r.horarios}</span>}
+                        {r.descuentoPorcentaje != null && r.descuentoPorcentaje > 0 && (
+                          <span className="font-medium text-blue-700">Descuento Club: {r.descuentoPorcentaje}%</span>
+                        )}
+                        {r.contacto && <span>✉ {r.contacto}</span>}
                         {r.web && (
-                          <a
-                            href={r.web}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            Web
+                          <a href={r.web} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
+                            🌐 Web
                           </a>
                         )}
+                        {r.cerradoTemporal && (
+                          <span className="font-semibold text-red-600">⛔ Cerrado temporalmente</span>
+                        )}
                       </div>
+
+                      {/* Horarios estructurados (actualizados por colaborador o admin) */}
+                      {r.horariosSemana && r.horariosSemana.length > 0 && (
+                        <div className="mt-3 overflow-hidden rounded border border-gray-100">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="bg-gray-50">
+                                <th className="px-2 py-1 text-left font-medium text-gray-500">Día</th>
+                                <th className="px-2 py-1 text-left font-medium text-gray-500">Horario</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                              {r.horariosSemana
+                                .sort((a, b) => a.diaSemana - b.diaSemana)
+                                .map((h) => {
+                                  const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+                                  return (
+                                    <tr key={h.diaSemana} className="hover:bg-gray-50/60">
+                                      <td className="px-2 py-1 font-medium text-gray-700">{dias[h.diaSemana]}</td>
+                                      <td className="px-2 py-1 text-gray-600">
+                                        {h.abierto
+                                          ? h.horaAbre && h.horaCierra
+                                            ? `${h.horaAbre} – ${h.horaCierra}`
+                                            : 'Abierto (sin horario concreto)'
+                                          : <span className="text-red-500">Cerrado</span>
+                                        }
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+
+                      {/* Cierres especiales */}
+                      {r.cierresEspeciales && r.cierresEspeciales.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs font-medium text-gray-500">Cierres especiales:</p>
+                          <ul className="mt-1 space-y-0.5">
+                            {r.cierresEspeciales.map((c) => {
+                              const fecha = new Date(c.fecha);
+                              const hoy = new Date();
+                              hoy.setHours(0, 0, 0, 0);
+                              const esHoy = fecha.toDateString() === hoy.toDateString();
+                              const esPasado = fecha < hoy && !esHoy;
+                              return (
+                                <li key={c.id ?? c.fecha.toString()}
+                                  className={`text-xs ${esHoy ? 'font-semibold text-red-600' : esPasado ? 'text-gray-400' : 'text-amber-700'}`}>
+                                  {fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                  {c.motivo ? ` — ${c.motivo}` : ''}
+                                  {esHoy && ' (HOY)'}
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
+                      )}
 
                       {r.codigoQr && (
                         <div className="mt-1 break-all font-mono text-xs text-gray-400">
