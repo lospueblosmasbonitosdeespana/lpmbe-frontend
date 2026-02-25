@@ -18,6 +18,10 @@ type Contenido = {
   _source: 'contenido' | 'notificacion';
 };
 
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&#x27;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
+}
+
 function ActualidadContent() {
   const t = useTranslations('actualidad');
   const searchParams = useSearchParams();
@@ -192,7 +196,7 @@ function ActualidadContent() {
                   </h2>
 
                   {item.resumen && (
-                    <p className="mt-3 text-gray-700 line-clamp-2">{item.resumen}</p>
+                    <p className="mt-3 text-gray-700 line-clamp-2">{stripHtml(item.resumen)}</p>
                   )}
 
                   <span className="mt-3 inline-block text-sm font-medium text-blue-600 group-hover:underline">
