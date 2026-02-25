@@ -168,6 +168,7 @@ function LocationInput({
   placeholder: string;
   hook: ReturnType<typeof useGeoAutocomplete>;
 }) {
+  const t = useTranslations("planifica.creaRuta");
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
