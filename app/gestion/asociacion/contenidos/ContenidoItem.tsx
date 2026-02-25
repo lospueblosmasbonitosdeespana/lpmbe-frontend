@@ -59,12 +59,16 @@ export default function ContenidoItem({ contenido }: ContenidoItemProps) {
             <span className="text-xs text-gray-500 uppercase">{contenido.tipo}</span>
           </div>
 
-          {contenido.resumen && (
-            <div className="mt-2 text-sm text-gray-700">
-              {contenido.resumen.slice(0, 150)}
-              {contenido.resumen.length > 150 ? '...' : ''}
-            </div>
-          )}
+          {(contenido.resumen || contenido.contenidoMd) && (() => {
+            const raw = contenido.resumen || contenido.contenidoMd || '';
+            const clean = raw.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&#x27;/g, "'").replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+            if (!clean) return null;
+            return (
+              <div className="mt-2 text-sm text-gray-700">
+                {clean.slice(0, 150)}{clean.length > 150 ? '…' : ''}
+              </div>
+            );
+          })()}
 
           {contenido.coverUrl && contenido.coverUrl.trim() && (
             <div className="mt-2">
