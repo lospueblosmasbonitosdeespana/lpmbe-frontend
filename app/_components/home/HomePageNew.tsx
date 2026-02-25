@@ -1142,82 +1142,64 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
     ARTICULO: "Artículo",
   };
 
-  function formatDate(iso?: string) {
-    if (!iso) return "";
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
-  }
-
-  function getHref(item: NewsItem): string {
-    return item.href || "/actualidad";
-  }
-
   return (
-    <Section spacing="sm" background="default">
+    <Section spacing="lg" background="default">
       <Container>
-        <div className="flex items-end justify-between mb-5">
-          <div>
-            <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-1">
-              {t("galeriaLabel")}
-            </p>
-            <Title as="h2" size="xl">
-              {t("galeriaTitle")}
-            </Title>
-          </div>
-          <Link
-            href="/actualidad"
-            className="hidden md:inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline shrink-0"
-          >
-            {t("seeAllShort")} <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+        <div className="text-center mb-10">
+          <Title as="h2" size="2xl" className="mb-3">
+            {t("galeriaTitle")}
+          </Title>
+          <Muted className="text-base max-w-2xl mx-auto">
+            {t("galeriaLabel")}
+          </Muted>
         </div>
 
-        {/* Scroll horizontal en mobile, grid en desktop */}
-        <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 lg:grid-cols-6 md:overflow-visible scrollbar-hide">
-          {news.map((item) => (
-            <Link
-              key={item.id}
-              href={getHref(item)}
-              className="group flex-shrink-0 w-[180px] md:w-auto"
-            >
-              {/* Imagen */}
-              <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-2.5 shadow-sm group-hover:shadow-md transition-shadow">
-                {item.image ? (
-                  <Image
-                    src={item.image}
-                    alt={item.title}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-muted flex items-center justify-center">
-                    <Newspaper className="h-8 w-8 text-muted-foreground/50" />
+        <div className="flex justify-center">
+          <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 lg:grid-cols-6 md:overflow-visible scrollbar-hide w-full max-w-5xl">
+            {news.map((item) => (
+              <Link
+                key={item.id}
+                href={item.href || "/actualidad"}
+                className="group flex-shrink-0 w-[160px] md:w-auto"
+              >
+                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden mb-3 shadow-md group-hover:shadow-xl transition-all duration-500">
+                  {item.image ? (
+                    <Image
+                      src={item.image}
+                      alt={item.title}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-muted flex items-center justify-center">
+                      <Newspaper className="h-8 w-8 text-muted-foreground/40" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <Title as="h3" size="sm" className="text-white font-semibold text-center">
+                      {item.title}
+                    </Title>
                   </div>
-                )}
-                {/* Badge tipo */}
-                <span className="absolute top-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                  {BADGE_LABELS[item.type?.toUpperCase()] ?? item.type}
-                </span>
-              </div>
-
-              {/* Texto */}
-              <p className="text-xs text-muted-foreground mb-1">{formatDate(item.date)}</p>
-              <p className="text-sm font-medium leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-                {item.title}
-              </p>
-            </Link>
-          ))}
+                  {/* Badge tipo */}
+                  <span className="absolute top-2 left-2 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                    {BADGE_LABELS[item.type?.toUpperCase()] ?? item.type}
+                  </span>
+                </div>
+                <p className="text-center text-xs text-primary font-medium group-hover:underline">
+                  {t("learnMore")}
+                </p>
+              </Link>
+            ))}
+          </div>
         </div>
 
-        {/* Ver todo — solo mobile */}
-        <div className="mt-4 md:hidden text-center">
-          <Link
-            href="/actualidad"
-            className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-          >
-            {t("seeAllShort")} <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+        <div className="text-center mt-8">
+          <Button asChild variant="outline" className="rounded-full bg-transparent">
+            <Link href="/actualidad">
+              {t("seeAllShort")} <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </Container>
     </Section>
@@ -1253,7 +1235,6 @@ export function HomePageNew({
       <AsociacionNewsGallerySection news={galeriaNews} />
       <PueblosDestacadosSection villages={villages} />
       <RutasSection routes={routes} />
-      <ActualidadSection news={news} />
       <TiendaBanner shopBannerImage={shopBannerImage} />
       <MapaSection mapPreviewImage={mapPreviewImage} />
       <VideosAsociacionSection videos={videos} />
