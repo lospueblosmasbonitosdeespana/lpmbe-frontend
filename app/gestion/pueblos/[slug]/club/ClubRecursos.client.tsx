@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import HorariosEditor, { HorarioDia, CierreEspecial } from '@/app/_components/editor/HorariosEditor';
 
 type Recurso = {
   id: number;
@@ -16,6 +17,8 @@ type Recurso = {
   maxAdultos: number;
   maxMenores: number;
   edadMaxMenor: number;
+  horariosSemana?: HorarioDia[];
+  cierresEspeciales?: CierreEspecial[];
 };
 
 function formatCondiciones(r: Recurso): string {
@@ -58,6 +61,8 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
   const [editMaxAdultos, setEditMaxAdultos] = useState('1');
   const [editMaxMenores, setEditMaxMenores] = useState('0');
   const [editEdadMaxMenor, setEditEdadMaxMenor] = useState('12');
+  const [editHorariosSemana, setEditHorariosSemana] = useState<HorarioDia[]>([]);
+  const [editCierresEspeciales, setEditCierresEspeciales] = useState<CierreEspecial[]>([]);
   const [guardando, setGuardando] = useState(false);
 
   async function loadRecursos() {
@@ -185,6 +190,8 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
     setEditMaxAdultos(String(r.maxAdultos ?? 1));
     setEditMaxMenores(String(r.maxMenores ?? 0));
     setEditEdadMaxMenor(String(r.edadMaxMenor ?? 12));
+    setEditHorariosSemana(r.horariosSemana ?? []);
+    setEditCierresEspeciales(r.cierresEspeciales ?? []);
   }
 
   function handleCancelarEdicion() {
@@ -225,6 +232,8 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
         maxAdultos: Math.max(1, Number(editMaxAdultos) || 1),
         maxMenores: Math.max(0, Number(editMaxMenores) || 0),
         edadMaxMenor: Math.max(0, Number(editEdadMaxMenor) || 12),
+        horariosSemana: editHorariosSemana,
+        cierresEspeciales: editCierresEspeciales,
       };
 
       if (editDescuento) {
@@ -620,6 +629,17 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                     />
                     <label className="text-sm text-gray-600">Activo</label>
                   </div>
+
+                  {/* Horarios y cierres especiales */}
+                  <div className="rounded-lg border border-gray-200 bg-gray-50/60 p-4 mt-2">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3">Horarios y cierres especiales</h4>
+                    <HorariosEditor
+                      horariosSemana={editHorariosSemana}
+                      cierresEspeciales={editCierresEspeciales}
+                      onChange={(h, c) => { setEditHorariosSemana(h); setEditCierresEspeciales(c); }}
+                    />
+                  </div>
+
                   <div className="flex gap-2">
                     <button
                       type="button"

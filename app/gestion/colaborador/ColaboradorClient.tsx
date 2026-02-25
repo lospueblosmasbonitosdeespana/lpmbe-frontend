@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { RESOURCE_TYPES, RESOURCE_TYPE_LABELS } from '@/lib/resource-types';
+import HorariosEditor, { HorarioDia, CierreEspecial } from '@/app/_components/editor/HorariosEditor';
 
 const MapLocationPicker = dynamic(
   () => import('@/app/components/MapLocationPicker'),
@@ -31,6 +32,8 @@ type Recurso = {
   maxAdultos: number;
   maxMenores: number;
   edadMaxMenor: number;
+  horariosSemana?: HorarioDia[];
+  cierresEspeciales?: CierreEspecial[];
 };
 
 type Metricas = {
@@ -206,6 +209,8 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
     maxMenores: recurso.maxMenores,
     edadMaxMenor: recurso.edadMaxMenor,
   });
+  const [horariosSemana, setHorariosSemana] = useState<HorarioDia[]>(recurso.horariosSemana ?? []);
+  const [cierresEspeciales, setCierresEspeciales] = useState<CierreEspecial[]>(recurso.cierresEspeciales ?? []);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -245,6 +250,8 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
         maxAdultos: form.maxAdultos,
         maxMenores: form.maxMenores,
         edadMaxMenor: form.edadMaxMenor,
+        horariosSemana,
+        cierresEspeciales,
       };
       if (form.descripcion.trim()) body.descripcion = form.descripcion.trim();
       else body.descripcion = null;
@@ -426,6 +433,16 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
             className="rounded" />
           Cerrado temporalmente
         </label>
+      </div>
+
+      {/* Horarios y cierres */}
+      <div className="rounded-xl border border-gray-200 bg-gray-50/50 p-5">
+        <h3 className="text-sm font-semibold text-gray-700 mb-4">Horarios y cierres especiales</h3>
+        <HorariosEditor
+          horariosSemana={horariosSemana}
+          cierresEspeciales={cierresEspeciales}
+          onChange={(h, c) => { setHorariosSemana(h); setCierresEspeciales(c); }}
+        />
       </div>
 
       {msg && (

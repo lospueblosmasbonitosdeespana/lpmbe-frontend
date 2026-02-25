@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import HorariosEditor, { HorarioDia, CierreEspecial } from '@/app/_components/editor/HorariosEditor';
 
 type ColaboradorPermiso = 'SOLO_METRICAS' | 'EDITAR_INFO' | 'EDITAR_TODO';
 
@@ -28,6 +29,8 @@ type Recurso = {
   edadMaxMenor: number;
   pueblo?: { id: number; nombre: string; slug: string } | null;
   permisos?: ColaboradorPermiso;
+  horariosSemana?: HorarioDia[];
+  cierresEspeciales?: CierreEspecial[];
 };
 
 type Metricas = {
@@ -60,6 +63,8 @@ export default function ColaboradorPuebloClient({ puebloSlug }: { puebloSlug: st
   const [editMaxAdultos, setEditMaxAdultos] = useState('1');
   const [editMaxMenores, setEditMaxMenores] = useState('0');
   const [editEdadMaxMenor, setEditEdadMaxMenor] = useState('12');
+  const [editHorariosSemana, setEditHorariosSemana] = useState<HorarioDia[]>([]);
+  const [editCierresEspeciales, setEditCierresEspeciales] = useState<CierreEspecial[]>([]);
   const [guardando, setGuardando] = useState(false);
   const [guardadoOk, setGuardadoOk] = useState(false);
 
@@ -105,6 +110,8 @@ export default function ColaboradorPuebloClient({ puebloSlug }: { puebloSlug: st
     setEditMaxAdultos(String(recurso.maxAdultos ?? 1));
     setEditMaxMenores(String(recurso.maxMenores ?? 0));
     setEditEdadMaxMenor(String(recurso.edadMaxMenor ?? 12));
+    setEditHorariosSemana(recurso.horariosSemana ?? []);
+    setEditCierresEspeciales(recurso.cierresEspeciales ?? []);
     setGuardadoOk(false);
   }, [selectedId, recursos]);
 
@@ -147,6 +154,10 @@ export default function ColaboradorPuebloClient({ puebloSlug }: { puebloSlug: st
       body.maxMenores = Math.max(0, Number(editMaxMenores) || 0);
       body.edadMaxMenor = Math.max(0, Number(editEdadMaxMenor) || 12);
     }
+
+    // Horarios siempre editables si puede editar info
+    body.horariosSemana = editHorariosSemana;
+    body.cierresEspeciales = editCierresEspeciales;
 
     try {
       const res = await fetch(`/api/colaborador/recursos/${selectedId}`, {
@@ -497,6 +508,16 @@ export default function ColaboradorPuebloClient({ puebloSlug }: { puebloSlug: st
                     </div>
                   </>
                 )}
+
+                {/* Horarios y cierres */}
+                <div className="rounded-xl border border-gray-200 bg-gray-50/50 p-5">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-4">Horarios y cierres especiales</h3>
+                  <HorariosEditor
+                    horariosSemana={editHorariosSemana}
+                    cierresEspeciales={editCierresEspeciales}
+                    onChange={(h, c) => { setEditHorariosSemana(h); setEditCierresEspeciales(c); }}
+                  />
+                </div>
 
                 <div>
                   <button
