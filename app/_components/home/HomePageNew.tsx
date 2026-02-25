@@ -1175,19 +1175,18 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
                       <Newspaper className="h-8 w-8 text-muted-foreground/40" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <Title as="h3" size="sm" className="text-white font-semibold text-center">
-                      {item.title}
-                    </Title>
-                  </div>
                   {/* Badge tipo */}
                   <span className="absolute top-2 left-2 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
                     {BADGE_LABELS[item.type?.toUpperCase()] ?? item.type}
                   </span>
                 </div>
-                <p className="text-center text-xs text-primary font-medium group-hover:underline">
-                  {t("learnMore")}
+                {item.date && (
+                  <p className="text-center text-xs text-muted-foreground mb-1">
+                    {new Date(item.date).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                  </p>
+                )}
+                <p className="text-center text-sm font-medium leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                  {item.title}
                 </p>
               </Link>
             ))}
