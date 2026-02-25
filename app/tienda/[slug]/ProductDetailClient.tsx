@@ -110,12 +110,12 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
         {/* Imagen + Galería */}
         <div>
-          <div className="aspect-square w-full overflow-hidden rounded-lg bg-white">
+          <div className="aspect-square w-full overflow-hidden rounded-lg bg-[#faf8f5]">
             {mainUrl ? (
               <img
                 src={mainUrl}
                 alt={productName || t('product')}
-                className="h-full w-full object-contain p-4"
+                className="h-full w-full object-contain"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-gray-100 text-sm text-gray-500">

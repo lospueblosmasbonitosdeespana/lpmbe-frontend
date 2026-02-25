@@ -50,7 +50,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
     >
       <article className="flex flex-col">
         {/* Imagen */}
-        <div className="relative aspect-square overflow-hidden rounded-lg bg-white">
+        <div className="relative aspect-square overflow-hidden rounded-lg bg-[#faf8f5]">
           {usePlaceholder ? (
             <div className="absolute inset-0 flex items-center justify-center bg-muted text-muted-foreground text-sm">
               {t('noImage')}
@@ -60,7 +60,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
               src={safeSrc}
               alt={localized(product.nombre, product.nombre_i18n, locale) || 'Producto'}
               fill
-              className="object-contain p-3 transition-transform duration-500 group-hover:scale-105"
+              className="object-contain transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
               unoptimized
             />
