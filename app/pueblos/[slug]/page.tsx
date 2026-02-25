@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug, getPueblosLite, getApiUrl } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
+import JsonLd from "@/app/components/seo/JsonLd";
 import PuebloActions from "./PuebloActions";
 import DescripcionPueblo from "./DescripcionPueblo";
 import MeteoPanel from "./_components/MeteoPanel";
@@ -507,8 +508,35 @@ export default async function PuebloPage({
     </div>
   );
 
+  const puebloLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "TouristAttraction",
+    name: puebloSafe.nombre,
+    description: puebloSafe.descripcion
+      ? puebloSafe.descripcion.replace(/<[^>]*>/g, "").slice(0, 300)
+      : undefined,
+    url: `${getBaseUrl()}/pueblos/${puebloSafe.slug}`,
+    image: heroImage || undefined,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: puebloSafe.nombre,
+      addressRegion: puebloSafe.provincia,
+      addressCountry: "ES",
+    },
+    ...(puebloSafe.lat && puebloSafe.lng
+      ? {
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: puebloSafe.lat,
+            longitude: puebloSafe.lng,
+          },
+        }
+      : {}),
+  };
+
   return (
     <main className="bg-background">
+      <JsonLd data={puebloLd} />
       {/* HERO - Diseño tourism-website-design */}
       <DetailPageHero
         title={puebloSafe.nombre}

@@ -3,12 +3,17 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getRutas } from "@/lib/api";
 import { createExcerpt } from "@/lib/sanitizeHtml";
+import { getCanonicalUrl, getLocaleAlternates } from "@/lib/seo";
 import RutaMiniMap from "@/app/_components/RutaMiniMap";
 import RutaCardStats from "@/app/_components/RutaCardStats";
 
 export const metadata: Metadata = {
   title: "Rutas – Los Pueblos Más Bonitos de España",
   description: "Descubre rutas turísticas por los pueblos más bonitos de España",
+  alternates: {
+    canonical: getCanonicalUrl("/rutas"),
+    languages: getLocaleAlternates("/rutas"),
+  },
 };
 
 export const dynamic = "force-dynamic";

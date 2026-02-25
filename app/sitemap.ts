@@ -1,110 +1,91 @@
-import type { MetadataRoute } from "next";
-import { getBaseUrl, pathForLocale, SUPPORTED_LOCALES } from "@/lib/seo";
+import type { MetadataRoute } from 'next';
+import { getBaseUrl, SUPPORTED_LOCALES, DEFAULT_LOCALE, pathForLocale } from '@/lib/seo';
+import { getApiUrl } from '@/lib/api';
 
-/** Rutas estáticas que se incluyen en el sitemap (sin segmentos dinámicos). */
-const STATIC_PATHS = [
-  "",
-  "/experiencias",
-  "/experiencias/gastronomia",
-  "/experiencias/naturaleza",
-  "/experiencias/cultura",
-  "/experiencias/en-familia",
-  "/experiencias/petfriendly",
-  "/pueblos",
-  "/rutas",
-  "/notificaciones",
-  "/mapa",
-  "/planifica",
-] as const;
+type SitemapEntry = MetadataRoute.Sitemap[number];
 
-function toSitemapEntry(
-  path: string,
-  priority: number,
-  changeFrequency: "yearly" | "monthly" | "weekly" | "daily" = "weekly"
-): MetadataRoute.Sitemap[number] {
-  const base = getBaseUrl();
-  const normalized = path.startsWith("/") ? path : `/${path}`;
+const BASE = getBaseUrl();
+const API = getApiUrl();
+
+async function fetchSlugs(endpoint: string, slugField = 'slug'): Promise<string[]> {
+  try {
+    const res = await fetch(`${API}${endpoint}`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : data?.items ?? [];
+    return items.map((i: any) => i[slugField]).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function entry(path: string, priority: number, changeFrequency: SitemapEntry['changeFrequency'] = 'weekly'): SitemapEntry {
+  const languages: Record<string, string> = {};
+  for (const locale of SUPPORTED_LOCALES) {
+    languages[locale] = `${BASE}${pathForLocale(path, locale)}`;
+  }
+  languages['x-default'] = `${BASE}${pathForLocale(path, DEFAULT_LOCALE)}`;
+
   return {
-    url: normalized ? `${base}${normalized}` : base,
+    url: `${BASE}${path}`,
     lastModified: new Date(),
     changeFrequency,
     priority,
+    alternates: { languages },
   };
 }
 
-/**
- * Genera entradas de sitemap para una path: una por idioma (SEO internacional).
- * Español = path sin query; resto = path?lang=xx
- */
-function expandPathByLocales(path: string): string[] {
-  return SUPPORTED_LOCALES.map((locale) => {
-    const p = pathForLocale(path, locale);
-    return p.startsWith("/") ? p : `/${p}`;
-  });
-}
-
-/** Fetch con caché de 24h, compatible con generación estática del sitemap */
-async function fetchForSitemap<T>(fetcher: () => Promise<T>, fallback: T): Promise<T> {
-  try {
-    return await fetcher();
-  } catch {
-    return fallback;
-  }
-}
-
-async function getPueblosSitemap(): Promise<Array<{ slug: string }>> {
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://lpmbe-backend-production.up.railway.app';
-  const res = await fetch(`${backendUrl}/pueblos?lang=es`, {
-    next: { revalidate: 86400 }, // 24h
-  }).catch(() => null);
-  if (!res?.ok) return [];
-  const data = await res.json().catch(() => []);
-  return Array.isArray(data) ? data : [];
-}
-
-async function getRutasSitemap(): Promise<Array<{ slug: string }>> {
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://lpmbe-backend-production.up.railway.app';
-  const res = await fetch(`${backendUrl}/rutas?lang=es`, {
-    next: { revalidate: 86400 }, // 24h
-  }).catch(() => null);
-  if (!res?.ok) return [];
-  const data = await res.json().catch(() => []);
-  return Array.isArray(data) ? data : [];
-}
-
-export const revalidate = 86400; // regenerar sitemap cada 24h
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const entries: MetadataRoute.Sitemap = [];
+  const [puebloSlugs, rutaSlugs, noticiaSlugs, eventoSlugs, contenidoSlugs] =
+    await Promise.all([
+      fetchSlugs('/pueblos'),
+      fetchSlugs('/rutas'),
+      fetchSlugs('/public/noticias?limit=1000'),
+      fetchSlugs('/public/eventos?limit=1000'),
+      fetchSlugs('/public/contenidos?limit=1000'),
+    ]);
 
-  // 1) Home y estáticas: una URL por idioma
-  for (const path of STATIC_PATHS) {
-    const paths = expandPathByLocales(path || "/");
-    const priority = path === "" ? 1 : path === "/experiencias" ? 0.95 : 0.8;
-    for (const p of paths) {
-      entries.push(toSitemapEntry(p, priority));
-    }
-  }
+  const staticPages: MetadataRoute.Sitemap = [
+    entry('/', 1.0, 'daily'),
+    entry('/actualidad', 0.8, 'daily'),
+    entry('/mapa', 0.7, 'weekly'),
+    entry('/meteo', 0.5, 'daily'),
+    entry('/contacto', 0.3, 'yearly'),
+    entry('/newsletter', 0.3, 'yearly'),
+    entry('/club', 0.6, 'monthly'),
+    entry('/tienda', 0.6, 'weekly'),
+    entry('/noche-romantica', 0.6, 'monthly'),
+    entry('/el-sello', 0.5, 'monthly'),
+    entry('/el-sello/quienes-somos', 0.5, 'monthly'),
+    entry('/el-sello/criterios', 0.4, 'yearly'),
+    entry('/el-sello/proceso', 0.4, 'yearly'),
+    entry('/el-sello/como-se-obtiene', 0.4, 'yearly'),
+    entry('/el-sello/internacional', 0.4, 'yearly'),
+    entry('/el-sello/socios', 0.4, 'monthly'),
+    entry('/el-sello/unete', 0.4, 'yearly'),
+    entry('/experiencias', 0.7, 'weekly'),
+    entry('/multiexperiencias', 0.6, 'weekly'),
+    entry('/planifica/crea-mi-ruta', 0.7, 'monthly'),
+    entry('/planifica/fin-de-semana', 0.7, 'monthly'),
+    entry('/pueblos', 0.9, 'weekly'),
+    entry('/pueblos/comunidades', 0.7, 'monthly'),
+    entry('/pueblos/provincias', 0.7, 'monthly'),
+    entry('/pueblos/ultimas-incorporaciones', 0.6, 'monthly'),
+    entry('/rutas', 0.8, 'weekly'),
+    entry('/noticias', 0.8, 'daily'),
+    entry('/eventos', 0.8, 'daily'),
+    entry('/recursos', 0.5, 'monthly'),
+    entry('/redes-sociales', 0.3, 'yearly'),
+    entry('/aviso-legal', 0.1, 'yearly'),
+    entry('/privacidad', 0.1, 'yearly'),
+    entry('/cookies', 0.1, 'yearly'),
+  ];
 
-  // 2) Pueblos: /pueblos/[slug] × 6 idiomas
-  const pueblos = await fetchForSitemap(getPueblosSitemap, []);
-  for (const pueblo of pueblos) {
-    const pathBase = `/pueblos/${pueblo.slug}`;
-    const paths = expandPathByLocales(pathBase);
-    for (const p of paths) {
-      entries.push(toSitemapEntry(p, 0.9, "weekly"));
-    }
-  }
+  const pueblos = puebloSlugs.map((s) => entry(`/pueblos/${s}`, 0.9, 'weekly'));
+  const rutas = rutaSlugs.map((s) => entry(`/rutas/${s}`, 0.8, 'weekly'));
+  const noticias = noticiaSlugs.map((s) => entry(`/noticias/${s}`, 0.6, 'monthly'));
+  const eventos = eventoSlugs.map((s) => entry(`/eventos/${s}`, 0.6, 'monthly'));
+  const contenidos = contenidoSlugs.map((s) => entry(`/c/${s}`, 0.5, 'monthly'));
 
-  // 3) Rutas: /rutas/[slug] × 6 idiomas
-  const rutas = await fetchForSitemap(getRutasSitemap, []);
-  for (const r of rutas) {
-    const pathBase = `/rutas/${r.slug}`;
-    const paths = expandPathByLocales(pathBase);
-    for (const p of paths) {
-      entries.push(toSitemapEntry(p, 0.85, "weekly"));
-    }
-  }
-
-  return entries;
+  return [...staticPages, ...pueblos, ...rutas, ...noticias, ...eventos, ...contenidos];
 }

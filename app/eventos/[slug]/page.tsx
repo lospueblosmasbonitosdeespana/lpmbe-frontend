@@ -6,6 +6,7 @@ import BackButton from '@/app/c/[slug]/BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
+import { getCanonicalUrl, getLocaleAlternates } from '@/lib/seo';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 
 const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it'] as const;
@@ -61,13 +62,24 @@ export async function generateMetadata({
 
   const description = evento.resumen ?? '';
 
+  const path = `/eventos/${slug}`;
   return {
     title: `${evento.titulo} | Los Pueblos Más Bonitos de España`,
     description: description || undefined,
+    alternates: {
+      canonical: getCanonicalUrl(path),
+      languages: getLocaleAlternates(path),
+    },
     openGraph: {
       title: evento.titulo,
       description: description || undefined,
+      url: getCanonicalUrl(path),
       images: evento.coverUrl ? [{ url: evento.coverUrl }] : [],
+    },
+    twitter: {
+      card: evento.coverUrl ? 'summary_large_image' : 'summary',
+      title: evento.titulo,
+      description: description || undefined,
     },
   };
 }

@@ -9,6 +9,7 @@ import GoogleAuthProviderWrapper from "./components/providers/GoogleAuthProvider
 import { ThemeProvider } from "./components/providers/ThemeProvider";
 import { WebAnalyticsTracker } from "@/components/analytics/WebAnalyticsTracker";
 import { getBaseUrl, SITE_NAME, DEFAULT_DESCRIPTION } from "@/lib/seo";
+import JsonLd from "./components/seo/JsonLd";
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseUrl()),
@@ -46,9 +47,23 @@ export default async function RootLayout({
   const locale = await getLocale();
   const messages = await getMessages();
 
+  const organizationLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: SITE_NAME,
+    url: getBaseUrl(),
+    logo: `${getBaseUrl()}/logo.png`,
+    sameAs: [
+      "https://www.facebook.com/lospueblosmasbonitos",
+      "https://www.instagram.com/lospueblosmasbonitosdeespana",
+      "https://www.youtube.com/@lospueblosmasbonitos",
+    ],
+  };
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className="antialiased">
+        <JsonLd data={organizationLd} />
         <ThemeProvider>
           <NextIntlClientProvider locale={locale} messages={messages}>
             <GoogleAuthProviderWrapper>
