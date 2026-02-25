@@ -105,8 +105,8 @@ export default function BandejaNotificaciones() {
 
   if (!items.length) {
     return (
-      <div className="p-6 border rounded-lg text-center text-gray-600">
-        <p className="text-lg mb-2">{t('noActiveNotifs')}</p>
+      <div className="p-6 border border-border rounded-lg text-center text-muted-foreground">
+        <p className="text-lg mb-2 text-foreground">{t('noActiveNotifs')}</p>
         <p className="text-sm">
           {t('configurePrefs')}
         </p>
@@ -115,17 +115,17 @@ export default function BandejaNotificaciones() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 text-foreground">
       {/* Filtros */}
-      <div className="flex flex-wrap gap-2 border-b pb-3">
+      <div className="flex flex-wrap gap-2 border-b border-border pb-3">
         {FILTERS.map(f => (
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
             className={`px-4 py-2 text-sm rounded-full transition ${
               filter === f.key
-                ? 'bg-blue-600 text-white font-medium'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-primary text-primary-foreground font-medium'
+                : 'bg-muted text-foreground hover:bg-muted/80'
             }`}
           >
             {f.label}
@@ -134,9 +134,9 @@ export default function BandejaNotificaciones() {
       </div>
 
       {/* Lista de notificaciones */}
-      <div className="border rounded-lg divide-y">
+      <div className="border border-border rounded-lg divide-y divide-border">
         {itemsFiltrados.length === 0 ? (
-          <div className="p-6 text-center text-gray-600">
+          <div className="p-6 text-center text-muted-foreground">
             {t('noNotifsOfType')} "{FILTERS.find(f => f.key === filter)?.label ?? filter}".
           </div>
         ) : (
@@ -149,11 +149,11 @@ export default function BandejaNotificaciones() {
                 : null;
 
             const badgeColor =
-              tipoLabel === 'ALERTA' ? 'bg-red-100 text-red-700' :
-              tipoLabel === 'SEMAFORO' ? 'bg-yellow-100 text-yellow-700' :
-              tipoLabel === 'METEO' ? 'bg-blue-100 text-blue-700' :
-              tipoLabel === 'EVENTO' ? 'bg-green-100 text-green-700' :
-              'bg-gray-100 text-gray-700';
+              tipoLabel === 'ALERTA' ? 'bg-red-500/20 text-red-400' :
+              tipoLabel === 'SEMAFORO' ? 'bg-yellow-500/20 text-yellow-400' :
+              tipoLabel === 'METEO' ? 'bg-blue-500/20 text-blue-400' :
+              tipoLabel === 'EVENTO' ? 'bg-green-500/20 text-green-400' :
+              'bg-muted text-foreground';
 
             let href: string | null = null;
             if (n.enlace) {
@@ -174,37 +174,37 @@ export default function BandejaNotificaciones() {
                       {tipoLabel}
                     </span>
                     {puebloNombre && (
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-muted-foreground">
                         📍 {puebloNombre}
                       </span>
                     )}
                   </div>
 
                   {n.titulo && (
-                    <p className="text-sm font-semibold text-gray-900 mb-1">{n.titulo}</p>
+                    <p className="text-sm font-semibold text-foreground mb-1">{n.titulo}</p>
                   )}
 
                   {n.contenido && (
-                    <p className="text-sm text-gray-800 whitespace-pre-line">{n.contenido}</p>
+                    <p className="text-sm text-foreground whitespace-pre-line">{n.contenido}</p>
                   )}
 
                   {href && (
-                    <span className="text-xs text-blue-600 mt-1 inline-block">Ver detalle →</span>
+                    <span className="text-xs text-primary mt-1 inline-block">Ver detalle →</span>
                   )}
                 </div>
 
-                <div className="text-xs text-gray-500 whitespace-nowrap">
+                <div className="text-xs text-muted-foreground whitespace-nowrap">
                   {formatFecha(n.createdAt)}
                 </div>
               </div>
             );
 
             return href ? (
-              <Link key={n.id} href={href} className="block p-4 hover:bg-gray-50 transition">
+              <Link key={n.id} href={href} className="block p-4 hover:bg-muted/50 transition text-foreground">
                 {inner}
               </Link>
             ) : (
-              <div key={n.id} className="p-4 hover:bg-gray-50 transition">
+              <div key={n.id} className="p-4 hover:bg-muted/50 transition">
                 {inner}
               </div>
             );
@@ -214,12 +214,12 @@ export default function BandejaNotificaciones() {
 
       {/* Contador */}
       {totalItems === MAX_ITEMS && (
-        <p className="text-sm text-gray-600 text-center">
+        <p className="text-sm text-muted-foreground text-center">
           {t('showingLatest')} {MAX_ITEMS} {t('notifications')}.
         </p>
       )}
       {totalItems < MAX_ITEMS && totalItems > 0 && (
-        <p className="text-sm text-gray-500 text-center">
+        <p className="text-sm text-muted-foreground text-center">
           {totalItems} {totalItems === 1 ? t('notification') : t('notifications')}
         </p>
       )}

@@ -234,13 +234,7 @@ export default function NotificacionesFeed() {
       return (
         <Link
           href={href}
-          style={{
-            fontWeight: "bold",
-            marginBottom: "0.25rem",
-            color: "#000",
-            textDecoration: "underline",
-            cursor: "pointer",
-          }}
+          className="font-bold mb-1 block text-foreground underline cursor-pointer hover:opacity-90"
         >
           {tituloTexto}
         </Link>
@@ -248,10 +242,10 @@ export default function NotificacionesFeed() {
     }
 
     return (
-      <div style={{ fontWeight: "bold", marginBottom: "0.25rem" }}>
+      <div className="font-bold mb-1">
         {tituloTexto}
         {color && (
-          <span style={{ marginLeft: "0.5rem", fontSize: "0.875rem", color: "#666" }}>
+          <span className="ml-2 text-sm text-muted-foreground">
             ● {color}
           </span>
         )}
@@ -260,23 +254,13 @@ export default function NotificacionesFeed() {
   }
 
   if (loading) {
-    return <div style={{ padding: "1rem" }}>{t("loading")}</div>;
+    return <div className="p-4 text-foreground">{t("loading")}</div>;
   }
 
   return (
-    <div>
+    <div className="text-foreground">
       {/* Pestañas de filtro traducidas */}
-      <div
-        style={{
-          display: "flex",
-          gap: "0.5rem",
-          marginBottom: "1.5rem",
-          borderBottom: "1px solid #e5e5e5",
-          paddingBottom: "0.5rem",
-          alignItems: "center",
-          flexWrap: "wrap",
-        }}
-      >
+      <div className="flex gap-2 mb-6 border-b border-border pb-2 items-center flex-wrap">
         {([
           { key: "TODAS", labelKey: "all" },
           { key: "NOTICIA", labelKey: "news" },
@@ -287,14 +271,11 @@ export default function NotificacionesFeed() {
           <button
             key={key}
             onClick={() => setFilter(key)}
-            style={{
-              padding: "0.5rem 1rem",
-              border: "none",
-              background: filter === key ? "#000" : "transparent",
-              color: filter === key ? "#fff" : "#000",
-              cursor: "pointer",
-              textDecoration: "underline",
-            }}
+            className={`px-4 py-2 border-none rounded cursor-pointer underline transition-colors ${
+              filter === key
+                ? "bg-primary text-primary-foreground"
+                : "bg-transparent text-foreground hover:opacity-80"
+            }`}
           >
             {t(labelKey)}
           </button>
@@ -303,17 +284,17 @@ export default function NotificacionesFeed() {
 
       {/* Lista de items - visual plano */}
       {filteredItems.length === 0 ? (
-        <div style={{ padding: "1rem", color: "#666" }}>
+        <div className="p-4 text-muted-foreground">
           {t("noNotifications")}
         </div>
       ) : (
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+        <ul className="list-none p-0 m-0">
           {filteredItems.map((item, idx) => {
             const href = getItemHref(item);
 
             const inner = (
               <>
-                <div style={{ fontSize: "0.75rem", color: "#666", marginBottom: "0.5rem" }}>
+                <div className="text-xs text-muted-foreground mb-2">
                   {formatFecha(item.fecha)} · {getTipoLabel(item.tipo)}
                   {item.pueblo && ` · ${t("village")} ${item.pueblo.nombre || item.pueblo.slug}`}
                 </div>
@@ -329,7 +310,7 @@ export default function NotificacionesFeed() {
                     
                     if (motivo && !esGenerico) {
                       return (
-                        <div style={{ fontSize: "0.875rem", color: "#666", lineHeight: "1.5", marginTop: "0.25rem" }}>
+                        <div className="text-sm text-muted-foreground leading-snug mt-1">
                           {t("motivo")} {motivo}
                         </div>
                       );
@@ -337,7 +318,7 @@ export default function NotificacionesFeed() {
                     
                     if (textoGen && !esGenerico && textoGen !== motivo) {
                       return (
-                        <div style={{ fontSize: "0.875rem", color: "#666", lineHeight: "1.5", marginTop: "0.25rem" }}>
+                        <div className="text-sm text-muted-foreground leading-snug mt-1">
                           {textoGen}
                         </div>
                       );
@@ -347,7 +328,7 @@ export default function NotificacionesFeed() {
                   })()
                 ) : (
                   item.texto && item.texto.trim() && (
-                    <div style={{ fontSize: "0.875rem", color: "#666", lineHeight: "1.5", marginTop: "0.25rem" }}>
+                    <div className="text-sm text-muted-foreground leading-snug mt-1">
                       {item.texto}
                     </div>
                   )
@@ -358,14 +339,14 @@ export default function NotificacionesFeed() {
             return (
               <li key={item.id}>
                 {idx > 0 && (
-                  <hr style={{ border: "none", borderTop: "1px solid #e5e5e5", margin: 0 }} />
+                  <hr className="border-0 border-t border-border m-0" />
                 )}
                 {href ? (
-                  <Link href={href} style={{ display: "block", padding: "1rem 0", textDecoration: "none", color: "inherit" }}>
+                  <Link href={href} className="block py-4 no-underline text-foreground hover:opacity-90">
                     {inner}
                   </Link>
                 ) : (
-                  <div style={{ padding: "1rem 0" }}>{inner}</div>
+                  <div className="py-4">{inner}</div>
                 )}
               </li>
             );
