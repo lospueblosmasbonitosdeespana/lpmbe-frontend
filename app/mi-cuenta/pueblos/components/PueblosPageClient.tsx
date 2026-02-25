@@ -58,6 +58,13 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
     return new Set(data.items.map((item) => item.puebloId));
   }, [data.items]);
 
+  // Map de origen por pueblo: GPS (azul) o MANUAL (verde)
+  const visitedOrigins = useMemo(() => {
+    const map = new Map<number, 'GPS' | 'MANUAL'>();
+    data.items.forEach((item) => map.set(item.puebloId, item.origen));
+    return map;
+  }, [data.items]);
+
   // Función para marcar un pueblo como visitado
   const handleMarcarVisitado = useCallback(
     async (puebloId: number) => {
@@ -146,13 +153,13 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
                   <Caption>{t('total')}</Caption>
                   <p className="mt-1 font-serif text-2xl font-medium tabular-nums">{data.total}</p>
                 </div>
-                <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-                  <Caption>{t('gps')}</Caption>
-                  <p className="mt-1 font-serif text-2xl font-medium tabular-nums">{data.gps}</p>
+                <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
+                  <Caption className="text-blue-700">{t('gps')}</Caption>
+                  <p className="mt-1 font-serif text-2xl font-medium tabular-nums text-blue-700">{data.gps}</p>
                 </div>
-                <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-                  <Caption>{t('manual')}</Caption>
-                  <p className="mt-1 font-serif text-2xl font-medium tabular-nums">{data.manual}</p>
+                <div className="rounded-xl border border-green-200 bg-green-50 p-4 shadow-sm">
+                  <Caption className="text-green-700">{t('manual')}</Caption>
+                  <p className="mt-1 font-serif text-2xl font-medium tabular-nums text-green-700">{data.manual}</p>
                 </div>
               </div>
 
@@ -168,7 +175,7 @@ export default function PueblosPageClient({ initialData, todosPueblos }: Props) 
 
                 {/* Columna derecha: mapa */}
                 <div className="min-h-0 overflow-hidden rounded-xl border border-border shadow-sm lg:min-h-[70vh]">
-                  <MapaPueblosVisitados pueblos={todosPueblos} visitedIds={visitedIds} />
+                  <MapaPueblosVisitados pueblos={todosPueblos} visitedIds={visitedIds} visitedOrigins={visitedOrigins} />
                 </div>
               </div>
 
