@@ -1174,15 +1174,15 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
         </div>
 
         {/* Scroll horizontal en mobile, grid en desktop */}
-        <div className="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:overflow-visible scrollbar-hide">
+        <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 lg:grid-cols-6 md:overflow-visible scrollbar-hide">
           {news.map((item) => (
             <Link
               key={item.id}
               href={getHref(item)}
-              className="group flex-shrink-0 w-[300px] md:w-auto"
+              className="group flex-shrink-0 w-[180px] md:w-auto"
             >
               {/* Imagen */}
-              <div className="relative aspect-[16/9] rounded-2xl overflow-hidden mb-4 shadow-md group-hover:shadow-lg transition-shadow">
+              <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-2.5 shadow-sm group-hover:shadow-md transition-shadow">
                 {item.image ? (
                   <Image
                     src={item.image}
@@ -1192,18 +1192,18 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
                   />
                 ) : (
                   <div className="absolute inset-0 bg-muted flex items-center justify-center">
-                    <Newspaper className="h-12 w-12 text-muted-foreground/40" />
+                    <Newspaper className="h-8 w-8 text-muted-foreground/50" />
                   </div>
                 )}
                 {/* Badge tipo */}
-                <span className="absolute top-3 left-3 rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+                <span className="absolute top-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
                   {BADGE_LABELS[item.type?.toUpperCase()] ?? item.type}
                 </span>
               </div>
 
               {/* Texto */}
-              <p className="text-sm text-muted-foreground mb-1.5">{formatDate(item.date)}</p>
-              <p className="text-base font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+              <p className="text-xs text-muted-foreground mb-1">{formatDate(item.date)}</p>
+              <p className="text-sm font-medium leading-snug line-clamp-2 group-hover:text-primary transition-colors">
                 {item.title}
               </p>
             </Link>
