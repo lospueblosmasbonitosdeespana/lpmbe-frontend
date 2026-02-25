@@ -174,7 +174,7 @@ async function getNews(locale?: string): Promise<NewsItem[]> {
       } else if (item.slug) {
         href = tipo === 'EVENTO' ? `/eventos/${item.slug}` : `/noticias/${item.slug}`;
       } else {
-        href = "/notificaciones";
+        href = "/actualidad";
       }
 
       return {
