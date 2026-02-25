@@ -77,25 +77,42 @@ async function getNotifications(locale?: string): Promise<NotificationItem[]> {
   try {
     const API_BASE = getApiUrl();
     const qs = locale ? `&lang=${encodeURIComponent(locale)}` : "";
-    const res = await fetch(
-      `${API_BASE}/public/notificaciones/feed?limit=10&tipos=NOTICIA,EVENTO,ALERTA,SEMAFORO${qs}`,
-      { cache: "no-store", headers: locale ? { "Accept-Language": locale } : undefined }
-    );
-    if (!res.ok) return [];
+    const headers = locale ? { "Accept-Language": locale } : undefined;
 
-    const json = await res.json();
-    const items = Array.isArray(json) ? json : (json?.items ?? []);
+    // Noticias y eventos: solo de la asociación (puebloId=null) desde sus endpoints dedicados
+    // Alertas y semáforos: del feed general (incluyen los de pueblos)
+    const [resNoticias, resEventos, resFeed] = await Promise.all([
+      fetch(`${API_BASE}/public/noticias?limit=5${qs}`, { cache: "no-store", headers }),
+      fetch(`${API_BASE}/public/eventos?limit=5${qs}`, { cache: "no-store", headers }),
+      fetch(`${API_BASE}/public/notificaciones/feed?limit=5&tipos=ALERTA,SEMAFORO${qs}`, { cache: "no-store", headers }),
+    ]);
 
-    return items.slice(0, 8).map((item: any) => ({
+    const noticias: any[] = resNoticias.ok ? await resNoticias.json().catch(() => []) : [];
+    const eventos: any[] = resEventos.ok ? await resEventos.json().catch(() => []) : [];
+    const feedItems: any[] = resFeed.ok
+      ? await resFeed.json().then((d: any) => (Array.isArray(d) ? d : d?.items ?? [])).catch(() => [])
+      : [];
+
+    const mapItem = (item: any, tipo: string): NotificationItem => ({
       id: item.id ?? item.refId ?? Math.random(),
-      date: formatShortDate(item.fecha),
+      date: formatShortDate(item.fechaInicio ?? item.fecha ?? item.createdAt),
       title: item.titulo ?? "(sin título)",
-      type: mapNotificationType(item.tipo),
-      href: item.contenidoSlug
-        ? `/c/${item.contenidoSlug}`
-        : item.url || item.href || "/notificaciones",
+      type: mapNotificationType(tipo),
+      href: item.contenidoSlug ?? item.slug ? `/c/${item.contenidoSlug ?? item.slug}` : item.url || "/notificaciones",
       message: (item.motivoPublico?.trim() || item.contenido?.trim()) || undefined,
-    }));
+    });
+
+    const all: NotificationItem[] = [
+      ...noticias.map((i: any) => mapItem(i, "NOTICIA")),
+      ...eventos.map((i: any) => mapItem(i, "EVENTO")),
+      ...feedItems.map((i: any) => mapItem(i, i.tipo ?? "ALERTA")),
+    ].sort((a, b) => {
+      // Mantener el orden: primero alertas/semáforos, luego noticias/eventos
+      const order: Record<string, number> = { alerta: 0, semaforo: 1, meteo: 2, noticia: 3 };
+      return (order[a.type] ?? 3) - (order[b.type] ?? 3);
+    });
+
+    return all.slice(0, 8);
   } catch {
     return [];
   }
@@ -109,34 +126,50 @@ function mapNotificationType(tipo?: string): "noticia" | "semaforo" | "alerta" |
   return "noticia";
 }
 
-// Fetch news for actualidad section
+// Fetch news for actualidad section — solo contenidos de la asociación (puebloId=null)
 async function getNews(locale?: string): Promise<NewsItem[]> {
   try {
     const API_BASE = getApiUrl();
     const qs = locale ? `&lang=${encodeURIComponent(locale)}` : "";
-    const res = await fetch(
-      `${API_BASE}/public/notificaciones/feed?limit=4&tipos=NOTICIA,EVENTO${qs}`,
-      { cache: "no-store", headers: locale ? { "Accept-Language": locale } : undefined }
-    );
-    if (!res.ok) return [];
 
-    const json = await res.json();
-    const items = Array.isArray(json) ? json : (json?.items ?? []);
+    // Cargamos noticias y eventos de la asociación en paralelo desde sus endpoints dedicados
+    const [resNoticias, resEventos] = await Promise.all([
+      fetch(`${API_BASE}/public/noticias?limit=4${qs}`, {
+        cache: "no-store",
+        headers: locale ? { "Accept-Language": locale } : undefined,
+      }),
+      fetch(`${API_BASE}/public/eventos?limit=4${qs}`, {
+        cache: "no-store",
+        headers: locale ? { "Accept-Language": locale } : undefined,
+      }),
+    ]);
 
-    return items.slice(0, 4).map((item: any) => {
-      // Prioridad: contenido enlazado (artículo completo) > anchor en listado
-      const contenidoSlug = item.contenidoSlug ?? item.contenido_slug;
+    const noticias: any[] = resNoticias.ok ? await resNoticias.json().catch(() => []) : [];
+    const eventos: any[] = resEventos.ok ? await resEventos.json().catch(() => []) : [];
+
+    // Mezclar y ordenar por fecha descendente, mostrar máximo 4
+    const all = [
+      ...noticias.map((item: any) => ({ ...item, _tipo: "NOTICIA" })),
+      ...eventos.map((item: any) => ({ ...item, _tipo: "EVENTO" })),
+    ].sort((a, b) => {
+      const da = new Date(a.fechaInicio ?? a.createdAt ?? 0).getTime();
+      const db = new Date(b.fechaInicio ?? b.createdAt ?? 0).getTime();
+      return db - da;
+    });
+
+    return all.slice(0, 4).map((item: any) => {
+      const contenidoSlug = item.contenidoSlug ?? item.slug;
       const href = contenidoSlug
         ? `/c/${contenidoSlug}`
-        : item.url || item.href || (item.id ? `/notificaciones#notif-${item.id}` : "/notificaciones");
+        : "/notificaciones";
 
       return {
-        id: item.id ?? item.refId ?? Math.random(),
+        id: item.id ?? Math.random(),
         title: item.titulo ?? "(sin título)",
-        type: item.tipo ?? "NOTICIA",
+        type: item._tipo ?? "NOTICIA",
         href,
-        image: item.coverUrl ?? item.imagen ?? item.image ?? null,
-        date: item.fecha ?? item.createdAt,
+        image: item.coverUrl ?? item.imagen ?? null,
+        date: item.fechaInicio ?? item.createdAt,
       };
     });
   } catch {

@@ -88,34 +88,43 @@ export function NotificacionesFloating() {
     async function load() {
       try {
         setLoading(true);
+        const lang = encodeURIComponent(locale);
 
-        // Endpoint corregido con tipos explícitos
-        const res = await fetch(`/api/public/notificaciones/feed?limit=10&tipos=NOTICIA,EVENTO,ALERTA,ALERTA_PUEBLO,SEMAFORO&lang=${encodeURIComponent(locale)}`, {
-          credentials: "include",
-          cache: "no-store",
+        // Noticias y eventos: solo de la asociación (puebloId=null)
+        // Alertas, semáforos, meteo: del feed general (incluyen pueblos)
+        const [resNoticias, resEventos, resFeed] = await Promise.all([
+          fetch(`/api/public/noticias?limit=5&lang=${lang}`, { cache: "no-store" }),
+          fetch(`/api/public/eventos?limit=5&lang=${lang}`, { cache: "no-store" }),
+          fetch(`/api/public/notificaciones/feed?limit=10&tipos=ALERTA,ALERTA_PUEBLO,SEMAFORO,METEO&lang=${lang}`, {
+            credentials: "include",
+            cache: "no-store",
+          }),
+        ]);
+
+        const noticias: any[] = resNoticias.ok ? await resNoticias.json().catch(() => []) : [];
+        const eventos: any[] = resEventos.ok ? await resEventos.json().catch(() => []) : [];
+        const feedData = resFeed.ok ? await resFeed.json().catch(() => []) : [];
+        const feedItems: any[] = Array.isArray(feedData) ? feedData : (feedData?.items ?? []);
+
+        const mapItem = (item: any, tipo: string): Notificacion => ({
+          id: item.id ?? Math.random(),
+          titulo: item.titulo ?? "",
+          tipo,
+          texto: item.contenido ?? item.resumen ?? "",
+          contenido: item.contenido ?? item.resumen ?? null,
+          fecha: item.fechaInicio ?? item.fecha ?? item.createdAt ?? new Date().toISOString(),
+          pueblo: item.pueblo ?? null,
+          estado: item.estado ?? null,
+          motivoPublico: item.motivoPublico ?? null,
         });
 
-        if (!res.ok) throw new Error(tNotif("loadErrorFeed"));
+        const mapped: Notificacion[] = [
+          ...noticias.map((i: any) => mapItem(i, "NOTICIA")),
+          ...eventos.map((i: any) => mapItem(i, "EVENTO")),
+          ...feedItems.map((i: any) => mapItem(i, i.tipo ?? "ALERTA")),
+        ];
 
-        const data = await res.json();
-        // CRÍTICO: el backend devuelve { items: [...] }
-        const rawItems = Array.isArray(data) ? data : (data?.items ?? []);
-        
-        if (!cancelled) {
-          // Mapear al formato esperado por el widget
-          const mapped: Notificacion[] = rawItems.map((item: any) => ({
-            id: item.id ?? item.refId ?? Math.random(),
-            titulo: item.titulo ?? "",
-            tipo: item.tipo ?? "NOTICIA",
-            texto: item.contenido ?? item.texto ?? "",
-            contenido: item.contenido ?? item.texto ?? null,
-            fecha: item.fecha ?? new Date().toISOString(),
-            pueblo: item.pueblo ?? null,
-            estado: item.estado ?? null,
-            motivoPublico: item.motivoPublico ?? null,
-          }));
-          setItems(mapped);
-        }
+        if (!cancelled) setItems(mapped);
       } catch {
         if (!cancelled) setItems([]);
       } finally {
@@ -127,7 +136,7 @@ export function NotificacionesFloating() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [locale]);
 
   const filtered = useMemo(() => {
     // Mapear tabs a tipos de notificación
