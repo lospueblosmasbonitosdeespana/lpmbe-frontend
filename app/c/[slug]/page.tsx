@@ -216,20 +216,6 @@ export default async function ContenidoPage({
               </p>
             )}
 
-            {/* Resumen (si existe) */}
-            {contenido.resumen && (
-              <p
-                style={{
-                  fontSize: '18px',
-                  lineHeight: '1.6',
-                  color: '#444',
-                  marginTop: '24px',
-                  fontWeight: 400,
-                }}
-              >
-                {contenido.resumen}
-              </p>
-            )}
           </header>
 
           {/* CONTENIDO (HTML o Markdown) */}
