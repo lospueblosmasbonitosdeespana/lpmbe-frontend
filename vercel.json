@@ -1,1 +1,8 @@
-{}
+{
+  "rewrites": [
+    {
+      "source": "/wp-json/:path*",
+      "destination": "https://lpmbe-backend-production.up.railway.app/wp-json/:path*"
+    }
+  ]
+}
