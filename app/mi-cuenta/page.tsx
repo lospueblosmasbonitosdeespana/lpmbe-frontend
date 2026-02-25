@@ -6,7 +6,6 @@ import { Display, Lead, Caption } from '@/app/components/ui/typography';
 import {
   Trophy,
   MapPin,
-  Bell,
   Settings,
   User,
   Users,
@@ -15,9 +14,16 @@ import {
 } from 'lucide-react';
 import { LogoutButton } from './components/LogoutButton';
 import ThemeSelector from '@/app/cuenta/ThemeSelector';
+import NotifCenterBadgeLink from './components/NotifCenterBadgeLink';
 
 export default async function MiCuentaPage() {
   const t = await getTranslations('myAccount');
+
+  const notifCenter = {
+    href: '/mi-cuenta/bandeja',
+    title: t('notifCenter'),
+    description: t('notifCenterDesc'),
+  };
 
   const links = [
     {
@@ -37,12 +43,6 @@ export default async function MiCuentaPage() {
       title: t('visitedVillages'),
       description: t('visitedVillagesDesc'),
       icon: MapPin,
-    },
-    {
-      href: '/mi-cuenta/bandeja',
-      title: t('notifCenter'),
-      description: t('notifCenterDesc'),
-      icon: Bell,
     },
     {
       href: '/mi-cuenta/notificaciones',
@@ -86,7 +86,31 @@ export default async function MiCuentaPage() {
               </div>
 
               <div className="grid w-full max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {links.map((item) => {
+                {/* Puntos, Rutas, Pueblos */}
+                {links.slice(0, 3).map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="group flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
+                    >
+                      <Icon className="mb-3 h-8 w-8 text-primary" />
+                      <Caption className="mb-1 font-medium">{item.title}</Caption>
+                      <p className="text-center text-sm text-muted-foreground group-hover:text-foreground">
+                        {item.description}
+                      </p>
+                    </Link>
+                  );
+                })}
+                {/* Centro de notificaciones con badge de no leídas */}
+                <NotifCenterBadgeLink
+                  href={notifCenter.href}
+                  title={notifCenter.title}
+                  description={notifCenter.description}
+                />
+                {/* Resto de links */}
+                {links.slice(3).map((item) => {
                   const Icon = item.icon;
                   return (
                     <Link

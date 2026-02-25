@@ -71,9 +71,15 @@ export default function BandejaNotificaciones() {
     fetch(`/api/notificaciones/me?limit=${MAX_ITEMS}&lang=${encodeURIComponent(locale)}`)
       .then(r => (r.ok ? r.json() : []))
       .then(data => {
-        const allItems = Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : []);
+        const allItems: Array<{ id: number }> = Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : []);
         setTotalItems(allItems.length);
-        setItems(allItems);
+        setItems(allItems as NotificacionItem[]);
+        // Marcar como leídas guardando el ID más reciente
+        if (allItems.length > 0) {
+          try {
+            localStorage.setItem('lpbe_notif_last_read_id', String(allItems[0].id));
+          } catch {}
+        }
       })
       .catch(() => {
         setTotalItems(0);
