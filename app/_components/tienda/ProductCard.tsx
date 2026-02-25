@@ -50,33 +50,20 @@ export function ProductCard({ product, className }: ProductCardProps) {
     >
       <article className="flex flex-col">
         {/* Imagen */}
-        <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
+        <div className="relative aspect-square overflow-hidden rounded-lg bg-white">
           {usePlaceholder ? (
             <div className="absolute inset-0 flex items-center justify-center bg-muted text-muted-foreground text-sm">
               {t('noImage')}
             </div>
           ) : (
-            <>
-              {/* Fondo desenfocado para imágenes que no llenan el cuadrado */}
-              <Image
-                src={safeSrc}
-                alt=""
-                fill
-                aria-hidden
-                className="object-cover scale-110 blur-xl brightness-75 saturate-125"
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                unoptimized
-              />
-              {/* Imagen real centrada, sin recorte */}
-              <Image
-                src={safeSrc}
-                alt={localized(product.nombre, product.nombre_i18n, locale) || 'Producto'}
-                fill
-                className="object-contain transition-transform duration-500 group-hover:scale-105 relative z-10"
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                unoptimized
-              />
-            </>
+            <Image
+              src={safeSrc}
+              alt={localized(product.nombre, product.nombre_i18n, locale) || 'Producto'}
+              fill
+              className="object-contain p-3 transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              unoptimized
+            />
           )}
           <div className="absolute inset-0 bg-foreground/0 transition-colors duration-300 group-hover:bg-foreground/5" />
 

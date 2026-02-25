@@ -110,23 +110,13 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
         {/* Imagen + Galería */}
         <div>
-          <div className="relative aspect-square w-full overflow-hidden rounded-lg">
+          <div className="aspect-square w-full overflow-hidden rounded-lg bg-white">
             {mainUrl ? (
-              <>
-                {/* Fondo desenfocado: misma imagen estirada */}
-                <img
-                  src={mainUrl}
-                  aria-hidden="true"
-                  className="absolute inset-0 h-full w-full object-cover scale-110"
-                  style={{ filter: 'blur(24px) brightness(0.7) saturate(1.2)' }}
-                />
-                {/* Imagen real centrada encima */}
-                <img
-                  src={mainUrl}
-                  alt={productName || t('product')}
-                  className="absolute inset-0 z-10 h-full w-full object-contain"
-                />
-              </>
+              <img
+                src={mainUrl}
+                alt={productName || t('product')}
+                className="h-full w-full object-contain p-4"
+              />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-gray-100 text-sm text-gray-500">
                 {t('noImage')}
