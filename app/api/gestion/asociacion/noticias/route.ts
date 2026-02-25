@@ -34,6 +34,7 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const titulo = typeof body?.titulo === 'string' ? body.titulo.trim() : '';
   const contenido = typeof body?.contenido === 'string' ? body.contenido.trim() : '';
+  const resumen = typeof body?.resumen === 'string' ? body.resumen.trim() : null;
   const coverUrl = typeof body?.coverUrl === 'string' ? body.coverUrl.trim() : null;
 
   if (!titulo) return NextResponse.json({ message: 'titulo requerido' }, { status: 400 });
@@ -48,6 +49,7 @@ export async function POST(req: Request) {
     body: JSON.stringify({
       tipo: 'NOTICIA',
       titulo,
+      resumen: resumen || null,
       contenido: contenido || null,
       coverUrl: coverUrl || null,
     }),

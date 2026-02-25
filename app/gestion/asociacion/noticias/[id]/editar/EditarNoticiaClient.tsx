@@ -18,6 +18,7 @@ export default function EditarNoticiaClient({ id }: EditarNoticiaClientProps) {
   const [error, setError] = useState<string | null>(null);
 
   const [titulo, setTitulo] = useState('');
+  const [subtitulo, setSubtitulo] = useState('');
   const [contenido, setContenido] = useState('');
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -38,6 +39,7 @@ export default function EditarNoticiaClient({ id }: EditarNoticiaClientProps) {
 
         const data = await res.json();
         setTitulo(data.titulo ?? '');
+        setSubtitulo(data.resumen ?? '');
         setContenido(data.contenido ?? '');
         setCoverUrl(data.coverUrl ?? null);
       } catch (e: any) {
@@ -74,7 +76,7 @@ export default function EditarNoticiaClient({ id }: EditarNoticiaClientProps) {
       }
 
       // 2. Actualizar noticia
-      const payload: any = { titulo: t, contenido };
+      const payload: any = { titulo: t, resumen: subtitulo.trim() || null, contenido };
       if (newCoverUrl) payload.coverUrl = newCoverUrl;
 
       const res = await fetch(`/api/gestion/asociacion/notificaciones/${id}`, {
@@ -124,6 +126,18 @@ export default function EditarNoticiaClient({ id }: EditarNoticiaClientProps) {
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">Subtítulo o entradilla (opcional)</label>
+          <p className="text-xs text-gray-500">Frase corta que aparece destacada debajo del título. No sustituye al contenido principal.</p>
+          <textarea
+            className="w-full rounded-md border px-3 py-2"
+            rows={2}
+            value={subtitulo}
+            onChange={(e) => setSubtitulo(e.target.value)}
+            placeholder="Ej: La asociación celebró su XIII Asamblea en Santillana del Mar."
           />
         </div>
 

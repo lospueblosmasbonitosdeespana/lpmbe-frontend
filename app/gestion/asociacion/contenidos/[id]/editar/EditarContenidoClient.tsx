@@ -224,13 +224,14 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium">Resumen (opcional)</label>
+          <label className="block text-sm font-medium">Subtítulo o entradilla (opcional)</label>
+          <p className="text-xs text-gray-500">Frase corta que aparece destacada debajo del título. No sustituye al contenido principal.</p>
           <textarea
             className="w-full rounded-md border px-3 py-2"
-            rows={3}
+            rows={2}
             value={resumen}
             onChange={(e) => setResumen(e.target.value)}
-            placeholder="Descripción corta del contenido"
+            placeholder="Ej: La asociación celebró su XIII Asamblea en Santillana del Mar."
           />
         </div>
 
