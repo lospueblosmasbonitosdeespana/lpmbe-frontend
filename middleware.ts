@@ -3,7 +3,8 @@ import type { NextRequest } from 'next/server';
 import { AUTH_COOKIE_NAME } from '@/lib/auth';
 import { SUPPORTED_LOCALES } from '@/lib/seo';
 
-const CANONICAL_HOST = 'staging.lospueblosmasbonitosdeespana.org';
+const CANONICAL_HOST = 'lospueblosmasbonitosdeespana.org';
+const STAGING_HOST = 'staging.lospueblosmasbonitosdeespana.org';
 const VERCEL_HOST = 'lpmbe-frontend.vercel.app';
 const LOCALE_COOKIE = 'NEXT_LOCALE';
 
@@ -11,8 +12,9 @@ export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
   const host = request.headers.get('host') ?? '';
 
-  // 1) Dominio canónico: si entran por Vercel → redirect 308 a staging (path + query)
-  if (host === VERCEL_HOST || host.startsWith(VERCEL_HOST + ':')) {
+  // 1) Dominio canónico: Vercel o staging → redirect 308 al dominio principal
+  if (host === VERCEL_HOST || host.startsWith(VERCEL_HOST + ':') ||
+      host === STAGING_HOST || host.startsWith(STAGING_HOST + ':')) {
     const url = new URL(request.url);
     url.protocol = 'https:';
     url.host = CANONICAL_HOST;
