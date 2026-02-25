@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import { ChevronDown, ChevronUp, Search, X } from 'lucide-react';
 import { RESOURCE_TYPES, RESOURCE_TYPE_LABELS } from '@/lib/resource-types';
 import HorariosEditor, { HorarioDia, CierreEspecial } from '@/app/_components/editor/HorariosEditor';
 
@@ -523,12 +524,38 @@ export default function RecursosAsociacionClient() {
   const [saving, setSaving] = useState(false);
 
   const [expandedColab, setExpandedColab] = useState<number | null>(null);
+  // IDs de recursos con detalle expandido (vista compacta)
+  const [expandedDetail, setExpandedDetail] = useState<Set<number>>(new Set());
+
+  // Búsqueda y filtro
+  const [search, setSearch] = useState('');
+  const [filterActivo, setFilterActivo] = useState<'todos' | 'activo' | 'inactivo'>('todos');
 
   const [flyToPos, setFlyToPos] = useState<[number, number] | null>(null);
 
   const recursoRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
   const isFormActive = showCreate || editId !== null;
+
+  function toggleDetail(id: number) {
+    setExpandedDetail((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  const recursosFiltrados = useMemo(() => {
+    return recursos.filter((r) => {
+      const q = search.trim().toLowerCase();
+      if (q && !r.nombre.toLowerCase().includes(q) &&
+          !(r.provincia || '').toLowerCase().includes(q) &&
+          !(r.comunidad || '').toLowerCase().includes(q)) return false;
+      if (filterActivo === 'activo' && !r.activo) return false;
+      if (filterActivo === 'inactivo' && r.activo) return false;
+      return true;
+    });
+  }, [recursos, search, filterActivo]);
 
   const existingMarkers = recursos
     .filter((r) => r.lat && r.lng)
@@ -792,197 +819,235 @@ export default function RecursosAsociacionClient() {
         </div>
       )}
 
+      {/* Barra de búsqueda y filtros */}
+      {recursos.length > 0 && (
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por nombre, provincia…"
+              className="w-full rounded border py-2 pl-8 pr-8 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            />
+            {search && (
+              <button type="button" onClick={() => setSearch('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          <div className="flex rounded border overflow-hidden text-sm">
+            {(['todos', 'activo', 'inactivo'] as const).map((v) => (
+              <button key={v} type="button"
+                onClick={() => setFilterActivo(v)}
+                className={`px-3 py-1.5 transition ${filterActivo === v ? 'bg-gray-800 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+                {v === 'todos' ? 'Todos' : v === 'activo' ? 'Activos' : 'Inactivos'}
+              </button>
+            ))}
+          </div>
+          <span className="text-xs text-gray-500">
+            {recursosFiltrados.length} de {recursos.length}
+          </span>
+        </div>
+      )}
+
       {/* Lista */}
-      <div className="mt-6 space-y-3">
+      <div className="mt-4 space-y-2">
         {loading ? (
-          <p className="text-sm text-gray-600">Cargando recursos…</p>
+          <div className="space-y-2">
+            {[1,2,3].map(i => (
+              <div key={i} className="h-14 animate-pulse rounded border bg-gray-50" />
+            ))}
+          </div>
         ) : recursos.length === 0 ? (
-          <p className="text-sm text-gray-600">
-            No hay recursos de asociación todavía.
-          </p>
+          <p className="text-sm text-gray-600">No hay recursos de asociación todavía.</p>
+        ) : recursosFiltrados.length === 0 ? (
+          <p className="text-sm text-gray-500">No hay recursos que coincidan con la búsqueda.</p>
         ) : (
-          recursos.map((r) => (
-            <div
-              key={r.id}
-              ref={(el) => {
-                if (el) recursoRefs.current.set(r.id, el);
-                else recursoRefs.current.delete(r.id);
-              }}
-              className="rounded border p-4 transition-shadow"
-            >
-              {editId === r.id ? (
-                <div>
-                  <h3 className="mb-3 font-medium">Editar recurso</h3>
-                  <RecursoForm
-                    data={editForm}
-                    onChange={setEditForm}
-                    onSubmit={() => handleSave(r.id)}
-                    onCancel={cancelEdit}
-                    saving={saving}
-                    submitLabel="Guardar"
-                    horariosSemana={editHorarios}
-                    cierresEspeciales={editCierres}
-                    onHorariosChange={(h, c) => { setEditHorarios(h); setEditCierres(c); }}
-                  />
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium">{r.nombre}</span>
-                        <span className="inline-block rounded border bg-gray-50 px-2 py-0.5 text-xs">
-                          {TIPO_LABELS[r.tipo] || r.tipo}
-                        </span>
-                        <span
-                          className={`inline-block rounded px-2 py-0.5 text-xs font-semibold ${
-                            r.activo
-                              ? 'border border-green-200 bg-green-50 text-green-700'
-                              : 'border border-gray-200 bg-gray-100 text-gray-500'
-                          }`}
-                        >
-                          {r.activo ? 'Activo' : 'Inactivo'}
-                        </span>
-                      </div>
+          recursosFiltrados.map((r) => {
+            const isExpanded = expandedDetail.has(r.id);
+            const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
-                      <div className="mt-1 text-sm text-gray-600">
-                        {r.provincia}, {r.comunidad}
-                      </div>
+            return (
+              <div
+                key={r.id}
+                ref={(el) => {
+                  if (el) recursoRefs.current.set(r.id, el);
+                  else recursoRefs.current.delete(r.id);
+                }}
+                className="rounded-lg border bg-white transition-shadow"
+              >
+                {editId === r.id ? (
+                  <div className="p-4">
+                    <h3 className="mb-3 font-medium">Editar: {r.nombre}</h3>
+                    <RecursoForm
+                      data={editForm}
+                      onChange={setEditForm}
+                      onSubmit={() => handleSave(r.id)}
+                      onCancel={cancelEdit}
+                      saving={saving}
+                      submitLabel="Guardar"
+                      horariosSemana={editHorarios}
+                      cierresEspeciales={editCierres}
+                      onHorariosChange={(h, c) => { setEditHorarios(h); setEditCierres(c); }}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    {/* Fila compacta (siempre visible) */}
+                    <button
+                      type="button"
+                      onClick={() => toggleDetail(r.id)}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-gray-50/60 transition"
+                    >
+                      {/* Foto miniatura */}
+                      {r.fotoUrl ? (
+                        <img src={r.fotoUrl} alt="" className="h-10 w-14 shrink-0 rounded object-cover" />
+                      ) : (
+                        <div className="h-10 w-14 shrink-0 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-xs">Sin foto</div>
+                      )}
 
-                      {r.descripcion && (
-                        <p className="mt-1 line-clamp-2 text-sm text-gray-500">
-                          {r.descripcion}
+                      {/* Info principal */}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="font-medium text-sm text-gray-900 truncate">{r.nombre}</span>
+                          <span className="shrink-0 rounded border bg-gray-50 px-1.5 py-0.5 text-xs text-gray-500">
+                            {TIPO_LABELS[r.tipo] || r.tipo}
+                          </span>
+                          <span className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold ${
+                            r.activo ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'
+                          }`}>
+                            {r.activo ? 'Activo' : 'Inactivo'}
+                          </span>
+                          {r.cerradoTemporal && (
+                            <span className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">⛔ Cerrado</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5 truncate">
+                          {[r.provincia, r.comunidad].filter(Boolean).join(', ')}
+                          {r.precioCents && r.precioCents > 0 ? ` · ${(r.precioCents / 100).toFixed(2)} €` : ''}
+                          {r.descuentoPorcentaje && r.descuentoPorcentaje > 0 ? ` · Club −${r.descuentoPorcentaje}%` : ''}
                         </p>
-                      )}
-
-                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
-                        {r.precioCents != null && r.precioCents > 0 && (
-                          <span>Precio: {(r.precioCents / 100).toFixed(2)} €</span>
-                        )}
-                        {r.descuentoPorcentaje != null && r.descuentoPorcentaje > 0 && (
-                          <span className="font-medium text-blue-700">Descuento Club: {r.descuentoPorcentaje}%</span>
-                        )}
-                        {r.contacto && <span>✉ {r.contacto}</span>}
-                        {r.web && (
-                          <a href={r.web} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                            🌐 Web
-                          </a>
-                        )}
-                        {r.cerradoTemporal && (
-                          <span className="font-semibold text-red-600">⛔ Cerrado temporalmente</span>
-                        )}
                       </div>
 
-                      {/* Horarios estructurados (actualizados por colaborador o admin) */}
-                      {r.horariosSemana && r.horariosSemana.length > 0 && (
-                        <div className="mt-3 overflow-hidden rounded border border-gray-100">
-                          <table className="w-full text-xs">
-                            <thead>
-                              <tr className="bg-gray-50">
-                                <th className="px-2 py-1 text-left font-medium text-gray-500">Día</th>
-                                <th className="px-2 py-1 text-left font-medium text-gray-500">Horario</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50">
-                              {r.horariosSemana
-                                .sort((a, b) => a.diaSemana - b.diaSemana)
-                                .map((h) => {
-                                  const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-                                  return (
-                                    <tr key={h.diaSemana} className="hover:bg-gray-50/60">
-                                      <td className="px-2 py-1 font-medium text-gray-700">{dias[h.diaSemana]}</td>
-                                      <td className="px-2 py-1 text-gray-600">
-                                        {h.abierto
-                                          ? h.horaAbre && h.horaCierra
-                                            ? `${h.horaAbre} – ${h.horaCierra}`
-                                            : 'Abierto (sin horario concreto)'
-                                          : <span className="text-red-500">Cerrado</span>
-                                        }
-                                      </td>
+                      {/* Chevron */}
+                      <span className="shrink-0 text-gray-400">
+                        {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      </span>
+                    </button>
+
+                    {/* Detalle expandido */}
+                    {isExpanded && (
+                      <div className="border-t px-4 pb-4 pt-3">
+                        <div className="grid gap-4 sm:grid-cols-2">
+
+                          {/* Columna izquierda: descripción + contacto + QR */}
+                          <div className="space-y-3">
+                            {r.descripcion && (
+                              <p className="text-sm text-gray-600 line-clamp-4">{r.descripcion}</p>
+                            )}
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                              {r.contacto && <span>✉ {r.contacto}</span>}
+                              {r.web && (
+                                <a href={r.web} target="_blank" rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline">🌐 {r.web}</a>
+                              )}
+                            </div>
+                            {r.codigoQr && (
+                              <div className="break-all font-mono text-xs text-gray-400">QR: {r.codigoQr}</div>
+                            )}
+                          </div>
+
+                          {/* Columna derecha: horarios + cierres */}
+                          <div className="space-y-3">
+                            {r.horariosSemana && r.horariosSemana.length > 0 && (
+                              <div className="overflow-hidden rounded border border-gray-100">
+                                <table className="w-full text-xs">
+                                  <thead>
+                                    <tr className="bg-gray-50">
+                                      <th className="px-2 py-1 text-left font-medium text-gray-500 w-12">Día</th>
+                                      <th className="px-2 py-1 text-left font-medium text-gray-500">Horario</th>
                                     </tr>
-                                  );
-                                })}
-                            </tbody>
-                          </table>
+                                  </thead>
+                                  <tbody className="divide-y divide-gray-50">
+                                    {[...r.horariosSemana].sort((a, b) => a.diaSemana - b.diaSemana).map((h) => (
+                                      <tr key={h.diaSemana} className="hover:bg-gray-50/60">
+                                        <td className="px-2 py-1 font-medium text-gray-700">{dias[h.diaSemana]}</td>
+                                        <td className="px-2 py-1 text-gray-600">
+                                          {h.abierto
+                                            ? h.horaAbre && h.horaCierra
+                                              ? `${h.horaAbre} – ${h.horaCierra}`
+                                              : 'Abierto'
+                                            : <span className="text-red-500">Cerrado</span>}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+
+                            {r.cierresEspeciales && r.cierresEspeciales.length > 0 && (
+                              <div>
+                                <p className="text-xs font-medium text-gray-500 mb-1">Cierres especiales:</p>
+                                <ul className="space-y-0.5">
+                                  {r.cierresEspeciales.map((c) => {
+                                    const fecha = new Date(c.fecha);
+                                    const hoy = new Date(); hoy.setHours(0,0,0,0);
+                                    const esHoy = fecha.toDateString() === hoy.toDateString();
+                                    const esPasado = fecha < hoy && !esHoy;
+                                    return (
+                                      <li key={c.fecha.toString()}
+                                        className={`text-xs ${esHoy ? 'font-semibold text-red-600' : esPasado ? 'text-gray-400' : 'text-amber-700'}`}>
+                                        {fecha.toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' })}
+                                        {c.motivo ? ` — ${c.motivo}` : ''}
+                                        {esHoy && ' (HOY)'}
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      )}
 
-                      {/* Cierres especiales */}
-                      {r.cierresEspeciales && r.cierresEspeciales.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-xs font-medium text-gray-500">Cierres especiales:</p>
-                          <ul className="mt-1 space-y-0.5">
-                            {r.cierresEspeciales.map((c) => {
-                              const fecha = new Date(c.fecha);
-                              const hoy = new Date();
-                              hoy.setHours(0, 0, 0, 0);
-                              const esHoy = fecha.toDateString() === hoy.toDateString();
-                              const esPasado = fecha < hoy && !esHoy;
-                              return (
-                                <li key={c.fecha.toString()}
-                                  className={`text-xs ${esHoy ? 'font-semibold text-red-600' : esPasado ? 'text-gray-400' : 'text-amber-700'}`}>
-                                  {fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                  {c.motivo ? ` — ${c.motivo}` : ''}
-                                  {esHoy && ' (HOY)'}
-                                </li>
-                              );
-                            })}
-                          </ul>
+                        {/* Acciones */}
+                        <div className="mt-4 flex flex-wrap gap-2 border-t pt-3">
+                          <button type="button" onClick={() => startEdit(r)}
+                            className="rounded border px-3 py-1 text-sm hover:bg-gray-50">
+                            Editar
+                          </button>
+                          <button type="button" onClick={() => handleToggle(r.id, r.activo)}
+                            className="rounded border px-3 py-1 text-sm hover:bg-gray-50">
+                            {r.activo ? 'Desactivar' : 'Activar'}
+                          </button>
+                          <button type="button"
+                            onClick={() => setExpandedColab(expandedColab === r.id ? null : r.id)}
+                            className="rounded border px-3 py-1 text-sm hover:bg-gray-50">
+                            Colaboradores
+                          </button>
+                          <a href={`/recursos/${r.slug || r.id}`} target="_blank" rel="noopener noreferrer"
+                            className="rounded border px-3 py-1 text-sm text-blue-600 hover:bg-blue-50">
+                            Ver pública ↗
+                          </a>
+                          <button type="button" onClick={() => handleDelete(r.id)}
+                            className="rounded border border-red-200 px-3 py-1 text-sm text-red-600 hover:bg-red-50">
+                            Eliminar
+                          </button>
                         </div>
-                      )}
 
-                      {r.codigoQr && (
-                        <div className="mt-1 break-all font-mono text-xs text-gray-400">
-                          QR: {r.codigoQr}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Acciones */}
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => startEdit(r)}
-                      className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleToggle(r.id, r.activo)}
-                      className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-                    >
-                      {r.activo ? 'Desactivar' : 'Activar'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setExpandedColab(
-                          expandedColab === r.id ? null : r.id,
-                        )
-                      }
-                      className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-                    >
-                      Colaboradores
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(r.id)}
-                      className="rounded border border-red-200 px-3 py-1 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-
-                  {/* Sección colaboradores expandida */}
-                  {expandedColab === r.id && (
-                    <ColaboradoresSection recursoId={r.id} />
-                  )}
-                </>
-              )}
-            </div>
-          ))
+                        {expandedColab === r.id && (
+                          <ColaboradoresSection recursoId={r.id} />
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
     </>
