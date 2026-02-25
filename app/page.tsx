@@ -191,6 +191,71 @@ async function getNews(locale?: string): Promise<NewsItem[]> {
   }
 }
 
+// Fetch galería de asociación: noticias + eventos + artículos, mezclados por fecha, máx 6
+async function getGaleriaAsociacion(locale?: string): Promise<NewsItem[]> {
+  try {
+    const API_BASE = getApiUrl();
+    const qs = locale ? `&lang=${encodeURIComponent(locale)}` : "";
+    const headers = locale ? { "Accept-Language": locale } : undefined;
+
+    const [resNoticias, resEventos, resArticulos] = await Promise.all([
+      fetch(`${API_BASE}/public/noticias?limit=6${qs}`, { cache: "no-store", headers }),
+      fetch(`${API_BASE}/public/eventos?limit=6${qs}`, { cache: "no-store", headers }),
+      fetch(`${API_BASE}/public/contenidos?scope=ASOCIACION&tipo=ARTICULO&limit=6${qs}`, { cache: "no-store", headers }),
+    ]);
+
+    const noticias: any[] = resNoticias.ok ? await resNoticias.json().catch(() => []) : [];
+    const eventos: any[] = resEventos.ok ? await resEventos.json().catch(() => []) : [];
+    const articulosRaw = resArticulos.ok ? await resArticulos.json().catch(() => []) : [];
+    const articulos: any[] = Array.isArray(articulosRaw) ? articulosRaw : (articulosRaw?.items ?? []);
+
+    const all = [
+      ...noticias.map((i: any) => ({ ...i, _tipo: "NOTICIA" })),
+      ...eventos.map((i: any) => ({ ...i, _tipo: "EVENTO" })),
+      ...articulos.map((i: any) => ({ ...i, _tipo: "ARTICULO" })),
+    ];
+
+    // Deduplicar por slug
+    const seen = new Set<string>();
+    const deduped = all.filter((i) => {
+      const key = i.slug ?? `id-${i.id}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    deduped.sort((a, b) => {
+      const da = new Date(a.publishedAt ?? a.fechaInicio ?? a.createdAt ?? 0).getTime();
+      const db = new Date(b.publishedAt ?? b.fechaInicio ?? b.createdAt ?? 0).getTime();
+      return db - da;
+    });
+
+    return deduped.slice(0, 6).map((item: any) => {
+      const tipo = (item._tipo ?? "NOTICIA").toUpperCase();
+      let href: string;
+      if (item.contenidoSlug) {
+        href = `/c/${item.contenidoSlug}`;
+      } else if (item.slug) {
+        if (tipo === "EVENTO") href = `/eventos/${item.slug}`;
+        else if (tipo === "ARTICULO") href = `/c/${item.slug}`;
+        else href = `/noticias/${item.slug}`;
+      } else {
+        href = "/actualidad";
+      }
+      return {
+        id: item.id ?? Math.random(),
+        title: item.titulo ?? "(sin título)",
+        type: tipo,
+        href,
+        image: item.coverUrl ?? null,
+        date: item.publishedAt ?? item.fechaInicio ?? item.createdAt,
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
 // Fetch routes
 async function getRoutesForHome(locale?: string): Promise<RouteCard[]> {
   try {
@@ -212,12 +277,13 @@ async function getRoutesForHome(locale?: string): Promise<RouteCard[]> {
 
 export default async function HomePage() {
   const locale = await getLocale();
-  const [config, villages, notifications, routes, news, videos] = await Promise.all([
+  const [config, villages, notifications, routes, news, galeriaNews, videos] = await Promise.all([
     getHomeConfig(locale),
     getFeaturedPueblos(locale),
     getNotifications(locale),
     getRoutesForHome(locale),
     getNews(locale),
+    getGaleriaAsociacion(locale),
     getHomeVideos(locale),
   ]);
 
@@ -245,6 +311,7 @@ export default async function HomePage() {
         notifications={notifications}
         categories={categories}
         routes={routes}
+        galeriaNews={galeriaNews}
         villages={villages}
         news={news}
         videos={videos}

@@ -107,7 +107,8 @@ export default function NotificacionesFeed() {
         });
 
         const data = await res.json();
-        const rawItems = Array.isArray(data.items) ? data.items : (data.items ?? data.data ?? []);
+        // publicFeed devuelve array plano; algunas rutas devuelven { items: [] }
+        const rawItems = Array.isArray(data) ? data : (Array.isArray(data.items) ? data.items : (data.data ?? []));
 
         // FILTRADO: tipos permitidos SIN METEO
         const tiposPermitidos = ["NOTICIA", "EVENTO", "ALERTA", "ALERTA_PUEBLO", "SEMAFORO"];

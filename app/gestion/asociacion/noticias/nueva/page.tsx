@@ -11,10 +11,27 @@ export default function NuevaNoticiaGlobalPage() {
   const router = useRouter();
   const [titulo, setTitulo] = useState('');
   const [contenido, setContenido] = useState('');
+  const [coverUrl, setCoverUrl] = useState('');
+  const [uploadingCover, setUploadingCover] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [editorMode, setEditorMode] = useState<EditorMode>('edit');
+
+  async function onCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingCover(true);
+    try {
+      const { uploadImageToR2 } = await import('@/src/lib/uploadHelper');
+      const { url } = await uploadImageToR2(file, 'noticias-global', '/api/media/upload');
+      setCoverUrl(url);
+    } catch {
+      setError('Error al subir la imagen de portada');
+    } finally {
+      setUploadingCover(false);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,7 +45,7 @@ export default function NuevaNoticiaGlobalPage() {
       const res = await fetch('/api/gestion/asociacion/noticias', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ titulo: t, contenido }),
+        body: JSON.stringify({ titulo: t, contenido, coverUrl: coverUrl || null }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -57,6 +74,26 @@ export default function NuevaNoticiaGlobalPage() {
             onChange={(e) => setTitulo(e.target.value)}
             required
           />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">Imagen de portada</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={onCoverChange}
+            disabled={uploadingCover}
+            className="block text-sm text-gray-600 file:mr-3 file:rounded file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-gray-200"
+          />
+          {uploadingCover && <p className="text-xs text-gray-500">Subiendo imagen…</p>}
+          {coverUrl && (
+            <div className="mt-2 flex items-center gap-3">
+              <img src={coverUrl} alt="Portada" className="h-20 w-32 rounded-md object-cover border" />
+              <button type="button" onClick={() => setCoverUrl('')} className="text-xs text-red-600 hover:underline">
+                Quitar imagen
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">
