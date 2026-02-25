@@ -452,10 +452,19 @@ export default async function RecursoDetailPage({
       {hasCapacidad && (
         <Section spacing="sm">
           <Container size="md">
-            <Headline as="h2" className="mb-4 flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              Admisión
-            </Headline>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <Headline as="h2" className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                Admisión
+              </Headline>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/8 px-3 py-1 text-xs font-semibold text-primary">
+                <Star className="h-3.5 w-3.5" />
+                Condiciones Club de Amigos
+              </span>
+            </div>
+            <p className="mb-3 text-sm text-muted-foreground">
+              Personas admitidas por uso del beneficio con el <Link href="/club" className="font-medium text-primary underline-offset-4 hover:underline">Club de Amigos</Link>.
+            </p>
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3">
                 <Users className="h-4 w-4 text-muted-foreground" />
