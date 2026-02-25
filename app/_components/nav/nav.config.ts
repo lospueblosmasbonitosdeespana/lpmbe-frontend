@@ -103,7 +103,7 @@ export const navConfig: NavItem[] = [
         titleKey: "content",
         links: [
           { labelKey: "noticias", href: "/noticias" },
-          { labelKey: "agenda", href: "/agenda" },
+          { labelKey: "eventos", href: "/eventos" },
           { labelKey: "articulos", href: "/articulos" },
         ],
       },
