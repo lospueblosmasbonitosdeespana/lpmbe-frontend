@@ -35,6 +35,7 @@ function EntrarForm() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
     setError(null);
     setLoading(true);
 
@@ -51,10 +52,9 @@ function EntrarForm() {
         return;
       }
 
-      // Respetar redirect si existe
       const redirect = searchParams.get('redirect');
-      router.push(redirect || '/mi-cuenta');
       router.refresh();
+      router.push(redirect || '/mi-cuenta');
     } finally {
       setLoading(false);
     }
@@ -64,7 +64,7 @@ function EntrarForm() {
     <main className="mx-auto max-w-md p-6">
       <h1 className="text-2xl font-semibold">Entrar</h1>
 
-      <form onSubmit={onSubmit} className="mt-6 space-y-4">
+      <form action="#" onSubmit={onSubmit} className="mt-6 space-y-4">
         <div className="space-y-2">
           <label className="block text-sm">Email</label>
           <input

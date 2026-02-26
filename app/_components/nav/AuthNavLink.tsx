@@ -1,12 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { shouldShowGestion, getGestionHref } from '@/lib/auth-nav';
 
 type Me = {
-  sub: number;
+  id?: number;
+  sub?: number;
   email: string;
   rol: 'USUARIO' | 'ALCALDE' | 'ADMIN' | 'CLIENTE' | 'COLABORADOR';
   nombre?: string | null;
@@ -17,32 +18,45 @@ export default function AuthNavLink() {
   const [loading, setLoading] = useState(true);
   const [me, setMe] = useState<Me | null>(null);
 
+  const fetchMe = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const res = await fetch('/api/auth/me', {
+        cache: 'no-store',
+        signal,
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data?.rol) return data as Me;
+      return null;
+    } catch {
+      return null;
+    }
+  }, []);
+
   useEffect(() => {
     let mounted = true;
+    const controller = new AbortController();
 
     (async () => {
-      try {
-        const res = await fetch('/api/auth/me', { cache: 'no-store' });
-        if (!mounted) return;
+      let result = await fetchMe(controller.signal);
 
-        if (!res.ok) {
-          setMe(null);
-          return;
-        }
+      // Reintentar una vez si falla (cold start de Railway)
+      if (!result && mounted) {
+        await new Promise(r => setTimeout(r, 1500));
+        if (mounted) result = await fetchMe(controller.signal);
+      }
 
-        const data = (await res.json()) as Me;
-        setMe(data);
-      } catch {
-        if (mounted) setMe(null);
-      } finally {
-        if (mounted) setLoading(false);
+      if (mounted) {
+        setMe(result);
+        setLoading(false);
       }
     })();
 
     return () => {
       mounted = false;
+      controller.abort();
     };
-  }, []);
+  }, [fetchMe]);
 
   if (loading) {
     return (
@@ -60,7 +74,6 @@ export default function AuthNavLink() {
     );
   }
 
-  // Logueado: Mi cuenta siempre, Gestión para ADMIN/ALCALDE/CLIENTE/COLABORADOR
   const showGestion = shouldShowGestion(me.rol);
   const gestionHref = getGestionHref(me.rol);
 
