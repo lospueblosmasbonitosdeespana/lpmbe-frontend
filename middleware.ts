@@ -12,9 +12,9 @@ export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
   const host = request.headers.get('host') ?? '';
 
-  // 1) Dominio canónico: Vercel → redirect 308 al dominio principal
-  //    NOTA: Añadir STAGING_HOST aquí el día de la migración DNS (Fase 1)
-  if (host === VERCEL_HOST || host.startsWith(VERCEL_HOST + ':')) {
+  // 1) Dominio canónico: Vercel y staging → redirect 308 al dominio principal
+  if (host === VERCEL_HOST || host.startsWith(VERCEL_HOST + ':') ||
+      host === STAGING_HOST || host.startsWith(STAGING_HOST + ':')) {
     const url = new URL(request.url);
     url.protocol = 'https:';
     url.host = CANONICAL_HOST;
