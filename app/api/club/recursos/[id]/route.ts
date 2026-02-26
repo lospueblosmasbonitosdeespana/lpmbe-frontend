@@ -54,3 +54,38 @@ export async function PATCH(
     );
   }
 }
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const token = await getToken();
+  if (!token) {
+    return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+  }
+
+  const { id } = await params;
+  if (!id) {
+    return NextResponse.json({ message: 'ID requerido' }, { status: 400 });
+  }
+
+  const apiUrl = getApiUrl();
+  try {
+    const res = await fetch(`${apiUrl}/club/recursos/${id}`, {
+      method: 'DELETE',
+      cache: 'no-store',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json().catch(() => ({}));
+    return NextResponse.json(data, { status: res.status });
+  } catch (err) {
+    console.error('[API proxy] DELETE club/recursos:', err);
+    return NextResponse.json(
+      { message: 'Error de conexión con el servidor' },
+      { status: 502 }
+    );
+  }
+}
