@@ -23,31 +23,22 @@ type Notificacion = {
   motivoPublico?: string | null;
 };
 
-// Título del item traducido (semáforo usa i18n; el resto usa titulo/texto del backend o fallback)
 function getHomeItemTitle(
   item: Notificacion,
   tNotif: (key: string, values?: Record<string, string>) => string
 ): string {
   if (item.tipo === "SEMAFORO") {
-    const puebloNombre = item.pueblo?.nombre ?? "Pueblo";
-    if (item.estado) {
-      const estado = item.estado.toUpperCase();
-      const statusKey =
-        estado === "VERDE"
-          ? "semaforoStatusGreen"
-          : estado === "AMARILLO"
-            ? "semaforoStatusYellow"
-            : estado === "ROJO"
-              ? "semaforoStatusRed"
-              : null;
-      if (statusKey) {
-        return tNotif("semaforoPuebloIs", {
-          pueblo: puebloNombre,
-          status: tNotif(statusKey),
-        });
-      }
-    }
-    return tNotif("semaforoPuebloUpdated", { pueblo: puebloNombre });
+    const colorMap: Record<string, string> = {
+      VERDE: "verde",
+      AMARILLO: "amarillo",
+      ROJO: "rojo",
+    };
+    const color = colorMap[(item.estado ?? "").toUpperCase()] ?? "";
+    const pueblo = item.pueblo?.nombre ?? "";
+    if (color && pueblo) return `Semáforo ${color} en ${pueblo}`;
+    if (pueblo) return `Semáforo en ${pueblo}`;
+    if (item.titulo?.trim() && item.titulo !== "Sin título") return item.titulo;
+    return "Semáforo";
   }
   if (item.tipo === "ALERTA" || item.tipo === "ALERTA_PUEBLO") {
     return (item.titulo || item.texto) || tNotif("alertFallback");

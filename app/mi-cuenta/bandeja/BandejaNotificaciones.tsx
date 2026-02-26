@@ -180,11 +180,22 @@ export default function BandejaNotificaciones() {
                     )}
                   </div>
 
-                  {(n.titulo || rawTipo === 'SEMAFORO') && (
-                    <p className="text-sm font-semibold text-foreground mb-1">
-                      {n.titulo || `Semáforo turístico${(n as any).estado ? ` ${(n as any).estado}` : ''} en ${puebloNombre || 'pueblo'}`}
-                    </p>
-                  )}
+                  {(n.titulo || rawTipo === 'SEMAFORO') && (() => {
+                    let displayTitle = n.titulo;
+                    if (rawTipo === 'SEMAFORO') {
+                      const colorMap: Record<string, string> = { ROJO: 'rojo', AMARILLO: 'amarillo', VERDE: 'verde' };
+                      const color = colorMap[((n as any).estado ?? '').toUpperCase()] ?? '';
+                      const pName = puebloNombre || '';
+                      if (color && pName) displayTitle = `Semáforo ${color} en ${pName}`;
+                      else if (pName) displayTitle = `Semáforo en ${pName}`;
+                      else if (!displayTitle || displayTitle === 'Sin título') displayTitle = 'Semáforo';
+                    }
+                    return (
+                      <p className="text-sm font-semibold text-foreground mb-1">
+                        {displayTitle}
+                      </p>
+                    );
+                  })()}
 
                   {n.contenido && (
                     <p className="text-sm text-foreground whitespace-pre-line">{n.contenido}</p>

@@ -13,7 +13,8 @@ type Item = {
   createdAt?: string | null;
   fecha?: string | null;
   puebloNombre?: string | null;
-  pueblo?: { nombre?: string | null } | null;
+  pueblo?: { nombre?: string | null; slug?: string | null } | null;
+  estado?: string | null;
   url?: string | null;
   href?: string | null;
 };
@@ -26,6 +27,19 @@ function formatFecha(it: Item) {
   return d.toLocaleString("es-ES");
 }
 
+function getSemaforoTitle(it: Item): string {
+  const colorMap: Record<string, string> = {
+    VERDE: "verde",
+    AMARILLO: "amarillo",
+    ROJO: "rojo",
+  };
+  const color = colorMap[(it.estado ?? "").toUpperCase()] ?? "";
+  const pueblo = it.pueblo?.nombre || it.puebloNombre || "";
+  if (color && pueblo) return `Semáforo ${color} en ${pueblo}`;
+  if (pueblo) return `Semáforo en ${pueblo}`;
+  return it.titulo || "Semáforo";
+}
+
 export default function NotificacionesList({ items }: { items: Item[] }) {
   const t = useTranslations("notifications");
   if (!items || items.length === 0) {
@@ -36,43 +50,29 @@ export default function NotificacionesList({ items }: { items: Item[] }) {
     <div style={{ display: "grid", gap: 12 }}>
       {items.map((it, idx) => {
         const key = `${it.id ?? ""}-${it.tipo ?? ""}-${it.createdAt ?? it.fecha ?? ""}-${idx}`;
-        const pueblo = it.puebloNombre || it.pueblo?.nombre || "";
+        const isSemaforo = (it.tipo ?? "").toUpperCase() === "SEMAFORO";
+        const pueblo = isSemaforo ? "" : (it.puebloNombre || it.pueblo?.nombre || "");
         const fecha = formatFecha(it);
-        
-        // Helper para generar link: prioridad url/href, fallback a anchor
-        const link = it.url || it.href || (it.id ? `/notificaciones#notif-${it.id}` : '/notificaciones');
+        const titulo = isSemaforo ? getSemaforoTitle(it) : (it.titulo || "Notificación").trim();
+        const subtexto = isSemaforo
+          ? (it.motivoPublico || it.contenido || "").trim() || null
+          : (it.mensaje || it.contenido || it.motivoPublico || "").trim() || null;
+
+        const link = it.url || it.href || (it.id ? `/notificaciones#notif-${it.id}` : "/notificaciones");
         const itemId = it.id ? `notif-${it.id}` : undefined;
 
         return (
           <div key={key} id={itemId}>
             <Link
               href={link}
-              style={{
-                display: "block",
-                textDecoration: "none",
-                color: "inherit",
-                padding: "12px",
-                border: "1px solid #e5e7eb",
-                borderRadius: "4px",
-                transition: "background-color 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#f9fafb";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
+              className="block rounded-lg border border-border bg-card p-3 text-foreground no-underline transition-colors hover:bg-muted/50"
             >
-              <div style={{ fontWeight: 700, marginBottom: 4 }}>
-                {(it.titulo || "Notificación").trim()}
-              </div>
-              {pueblo ? <div style={{ fontSize: 14, color: "#666" }}>Pueblo: {pueblo}</div> : null}
-              {fecha ? <div style={{ fontSize: 14, color: "#666" }}>{fecha}</div> : null}
-              {it.tipo ? <div style={{ fontSize: 14, color: "#666" }}>Tipo: {it.tipo}</div> : null}
-              {(it.mensaje || it.contenido || it.motivoPublico) ? (
-                <div style={{ fontSize: 14, color: "#666", marginTop: 8 }}>
-                  {it.mensaje || it.contenido || it.motivoPublico}
-                </div>
+              <div className="font-bold mb-1">{titulo}</div>
+              {pueblo ? <div className="text-sm text-muted-foreground">Pueblo: {pueblo}</div> : null}
+              {fecha ? <div className="text-sm text-muted-foreground">{fecha}</div> : null}
+              {!isSemaforo && it.tipo ? <div className="text-sm text-muted-foreground">Tipo: {it.tipo}</div> : null}
+              {subtexto ? (
+                <div className="text-sm text-muted-foreground mt-2">{subtexto}</div>
               ) : null}
             </Link>
           </div>
