@@ -31,6 +31,14 @@ function formatCondiciones(r: Recurso): string {
   return txt;
 }
 
+function parseApiError(data: any, fallback: string): string {
+  if (!data) return fallback;
+  if (Array.isArray(data.message)) return data.message.join('. ');
+  if (typeof data.message === 'string') return data.message;
+  if (typeof data.error === 'string' && data.error !== 'Bad Request') return data.error;
+  return fallback;
+}
+
 export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slug: string }) {
   const router = useRouter();
   const [recursos, setRecursos] = useState<Recurso[]>([]);
@@ -89,8 +97,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => null);
-        const errorText = errorData?.error || await res.text().catch(() => 'Error cargando recursos');
-        setError(errorText);
+        setError(parseApiError(errorData, 'Error cargando recursos'));
         return;
       }
 
@@ -110,7 +117,12 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
 
   async function handleCrear() {
     if (!nuevoNombre.trim()) {
-      setError('El nombre es requerido');
+      setError('El nombre es obligatorio');
+      return;
+    }
+
+    if (!nuevoTipo.trim()) {
+      setError('El tipo es obligatorio (ej. Museo, Restaurante, Hotel…)');
       return;
     }
 
@@ -156,8 +168,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => null);
-        const errorText = errorData?.error || await res.text().catch(() => 'Error creando recurso');
-        setError(errorText);
+        setError(parseApiError(errorData, 'Error creando recurso'));
         return;
       }
 
@@ -206,7 +217,12 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
 
   async function handleGuardar(id: number) {
     if (!editNombre.trim()) {
-      setError('El nombre es requerido');
+      setError('El nombre es obligatorio');
+      return;
+    }
+
+    if (!editTipo.trim()) {
+      setError('El tipo es obligatorio (ej. Museo, Restaurante, Hotel…)');
       return;
     }
 
@@ -258,8 +274,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => null);
-        const errorText = errorData?.error || await res.text().catch(() => 'Error guardando recurso');
-        setError(errorText);
+        setError(parseApiError(errorData, 'Error guardando recurso'));
         return;
       }
 
@@ -284,8 +299,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => null);
-        const errorText = errorData?.error || await res.text().catch(() => 'Error eliminando recurso');
-        setError(errorText);
+        setError(parseApiError(errorData, 'Error eliminando recurso'));
         return;
       }
 
@@ -309,8 +323,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => null);
-        const errorText = errorData?.error || await res.text().catch(() => 'Error actualizando recurso');
-        setError(errorText);
+        setError(parseApiError(errorData, 'Error actualizando recurso'));
         return;
       }
 
@@ -353,12 +366,13 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Tipo</label>
+            <label className="block text-sm text-gray-600 mb-1">Tipo *</label>
             <input
               type="text"
               value={nuevoTipo}
               onChange={(e) => setNuevoTipo(e.target.value)}
               disabled={creando}
+              placeholder="Ej: Museo, Restaurante, Hotel…"
               className="w-full px-3 py-2 border rounded disabled:opacity-50"
             />
           </div>
@@ -468,7 +482,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
             <button
               type="button"
               onClick={handleCrear}
-              disabled={creando || !nuevoNombre.trim()}
+              disabled={creando || !nuevoNombre.trim() || !nuevoTipo.trim()}
               className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
             >
               {creando ? 'Creando…' : 'Crear'}
@@ -518,12 +532,13 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Tipo</label>
+                    <label className="block text-sm text-gray-600 mb-1">Tipo *</label>
                     <input
                       type="text"
                       value={editTipo}
                       onChange={(e) => setEditTipo(e.target.value)}
                       disabled={guardando}
+                      placeholder="Ej: Museo, Restaurante, Hotel…"
                       className="w-full px-3 py-2 border rounded disabled:opacity-50"
                     />
                   </div>
