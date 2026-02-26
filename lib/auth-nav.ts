@@ -9,10 +9,10 @@
  * y Gestión (pueblo, ej. escanear QR Club de Amigos).
  */
 
-export type UserRol = 'USUARIO' | 'ALCALDE' | 'ADMIN' | 'CLIENTE' | 'COLABORADOR';
+export type UserRol = 'USUARIO' | 'ALCALDE' | 'ADMIN' | 'EDITOR' | 'CLIENTE' | 'COLABORADOR';
 
 /** Roles que ven el botón/enlace Gestión */
-export const ROLES_CON_GESTION: UserRol[] = ['ADMIN', 'ALCALDE', 'CLIENTE', 'COLABORADOR'];
+export const ROLES_CON_GESTION: UserRol[] = ['ADMIN', 'EDITOR', 'ALCALDE', 'CLIENTE', 'COLABORADOR'];
 
 export function shouldShowGestion(rol: UserRol | string | null | undefined): boolean {
   return ROLES_CON_GESTION.includes((rol ?? '') as UserRol);

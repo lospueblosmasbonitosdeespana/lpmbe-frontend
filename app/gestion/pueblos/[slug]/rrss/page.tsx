@@ -14,7 +14,7 @@ export default async function RrssPuebloPage({
   const { slug } = await params;
   const me = await getMeServer();
   if (!me) redirect("/entrar");
-  if (me.rol !== "ALCALDE" && me.rol !== "ADMIN") redirect("/cuenta");
+  if (me.rol !== "ALCALDE" && me.rol !== "ADMIN" && me.rol !== "EDITOR") redirect("/cuenta");
 
   if (me.rol === "ALCALDE") {
     const mis = await getMisPueblosServer();

@@ -43,7 +43,7 @@ export default async function GestionPage() {
   const me = await getMeServer();
   if (!me) redirect('/entrar');
 
-  if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN' && me.rol !== 'COLABORADOR') {
+  if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN' && me.rol !== 'EDITOR' && me.rol !== 'COLABORADOR') {
     redirect('/cuenta');
   }
 
@@ -55,7 +55,9 @@ export default async function GestionPage() {
           ? 'Gestiona el recurso turístico que tienes asignado.'
           : me.rol === 'ALCALDE'
             ? 'Gestiona los contenidos de tus pueblos asignados.'
-            : 'Gestión de contenidos y configuración global.'}
+            : me.rol === 'EDITOR'
+              ? 'Edita contenidos, fotos y rutas de los pueblos.'
+              : 'Gestión de contenidos y configuración global.'}
       </p>
 
       {/* Colaborador: solo Mis recursos */}
@@ -75,16 +77,16 @@ export default async function GestionPage() {
         </section>
       )}
 
-      {/* Grid para alcaldes y admin */}
-      {(me.rol === 'ALCALDE' || me.rol === 'ADMIN') && (
+      {/* Grid para alcaldes, editores y admin */}
+      {(me.rol === 'ALCALDE' || me.rol === 'ADMIN' || me.rol === 'EDITOR') && (
         <section className="mt-8">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Mis pueblos
+            {me.rol === 'ALCALDE' ? 'Mis pueblos' : 'Pueblos'}
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <GridCard
               href="/gestion/mis-pueblos"
-              title="Mis pueblos"
+              title={me.rol === 'ALCALDE' ? 'Mis pueblos' : 'Pueblos'}
               description={
                 me.rol === 'ALCALDE'
                   ? 'Gestiona los pueblos que tienes asignados'

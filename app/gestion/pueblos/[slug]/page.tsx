@@ -78,7 +78,7 @@ export default async function GestionPuebloPage({
   const { slug } = await params;
   const me = await getMeServer();
   if (!me) redirect('/entrar');
-  if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN') redirect('/cuenta');
+  if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN' && me.rol !== 'EDITOR') redirect('/cuenta');
 
   // Si es ALCALDE, verificamos que el pueblo está en su lista.
   if (me.rol === 'ALCALDE') {

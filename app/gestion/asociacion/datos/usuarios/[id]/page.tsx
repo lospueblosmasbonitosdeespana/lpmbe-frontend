@@ -60,7 +60,9 @@ type Pueblo = {
 
 const ROL_LABELS: Record<string, string> = {
   ADMIN: 'Admin',
+  EDITOR: 'Editor',
   ALCALDE: 'Alcalde',
+  COLABORADOR: 'Colaborador',
   USUARIO: 'Usuario',
   CLIENTE: 'Cliente',
 };

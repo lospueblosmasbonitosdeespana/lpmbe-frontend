@@ -52,20 +52,22 @@ export default async function CuentaPage() {
   }
 
   const misPueblos =
-    me.rol === 'ALCALDE' || me.rol === 'ADMIN'
+    me.rol === 'ALCALDE' || me.rol === 'ADMIN' || me.rol === 'EDITOR'
       ? await getMisPueblosServer()
       : [];
 
   const rolBadgeClass =
     me.rol === 'ADMIN'
       ? 'bg-primary/15 text-primary border-primary/30'
-      : me.rol === 'ALCALDE'
-        ? 'bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-400 dark:border-amber-400/30'
-        : me.rol === 'COLABORADOR'
-          ? 'bg-blue-500/15 text-blue-700 border-blue-500/30 dark:text-blue-400 dark:border-blue-400/30'
-          : me.rol === 'CLIENTE'
-            ? 'bg-green-500/15 text-green-700 border-green-500/30 dark:text-green-400 dark:border-green-400/30'
-            : 'bg-muted text-muted-foreground border-border';
+      : me.rol === 'EDITOR'
+        ? 'bg-indigo-500/15 text-indigo-700 border-indigo-500/30 dark:text-indigo-400 dark:border-indigo-400/30'
+        : me.rol === 'ALCALDE'
+          ? 'bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-400 dark:border-amber-400/30'
+          : me.rol === 'COLABORADOR'
+            ? 'bg-blue-500/15 text-blue-700 border-blue-500/30 dark:text-blue-400 dark:border-blue-400/30'
+            : me.rol === 'CLIENTE'
+              ? 'bg-green-500/15 text-green-700 border-green-500/30 dark:text-green-400 dark:border-green-400/30'
+              : 'bg-muted text-muted-foreground border-border';
 
   return (
     <main className="mx-auto max-w-5xl p-6">
@@ -91,7 +93,7 @@ export default async function CuentaPage() {
                 <span
                   className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium ${rolBadgeClass}`}
                 >
-                  {me.rol === 'ADMIN' ? t('admin') : me.rol === 'ALCALDE' ? t('mayor') : me.rol === 'COLABORADOR' ? t('collaborator') : me.rol === 'CLIENTE' ? t('client') : t('user')}
+                  {me.rol === 'ADMIN' ? t('admin') : me.rol === 'EDITOR' ? 'Editor' : me.rol === 'ALCALDE' ? t('mayor') : me.rol === 'COLABORADOR' ? t('collaborator') : me.rol === 'CLIENTE' ? t('client') : t('user')}
                 </span>
                 {me.rol === 'ALCALDE' && misPueblos.length > 0 && (
                   <div className="text-sm font-medium text-foreground">
@@ -140,7 +142,7 @@ export default async function CuentaPage() {
           </div>
         ) : null}
 
-        {(me.rol === 'ALCALDE' || me.rol === 'ADMIN') ? (
+        {(me.rol === 'ALCALDE' || me.rol === 'ADMIN' || me.rol === 'EDITOR') ? (
           <div>
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               {t('management')}
@@ -151,7 +153,7 @@ export default async function CuentaPage() {
                 title={
                   me.rol === 'ALCALDE' && misPueblos.length === 1
                     ? misPueblos[0].nombre
-                    : me.rol === 'ADMIN'
+                    : me.rol === 'ADMIN' || me.rol === 'EDITOR'
                       ? t('villageManagement')
                       : t('myVillages')
                 }
