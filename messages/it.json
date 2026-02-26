@@ -107,7 +107,8 @@
     "byProvince": "Per provincia",
     "communities": "Regioni",
     "loadError": "Errore nel caricamento dei borghi. Riprova più tardi.",
-    "loadingMap": "Caricamento mappa..."
+    "loadingMap": "Caricamento mappa...",
+    "certificationsByYear": "Certificazioni per anno"
   },
   "profile": {
     "title": "Il mio profilo",

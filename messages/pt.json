@@ -107,7 +107,8 @@
     "byProvince": "Por província",
     "communities": "Regiões",
     "loadError": "Erro ao carregar as aldeias. Por favor, tente mais tarde.",
-    "loadingMap": "A carregar mapa..."
+    "loadingMap": "A carregar mapa...",
+    "certificationsByYear": "Certificações por ano"
   },
   "profile": {
     "title": "O meu perfil",

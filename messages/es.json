@@ -107,7 +107,8 @@
     "byProvince": "Por provincia",
     "communities": "Comunidades",
     "loadError": "Error al cargar los pueblos. Por favor, intenta de nuevo más tarde.",
-    "loadingMap": "Cargando mapa..."
+    "loadingMap": "Cargando mapa...",
+    "certificationsByYear": "Certificaciones por año"
   },
   "profile": {
     "title": "Mi Perfil",

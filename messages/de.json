@@ -107,7 +107,8 @@
     "byProvince": "Nach Provinz",
     "communities": "Regionen",
     "loadError": "Fehler beim Laden der Dörfer. Bitte versuchen Sie es später erneut.",
-    "loadingMap": "Karte wird geladen..."
+    "loadingMap": "Karte wird geladen...",
+    "certificationsByYear": "Zertifizierungen nach Jahr"
   },
   "profile": {
     "title": "Mein Profil",

@@ -107,7 +107,8 @@
     "byProvince": "Par province",
     "communities": "Régions",
     "loadError": "Erreur lors du chargement des villages. Veuillez réessayer plus tard.",
-    "loadingMap": "Chargement de la carte..."
+    "loadingMap": "Chargement de la carte...",
+    "certificationsByYear": "Certifications par année"
   },
   "profile": {
     "title": "Mon profil",
