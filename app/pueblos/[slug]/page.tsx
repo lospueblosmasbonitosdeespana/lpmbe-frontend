@@ -1,3 +1,4 @@
+import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -566,7 +567,7 @@ export default async function PuebloPage({
 
       {/* RRSS DEL PUEBLO */}
       {(() => {
-        const rrssLinks: { label: string; href: string; icon: JSX.Element }[] = [];
+        const rrssLinks: { label: string; href: string; icon: React.ReactNode }[] = [];
         const p = pueblo as any;
         if (p.rrssInstagram) rrssLinks.push({
           label: "Instagram", href: p.rrssInstagram,

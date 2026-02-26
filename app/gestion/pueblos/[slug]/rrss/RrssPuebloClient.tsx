@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 
 type RrssData = {
@@ -12,7 +12,7 @@ type RrssData = {
   rrssWeb: string | null;
 };
 
-const FIELDS: { key: keyof RrssData; label: string; placeholder: string; icon: JSX.Element }[] = [
+const FIELDS: { key: keyof RrssData; label: string; placeholder: string; icon: React.ReactNode }[] = [
   {
     key: "rrssInstagram",
     label: "Instagram",
