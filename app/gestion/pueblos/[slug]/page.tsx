@@ -16,6 +16,7 @@ import {
   IconAutorizados,
   IconVideos,
   IconWebcam,
+  IconRRSS,
 } from '../../_components/GestionIcons';
 
 export const dynamic = 'force-dynamic';
@@ -148,6 +149,13 @@ export default async function GestionPuebloPage({
       title: 'Videos',
       description: 'Enlaces a YouTube y videos del pueblo',
       icon: <IconVideos />,
+      disabled: false,
+    },
+    {
+      href: `${baseUrl}/rrss`,
+      title: 'Redes sociales',
+      description: 'Instagram, Facebook, X, YouTube, TikTok y web',
+      icon: <IconRRSS />,
       disabled: false,
     },
     {

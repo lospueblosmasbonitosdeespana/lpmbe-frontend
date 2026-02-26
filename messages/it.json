@@ -477,7 +477,8 @@
     "nearbyEyebrow": "Scopri di più",
     "nearbyTitle": "Borghi Vicini",
     "coordinates": "Coordinate: {lat}, {lng}",
-    "viewOnGoogleMaps": "Vedi su Google Maps"
+    "viewOnGoogleMaps": "Vedi su Google Maps",
+    "videos": "Video"
   },
   "poiPage": {
     "backTo": "← Torna a {nombre}",

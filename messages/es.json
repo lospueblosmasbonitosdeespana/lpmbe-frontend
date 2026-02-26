@@ -465,7 +465,8 @@
     "nearbyEyebrow": "Descubre más",
     "nearbyTitle": "Pueblos Cercanos",
     "coordinates": "Coordenadas: {lat}, {lng}",
-    "viewOnGoogleMaps": "Ver en Google Maps"
+    "viewOnGoogleMaps": "Ver en Google Maps",
+    "videos": "Videos"
   },
   "poiPage": {
     "backTo": "← Volver a {nombre}",

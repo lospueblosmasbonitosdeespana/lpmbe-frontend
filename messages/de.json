@@ -477,7 +477,8 @@
     "nearbyEyebrow": "Mehr entdecken",
     "nearbyTitle": "Dörfer in der Nähe",
     "coordinates": "Koordinaten: {lat}, {lng}",
-    "viewOnGoogleMaps": "Auf Google Maps ansehen"
+    "viewOnGoogleMaps": "Auf Google Maps ansehen",
+    "videos": "Videos"
   },
   "poiPage": {
     "backTo": "← Zurück zu {nombre}",

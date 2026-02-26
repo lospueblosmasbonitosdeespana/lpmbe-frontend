@@ -477,7 +477,8 @@
     "nearbyEyebrow": "Descubra mais",
     "nearbyTitle": "Aldeias Próximas",
     "coordinates": "Coordenadas: {lat}, {lng}, {lng}, {lng}, {lng}, {lng}, {lng}, {lng}.",
-    "viewOnGoogleMaps": "Ver no Google Maps"
+    "viewOnGoogleMaps": "Ver no Google Maps",
+    "videos": "Vídeos"
   },
   "poiPage": {
     "backTo": "← Voltar a {nombre}",
