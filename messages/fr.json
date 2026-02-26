@@ -161,6 +161,25 @@
       "loading": "Temps de chargement...",
       "tomorrow": "Demain"
     },
+    "serviciosVisitante": {
+      "togglePois": "Lieux d'intérêt",
+      "toggleServicios": "Services",
+      "sinHorario": "Horaires non spécifiés",
+      "tipos": {
+        "LAVABO": "Toilettes publiques",
+        "PARKING": "Parking",
+        "TURISMO": "Office de tourisme",
+        "PIPICAN": "Parc pour chiens",
+        "CARAVANAS": "Aire de camping-cars",
+        "BANCO": "Banque / Distributeur",
+        "FARMACIA": "Pharmacie",
+        "GASOLINERA": "Station-service",
+        "SUPERMERCADO": "Supermarché",
+        "HOSPITAL": "Centre de santé / Hôpital",
+        "TAXI": "Station de taxi",
+        "AUTOBUS": "Arrêt de bus"
+      }
+    },
     "howToGetThere": "Comment s'y rendre",
     "actionShare": "Partager",
     "actionVideos": "Vidéos",

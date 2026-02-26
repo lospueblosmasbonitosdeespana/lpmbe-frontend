@@ -161,6 +161,25 @@
       "loading": "Cargando tiempo...",
       "tomorrow": "Mañana"
     },
+    "serviciosVisitante": {
+      "togglePois": "Lugares de interés",
+      "toggleServicios": "Servicios",
+      "sinHorario": "Sin horario especificado",
+      "tipos": {
+        "LAVABO": "Lavabos públicos",
+        "PARKING": "Aparcamiento",
+        "TURISMO": "Oficina de turismo",
+        "PIPICAN": "Pipicán",
+        "CARAVANAS": "Área de caravanas",
+        "BANCO": "Banco / Cajero",
+        "FARMACIA": "Farmacia",
+        "GASOLINERA": "Gasolinera",
+        "SUPERMERCADO": "Supermercado",
+        "HOSPITAL": "Centro de salud / Hospital",
+        "TAXI": "Parada de taxi",
+        "AUTOBUS": "Parada de autobús"
+      }
+    },
     "howToGetThere": "Cómo llegar",
     "actionShare": "Compartir",
     "actionVideos": "Videos",

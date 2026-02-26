@@ -14,7 +14,8 @@ export type TipoServicio =
 
 export interface TipoServicioConfig {
   tipo: TipoServicio;
-  etiqueta: string;
+  etiqueta: string;   // etiqueta en español (fallback y gestión)
+  i18nKey: string;    // clave dentro de pueblo.serviciosVisitante.tipos.*
   color: string;      // color de fondo del marcador
   emoji: string;      // emoji de respaldo para texto
   svg: string;        // SVG inline para el marcador Leaflet
@@ -24,6 +25,7 @@ export const TIPOS_SERVICIO: TipoServicioConfig[] = [
   {
     tipo: 'LAVABO',
     etiqueta: 'Lavabos públicos',
+    i18nKey: 'LAVABO',
     color: '#2563eb',
     emoji: '🚻',
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">
@@ -33,6 +35,7 @@ export const TIPOS_SERVICIO: TipoServicioConfig[] = [
   {
     tipo: 'PARKING',
     etiqueta: 'Aparcamiento',
+    i18nKey: 'PARKING',
     color: '#1d4ed8',
     emoji: '🅿️',
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">
@@ -42,6 +45,7 @@ export const TIPOS_SERVICIO: TipoServicioConfig[] = [
   {
     tipo: 'TURISMO',
     etiqueta: 'Oficina de turismo',
+    i18nKey: 'TURISMO',
     color: '#0891b2',
     emoji: 'ℹ️',
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">
@@ -51,6 +55,7 @@ export const TIPOS_SERVICIO: TipoServicioConfig[] = [
   {
     tipo: 'PIPICAN',
     etiqueta: 'Pipicán',
+    i18nKey: 'PIPICAN',
     color: '#16a34a',
     emoji: '🐕',
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">
@@ -60,6 +65,7 @@ export const TIPOS_SERVICIO: TipoServicioConfig[] = [
   {
     tipo: 'CARAVANAS',
     etiqueta: 'Área de caravanas',
+    i18nKey: 'CARAVANAS',
     color: '#7c3aed',
     emoji: '🚐',
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">
@@ -69,6 +75,7 @@ export const TIPOS_SERVICIO: TipoServicioConfig[] = [
   {
     tipo: 'BANCO',
     etiqueta: 'Banco / Cajero',
+    i18nKey: 'BANCO',
     color: '#b45309',
     emoji: '🏦',
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">
@@ -78,6 +85,7 @@ export const TIPOS_SERVICIO: TipoServicioConfig[] = [
   {
     tipo: 'FARMACIA',
     etiqueta: 'Farmacia',
+    i18nKey: 'FARMACIA',
     color: '#16a34a',
     emoji: '💊',
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">
@@ -87,6 +95,7 @@ export const TIPOS_SERVICIO: TipoServicioConfig[] = [
   {
     tipo: 'GASOLINERA',
     etiqueta: 'Gasolinera',
+    i18nKey: 'GASOLINERA',
     color: '#dc2626',
     emoji: '⛽',
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">
@@ -96,6 +105,7 @@ export const TIPOS_SERVICIO: TipoServicioConfig[] = [
   {
     tipo: 'SUPERMERCADO',
     etiqueta: 'Supermercado',
+    i18nKey: 'SUPERMERCADO',
     color: '#ea580c',
     emoji: '🛒',
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">
@@ -105,6 +115,7 @@ export const TIPOS_SERVICIO: TipoServicioConfig[] = [
   {
     tipo: 'HOSPITAL',
     etiqueta: 'Centro de salud / Hospital',
+    i18nKey: 'HOSPITAL',
     color: '#dc2626',
     emoji: '🏥',
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">
@@ -114,6 +125,7 @@ export const TIPOS_SERVICIO: TipoServicioConfig[] = [
   {
     tipo: 'TAXI',
     etiqueta: 'Parada de taxi',
+    i18nKey: 'TAXI',
     color: '#ca8a04',
     emoji: '🚕',
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">
@@ -123,6 +135,7 @@ export const TIPOS_SERVICIO: TipoServicioConfig[] = [
   {
     tipo: 'AUTOBUS',
     etiqueta: 'Parada de autobús',
+    i18nKey: 'AUTOBUS',
     color: '#0284c7',
     emoji: '🚌',
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">

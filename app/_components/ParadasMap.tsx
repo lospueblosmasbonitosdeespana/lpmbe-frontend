@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import 'leaflet/dist/leaflet.css';
 import { getResourceColor, getResourceSvg } from '@/lib/resource-types';
 import { getTipoServicioConfig, DIAS_SEMANA, type HorarioServicio } from '@/lib/tipos-servicio';
@@ -45,6 +46,7 @@ export default function ParadasMap({
   resourceTipo?: string | null;
   puntosServicio?: PuntoServicio[];
 }) {
+  const tServ = useTranslations('pueblo.serviciosVisitante');
   const [mounted, setMounted] = useState(false);
   const [L, setL] = useState<typeof import('leaflet') | null>(null);
   const [RL, setRL] = useState<typeof import('react-leaflet') | null>(null);
@@ -240,7 +242,7 @@ export default function ParadasMap({
               className="inline-block h-3 w-3 rounded-full border border-white/40"
               style={{ background: showPois ? 'white' : '#7A1C1C' }}
             />
-            Lugares de interés
+            {tServ('togglePois')}
           </button>
           <button
             type="button"
@@ -255,7 +257,7 @@ export default function ParadasMap({
               className="inline-block h-3 w-3 rounded-full border border-white/40"
               style={{ background: showServicios ? 'white' : '#2563eb' }}
             />
-            Servicios del visitante
+            {tServ('toggleServicios')}
           </button>
         </div>
       )}
@@ -347,7 +349,7 @@ export default function ParadasMap({
                           dangerouslySetInnerHTML={{ __html: cfg?.svg ?? '' }}
                         />
                         <strong style={{ fontSize: '13px' }}>
-                          {cfg?.etiqueta ?? punto.tipo}
+                          {cfg ? tServ(`tipos.${cfg.i18nKey}`) : punto.tipo}
                         </strong>
                       </div>
                       {punto.nombre && (
@@ -369,7 +371,7 @@ export default function ParadasMap({
                         />
                       ) : (
                         <p style={{ fontSize: '11px', color: '#9ca3af', margin: '4px 0 0' }}>
-                          Sin horario especificado
+                          {tServ('sinHorario')}
                         </p>
                       )}
                     </div>
@@ -395,7 +397,7 @@ export default function ParadasMap({
                 }}
               >
                 <span>{cfg?.emoji ?? '📍'}</span>
-                {cfg?.etiqueta ?? tipo}
+                {cfg ? tServ(`tipos.${cfg.i18nKey}`) : tipo}
               </span>
             );
           })}

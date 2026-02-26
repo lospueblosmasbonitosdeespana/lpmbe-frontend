@@ -161,6 +161,25 @@
       "loading": "Ladezeit...",
       "tomorrow": "Morgen"
     },
+    "serviciosVisitante": {
+      "togglePois": "Sehenswürdigkeiten",
+      "toggleServicios": "Dienstleistungen",
+      "sinHorario": "Keine Öffnungszeiten angegeben",
+      "tipos": {
+        "LAVABO": "Öffentliche Toiletten",
+        "PARKING": "Parkplatz",
+        "TURISMO": "Touristinformation",
+        "PIPICAN": "Hundepark",
+        "CARAVANAS": "Wohnmobilstellplatz",
+        "BANCO": "Bank / Geldautomat",
+        "FARMACIA": "Apotheke",
+        "GASOLINERA": "Tankstelle",
+        "SUPERMERCADO": "Supermarkt",
+        "HOSPITAL": "Gesundheitszentrum / Krankenhaus",
+        "TAXI": "Taxistand",
+        "AUTOBUS": "Bushaltestelle"
+      }
+    },
     "howToGetThere": "Wie man dorthin kommt",
     "actionShare": "Teilen",
     "actionVideos": "Videos",
