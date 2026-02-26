@@ -20,7 +20,6 @@ import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Title, Lead } from "@/app/components/ui/typography";
 import ParadasMap from "@/app/_components/ParadasMap";
-import MapaServiciosVisitante from "@/app/_components/MapaServiciosVisitante";
 import { DetailGallerySection } from "@/app/components/ui/detail-gallery-section";
 import { PointsOfInterest } from "@/app/components/pueblos/PointsOfInterest";
 import RotatedImage from "@/app/components/RotatedImage";
@@ -924,7 +923,7 @@ export default async function PuebloPage({
         ]}
       />
 
-      {/* MAPA - POIs del pueblo (Leaflet, mismo que lugares-de-interes) */}
+      {/* MAPA - POIs + Servicios del visitante (mapa unificado con toggle de capas) */}
       {puebloSafe.lat != null && puebloSafe.lng != null && (
         <div id="mapa">
           <Section spacing="md">
@@ -948,54 +947,11 @@ export default async function PuebloPage({
                     : [{ titulo: puebloSafe.nombre, lat: puebloSafe.lat!, lng: puebloSafe.lng! }]
                 }
                 puebloNombre={puebloSafe.nombre}
+                puntosServicio={puntosServicio}
               />
             </Container>
           </Section>
         </div>
-      )}
-
-      {/* PUNTOS DE INTERÉS DEL VISITANTE */}
-      {puntosServicio.length > 0 && (
-        <Section spacing="md">
-          <Container>
-            <details className="group">
-              <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl border border-blue-200 bg-blue-50 px-5 py-4 hover:bg-blue-100 transition-colors">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-                      <circle cx="12" cy="10" r="3" />
-                      <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 14 8 14s8-8.75 8-14a8 8 0 0 0-8-8z" />
-                    </svg>
-                  </span>
-                  <div>
-                    <h2 className="text-base font-semibold text-blue-900">
-                      Puntos de interés del visitante
-                    </h2>
-                    <p className="text-xs text-blue-700">
-                      {puntosServicio.length} punto{puntosServicio.length !== 1 ? "s" : ""} — Lavabos, parking, turismo y más
-                    </p>
-                  </div>
-                </div>
-                <span className="ml-4 flex-shrink-0 text-blue-600 group-open:rotate-180 transition-transform">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-                    <path d="M19 9l-7 7-7-7" />
-                  </svg>
-                </span>
-              </summary>
-              <div className="mt-4">
-                <MapaServiciosVisitante
-                  puntos={puntosServicio}
-                  puebloNombre={puebloSafe.nombre}
-                  center={
-                    puebloSafe.lat != null && puebloSafe.lng != null
-                      ? [puebloSafe.lat, puebloSafe.lng]
-                      : undefined
-                  }
-                />
-              </div>
-            </details>
-          </Container>
-        </Section>
       )}
 
       {/* PUEBLOS CERCANOS */}
