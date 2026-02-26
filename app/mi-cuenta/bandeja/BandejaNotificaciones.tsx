@@ -180,8 +180,10 @@ export default function BandejaNotificaciones() {
                     )}
                   </div>
 
-                  {n.titulo && (
-                    <p className="text-sm font-semibold text-foreground mb-1">{n.titulo}</p>
+                  {(n.titulo || rawTipo === 'SEMAFORO') && (
+                    <p className="text-sm font-semibold text-foreground mb-1">
+                      {n.titulo || `Semáforo turístico${(n as any).estado ? ` ${(n as any).estado}` : ''} en ${puebloNombre || 'pueblo'}`}
+                    </p>
                   )}
 
                   {n.contenido && (
