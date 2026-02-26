@@ -17,6 +17,7 @@ import {
   IconVideos,
   IconWebcam,
   IconRRSS,
+  IconServiciosVisitante,
 } from '../../_components/GestionIcons';
 
 export const dynamic = 'force-dynamic';
@@ -184,6 +185,13 @@ export default async function GestionPuebloPage({
       title: 'POIs',
       description: 'Puntos de interés',
       icon: <IconPois />,
+      disabled: false,
+    },
+    {
+      href: `${baseUrl}/servicios`,
+      title: 'Servicios del visitante',
+      description: 'Lavabos, parking, turismo, pipicán, caravanas...',
+      icon: <IconServiciosVisitante />,
       disabled: false,
     },
     {

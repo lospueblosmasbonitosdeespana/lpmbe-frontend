@@ -306,3 +306,14 @@ export function IconPueblos() {
   );
 }
 
+export function IconServiciosVisitante() {
+  return (
+    <svg className={iconClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="10" r="3" />
+      <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 14 8 14s8-8.75 8-14a8 8 0 0 0-8-8z" />
+      <line x1="8" y1="10" x2="4" y2="10" />
+      <line x1="20" y1="10" x2="16" y2="10" />
+    </svg>
+  );
+}
+

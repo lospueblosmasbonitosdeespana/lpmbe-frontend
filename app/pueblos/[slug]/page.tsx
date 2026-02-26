@@ -20,6 +20,7 @@ import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Title, Lead } from "@/app/components/ui/typography";
 import ParadasMap from "@/app/_components/ParadasMap";
+import MapaServiciosVisitante from "@/app/_components/MapaServiciosVisitante";
 import { DetailGallerySection } from "@/app/components/ui/detail-gallery-section";
 import { PointsOfInterest } from "@/app/components/pueblos/PointsOfInterest";
 import RotatedImage from "@/app/components/RotatedImage";
@@ -282,10 +283,11 @@ export default async function PuebloPage({
   const t = await getTranslations("puebloPage");
   const API_BASE = getApiUrl();
   const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
-  const [pueblo, pueblosLite, pagesRes] = await Promise.all([
+  const [pueblo, pueblosLite, pagesRes, puntosServicioRes] = await Promise.all([
     getPuebloBySlug(slug, locale),
     getPueblosLite(locale),
     fetch(`${API_BASE}/public/pueblos/${slug}/pages${langQs}`, { cache: "no-store" }).catch(() => null),
+    fetch(`${API_BASE}/pueblos/${slug}/puntos-servicio`, { cache: "no-store" }).catch(() => null),
   ]);
 
   // Páginas temáticas del pueblo (contenidos temáticos) - ahora son arrays por categoría
@@ -306,6 +308,29 @@ export default async function PuebloPage({
             category: cat,
           }));
         });
+    } catch {
+      // ignorar
+    }
+  }
+
+  // Puntos de servicio para visitantes
+  type PuntoServicioPublic = {
+    id: number;
+    tipo: string;
+    nombre?: string | null;
+    lat?: number | null;
+    lng?: number | null;
+    horario?: Record<string, string | null> | null;
+  };
+  let puntosServicio: PuntoServicioPublic[] = [];
+  if (puntosServicioRes?.ok) {
+    try {
+      const data = await puntosServicioRes.json();
+      if (Array.isArray(data)) {
+        puntosServicio = data.filter(
+          (p: PuntoServicioPublic) => typeof p.lat === "number" && typeof p.lng === "number"
+        );
+      }
     } catch {
       // ignorar
     }
@@ -927,6 +952,50 @@ export default async function PuebloPage({
             </Container>
           </Section>
         </div>
+      )}
+
+      {/* PUNTOS DE INTERÉS DEL VISITANTE */}
+      {puntosServicio.length > 0 && (
+        <Section spacing="md">
+          <Container>
+            <details className="group">
+              <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl border border-blue-200 bg-blue-50 px-5 py-4 hover:bg-blue-100 transition-colors">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                      <circle cx="12" cy="10" r="3" />
+                      <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 14 8 14s8-8.75 8-14a8 8 0 0 0-8-8z" />
+                    </svg>
+                  </span>
+                  <div>
+                    <h2 className="text-base font-semibold text-blue-900">
+                      Puntos de interés del visitante
+                    </h2>
+                    <p className="text-xs text-blue-700">
+                      {puntosServicio.length} punto{puntosServicio.length !== 1 ? "s" : ""} — Lavabos, parking, turismo y más
+                    </p>
+                  </div>
+                </div>
+                <span className="ml-4 flex-shrink-0 text-blue-600 group-open:rotate-180 transition-transform">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                    <path d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </summary>
+              <div className="mt-4">
+                <MapaServiciosVisitante
+                  puntos={puntosServicio}
+                  puebloNombre={puebloSafe.nombre}
+                  center={
+                    puebloSafe.lat != null && puebloSafe.lng != null
+                      ? [puebloSafe.lat, puebloSafe.lng]
+                      : undefined
+                  }
+                />
+              </div>
+            </details>
+          </Container>
+        </Section>
       )}
 
       {/* PUEBLOS CERCANOS */}
