@@ -113,12 +113,17 @@ export default function PueblosMap({ className, compact }: PueblosMapProps) {
     const markers: L.Marker[] = [];
 
     pueblos.forEach((p) => {
+      const googleMapsWalking = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=walking`;
       const popup = `
         <div style="min-width:180px;font-family:system-ui,sans-serif;padding:4px 0">
           <strong style="font-size:14px;color:#1a1a1a">${p.nombre}</strong><br/>
           <span style="color:#666;font-size:12px">${p.provincia} · ${p.comunidad}</span><br/>
           <a href="/pueblos/${p.slug}" style="color:${TERRACOTTA};font-weight:600;font-size:12px;text-decoration:none;margin-top:4px;display:inline-block">
             Ver pueblo →
+          </a>
+          <br/>
+          <a href="${googleMapsWalking}" target="_blank" rel="noopener noreferrer" style="color:${TERRACOTTA};font-weight:600;font-size:12px;text-decoration:none;margin-top:6px;display:inline-block">
+            Ir a (Google Maps) →
           </a>
         </div>`;
 

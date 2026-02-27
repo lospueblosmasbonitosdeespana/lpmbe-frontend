@@ -41,6 +41,8 @@ export interface NotificationItem {
   href: string;
   /** Mensaje público (ej. para semáforos: motivo público del cambio) */
   message?: string;
+  /** ISO date para calcular no vistas (badge) */
+  createdAt?: string;
 }
 
 export interface CategoryCard {
@@ -226,6 +228,8 @@ function HeroSection({
   );
 }
 
+const NOTIFICACIONES_VISTAS_KEY = "lpmbe_notificaciones_vistas_at";
+
 /* ----- COLLAPSIBLE NOTIFICATION CENTER ----- */
 function NotificationCenter({
   notifications = [],
@@ -237,6 +241,8 @@ function NotificationCenter({
   const [activeTab, setActiveTab] = useState<
     "noticias" | "semaforos" | "alertas"
   >("noticias");
+  const [lastSeenAt, setLastSeenAt] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const tabs = [
     { id: "noticias", label: t("tabNews"), icon: Newspaper },
@@ -253,7 +259,38 @@ function NotificationCenter({
         : n.type === "alerta"
   );
 
-  const notificationCount = homeNotifications.length;
+  // Leer "última vez vista" del cliente (solo tras montar para evitar hidratación distinta)
+  useEffect(() => {
+    setMounted(true);
+    try {
+      const stored = localStorage.getItem(NOTIFICACIONES_VISTAS_KEY);
+      if (stored) setLastSeenAt(stored);
+    } catch {
+      // ignorar si localStorage no está disponible
+    }
+  }, []);
+
+  // Contador de no vistas: solo las que son posteriores a lastSeenAt
+  const unreadCount = mounted
+    ? homeNotifications.filter((n) => {
+        if (!n.createdAt) return true;
+        const created = new Date(n.createdAt).getTime();
+        const seen = lastSeenAt ? new Date(lastSeenAt).getTime() : 0;
+        return created > seen;
+      }).length
+    : homeNotifications.length;
+
+  // Al abrir el centro de notificaciones, marcar como vistas
+  useEffect(() => {
+    if (!mounted || !isOpen) return;
+    try {
+      const now = new Date().toISOString();
+      localStorage.setItem(NOTIFICACIONES_VISTAS_KEY, now);
+      setLastSeenAt(now);
+    } catch {
+      // ignorar
+    }
+  }, [mounted, isOpen]);
 
   return (
     <div className="relative z-10 -mt-8">
@@ -276,9 +313,9 @@ function NotificationCenter({
               <span className="font-semibold text-sm">
                 {t("notifCenterTitle")}
               </span>
-              {notificationCount > 0 && (
+              {unreadCount > 0 && (
                 <span className="px-2 py-0.5 text-xs font-bold bg-primary text-primary-foreground rounded-full">
-                  {notificationCount}
+                  {unreadCount}
                 </span>
               )}
             </div>

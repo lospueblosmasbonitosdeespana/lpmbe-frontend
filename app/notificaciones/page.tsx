@@ -32,6 +32,8 @@ function normalizeFeed(data: any): NotifItem[] {
   return raw.filter(Boolean);
 }
 
+const NOTIFICACIONES_VISTAS_KEY = "lpmbe_notificaciones_vistas_at";
+
 export default function NotificacionesPage() {
   const locale = useLocale();
   const t = useTranslations("notifications");
@@ -39,6 +41,15 @@ export default function NotificacionesPage() {
   const [items, setItems] = useState<NotifItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+
+  // Al entrar en esta página, marcar notificaciones como vistas (para que el badge en home desaparezca)
+  useEffect(() => {
+    try {
+      localStorage.setItem(NOTIFICACIONES_VISTAS_KEY, new Date().toISOString());
+    } catch {
+      // ignorar si localStorage no está disponible
+    }
+  }, []);
 
   useEffect(() => {
     let alive = true;

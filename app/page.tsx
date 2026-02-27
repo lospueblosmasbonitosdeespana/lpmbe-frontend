@@ -109,6 +109,7 @@ async function getNotifications(locale?: string): Promise<NotificationItem[]> {
         return item.url || "/notificaciones";
       })(),
       message: (item.motivoPublico?.trim() || item.contenido?.trim()) || undefined,
+      createdAt: item.fechaInicio ?? item.fecha ?? item.createdAt ?? new Date().toISOString(),
     });
 
     const all: NotificationItem[] = [
