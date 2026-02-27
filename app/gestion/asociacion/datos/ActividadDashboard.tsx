@@ -244,6 +244,19 @@ export default function ActividadDashboard() {
   const [userPage, setUserPage] = useState(0);
   const PAGE_SIZE = 20;
 
+  // Create user modal
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [newNombre, setNewNombre] = useState('');
+  const [newApellidos, setNewApellidos] = useState('');
+  const [newRol, setNewRol] = useState('USUARIO');
+  const [newPassword, setNewPassword] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [createMsg, setCreateMsg] = useState<string | null>(null);
+
+  // Delete user
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
   useEffect(() => {
     (async () => {
       try {
@@ -285,6 +298,62 @@ export default function ActividadDashboard() {
   useEffect(() => {
     setUserPage(0);
   }, [userSearch, userRolFilter]);
+
+  const handleCreateUser = async () => {
+    if (!newEmail.trim()) return;
+    setCreating(true);
+    setCreateMsg(null);
+    try {
+      const res = await fetch('/api/admin/datos/usuarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: newEmail.trim(),
+          nombre: newNombre.trim() || undefined,
+          apellidos: newApellidos.trim() || undefined,
+          rol: newRol,
+          password: newPassword.trim() || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || d.message || 'Error al crear usuario');
+      }
+      setCreateMsg('Usuario creado correctamente');
+      setNewEmail('');
+      setNewNombre('');
+      setNewApellidos('');
+      setNewRol('USUARIO');
+      setNewPassword('');
+      fetchUsers();
+      setTimeout(() => {
+        setShowCreateModal(false);
+        setCreateMsg(null);
+      }, 1500);
+    } catch (e: any) {
+      setCreateMsg(`Error: ${e.message}`);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: number, email: string) => {
+    if (!confirm(`¿Seguro que quieres desactivar al usuario ${email}? Se marcará como inactivo.`)) return;
+    setDeletingId(userId);
+    try {
+      const res = await fetch(`/api/admin/datos/usuarios/${userId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        alert(d.error || d.message || 'Error al eliminar');
+      } else {
+        fetchUsers();
+      }
+    } catch {
+      alert('Error de red al eliminar');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -521,7 +590,98 @@ export default function ActividadDashboard() {
               <option key={r} value={r}>{r}</option>
             ))}
           </select>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition-colors whitespace-nowrap"
+          >
+            + Crear usuario
+          </button>
         </div>
+
+        {/* Create user modal */}
+        {showCreateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="mx-4 w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-2xl">
+              <h3 className="mb-4 text-lg font-semibold text-foreground">Crear nuevo usuario</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-muted-foreground">Email *</label>
+                  <input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    placeholder="usuario@email.com"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-muted-foreground">Nombre</label>
+                    <input
+                      type="text"
+                      value={newNombre}
+                      onChange={(e) => setNewNombre(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-muted-foreground">Apellidos</label>
+                    <input
+                      type="text"
+                      value={newApellidos}
+                      onChange={(e) => setNewApellidos(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-muted-foreground">Rol</label>
+                    <select
+                      value={newRol}
+                      onChange={(e) => setNewRol(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    >
+                      {ROLES.filter(Boolean).map((r) => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-muted-foreground">Contraseña</label>
+                    <input
+                      type="text"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      placeholder="(auto si vacío)"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 flex items-center gap-3">
+                <button
+                  onClick={handleCreateUser}
+                  disabled={creating || !newEmail.trim()}
+                  className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                >
+                  {creating ? 'Creando…' : 'Crear'}
+                </button>
+                <button
+                  onClick={() => { setShowCreateModal(false); setCreateMsg(null); }}
+                  className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted transition-colors"
+                >
+                  Cancelar
+                </button>
+                {createMsg && (
+                  <span className={`text-sm ${createMsg.startsWith('Error') ? 'text-red-600' : 'text-green-600'}`}>
+                    {createMsg}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
           {usersLoading ? (
@@ -569,12 +729,21 @@ export default function ActividadDashboard() {
                         {u.lastLoginAt ? formatDate(u.lastLoginAt) : '—'}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() => router.push(`/gestion/asociacion/datos/usuarios/${u.id}`)}
-                          className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                        >
-                          Ver / Editar
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => router.push(`/gestion/asociacion/datos/usuarios/${u.id}`)}
+                            className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                          >
+                            Ver / Editar
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(u.id, u.email)}
+                            disabled={deletingId === u.id}
+                            className="rounded-md bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+                          >
+                            {deletingId === u.id ? '…' : 'Eliminar'}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

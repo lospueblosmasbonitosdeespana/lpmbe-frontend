@@ -103,6 +103,21 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
     fetchUser();
   }, [fetchUser]);
 
+  const handleDelete = async () => {
+    if (!confirm(`¿Seguro que quieres desactivar al usuario ${user?.email}? Se marcará como inactivo.`)) return;
+    try {
+      const res = await fetch(`/api/admin/datos/usuarios/${userId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        alert(d.error || d.message || 'Error al eliminar');
+        return;
+      }
+      router.push('/gestion/asociacion/datos?tab=usuarios');
+    } catch {
+      alert('Error de red al eliminar');
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setSaveMsg(null);
@@ -278,6 +293,12 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
                 className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
               >
                 {saving ? 'Guardando…' : 'Guardar cambios'}
+              </button>
+              <button
+                onClick={handleDelete}
+                className="rounded-md bg-red-600 px-5 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
+              >
+                Eliminar usuario
               </button>
               {saveMsg && (
                 <span className={`text-sm ${saveMsg.startsWith('Error') ? 'text-red-600' : 'text-green-600'}`}>

@@ -6,11 +6,13 @@ import ActividadDashboard from './ActividadDashboard';
 
 const PueblosDashboard = lazy(() => import('./PueblosDashboard'));
 const WebDashboard = lazy(() => import('./WebDashboard'));
+const InternoDashboard = lazy(() => import('./InternoDashboard'));
 
 const TABS = [
   { key: 'usuarios' as const, label: 'Usuarios' },
   { key: 'pueblos' as const, label: 'Pueblos' },
   { key: 'web' as const, label: 'Web' },
+  { key: 'interno' as const, label: 'Interno' },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
@@ -66,6 +68,11 @@ export default function DatosTabs({ defaultTab }: { defaultTab: TabKey }) {
       {active === 'web' && (
         <Suspense fallback={<Spinner />}>
           <WebDashboard />
+        </Suspense>
+      )}
+      {active === 'interno' && (
+        <Suspense fallback={<Spinner />}>
+          <InternoDashboard />
         </Suspense>
       )}
     </div>

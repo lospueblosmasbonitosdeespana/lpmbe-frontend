@@ -8,26 +8,31 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  try {
-    const { searchParams } = new URL(req.url);
-    const params = new URLSearchParams();
-    searchParams.forEach((v, k) => params.set(k, v));
+  const { searchParams } = new URL(req.url);
+  const params = new URLSearchParams();
+  ['limit', 'offset', 'userId', 'entityType', 'puebloId', 'desde', 'hasta'].forEach((key) => {
+    const val = searchParams.get(key);
+    if (val != null && val !== '') params.set(key, val);
+  });
+  const qs = params.toString();
+  const API_BASE = getApiUrl();
+  const url = `${API_BASE}/admin/datos/audit-logs${qs ? `?${qs}` : ''}`;
 
-    const API_BASE = getApiUrl();
-    const res = await fetch(`${API_BASE}/admin/datos/audit-logs?${params.toString()}`, {
+  try {
+    const upstream = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',
     });
 
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      return NextResponse.json(data, { status: res.status });
+    if (!upstream.ok) {
+      const text = await upstream.text().catch(() => 'Error');
+      return NextResponse.json({ error: text }, { status: upstream.status });
     }
+
+    const data = await upstream.json();
     return NextResponse.json(data);
-  } catch (e: any) {
-    return NextResponse.json(
-      { error: e?.message ?? 'Error interno' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Error interno';
+    return NextResponse.json({ error: message }, { status: 502 });
   }
 }

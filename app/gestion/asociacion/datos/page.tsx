@@ -13,8 +13,8 @@ export default async function DatosPage({
   if (me.rol !== 'ADMIN' && me.rol !== 'EDITOR') redirect('/mi-cuenta');
 
   const { tab } = await searchParams;
-  const activeTab = ['usuarios', 'pueblos', 'web'].includes(tab ?? '')
-    ? (tab as 'usuarios' | 'pueblos' | 'web')
+  const activeTab = ['usuarios', 'pueblos', 'web', 'interno'].includes(tab ?? '')
+    ? (tab as 'usuarios' | 'pueblos' | 'web' | 'interno')
     : 'usuarios';
 
   return (
