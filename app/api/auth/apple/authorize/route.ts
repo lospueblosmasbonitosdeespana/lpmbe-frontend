@@ -1,6 +1,6 @@
 /**
  * GET /api/auth/apple/authorize
- * Redirige a Apple Sign In. Navegación directa evita que Safari/navegadores bloqueen el redirect.
+ * Redirige a Apple Sign In (uso en móvil: enlace directo evita que Safari bloquee el redirect del SDK).
  */
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
