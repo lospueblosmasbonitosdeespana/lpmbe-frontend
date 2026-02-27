@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { getLugarLegacyBySlug, getApiUrl, type Pueblo } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
 import ParadasMap from "@/app/_components/ParadasMap";
+import ParadaFoto from "./ParadaFoto";
 
 // Helpers para SEO
 function cleanText(input: string) {
@@ -256,36 +257,20 @@ export default async function MultiexperienciaPage({
                   key={key}
                   className="rounded-xl overflow-hidden border border-border bg-card dark:bg-card"
                 >
-                  {/* Foto */}
+                  {/* Foto: usa Client Component para ocultar el bloque si la imagen falla */}
                   {p.foto ? (
-                    <div className="relative aspect-video w-full overflow-hidden bg-muted">
-                      <img
-                        src={p.foto}
-                        alt={p.titulo ?? t("stopFallback")}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                        loading="lazy"
-                      />
-                    </div>
+                    <ParadaFoto src={p.foto} alt={p.titulo ?? t("stopFallback")} />
                   ) : null}
 
                   {/* Contenido */}
                   <div className="p-5">
                     {/* Número + Título */}
                     <div className="flex items-center gap-3">
-                      {!p.foto && (
-                        <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-primary text-primary-foreground text-base font-extrabold shrink-0 shadow-sm">
-                          {num}
-                        </span>
-                      )}
+                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-primary text-primary-foreground text-base font-extrabold shrink-0 shadow-sm">
+                        {num}
+                      </span>
                       {p.titulo ? (
                         <h3 className="text-xl font-semibold text-foreground leading-tight m-0">
-                          {p.foto && (
-                            <span className="text-primary font-bold">{num}. </span>
-                          )}
                           {p.titulo}
                         </h3>
                       ) : (
