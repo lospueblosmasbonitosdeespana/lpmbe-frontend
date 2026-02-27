@@ -165,6 +165,7 @@
       "togglePois": "Places of interest",
       "toggleServicios": "Services",
       "sinHorario": "No schedule specified",
+      "goTo": "Go to",
       "tipos": {
         "LAVABO": "Public restrooms",
         "PARKING": "Parking",

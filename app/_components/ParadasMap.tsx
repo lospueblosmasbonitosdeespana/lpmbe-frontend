@@ -305,6 +305,21 @@ export default function ParadasMap({
                           {puebloNombre}
                         </div>
                       )}
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=walking`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-block',
+                          marginTop: 8,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: '#7c2d34',
+                          textDecoration: 'none',
+                        }}
+                      >
+                        {tServ('goTo')} (Google Maps) →
+                      </a>
                     </div>
                   </Popup>
                 </Marker>
@@ -374,6 +389,21 @@ export default function ParadasMap({
                           {tServ('sinHorario')}
                         </p>
                       )}
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${punto.lat},${punto.lng}&travelmode=walking`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-block',
+                          marginTop: 8,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: '#7c2d34',
+                          textDecoration: 'none',
+                        }}
+                      >
+                        {tServ('goTo')} (Google Maps) →
+                      </a>
                     </div>
                   </Popup>
                 </Marker>

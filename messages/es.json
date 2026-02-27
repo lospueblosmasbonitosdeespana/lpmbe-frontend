@@ -165,6 +165,7 @@
       "togglePois": "Lugares de interés",
       "toggleServicios": "Servicios",
       "sinHorario": "Sin horario especificado",
+      "goTo": "Ir a",
       "tipos": {
         "LAVABO": "Lavabos públicos",
         "PARKING": "Aparcamiento",
