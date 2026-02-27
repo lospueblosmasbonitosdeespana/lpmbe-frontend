@@ -13,6 +13,7 @@ type PuebloVisitado = {
   comunidad: string | null;
   fecha: string;
   origen: string;
+  valoracion: number | null;
 };
 
 type UserDetail = {
@@ -69,6 +70,7 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [updatingOrigen, setUpdatingOrigen] = useState<string | null>(null);
 
   // Editable fields
   const [editNombre, setEditNombre] = useState('');
@@ -115,6 +117,28 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
       router.push('/gestion/asociacion/datos?tab=usuarios');
     } catch {
       alert('Error de red al eliminar');
+    }
+  };
+
+  const handleChangeOrigen = async (puebloId: number, nuevoOrigen: 'GPS' | 'MANUAL') => {
+    const key = `${puebloId}`;
+    setUpdatingOrigen(key);
+    try {
+      const res = await fetch(`/api/admin/datos/usuarios/${userId}/visitas/${puebloId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ origen: nuevoOrigen }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        alert(d.error || d.message || 'Error al actualizar origen');
+        return;
+      }
+      await fetchUser();
+    } catch {
+      alert('Error de red al actualizar origen');
+    } finally {
+      setUpdatingOrigen(null);
     }
   };
 
@@ -324,34 +348,39 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Comunidad</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Origen</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Fecha</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Valoración</th>
               </tr>
             </thead>
             <tbody>
               {!user.pueblosVisitados?.pueblos?.length ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                     Este usuario no ha visitado ningún pueblo
                   </td>
                 </tr>
               ) : (
                 user.pueblosVisitados.pueblos.map((p) => (
-                  <tr key={`${p.puebloId}-${p.origen}`} className="border-b border-border last:border-0 hover:bg-muted/30">
+                  <tr key={p.puebloId} className="border-b border-border last:border-0 hover:bg-muted/30">
                     <td className="px-4 py-3 font-medium text-foreground">{p.nombre}</td>
                     <td className="px-4 py-3 text-muted-foreground">{p.provincia ?? '—'}</td>
                     <td className="px-4 py-3 text-muted-foreground">{p.comunidad ?? '—'}</td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                          p.origen === 'GPS'
-                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                        }`}
+                      <select
+                        value={p.origen}
+                        onChange={(e) => handleChangeOrigen(p.puebloId, e.target.value as 'GPS' | 'MANUAL')}
+                        disabled={updatingOrigen === String(p.puebloId)}
+                        className="rounded border border-border bg-background px-2 py-1 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
+                        title="Cambiar origen (GPS / Manual)"
                       >
-                        {p.origen}
-                      </span>
+                        <option value="GPS">GPS</option>
+                        <option value="MANUAL">Manual</option>
+                      </select>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {formatDate(p.fecha)}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {p.valoracion != null ? `${p.valoracion} ★` : '—'}
                     </td>
                   </tr>
                 ))
