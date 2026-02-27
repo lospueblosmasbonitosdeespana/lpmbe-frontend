@@ -242,6 +242,8 @@ export default function ActividadDashboard() {
   const [userSearch, setUserSearch] = useState('');
   const [userRolFilter, setUserRolFilter] = useState('');
   const [userPage, setUserPage] = useState(0);
+  type OrderByVisitas = 'createdAt' | 'visitas-desc' | 'visitas-asc';
+  const [userOrderBy, setUserOrderBy] = useState<OrderByVisitas>('createdAt');
   const PAGE_SIZE = 20;
 
   // Create user modal
@@ -284,6 +286,13 @@ export default function ActividadDashboard() {
       if (userSearch.trim()) params.set('q', userSearch.trim());
       if (userRolFilter) params.set('rol', userRolFilter);
       if (!showInactivos) params.set('activo', 'true');
+      if (userOrderBy === 'visitas-desc') {
+        params.set('orderBy', 'visitas');
+        params.set('order', 'desc');
+      } else if (userOrderBy === 'visitas-asc') {
+        params.set('orderBy', 'visitas');
+        params.set('order', 'asc');
+      }
       const res = await fetch(`/api/admin/datos/usuarios?${params}`, { cache: 'no-store' });
       if (res.ok) setUsers(await res.json());
     } catch {
@@ -291,7 +300,7 @@ export default function ActividadDashboard() {
     } finally {
       setUsersLoading(false);
     }
-  }, [userSearch, userRolFilter, userPage, showInactivos]);
+  }, [userSearch, userRolFilter, userPage, showInactivos, userOrderBy]);
 
   useEffect(() => {
     fetchUsers();
@@ -299,7 +308,15 @@ export default function ActividadDashboard() {
 
   useEffect(() => {
     setUserPage(0);
-  }, [userSearch, userRolFilter, showInactivos]);
+  }, [userSearch, userRolFilter, showInactivos, userOrderBy]);
+
+  const cycleVisitasSort = () => {
+    setUserOrderBy((prev) => {
+      if (prev === 'createdAt') return 'visitas-desc';
+      if (prev === 'visitas-desc') return 'visitas-asc';
+      return 'createdAt';
+    });
+  };
 
   const handleCreateUser = async () => {
     if (!newEmail.trim()) return;
@@ -735,7 +752,28 @@ export default function ActividadDashboard() {
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Email</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Nombre</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Rol</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">Visitas</th>
+                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                    <button
+                      type="button"
+                      onClick={cycleVisitasSort}
+                      className="inline-flex items-center gap-1 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 rounded"
+                      title={
+                        userOrderBy === 'createdAt'
+                          ? 'Ordenar por visitas (más primero)'
+                          : userOrderBy === 'visitas-desc'
+                            ? 'Ordenar por visitas (menos primero)'
+                            : 'Quitar orden por visitas'
+                      }
+                    >
+                      Visitas
+                      {userOrderBy === 'visitas-desc' && (
+                        <span className="text-primary" aria-hidden>▼</span>
+                      )}
+                      {userOrderBy === 'visitas-asc' && (
+                        <span className="text-primary" aria-hidden>▲</span>
+                      )}
+                    </button>
+                  </th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Registro</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Último login</th>
                   <th className="px-4 py-3 text-center font-medium text-muted-foreground">Acciones</th>
