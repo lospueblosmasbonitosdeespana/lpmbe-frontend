@@ -263,7 +263,7 @@ export default function PuebloMetricasDashboard({
           <KpiCard
             label="Valoraciones 5★"
             value={valoraciones.distribucion[5] ?? 0}
-            sub={`1★–4★: ver podio abajo`}
+            sub={`1★: ${valoraciones.distribucion[1] ?? 0} · 2★: ${valoraciones.distribucion[2] ?? 0} · 3★: ${valoraciones.distribucion[3] ?? 0} · 4★: ${valoraciones.distribucion[4] ?? 0}`}
             accent="valoraciones"
           />
         </div>
