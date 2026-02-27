@@ -319,7 +319,11 @@ export default function ActividadDashboard() {
         const d = await res.json().catch(() => ({}));
         throw new Error(d.error || d.message || 'Error al crear usuario');
       }
-      setCreateMsg('Usuario creado correctamente');
+      const result = await res.json().catch(() => ({}));
+      const emailSent = result?.emailEnviado;
+      setCreateMsg(emailSent
+        ? 'Usuario creado. Se ha enviado un email para que establezca su contraseña.'
+        : 'Usuario creado correctamente.');
       setNewEmail('');
       setNewNombre('');
       setNewApellidos('');
@@ -654,8 +658,11 @@ export default function ActividadDashboard() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                      placeholder="(auto si vacío)"
+                      placeholder="Dejar vacío → email"
                     />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Si se deja vacío, se envía email al usuario para que la establezca.
+                    </p>
                   </div>
                 </div>
               </div>
