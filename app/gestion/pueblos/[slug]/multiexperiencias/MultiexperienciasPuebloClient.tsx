@@ -362,9 +362,10 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
         payload.lng = lng!;
       }
 
-      // Para LEGACY, hacemos un upsert con legacyLugarId
       if (p.kind === "LEGACY" && p.legacyLugarId) {
         payload.legacyLugarId = p.legacyLugarId;
+      } else if (p.kind === "CUSTOM" && p.customId) {
+        payload.customId = p.customId;
       }
 
       const res = await fetch(`/api/admin/multiexperiencias/${expandedMxId}/paradas`, {
