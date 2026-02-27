@@ -17,6 +17,7 @@ import {
   IconVideos,
   IconWebcam,
   IconRRSS,
+  IconMetricas,
   IconServiciosVisitante,
 } from '../../_components/GestionIcons';
 
@@ -130,6 +131,13 @@ export default async function GestionPuebloPage({
       description: 'Estado turístico y aforo',
       icon: <IconSemaforo />,
       disabled: false,
+    },
+    {
+      href: `${baseUrl}/metricas`,
+      title: 'Métricas',
+      description: 'Visitas, valoraciones y analítica web del pueblo',
+      icon: <IconMetricas />,
+      disabled: !puebloId,
     },
     {
       href: `${baseUrl}/club`,
