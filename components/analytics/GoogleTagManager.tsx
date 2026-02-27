@@ -2,7 +2,8 @@
 
 import Script from "next/script";
 
-const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID ?? "GTM-W898BSGR";
+// Contenedor nuevo (LPMBE Nextjs) - configurado de 0 para la web
+const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID ?? "GTM-T9G8Z48W";
 
 export function GoogleTagManager() {
   if (!GTM_ID || GTM_ID === "GTM-XXXXXXX") return null;
