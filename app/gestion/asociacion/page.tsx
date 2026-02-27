@@ -153,7 +153,7 @@ function GridCard({
 export default async function GestionAsociacionPage() {
   const me = await getMeServer();
   if (!me) redirect('/entrar');
-  if (me.rol !== 'ADMIN') redirect('/mi-cuenta');
+  if (me.rol !== 'ADMIN' && me.rol !== 'EDITOR') redirect('/mi-cuenta');
 
   return (
     <main className="mx-auto max-w-5xl p-6">

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -51,6 +52,25 @@ type VisitaReciente = {
 };
 
 type DatoGrafica = { dia: string; total: number };
+
+type UserRow = {
+  id: number;
+  email: string;
+  nombre: string | null;
+  apellidos: string | null;
+  rol: string;
+  activo: boolean;
+  createdAt: string;
+  lastLoginAt: string | null;
+  totalVisitas: number;
+};
+
+type UsersResponse = {
+  items: UserRow[];
+  total: number;
+};
+
+const ROLES = ['', 'ADMIN', 'EDITOR', 'ALCALDE', 'COLABORADOR', 'CLIENTE', 'USUARIO'] as const;
 
 type DashboardData = {
   kpis: KPIs;
@@ -210,10 +230,19 @@ function MergedChart({
 }
 
 export default function ActividadDashboard() {
+  const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<'usuarios' | 'valoraciones' | 'visitas'>('usuarios');
+
+  // Users table state
+  const [users, setUsers] = useState<UsersResponse | null>(null);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [userSearch, setUserSearch] = useState('');
+  const [userRolFilter, setUserRolFilter] = useState('');
+  const [userPage, setUserPage] = useState(0);
+  const PAGE_SIZE = 20;
 
   useEffect(() => {
     (async () => {
@@ -230,6 +259,32 @@ export default function ActividadDashboard() {
       }
     })();
   }, []);
+
+  const fetchUsers = useCallback(async () => {
+    setUsersLoading(true);
+    try {
+      const params = new URLSearchParams({
+        limit: String(PAGE_SIZE),
+        offset: String(userPage * PAGE_SIZE),
+      });
+      if (userSearch.trim()) params.set('q', userSearch.trim());
+      if (userRolFilter) params.set('rol', userRolFilter);
+      const res = await fetch(`/api/admin/datos/usuarios?${params}`, { cache: 'no-store' });
+      if (res.ok) setUsers(await res.json());
+    } catch {
+      // silently fail
+    } finally {
+      setUsersLoading(false);
+    }
+  }, [userSearch, userRolFilter, userPage]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  useEffect(() => {
+    setUserPage(0);
+  }, [userSearch, userRolFilter]);
 
   if (loading) {
     return (
@@ -442,6 +497,118 @@ export default function ActividadDashboard() {
             </table>
           )}
         </div>
+      </section>
+
+      {/* ─── Gestión de usuarios ─── */}
+      <section>
+        <h2 className="mb-4 text-lg font-semibold text-foreground">Gestión de usuarios</h2>
+
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <input
+            type="text"
+            placeholder="Buscar por email o nombre…"
+            value={userSearch}
+            onChange={(e) => setUserSearch(e.target.value)}
+            className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
+          <select
+            value={userRolFilter}
+            onChange={(e) => setUserRolFilter(e.target.value)}
+            className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          >
+            <option value="">Todos los roles</option>
+            {ROLES.filter(Boolean).map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+          {usersLoading ? (
+            <div className="flex items-center justify-center gap-2 py-12 text-muted-foreground">
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
+                <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="4" strokeLinecap="round" className="opacity-75" />
+              </svg>
+              Cargando…
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Email</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Nombre</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Rol</th>
+                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">Visitas</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Registro</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Último login</th>
+                  <th className="px-4 py-3 text-center font-medium text-muted-foreground">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {!users || users.items.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                      Sin resultados
+                    </td>
+                  </tr>
+                ) : (
+                  users.items.map((u) => (
+                    <tr
+                      key={u.id}
+                      className={`border-b border-border last:border-0 hover:bg-muted/30 ${!u.activo ? 'opacity-50' : ''}`}
+                    >
+                      <td className="px-4 py-3 text-foreground">{u.email}</td>
+                      <td className="px-4 py-3 text-foreground">
+                        {[u.nombre, u.apellidos].filter(Boolean).join(' ') || '—'}
+                      </td>
+                      <td className="px-4 py-3"><RolBadge rol={u.rol} /></td>
+                      <td className="px-4 py-3 text-right font-medium text-foreground">{u.totalVisitas}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{formatDate(u.createdAt)}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {u.lastLoginAt ? formatDate(u.lastLoginAt) : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => router.push(`/gestion/asociacion/datos/usuarios/${u.id}`)}
+                          className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                        >
+                          Ver / Editar
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {users && users.total > PAGE_SIZE && (
+          <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+            <span>
+              Mostrando {userPage * PAGE_SIZE + 1}–{Math.min((userPage + 1) * PAGE_SIZE, users.total)} de{' '}
+              {users.total.toLocaleString('es-ES')}
+            </span>
+            <div className="flex gap-2">
+              <button
+                disabled={userPage === 0}
+                onClick={() => setUserPage((p) => p - 1)}
+                className="rounded-md border border-border px-3 py-1.5 hover:bg-muted disabled:opacity-40"
+              >
+                ← Anterior
+              </button>
+              <button
+                disabled={(userPage + 1) * PAGE_SIZE >= users.total}
+                onClick={() => setUserPage((p) => p + 1)}
+                className="rounded-md border border-border px-3 py-1.5 hover:bg-muted disabled:opacity-40"
+              >
+                Siguiente →
+              </button>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

@@ -11,24 +11,26 @@ export async function GET(
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
+  const { id } = await params;
+  const API_BASE = getApiUrl();
+  const url = `${API_BASE}/admin/datos/usuarios/${encodeURIComponent(id)}`;
+
   try {
-    const { id } = await params;
-    const API_BASE = getApiUrl();
-    const res = await fetch(`${API_BASE}/admin/datos/usuarios/${id}`, {
+    const upstream = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',
     });
 
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      return NextResponse.json(data, { status: res.status });
+    if (!upstream.ok) {
+      const text = await upstream.text().catch(() => 'Error');
+      return NextResponse.json({ error: text }, { status: upstream.status });
     }
+
+    const data = await upstream.json();
     return NextResponse.json(data);
-  } catch (e: any) {
-    return NextResponse.json(
-      { error: e?.message ?? 'Error interno' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Error interno';
+    return NextResponse.json({ error: message }, { status: 502 });
   }
 }
 
@@ -41,58 +43,40 @@ export async function PATCH(
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
+  const { id } = await params;
+  const API_BASE = getApiUrl();
+  const url = `${API_BASE}/admin/datos/usuarios/${encodeURIComponent(id)}`;
+
+  let body: unknown;
   try {
-    const { id } = await params;
-    const body = await req.json();
-    const API_BASE = getApiUrl();
-    const res = await fetch(`${API_BASE}/admin/datos/usuarios/${id}`, {
+    body = await req.json();
+  } catch {
+    return NextResponse.json(
+      { error: 'Cuerpo JSON inválido' },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const upstream = await fetch(url, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
+      cache: 'no-store',
     });
 
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      return NextResponse.json(data, { status: res.status });
+    if (!upstream.ok) {
+      const text = await upstream.text().catch(() => 'Error');
+      return NextResponse.json({ error: text }, { status: upstream.status });
     }
+
+    const data = await upstream.json();
     return NextResponse.json(data);
-  } catch (e: any) {
-    return NextResponse.json(
-      { error: e?.message ?? 'Error interno' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const token = await getToken();
-  if (!token) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  }
-
-  try {
-    const { id } = await params;
-    const API_BASE = getApiUrl();
-    const res = await fetch(`${API_BASE}/admin/datos/usuarios/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      return NextResponse.json(data, { status: res.status });
-    }
-    return NextResponse.json(data);
-  } catch (e: any) {
-    return NextResponse.json(
-      { error: e?.message ?? 'Error interno' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Error interno';
+    return NextResponse.json({ error: message }, { status: 502 });
   }
 }

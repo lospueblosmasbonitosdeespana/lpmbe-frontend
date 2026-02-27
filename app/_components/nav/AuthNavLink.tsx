@@ -9,7 +9,7 @@ type Me = {
   id?: number;
   sub?: number;
   email: string;
-  rol: 'USUARIO' | 'ALCALDE' | 'ADMIN' | 'CLIENTE' | 'COLABORADOR';
+  rol: 'USUARIO' | 'ALCALDE' | 'ADMIN' | 'EDITOR' | 'CLIENTE' | 'COLABORADOR';
   nombre?: string | null;
 };
 

@@ -8,15 +8,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  const { searchParams } = new URL(req.url);
-  const params = new URLSearchParams();
-  ['q', 'rol', 'limit', 'offset', 'order', 'activo'].forEach((key) => {
-    const val = searchParams.get(key);
-    if (val != null && val !== '') params.set(key, val);
-  });
-  const qs = params.toString();
   const API_BASE = getApiUrl();
-  const url = `${API_BASE}/admin/datos/usuarios${qs ? `?${qs}` : ''}`;
+  const url = `${API_BASE}/admin/datos/pueblos-stats`;
 
   try {
     const upstream = await fetch(url, {

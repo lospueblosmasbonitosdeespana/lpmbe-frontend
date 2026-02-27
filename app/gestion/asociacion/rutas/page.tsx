@@ -9,7 +9,7 @@ export const revalidate = 0;
 export default async function RutasGestionPage() {
   const me = await getMeServer();
   if (!me) redirect('/entrar');
-  if (me.rol !== 'ADMIN') redirect('/cuenta');
+  if (me.rol !== 'ADMIN' && me.rol !== 'EDITOR') redirect('/cuenta');
 
   return (
     <>
