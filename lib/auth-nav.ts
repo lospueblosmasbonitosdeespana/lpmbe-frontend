@@ -15,10 +15,11 @@ export type UserRol = 'USUARIO' | 'ALCALDE' | 'ADMIN' | 'EDITOR' | 'CLIENTE' | '
 export const ROLES_CON_GESTION: UserRol[] = ['ADMIN', 'EDITOR', 'ALCALDE', 'CLIENTE', 'COLABORADOR'];
 
 export function shouldShowGestion(rol: UserRol | string | null | undefined): boolean {
-  return ROLES_CON_GESTION.includes((rol ?? '') as UserRol);
+  const normalized = (rol ?? '').toString().toUpperCase();
+  return ROLES_CON_GESTION.includes(normalized as UserRol);
 }
 
 /** URL de Gestión según rol: CLIENTE va a /cuenta, resto a /gestion */
 export function getGestionHref(rol: UserRol | string | null | undefined): string {
-  return rol === 'CLIENTE' ? '/cuenta' : '/gestion';
+  return (rol ?? '').toString().toUpperCase() === 'CLIENTE' ? '/cuenta' : '/gestion';
 }
