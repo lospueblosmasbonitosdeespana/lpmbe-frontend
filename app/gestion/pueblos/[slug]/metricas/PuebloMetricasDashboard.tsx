@@ -5,10 +5,13 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
+  Cell,
 } from 'recharts';
 
 type MetricasData = {
@@ -36,17 +39,27 @@ type MetricasData = {
   };
 };
 
+const RATING_COLORS = ['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e'];
+
 function KpiCard({
   label,
   value,
   sub,
+  accent = 'default',
 }: {
   label: string;
   value: string | number;
   sub?: string;
+  accent?: 'default' | 'visitas' | 'valoraciones' | 'web';
 }) {
+  const accentStyles = {
+    default: '',
+    visitas: 'border-l-4 border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20',
+    valoraciones: 'border-l-4 border-l-amber-500 bg-amber-50/50 dark:bg-amber-950/20',
+    web: 'border-l-4 border-l-blue-500 bg-blue-50/50 dark:bg-blue-950/20',
+  };
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+    <div className={`rounded-xl border border-border bg-card p-5 shadow-sm ${accentStyles[accent]}`}>
       <p className="text-sm font-medium text-muted-foreground">{label}</p>
       <p className="mt-1 text-3xl font-bold text-foreground">
         {typeof value === 'number' ? value.toLocaleString('es-ES') : value}
@@ -180,21 +193,25 @@ export default function PuebloMetricasDashboard({
             label="Total visitas"
             value={visitas.total}
             sub="Histórico"
+            accent="visitas"
           />
           <KpiCard
             label="En el periodo"
             value={visitas.periodo}
             sub={`Últimos ${days} días`}
+            accent="visitas"
           />
           <KpiCard
             label="Visitantes únicos"
             value={visitas.visitantesUnicos}
             sub="Usuarios distintos"
+            accent="visitas"
           />
           <KpiCard
             label="GPS / Manual"
             value={`${visitas.gps} / ${visitas.manual}`}
             sub="Origen de la visita"
+            accent="visitas"
           />
         </div>
         {chartVisitas.length > 0 && (
@@ -208,8 +225,9 @@ export default function PuebloMetricasDashboard({
                 <Area
                   type="monotone"
                   dataKey="Visitas"
-                  stroke="hsl(var(--primary))"
-                  fill="hsl(var(--primary) / 0.2)"
+                  stroke="#10b981"
+                  fill="#10b981"
+                  fillOpacity={0.25}
                   strokeWidth={2}
                 />
               </AreaChart>
@@ -228,22 +246,57 @@ export default function PuebloMetricasDashboard({
             label="Total valoraciones"
             value={valoraciones.total}
             sub="Histórico"
+            accent="valoraciones"
           />
           <KpiCard
             label="En el periodo"
             value={valoraciones.periodo}
             sub={`Últimos ${days} días`}
+            accent="valoraciones"
           />
           <KpiCard
             label="Media"
             value={valoraciones.media.toFixed(1)}
             sub="Valoración media"
+            accent="valoraciones"
           />
           <KpiCard
             label="Valoraciones 5★"
             value={valoraciones.distribucion[5] ?? 0}
-            sub={`1★: ${valoraciones.distribucion[1] ?? 0} · 2★: ${valoraciones.distribucion[2] ?? 0} · 3★: ${valoraciones.distribucion[3] ?? 0} · 4★: ${valoraciones.distribucion[4] ?? 0}`}
+            sub={`1★–4★: ver podio abajo`}
+            accent="valoraciones"
           />
+        </div>
+        {/* Podio de valoraciones (igual que admin) */}
+        <div className="mt-4 rounded-xl border border-border bg-card p-4 shadow-sm">
+          <h3 className="mb-3 text-sm font-semibold text-foreground">Distribución por estrellas</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart
+              data={[1, 2, 3, 4, 5].map((r) => ({
+                rating: `${r} ★`,
+                count: valoraciones.distribucion[r] ?? 0,
+              }))}
+              margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+              <XAxis dataKey="rating" tick={{ fontSize: 13 }} className="fill-muted-foreground" />
+              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+              <Tooltip
+                contentStyle={{
+                  borderRadius: 8,
+                  fontSize: 13,
+                  border: '1px solid var(--border)',
+                  backgroundColor: 'var(--card)',
+                  color: 'var(--foreground)',
+                }}
+              />
+              <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <Cell key={i} fill={RATING_COLORS[i]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
         {chartValoraciones.length > 0 && (
           <div className="mt-4 h-64">
@@ -256,8 +309,9 @@ export default function PuebloMetricasDashboard({
                 <Area
                   type="monotone"
                   dataKey="Valoraciones"
-                  stroke="hsl(var(--primary))"
-                  fill="hsl(var(--primary) / 0.2)"
+                  stroke="#f59e0b"
+                  fill="#f59e0b"
+                  fillOpacity={0.25}
                   strokeWidth={2}
                 />
               </AreaChart>
@@ -276,6 +330,7 @@ export default function PuebloMetricasDashboard({
             label="Pageviews"
             value={web.pageviews}
             sub={`Últimos ${days} días`}
+            accent="web"
           />
         </div>
         {chartWeb.length > 0 && (
@@ -289,8 +344,9 @@ export default function PuebloMetricasDashboard({
                 <Area
                   type="monotone"
                   dataKey="Pageviews"
-                  stroke="hsl(var(--primary))"
-                  fill="hsl(var(--primary) / 0.2)"
+                  stroke="#3b82f6"
+                  fill="#3b82f6"
+                  fillOpacity={0.25}
                   strokeWidth={2}
                 />
               </AreaChart>

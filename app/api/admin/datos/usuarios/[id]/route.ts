@@ -91,8 +91,9 @@ export async function DELETE(
   }
 
   const { id } = await params;
+  const permanent = req.nextUrl.searchParams.get('permanent');
   const API_BASE = getApiUrl();
-  const url = `${API_BASE}/admin/datos/usuarios/${encodeURIComponent(id)}`;
+  const url = `${API_BASE}/admin/datos/usuarios/${encodeURIComponent(id)}${permanent === '1' || permanent === 'true' ? '?permanent=1' : ''}`;
 
   try {
     const upstream = await fetch(url, {

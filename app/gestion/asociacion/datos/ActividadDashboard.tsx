@@ -256,6 +256,7 @@ export default function ActividadDashboard() {
 
   // Delete user
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [showInactivos, setShowInactivos] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -282,6 +283,7 @@ export default function ActividadDashboard() {
       });
       if (userSearch.trim()) params.set('q', userSearch.trim());
       if (userRolFilter) params.set('rol', userRolFilter);
+      if (!showInactivos) params.set('activo', 'true');
       const res = await fetch(`/api/admin/datos/usuarios?${params}`, { cache: 'no-store' });
       if (res.ok) setUsers(await res.json());
     } catch {
@@ -289,7 +291,7 @@ export default function ActividadDashboard() {
     } finally {
       setUsersLoading(false);
     }
-  }, [userSearch, userRolFilter, userPage]);
+  }, [userSearch, userRolFilter, userPage, showInactivos]);
 
   useEffect(() => {
     fetchUsers();
@@ -297,7 +299,7 @@ export default function ActividadDashboard() {
 
   useEffect(() => {
     setUserPage(0);
-  }, [userSearch, userRolFilter]);
+  }, [userSearch, userRolFilter, showInactivos]);
 
   const handleCreateUser = async () => {
     if (!newEmail.trim()) return;
@@ -342,10 +344,28 @@ export default function ActividadDashboard() {
   };
 
   const handleDeleteUser = async (userId: number, email: string) => {
-    if (!confirm(`¿Seguro que quieres desactivar al usuario ${email}? Se marcará como inactivo.`)) return;
+    if (!confirm(`¿Desactivar al usuario ${email}? Dejará de poder entrar; seguirá en la lista si marcas "Incluir inactivos".`)) return;
     setDeletingId(userId);
     try {
       const res = await fetch(`/api/admin/datos/usuarios/${userId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        alert(d.error || d.message || 'Error al desactivar');
+      } else {
+        fetchUsers();
+      }
+    } catch {
+      alert('Error de red al desactivar');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleDeletePermanent = async (userId: number, email: string) => {
+    if (!confirm(`¿Eliminar DEFINITIVAMENTE a ${email}? Se borrará de la base de datos y no podrá recuperarse.`)) return;
+    setDeletingId(userId);
+    try {
+      const res = await fetch(`/api/admin/datos/usuarios/${userId}?permanent=1`, { method: 'DELETE' });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
         alert(d.error || d.message || 'Error al eliminar');
@@ -576,13 +596,13 @@ export default function ActividadDashboard() {
       <section>
         <h2 className="mb-4 text-lg font-semibold text-foreground">Gestión de usuarios</h2>
 
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
           <input
             type="text"
             placeholder="Buscar por email o nombre…"
             value={userSearch}
             onChange={(e) => setUserSearch(e.target.value)}
-            className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="flex-1 min-w-[200px] rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
           <select
             value={userRolFilter}
@@ -594,6 +614,15 @@ export default function ActividadDashboard() {
               <option key={r} value={r}>{r}</option>
             ))}
           </select>
+          <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showInactivos}
+              onChange={(e) => setShowInactivos(e.target.checked)}
+              className="rounded border-border"
+            />
+            Incluir inactivos
+          </label>
           <button
             onClick={() => setShowCreateModal(true)}
             className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition-colors whitespace-nowrap"
@@ -736,20 +765,30 @@ export default function ActividadDashboard() {
                         {u.lastLoginAt ? formatDate(u.lastLoginAt) : '—'}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
+                        <div className="flex items-center justify-center gap-1.5 flex-wrap">
                           <button
                             onClick={() => router.push(`/gestion/asociacion/datos/usuarios/${u.id}`)}
                             className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                           >
                             Ver / Editar
                           </button>
-                          <button
-                            onClick={() => handleDeleteUser(u.id, u.email)}
-                            disabled={deletingId === u.id}
-                            className="rounded-md bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
-                          >
-                            {deletingId === u.id ? '…' : 'Eliminar'}
-                          </button>
+                          {u.activo ? (
+                            <button
+                              onClick={() => handleDeleteUser(u.id, u.email)}
+                              disabled={deletingId === u.id}
+                              className="rounded-md bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+                            >
+                              {deletingId === u.id ? '…' : 'Desactivar'}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleDeletePermanent(u.id, u.email)}
+                              disabled={deletingId === u.id}
+                              className="rounded-md bg-red-800 px-3 py-1 text-xs font-medium text-white hover:bg-red-900 disabled:opacity-50 transition-colors"
+                            >
+                              {deletingId === u.id ? '…' : 'Eliminar permanentemente'}
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
