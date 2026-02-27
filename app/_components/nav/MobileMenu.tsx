@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import type { NavItem } from "./nav.config";
 import { navConfig } from "./nav.config";
+import AuthNavLink from "./AuthNavLink";
 
 function NavLinkItem({
   label,
@@ -221,6 +222,7 @@ export function MobileMenu() {
               </nav>
 
               <div className="mt-6 space-y-2 border-t border-border pt-6">
+                <AuthNavLink variant="drawer" />
                 <NavLinkItem
                   label={tNav("contact")}
                   href="/contacto"

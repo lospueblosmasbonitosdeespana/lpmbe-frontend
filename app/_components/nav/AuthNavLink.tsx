@@ -13,7 +13,12 @@ type Me = {
   nombre?: string | null;
 };
 
-export default function AuthNavLink() {
+type AuthNavLinkProps = {
+  /** En drawer (menú móvil) se muestra en bloque para tap fácil */
+  variant?: 'default' | 'drawer';
+};
+
+export default function AuthNavLink({ variant = 'default' }: AuthNavLinkProps) {
   const t = useTranslations('nav');
   const [loading, setLoading] = useState(true);
   const [me, setMe] = useState<Me | null>(null);
@@ -22,6 +27,7 @@ export default function AuthNavLink() {
     try {
       const res = await fetch('/api/auth/me', {
         cache: 'no-store',
+        credentials: 'include',
         signal,
       });
       if (!res.ok) return null;
@@ -77,13 +83,17 @@ export default function AuthNavLink() {
   const showGestion = shouldShowGestion(me.rol);
   const gestionHref = getGestionHref(me.rol);
 
+  const linkClass = variant === 'drawer'
+    ? 'block py-3 text-base font-medium text-foreground hover:text-primary border-b border-border'
+    : 'text-sm font-medium hover:underline';
+
   return (
-    <span className="flex items-center gap-4">
-      <Link href="/mi-cuenta" className="text-sm font-medium hover:underline">
+    <span className={variant === 'drawer' ? 'flex flex-col' : 'flex items-center gap-4'}>
+      <Link href="/mi-cuenta" className={linkClass}>
         {t('myAccount')}
       </Link>
       {showGestion && (
-        <Link href={gestionHref} className="text-sm font-medium hover:underline">
+        <Link href={gestionHref} className={linkClass}>
           {t('management')}
         </Link>
       )}
