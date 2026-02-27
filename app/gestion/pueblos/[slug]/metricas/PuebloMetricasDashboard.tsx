@@ -166,19 +166,28 @@ export default function PuebloMetricasDashboard({
   return (
     <div className="space-y-8">
       {/* Period selector */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm text-muted-foreground">Periodo:</span>
-        {[7, 14, 30, 60, 90].map((d) => (
+        {[
+          { value: 7, label: '7d' },
+          { value: 14, label: '14d' },
+          { value: 30, label: '30d' },
+          { value: 60, label: '60d' },
+          { value: 90, label: '3m' },
+          { value: 180, label: '6m' },
+          { value: 365, label: '1a' },
+          { value: 365, label: 'Máx' },
+        ].map(({ value, label }) => (
           <button
-            key={d}
-            onClick={() => setDays(d)}
+            key={label === 'Máx' ? 'max' : value}
+            onClick={() => setDays(value)}
             className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-              days === d
+              days === value
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-muted-foreground hover:text-foreground'
             }`}
           >
-            {d}d
+            {label}
           </button>
         ))}
       </div>
