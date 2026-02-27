@@ -133,6 +133,8 @@ export default function WebDashboard() {
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm text-muted-foreground">Periodo:</span>
         {[
+          { value: 1, label: '24h' },
+          { value: 3, label: '3d' },
           { value: 7, label: '7d' },
           { value: 14, label: '14d' },
           { value: 30, label: '30d' },
