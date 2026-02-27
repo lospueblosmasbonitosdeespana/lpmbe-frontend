@@ -7,6 +7,8 @@ import { Header } from "./_components/nav/Header";
 import { Footer } from "./_components/nav/Footer";
 import GoogleAuthProviderWrapper from "./components/providers/GoogleAuthProvider";
 import { ThemeProvider } from "./components/providers/ThemeProvider";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { GoogleTagManager } from "@/components/analytics/GoogleTagManager";
 import { WebAnalyticsTracker } from "@/components/analytics/WebAnalyticsTracker";
 import { getBaseUrl, SITE_NAME, DEFAULT_DESCRIPTION } from "@/lib/seo";
 import JsonLd from "./components/seo/JsonLd";
@@ -63,6 +65,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className="antialiased">
+        <GoogleTagManager />
         <JsonLd data={organizationLd} />
         <ThemeProvider>
           <NextIntlClientProvider locale={locale} messages={messages}>
@@ -71,6 +74,7 @@ export default async function RootLayout({
               <Header locale={locale} />
               {children}
               <Footer locale={locale} />
+              <SpeedInsights />
             </GoogleAuthProviderWrapper>
           </NextIntlClientProvider>
         </ThemeProvider>
