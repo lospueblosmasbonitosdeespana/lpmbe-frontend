@@ -41,7 +41,7 @@ export default function SelloCmsPage({
       <h1 className="text-4xl font-semibold mb-6">{titulo}</h1>
 
       {subtitle && (
-        <p className="text-xl text-gray-600 mb-8">{subtitle}</p>
+        <p className="text-xl text-muted-foreground mb-8">{subtitle}</p>
       )}
 
       {contenido && (

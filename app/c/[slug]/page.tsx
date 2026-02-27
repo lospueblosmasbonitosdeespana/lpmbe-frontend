@@ -130,98 +130,40 @@ export default async function ContenidoPage({
   };
 
   return (
-    <main style={{ padding: '40px 20px' }}>
+    <main className="px-5 py-10 md:py-[40px]">
       <article>
-        {/* IMAGEN DE PORTADA (si existe) */}
         {contenido.coverUrl && contenido.coverUrl.trim() && (
           <SmartCoverImage src={contenido.coverUrl.trim()} alt={contenido.titulo} />
         )}
 
-        {/* CONTENEDOR DE LECTURA */}
-        <div
-          style={{
-            maxWidth: '720px',
-            margin: '0 auto',
-            padding: '0 20px',
-          }}
-        >
-          {/* HEADER: Badge + Título + Fecha */}
-          <header style={{ marginBottom: '40px' }}>
-            {/* Badge de tipo */}
-            <div
-              style={{
-                fontSize: '13px',
-                fontWeight: 500,
-                color: '#666',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                marginBottom: '16px',
-              }}
-            >
+        <div className="max-w-[720px] mx-auto px-5">
+          <header className="mb-10">
+            <div className="text-[13px] font-medium text-muted-foreground uppercase tracking-wide mb-4">
               {tipoBadge[contenido.tipo] || contenido.tipo}
             </div>
 
-            {/* Título + Compartir */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '12px' }}>
-              <h1
-                style={{
-                  fontSize: '36px',
-                  fontWeight: 700,
-                  lineHeight: '1.2',
-                  margin: 0,
-                  color: '#111',
-                  flex: 1,
-                  minWidth: 0,
-                }}
-              >
+            <div className="flex items-start justify-between gap-4 mb-3">
+              <h1 className="text-3xl md:text-4xl font-bold leading-tight m-0 text-foreground flex-1 min-w-0">
                 {contenido.titulo}
               </h1>
               <ShareButton url={`/c/${slug}`} title={contenido.titulo} variant="button" />
             </div>
 
-            {/* Fecha de publicación */}
             {fechaPublicacionFormateada && (
-              <p
-                style={{
-                  fontSize: '14px',
-                  color: '#666',
-                  marginTop: '8px',
-                }}
-              >
+              <p className="text-sm text-muted-foreground mt-2">
                 {fechaPublicacionFormateada}
               </p>
             )}
 
-            {/* Fechas del evento (si es EVENTO) */}
             {esEvento && fechaInicioEvento && (
-              <p
-                style={{
-                  fontSize: '16px',
-                  color: '#111',
-                  marginTop: '16px',
-                  fontWeight: 500,
-                  padding: '12px 16px',
-                  backgroundColor: '#f0f9ff',
-                  borderLeft: '3px solid #0066cc',
-                  borderRadius: '4px',
-                }}
-              >
+              <p className="text-base text-foreground mt-4 font-medium py-3 px-4 bg-primary/10 dark:bg-primary/20 border-l-4 border-primary rounded-r">
                 <strong>Evento:</strong> {formatEventoRangeEs(fechaInicioEvento, contenido.fechaFin, locale)}
               </p>
             )}
-
           </header>
 
-          {/* CONTENIDO (HTML o Markdown) */}
           {contenido.contenidoMd && (
-            <div
-              style={{
-                fontSize: '16px',
-                lineHeight: '1.8',
-                color: '#333',
-              }}
-              className="prose-contenido"
-            >
+            <div className="prose-contenido text-base leading-relaxed text-foreground">
               {isHtmlContent(contenido.contenidoMd) ? (
                 <div dangerouslySetInnerHTML={{ __html: contenido.contenidoMd }} />
               ) : (
@@ -230,54 +172,38 @@ export default async function ContenidoPage({
             </div>
           )}
 
-          {/* FOOTER: Volver */}
-          <div
-            style={{
-              marginTop: '60px',
-              paddingTop: '24px',
-              borderTop: '1px solid #e5e5e5',
-            }}
-          >
+          <div className="mt-14 pt-6 border-t border-border">
             <BackButton />
           </div>
         </div>
       </article>
 
-      {/* ESTILOS PARA MARKDOWN */}
       <style>{`
         .link-volver {
           font-size: 14px;
-          color: #666;
           text-decoration: none;
+          color: var(--muted-foreground);
         }
-        .link-volver:hover {
-          text-decoration: underline;
-        }
-        .prose-contenido p {
-          margin-bottom: 20px;
-        }
+        .link-volver:hover { text-decoration: underline; }
+
+        .prose-contenido p { margin-bottom: 20px; }
         .prose-contenido h2 {
           font-size: 24px;
           font-weight: 600;
           margin-top: 32px;
           margin-bottom: 16px;
-          color: #111;
         }
         .prose-contenido h3 {
           font-size: 20px;
           font-weight: 600;
           margin-top: 24px;
           margin-bottom: 12px;
-          color: #222;
         }
-        .prose-contenido ul,
-        .prose-contenido ol {
+        .prose-contenido ul, .prose-contenido ol {
           margin-bottom: 20px;
           padding-left: 24px;
         }
-        .prose-contenido li {
-          margin-bottom: 8px;
-        }
+        .prose-contenido li { margin-bottom: 8px; }
         .prose-contenido img {
           max-width: 100%;
           height: auto;
@@ -285,32 +211,32 @@ export default async function ContenidoPage({
           margin: 24px 0;
         }
         .prose-contenido blockquote {
-          border-left: 3px solid #ddd;
+          border-left: 3px solid var(--border);
           padding-left: 16px;
           margin: 24px 0;
-          color: #555;
+          color: var(--muted-foreground);
           font-style: italic;
         }
         .prose-contenido code {
-          background-color: #f5f5f5;
+          background-color: var(--muted);
+          color: var(--foreground);
           padding: 2px 6px;
           border-radius: 3px;
           font-size: 14px;
         }
         .prose-contenido pre {
-          background-color: #f5f5f5;
+          background-color: var(--muted);
+          color: var(--foreground);
           padding: 16px;
           border-radius: 4px;
           overflow-x: auto;
           margin: 24px 0;
         }
         .prose-contenido a {
-          color: #0066cc;
+          color: var(--primary);
           text-decoration: none;
         }
-        .prose-contenido a:hover {
-          text-decoration: underline;
-        }
+        .prose-contenido a:hover { text-decoration: underline; }
       `}</style>
     </main>
   );

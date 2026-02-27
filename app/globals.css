@@ -229,6 +229,15 @@
   box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
   margin: 0 !important;
 }
+.dark .safe-html-content .pais-card {
+  border-color: var(--border) !important;
+  background: var(--card) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+}
+.dark .safe-html-content .pais-card h3,
+.dark .safe-html-content .pais-card p {
+  color: var(--foreground);
+}
 .safe-html-content .pais-card h3 {
   margin-top: 0 !important;
   font-size: 1.25rem !important;

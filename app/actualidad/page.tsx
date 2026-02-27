@@ -113,7 +113,7 @@ function ActualidadContent() {
     <main className="mx-auto max-w-4xl px-6 py-10">
       <div className="mb-8">
         <h1 className="text-4xl font-semibold">{t('title')}</h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted-foreground">
           {t('pageDesc')}
         </p>
       </div>
@@ -125,8 +125,8 @@ function ActualidadContent() {
             href={t.key === 'TODOS' ? '/actualidad' : `/actualidad?tipo=${t.key}`}
             className={`rounded-full px-4 py-2 text-sm font-medium transition ${
               tipoParam === t.key
-                ? 'bg-black text-white'
-                : 'bg-black/5 text-black hover:bg-black/10'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-foreground hover:bg-muted/80'
             }`}
           >
             {t.label}
@@ -135,9 +135,9 @@ function ActualidadContent() {
       </div>
 
       {loading ? (
-        <div className="text-gray-600">{t('loading')}</div>
+        <div className="text-muted-foreground">{t('loading')}</div>
       ) : items.length === 0 ? (
-        <div className="rounded-md border p-6 text-gray-600">
+        <div className="rounded-md border border-border p-6 text-muted-foreground">
           {t('noContent')}
         </div>
       ) : (
@@ -166,7 +166,7 @@ function ActualidadContent() {
               : '';
 
             return (
-              <article key={item.id} className="border-b pb-6 last:border-0">
+              <article key={item.id} className="border-b border-border pb-6 last:border-0">
                 <div className="flex items-start justify-between gap-4">
                   <Link href={href} className="group flex-1 min-w-0">
                     {item.coverUrl && item.coverUrl.trim() && (
@@ -180,13 +180,13 @@ function ActualidadContent() {
                   )}
 
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-medium text-gray-500 uppercase">
+                    <span className="text-xs font-medium text-muted-foreground uppercase">
                       {item.tipo}
                     </span>
                     {fechaFormateada && (
                       <>
-                        <span className="text-gray-300">·</span>
-                        <span className="text-xs text-gray-500">{fechaFormateada}</span>
+                        <span className="text-muted-foreground/60">·</span>
+                        <span className="text-xs text-muted-foreground">{fechaFormateada}</span>
                       </>
                     )}
                   </div>
@@ -196,10 +196,10 @@ function ActualidadContent() {
                   </h2>
 
                   {item.resumen && (
-                    <p className="mt-3 text-gray-700 line-clamp-2">{stripHtml(item.resumen)}</p>
+                    <p className="mt-3 text-muted-foreground line-clamp-2">{stripHtml(item.resumen)}</p>
                   )}
 
-                  <span className="mt-3 inline-block text-sm font-medium text-blue-600 group-hover:underline">
+                  <span className="mt-3 inline-block text-sm font-medium text-primary group-hover:underline">
                     {t('readMore')}
                   </span>
                 </Link>
@@ -222,7 +222,7 @@ function ActualidadContent() {
 
 export default function ActualidadPage() {
   return (
-    <Suspense fallback={<div className="mx-auto max-w-4xl px-6 py-10 text-gray-600">...</div>}>
+    <Suspense fallback={<div className="mx-auto max-w-4xl px-6 py-10 text-muted-foreground">...</div>}>
       <ActualidadContent />
     </Suspense>
   );

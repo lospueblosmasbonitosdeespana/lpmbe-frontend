@@ -8,17 +8,8 @@ export default function BackButton() {
   return (
     <button
       onClick={() => router.back()}
-      style={{
-        background: 'none',
-        border: 'none',
-        padding: 0,
-        fontSize: '14px',
-        color: '#666',
-        cursor: 'pointer',
-        fontFamily: 'inherit',
-      }}
+      className="link-volver bg-transparent border-0 p-0 text-sm text-muted-foreground cursor-pointer font-inherit"
       type="button"
-      className="link-volver"
     >
       ← Volver
     </button>

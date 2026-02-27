@@ -87,7 +87,7 @@ export default function NotificacionesPage() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-4xl font-semibold">{tHome("notifCenterTitle")}</h1>
-          <p className="mt-2 text-gray-600">{t("pageSubtitle")}</p>
+          <p className="mt-2 text-muted-foreground">{t("pageSubtitle")}</p>
         </div>
         <Link
           href="/meteo"
