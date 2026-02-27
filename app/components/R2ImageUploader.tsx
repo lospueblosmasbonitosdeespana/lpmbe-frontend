@@ -69,12 +69,35 @@ export default function R2ImageUploader({
         body: formData,
       });
 
+      const raw = await res.text();
+
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `Error ${res.status}`);
+        // No usar nunca el body crudo como mensaje si es HTML (ej. Vercel Security Checkpoint)
+        let msg = `Error ${res.status}`;
+        const trimmed = raw?.trim() || '';
+        if (trimmed.startsWith('<') || trimmed.toLowerCase().includes('<html')) {
+          msg =
+            res.status === 403 || res.status === 503
+              ? 'No se pudo subir la imagen. Intenta de nuevo en un momento o con una imagen más pequeña.'
+              : 'No se pudo subir la imagen. Intenta más tarde.';
+        } else {
+          try {
+            const json = JSON.parse(raw);
+            const apiMsg = json?.error ?? json?.message;
+            if (typeof apiMsg === 'string' && apiMsg.length < 300) msg = apiMsg;
+          } catch {
+            if (trimmed.length > 0 && trimmed.length < 300 && !trimmed.includes('<')) msg = trimmed;
+          }
+        }
+        throw new Error(msg);
       }
 
-      const data = await res.json();
+      let data: { url?: string; publicUrl?: string; key?: string };
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        throw new Error('La respuesta del servidor no es válida. Intenta de nuevo.');
+      }
       const url = data.url || data.publicUrl || data.key;
       if (!url) throw new Error('No se recibió URL de la imagen');
 
