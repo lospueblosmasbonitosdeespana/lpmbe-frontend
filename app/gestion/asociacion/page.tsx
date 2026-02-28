@@ -16,6 +16,7 @@ import {
   IconContacto,
   IconVideos,
   IconPois,
+  IconApp,
 } from '../_components/GestionIcons';
 
 const ACCESOS = [
@@ -72,6 +73,12 @@ const ACCESOS = [
     title: 'Tienda',
     description: 'Productos, pedidos y promociones',
     icon: <IconTienda />,
+  },
+  {
+    href: '/gestion/asociacion/app',
+    title: 'App',
+    description: 'Pop-ups y ofertas en la app móvil (cuándo, cada cuánto, con home o no)',
+    icon: <IconApp />,
   },
   {
     href: '/gestion/asociacion/newsletters',
