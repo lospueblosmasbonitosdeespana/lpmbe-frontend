@@ -17,6 +17,9 @@ type NotificacionItem = {
   puebloId?: number | null;
   pueblo?: { id: number; nombre?: string; slug?: string } | null;
   createdAt?: string | null;
+  /** Fechas del evento (solo EVENTO); en la bandeja se ocultan eventos con fechaFin pasada */
+  fechaInicio?: string | null;
+  fechaFin?: string | null;
 };
 
 type PuebloItem = {
@@ -39,6 +42,34 @@ function formatFecha(fecha?: string | null) {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+/** Formatea rango de fechas de evento: "del 5 al 8 de marzo 2026" o "8 de marzo 2026" si solo hay una */
+function formatEventoFechas(fechaInicio?: string | null, fechaFin?: string | null, locale: string = 'es-ES'): string {
+  const start = fechaInicio ? new Date(fechaInicio) : null;
+  const end = fechaFin ? new Date(fechaFin) : null;
+  if (!start && !end) return '';
+  if (start && !end) {
+    return start.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+  if (!start && end) {
+    return end.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+  const s = start!;
+  const e = end!;
+  const sameDay = s.getTime() === e.getTime() || (s.getDate() === e.getDate() && s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear());
+  if (sameDay) {
+    return s.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+  const sameMonth = s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear();
+  if (sameMonth) {
+    return `del ${s.getDate()} al ${e.getDate()} de ${s.toLocaleDateString(locale, { month: 'long' })} ${s.getFullYear()}`;
+  }
+  const sameYear = s.getFullYear() === e.getFullYear();
+  if (sameYear) {
+    return `del ${s.getDate()} de ${s.toLocaleDateString(locale, { month: 'long' })} al ${e.getDate()} de ${e.toLocaleDateString(locale, { month: 'long' })} ${e.getFullYear()}`;
+  }
+  return `del ${s.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' })} al ${e.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' })}`;
 }
 
 export default function BandejaNotificaciones() {
@@ -179,6 +210,12 @@ export default function BandejaNotificaciones() {
                       </span>
                     )}
                   </div>
+
+                  {rawTipo === 'EVENTO' && (n.fechaInicio || n.fechaFin) && (
+                    <p className="text-sm font-medium text-foreground mb-1">
+                      📅 {formatEventoFechas(n.fechaInicio, n.fechaFin, locale === 'es' ? 'es-ES' : locale)}
+                    </p>
+                  )}
 
                   {(n.titulo || rawTipo === 'SEMAFORO') && (() => {
                     let displayTitle = n.titulo;
