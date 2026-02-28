@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { compressImage } from "@/src/lib/compressImage";
 import type { AppPromoItem } from "./AppPromosList.client";
 
 type FormData = {
@@ -59,9 +60,48 @@ type Props = {
 
 export default function AppPromoForm({ id, initialData }: Props) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState<FormData>(initialData ? promoToForm(initialData) : defaultForm);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  async function handleUploadImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setUploadingImage(true);
+    setMessage(null);
+    try {
+      const compressed = await compressImage(file, { fileName: file.name.replace(/\.[^.]+$/, "") });
+      const fd = new FormData();
+      fd.append("file", compressed);
+      fd.append("folder", "app-promos");
+
+      const res = await fetch("/api/admin/uploads", {
+        method: "POST",
+        body: fd,
+        credentials: "include",
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg = data?.error ?? data?.message ?? `Error ${res.status}`;
+        throw new Error(typeof msg === "string" ? msg : "Error subiendo imagen");
+      }
+
+      const url = data?.url ?? data?.publicUrl;
+      if (!url || typeof url !== "string") throw new Error("La subida no devolvió URL");
+
+      setForm((f) => ({ ...f, imageUrl: url }));
+      setMessage({ type: "success", text: "Imagen subida a R2 correctamente." });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err) {
+      setMessage({ type: "error", text: err instanceof Error ? err.message : "Error subiendo imagen" });
+    } finally {
+      setUploadingImage(false);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,13 +182,48 @@ export default function AppPromoForm({ id, initialData }: Props) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-foreground">Imagen (URL)</label>
+          <label className="block text-sm font-medium text-foreground">Imagen del pop-up</label>
+          <p className="mt-1 text-xs text-muted-foreground mb-2">
+            Sube una imagen (se guarda en R2) o pega una URL si ya la tienes en otro sitio.
+          </p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleUploadImage}
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingImage}
+              className="rounded-lg border border-primary bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20 disabled:opacity-50"
+            >
+              {uploadingImage ? "Subiendo…" : "Subir imagen a R2"}
+            </button>
+            {form.imageUrl ? (
+              <span className="text-xs text-muted-foreground truncate max-w-[200px]" title={form.imageUrl}>
+                ✓ Imagen asignada
+              </span>
+            ) : null}
+          </div>
+          {form.imageUrl ? (
+            <div className="mt-2 w-full max-w-sm h-32 rounded border border-border overflow-hidden bg-muted">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={form.imageUrl}
+                alt="Vista previa"
+                className="w-full h-full object-contain"
+              />
+            </div>
+          ) : null}
           <input
             type="url"
             value={form.imageUrl}
             onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
-            placeholder="https://… (opcional; puedes subir una imagen y pegar la URL, p. ej. desde Canva)"
-            className="mt-1 w-full rounded border border-input bg-background px-3 py-2 text-sm"
+            placeholder="O pega aquí la URL (p. ej. después de subir)"
+            className="mt-2 w-full rounded border border-input bg-background px-3 py-2 text-sm"
           />
         </div>
 
