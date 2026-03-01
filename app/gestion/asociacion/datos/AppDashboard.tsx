@@ -525,7 +525,7 @@ export default function AppDashboard() {
                   </Pie>
                   <Tooltip
                     contentStyle={CHART_TOOLTIP_STYLE}
-                    formatter={(v: number) => [n(v), 'Puntos']}
+                    formatter={(v: number | undefined) => [n(v ?? 0), 'Puntos']}
                   />
                 </PieChart>
               </ResponsiveContainer>
