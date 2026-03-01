@@ -1,5 +1,4 @@
-import { cookies } from 'next/headers';
-import { getLocale as getIntlLocale } from 'next-intl/server';
+import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
@@ -99,25 +98,23 @@ type Contenido = {
 /**
  * Resuelve el idioma con esta prioridad:
  *  1. Parámetro ?lang= de la URL (searchParams)
- *  2. next-intl getLocale() — usa x-next-locale header (middleware) y cookie NEXT_LOCALE
- *  3. Español por defecto
+ *  2. Header x-next-locale (puesto por middleware al procesar ?lang=)
+ *  3. Cookie NEXT_LOCALE (puesta al cambiar idioma en el selector)
+ *  4. Español por defecto
  */
-async function getLocale(langParam?: string): Promise<SupportedLocale> {
+async function resolveLocale(langParam?: string): Promise<SupportedLocale> {
   if (langParam && SUPPORTED_LOCALES.includes(langParam as SupportedLocale)) {
     return langParam as SupportedLocale;
   }
-  try {
-    const locale = await getIntlLocale();
-    if (locale && SUPPORTED_LOCALES.includes(locale as SupportedLocale)) {
-      return locale as SupportedLocale;
-    }
-  } catch {
-    // fallback a cookie manual
-    const cookieStore = await cookies();
-    const locale = cookieStore.get('NEXT_LOCALE')?.value;
-    if (locale && SUPPORTED_LOCALES.includes(locale as SupportedLocale)) {
-      return locale as SupportedLocale;
-    }
+  const h = await headers();
+  const headerLocale = h.get('x-next-locale');
+  if (headerLocale && SUPPORTED_LOCALES.includes(headerLocale as SupportedLocale)) {
+    return headerLocale as SupportedLocale;
+  }
+  const cookieStore = await cookies();
+  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value;
+  if (cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale as SupportedLocale)) {
+    return cookieLocale as SupportedLocale;
   }
   return 'es';
 }
@@ -178,7 +175,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const { lang: langParam } = await searchParams;
-  const lang = await getLocale(langParam);
+  const lang = await resolveLocale(langParam);
   const page = await fetchPageData(slug, lang);
 
   if (!page) {
@@ -227,7 +224,7 @@ export default async function ContenidoPage({
 }) {
   const { slug } = await params;
   const { lang: langParam } = await searchParams;
-  const locale = await getLocale(langParam);
+  const locale = await resolveLocale(langParam);
   const page = await fetchPageData(slug, locale);
 
   if (!page) {

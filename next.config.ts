@@ -6,6 +6,14 @@ const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname),
+  async rewrites() {
+    return [
+      { source: '/privacidad', destination: '/c/privacidad' },
+      { source: '/aviso-legal', destination: '/c/aviso-legal' },
+      { source: '/cookies', destination: '/c/cookies' },
+      { source: '/contacto', destination: '/c/contacto' },
+    ];
+  },
   images: {
     unoptimized: true,
     remotePatterns: [

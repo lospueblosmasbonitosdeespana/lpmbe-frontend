@@ -1,6 +1,5 @@
 {
   "rewrites": [
-    {"source": "/wp-json/:path*", "destination": "https://lpmbe-backend-production.up.railway.app/wp-json/:path*"},
-    {"source": "/privacidad", "destination": "/c/privacidad"}
+    {"source": "/wp-json/:path*", "destination": "https://lpmbe-backend-production.up.railway.app/wp-json/:path*"}
   ]
 }
