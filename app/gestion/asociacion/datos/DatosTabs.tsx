@@ -2,11 +2,12 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, lazy, useState } from 'react';
+import dynamic from 'next/dynamic';
 import ActividadDashboard from './ActividadDashboard';
 
 const PueblosDashboard = lazy(() => import('./PueblosDashboard'));
 const WebDashboard = lazy(() => import('./WebDashboard'));
-const AppDashboard = lazy(() => import('./AppDashboard'));
+const AppDashboard = dynamic(() => import('./AppDashboard'), { ssr: false });
 const InternoDashboard = lazy(() => import('./InternoDashboard'));
 
 const TABS = [
