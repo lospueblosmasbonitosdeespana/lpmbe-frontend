@@ -274,8 +274,9 @@ export default function AppDashboard() {
     setError(null);
     fetch(`/api/admin/datos/app-metricas?days=${days}`, { cache: 'no-store' })
       .then(async (res) => {
-        if (!res.ok) throw new Error('Error cargando métricas de la app');
-        return res.json();
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(json?.error || json?.message || `Error ${res.status}`);
+        return json;
       })
       .then(setData)
       .catch((e) => setError(e.message))
