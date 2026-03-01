@@ -516,7 +516,7 @@ export default function AppDashboard() {
                     cy="50%"
                     outerRadius={80}
                     dataKey="value"
-                    label={({ name, percent }: { name: string; percent?: number }) => `${name} ${Math.round((percent ?? 0) * 100)}%`}
+                    label={({ name, percent }: { name?: string; percent?: number }) => `${name ?? ''} ${Math.round((percent ?? 0) * 100)}%`}
                     labelLine={false}
                   >
                     {gamificacion.porMotivo.map((_, i) => (
