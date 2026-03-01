@@ -430,7 +430,7 @@ export default function AppDashboard() {
           <KpiCard label="Media global" value={`${valoraciones.media} ⭐`} sub="sobre 5 estrellas" highlight />
           <KpiCard
             label="Distribución"
-            value={`${Math.round(((valoraciones.distribucion[5] ?? 0) / Math.max(valoraciones.total, 1)) * 100)}% 5★`}
+            value={`${Math.round(((valoraciones.distribucion?.[5] ?? 0) / Math.max(valoraciones.total, 1)) * 100)}% 5★`}
             sub="porcentaje de 5 estrellas"
           />
         </div>
@@ -443,7 +443,7 @@ export default function AppDashboard() {
                 <StarBar
                   key={s}
                   stars={s}
-                  count={valoraciones.distribucion[s] ?? 0}
+                  count={valoraciones.distribucion?.[s] ?? 0}
                   max={maxRating}
                 />
               ))}
