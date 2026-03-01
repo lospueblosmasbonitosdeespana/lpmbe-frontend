@@ -66,6 +66,20 @@ function isHtmlContent(content: string): boolean {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+/** Slug de página legal -> key de StaticPage (traducidas con DeepL en backend) */
+const STATIC_SLUG_TO_KEY: Record<string, string> = {
+  contacto: 'CONTACTO',
+  privacidad: 'PRIVACIDAD',
+  'aviso-legal': 'AVISO_LEGAL',
+  cookies: 'COOKIES',
+};
+
+type StaticPageData = {
+  key: string;
+  titulo: string;
+  contenido: string | null;
+};
+
 type Contenido = {
   id: number;
   titulo: string;
@@ -81,11 +95,26 @@ type Contenido = {
   fechaFin?: string;
 };
 
-async function fetchContenido(slug: string): Promise<Contenido | null> {
+async function getLocale(): Promise<SupportedLocale> {
   const cookieStore = await cookies();
   const locale = cookieStore.get('NEXT_LOCALE')?.value;
-  const lang = locale && SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? locale : 'es';
+  return (locale && SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? locale : 'es') as SupportedLocale;
+}
 
+async function fetchStaticPage(key: string, lang: string): Promise<StaticPageData | null> {
+  const API_BASE = getApiUrl();
+  const res = await fetch(`${API_BASE}/public/static-pages/${key}?lang=${lang}`, {
+    cache: 'no-store',
+    headers: { 'Accept-Language': lang },
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  if (!data?.titulo) return null;
+  return { key: data.key, titulo: data.titulo, contenido: data.contenido ?? null };
+}
+
+async function fetchContenido(slug: string): Promise<Contenido | null> {
+  const lang = await getLocale();
   const API_BASE = getApiUrl();
   const res = await fetch(`${API_BASE}/public/contenidos/${slug}?lang=${lang}`, {
     cache: 'no-store',
@@ -96,48 +125,71 @@ async function fetchContenido(slug: string): Promise<Contenido | null> {
   return res.json();
 }
 
+/** Para slugs legales, intenta static-pages (DeepL); si no hay, usa contenido. */
+async function fetchPageData(slug: string): Promise<
+  { type: 'static'; data: StaticPageData } | { type: 'contenido'; data: Contenido } | null
+> {
+  const lang = await getLocale();
+  const staticKey = STATIC_SLUG_TO_KEY[slug];
+  if (staticKey) {
+    const staticPage = await fetchStaticPage(staticKey, lang);
+    if (staticPage) return { type: 'static', data: staticPage };
+  }
+  const contenido = await fetchContenido(slug);
+  if (contenido) return { type: 'contenido', data: contenido };
+  return null;
+}
+
+function plainDescription(htmlOrMd: string): string {
+  const plainText = htmlOrMd
+    .replace(/<[^>]+>/g, '')
+    .replace(/[#*\[\]()]/g, '')
+    .replace(/\n+/g, ' ')
+    .trim();
+  const desc = plainText.slice(0, 160);
+  return plainText.length > 160 ? `${desc}...` : desc;
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const contenido = await fetchContenido(slug);
+  const page = await fetchPageData(slug);
 
-  if (!contenido) {
+  if (!page) {
     return {
       title: 'Contenido no encontrado | Los Pueblos Más Bonitos de España',
     };
   }
 
-  // Generar descripción: resumen o primeros 160 chars del markdown
-  let description = contenido.resumen ?? '';
-  if (!description && contenido.contenidoMd) {
-    const plainText = contenido.contenidoMd
-      .replace(/[#*\[\]()]/g, '') // Quitar símbolos markdown
-      .replace(/\n+/g, ' ')
-      .trim();
-    description = plainText.slice(0, 160);
-    if (plainText.length > 160) description += '...';
-  }
+  const titulo = page.data.titulo;
+  const description =
+    page.type === 'contenido'
+      ? (page.data.resumen ?? (page.data.contenidoMd ? plainDescription(page.data.contenidoMd) : ''))
+      : page.type === 'static' && page.data.contenido
+        ? plainDescription(page.data.contenido)
+        : '';
+  const coverUrl = page.type === 'contenido' ? page.data.coverUrl : undefined;
 
   const path = `/c/${slug}`;
   return {
-    title: `${contenido.titulo} | Los Pueblos Más Bonitos de España`,
+    title: `${titulo} | Los Pueblos Más Bonitos de España`,
     description: description || undefined,
     alternates: {
       canonical: getCanonicalUrl(path),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: contenido.titulo,
+      title: titulo,
       description: description || undefined,
       url: getCanonicalUrl(path),
-      images: contenido.coverUrl ? [{ url: contenido.coverUrl }] : [],
+      images: coverUrl ? [{ url: coverUrl }] : [],
     },
     twitter: {
-      card: contenido.coverUrl ? 'summary_large_image' : 'summary',
-      title: contenido.titulo,
+      card: coverUrl ? 'summary_large_image' : 'summary',
+      title: titulo,
       description: description || undefined,
     },
   };
@@ -149,25 +201,80 @@ export default async function ContenidoPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const contenido = await fetchContenido(slug);
+  const page = await fetchPageData(slug);
 
-  if (!contenido) {
+  if (!page) {
     notFound();
   }
 
-  // Leer locale para formateo de fechas
-  const cookieStore = await cookies();
-  const locale = cookieStore.get('NEXT_LOCALE')?.value ?? 'es';
+  const locale = await getLocale();
 
-  // Determinar fecha de publicación
+  // Páginas estáticas (contacto, privacidad, aviso-legal, cookies): traducidas con DeepL
+  if (page.type === 'static') {
+    const { titulo, contenido } = page.data;
+    const body = contenido ?? '';
+    const lang = locale as SupportedLocale;
+    const t = PRIVACY_LOCATION_BLOCK[lang];
+
+    return (
+      <main className="px-5 py-10 md:py-[40px]">
+        <article>
+          <div className="max-w-[720px] mx-auto px-5">
+            <header className="mb-10">
+              <div className="flex items-start justify-between gap-4 mb-3">
+                <h1 className="text-3xl md:text-4xl font-bold leading-tight m-0 text-foreground flex-1 min-w-0">
+                  {titulo}
+                </h1>
+                <ShareButton url={`/c/${slug}`} title={titulo} variant="button" />
+              </div>
+            </header>
+
+            {body && (
+              <div className="prose-contenido text-base leading-relaxed text-foreground">
+                {isHtmlContent(body) ? (
+                  <div dangerouslySetInnerHTML={{ __html: body }} />
+                ) : (
+                  <ReactMarkdown>{body}</ReactMarkdown>
+                )}
+              </div>
+            )}
+
+            {slug === 'privacidad' && (
+              <section className="prose-contenido text-base leading-relaxed text-foreground mt-10 pt-8 border-t border-border">
+                <h2 className="text-2xl font-semibold mb-4">{t.title}</h2>
+                <p className="mb-4">{t.intro}</p>
+                <ul className="list-disc pl-6 mb-4 space-y-2">
+                  <li>{t.foreground}</li>
+                  <li>{t.background}</li>
+                </ul>
+                <p>{t.closing}</p>
+              </section>
+            )}
+
+            <div className="mt-14 pt-6 border-t border-border">
+              <BackButton />
+            </div>
+          </div>
+        </article>
+        <style>{`
+          .prose-contenido p { margin-bottom: 20px; }
+          .prose-contenido h2 { font-size: 24px; font-weight: 600; margin-top: 32px; margin-bottom: 16px; }
+          .prose-contenido h3 { font-size: 20px; font-weight: 600; margin-top: 24px; margin-bottom: 12px; }
+          .prose-contenido ul, .prose-contenido ol { margin-bottom: 20px; padding-left: 24px; }
+          .prose-contenido li { margin-bottom: 8px; }
+          .prose-contenido a { color: var(--primary); text-decoration: none; }
+          .prose-contenido a:hover { text-decoration: underline; }
+        `}</style>
+      </main>
+    );
+  }
+
+  // Contenido (noticias, eventos, páginas CMS)
+  const contenido = page.data;
   const fechaPublicacion = contenido.publishedAt ?? contenido.createdAt;
   const fechaPublicacionFormateada = fechaPublicacion ? formatDateTimeEs(fechaPublicacion, locale) : '';
-
-  // Formatear fechas del evento si es EVENTO
   const esEvento = contenido.tipo === 'EVENTO';
   const fechaInicioEvento = esEvento ? contenido.fechaInicio : null;
-
-  // Texto del badge según tipo
   const tipoBadge: Record<string, string> = {
     EVENTO: 'Evento',
     NOTICIA: 'Noticia',
