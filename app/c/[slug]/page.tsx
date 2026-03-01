@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { getLocale as getIntlLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
@@ -98,16 +99,27 @@ type Contenido = {
 /**
  * Resuelve el idioma con esta prioridad:
  *  1. Parámetro ?lang= de la URL (searchParams)
- *  2. Cookie NEXT_LOCALE
+ *  2. next-intl getLocale() — usa x-next-locale header (middleware) y cookie NEXT_LOCALE
  *  3. Español por defecto
  */
 async function getLocale(langParam?: string): Promise<SupportedLocale> {
   if (langParam && SUPPORTED_LOCALES.includes(langParam as SupportedLocale)) {
     return langParam as SupportedLocale;
   }
-  const cookieStore = await cookies();
-  const locale = cookieStore.get('NEXT_LOCALE')?.value;
-  return (locale && SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? locale : 'es') as SupportedLocale;
+  try {
+    const locale = await getIntlLocale();
+    if (locale && SUPPORTED_LOCALES.includes(locale as SupportedLocale)) {
+      return locale as SupportedLocale;
+    }
+  } catch {
+    // fallback a cookie manual
+    const cookieStore = await cookies();
+    const locale = cookieStore.get('NEXT_LOCALE')?.value;
+    if (locale && SUPPORTED_LOCALES.includes(locale as SupportedLocale)) {
+      return locale as SupportedLocale;
+    }
+  }
+  return 'es';
 }
 
 async function fetchStaticPage(key: string, lang: string): Promise<StaticPageData | null> {
