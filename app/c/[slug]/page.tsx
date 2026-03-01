@@ -95,7 +95,16 @@ type Contenido = {
   fechaFin?: string;
 };
 
-async function getLocale(): Promise<SupportedLocale> {
+/**
+ * Resuelve el idioma con esta prioridad:
+ *  1. Parámetro ?lang= de la URL (searchParams)
+ *  2. Cookie NEXT_LOCALE
+ *  3. Español por defecto
+ */
+async function getLocale(langParam?: string): Promise<SupportedLocale> {
+  if (langParam && SUPPORTED_LOCALES.includes(langParam as SupportedLocale)) {
+    return langParam as SupportedLocale;
+  }
   const cookieStore = await cookies();
   const locale = cookieStore.get('NEXT_LOCALE')?.value;
   return (locale && SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? locale : 'es') as SupportedLocale;
@@ -113,8 +122,7 @@ async function fetchStaticPage(key: string, lang: string): Promise<StaticPageDat
   return { key: data.key, titulo: data.titulo, contenido: data.contenido ?? null };
 }
 
-async function fetchContenido(slug: string): Promise<Contenido | null> {
-  const lang = await getLocale();
+async function fetchContenido(slug: string, lang: string): Promise<Contenido | null> {
   const API_BASE = getApiUrl();
   const res = await fetch(`${API_BASE}/public/contenidos/${slug}?lang=${lang}`, {
     cache: 'no-store',
@@ -126,16 +134,15 @@ async function fetchContenido(slug: string): Promise<Contenido | null> {
 }
 
 /** Para slugs legales, intenta static-pages (DeepL); si no hay, usa contenido. */
-async function fetchPageData(slug: string): Promise<
+async function fetchPageData(slug: string, lang: string): Promise<
   { type: 'static'; data: StaticPageData } | { type: 'contenido'; data: Contenido } | null
 > {
-  const lang = await getLocale();
   const staticKey = STATIC_SLUG_TO_KEY[slug];
   if (staticKey) {
     const staticPage = await fetchStaticPage(staticKey, lang);
     if (staticPage) return { type: 'static', data: staticPage };
   }
-  const contenido = await fetchContenido(slug);
+  const contenido = await fetchContenido(slug, lang);
   if (contenido) return { type: 'contenido', data: contenido };
   return null;
 }
@@ -152,11 +159,15 @@ function plainDescription(htmlOrMd: string): string {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ lang?: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const page = await fetchPageData(slug);
+  const { lang: langParam } = await searchParams;
+  const lang = await getLocale(langParam);
+  const page = await fetchPageData(slug, lang);
 
   if (!page) {
     return {
@@ -197,17 +208,19 @@ export async function generateMetadata({
 
 export default async function ContenidoPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ lang?: string }>;
 }) {
   const { slug } = await params;
-  const page = await fetchPageData(slug);
+  const { lang: langParam } = await searchParams;
+  const locale = await getLocale(langParam);
+  const page = await fetchPageData(slug, locale);
 
   if (!page) {
     notFound();
   }
-
-  const locale = await getLocale();
 
   // Páginas estáticas (contacto, privacidad, aviso-legal, cookies): traducidas con DeepL
   if (page.type === 'static') {
