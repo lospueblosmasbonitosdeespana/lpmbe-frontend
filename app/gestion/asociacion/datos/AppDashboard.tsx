@@ -37,8 +37,8 @@ type AppData = {
     activos7d: number;
     activos30d: number;
     nuevosPeriodo: number;
-    registrosPorDia: DayPoint[];
-    activosPorDia: DayActivos[];
+    registrosPorDia?: DayPoint[];
+    activosPorDia?: DayActivos[];
   };
   visitas: {
     total: number;
@@ -47,22 +47,22 @@ type AppData = {
     manualTotal: number;
     gpsPeriodo: number;
     manualPeriodo: number;
-    porDia: DayVisita[];
+    porDia?: DayVisita[];
     topPueblos: PuebloVisita[];
   };
   valoraciones: {
     total: number;
     periodo: number;
     media: number;
-    distribucion: Record<number, number>;
-    porDia: DayPoint[];
+    distribucion?: Record<number, number>;
+    porDia?: DayPoint[];
     topPueblos: PuebloValoracion[];
   };
   gamificacion: {
     totalPuntos: number;
     porMotivo: MotivoPoint[];
     topUsuarios: UsuarioPuntos[];
-    porDia: DayPoint[];
+    porDia?: DayPoint[];
   };
   suscripcionesPush: {
     total: number;
@@ -305,12 +305,12 @@ export default function AppDashboard() {
 
   const { usuarios, visitas, valoraciones, gamificacion, suscripcionesPush, club, tienda } = data;
 
-  const maxRating = Math.max(...Object.values(valoraciones.distribucion));
-  const visitasDayChart = visitas.porDia.map((d) => ({ dia: fmt(d.fecha), GPS: d.gps, Manual: d.manual }));
-  const activosDayChart = usuarios.activosPorDia.map((d) => ({ dia: fmt(d.fecha), Activos: d.activos }));
-  const registrosDayChart = usuarios.registrosPorDia.map((d) => ({ dia: fmt(d.fecha), Registros: d.total }));
-  const puntosDayChart = gamificacion.porDia.map((d) => ({ dia: fmt(d.fecha), Puntos: d.total }));
-  const valoracionesDayChart = valoraciones.porDia.map((d) => ({ dia: fmt(d.fecha), Valoraciones: d.total }));
+  const maxRating = Math.max(...Object.values(valoraciones.distribucion ?? {}), 0);
+  const visitasDayChart = (visitas.porDia ?? []).map((d) => ({ dia: fmt(d.fecha), GPS: d.gps, Manual: d.manual }));
+  const activosDayChart = (usuarios.activosPorDia ?? []).map((d) => ({ dia: fmt(d.fecha), Activos: d.activos }));
+  const registrosDayChart = (usuarios.registrosPorDia ?? []).map((d) => ({ dia: fmt(d.fecha), Registros: d.total }));
+  const puntosDayChart = (gamificacion.porDia ?? []).map((d: DayPoint) => ({ dia: fmt(d.fecha), Puntos: d.total }));
+  const valoracionesDayChart = (valoraciones.porDia ?? []).map((d) => ({ dia: fmt(d.fecha), Valoraciones: d.total }));
 
   return (
     <div className="space-y-10">
