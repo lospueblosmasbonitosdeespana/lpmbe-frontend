@@ -359,6 +359,22 @@ export default function ActualidadPuebloClient({
         </div>
       )}
 
+      {/* Enlace al archivo de noticias y eventos anteriores */}
+      {!loading && (
+        <div className="mt-12 text-center">
+          <Link
+            href={`/pueblos/${puebloSlug}/archivo`}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-400 transition"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" />
+              <path fillRule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clipRule="evenodd" />
+            </svg>
+            Noticias y eventos anteriores
+          </Link>
+        </div>
+      )}
+
       <div className="mt-10">
         <Link href={`/pueblos/${puebloSlug}`} className="text-sm hover:underline">
           ← Volver al pueblo
