@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { getApiUrl } from '@/lib/api';
-
-const LOCALE_COOKIE = 'NEXT_LOCALE';
-const SUPPORTED = ['es', 'en', 'fr', 'de', 'pt', 'it'] as const;
+import { SUPPORTED_LOCALES, type SupportedLocale } from '@/lib/seo';
 
 export async function GET(
   req: Request,
@@ -18,11 +15,10 @@ export async function GET(
   if (searchParams.get('limit')) qs.set('limit', searchParams.get('limit')!);
   if (searchParams.get('cursor')) qs.set('cursor', searchParams.get('cursor')!);
 
-  const store = await cookies();
-  const locale = store.get(LOCALE_COOKIE)?.value;
+  const rawLang = searchParams.get('lang');
   const lang =
-    locale && SUPPORTED.includes(locale as (typeof SUPPORTED)[number])
-      ? locale
+    rawLang && SUPPORTED_LOCALES.includes(rawLang as SupportedLocale)
+      ? rawLang
       : undefined;
   if (lang) qs.set('lang', lang);
 

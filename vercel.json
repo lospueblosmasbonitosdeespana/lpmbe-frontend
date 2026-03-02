@@ -1,4 +1,18 @@
 {
+  "redirects": [
+    {
+      "source": "/:path(.*)",
+      "has": [{ "type": "host", "value": "lpmbe-frontend.vercel.app" }],
+      "destination": "https://lospueblosmasbonitosdeespana.org/:path",
+      "permanent": true
+    },
+    {
+      "source": "/:path(.*)",
+      "has": [{ "type": "host", "value": "staging.lospueblosmasbonitosdeespana.org" }],
+      "destination": "https://lospueblosmasbonitosdeespana.org/:path",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {"source": "/wp-json/:path*", "destination": "https://lpmbe-backend-production.up.railway.app/wp-json/:path*"}
   ]
