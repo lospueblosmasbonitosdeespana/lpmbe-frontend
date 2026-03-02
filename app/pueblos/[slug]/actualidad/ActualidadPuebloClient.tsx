@@ -32,14 +32,17 @@ function procesarContenidos(contenidos: Contenido[]) {
   const noticias = contenidos.filter((c) => c.tipo === 'NOTICIA');
   const articulos = contenidos.filter((c) => c.tipo === 'ARTICULO');
 
-  const eventosProximos = eventos
+  const eventosActivos = eventos
     .filter((e) => {
-      if (!e.fechaInicio) return false;
-      return new Date(e.fechaInicio) >= ahora;
+      const fin = e.fechaFin ?? e.fechaInicio;
+      if (!fin) return false;
+      return new Date(fin) >= ahora;
     })
     .sort((a, b) => {
-      if (!a.fechaInicio || !b.fechaInicio) return 0;
-      return new Date(a.fechaInicio).getTime() - new Date(b.fechaInicio).getTime();
+      const fa = a.fechaInicio ?? a.fechaFin ?? '';
+      const fb = b.fechaInicio ?? b.fechaFin ?? '';
+      if (!fa || !fb) return 0;
+      return new Date(fa).getTime() - new Date(fb).getTime();
     });
 
   const noticiasOrdenadas = [...noticias].sort((a, b) => {
@@ -58,7 +61,7 @@ function procesarContenidos(contenidos: Contenido[]) {
 
   return {
     noticias: noticiasOrdenadas,
-    eventos: eventosProximos,
+    eventos: eventosActivos,
     articulos: articulosOrdenados,
   };
 }
@@ -299,7 +302,7 @@ export default function ActualidadPuebloClient({
 
           {/* Eventos */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Próximos eventos</h2>
+            <h2 className="text-xl font-semibold mb-4">Eventos</h2>
             {eventosMostrar.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -323,7 +326,7 @@ export default function ActualidadPuebloClient({
                 )}
               </>
             ) : (
-              <p className="text-gray-500">No hay eventos próximos.</p>
+              <p className="text-gray-500">No hay eventos activos.</p>
             )}
           </section>
 
