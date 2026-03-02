@@ -27,7 +27,7 @@ export default async function PedidoConfirmacionPage({ params }: PageProps) {
             Volver a la tienda
           </Link>
           <Link
-            href="/cuenta"
+            href="/mi-cuenta/pedidos"
             className="inline-block rounded-lg border border-gray-300 px-6 py-3 font-semibold hover:bg-gray-50"
           >
             Ver mis pedidos

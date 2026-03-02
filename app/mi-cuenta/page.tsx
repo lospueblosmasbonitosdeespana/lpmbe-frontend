@@ -11,6 +11,7 @@ import {
   Users,
   Package,
   Bookmark,
+  ShoppingBag,
 } from 'lucide-react';
 import { LogoutButton } from './components/LogoutButton';
 import ThemeSelector from '@/app/cuenta/ThemeSelector';
@@ -61,6 +62,12 @@ export default async function MiCuentaPage() {
       title: t('myAddresses'),
       description: t('myAddressesDesc'),
       icon: Package,
+    },
+    {
+      href: '/mi-cuenta/pedidos',
+      title: 'Mis pedidos',
+      description: 'Historial de tus compras',
+      icon: ShoppingBag,
     },
     {
       href: '/mi-cuenta/club',
