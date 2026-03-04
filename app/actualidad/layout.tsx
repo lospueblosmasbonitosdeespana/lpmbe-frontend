@@ -1,23 +1,25 @@
 import type { Metadata } from "next";
-import { getCanonicalUrl, getLocaleAlternates, SITE_NAME } from "@/lib/seo";
-
-const TITLE = `Actualidad | ${SITE_NAME}`;
-const DESCRIPTION =
-  "Noticias, eventos y artículos sobre los pueblos más bonitos de España. Actualidad de la red y de nuestros pueblos.";
+import { getLocale, getTranslations } from "next-intl/server";
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const t = await getTranslations("seo");
   const path = "/actualidad";
+  const title = t("actualidadTitle");
+  const description = t("actualidadDescription");
   return {
-    title: TITLE,
-    description: DESCRIPTION,
+    title,
+    description,
     alternates: {
-      canonical: getCanonicalUrl(path),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: TITLE,
-      description: DESCRIPTION,
-      url: getCanonicalUrl(path),
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
     },
   };
 }

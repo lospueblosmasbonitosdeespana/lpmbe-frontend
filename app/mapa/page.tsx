@@ -1,20 +1,27 @@
 import type { Metadata } from "next";
+import { getLocale, getTranslations } from "next-intl/server";
 import MapaPageClient from "./MapaPageClient";
-import { getCanonicalUrl, getLocaleAlternates, SITE_NAME } from "@/lib/seo";
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const t = await getTranslations("seo");
   const path = "/mapa";
-  const title = "Mapa interactivo | " + SITE_NAME;
-  const description =
-    "Explora el mapa interactivo con todos los pueblos más bonitos de España. Descubre su ubicación y planifica tu próxima escapada.";
+  const title = t("mapTitle");
+  const description = t("mapDescription");
   return {
     title,
     description,
     alternates: {
-      canonical: getCanonicalUrl(path),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
-    openGraph: { title, description, url: getCanonicalUrl(path) },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+    },
   };
 }
 

@@ -1,28 +1,30 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPueblosLite } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, SITE_NAME } from "@/lib/seo";
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
 import PueblosList from "./PueblosList";
 
 // 🔒 Evita SSG / paths raros
 export const dynamic = "force-dynamic";
 
-const LIST_DESCRIPTION =
-  "Listado de los pueblos más bonitos de España por comunidad y provincia. Descubre destinos, mapas y planifica tu visita.";
-
 export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const t = await getTranslations("seo");
   const path = "/pueblos";
+  const title = t("pueblosListTitle");
+  const description = t("pueblosListDescription");
   return {
-    title: "Pueblos más bonitos de España – Listado por provincia y comunidad",
-    description: LIST_DESCRIPTION,
+    title,
+    description,
     alternates: {
-      canonical: getCanonicalUrl(path),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: "Pueblos más bonitos de España – Listado | " + SITE_NAME,
-      description: LIST_DESCRIPTION,
-      url: getCanonicalUrl(path),
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
     },
   };
 }

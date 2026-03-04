@@ -10,6 +10,11 @@ import DashboardFavoritos from '../components/DashboardFavoritos';
 
 export const dynamic = 'force-dynamic';
 
+// IMPORTANTE: Puntos y pueblos visitados deben leer del mismo backend que la app.
+// getApiUrl() = NEXT_PUBLIC_API_URL → debe ser la URL del backend NestJS (Railway),
+// no WordPress. Así /usuarios/me/puntos y /usuarios/me/pueblos-visitados coinciden
+// con lo que guarda la app (POST jet-cct/visita, PUT /visitas/batch).
+
 async function getDashboardData() {
   const token = await getToken();
   const t = await getTranslations('points');

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getLugarLegacyBySlug, getApiUrl, type Pueblo } from "@/lib/api";
-import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
 import ParadasMap from "@/app/_components/ParadasMap";
 import ParadaFoto from "./ParadaFoto";
 import JsonLd from "@/app/components/seo/JsonLd";
@@ -68,8 +68,9 @@ export async function generateMetadata({
   // Normalizar: si viene anidada, usa x.multiexperiencia; si viene plana, usa x
   const mx = (mxItem?.multiexperiencia ?? mxItem ?? null) as Multiexperiencia | null;
   
+  const tSeo = await getTranslations("seo");
   const expTitle = mx?.titulo ?? t("experienceFallback");
-  const title = `${expTitle} – ${pueblo.nombre} – Los Pueblos Más Bonitos de España`;
+  const title = `${expTitle} – ${pueblo.nombre}${tSeo("siteNameSuffix")}`;
   const heroImage =
     mx?.foto ??
     pueblo.foto_destacada ??
@@ -78,7 +79,7 @@ export async function generateMetadata({
   const descSource = mx?.descripcion ?? null;
   const description = descSource
     ? cut(descSource, 160)
-    : "Detalle de la experiencia y sus paradas.";
+    : tSeo("mxDescriptionFallback");
   const path = `/pueblos/${pueblo.slug}/experiencias/${mxSlug}`;
 
   return {
@@ -93,6 +94,7 @@ export async function generateMetadata({
       title,
       description,
       url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
       type: "article",
       images: heroImage
         ? [{ url: heroImage, alt: `${expTitle} – ${pueblo.nombre}` }]

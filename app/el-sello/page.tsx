@@ -17,28 +17,29 @@ import {
 } from "@/app/components/ui/typography";
 import type { SelloPage, CmsDocumento } from "@/lib/cms/sello";
 import { CONTENIDO_SELLO_HOME } from "@/lib/cms/sello-content";
-import { getTranslations } from "next-intl/server";
-import { getCanonicalUrl, getLocaleAlternates, SITE_NAME } from "@/lib/seo";
+import { getLocale, getTranslations } from "next-intl/server";
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-const SELLO_TITLE = `El Sello | ${SITE_NAME}`;
-const SELLO_DESCRIPTION =
-  "Conoce el sello de calidad turística de Los Pueblos Más Bonitos de España. Criterios, beneficios y proceso de certificación.";
-
 export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const t = await getTranslations("seo");
   const path = "/el-sello";
+  const title = t("selloTitle");
+  const description = t("selloDescription");
   return {
-    title: SELLO_TITLE,
-    description: SELLO_DESCRIPTION,
+    title,
+    description,
     alternates: {
-      canonical: getCanonicalUrl(path),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: SELLO_TITLE,
-      description: SELLO_DESCRIPTION,
-      url: getCanonicalUrl(path),
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
     },
   };
 }

@@ -11,6 +11,7 @@ const LOCALES: { code: string; label: string }[] = [
   { code: 'de', label: 'Deutsch' },
   { code: 'pt', label: 'Português' },
   { code: 'it', label: 'Italiano' },
+  { code: 'ca', label: 'Català' },
 ];
 
 type Props = { currentLocale: string; variant?: 'footer' | 'header' };

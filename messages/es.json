@@ -1404,5 +1404,24 @@
     "wantToBePartner": "¿Quieres ser socio colaborador?",
     "wantToBePartnerBody": "Si tu empresa u organización quiere colaborar con la asociación, solicita información sobre las opciones de patrocinio y colaboración.",
     "gallery": "Galería"
+  },
+  "seo": {
+    "siteNameSuffix": " – Los Pueblos Más Bonitos de España",
+    "contactTitle": "Contacto",
+    "contactDescription": "Contacta con la asociación Los Pueblos Más Bonitos de España. Email, teléfono y formulario de contacto.",
+    "mapTitle": "Mapa interactivo",
+    "mapDescription": "Explora el mapa interactivo con todos los pueblos más bonitos de España. Descubre su ubicación y planifica tu próxima escapada.",
+    "actualidadTitle": "Actualidad",
+    "actualidadDescription": "Noticias, eventos y artículos sobre los pueblos más bonitos de España. Actualidad de la red y de nuestros pueblos.",
+    "selloTitle": "El Sello",
+    "selloDescription": "Conoce el sello de calidad turística de Los Pueblos Más Bonitos de España. Criterios, beneficios y proceso de certificación.",
+    "pueblosListTitle": "Pueblos más bonitos de España – Listado por provincia y comunidad",
+    "pueblosListDescription": "Listado de los pueblos más bonitos de España por comunidad y provincia. Descubre destinos, mapas y planifica tu visita.",
+    "rutasListTitle": "Rutas",
+    "rutasListDescription": "Descubre rutas turísticas por los pueblos más bonitos de España.",
+    "routeNotFoundTitle": "Ruta no encontrada",
+    "puebloDescriptionFallback": "Información, mapa, fotos, puntos de interés y experiencias del pueblo.",
+    "rutaDescriptionFallback": "Ruta turística por los pueblos más bonitos de España.",
+    "mxDescriptionFallback": "Detalle de la experiencia y sus paradas."
   }
 }

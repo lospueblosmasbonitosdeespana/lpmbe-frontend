@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getRutas, getRutaById, getRutaMapa } from "@/lib/api";
-import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
 import { sanitizeHtml, createExcerpt } from "@/lib/sanitizeHtml";
 import RutaParadasConMapa from "@/app/_components/RutaParadasConMapa";
 import JsonLd from "@/app/components/seo/JsonLd";
@@ -77,19 +77,20 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
+  const tSeo = await getTranslations("seo");
   const rutas = await getRutas(locale);
   const ruta = rutas.find((r) => r.slug === slug);
-  
+
   if (!ruta) {
     return {
-      title: "Ruta no encontrada – Los Pueblos Más Bonitos de España",
+      title: `${tSeo("routeNotFoundTitle")}${tSeo("siteNameSuffix")}`,
     };
   }
 
-  const title = `${ruta.titulo} – Los Pueblos Más Bonitos de España`;
+  const title = `${ruta.titulo}${tSeo("siteNameSuffix")}`;
   const description = ruta.descripcion
     ? createExcerpt(ruta.descripcion, 160)
-    : "Ruta turística por los pueblos más bonitos de España";
+    : tSeo("rutaDescriptionFallback");
   const path = `/rutas/${ruta.slug}`;
 
   return {
@@ -104,6 +105,7 @@ export async function generateMetadata({
       title,
       description,
       url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
       type: "article",
       images: ruta.foto_portada
         ? [{ url: ruta.foto_portada, alt: ruta.titulo }]

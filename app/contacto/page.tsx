@@ -1,30 +1,33 @@
 import type { Metadata } from 'next';
+import { getLocale, getTranslations } from 'next-intl/server';
 import BackButton from '@/app/c/[slug]/BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import ContactForm from './ContactForm';
-import { getCanonicalUrl, getLocaleAlternates, SITE_NAME } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const CONTACTO_EMAIL = 'asociacion@lospueblosmasbonitosdeespana.org';
 
-const CONTACTO_DESCRIPTION =
-  'Contacta con la asociación Los Pueblos Más Bonitos de España. Email, teléfono y formulario de contacto.';
-
 export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const t = await getTranslations('seo');
   const path = '/contacto';
+  const title = t('contactTitle');
+  const description = t('contactDescription');
   return {
-    title: 'Contacto',
-    description: CONTACTO_DESCRIPTION,
+    title,
+    description,
     alternates: {
-      canonical: getCanonicalUrl(path),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: `Contacto | ${SITE_NAME}`,
-      description: CONTACTO_DESCRIPTION,
-      url: getCanonicalUrl(path),
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
     },
   };
 }

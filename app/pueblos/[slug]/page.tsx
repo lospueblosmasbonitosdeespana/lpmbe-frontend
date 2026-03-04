@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug, getPueblosLite, getApiUrl } from "@/lib/api";
-import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
 import JsonLd from "@/app/components/seo/JsonLd";
 import PuebloActions from "./PuebloActions";
 import DescripcionPueblo from "./DescripcionPueblo";
@@ -234,18 +234,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
+  const tSeo = await getTranslations("seo");
   const pueblo = await getPuebloBySlug(slug, locale);
   const fotos = Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [];
   const heroImage = pueblo.foto_destacada ?? fotos[0]?.url ?? null;
   const baseTitle = `${pueblo.nombre} · ${pueblo.provincia} · ${pueblo.comunidad}`;
-  const title = `${pueblo.nombre} – Los Pueblos Más Bonitos de España`;
+  const title = `${pueblo.nombre}${tSeo("siteNameSuffix")}`;
   // Extraer texto plano del HTML para la descripción (sin tags)
   const descText = pueblo.descripcion
     ? cleanText(pueblo.descripcion.replace(/<[^>]*>/g, ""))
     : null;
   const description = descText
     ? cut(descText, 160)
-    : "Información, mapa, fotos, puntos de interés y experiencias del pueblo.";
+    : tSeo("puebloDescriptionFallback");
   const path = `/pueblos/${pueblo.slug}`;
 
   return {
@@ -260,6 +261,7 @@ export async function generateMetadata({
       title,
       description,
       url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
       type: "article",
       images: heroImage ? [{ url: heroImage, alt: baseTitle }] : undefined,
     },

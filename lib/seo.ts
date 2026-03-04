@@ -3,11 +3,11 @@
  * Usar para metadataBase, canonical absoluto y alternates.languages.
  */
 
-export const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it'] as const;
+export const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 export const DEFAULT_LOCALE: SupportedLocale = 'es';
 
-/** Códigos hreflang (es, en, fr, de, pt, it). x-default = español. */
+/** Códigos hreflang (es, en, fr, de, pt, it, ca). x-default = español. */
 export const HREFLANG_LOCALES = [...SUPPORTED_LOCALES] as const;
 
 /**
@@ -70,3 +70,18 @@ export const SITE_NAME = 'Los Pueblos Más Bonitos de España';
 /** Descripción por defecto (es) para meta description y OG */
 export const DEFAULT_DESCRIPTION =
   'Descubre los pueblos más bonitos de España: información, mapas, experiencias y rutas. Planifica tu visita.';
+
+/** Códigos locale para Open Graph (es_ES, en_US, etc.) */
+const OG_LOCALE_MAP: Record<SupportedLocale, string> = {
+  es: 'es_ES',
+  en: 'en_US',
+  fr: 'fr_FR',
+  de: 'de_DE',
+  pt: 'pt_PT',
+  it: 'it_IT',
+  ca: 'ca_ES',
+};
+
+export function getOGLocale(locale: SupportedLocale): string {
+  return OG_LOCALE_MAP[locale] ?? 'es_ES';
+}
