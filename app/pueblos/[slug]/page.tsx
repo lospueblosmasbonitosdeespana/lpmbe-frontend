@@ -1,7 +1,6 @@
 import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-// Redeploy: regenerar fichas pueblo (POIs/fotos legacy)
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug, getPueblosLite, getApiUrl } from "@/lib/api";
 import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";

@@ -1,6 +1,5 @@
 "use client"
 
-import Image from "next/image"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Section } from "@/app/components/ui/section"
@@ -88,11 +87,11 @@ function PointOfInterestCard({ point, index, showFullDescription }: { point: Poi
     >
       {point.image && (
         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-sm bg-muted/50 sm:h-20 sm:w-20 self-start">
-          <Image
+          <img
             src={point.image}
             alt={point.name}
-            fill
-            className="object-cover"
+            referrerPolicy="no-referrer"
+            className="h-full w-full object-cover"
           />
         </div>
       )}
