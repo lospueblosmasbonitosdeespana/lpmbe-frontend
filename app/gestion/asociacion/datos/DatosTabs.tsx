@@ -23,14 +23,14 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]['key'];
 
-function Spinner() {
+function Spinner({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-2 py-20 text-muted-foreground">
       <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
         <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="4" strokeLinecap="round" className="opacity-75" />
       </svg>
-      {t('loading')}
+      {label}
     </div>
   );
 }
@@ -68,27 +68,27 @@ export default function DatosTabs({ defaultTab }: { defaultTab: TabKey }) {
 
       {active === 'usuarios' && <ActividadDashboard />}
       {active === 'pueblos' && (
-        <Suspense fallback={<Spinner />}>
+        <Suspense fallback={<Spinner label={t('loading')} />}>
           <PueblosDashboard />
         </Suspense>
       )}
       {active === 'web' && (
-        <Suspense fallback={<Spinner />}>
+        <Suspense fallback={<Spinner label={t('loading')} />}>
           <WebDashboard />
         </Suspense>
       )}
       {active === 'app' && (
-        <Suspense fallback={<Spinner />}>
+        <Suspense fallback={<Spinner label={t('loading')} />}>
           <AppDashboard />
         </Suspense>
       )}
       {active === 'interno' && (
-        <Suspense fallback={<Spinner />}>
+        <Suspense fallback={<Spinner label={t('loading')} />}>
           <InternoDashboard />
         </Suspense>
       )}
       {active === 'puntos' && (
-        <Suspense fallback={<Spinner />}>
+        <Suspense fallback={<Spinner label={t('loading')} />}>
           <PuntosPueblosClient />
         </Suspense>
       )}
