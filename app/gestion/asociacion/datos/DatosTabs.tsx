@@ -9,13 +9,15 @@ const PueblosDashboard = lazy(() => import('./PueblosDashboard'));
 const WebDashboard = lazy(() => import('./WebDashboard'));
 const AppDashboard = dynamic(() => import('./AppDashboard'), { ssr: false });
 const InternoDashboard = lazy(() => import('./InternoDashboard'));
+const PuntosPueblosClient = lazy(() => import('./puntos-pueblos/PuntosPueblosClient'));
 
 const TABS = [
   { key: 'usuarios' as const, label: 'Usuarios' },
-  { key: 'pueblos' as const, label: 'Pueblos' },
-  { key: 'web' as const, label: '🌐 Web' },
   { key: 'app' as const, label: '📱 App' },
   { key: 'interno' as const, label: 'Interno' },
+  { key: 'pueblos' as const, label: 'Pueblos' },
+  { key: 'web' as const, label: '🌐 Web' },
+  { key: 'puntos' as const, label: 'Puntos Pueblos' },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
@@ -46,12 +48,12 @@ export default function DatosTabs({ defaultTab }: { defaultTab: TabKey }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-1 rounded-lg bg-muted p-1">
+      <div className="flex flex-wrap gap-1 rounded-lg bg-muted p-1">
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => switchTab(t.key)}
-            className={`flex-1 rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
+            className={`flex-1 rounded-md px-3 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${
               active === t.key
                 ? 'bg-card text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -81,6 +83,11 @@ export default function DatosTabs({ defaultTab }: { defaultTab: TabKey }) {
       {active === 'interno' && (
         <Suspense fallback={<Spinner />}>
           <InternoDashboard />
+        </Suspense>
+      )}
+      {active === 'puntos' && (
+        <Suspense fallback={<Spinner />}>
+          <PuntosPueblosClient />
         </Suspense>
       )}
     </div>
