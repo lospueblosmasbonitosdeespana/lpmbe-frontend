@@ -3,10 +3,42 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-/** Formatea fecha para input datetime-local (usa hora local, no UTC) */
+/**
+ * Formatea fecha para input datetime-local.
+ * El valor debe ser exactamente "yyyy-MM-ddThh:mm" (sin segundos) para evitar "Valor no válido".
+ * Acepta: ISO string, Date, o formato español "dd/MM/yyyy, HH:mm" / "dd/MM/yyyy HH:mm".
+ */
 function toDatetimeLocal(isoOrDate: string | Date | null): string {
-  if (!isoOrDate) return '';
-  const d = new Date(isoOrDate);
+  if (isoOrDate == null) return '';
+  let d: Date;
+  if (isoOrDate instanceof Date) {
+    d = isoOrDate;
+  } else if (typeof isoOrDate === 'string') {
+    const s = isoOrDate.trim();
+    if (!s) return '';
+    // Ya en formato datetime-local
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) {
+      const parsed = new Date(s);
+      if (!isNaN(parsed.getTime())) {
+        const y = parsed.getFullYear();
+        const m = String(parsed.getMonth() + 1).padStart(2, '0');
+        const day = String(parsed.getDate()).padStart(2, '0');
+        const h = String(parsed.getHours()).padStart(2, '0');
+        const min = String(parsed.getMinutes()).padStart(2, '0');
+        return `${y}-${m}-${day}T${h}:${min}`;
+      }
+    }
+    // Formato español: "21/03/2026, 07:30" o "21/03/2026 07:30"
+    const match = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})[\s,]+(\d{1,2}):(\d{2})/);
+    if (match) {
+      const [, day, month, year, hour, min] = match;
+      d = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10), parseInt(hour, 10), parseInt(min, 10));
+    } else {
+      d = new Date(s);
+    }
+  } else {
+    return '';
+  }
   if (isNaN(d.getTime())) return '';
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -125,13 +157,22 @@ export default function SemaforoForm({
       return;
     }
 
+    // Normalizar a ISO para el API (el input puede ser "yyyy-MM-ddThh:mm" o formato español)
+    const toIso = (val: string): string | null => {
+      if (!val || !val.trim()) return null;
+      const normalized = toDatetimeLocal(val.trim());
+      if (!normalized) return null;
+      const d = new Date(normalized);
+      return isNaN(d.getTime()) ? null : d.toISOString();
+    };
+
     saveSemaforo({
       estado,
       mensaje: mensaje.trim() || null,
       mensajePublico: mensajePublico.trim() || null,
       motivo: motivo.trim() || null,
-      inicioProgramado: inicioProgramado ? new Date(inicioProgramado).toISOString() : null,
-      finProgramado: finProgramado ? new Date(finProgramado).toISOString() : null,
+      inicioProgramado: toIso(inicioProgramado),
+      finProgramado: toIso(finProgramado),
     });
   }
 

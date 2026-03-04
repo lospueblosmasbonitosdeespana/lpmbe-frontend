@@ -50,10 +50,27 @@ export async function POST(
   if (mensajePublico) payload.mensajePublico = mensajePublico;
   if (mensaje) payload.mensaje = mensaje;
 
-  // Backend DTO usa programadoInicio/programadoFin
-  const isIso = (x: string) => /^\d{4}-\d{2}-\d{2}T/.test(x);
-  if (inicioRaw && isIso(inicioRaw)) payload.programadoInicio = inicioRaw;
-  if (finRaw && isIso(finRaw)) payload.programadoFin = finRaw;
+  // Backend espera ISO; aceptamos ISO o formato "dd/MM/yyyy, HH:mm" / "yyyy-MM-ddThh:mm"
+  const toIso = (x: string): string | null => {
+    if (!x || !x.trim()) return null;
+    const t = x.trim();
+    if (/^\d{4}-\d{2}-\d{2}T/.test(t)) {
+      const d = new Date(t);
+      return isNaN(d.getTime()) ? null : d.toISOString();
+    }
+    const match = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})[\s,]+(\d{1,2}):(\d{2})/);
+    if (match) {
+      const [, day, month, year, hour, min] = match;
+      const d = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10), parseInt(hour, 10), parseInt(min, 10));
+      return isNaN(d.getTime()) ? null : d.toISOString();
+    }
+    const d = new Date(t);
+    return isNaN(d.getTime()) ? null : d.toISOString();
+  };
+  const inicioIso = toIso(inicioRaw);
+  const finIso = toIso(finRaw);
+  if (inicioIso) payload.programadoInicio = inicioIso;
+  if (finIso) payload.programadoFin = finIso;
 
   const API_BASE = getApiUrl();
 
