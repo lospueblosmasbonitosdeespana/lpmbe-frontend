@@ -5,18 +5,18 @@ import { useRouter } from 'next/navigation';
 
 /**
  * Formatea fecha para input datetime-local.
- * El valor debe ser exactamente "yyyy-MM-ddThh:mm" (sin segundos) para evitar "Valor no válido".
+ * El valor DEBE ser exactamente "yyyy-MM-ddThh:mm" para evitar "Valor no válido".
  * Acepta: ISO string, Date, o formato español "dd/MM/yyyy, HH:mm" / "dd/MM/yyyy HH:mm".
  */
-function toDatetimeLocal(isoOrDate: string | Date | null): string {
-  if (isoOrDate == null) return '';
+function toDatetimeLocal(isoOrDate: string | Date | null | undefined): string {
+  if (isoOrDate == null || isoOrDate === undefined) return '';
   let d: Date;
   if (isoOrDate instanceof Date) {
     d = isoOrDate;
   } else if (typeof isoOrDate === 'string') {
     const s = isoOrDate.trim();
     if (!s) return '';
-    // Ya en formato datetime-local
+    // Ya en formato datetime-local (yyyy-MM-ddThh:mm o con segundos)
     if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) {
       const parsed = new Date(s);
       if (!isNaN(parsed.getTime())) {
@@ -28,8 +28,8 @@ function toDatetimeLocal(isoOrDate: string | Date | null): string {
         return `${y}-${m}-${day}T${h}:${min}`;
       }
     }
-    // Formato español: "21/03/2026, 07:30" o "21/03/2026 07:30"
-    const match = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})[\s,]+(\d{1,2}):(\d{2})/);
+    // Formato español: "21/03/2026, 07:30" o "21/03/2026 07:30" o "21/03/2026, 22:30"
+    const match = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})[\s,]*(\d{1,2}):(\d{2})/);
     if (match) {
       const [, day, month, year, hour, min] = match;
       d = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10), parseInt(hour, 10), parseInt(min, 10));
@@ -46,6 +46,12 @@ function toDatetimeLocal(isoOrDate: string | Date | null): string {
   const h = String(d.getHours()).padStart(2, '0');
   const min = String(d.getMinutes()).padStart(2, '0');
   return `${y}-${m}-${day}T${h}:${min}`;
+}
+
+/** Normaliza el valor del input para que el estado siempre tenga formato válido datetime-local */
+function normalizeDatetimeLocalValue(raw: string): string {
+  const normalized = toDatetimeLocal(raw);
+  return normalized || raw;
 }
 
 type SemaforoFormProps = {
@@ -74,11 +80,11 @@ export default function SemaforoForm({
   const [mensaje, setMensaje] = useState(mensajeActual);
   const [mensajePublico, setMensajePublico] = useState(mensajePublicoActual);
   const [motivo, setMotivo] = useState(motivoActual);
-  const [inicioProgramado, setInicioProgramado] = useState(
-    toDatetimeLocal(inicioProgramadoActual)
+  const [inicioProgramado, setInicioProgramado] = useState(() =>
+    toDatetimeLocal(inicioProgramadoActual) || ''
   );
-  const [finProgramado, setFinProgramado] = useState(
-    toDatetimeLocal(finProgramadoActual)
+  const [finProgramado, setFinProgramado] = useState(() =>
+    toDatetimeLocal(finProgramadoActual) || ''
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -272,8 +278,8 @@ export default function SemaforoForm({
               <label className="block text-xs text-gray-600">Inicio programado</label>
               <input
                 type="datetime-local"
-                value={inicioProgramado}
-                onChange={(e) => setInicioProgramado(e.target.value)}
+                value={toDatetimeLocal(inicioProgramado) || ''}
+                onChange={(e) => setInicioProgramado(normalizeDatetimeLocalValue(e.target.value))}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1 text-sm"
               />
             </div>
@@ -281,8 +287,8 @@ export default function SemaforoForm({
               <label className="block text-xs text-gray-600">Fin programado</label>
               <input
                 type="datetime-local"
-                value={finProgramado}
-                onChange={(e) => setFinProgramado(e.target.value)}
+                value={toDatetimeLocal(finProgramado) || ''}
+                onChange={(e) => setFinProgramado(normalizeDatetimeLocalValue(e.target.value))}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1 text-sm"
               />
             </div>
