@@ -156,6 +156,7 @@ export default async function MultiexperienciaPage({
     }
   }
 
+  const tPueblo = await getTranslations("puebloPage");
   const base = getBaseUrl();
   const breadcrumbLd = {
     "@context": "https://schema.org",
