@@ -45,6 +45,7 @@ export default function RotatedImage({
       <img
         src={src}
         alt={alt}
+        referrerPolicy="no-referrer"
         style={{
           width: "100%",
           height: "100%",

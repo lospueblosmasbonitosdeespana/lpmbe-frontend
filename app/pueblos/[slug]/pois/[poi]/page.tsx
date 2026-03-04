@@ -137,6 +137,7 @@ export default async function PoiPage({
             <img
               src={foto}
               alt={data?.nombre ?? "POI"}
+              referrerPolicy="no-referrer"
               className="h-full w-full object-cover"
               style={{
                 transform: (() => {
@@ -173,6 +174,7 @@ export default async function PoiPage({
                   <img
                     src={foto.url}
                     alt={foto.alt ?? `${data.nombre} - Foto ${idx + 1}`}
+                    referrerPolicy="no-referrer"
                     className="absolute inset-0 h-full w-full object-cover"
                     style={{
                       transform: foto.rotation ? `rotate(${foto.rotation}deg)` : undefined,
