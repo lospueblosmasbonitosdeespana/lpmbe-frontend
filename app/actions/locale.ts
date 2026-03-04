@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers';
 
 const LOCALE_COOKIE = 'NEXT_LOCALE';
-const SUPPORTED = ['es', 'en', 'fr', 'de', 'pt', 'it'] as const;
+const SUPPORTED = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'] as const;
 
 export async function setLocale(formData: FormData) {
   const locale = formData.get('locale') as string;
