@@ -3,9 +3,10 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getRutas, getRutaById, getRutaMapa } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
 import { sanitizeHtml, createExcerpt } from "@/lib/sanitizeHtml";
 import RutaParadasConMapa from "@/app/_components/RutaParadasConMapa";
+import JsonLd from "@/app/components/seo/JsonLd";
 
 export const revalidate = 60;
 
@@ -177,8 +178,38 @@ export default async function RutaPage({
   const introLimpia = introSinSaberMas ? sanitizeHtml(introSinSaberMas) : null;
   const outroLimpia = outroSinSaberMas ? sanitizeHtml(outroSinSaberMas) : null;
 
+  const base = getBaseUrl();
+  const pathRuta = `/rutas/${ruta.slug}`;
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: base },
+      { "@type": "ListItem", position: 2, name: "Rutas", item: `${base}/rutas` },
+      { "@type": "ListItem", position: 3, name: ruta.titulo, item: `${base}${pathRuta}` },
+    ],
+  };
+  const itemListLd =
+    pueblosOrdenados.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: ruta.titulo,
+          description: ruta.descripcion ? createExcerpt(ruta.descripcion, 200) : undefined,
+          numberOfItems: pueblosOrdenados.length,
+          itemListElement: pueblosOrdenados.map((p: any, i: number) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: typeof p === "object" && p?.nombre ? p.nombre : String(p),
+            url: typeof p === "object" && p?.slug ? `${base}/pueblos/${p.slug}` : undefined,
+          })),
+        }
+      : null;
+
   return (
     <main className="mx-auto max-w-5xl px-4 py-12">
+      <JsonLd data={breadcrumbLd} />
+      {itemListLd && <JsonLd data={itemListLd} />}
       {/* Breadcrumb */}
       <div className="mb-6">
         <Link href="/rutas" className="text-blue-600 hover:underline">

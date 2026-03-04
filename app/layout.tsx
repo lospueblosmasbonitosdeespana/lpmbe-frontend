@@ -13,8 +13,10 @@ import { WebAnalyticsTracker } from "@/components/analytics/WebAnalyticsTracker"
 import { getBaseUrl, SITE_NAME, DEFAULT_DESCRIPTION } from "@/lib/seo";
 import JsonLd from "./components/seo/JsonLd";
 
+const baseUrl = getBaseUrl();
+
 export const metadata: Metadata = {
-  metadataBase: new URL(getBaseUrl()),
+  metadataBase: new URL(baseUrl),
   title: {
     default: `${SITE_NAME} – Pueblos, rutas y experiencias`,
     template: `%s | ${SITE_NAME}`,
@@ -25,9 +27,11 @@ export const metadata: Metadata = {
     locale: "es_ES",
     type: "website",
     description: DEFAULT_DESCRIPTION,
+    images: [{ url: `${baseUrl}/logo.png`, width: 512, height: 512, alt: SITE_NAME }],
   },
   twitter: {
     card: "summary_large_image",
+    images: [`${baseUrl}/logo.png`],
   },
   alternates: {
     canonical: "/",

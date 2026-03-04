@@ -2,9 +2,10 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getLugarLegacyBySlug, getApiUrl, type Pueblo } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
 import ParadasMap from "@/app/_components/ParadasMap";
 import ParadaFoto from "./ParadaFoto";
+import JsonLd from "@/app/components/seo/JsonLd";
 
 // Helpers para SEO
 function cleanText(input: string) {
@@ -152,8 +153,21 @@ export default async function MultiexperienciaPage({
     }
   }
 
+  const base = getBaseUrl();
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: base },
+      { "@type": "ListItem", position: 2, name: "Pueblos", item: `${base}/pueblos` },
+      { "@type": "ListItem", position: 3, name: pueblo.nombre, item: `${base}/pueblos/${pueblo.slug}` },
+      { "@type": "ListItem", position: 4, name: mx.titulo, item: `${base}/pueblos/${pueblo.slug}/experiencias/${mxSlug}` },
+    ],
+  };
+
   return (
     <main className="mx-auto max-w-[1200px] px-6 py-8 bg-background">
+      <JsonLd data={breadcrumbLd} />
       {/* Breadcrumb */}
       <div className="mb-6">
         <Link

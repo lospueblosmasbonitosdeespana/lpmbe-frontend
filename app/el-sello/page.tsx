@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import SafeHtml from "@/app/_components/ui/SafeHtml";
 import { Section } from "@/app/components/ui/section";
@@ -17,8 +18,30 @@ import {
 import type { SelloPage, CmsDocumento } from "@/lib/cms/sello";
 import { CONTENIDO_SELLO_HOME } from "@/lib/cms/sello-content";
 import { getTranslations } from "next-intl/server";
+import { getCanonicalUrl, getLocaleAlternates, SITE_NAME } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+const SELLO_TITLE = `El Sello | ${SITE_NAME}`;
+const SELLO_DESCRIPTION =
+  "Conoce el sello de calidad turística de Los Pueblos Más Bonitos de España. Criterios, beneficios y proceso de certificación.";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const path = "/el-sello";
+  return {
+    title: SELLO_TITLE,
+    description: SELLO_DESCRIPTION,
+    alternates: {
+      canonical: getCanonicalUrl(path),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title: SELLO_TITLE,
+      description: SELLO_DESCRIPTION,
+      url: getCanonicalUrl(path),
+    },
+  };
+}
 
 /* ===== ICONS ===== */
 function ArchitectureIcon({ className }: { className?: string }) {

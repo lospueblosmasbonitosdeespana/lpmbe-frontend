@@ -534,6 +534,7 @@ export default async function PuebloPage({
     </div>
   );
 
+  const base = getBaseUrl();
   const puebloLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "TouristAttraction",
@@ -541,7 +542,7 @@ export default async function PuebloPage({
     description: puebloSafe.descripcion
       ? puebloSafe.descripcion.replace(/<[^>]*>/g, "").slice(0, 300)
       : undefined,
-    url: `${getBaseUrl()}/pueblos/${puebloSafe.slug}`,
+    url: `${base}/pueblos/${puebloSafe.slug}`,
     image: heroImage || undefined,
     address: {
       "@type": "PostalAddress",
@@ -560,9 +561,21 @@ export default async function PuebloPage({
       : {}),
   };
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbs.map((b, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: b.label,
+      item: `${base}${b.href}`,
+    })),
+  };
+
   return (
     <main className="bg-background">
       <JsonLd data={puebloLd} />
+      <JsonLd data={breadcrumbLd} />
       {/* HERO - Diseño tourism-website-design */}
       <DetailPageHero
         title={puebloSafe.nombre}

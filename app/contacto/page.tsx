@@ -1,11 +1,33 @@
+import type { Metadata } from 'next';
 import BackButton from '@/app/c/[slug]/BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import ContactForm from './ContactForm';
+import { getCanonicalUrl, getLocaleAlternates, SITE_NAME } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const CONTACTO_EMAIL = 'asociacion@lospueblosmasbonitosdeespana.org';
+
+const CONTACTO_DESCRIPTION =
+  'Contacta con la asociación Los Pueblos Más Bonitos de España. Email, teléfono y formulario de contacto.';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const path = '/contacto';
+  return {
+    title: 'Contacto',
+    description: CONTACTO_DESCRIPTION,
+    alternates: {
+      canonical: getCanonicalUrl(path),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title: `Contacto | ${SITE_NAME}`,
+      description: CONTACTO_DESCRIPTION,
+      url: getCanonicalUrl(path),
+    },
+  };
+}
 
 export default function ContactoPage() {
   return (
