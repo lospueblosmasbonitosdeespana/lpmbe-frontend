@@ -37,6 +37,16 @@ async function getDashboardData() {
 
   const raw = await res.json();
 
+  const pueblosPuntos = Array.isArray(raw?.pueblosPuntos)
+    ? raw.pueblosPuntos.map((p: any) => ({
+        puebloId: p.puebloId,
+        nombre: String(p.nombre ?? ''),
+        provincia: String(p.provincia ?? ''),
+        comunidad: String(p.comunidad ?? ''),
+        puntos: Number(p.puntos ?? 0),
+      }))
+    : [];
+
   const data = {
     puntosTotales: Number(raw?.total ?? 0),
     puntosPorTipo: {
@@ -56,6 +66,7 @@ async function getDashboardData() {
         }
       : null,
     progreso: Number(raw.progreso ?? 0),
+    pueblosPuntos,
   };
 
   return data;
@@ -92,7 +103,7 @@ export default async function PuntosPage() {
                 progreso={data.progreso}
               />
 
-              <DashboardPuntos puntosPorTipo={data.puntosPorTipo} />
+              <DashboardPuntos puntosPorTipo={data.puntosPorTipo} pueblosPuntos={data.pueblosPuntos} />
 
               <DashboardFavoritos items={visitadosItems} />
             </div>
