@@ -57,11 +57,22 @@ function formatDay(dateStr: string): string {
   return d.toLocaleDateString("es-ES", { weekday: "short", day: "2-digit", month: "2-digit" });
 }
 
+/* ── Iconos meteorológicos ── */
+
 function SunIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" fill="none" stroke="currentColor" strokeWidth="2" />
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <circle cx="12" cy="12" r="4" fill="currentColor" />
+      <g stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <line x1="12" y1="2" x2="12" y2="4" />
+        <line x1="12" y1="20" x2="12" y2="22" />
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+        <line x1="2" y1="12" x2="4" y2="12" />
+        <line x1="20" y1="12" x2="22" y2="12" />
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+      </g>
     </svg>
   );
 }
@@ -78,6 +89,139 @@ function DropletIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
       <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+    </svg>
+  );
+}
+
+/** Icono para cada tipo de tiempo (weather code WMO) */
+function WeatherIcon({ code, className }: { code: number | null; className?: string }) {
+  const key = weatherCodeToKey(code);
+
+  if (key === "clear") {
+    // Sol
+    return (
+      <svg viewBox="0 0 32 32" className={className} fill="none">
+        <circle cx="16" cy="16" r="6" fill="#F59E0B" />
+        <g stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round">
+          <line x1="16" y1="3" x2="16" y2="6" />
+          <line x1="16" y1="26" x2="16" y2="29" />
+          <line x1="3" y1="16" x2="6" y2="16" />
+          <line x1="26" y1="16" x2="29" y2="16" />
+          <line x1="7.1" y1="7.1" x2="9.2" y2="9.2" />
+          <line x1="22.8" y1="22.8" x2="24.9" y2="24.9" />
+          <line x1="7.1" y1="24.9" x2="9.2" y2="22.8" />
+          <line x1="22.8" y1="9.2" x2="24.9" y2="7.1" />
+        </g>
+      </svg>
+    );
+  }
+
+  if (key === "cloudy") {
+    // Parcialmente nublado
+    return (
+      <svg viewBox="0 0 32 32" className={className} fill="none">
+        <circle cx="12" cy="14" r="5" fill="#F59E0B" opacity="0.9" />
+        <g stroke="#F59E0B" strokeWidth="1.5" strokeLinecap="round" opacity="0.7">
+          <line x1="12" y1="6" x2="12" y2="8" />
+          <line x1="5" y1="14" x2="7" y2="14" />
+          <line x1="6.9" y1="8.1" x2="8.3" y2="9.5" />
+        </g>
+        <path d="M10 20c0-3.3 2.7-6 6-6 .4 0 .8 0 1.2.1A5 5 0 0 1 22 19c0 .3 0 .7-.1 1H10v-1z" fill="#94A3B8" />
+        <rect x="8" y="19" width="16" height="5" rx="2.5" fill="#CBD5E1" />
+      </svg>
+    );
+  }
+
+  if (key === "fog") {
+    // Niebla
+    return (
+      <svg viewBox="0 0 32 32" className={className} fill="none">
+        <g stroke="#94A3B8" strokeWidth="2" strokeLinecap="round">
+          <line x1="5" y1="11" x2="27" y2="11" />
+          <line x1="5" y1="16" x2="27" y2="16" />
+          <line x1="8" y1="21" x2="24" y2="21" />
+        </g>
+      </svg>
+    );
+  }
+
+  if (key === "drizzle") {
+    // Llovizna
+    return (
+      <svg viewBox="0 0 32 32" className={className} fill="none">
+        <path d="M8 18a6 6 0 0 1 6-6c.3 0 .6 0 .9.1A4 4 0 0 1 20 16c0 .2 0 .5-.1.7L8 18z" fill="#94A3B8" />
+        <rect x="6" y="17" width="20" height="5" rx="2.5" fill="#CBD5E1" />
+        <g stroke="#60A5FA" strokeWidth="2" strokeLinecap="round">
+          <line x1="11" y1="24" x2="10" y2="27" />
+          <line x1="16" y1="24" x2="15" y2="27" />
+          <line x1="21" y1="24" x2="20" y2="27" />
+        </g>
+      </svg>
+    );
+  }
+
+  if (key === "rain") {
+    // Lluvia
+    return (
+      <svg viewBox="0 0 32 32" className={className} fill="none">
+        <path d="M7 17a6 6 0 0 1 6-6c.3 0 .6 0 .9.1A4 4 0 0 1 19 15c0 .3 0 .6-.1.9L7 17z" fill="#94A3B8" />
+        <rect x="5" y="16" width="22" height="5" rx="2.5" fill="#94A3B8" />
+        <g stroke="#3B82F6" strokeWidth="2.5" strokeLinecap="round">
+          <line x1="10" y1="23" x2="8" y2="28" />
+          <line x1="16" y1="23" x2="14" y2="28" />
+          <line x1="22" y1="23" x2="20" y2="28" />
+        </g>
+      </svg>
+    );
+  }
+
+  if (key === "snow") {
+    // Nieve
+    return (
+      <svg viewBox="0 0 32 32" className={className} fill="none">
+        <path d="M7 17a6 6 0 0 1 6-6c.3 0 .6 0 .9.1A4 4 0 0 1 19 15c0 .3 0 .6-.1.9L7 17z" fill="#CBD5E1" />
+        <rect x="5" y="16" width="22" height="5" rx="2.5" fill="#CBD5E1" />
+        <g fill="#93C5FD">
+          <circle cx="11" cy="26" r="1.5" />
+          <circle cx="16" cy="25" r="1.5" />
+          <circle cx="21" cy="26" r="1.5" />
+        </g>
+      </svg>
+    );
+  }
+
+  if (key === "showers") {
+    // Chubascos
+    return (
+      <svg viewBox="0 0 32 32" className={className} fill="none">
+        <circle cx="11" cy="12" r="4" fill="#F59E0B" opacity="0.7" />
+        <path d="M10 18a5 5 0 0 1 5-5c.3 0 .6 0 .8.1A3.5 3.5 0 0 1 20 16.5v.5H10V18z" fill="#94A3B8" />
+        <rect x="8" y="17" width="16" height="4" rx="2" fill="#94A3B8" />
+        <g stroke="#3B82F6" strokeWidth="2.5" strokeLinecap="round">
+          <line x1="12" y1="23" x2="10" y2="28" />
+          <line x1="17" y1="23" x2="15" y2="28" />
+          <line x1="22" y1="23" x2="20" y2="28" />
+        </g>
+      </svg>
+    );
+  }
+
+  if (key === "storm") {
+    // Tormenta
+    return (
+      <svg viewBox="0 0 32 32" className={className} fill="none">
+        <path d="M6 17a6 6 0 0 1 6-6c.3 0 .6 0 .9.1A4 4 0 0 1 18 15c0 .3 0 .6-.1.9L6 17z" fill="#64748B" />
+        <rect x="4" y="16" width="24" height="5" rx="2.5" fill="#475569" />
+        <path d="M15 22l-3 5h4l-2 4" stroke="#FCD34D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      </svg>
+    );
+  }
+
+  // Default: nube genérica
+  return (
+    <svg viewBox="0 0 32 32" className={className} fill="none">
+      <path d="M7 19a7 7 0 0 1 7-7c.4 0 .7 0 1 .1A5 5 0 0 1 22 17c0 .3 0 .7-.1 1H7v1z" fill="#94A3B8" />
+      <rect x="5" y="18" width="22" height="6" rx="3" fill="#CBD5E1" />
     </svg>
   );
 }
@@ -155,7 +299,10 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
         <div className="mb-4">
           <Title as="h3" className="mb-3 text-lg">{t("titleNow")}</Title>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-            <span>{t("statusLabel")} <strong>{codeToText(c.weatherCode)}</strong></span>
+            <div className="flex items-center gap-2">
+              <WeatherIcon code={c.weatherCode} className="h-8 w-8 shrink-0" />
+              <span>{t("statusLabel")} <strong>{codeToText(c.weatherCode)}</strong></span>
+            </div>
             <span>Temp: <strong>{c.temperatureC == null ? "—" : `${Math.round(c.temperatureC)}°C`}</strong></span>
             <span>Viento: <strong>{c.windKph == null ? "—" : `${Math.round(c.windKph)} km/h`} {degToCardinal(c.windDirDeg)}</strong></span>
             <span className="flex items-center gap-1">
@@ -176,7 +323,10 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
               {next3.map((d) => (
                 <div key={d.date} className="flex-1 border-l border-border px-4 py-3 first:border-l-0">
                   <p className="text-sm font-medium text-foreground">{formatDay(d.date)}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{codeToText(d.weatherCode)}</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <WeatherIcon code={d.weatherCode} className="h-9 w-9 shrink-0" />
+                    <p className="text-sm text-muted-foreground">{codeToText(d.weatherCode)}</p>
+                  </div>
                   <p className="mt-1">
                     <span className="text-base font-semibold">{d.tMaxC == null ? "—" : `${Math.round(d.tMaxC)}°`}</span>
                     <span className="text-sm text-muted-foreground"> / {d.tMinC == null ? "—" : `${Math.round(d.tMinC)}°`}</span>
