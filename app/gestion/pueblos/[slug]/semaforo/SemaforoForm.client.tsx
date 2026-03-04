@@ -4,54 +4,70 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 /**
- * Formatea fecha para input datetime-local.
- * El valor DEBE ser exactamente "yyyy-MM-ddThh:mm" para evitar "Valor no válido".
- * Acepta: ISO string, Date, o formato español "dd/MM/yyyy, HH:mm" / "dd/MM/yyyy HH:mm".
+ * Extrae la parte "yyyy-MM-dd" de una fecha (ISO, Date o "dd/MM/yyyy...").
+ * Solo devuelve string vacío si no puede parsear.
  */
-function toDatetimeLocal(isoOrDate: string | Date | null | undefined): string {
-  if (isoOrDate == null || isoOrDate === undefined) return '';
+function extractDate(raw: string | Date | null | undefined): string {
+  if (!raw) return '';
   let d: Date;
-  if (isoOrDate instanceof Date) {
-    d = isoOrDate;
-  } else if (typeof isoOrDate === 'string') {
-    const s = isoOrDate.trim();
-    if (!s) return '';
-    // Ya en formato datetime-local (yyyy-MM-ddThh:mm o con segundos)
-    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) {
-      const parsed = new Date(s);
-      if (!isNaN(parsed.getTime())) {
-        const y = parsed.getFullYear();
-        const m = String(parsed.getMonth() + 1).padStart(2, '0');
-        const day = String(parsed.getDate()).padStart(2, '0');
-        const h = String(parsed.getHours()).padStart(2, '0');
-        const min = String(parsed.getMinutes()).padStart(2, '0');
-        return `${y}-${m}-${day}T${h}:${min}`;
+  if (raw instanceof Date) {
+    d = raw;
+  } else {
+    const s = raw.toString().trim();
+    // ISO: 2026-03-21T...
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+      d = new Date(s);
+    } else {
+      // Formato español: "21/03/2026, 07:30" → extraer partes
+      const match = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (match) {
+        const [, day, month, year] = match;
+        d = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10));
+      } else {
+        d = new Date(s);
       }
     }
-    // Formato español: "21/03/2026, 07:30" o "21/03/2026 07:30" o "21/03/2026, 22:30"
-    const match = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})[\s,]*(\d{1,2}):(\d{2})/);
-    if (match) {
-      const [, day, month, year, hour, min] = match;
-      d = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10), parseInt(hour, 10), parseInt(min, 10));
-    } else {
-      d = new Date(s);
-    }
-  } else {
-    return '';
   }
   if (isNaN(d.getTime())) return '';
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
-  const h = String(d.getHours()).padStart(2, '0');
-  const min = String(d.getMinutes()).padStart(2, '0');
-  return `${y}-${m}-${day}T${h}:${min}`;
+  return `${y}-${m}-${day}`;
 }
 
-/** Normaliza el valor del input para que el estado siempre tenga formato válido datetime-local */
-function normalizeDatetimeLocalValue(raw: string): string {
-  const normalized = toDatetimeLocal(raw);
-  return normalized || raw;
+/**
+ * Extrae la parte "HH:mm" de una fecha (ISO, Date o "dd/MM/yyyy, HH:mm").
+ */
+function extractTime(raw: string | Date | null | undefined): string {
+  if (!raw) return '';
+  let h = 0, min = 0;
+  if (raw instanceof Date) {
+    h = raw.getHours();
+    min = raw.getMinutes();
+  } else {
+    const s = raw.toString().trim();
+    // ISO: ...T07:30...
+    const isoMatch = s.match(/T(\d{2}):(\d{2})/);
+    if (isoMatch) {
+      h = parseInt(isoMatch[1], 10);
+      min = parseInt(isoMatch[2], 10);
+    } else {
+      // Formato español: "21/03/2026, 07:30" o "21/03/2026 07:30"
+      const spMatch = s.match(/[\s,]+(\d{1,2}):(\d{2})/);
+      if (spMatch) {
+        h = parseInt(spMatch[1], 10);
+        min = parseInt(spMatch[2], 10);
+      }
+    }
+  }
+  return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+}
+
+/** Combina "yyyy-MM-dd" + "HH:mm" en un ISO string. Null si alguno está vacío. */
+function combineToISO(date: string, time: string): string | null {
+  if (!date || !time) return null;
+  const d = new Date(`${date}T${time}:00`);
+  return isNaN(d.getTime()) ? null : d.toISOString();
 }
 
 type SemaforoFormProps = {
@@ -80,12 +96,13 @@ export default function SemaforoForm({
   const [mensaje, setMensaje] = useState(mensajeActual);
   const [mensajePublico, setMensajePublico] = useState(mensajePublicoActual);
   const [motivo, setMotivo] = useState(motivoActual);
-  const [inicioProgramado, setInicioProgramado] = useState(() =>
-    toDatetimeLocal(inicioProgramadoActual) || ''
-  );
-  const [finProgramado, setFinProgramado] = useState(() =>
-    toDatetimeLocal(finProgramadoActual) || ''
-  );
+
+  // Separamos fecha y hora para evitar TOTALMENTE el type="datetime-local"
+  const [inicioFecha, setInicioFecha] = useState(() => extractDate(inicioProgramadoActual));
+  const [inicioHora, setInicioHora] = useState(() => extractTime(inicioProgramadoActual) || '07:00');
+  const [finFecha, setFinFecha] = useState(() => extractDate(finProgramadoActual));
+  const [finHora, setFinHora] = useState(() => extractTime(finProgramadoActual) || '23:00');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -111,15 +128,10 @@ export default function SemaforoForm({
 
       const text = await res.text();
       let data: any = null;
-      try {
-        data = text ? JSON.parse(text) : null;
-      } catch {
-        data = null;
-      }
+      try { data = text ? JSON.parse(text) : null; } catch { data = null; }
 
       if (!res.ok) {
-        const msg = data?.message || data?.error || text || `HTTP ${res.status}`;
-        setError(msg);
+        setError(data?.message || data?.error || text || `HTTP ${res.status}`);
         return;
       }
 
@@ -134,8 +146,10 @@ export default function SemaforoForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    // Validaciones: ROJO/AMARILLO sin programación requiere mensaje público
-    const hasProgramacion = !!(inicioProgramado && finProgramado);
+    const inicioProgramado = combineToISO(inicioFecha, inicioHora);
+    const finProgramado = combineToISO(finFecha, finHora);
+    const hasProgramacion = !!(inicioFecha && finFecha);
+
     if (estado !== 'VERDE' && !hasProgramacion) {
       if (!mensajePublico.trim()) {
         setError('El mensaje público es obligatorio para ROJO/AMARILLO sin programación');
@@ -143,42 +157,30 @@ export default function SemaforoForm({
       }
     }
 
-    // Con programación: motivo obligatorio
     if (hasProgramacion && estado !== 'VERDE' && !motivo.trim()) {
       setError('El motivo es obligatorio cuando hay programación');
       return;
     }
 
-    if (inicioProgramado && finProgramado) {
-      const inicio = new Date(inicioProgramado);
-      const fin = new Date(finProgramado);
-      if (fin <= inicio) {
+    if (hasProgramacion && inicioProgramado && finProgramado) {
+      if (new Date(finProgramado) <= new Date(inicioProgramado)) {
         setError('La fecha de fin debe ser posterior a la de inicio');
         return;
       }
     }
 
-    if ((inicioProgramado && !finProgramado) || (!inicioProgramado && finProgramado)) {
-      setError('Debes especificar ambas fechas de programación o ninguna');
+    if ((inicioFecha && !finFecha) || (!inicioFecha && finFecha)) {
+      setError('Debes especificar ambas fechas o ninguna');
       return;
     }
-
-    // Normalizar a ISO para el API (el input puede ser "yyyy-MM-ddThh:mm" o formato español)
-    const toIso = (val: string): string | null => {
-      if (!val || !val.trim()) return null;
-      const normalized = toDatetimeLocal(val.trim());
-      if (!normalized) return null;
-      const d = new Date(normalized);
-      return isNaN(d.getTime()) ? null : d.toISOString();
-    };
 
     saveSemaforo({
       estado,
       mensaje: mensaje.trim() || null,
       mensajePublico: mensajePublico.trim() || null,
       motivo: motivo.trim() || null,
-      inicioProgramado: toIso(inicioProgramado),
-      finProgramado: toIso(finProgramado),
+      inicioProgramado,
+      finProgramado,
     });
   }
 
@@ -187,10 +189,11 @@ export default function SemaforoForm({
     setMensaje('');
     setMensajePublico('');
     setMotivo('');
-    setInicioProgramado('');
-    setFinProgramado('');
+    setInicioFecha('');
+    setInicioHora('07:00');
+    setFinFecha('');
+    setFinHora('23:00');
     setError(null);
-    // Enviar al backend para que el semáforo quede VERDE y se borre programación/manual
     saveSemaforo({
       estado: 'VERDE',
       mensaje: null,
@@ -273,24 +276,46 @@ export default function SemaforoForm({
 
         <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
           <div className="text-sm font-medium text-gray-700">Programación (opcional)</div>
-          <div className="mt-3 grid grid-cols-2 gap-4">
+          <div className="mt-3 grid grid-cols-2 gap-6">
+            {/* Inicio */}
             <div>
-              <label className="block text-xs text-gray-600">Inicio programado</label>
-              <input
-                type="datetime-local"
-                value={toDatetimeLocal(inicioProgramado) || ''}
-                onChange={(e) => setInicioProgramado(normalizeDatetimeLocalValue(e.target.value))}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1 text-sm"
-              />
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Inicio programado
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={inicioFecha}
+                  onChange={(e) => setInicioFecha(e.target.value)}
+                  className="flex-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+                />
+                <input
+                  type="time"
+                  value={inicioHora}
+                  onChange={(e) => setInicioHora(e.target.value)}
+                  className="w-24 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+                />
+              </div>
             </div>
+            {/* Fin */}
             <div>
-              <label className="block text-xs text-gray-600">Fin programado</label>
-              <input
-                type="datetime-local"
-                value={toDatetimeLocal(finProgramado) || ''}
-                onChange={(e) => setFinProgramado(normalizeDatetimeLocalValue(e.target.value))}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1 text-sm"
-              />
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Fin programado
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={finFecha}
+                  onChange={(e) => setFinFecha(e.target.value)}
+                  className="flex-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+                />
+                <input
+                  type="time"
+                  value={finHora}
+                  onChange={(e) => setFinHora(e.target.value)}
+                  className="w-24 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+                />
+              </div>
             </div>
           </div>
           <p className="mt-2 text-xs text-gray-500">
@@ -311,7 +336,8 @@ export default function SemaforoForm({
         <button
           type="button"
           onClick={handleResetVerde}
-          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          disabled={loading}
+          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
         >
           Reset a VERDE
         </button>
@@ -326,31 +352,3 @@ export default function SemaforoForm({
     </form>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
