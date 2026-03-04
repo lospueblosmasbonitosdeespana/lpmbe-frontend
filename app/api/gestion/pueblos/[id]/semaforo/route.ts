@@ -53,6 +53,12 @@ export async function POST(
   // Flag para borrar solo el evento programado
   if (body?.clearProgramado === true) {
     payload.clearProgramado = true;
+    if (body?.eventoId) payload.eventoId = body.eventoId;
+  }
+
+  // ID del evento a editar (si se pasa)
+  if (body?.eventoId && !body?.clearProgramado) {
+    payload.eventoId = body.eventoId;
   }
 
   // Backend espera ISO; aceptamos ISO o formato "dd/MM/yyyy, HH:mm" / "yyyy-MM-ddThh:mm"

@@ -585,6 +585,7 @@ export default async function PuebloPage({
         semaforoMensaje={semaforoPueblo.mensaje ?? null}
         semaforoCaducaEn={semaforoPueblo.caduca_en ?? null}
         semaforoProgramado={semaforoPueblo.programado ?? null}
+        semaforoProgramadoEventos={(semaforoPueblo as any).programado_eventos_list ?? undefined}
       />
 
       {/* RRSS DEL PUEBLO */}

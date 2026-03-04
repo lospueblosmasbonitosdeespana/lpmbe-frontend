@@ -8,8 +8,10 @@ import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 
 type SemaforoProgramado = {
+  id?: string;
   estado: "VERDE" | "AMARILLO" | "ROJO";
   mensaje: string | null;
+  motivo?: string | null;
   inicio: string | Date;
   fin: string | Date;
 };
@@ -24,6 +26,7 @@ type PuebloActionsProps = {
   semaforoMensaje?: string | null;
   semaforoCaducaEn?: string | Date | null;
   semaforoProgramado?: SemaforoProgramado | null;
+  semaforoProgramadoEventos?: SemaforoProgramado[];
 };
 
 type ActionBarState = "idle" | "loading" | "success" | "error";
@@ -231,6 +234,7 @@ export default function PuebloActions({
   semaforoMensaje,
   semaforoCaducaEn,
   semaforoProgramado,
+  semaforoProgramadoEventos,
 }: PuebloActionsProps) {
   const t = useTranslations("pueblo");
   const locale = useLocale();
@@ -433,32 +437,37 @@ export default function PuebloActions({
             </div>
           )}
 
-          {/* Aviso de semáforo programado para el futuro */}
-          {semaforoProgramado && (() => {
-            const progConfig = getSemaforoConfig(semaforoProgramado.estado, t);
-            if (!progConfig) return null;
-            const borderColor =
-              semaforoProgramado.estado === "ROJO" ? "border-red-300" :
-              semaforoProgramado.estado === "AMARILLO" ? "border-amber-300" :
-              "border-green-300";
-            const bgColor =
-              semaforoProgramado.estado === "ROJO" ? "bg-red-50" :
-              semaforoProgramado.estado === "AMARILLO" ? "bg-amber-50" :
-              "bg-green-50";
+          {/* Avisos de eventos programados futuros */}
+          {(() => {
+            const eventos = semaforoProgramadoEventos && semaforoProgramadoEventos.length > 0
+              ? semaforoProgramadoEventos
+              : semaforoProgramado ? [semaforoProgramado] : [];
+            if (eventos.length === 0) return null;
             return (
-              <div className={cn("mt-3 w-full rounded-lg border px-4 py-3", borderColor, bgColor)}>
-                <div className="flex items-center justify-center gap-2">
-                  <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", progConfig.dotClass)} />
-                  <span className={cn("text-sm font-semibold", progConfig.color)}>
-                    {t("semaforoScheduledAlert")}
-                  </span>
-                </div>
-                <p className="mt-1 text-center text-sm text-foreground/80">
-                  {semaforoProgramado.mensaje?.trim() || progConfig.mensajeDefault}
-                </p>
-                <span className="mt-1 block text-center text-xs text-muted-foreground">
-                  {formatFecha(semaforoProgramado.inicio, locale)} – {formatFecha(semaforoProgramado.fin, locale)}
-                </span>
+              <div className="mt-3 w-full space-y-2">
+                {eventos.map((ev, i) => {
+                  const progConfig = getSemaforoConfig(ev.estado, t);
+                  if (!progConfig) return null;
+                  const borderColor = ev.estado === "ROJO" ? "border-red-300" : ev.estado === "AMARILLO" ? "border-amber-300" : "border-green-300";
+                  const bgColor = ev.estado === "ROJO" ? "bg-red-50" : ev.estado === "AMARILLO" ? "bg-amber-50" : "bg-green-50";
+                  return (
+                    <div key={ev.id ?? i} className={cn("rounded-lg border px-4 py-3", borderColor, bgColor)}>
+                      <div className="flex items-center justify-center gap-2">
+                        <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", progConfig.dotClass)} />
+                        <span className={cn("text-sm font-semibold", progConfig.color)}>
+                          {t("semaforoScheduledAlert")}
+                          {ev.motivo ? ` · ${ev.motivo}` : ''}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-center text-sm text-foreground/80">
+                        {ev.mensaje?.trim() || progConfig.mensajeDefault}
+                      </p>
+                      <span className="mt-1 block text-center text-xs text-muted-foreground">
+                        {formatFecha(ev.inicio, locale)} – {formatFecha(ev.fin, locale)}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             );
           })()}
