@@ -39,10 +39,14 @@ function procesarContenidos(contenidos: Contenido[]) {
       return new Date(fin) >= ahora;
     })
     .sort((a, b) => {
-      const fa = a.fechaInicio ?? a.fechaFin ?? '';
-      const fb = b.fechaInicio ?? b.fechaFin ?? '';
+      const fa = a.fechaInicio ? new Date(a.fechaInicio) : null;
+      const fb = b.fechaInicio ? new Date(b.fechaInicio) : null;
       if (!fa || !fb) return 0;
-      return new Date(fa).getTime() - new Date(fb).getTime();
+      const aStarted = fa.getTime() < ahora.getTime();
+      const bStarted = fb.getTime() < ahora.getTime();
+      if (aStarted && !bStarted) return 1;
+      if (!aStarted && bStarted) return -1;
+      return fa.getTime() - fb.getTime();
     });
 
   const noticiasOrdenadas = [...noticias].sort((a, b) => {

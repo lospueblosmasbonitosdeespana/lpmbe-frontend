@@ -90,9 +90,14 @@ function ActualidadContent() {
         }
 
         allItems.sort((a, b) => {
-          const da = new Date(a.publishedAt ?? a.createdAt ?? 0).getTime();
-          const db = new Date(b.publishedAt ?? b.createdAt ?? 0).getTime();
-          return db - da;
+          const isEventoA = (a.tipo ?? '').toUpperCase() === 'EVENTO';
+          const isEventoB = (b.tipo ?? '').toUpperCase() === 'EVENTO';
+          if (isEventoA && isEventoB) {
+            return new Date(a.publishedAt ?? a.createdAt ?? 0).getTime() - new Date(b.publishedAt ?? b.createdAt ?? 0).getTime();
+          }
+          if (isEventoA) return -1;
+          if (isEventoB) return 1;
+          return new Date(b.publishedAt ?? b.createdAt ?? 0).getTime() - new Date(a.publishedAt ?? a.createdAt ?? 0).getTime();
         });
 
         if (!cancelled) setItems(allItems.slice(0, 50));

@@ -162,9 +162,14 @@ async function getNews(locale?: string): Promise<NewsItem[]> {
       ...noticias.map((item: any) => ({ ...item, _tipo: "NOTICIA" })),
       ...eventos.map((item: any) => ({ ...item, _tipo: "EVENTO" })),
     ].sort((a, b) => {
-      const da = new Date(a.fechaInicio ?? a.createdAt ?? 0).getTime();
-      const db = new Date(b.fechaInicio ?? b.createdAt ?? 0).getTime();
-      return db - da;
+      const isEventoA = (a._tipo ?? '').toUpperCase() === 'EVENTO';
+      const isEventoB = (b._tipo ?? '').toUpperCase() === 'EVENTO';
+      if (isEventoA && isEventoB) {
+        return new Date(a.fechaInicio ?? a.createdAt ?? 0).getTime() - new Date(b.fechaInicio ?? b.createdAt ?? 0).getTime();
+      }
+      if (isEventoA) return -1;
+      if (isEventoB) return 1;
+      return new Date(b.fechaInicio ?? b.createdAt ?? 0).getTime() - new Date(a.fechaInicio ?? a.createdAt ?? 0).getTime();
     });
 
     return all.slice(0, 4).map((item: any) => {

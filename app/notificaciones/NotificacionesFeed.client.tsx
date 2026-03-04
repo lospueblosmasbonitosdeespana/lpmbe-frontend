@@ -155,11 +155,14 @@ export default function NotificacionesFeed() {
             return ["NOTICIA", "EVENTO", "ALERTA", "ALERTA_PUEBLO", "SEMAFORO"].includes(item.tipo);
           });
 
-        // Ordenar por fecha desc usando helper seguro
+        // Eventos por fecha del evento (ascendente, próximo primero), resto por fecha desc
         normalized.sort((a, b) => {
-          const msA = toMs(a.fecha);
-          const msB = toMs(b.fecha);
-          return msB - msA;
+          if (a.tipo === 'EVENTO' && b.tipo === 'EVENTO') {
+            return toMs(a.fecha) - toMs(b.fecha);
+          }
+          if (a.tipo === 'EVENTO') return -1;
+          if (b.tipo === 'EVENTO') return 1;
+          return toMs(b.fecha) - toMs(a.fecha);
         });
 
         setItems(normalized);

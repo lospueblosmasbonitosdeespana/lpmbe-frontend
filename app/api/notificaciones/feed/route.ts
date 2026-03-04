@@ -214,11 +214,14 @@ export async function GET() {
       .map(normalizeItem)
       .filter((item): item is FeedItem => item !== null);
 
-    // Ordenar por fecha desc (fallbacks: fecha, fechaInicio, createdAt, updatedAt)
+    // Eventos por fecha del evento (ascendente, próximo primero), resto por fecha desc
     normalized.sort((a, b) => {
-      const msA = new Date(a.fecha).getTime();
-      const msB = new Date(b.fecha).getTime();
-      return msB - msA;
+      if (a.tipo === 'EVENTO' && b.tipo === 'EVENTO') {
+        return new Date(a.fecha).getTime() - new Date(b.fecha).getTime();
+      }
+      if (a.tipo === 'EVENTO') return -1;
+      if (b.tipo === 'EVENTO') return 1;
+      return new Date(b.fecha).getTime() - new Date(a.fecha).getTime();
     });
 
     console.log('[feed] total items raw', allItems.length);

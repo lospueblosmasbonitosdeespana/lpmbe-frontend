@@ -125,12 +125,20 @@ export default function BandejaNotificaciones() {
   }, [pueblos]);
 
   const itemsFiltrados = useMemo(() => {
-    if (filter === 'TODAS') return items;
-    
-    return items.filter(n => {
+    const filtered = filter === 'TODAS' ? items : items.filter(n => {
       const rawTipo = (n.tipo ?? n.notificacionTipo ?? n.type ?? '').toString().toUpperCase();
       const tipoNormalizado = rawTipo === 'ALERTA_PUEBLO' ? 'ALERTA' : rawTipo;
       return tipoNormalizado === filter;
+    });
+    return [...filtered].sort((a: any, b: any) => {
+      const tipoA = (a.tipo ?? '').toString().toUpperCase();
+      const tipoB = (b.tipo ?? '').toString().toUpperCase();
+      if (tipoA === 'EVENTO' && tipoB === 'EVENTO') {
+        return new Date(a.fechaInicio || a.createdAt || 0).getTime() - new Date(b.fechaInicio || b.createdAt || 0).getTime();
+      }
+      if (tipoA === 'EVENTO') return -1;
+      if (tipoB === 'EVENTO') return 1;
+      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
     });
   }, [items, filter]);
 
