@@ -208,7 +208,7 @@ export default function ParadasMap({
       <div
         style={{
           width: '100%',
-          height: 340,
+          height: 510,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -265,7 +265,7 @@ export default function ParadasMap({
       <div
         style={{
           width: '100%',
-          height: 340,
+          height: 510,
           borderRadius: 12,
           overflow: 'hidden',
           border: '1px solid #e0e0e0',

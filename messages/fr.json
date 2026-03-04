@@ -179,7 +179,17 @@
         "SUPERMERCADO": "Supermarché",
         "HOSPITAL": "Centre de santé / Hôpital",
         "TAXI": "Station de taxi",
-        "AUTOBUS": "Arrêt de bus"
+        "AUTOBUS": "Arrêt de bus",
+        "COCHE_ELECTRICO": "Borne de recharge électrique",
+        "ALQUILER_BICI": "Location de vélos",
+        "FUENTE": "Fontaine d'eau potable",
+        "POLICIA": "Police / Garde civile",
+        "TREN": "Gare ferroviaire",
+        "PICNIC": "Aire de pique-nique",
+        "BANO_NATURAL": "Zone naturelle de baignade",
+        "PLAYA": "Plage",
+        "PARQUE_INFANTIL": "Aire de jeux",
+        "DESFIBRILADOR": "Défibrillateur"
       }
     },
     "howToGetThere": "Comment s'y rendre",

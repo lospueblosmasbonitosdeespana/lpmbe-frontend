@@ -179,7 +179,17 @@
         "SUPERMERCADO": "Supermercato",
         "HOSPITAL": "Centro salute / Ospedale",
         "TAXI": "Fermata taxi",
-        "AUTOBUS": "Fermata autobus"
+        "AUTOBUS": "Fermata autobus",
+        "COCHE_ELECTRICO": "Ricarica veicoli elettrici",
+        "ALQUILER_BICI": "Noleggio biciclette",
+        "FUENTE": "Fontana d'acqua potabile",
+        "POLICIA": "Polizia / Guardia Civil",
+        "TREN": "Stazione ferroviaria",
+        "PICNIC": "Area picnic",
+        "BANO_NATURAL": "Zona naturale di balneazione",
+        "PLAYA": "Spiaggia",
+        "PARQUE_INFANTIL": "Parco giochi",
+        "DESFIBRILADOR": "Defibrillatore"
       }
     },
     "howToGetThere": "Come arrivare",

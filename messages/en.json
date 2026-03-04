@@ -179,7 +179,17 @@
         "SUPERMERCADO": "Supermarket",
         "HOSPITAL": "Health center / Hospital",
         "TAXI": "Taxi stand",
-        "AUTOBUS": "Bus stop"
+        "AUTOBUS": "Bus stop",
+        "COCHE_ELECTRICO": "Electric vehicle charging",
+        "ALQUILER_BICI": "Bicycle rental",
+        "FUENTE": "Drinking water fountain",
+        "POLICIA": "Police / Civil Guard",
+        "TREN": "Train station",
+        "PICNIC": "Picnic area",
+        "BANO_NATURAL": "Natural swimming area",
+        "PLAYA": "Beach",
+        "PARQUE_INFANTIL": "Playground",
+        "DESFIBRILADOR": "Defibrillator"
       }
     },
     "howToGetThere": "How to get there",
