@@ -59,19 +59,15 @@ export default function DashboardPuntos({ puntosPorTipo, pueblosPuntos = [] }: P
           </button>
 
           {open && pueblosPuntos.length > 0 && (
-            <div className="mt-2 space-y-1 pl-2">
+            <div className="mt-2 space-y-1 pl-2 max-w-md">
               {pueblosPuntos.map((p) => (
                 <div
                   key={p.puebloId}
-                  className="flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted/30"
+                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted/30"
                 >
-                  <div className="min-w-0">
-                    <span className="font-medium text-foreground">{p.nombre}</span>
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      {p.provincia}
-                    </span>
-                  </div>
-                  <span className="ml-4 shrink-0 font-semibold tabular-nums text-primary">
+                  <span className="font-medium text-foreground">{p.nombre}</span>
+                  <span className="text-xs text-muted-foreground">{p.provincia}</span>
+                  <span className="font-semibold tabular-nums text-primary">
                     {p.puntos} pts
                   </span>
                 </div>
