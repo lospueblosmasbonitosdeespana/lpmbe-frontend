@@ -446,17 +446,17 @@ export default function PuebloActions({
               semaforoProgramado.estado === "AMARILLO" ? "bg-amber-50" :
               "bg-green-50";
             return (
-              <div className={cn("mt-3 rounded-lg border px-4 py-3", borderColor, bgColor)}>
-                <div className="flex items-center gap-2">
+              <div className={cn("mt-3 w-full rounded-lg border px-4 py-3", borderColor, bgColor)}>
+                <div className="flex items-center justify-center gap-2">
                   <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", progConfig.dotClass)} />
                   <span className={cn("text-sm font-semibold", progConfig.color)}>
                     {t("semaforoScheduledAlert")}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-foreground/80">
+                <p className="mt-1 text-center text-sm text-foreground/80">
                   {semaforoProgramado.mensaje?.trim() || progConfig.mensajeDefault}
                 </p>
-                <span className="mt-1 block text-xs text-muted-foreground">
+                <span className="mt-1 block text-center text-xs text-muted-foreground">
                   {formatFecha(semaforoProgramado.inicio, locale)} – {formatFecha(semaforoProgramado.fin, locale)}
                 </span>
               </div>

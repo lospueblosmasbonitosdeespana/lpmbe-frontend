@@ -50,6 +50,11 @@ export async function POST(
   if (mensajePublico) payload.mensajePublico = mensajePublico;
   if (mensaje) payload.mensaje = mensaje;
 
+  // Flag para borrar solo el evento programado
+  if (body?.clearProgramado === true) {
+    payload.clearProgramado = true;
+  }
+
   // Backend espera ISO; aceptamos ISO o formato "dd/MM/yyyy, HH:mm" / "yyyy-MM-ddThh:mm"
   const toIso = (x: string): string | null => {
     if (!x || !x.trim()) return null;

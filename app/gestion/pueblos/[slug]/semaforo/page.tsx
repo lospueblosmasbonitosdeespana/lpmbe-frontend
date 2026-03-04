@@ -9,9 +9,9 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const ESTADO_LABEL: Record<string, { label: string; color: string; dot: string }> = {
-  VERDE:    { label: 'Verde',    color: 'bg-green-50 border-green-200 text-green-800',   dot: 'bg-green-500' },
+  VERDE:    { label: 'Verde',    color: 'bg-green-50 border-green-200 text-green-800',    dot: 'bg-green-500' },
   AMARILLO: { label: 'Amarillo', color: 'bg-yellow-50 border-yellow-200 text-yellow-800', dot: 'bg-yellow-400' },
-  ROJO:     { label: 'Rojo',     color: 'bg-red-50 border-red-200 text-red-800',         dot: 'bg-red-500' },
+  ROJO:     { label: 'Rojo',     color: 'bg-red-50 border-red-200 text-red-800',          dot: 'bg-red-500' },
 };
 
 function EstadoBadge({ estado }: { estado: string }) {
@@ -55,30 +55,29 @@ export default async function SemaforoPuebloPage({
   const estadoManual: string = s?.estado_manual ?? s?.estado ?? 'VERDE';
   // Estado efectivo (lo que ve el público ahora mismo)
   const estadoEfectivo: string = s?.estado ?? 'VERDE';
-  // Evento programado futuro
+  // Evento programado futuro (objeto con { estado, mensaje, inicio, fin })
   const programado: any = s?.programado ?? null;
 
-  const mensajePublicoActual: string = s?.mensaje_publico ?? '';
-  const mensajeActual: string = s?.mensaje ?? '';
-  const motivoActual: string = s?.motivo ?? '';
+  // Datos del estado manual
+  const mensajePublicoManual: string = s?.mensaje_publico ?? '';
+  const mensajeInternoManual: string = s?.mensaje ?? '';
   const caducaEn: string | null = s?.caduca_en ?? null;
   const ultimaActualizacion: string | null = s?.ultima_actualizacion ?? s?.ultimaActualizacion ?? null;
 
-  // Para el formulario: las fechas de programación son las del evento futuro
+  // Datos del evento programado (para pre-rellenar la pestaña de programación)
   const inicioProgramadoActual: string | null = s?.programado_inicio ?? null;
   const finProgramadoActual: string | null = s?.programado_fin ?? null;
+  // El motivo y mensaje del programado vienen en programado_data (raw) o en programado.mensaje
+  const mensajePublicoProgramado: string = programado?.mensaje ?? '';
+  // motivo viene en s.motivo si hay programado sin manual, o en programado_data
+  const motivoProgramado: string = !estadoManual || estadoManual === 'VERDE'
+    ? (s?.motivo ?? '')
+    : '';
 
-  // Determinar si hay override manual activo (estado manual != VERDE)
+  // Para el formulario manual: mensaje real del manual (no del programado)
   const hayManualActivo = estadoManual !== 'VERDE';
-  // El estado efectivo para el formulario de edición es el manual
-  const estadoFormulario = estadoManual;
-
-  // Si hay override manual y también hay programado futuro, el mensaje del formulario
-  // es el del manual (mensaje_publico); el programado tiene el suyo propio
-  const mensajePublicoFormulario = hayManualActivo
-    ? mensajePublicoActual
-    : (programado ? '' : mensajePublicoActual);
-  const motivoFormulario = hayManualActivo ? motivoActual : (programado ? '' : motivoActual);
+  const mensajePublicoFormularioManual = hayManualActivo ? mensajePublicoManual : '';
+  const mensajeInternoFormulario = mensajeInternoManual;
 
   return (
     <main className="mx-auto max-w-3xl p-6">
@@ -93,14 +92,14 @@ export default async function SemaforoPuebloPage({
           Estado actual
         </h2>
 
-        {/* Semáforo en tiempo real (lo que ve el público ahora) */}
+        {/* Semáforo en tiempo real */}
         <div className={`rounded-lg border p-4 ${ESTADO_LABEL[estadoEfectivo]?.color ?? 'bg-gray-50 border-gray-200'}`}>
           <div className="flex items-center justify-between gap-2">
             <span className="text-sm font-medium">Semáforo en tiempo real (público)</span>
             <EstadoBadge estado={estadoEfectivo} />
           </div>
-          {mensajePublicoActual && (
-            <p className="mt-2 text-sm">{mensajePublicoActual}</p>
+          {mensajePublicoManual && hayManualActivo && (
+            <p className="mt-2 text-sm">{mensajePublicoManual}</p>
           )}
           {ultimaActualizacion && (
             <p className="mt-2 text-xs opacity-70">
@@ -112,9 +111,12 @@ export default async function SemaforoPuebloPage({
               Expira automáticamente: {formatDate(caducaEn)}
             </p>
           )}
+          {!hayManualActivo && !programado && (
+            <p className="mt-2 text-xs opacity-60 italic">Sin incidencias activas.</p>
+          )}
         </div>
 
-        {/* Evento programado futuro (si existe) */}
+        {/* Evento programado futuro */}
         {programado && (
           <div className={`rounded-lg border p-4 ${ESTADO_LABEL[programado.estado]?.color ?? 'bg-gray-50 border-gray-200'}`}>
             <div className="flex items-center justify-between gap-2">
@@ -130,11 +132,8 @@ export default async function SemaforoPuebloPage({
           </div>
         )}
 
-        {/* Sin actividad */}
-        {estadoEfectivo === 'VERDE' && !programado && (
-          <p className="text-sm text-gray-500 italic">
-            Sin eventos activos ni programados.
-          </p>
+        {!hayManualActivo && !programado && (
+          <p className="text-sm text-gray-400 italic">Sin eventos activos ni programados.</p>
         )}
       </section>
 
@@ -152,12 +151,18 @@ export default async function SemaforoPuebloPage({
         <SemaforoForm
           puebloId={pueblo.id}
           slug={slug}
-          estadoActual={estadoFormulario}
-          mensajeActual={mensajeActual}
-          mensajePublicoActual={mensajePublicoFormulario}
-          motivoActual={motivoFormulario}
+          // Manual
+          estadoManualActual={estadoManual}
+          mensajePublicoManualActual={mensajePublicoFormularioManual}
+          mensajeInternoActual={mensajeInternoFormulario}
+          hayManualActivo={hayManualActivo}
+          // Programado
+          estadoProgramadoActual={programado?.estado ?? 'AMARILLO'}
+          mensajePublicoProgramadoActual={mensajePublicoProgramado}
+          motivoProgramadoActual={motivoProgramado}
           inicioProgramadoActual={inicioProgramadoActual}
           finProgramadoActual={finProgramadoActual}
+          hayProgramadoActivo={!!programado}
           key={`${pueblo.id}-${ultimaActualizacion ?? 'na'}`}
         />
       </section>
