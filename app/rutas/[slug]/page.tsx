@@ -128,6 +128,7 @@ export default async function RutaPage({
   const { slug } = await params;
   const locale = await getLocale();
   const t = await getTranslations("rutas");
+  const tPueblo = await getTranslations("puebloPage");
 
   // 1. Resolver slug → ruta
   const rutas = await getRutas(locale);
@@ -186,8 +187,8 @@ export default async function RutaPage({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Inicio", item: base },
-      { "@type": "ListItem", position: 2, name: "Rutas", item: `${base}/rutas` },
+      { "@type": "ListItem", position: 1, name: tPueblo("breadcrumbHome"), item: base },
+      { "@type": "ListItem", position: 2, name: t("title"), item: `${base}/rutas` },
       { "@type": "ListItem", position: 3, name: ruta.titulo, item: `${base}${pathRuta}` },
     ],
   };
@@ -392,7 +393,7 @@ export default async function RutaPage({
       {/* Lista de pueblos (legacy, solo si no hay paradas) */}
       {paradas.length === 0 && pueblosOrdenados.length > 0 && (
         <section className="mb-8">
-          <h2 className="mb-4 text-2xl font-semibold">Pueblos de la ruta</h2>
+          <h2 className="mb-4 text-2xl font-semibold">{t("villagesOfRoute")}</h2>
           <div className="space-y-3">
             {pueblosOrdenados.map((pueblo, idx) => (
               <Link

@@ -69,6 +69,7 @@ export async function generateMetadata({
   const mx = (mxItem?.multiexperiencia ?? mxItem ?? null) as Multiexperiencia | null;
   
   const tSeo = await getTranslations("seo");
+  const tPueblo = await getTranslations("puebloPage");
   const expTitle = mx?.titulo ?? t("experienceFallback");
   const title = `${expTitle} – ${pueblo.nombre}${tSeo("siteNameSuffix")}`;
   const heroImage =
@@ -160,8 +161,8 @@ export default async function MultiexperienciaPage({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Inicio", item: base },
-      { "@type": "ListItem", position: 2, name: "Pueblos", item: `${base}/pueblos` },
+      { "@type": "ListItem", position: 1, name: tPueblo("breadcrumbHome"), item: base },
+      { "@type": "ListItem", position: 2, name: tPueblo("breadcrumbPueblos"), item: `${base}/pueblos` },
       { "@type": "ListItem", position: 3, name: pueblo.nombre, item: `${base}/pueblos/${pueblo.slug}` },
       { "@type": "ListItem", position: 4, name: mx.titulo, item: `${base}/pueblos/${pueblo.slug}/experiencias/${mxSlug}` },
     ],
@@ -202,7 +203,7 @@ export default async function MultiexperienciaPage({
       {/* Descripción */}
       <section className="mt-8">
         <p className="text-foreground">
-          {mx.descripcion ?? "Descripción próximamente."}
+          {mx.descripcion ?? t("descriptionComingSoon")}
         </p>
       </section>
 

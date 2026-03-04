@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { setLocale } from '@/app/actions/locale';
 
 const LOCALES: { code: string; label: string }[] = [
@@ -20,6 +21,7 @@ export function LocaleSwitcher({ currentLocale, variant = 'footer' }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations('nav');
 
   const handleChange = (code: string) => {
     if (code === currentLocale) return;
@@ -44,7 +46,7 @@ export function LocaleSwitcher({ currentLocale, variant = 'footer' }: Props) {
           onChange={(e) => handleChange(e.target.value)}
           disabled={isPending}
           className="rounded border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-border dark:bg-card dark:text-foreground"
-          aria-label="Idioma"
+          aria-label={t('languageLabel')}
         >
           {LOCALES.map(({ code, label }) => (
             <option key={code} value={code}>
@@ -58,7 +60,7 @@ export function LocaleSwitcher({ currentLocale, variant = 'footer' }: Props) {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-sm text-white/60">Idioma:</span>
+      <span className="text-sm text-white/60">{t('languageLabel')}:</span>
       <div className="flex flex-wrap gap-1">
         {LOCALES.map(({ code, label }) => (
           <button

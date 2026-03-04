@@ -292,7 +292,8 @@
     "rutas": "Rutas",
     "myAccount": "Mi cuenta",
     "management": "Gestión",
-    "login": "Entrar"
+    "login": "Entrar",
+    "languageLabel": "Idioma"
   },
   "footer": {
     "explore": "Explorar",
@@ -348,7 +349,8 @@
     "viewVillage": "Ver pueblo →",
     "kmFromStart": "km {km} desde el inicio",
     "stopN": "Parada {n}",
-    "tipsTitle": "Tips de la ruta"
+    "tipsTitle": "Tips de la ruta",
+    "villagesOfRoute": "Pueblos de la ruta"
   },
   "certificationsByYear": {
     "subtitle": "Cada año nuevos pueblos obtienen la certificación de Los Pueblos Más Bonitos de España.",
@@ -360,6 +362,19 @@
     "reincorporaciones": "reincorporaciones",
     "goTo": "Ir a:",
     "breadcrumbPueblos": "Pueblos"
+  },
+  "gestion": {
+    "tabUsuarios": "Usuarios",
+    "tabApp": "📱 App",
+    "tabInterno": "Interno",
+    "tabPueblos": "Pueblos",
+    "tabWeb": "🌐 Web",
+    "tabPuntosPueblos": "Puntos Pueblos",
+    "loading": "Cargando…",
+    "datosTitle": "Datos · Métricas",
+    "datosDescription": "Panel de métricas de la plataforma: usuarios, pueblos y analítica web.",
+    "backToAssociation": "← Volver a Asociación",
+    "puntosPueblosLink": "Puntos Pueblos"
   },
   "planifica": {
     "creaRuta": {

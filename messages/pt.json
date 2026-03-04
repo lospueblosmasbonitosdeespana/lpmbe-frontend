@@ -292,7 +292,8 @@
     "rutas": "Rotas",
     "myAccount": "A minha conta",
     "management": "Gestão",
-    "login": "Entrar"
+    "login": "Entrar",
+    "languageLabel": "Língua"
   },
   "footer": {
     "explore": "Explorar",
@@ -348,7 +349,8 @@
     "viewVillage": "Ver aldeia →",
     "kmFromStart": "km {km} desde o início",
     "stopN": "Paragem {n}",
-    "tipsTitle": "Dicas de percurso"
+    "tipsTitle": "Dicas de percurso",
+    "villagesOfRoute": "Aldeias ao longo do percurso"
   },
   "certificationsByYear": {
     "subtitle": "Todos os anos, novas aldeias obtêm a certificação de Aldeias Mais Bonitas de Espanha.",
@@ -1421,5 +1423,18 @@
     "puebloDescriptionFallback": "Informações, mapa, fotos, pontos de interesse e experiências da aldeia.",
     "rutaDescriptionFallback": "Percurso turístico pelas mais belas aldeias de Espanha.",
     "mxDescriptionFallback": "Detalhes da experiência e das suas paragens."
+  },
+  "gestion": {
+    "tabUsuarios": "Utilizadores",
+    "tabApp": "📱 Aplicação",
+    "tabInterno": "Interno",
+    "tabPueblos": "Aldeias",
+    "tabWeb": "🌐 Web",
+    "tabPuntosPueblos": "Pontos Aldeias",
+    "loading": "Carregando...",
+    "datosTitle": "Dados - Métricas",
+    "datosDescription": "Painel de métricas da plataforma: utilizadores, aldeias e análise da Web.",
+    "backToAssociation": "← Voltar à parceria",
+    "puntosPueblosLink": "Pontos Aldeias"
   }
 }

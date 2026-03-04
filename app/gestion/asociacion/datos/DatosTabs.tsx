@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, lazy, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 import ActividadDashboard from './ActividadDashboard';
 
 const PueblosDashboard = lazy(() => import('./PueblosDashboard'));
@@ -12,12 +13,12 @@ const InternoDashboard = lazy(() => import('./InternoDashboard'));
 const PuntosPueblosClient = lazy(() => import('./puntos-pueblos/PuntosPueblosClient'));
 
 const TABS = [
-  { key: 'usuarios' as const, label: 'Usuarios' },
-  { key: 'app' as const, label: '📱 App' },
-  { key: 'interno' as const, label: 'Interno' },
-  { key: 'pueblos' as const, label: 'Pueblos' },
-  { key: 'web' as const, label: '🌐 Web' },
-  { key: 'puntos' as const, label: 'Puntos Pueblos' },
+  { key: 'usuarios' as const, labelKey: 'tabUsuarios' as const },
+  { key: 'app' as const, labelKey: 'tabApp' as const },
+  { key: 'interno' as const, labelKey: 'tabInterno' as const },
+  { key: 'pueblos' as const, labelKey: 'tabPueblos' as const },
+  { key: 'web' as const, labelKey: 'tabWeb' as const },
+  { key: 'puntos' as const, labelKey: 'tabPuntosPueblos' as const },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
@@ -29,7 +30,7 @@ function Spinner() {
         <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
         <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="4" strokeLinecap="round" className="opacity-75" />
       </svg>
-      Cargando…
+      {t('loading')}
     </div>
   );
 }
@@ -38,28 +39,29 @@ export default function DatosTabs({ defaultTab }: { defaultTab: TabKey }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [active, setActive] = useState<TabKey>(defaultTab);
+  const t = useTranslations('gestion');
 
-  const switchTab = (t: TabKey) => {
-    setActive(t);
+  const switchTab = (tab: TabKey) => {
+    setActive(tab);
     const params = new URLSearchParams(searchParams.toString());
-    params.set('tab', t);
+    params.set('tab', tab);
     router.replace(`?${params.toString()}`, { scroll: false });
   };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-1 rounded-lg bg-muted p-1">
-        {TABS.map((t) => (
+        {TABS.map((tab) => (
           <button
-            key={t.key}
-            onClick={() => switchTab(t.key)}
+            key={tab.key}
+            onClick={() => switchTab(tab.key)}
             className={`flex-1 rounded-md px-3 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${
-              active === t.key
+              active === tab.key
                 ? 'bg-card text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            {t.label}
+            {t(tab.labelKey)}
           </button>
         ))}
       </div>

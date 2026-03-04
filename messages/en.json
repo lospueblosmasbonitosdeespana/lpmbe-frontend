@@ -292,7 +292,8 @@
     "rutas": "Routes",
     "myAccount": "My account",
     "management": "Management",
-    "login": "Enter"
+    "login": "Enter",
+    "languageLabel": "Language"
   },
   "footer": {
     "explore": "Explore",
@@ -348,7 +349,8 @@
     "viewVillage": "See village →",
     "kmFromStart": "km {km} from start",
     "stopN": "Stop {n}",
-    "tipsTitle": "Route tips"
+    "tipsTitle": "Route tips",
+    "villagesOfRoute": "Towns along the route"
   },
   "certificationsByYear": {
     "subtitle": "Every year new villages obtain the Most Beautiful Villages of Spain certification.",
@@ -1421,5 +1423,18 @@
     "puebloDescriptionFallback": "Information, map, photos, points of interest and experiences of the town.",
     "rutaDescriptionFallback": "Tourist route through the most beautiful villages in Spain.",
     "mxDescriptionFallback": "Details of the experience and its stops."
+  },
+  "gestion": {
+    "tabUsuarios": "Users",
+    "tabApp": "📱 App",
+    "tabInterno": "Internal",
+    "tabPueblos": "Villages",
+    "tabWeb": "🌐 Web",
+    "tabPuntosPueblos": "Points Villages",
+    "loading": "Loading...",
+    "datosTitle": "Data - Metrics",
+    "datosDescription": "Platform metrics panel: users, towns and web analytics.",
+    "backToAssociation": "← Back to Association",
+    "puntosPueblosLink": "Points Villages"
   }
 }

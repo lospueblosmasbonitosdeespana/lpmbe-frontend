@@ -292,7 +292,8 @@
     "rutas": "Itinéraires",
     "myAccount": "Mon compte",
     "management": "Gestion",
-    "login": "Entrer"
+    "login": "Entrer",
+    "languageLabel": "Langue"
   },
   "footer": {
     "explore": "Explorer",
@@ -348,7 +349,8 @@
     "viewVillage": "Voir le village →",
     "kmFromStart": "km {km} du départ",
     "stopN": "Stop {n}",
-    "tipsTitle": "Conseils pour l'itinéraire"
+    "tipsTitle": "Conseils pour l'itinéraire",
+    "villagesOfRoute": "Villages le long de l'itinéraire"
   },
   "certificationsByYear": {
     "subtitle": "Chaque année, de nouveaux villages obtiennent la certification \"Plus beaux villages d'Espagne\".",
@@ -1421,5 +1423,18 @@
     "puebloDescriptionFallback": "Informations, carte, photos, points d'intérêt et expériences du village.",
     "rutaDescriptionFallback": "Route touristique traversant les plus beaux villages d'Espagne.",
     "mxDescriptionFallback": "Détails de l'expérience et des arrêts."
+  },
+  "gestion": {
+    "tabUsuarios": "Utilisateurs",
+    "tabApp": "📱 App",
+    "tabInterno": "Interne",
+    "tabPueblos": "Villages",
+    "tabWeb": "🌐 Web",
+    "tabPuntosPueblos": "Points Villages",
+    "loading": "Chargement...",
+    "datosTitle": "Données - Métriques",
+    "datosDescription": "Panneau de mesures de la plateforme : utilisateurs, villages et analyse web.",
+    "backToAssociation": "← Retour au partenariat",
+    "puntosPueblosLink": "Points Villages"
   }
 }

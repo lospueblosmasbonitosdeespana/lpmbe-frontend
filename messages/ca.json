@@ -292,7 +292,8 @@
     "rutas": "Rutes",
     "myAccount": "El meu compte",
     "management": "Gestió",
-    "login": "Entrar"
+    "login": "Entrar",
+    "languageLabel": "Llengua"
   },
   "footer": {
     "explore": "Explora",
@@ -348,7 +349,8 @@
     "viewVillage": "Vegeu el poble →",
     "kmFromStart": "km {km} des de l'inici",
     "stopN": "Atura {n}",
-    "tipsTitle": "Consells per a la ruta"
+    "tipsTitle": "Consells per a la ruta",
+    "villagesOfRoute": "Pobles al llarg de la ruta"
   },
   "certificationsByYear": {
     "subtitle": "Cada any, nous pobles obtenen la certificació de Los Pueblos Más Bonitos de España (Els Pobles Més Bonics d'Espanya).",
@@ -634,7 +636,7 @@
     "shippingLabel": "Enviament",
     "estimated": "(estimat)",
     "calculating": "Calculant...",
-    "free": "Gratis",
+    "free": "Gratuït",
     "shippingCalcNote": "El cost exacte es calcularà quan seleccioneu l'adreça de lliurament.",
     "discountsApplied": "Descomptes aplicats",
     "discountTotal": "Total amb descompte: {amount} €",
@@ -1421,5 +1423,18 @@
     "puebloDescriptionFallback": "Informació, mapa, fotografies, punts d'interès i experiències al poble.",
     "rutaDescriptionFallback": "Ruta turística pels pobles més bonics d'Espanya.",
     "mxDescriptionFallback": "Detalls de l'experiència i de les seves parades."
+  },
+  "gestion": {
+    "tabUsuarios": "Usuaris",
+    "tabApp": "📱 Aplicació",
+    "tabInterno": "Intern",
+    "tabPueblos": "Pobles",
+    "tabWeb": "🌐 Lloc web",
+    "tabPuntosPueblos": "Punts de ciutats",
+    "loading": "Carregant...",
+    "datosTitle": "Dades · Mètriques",
+    "datosDescription": "Panell de mètriques de la plataforma: usuaris, ciutats i anàlisi web.",
+    "backToAssociation": "← Tornar a l'Associació",
+    "puntosPueblosLink": "Punts de ciutats"
   }
 }

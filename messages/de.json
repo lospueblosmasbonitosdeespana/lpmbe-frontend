@@ -292,7 +292,8 @@
     "rutas": "Routen",
     "myAccount": "Mein Konto",
     "management": "Verwaltung",
-    "login": "Eingabe"
+    "login": "Eingabe",
+    "languageLabel": "Sprache"
   },
   "footer": {
     "explore": "Erkunden Sie",
@@ -348,7 +349,8 @@
     "viewVillage": "Siehe Dorf →.",
     "kmFromStart": "km {km} vom Start",
     "stopN": "Stopp {n}",
-    "tipsTitle": "Tipps zur Route"
+    "tipsTitle": "Tipps zur Route",
+    "villagesOfRoute": "Dörfer entlang der Route"
   },
   "certificationsByYear": {
     "subtitle": "Jedes Jahr erhalten neue Dörfer die Auszeichnung \"Schönste Dörfer Spaniens\".",
@@ -1421,5 +1423,18 @@
     "puebloDescriptionFallback": "Informationen, Karte, Fotos, Sehenswürdigkeiten und Erfahrungen mit dem Dorf.",
     "rutaDescriptionFallback": "Touristische Route durch die schönsten Dörfer Spaniens.",
     "mxDescriptionFallback": "Einzelheiten über das Erlebnis und seine Stationen."
+  },
+  "gestion": {
+    "tabUsuarios": "Benutzer",
+    "tabApp": "📱 App",
+    "tabInterno": "Intern",
+    "tabPueblos": "Dörfer",
+    "tabWeb": "🌐 Web",
+    "tabPuntosPueblos": "Punkte Dörfer",
+    "loading": "Laden...",
+    "datosTitle": "Daten - Metriken",
+    "datosDescription": "Metrik-Panel der Plattform: Nutzer, Dörfer und Webanalyse.",
+    "backToAssociation": "← Zurück zur Partnerschaft",
+    "puntosPueblosLink": "Punkte Dörfer"
   }
 }

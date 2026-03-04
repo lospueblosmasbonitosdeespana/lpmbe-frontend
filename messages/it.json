@@ -292,7 +292,8 @@
     "rutas": "Percorsi",
     "myAccount": "Il mio account",
     "management": "Gestione",
-    "login": "Entrare"
+    "login": "Entrare",
+    "languageLabel": "Lingua"
   },
   "footer": {
     "explore": "Esplorare",
@@ -348,7 +349,8 @@
     "viewVillage": "Vedere il villaggio →",
     "kmFromStart": "km {km} dalla partenza",
     "stopN": "Stop {n}",
-    "tipsTitle": "Suggerimenti per il percorso"
+    "tipsTitle": "Suggerimenti per il percorso",
+    "villagesOfRoute": "Villaggi lungo il percorso"
   },
   "certificationsByYear": {
     "subtitle": "Ogni anno nuovi villaggi ottengono la certificazione di Villaggi più belli di Spagna.",
@@ -1421,5 +1423,18 @@
     "puebloDescriptionFallback": "Informazioni, mappa, foto, punti di interesse ed esperienze del villaggio.",
     "rutaDescriptionFallback": "Itinerario turistico attraverso i più bei villaggi della Spagna.",
     "mxDescriptionFallback": "Dettagli dell'esperienza e delle sue tappe."
+  },
+  "gestion": {
+    "tabUsuarios": "Utenti",
+    "tabApp": "📱 App",
+    "tabInterno": "Interno",
+    "tabPueblos": "Villaggi",
+    "tabWeb": "🌐 Web",
+    "tabPuntosPueblos": "Punti Villaggi",
+    "loading": "Caricamento...",
+    "datosTitle": "Dati - Metriche",
+    "datosDescription": "Pannello delle metriche della piattaforma: utenti, villaggi e analisi web.",
+    "backToAssociation": "← Torna alla partnership",
+    "puntosPueblosLink": "Punti Villaggi"
   }
 }
