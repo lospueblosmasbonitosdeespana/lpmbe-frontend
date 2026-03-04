@@ -183,6 +183,16 @@ export default function SemaforoForm({
     setMotivo('');
     setInicioProgramado('');
     setFinProgramado('');
+    setError(null);
+    // Enviar al backend para que el semáforo quede VERDE y se borre programación/manual
+    saveSemaforo({
+      estado: 'VERDE',
+      mensaje: null,
+      mensajePublico: null,
+      motivo: null,
+      inicioProgramado: null,
+      finProgramado: null,
+    });
   }
 
   function handleBorrarMensaje() {
