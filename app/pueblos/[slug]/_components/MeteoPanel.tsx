@@ -318,25 +318,25 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
 
         {next3.length > 0 && (
           <div>
-            <Title as="h4" className="mb-3 text-base">{t("next3Days")}</Title>
-            <div className="flex rounded-lg border border-border bg-background">
+            <Title as="h4" className="mb-2 text-base">{t("next3Days")}</Title>
+            <div className="flex rounded-lg border border-border bg-background divide-x divide-border">
               {next3.map((d) => (
-                <div key={d.date} className="flex-1 border-l border-border px-4 py-3 first:border-l-0">
-                  <p className="text-sm font-medium text-foreground">{formatDay(d.date)}</p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <WeatherIcon code={d.weatherCode} className="h-9 w-9 shrink-0" />
-                    <p className="text-sm text-muted-foreground">{codeToText(d.weatherCode)}</p>
+                <div key={d.date} className="flex-1 px-3 py-2.5">
+                  <p className="text-xs font-semibold text-foreground uppercase tracking-wide">{formatDay(d.date)}</p>
+                  <div className="mt-1.5 flex items-center gap-1.5">
+                    <WeatherIcon code={d.weatherCode} className="h-6 w-6 shrink-0" />
+                    <span className="text-xs text-muted-foreground leading-tight">{codeToText(d.weatherCode)}</span>
                   </div>
-                  <p className="mt-1">
-                    <span className="text-base font-semibold">{d.tMaxC == null ? "—" : `${Math.round(d.tMaxC)}°`}</span>
-                    <span className="text-sm text-muted-foreground"> / {d.tMinC == null ? "—" : `${Math.round(d.tMinC)}°`}</span>
-                  </p>
-                  <p className="mt-1 flex items-center gap-1 text-xs text-blue-500">
-                    <DropletIcon className="h-3 w-3" />
-                    <span>
-                      {d.precipitationMm == null ? "—" : `${Math.round(d.precipitationMm)}mm`} ({d.precipProbPct == null ? "—" : `${Math.round(d.precipProbPct)}%`})
-                    </span>
-                  </p>
+                  <div className="mt-1.5 flex items-center justify-between gap-1">
+                    <p>
+                      <span className="text-sm font-semibold">{d.tMaxC == null ? "—" : `${Math.round(d.tMaxC)}°`}</span>
+                      <span className="text-xs text-muted-foreground"> / {d.tMinC == null ? "—" : `${Math.round(d.tMinC)}°`}</span>
+                    </p>
+                    <p className="flex items-center gap-0.5 text-xs text-blue-500">
+                      <DropletIcon className="h-3 w-3" />
+                      <span>{d.precipitationMm == null ? "—" : `${Math.round(d.precipitationMm)}mm`} ({d.precipProbPct == null ? "—" : `${Math.round(d.precipProbPct)}%`})</span>
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
