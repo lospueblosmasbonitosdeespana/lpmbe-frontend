@@ -152,6 +152,7 @@
     "semaforoNoDisponible": "Traffic light unavailable",
     "semaforoUpdated": "Updated",
     "semaforoScheduled": "Scheduled",
+    "semaforoScheduledAlert": "Planned alert",
     "semaforoValidUntil": "Valid until",
     "semaforoUpdatedNow": "Just now",
     "semaforoUpdatedMin": "{n} min ago",

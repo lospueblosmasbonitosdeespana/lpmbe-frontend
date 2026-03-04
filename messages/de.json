@@ -152,6 +152,7 @@
     "semaforoNoDisponible": "Ampel nicht verfügbar",
     "semaforoUpdated": "Aktualisiert",
     "semaforoScheduled": "Geplant",
+    "semaforoScheduledAlert": "Geplante Warnung",
     "semaforoValidUntil": "Gültig bis",
     "semaforoUpdatedNow": "Gerade eben",
     "semaforoUpdatedMin": "Vor {n} Min.",

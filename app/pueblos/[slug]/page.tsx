@@ -462,24 +462,23 @@ export default async function PuebloPage({
     href: `/noticias/${n.id}`,
   }));
 
-  // Semáforo: usar datos del API (estado, mensaje_publico, fechas)
+  // Semáforo: el backend ya devuelve estado efectivo (VERDE si programado futuro)
+  // y un campo `programado` con los datos del evento futuro si aplica
   const s = (puebloSafe as any).semaforo;
   const semaforoPueblo = s
     ? {
         estado: (s.estado ?? "VERDE") as "VERDE" | "AMARILLO" | "ROJO",
         mensaje: s.mensaje_publico ?? s.mensaje ?? null,
         ultima_actualizacion: s.ultima_actualizacion ?? null,
-        programado_inicio: s.programado_inicio ?? null,
-        programado_fin: s.programado_fin ?? null,
         caduca_en: s.caduca_en ?? null,
+        programado: s.programado ?? null,
       }
     : {
         estado: "VERDE" as const,
         mensaje: null,
         ultima_actualizacion: null,
-        programado_inicio: null,
-        programado_fin: null,
         caduca_en: null,
+        programado: null,
       };
 
   // Obtener bandera de la comunidad
@@ -584,9 +583,8 @@ export default async function PuebloPage({
         lng={puebloSafe.lng}
         semaforoEstado={semaforoPueblo.estado ?? "VERDE"}
         semaforoMensaje={semaforoPueblo.mensaje ?? null}
-        semaforoProgramadoInicio={semaforoPueblo.programado_inicio ?? null}
-        semaforoProgramadoFin={semaforoPueblo.programado_fin ?? null}
         semaforoCaducaEn={semaforoPueblo.caduca_en ?? null}
+        semaforoProgramado={semaforoPueblo.programado ?? null}
       />
 
       {/* RRSS DEL PUEBLO */}

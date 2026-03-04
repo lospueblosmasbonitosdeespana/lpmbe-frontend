@@ -152,6 +152,7 @@
     "semaforoNoDisponible": "Semaforo non disponibile",
     "semaforoUpdated": "Aggiornato",
     "semaforoScheduled": "Programmato",
+    "semaforoScheduledAlert": "Attenzione prevista",
     "semaforoValidUntil": "Valido fino al",
     "semaforoUpdatedNow": "Proprio ora",
     "semaforoUpdatedMin": "{n} min fa",

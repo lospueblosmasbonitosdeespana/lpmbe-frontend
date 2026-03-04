@@ -7,6 +7,13 @@ import { cn } from "@/lib/utils";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 
+type SemaforoProgramado = {
+  estado: "VERDE" | "AMARILLO" | "ROJO";
+  mensaje: string | null;
+  inicio: string | Date;
+  fin: string | Date;
+};
+
 type PuebloActionsProps = {
   nombre: string;
   puebloSlug: string;
@@ -15,9 +22,8 @@ type PuebloActionsProps = {
   mapAnchorId?: string;
   semaforoEstado?: "VERDE" | "AMARILLO" | "ROJO" | null;
   semaforoMensaje?: string | null;
-  semaforoProgramadoInicio?: string | Date | null;
-  semaforoProgramadoFin?: string | Date | null;
   semaforoCaducaEn?: string | Date | null;
+  semaforoProgramado?: SemaforoProgramado | null;
 };
 
 type ActionBarState = "idle" | "loading" | "success" | "error";
@@ -223,9 +229,8 @@ export default function PuebloActions({
   mapAnchorId = "mapa",
   semaforoEstado,
   semaforoMensaje,
-  semaforoProgramadoInicio,
-  semaforoProgramadoFin,
   semaforoCaducaEn,
+  semaforoProgramado,
 }: PuebloActionsProps) {
   const t = useTranslations("pueblo");
   const locale = useLocale();
@@ -392,10 +397,9 @@ export default function PuebloActions({
             />
           </div>
 
-          {/* Semáforo turístico - V0: label + mensaje + actualizado */}
+          {/* Semáforo turístico: estado en tiempo real */}
           {semaforoConfig && (
             <div className="mt-4 flex items-start justify-center gap-4 rounded-lg border border-border bg-card px-4 py-4">
-              {/* Indicador visual del semáforo */}
               <div className="flex flex-col gap-1 rounded-full bg-foreground/90 p-1.5 shrink-0">
                 <div className={cn(
                   "h-3 w-3 rounded-full transition-opacity",
@@ -410,7 +414,6 @@ export default function PuebloActions({
                   semaforoEstado === "VERDE" ? "bg-green-500" : "bg-green-500/20"
                 )} />
               </div>
-              {/* Texto: label + mensaje + actualizado */}
               <div className="flex-1 min-w-0 max-w-2xl">
                 <div className="flex items-center gap-2">
                   <span className={cn("text-sm font-semibold", semaforoConfig.color)}>
@@ -421,12 +424,7 @@ export default function PuebloActions({
                 <p className="mt-0.5 text-sm text-foreground/80">
                   {semaforoMensaje?.trim() || semaforoConfig.mensajeDefault}
                 </p>
-                {(semaforoProgramadoInicio && semaforoProgramadoFin) && (
-                  <span className="mt-1 block text-xs text-muted-foreground">
-                    {t("semaforoScheduled")}: {formatFecha(semaforoProgramadoInicio, locale)} – {formatFecha(semaforoProgramadoFin, locale)}
-                  </span>
-                )}
-                {!semaforoProgramadoInicio && semaforoCaducaEn && (
+                {semaforoCaducaEn && (
                   <span className="mt-1 block text-xs text-muted-foreground">
                     {t("semaforoValidUntil")}: {formatFecha(semaforoCaducaEn, locale)}
                   </span>
@@ -434,6 +432,36 @@ export default function PuebloActions({
               </div>
             </div>
           )}
+
+          {/* Aviso de semáforo programado para el futuro */}
+          {semaforoProgramado && (() => {
+            const progConfig = getSemaforoConfig(semaforoProgramado.estado, t);
+            if (!progConfig) return null;
+            const borderColor =
+              semaforoProgramado.estado === "ROJO" ? "border-red-300" :
+              semaforoProgramado.estado === "AMARILLO" ? "border-amber-300" :
+              "border-green-300";
+            const bgColor =
+              semaforoProgramado.estado === "ROJO" ? "bg-red-50" :
+              semaforoProgramado.estado === "AMARILLO" ? "bg-amber-50" :
+              "bg-green-50";
+            return (
+              <div className={cn("mt-3 rounded-lg border px-4 py-3", borderColor, bgColor)}>
+                <div className="flex items-center gap-2">
+                  <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", progConfig.dotClass)} />
+                  <span className={cn("text-sm font-semibold", progConfig.color)}>
+                    {t("semaforoScheduledAlert")}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-foreground/80">
+                  {semaforoProgramado.mensaje?.trim() || progConfig.mensajeDefault}
+                </p>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  {formatFecha(semaforoProgramado.inicio, locale)} – {formatFecha(semaforoProgramado.fin, locale)}
+                </span>
+              </div>
+            );
+          })()}
         </Container>
       </Section>
 

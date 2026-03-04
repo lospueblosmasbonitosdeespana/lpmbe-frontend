@@ -152,6 +152,7 @@
     "semaforoNoDisponible": "Feu non disponible",
     "semaforoUpdated": "Mis à jour",
     "semaforoScheduled": "Programmé",
+    "semaforoScheduledAlert": "Attention prévue",
     "semaforoValidUntil": "Valable jusqu'au",
     "semaforoUpdatedNow": "À l'instant",
     "semaforoUpdatedMin": "Il y a {n} min",
