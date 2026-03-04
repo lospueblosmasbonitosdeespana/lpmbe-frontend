@@ -67,16 +67,13 @@ export default async function SemaforoPuebloPage({
   // Datos del evento programado (para pre-rellenar la pestaña de programación)
   const inicioProgramadoActual: string | null = s?.programado_inicio ?? null;
   const finProgramadoActual: string | null = s?.programado_fin ?? null;
-  // El motivo y mensaje del programado vienen en programado_data (raw) o en programado.mensaje
+  // El motivo y mensaje del programado vienen en programado.motivo / programado.mensaje
   const mensajePublicoProgramado: string = programado?.mensaje ?? '';
-  // motivo viene en s.motivo si hay programado sin manual, o en programado_data
-  const motivoProgramado: string = !estadoManual || estadoManual === 'VERDE'
-    ? (s?.motivo ?? '')
-    : '';
+  const motivoProgramado: string = programado?.motivo ?? '';
 
-  // Para el formulario manual: mensaje real del manual (no del programado)
+  // Para el formulario manual: siempre pre-rellenar con los datos manuales reales
   const hayManualActivo = estadoManual !== 'VERDE';
-  const mensajePublicoFormularioManual = hayManualActivo ? mensajePublicoManual : '';
+  const mensajePublicoFormularioManual = mensajePublicoManual; // siempre (incluso verde para editar)
   const mensajeInternoFormulario = mensajeInternoManual;
 
   return (

@@ -94,6 +94,7 @@ export default function SemaforoForm({
   estadoManualActual,
   mensajePublicoManualActual,
   mensajeInternoActual,
+  hayManualActivo,
   estadoProgramadoActual,
   mensajePublicoProgramadoActual,
   motivoProgramadoActual,
@@ -103,9 +104,9 @@ export default function SemaforoForm({
 }: SemaforoFormProps) {
   const router = useRouter();
 
-  // Tab activo
+  // Tab activo: manual si hay override manual, programado si solo hay evento futuro
   const [tab, setTab] = useState<'manual' | 'programado'>(
-    hayProgramadoActivo ? 'programado' : 'manual'
+    hayManualActivo ? 'manual' : (hayProgramadoActivo ? 'programado' : 'manual')
   );
 
   // Estado del formulario manual
