@@ -1,7 +1,7 @@
-import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
+import { getLocale } from 'next-intl/server';
 import BackButton from '@/app/c/[slug]/BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
@@ -9,7 +9,7 @@ import { getApiUrl } from '@/lib/api';
 import { getCanonicalUrl, getLocaleAlternates } from '@/lib/seo';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 
-const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it'] as const;
+const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'] as const;
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 function isHtmlContent(content: string): boolean {
@@ -34,9 +34,8 @@ type Evento = {
 };
 
 async function fetchEvento(slug: string): Promise<Evento | null> {
-  const cookieStore = await cookies();
-  const locale = cookieStore.get('NEXT_LOCALE')?.value;
-  const lang = locale && SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? locale : 'es';
+  const locale = await getLocale();
+  const lang = SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? (locale as SupportedLocale) : 'es';
 
   const API_BASE = getApiUrl();
   const res = await fetch(`${API_BASE}/public/eventos/${encodeURIComponent(slug)}?lang=${lang}`, {
@@ -94,9 +93,9 @@ export default async function EventoPage({
 
   if (!evento) notFound();
 
-  const cookieStore = await cookies();
-  const locale = cookieStore.get('NEXT_LOCALE')?.value ?? 'es';
-  const fechaFormateada = evento.createdAt ? formatDateTimeEs(evento.createdAt, locale) : '';
+  const locale = await getLocale();
+  const lang = SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? (locale as SupportedLocale) : 'es';
+  const fechaFormateada = evento.createdAt ? formatDateTimeEs(evento.createdAt, lang) : '';
 
   return (
     <main style={{ padding: '40px 20px' }}>
@@ -129,7 +128,7 @@ export default async function EventoPage({
                 fontSize: '16px', color: '#111', marginTop: '16px', fontWeight: 500,
                 padding: '12px 16px', backgroundColor: '#f0f9ff', borderLeft: '3px solid #0066cc', borderRadius: '4px',
               }}>
-                <strong>Evento:</strong> {formatEventoRangeEs(evento.fechaInicio, evento.fechaFin, locale)}
+                <strong>Evento:</strong> {formatEventoRangeEs(evento.fechaInicio, evento.fechaFin, lang)}
               </p>
             )}
 

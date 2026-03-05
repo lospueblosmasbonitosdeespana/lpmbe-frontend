@@ -1,7 +1,7 @@
-import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
+import { getLocale } from 'next-intl/server';
 import BackButton from '@/app/c/[slug]/BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatDateTimeEs } from '@/app/_lib/dates';
@@ -9,7 +9,7 @@ import { getApiUrl } from '@/lib/api';
 import { getCanonicalUrl, getLocaleAlternates } from '@/lib/seo';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 
-const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it'] as const;
+const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'] as const;
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 function isHtmlContent(content: string): boolean {
@@ -32,9 +32,8 @@ type Noticia = {
 };
 
 async function fetchNoticia(slug: string): Promise<Noticia | null> {
-  const cookieStore = await cookies();
-  const locale = cookieStore.get('NEXT_LOCALE')?.value;
-  const lang = locale && SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? locale : 'es';
+  const locale = await getLocale();
+  const lang = SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? (locale as SupportedLocale) : 'es';
 
   const API_BASE = getApiUrl();
   const res = await fetch(`${API_BASE}/public/noticias/${encodeURIComponent(slug)}?lang=${lang}`, {
@@ -92,9 +91,9 @@ export default async function NoticiaPage({
 
   if (!noticia) notFound();
 
-  const cookieStore = await cookies();
-  const locale = cookieStore.get('NEXT_LOCALE')?.value ?? 'es';
-  const fechaFormateada = noticia.createdAt ? formatDateTimeEs(noticia.createdAt, locale) : '';
+  const locale = await getLocale();
+  const lang = SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? (locale as SupportedLocale) : 'es';
+  const fechaFormateada = noticia.createdAt ? formatDateTimeEs(noticia.createdAt, lang) : '';
 
   return (
     <main style={{ padding: '40px 20px' }}>

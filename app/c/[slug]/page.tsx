@@ -2,7 +2,7 @@ import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import BackButton from './BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
@@ -104,13 +104,14 @@ type Contenido = {
 };
 
 /**
- * Resuelve el idioma con esta prioridad:
- *  1. Parámetro ?lang= de la URL (searchParams)
- *  2. Header x-next-locale (puesto por middleware al procesar ?lang=)
- *  3. Cookie NEXT_LOCALE (puesta al cambiar idioma en el selector)
- *  4. Español por defecto
+ * Resuelve el idioma: prioridad a getLocale() de next-intl (sincronizado con el selector de idioma de la UI).
+ * Si no está en SUPPORTED_LOCALES, fallback a ?lang= o 'es'.
  */
 async function resolveLocale(langParam?: string): Promise<SupportedLocale> {
+  const nextIntlLocale = await getLocale();
+  if (nextIntlLocale && SUPPORTED_LOCALES.includes(nextIntlLocale as SupportedLocale)) {
+    return nextIntlLocale as SupportedLocale;
+  }
   if (langParam && SUPPORTED_LOCALES.includes(langParam as SupportedLocale)) {
     return langParam as SupportedLocale;
   }
