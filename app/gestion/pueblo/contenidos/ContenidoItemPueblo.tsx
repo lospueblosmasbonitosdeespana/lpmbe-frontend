@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type ContenidoItemPuebloProps = {
   contenido: any;
@@ -18,8 +18,41 @@ const CATEGORIA_TO_SLUG: Record<string, string> = {
 export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloProps) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
-
+  const [rol, setRol] = useState<string | null>(null);
+  const [ocultoPlanifica, setOcultoPlanifica] = useState(!!contenido.ocultoEnPlanificaFinDeSemana);
+  const [togglingPlanifica, setTogglingPlanifica] = useState(false);
   const isPaginaTematica = contenido.tipo === 'PAGINA_TEMATICA' || String(contenido.id ?? '').startsWith('page-');
+  const isEvento = contenido.tipo === 'EVENTO' && !isPaginaTematica;
+
+  useEffect(() => {
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((me) => me?.rol && setRol(me.rol))
+      .catch(() => {});
+  }, []);
+  useEffect(() => {
+    setOcultoPlanifica(!!contenido.ocultoEnPlanificaFinDeSemana);
+  }, [contenido.ocultoEnPlanificaFinDeSemana]);
+
+  async function toggleOcultoPlanifica() {
+    if (!isEvento || rol !== 'ADMIN' || togglingPlanifica) return;
+    const next = !ocultoPlanifica;
+    setTogglingPlanifica(true);
+    try {
+      const res = await fetch(`/api/gestion/pueblo/contenidos/${contenido.id}/oculto-planifica`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ocultoEnPlanificaFinDeSemana: next }),
+      });
+      if (res.ok) {
+        setOcultoPlanifica(next);
+        router.refresh();
+      }
+    } finally {
+      setTogglingPlanifica(false);
+    }
+  }
 
   async function handleDelete() {
     if (!confirm('¿Borrar este contenido?')) return;
@@ -107,6 +140,18 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
         </div>
 
         <div className="flex flex-col gap-2">
+          {isEvento && rol === 'ADMIN' && (
+            <label className="flex items-center gap-2 rounded border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm dark:border-amber-800 dark:bg-amber-950/30">
+              <input
+                type="checkbox"
+                checked={ocultoPlanifica}
+                onChange={toggleOcultoPlanifica}
+                disabled={togglingPlanifica}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <span>Ocultar en Planifica fin de semana</span>
+            </label>
+          )}
           {verPagenaUrl && (
             <a
               href={verPagenaUrl}

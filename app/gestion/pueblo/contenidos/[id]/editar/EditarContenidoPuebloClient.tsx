@@ -37,6 +37,8 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [editorMode, setEditorMode] = useState<EditorMode>('edit');
+  const [ocultoEnPlanifica, setOcultoEnPlanifica] = useState(false);
+  const [rol, setRol] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -70,6 +72,9 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
         if (data.fechaFin) {
           setFechaFinLocal(toDatetimeLocal(data.fechaFin));
         }
+        if (data.ocultoEnPlanificaFinDeSemana !== undefined) {
+          setOcultoEnPlanifica(!!data.ocultoEnPlanificaFinDeSemana);
+        }
       } catch (e: any) {
         setError(e?.message ?? 'Error al cargar');
       } finally {
@@ -77,6 +82,13 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
       }
     })();
   }, [id]);
+
+  useEffect(() => {
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((me) => me?.rol && setRol(me.rol))
+      .catch(() => {});
+  }, []);
 
   async function handleUploadEditorImage(file: File): Promise<string> {
     setUploading(true);
@@ -155,6 +167,9 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
         if (fechaFinLocal) {
           payload.fechaFin = datetimeLocalToIsoUtc(fechaFinLocal);
         }
+      }
+      if (tipo === 'EVENTO' && rol === 'ADMIN') {
+        payload.ocultoEnPlanificaFinDeSemana = ocultoEnPlanifica;
       }
 
       const res = await fetch(`/api/gestion/pueblo/contenidos/${id}`, {
@@ -310,6 +325,21 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
                 onChange={(e) => setFechaFinLocal(e.target.value)}
               />
             </div>
+
+            {rol === 'ADMIN' && (
+              <div className="flex items-center gap-2 rounded border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
+                <input
+                  type="checkbox"
+                  id="ocultoPlanifica"
+                  checked={ocultoEnPlanifica}
+                  onChange={(e) => setOcultoEnPlanifica(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <label htmlFor="ocultoPlanifica" className="text-sm">
+                  Ocultar en la página &quot;Planifica tu fin de semana&quot; (solo esa página; sigue en actualidad y notificaciones)
+                </label>
+              </div>
+            )}
           </div>
         )}
 
