@@ -1436,5 +1436,25 @@
     "datosDescription": "Painel de métricas da plataforma: utilizadores, aldeias e análise da Web.",
     "backToAssociation": "← Voltar à parceria",
     "puntosPueblosLink": "Pontos Aldeias"
+  },
+  "contact": {
+    "title": "Contacto",
+    "intro": "Tem alguma questão? Pode escrever-nos por correio, telefonar-nos ou utilizar o formulário.",
+    "contactData": "Dados de contacto",
+    "email": "Correio eletrónico",
+    "phone": "Telefone",
+    "address": "Endereço",
+    "sendMessage": "Enviar-nos uma mensagem",
+    "name": "Nome",
+    "namePlaceholder": "O seu nome",
+    "emailPlaceholder": "tu@email.com",
+    "web": "Web",
+    "webPlaceholder": "https://...",
+    "message": "Mensagem",
+    "messagePlaceholder": "Escreva a sua mensagem...",
+    "send": "Enviar",
+    "sending": "Enviando...",
+    "back": "← Voltar",
+    "successMessage": "O seu cliente de correio eletrónico abrir-se-á. Se não abrir, escreva-nos diretamente para"
   }
 }

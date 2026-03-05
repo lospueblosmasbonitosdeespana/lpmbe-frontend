@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 
-export default function BackButton() {
+export default function BackButton({ label = '← Volver' }: { label?: string }) {
   const router = useRouter();
 
   return (
@@ -11,7 +11,7 @@ export default function BackButton() {
       className="link-volver bg-transparent border-0 p-0 text-sm text-muted-foreground cursor-pointer font-inherit"
       type="button"
     >
-      ← Volver
+      {label}
     </button>
   );
 }

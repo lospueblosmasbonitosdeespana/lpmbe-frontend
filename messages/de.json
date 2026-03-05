@@ -1436,5 +1436,25 @@
     "datosDescription": "Metrik-Panel der Plattform: Nutzer, Dörfer und Webanalyse.",
     "backToAssociation": "← Zurück zur Partnerschaft",
     "puntosPueblosLink": "Punkte Dörfer"
+  },
+  "contact": {
+    "title": "Kontakt",
+    "intro": "Haben Sie noch Fragen? Sie können uns per Post schreiben, uns anrufen oder das Formular benutzen.",
+    "contactData": "Kontaktangaben",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "address": "Adresse",
+    "sendMessage": "Senden Sie uns eine Nachricht",
+    "name": "Name",
+    "namePlaceholder": "Ihr Name",
+    "emailPlaceholder": "tu@email.com",
+    "web": "Web",
+    "webPlaceholder": "https://...",
+    "message": "Nachricht",
+    "messagePlaceholder": "Schreiben Sie Ihre Nachricht...",
+    "send": "Senden Sie",
+    "sending": "Ich schicke...",
+    "back": "← Zurück",
+    "successMessage": "Ihr E-Mail-Programm wird sich öffnen. Sollte er sich nicht öffnen, schreiben Sie uns bitte direkt an"
   }
 }

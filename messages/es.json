@@ -376,6 +376,26 @@
     "backToAssociation": "← Volver a Asociación",
     "puntosPueblosLink": "Puntos Pueblos"
   },
+  "contact": {
+    "title": "Contacto",
+    "intro": "¿Tienes alguna consulta? Puedes escribirnos por correo, llamarnos o usar el formulario.",
+    "contactData": "Datos de contacto",
+    "email": "Email",
+    "phone": "Teléfono",
+    "address": "Dirección",
+    "sendMessage": "Envíanos un mensaje",
+    "name": "Nombre",
+    "namePlaceholder": "Tu nombre",
+    "emailPlaceholder": "tu@email.com",
+    "web": "Web",
+    "webPlaceholder": "https://...",
+    "message": "Mensaje",
+    "messagePlaceholder": "Escribe tu mensaje...",
+    "send": "Enviar",
+    "sending": "Enviando…",
+    "back": "← Volver",
+    "successMessage": "Se abrirá tu cliente de correo. Si no se abre, escríbenos directamente a"
+  },
   "planifica": {
     "creaRuta": {
       "title": "Crea tu ruta",

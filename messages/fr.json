@@ -1436,5 +1436,25 @@
     "datosDescription": "Panneau de mesures de la plateforme : utilisateurs, villages et analyse web.",
     "backToAssociation": "← Retour au partenariat",
     "puntosPueblosLink": "Points Villages"
+  },
+  "contact": {
+    "title": "Contact",
+    "intro": "Vous avez des questions ? Vous pouvez nous écrire par courrier, nous appeler ou utiliser le formulaire.",
+    "contactData": "Coordonnées de la personne à contacter",
+    "email": "Courriel",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "sendMessage": "Envoyer un message",
+    "name": "Nom",
+    "namePlaceholder": "Votre nom",
+    "emailPlaceholder": "tu@email.com",
+    "web": "Web",
+    "webPlaceholder": "https://...",
+    "message": "Message",
+    "messagePlaceholder": "Rédigez votre message...",
+    "send": "Envoyer",
+    "sending": "Envoi...",
+    "back": "← Retour",
+    "successMessage": "Votre client de messagerie s'ouvrira. S'il ne s'ouvre pas, veuillez nous écrire directement à l'adresse suivante"
   }
 }

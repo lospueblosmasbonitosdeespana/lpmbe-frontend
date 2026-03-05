@@ -1436,5 +1436,25 @@
     "datosDescription": "Panell de mètriques de la plataforma: usuaris, ciutats i anàlisi web.",
     "backToAssociation": "← Tornar a l'Associació",
     "puntosPueblosLink": "Punts de ciutats"
+  },
+  "contact": {
+    "title": "Contacte",
+    "intro": "Teniu cap pregunta? Podeu escriure'ns per correu postal, trucar-nos o utilitzar el formulari.",
+    "contactData": "Dades de contacte",
+    "email": "Correu electrònic",
+    "phone": "Telèfon",
+    "address": "Adreça",
+    "sendMessage": "Envia'ns un missatge",
+    "name": "Nom",
+    "namePlaceholder": "El teu nom",
+    "emailPlaceholder": "tu@email.com",
+    "web": "Web",
+    "webPlaceholder": "https://...",
+    "message": "Missatge",
+    "messagePlaceholder": "Escriu el teu missatge...",
+    "send": "Envia",
+    "sending": "Enviant...",
+    "back": "← Enrere",
+    "successMessage": "El vostre client de correu s'obrirà. Si no s'obre, si us plau, escriviu-nos directament a"
   }
 }

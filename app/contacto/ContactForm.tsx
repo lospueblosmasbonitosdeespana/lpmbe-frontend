@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/app/components/ui/button";
 
 export default function ContactForm({ defaultEmail }: { defaultEmail?: string }) {
+  const t = useTranslations("contact");
   const emailTo = defaultEmail || "asociacion@lospueblosmasbonitosdeespana.org";
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -15,11 +17,10 @@ export default function ContactForm({ defaultEmail }: { defaultEmail?: string })
       const form = e.currentTarget;
       const formData = new FormData(form);
       const data = Object.fromEntries(formData);
-      // Por ahora: abrir mailto (el backend puede añadir endpoint de envío después)
       const mailto = `mailto:${emailTo}?subject=${encodeURIComponent(
-        `Contacto web: ${data.nombre}`
+        `${t("title")} web: ${data.nombre}`
       )}&body=${encodeURIComponent(
-        `Nombre: ${data.nombre}\nEmail: ${data.email}\nWeb: ${data.website || "-"}\n\nMensaje:\n${data.mensaje}`
+        `${t("name")}: ${data.nombre}\n${t("email")}: ${data.email}\n${t("web")}: ${data.website || "-"}\n\n${t("message")}:\n${data.mensaje}`
       )}`;
       window.location.href = mailto;
       setSent(true);
@@ -32,7 +33,7 @@ export default function ContactForm({ defaultEmail }: { defaultEmail?: string })
     return (
       <div className="mx-auto max-w-md rounded-xl border border-border bg-muted/50 p-8 text-center">
         <p className="text-muted-foreground">
-          Se abrirá tu cliente de correo. Si no se abre, escríbenos directamente a{" "}
+          {t("successMessage")}{" "}
           <a
             href={`mailto:${emailTo}`}
             className="font-medium text-primary hover:underline"
@@ -52,7 +53,7 @@ export default function ContactForm({ defaultEmail }: { defaultEmail?: string })
       <div className="grid gap-4 sm:grid-cols-3">
         <div>
           <label htmlFor="nombre" className="mb-1 block text-sm font-medium">
-            Nombre *
+            {t("name")} *
           </label>
           <input
             id="nombre"
@@ -60,12 +61,12 @@ export default function ContactForm({ defaultEmail }: { defaultEmail?: string })
             type="text"
             required
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-            placeholder="Tu nombre"
+            placeholder={t("namePlaceholder")}
           />
         </div>
         <div>
           <label htmlFor="email" className="mb-1 block text-sm font-medium">
-            Email *
+            {t("email")} *
           </label>
           <input
             id="email"
@@ -73,25 +74,25 @@ export default function ContactForm({ defaultEmail }: { defaultEmail?: string })
             type="email"
             required
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-            placeholder="tu@email.com"
+            placeholder={t("emailPlaceholder")}
           />
         </div>
         <div>
           <label htmlFor="website" className="mb-1 block text-sm font-medium">
-            Web
+            {t("web")}
           </label>
           <input
             id="website"
             name="website"
             type="url"
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-            placeholder="https://..."
+            placeholder={t("webPlaceholder")}
           />
         </div>
       </div>
       <div>
         <label htmlFor="mensaje" className="mb-1 block text-sm font-medium">
-          Mensaje *
+          {t("message")} *
         </label>
         <textarea
           id="mensaje"
@@ -99,11 +100,11 @@ export default function ContactForm({ defaultEmail }: { defaultEmail?: string })
           required
           rows={5}
           className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-          placeholder="Escribe tu mensaje..."
+          placeholder={t("messagePlaceholder")}
         />
       </div>
       <Button type="submit" disabled={loading}>
-        {loading ? "Enviando…" : "Enviar"}
+        {loading ? t("sending") : t("send")}
       </Button>
     </form>
   );

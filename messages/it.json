@@ -1436,5 +1436,25 @@
     "datosDescription": "Pannello delle metriche della piattaforma: utenti, villaggi e analisi web.",
     "backToAssociation": "← Torna alla partnership",
     "puntosPueblosLink": "Punti Villaggi"
+  },
+  "contact": {
+    "title": "Contatto",
+    "intro": "Avete domande? Potete scriverci per posta, chiamarci o utilizzare il modulo.",
+    "contactData": "Dettagli di contatto",
+    "email": "Email",
+    "phone": "Telefono",
+    "address": "Indirizzo",
+    "sendMessage": "Inviaci un messaggio",
+    "name": "Nome",
+    "namePlaceholder": "Il tuo nome",
+    "emailPlaceholder": "tu@email.com",
+    "web": "Web",
+    "webPlaceholder": "https://...",
+    "message": "Messaggio",
+    "messagePlaceholder": "Scrivi il tuo messaggio...",
+    "send": "Inviare",
+    "sending": "Invio...",
+    "back": "← Indietro",
+    "successMessage": "Il vostro client di posta elettronica si aprirà. Se non si apre, scriveteci direttamente a"
   }
 }

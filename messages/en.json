@@ -1436,5 +1436,25 @@
     "datosDescription": "Platform metrics panel: users, towns and web analytics.",
     "backToAssociation": "← Back to Association",
     "puntosPueblosLink": "Points Villages"
+  },
+  "contact": {
+    "title": "Contact",
+    "intro": "Do you have any questions? You can write us by mail, call us or use the form.",
+    "contactData": "Contact information",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "sendMessage": "Send us a message",
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "tu@email.com",
+    "web": "Web",
+    "webPlaceholder": "https://...",
+    "message": "Message",
+    "messagePlaceholder": "Write your message...",
+    "send": "Send to",
+    "sending": "Sending...",
+    "back": "← Back",
+    "successMessage": "Your email client will open. If it does not open, please write directly to us at"
   }
 }
