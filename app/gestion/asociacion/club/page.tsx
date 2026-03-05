@@ -19,9 +19,23 @@ export default async function GestionAsociacionClubPage() {
             Gestiona las inscripciones, precios y estadísticas del Club de Amigos.
           </p>
         </div>
-        <Link href="/gestion/asociacion/club/metricas" className="text-sm text-primary hover:underline">
-          Métricas de validaciones →
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/gestion/asociacion/club/recursos-pueblos"
+            className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+          >
+            Recursos turísticos pueblos
+          </Link>
+          <Link
+            href="/gestion/asociacion/club/recursos-asociacion"
+            className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+          >
+            Recursos turísticos asociación
+          </Link>
+          <Link href="/gestion/asociacion/club/metricas" className="text-sm text-primary hover:underline">
+            Métricas de validaciones →
+          </Link>
+        </div>
       </div>
 
       <ClubAdminClient />
