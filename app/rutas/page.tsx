@@ -91,7 +91,7 @@ export default async function RutasPage() {
                 <RutaMiniMap rutaId={ruta.id} width={100} height={70} />
 
                 {/* Stats (calculadas dinámicamente via OSRM) */}
-                <RutaCardStats rutaId={ruta.id} />
+                <RutaCardStats rutaId={ruta.id} locale={locale} />
               </div>
 
               {/* Contenido */}

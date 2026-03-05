@@ -1,9 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   rutaId: number;
+  /** Idioma para la petición al API y las etiquetas (paradas, etc.) */
+  locale?: string;
 };
 
 type Stats = {
@@ -23,11 +26,12 @@ function formatDuration(minutes: number): string {
  * Client component that fetches route waypoints and calculates OSRM
  * distance/time for each route card. Lazy-loads via IntersectionObserver.
  */
-export default function RutaCardStats({ rutaId }: Props) {
+export default function RutaCardStats({ rutaId, locale = 'es' }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations('rutas');
 
   // Lazy load: only fetch when visible
   useEffect(() => {
@@ -58,7 +62,8 @@ export default function RutaCardStats({ rutaId }: Props) {
           process.env.NEXT_PUBLIC_API_URL ??
           'https://lpmbe-backend-production.up.railway.app';
 
-        const res = await fetch(`${backendBase}/rutas/${rutaId}`);
+        const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
+        const res = await fetch(`${backendBase}/rutas/${rutaId}${langQs}`);
         if (!res.ok) return;
         const data = await res.json();
         if (cancelled) return;
@@ -116,14 +121,14 @@ export default function RutaCardStats({ rutaId }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [isVisible, rutaId]);
+  }, [isVisible, rutaId, locale]);
 
   return (
     <div ref={ref} className="flex flex-1 flex-col justify-center gap-1.5">
       {loading ? (
         <div className="flex items-center gap-1.5">
           <div className="h-3 w-3 animate-pulse rounded-full bg-primary/30" />
-          <span className="text-xs text-muted-foreground">Calculando...</span>
+          <span className="text-xs text-muted-foreground">{t('calculating')}</span>
         </div>
       ) : stats ? (
         <>
@@ -181,13 +186,13 @@ export default function RutaCardStats({ rutaId }: Props) {
                 <path d="M3 18h18" />
               </svg>
               <span className="text-sm font-bold text-foreground">
-                {stats.paradas} paradas
+                {t('stopsCount', { count: stats.paradas })}
               </span>
             </div>
           )}
         </>
       ) : (
-        <span className="text-xs text-muted-foreground">Ubicación en España</span>
+        <span className="text-xs text-muted-foreground">{t('locationInSpain')}</span>
       )}
     </div>
   );

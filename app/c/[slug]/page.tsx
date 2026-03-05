@@ -2,6 +2,7 @@ import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
+import { getTranslations } from 'next-intl/server';
 import BackButton from './BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
@@ -9,7 +10,7 @@ import { getApiUrl } from '@/lib/api';
 import { getCanonicalUrl, getLocaleAlternates } from '@/lib/seo';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 
-const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it'] as const;
+const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'] as const;
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 /** Textos del bloque "Uso de ubicación en la app" para la política de privacidad (6 idiomas) */
@@ -55,6 +56,13 @@ const PRIVACY_LOCATION_BLOCK: Record<SupportedLocale, { title: string; intro: st
     foreground: "Posizione in primo piano: per mostrare i borghi più vicini alla tua posizione, calcolare distanze e itinerari e migliorare l'esperienza su mappe e ricerche. Questa funzionalità viene utilizzata mentre l'app è in uso.",
     background: "Posizione in secondo piano (opzionale): se l'utente attiva espressamente questa opzione nelle Impostazioni dell'app, l'app può utilizzare la posizione in secondo piano per rilevare quando ti trovi nelle vicinanze di un borgo della rete (a meno di 2 km). In tal caso, l'app mostra una notifica di benvenuto e registra la visita e i punti associati sul tuo account. L'utente può disattivare questa funzione in qualsiasi momento dal profilo nell'app.",
     closing: "I dati di posizione non vengono condivisi con terzi per finalità pubblicitarie. Sono utilizzati solo per le funzionalità descritte e per il corretto funzionamento del passaporto digitale delle visite e del sistema di punti. L'utente può revocare i permessi di posizione dalle impostazioni del dispositivo.",
+  },
+  ca: {
+    title: 'App mòbil «Pobles Més Bonics d\'Espanya» – Ús de la ubicació',
+    intro: 'L\'aplicació mòbil oficial de Los Pueblos Más Bonitos de España (a Google Play i App Store) utilitza dades d\'ubicació per a les finalitats següents:',
+    foreground: 'Ubicació en primer pla: per mostrar els pobles més propers a la vostra posició, calcular distàncies i rutes i millorar l\'experiència en mapes i cerques. Aquesta funcionalitat s\'utilitza mentre l\'aplicació està en ús.',
+    background: 'Ubicació en segon pla (opcional): si l\'usuari activa expressament aquesta opció a Configuració de l\'app, l\'aplicació pot utilitzar la ubicació en segon pla per detectar quan us trobeu a prop d\'un poble de la xarxa (a menys de 2 km). En aquest cas, l\'app mostra una notificació de benvinguda i registra la visita i els punts associats al vostre compte. L\'usuari pot desactivar aquesta funció en qualsevol moment des del perfil a l\'app.',
+    closing: 'Les dades d\'ubicació no es comparteixen amb tercers per a finalitats publicitàries. S\'utilitzen només per a les funcionalitats descrites i per al correcte funcionament del passaport digital de visites i del sistema de punts. L\'usuari pot revocar els permisos d\'ubicació des de la configuració del dispositiu.',
   },
 };
 
@@ -291,18 +299,20 @@ export default async function ContenidoPage({
     );
   }
 
-  // Contenido (noticias, eventos, páginas CMS)
+  // Contenido (noticias, eventos, páginas CMS) — titulo/contenidoMd ya vienen en el idioma pedido (API ?lang=)
   const contenido = page.data;
   const fechaPublicacion = contenido.publishedAt ?? contenido.createdAt;
   const fechaPublicacionFormateada = fechaPublicacion ? formatDateTimeEs(fechaPublicacion, locale) : '';
   const esEvento = contenido.tipo === 'EVENTO';
   const fechaInicioEvento = esEvento ? contenido.fechaInicio : null;
-  const tipoBadge: Record<string, string> = {
-    EVENTO: 'Evento',
-    NOTICIA: 'Noticia',
-    ARTICULO: 'Artículo',
-    PAGINA: 'Página',
+  const tActualidad = await getTranslations('actualidad');
+  const tipoBadgeKey: Record<string, string> = {
+    NOTICIA: 'news',
+    EVENTO: 'events',
+    ARTICULO: 'articles',
+    PAGINA: 'page',
   };
+  const tipoBadgeLabel = tActualidad(tipoBadgeKey[contenido.tipo] ?? 'page');
 
   return (
     <main className="px-5 py-10 md:py-[40px]">
@@ -314,7 +324,7 @@ export default async function ContenidoPage({
         <div className="max-w-[720px] mx-auto px-5">
           <header className="mb-10">
             <div className="text-[13px] font-medium text-muted-foreground uppercase tracking-wide mb-4">
-              {tipoBadge[contenido.tipo] || contenido.tipo}
+              {tipoBadgeLabel}
             </div>
 
             <div className="flex items-start justify-between gap-4 mb-3">
@@ -332,7 +342,7 @@ export default async function ContenidoPage({
 
             {esEvento && fechaInicioEvento && (
               <p className="text-base text-foreground mt-4 font-medium py-3 px-4 bg-primary/10 dark:bg-primary/20 border-l-4 border-primary rounded-r">
-                <strong>Evento:</strong> {formatEventoRangeEs(fechaInicioEvento, contenido.fechaFin, locale)}
+                <strong>{tActualidad('eventLabel')}</strong> {formatEventoRangeEs(fechaInicioEvento, contenido.fechaFin, locale)}
               </p>
             )}
           </header>

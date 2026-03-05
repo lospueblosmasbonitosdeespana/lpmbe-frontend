@@ -133,14 +133,14 @@ const CRITERIA_KEYS = [
   { titleKey: "criteria6Title", descKey: "criteria6Desc" },
 ] as const;
 
-/* ===== WORLD NETWORKS ===== */
-const worldNetworks = [
-  { country: "Francia", flag: "🇫🇷", name: "Les Plus Beaux Villages de France", villages: 176, href: "/el-sello/internacional" },
-  { country: "Italia", flag: "🇮🇹", name: "I Borghi più belli d'Italia", villages: 334, href: "/el-sello/internacional" },
-  { country: "Bélgica", flag: "🇧🇪", name: "Les Plus Beaux Villages de Wallonie", villages: 32, href: "/el-sello/internacional" },
-  { country: "Japón", flag: "🇯🇵", name: "Les Plus Beaux Villages du Japon", villages: 64, href: "/el-sello/internacional" },
-  { country: "Canadá", flag: "🇨🇦", name: "Les Plus Beaux Villages du Québec", villages: 43, href: "/el-sello/internacional" },
-  { country: "Suiza", flag: "🇨🇭", name: "Les Plus Beaux Villages de Suisse", villages: 44, href: "/el-sello/internacional" },
+/* ===== WORLD NETWORKS: country/name come from t() in component ===== */
+const WORLD_NETWORK_KEYS = [
+  { countryKey: "worldNetwork1Country" as const, nameKey: "worldNetwork1Name" as const, flag: "🇫🇷", villages: 176 },
+  { countryKey: "worldNetwork2Country" as const, nameKey: "worldNetwork2Name" as const, flag: "🇮🇹", villages: 334 },
+  { countryKey: "worldNetwork3Country" as const, nameKey: "worldNetwork3Name" as const, flag: "🇧🇪", villages: 32 },
+  { countryKey: "worldNetwork4Country" as const, nameKey: "worldNetwork4Name" as const, flag: "🇯🇵", villages: 64 },
+  { countryKey: "worldNetwork5Country" as const, nameKey: "worldNetwork5Name" as const, flag: "🇨🇦", villages: 43 },
+  { countryKey: "worldNetwork6Country" as const, nameKey: "worldNetwork6Name" as const, flag: "🇨🇭", villages: 44 },
 ];
 
 async function getSelloPage(): Promise<SelloPage | null> {
@@ -237,7 +237,7 @@ export default async function ElSelloPage() {
                 <div className="mb-6">
                   <Image
                     src={siteSettings.logoUrl}
-                    alt="Los Pueblos Más Bonitos de España"
+                    alt={t("logoAlt")}
                     width={180}
                     height={72}
                     className="h-16 w-auto object-contain lg:h-20"
@@ -249,7 +249,7 @@ export default async function ElSelloPage() {
               <div className="mb-8 h-32 w-32 overflow-hidden rounded-full border-4 border-primary/20 bg-card shadow-xl lg:h-40 lg:w-40">
                 <Image
                   src={sealBadgeUrl}
-                  alt="Sello de Los Pueblos Más Bonitos de España"
+                  alt={t("sealBadgeAlt")}
                   width={160}
                   height={160}
                   className="h-full w-full object-cover"
@@ -442,19 +442,19 @@ export default async function ElSelloPage() {
             </Lead>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {worldNetworks.map((network, index) => (
+            {WORLD_NETWORK_KEYS.map((network, index) => (
               <Link
                 key={index}
-                href={network.href}
+                href="/el-sello/internacional"
                 className="group flex items-center gap-4 rounded-lg border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md"
               >
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted text-2xl">
                   {network.flag}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <Caption className="text-primary">{network.country}</Caption>
+                  <Caption className="text-primary">{t(network.countryKey)}</Caption>
                   <Title as="h4" className="text-base">
-                    {network.name}
+                    {t(network.nameKey)}
                   </Title>
                   <Caption>{network.villages} {t("villagesCount")}</Caption>
                 </div>
