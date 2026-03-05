@@ -9,17 +9,18 @@ import {
   Body,
 } from '@/app/components/ui/typography';
 import { CONTENIDO_QUIENES_SOMOS } from '@/lib/cms/sello-content';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
-async function getPageContent(): Promise<{ titulo?: string; subtitle?: string; contenido?: string } | null> {
+async function getPageContent(locale?: string): Promise<{ titulo?: string; subtitle?: string; contenido?: string } | null> {
   try {
+    const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
     const res = await fetch(
-      `${API_BASE}/public/cms/sello/SELLO_QUIENES_SOMOS`,
-      { cache: 'no-store' }
+      `${API_BASE}/public/cms/sello/SELLO_QUIENES_SOMOS${langQs}`,
+      { cache: 'no-store', headers: locale ? { 'Accept-Language': locale } : undefined }
     );
     if (!res.ok) return null;
     return await res.json();
@@ -29,8 +30,9 @@ async function getPageContent(): Promise<{ titulo?: string; subtitle?: string; c
 }
 
 export default async function QuienesSomosPage() {
+  const locale = await getLocale();
   const t = await getTranslations('sello');
-  const page = await getPageContent();
+  const page = await getPageContent(locale);
   const titulo = page?.titulo ?? t('aboutTitle');
   const subtitle = page?.subtitle ?? t('aboutEyebrow');
   const raw = page?.contenido?.trim() ?? '';

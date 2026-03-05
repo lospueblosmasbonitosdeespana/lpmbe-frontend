@@ -10,17 +10,18 @@ import {
 } from '@/app/components/ui/typography';
 import type { SelloPage } from '@/lib/cms/sello';
 import { CONTENIDO_CRITERIOS } from '@/lib/cms/sello-content';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
-async function getPage(): Promise<SelloPage | null> {
+async function getPage(locale?: string): Promise<SelloPage | null> {
   try {
+    const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
     const res = await fetch(
-      `${API_BASE}/public/cms/sello/SELLO_CRITERIOS`,
-      { cache: 'no-store' }
+      `${API_BASE}/public/cms/sello/SELLO_CRITERIOS${langQs}`,
+      { cache: 'no-store', headers: locale ? { 'Accept-Language': locale } : undefined }
     );
     if (!res.ok) return null;
     return await res.json();
@@ -45,8 +46,9 @@ async function getCartaCalidad(): Promise<{ titulo: string; url: string } | null
 }
 
 export default async function CriteriosPage() {
+  const locale = await getLocale();
   const t = await getTranslations('sello');
-  const [page, cartaDoc] = await Promise.all([getPage(), getCartaCalidad()]);
+  const [page, cartaDoc] = await Promise.all([getPage(locale), getCartaCalidad()]);
 
   const titulo = page?.titulo ?? t('criteriaEyebrow');
   const subtitle = page?.subtitle ?? t('criteriaTitle');

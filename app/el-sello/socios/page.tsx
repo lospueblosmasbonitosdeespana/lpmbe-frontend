@@ -10,17 +10,18 @@ import {
 } from '@/app/components/ui/typography';
 import type { SelloPage } from '@/lib/cms/sello';
 import { CONTENIDO_SOCIOS } from '@/lib/cms/sello-content';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
-async function getPage(): Promise<SelloPage | null> {
+async function getPage(locale?: string): Promise<SelloPage | null> {
   try {
+    const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
     const res = await fetch(
-      `${API_BASE}/public/cms/sello/SELLO_SOCIOS`,
-      { cache: 'no-store' }
+      `${API_BASE}/public/cms/sello/SELLO_SOCIOS${langQs}`,
+      { cache: 'no-store', headers: locale ? { 'Accept-Language': locale } : undefined }
     );
     if (!res.ok) return null;
     return await res.json();
@@ -150,8 +151,9 @@ function PartnerCard({
 }
 
 export default async function SociosPage() {
+  const locale = await getLocale();
   const t = await getTranslations('sello');
-  const [page, socios] = await Promise.all([getPage(), getSocios()]);
+  const [page, socios] = await Promise.all([getPage(locale), getSocios()]);
 
   const titulo = page?.titulo ?? t('sociosTitle');
   const subtitle = page?.subtitle ?? t('sociosSubtitle');

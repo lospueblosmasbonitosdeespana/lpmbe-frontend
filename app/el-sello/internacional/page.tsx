@@ -5,7 +5,7 @@ import { Container } from "@/app/components/ui/container";
 import { Display, Lead } from "@/app/components/ui/typography";
 import type { SelloPage } from "@/lib/cms/sello";
 import { CONTENIDO_INTERNACIONAL } from "@/lib/cms/sello-content";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -19,11 +19,12 @@ function GlobeIcon({ className }: { className?: string }) {
   );
 }
 
-async function getPage(): Promise<SelloPage | null> {
+async function getPage(locale?: string): Promise<SelloPage | null> {
   try {
+    const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/public/cms/sello/SELLO_INTERNACIONAL`,
-      { cache: "no-store" }
+      `${process.env.NEXT_PUBLIC_API_URL}/public/cms/sello/SELLO_INTERNACIONAL${langQs}`,
+      { cache: "no-store", headers: locale ? { "Accept-Language": locale } : undefined }
     );
     if (!res.ok) return null;
     return await res.json();
@@ -33,8 +34,9 @@ async function getPage(): Promise<SelloPage | null> {
 }
 
 export default async function InternacionalPage() {
+  const locale = await getLocale();
   const t = await getTranslations("sello");
-  const page = await getPage();
+  const page = await getPage(locale);
   const titulo = page?.titulo ?? t("worldTitle");
   const subtitle = page?.subtitle ?? t("worldLead");
   const raw = page?.contenido?.trim() ?? "";

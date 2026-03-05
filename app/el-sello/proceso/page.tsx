@@ -10,17 +10,18 @@ import {
 } from '@/app/components/ui/typography';
 import type { SelloPage } from '@/lib/cms/sello';
 import { CONTENIDO_PROCESO } from '@/lib/cms/sello-content';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
-async function getPage(): Promise<SelloPage | null> {
+async function getPage(locale?: string): Promise<SelloPage | null> {
   try {
+    const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
     const res = await fetch(
-      `${API_BASE}/public/cms/sello/SELLO_PROCESO`,
-      { cache: 'no-store' }
+      `${API_BASE}/public/cms/sello/SELLO_PROCESO${langQs}`,
+      { cache: 'no-store', headers: locale ? { 'Accept-Language': locale } : undefined }
     );
     if (!res.ok) return null;
     return await res.json();
@@ -30,8 +31,9 @@ async function getPage(): Promise<SelloPage | null> {
 }
 
 export default async function ProcesoPage() {
+  const locale = await getLocale();
   const t = await getTranslations('sello');
-  const page = await getPage();
+  const page = await getPage(locale);
   const titulo = page?.titulo ?? t('processTitle');
   const subtitle = page?.subtitle ?? t('processPageSubtitle');
   const raw = page?.contenido?.trim() ?? '';

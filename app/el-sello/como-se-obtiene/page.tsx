@@ -4,7 +4,7 @@ import { Container } from "@/app/components/ui/container";
 import { Display, Lead, Title, Body } from "@/app/components/ui/typography";
 import SafeHtml from "@/app/_components/ui/SafeHtml";
 import type { SelloPage } from "@/lib/cms/sello";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -59,11 +59,12 @@ const cards = [
   },
 ];
 
-async function getPage(): Promise<SelloPage | null> {
+async function getPage(locale?: string): Promise<SelloPage | null> {
   try {
+    const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/public/cms/sello/SELLO_COMO_SE_OBTIENE`,
-      { cache: "no-store" }
+      `${process.env.NEXT_PUBLIC_API_URL}/public/cms/sello/SELLO_COMO_SE_OBTIENE${langQs}`,
+      { cache: "no-store", headers: locale ? { "Accept-Language": locale } : undefined }
     );
     if (!res.ok) return null;
     return await res.json();
@@ -73,8 +74,9 @@ async function getPage(): Promise<SelloPage | null> {
 }
 
 export default async function ComoSeObtienePage() {
+  const locale = await getLocale();
   const t = await getTranslations("sello");
-  const page = await getPage();
+  const page = await getPage(locale);
   const titulo = page?.titulo ?? t("howToGetTitle");
   const subtitle = page?.subtitle;
   const contenido = page?.contenido ?? "";
