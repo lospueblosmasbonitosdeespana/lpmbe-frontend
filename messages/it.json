@@ -314,6 +314,10 @@
     "legal": "Avviso legale",
     "cookies": "Biscotti"
   },
+  "planifica": {
+    "moreInPueblo": "Altri eventi a {pueblo} questo fine settimana",
+    "verPueblo": "Vedi villaggio →"
+  },
   "actualidad": {
     "title": "Notizie",
     "pageDesc": "Notizie, eventi e articoli da I borghi più belli della Spagna",

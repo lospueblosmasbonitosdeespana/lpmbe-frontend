@@ -314,6 +314,10 @@
     "legal": "Avís legal",
     "cookies": "Galetes"
   },
+  "planifica": {
+    "moreInPueblo": "Hi ha més esdeveniments a {pueblo} aquest cap de setmana",
+    "verPueblo": "Veure poble →"
+  },
   "actualidad": {
     "title": "Esdeveniments actuals",
     "pageDesc": "Notícies, esdeveniments i articles sobre els pobles més bonics d'Espanya",

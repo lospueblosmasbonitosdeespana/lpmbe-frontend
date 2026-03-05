@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { formatEventoRangeEs } from '@/app/_lib/dates';
 import { stripHtml } from '@/app/_lib/html';
+
 type EventoItem = {
   id: string;
   fuente: 'asociacion' | 'pueblo';
@@ -21,6 +22,61 @@ type EventoItem = {
     provincia?: string | null;
   } | null;
 };
+
+/** Tarjeta placeholder cuando un pueblo tiene más de 2 eventos: solo se muestra si hay >2. */
+type MoreInPuebloItem = {
+  _type: 'moreInPueblo';
+  pueblo: { nombre: string; slug: string };
+  key: string;
+};
+
+type PlanificaCardItem = EventoItem | MoreInPuebloItem;
+
+function isMoreInPueblo(item: PlanificaCardItem): item is MoreInPuebloItem {
+  return (item as MoreInPuebloItem)._type === 'moreInPueblo';
+}
+
+/**
+ * Limita a 2 eventos por pueblo; si un pueblo tiene más de 2, inserta una tarjeta
+ * "Hay más eventos en [pueblo] este fin de semana" después del segundo. Eventos sin pueblo (asociación) no se limitan.
+ */
+function limitEventosPerPueblo(eventos: EventoItem[]): PlanificaCardItem[] {
+  const countByPueblo = new Map<number, number>();
+  for (const e of eventos) {
+    if (e.pueblo) {
+      const id = e.pueblo.id;
+      countByPueblo.set(id, (countByPueblo.get(id) ?? 0) + 1);
+    }
+  }
+
+  const displayed = new Map<number, number>();
+  const moreShown = new Set<number>();
+  const result: PlanificaCardItem[] = [];
+
+  for (const e of eventos) {
+    if (!e.pueblo) {
+      result.push(e);
+      continue;
+    }
+    const id = e.pueblo.id;
+    const total = countByPueblo.get(id) ?? 0;
+    const count = displayed.get(id) ?? 0;
+
+    if (count < 2) {
+      result.push(e);
+      displayed.set(id, count + 1);
+      if (count + 1 === 2 && total > 2 && !moreShown.has(id)) {
+        result.push({
+          _type: 'moreInPueblo',
+          pueblo: { nombre: e.pueblo.nombre, slug: e.pueblo.slug },
+          key: `more-${id}`,
+        });
+        moreShown.add(id);
+      }
+    }
+  }
+  return result;
+}
 
 type PlanificaData = {
   asociacion: EventoItem[];
@@ -105,6 +161,24 @@ function EventoCard({ e, regionLabel, locale }: { e: EventoItem; regionLabel: st
   );
 }
 
+function MoreInPuebloCard({ item }: { item: MoreInPuebloItem }) {
+  const t = useTranslations('planifica');
+  const label = t('moreInPueblo', { pueblo: item.pueblo.nombre });
+  return (
+    <Link
+      href={`/pueblos/${item.pueblo.slug}`}
+      className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card p-6 transition-all hover:shadow-md"
+    >
+      <span className="rounded bg-red-600 px-2 py-1 text-sm font-medium text-white">
+        {label}
+      </span>
+      <span className="mt-3 inline-block text-sm font-medium text-primary">
+        {t('verPueblo')}
+      </span>
+    </Link>
+  );
+}
+
 function RegionSection({
   label,
   eventos,
@@ -114,7 +188,8 @@ function RegionSection({
   eventos: EventoItem[];
   locale: string;
 }) {
-  if (eventos.length === 0) return null;
+  const items = limitEventosPerPueblo(eventos);
+  if (items.length === 0) return null;
 
   return (
     <section className="mb-14">
@@ -122,9 +197,13 @@ function RegionSection({
         {label}
       </h2>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {eventos.map((e) => (
-          <EventoCard key={e.id} e={e} regionLabel={label} locale={locale} />
-        ))}
+        {items.map((item) =>
+          isMoreInPueblo(item) ? (
+            <MoreInPuebloCard key={item.key} item={item} />
+          ) : (
+            <EventoCard key={item.id} e={item} regionLabel={label} locale={locale} />
+          )
+        )}
       </div>
     </section>
   );

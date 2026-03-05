@@ -314,6 +314,10 @@
     "legal": "Avis juridique",
     "cookies": "Cookies"
   },
+  "planifica": {
+    "moreInPueblo": "Plus d'événements à {pueblo} ce week-end",
+    "verPueblo": "Voir le village →"
+  },
   "actualidad": {
     "title": "Actualités",
     "pageDesc": "Nouvelles, événements et articles des Plus beaux villages d'Espagne",

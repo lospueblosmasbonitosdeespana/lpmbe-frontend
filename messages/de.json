@@ -314,6 +314,10 @@
     "legal": "Rechtlicher Hinweis",
     "cookies": "Cookies"
   },
+  "planifica": {
+    "moreInPueblo": "Weitere Veranstaltungen in {pueblo} an diesem Wochenende",
+    "verPueblo": "Dorf anzeigen →"
+  },
   "actualidad": {
     "title": "Nachrichten",
     "pageDesc": "Nachrichten, Veranstaltungen und Artikel aus Die schönsten Dörfer Spaniens",

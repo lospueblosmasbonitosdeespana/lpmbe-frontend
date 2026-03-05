@@ -314,6 +314,10 @@
     "legal": "Aviso legal",
     "cookies": "Biscoitos"
   },
+  "planifica": {
+    "moreInPueblo": "Mais eventos em {pueblo} este fim de semana",
+    "verPueblo": "Ver aldeia →"
+  },
   "actualidad": {
     "title": "Notícias",
     "pageDesc": "Notícias, eventos e artigos de As mais belas aldeias de Espanha",

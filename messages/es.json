@@ -314,6 +314,10 @@
     "legal": "Aviso Legal",
     "cookies": "Cookies"
   },
+  "planifica": {
+    "moreInPueblo": "Hay más eventos en {pueblo} este fin de semana",
+    "verPueblo": "Ver pueblo →"
+  },
   "actualidad": {
     "title": "Actualidad",
     "pageDesc": "Noticias, eventos y artículos de Los Pueblos Más Bonitos de España",
