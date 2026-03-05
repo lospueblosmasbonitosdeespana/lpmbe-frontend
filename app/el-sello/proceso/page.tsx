@@ -37,7 +37,7 @@ export default async function ProcesoPage() {
   const titulo = page?.titulo ?? t('processTitle');
   const subtitle = page?.subtitle ?? t('processPageSubtitle');
   const raw = page?.contenido?.trim() ?? '';
-  const isMinimalContent = raw.length < 400 || !raw.includes('Petición formal');
+  const isMinimalContent = raw.length < 300 || !raw.includes('<');
   const contenido = raw && !isMinimalContent ? raw : CONTENIDO_PROCESO;
 
   return (

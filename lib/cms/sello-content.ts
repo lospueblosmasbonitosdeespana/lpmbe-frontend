@@ -54,8 +54,8 @@ export const CONTENIDO_CRITERIOS = `
     <h3 class="mb-2 font-semibold">Requisitos de admisión</h3>
     <p class="mb-4 text-sm text-muted-foreground">Criterios obligatorios que todo municipio debe cumplir.</p>
     <ul class="space-y-2 text-sm text-muted-foreground">
-      <li>• Población máxima de 15.000 habitantes (hasta +10% bajo validación de la Comisión de Calidad). Criterio eliminatorio.</li>
-      <li>• Patrimonio arquitectónico o natural certificado por documento en poder del ayuntamiento.</li>
+      <li>Población máxima de 15.000 habitantes (hasta +10% bajo validación de la Comisión de Calidad). Criterio eliminatorio.</li>
+      <li>Patrimonio arquitectónico o natural certificado por documento en poder del ayuntamiento.</li>
     </ul>
   </div>
   <div class="group rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
@@ -65,9 +65,9 @@ export const CONTENIDO_CRITERIOS = `
     <h3 class="mb-2 font-semibold">Calidad urbanística</h3>
     <p class="mb-4 text-sm text-muted-foreground">Coherencia y accesibilidad del tejido urbano.</p>
     <ul class="space-y-2 text-sm text-muted-foreground">
-      <li>• Calidad del acceso al pueblo</li>
-      <li>• Homogeneidad y dimensión de la masa construida</li>
-      <li>• Diversidad de rutas</li>
+      <li>Calidad del acceso al pueblo</li>
+      <li>Homogeneidad y dimensión de la masa construida</li>
+      <li>Diversidad de rutas</li>
     </ul>
   </div>
   <div class="group rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
@@ -77,9 +77,9 @@ export const CONTENIDO_CRITERIOS = `
     <h3 class="mb-2 font-semibold">Calidad arquitectónica</h3>
     <p class="mb-4 text-sm text-muted-foreground">Armonía y conservación del patrimonio edificado.</p>
     <ul class="space-y-2 text-sm text-muted-foreground">
-      <li>• Armonía de edificios, materiales, fachadas y tejados</li>
-      <li>• Homogeneidad de ventanas, puertas y colores</li>
-      <li>• Presencia de elementos decorativos simbólicos</li>
+      <li>Armonía de edificios, materiales, fachadas y tejados</li>
+      <li>Homogeneidad de ventanas, puertas y colores</li>
+      <li>Presencia de elementos decorativos simbólicos</li>
     </ul>
   </div>
   <div class="group rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
@@ -89,10 +89,10 @@ export const CONTENIDO_CRITERIOS = `
     <h3 class="mb-2 font-semibold">Valorización</h3>
     <p class="mb-4 text-sm text-muted-foreground">Política activa de mejora y cuidado del patrimonio.</p>
     <ul class="space-y-2 text-sm text-muted-foreground">
-      <li>• Cerrado a coches en casco antiguo (permanente o temporal)</li>
-      <li>• Aparcamiento organizado y tratamiento de líneas aéreas</li>
-      <li>• Renovación de fachadas, iluminación y espacios públicos</li>
-      <li>• Cuidado de zonas verdes y flores</li>
+      <li>Cerrado a coches en casco antiguo (permanente o temporal)</li>
+      <li>Aparcamiento organizado y tratamiento de líneas aéreas</li>
+      <li>Renovación de fachadas, iluminación y espacios públicos</li>
+      <li>Cuidado de zonas verdes y flores</li>
     </ul>
   </div>
   <div class="group rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
@@ -102,10 +102,10 @@ export const CONTENIDO_CRITERIOS = `
     <h3 class="mb-2 font-semibold">Desarrollo y promoción</h3>
     <p class="mb-4 text-sm text-muted-foreground">Infraestructura turística y oferta de servicios.</p>
     <ul class="space-y-2 text-sm text-muted-foreground">
-      <li>• Conocimiento del número de turistas</li>
-      <li>• Oferta de alojamiento, restauración y actividades</li>
-      <li>• Punto de información, visitas guiadas y señalización</li>
-      <li>• Guías o documentos promocionales</li>
+      <li>Conocimiento del número de turistas</li>
+      <li>Oferta de alojamiento, restauración y actividades</li>
+      <li>Punto de información, visitas guiadas y señalización</li>
+      <li>Guías o documentos promocionales</li>
     </ul>
   </div>
   <div class="group rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
@@ -115,9 +115,9 @@ export const CONTENIDO_CRITERIOS = `
     <h3 class="mb-2 font-semibold">Animación</h3>
     <p class="mb-4 text-sm text-muted-foreground">Vida cultural y eventos que dinamizan el pueblo.</p>
     <ul class="space-y-2 text-sm text-muted-foreground">
-      <li>• Espacios para actos festivos (cubiertos o al aire libre)</li>
-      <li>• Organización de eventos originales y de calidad</li>
-      <li>• Manifestaciones permanentes o temporales</li>
+      <li>Espacios para actos festivos (cubiertos o al aire libre)</li>
+      <li>Organización de eventos originales y de calidad</li>
+      <li>Manifestaciones permanentes o temporales</li>
     </ul>
   </div>
 </div>

@@ -40,7 +40,7 @@ export default async function InternacionalPage() {
   const titulo = page?.titulo ?? t("worldTitle");
   const subtitle = page?.subtitle ?? t("worldLead");
   const raw = page?.contenido?.trim() ?? "";
-  const isMinimalContent = raw.length < 400 || !raw.includes("sm:grid-cols-2");
+  const isMinimalContent = raw.length < 300 || !raw.includes("<");
   const contenido = raw && !isMinimalContent ? raw : CONTENIDO_INTERNACIONAL;
 
   return (
