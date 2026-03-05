@@ -17,6 +17,7 @@ type EventoItem = {
     id: number;
     nombre: string;
     slug: string;
+    provincia?: string | null;
   } | null;
 };
 
@@ -67,7 +68,9 @@ function EventoCard({ e, regionLabel, locale }: { e: EventoItem; regionLabel: st
           {e.titulo}
         </h3>
         {e.pueblo && (
-          <p className="mt-1 text-sm text-muted-foreground">{e.pueblo.nombre}</p>
+          <p className="mt-1.5 text-sm font-semibold text-foreground">
+            {e.pueblo.provincia ? `${e.pueblo.nombre} (${e.pueblo.provincia})` : e.pueblo.nombre}
+          </p>
         )}
         {e.resumen && (
           <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
