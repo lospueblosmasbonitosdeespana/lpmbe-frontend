@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useLocale } from 'next-intl';
 import { formatEventoRangeEs } from '@/app/_lib/dates';
 type EventoItem = {
   id: string;
@@ -35,7 +36,7 @@ const REGIONES: { key: keyof PlanificaData; label: string }[] = [
   { key: 'centro', label: 'Centro' },
 ];
 
-function EventoCard({ e, regionLabel }: { e: EventoItem; regionLabel: string }) {
+function EventoCard({ e, regionLabel, locale }: { e: EventoItem; regionLabel: string; locale: string }) {
   const href =
     e.fuente === 'asociacion' && e.slug
       ? `/c/${e.slug}`
@@ -60,7 +61,7 @@ function EventoCard({ e, regionLabel }: { e: EventoItem; regionLabel: string }) 
       )}
       <div className="flex flex-col p-4">
         <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          {formatEventoRangeEs(e.fechaInicio, e.fechaFin)}
+          {formatEventoRangeEs(e.fechaInicio, e.fechaFin, locale)}
         </span>
         <h3 className="mt-2 font-serif text-lg font-medium text-foreground transition-colors group-hover:text-primary">
           {e.titulo}
@@ -103,9 +104,11 @@ function EventoCard({ e, regionLabel }: { e: EventoItem; regionLabel: string }) 
 function RegionSection({
   label,
   eventos,
+  locale,
 }: {
   label: string;
   eventos: EventoItem[];
+  locale: string;
 }) {
   if (eventos.length === 0) return null;
 
@@ -116,7 +119,7 @@ function RegionSection({
       </h2>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {eventos.map((e) => (
-          <EventoCard key={e.id} e={e} regionLabel={label} />
+          <EventoCard key={e.id} e={e} regionLabel={label} locale={locale} />
         ))}
       </div>
     </section>
@@ -124,6 +127,7 @@ function RegionSection({
 }
 
 export default function PlanificaFinDeSemanaPage() {
+  const locale = useLocale();
   const [data, setData] = useState<PlanificaData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -133,7 +137,7 @@ export default function PlanificaFinDeSemanaPage() {
     async function load() {
       try {
         setLoading(true);
-        const res = await fetch('/api/public/planifica/fin-de-semana', {
+        const res = await fetch(`/api/public/planifica/fin-de-semana?lang=${locale}`, {
           cache: 'no-store',
         });
         if (!res.ok) throw new Error('Error');
@@ -150,7 +154,7 @@ export default function PlanificaFinDeSemanaPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [locale]);
 
   const totalEventos =
     data && REGIONES.reduce((acc, r) => acc + data[r.key].length, 0);
@@ -163,8 +167,7 @@ export default function PlanificaFinDeSemanaPage() {
             Planifica tu fin de semana
           </h1>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Eventos de los pueblos y de la asociación en los próximos 7 días,
-            organizados por región.
+            Eventos de los pueblos y de la asociación para el próximo fin de semana (de lunes a domingo), organizados por región.
           </p>
         </header>
 
@@ -180,7 +183,7 @@ export default function PlanificaFinDeSemanaPage() {
         ) : totalEventos === 0 ? (
           <div className="rounded-lg border border-border bg-card p-12 text-center">
             <p className="text-muted-foreground">
-              No hay eventos previstos en los próximos 7 días.
+              No hay eventos previstos para el próximo fin de semana.
             </p>
             <Link
               href="/pueblos"
@@ -192,7 +195,7 @@ export default function PlanificaFinDeSemanaPage() {
         ) : (
           <div>
             {REGIONES.map(({ key, label }) => (
-              <RegionSection key={key} label={label} eventos={data[key]} />
+              <RegionSection key={key} label={label} eventos={data[key]} locale={locale} />
             ))}
           </div>
         )}

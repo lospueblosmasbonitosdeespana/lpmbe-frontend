@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getApiUrl } from '@/lib/api';
 
-export async function GET() {
-  const API_BASE = getApiUrl();
+const SUPPORTED = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'] as const;
 
-  const res = await fetch(`${API_BASE}/public/planifica/fin-de-semana`, {
+export async function GET(req: Request) {
+  const API_BASE = getApiUrl();
+  const url = new URL(req.url);
+  const lang = url.searchParams.get('lang');
+  const qs = lang && SUPPORTED.includes(lang as (typeof SUPPORTED)[number]) ? `?lang=${lang}` : '';
+
+  const res = await fetch(`${API_BASE}/public/planifica/fin-de-semana${qs}`, {
     cache: 'no-store',
   });
 

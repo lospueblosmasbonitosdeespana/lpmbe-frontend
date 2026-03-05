@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TipTapEditor from '@/app/_components/editor/TipTapEditor';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 
@@ -11,12 +11,21 @@ export default function NuevoEventoPage() {
   const params = useParams<{ slug: string }>();
   const slug = params?.slug || '';
   const router = useRouter();
+  const [rol, setRol] = useState<string | null>(null);
 
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [ocultoEnPlanifica, setOcultoEnPlanifica] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then((r) => r.ok ? r.json() : null)
+      .then((me) => me?.rol && setRol(me.rol))
+      .catch(() => {});
+  }, []);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +70,7 @@ export default function NuevoEventoPage() {
           fecha_inicio: fechaInicio || null,
           fecha_fin: fechaFin || null,
           ...(imagen && { imagen }),
+          ...(rol === 'ADMIN' && { ocultoEnPlanificaFinDeSemana: ocultoEnPlanifica }),
         }),
       });
 
@@ -138,6 +148,21 @@ export default function NuevoEventoPage() {
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
         </div>
+
+        {rol === 'ADMIN' && (
+          <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
+            <input
+              type="checkbox"
+              id="ocultoPlanifica"
+              checked={ocultoEnPlanifica}
+              onChange={(e) => setOcultoEnPlanifica(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300"
+            />
+            <label htmlFor="ocultoPlanifica" className="text-sm">
+              Ocultar en &quot;Planifica tu fin de semana&quot; (solo este evento; seguirá en actualidad y notificaciones)
+            </label>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-2">
