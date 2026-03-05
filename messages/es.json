@@ -978,6 +978,7 @@
     "noMeteoAlertsNow": "No hay alertas meteorológicas ahora mismo.",
     "noItemsNow": "No hay {type} ahora mismo.",
     "viewAll": "Ver todas",
+    "seeDetail": "Ver detalle",
     "open": "Abrir",
     "alertFallback": "Alerta",
     "actualidadFallback": "Actualidad",

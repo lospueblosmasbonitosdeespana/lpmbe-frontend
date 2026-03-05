@@ -943,6 +943,7 @@
     "noMeteoAlertsNow": "En aquest moment no hi ha avisos meteorològics.",
     "noItemsNow": "No hi ha cap {type} en aquest moment.",
     "viewAll": "Veure-ho tot",
+    "seeDetail": "Veure detall",
     "open": "Obert",
     "alertFallback": "Avís",
     "actualidadFallback": "Esdeveniments actuals",

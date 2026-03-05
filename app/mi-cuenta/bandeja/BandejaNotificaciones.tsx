@@ -31,11 +31,15 @@ type FilterType = 'TODAS' | 'NOTICIA' | 'EVENTO' | 'ALERTA' | 'SEMAFORO' | 'METE
 
 const MAX_ITEMS = 150;
 
-function formatFecha(fecha?: string | null) {
+/** Locale para formato de fecha (short month): es-ES, ca-ES, etc. */
+const DATE_LOCALE: Record<string, string> = { es: 'es-ES', ca: 'ca-ES', en: 'en-GB', fr: 'fr-FR', de: 'de-DE', pt: 'pt-PT', it: 'it-IT' };
+
+function formatFecha(fecha?: string | null, locale: string = 'es') {
   if (!fecha) return '';
   const d = new Date(fecha);
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('es-ES', { 
+  const loc = DATE_LOCALE[locale] ?? 'es-ES';
+  return d.toLocaleDateString(loc, { 
     year: 'numeric', 
     month: 'short', 
     day: '2-digit',
@@ -210,7 +214,7 @@ export default function BandejaNotificaciones() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <span className={`px-2 py-1 text-xs font-semibold rounded ${badgeColor}`}>
-                      {tipoLabel}
+                      {FILTERS.find(f => f.key === tipoLabel)?.label ?? tipoLabel}
                     </span>
                     {puebloNombre && (
                       <span className="text-sm text-muted-foreground">
@@ -221,7 +225,7 @@ export default function BandejaNotificaciones() {
 
                   {rawTipo === 'EVENTO' && (n.fechaInicio || n.fechaFin) && (
                     <p className="text-sm font-medium text-foreground mb-1">
-                      📅 {formatEventoFechas(n.fechaInicio, n.fechaFin, locale === 'es' ? 'es-ES' : locale)}
+                      📅 {formatEventoFechas(n.fechaInicio, n.fechaFin, DATE_LOCALE[locale] ?? 'es-ES')}
                     </p>
                   )}
 
@@ -247,12 +251,12 @@ export default function BandejaNotificaciones() {
                   )}
 
                   {href && (
-                    <span className="text-xs text-primary mt-1 inline-block">Ver detalle →</span>
+                    <span className="text-xs text-primary mt-1 inline-block">{t('seeDetail')} →</span>
                   )}
                 </div>
 
                 <div className="text-xs text-muted-foreground whitespace-nowrap">
-                  {formatFecha(n.createdAt)}
+                  {formatFecha(n.createdAt, locale)}
                 </div>
               </div>
             );
