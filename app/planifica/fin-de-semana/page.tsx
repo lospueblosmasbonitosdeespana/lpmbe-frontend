@@ -37,12 +37,12 @@ const REGIONES: { key: keyof PlanificaData; label: string }[] = [
 ];
 
 function EventoCard({ e, regionLabel, locale }: { e: EventoItem; regionLabel: string; locale: string }) {
-  const href =
-    e.fuente === 'asociacion' && e.slug
-      ? `/c/${e.slug}`
-      : e.pueblo
-        ? `/pueblos/${e.pueblo.slug}`
-        : null;
+  // Si tiene slug (Contenido), enlace al detalle del evento; si no, al pueblo
+  const href = e.slug
+    ? `/c/${e.slug}`
+    : e.pueblo
+      ? `/pueblos/${e.pueblo.slug}`
+      : null;
 
   const contenido = (
     <>
