@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { stripHtml } from '@/app/_lib/html';
 
 type ContenidoItemPuebloProps = {
   contenido: any;
@@ -122,8 +123,8 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
 
           {contenido.resumen && (
             <div className="mt-2 text-sm text-gray-700">
-              {contenido.resumen.slice(0, 150)}
-              {contenido.resumen.length > 150 ? '...' : ''}
+              {stripHtml(contenido.resumen).slice(0, 150)}
+              {stripHtml(contenido.resumen).length > 150 ? '...' : ''}
             </div>
           )}
 

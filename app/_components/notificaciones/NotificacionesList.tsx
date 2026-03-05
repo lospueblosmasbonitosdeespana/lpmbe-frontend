@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { stripHtml } from "@/app/_lib/html";
 
 type Item = {
   id?: string | number;
@@ -72,7 +73,7 @@ export default function NotificacionesList({ items }: { items: Item[] }) {
               {fecha ? <div className="text-sm text-muted-foreground">{fecha}</div> : null}
               {!isSemaforo && it.tipo ? <div className="text-sm text-muted-foreground">Tipo: {it.tipo}</div> : null}
               {subtexto ? (
-                <div className="text-sm text-muted-foreground mt-2">{subtexto}</div>
+                <div className="text-sm text-muted-foreground mt-2">{stripHtml(subtexto)}</div>
               ) : null}
             </Link>
           </div>

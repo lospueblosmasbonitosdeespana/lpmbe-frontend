@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
 import { formatEventoRangeEs } from '@/app/_lib/dates';
+import { stripHtml } from '@/app/_lib/html';
 type EventoItem = {
   id: string;
   fuente: 'asociacion' | 'pueblo';
@@ -74,7 +75,7 @@ function EventoCard({ e, regionLabel, locale }: { e: EventoItem; regionLabel: st
         )}
         {e.resumen && (
           <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-            {e.resumen}
+            {stripHtml(e.resumen)}
           </p>
         )}
         {href && (

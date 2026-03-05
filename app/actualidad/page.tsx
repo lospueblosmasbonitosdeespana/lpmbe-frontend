@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import ShareButton from '@/app/components/ShareButton';
+import { stripHtml } from '@/app/_lib/html';
 
 type Contenido = {
   id: number;
@@ -17,10 +18,6 @@ type Contenido = {
   createdAt?: string;
   _source: 'contenido' | 'notificacion';
 };
-
-function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&#x27;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
-}
 
 function ActualidadContent() {
   const t = useTranslations('actualidad');
