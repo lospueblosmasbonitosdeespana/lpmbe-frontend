@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
 import { formatEventoRangeEs } from '@/app/_lib/dates';
 import { stripHtml } from '@/app/_lib/html';
+import ShareButton from '@/app/components/ShareButton';
 
 type EventoItem = {
   id: string;
@@ -119,12 +120,22 @@ export default function PlanificaPuebloPage() {
           >
             ← Planifica tu fin de semana
           </Link>
-          <h1 className="mt-4 font-serif text-3xl font-medium text-foreground">
-            Eventos en {nombrePueblo} este fin de semana
-          </h1>
-          {pueblo?.provincia && (
-            <p className="mt-1 text-muted-foreground">{pueblo.provincia}</p>
-          )}
+          <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h1 className="font-serif text-3xl font-medium text-foreground">
+                Eventos en {nombrePueblo} este fin de semana
+              </h1>
+              {pueblo?.provincia && (
+                <p className="mt-1 text-muted-foreground">{pueblo.provincia}</p>
+              )}
+            </div>
+            <ShareButton
+              url={`/planifica/fin-de-semana/pueblo/${slug}`}
+              title={`Eventos en ${nombrePueblo} este fin de semana`}
+              variant="button"
+              className="shrink-0"
+            />
+          </div>
         </header>
 
         {eventos.length === 0 ? (
@@ -134,7 +145,7 @@ export default function PlanificaPuebloPage() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {eventos.map((e) => (
-              <EventoCard key={e.id} e={e} locale={locale} />
+              <EventoCard key={e.id} e={e} locale={locale} puebloSlug={slug} />
             ))}
           </div>
         )}
@@ -160,28 +171,43 @@ export default function PlanificaPuebloPage() {
   );
 }
 
-function EventoCard({ e, locale }: { e: EventoItem; locale: string }) {
+function EventoCard({ e, locale, puebloSlug }: { e: EventoItem; locale: string; puebloSlug: string }) {
   const href = e.slug
     ? `/c/${e.slug}`
     : e.pueblo
       ? `/pueblos/${e.pueblo.slug}`
       : null;
 
+  const shareUrl = href ?? (e.pueblo ? `/pueblos/${e.pueblo.slug}` : `/planifica/fin-de-semana/pueblo/${puebloSlug}`);
+  const shareBlock = (
+    <div className="absolute right-2 top-2 z-10" onClick={(ev) => ev.stopPropagation()}>
+      <ShareButton
+        url={shareUrl}
+        title={e.titulo}
+        variant="icon"
+        className="rounded-full bg-card/90 p-2 shadow hover:bg-card"
+      />
+    </div>
+  );
+
   const content = (
     <>
-      {e.coverUrl && e.coverUrl.trim() ? (
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
-          <img
-            src={e.coverUrl.trim()}
-            alt={e.titulo}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        </div>
-      ) : (
-        <div className="flex aspect-[16/10] w-full items-center justify-center bg-muted text-muted-foreground">
-          <span className="text-4xl font-serif">·</span>
-        </div>
-      )}
+      <div className="relative">
+        {e.coverUrl && e.coverUrl.trim() ? (
+          <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+            <img
+              src={e.coverUrl.trim()}
+              alt={e.titulo}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          </div>
+        ) : (
+          <div className="flex aspect-[16/10] w-full items-center justify-center bg-muted text-muted-foreground">
+            <span className="text-4xl font-serif">·</span>
+          </div>
+        )}
+        {shareBlock}
+      </div>
       <div className="flex flex-col p-4">
         <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {formatEventoRangeEs(e.fechaInicio, e.fechaFin, locale)}
@@ -207,14 +233,14 @@ function EventoCard({ e, locale }: { e: EventoItem; locale: string }) {
     return (
       <Link
         href={href}
-        className="group block overflow-hidden rounded-lg border border-border bg-card transition-all hover:shadow-md"
+        className="group relative block overflow-hidden rounded-lg border border-border bg-card transition-all hover:shadow-md"
       >
         {content}
       </Link>
     );
   }
   return (
-    <div className="block overflow-hidden rounded-lg border border-border bg-card">
+    <div className="relative block overflow-hidden rounded-lg border border-border bg-card">
       {content}
     </div>
   );

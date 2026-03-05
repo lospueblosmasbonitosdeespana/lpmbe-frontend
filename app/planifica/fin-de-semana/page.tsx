@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { formatEventoRangeEs } from '@/app/_lib/dates';
 import { stripHtml } from '@/app/_lib/html';
+import ShareButton from '@/app/components/ShareButton';
 
 type EventoItem = {
   id: string;
@@ -103,21 +104,35 @@ function EventoCard({
       ? `/pueblos/${e.pueblo.slug}`
       : null;
 
+  const shareBlock = (
+    <div className="absolute right-2 top-2 z-10" onClick={(ev) => ev.stopPropagation()}>
+      <ShareButton
+        url={href ?? (e.pueblo ? `/pueblos/${e.pueblo.slug}` : '/planifica/fin-de-semana')}
+        title={e.titulo}
+        variant="icon"
+        className="rounded-full bg-card/90 p-2 shadow hover:bg-card"
+      />
+    </div>
+  );
+
   const eventBlock = (
     <>
-      {e.coverUrl && e.coverUrl.trim() ? (
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
-          <img
-            src={e.coverUrl.trim()}
-            alt={e.titulo}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        </div>
-      ) : (
-        <div className="flex aspect-[16/10] w-full items-center justify-center bg-muted text-muted-foreground">
-          <span className="text-4xl font-serif">·</span>
-        </div>
-      )}
+      <div className="relative">
+        {e.coverUrl && e.coverUrl.trim() ? (
+          <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+            <img
+              src={e.coverUrl.trim()}
+              alt={e.titulo}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          </div>
+        ) : (
+          <div className="flex aspect-[16/10] w-full items-center justify-center bg-muted text-muted-foreground">
+            <span className="text-4xl font-serif">·</span>
+          </div>
+        )}
+        {shareBlock}
+      </div>
       <div className="flex flex-col p-4">
         <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {formatEventoRangeEs(e.fechaInicio, e.fechaFin, locale)}
@@ -158,7 +173,7 @@ function EventoCard({
     </div>
   );
 
-  const cardClass = 'group block overflow-hidden rounded-lg border border-border bg-card transition-all hover:shadow-md';
+  const cardClass = 'group block overflow-hidden rounded-lg border border-border bg-card transition-all hover:shadow-md relative';
   if (moreInPueblo && href) {
     return (
       <div className={cardClass}>
@@ -168,7 +183,11 @@ function EventoCard({
     );
   }
   if (href) {
-    return <Link href={href} className={cardClass}>{eventBlock}</Link>;
+    return (
+      <Link href={href} className={cardClass}>
+        {eventBlock}
+      </Link>
+    );
   }
   return (
     <div className={cardClass}>
