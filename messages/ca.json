@@ -506,7 +506,7 @@
       "tramuntana": "UNESCO TRAMUNTANA"
     },
     "gallery": "Galeria",
-    "galleryTitle": "Imatges de {name}",
+    "galleryTitle": "Imatges de {nombre}",
     "leadFallback": "Descobreix un dels pobles més bonics d'Espanya.",
     "experienceStops": "L'experiència s'atura",
     "others": "Altres",
@@ -722,9 +722,9 @@
     "viewAll": "Tots els llocs d'interès"
   },
   "queHacer": {
-    "title": "Què fer a {name}",
+    "title": "Què fer a {nombre}",
     "subtitle": "Rutes, experiències i activitats per descobrir el poble.",
-    "routeThrough": "{title} passant per {name}",
+    "routeThrough": "{titulo} passant per {nombre}",
     "multiexperiencias": "Multiexperiències",
     "viewAll": "Veure-ho tot",
     "route": "Ruta",

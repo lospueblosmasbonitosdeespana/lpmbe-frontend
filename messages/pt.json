@@ -506,7 +506,7 @@
       "tramuntana": "UNESCO TRAMUNTANA"
     },
     "gallery": "Galeria",
-    "galleryTitle": "Imagens de {nome}",
+    "galleryTitle": "Imagens de {nombre}",
     "leadFallback": "Descubra uma das mais belas aldeias de Espanha.",
     "experienceStops": "Paragens de experiência",
     "others": "Outros",
@@ -722,9 +722,9 @@
     "viewAll": "Todos os locais de interesse"
   },
   "queHacer": {
-    "title": "O que fazer em {name}",
+    "title": "O que fazer em {nombre}",
     "subtitle": "Percursos, experiências e actividades para descobrir a aldeia.",
-    "routeThrough": "{title} passando por {name}",
+    "routeThrough": "{titulo} passando por {nombre}",
     "multiexperiencias": "Multi-experiências",
     "viewAll": "Ver tudo",
     "route": "Rota",

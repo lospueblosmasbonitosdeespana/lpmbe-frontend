@@ -506,7 +506,7 @@
       "tramuntana": "UNESCO TRAMUNTANA"
     },
     "gallery": "Galerie",
-    "galleryTitle": "Bilder von {Name}",
+    "galleryTitle": "Bilder von {nombre}",
     "leadFallback": "Entdecken Sie eines der schönsten Dörfer Spaniens.",
     "experienceStops": "Erfahrung stoppt",
     "others": "Andere",
@@ -722,9 +722,9 @@
     "viewAll": "Alle Orte von Interesse"
   },
   "queHacer": {
-    "title": "Was man in {Name} tun kann",
+    "title": "Was man in {nombre} tun kann",
     "subtitle": "Routen, Erlebnisse und Aktivitäten zur Entdeckung des Dorfes.",
-    "routeThrough": "{Titel}, der durch {Name} verläuft",
+    "routeThrough": "{titulo}, der durch {nombre} verläuft",
     "multiexperiencias": "Multierfahrungen",
     "viewAll": "Alle sehen",
     "route": "Route",

@@ -506,7 +506,7 @@
       "tramuntana": "TRAMUNTANA DELL'UNESCO"
     },
     "gallery": "Galleria",
-    "galleryTitle": "Immagini di {nome}",
+    "galleryTitle": "Immagini di {nombre}",
     "leadFallback": "Scoprite uno dei villaggi più belli della Spagna.",
     "experienceStops": "Fermate d'esperienza",
     "others": "Altro",
@@ -722,9 +722,9 @@
     "viewAll": "Tutti i luoghi di interesse"
   },
   "queHacer": {
-    "title": "Cosa fare a {nome}",
+    "title": "Cosa fare a {nombre}",
     "subtitle": "Itinerari, esperienze e attività per scoprire il villaggio.",
-    "routeThrough": "{titolo} passando per {nome}",
+    "routeThrough": "{titulo} passando per {nombre}",
     "multiexperiencias": "Multiesperienze",
     "viewAll": "Vedi tutti",
     "route": "Percorso",
