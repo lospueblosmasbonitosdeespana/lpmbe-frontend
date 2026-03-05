@@ -179,8 +179,8 @@ function EventoCard({ e, locale, puebloSlug }: { e: EventoItem; locale: string; 
       : null;
 
   const shareUrl = href ?? (e.pueblo ? `/pueblos/${e.pueblo.slug}` : `/planifica/fin-de-semana/pueblo/${puebloSlug}`);
-  const shareBlock = (
-    <div className="absolute right-2 top-2 z-10" onClick={(ev) => ev.stopPropagation()}>
+  const shareButton = (
+    <div className="absolute right-2 top-2 z-20">
       <ShareButton
         url={shareUrl}
         title={e.titulo}
@@ -190,24 +190,21 @@ function EventoCard({ e, locale, puebloSlug }: { e: EventoItem; locale: string; 
     </div>
   );
 
-  const content = (
+  const linkableContent = (
     <>
-      <div className="relative">
-        {e.coverUrl && e.coverUrl.trim() ? (
-          <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
-            <img
-              src={e.coverUrl.trim()}
-              alt={e.titulo}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-          </div>
-        ) : (
-          <div className="flex aspect-[16/10] w-full items-center justify-center bg-muted text-muted-foreground">
-            <span className="text-4xl font-serif">·</span>
-          </div>
-        )}
-        {shareBlock}
-      </div>
+      {e.coverUrl && e.coverUrl.trim() ? (
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+          <img
+            src={e.coverUrl.trim()}
+            alt={e.titulo}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
+      ) : (
+        <div className="flex aspect-[16/10] w-full items-center justify-center bg-muted text-muted-foreground">
+          <span className="text-4xl font-serif">·</span>
+        </div>
+      )}
       <div className="flex flex-col p-4">
         <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {formatEventoRangeEs(e.fechaInicio, e.fechaFin, locale)}
@@ -229,19 +226,18 @@ function EventoCard({ e, locale, puebloSlug }: { e: EventoItem; locale: string; 
     </>
   );
 
-  if (href) {
-    return (
-      <Link
-        href={href}
-        className="group relative block overflow-hidden rounded-lg border border-border bg-card transition-all hover:shadow-md"
-      >
-        {content}
-      </Link>
-    );
-  }
   return (
-    <div className="relative block overflow-hidden rounded-lg border border-border bg-card">
-      {content}
+    <div className="group relative block overflow-hidden rounded-lg border border-border bg-card transition-all hover:shadow-md">
+      <div className="relative">
+        {href ? (
+          <Link href={href} className="block">
+            {linkableContent}
+          </Link>
+        ) : (
+          linkableContent
+        )}
+        {shareButton}
+      </div>
     </div>
   );
 }
