@@ -16,7 +16,7 @@ import {
   Caption,
 } from "@/app/components/ui/typography";
 import type { SelloPage, CmsDocumento } from "@/lib/cms/sello";
-import { CONTENIDO_SELLO_HOME } from "@/lib/cms/sello-content";
+import { CONTENIDO_SELLO_HOME, CONTENIDO_SELLO_HOME_CA } from "@/lib/cms/sello-content";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
 
@@ -143,12 +143,14 @@ const WORLD_NETWORK_KEYS = [
   { countryKey: "worldNetwork6Country" as const, nameKey: "worldNetwork6Name" as const, flag: "🇨🇭", villages: 44 },
 ];
 
-async function getSelloPage(): Promise<SelloPage | null> {
+async function getSelloPage(locale?: string): Promise<SelloPage | null> {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/public/cms/sello/SELLO_HOME`,
-      { cache: "no-store" }
-    );
+    const base = process.env.NEXT_PUBLIC_API_URL ?? "";
+    const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
+    const res = await fetch(`${base}/public/cms/sello/SELLO_HOME${langQs}`, {
+      cache: "no-store",
+      headers: locale ? { "Accept-Language": locale } : undefined,
+    });
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -196,18 +198,20 @@ async function getDocumentos(): Promise<{ estatutos: CmsDocumento[]; cartaCalida
 }
 
 export default async function ElSelloPage() {
+  const locale = (await getLocale()) as string;
   const t = await getTranslations("sello");
   const [page, documentos, siteSettings] = await Promise.all([
-    getSelloPage(),
+    getSelloPage(locale),
     getDocumentos(),
     getSiteSettings(),
   ]);
 
   const subtitle = page?.subtitle;
   const raw = page?.contenido?.trim() ?? '';
-  // Usar contenido del CMS si tiene contenido real
+  // Usar contenido del CMS si tiene contenido real; si no, fallback por idioma
   const isMinimalContent = raw.length < 200 || raw.startsWith('# ') || raw.startsWith('<h2>Título');
-  const contenido = raw && !isMinimalContent ? raw : CONTENIDO_SELLO_HOME;
+  const defaultContent = locale === 'ca' ? CONTENIDO_SELLO_HOME_CA : CONTENIDO_SELLO_HOME;
+  const contenido = raw && !isMinimalContent ? raw : defaultContent;
   const sealBadgeUrl = siteSettings.selloSealBadgeUrl || page?.heroUrl?.trim() || "/images/sello/seal-badge.jpg";
   const evaluationImageUrl = siteSettings.selloEvaluationImageUrl || "/images/sello/evaluation.jpg";
   const teamImageUrl = siteSettings.selloTeamImageUrl || "/images/sello/team.jpg";

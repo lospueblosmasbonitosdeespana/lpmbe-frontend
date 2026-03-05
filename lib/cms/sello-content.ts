@@ -244,3 +244,23 @@ export const CONTENIDO_SELLO_HOME = `
 
 <p>Formamos parte de la red internacional <em>Les Plus Beaux Villages de la Terre</em>, que agrupa a asociaciones de Francia, Italia, Bélgica, Japón, Canadá, Suiza y otros países.</p>
 `;
+
+/** Versión en catalán del contenido por defecto de la home del Sello (quan locale és 'ca'). */
+export const CONTENIDO_SELLO_HOME_CA = `
+<p>El <strong>Segell de Els Pobles Més Bonics d'Espanya</strong> és una marca de qualitat turística que distingeix els municipis que compleixen criteris rigorosos de patrimoni, conservació i compromís amb el visitant.</p>
+
+<p>Atorgat per la nostra associació, el segell garanteix una <strong>experiència autèntica</strong> a cada poble certificat. Actualment, més de <strong>126 pobles</strong> a <strong>17 comunitats autònomes</strong> duen aquest distintiu d'excel·lència.</p>
+
+<p>Cada poble candidat és avaluat segons sis pilars fonamentals:</p>
+
+<ul class="list-disc pl-6 space-y-1">
+  <li><strong>Patrimoni arquitectònic</strong> — Conservació del conjunt urbà i edificacions de valor històric.</li>
+  <li><strong>Riquesa històrica</strong> — Llegat cultural i tradicions vives.</li>
+  <li><strong>Entorn natural</strong> — Integració harmònica amb el paisatge.</li>
+  <li><strong>Vida local</strong> — Població resident i activitat econòmica.</li>
+  <li><strong>Sostenibilitat</strong> — Polítiques de conservació i desenvolupament compatible.</li>
+  <li><strong>Acollida al visitant</strong> — Infraestructura turística de qualitat.</li>
+</ul>
+
+<p>Formem part de la xarxa internacional <em>Les Plus Beaux Villages de la Terre</em>, que agrupa associacions de França, Itàlia, Bèlgica, Japó, Canadà, Suïssa i altres països.</p>
+`;

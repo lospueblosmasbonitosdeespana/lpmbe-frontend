@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import ShareButton from '@/app/components/ShareButton';
 
 type Contenido = {
@@ -24,8 +24,10 @@ function stripHtml(html: string): string {
 
 function ActualidadContent() {
   const t = useTranslations('actualidad');
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const tipoParam = searchParams.get('tipo') ?? 'TODOS';
+  const langQs = `&lang=${encodeURIComponent(locale)}`;
   const TIPOS = [
     { key: 'TODOS', label: t('all') },
     { key: 'NOTICIA', label: t('news') },
@@ -48,15 +50,15 @@ function ActualidadContent() {
         const fetches: { url: string; tipo: string; source: 'contenido' | 'notificacion' }[] = [];
 
         if (tipoParam === 'TODOS' || tipoParam === 'NOTICIA') {
-          fetches.push({ url: '/api/public/contenidos?scope=ASOCIACION&tipo=NOTICIA&limit=50', tipo: 'NOTICIA', source: 'contenido' });
-          fetches.push({ url: '/api/public/noticias?limit=50', tipo: 'NOTICIA', source: 'notificacion' });
+          fetches.push({ url: `/api/public/contenidos?scope=ASOCIACION&tipo=NOTICIA&limit=50${langQs}`, tipo: 'NOTICIA', source: 'contenido' });
+          fetches.push({ url: `/api/public/noticias?limit=50${langQs}`, tipo: 'NOTICIA', source: 'notificacion' });
         }
         if (tipoParam === 'TODOS' || tipoParam === 'EVENTO') {
-          fetches.push({ url: '/api/public/contenidos?scope=ASOCIACION&tipo=EVENTO&limit=50', tipo: 'EVENTO', source: 'contenido' });
-          fetches.push({ url: '/api/public/eventos?limit=50', tipo: 'EVENTO', source: 'notificacion' });
+          fetches.push({ url: `/api/public/contenidos?scope=ASOCIACION&tipo=EVENTO&limit=50${langQs}`, tipo: 'EVENTO', source: 'contenido' });
+          fetches.push({ url: `/api/public/eventos?limit=50${langQs}`, tipo: 'EVENTO', source: 'notificacion' });
         }
         if (tipoParam === 'TODOS' || tipoParam === 'ARTICULO') {
-          fetches.push({ url: '/api/public/contenidos?scope=ASOCIACION&tipo=ARTICULO&limit=50', tipo: 'ARTICULO', source: 'contenido' });
+          fetches.push({ url: `/api/public/contenidos?scope=ASOCIACION&tipo=ARTICULO&limit=50${langQs}`, tipo: 'ARTICULO', source: 'contenido' });
         }
 
         const responses = await Promise.all(fetches.map(f => fetch(f.url, { cache: 'no-store' }).then(r => ({ r, tipo: f.tipo, source: f.source }))));
@@ -112,7 +114,7 @@ function ActualidadContent() {
     return () => {
       cancelled = true;
     };
-  }, [tipoParam]);
+  }, [tipoParam, locale]);
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
