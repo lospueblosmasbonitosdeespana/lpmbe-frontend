@@ -316,7 +316,8 @@
   },
   "planifica": {
     "moreInPueblo": "Altri eventi a {pueblo} questo fine settimana",
-    "verPueblo": "Vedi villaggio →"
+    "verPueblo": "Vedi villaggio →",
+    "verMasEventos": "Vedi altri eventi"
   },
   "actualidad": {
     "title": "Notizie",

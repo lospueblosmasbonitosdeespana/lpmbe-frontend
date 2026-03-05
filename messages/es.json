@@ -316,7 +316,8 @@
   },
   "planifica": {
     "moreInPueblo": "Hay más eventos en {pueblo} este fin de semana",
-    "verPueblo": "Ver pueblo →"
+    "verPueblo": "Ver pueblo →",
+    "verMasEventos": "Ver más eventos"
   },
   "actualidad": {
     "title": "Actualidad",

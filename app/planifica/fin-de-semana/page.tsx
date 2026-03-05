@@ -23,24 +23,17 @@ type EventoItem = {
   } | null;
 };
 
-/** Tarjeta placeholder cuando un pueblo tiene más de 2 eventos: solo se muestra si hay >2. */
-type MoreInPuebloItem = {
-  _type: 'moreInPueblo';
-  pueblo: { nombre: string; slug: string };
-  key: string;
-};
-
-type PlanificaCardItem = EventoItem | MoreInPuebloItem;
-
-function isMoreInPueblo(item: PlanificaCardItem): item is MoreInPuebloItem {
-  return (item as MoreInPuebloItem)._type === 'moreInPueblo';
-}
+/** Para la 2ª tarjeta de un pueblo con >2 eventos: mostrar "Hay más eventos..." y enlace a la página del pueblo. */
+type MoreInPuebloInfo = { nombre: string; slug: string };
 
 /**
- * Limita a 2 eventos por pueblo; si un pueblo tiene más de 2, inserta una tarjeta
- * "Hay más eventos en [pueblo] este fin de semana" después del segundo. Eventos sin pueblo (asociación) no se limitan.
+ * Limita a 2 eventos por pueblo; devuelve la lista limitada y un mapa de eventId -> moreInPueblo
+ * para pintar en la parte de abajo de la 2ª tarjeta la etiqueta y el "Ver más" al listado del pueblo.
  */
-function limitEventosPerPueblo(eventos: EventoItem[]): PlanificaCardItem[] {
+function limitEventosPerPueblo(eventos: EventoItem[]): {
+  items: EventoItem[];
+  moreInPuebloByEventId: Map<string, MoreInPuebloInfo>;
+} {
   const countByPueblo = new Map<number, number>();
   for (const e of eventos) {
     if (e.pueblo) {
@@ -50,12 +43,12 @@ function limitEventosPerPueblo(eventos: EventoItem[]): PlanificaCardItem[] {
   }
 
   const displayed = new Map<number, number>();
-  const moreShown = new Set<number>();
-  const result: PlanificaCardItem[] = [];
+  const moreInPuebloByEventId = new Map<string, MoreInPuebloInfo>();
+  const items: EventoItem[] = [];
 
   for (const e of eventos) {
     if (!e.pueblo) {
-      result.push(e);
+      items.push(e);
       continue;
     }
     const id = e.pueblo.id;
@@ -63,19 +56,17 @@ function limitEventosPerPueblo(eventos: EventoItem[]): PlanificaCardItem[] {
     const count = displayed.get(id) ?? 0;
 
     if (count < 2) {
-      result.push(e);
+      items.push(e);
       displayed.set(id, count + 1);
-      if (count + 1 === 2 && total > 2 && !moreShown.has(id)) {
-        result.push({
-          _type: 'moreInPueblo',
-          pueblo: { nombre: e.pueblo.nombre, slug: e.pueblo.slug },
-          key: `more-${id}`,
+      if (count + 1 === 2 && total > 2) {
+        moreInPuebloByEventId.set(e.id, {
+          nombre: e.pueblo.nombre,
+          slug: e.pueblo.slug,
         });
-        moreShown.add(id);
       }
     }
   }
-  return result;
+  return { items, moreInPuebloByEventId };
 }
 
 type PlanificaData = {
@@ -94,15 +85,25 @@ const REGIONES: { key: keyof PlanificaData; label: string }[] = [
   { key: 'centro', label: 'Centro' },
 ];
 
-function EventoCard({ e, regionLabel, locale }: { e: EventoItem; regionLabel: string; locale: string }) {
-  // Si tiene slug (Contenido), enlace al detalle del evento; si no, al pueblo
+function EventoCard({
+  e,
+  regionLabel,
+  locale,
+  moreInPueblo,
+}: {
+  e: EventoItem;
+  regionLabel: string;
+  locale: string;
+  moreInPueblo?: MoreInPuebloInfo | null;
+}) {
+  const t = useTranslations('planifica');
   const href = e.slug
     ? `/c/${e.slug}`
     : e.pueblo
       ? `/pueblos/${e.pueblo.slug}`
       : null;
 
-  const contenido = (
+  const eventBlock = (
     <>
       {e.coverUrl && e.coverUrl.trim() ? (
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
@@ -143,39 +144,37 @@ function EventoCard({ e, regionLabel, locale }: { e: EventoItem; regionLabel: st
     </>
   );
 
-  if (href) {
-    return (
+  const moreBlock = moreInPueblo && (
+    <div className="border-t border-border px-4 pb-4 pt-3">
+      <span className="inline-block rounded bg-red-600 px-2 py-1 text-sm font-medium text-white">
+        {t('moreInPueblo', { pueblo: moreInPueblo.nombre })}
+      </span>
       <Link
-        href={href}
-        className="group block overflow-hidden rounded-lg border border-border bg-card transition-all hover:shadow-md"
+        href={`/planifica/fin-de-semana/pueblo/${moreInPueblo.slug}`}
+        className="mt-2 inline-block text-sm font-medium text-primary hover:underline"
       >
-        {contenido}
+        {t('verMasEventos')} →
       </Link>
-    );
-  }
-
-  return (
-    <div className="block overflow-hidden rounded-lg border border-border bg-card">
-      {contenido}
     </div>
   );
-}
 
-function MoreInPuebloCard({ item }: { item: MoreInPuebloItem }) {
-  const t = useTranslations('planifica');
-  const label = t('moreInPueblo', { pueblo: item.pueblo.nombre });
+  const cardClass = 'group block overflow-hidden rounded-lg border border-border bg-card transition-all hover:shadow-md';
+  if (moreInPueblo && href) {
+    return (
+      <div className={cardClass}>
+        <Link href={href} className="block">{eventBlock}</Link>
+        {moreBlock}
+      </div>
+    );
+  }
+  if (href) {
+    return <Link href={href} className={cardClass}>{eventBlock}</Link>;
+  }
   return (
-    <Link
-      href={`/pueblos/${item.pueblo.slug}`}
-      className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card p-6 transition-all hover:shadow-md"
-    >
-      <span className="rounded bg-red-600 px-2 py-1 text-sm font-medium text-white">
-        {label}
-      </span>
-      <span className="mt-3 inline-block text-sm font-medium text-primary">
-        {t('verPueblo')}
-      </span>
-    </Link>
+    <div className={cardClass}>
+      {eventBlock}
+      {moreBlock}
+    </div>
   );
 }
 
@@ -188,7 +187,7 @@ function RegionSection({
   eventos: EventoItem[];
   locale: string;
 }) {
-  const items = limitEventosPerPueblo(eventos);
+  const { items, moreInPuebloByEventId } = limitEventosPerPueblo(eventos);
   if (items.length === 0) return null;
 
   return (
@@ -197,13 +196,15 @@ function RegionSection({
         {label}
       </h2>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((item) =>
-          isMoreInPueblo(item) ? (
-            <MoreInPuebloCard key={item.key} item={item} />
-          ) : (
-            <EventoCard key={item.id} e={item} regionLabel={label} locale={locale} />
-          )
-        )}
+        {items.map((e) => (
+          <EventoCard
+            key={e.id}
+            e={e}
+            regionLabel={label}
+            locale={locale}
+            moreInPueblo={moreInPuebloByEventId.get(e.id) ?? null}
+          />
+        ))}
       </div>
     </section>
   );
