@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { getApiUrl } from '@/lib/api';
 
 const LOCALE_COOKIE = 'NEXT_LOCALE';
-const SUPPORTED = ['es', 'en', 'fr', 'de', 'pt', 'it'] as const;
+const SUPPORTED = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'] as const;
 
 export async function GET(req: Request) {
   const API_BASE = getApiUrl();
@@ -14,9 +14,11 @@ export async function GET(req: Request) {
   if (searchParams.get('tipo')) params.set('tipo', searchParams.get('tipo')!);
   if (searchParams.get('puebloId')) params.set('puebloId', searchParams.get('puebloId')!);
   if (searchParams.get('limit')) params.set('limit', searchParams.get('limit')!);
+  const langParam = searchParams.get('lang');
   const store = await cookies();
   const locale = store.get(LOCALE_COOKIE)?.value;
-  const lang = locale && SUPPORTED.includes(locale as (typeof SUPPORTED)[number]) ? locale : undefined;
+  const rawLang = langParam || locale;
+  const lang = rawLang && SUPPORTED.includes(rawLang as (typeof SUPPORTED)[number]) ? rawLang : undefined;
   if (lang) params.set('lang', lang);
 
   const queryString = params.toString() ? `?${params.toString()}` : '';

@@ -34,6 +34,12 @@ function ActualidadContent() {
     { key: 'EVENTO', label: t('events') },
     { key: 'ARTICULO', label: t('articles') },
   ];
+  const tipoToLabel: Record<string, string> = {
+    NOTICIA: t('news'),
+    EVENTO: t('events'),
+    ARTICULO: t('articles'),
+  };
+  const dateLocale = locale === 'es' ? 'es-ES' : locale === 'ca' ? 'ca-ES' : locale === 'en' ? 'en-GB' : locale === 'fr' ? 'fr-FR' : locale === 'de' ? 'de-DE' : locale === 'pt' ? 'pt-PT' : locale === 'it' ? 'it-IT' : 'es-ES';
   
   const [items, setItems] = useState<Contenido[]>([]);
   const [loading, setLoading] = useState(true);
@@ -165,7 +171,7 @@ function ActualidadContent() {
             }
             const fecha = item.publishedAt ?? item.createdAt;
             const fechaFormateada = fecha
-              ? new Date(fecha).toLocaleDateString('es-ES', {
+              ? new Date(fecha).toLocaleDateString(dateLocale, {
                   day: 'numeric',
                   month: 'long',
                   year: 'numeric',
@@ -188,7 +194,7 @@ function ActualidadContent() {
 
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xs font-medium text-muted-foreground uppercase">
-                      {item.tipo}
+                      {tipoToLabel[item.tipo] ?? item.tipo}
                     </span>
                     {fechaFormateada && (
                       <>

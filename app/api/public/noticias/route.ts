@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { getApiUrl } from '@/lib/api';
 
 const LOCALE_COOKIE = 'NEXT_LOCALE';
-const SUPPORTED = ['es', 'en', 'fr', 'de', 'pt', 'it'] as const;
+const SUPPORTED = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'] as const;
 
 export async function GET(req: Request) {
   const API_BASE = getApiUrl();
