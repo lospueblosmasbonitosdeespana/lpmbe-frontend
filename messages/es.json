@@ -314,11 +314,6 @@
     "legal": "Aviso Legal",
     "cookies": "Cookies"
   },
-  "planifica": {
-    "moreInPueblo": "Hay más eventos en {pueblo} este fin de semana",
-    "verPueblo": "Ver pueblo →",
-    "verMasEventos": "Ver más eventos"
-  },
   "actualidad": {
     "title": "Actualidad",
     "pageDesc": "Noticias, eventos y artículos de Los Pueblos Más Bonitos de España",
@@ -407,6 +402,9 @@
     "successMessage": "Se abrirá tu cliente de correo. Si no se abre, escríbenos directamente a"
   },
   "planifica": {
+    "moreInPueblo": "Hay más eventos en {pueblo} este fin de semana",
+    "verPueblo": "Ver pueblo →",
+    "verMasEventos": "Ver más eventos",
     "creaRuta": {
       "title": "Crea tu ruta",
       "description": "Introduce un origen y un destino y descubre qué pueblos de la asociación y recursos turísticos encontrarás por el camino.",

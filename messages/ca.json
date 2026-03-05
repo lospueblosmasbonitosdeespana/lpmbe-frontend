@@ -314,11 +314,6 @@
     "legal": "Avís legal",
     "cookies": "Galetes"
   },
-  "planifica": {
-    "moreInPueblo": "Hi ha més esdeveniments a {pueblo} aquest cap de setmana",
-    "verPueblo": "Veure poble →",
-    "verMasEventos": "Veure més esdeveniments"
-  },
   "actualidad": {
     "title": "Esdeveniments actuals",
     "pageDesc": "Notícies, esdeveniments i articles sobre els pobles més bonics d'Espanya",
@@ -374,6 +369,9 @@
     "breadcrumbPueblos": "Pobles"
   },
   "planifica": {
+    "moreInPueblo": "Hi ha més esdeveniments a {pueblo} aquest cap de setmana",
+    "verPueblo": "Veure poble →",
+    "verMasEventos": "Veure més esdeveniments",
     "creaRuta": {
       "title": "Crea la teva ruta",
       "description": "Introdueix un punt de partida i una destinació i descobreix quins pobles de l'associació i quines atraccions turístiques trobaràs pel camí.",

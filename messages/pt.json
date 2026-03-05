@@ -314,11 +314,6 @@
     "legal": "Aviso legal",
     "cookies": "Biscoitos"
   },
-  "planifica": {
-    "moreInPueblo": "Mais eventos em {pueblo} este fim de semana",
-    "verPueblo": "Ver aldeia →",
-    "verMasEventos": "Ver mais eventos"
-  },
   "actualidad": {
     "title": "Notícias",
     "pageDesc": "Notícias, eventos e artigos de As mais belas aldeias de Espanha",
@@ -374,6 +369,9 @@
     "breadcrumbPueblos": "Aldeias"
   },
   "planifica": {
+    "moreInPueblo": "Mais eventos em {pueblo} este fim de semana",
+    "verPueblo": "Ver aldeia →",
+    "verMasEventos": "Ver mais eventos",
     "creaRuta": {
       "title": "Criar o seu itinerário",
       "description": "Introduza uma origem e um destino e descubra que aldeias e recursos turísticos encontrará pelo caminho.",

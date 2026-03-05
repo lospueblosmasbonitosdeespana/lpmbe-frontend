@@ -314,11 +314,6 @@
     "legal": "Avis juridique",
     "cookies": "Cookies"
   },
-  "planifica": {
-    "moreInPueblo": "Plus d'événements à {pueblo} ce week-end",
-    "verPueblo": "Voir le village →",
-    "verMasEventos": "Voir plus d'événements"
-  },
   "actualidad": {
     "title": "Actualités",
     "pageDesc": "Nouvelles, événements et articles des Plus beaux villages d'Espagne",
@@ -374,6 +369,9 @@
     "breadcrumbPueblos": "Villages"
   },
   "planifica": {
+    "moreInPueblo": "Plus d'événements à {pueblo} ce week-end",
+    "verPueblo": "Voir le village →",
+    "verMasEventos": "Voir plus d'événements",
     "creaRuta": {
       "title": "Créez votre itinéraire",
       "description": "Entrez une origine et une destination et découvrez les villages et les ressources touristiques que vous trouverez sur votre chemin.",

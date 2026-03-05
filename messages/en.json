@@ -314,11 +314,6 @@
     "legal": "Legal Notice",
     "cookies": "Cookies"
   },
-  "planifica": {
-    "moreInPueblo": "More events in {pueblo} this weekend",
-    "verPueblo": "View village →",
-    "verMasEventos": "View more events"
-  },
   "actualidad": {
     "title": "News",
     "pageDesc": "News, events and articles from The Most Beautiful Villages of Spain",
@@ -374,6 +369,9 @@
     "breadcrumbPueblos": "Villages"
   },
   "planifica": {
+    "moreInPueblo": "More events in {pueblo} this weekend",
+    "verPueblo": "View village →",
+    "verMasEventos": "View more events",
     "creaRuta": {
       "title": "Create your route",
       "description": "Enter an origin and a destination and discover which towns and tourist resources you will find along the way.",
