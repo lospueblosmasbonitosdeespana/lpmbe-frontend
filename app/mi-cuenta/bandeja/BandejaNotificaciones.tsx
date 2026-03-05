@@ -34,6 +34,21 @@ const MAX_ITEMS = 150;
 /** Locale para formato de fecha (short month): es-ES, ca-ES, etc. */
 const DATE_LOCALE: Record<string, string> = { es: 'es-ES', ca: 'ca-ES', en: 'en-GB', fr: 'fr-FR', de: 'de-DE', pt: 'pt-PT', it: 'it-IT' };
 
+/** Quita etiquetas HTML y decodifica entidades para mostrar texto plano en la tarjeta. */
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#x27;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function formatFecha(fecha?: string | null, locale: string = 'es') {
   if (!fecha) return '';
   const d = new Date(fecha);
@@ -247,7 +262,7 @@ export default function BandejaNotificaciones() {
                   })()}
 
                   {n.contenido && (
-                    <p className="text-sm text-foreground whitespace-pre-line">{n.contenido}</p>
+                    <p className="text-sm text-foreground whitespace-pre-line">{stripHtml(n.contenido)}</p>
                   )}
 
                   {href && (
