@@ -98,12 +98,15 @@ function EventoCard({
   moreInPueblo?: MoreInPuebloInfo | null;
 }) {
   const t = useTranslations('planifica');
-  // Eventos con slug (Contenido) → página del contenido /c/slug. Sin slug (Evento pueblo) → actualidad/eventos del pueblo.
-  const href = e.slug
+  // Eventos con slug propio (Contenido, distinto del pueblo) → /c/slug. Si no hay slug o slug = pueblo → pestaña eventos del pueblo.
+  const slugDistintoDelPueblo = e.slug && e.pueblo && e.slug !== e.pueblo.slug;
+  const href = slugDistintoDelPueblo
     ? `/c/${e.slug}`
     : e.pueblo
       ? `/pueblos/${e.pueblo.slug}/actualidad?tipo=EVENTO`
-      : null;
+      : e.slug
+        ? `/c/${e.slug}`
+        : null;
 
   const shareButton = (
     <div className="absolute right-2 top-2 z-20">
