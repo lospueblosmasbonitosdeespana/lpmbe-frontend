@@ -366,7 +366,7 @@ export default function PlanificaFinDeSemanaPage() {
     });
   }, [allEventos, filterCCAA, filterProvincia]);
 
-  const isFiltered = !!filterProvincia;
+  const isFiltered = !!filterProvincia || !!filterCCAA;
 
   const nearestResult =
     showNearest && userCoords && data
@@ -436,7 +436,10 @@ export default function PlanificaFinDeSemanaPage() {
                       onChange={e => { setFilterProvincia(e.target.value); setShowNearest(false); }}
                     >
                       <option value="">{t('filterPlaceholderProvincia')}</option>
-                      {uniqueProvincias.map(p => (
+                      {(filterCCAA
+                        ? uniqueProvincias.filter(p => allEventos.some(e => e.pueblo?.comunidad === filterCCAA && e.pueblo?.provincia === p))
+                        : uniqueProvincias
+                      ).map(p => (
                         <option key={p} value={p}>{p}</option>
                       ))}
                     </select>
@@ -499,11 +502,11 @@ export default function PlanificaFinDeSemanaPage() {
             </Link>
           </div>
         ) : isFiltered ? (
-          /* Vista filtrada por provincia */
+          /* Vista filtrada por CCAA o provincia */
           <div>
             <div className="mb-6 flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                Mostrando eventos en <span className="font-semibold text-foreground">{filterProvincia}</span>
+                Mostrando eventos en <span className="font-semibold text-foreground">{filterProvincia || filterCCAA}</span>
               </p>
               <button
                 type="button"
