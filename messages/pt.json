@@ -382,6 +382,11 @@
     "nearestRetry": "Tentar novamente",
     "nearestFallbackLabel": "Ou ordenar por proximidade de:",
     "nearestFallbackPlaceholder": "Escolha uma aldeia…",
+    "filterByCCAA": "Filtrar por região",
+    "filterByProvincia": "Filtrar por província",
+    "filterPlaceholderCCAA": "Comunidade Autónoma…",
+    "filterPlaceholderProvincia": "Província…",
+    "backToRegions": "← Voltar à vista por regiões",
     "creaRuta": {
       "title": "Criar o seu itinerário",
       "description": "Introduza uma origem e um destino e descubra que aldeias e recursos turísticos encontrará pelo caminho.",

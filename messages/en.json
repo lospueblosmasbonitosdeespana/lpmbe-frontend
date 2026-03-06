@@ -382,6 +382,11 @@
     "nearestRetry": "Retry",
     "nearestFallbackLabel": "Or sort by distance from:",
     "nearestFallbackPlaceholder": "Choose a village…",
+    "filterByCCAA": "Filter by region",
+    "filterByProvincia": "Filter by province",
+    "filterPlaceholderCCAA": "Autonomous Community…",
+    "filterPlaceholderProvincia": "Province…",
+    "backToRegions": "← Back to regions view",
     "creaRuta": {
       "title": "Create your route",
       "description": "Enter an origin and a destination and discover which towns and tourist resources you will find along the way.",

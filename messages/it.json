@@ -382,6 +382,11 @@
     "nearestRetry": "Riprova",
     "nearestFallbackLabel": "Oppure ordina per vicinanza a:",
     "nearestFallbackPlaceholder": "Scegli un villaggio…",
+    "filterByCCAA": "Filtra per regione",
+    "filterByProvincia": "Filtra per provincia",
+    "filterPlaceholderCCAA": "Comunità autonoma…",
+    "filterPlaceholderProvincia": "Provincia…",
+    "backToRegions": "← Torna alla vista per regioni",
     "creaRuta": {
       "title": "Creare il percorso",
       "description": "Inserite un'origine e una destinazione e scoprite quali villaggi e risorse turistiche troverete lungo il percorso.",

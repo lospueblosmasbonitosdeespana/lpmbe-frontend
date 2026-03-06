@@ -382,6 +382,11 @@
     "nearestRetry": "Tornar a provar",
     "nearestFallbackLabel": "O ordenar per proximitat a:",
     "nearestFallbackPlaceholder": "Tria un poble…",
+    "filterByCCAA": "Filtra per comunitat",
+    "filterByProvincia": "Filtra per província",
+    "filterPlaceholderCCAA": "Comunitat autònoma…",
+    "filterPlaceholderProvincia": "Província…",
+    "backToRegions": "← Tornar a la vista per regions",
     "creaRuta": {
       "title": "Crea la teva ruta",
       "description": "Introdueix un punt de partida i una destinació i descobreix quins pobles de l'associació i quines atraccions turístiques trobaràs pel camí.",

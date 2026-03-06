@@ -382,6 +382,11 @@
     "nearestRetry": "Erneut versuchen",
     "nearestFallbackLabel": "Oder sortieren nach Nähe zu:",
     "nearestFallbackPlaceholder": "Dorf wählen…",
+    "filterByCCAA": "Nach Region filtern",
+    "filterByProvincia": "Nach Provinz filtern",
+    "filterPlaceholderCCAA": "Autonome Gemeinschaft…",
+    "filterPlaceholderProvincia": "Provinz…",
+    "backToRegions": "← Zurück zur Regionsansicht",
     "creaRuta": {
       "title": "Erstellen Sie Ihre Route",
       "description": "Geben Sie einen Start- und einen Zielort ein und entdecken Sie, welche Dörfer und touristischen Angebote Sie entlang der Strecke finden.",

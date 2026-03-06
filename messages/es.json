@@ -415,6 +415,11 @@
     "nearestRetry": "Reintentar",
     "nearestFallbackLabel": "O ordenar por cercanía a:",
     "nearestFallbackPlaceholder": "Elige un pueblo…",
+    "filterByCCAA": "Filtrar por CCAA",
+    "filterByProvincia": "Filtrar por provincia",
+    "filterPlaceholderCCAA": "Comunidad Autónoma…",
+    "filterPlaceholderProvincia": "Provincia…",
+    "backToRegions": "← Volver a la vista por regiones",
     "creaRuta": {
       "title": "Crea tu ruta",
       "description": "Introduce un origen y un destino y descubre qué pueblos de la asociación y recursos turísticos encontrarás por el camino.",

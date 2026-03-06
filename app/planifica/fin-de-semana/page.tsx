@@ -21,6 +21,7 @@ type EventoItem = {
     nombre: string;
     slug: string;
     provincia?: string | null;
+    comunidad?: string | null;
     lat?: number;
     lng?: number;
   } | null;
@@ -280,8 +281,10 @@ export default function PlanificaFinDeSemanaPage() {
   const [showNearest, setShowNearest] = useState(false);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [nearestLoading, setNearestLoading] = useState(false);
-  const [nearestMode, setNearestMode] = useState<'idle' | 'gps' | 'pueblo'>('idle');
-  const [nearestPuebloRef, setNearestPuebloRef] = useState<string | null>(null);
+  const [nearestMode, setNearestMode] = useState<'idle' | 'gps'>('idle');
+  // Filtros CCAA / provincia
+  const [filterCCAA, setFilterCCAA] = useState<string>('');
+  const [filterProvincia, setFilterProvincia] = useState<string>('');
   const nearestSectionRef = useRef<HTMLElement>(null);
 
   const handleNearestClick = () => {
@@ -292,14 +295,8 @@ export default function PlanificaFinDeSemanaPage() {
     setNearestLoading(true);
     if (!navigator.geolocation) {
       setNearestLoading(false);
-      // Sin GPS: solo el selector de pueblo está disponible
       return;
     }
-    const options: PositionOptions = {
-      enableHighAccuracy: false,
-      timeout: 8000,
-      maximumAge: 60000,
-    };
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
@@ -307,34 +304,25 @@ export default function PlanificaFinDeSemanaPage() {
         setShowNearest(true);
         setNearestLoading(false);
       },
-      () => {
-        // GPS falló silenciosamente — el usuario puede usar el selector de pueblo
-        setNearestLoading(false);
-      },
-      options
+      () => { setNearestLoading(false); },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
     );
   };
 
-  const handlePuebloRefSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const id = Number(e.target.value);
-    if (!id) return;
-    const pueblo = uniquePueblos.find((p) => p.id === id);
-    if (!pueblo) return;
-    setNearestPuebloRef(e.target.value);
-    setUserCoords({ lat: pueblo.lat, lng: pueblo.lng });
-    setNearestMode('pueblo');
-    setShowNearest(true);
+  const handleBackToRegions = () => {
+    setShowNearest(false);
+    setUserCoords(null);
+    setNearestMode('idle');
+    setFilterCCAA('');
+    setFilterProvincia('');
   };
 
   useEffect(() => {
     let cancelled = false;
-
     async function load() {
       try {
         setLoading(true);
-        const res = await fetch(`/api/public/planifica/fin-de-semana?lang=${locale}`, {
-          cache: 'no-store',
-        });
+        const res = await fetch(`/api/public/planifica/fin-de-semana?lang=${locale}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Error');
         const json = await res.json();
         if (!cancelled) setData(json);
@@ -344,33 +332,42 @@ export default function PlanificaFinDeSemanaPage() {
         if (!cancelled) setLoading(false);
       }
     }
-
     load();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [locale]);
 
-  const totalEventos =
-    data && REGIONES.reduce((acc, r) => acc + data[r.key].length, 0);
+  const totalEventos = data && REGIONES.reduce((acc, r) => acc + data[r.key].length, 0);
 
   const allEventos: EventoItem[] = data
     ? [...data.asociacion, ...data.norte, ...data.sur, ...data.este, ...data.centro]
     : [];
-  const uniquePueblos = useMemo(() => {
-    if (!data) return [];
-    const all = [...data.asociacion, ...data.norte, ...data.sur, ...data.este, ...data.centro];
-    const seen = new Set<number>();
-    const list: { id: number; nombre: string; slug: string; lat: number; lng: number }[] = [];
-    for (const e of all) {
-      const p = e.pueblo;
-      if (!p || p.lat == null || p.lng == null || seen.has(p.id)) continue;
-      seen.add(p.id);
-      list.push({ id: p.id, nombre: p.nombre, slug: p.slug, lat: p.lat, lng: p.lng });
+
+  // Listas únicas de CCAA y provincias a partir de los pueblos con eventos
+  const { uniqueCCAA, uniqueProvincias } = useMemo(() => {
+    const ccaaSet = new Set<string>();
+    const provSet = new Set<string>();
+    for (const e of allEventos) {
+      if (e.pueblo?.comunidad) ccaaSet.add(e.pueblo.comunidad);
+      if (e.pueblo?.provincia) provSet.add(e.pueblo.provincia);
     }
-    list.sort((a, b) => a.nombre.localeCompare(b.nombre, locale));
-    return list;
-  }, [data, locale]);
+    return {
+      uniqueCCAA: Array.from(ccaaSet).sort((a, b) => a.localeCompare(b, locale)),
+      uniqueProvincias: Array.from(provSet).sort((a, b) => a.localeCompare(b, locale)),
+    };
+  }, [allEventos, locale]);
+
+  // Filtrado por CCAA y/o provincia
+  const filteredEventos: EventoItem[] = useMemo(() => {
+    if (!filterCCAA && !filterProvincia) return allEventos;
+    return allEventos.filter(e => {
+      if (filterCCAA && e.pueblo?.comunidad !== filterCCAA) return false;
+      if (filterProvincia && e.pueblo?.provincia !== filterProvincia) return false;
+      return true;
+    });
+  }, [allEventos, filterCCAA, filterProvincia]);
+
+  const isFiltered = !!filterProvincia;
+
   const nearestResult =
     showNearest && userCoords && data
       ? (() => {
@@ -390,7 +387,7 @@ export default function PlanificaFinDeSemanaPage() {
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-4xl px-6 py-12 lg:py-16">
-        <header className="mb-12">
+        <header className="mb-10">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
             <div>
               <h1 className="font-serif text-4xl font-medium text-foreground">
@@ -401,7 +398,8 @@ export default function PlanificaFinDeSemanaPage() {
               </p>
             </div>
             {!loading && data && totalEventos !== 0 && (
-              <div className="flex shrink-0 flex-col items-end gap-2">
+              <div className="flex shrink-0 flex-col items-end gap-3">
+                {/* Botón GPS */}
                 <button
                   type="button"
                   onClick={handleNearestClick}
@@ -410,30 +408,39 @@ export default function PlanificaFinDeSemanaPage() {
                   aria-label={t('nearestButton')}
                 >
                   {nearestLoading
-                    ? <span className="h-4 w-4 animate-pulse rounded-full bg-primary/30" />
+                    ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                     : <LocationIcon className="h-5 w-5 text-primary" />
                   }
                   <span>{t('nearestButton')}</span>
                 </button>
-                {uniquePueblos.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <label htmlFor="planifica-pueblo-ref" className="text-xs text-muted-foreground whitespace-nowrap">
-                    {t('nearestFallbackLabel')}
-                  </label>
-                  <select
-                    id="planifica-pueblo-ref"
-                    className="rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground"
-                    value={nearestPuebloRef ?? ''}
-                    onChange={handlePuebloRefSelect}
-                  >
-                    <option value="">{t('nearestFallbackPlaceholder')}</option>
-                    {uniquePueblos.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {/* Filtro por provincia */}
+                {uniqueProvincias.length > 0 && (
+                  <div className="flex flex-col items-end gap-2">
+                    {uniqueCCAA.length > 0 && (
+                      <select
+                        id="planifica-ccaa"
+                        className="rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground max-w-[200px]"
+                        value={filterCCAA}
+                        onChange={e => { setFilterCCAA(e.target.value); setFilterProvincia(''); setShowNearest(false); }}
+                      >
+                        <option value="">{t('filterPlaceholderCCAA')}</option>
+                        {uniqueCCAA.map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    )}
+                    <select
+                      id="planifica-provincia"
+                      className="rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground max-w-[200px]"
+                      value={filterProvincia}
+                      onChange={e => { setFilterProvincia(e.target.value); setShowNearest(false); }}
+                    >
+                      <option value="">{t('filterPlaceholderProvincia')}</option>
+                      {uniqueProvincias.map(p => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </select>
+                  </div>
                 )}
               </div>
             )}
@@ -446,7 +453,9 @@ export default function PlanificaFinDeSemanaPage() {
             {t('nearestLoading')}
           </div>
         )}
-        {showNearest && userCoords && nearestEventos.length > 0 && (
+
+        {/* Vista "Eventos más cercanos" — oculta la vista por regiones */}
+        {showNearest && userCoords && nearestEventos.length > 0 ? (
           <section ref={nearestSectionRef} className="mb-14" id="eventos-mas-cercanos">
             <h2 className="mb-5 font-serif text-2xl font-medium text-foreground">
               {t('nearestTitle')}
@@ -462,10 +471,18 @@ export default function PlanificaFinDeSemanaPage() {
                 />
               ))}
             </div>
+            {/* Botón volver a vista por regiones */}
+            <div className="mt-10 flex justify-center">
+              <button
+                type="button"
+                onClick={handleBackToRegions}
+                className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-5 py-3 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted"
+              >
+                {t('backToRegions')}
+              </button>
+            </div>
           </section>
-        )}
-
-        {loading ? (
+        ) : loading ? (
           <div className="flex items-center gap-3 py-12 text-muted-foreground">
             <span className="h-4 w-4 animate-pulse rounded-full bg-primary/30" />
             Cargando eventos...
@@ -476,17 +493,39 @@ export default function PlanificaFinDeSemanaPage() {
           </div>
         ) : totalEventos === 0 ? (
           <div className="rounded-lg border border-border bg-card p-12 text-center">
-            <p className="text-muted-foreground">
-              No hay eventos previstos para el próximo fin de semana.
-            </p>
-            <Link
-              href="/pueblos"
-              className="mt-4 inline-block text-sm font-medium text-primary hover:underline"
-            >
+            <p className="text-muted-foreground">No hay eventos previstos para el próximo fin de semana.</p>
+            <Link href="/pueblos" className="mt-4 inline-block text-sm font-medium text-primary hover:underline">
               Explorar pueblos →
             </Link>
           </div>
+        ) : isFiltered ? (
+          /* Vista filtrada por provincia */
+          <div>
+            <div className="mb-6 flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Mostrando eventos en <span className="font-semibold text-foreground">{filterProvincia}</span>
+              </p>
+              <button
+                type="button"
+                onClick={handleBackToRegions}
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                {t('backToRegions')}
+              </button>
+            </div>
+            {(() => {
+              const { items, moreInPuebloByEventId } = limitEventosPerPueblo(filteredEventos);
+              return (
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {items.map((e) => (
+                    <EventoCard key={e.id} e={e} regionLabel={filterProvincia} locale={locale} moreInPueblo={moreInPuebloByEventId.get(e.id) ?? null} />
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
         ) : (
+          /* Vista normal por regiones */
           <div>
             {REGIONES.map(({ key, label }) => (
               <RegionSection key={key} label={label} eventos={data[key]} locale={locale} />
@@ -495,10 +534,7 @@ export default function PlanificaFinDeSemanaPage() {
         )}
 
         <footer className="mt-14 pt-8 border-t border-border">
-          <Link
-            href="/"
-            className="text-sm text-muted-foreground hover:text-foreground hover:underline"
-          >
+          <Link href="/" className="text-sm text-muted-foreground hover:text-foreground hover:underline">
             ← Volver al inicio
           </Link>
         </footer>

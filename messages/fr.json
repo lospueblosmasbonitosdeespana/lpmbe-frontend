@@ -382,6 +382,11 @@
     "nearestRetry": "Réessayer",
     "nearestFallbackLabel": "Ou trier par proximité avec :",
     "nearestFallbackPlaceholder": "Choisir un village…",
+    "filterByCCAA": "Filtrer par région",
+    "filterByProvincia": "Filtrer par province",
+    "filterPlaceholderCCAA": "Communauté autonome…",
+    "filterPlaceholderProvincia": "Province…",
+    "backToRegions": "← Retour à la vue par régions",
     "creaRuta": {
       "title": "Créez votre itinéraire",
       "description": "Entrez une origine et une destination et découvrez les villages et les ressources touristiques que vous trouverez sur votre chemin.",
