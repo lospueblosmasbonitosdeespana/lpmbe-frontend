@@ -20,6 +20,9 @@ export default function robots(): MetadataRoute.Robots {
           '/checkout/',
           '/validador/',
           '/api/',
+          // Feeds WP antiguos (404): evitar que Google los rastree
+          '/feed/',
+          '/*/feed/',
         ],
       },
     ],
