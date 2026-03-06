@@ -339,11 +339,11 @@ export default async function HomePage() {
         thumbnailUrl: videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : undefined,
       };
     })
-    .filter(Boolean);
+    .filter(Boolean) as Record<string, unknown>[];
 
   return (
     <main>
-      {homeVideoLds.map((ld: Record<string, unknown>, i: number) => (
+      {homeVideoLds.map((ld, i) => (
         <JsonLd key={i} data={ld} />
       ))}
       <HomePageNew
