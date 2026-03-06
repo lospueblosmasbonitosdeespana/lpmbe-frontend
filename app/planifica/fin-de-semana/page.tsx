@@ -400,7 +400,7 @@ export default function PlanificaFinDeSemanaPage() {
                 Eventos de los pueblos y de la asociación para el próximo fin de semana (de lunes a domingo), organizados por región.
               </p>
             </div>
-            {!loading && data && totalEventos !== 0 && uniquePueblos.length > 0 && (
+            {!loading && data && totalEventos !== 0 && (
               <div className="flex shrink-0 flex-col items-end gap-2">
                 <button
                   type="button"
@@ -415,6 +415,7 @@ export default function PlanificaFinDeSemanaPage() {
                   }
                   <span>{t('nearestButton')}</span>
                 </button>
+                {uniquePueblos.length > 0 && (
                 <div className="flex items-center gap-2">
                   <label htmlFor="planifica-pueblo-ref" className="text-xs text-muted-foreground whitespace-nowrap">
                     {t('nearestFallbackLabel')}
@@ -433,6 +434,7 @@ export default function PlanificaFinDeSemanaPage() {
                     ))}
                   </select>
                 </div>
+                )}
               </div>
             )}
           </div>
