@@ -380,6 +380,8 @@
     "nearestErrorUnavailable": "El teu dispositiu no ha pogut obtenir la posició. Prova en un lloc amb millor cobertura o més tard.",
     "nearestErrorTimeout": "La ubicació ha trigat massa. Torna a prémer «Els esdeveniments més propers» per tornar-ho a provar.",
     "nearestRetry": "Tornar a provar",
+    "nearestFallbackLabel": "O ordenar per proximitat a:",
+    "nearestFallbackPlaceholder": "Tria un poble…",
     "creaRuta": {
       "title": "Crea la teva ruta",
       "description": "Introdueix un punt de partida i una destinació i descobreix quins pobles de l'associació i quines atraccions turístiques trobaràs pel camí.",

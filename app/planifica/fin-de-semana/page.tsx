@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { formatEventoRangeEs } from '@/app/_lib/dates';
 import { stripHtml } from '@/app/_lib/html';
@@ -322,6 +322,12 @@ export default function PlanificaFinDeSemanaPage() {
     );
   };
 
+  const handlePuebloRefSelect = (pueblo: { id: number; nombre: string; slug: string; lat: number; lng: number }) => {
+    setUserCoords({ lat: pueblo.lat, lng: pueblo.lng });
+    setShowNearest(true);
+    setNearestError(null);
+  };
+
   useEffect(() => {
     let cancelled = false;
 
@@ -353,6 +359,20 @@ export default function PlanificaFinDeSemanaPage() {
   const allEventos: EventoItem[] = data
     ? [...data.asociacion, ...data.norte, ...data.sur, ...data.este, ...data.centro]
     : [];
+  const uniquePueblos = useMemo(() => {
+    if (!data) return [];
+    const all = [...data.asociacion, ...data.norte, ...data.sur, ...data.este, ...data.centro];
+    const seen = new Set<number>();
+    const list: { id: number; nombre: string; slug: string; lat: number; lng: number }[] = [];
+    for (const e of all) {
+      const p = e.pueblo;
+      if (!p || p.lat == null || p.lng == null || seen.has(p.id)) continue;
+      seen.add(p.id);
+      list.push({ id: p.id, nombre: p.nombre, slug: p.slug, lat: p.lat, lng: p.lng });
+    }
+    list.sort((a, b) => a.nombre.localeCompare(b.nombre, locale));
+    return list;
+  }, [data, locale]);
   const nearestResult =
     showNearest && userCoords && data
       ? (() => {
@@ -383,16 +403,43 @@ export default function PlanificaFinDeSemanaPage() {
               </p>
             </div>
             {!loading && data && totalEventos !== 0 && (
-              <button
-                type="button"
-                onClick={handleNearestClick}
-                disabled={nearestLoading}
-                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted disabled:opacity-60"
-                aria-label={t('nearestButton')}
-              >
-                <LocationIcon className="h-5 w-5 text-primary" />
-                <span>{t('nearestButton')}</span>
-              </button>
+              <div className="flex shrink-0 flex-col gap-2 sm:items-end">
+                <button
+                  type="button"
+                  onClick={handleNearestClick}
+                  disabled={nearestLoading}
+                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted disabled:opacity-60"
+                  aria-label={t('nearestButton')}
+                >
+                  <LocationIcon className="h-5 w-5 text-primary" />
+                  <span>{t('nearestButton')}</span>
+                </button>
+                {uniquePueblos.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="planifica-pueblo-ref" className="text-sm text-muted-foreground whitespace-nowrap">
+                      {t('nearestFallbackLabel')}
+                    </label>
+                    <select
+                      id="planifica-pueblo-ref"
+                      className="rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground"
+                      value=""
+                      onChange={(e) => {
+                        const id = Number(e.target.value);
+                        if (!id) return;
+                        const pueblo = uniquePueblos.find((p) => p.id === id);
+                        if (pueblo) handlePuebloRefSelect(pueblo);
+                      }}
+                    >
+                      <option value="">{t('nearestFallbackPlaceholder')}</option>
+                      {uniquePueblos.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </header>
@@ -406,13 +453,37 @@ export default function PlanificaFinDeSemanaPage() {
         {nearestError && !nearestLoading && (
           <div className="mb-10 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
             <p>{nearestError}</p>
-            <button
-              type="button"
-              onClick={() => { setNearestError(null); handleNearestClick(); }}
-              className="mt-3 rounded-md border border-current px-3 py-1.5 text-sm font-medium hover:bg-destructive/20"
-            >
-              {t('nearestRetry')}
-            </button>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => { setNearestError(null); handleNearestClick(); }}
+                className="rounded-md border border-current px-3 py-1.5 text-sm font-medium hover:bg-destructive/20"
+              >
+                {t('nearestRetry')}
+              </button>
+              {uniquePueblos.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">{t('nearestFallbackLabel')}</span>
+                  <select
+                    className="rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground"
+                    value=""
+                    onChange={(e) => {
+                      const id = Number(e.target.value);
+                      if (!id) return;
+                      const pueblo = uniquePueblos.find((p) => p.id === id);
+                      if (pueblo) handlePuebloRefSelect(pueblo);
+                    }}
+                  >
+                    <option value="">{t('nearestFallbackPlaceholder')}</option>
+                    {uniquePueblos.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
           </div>
         )}
         {showNearest && userCoords && nearestEventos.length > 0 && (

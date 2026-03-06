@@ -380,6 +380,8 @@
     "nearestErrorUnavailable": "Your device could not get your position. Try again in a place with better coverage or later.",
     "nearestErrorTimeout": "Location took too long. Tap «Nearest events» again to try again.",
     "nearestRetry": "Retry",
+    "nearestFallbackLabel": "Or sort by distance from:",
+    "nearestFallbackPlaceholder": "Choose a village…",
     "creaRuta": {
       "title": "Create your route",
       "description": "Enter an origin and a destination and discover which towns and tourist resources you will find along the way.",

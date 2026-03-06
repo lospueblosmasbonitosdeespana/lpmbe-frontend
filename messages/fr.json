@@ -380,6 +380,8 @@
     "nearestErrorUnavailable": "Votre appareil n'a pas pu obtenir la position. Réessayez dans un endroit avec une meilleure couverture.",
     "nearestErrorTimeout": "La localisation a pris trop de temps. Appuyez à nouveau sur « Les événements les plus proches » pour réessayer.",
     "nearestRetry": "Réessayer",
+    "nearestFallbackLabel": "Ou trier par proximité avec :",
+    "nearestFallbackPlaceholder": "Choisir un village…",
     "creaRuta": {
       "title": "Créez votre itinéraire",
       "description": "Entrez une origine et une destination et découvrez les villages et les ressources touristiques que vous trouverez sur votre chemin.",

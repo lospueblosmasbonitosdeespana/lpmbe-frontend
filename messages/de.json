@@ -380,6 +380,8 @@
     "nearestErrorUnavailable": "Ihr Gerät konnte den Standort nicht ermitteln. Versuchen Sie es an einem Ort mit besserem Empfang erneut.",
     "nearestErrorTimeout": "Die Standortabfrage hat zu lange gedauert. Tippen Sie erneut auf « Nächste Veranstaltungen », um es erneut zu versuchen.",
     "nearestRetry": "Erneut versuchen",
+    "nearestFallbackLabel": "Oder sortieren nach Nähe zu:",
+    "nearestFallbackPlaceholder": "Dorf wählen…",
     "creaRuta": {
       "title": "Erstellen Sie Ihre Route",
       "description": "Geben Sie einen Start- und einen Zielort ein und entdecken Sie, welche Dörfer und touristischen Angebote Sie entlang der Strecke finden.",
