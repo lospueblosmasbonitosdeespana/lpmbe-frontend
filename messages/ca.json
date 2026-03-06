@@ -372,6 +372,10 @@
     "moreInPueblo": "Hi ha més esdeveniments a {pueblo} aquest cap de setmana",
     "verPueblo": "Veure poble →",
     "verMasEventos": "Veure més esdeveniments",
+    "nearestButton": "Els esdeveniments més propers",
+    "nearestTitle": "Esdeveniments més propers a tu",
+    "nearestLoading": "Calculant els esdeveniments més propers...",
+    "nearestError": "No hem pogut obtenir la teva ubicació. Comprova que el navegador tingui permís d'ubicació.",
     "creaRuta": {
       "title": "Crea la teva ruta",
       "description": "Introdueix un punt de partida i una destinació i descobreix quins pobles de l'associació i quines atraccions turístiques trobaràs pel camí.",

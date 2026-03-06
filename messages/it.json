@@ -372,6 +372,10 @@
     "moreInPueblo": "Altri eventi a {pueblo} questo fine settimana",
     "verPueblo": "Vedi villaggio →",
     "verMasEventos": "Vedi altri eventi",
+    "nearestButton": "Gli eventi più vicini",
+    "nearestTitle": "Eventi più vicini a te",
+    "nearestLoading": "Calcolo degli eventi più vicini...",
+    "nearestError": "Non siamo riusciti a ottenere la tua posizione. Verifica che il browser abbia il permesso di localizzazione.",
     "creaRuta": {
       "title": "Creare il percorso",
       "description": "Inserite un'origine e una destinazione e scoprite quali villaggi e risorse turistiche troverete lungo il percorso.",

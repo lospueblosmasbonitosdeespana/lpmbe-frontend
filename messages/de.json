@@ -372,6 +372,10 @@
     "moreInPueblo": "Weitere Veranstaltungen in {pueblo} an diesem Wochenende",
     "verPueblo": "Dorf anzeigen →",
     "verMasEventos": "Weitere Veranstaltungen anzeigen",
+    "nearestButton": "Nächste Veranstaltungen",
+    "nearestTitle": "Veranstaltungen in Ihrer Nähe",
+    "nearestLoading": "Berechne nächste Veranstaltungen...",
+    "nearestError": "Ihr Standort konnte nicht ermittelt werden. Bitte erlauben Sie die Standortfreigabe im Browser.",
     "creaRuta": {
       "title": "Erstellen Sie Ihre Route",
       "description": "Geben Sie einen Start- und einen Zielort ein und entdecken Sie, welche Dörfer und touristischen Angebote Sie entlang der Strecke finden.",

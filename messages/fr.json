@@ -372,6 +372,10 @@
     "moreInPueblo": "Plus d'événements à {pueblo} ce week-end",
     "verPueblo": "Voir le village →",
     "verMasEventos": "Voir plus d'événements",
+    "nearestButton": "Les événements les plus proches",
+    "nearestTitle": "Événements les plus proches de vous",
+    "nearestLoading": "Calcul des événements les plus proches...",
+    "nearestError": "Impossible d'obtenir votre position. Vérifiez que le navigateur a la permission de localisation.",
     "creaRuta": {
       "title": "Créez votre itinéraire",
       "description": "Entrez une origine et une destination et découvrez les villages et les ressources touristiques que vous trouverez sur votre chemin.",

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { formatEventoRangeEs } from '@/app/_lib/dates';
 import { stripHtml } from '@/app/_lib/html';
@@ -21,8 +21,47 @@ type EventoItem = {
     nombre: string;
     slug: string;
     provincia?: string | null;
+    lat?: number;
+    lng?: number;
   } | null;
 };
+
+function haversineKm(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number
+): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function eventosOrdenadosPorCercania(
+  eventos: EventoItem[],
+  userLat: number,
+  userLng: number
+): EventoItem[] {
+  return [...eventos].sort((a, b) => {
+    const latA = a.pueblo?.lat;
+    const lngA = a.pueblo?.lng;
+    const latB = b.pueblo?.lat;
+    const lngB = b.pueblo?.lng;
+    if (latA == null || lngA == null) return 1;
+    if (latB == null || lngB == null) return -1;
+    const distA = haversineKm(userLat, userLng, latA, lngA);
+    const distB = haversineKm(userLat, userLng, latB, lngB);
+    return distA - distB;
+  });
+}
 
 /** Para la 2ª tarjeta de un pueblo con >2 eventos: mostrar "Hay más eventos..." y enlace a la página del pueblo. */
 type MoreInPuebloInfo = { nombre: string; slug: string };
@@ -224,10 +263,51 @@ function RegionSection({
   );
 }
 
+function LocationIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
 export default function PlanificaFinDeSemanaPage() {
   const locale = useLocale();
+  const t = useTranslations('planifica');
   const [data, setData] = useState<PlanificaData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showNearest, setShowNearest] = useState(false);
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [nearestLoading, setNearestLoading] = useState(false);
+  const [nearestError, setNearestError] = useState<string | null>(null);
+  const nearestSectionRef = useRef<HTMLElement>(null);
+
+  const handleNearestClick = () => {
+    if (userCoords) {
+      setShowNearest(true);
+      return;
+    }
+    setNearestError(null);
+    setNearestLoading(true);
+    if (!navigator.geolocation) {
+      setNearestLoading(false);
+      setNearestError(t('nearestError'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setShowNearest(true);
+        setNearestLoading(false);
+      },
+      () => {
+        setNearestError(t('nearestError'));
+        setNearestLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+    );
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -257,17 +337,82 @@ export default function PlanificaFinDeSemanaPage() {
   const totalEventos =
     data && REGIONES.reduce((acc, r) => acc + data[r.key].length, 0);
 
+  const allEventos: EventoItem[] = data
+    ? [...data.asociacion, ...data.norte, ...data.sur, ...data.este, ...data.centro]
+    : [];
+  const nearestResult =
+    showNearest && userCoords && data
+      ? (() => {
+          const sorted = eventosOrdenadosPorCercania(allEventos, userCoords.lat, userCoords.lng);
+          return limitEventosPerPueblo(sorted);
+        })()
+      : null;
+  const nearestEventos = nearestResult?.items ?? [];
+  const nearestMoreInPuebloByEventId = nearestResult?.moreInPuebloByEventId ?? new Map<string, MoreInPuebloInfo>();
+
+  useEffect(() => {
+    if (showNearest && nearestEventos.length > 0 && nearestSectionRef.current) {
+      nearestSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [showNearest, nearestEventos.length]);
+
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-4xl px-6 py-12 lg:py-16">
         <header className="mb-12">
-          <h1 className="font-serif text-4xl font-medium text-foreground">
-            Planifica tu fin de semana
-          </h1>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            Eventos de los pueblos y de la asociación para el próximo fin de semana (de lunes a domingo), organizados por región.
-          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+            <div>
+              <h1 className="font-serif text-4xl font-medium text-foreground">
+                Planifica tu fin de semana
+              </h1>
+              <p className="mt-3 max-w-2xl text-muted-foreground">
+                Eventos de los pueblos y de la asociación para el próximo fin de semana (de lunes a domingo), organizados por región.
+              </p>
+            </div>
+            {!loading && data && totalEventos !== 0 && (
+              <button
+                type="button"
+                onClick={handleNearestClick}
+                disabled={nearestLoading}
+                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted disabled:opacity-60"
+                aria-label={t('nearestButton')}
+              >
+                <LocationIcon className="h-5 w-5 text-primary" />
+                <span>{t('nearestButton')}</span>
+              </button>
+            )}
+          </div>
         </header>
+
+        {nearestLoading && (
+          <div className="mb-10 flex items-center gap-3 rounded-lg border border-border bg-card p-4 text-muted-foreground">
+            <span className="h-4 w-4 animate-pulse rounded-full bg-primary/30" />
+            {t('nearestLoading')}
+          </div>
+        )}
+        {nearestError && !nearestLoading && (
+          <div className="mb-10 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+            {nearestError}
+          </div>
+        )}
+        {showNearest && userCoords && nearestEventos.length > 0 && (
+          <section ref={nearestSectionRef} className="mb-14" id="eventos-mas-cercanos">
+            <h2 className="mb-5 font-serif text-2xl font-medium text-foreground">
+              {t('nearestTitle')}
+            </h2>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {nearestEventos.map((e) => (
+                <EventoCard
+                  key={e.id}
+                  e={e}
+                  regionLabel={t('nearestTitle')}
+                  locale={locale}
+                  moreInPueblo={nearestMoreInPuebloByEventId.get(e.id) ?? null}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
         {loading ? (
           <div className="flex items-center gap-3 py-12 text-muted-foreground">

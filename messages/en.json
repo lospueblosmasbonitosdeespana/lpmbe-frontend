@@ -372,6 +372,10 @@
     "moreInPueblo": "More events in {pueblo} this weekend",
     "verPueblo": "View village →",
     "verMasEventos": "View more events",
+    "nearestButton": "Nearest events",
+    "nearestTitle": "Events nearest to you",
+    "nearestLoading": "Calculating nearest events...",
+    "nearestError": "We could not get your location. Please check that the browser has location permission.",
     "creaRuta": {
       "title": "Create your route",
       "description": "Enter an origin and a destination and discover which towns and tourist resources you will find along the way.",

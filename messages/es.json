@@ -405,6 +405,10 @@
     "moreInPueblo": "Hay más eventos en {pueblo} este fin de semana",
     "verPueblo": "Ver pueblo →",
     "verMasEventos": "Ver más eventos",
+    "nearestButton": "Los eventos más cercanos",
+    "nearestTitle": "Eventos más cercanos a ti",
+    "nearestLoading": "Calculando los eventos más cercanos...",
+    "nearestError": "No hemos podido obtener tu ubicación. Comprueba que el navegador tenga permiso de ubicación.",
     "creaRuta": {
       "title": "Crea tu ruta",
       "description": "Introduce un origen y un destino y descubre qué pueblos de la asociación y recursos turísticos encontrarás por el camino.",

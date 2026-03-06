@@ -372,6 +372,10 @@
     "moreInPueblo": "Mais eventos em {pueblo} este fim de semana",
     "verPueblo": "Ver aldeia →",
     "verMasEventos": "Ver mais eventos",
+    "nearestButton": "Os eventos mais próximos",
+    "nearestTitle": "Eventos mais próximos de si",
+    "nearestLoading": "A calcular os eventos mais próximos...",
+    "nearestError": "Não foi possível obter a sua localização. Verifique se o navegador tem permissão de localização.",
     "creaRuta": {
       "title": "Criar o seu itinerário",
       "description": "Introduza uma origem e um destino e descubra que aldeias e recursos turísticos encontrará pelo caminho.",
