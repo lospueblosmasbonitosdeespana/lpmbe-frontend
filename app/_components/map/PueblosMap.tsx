@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import L from "leaflet";
 
 const TERRACOTTA = "#7c2d34";
@@ -35,6 +35,15 @@ interface PueblosMapProps {
   compact?: boolean;
 }
 
+function makeUserIcon() {
+  return L.divIcon({
+    html: `<div style="width:20px;height:20px;border-radius:50%;background:#2563eb;border:3px solid #fff;box-shadow:0 2px 8px rgba(37,99,235,.5)"></div>`,
+    className: "",
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  });
+}
+
 const LABEL_STYLES = `
   .pueblo-label {
     background: rgba(255,255,255,0.92) !important;
@@ -54,8 +63,51 @@ const LABEL_STYLES = `
 export default function PueblosMap({ className, compact }: PueblosMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const userMarkerRef = useRef<L.Marker | null>(null);
   const [pueblos, setPueblos] = useState<PuebloMapa[]>([]);
   const [loading, setLoading] = useState(true);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
+
+  const handleGeolocate = useCallback(() => {
+    if (!navigator.geolocation) return;
+    setGeoLoading(true);
+    setGeoError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        const map = mapInstanceRef.current;
+        if (!map) { setGeoLoading(false); return; }
+
+        // Eliminar marcador previo del usuario
+        if (userMarkerRef.current) {
+          userMarkerRef.current.remove();
+        }
+
+        // Crear marcador de usuario con animación de pulso
+        const userIcon = makeUserIcon();
+        const marker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 })
+          .addTo(map)
+          .bindPopup("<strong>Tu ubicación</strong>", { closeButton: false });
+        userMarkerRef.current = marker;
+
+        // Centrar el mapa en el usuario con zoom apropiado
+        map.flyTo([lat, lng], 9, { animate: true, duration: 1.2 });
+        marker.openPopup();
+        setGeoLoading(false);
+      },
+      (err) => {
+        setGeoLoading(false);
+        if (err.code === 1) {
+          setGeoError("Permiso denegado. Activa la ubicación en tu navegador.");
+        } else {
+          setGeoError("No se pudo obtener tu posición.");
+        }
+        setTimeout(() => setGeoError(null), 4000);
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+    );
+  }, []);
 
   useEffect(() => {
     if (document.getElementById("pueblo-label-styles")) return;
@@ -170,6 +222,7 @@ export default function PueblosMap({ className, compact }: PueblosMapProps) {
     return () => {
       map.remove();
       mapInstanceRef.current = null;
+      userMarkerRef.current = null;
     };
   }, [pueblos, compact]);
 
@@ -191,9 +244,39 @@ export default function PueblosMap({ className, compact }: PueblosMapProps) {
   }
 
   return (
-    <div
-      ref={mapRef}
-      className={`relative z-0 w-full rounded-2xl border border-border shadow-sm ${heightClass} ${className ?? ""}`}
-    />
+    <div className={`relative w-full ${className ?? ""}`}>
+      <div
+        ref={mapRef}
+        className={`relative z-0 w-full rounded-2xl border border-border shadow-sm ${heightClass}`}
+      />
+      {/* Botón de geolocalización */}
+      {!compact && (
+        <div className="absolute bottom-5 right-3 z-[400] flex flex-col items-end gap-2">
+          {geoError && (
+            <div className="rounded-lg bg-white px-3 py-2 text-xs text-red-600 shadow-md border border-red-200 max-w-[200px] text-right">
+              {geoError}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={handleGeolocate}
+            disabled={geoLoading}
+            title="Mi ubicación"
+            aria-label="Centrar mapa en mi ubicación"
+            className="flex items-center gap-2 rounded-xl border border-border bg-white px-4 py-2.5 text-sm font-semibold text-foreground shadow-md transition hover:bg-muted disabled:opacity-60 dark:bg-neutral-800 dark:border-neutral-600 dark:hover:bg-neutral-700"
+          >
+            {geoLoading ? (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-primary" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+              </svg>
+            )}
+            <span>Mi ubicación</span>
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
