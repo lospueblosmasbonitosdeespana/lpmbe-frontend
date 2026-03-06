@@ -5,7 +5,7 @@ import { getApiUrl } from '@/lib/api';
 export async function GET() {
   const API_BASE = getApiUrl();
   const store = await cookies();
-  const token = store.get('token')?.value;
+  const token = store.get('auth_token')?.value;
 
   if (!token) {
     return NextResponse.json([], { status: 401 });
