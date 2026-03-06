@@ -295,17 +295,30 @@ export default function PlanificaFinDeSemanaPage() {
       setNearestError(t('nearestError'));
       return;
     }
+    const options: PositionOptions = {
+      enableHighAccuracy: false,
+      timeout: 20000,
+      maximumAge: 60000,
+    };
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setShowNearest(true);
         setNearestLoading(false);
       },
-      () => {
-        setNearestError(t('nearestError'));
+      (err: GeolocationPositionError) => {
+        const message =
+          err.code === 1
+            ? t('nearestErrorDenied')
+            : err.code === 2
+              ? t('nearestErrorUnavailable')
+              : err.code === 3
+                ? t('nearestErrorTimeout')
+                : t('nearestError');
+        setNearestError(message);
         setNearestLoading(false);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+      options
     );
   };
 
@@ -392,7 +405,14 @@ export default function PlanificaFinDeSemanaPage() {
         )}
         {nearestError && !nearestLoading && (
           <div className="mb-10 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-            {nearestError}
+            <p>{nearestError}</p>
+            <button
+              type="button"
+              onClick={() => { setNearestError(null); handleNearestClick(); }}
+              className="mt-3 rounded-md border border-current px-3 py-1.5 text-sm font-medium hover:bg-destructive/20"
+            >
+              {t('nearestRetry')}
+            </button>
           </div>
         )}
         {showNearest && userCoords && nearestEventos.length > 0 && (

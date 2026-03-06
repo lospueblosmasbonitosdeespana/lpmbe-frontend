@@ -376,6 +376,10 @@
     "nearestTitle": "Événements les plus proches de vous",
     "nearestLoading": "Calcul des événements les plus proches...",
     "nearestError": "Impossible d'obtenir votre position. Vérifiez que le navigateur a la permission de localisation.",
+    "nearestErrorDenied": "Le navigateur a bloqué l'accès à la position. Activez l'autorisation pour ce site dans les paramètres.",
+    "nearestErrorUnavailable": "Votre appareil n'a pas pu obtenir la position. Réessayez dans un endroit avec une meilleure couverture.",
+    "nearestErrorTimeout": "La localisation a pris trop de temps. Appuyez à nouveau sur « Les événements les plus proches » pour réessayer.",
+    "nearestRetry": "Réessayer",
     "creaRuta": {
       "title": "Créez votre itinéraire",
       "description": "Entrez une origine et une destination et découvrez les villages et les ressources touristiques que vous trouverez sur votre chemin.",

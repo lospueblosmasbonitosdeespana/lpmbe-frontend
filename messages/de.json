@@ -376,6 +376,10 @@
     "nearestTitle": "Veranstaltungen in Ihrer Nähe",
     "nearestLoading": "Berechne nächste Veranstaltungen...",
     "nearestError": "Ihr Standort konnte nicht ermittelt werden. Bitte erlauben Sie die Standortfreigabe im Browser.",
+    "nearestErrorDenied": "Der Browser hat den Standortzugriff blockiert. Erlauben Sie die Standortfreigabe für diese Seite in den Einstellungen.",
+    "nearestErrorUnavailable": "Ihr Gerät konnte den Standort nicht ermitteln. Versuchen Sie es an einem Ort mit besserem Empfang erneut.",
+    "nearestErrorTimeout": "Die Standortabfrage hat zu lange gedauert. Tippen Sie erneut auf « Nächste Veranstaltungen », um es erneut zu versuchen.",
+    "nearestRetry": "Erneut versuchen",
     "creaRuta": {
       "title": "Erstellen Sie Ihre Route",
       "description": "Geben Sie einen Start- und einen Zielort ein und entdecken Sie, welche Dörfer und touristischen Angebote Sie entlang der Strecke finden.",

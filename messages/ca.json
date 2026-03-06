@@ -376,6 +376,10 @@
     "nearestTitle": "Esdeveniments més propers a tu",
     "nearestLoading": "Calculant els esdeveniments més propers...",
     "nearestError": "No hem pogut obtenir la teva ubicació. Comprova que el navegador tingui permís d'ubicació.",
+    "nearestErrorDenied": "El navegador ha bloquejat l'accés a la ubicació. Activa el permís per a aquest lloc a la configuració del navegador.",
+    "nearestErrorUnavailable": "El teu dispositiu no ha pogut obtenir la posició. Prova en un lloc amb millor cobertura o més tard.",
+    "nearestErrorTimeout": "La ubicació ha trigat massa. Torna a prémer «Els esdeveniments més propers» per tornar-ho a provar.",
+    "nearestRetry": "Tornar a provar",
     "creaRuta": {
       "title": "Crea la teva ruta",
       "description": "Introdueix un punt de partida i una destinació i descobreix quins pobles de l'associació i quines atraccions turístiques trobaràs pel camí.",

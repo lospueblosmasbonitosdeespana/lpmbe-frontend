@@ -376,6 +376,10 @@
     "nearestTitle": "Eventos mais próximos de si",
     "nearestLoading": "A calcular os eventos mais próximos...",
     "nearestError": "Não foi possível obter a sua localização. Verifique se o navegador tem permissão de localização.",
+    "nearestErrorDenied": "O navegador bloqueou o acesso à localização. Ative a permissão para este site nas definições.",
+    "nearestErrorUnavailable": "O seu dispositivo não conseguiu obter a posição. Tente novamente num local com melhor cobertura.",
+    "nearestErrorTimeout": "A localização demorou demasiado. Toque novamente em « Os eventos mais próximos » para tentar de novo.",
+    "nearestRetry": "Tentar novamente",
     "creaRuta": {
       "title": "Criar o seu itinerário",
       "description": "Introduza uma origem e um destino e descubra que aldeias e recursos turísticos encontrará pelo caminho.",

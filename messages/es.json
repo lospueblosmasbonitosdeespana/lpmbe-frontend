@@ -409,6 +409,10 @@
     "nearestTitle": "Eventos más cercanos a ti",
     "nearestLoading": "Calculando los eventos más cercanos...",
     "nearestError": "No hemos podido obtener tu ubicación. Comprueba que el navegador tenga permiso de ubicación.",
+    "nearestErrorDenied": "El navegador ha bloqueado el acceso a la ubicación. Activa el permiso para este sitio en la configuración del navegador.",
+    "nearestErrorUnavailable": "Tu dispositivo no ha podido obtener la posición. Prueba en un lugar con mejor cobertura o más tarde.",
+    "nearestErrorTimeout": "La ubicación ha tardado demasiado. Vuelve a pulsar «Los eventos más cercanos» para intentarlo de nuevo.",
+    "nearestRetry": "Reintentar",
     "creaRuta": {
       "title": "Crea tu ruta",
       "description": "Introduce un origen y un destino y descubre qué pueblos de la asociación y recursos turísticos encontrarás por el camino.",
