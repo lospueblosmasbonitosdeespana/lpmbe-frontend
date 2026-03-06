@@ -3,7 +3,8 @@ import { getLocale } from "next-intl/server";
 import { HomePageNew, type NotificationItem, type CategoryCard, type RouteCard, type VillageCard, type NewsItem } from "./_components/home/HomePageNew";
 import { getHomeConfig, getHomeVideos } from "@/lib/homeApi";
 import { getRutas, getApiUrl, getPueblosLite, getPuebloMainPhoto, type Pueblo } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, DEFAULT_DESCRIPTION, SITE_NAME } from "@/lib/seo";
+import { getCanonicalUrl, getLocaleAlternates, getBaseUrl, DEFAULT_DESCRIPTION, SITE_NAME } from "@/lib/seo";
+import JsonLd from "./components/seo/JsonLd";
 
 // Forzar render dinámico para evitar que el build falle si el backend no responde
 export const dynamic = "force-dynamic";
@@ -313,8 +314,38 @@ export default async function HomePage() {
     .slice(0, 4)
     .map((s) => ({ image: s.image, alt: s.alt, link: s?.link }));
 
+  // VideoObject para cada vídeo YouTube en home (asociación) — ayuda a GSC "vídeo en página de visualización"
+  const base = getBaseUrl();
+  function getEmbedUrlAndId(url: string): { embedUrl: string; videoId: string | null } {
+    const watchMatch = (url || "").match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
+    if (watchMatch) return { embedUrl: `https://www.youtube.com/embed/${watchMatch[1]}`, videoId: watchMatch[1] };
+    const shortMatch = (url || "").match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    if (shortMatch) return { embedUrl: `https://www.youtube.com/embed/${shortMatch[1]}`, videoId: shortMatch[1] };
+    const embedMatch = (url || "").match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+    if (embedMatch) return { embedUrl: url, videoId: embedMatch[1] };
+    return { embedUrl: url, videoId: null };
+  }
+  const homeVideoLds = (videos ?? [])
+    .filter((v: { tipo?: string }) => (v.tipo ?? "").toUpperCase() !== "R2")
+    .slice(0, 2) // Solo los 2 que se muestran en la sección de vídeos
+    .map((v: { id: number; titulo?: string; url?: string }) => {
+      const { embedUrl, videoId } = getEmbedUrlAndId(v.url || "");
+      if (!embedUrl || !embedUrl.includes("youtube")) return null;
+      return {
+        "@context": "https://schema.org",
+        "@type": "VideoObject" as const,
+        name: (v.titulo || "Vídeo – Los Pueblos Más Bonitos de España").slice(0, 200),
+        embedUrl,
+        thumbnailUrl: videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : undefined,
+      };
+    })
+    .filter(Boolean);
+
   return (
     <main>
+      {homeVideoLds.map((ld: Record<string, unknown>, i: number) => (
+        <JsonLd key={i} data={ld} />
+      ))}
       <HomePageNew
         heroSlides={heroSlides}
         heroIntervalMs={config.hero.intervalMs ?? 4000}

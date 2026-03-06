@@ -574,10 +574,38 @@ export default async function PuebloPage({
     })),
   };
 
+  // VideoObject por cada vídeo (YouTube) para que Google indexe "vídeo en página de visualización")
+  function getEmbedUrlAndId(url: string): { embedUrl: string; videoId: string | null } {
+    const watchMatch = (url || "").match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
+    if (watchMatch) return { embedUrl: `https://www.youtube.com/embed/${watchMatch[1]}`, videoId: watchMatch[1] };
+    const shortMatch = (url || "").match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    if (shortMatch) return { embedUrl: `https://www.youtube.com/embed/${shortMatch[1]}`, videoId: shortMatch[1] };
+    const embedMatch = (url || "").match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+    if (embedMatch) return { embedUrl: url, videoId: embedMatch[1] };
+    return { embedUrl: url, videoId: null };
+  }
+  const videoLds = (puebloSafe.videos ?? [])
+    .map((v: { id: number; titulo?: string; url?: string }) => {
+      const { embedUrl, videoId } = getEmbedUrlAndId(v.url || "");
+      if (!embedUrl || !embedUrl.includes("youtube")) return null;
+      return {
+        "@context": "https://schema.org",
+        "@type": "VideoObject" as const,
+        name: (v.titulo || puebloSafe.nombre).slice(0, 200),
+        embedUrl,
+        thumbnailUrl: videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : undefined,
+        uploadDate: undefined,
+      };
+    })
+    .filter(Boolean);
+
   return (
     <main className="bg-background">
       <JsonLd data={puebloLd} />
       <JsonLd data={breadcrumbLd} />
+      {videoLds.map((ld, i) => (
+        <JsonLd key={i} data={ld as Record<string, unknown>} />
+      ))}
       {/* HERO - Diseño tourism-website-design */}
       <DetailPageHero
         title={puebloSafe.nombre}
