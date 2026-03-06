@@ -1,4 +1,4 @@
-import { Link } from 'next-intl/navigation';
+import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
