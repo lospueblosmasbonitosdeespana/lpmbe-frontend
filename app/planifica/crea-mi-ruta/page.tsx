@@ -163,13 +163,16 @@ function LocationInput({
   label,
   placeholder,
   hook,
+  showGeolocate,
 }: {
   label: string;
   placeholder: string;
   hook: ReturnType<typeof useGeoAutocomplete>;
+  showGeolocate?: boolean;
 }) {
   const t = useTranslations("planifica.creaRuta");
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const [geoLoading, setGeoLoading] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -181,33 +184,90 @@ function LocationInput({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [hook]);
 
+  function handleGeolocate() {
+    if (!navigator.geolocation) return;
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lon } = pos.coords;
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=es`,
+            { headers: { "Accept-Language": "es" } }
+          );
+          const data = await res.json();
+          const label =
+            data?.address?.city ||
+            data?.address?.town ||
+            data?.address?.village ||
+            data?.display_name ||
+            `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+          hook.setValue({ label, lat, lng: lon });
+        } catch {
+          hook.setValue({
+            label: `${lat.toFixed(4)}, ${lon.toFixed(4)}`,
+            lat,
+            lng: lon,
+          });
+        } finally {
+          setGeoLoading(false);
+        }
+      },
+      () => setGeoLoading(false),
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+    );
+  }
+
   return (
     <div ref={wrapperRef} className="relative flex-1 min-w-[260px]">
       <label className="mb-1.5 block text-sm font-semibold text-foreground/80">
         {label}
       </label>
-      <div className="relative">
-        <input
-          type="text"
-          value={hook.query}
-          onChange={(e) => hook.onInputChange(e.target.value)}
-          onFocus={() => hook.results.length > 0 && hook.setOpen(true)}
-          placeholder={placeholder}
-          className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-sm text-foreground shadow-sm transition placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-400 dark:border-neutral-600"
-        />
-        {hook.loading && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        )}
-        {hook.selected && !hook.loading && (
+      <div className="flex items-stretch gap-2">
+        <div className="relative flex-1">
+          <input
+            type="text"
+            value={hook.query}
+            onChange={(e) => hook.onInputChange(e.target.value)}
+            onFocus={() => hook.results.length > 0 && hook.setOpen(true)}
+            placeholder={placeholder}
+            className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-sm text-foreground shadow-sm transition placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-400 dark:border-neutral-600"
+          />
+          {hook.loading && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            </div>
+          )}
+          {hook.selected && !hook.loading && (
+            <button
+              type="button"
+              onClick={hook.clear}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              aria-label={t("clear")}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        {showGeolocate && (
           <button
             type="button"
-            onClick={hook.clear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            aria-label={t("clear")}
+            onClick={handleGeolocate}
+            disabled={geoLoading}
+            title={t("useMyLocation")}
+            aria-label={t("useMyLocation")}
+            className="flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-2.5 text-sm font-medium text-primary shadow-sm transition hover:bg-accent disabled:opacity-60 dark:bg-neutral-800 dark:border-neutral-600 dark:hover:bg-neutral-700"
           >
-            ✕
+            {geoLoading ? (
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20" opacity=".15" />
+              </svg>
+            )}
+            <span className="hidden sm:inline">{t("useMyLocation")}</span>
           </button>
         )}
       </div>
@@ -634,6 +694,7 @@ export default function CreaMiRutaPage() {
               label={t("originLabel")}
               placeholder={t("originPlaceholder")}
               hook={originHook}
+              showGeolocate
             />
             <LocationInput
               label={t("destLabel")}

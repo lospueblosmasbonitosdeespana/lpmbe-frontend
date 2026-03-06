@@ -427,6 +427,7 @@
       "selectOrigin": "Selecciona un punto de origen de la lista de sugerencias.",
       "selectDest": "Selecciona un punto de destino de la lista de sugerencias.",
       "clear": "Borrar",
+      "useMyLocation": "Mi ubicación",
       "calculating": "Calculando…",
       "errorGenerating": "Error al generar la ruta. Inténtalo de nuevo.",
       "origin": "Origen",

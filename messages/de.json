@@ -394,6 +394,7 @@
       "selectOrigin": "Wählen Sie einen Herkunftsort aus der Vorschlagsliste aus.",
       "selectDest": "Wählen Sie einen Zielpunkt aus der Vorschlagsliste aus.",
       "clear": "Löschen",
+      "useMyLocation": "Mein Standort",
       "calculating": "Berechnen...",
       "errorGenerating": "Fehler beim Generieren der Route. Bitte versuchen Sie es erneut.",
       "origin": "Herkunft",

@@ -394,6 +394,7 @@
       "selectOrigin": "Selezionare un punto di origine dall'elenco dei suggerimenti.",
       "selectDest": "Selezionare un punto di destinazione dall'elenco dei suggerimenti.",
       "clear": "Cancellare",
+      "useMyLocation": "La mia posizione",
       "calculating": "Calcolo...",
       "errorGenerating": "Errore nella generazione del percorso. Riprovare.",
       "origin": "Origine",

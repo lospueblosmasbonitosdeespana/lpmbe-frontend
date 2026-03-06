@@ -394,6 +394,7 @@
       "selectOrigin": "Select a point of origin from the list of suggestions.",
       "selectDest": "Select a destination point from the list of suggestions.",
       "clear": "Delete",
+      "useMyLocation": "My location",
       "calculating": "Calculating...",
       "errorGenerating": "Error generating the route. Please try again.",
       "origin": "Origin",

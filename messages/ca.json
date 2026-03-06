@@ -394,6 +394,7 @@
       "selectOrigin": "Seleccioneu un punt de partida de la llista de suggeriments.",
       "selectDest": "Seleccioneu un punt de destinació de la llista de suggeriments.",
       "clear": "Suprimeix",
+      "useMyLocation": "La meva ubicació",
       "calculating": "Calculant...",
       "errorGenerating": "Error en generar la ruta. Torna a provar.",
       "origin": "Origen",
