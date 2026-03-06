@@ -111,7 +111,10 @@ export type OrderItem = {
   orderId: number;
   productId: number;
   cantidad: number;
-  precioUnitario: number | string; // Decimal viene como string desde backend
+  /** Backend (Prisma) devuelve precioUnit; alias para compatibilidad */
+  precioUnit?: number | string;
+  precioUnitario?: number | string;
+  subtotal?: number | string;
   productNombre?: string; // Snapshot del backend
   producto?: Product;
 };

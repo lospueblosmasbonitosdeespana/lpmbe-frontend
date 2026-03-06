@@ -16,6 +16,7 @@ export default function MiCuentaBreadcrumbs() {
     '/mi-cuenta/notificaciones': t('breadcrumbNotifPrefs'),
     '/mi-cuenta/perfil': t('breadcrumbProfile'),
     '/mi-cuenta/direcciones': t('breadcrumbAddresses'),
+    '/mi-cuenta/pedidos': t('breadcrumbOrders'),
     '/mi-cuenta/club': t('breadcrumbClub'),
     '/mi-cuenta/mapa': t('breadcrumbMap'),
     '/mi-cuenta/club/recursos': t('breadcrumbResources'),

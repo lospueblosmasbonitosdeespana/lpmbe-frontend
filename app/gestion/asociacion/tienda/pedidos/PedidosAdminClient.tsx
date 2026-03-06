@@ -330,10 +330,10 @@ export default function PedidosAdminClient() {
                       </thead>
                       <tbody>
                         {pedido.items.map((item) => {
-                          // ✅ Conversión segura a número antes de operar
-                          const precioUnitarioNum = toNumber(item.precioUnitario);
+                          // Backend devuelve precioUnit y subtotal (Prisma)
+                          const precioUnitarioNum = toNumber(item.precioUnit ?? item.precioUnitario);
                           const cantidadNum = Number(item.cantidad);
-                          const subtotalLinea = precioUnitarioNum * cantidadNum;
+                          const subtotalLinea = toNumber(item.subtotal) || precioUnitarioNum * cantidadNum;
 
                           return (
                             <tr key={item.id} className="border-b border-gray-100">
