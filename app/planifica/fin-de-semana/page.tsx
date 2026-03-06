@@ -98,16 +98,17 @@ function EventoCard({
   moreInPueblo?: MoreInPuebloInfo | null;
 }) {
   const t = useTranslations('planifica');
+  // Eventos con slug (Contenido) → página del contenido /c/slug. Sin slug (Evento pueblo) → actualidad/eventos del pueblo.
   const href = e.slug
     ? `/c/${e.slug}`
     : e.pueblo
-      ? `/pueblos/${e.pueblo.slug}`
+      ? `/pueblos/${e.pueblo.slug}/actualidad?tipo=EVENTO`
       : null;
 
   const shareButton = (
     <div className="absolute right-2 top-2 z-20">
       <ShareButton
-        url={href ?? (e.pueblo ? `/pueblos/${e.pueblo.slug}` : '/planifica/fin-de-semana')}
+        url={href ?? (e.pueblo ? `/pueblos/${e.pueblo.slug}/actualidad?tipo=EVENTO` : '/planifica/fin-de-semana')}
         title={e.titulo}
         variant="icon"
         className="rounded-full bg-card/90 p-2 shadow hover:bg-card"
