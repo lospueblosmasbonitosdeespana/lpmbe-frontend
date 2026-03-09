@@ -29,6 +29,7 @@ type Agenda = {
   fechaInicio: string;
   fechaFin: string | null;
   fotoUrl: string | null;
+  youtubeUrl?: string | null;
 };
 
 type Payload = {
@@ -86,6 +87,11 @@ export default async function SemanaSantaPuebloPage({
         : participante.interesTuristico === 'REGIONAL'
           ? 'Interés Turístico Regional'
           : null;
+  const eventsByDate = participante.agenda.reduce<Record<string, Agenda[]>>((acc, item) => {
+    const key = item.fechaInicio.slice(0, 10);
+    acc[key] = [...(acc[key] || []), item].sort((a, b) => a.fechaInicio.localeCompare(b.fechaInicio));
+    return acc;
+  }, {});
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-stone-50 via-background to-background">
@@ -164,31 +170,41 @@ export default async function SemanaSantaPuebloPage({
           {participante.dias.length === 0 ? (
             <p className="text-muted-foreground">No hay días configurados aún.</p>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-3">
               {participante.dias.map((d) => (
                 <Link key={d.id} href={`/planifica/semana-santa/pueblo/${participante.pueblo.slug}/dia/${d.fecha}`}>
-                  <article className="relative overflow-hidden rounded-xl border bg-muted shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-                  {d.fotoUrl ? (
-                    <img src={d.fotoUrl} alt={d.nombreDia} className="h-56 w-full object-cover" />
-                  ) : (
-                    <div className="flex h-56 items-center justify-center bg-muted text-2xl font-semibold">
-                      {d.nombreDia}
+                  <article className="rounded-xl border bg-background p-4 transition hover:-translate-y-0.5 hover:shadow-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                          {new Date(d.fecha).toLocaleDateString(locale, {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                          })}
+                        </p>
+                        <h3 className="mt-1 text-lg font-semibold">{d.titulo || d.nombreDia}</h3>
+                      </div>
+                      <span className="rounded-full border px-2.5 py-1 text-xs">
+                        {(eventsByDate[d.fecha]?.length ?? 0)} eventos
+                      </span>
                     </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                    <p className="text-xs uppercase tracking-wide opacity-90">
-                      {new Date(d.fecha).toLocaleDateString(locale, {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
-                    </p>
-                    <h3 className="mt-1 text-2xl font-semibold">{d.titulo || d.nombreDia}</h3>
-                    {d.descripcion && <p className="mt-1 text-sm opacity-90">{d.descripcion}</p>}
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-wide">Ver eventos del día →</p>
-                  </div>
-                </article>
+                    <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+                      {(eventsByDate[d.fecha] ?? []).slice(0, 4).map((ev) => (
+                        <p key={ev.id}>
+                          {new Date(ev.fechaInicio).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
+                          {ev.fechaFin
+                            ? `-${new Date(ev.fechaFin).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`
+                            : ''}{' '}
+                          · {ev.titulo}
+                        </p>
+                      ))}
+                      {(eventsByDate[d.fecha]?.length ?? 0) > 4 && (
+                        <p className="text-xs">+ {(eventsByDate[d.fecha]?.length ?? 0) - 4} eventos más</p>
+                      )}
+                    </div>
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-primary">Ver eventos del día →</p>
+                  </article>
                 </Link>
               ))}
             </div>

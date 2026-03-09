@@ -18,6 +18,7 @@ type AgendaItem = {
   fechaInicio: string;
   fechaFin: string | null;
   fotoUrl: string | null;
+  youtubeUrl?: string | null;
 };
 
 function googleCalendarUrl(item: AgendaItem) {
@@ -137,6 +138,16 @@ export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: A
                   className="rounded-full border px-3 py-2 text-sm font-medium hover:bg-muted"
                 >
                   Ver ubicación
+                </a>
+              )}
+              {selected.youtubeUrl && (
+                <a
+                  href={selected.youtubeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-full border px-3 py-2 text-sm font-medium hover:bg-muted"
+                >
+                  Ver vídeo de otros años
                 </a>
               )}
             </div>

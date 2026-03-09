@@ -17,6 +17,7 @@ type Agenda = {
   fechaInicio: string;
   fechaFin: string | null;
   fotoUrl: string | null;
+  youtubeUrl?: string | null;
 };
 
 type Payload = {
@@ -86,6 +87,16 @@ export default async function SemanaSantaDiaPage({
                 </p>
                 {e.ubicacion && <p className="mt-1 text-sm">📍 {e.ubicacion}</p>}
                 {e.descripcion && <p className="mt-3 text-sm text-muted-foreground">{e.descripcion}</p>}
+                {e.youtubeUrl && (
+                  <a
+                    href={e.youtubeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex rounded-full border px-3 py-1 text-xs font-medium hover:bg-muted"
+                  >
+                    Ver vídeo de años anteriores
+                  </a>
+                )}
                 {(e.inicioLat != null && e.inicioLng != null) && (
                   <div className="mt-3">
                     <EventoRecorridoMap

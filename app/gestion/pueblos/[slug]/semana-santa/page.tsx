@@ -34,6 +34,7 @@ type AgendaItem = {
   fechaInicio: string;
   fechaFin: string | null;
   fotoUrl: string | null;
+  youtubeUrl?: string | null;
   orden: number;
 };
 type Participante = {
@@ -84,6 +85,11 @@ function SortableAgendaCard({
         {a.fechaFin ? ` - ${new Date(a.fechaFin).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : ''}
       </p>
       {a.ubicacion && <p className="text-sm text-muted-foreground">{a.ubicacion}</p>}
+      {a.youtubeUrl && (
+        <a href={a.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">
+          Enlace YouTube
+        </a>
+      )}
       {(a.inicioLat != null && a.inicioLng != null) && (
         <p className="text-xs text-muted-foreground">
           Recorrido: inicio definido{a.finLat != null && a.finLng != null ? ', fin definido' : ''} · {a.paradas?.length ?? 0} paradas
@@ -129,9 +135,11 @@ export default function GestionPuebloSemanaSantaPage() {
     finLat: undefined as number | undefined,
     finLng: undefined as number | undefined,
     paradas: [] as Array<{ lat: number; lng: number; label?: string }>,
-    fechaInicio: '',
-    fechaFin: '',
+    fecha: '',
+    horaInicio: '',
+    horaFin: '',
     fotoUrl: '',
+    youtubeUrl: '',
   });
   const [mapMode, setMapMode] = useState<'inicio' | 'fin' | 'parada'>('parada');
   const [editMapMode, setEditMapMode] = useState<'inicio' | 'fin' | 'parada'>('parada');
@@ -144,9 +152,11 @@ export default function GestionPuebloSemanaSantaPage() {
     finLat: undefined as number | undefined,
     finLng: undefined as number | undefined,
     paradas: [] as Array<{ lat: number; lng: number; label?: string }>,
-    fechaInicio: '',
-    fechaFin: '',
+    fecha: '',
+    horaInicio: '',
+    horaFin: '',
     fotoUrl: '',
+    youtubeUrl: '',
   });
 
   useEffect(() => {
@@ -187,6 +197,11 @@ export default function GestionPuebloSemanaSantaPage() {
   const flash = (msg: string) => {
     setSuccess(msg);
     setTimeout(() => setSuccess(null), 2500);
+  };
+
+  const toIsoUtc = (fecha: string, hora: string) => {
+    if (!fecha || !hora) return '';
+    return new Date(`${fecha}T${hora}:00`).toISOString();
   };
 
   const inscribirse = async () => {
@@ -266,7 +281,10 @@ export default function GestionPuebloSemanaSantaPage() {
   };
 
   const createAgenda = async () => {
-    if (!puebloId || !newAgenda.titulo || !newAgenda.fechaInicio) return;
+    if (!puebloId || !newAgenda.titulo || !newAgenda.fecha || !newAgenda.horaInicio) return;
+    const fechaInicioIso = toIsoUtc(newAgenda.fecha, newAgenda.horaInicio);
+    const fechaFinIso = newAgenda.horaFin ? toIsoUtc(newAgenda.fecha, newAgenda.horaFin) : undefined;
+    if (!fechaInicioIso) return;
     setSaving(true);
     const res = await fetch(`/api/admin/semana-santa/pueblos/by-pueblo/${puebloId}/agenda`, {
       method: 'POST',
@@ -280,9 +298,10 @@ export default function GestionPuebloSemanaSantaPage() {
         finLat: newAgenda.finLat,
         finLng: newAgenda.finLng,
         paradas: newAgenda.paradas,
-        fechaInicio: new Date(newAgenda.fechaInicio).toISOString(),
-        fechaFin: newAgenda.fechaFin ? new Date(newAgenda.fechaFin).toISOString() : undefined,
+        fechaInicio: fechaInicioIso,
+        fechaFin: fechaFinIso,
         fotoUrl: newAgenda.fotoUrl || undefined,
+        youtubeUrl: newAgenda.youtubeUrl || undefined,
       }),
     });
     setSaving(false);
@@ -300,9 +319,11 @@ export default function GestionPuebloSemanaSantaPage() {
       finLat: undefined,
       finLng: undefined,
       paradas: [],
-      fechaInicio: '',
-      fechaFin: '',
+      fecha: '',
+      horaInicio: '',
+      horaFin: '',
       fotoUrl: '',
+      youtubeUrl: '',
     });
     await loadData();
     flash('Evento de agenda añadido');
@@ -320,6 +341,8 @@ export default function GestionPuebloSemanaSantaPage() {
   };
 
   const startEditAgenda = (a: AgendaItem) => {
+    const start = new Date(a.fechaInicio);
+    const end = a.fechaFin ? new Date(a.fechaFin) : null;
     setEditingAgendaId(a.id);
     setEditAgenda({
       titulo: a.titulo || '',
@@ -330,14 +353,19 @@ export default function GestionPuebloSemanaSantaPage() {
       finLat: a.finLat ?? undefined,
       finLng: a.finLng ?? undefined,
       paradas: a.paradas ?? [],
-      fechaInicio: a.fechaInicio ? new Date(a.fechaInicio).toISOString().slice(0, 16) : '',
-      fechaFin: a.fechaFin ? new Date(a.fechaFin).toISOString().slice(0, 16) : '',
+      fecha: start.toISOString().slice(0, 10),
+      horaInicio: start.toISOString().slice(11, 16),
+      horaFin: end ? end.toISOString().slice(11, 16) : '',
       fotoUrl: a.fotoUrl || '',
+      youtubeUrl: a.youtubeUrl || '',
     });
   };
 
   const saveEditAgenda = async () => {
-    if (!editingAgendaId || !editAgenda.titulo || !editAgenda.fechaInicio) return;
+    if (!editingAgendaId || !editAgenda.titulo || !editAgenda.fecha || !editAgenda.horaInicio) return;
+    const fechaInicioIso = toIsoUtc(editAgenda.fecha, editAgenda.horaInicio);
+    const fechaFinIso = editAgenda.horaFin ? toIsoUtc(editAgenda.fecha, editAgenda.horaFin) : null;
+    if (!fechaInicioIso) return;
     setSaving(true);
     const res = await fetch(`/api/admin/semana-santa/agenda/${editingAgendaId}`, {
       method: 'PUT',
@@ -351,9 +379,10 @@ export default function GestionPuebloSemanaSantaPage() {
         finLat: editAgenda.finLat,
         finLng: editAgenda.finLng,
         paradas: editAgenda.paradas,
-        fechaInicio: new Date(editAgenda.fechaInicio).toISOString(),
-        fechaFin: editAgenda.fechaFin ? new Date(editAgenda.fechaFin).toISOString() : null,
+        fechaInicio: fechaInicioIso,
+        fechaFin: fechaFinIso,
         fotoUrl: editAgenda.fotoUrl || undefined,
+        youtubeUrl: editAgenda.youtubeUrl || undefined,
       }),
     });
     setSaving(false);
@@ -384,6 +413,7 @@ export default function GestionPuebloSemanaSantaPage() {
         fechaInicio: a.fechaInicio,
         fechaFin: a.fechaFin || undefined,
         fotoUrl: a.fotoUrl || undefined,
+        youtubeUrl: a.youtubeUrl || undefined,
         orden: (a.orden ?? 0) + 1,
       }),
     });
@@ -606,7 +636,7 @@ export default function GestionPuebloSemanaSantaPage() {
 
       <section className="mb-8 rounded-lg border p-5">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Días de procesiones</h2>
+          <h2 className="text-lg font-semibold">Días (configuración rápida)</h2>
           <button
             onClick={() =>
               setData({
@@ -622,10 +652,10 @@ export default function GestionPuebloSemanaSantaPage() {
             + Añadir día
           </button>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-2">
           {orderedDias.map((d, idx) => (
-            <div key={`${d.fecha}-${idx}`} className="rounded-md border p-4">
-              <div className="grid gap-3 sm:grid-cols-2">
+            <div key={`${d.fecha}-${idx}`} className="rounded-md border p-3">
+              <div className="grid gap-2 sm:grid-cols-[180px_1fr_auto]">
                 <input
                   type="date"
                   className="rounded-md border px-3 py-2 text-sm"
@@ -639,24 +669,11 @@ export default function GestionPuebloSemanaSantaPage() {
                 <input
                   type="text"
                   className="rounded-md border px-3 py-2 text-sm"
-                  placeholder="Nombre del día"
+                  placeholder="Nombre del día (ej. Viernes Santo)"
                   value={d.nombreDia}
                   onChange={(e) => {
                     const next = [...orderedDias];
                     next[idx] = { ...next[idx], nombreDia: e.target.value };
-                    setData({ ...data, dias: next });
-                  }}
-                />
-              </div>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <input
-                  type="text"
-                  className="rounded-md border px-3 py-2 text-sm"
-                  placeholder="Título opcional"
-                  value={d.titulo ?? ''}
-                  onChange={(e) => {
-                    const next = [...orderedDias];
-                    next[idx] = { ...next[idx], titulo: e.target.value };
                     setData({ ...data, dias: next });
                   }}
                 />
@@ -669,32 +686,6 @@ export default function GestionPuebloSemanaSantaPage() {
                 >
                   Quitar día
                 </button>
-              </div>
-              <div className="mt-3">
-                <textarea
-                  rows={2}
-                  className="w-full rounded-md border px-3 py-2 text-sm"
-                  placeholder="Descripción opcional"
-                  value={d.descripcion ?? ''}
-                  onChange={(e) => {
-                    const next = [...orderedDias];
-                    next[idx] = { ...next[idx], descripcion: e.target.value };
-                    setData({ ...data, dias: next });
-                  }}
-                />
-              </div>
-              <div className="mt-3">
-                <R2ImageUploader
-                  label="Foto principal del día (opcional)"
-                  value={d.fotoUrl || null}
-                  onChange={(url) => {
-                    const next = [...orderedDias];
-                    next[idx] = { ...next[idx], fotoUrl: url };
-                    setData({ ...data, dias: next });
-                  }}
-                  folder="semana-santa/dias"
-                  previewHeight="h-36"
-                />
               </div>
             </div>
           ))}
@@ -724,35 +715,54 @@ export default function GestionPuebloSemanaSantaPage() {
             <input
               type="text"
               className="w-full rounded-md border px-3 py-2 text-sm"
-              placeholder="Título del evento"
+              placeholder="Título (ej. Procesión de..., Vía Crucis, Los Empalaos...)"
               value={newAgenda.titulo}
               onChange={(e) => setNewAgenda({ ...newAgenda, titulo: e.target.value })}
             />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <input
-                type="datetime-local"
+            <div className="grid gap-3 sm:grid-cols-3">
+              <select
                 className="rounded-md border px-3 py-2 text-sm"
-                value={newAgenda.fechaInicio}
-                onChange={(e) => setNewAgenda({ ...newAgenda, fechaInicio: e.target.value })}
+                value={newAgenda.fecha}
+                onChange={(e) => setNewAgenda({ ...newAgenda, fecha: e.target.value })}
+              >
+                <option value="">Selecciona día</option>
+                {orderedDias.map((d, idx) => (
+                  <option key={`${d.fecha}-${idx}`} value={d.fecha}>
+                    {(d.nombreDia || 'Día')} · {d.fecha}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="time"
+                className="rounded-md border px-3 py-2 text-sm"
+                value={newAgenda.horaInicio}
+                onChange={(e) => setNewAgenda({ ...newAgenda, horaInicio: e.target.value })}
               />
               <input
-                type="datetime-local"
+                type="time"
                 className="rounded-md border px-3 py-2 text-sm"
-                value={newAgenda.fechaFin}
-                onChange={(e) => setNewAgenda({ ...newAgenda, fechaFin: e.target.value })}
+                value={newAgenda.horaFin}
+                onChange={(e) => setNewAgenda({ ...newAgenda, horaFin: e.target.value })}
               />
             </div>
             <input
               type="text"
               className="w-full rounded-md border px-3 py-2 text-sm"
-              placeholder="Ubicación"
+              placeholder="Ubicación / calle / plaza"
               value={newAgenda.ubicacion}
               onChange={(e) => setNewAgenda({ ...newAgenda, ubicacion: e.target.value })}
+            />
+            <input
+              type="url"
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              placeholder="Enlace YouTube opcional (años anteriores)"
+              value={newAgenda.youtubeUrl}
+              onChange={(e) => setNewAgenda({ ...newAgenda, youtubeUrl: e.target.value })}
             />
             <textarea
               rows={2}
               className="w-full rounded-md border px-3 py-2 text-sm"
-              placeholder="Descripción"
+              placeholder="Descripción de lo que se va a hacer"
               value={newAgenda.descripcion}
               onChange={(e) => setNewAgenda({ ...newAgenda, descripcion: e.target.value })}
             />
@@ -797,13 +807,13 @@ export default function GestionPuebloSemanaSantaPage() {
               </div>
               <RouteEditorMap value={newAgenda} mode={mapMode} onChange={(next) => setNewAgenda((prev) => ({ ...prev, ...next }))} />
               <p className="mt-2 text-xs text-muted-foreground">
-                Haz clic en el mapa según el modo activo. Inicio (verde), fin (rojo), paradas (azul).
+                Puedes buscar una calle/pueblo y marcar el punto, o hacerlo manualmente con clic en mapa.
               </p>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={createAgenda}
-                disabled={saving || !newAgenda.titulo || !newAgenda.fechaInicio}
+                disabled={saving || !newAgenda.titulo || !newAgenda.fecha || !newAgenda.horaInicio}
                 className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
               >
                 Crear evento
@@ -866,32 +876,54 @@ export default function GestionPuebloSemanaSantaPage() {
             <input
               type="text"
               className="w-full rounded-md border px-3 py-2 text-sm"
+              placeholder="Título del evento"
               value={editAgenda.titulo}
               onChange={(e) => setEditAgenda({ ...editAgenda, titulo: e.target.value })}
             />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <input
-                type="datetime-local"
+            <div className="grid gap-3 sm:grid-cols-3">
+              <select
                 className="rounded-md border px-3 py-2 text-sm"
-                value={editAgenda.fechaInicio}
-                onChange={(e) => setEditAgenda({ ...editAgenda, fechaInicio: e.target.value })}
+                value={editAgenda.fecha}
+                onChange={(e) => setEditAgenda({ ...editAgenda, fecha: e.target.value })}
+              >
+                <option value="">Selecciona día</option>
+                {orderedDias.map((d, idx) => (
+                  <option key={`${d.fecha}-${idx}`} value={d.fecha}>
+                    {(d.nombreDia || 'Día')} · {d.fecha}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="time"
+                className="rounded-md border px-3 py-2 text-sm"
+                value={editAgenda.horaInicio}
+                onChange={(e) => setEditAgenda({ ...editAgenda, horaInicio: e.target.value })}
               />
               <input
-                type="datetime-local"
+                type="time"
                 className="rounded-md border px-3 py-2 text-sm"
-                value={editAgenda.fechaFin}
-                onChange={(e) => setEditAgenda({ ...editAgenda, fechaFin: e.target.value })}
+                value={editAgenda.horaFin}
+                onChange={(e) => setEditAgenda({ ...editAgenda, horaFin: e.target.value })}
               />
             </div>
             <input
               type="text"
               className="w-full rounded-md border px-3 py-2 text-sm"
+              placeholder="Ubicación / calle / plaza"
               value={editAgenda.ubicacion}
               onChange={(e) => setEditAgenda({ ...editAgenda, ubicacion: e.target.value })}
+            />
+            <input
+              type="url"
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              placeholder="Enlace YouTube opcional"
+              value={editAgenda.youtubeUrl}
+              onChange={(e) => setEditAgenda({ ...editAgenda, youtubeUrl: e.target.value })}
             />
             <textarea
               rows={2}
               className="w-full rounded-md border px-3 py-2 text-sm"
+              placeholder="Descripción del evento"
               value={editAgenda.descripcion}
               onChange={(e) => setEditAgenda({ ...editAgenda, descripcion: e.target.value })}
             />
@@ -939,7 +971,7 @@ export default function GestionPuebloSemanaSantaPage() {
             <div className="flex gap-2">
               <button
                 onClick={saveEditAgenda}
-                disabled={saving || !editAgenda.titulo || !editAgenda.fechaInicio}
+                disabled={saving || !editAgenda.titulo || !editAgenda.fecha || !editAgenda.horaInicio}
                 className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
               >
                 Guardar cambios
