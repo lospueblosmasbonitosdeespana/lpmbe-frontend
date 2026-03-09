@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
@@ -150,6 +150,8 @@ export default function GestionPuebloSemanaSantaPage() {
   });
   const [mapMode, setMapMode] = useState<'inicio' | 'fin' | 'parada'>('parada');
   const [editMapMode, setEditMapMode] = useState<'inicio' | 'fin' | 'parada'>('parada');
+  const newAgendaFormRef = useRef<HTMLDivElement>(null);
+  const editAgendaFormRef = useRef<HTMLDivElement>(null);
   const [editAgenda, setEditAgenda] = useState({
     titulo: '',
     descripcion: '',
@@ -175,6 +177,7 @@ export default function GestionPuebloSemanaSantaPage() {
       fecha: fecha ?? prev.fecha,
       horaInicio: prev.horaInicio || '12:00',
     }));
+    setTimeout(() => newAgendaFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   };
 
   useEffect(() => {
@@ -328,6 +331,7 @@ export default function GestionPuebloSemanaSantaPage() {
       setError('No se pudo crear el evento de agenda');
       return;
     }
+    const created = (await res.json()) as AgendaItem;
     setShowNewAgenda(false);
     setNewAgenda({
       titulo: '',
@@ -346,6 +350,8 @@ export default function GestionPuebloSemanaSantaPage() {
       esFiestaInteresTuristico: false,
     });
     await loadData();
+    startEditAgenda(created);
+    setTimeout(() => editAgendaFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     flash('Evento de agenda añadido');
   };
 
@@ -363,6 +369,9 @@ export default function GestionPuebloSemanaSantaPage() {
   const startEditAgenda = (a: AgendaItem) => {
     const start = new Date(a.fechaInicio);
     const end = a.fechaFin ? new Date(a.fechaFin) : null;
+    const toLocalHHMM = (d: Date) =>
+      d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+    setShowNewAgenda(false);
     setEditingAgendaId(a.id);
     setEditAgenda({
       titulo: a.titulo || '',
@@ -374,12 +383,13 @@ export default function GestionPuebloSemanaSantaPage() {
       finLng: a.finLng ?? undefined,
       paradas: a.paradas ?? [],
       fecha: start.toISOString().slice(0, 10),
-      horaInicio: start.toISOString().slice(11, 16),
-      horaFin: end ? end.toISOString().slice(11, 16) : '',
+      horaInicio: toLocalHHMM(start),
+      horaFin: end ? toLocalHHMM(end) : '',
       fotoUrl: a.fotoUrl || '',
       youtubeUrl: a.youtubeUrl || '',
       esFiestaInteresTuristico: a.esFiestaInteresTuristico ?? false,
     });
+    setTimeout(() => editAgendaFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   };
 
   const saveEditAgenda = async () => {
@@ -709,7 +719,7 @@ export default function GestionPuebloSemanaSantaPage() {
         </div>
 
         {showNewAgenda && (
-          <div className="mb-4 space-y-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
+          <div ref={newAgendaFormRef} className="mb-4 space-y-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
             <input
               type="text"
               className="w-full rounded-md border px-3 py-2 text-sm"
@@ -889,7 +899,7 @@ export default function GestionPuebloSemanaSantaPage() {
         )}
 
         {editingAgendaId && (
-          <div className="mt-4 space-y-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
+          <div ref={editAgendaFormRef} className="mt-4 space-y-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
             <p className="text-sm font-medium">Editar evento</p>
             <input
               type="text"

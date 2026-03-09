@@ -58,6 +58,8 @@ export default async function SemanaSantaDiaPage({
   const eventos = data.participante.agenda.filter((a) => a.fechaInicio.slice(0, 10) === fecha);
   if (!day) return notFound();
 
+  const timeOpts = { hour: '2-digit' as const, minute: '2-digit' as const, timeZone: 'Europe/Madrid' };
+
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
       <Link href={`/planifica/semana-santa/pueblo/${puebloSlug}`} className="text-sm text-muted-foreground hover:underline">
@@ -83,8 +85,8 @@ export default async function SemanaSantaDiaPage({
               <article key={e.id} className="rounded-lg border p-4">
                 <h3 className="text-lg font-semibold">{e.titulo}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {new Date(e.fechaInicio).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
-                  {e.fechaFin ? ` - ${new Date(e.fechaFin).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}` : ''}
+                  {new Date(e.fechaInicio).toLocaleTimeString(locale, timeOpts)}
+                  {e.fechaFin ? ` - ${new Date(e.fechaFin).toLocaleTimeString(locale, timeOpts)}` : ''}
                 </p>
                 {e.esFiestaInteresTuristico && (
                   <span className="mt-2 inline-flex rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2.5 py-1 text-xs font-medium text-[#8f4a26]">

@@ -34,6 +34,8 @@ function googleCalendarUrl(item: AgendaItem) {
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${start}/${end}&details=${details}&location=${location}`;
 }
 
+const timeOpts = { hour: '2-digit' as const, minute: '2-digit' as const, timeZone: 'Europe/Madrid' };
+
 export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: AgendaItem[]; locale?: string }) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<AgendaItem | null>(null);
@@ -77,9 +79,9 @@ export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: A
                     <span>
                       <span className="block font-medium">{it.titulo}</span>
                       <span className="text-sm text-muted-foreground">
-                        {new Date(it.fechaInicio).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(it.fechaInicio).toLocaleTimeString(locale, timeOpts)}
                         {it.fechaFin
-                          ? ` - ${new Date(it.fechaFin).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`
+                          ? ` - ${new Date(it.fechaFin).toLocaleTimeString(locale, timeOpts)}`
                           : ''}
                       </span>
                     </span>
@@ -103,9 +105,9 @@ export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: A
             </div>
             <p className="text-sm text-muted-foreground">
               {new Date(selected.fechaInicio).toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })} ·{' '}
-              {new Date(selected.fechaInicio).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
+              {new Date(selected.fechaInicio).toLocaleTimeString(locale, timeOpts)}
               {selected.fechaFin
-                ? ` - ${new Date(selected.fechaFin).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`
+                ? ` - ${new Date(selected.fechaFin).toLocaleTimeString(locale, timeOpts)}`
                 : ''}
             </p>
             {selected.esFiestaInteresTuristico && (

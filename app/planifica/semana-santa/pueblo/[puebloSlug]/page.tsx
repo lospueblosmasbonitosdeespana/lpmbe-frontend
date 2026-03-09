@@ -94,6 +94,9 @@ export default async function SemanaSantaPuebloPage({
     return acc;
   }, {});
 
+  const timeOpts = { hour: '2-digit' as const, minute: '2-digit' as const, timeZone: 'Europe/Madrid' };
+  const diasConEventos = participante.dias.filter((d) => (eventsByDate[d.fecha]?.length ?? 0) > 0);
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-stone-50 via-background to-background">
       {hero && (
@@ -168,11 +171,11 @@ export default async function SemanaSantaPuebloPage({
               {config.anio}
             </span>
           </div>
-          {participante.dias.length === 0 ? (
-            <p className="text-muted-foreground">No hay días configurados aún.</p>
+          {diasConEventos.length === 0 ? (
+            <p className="text-muted-foreground">No hay días con eventos programados.</p>
           ) : (
             <div className="space-y-3">
-              {participante.dias.map((d) => (
+              {diasConEventos.map((d) => (
                 <Link key={d.id} href={`/planifica/semana-santa/pueblo/${participante.pueblo.slug}/dia/${d.fecha}`}>
                   <article className="rounded-xl border bg-background p-4 transition hover:-translate-y-0.5 hover:shadow-sm">
                     <div className="flex items-start justify-between gap-3">
@@ -191,18 +194,15 @@ export default async function SemanaSantaPuebloPage({
                       </span>
                     </div>
                     <div className="mt-2 space-y-1 text-sm text-muted-foreground">
-                      {(eventsByDate[d.fecha] ?? []).slice(0, 4).map((ev) => (
+                      {(eventsByDate[d.fecha] ?? []).map((ev) => (
                         <p key={ev.id}>
-                          {new Date(ev.fechaInicio).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(ev.fechaInicio).toLocaleTimeString(locale, timeOpts)}
                           {ev.fechaFin
-                            ? `-${new Date(ev.fechaFin).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`
+                            ? ` - ${new Date(ev.fechaFin).toLocaleTimeString(locale, timeOpts)}`
                             : ''}{' '}
                           · {ev.titulo}
                         </p>
                       ))}
-                      {(eventsByDate[d.fecha]?.length ?? 0) > 4 && (
-                        <p className="text-xs">+ {(eventsByDate[d.fecha]?.length ?? 0) - 4} eventos más</p>
-                      )}
                     </div>
                     <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-primary">Ver eventos del día →</p>
                   </article>
