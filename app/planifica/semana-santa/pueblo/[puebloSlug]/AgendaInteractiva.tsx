@@ -24,7 +24,7 @@ function googleCalendarUrl(item: AgendaItem) {
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${start}/${end}&details=${details}&location=${location}`;
 }
 
-export default function AgendaInteractiva({ agenda }: { agenda: AgendaItem[] }) {
+export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: AgendaItem[]; locale?: string }) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<AgendaItem | null>(null);
 
@@ -55,7 +55,7 @@ export default function AgendaInteractiva({ agenda }: { agenda: AgendaItem[] }) 
           {Object.entries(grouped).map(([date, items]) => (
             <div key={date} className="rounded-xl border p-3">
               <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                {new Date(date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                {new Date(date).toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}
               </h3>
               <div className="space-y-2">
                 {items.map((it) => (
@@ -67,9 +67,9 @@ export default function AgendaInteractiva({ agenda }: { agenda: AgendaItem[] }) 
                     <span>
                       <span className="block font-medium">{it.titulo}</span>
                       <span className="text-sm text-muted-foreground">
-                        {new Date(it.fechaInicio).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(it.fechaInicio).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
                         {it.fechaFin
-                          ? ` - ${new Date(it.fechaFin).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`
+                          ? ` - ${new Date(it.fechaFin).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`
                           : ''}
                       </span>
                     </span>
@@ -92,10 +92,10 @@ export default function AgendaInteractiva({ agenda }: { agenda: AgendaItem[] }) 
               </button>
             </div>
             <p className="text-sm text-muted-foreground">
-              {new Date(selected.fechaInicio).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })} ·{' '}
-              {new Date(selected.fechaInicio).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+              {new Date(selected.fechaInicio).toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })} ·{' '}
+              {new Date(selected.fechaInicio).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
               {selected.fechaFin
-                ? ` - ${new Date(selected.fechaFin).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`
+                ? ` - ${new Date(selected.fechaFin).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`
                 : ''}
             </p>
             {selected.ubicacion && <p className="mt-2 text-sm">📍 {selected.ubicacion}</p>}

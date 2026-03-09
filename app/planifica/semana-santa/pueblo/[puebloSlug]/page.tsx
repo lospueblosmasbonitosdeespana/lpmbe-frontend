@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getApiUrl } from '@/lib/api';
 import AgendaInteractiva from './AgendaInteractiva';
+import { getLocale } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -49,9 +50,10 @@ type Payload = {
   };
 };
 
-async function fetchData(slug: string): Promise<Payload | null> {
+async function fetchData(slug: string, locale: string): Promise<Payload | null> {
   const API = getApiUrl();
-  const res = await fetch(`${API}/semana-santa/pueblos/${slug}`, { cache: 'no-store' });
+  const lang = encodeURIComponent(locale);
+  const res = await fetch(`${API}/semana-santa/pueblos/${slug}?lang=${lang}`, { cache: 'no-store' });
   if (!res.ok) return null;
   return res.json();
 }
@@ -62,7 +64,8 @@ export default async function SemanaSantaPuebloPage({
   params: Promise<{ puebloSlug: string }>;
 }) {
   const { puebloSlug } = await params;
-  const data = await fetchData(puebloSlug);
+  const locale = await getLocale();
+  const data = await fetchData(puebloSlug, locale);
   if (!data) notFound();
 
   const { participante, config } = data;
@@ -141,7 +144,7 @@ export default async function SemanaSantaPuebloPage({
           </section>
         )}
 
-        <AgendaInteractiva agenda={participante.agenda} />
+        <AgendaInteractiva agenda={participante.agenda} locale={locale} />
 
         <section className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
@@ -169,7 +172,7 @@ export default async function SemanaSantaPuebloPage({
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                     <p className="text-xs uppercase tracking-wide opacity-90">
-                      {new Date(d.fecha).toLocaleDateString('es-ES', {
+                      {new Date(d.fecha).toLocaleDateString(locale, {
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric',

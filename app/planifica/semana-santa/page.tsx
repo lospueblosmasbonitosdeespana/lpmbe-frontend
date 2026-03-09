@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/api';
+import { getLocale } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -27,11 +28,12 @@ type Config = {
   activo: boolean;
 };
 
-async function fetchData(): Promise<{ config: Config | null; pueblos: Item[] }> {
+async function fetchData(locale: string): Promise<{ config: Config | null; pueblos: Item[] }> {
   const API = getApiUrl();
+  const lang = encodeURIComponent(locale);
   const [cfgRes, pueblosRes] = await Promise.all([
-    fetch(`${API}/semana-santa/config`, { cache: 'no-store' }),
-    fetch(`${API}/semana-santa/pueblos`, { cache: 'no-store' }),
+    fetch(`${API}/semana-santa/config?lang=${lang}`, { cache: 'no-store' }),
+    fetch(`${API}/semana-santa/pueblos?lang=${lang}`, { cache: 'no-store' }),
   ]);
   return {
     config: cfgRes.ok ? await cfgRes.json() : null,
@@ -47,7 +49,8 @@ function badgeInteres(value: Item['interesTuristico']) {
 }
 
 export default async function SemanaSantaLandingPage() {
-  const { config, pueblos } = await fetchData();
+  const locale = await getLocale();
+  const { config, pueblos } = await fetchData(locale);
   const title = config?.titulo ?? 'Semana Santa';
   const totalEventos = pueblos.reduce((acc, p) => acc + p.agenda.length, 0);
   const totalDias = pueblos.reduce((acc, p) => acc + p.dias.length, 0);
