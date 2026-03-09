@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 const EventoRecorridoMap = dynamic(() => import('./EventoRecorridoMap'), { ssr: false });
 const ImagenConLightbox = dynamic(() => import('./ImagenConLightbox'), { ssr: false });
 const YoutubeEmbed = dynamic(() => import('./YoutubeEmbed'), { ssr: false });
+const ShareEventoSemanaSanta = dynamic(() => import('./ShareEventoSemanaSanta'), { ssr: false });
 
 type AgendaItem = {
   id: number;
@@ -84,7 +85,15 @@ function downloadAppleCalendar(item: AgendaItem) {
 
 const timeOpts = { hour: '2-digit' as const, minute: '2-digit' as const, hour12: false as const, timeZone: 'Europe/Madrid' };
 
-export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: AgendaItem[]; locale?: string }) {
+export default function AgendaInteractiva({
+  agenda,
+  locale = 'es',
+  puebloSlug,
+}: {
+  agenda: AgendaItem[];
+  locale?: string;
+  puebloSlug: string;
+}) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<AgendaItem | null>(null);
 
@@ -223,13 +232,19 @@ export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: A
                   Ver ubicación
                 </a>
               )}
-              {selected.youtubeUrl && (
-                <div className="mt-3 w-full">
-                  <p className="mb-2 text-sm font-medium">Vídeo de años anteriores</p>
-                  <YoutubeEmbed url={selected.youtubeUrl} title={`${selected.titulo} - años anteriores`} />
-                </div>
-              )}
             </div>
+            <div className="mt-3 border-t pt-3">
+              <ShareEventoSemanaSanta
+                shareUrl={`/planifica/semana-santa/pueblo/${puebloSlug}/dia/${selected.fechaInicio.slice(0, 10)}`}
+                shareTitle={selected.titulo}
+              />
+            </div>
+            {selected.youtubeUrl && (
+              <div className="mt-3 w-full">
+                <p className="mb-2 text-sm font-medium">Vídeo de años anteriores</p>
+                <YoutubeEmbed url={selected.youtubeUrl} title={`${selected.titulo} - años anteriores`} />
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -4,6 +4,7 @@ import { getApiUrl } from '@/lib/api';
 import { getLocale } from 'next-intl/server';
 import EventoRecorridoMap from '../../EventoRecorridoMap';
 import ImagenConLightbox from '../../ImagenConLightbox';
+import ShareEventoSemanaSanta from '../../ShareEventoSemanaSanta';
 import YoutubeEmbed from '../../YoutubeEmbed';
 
 type Agenda = {
@@ -125,6 +126,12 @@ export default async function SemanaSantaDiaPage({
                     />
                   </div>
                 )}
+                <div className="mt-3 border-t pt-3">
+                  <ShareEventoSemanaSanta
+                    shareUrl={`/planifica/semana-santa/pueblo/${puebloSlug}/dia/${fecha}`}
+                    shareTitle={e.titulo}
+                  />
+                </div>
               </article>
             ))}
           </div>

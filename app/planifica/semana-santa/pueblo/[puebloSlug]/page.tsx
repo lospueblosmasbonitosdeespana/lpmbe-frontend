@@ -162,7 +162,7 @@ export default async function SemanaSantaPuebloPage({
           </section>
         )}
 
-        <AgendaInteractiva agenda={participante.agenda} locale={locale} />
+        <AgendaInteractiva agenda={participante.agenda} locale={locale} puebloSlug={participante.pueblo.slug} />
 
         <section className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
