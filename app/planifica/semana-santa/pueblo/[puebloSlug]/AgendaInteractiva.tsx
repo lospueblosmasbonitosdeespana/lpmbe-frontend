@@ -12,6 +12,7 @@ type AgendaItem = {
   id: number;
   titulo: string;
   descripcion: string | null;
+  avisosImportantes?: string | null;
   ubicacion: string | null;
   inicioLat?: number | null;
   inicioLng?: number | null;
@@ -194,6 +195,12 @@ export default function AgendaInteractiva({
             )}
             {selected.ubicacion && <p className="mt-2 text-sm">📍 {selected.ubicacion}</p>}
             {selected.descripcion && <p className="mt-3 text-sm text-muted-foreground">{selected.descripcion}</p>}
+            {selected.avisosImportantes && (
+              <div className="mt-3 rounded-md border border-amber-300/40 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                <p className="font-medium">Avisos importantes</p>
+                <p className="mt-1 whitespace-pre-line">{selected.avisosImportantes}</p>
+              </div>
+            )}
             {(selected.inicioLat != null &&
               selected.inicioLng != null &&
               Array.isArray(selected.paradas) &&

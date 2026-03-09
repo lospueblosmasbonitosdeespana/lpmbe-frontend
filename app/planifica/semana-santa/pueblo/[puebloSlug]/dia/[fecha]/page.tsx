@@ -11,6 +11,7 @@ type Agenda = {
   id: number;
   titulo: string;
   descripcion: string | null;
+  avisosImportantes?: string | null;
   ubicacion: string | null;
   inicioLat?: number | null;
   inicioLng?: number | null;
@@ -117,6 +118,12 @@ export default async function SemanaSantaDiaPage({
                 )}
                 {e.ubicacion && <p className="mt-1 text-sm">📍 {e.ubicacion}</p>}
                 {e.descripcion && <p className="mt-3 text-sm text-muted-foreground">{e.descripcion}</p>}
+                {e.avisosImportantes && (
+                  <div className="mt-3 rounded-md border border-amber-300/40 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                    <p className="font-medium">Avisos importantes</p>
+                    <p className="mt-1 whitespace-pre-line">{e.avisosImportantes}</p>
+                  </div>
+                )}
                 {(e.inicioLat != null &&
                   e.inicioLng != null &&
                   Array.isArray(e.paradas) &&

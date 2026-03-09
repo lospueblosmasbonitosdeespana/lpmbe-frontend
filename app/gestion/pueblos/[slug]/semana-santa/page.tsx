@@ -25,6 +25,7 @@ type AgendaItem = {
   id: number;
   titulo: string;
   descripcion: string | null;
+  avisosImportantes?: string | null;
   ubicacion: string | null;
   inicioLat?: number | null;
   inicioLng?: number | null;
@@ -88,6 +89,11 @@ function SortableAgendaCard({
         {a.fechaFin ? ` – ${new Date(a.fechaFin).toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false })}` : ''}
       </p>
       {a.ubicacion && <p className="text-sm text-muted-foreground">{a.ubicacion}</p>}
+      {a.avisosImportantes && (
+        <p className="text-xs text-amber-700">
+          Avisos importantes: {a.avisosImportantes}
+        </p>
+      )}
       {a.youtubeUrl && (
         <a href={a.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">
           Enlace YouTube
@@ -137,6 +143,7 @@ export default function GestionPuebloSemanaSantaPage() {
   const [newAgenda, setNewAgenda] = useState({
     titulo: '',
     descripcion: '',
+    avisosImportantes: '',
     ubicacion: '',
     inicioLat: undefined as number | undefined,
     inicioLng: undefined as number | undefined,
@@ -157,6 +164,7 @@ export default function GestionPuebloSemanaSantaPage() {
   const [editAgenda, setEditAgenda] = useState({
     titulo: '',
     descripcion: '',
+    avisosImportantes: '',
     ubicacion: '',
     inicioLat: undefined as number | undefined,
     inicioLng: undefined as number | undefined,
@@ -318,6 +326,7 @@ export default function GestionPuebloSemanaSantaPage() {
       body: JSON.stringify({
         titulo: newAgenda.titulo,
         descripcion: newAgenda.descripcion || undefined,
+        avisosImportantes: newAgenda.avisosImportantes || undefined,
         ubicacion: newAgenda.ubicacion || undefined,
         inicioLat: newAgenda.inicioLat,
         inicioLng: newAgenda.inicioLng,
@@ -344,6 +353,7 @@ export default function GestionPuebloSemanaSantaPage() {
     setNewAgenda({
       titulo: '',
       descripcion: '',
+      avisosImportantes: '',
       ubicacion: '',
       inicioLat: undefined,
       inicioLng: undefined,
@@ -390,6 +400,7 @@ export default function GestionPuebloSemanaSantaPage() {
     setEditAgenda({
       titulo: a.titulo || '',
       descripcion: a.descripcion || '',
+      avisosImportantes: a.avisosImportantes || '',
       ubicacion: a.ubicacion || '',
       inicioLat: a.inicioLat ?? undefined,
       inicioLng: a.inicioLng ?? undefined,
@@ -415,6 +426,7 @@ export default function GestionPuebloSemanaSantaPage() {
       body: JSON.stringify({
         titulo: editAgenda.titulo,
         descripcion: editAgenda.descripcion || undefined,
+        avisosImportantes: editAgenda.avisosImportantes || undefined,
         ubicacion: editAgenda.ubicacion || undefined,
         inicioLat: editAgenda.inicioLat,
         inicioLng: editAgenda.inicioLng,
@@ -450,6 +462,7 @@ export default function GestionPuebloSemanaSantaPage() {
       body: JSON.stringify({
         titulo: `${a.titulo} (copia)`,
         descripcion: a.descripcion || undefined,
+        avisosImportantes: a.avisosImportantes || undefined,
         ubicacion: a.ubicacion || undefined,
         inicioLat: a.inicioLat ?? undefined,
         inicioLng: a.inicioLng ?? undefined,
@@ -798,6 +811,13 @@ export default function GestionPuebloSemanaSantaPage() {
               value={newAgenda.descripcion}
               onChange={(e) => setNewAgenda({ ...newAgenda, descripcion: e.target.value })}
             />
+            <textarea
+              rows={2}
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              placeholder="Avisos importantes (aparcamiento, cierre de calles, recomendaciones...)"
+              value={newAgenda.avisosImportantes}
+              onChange={(e) => setNewAgenda({ ...newAgenda, avisosImportantes: e.target.value })}
+            />
             <R2ImageUploader
               label="Foto del evento (opcional)"
               value={newAgenda.fotoUrl || null}
@@ -980,6 +1000,13 @@ export default function GestionPuebloSemanaSantaPage() {
               placeholder="Descripción del evento"
               value={editAgenda.descripcion}
               onChange={(e) => setEditAgenda({ ...editAgenda, descripcion: e.target.value })}
+            />
+            <textarea
+              rows={2}
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              placeholder="Avisos importantes (aparcamiento, cierre de calles, recomendaciones...)"
+              value={editAgenda.avisosImportantes}
+              onChange={(e) => setEditAgenda({ ...editAgenda, avisosImportantes: e.target.value })}
             />
             <R2ImageUploader
               label="Foto del evento (opcional)"
