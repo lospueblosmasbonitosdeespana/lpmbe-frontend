@@ -139,22 +139,20 @@ export default async function SemanaSantaPuebloPage({
             <h2 className="mb-4 font-serif text-2xl font-medium">Cartel</h2>
             <div className="grid gap-4 md:grid-cols-2">
               {participante.cartelVerticalUrl && (
-                <div>
-                  <p className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Formato vertical</p>
+                <div className="flex justify-center">
                   <img
                     src={participante.cartelVerticalUrl}
                     alt={`Cartel vertical ${participante.pueblo.nombre}`}
-                    className="w-full rounded-xl border object-cover"
+                    className="max-h-[70vh] w-full max-w-2xl rounded-xl border object-contain"
                   />
                 </div>
               )}
               {participante.cartelHorizontalUrl && (
-                <div>
-                  <p className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Formato horizontal</p>
+                <div className="flex justify-center">
                   <img
                     src={participante.cartelHorizontalUrl}
                     alt={`Cartel horizontal ${participante.pueblo.nombre}`}
-                    className="w-full rounded-xl border object-cover"
+                    className="max-h-[70vh] w-full max-w-2xl rounded-xl border object-contain"
                   />
                 </div>
               )}
