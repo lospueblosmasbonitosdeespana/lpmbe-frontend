@@ -34,6 +34,52 @@ function googleCalendarUrl(item: AgendaItem) {
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${start}/${end}&details=${details}&location=${location}`;
 }
 
+function formatIcsDateTime(isoString: string): string {
+  const d = new Date(isoString);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const year = d.toLocaleString('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric' });
+  const month = pad(Number(d.toLocaleString('en-CA', { timeZone: 'Europe/Madrid', month: '2-digit' })));
+  const day = pad(Number(d.toLocaleString('en-CA', { timeZone: 'Europe/Madrid', day: '2-digit' })));
+  const hour = pad(Number(d.toLocaleString('en-CA', { timeZone: 'Europe/Madrid', hour: '2-digit', hour12: false })));
+  const minute = pad(Number(d.toLocaleString('en-CA', { timeZone: 'Europe/Madrid', minute: '2-digit' })));
+  const second = pad(Number(d.toLocaleString('en-CA', { timeZone: 'Europe/Madrid', second: '2-digit' })));
+  return `${year}${month}${day}T${hour}${minute}${second}`;
+}
+
+function escapeIcsText(s: string): string {
+  return s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+}
+
+function downloadAppleCalendar(item: AgendaItem) {
+  const start = formatIcsDateTime(item.fechaInicio);
+  const end = formatIcsDateTime(item.fechaFin || item.fechaInicio);
+  const summary = escapeIcsText(item.titulo);
+  const description = escapeIcsText(item.descripcion || '');
+  const location = escapeIcsText(item.ubicacion || '');
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//LPMBE//Semana Santa//ES',
+    'BEGIN:VEVENT',
+    `DTSTART:${start}`,
+    `DTEND:${end}`,
+    `SUMMARY:${summary}`,
+    description && `DESCRIPTION:${description}`,
+    location && `LOCATION:${location}`,
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ]
+    .filter(Boolean)
+    .join('\r\n');
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${item.titulo.replace(/[^a-z0-9]/gi, '-')}.ics`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 const timeOpts = { hour: '2-digit' as const, minute: '2-digit' as const, timeZone: 'Europe/Madrid' };
 
 export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: AgendaItem[]; locale?: string }) {
@@ -138,6 +184,13 @@ export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: A
               >
                 Añadir a Google Calendar
               </a>
+              <button
+                type="button"
+                onClick={() => downloadAppleCalendar(selected)}
+                className="rounded-full border px-3 py-2 text-sm font-medium hover:bg-muted"
+              >
+                Añadir a Apple Calendar
+              </button>
               {selected.ubicacion && (
                 <a
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selected.ubicacion)}`}
