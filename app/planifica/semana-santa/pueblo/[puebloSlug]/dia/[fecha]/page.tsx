@@ -18,6 +18,7 @@ type Agenda = {
   fechaFin: string | null;
   fotoUrl: string | null;
   youtubeUrl?: string | null;
+  esFiestaInteresTuristico?: boolean;
 };
 
 type Payload = {
@@ -85,6 +86,11 @@ export default async function SemanaSantaDiaPage({
                   {new Date(e.fechaInicio).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
                   {e.fechaFin ? ` - ${new Date(e.fechaFin).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}` : ''}
                 </p>
+                {e.esFiestaInteresTuristico && (
+                  <span className="mt-2 inline-flex rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2.5 py-1 text-xs font-medium text-[#8f4a26]">
+                    Fiesta de Interés Turístico
+                  </span>
+                )}
                 {e.ubicacion && <p className="mt-1 text-sm">📍 {e.ubicacion}</p>}
                 {e.descripcion && <p className="mt-3 text-sm text-muted-foreground">{e.descripcion}</p>}
                 {e.youtubeUrl && (

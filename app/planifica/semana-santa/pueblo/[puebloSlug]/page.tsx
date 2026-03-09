@@ -30,6 +30,7 @@ type Agenda = {
   fechaFin: string | null;
   fotoUrl: string | null;
   youtubeUrl?: string | null;
+  esFiestaInteresTuristico?: boolean;
 };
 
 type Payload = {

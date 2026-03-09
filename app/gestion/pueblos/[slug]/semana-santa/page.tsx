@@ -35,6 +35,7 @@ type AgendaItem = {
   fechaFin: string | null;
   fotoUrl: string | null;
   youtubeUrl?: string | null;
+  esFiestaInteresTuristico?: boolean;
   orden: number;
 };
 type Participante = {
@@ -90,6 +91,11 @@ function SortableAgendaCard({
           Enlace YouTube
         </a>
       )}
+      {a.esFiestaInteresTuristico && (
+        <span className="inline-flex rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2 py-0.5 text-[11px] font-medium text-[#8f4a26]">
+          Fiesta de Interés Turístico
+        </span>
+      )}
       {(a.inicioLat != null && a.inicioLng != null) && (
         <p className="text-xs text-muted-foreground">
           Recorrido: inicio definido{a.finLat != null && a.finLng != null ? ', fin definido' : ''} · {a.paradas?.length ?? 0} paradas
@@ -140,6 +146,7 @@ export default function GestionPuebloSemanaSantaPage() {
     horaFin: '',
     fotoUrl: '',
     youtubeUrl: '',
+    esFiestaInteresTuristico: false,
   });
   const [mapMode, setMapMode] = useState<'inicio' | 'fin' | 'parada'>('parada');
   const [editMapMode, setEditMapMode] = useState<'inicio' | 'fin' | 'parada'>('parada');
@@ -157,6 +164,7 @@ export default function GestionPuebloSemanaSantaPage() {
     horaFin: '',
     fotoUrl: '',
     youtubeUrl: '',
+    esFiestaInteresTuristico: false,
   });
 
   const openNewAgenda = (fecha?: string) => {
@@ -312,6 +320,7 @@ export default function GestionPuebloSemanaSantaPage() {
         fechaFin: fechaFinIso,
         fotoUrl: newAgenda.fotoUrl || undefined,
         youtubeUrl: newAgenda.youtubeUrl || undefined,
+        esFiestaInteresTuristico: newAgenda.esFiestaInteresTuristico,
       }),
     });
     setSaving(false);
@@ -334,6 +343,7 @@ export default function GestionPuebloSemanaSantaPage() {
       horaFin: '',
       fotoUrl: '',
       youtubeUrl: '',
+      esFiestaInteresTuristico: false,
     });
     await loadData();
     flash('Evento de agenda añadido');
@@ -368,6 +378,7 @@ export default function GestionPuebloSemanaSantaPage() {
       horaFin: end ? end.toISOString().slice(11, 16) : '',
       fotoUrl: a.fotoUrl || '',
       youtubeUrl: a.youtubeUrl || '',
+      esFiestaInteresTuristico: a.esFiestaInteresTuristico ?? false,
     });
   };
 
@@ -393,6 +404,7 @@ export default function GestionPuebloSemanaSantaPage() {
         fechaFin: fechaFinIso,
         fotoUrl: editAgenda.fotoUrl || undefined,
         youtubeUrl: editAgenda.youtubeUrl || undefined,
+        esFiestaInteresTuristico: editAgenda.esFiestaInteresTuristico,
       }),
     });
     setSaving(false);
@@ -424,6 +436,7 @@ export default function GestionPuebloSemanaSantaPage() {
         fechaFin: a.fechaFin || undefined,
         fotoUrl: a.fotoUrl || undefined,
         youtubeUrl: a.youtubeUrl || undefined,
+        esFiestaInteresTuristico: a.esFiestaInteresTuristico ?? false,
         orden: (a.orden ?? 0) + 1,
       }),
     });
@@ -766,6 +779,14 @@ export default function GestionPuebloSemanaSantaPage() {
               value={newAgenda.youtubeUrl}
               onChange={(e) => setNewAgenda({ ...newAgenda, youtubeUrl: e.target.value })}
             />
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={Boolean(newAgenda.esFiestaInteresTuristico)}
+                onChange={(e) => setNewAgenda({ ...newAgenda, esFiestaInteresTuristico: e.target.checked })}
+              />
+              Fiesta de Interés Turístico (este evento)
+            </label>
             <textarea
               rows={2}
               className="w-full rounded-md border px-3 py-2 text-sm"
@@ -803,6 +824,18 @@ export default function GestionPuebloSemanaSantaPage() {
                   className={`rounded-md border px-3 py-1.5 text-xs ${mapMode === 'parada' ? 'bg-blue-600 text-white' : ''}`}
                 >
                   Añadir paradas
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setNewAgenda({
+                      ...newAgenda,
+                      paradas: newAgenda.paradas.length > 0 ? newAgenda.paradas.slice(0, -1) : [],
+                    })
+                  }
+                  className="rounded-md border px-3 py-1.5 text-xs"
+                >
+                  Deshacer última parada
                 </button>
                 <button
                   type="button"
@@ -927,6 +960,14 @@ export default function GestionPuebloSemanaSantaPage() {
               value={editAgenda.youtubeUrl}
               onChange={(e) => setEditAgenda({ ...editAgenda, youtubeUrl: e.target.value })}
             />
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={Boolean(editAgenda.esFiestaInteresTuristico)}
+                onChange={(e) => setEditAgenda({ ...editAgenda, esFiestaInteresTuristico: e.target.checked })}
+              />
+              Fiesta de Interés Turístico (este evento)
+            </label>
             <textarea
               rows={2}
               className="w-full rounded-md border px-3 py-2 text-sm"
@@ -964,6 +1005,18 @@ export default function GestionPuebloSemanaSantaPage() {
                   className={`rounded-md border px-3 py-1.5 text-xs ${editMapMode === 'parada' ? 'bg-blue-600 text-white' : ''}`}
                 >
                   Añadir paradas
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditAgenda({
+                      ...editAgenda,
+                      paradas: editAgenda.paradas.length > 0 ? editAgenda.paradas.slice(0, -1) : [],
+                    })
+                  }
+                  className="rounded-md border px-3 py-1.5 text-xs"
+                >
+                  Deshacer última parada
                 </button>
                 <button
                   type="button"

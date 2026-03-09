@@ -114,7 +114,7 @@ function SearchAndManualPicker({
         </div>
       )}
       <p className="text-xs text-muted-foreground">
-        Modo activo: <strong>{mode}</strong>. Buscar/seleccionar marca el punto en el modo activo; también puedes clicar manualmente en el mapa.
+        Modo activo: <strong>{mode}</strong>. Ruta calculada 100% andando. Buscar/seleccionar marca el punto en el modo activo; también puedes clicar manualmente en el mapa.
       </p>
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
@@ -159,7 +159,7 @@ export default function RouteEditorMap({
       try {
         const coords = linePoints.map(([lat, lng]) => `${lng},${lat}`).join(';');
         const res = await fetch(
-          `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`,
+          `https://routing.openstreetmap.de/routed-foot/route/v1/driving/${coords}?overview=full&geometries=geojson`,
         );
         if (!res.ok) throw new Error('routing_error');
         const json = (await res.json()) as {

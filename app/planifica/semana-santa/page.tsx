@@ -106,13 +106,8 @@ export default async function SemanaSantaLandingPage() {
                     ) : (
                       <div className="flex h-full items-center justify-center text-muted-foreground">Semana Santa</div>
                     )}
-                    {isVerticalPriority && (
-                      <span className="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-zinc-800">
-                        Cartel vertical
-                      </span>
-                    )}
                     {badge && (
-                      <span className="absolute left-3 top-3 rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-medium text-white">
+                      <span className="absolute left-3 top-3 rounded-full bg-[#b2643a]/90 px-2.5 py-1 text-[11px] font-medium text-white">
                         {badge}
                       </span>
                     )}

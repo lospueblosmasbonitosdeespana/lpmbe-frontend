@@ -19,6 +19,7 @@ type AgendaItem = {
   fechaFin: string | null;
   fotoUrl: string | null;
   youtubeUrl?: string | null;
+  esFiestaInteresTuristico?: boolean;
 };
 
 function googleCalendarUrl(item: AgendaItem) {
@@ -107,6 +108,11 @@ export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: A
                 ? ` - ${new Date(selected.fechaFin).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`
                 : ''}
             </p>
+            {selected.esFiestaInteresTuristico && (
+              <span className="mt-2 inline-flex rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2.5 py-1 text-xs font-medium text-[#8f4a26]">
+                Fiesta de Interés Turístico
+              </span>
+            )}
             {selected.ubicacion && <p className="mt-2 text-sm">📍 {selected.ubicacion}</p>}
             {selected.descripcion && <p className="mt-3 text-sm text-muted-foreground">{selected.descripcion}</p>}
             {(selected.inicioLat != null && selected.inicioLng != null) && (
