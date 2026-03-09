@@ -159,6 +159,16 @@ export default function GestionPuebloSemanaSantaPage() {
     youtubeUrl: '',
   });
 
+  const openNewAgenda = (fecha?: string) => {
+    setShowNewAgenda(true);
+    setEditingAgendaId(null);
+    setNewAgenda((prev) => ({
+      ...prev,
+      fecha: fecha ?? prev.fecha,
+      horaInicio: prev.horaInicio || '12:00',
+    }));
+  };
+
   useEffect(() => {
     (async () => {
       const res = await fetch(`/api/pueblos/${slug}`);
@@ -678,13 +688,10 @@ export default function GestionPuebloSemanaSantaPage() {
                   }}
                 />
                 <button
-                  className="rounded-md border border-red-200 px-3 py-2 text-sm text-red-600"
-                  onClick={() => {
-                    const next = orderedDias.filter((_, i) => i !== idx).map((x, i) => ({ ...x, orden: i }));
-                    setData({ ...data, dias: next });
-                  }}
+                  className="rounded-md border px-3 py-2 text-sm hover:bg-muted"
+                  onClick={() => openNewAgenda(d.fecha)}
                 >
-                  Quitar día
+                  Añadir evento
                 </button>
               </div>
             </div>
@@ -703,7 +710,7 @@ export default function GestionPuebloSemanaSantaPage() {
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Agenda de procesiones y actos</h2>
           <button
-            onClick={() => setShowNewAgenda(true)}
+            onClick={() => openNewAgenda(orderedDias[0]?.fecha)}
             className="rounded-lg bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground"
           >
             + Añadir evento
@@ -807,7 +814,7 @@ export default function GestionPuebloSemanaSantaPage() {
               </div>
               <RouteEditorMap value={newAgenda} mode={mapMode} onChange={(next) => setNewAgenda((prev) => ({ ...prev, ...next }))} />
               <p className="mt-2 text-xs text-muted-foreground">
-                Puedes buscar una calle/pueblo y marcar el punto, o hacerlo manualmente con clic en mapa.
+                Puedes buscar una calle/pueblo y marcar el punto, o hacerlo con clic en mapa. Clic en una parada azul para eliminarla.
               </p>
             </div>
             <div className="flex gap-2">
@@ -967,6 +974,9 @@ export default function GestionPuebloSemanaSantaPage() {
                 </button>
               </div>
               <RouteEditorMap value={editAgenda} mode={editMapMode} onChange={(next) => setEditAgenda((prev) => ({ ...prev, ...next }))} />
+              <p className="mt-2 text-xs text-muted-foreground">
+                Clic en una parada azul para eliminarla. &quot;Limpiar paradas&quot; borra todas.
+              </p>
             </div>
             <div className="flex gap-2">
               <button

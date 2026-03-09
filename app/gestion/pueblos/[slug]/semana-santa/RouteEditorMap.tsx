@@ -48,8 +48,6 @@ function SearchAndManualPicker({
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [manualLat, setManualLat] = useState('');
-  const [manualLng, setManualLng] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const runSearch = async () => {
@@ -76,17 +74,8 @@ function SearchAndManualPicker({
     const lat = Number(item.lat);
     const lng = Number(item.lon);
     if (Number.isNaN(lat) || Number.isNaN(lng)) return;
-    onPick(lat, lng, mode);
-  };
-
-  const pickManual = () => {
-    const lat = Number(manualLat);
-    const lng = Number(manualLng);
-    if (Number.isNaN(lat) || Number.isNaN(lng)) {
-      setError('Coordenadas manuales no válidas.');
-      return;
-    }
-    setError(null);
+    setQuery(item.display_name);
+    setResults([]);
     onPick(lat, lng, mode);
   };
 
@@ -124,27 +113,6 @@ function SearchAndManualPicker({
           ))}
         </div>
       )}
-      <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-        <input
-          type="number"
-          step="any"
-          className="rounded-md border px-3 py-2 text-sm"
-          placeholder="Lat manual"
-          value={manualLat}
-          onChange={(e) => setManualLat(e.target.value)}
-        />
-        <input
-          type="number"
-          step="any"
-          className="rounded-md border px-3 py-2 text-sm"
-          placeholder="Lng manual"
-          value={manualLng}
-          onChange={(e) => setManualLng(e.target.value)}
-        />
-        <button type="button" onClick={pickManual} className="rounded-md border px-3 py-2 text-sm hover:bg-muted">
-          Ir + marcar
-        </button>
-      </div>
       <p className="text-xs text-muted-foreground">
         Modo activo: <strong>{mode}</strong>. Buscar/seleccionar marca el punto en el modo activo; también puedes clicar manualmente en el mapa.
       </p>
@@ -163,6 +131,7 @@ export default function RouteEditorMap({
   onChange: (next: RouteDraft) => void;
 }) {
   const [flyToPoint, setFlyToPoint] = useState<[number, number] | null>(null);
+  const [routedLine, setRoutedLine] = useState<Array<[number, number]> | null>(null);
 
   const center: [number, number] = useMemo(() => {
     if (value.inicioLat != null && value.inicioLng != null) return [value.inicioLat, value.inicioLng];
@@ -179,6 +148,39 @@ export default function RouteEditorMap({
     return points;
   }, [value]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadRoute = async () => {
+      if (linePoints.length < 2) {
+        setRoutedLine(null);
+        return;
+      }
+      try {
+        const coords = linePoints.map(([lat, lng]) => `${lng},${lat}`).join(';');
+        const res = await fetch(
+          `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`,
+        );
+        if (!res.ok) throw new Error('routing_error');
+        const json = (await res.json()) as {
+          routes?: Array<{ geometry?: { coordinates?: Array<[number, number]> } }>;
+        };
+        const routeCoords = json.routes?.[0]?.geometry?.coordinates ?? [];
+        const next = routeCoords
+          .map(([lng, lat]) => [lat, lng] as [number, number])
+          .filter((p) => Number.isFinite(p[0]) && Number.isFinite(p[1]));
+        if (!cancelled) setRoutedLine(next.length >= 2 ? next : null);
+      } catch {
+        if (!cancelled) setRoutedLine(null);
+      }
+    };
+
+    void loadRoute();
+    return () => {
+      cancelled = true;
+    };
+  }, [linePoints]);
+
   const applyPick = (lat: number, lng: number, currentMode: Mode) => {
     setFlyToPoint([lat, lng]);
     if (currentMode === 'inicio') {
@@ -190,6 +192,11 @@ export default function RouteEditorMap({
       return;
     }
     onChange({ ...value, paradas: [...value.paradas, { lat, lng }] });
+  };
+
+  const removeStopAt = (index: number) => {
+    const next = value.paradas.filter((_, i) => i !== index);
+    onChange({ ...value, paradas: next });
   };
 
   return (
@@ -210,10 +217,23 @@ export default function RouteEditorMap({
           <CircleMarker center={[value.finLat, value.finLng]} radius={7} pathOptions={{ color: '#dc2626' }} />
         )}
         {value.paradas.map((p, i) => (
-          <CircleMarker key={`${p.lat}-${p.lng}-${i}`} center={[p.lat, p.lng]} radius={5} pathOptions={{ color: '#2563eb' }} />
+          <CircleMarker
+            key={`${p.lat}-${p.lng}-${i}`}
+            center={[p.lat, p.lng]}
+            radius={5}
+            pathOptions={{ color: '#2563eb' }}
+            eventHandlers={{
+              click: () => removeStopAt(i),
+            }}
+          />
         ))}
 
-        {linePoints.length >= 2 && <Polyline positions={linePoints} pathOptions={{ color: '#1d4ed8', weight: 4 }} />}
+        {linePoints.length >= 2 && (
+          <Polyline
+            positions={routedLine && routedLine.length >= 2 ? routedLine : linePoints}
+            pathOptions={{ color: '#1d4ed8', weight: 4 }}
+          />
+        )}
       </MapContainer>
     </div>
   );
