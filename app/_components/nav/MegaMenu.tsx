@@ -8,11 +8,11 @@ import { navConfig } from "./nav.config";
 
 const CLOSE_DELAY_MS = 120;
 
-export function MegaMenu() {
+export function MegaMenu({ items: itemsProp }: { items?: NavItem[] }) {
   const tTabs = useTranslations("tabs");
   const tNav = useTranslations("nav");
   const [openLabel, setOpenLabel] = useState<string | null>(null);
-  const items = useMemo(() => navConfig, []);
+  const items = useMemo(() => itemsProp ?? navConfig, [itemsProp]);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
   const getItemLabel = (item: NavItem) =>

@@ -22,7 +22,26 @@ export type NavItem =
       columns: NavColumn[];
     };
 
-export const navConfig: NavItem[] = [
+type CampaignNavOptions = {
+  showNocheRomantica: boolean;
+  showSemanaSanta: boolean;
+};
+
+export function getNavConfig(options?: Partial<CampaignNavOptions>): NavItem[] {
+  const settings: CampaignNavOptions = {
+    showNocheRomantica: options?.showNocheRomantica ?? true,
+    showSemanaSanta: options?.showSemanaSanta ?? true,
+  };
+
+  const planificaLinks: NavLink[] = [
+    { labelKey: "createRoute", href: "/planifica/crea-mi-ruta" },
+    { labelKey: "weekend", href: "/planifica/fin-de-semana" },
+    ...(settings.showSemanaSanta ? [{ labelKey: "semanaSanta", href: "/planifica/semana-santa" }] : []),
+    { labelKey: "pirineos", href: "/rutas/mas-bonitos-de-los-pirineos" },
+    ...(settings.showNocheRomantica ? [{ labelKey: "nocheRomantica", href: "/noche-romantica" }] : []),
+  ];
+
+  return [
   {
     type: "mega",
     labelKey: "pueblos",
@@ -76,12 +95,7 @@ export const navConfig: NavItem[] = [
       },
       {
         titleKey: "planifica",
-        links: [
-          { labelKey: "createRoute", href: "/planifica/crea-mi-ruta" },
-          { labelKey: "weekend", href: "/planifica/fin-de-semana" },
-          { labelKey: "pirineos", href: "/rutas/mas-bonitos-de-los-pirineos" },
-          { labelKey: "nocheRomantica", href: "/noche-romantica" },
-        ],
+        links: planificaLinks,
       },
     ],
   },
@@ -133,4 +147,7 @@ export const navConfig: NavItem[] = [
     labelNs: "nav",
     href: "/tienda",
   },
-];
+  ];
+}
+
+export const navConfig: NavItem[] = getNavConfig();

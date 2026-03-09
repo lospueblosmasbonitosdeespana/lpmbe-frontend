@@ -6,6 +6,8 @@ import AuthNavLink from "./AuthNavLink";
 import CartIndicatorWrapper from "../tienda/CartIndicatorWrapper";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { headers } from "next/headers";
+import { getApiUrl } from "@/lib/api";
+import { getNavConfig } from "./nav.config";
 
 type SiteSettings = {
   brandName: string;
@@ -42,9 +44,36 @@ async function fetchSiteSettings(): Promise<SiteSettings> {
 
 type HeaderProps = { locale: string };
 
+async function fetchCampaignVisibility(): Promise<{ showNocheRomantica: boolean; showSemanaSanta: boolean }> {
+  const apiBase = getApiUrl();
+  try {
+    const [nrRes, ssRes] = await Promise.all([
+      fetch(`${apiBase}/noche-romantica/config`, { cache: "no-store" }),
+      fetch(`${apiBase}/semana-santa/config`, { cache: "no-store" }),
+    ]);
+
+    const [nrConfig, ssConfig] = await Promise.all([
+      nrRes.ok ? nrRes.json() : null,
+      ssRes.ok ? ssRes.json() : null,
+    ]);
+
+    return {
+      showNocheRomantica: !!nrConfig?.activo,
+      showSemanaSanta: !!ssConfig?.activo,
+    };
+  } catch {
+    return {
+      showNocheRomantica: true,
+      showSemanaSanta: false,
+    };
+  }
+}
+
 export async function Header({ locale }: HeaderProps) {
   const t = await getTranslations("nav");
   const settings = await fetchSiteSettings();
+  const campaignVisibility = await fetchCampaignVisibility();
+  const navItems = getNavConfig(campaignVisibility);
 
   // Determinar qué mostrar según activeLogo
   // En dark mode usamos el mismo logo blanco que el footer (logoVariantUrl) si existe
@@ -115,12 +144,12 @@ export async function Header({ locale }: HeaderProps) {
         </Link>
 
         <div className="hidden md:block">
-          <MegaMenu />
+          <MegaMenu items={navItems} />
         </div>
 
         <div className="flex items-center gap-3 md:gap-4 text-foreground">
           <LocaleSwitcher currentLocale={locale} variant="header" />
-          <MobileMenu />
+          <MobileMenu items={navItems} />
           <CartIndicatorWrapper />
           <Link href="/contacto" className="text-sm font-medium hover:underline">
             {t("contact")}

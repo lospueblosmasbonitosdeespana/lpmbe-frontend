@@ -44,7 +44,7 @@ function NavLinkItem({
   );
 }
 
-export function MobileMenu() {
+export function MobileMenu({ items = navConfig }: { items?: NavItem[] }) {
   const tTabs = useTranslations("tabs");
   const tNav = useTranslations("nav");
   const tCommon = useTranslations("common");
@@ -154,7 +154,7 @@ export function MobileMenu() {
               </div>
 
               <nav className="space-y-2">
-                {navConfig.map((item) => {
+                {items.map((item) => {
                   const itemLabel = getItemLabel(item);
                   if (item.type === "link") {
                     return (

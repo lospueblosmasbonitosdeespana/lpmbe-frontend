@@ -48,6 +48,7 @@ export default function GestionPuebloSemanaSantaPage() {
   const [notInscribed, setNotInscribed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [inscribing, setInscribing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showNewAgenda, setShowNewAgenda] = useState(false);
@@ -98,6 +99,30 @@ export default function GestionPuebloSemanaSantaPage() {
   const flash = (msg: string) => {
     setSuccess(msg);
     setTimeout(() => setSuccess(null), 2500);
+  };
+
+  const inscribirse = async () => {
+    if (!puebloId) return;
+    setInscribing(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/admin/semana-santa/pueblos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ puebloId }),
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(text || 'No se pudo completar la inscripción');
+      }
+      setNotInscribed(false);
+      await loadData();
+      flash('Pueblo inscrito correctamente en Semana Santa');
+    } catch (e: any) {
+      setError(e?.message ?? 'No se pudo completar la inscripción');
+    } finally {
+      setInscribing(false);
+    }
   };
 
   const saveInfo = async () => {
@@ -210,8 +235,18 @@ export default function GestionPuebloSemanaSantaPage() {
     return (
       <main className="mx-auto max-w-5xl p-6">
         <h1 className="text-2xl font-semibold">Semana Santa</h1>
+        {error && <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
         <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-5 text-amber-800">
           Este pueblo no está inscrito en Semana Santa este año.
+        </div>
+        <div className="mt-4">
+          <button
+            onClick={inscribirse}
+            disabled={inscribing || !puebloId}
+            className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          >
+            {inscribing ? 'Inscribiendo...' : 'Inscribirse'}
+          </button>
         </div>
         <div className="mt-6 text-sm">
           <Link href={`/gestion/pueblos/${slug}`} className="text-muted-foreground hover:underline">
