@@ -222,23 +222,15 @@ export default function GestionPuebloSemanaSantaPage() {
     setTimeout(() => setSuccess(null), 2500);
   };
 
-  // Convierte fecha "YYYY-MM-DD" y hora "HH:MM" a ISO UTC
-  // Calcula el offset correcto de Europe/Madrid para esa fecha exacta
   const toIsoUtc = (fecha: string, hora: string): string => {
     if (!fecha || !hora) return '';
-    // Probamos si esa fecha/hora está en horario de verano usando Intl
-    const testDate = new Date(`${fecha}T${hora}:00Z`);
-    // Europe/Madrid en verano es UTC+2, en invierno UTC+1
-    // Usamos una heurística: comparamos el offset que Intl reporta para esa fecha
-    const localStr = testDate.toLocaleString('en-CA', { timeZone: 'Europe/Madrid', hour12: false });
-    const utcStr = testDate.toISOString().slice(0, 19).replace('T', ' ');
-    const localParts = localStr.replace(',', '').split(' ');
-    const utcParts = utcStr.split(' ');
-    const localH = parseInt(localParts[1]?.split(':')[0] ?? '0', 10);
-    const utcH = parseInt(utcParts[1]?.split(':')[0] ?? '0', 10);
-    const diffH = ((localH - utcH) + 24) % 24; // 1 o 2
-    const offset = diffH === 2 ? '+02:00' : '+01:00';
-    return new Date(`${fecha}T${hora}:00${offset}`).toISOString();
+    const try1 = new Date(`${fecha}T${hora}:00+01:00`);
+    const try2 = new Date(`${fecha}T${hora}:00+02:00`);
+    const check = (d: Date) =>
+      d.toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false }).slice(0, 5);
+    if (check(try2) === hora) return try2.toISOString();
+    if (check(try1) === hora) return try1.toISOString();
+    return try2.toISOString();
   };
 
   const inscribirse = async () => {
@@ -381,32 +373,18 @@ export default function GestionPuebloSemanaSantaPage() {
     flash('Evento eliminado');
   };
 
-  const toLocalHHMM = (isoString: string): string => {
+  const toMadridTime = (isoString: string) =>
+    new Date(isoString).toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false }).slice(0, 5);
+
+  const toMadridDate = (isoString: string) => {
     const d = new Date(isoString);
-    // toLocaleTimeString con timeZone explícito es fiable en Node.js y navegadores modernos
-    const t = d.toLocaleTimeString('es-ES', {
-      timeZone: 'Europe/Madrid',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
-    // t puede ser "20:00" o "20:00:00" — tomamos solo HH:MM
-    return t.slice(0, 5);
+    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+    return parts;
   };
 
   const startEditAgenda = (a: AgendaItem) => {
     setShowNewAgenda(false);
     setEditingAgendaId(a.id);
-
-    // Fecha local (Spain) a partir del ISO string usando el mismo offset
-    const getLocalDate = (isoString: string) => {
-      const d = new Date(isoString);
-      const month = d.getUTCMonth() + 1;
-      const offset = month >= 4 && month <= 10 ? 2 : 1;
-      const localMs = d.getTime() + offset * 3600 * 1000;
-      const localDate = new Date(localMs);
-      return localDate.toISOString().slice(0, 10);
-    };
 
     setEditAgenda({
       titulo: a.titulo || '',
@@ -417,9 +395,9 @@ export default function GestionPuebloSemanaSantaPage() {
       finLat: a.finLat ?? undefined,
       finLng: a.finLng ?? undefined,
       paradas: a.paradas ?? [],
-      fecha: getLocalDate(a.fechaInicio),
-      horaInicio: toLocalHHMM(a.fechaInicio),
-      horaFin: a.fechaFin ? toLocalHHMM(a.fechaFin) : '',
+      fecha: toMadridDate(a.fechaInicio),
+      horaInicio: toMadridTime(a.fechaInicio),
+      horaFin: a.fechaFin ? toMadridTime(a.fechaFin) : '',
       fotoUrl: a.fotoUrl || '',
       youtubeUrl: a.youtubeUrl || '',
       esFiestaInteresTuristico: a.esFiestaInteresTuristico ?? false,
@@ -770,19 +748,21 @@ export default function GestionPuebloSemanaSantaPage() {
                 <option value="">Selecciona día</option>
                 {orderedDias.map((d, idx) => (
                   <option key={`${d.fecha}-${idx}`} value={d.fecha}>
-                    {(d.nombreDia || 'Día')} · {d.fecha}
+                    {(d.nombreDia || 'Día')} · {d.fecha.split('-').reverse().join('/')}
                   </option>
                 ))}
               </select>
               <input
-                type="time"
+                type="text"
                 className="rounded-md border px-3 py-2 text-sm"
+                placeholder="Hora inicio (ej. 20:00)"
                 value={newAgenda.horaInicio}
                 onChange={(e) => setNewAgenda({ ...newAgenda, horaInicio: e.target.value })}
               />
               <input
-                type="time"
+                type="text"
                 className="rounded-md border px-3 py-2 text-sm"
+                placeholder="Hora fin (ej. 22:30)"
                 value={newAgenda.horaFin}
                 onChange={(e) => setNewAgenda({ ...newAgenda, horaFin: e.target.value })}
               />
@@ -951,19 +931,21 @@ export default function GestionPuebloSemanaSantaPage() {
                 <option value="">Selecciona día</option>
                 {orderedDias.map((d, idx) => (
                   <option key={`${d.fecha}-${idx}`} value={d.fecha}>
-                    {(d.nombreDia || 'Día')} · {d.fecha}
+                    {(d.nombreDia || 'Día')} · {d.fecha.split('-').reverse().join('/')}
                   </option>
                 ))}
               </select>
               <input
-                type="time"
+                type="text"
                 className="rounded-md border px-3 py-2 text-sm"
+                placeholder="Hora inicio (ej. 20:00)"
                 value={editAgenda.horaInicio}
                 onChange={(e) => setEditAgenda({ ...editAgenda, horaInicio: e.target.value })}
               />
               <input
-                type="time"
+                type="text"
                 className="rounded-md border px-3 py-2 text-sm"
+                placeholder="Hora fin (ej. 22:30)"
                 value={editAgenda.horaFin}
                 onChange={(e) => setEditAgenda({ ...editAgenda, horaFin: e.target.value })}
               />
