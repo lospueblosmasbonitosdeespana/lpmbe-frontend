@@ -4,7 +4,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useCartStore } from '@/src/store/cart';
-import { getUserDirecciones, createDireccion, updateDireccion, deleteDireccion, createCheckout } from '@/src/lib/tiendaApi';
+import {
+  getUserDirecciones,
+  createDireccion,
+  updateDireccion,
+  deleteDireccion,
+  createCheckout,
+  previewCheckout as previewCheckoutApi,
+} from '@/src/lib/tiendaApi';
 import { formatEUR, toNumber } from '@/src/lib/money';
 import { PAISES_ENVIO, getCountryLabel, getCountrySelectValue } from '@/src/lib/countries';
 import type { Direccion, CheckoutResponse } from '@/src/types/tienda';
@@ -29,6 +36,7 @@ export default function CheckoutPage() {
   const [payment, setPayment] = useState<{ orderId: number; clientSecret: string } | null>(null);
   const [checkoutData, setCheckoutData] = useState<CheckoutResponse | null>(null);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(null);
 
   // Formulario nueva/editar dirección
   const [formData, setFormData] = useState({
@@ -216,8 +224,9 @@ export default function CheckoutPage() {
         return;
       }
 
-      const result = await createCheckout(payload);
+      const result = await previewCheckoutApi(payload);
       setCheckoutData(normalizeCheckoutResponse(result));
+      setAppliedCouponCode(coupon ?? null);
     } catch (e: any) {
       console.error('Error previsualizando checkout:', e);
       setCheckoutData(null);
@@ -248,9 +257,9 @@ export default function CheckoutPage() {
   // Previsualizar cuando cambie la dirección seleccionada
   useEffect(() => {
     if (selectedDireccionId && items.length > 0) {
-      previewCheckout(selectedDireccionId);
+      previewCheckout(selectedDireccionId, appliedCouponCode ?? undefined);
     }
-  }, [selectedDireccionId, items.length]);
+  }, [selectedDireccionId, items.length, appliedCouponCode]);
 
   const handleCheckout = async () => {
     if (!selectedDireccionId) {
@@ -273,18 +282,28 @@ export default function CheckoutPage() {
     setError(null);
 
     try {
-      // El checkout ya se calculó en preview, usar el clientSecret
-      if (checkoutData.clientSecret) {
+      const payload = {
+        shippingAddressId: Number(selectedDireccionId),
+        items: items.map((item) => ({
+          productId: Number(item.product.id),
+          cantidad: Math.max(1, parseInt(String(item.quantity ?? 1), 10) || 1),
+        })),
+        ...(appliedCouponCode ? { couponCode: appliedCouponCode } : {}),
+      };
+
+      const checkoutResult = normalizeCheckoutResponse(await createCheckout(payload));
+
+      if (checkoutResult.clientSecret) {
         setPayment({
-          orderId: checkoutData.orderId,
-          clientSecret: checkoutData.clientSecret,
+          orderId: checkoutResult.orderId,
+          clientSecret: checkoutResult.clientSecret,
         });
         return;
       }
 
       // Sin clientSecret (no debería pasar)
       clear();
-      router.push(`/tienda/pedido/${checkoutData.orderId}`);
+      router.push(`/tienda/pedido/${checkoutResult.orderId}`);
     } catch (e: any) {
       setError(e?.message ?? 'Error procesando el pedido');
     } finally {

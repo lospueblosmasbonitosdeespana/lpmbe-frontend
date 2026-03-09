@@ -118,6 +118,31 @@ export type CheckoutPayload = {
   couponCode?: string;
 };
 
+export async function previewCheckout(payload: CheckoutPayload): Promise<CheckoutResponse> {
+  const res = await fetch('/api/orders/preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    cache: 'no-store',
+  });
+
+  if (res.status === 503) {
+    throw new Error('Pagos no disponibles todavía');
+  }
+
+  if (!res.ok) {
+    try {
+      const errorData = await res.json();
+      throw new Error(errorData.message || errorData.error || `Error ${res.status}`);
+    } catch (parseError) {
+      if (parseError instanceof Error) throw parseError;
+      throw new Error(`Error en preview de checkout (${res.status})`);
+    }
+  }
+
+  return res.json();
+}
+
 export async function createCheckout(payload: CheckoutPayload): Promise<CheckoutResponse> {
   const res = await fetch('/api/orders/checkout', {
     method: 'POST',
