@@ -217,6 +217,13 @@ export default async function GestionPuebloPage({
       disabled: false,
     },
     {
+      href: `${baseUrl}/semana-santa`,
+      title: 'Semana Santa',
+      description: 'Cartel, agenda y días de procesiones del pueblo',
+      icon: <span className="text-2xl">✝️</span>,
+      disabled: false,
+    },
+    {
       href: `${baseUrl}/autorizados`,
       title: 'Autorizados',
       description: 'Usuarios que pueden gestionar el pueblo',

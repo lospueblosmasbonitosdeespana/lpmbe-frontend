@@ -122,6 +122,12 @@ const ACCESOS = [
     description: 'Configuración del evento y pueblos participantes',
     icon: <span className="text-2xl">❤️</span>,
   },
+  {
+    href: '/gestion/asociacion/semana-santa',
+    title: 'Semana Santa',
+    description: 'Configura año, días y pueblos participantes',
+    icon: <span className="text-2xl">✝️</span>,
+  },
 ];
 
 function GridCard({

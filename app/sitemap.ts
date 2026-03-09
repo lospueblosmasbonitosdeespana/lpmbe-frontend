@@ -13,7 +13,9 @@ async function fetchSlugs(endpoint: string, slugField = 'slug'): Promise<string[
     if (!res.ok) return [];
     const data = await res.json();
     const items = Array.isArray(data) ? data : data?.items ?? [];
-    return items.map((i: any) => i[slugField]).filter(Boolean);
+    const readPath = (obj: any, path: string) =>
+      path.split('.').reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), obj);
+    return items.map((i: any) => readPath(i, slugField)).filter(Boolean);
   } catch {
     return [];
   }
@@ -36,13 +38,14 @@ function entry(path: string, priority: number, changeFrequency: SitemapEntry['ch
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [puebloSlugs, rutaSlugs, noticiaSlugs, eventoSlugs, contenidoSlugs] =
+  const [puebloSlugs, rutaSlugs, noticiaSlugs, eventoSlugs, contenidoSlugs, semanaSantaPueblos] =
     await Promise.all([
       fetchSlugs('/pueblos'),
       fetchSlugs('/rutas'),
       fetchSlugs('/public/noticias?limit=1000'),
       fetchSlugs('/public/eventos?limit=1000'),
       fetchSlugs('/public/contenidos?limit=1000'),
+      fetchSlugs('/semana-santa/pueblos', 'pueblo.slug'),
     ]);
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -72,6 +75,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry('/multiexperiencias', 0.6, 'weekly'),
     entry('/planifica/crea-mi-ruta', 0.7, 'monthly'),
     entry('/planifica/fin-de-semana', 0.7, 'monthly'),
+    entry('/planifica/semana-santa', 0.7, 'daily'),
     entry('/pueblos', 0.9, 'weekly'),
     entry('/pueblos/comunidades', 0.7, 'monthly'),
     entry('/pueblos/provincias', 0.7, 'monthly'),
@@ -91,6 +95,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const noticias = noticiaSlugs.map((s) => entry(`/noticias/${s}`, 0.6, 'monthly'));
   const eventos = eventoSlugs.map((s) => entry(`/eventos/${s}`, 0.6, 'monthly'));
   const contenidos = contenidoSlugs.map((s) => entry(`/c/${s}`, 0.5, 'monthly'));
+  const semanaSanta = semanaSantaPueblos.map((s) => entry(`/planifica/semana-santa/pueblo/${s}`, 0.6, 'weekly'));
 
-  return [...staticPages, ...pueblos, ...rutas, ...noticias, ...eventos, ...contenidos];
+  return [...staticPages, ...pueblos, ...rutas, ...noticias, ...eventos, ...contenidos, ...semanaSanta];
 }
