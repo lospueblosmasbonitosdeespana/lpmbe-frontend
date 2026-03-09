@@ -60,7 +60,7 @@ export default async function SemanaSantaDiaPage({
   const eventos = data.participante.agenda.filter((a) => a.fechaInicio.slice(0, 10) === fecha);
   if (!day) return notFound();
 
-  const timeOpts = { hour: '2-digit' as const, minute: '2-digit' as const, timeZone: 'Europe/Madrid' };
+  const timeOpts = { hour: '2-digit' as const, minute: '2-digit' as const, hour12: false as const, timeZone: 'Europe/Madrid' };
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">

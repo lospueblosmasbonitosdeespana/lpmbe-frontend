@@ -94,7 +94,7 @@ export default async function SemanaSantaPuebloPage({
     return acc;
   }, {});
 
-  const timeOpts = { hour: '2-digit' as const, minute: '2-digit' as const, timeZone: 'Europe/Madrid' };
+  const timeOpts = { hour: '2-digit' as const, minute: '2-digit' as const, hour12: false as const, timeZone: 'Europe/Madrid' };
   const diasConEventos = participante.dias.filter((d) => (eventsByDate[d.fecha]?.length ?? 0) > 0);
 
   return (

@@ -83,9 +83,9 @@ function SortableAgendaCard({
       </div>
       <p className="text-sm text-muted-foreground">
         {new Date(a.fechaInicio).toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid', day: '2-digit', month: '2-digit', year: 'numeric' })}
-        {', '}
-        {new Date(a.fechaInicio).toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' })}
-        {a.fechaFin ? ` - ${new Date(a.fechaFin).toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' })}` : ''}
+        {' · '}
+        {new Date(a.fechaInicio).toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false })}
+        {a.fechaFin ? ` – ${new Date(a.fechaFin).toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false })}` : ''}
       </p>
       {a.ubicacion && <p className="text-sm text-muted-foreground">{a.ubicacion}</p>}
       {a.youtubeUrl && (
@@ -327,7 +327,8 @@ export default function GestionPuebloSemanaSantaPage() {
         fecha: newAgenda.fecha,
         horaInicio: newAgenda.horaInicio,
         horaFin: newAgenda.horaFin || undefined,
-        fechaInicio: newAgenda.fecha,
+        fechaInicio: toIsoUtc(newAgenda.fecha, newAgenda.horaInicio),
+        fechaFin: newAgenda.horaFin ? toIsoUtc(newAgenda.fecha, newAgenda.horaFin) : undefined,
         fotoUrl: newAgenda.fotoUrl || undefined,
         youtubeUrl: newAgenda.youtubeUrl || undefined,
         esFiestaInteresTuristico: newAgenda.esFiestaInteresTuristico,
@@ -423,7 +424,8 @@ export default function GestionPuebloSemanaSantaPage() {
         fecha: editAgenda.fecha,
         horaInicio: editAgenda.horaInicio,
         horaFin: editAgenda.horaFin || undefined,
-        fechaInicio: editAgenda.fecha,
+        fechaInicio: toIsoUtc(editAgenda.fecha, editAgenda.horaInicio),
+        fechaFin: editAgenda.horaFin ? toIsoUtc(editAgenda.fecha, editAgenda.horaFin) : undefined,
         fotoUrl: editAgenda.fotoUrl || undefined,
         youtubeUrl: editAgenda.youtubeUrl || undefined,
         esFiestaInteresTuristico: editAgenda.esFiestaInteresTuristico,
