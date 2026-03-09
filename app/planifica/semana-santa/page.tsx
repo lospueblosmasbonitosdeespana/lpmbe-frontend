@@ -83,10 +83,10 @@ export default async function SemanaSantaLandingPage() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {pueblos.map((p) => {
-              const image =
-                (p.cartelHorizontalUrl && p.cartelHorizontalUrl.trim()) ||
-                (p.cartelVerticalUrl && p.cartelVerticalUrl.trim()) ||
-                p.pueblo.foto_destacada;
+              const verticalImage = p.cartelVerticalUrl && p.cartelVerticalUrl.trim();
+              const horizontalImage = p.cartelHorizontalUrl && p.cartelHorizontalUrl.trim();
+              const image = verticalImage || horizontalImage || p.pueblo.foto_destacada;
+              const isVerticalPriority = Boolean(verticalImage);
               const badge = badgeInteres(p.interesTuristico);
               return (
                 <Link
@@ -94,15 +94,22 @@ export default async function SemanaSantaLandingPage() {
                   href={`/planifica/semana-santa/pueblo/${p.pueblo.slug}`}
                   className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                 >
-                  <div className="relative h-52 bg-muted">
+                  <div className={`relative bg-muted ${isVerticalPriority ? 'h-72' : 'h-52'}`}>
                     {image ? (
                       <img
                         src={image}
                         alt={p.pueblo.nombre}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        className={`h-full w-full transition-transform duration-300 group-hover:scale-105 ${
+                          isVerticalPriority ? 'bg-stone-100 object-contain p-2' : 'object-cover'
+                        }`}
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center text-muted-foreground">Semana Santa</div>
+                    )}
+                    {isVerticalPriority && (
+                      <span className="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-zinc-800">
+                        Cartel vertical
+                      </span>
                     )}
                     {badge && (
                       <span className="absolute left-3 top-3 rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-medium text-white">

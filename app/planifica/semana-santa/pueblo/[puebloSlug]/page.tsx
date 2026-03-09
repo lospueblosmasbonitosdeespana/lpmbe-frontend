@@ -75,9 +75,9 @@ export default async function SemanaSantaPuebloPage({
 
   const { participante, config } = data;
   const hero =
+    (participante.pueblo.foto_destacada && participante.pueblo.foto_destacada.trim()) ||
     (participante.cartelHorizontalUrl && participante.cartelHorizontalUrl.trim()) ||
-    (participante.cartelVerticalUrl && participante.cartelVerticalUrl.trim()) ||
-    participante.pueblo.foto_destacada;
+    (participante.cartelVerticalUrl && participante.cartelVerticalUrl.trim());
   const interesLabel =
     participante.interesTuristico === 'INTERNACIONAL'
       ? 'Interés Turístico Internacional'
