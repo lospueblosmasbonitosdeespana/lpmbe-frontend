@@ -32,6 +32,16 @@ export default async function AppGestionPage() {
             Crear y editar pop-ups (título, texto, imagen opcional, botón). Definir fechas, si se muestra en home o al abrir la app, frecuencia (una vez, cada día, cada sesión, siempre) y retraso en segundos.
           </p>
         </Link>
+
+        <Link
+          href="/gestion/asociacion/app/evento-activo"
+          className="block rounded-lg border border-border bg-card p-6 transition-shadow hover:shadow-md"
+        >
+          <h2 className="text-xl font-semibold">Evento activo del botón estacional</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Elige desde gestión qué botón estacional verá el usuario en la Home de la app: Semana Santa, Noche Romántica o Navidad.
+          </p>
+        </Link>
       </div>
     </main>
   );
