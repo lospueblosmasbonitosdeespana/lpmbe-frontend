@@ -83,15 +83,22 @@ export default async function SemanaSantaDiaPage({
           <div className="mt-4 space-y-4">
             {eventos.map((e) => (
               <article key={e.id} className="rounded-lg border p-4">
-                <h3 className="text-lg font-semibold">{e.titulo}</h3>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-lg font-semibold">{e.titulo}</h3>
+                  {e.esFiestaInteresTuristico && (
+                    <span className="inline-flex shrink-0 rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2.5 py-1 text-xs font-medium text-[#8f4a26]">
+                      Fiesta de Interés Turístico
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-muted-foreground">
                   {new Date(e.fechaInicio).toLocaleTimeString(locale, timeOpts)}
                   {e.fechaFin ? ` - ${new Date(e.fechaFin).toLocaleTimeString(locale, timeOpts)}` : ''}
                 </p>
-                {e.esFiestaInteresTuristico && (
-                  <span className="mt-2 inline-flex rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2.5 py-1 text-xs font-medium text-[#8f4a26]">
-                    Fiesta de Interés Turístico
-                  </span>
+                {e.fotoUrl && (
+                  <div className="mt-3 overflow-hidden rounded-lg border">
+                    <img src={e.fotoUrl} alt={e.titulo} className="h-48 w-full object-cover" />
+                  </div>
                 )}
                 {e.ubicacion && <p className="mt-1 text-sm">📍 {e.ubicacion}</p>}
                 {e.descripcion && <p className="mt-3 text-sm text-muted-foreground">{e.descripcion}</p>}

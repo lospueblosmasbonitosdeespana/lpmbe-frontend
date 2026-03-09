@@ -195,12 +195,19 @@ export default async function SemanaSantaPuebloPage({
                     </div>
                     <div className="mt-2 space-y-1 text-sm text-muted-foreground">
                       {(eventsByDate[d.fecha] ?? []).map((ev) => (
-                        <p key={ev.id}>
-                          {new Date(ev.fechaInicio).toLocaleTimeString(locale, timeOpts)}
-                          {ev.fechaFin
-                            ? ` - ${new Date(ev.fechaFin).toLocaleTimeString(locale, timeOpts)}`
-                            : ''}{' '}
-                          · {ev.titulo}
+                        <p key={ev.id} className="flex flex-wrap items-center gap-2">
+                          <span>
+                            {new Date(ev.fechaInicio).toLocaleTimeString(locale, timeOpts)}
+                            {ev.fechaFin
+                              ? ` - ${new Date(ev.fechaFin).toLocaleTimeString(locale, timeOpts)}`
+                              : ''}{' '}
+                            · {ev.titulo}
+                          </span>
+                          {ev.esFiestaInteresTuristico && (
+                            <span className="inline-flex shrink-0 rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2 py-0.5 text-[10px] font-medium text-[#8f4a26]">
+                              Fiesta de Interés Turístico
+                            </span>
+                          )}
                         </p>
                       ))}
                     </div>

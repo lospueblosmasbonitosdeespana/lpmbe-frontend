@@ -122,9 +122,16 @@ export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: A
                     onClick={() => setSelected(it)}
                     className="flex w-full items-start justify-between rounded-lg border px-3 py-2 text-left hover:bg-muted"
                   >
-                    <span>
-                      <span className="block font-medium">{it.titulo}</span>
-                      <span className="text-sm text-muted-foreground">
+                    <span className="min-w-0 flex-1">
+                      <span className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium">{it.titulo}</span>
+                        {it.esFiestaInteresTuristico && (
+                          <span className="inline-flex shrink-0 rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2 py-0.5 text-[10px] font-medium text-[#8f4a26]">
+                            Fiesta de Interés Turístico
+                          </span>
+                        )}
+                      </span>
+                      <span className="mt-0.5 block text-sm text-muted-foreground">
                         {new Date(it.fechaInicio).toLocaleTimeString(locale, timeOpts)}
                         {it.fechaFin
                           ? ` - ${new Date(it.fechaFin).toLocaleTimeString(locale, timeOpts)}`
@@ -143,9 +150,18 @@ export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: A
       {selected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-xl rounded-2xl bg-white p-5 shadow-xl">
-            <div className="mb-3 flex items-start justify-between">
-              <h3 className="text-xl font-semibold">{selected.titulo}</h3>
-              <button className="rounded-full border px-2 py-1 text-muted-foreground" onClick={() => setSelected(null)}>
+            <div className="mb-3 flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-xl font-semibold">{selected.titulo}</h3>
+                  {selected.esFiestaInteresTuristico && (
+                    <span className="inline-flex shrink-0 rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2.5 py-1 text-xs font-medium text-[#8f4a26]">
+                      Fiesta de Interés Turístico
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button className="shrink-0 rounded-full border px-2 py-1 text-muted-foreground" onClick={() => setSelected(null)}>
                 ✕
               </button>
             </div>
@@ -156,10 +172,10 @@ export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: A
                 ? ` - ${new Date(selected.fechaFin).toLocaleTimeString(locale, timeOpts)}`
                 : ''}
             </p>
-            {selected.esFiestaInteresTuristico && (
-              <span className="mt-2 inline-flex rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2.5 py-1 text-xs font-medium text-[#8f4a26]">
-                Fiesta de Interés Turístico
-              </span>
+            {selected.fotoUrl && (
+              <div className="mt-3 overflow-hidden rounded-lg border">
+                <img src={selected.fotoUrl} alt={selected.titulo} className="h-48 w-full object-cover" />
+              </div>
             )}
             {selected.ubicacion && <p className="mt-2 text-sm">📍 {selected.ubicacion}</p>}
             {selected.descripcion && <p className="mt-3 text-sm text-muted-foreground">{selected.descripcion}</p>}

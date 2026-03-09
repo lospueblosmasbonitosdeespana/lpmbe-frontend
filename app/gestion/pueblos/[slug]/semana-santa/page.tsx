@@ -222,7 +222,9 @@ export default function GestionPuebloSemanaSantaPage() {
 
   const toIsoUtc = (fecha: string, hora: string) => {
     if (!fecha || !hora) return '';
-    return new Date(`${fecha}T${hora}:00`).toISOString();
+    const month = parseInt(fecha.slice(5, 7), 10);
+    const offset = month >= 3 && month <= 10 ? '+02:00' : '+01:00';
+    return new Date(`${fecha}T${hora}:00${offset}`).toISOString();
   };
 
   const inscribirse = async () => {
@@ -366,11 +368,23 @@ export default function GestionPuebloSemanaSantaPage() {
     flash('Evento eliminado');
   };
 
+  const toLocalHHMM = (isoString: string) => {
+    const d = new Date(isoString);
+    const formatter = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Madrid',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+    const parts = formatter.formatToParts(d);
+    const hour = (parts.find((p) => p.type === 'hour')?.value ?? '00').padStart(2, '0');
+    const minute = (parts.find((p) => p.type === 'minute')?.value ?? '00').padStart(2, '0');
+    return `${hour}:${minute}`;
+  };
+
   const startEditAgenda = (a: AgendaItem) => {
     const start = new Date(a.fechaInicio);
     const end = a.fechaFin ? new Date(a.fechaFin) : null;
-    const toLocalHHMM = (d: Date) =>
-      d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
     setShowNewAgenda(false);
     setEditingAgendaId(a.id);
     setEditAgenda({
@@ -383,8 +397,8 @@ export default function GestionPuebloSemanaSantaPage() {
       finLng: a.finLng ?? undefined,
       paradas: a.paradas ?? [],
       fecha: start.toISOString().slice(0, 10),
-      horaInicio: toLocalHHMM(start),
-      horaFin: end ? toLocalHHMM(end) : '',
+      horaInicio: toLocalHHMM(a.fechaInicio),
+      horaFin: end ? toLocalHHMM(a.fechaFin!) : '',
       fotoUrl: a.fotoUrl || '',
       youtubeUrl: a.youtubeUrl || '',
       esFiestaInteresTuristico: a.esFiestaInteresTuristico ?? false,
