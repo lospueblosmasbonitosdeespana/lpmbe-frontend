@@ -2,11 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
+import ShareButton from '@/app/components/ShareButton';
 
 const EventoRecorridoMap = dynamic(() => import('./EventoRecorridoMap'), { ssr: false });
 const ImagenConLightbox = dynamic(() => import('./ImagenConLightbox'), { ssr: false });
 const YoutubeEmbed = dynamic(() => import('./YoutubeEmbed'), { ssr: false });
-const ShareEventoSemanaSanta = dynamic(() => import('./ShareEventoSemanaSanta'), { ssr: false });
 
 type AgendaItem = {
   id: number;
@@ -194,7 +194,10 @@ export default function AgendaInteractiva({
             )}
             {selected.ubicacion && <p className="mt-2 text-sm">📍 {selected.ubicacion}</p>}
             {selected.descripcion && <p className="mt-3 text-sm text-muted-foreground">{selected.descripcion}</p>}
-            {(selected.inicioLat != null && selected.inicioLng != null) && (
+            {(selected.inicioLat != null &&
+              selected.inicioLng != null &&
+              Array.isArray(selected.paradas) &&
+              selected.paradas.length > 0) && (
               <div className="mt-4">
                 <p className="mb-2 text-sm font-medium">Recorrido</p>
                 <EventoRecorridoMap
@@ -234,10 +237,15 @@ export default function AgendaInteractiva({
               )}
             </div>
             <div className="mt-3 border-t pt-3">
-              <ShareEventoSemanaSanta
-                shareUrl={`/planifica/semana-santa/pueblo/${puebloSlug}/dia/${selected.fechaInicio.slice(0, 10)}`}
-                shareTitle={selected.titulo}
-              />
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Compartir</p>
+                <ShareButton
+                  url={`/planifica/semana-santa/pueblo/${puebloSlug}/dia/${selected.fechaInicio.slice(0, 10)}`}
+                  title={selected.titulo}
+                  variant="icon"
+                  className="rounded-full border bg-card"
+                />
+              </div>
             </div>
             {selected.youtubeUrl && (
               <div className="mt-3 w-full">

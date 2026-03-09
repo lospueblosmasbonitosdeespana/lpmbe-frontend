@@ -2,9 +2,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getApiUrl } from '@/lib/api';
 import { getLocale } from 'next-intl/server';
+import ShareButton from '@/app/components/ShareButton';
 import EventoRecorridoMap from '../../EventoRecorridoMap';
 import ImagenConLightbox from '../../ImagenConLightbox';
-import ShareEventoSemanaSanta from '../../ShareEventoSemanaSanta';
 import YoutubeEmbed from '../../YoutubeEmbed';
 
 type Agenda = {
@@ -86,13 +86,21 @@ export default async function SemanaSantaDiaPage({
           <div className="mt-4 space-y-4">
             {eventos.map((e) => (
               <article key={e.id} className="rounded-lg border p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-lg font-semibold">{e.titulo}</h3>
-                  {e.esFiestaInteresTuristico && (
-                    <span className="inline-flex shrink-0 rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2.5 py-1 text-xs font-medium text-[#8f4a26]">
-                      Fiesta de Interés Turístico
-                    </span>
-                  )}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
+                    <h3 className="text-lg font-semibold">{e.titulo}</h3>
+                    {e.esFiestaInteresTuristico && (
+                      <span className="inline-flex shrink-0 rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2.5 py-1 text-xs font-medium text-[#8f4a26]">
+                        Fiesta de Interés Turístico
+                      </span>
+                    )}
+                  </div>
+                  <ShareButton
+                    url={`/planifica/semana-santa/pueblo/${puebloSlug}/dia/${fecha}`}
+                    title={e.titulo}
+                    variant="icon"
+                    className="rounded-full border bg-card"
+                  />
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {new Date(e.fechaInicio).toLocaleTimeString(locale, timeOpts)}
@@ -109,13 +117,10 @@ export default async function SemanaSantaDiaPage({
                 )}
                 {e.ubicacion && <p className="mt-1 text-sm">📍 {e.ubicacion}</p>}
                 {e.descripcion && <p className="mt-3 text-sm text-muted-foreground">{e.descripcion}</p>}
-                {e.youtubeUrl && (
-                  <div className="mt-3">
-                    <p className="mb-2 text-sm font-medium">Vídeo de años anteriores</p>
-                    <YoutubeEmbed url={e.youtubeUrl} title={`${e.titulo} - años anteriores`} />
-                  </div>
-                )}
-                {(e.inicioLat != null && e.inicioLng != null) && (
+                {(e.inicioLat != null &&
+                  e.inicioLng != null &&
+                  Array.isArray(e.paradas) &&
+                  e.paradas.length > 0) && (
                   <div className="mt-3">
                     <EventoRecorridoMap
                       inicioLat={e.inicioLat}
@@ -126,12 +131,12 @@ export default async function SemanaSantaDiaPage({
                     />
                   </div>
                 )}
-                <div className="mt-3 border-t pt-3">
-                  <ShareEventoSemanaSanta
-                    shareUrl={`/planifica/semana-santa/pueblo/${puebloSlug}/dia/${fecha}`}
-                    shareTitle={e.titulo}
-                  />
-                </div>
+                {e.youtubeUrl && (
+                  <div className="mt-4 border-t pt-4">
+                    <p className="mb-2 text-sm font-medium">Vídeo de años anteriores</p>
+                    <YoutubeEmbed url={e.youtubeUrl} title={`${e.titulo} - años anteriores`} />
+                  </div>
+                )}
               </article>
             ))}
           </div>
