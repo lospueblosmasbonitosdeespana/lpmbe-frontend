@@ -587,28 +587,6 @@ export default function GestionPuebloSemanaSantaPage() {
               previewHeight="h-40"
             />
           </div>
-          {(data.cartelHorizontalUrl || data.cartelVerticalUrl || data.pueblo) && (
-            <div className="rounded-lg border border-dashed p-3">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Vista previa pública</p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="overflow-hidden rounded-md border bg-muted">
-                  {data.cartelHorizontalUrl || data.cartelVerticalUrl ? (
-                    <img
-                      src={data.cartelHorizontalUrl || data.cartelVerticalUrl || ''}
-                      alt={`Vista previa ${data.pueblo.nombre}`}
-                      className="h-36 w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-36 items-center justify-center text-sm text-muted-foreground">Sin cartel principal</div>
-                  )}
-                </div>
-                <div className="text-sm">
-                  <p className="font-medium">{data.titulo || data.pueblo.nombre}</p>
-                  <p className="mt-1 line-clamp-4 text-muted-foreground">{data.descripcion || 'Sin descripción aún.'}</p>
-                </div>
-              </div>
-            </div>
-          )}
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm">Stream / webcam (URL embebible)</label>
