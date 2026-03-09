@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { getApiUrl } from '@/lib/api';
 import { getLocale } from 'next-intl/server';
 import EventoRecorridoMap from '../../EventoRecorridoMap';
+import ImagenConLightbox from '../../ImagenConLightbox';
+import YoutubeEmbed from '../../YoutubeEmbed';
 
 type Agenda = {
   id: number;
@@ -96,21 +98,21 @@ export default async function SemanaSantaDiaPage({
                   {e.fechaFin ? ` - ${new Date(e.fechaFin).toLocaleTimeString(locale, timeOpts)}` : ''}
                 </p>
                 {e.fotoUrl && (
-                  <div className="mt-3 overflow-hidden rounded-lg border">
-                    <img src={e.fotoUrl} alt={e.titulo} className="h-48 w-full object-cover" />
+                  <div className="mt-3 overflow-hidden rounded-lg border bg-muted/30">
+                    <ImagenConLightbox
+                      src={e.fotoUrl}
+                      alt={e.titulo}
+                      className="max-h-64 w-full object-contain"
+                    />
                   </div>
                 )}
                 {e.ubicacion && <p className="mt-1 text-sm">📍 {e.ubicacion}</p>}
                 {e.descripcion && <p className="mt-3 text-sm text-muted-foreground">{e.descripcion}</p>}
                 {e.youtubeUrl && (
-                  <a
-                    href={e.youtubeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 inline-flex rounded-full border px-3 py-1 text-xs font-medium hover:bg-muted"
-                  >
-                    Ver vídeo de años anteriores
-                  </a>
+                  <div className="mt-3">
+                    <p className="mb-2 text-sm font-medium">Vídeo de años anteriores</p>
+                    <YoutubeEmbed url={e.youtubeUrl} title={`${e.titulo} - años anteriores`} />
+                  </div>
                 )}
                 {(e.inicioLat != null && e.inicioLng != null) && (
                   <div className="mt-3">

@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 
 const EventoRecorridoMap = dynamic(() => import('./EventoRecorridoMap'), { ssr: false });
+const ImagenConLightbox = dynamic(() => import('./ImagenConLightbox'), { ssr: false });
+const YoutubeEmbed = dynamic(() => import('./YoutubeEmbed'), { ssr: false });
 
 type AgendaItem = {
   id: number;
@@ -173,8 +175,12 @@ export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: A
                 : ''}
             </p>
             {selected.fotoUrl && (
-              <div className="mt-3 overflow-hidden rounded-lg border">
-                <img src={selected.fotoUrl} alt={selected.titulo} className="h-48 w-full object-cover" />
+              <div className="mt-3 overflow-hidden rounded-lg border bg-muted/30">
+                <ImagenConLightbox
+                  src={selected.fotoUrl}
+                  alt={selected.titulo}
+                  className="max-h-64 w-full object-contain"
+                />
               </div>
             )}
             {selected.ubicacion && <p className="mt-2 text-sm">📍 {selected.ubicacion}</p>}
@@ -218,14 +224,10 @@ export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: A
                 </a>
               )}
               {selected.youtubeUrl && (
-                <a
-                  href={selected.youtubeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-full border px-3 py-2 text-sm font-medium hover:bg-muted"
-                >
-                  Ver vídeo de otros años
-                </a>
+                <div className="mt-3 w-full">
+                  <p className="mb-2 text-sm font-medium">Vídeo de años anteriores</p>
+                  <YoutubeEmbed url={selected.youtubeUrl} title={`${selected.titulo} - años anteriores`} />
+                </div>
               )}
             </div>
           </div>
