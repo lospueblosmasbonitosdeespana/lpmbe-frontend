@@ -137,7 +137,6 @@ export default async function SemanaSantaPuebloPage({
 
         {(participante.cartelVerticalUrl || participante.cartelHorizontalUrl) && (
           <section className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <h2 className="mb-4 font-serif text-2xl font-medium">Cartel</h2>
             <div className={hasBothPosters ? 'grid gap-4 md:grid-cols-2' : 'flex justify-center'}>
               {participante.cartelVerticalUrl && (
                 <div className="flex justify-center">
