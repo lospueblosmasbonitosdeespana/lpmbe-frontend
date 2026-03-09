@@ -21,6 +21,11 @@ type Agenda = {
   titulo: string;
   descripcion: string | null;
   ubicacion: string | null;
+  inicioLat?: number | null;
+  inicioLng?: number | null;
+  finLat?: number | null;
+  finLng?: number | null;
+  paradas?: Array<{ lat: number; lng: number; label?: string }> | null;
   fechaInicio: string;
   fechaFin: string | null;
   fotoUrl: string | null;
@@ -69,7 +74,10 @@ export default async function SemanaSantaPuebloPage({
   if (!data) notFound();
 
   const { participante, config } = data;
-  const hero = participante.cartelHorizontalUrl || participante.cartelVerticalUrl || participante.pueblo.foto_destacada;
+  const hero =
+    (participante.cartelHorizontalUrl && participante.cartelHorizontalUrl.trim()) ||
+    (participante.cartelVerticalUrl && participante.cartelVerticalUrl.trim()) ||
+    participante.pueblo.foto_destacada;
   const interesLabel =
     participante.interesTuristico === 'INTERNACIONAL'
       ? 'Interés Turístico Internacional'
@@ -158,10 +166,8 @@ export default async function SemanaSantaPuebloPage({
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {participante.dias.map((d) => (
-                <article
-                  key={d.id}
-                  className="relative overflow-hidden rounded-xl border bg-muted shadow-sm"
-                >
+                <Link key={d.id} href={`/planifica/semana-santa/pueblo/${participante.pueblo.slug}/dia/${d.fecha}`}>
+                  <article className="relative overflow-hidden rounded-xl border bg-muted shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
                   {d.fotoUrl ? (
                     <img src={d.fotoUrl} alt={d.nombreDia} className="h-56 w-full object-cover" />
                   ) : (
@@ -180,8 +186,10 @@ export default async function SemanaSantaPuebloPage({
                     </p>
                     <h3 className="mt-1 text-2xl font-semibold">{d.titulo || d.nombreDia}</h3>
                     {d.descripcion && <p className="mt-1 text-sm opacity-90">{d.descripcion}</p>}
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-wide">Ver eventos del día →</p>
                   </div>
                 </article>
+                </Link>
               ))}
             </div>
           )}

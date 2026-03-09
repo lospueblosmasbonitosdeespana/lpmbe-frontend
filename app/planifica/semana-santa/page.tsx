@@ -83,7 +83,10 @@ export default async function SemanaSantaLandingPage() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {pueblos.map((p) => {
-              const image = p.cartelHorizontalUrl || p.cartelVerticalUrl || p.pueblo.foto_destacada;
+              const image =
+                (p.cartelHorizontalUrl && p.cartelHorizontalUrl.trim()) ||
+                (p.cartelVerticalUrl && p.cartelVerticalUrl.trim()) ||
+                p.pueblo.foto_destacada;
               const badge = badgeInteres(p.interesTuristico);
               return (
                 <Link

@@ -1,0 +1,107 @@
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { getApiUrl } from '@/lib/api';
+import { getLocale } from 'next-intl/server';
+import EventoRecorridoMap from '../../EventoRecorridoMap';
+
+type Agenda = {
+  id: number;
+  titulo: string;
+  descripcion: string | null;
+  ubicacion: string | null;
+  inicioLat?: number | null;
+  inicioLng?: number | null;
+  finLat?: number | null;
+  finLng?: number | null;
+  paradas?: Array<{ lat: number; lng: number; label?: string }> | null;
+  fechaInicio: string;
+  fechaFin: string | null;
+  fotoUrl: string | null;
+};
+
+type Payload = {
+  participante: {
+    pueblo: { nombre: string; slug: string };
+    agenda: Agenda[];
+    dias: Array<{
+      id: number;
+      fecha: string;
+      nombreDia: string;
+      titulo: string | null;
+      descripcion: string | null;
+      fotoUrl: string | null;
+    }>;
+  };
+};
+
+async function fetchData(slug: string, locale: string): Promise<Payload | null> {
+  const API = getApiUrl();
+  const lang = encodeURIComponent(locale);
+  const res = await fetch(`${API}/semana-santa/pueblos/${slug}?lang=${lang}`, { cache: 'no-store' });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export default async function SemanaSantaDiaPage({
+  params,
+}: {
+  params: Promise<{ puebloSlug: string; fecha: string }>;
+}) {
+  const { puebloSlug, fecha } = await params;
+  const locale = await getLocale();
+  const data = await fetchData(puebloSlug, locale);
+  if (!data) return notFound();
+
+  const day = data.participante.dias.find((d) => d.fecha === fecha);
+  const eventos = data.participante.agenda.filter((a) => a.fechaInicio.slice(0, 10) === fecha);
+  if (!day) return notFound();
+
+  return (
+    <main className="mx-auto max-w-4xl px-6 py-10">
+      <Link href={`/planifica/semana-santa/pueblo/${puebloSlug}`} className="text-sm text-muted-foreground hover:underline">
+        ← Volver a la Semana Santa del pueblo
+      </Link>
+
+      <header className="mt-4 rounded-xl border bg-card p-5">
+        <p className="text-sm text-muted-foreground">{data.participante.pueblo.nombre}</p>
+        <h1 className="font-serif text-3xl font-medium">{day.titulo || day.nombreDia}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {new Date(day.fecha).toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+        </p>
+        {day.descripcion && <p className="mt-3 text-muted-foreground">{day.descripcion}</p>}
+      </header>
+
+      <section className="mt-6 rounded-xl border bg-card p-5">
+        <h2 className="text-xl font-semibold">Eventos del día</h2>
+        {eventos.length === 0 ? (
+          <p className="mt-3 text-muted-foreground">No hay eventos cargados para este día.</p>
+        ) : (
+          <div className="mt-4 space-y-4">
+            {eventos.map((e) => (
+              <article key={e.id} className="rounded-lg border p-4">
+                <h3 className="text-lg font-semibold">{e.titulo}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(e.fechaInicio).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
+                  {e.fechaFin ? ` - ${new Date(e.fechaFin).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}` : ''}
+                </p>
+                {e.ubicacion && <p className="mt-1 text-sm">📍 {e.ubicacion}</p>}
+                {e.descripcion && <p className="mt-3 text-sm text-muted-foreground">{e.descripcion}</p>}
+                {(e.inicioLat != null && e.inicioLng != null) && (
+                  <div className="mt-3">
+                    <EventoRecorridoMap
+                      inicioLat={e.inicioLat}
+                      inicioLng={e.inicioLng}
+                      finLat={e.finLat}
+                      finLng={e.finLng}
+                      paradas={e.paradas}
+                    />
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}

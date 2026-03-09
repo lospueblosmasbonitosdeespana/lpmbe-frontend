@@ -4,6 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
+import dynamic from 'next/dynamic';
+
+const RouteEditorMap = dynamic(() => import('./RouteEditorMap'), { ssr: false });
 
 type DiaConfig = { fecha: string; nombreDia: string; orden: number };
 type PuebloDia = {
@@ -20,6 +23,11 @@ type AgendaItem = {
   titulo: string;
   descripcion: string | null;
   ubicacion: string | null;
+  inicioLat?: number | null;
+  inicioLng?: number | null;
+  finLat?: number | null;
+  finLng?: number | null;
+  paradas?: Array<{ lat: number; lng: number; label?: string }> | null;
   fechaInicio: string;
   fechaFin: string | null;
   fotoUrl: string | null;
@@ -56,10 +64,16 @@ export default function GestionPuebloSemanaSantaPage() {
     titulo: '',
     descripcion: '',
     ubicacion: '',
+    inicioLat: undefined as number | undefined,
+    inicioLng: undefined as number | undefined,
+    finLat: undefined as number | undefined,
+    finLng: undefined as number | undefined,
+    paradas: [] as Array<{ lat: number; lng: number; label?: string }>,
     fechaInicio: '',
     fechaFin: '',
     fotoUrl: '',
   });
+  const [mapMode, setMapMode] = useState<'inicio' | 'fin' | 'parada'>('parada');
 
   useEffect(() => {
     (async () => {
@@ -187,6 +201,11 @@ export default function GestionPuebloSemanaSantaPage() {
         titulo: newAgenda.titulo,
         descripcion: newAgenda.descripcion || undefined,
         ubicacion: newAgenda.ubicacion || undefined,
+        inicioLat: newAgenda.inicioLat,
+        inicioLng: newAgenda.inicioLng,
+        finLat: newAgenda.finLat,
+        finLng: newAgenda.finLng,
+        paradas: newAgenda.paradas,
         fechaInicio: new Date(newAgenda.fechaInicio).toISOString(),
         fechaFin: newAgenda.fechaFin ? new Date(newAgenda.fechaFin).toISOString() : undefined,
         fotoUrl: newAgenda.fotoUrl || undefined,
@@ -198,7 +217,19 @@ export default function GestionPuebloSemanaSantaPage() {
       return;
     }
     setShowNewAgenda(false);
-    setNewAgenda({ titulo: '', descripcion: '', ubicacion: '', fechaInicio: '', fechaFin: '', fotoUrl: '' });
+    setNewAgenda({
+      titulo: '',
+      descripcion: '',
+      ubicacion: '',
+      inicioLat: undefined,
+      inicioLng: undefined,
+      finLat: undefined,
+      finLng: undefined,
+      paradas: [],
+      fechaInicio: '',
+      fechaFin: '',
+      fotoUrl: '',
+    });
     await loadData();
     flash('Evento de agenda añadido');
   };
@@ -309,6 +340,28 @@ export default function GestionPuebloSemanaSantaPage() {
               previewHeight="h-40"
             />
           </div>
+          {(data.cartelHorizontalUrl || data.cartelVerticalUrl || data.pueblo) && (
+            <div className="rounded-lg border border-dashed p-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Vista previa pública</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="overflow-hidden rounded-md border bg-muted">
+                  {data.cartelHorizontalUrl || data.cartelVerticalUrl ? (
+                    <img
+                      src={data.cartelHorizontalUrl || data.cartelVerticalUrl || ''}
+                      alt={`Vista previa ${data.pueblo.nombre}`}
+                      className="h-36 w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-36 items-center justify-center text-sm text-muted-foreground">Sin cartel principal</div>
+                  )}
+                </div>
+                <div className="text-sm">
+                  <p className="font-medium">{data.titulo || data.pueblo.nombre}</p>
+                  <p className="mt-1 line-clamp-4 text-muted-foreground">{data.descripcion || 'Sin descripción aún.'}</p>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm">Stream / webcam (URL embebible)</label>
@@ -516,6 +569,43 @@ export default function GestionPuebloSemanaSantaPage() {
               folder="semana-santa/agenda"
               previewHeight="h-32"
             />
+            <div className="rounded-lg border border-dashed p-3">
+              <p className="mb-2 text-sm font-medium">Recorrido de la procesión / evento (opcional)</p>
+              <div className="mb-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMapMode('inicio')}
+                  className={`rounded-md border px-3 py-1.5 text-xs ${mapMode === 'inicio' ? 'bg-green-600 text-white' : ''}`}
+                >
+                  Marcar inicio
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMapMode('fin')}
+                  className={`rounded-md border px-3 py-1.5 text-xs ${mapMode === 'fin' ? 'bg-red-600 text-white' : ''}`}
+                >
+                  Marcar fin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMapMode('parada')}
+                  className={`rounded-md border px-3 py-1.5 text-xs ${mapMode === 'parada' ? 'bg-blue-600 text-white' : ''}`}
+                >
+                  Añadir paradas
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewAgenda({ ...newAgenda, paradas: [] })}
+                  className="rounded-md border px-3 py-1.5 text-xs"
+                >
+                  Limpiar paradas
+                </button>
+              </div>
+              <RouteEditorMap value={newAgenda} mode={mapMode} onChange={(next) => setNewAgenda((prev) => ({ ...prev, ...next }))} />
+              <p className="mt-2 text-xs text-muted-foreground">
+                Haz clic en el mapa según el modo activo. Inicio (verde), fin (rojo), paradas (azul).
+              </p>
+            </div>
             <div className="flex gap-2">
               <button
                 onClick={createAgenda}
@@ -547,6 +637,11 @@ export default function GestionPuebloSemanaSantaPage() {
                     {a.fechaFin ? ` - ${new Date(a.fechaFin).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : ''}
                   </p>
                   {a.ubicacion && <p className="text-sm text-muted-foreground">{a.ubicacion}</p>}
+                  {(a.inicioLat != null && a.inicioLng != null) && (
+                    <p className="text-xs text-muted-foreground">
+                      Recorrido: inicio definido{a.finLat != null && a.finLng != null ? ', fin definido' : ''} · {a.paradas?.length ?? 0} paradas
+                    </p>
+                  )}
                 </div>
                 <button
                   onClick={() => deleteAgenda(a.id)}

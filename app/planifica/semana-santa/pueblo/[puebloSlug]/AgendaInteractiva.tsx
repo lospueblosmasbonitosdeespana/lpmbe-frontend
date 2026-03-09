@@ -1,12 +1,20 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
+
+const EventoRecorridoMap = dynamic(() => import('./EventoRecorridoMap'), { ssr: false });
 
 type AgendaItem = {
   id: number;
   titulo: string;
   descripcion: string | null;
   ubicacion: string | null;
+  inicioLat?: number | null;
+  inicioLng?: number | null;
+  finLat?: number | null;
+  finLng?: number | null;
+  paradas?: Array<{ lat: number; lng: number; label?: string }> | null;
   fechaInicio: string;
   fechaFin: string | null;
   fotoUrl: string | null;
@@ -100,6 +108,18 @@ export default function AgendaInteractiva({ agenda, locale = 'es' }: { agenda: A
             </p>
             {selected.ubicacion && <p className="mt-2 text-sm">📍 {selected.ubicacion}</p>}
             {selected.descripcion && <p className="mt-3 text-sm text-muted-foreground">{selected.descripcion}</p>}
+            {(selected.inicioLat != null && selected.inicioLng != null) && (
+              <div className="mt-4">
+                <p className="mb-2 text-sm font-medium">Recorrido</p>
+                <EventoRecorridoMap
+                  inicioLat={selected.inicioLat}
+                  inicioLng={selected.inicioLng}
+                  finLat={selected.finLat}
+                  finLng={selected.finLng}
+                  paradas={selected.paradas}
+                />
+              </div>
+            )}
             <div className="mt-4 flex flex-wrap gap-2">
               <a
                 href={googleCalendarUrl(selected)}
