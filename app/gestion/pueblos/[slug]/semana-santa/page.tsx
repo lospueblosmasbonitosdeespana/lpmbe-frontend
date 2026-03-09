@@ -82,8 +82,10 @@ function SortableAgendaCard({
         </button>
       </div>
       <p className="text-sm text-muted-foreground">
-        {new Date(a.fechaInicio).toLocaleString('es-ES')}
-        {a.fechaFin ? ` - ${new Date(a.fechaFin).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : ''}
+        {new Date(a.fechaInicio).toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid', day: '2-digit', month: '2-digit', year: 'numeric' })}
+        {', '}
+        {new Date(a.fechaInicio).toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' })}
+        {a.fechaFin ? ` - ${new Date(a.fechaFin).toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' })}` : ''}
       </p>
       {a.ubicacion && <p className="text-sm text-muted-foreground">{a.ubicacion}</p>}
       {a.youtubeUrl && (
@@ -220,10 +222,22 @@ export default function GestionPuebloSemanaSantaPage() {
     setTimeout(() => setSuccess(null), 2500);
   };
 
-  const toIsoUtc = (fecha: string, hora: string) => {
+  // Convierte fecha "YYYY-MM-DD" y hora "HH:MM" a ISO UTC
+  // Calcula el offset correcto de Europe/Madrid para esa fecha exacta
+  const toIsoUtc = (fecha: string, hora: string): string => {
     if (!fecha || !hora) return '';
-    const month = parseInt(fecha.slice(5, 7), 10);
-    const offset = month >= 3 && month <= 10 ? '+02:00' : '+01:00';
+    // Probamos si esa fecha/hora está en horario de verano usando Intl
+    const testDate = new Date(`${fecha}T${hora}:00Z`);
+    // Europe/Madrid en verano es UTC+2, en invierno UTC+1
+    // Usamos una heurística: comparamos el offset que Intl reporta para esa fecha
+    const localStr = testDate.toLocaleString('en-CA', { timeZone: 'Europe/Madrid', hour12: false });
+    const utcStr = testDate.toISOString().slice(0, 19).replace('T', ' ');
+    const localParts = localStr.replace(',', '').split(' ');
+    const utcParts = utcStr.split(' ');
+    const localH = parseInt(localParts[1]?.split(':')[0] ?? '0', 10);
+    const utcH = parseInt(utcParts[1]?.split(':')[0] ?? '0', 10);
+    const diffH = ((localH - utcH) + 24) % 24; // 1 o 2
+    const offset = diffH === 2 ? '+02:00' : '+01:00';
     return new Date(`${fecha}T${hora}:00${offset}`).toISOString();
   };
 
@@ -368,18 +382,17 @@ export default function GestionPuebloSemanaSantaPage() {
     flash('Evento eliminado');
   };
 
-  const toLocalHHMM = (isoString: string) => {
+  const toLocalHHMM = (isoString: string): string => {
     const d = new Date(isoString);
-    // Obtenemos la hora local de Madrid sumando el offset manualmente
-    // Europe/Madrid: UTC+1 en invierno, UTC+2 en verano (último domingo de marzo a último de octubre)
-    const utcMs = d.getTime();
-    const month = d.getUTCMonth() + 1; // 1-12
-    const offset = month >= 4 && month <= 10 ? 2 : 1; // aproximación válida para fechas de Semana Santa (marzo/abril)
-    const localMs = utcMs + offset * 3600 * 1000;
-    const localDate = new Date(localMs);
-    const h = String(localDate.getUTCHours()).padStart(2, '0');
-    const m = String(localDate.getUTCMinutes()).padStart(2, '0');
-    return `${h}:${m}`;
+    // toLocaleTimeString con timeZone explícito es fiable en Node.js y navegadores modernos
+    const t = d.toLocaleTimeString('es-ES', {
+      timeZone: 'Europe/Madrid',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+    // t puede ser "20:00" o "20:00:00" — tomamos solo HH:MM
+    return t.slice(0, 5);
   };
 
   const startEditAgenda = (a: AgendaItem) => {
