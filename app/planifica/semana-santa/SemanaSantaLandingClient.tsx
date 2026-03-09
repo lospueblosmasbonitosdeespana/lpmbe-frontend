@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import ShareButton from '@/app/components/ShareButton';
 
 type Item = {
   id: number;
@@ -231,11 +232,19 @@ export default function SemanaSantaLandingClient({
                   : null;
 
               return (
-                <Link
+                <div
                   key={p.id}
-                  href={`/planifica/semana-santa/pueblo/${p.pueblo.slug}`}
-                  className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+                  className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                 >
+                  <div className="absolute right-3 top-3 z-20">
+                    <ShareButton
+                      url={`/planifica/semana-santa/pueblo/${p.pueblo.slug}`}
+                      title={`Semana Santa en ${p.pueblo.nombre}`}
+                      variant="icon"
+                      className="rounded-full bg-card/90 p-1 shadow hover:bg-card"
+                    />
+                  </div>
+                  <Link href={`/planifica/semana-santa/pueblo/${p.pueblo.slug}`} className="block">
                   <div className={`relative bg-muted ${isVerticalPriority ? 'h-72' : 'h-52'}`}>
                     {image ? (
                       <img
@@ -268,7 +277,8 @@ export default function SemanaSantaLandingClient({
                     </p>
                     <p className="mt-3 text-sm font-medium text-primary">Ver página del pueblo →</p>
                   </div>
-                </Link>
+                  </Link>
+                </div>
               );
             })}
           </div>
