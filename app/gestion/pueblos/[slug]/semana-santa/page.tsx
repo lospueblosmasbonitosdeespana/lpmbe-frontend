@@ -319,9 +319,6 @@ export default function GestionPuebloSemanaSantaPage() {
 
   const createAgenda = async () => {
     if (!puebloId || !newAgenda.titulo || !newAgenda.fecha || !newAgenda.horaInicio) return;
-    const fechaInicioIso = toIsoUtc(newAgenda.fecha, newAgenda.horaInicio);
-    const fechaFinIso = newAgenda.horaFin ? toIsoUtc(newAgenda.fecha, newAgenda.horaFin) : undefined;
-    if (!fechaInicioIso) return;
     setSaving(true);
     const res = await fetch(`/api/admin/semana-santa/pueblos/by-pueblo/${puebloId}/agenda`, {
       method: 'POST',
@@ -335,8 +332,10 @@ export default function GestionPuebloSemanaSantaPage() {
         finLat: newAgenda.finLat,
         finLng: newAgenda.finLng,
         paradas: newAgenda.paradas,
-        fechaInicio: fechaInicioIso,
-        fechaFin: fechaFinIso,
+        fecha: newAgenda.fecha,
+        horaInicio: newAgenda.horaInicio,
+        horaFin: newAgenda.horaFin || undefined,
+        fechaInicio: newAgenda.fecha,
         fotoUrl: newAgenda.fotoUrl || undefined,
         youtubeUrl: newAgenda.youtubeUrl || undefined,
         esFiestaInteresTuristico: newAgenda.esFiestaInteresTuristico,
@@ -430,9 +429,6 @@ export default function GestionPuebloSemanaSantaPage() {
 
   const saveEditAgenda = async () => {
     if (!editingAgendaId || !editAgenda.titulo || !editAgenda.fecha || !editAgenda.horaInicio) return;
-    const fechaInicioIso = toIsoUtc(editAgenda.fecha, editAgenda.horaInicio);
-    const fechaFinIso = editAgenda.horaFin ? toIsoUtc(editAgenda.fecha, editAgenda.horaFin) : null;
-    if (!fechaInicioIso) return;
     setSaving(true);
     const res = await fetch(`/api/admin/semana-santa/agenda/${editingAgendaId}`, {
       method: 'PUT',
@@ -446,8 +442,10 @@ export default function GestionPuebloSemanaSantaPage() {
         finLat: editAgenda.finLat,
         finLng: editAgenda.finLng,
         paradas: editAgenda.paradas,
-        fechaInicio: fechaInicioIso,
-        fechaFin: fechaFinIso,
+        fecha: editAgenda.fecha,
+        horaInicio: editAgenda.horaInicio,
+        horaFin: editAgenda.horaFin || undefined,
+        fechaInicio: editAgenda.fecha,
         fotoUrl: editAgenda.fotoUrl || undefined,
         youtubeUrl: editAgenda.youtubeUrl || undefined,
         esFiestaInteresTuristico: editAgenda.esFiestaInteresTuristico,
