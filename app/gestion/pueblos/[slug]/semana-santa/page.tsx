@@ -370,23 +370,32 @@ export default function GestionPuebloSemanaSantaPage() {
 
   const toLocalHHMM = (isoString: string) => {
     const d = new Date(isoString);
-    const formatter = new Intl.DateTimeFormat('en-GB', {
-      timeZone: 'Europe/Madrid',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
-    const parts = formatter.formatToParts(d);
-    const hour = (parts.find((p) => p.type === 'hour')?.value ?? '00').padStart(2, '0');
-    const minute = (parts.find((p) => p.type === 'minute')?.value ?? '00').padStart(2, '0');
-    return `${hour}:${minute}`;
+    // Obtenemos la hora local de Madrid sumando el offset manualmente
+    // Europe/Madrid: UTC+1 en invierno, UTC+2 en verano (último domingo de marzo a último de octubre)
+    const utcMs = d.getTime();
+    const month = d.getUTCMonth() + 1; // 1-12
+    const offset = month >= 4 && month <= 10 ? 2 : 1; // aproximación válida para fechas de Semana Santa (marzo/abril)
+    const localMs = utcMs + offset * 3600 * 1000;
+    const localDate = new Date(localMs);
+    const h = String(localDate.getUTCHours()).padStart(2, '0');
+    const m = String(localDate.getUTCMinutes()).padStart(2, '0');
+    return `${h}:${m}`;
   };
 
   const startEditAgenda = (a: AgendaItem) => {
-    const start = new Date(a.fechaInicio);
-    const end = a.fechaFin ? new Date(a.fechaFin) : null;
     setShowNewAgenda(false);
     setEditingAgendaId(a.id);
+
+    // Fecha local (Spain) a partir del ISO string usando el mismo offset
+    const getLocalDate = (isoString: string) => {
+      const d = new Date(isoString);
+      const month = d.getUTCMonth() + 1;
+      const offset = month >= 4 && month <= 10 ? 2 : 1;
+      const localMs = d.getTime() + offset * 3600 * 1000;
+      const localDate = new Date(localMs);
+      return localDate.toISOString().slice(0, 10);
+    };
+
     setEditAgenda({
       titulo: a.titulo || '',
       descripcion: a.descripcion || '',
@@ -396,9 +405,9 @@ export default function GestionPuebloSemanaSantaPage() {
       finLat: a.finLat ?? undefined,
       finLng: a.finLng ?? undefined,
       paradas: a.paradas ?? [],
-      fecha: start.toISOString().slice(0, 10),
+      fecha: getLocalDate(a.fechaInicio),
       horaInicio: toLocalHHMM(a.fechaInicio),
-      horaFin: end ? toLocalHHMM(a.fechaFin!) : '',
+      horaFin: a.fechaFin ? toLocalHHMM(a.fechaFin) : '',
       fotoUrl: a.fotoUrl || '',
       youtubeUrl: a.youtubeUrl || '',
       esFiestaInteresTuristico: a.esFiestaInteresTuristico ?? false,
