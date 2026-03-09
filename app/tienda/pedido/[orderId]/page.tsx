@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
+import { useCartStore } from '@/src/store/cart';
 
 type OrderStatus =
   | 'PENDING'
@@ -35,6 +36,7 @@ export default function PedidoConfirmacionPage() {
   const [order, setOrder] = useState<PedidoResumen | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const clearCart = useCartStore((s) => s.clear);
 
   const isPaid = useMemo(() => {
     if (!order) return false;
@@ -92,6 +94,13 @@ export default function PedidoConfirmacionPage() {
       cancelled = true;
     };
   }, [orderId]);
+
+  useEffect(() => {
+    if (isPaid) {
+      // En pagos con redirección (PayPal), limpiar carrito al volver con pago confirmado.
+      clearCart();
+    }
+  }, [isPaid, clearCart]);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { getStripe } from '@/src/lib/stripe/client';
+import { useCartStore } from '@/src/store/cart';
 
 interface StripePaymentClientProps {
   clientSecret: string;
@@ -15,6 +16,7 @@ function PaymentForm({ orderId }: { orderId: number }) {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
+  const clearCart = useCartStore((s) => s.clear);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,6 +38,8 @@ function PaymentForm({ orderId }: { orderId: number }) {
       if (submitError) {
         setError(submitError.message ?? 'Error en el pago');
       } else {
+        // En pagos no-redirigidos (tarjeta), limpiar carrito al confirmar.
+        clearCart();
         router.push(`/tienda/pedido/${orderId}`);
       }
     } catch (err: unknown) {
