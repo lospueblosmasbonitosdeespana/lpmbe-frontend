@@ -96,6 +96,7 @@ export default async function SemanaSantaPuebloPage({
 
   const timeOpts = { hour: '2-digit' as const, minute: '2-digit' as const, hour12: false as const, timeZone: 'Europe/Madrid' };
   const diasConEventos = participante.dias.filter((d) => (eventsByDate[d.fecha]?.length ?? 0) > 0);
+  const hasBothPosters = Boolean(participante.cartelVerticalUrl && participante.cartelHorizontalUrl);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-stone-50 via-background to-background">
@@ -137,7 +138,7 @@ export default async function SemanaSantaPuebloPage({
         {(participante.cartelVerticalUrl || participante.cartelHorizontalUrl) && (
           <section className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
             <h2 className="mb-4 font-serif text-2xl font-medium">Cartel</h2>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className={hasBothPosters ? 'grid gap-4 md:grid-cols-2' : 'flex justify-center'}>
               {participante.cartelVerticalUrl && (
                 <div className="flex justify-center">
                   <img
