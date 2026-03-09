@@ -60,6 +60,7 @@ export default function GestionPuebloSemanaSantaPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showNewAgenda, setShowNewAgenda] = useState(false);
+  const [editingAgendaId, setEditingAgendaId] = useState<number | null>(null);
   const [newAgenda, setNewAgenda] = useState({
     titulo: '',
     descripcion: '',
@@ -74,6 +75,20 @@ export default function GestionPuebloSemanaSantaPage() {
     fotoUrl: '',
   });
   const [mapMode, setMapMode] = useState<'inicio' | 'fin' | 'parada'>('parada');
+  const [editMapMode, setEditMapMode] = useState<'inicio' | 'fin' | 'parada'>('parada');
+  const [editAgenda, setEditAgenda] = useState({
+    titulo: '',
+    descripcion: '',
+    ubicacion: '',
+    inicioLat: undefined as number | undefined,
+    inicioLng: undefined as number | undefined,
+    finLat: undefined as number | undefined,
+    finLng: undefined as number | undefined,
+    paradas: [] as Array<{ lat: number; lng: number; label?: string }>,
+    fechaInicio: '',
+    fechaFin: '',
+    fotoUrl: '',
+  });
 
   useEffect(() => {
     (async () => {
@@ -243,6 +258,53 @@ export default function GestionPuebloSemanaSantaPage() {
     }
     await loadData();
     flash('Evento eliminado');
+  };
+
+  const startEditAgenda = (a: AgendaItem) => {
+    setEditingAgendaId(a.id);
+    setEditAgenda({
+      titulo: a.titulo || '',
+      descripcion: a.descripcion || '',
+      ubicacion: a.ubicacion || '',
+      inicioLat: a.inicioLat ?? undefined,
+      inicioLng: a.inicioLng ?? undefined,
+      finLat: a.finLat ?? undefined,
+      finLng: a.finLng ?? undefined,
+      paradas: a.paradas ?? [],
+      fechaInicio: a.fechaInicio ? new Date(a.fechaInicio).toISOString().slice(0, 16) : '',
+      fechaFin: a.fechaFin ? new Date(a.fechaFin).toISOString().slice(0, 16) : '',
+      fotoUrl: a.fotoUrl || '',
+    });
+  };
+
+  const saveEditAgenda = async () => {
+    if (!editingAgendaId || !editAgenda.titulo || !editAgenda.fechaInicio) return;
+    setSaving(true);
+    const res = await fetch(`/api/admin/semana-santa/agenda/${editingAgendaId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        titulo: editAgenda.titulo,
+        descripcion: editAgenda.descripcion || undefined,
+        ubicacion: editAgenda.ubicacion || undefined,
+        inicioLat: editAgenda.inicioLat,
+        inicioLng: editAgenda.inicioLng,
+        finLat: editAgenda.finLat,
+        finLng: editAgenda.finLng,
+        paradas: editAgenda.paradas,
+        fechaInicio: new Date(editAgenda.fechaInicio).toISOString(),
+        fechaFin: editAgenda.fechaFin ? new Date(editAgenda.fechaFin).toISOString() : null,
+        fotoUrl: editAgenda.fotoUrl || undefined,
+      }),
+    });
+    setSaving(false);
+    if (!res.ok) {
+      setError('No se pudo actualizar el evento');
+      return;
+    }
+    setEditingAgendaId(null);
+    await loadData();
+    flash('Evento actualizado');
   };
 
   const orderedDias = useMemo(() => {
@@ -629,7 +691,7 @@ export default function GestionPuebloSemanaSantaPage() {
         ) : (
           <div className="space-y-2">
             {data.agenda.map((a) => (
-              <div key={a.id} className="flex items-start justify-between rounded-md border p-3">
+              <div key={a.id} className="rounded-md border p-3">
                 <div>
                   <p className="font-medium">{a.titulo}</p>
                   <p className="text-sm text-muted-foreground">
@@ -643,14 +705,116 @@ export default function GestionPuebloSemanaSantaPage() {
                     </p>
                   )}
                 </div>
-                <button
-                  onClick={() => deleteAgenda(a.id)}
-                  className="rounded-md border border-red-200 px-3 py-1 text-xs text-red-600 hover:bg-red-50"
-                >
-                  Eliminar
-                </button>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => startEditAgenda(a)}
+                    className="rounded-md border px-3 py-1 text-xs hover:bg-muted"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => deleteAgenda(a.id)}
+                    className="rounded-md border border-red-200 px-3 py-1 text-xs text-red-600 hover:bg-red-50"
+                  >
+                    Eliminar
+                  </button>
+                </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {editingAgendaId && (
+          <div className="mt-4 space-y-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
+            <p className="text-sm font-medium">Editar evento</p>
+            <input
+              type="text"
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              value={editAgenda.titulo}
+              onChange={(e) => setEditAgenda({ ...editAgenda, titulo: e.target.value })}
+            />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <input
+                type="datetime-local"
+                className="rounded-md border px-3 py-2 text-sm"
+                value={editAgenda.fechaInicio}
+                onChange={(e) => setEditAgenda({ ...editAgenda, fechaInicio: e.target.value })}
+              />
+              <input
+                type="datetime-local"
+                className="rounded-md border px-3 py-2 text-sm"
+                value={editAgenda.fechaFin}
+                onChange={(e) => setEditAgenda({ ...editAgenda, fechaFin: e.target.value })}
+              />
+            </div>
+            <input
+              type="text"
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              value={editAgenda.ubicacion}
+              onChange={(e) => setEditAgenda({ ...editAgenda, ubicacion: e.target.value })}
+            />
+            <textarea
+              rows={2}
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              value={editAgenda.descripcion}
+              onChange={(e) => setEditAgenda({ ...editAgenda, descripcion: e.target.value })}
+            />
+            <R2ImageUploader
+              label="Foto del evento (opcional)"
+              value={editAgenda.fotoUrl || null}
+              onChange={(url) => setEditAgenda({ ...editAgenda, fotoUrl: url ?? '' })}
+              folder="semana-santa/agenda"
+              previewHeight="h-32"
+            />
+            <div className="rounded-lg border border-dashed p-3">
+              <p className="mb-2 text-sm font-medium">Editar recorrido</p>
+              <div className="mb-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditMapMode('inicio')}
+                  className={`rounded-md border px-3 py-1.5 text-xs ${editMapMode === 'inicio' ? 'bg-green-600 text-white' : ''}`}
+                >
+                  Marcar inicio
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditMapMode('fin')}
+                  className={`rounded-md border px-3 py-1.5 text-xs ${editMapMode === 'fin' ? 'bg-red-600 text-white' : ''}`}
+                >
+                  Marcar fin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditMapMode('parada')}
+                  className={`rounded-md border px-3 py-1.5 text-xs ${editMapMode === 'parada' ? 'bg-blue-600 text-white' : ''}`}
+                >
+                  Añadir paradas
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditAgenda({ ...editAgenda, paradas: [] })}
+                  className="rounded-md border px-3 py-1.5 text-xs"
+                >
+                  Limpiar paradas
+                </button>
+              </div>
+              <RouteEditorMap value={editAgenda} mode={editMapMode} onChange={(next) => setEditAgenda((prev) => ({ ...prev, ...next }))} />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={saveEditAgenda}
+                disabled={saving || !editAgenda.titulo || !editAgenda.fechaInicio}
+                className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              >
+                Guardar cambios
+              </button>
+              <button
+                onClick={() => setEditingAgendaId(null)}
+                className="rounded-md border px-4 py-1.5 text-sm text-muted-foreground"
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         )}
       </section>
