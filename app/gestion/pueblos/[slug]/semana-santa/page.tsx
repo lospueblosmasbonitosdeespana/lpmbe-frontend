@@ -5,6 +5,9 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
 import dynamic from 'next/dynamic';
+import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const RouteEditorMap = dynamic(() => import('./RouteEditorMap'), { ssr: false });
 
@@ -47,6 +50,62 @@ type Participante = {
   agenda: AgendaItem[];
   dias: PuebloDia[];
 };
+
+function SortableAgendaCard({
+  a,
+  onEdit,
+  onDelete,
+  onDuplicate,
+}: {
+  a: AgendaItem;
+  onEdit: (a: AgendaItem) => void;
+  onDelete: (id: number) => void;
+  onDuplicate: (a: AgendaItem) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: a.id });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+
+  return (
+    <div ref={setNodeRef} style={style} className="rounded-md border bg-card p-3">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <p className="font-medium">{a.titulo}</p>
+        <button
+          type="button"
+          {...attributes}
+          {...listeners}
+          className="cursor-grab rounded border px-2 py-1 text-[11px] text-muted-foreground active:cursor-grabbing"
+          title="Arrastra para ordenar"
+        >
+          Arrastrar
+        </button>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        {new Date(a.fechaInicio).toLocaleString('es-ES')}
+        {a.fechaFin ? ` - ${new Date(a.fechaFin).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : ''}
+      </p>
+      {a.ubicacion && <p className="text-sm text-muted-foreground">{a.ubicacion}</p>}
+      {(a.inicioLat != null && a.inicioLng != null) && (
+        <p className="text-xs text-muted-foreground">
+          Recorrido: inicio definido{a.finLat != null && a.finLng != null ? ', fin definido' : ''} · {a.paradas?.length ?? 0} paradas
+        </p>
+      )}
+      <div className="mt-3 flex gap-2">
+        <button onClick={() => onEdit(a)} className="rounded-md border px-3 py-1 text-xs hover:bg-muted">
+          Editar
+        </button>
+        <button onClick={() => onDuplicate(a)} className="rounded-md border px-3 py-1 text-xs hover:bg-muted">
+          Duplicar
+        </button>
+        <button
+          onClick={() => onDelete(a.id)}
+          className="rounded-md border border-red-200 px-3 py-1 text-xs text-red-600 hover:bg-red-50"
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function GestionPuebloSemanaSantaPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -114,8 +173,8 @@ export default function GestionPuebloSemanaSantaPage() {
       const json = await res.json();
       setData(json.participante);
       setConfigDias(json.config?.dias ?? []);
-    } catch (e: any) {
-      setError(e?.message ?? 'Error');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error');
     } finally {
       setLoading(false);
     }
@@ -147,8 +206,8 @@ export default function GestionPuebloSemanaSantaPage() {
       setNotInscribed(false);
       await loadData();
       flash('Pueblo inscrito correctamente en Semana Santa');
-    } catch (e: any) {
-      setError(e?.message ?? 'No se pudo completar la inscripción');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'No se pudo completar la inscripción');
     } finally {
       setInscribing(false);
     }
@@ -307,6 +366,36 @@ export default function GestionPuebloSemanaSantaPage() {
     flash('Evento actualizado');
   };
 
+  const duplicateAgenda = async (a: AgendaItem) => {
+    if (!puebloId) return;
+    setSaving(true);
+    const res = await fetch(`/api/admin/semana-santa/pueblos/by-pueblo/${puebloId}/agenda`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        titulo: `${a.titulo} (copia)`,
+        descripcion: a.descripcion || undefined,
+        ubicacion: a.ubicacion || undefined,
+        inicioLat: a.inicioLat ?? undefined,
+        inicioLng: a.inicioLng ?? undefined,
+        finLat: a.finLat ?? undefined,
+        finLng: a.finLng ?? undefined,
+        paradas: a.paradas ?? [],
+        fechaInicio: a.fechaInicio,
+        fechaFin: a.fechaFin || undefined,
+        fotoUrl: a.fotoUrl || undefined,
+        orden: (a.orden ?? 0) + 1,
+      }),
+    });
+    setSaving(false);
+    if (!res.ok) {
+      setError('No se pudo duplicar el evento');
+      return;
+    }
+    await loadData();
+    flash('Evento duplicado');
+  };
+
   const orderedDias = useMemo(() => {
     if (!data) return [];
     if (data.dias.length > 0) return data.dias;
@@ -319,6 +408,49 @@ export default function GestionPuebloSemanaSantaPage() {
       orden: i,
     }));
   }, [configDias, data]);
+
+  const agendaByDay = useMemo(() => {
+    if (!data) return [] as Array<{ fecha: string; items: AgendaItem[] }>;
+    const grouped = new Map<string, AgendaItem[]>();
+    for (const a of data.agenda) {
+      const key = a.fechaInicio.slice(0, 10);
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key)!.push(a);
+    }
+    return Array.from(grouped.entries())
+      .map(([fecha, items]) => ({
+        fecha,
+        items: [...items].sort((x, y) => x.orden - y.orden || x.fechaInicio.localeCompare(y.fechaInicio)),
+      }))
+      .sort((x, y) => x.fecha.localeCompare(y.fecha));
+  }, [data]);
+
+  const nombreDiaByFecha = useMemo(() => {
+    const out = new Map<string, string>();
+    for (const d of orderedDias) out.set(d.fecha, d.nombreDia);
+    return out;
+  }, [orderedDias]);
+
+  const reorderAgendaDay = async (fecha: string, reordered: AgendaItem[]) => {
+    setSaving(true);
+    try {
+      await Promise.all(
+        reordered.map((item, idx) =>
+          fetch(`/api/admin/semana-santa/agenda/${item.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orden: idx }),
+          }),
+        ),
+      );
+      await loadData();
+      flash(`Orden actualizado para ${nombreDiaByFecha.get(fecha) || fecha}`);
+    } catch {
+      setError('No se pudo reordenar la agenda');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (loading && !data) {
     return <main className="mx-auto max-w-5xl p-6 text-muted-foreground">Cargando...</main>;
@@ -689,36 +821,40 @@ export default function GestionPuebloSemanaSantaPage() {
         {data.agenda.length === 0 ? (
           <p className="text-sm text-muted-foreground">No hay eventos todavía.</p>
         ) : (
-          <div className="space-y-2">
-            {data.agenda.map((a) => (
-              <div key={a.id} className="rounded-md border p-3">
-                <div>
-                  <p className="font-medium">{a.titulo}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(a.fechaInicio).toLocaleString('es-ES')}
-                    {a.fechaFin ? ` - ${new Date(a.fechaFin).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : ''}
+          <div className="space-y-5">
+            {agendaByDay.map((day) => (
+              <div key={day.fecha} className="rounded-lg border p-3">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-sm font-semibold">
+                    {nombreDiaByFecha.get(day.fecha) || day.fecha} · {day.fecha}
                   </p>
-                  {a.ubicacion && <p className="text-sm text-muted-foreground">{a.ubicacion}</p>}
-                  {(a.inicioLat != null && a.inicioLng != null) && (
-                    <p className="text-xs text-muted-foreground">
-                      Recorrido: inicio definido{a.finLat != null && a.finLng != null ? ', fin definido' : ''} · {a.paradas?.length ?? 0} paradas
-                    </p>
-                  )}
+                  <span className="text-xs text-muted-foreground">{day.items.length} evento(s)</span>
                 </div>
-                <div className="mt-3 flex gap-2">
-                  <button
-                    onClick={() => startEditAgenda(a)}
-                    className="rounded-md border px-3 py-1 text-xs hover:bg-muted"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => deleteAgenda(a.id)}
-                    className="rounded-md border border-red-200 px-3 py-1 text-xs text-red-600 hover:bg-red-50"
-                  >
-                    Eliminar
-                  </button>
-                </div>
+                <DndContext
+                  collisionDetection={closestCenter}
+                  onDragEnd={(event: DragEndEvent) => {
+                    if (!event.over || event.active.id === event.over.id) return;
+                    const oldIndex = day.items.findIndex((x) => x.id === Number(event.active.id));
+                    const newIndex = day.items.findIndex((x) => x.id === Number(event.over?.id));
+                    if (oldIndex < 0 || newIndex < 0) return;
+                    const reordered = arrayMove(day.items, oldIndex, newIndex);
+                    void reorderAgendaDay(day.fecha, reordered);
+                  }}
+                >
+                  <SortableContext items={day.items.map((x) => x.id)} strategy={verticalListSortingStrategy}>
+                    <div className="space-y-2">
+                      {day.items.map((a) => (
+                        <SortableAgendaCard
+                          key={a.id}
+                          a={a}
+                          onEdit={startEditAgenda}
+                          onDelete={deleteAgenda}
+                          onDuplicate={duplicateAgenda}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
               </div>
             ))}
           </div>
