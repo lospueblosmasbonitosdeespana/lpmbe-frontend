@@ -38,6 +38,7 @@ export default function PedidosAdminClient() {
   const [editingStatusId, setEditingStatusId] = useState<number | null>(null);
   const [newStatus, setNewStatus] = useState<Order['status'] | ''>('');
   const [trackingNumber, setTrackingNumber] = useState<string>('');
+  const [sendcloudSyncingId, setSendcloudSyncingId] = useState<number | null>(null);
   const [sendcloudCreatingId, setSendcloudCreatingId] = useState<number | null>(null);
 
   async function loadOrders() {
@@ -84,6 +85,27 @@ export default function PedidosAdminClient() {
     setTrackingNumber('');
   }
 
+  async function syncSendcloudOrder(orderId: number) {
+    try {
+      setSendcloudSyncingId(orderId);
+      setError(null);
+      const res = await fetch(`/api/admin/sendcloud/orders/${orderId}/sync-order`, {
+        method: "POST",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const errMsg = data?.message ?? data?.error ?? (typeof data === 'string' ? data : "Error sincronizando pedido");
+        throw new Error(errMsg);
+      }
+      setSuccess("Pedido sincronizado en Sendcloud (Pedidos entrantes)");
+      await loadOrders();
+    } catch (e: any) {
+      setError(e?.message ?? "Error sincronizando pedido en Sendcloud");
+    } finally {
+      setSendcloudSyncingId(null);
+    }
+  }
+
   async function createSendcloudParcel(orderId: number) {
     try {
       setSendcloudCreatingId(orderId);
@@ -96,7 +118,7 @@ export default function PedidosAdminClient() {
         const errMsg = data?.message ?? data?.error ?? (typeof data === 'string' ? data : "Error creando envío");
         throw new Error(errMsg);
       }
-      setSuccess("Envío creado en Sendcloud correctamente");
+      setSuccess("Etiqueta creada en Sendcloud correctamente");
       await loadOrders();
     } catch (e: any) {
       setError(e?.message ?? "Error creando envío Sendcloud");
@@ -279,13 +301,22 @@ export default function PedidosAdminClient() {
                   ) : (
                     <>
                       {(pedido.status === "PAID" || pedido.status === "PROCESSING") && (
-                        <button
-                          onClick={() => createSendcloudParcel(pedido.id)}
-                          disabled={sendcloudCreatingId === pedido.id}
-                          className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-                        >
-                          {sendcloudCreatingId === pedido.id ? "Creando…" : "Sendcloud"}
-                        </button>
+                        <>
+                          <button
+                            onClick={() => syncSendcloudOrder(pedido.id)}
+                            disabled={sendcloudSyncingId === pedido.id || sendcloudCreatingId === pedido.id}
+                            className="rounded-md border border-indigo-300 bg-white px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-50 disabled:opacity-50"
+                          >
+                            {sendcloudSyncingId === pedido.id ? "Sincronizando…" : "Sync pedido"}
+                          </button>
+                          <button
+                            onClick={() => createSendcloudParcel(pedido.id)}
+                            disabled={sendcloudCreatingId === pedido.id || sendcloudSyncingId === pedido.id}
+                            className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                          >
+                            {sendcloudCreatingId === pedido.id ? "Creando…" : "Crear etiqueta"}
+                          </button>
+                        </>
                       )}
                       <button
                         onClick={() => startEditStatus(pedido)}
