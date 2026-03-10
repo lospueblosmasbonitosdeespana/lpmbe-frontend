@@ -22,6 +22,7 @@ import {
 type DayPoint = { fecha: string; total: number };
 type DayVisita = { fecha: string; total: number; gps: number; manual: number };
 type DayActivos = { fecha: string; activos: number };
+type PathPoint = { path: string; total: number };
 type PuebloVisita = { puebloId: number; nombre: string; provincia: string; total: number; gps: number; manual: number };
 type PuebloValoracion = { puebloId: number; nombre: string; provincia: string; media: number; total: number };
 type PuebloSuscripcion = { puebloId: number; nombre: string; total: number };
@@ -76,6 +77,14 @@ type AppData = {
   };
   tienda: {
     pedidosPagadosPeriodo: number;
+  };
+  navegacionApp?: {
+    pageviewsTotal: number;
+    pageviewsPeriodo: number;
+    eventosPeriodo: number;
+    sesionesUnicasPeriodo: number;
+    porDia?: DayPoint[];
+    topRutas?: PathPoint[];
   };
 };
 
@@ -304,11 +313,20 @@ export default function AppDashboard() {
   }
 
   const { usuarios, visitas, valoraciones, gamificacion, suscripcionesPush, club, tienda } = data;
+  const navegacionApp = data.navegacionApp ?? {
+    pageviewsTotal: 0,
+    pageviewsPeriodo: 0,
+    eventosPeriodo: 0,
+    sesionesUnicasPeriodo: 0,
+    porDia: [] as DayPoint[],
+    topRutas: [] as PathPoint[],
+  };
 
   const maxRating = Math.max(...Object.values(valoraciones.distribucion ?? {}), 0);
   const visitasDayChart = (visitas.porDia ?? []).map((d) => ({ dia: fmt(d.fecha), GPS: d.gps, Manual: d.manual }));
   const activosDayChart = (usuarios.activosPorDia ?? []).map((d) => ({ dia: fmt(d.fecha), Activos: d.activos }));
   const registrosDayChart = (usuarios.registrosPorDia ?? []).map((d) => ({ dia: fmt(d.fecha), Registros: d.total }));
+  const appNavDayChart = (navegacionApp.porDia ?? []).map((d) => ({ dia: fmt(d.fecha), Vistas: d.total }));
   const puntosDayChart = (gamificacion.porDia ?? []).map((d: DayPoint) => ({ dia: fmt(d.fecha), Puntos: d.total }));
   const valoracionesDayChart = (valoraciones.porDia ?? []).map((d) => ({ dia: fmt(d.fecha), Valoraciones: d.total }));
 
@@ -377,6 +395,65 @@ export default function AppDashboard() {
               </ResponsiveContainer>
             ) : <EmptyChart />}
           </ChartCard>
+        </div>
+      </section>
+
+      {/* ── 1B. NAVEGACIÓN WEB DESDE APP ───────────────────────────── */}
+      <section className="space-y-4">
+        <SectionTitle>📱 Navegación web desde app</SectionTitle>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <KpiCard
+            label="Pageviews app (histórico)"
+            value={navegacionApp.pageviewsTotal}
+            sub="web abierta desde app"
+          />
+          <KpiCard
+            label={`Pageviews app (período)`}
+            value={navegacionApp.pageviewsPeriodo}
+            sub={`últimos ${days}d`}
+            highlight
+          />
+          <KpiCard
+            label={`Eventos app (período)`}
+            value={navegacionApp.eventosPeriodo}
+            sub={`últimos ${days}d`}
+          />
+          <KpiCard
+            label="Sesiones únicas app"
+            value={navegacionApp.sesionesUnicasPeriodo}
+            sub={`últimos ${days}d`}
+          />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <ChartCard title="Pageviews app por día">
+            {appNavDayChart.length > 0 ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <AreaChart data={appNavDayChart} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="gAppNav" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#994920" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#994920" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="dia" tick={{ fontSize: 10 }} className="fill-muted-foreground" />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 10 }} className="fill-muted-foreground" />
+                  <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+                  <Area type="monotone" dataKey="Vistas" stroke="#994920" fill="url(#gAppNav)" strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : <EmptyChart />}
+          </ChartCard>
+
+          <MiniTable
+            title={`Top rutas vistas desde app (últimos ${days}d)`}
+            cols={['Ruta', 'Pageviews']}
+            rows={(navegacionApp.topRutas ?? []).map((r) => [
+              <span key="path" className="truncate">{r.path}</span>,
+              <span key="total" className="font-medium">{n(r.total)}</span>,
+            ])}
+          />
         </div>
       </section>
 

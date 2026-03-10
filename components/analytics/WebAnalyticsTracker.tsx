@@ -45,6 +45,42 @@ function parseUserAgent(ua: string) {
   return { browser, os, deviceType };
 }
 
+function detectAnalyticsSource(pathname: string, ua: string): 'web' | 'app' {
+  if (typeof window === 'undefined') return 'web';
+
+  const params = new URLSearchParams(window.location.search);
+  const rawSource = (
+    params.get('source') ??
+    params.get('src') ??
+    params.get('from') ??
+    params.get('utm_source') ??
+    ''
+  ).toLowerCase();
+
+  if (['app', 'ios-app', 'android-app', 'mobile-app', 'lpmbe-app'].includes(rawSource)) {
+    return 'app';
+  }
+
+  const uaLower = ua.toLowerCase();
+  const appUaHint =
+    uaLower.includes('pueblos_bonitos_app') ||
+    uaLower.includes('lpmbeapp') ||
+    uaLower.includes('lpmbe-app') ||
+    uaLower.includes('app.rork.pueblos_bonitos_app');
+
+  const isLikelyWebView =
+    uaLower.includes('; wv') ||
+    uaLower.includes(' wv)') ||
+    uaLower.includes('webview');
+
+  if (appUaHint || isLikelyWebView) return 'app';
+
+  // Fallback defensivo: rutas de puente de descarga siempre computan como web.
+  if (pathname === '/app') return 'web';
+
+  return 'web';
+}
+
 export function WebAnalyticsTracker() {
   const pathname = usePathname();
   const lastPathRef = useRef<string | null>(null);
@@ -55,14 +91,16 @@ export function WebAnalyticsTracker() {
     lastPathRef.current = pathname;
 
     const sessionId = getOrCreateSessionId();
-    const { browser, os, deviceType } = parseUserAgent(navigator.userAgent);
+    const ua = navigator.userAgent;
+    const { browser, os, deviceType } = parseUserAgent(ua);
+    const source = detectAnalyticsSource(pathname, ua);
 
     const payload = {
       path: pathname,
       fullUrl: typeof window !== 'undefined' ? window.location.href : undefined,
       title: typeof document !== 'undefined' ? document.title : undefined,
       referrer: typeof document !== 'undefined' ? document.referrer || undefined : undefined,
-      userAgent: navigator.userAgent,
+      userAgent: ua,
       screenW: typeof screen !== 'undefined' ? screen.width : undefined,
       screenH: typeof screen !== 'undefined' ? screen.height : undefined,
       viewportW: typeof window !== 'undefined' ? window.innerWidth : undefined,
@@ -70,7 +108,7 @@ export function WebAnalyticsTracker() {
       deviceType,
       browser,
       os,
-      source: 'web' as const,
+      source,
       sessionId,
     };
 
