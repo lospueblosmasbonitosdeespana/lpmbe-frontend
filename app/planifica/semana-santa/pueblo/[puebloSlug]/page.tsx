@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getApiUrl } from '@/lib/api';
 import AgendaInteractiva from './AgendaInteractiva';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -72,6 +72,7 @@ export default async function SemanaSantaPuebloPage({
 }) {
   const { puebloSlug } = await params;
   const locale = await getLocale();
+  const t = await getTranslations('planifica.semanaSanta');
   const data = await fetchData(puebloSlug, locale);
   if (!data) notFound();
 
@@ -82,11 +83,11 @@ export default async function SemanaSantaPuebloPage({
     (participante.cartelVerticalUrl && participante.cartelVerticalUrl.trim());
   const interesLabel =
     participante.interesTuristico === 'INTERNACIONAL'
-      ? 'Interés Turístico Internacional'
+      ? t('tourismInterestInternational')
       : participante.interesTuristico === 'NACIONAL'
-        ? 'Interés Turístico Nacional'
+        ? t('tourismInterestNational')
         : participante.interesTuristico === 'REGIONAL'
-          ? 'Interés Turístico Regional'
+          ? t('tourismInterestRegional')
           : null;
   const eventsByDate = participante.agenda.reduce<Record<string, Agenda[]>>((acc, item) => {
     const key = item.fechaInicio.slice(0, 10);
@@ -124,7 +125,7 @@ export default async function SemanaSantaPuebloPage({
       <div className="mx-auto max-w-6xl px-6 py-10">
         <nav className="mb-6 text-sm text-muted-foreground">
           <Link href="/planifica/semana-santa" className="hover:underline">
-            ← Volver al listado de pueblos
+            {t('backToVillageList')}
           </Link>
         </nav>
 
@@ -144,7 +145,7 @@ export default async function SemanaSantaPuebloPage({
                 <div className="flex justify-center">
                   <img
                     src={participante.cartelVerticalUrl}
-                    alt={`Cartel vertical ${participante.pueblo.nombre}`}
+                    alt={t('verticalPosterAlt', { village: participante.pueblo.nombre })}
                     className="max-h-[70vh] w-full max-w-2xl rounded-xl border object-contain"
                   />
                 </div>
@@ -153,7 +154,7 @@ export default async function SemanaSantaPuebloPage({
                 <div className="flex justify-center">
                   <img
                     src={participante.cartelHorizontalUrl}
-                    alt={`Cartel horizontal ${participante.pueblo.nombre}`}
+                    alt={t('horizontalPosterAlt', { village: participante.pueblo.nombre })}
                     className="max-h-[70vh] w-full max-w-2xl rounded-xl border object-contain"
                   />
                 </div>
@@ -166,13 +167,13 @@ export default async function SemanaSantaPuebloPage({
 
         <section className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-serif text-2xl font-medium">Procesiones por día</h2>
+            <h2 className="font-serif text-2xl font-medium">{t('processionsByDay')}</h2>
             <span className="text-xs uppercase tracking-wider text-muted-foreground">
               {config.anio}
             </span>
           </div>
           {diasConEventos.length === 0 ? (
-            <p className="text-muted-foreground">No hay días con eventos programados.</p>
+            <p className="text-muted-foreground">{t('noScheduledEventDays')}</p>
           ) : (
             <div className="space-y-3">
               {diasConEventos.map((d) => (
@@ -190,7 +191,7 @@ export default async function SemanaSantaPuebloPage({
                         <h3 className="mt-1 text-lg font-semibold">{d.titulo || d.nombreDia}</h3>
                       </div>
                       <span className="rounded-full border px-2.5 py-1 text-xs">
-                        {(eventsByDate[d.fecha]?.length ?? 0)} eventos
+                        {t('eventsCount', { count: eventsByDate[d.fecha]?.length ?? 0 })}
                       </span>
                     </div>
                     <div className="mt-2 space-y-1 text-sm text-muted-foreground">
@@ -205,13 +206,13 @@ export default async function SemanaSantaPuebloPage({
                           </span>
                           {ev.esFiestaInteresTuristico && (
                             <span className="inline-flex shrink-0 rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2 py-0.5 text-[10px] font-medium text-[#8f4a26]">
-                              Fiesta de Interés Turístico
+                              {t('tourismFestivalTag')}
                             </span>
                           )}
                         </p>
                       ))}
                     </div>
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-primary">Ver eventos del día →</p>
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-primary">{t('viewDayEvents')}</p>
                   </article>
                 </Link>
               ))}
@@ -221,11 +222,11 @@ export default async function SemanaSantaPuebloPage({
 
         {participante.streamUrl && (
           <section className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <h2 className="mb-3 font-serif text-2xl font-medium">Retransmisión en directo</h2>
+            <h2 className="mb-3 font-serif text-2xl font-medium">{t('liveStream')}</h2>
             <div className="relative w-full overflow-hidden rounded-md border bg-black" style={{ paddingBottom: '56.25%' }}>
               <iframe
                 src={participante.streamUrl}
-                title={`Directo ${participante.pueblo.nombre}`}
+                title={t('liveTitle', { village: participante.pueblo.nombre })}
                 className="absolute inset-0 h-full w-full"
                 allow="autoplay; encrypted-media; picture-in-picture"
                 allowFullScreen

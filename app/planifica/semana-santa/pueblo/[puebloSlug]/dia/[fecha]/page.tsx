@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getApiUrl } from '@/lib/api';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import ShareButton from '@/app/components/ShareButton';
 import EventoRecorridoMap from '../../EventoRecorridoMap';
 import ImagenConLightbox from '../../ImagenConLightbox';
@@ -55,6 +55,7 @@ export default async function SemanaSantaDiaPage({
 }) {
   const { puebloSlug, fecha } = await params;
   const locale = await getLocale();
+  const t = await getTranslations('planifica.semanaSanta');
   const data = await fetchData(puebloSlug, locale);
   if (!data) return notFound();
 
@@ -67,7 +68,7 @@ export default async function SemanaSantaDiaPage({
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
       <Link href={`/planifica/semana-santa/pueblo/${puebloSlug}`} className="text-sm text-muted-foreground hover:underline">
-        ← Volver a la Semana Santa del pueblo
+        {t('backToVillageHolyWeek')}
       </Link>
 
       <header className="mt-4 rounded-xl border bg-card p-5">
@@ -80,9 +81,9 @@ export default async function SemanaSantaDiaPage({
       </header>
 
       <section className="mt-6 rounded-xl border bg-card p-5">
-        <h2 className="text-xl font-semibold">Eventos del día</h2>
+        <h2 className="text-xl font-semibold">{t('eventsOfDay')}</h2>
         {eventos.length === 0 ? (
-          <p className="mt-3 text-muted-foreground">No hay eventos cargados para este día.</p>
+          <p className="mt-3 text-muted-foreground">{t('noEventsForDay')}</p>
         ) : (
           <div className="mt-4 space-y-4">
             {eventos.map((e) => (
@@ -92,7 +93,7 @@ export default async function SemanaSantaDiaPage({
                     <h3 className="text-lg font-semibold">{e.titulo}</h3>
                     {e.esFiestaInteresTuristico && (
                       <span className="inline-flex shrink-0 rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2.5 py-1 text-xs font-medium text-[#8f4a26]">
-                        Fiesta de Interés Turístico
+                        {t('tourismFestivalTag')}
                       </span>
                     )}
                   </div>
@@ -120,7 +121,7 @@ export default async function SemanaSantaDiaPage({
                 {e.descripcion && <p className="mt-3 text-sm text-muted-foreground">{e.descripcion}</p>}
                 {e.avisosImportantes && (
                   <div className="mt-3 rounded-md border border-amber-300/40 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                    <p className="font-medium">Avisos importantes</p>
+                    <p className="font-medium">{t('importantNotices')}</p>
                     <p className="mt-1 whitespace-pre-line">{e.avisosImportantes}</p>
                   </div>
                 )}
@@ -140,8 +141,8 @@ export default async function SemanaSantaDiaPage({
                 )}
                 {e.youtubeUrl && (
                   <div className="mt-4 border-t pt-4">
-                    <p className="mb-2 text-sm font-medium">Vídeo de años anteriores</p>
-                    <YoutubeEmbed url={e.youtubeUrl} title={`${e.titulo} - años anteriores`} />
+                    <p className="mb-2 text-sm font-medium">{t('previousYearsVideo')}</p>
+                    <YoutubeEmbed url={e.youtubeUrl} title={t('previousYearsVideoTitle', { title: e.titulo })} />
                   </div>
                 )}
               </article>

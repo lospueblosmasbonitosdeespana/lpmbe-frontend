@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import ShareButton from '@/app/components/ShareButton';
+import { useTranslations } from 'next-intl';
 
 const EventoRecorridoMap = dynamic(() => import('./EventoRecorridoMap'), { ssr: false });
 const ImagenConLightbox = dynamic(() => import('./ImagenConLightbox'), { ssr: false });
@@ -95,6 +96,7 @@ export default function AgendaInteractiva({
   locale?: string;
   puebloSlug: string;
 }) {
+  const t = useTranslations('planifica.semanaSanta');
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<AgendaItem | null>(null);
 
@@ -111,12 +113,12 @@ export default function AgendaInteractiva({
   return (
     <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="font-serif text-2xl font-medium">Agenda</h2>
+        <h2 className="font-serif text-2xl font-medium">{t('agenda')}</h2>
         <button
           onClick={() => setOpen((v) => !v)}
           className="rounded-full border px-4 py-2 text-sm font-medium hover:bg-muted"
         >
-          {open ? 'Ocultar agenda' : 'Ver agenda completa'}
+          {open ? t('hideAgenda') : t('viewFullAgenda')}
         </button>
       </div>
 
@@ -139,7 +141,7 @@ export default function AgendaInteractiva({
                         <span className="font-medium">{it.titulo}</span>
                         {it.esFiestaInteresTuristico && (
                           <span className="inline-flex shrink-0 rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2 py-0.5 text-[10px] font-medium text-[#8f4a26]">
-                            Fiesta de Interés Turístico
+                            {t('tourismFestivalTag')}
                           </span>
                         )}
                       </span>
@@ -150,7 +152,7 @@ export default function AgendaInteractiva({
                           : ''}
                       </span>
                     </span>
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">Detalles</span>
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">{t('details')}</span>
                   </button>
                 ))}
               </div>
@@ -168,7 +170,7 @@ export default function AgendaInteractiva({
                   <h3 className="text-xl font-semibold">{selected.titulo}</h3>
                   {selected.esFiestaInteresTuristico && (
                     <span className="inline-flex shrink-0 rounded-full border border-[#b2643a]/30 bg-[#b2643a]/10 px-2.5 py-1 text-xs font-medium text-[#8f4a26]">
-                      Fiesta de Interés Turístico
+                      {t('tourismFestivalTag')}
                     </span>
                   )}
                 </div>
@@ -197,7 +199,7 @@ export default function AgendaInteractiva({
             {selected.descripcion && <p className="mt-3 text-sm text-muted-foreground">{selected.descripcion}</p>}
             {selected.avisosImportantes && (
               <div className="mt-3 rounded-md border border-amber-300/40 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                <p className="font-medium">Avisos importantes</p>
+                <p className="font-medium">{t('importantNotices')}</p>
                 <p className="mt-1 whitespace-pre-line">{selected.avisosImportantes}</p>
               </div>
             )}
@@ -206,7 +208,7 @@ export default function AgendaInteractiva({
               Array.isArray(selected.paradas) &&
               selected.paradas.length > 0) && (
               <div className="mt-4">
-                <p className="mb-2 text-sm font-medium">Recorrido</p>
+                <p className="mb-2 text-sm font-medium">{t('route')}</p>
                 <EventoRecorridoMap
                   inicioLat={selected.inicioLat}
                   inicioLng={selected.inicioLng}
@@ -223,14 +225,14 @@ export default function AgendaInteractiva({
                 rel="noopener noreferrer"
                 className="rounded-full border px-3 py-2 text-sm font-medium hover:bg-muted"
               >
-                Añadir a Google Calendar
+                {t('addGoogleCalendar')}
               </a>
               <button
                 type="button"
                 onClick={() => downloadAppleCalendar(selected)}
                 className="rounded-full border px-3 py-2 text-sm font-medium hover:bg-muted"
               >
-                Añadir a Apple Calendar
+                {t('addAppleCalendar')}
               </button>
               {selected.ubicacion && (
                 <a
@@ -239,13 +241,13 @@ export default function AgendaInteractiva({
                   rel="noopener noreferrer"
                   className="rounded-full border px-3 py-2 text-sm font-medium hover:bg-muted"
                 >
-                  Ver ubicación
+                  {t('viewLocation')}
                 </a>
               )}
             </div>
             <div className="mt-3 border-t pt-3">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Compartir</p>
+                <p className="text-sm text-muted-foreground">{t('share')}</p>
                 <ShareButton
                   url={`/planifica/semana-santa/pueblo/${puebloSlug}/dia/${selected.fechaInicio.slice(0, 10)}`}
                   title={selected.titulo}
@@ -256,8 +258,8 @@ export default function AgendaInteractiva({
             </div>
             {selected.youtubeUrl && (
               <div className="mt-3 w-full">
-                <p className="mb-2 text-sm font-medium">Vídeo de años anteriores</p>
-                <YoutubeEmbed url={selected.youtubeUrl} title={`${selected.titulo} - años anteriores`} />
+                <p className="mb-2 text-sm font-medium">{t('previousYearsVideo')}</p>
+                <YoutubeEmbed url={selected.youtubeUrl} title={t('previousYearsVideoTitle', { title: selected.titulo })} />
               </div>
             )}
           </div>

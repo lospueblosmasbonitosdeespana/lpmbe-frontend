@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import ShareButton from '@/app/components/ShareButton';
+import { useTranslations } from 'next-intl';
 
 type Item = {
   id: number;
@@ -29,10 +30,10 @@ type Config = {
   activo: boolean;
 };
 
-function badgeInteres(value: Item['interesTuristico']) {
-  if (value === 'INTERNACIONAL') return 'Interés Turístico Internacional';
-  if (value === 'NACIONAL') return 'Interés Turístico Nacional';
-  if (value === 'REGIONAL') return 'Interés Turístico Regional';
+function badgeInteres(value: Item['interesTuristico'], t: (key: string) => string) {
+  if (value === 'INTERNACIONAL') return t('tourismInterestInternational');
+  if (value === 'NACIONAL') return t('tourismInterestNational');
+  if (value === 'REGIONAL') return t('tourismInterestRegional');
   return null;
 }
 
@@ -66,12 +67,13 @@ export default function SemanaSantaLandingClient({
   config: Config | null;
   pueblos: Item[];
 }) {
+  const t = useTranslations('planifica.semanaSanta');
   const [filterCCAA, setFilterCCAA] = useState('');
   const [filterProvincia, setFilterProvincia] = useState('');
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [nearestLoading, setNearestLoading] = useState(false);
 
-  const title = config?.titulo ?? 'Semana Santa';
+  const title = config?.titulo ?? t('defaultTitle');
   const totalEventos = pueblos.reduce((acc, p) => acc + p.agenda.length, 0);
   const totalDias = pueblos.reduce((acc, p) => acc + p.dias.length, 0);
 
@@ -144,18 +146,18 @@ export default function SemanaSantaLandingClient({
       <div className="mx-auto max-w-6xl px-6 py-12">
         <header className="mb-10 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
           <div className="bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 px-7 py-8 text-white">
-            <p className="text-xs uppercase tracking-[0.24em] text-zinc-300">Experiencias · Planifica</p>
+            <p className="text-xs uppercase tracking-[0.24em] text-zinc-300">{t('eyebrow')}</p>
             <h1 className="mt-2 font-serif text-4xl font-medium">{title}</h1>
           </div>
           <div className="px-7 py-6">
             <p className="text-muted-foreground">
-              {config?.subtitulo || 'Selecciona un pueblo participante para ver su cartel, agenda y procesiones por día.'}
+              {config?.subtitulo || t('subtitleFallback')}
             </p>
             <div className="mt-4 flex flex-wrap gap-2 text-xs">
-              {config?.anio && <span className="rounded-full border bg-background px-3 py-1">Edición {config.anio}</span>}
-              <span className="rounded-full border bg-background px-3 py-1">{pueblos.length} pueblos activos</span>
-              <span className="rounded-full border bg-background px-3 py-1">{totalEventos} eventos agenda</span>
-              <span className="rounded-full border bg-background px-3 py-1">{totalDias} días procesionales</span>
+              {config?.anio && <span className="rounded-full border bg-background px-3 py-1">{t('edition', { year: config.anio })}</span>}
+              <span className="rounded-full border bg-background px-3 py-1">{t('activeVillages', { count: pueblos.length })}</span>
+              <span className="rounded-full border bg-background px-3 py-1">{t('agendaEvents', { count: totalEventos })}</span>
+              <span className="rounded-full border bg-background px-3 py-1">{t('processionDays', { count: totalDias })}</span>
             </div>
 
             {pueblos.length > 0 && (
@@ -171,7 +173,7 @@ export default function SemanaSantaLandingClient({
                   ) : (
                     <LocationIcon className="h-4 w-4 text-primary" />
                   )}
-                  {userCoords ? 'Mostrando más cercanos' : 'Ver más cercanos'}
+                  {userCoords ? t('showingNearest') : t('showNearest')}
                 </button>
                 {userCoords && (
                   <button
@@ -179,7 +181,7 @@ export default function SemanaSantaLandingClient({
                     onClick={clearNearest}
                     className="rounded-lg border bg-background px-3 py-2 text-sm font-medium hover:bg-muted"
                   >
-                    Quitar cercanía
+                    {t('clearNearest')}
                   </button>
                 )}
                 <select
@@ -190,7 +192,7 @@ export default function SemanaSantaLandingClient({
                     setFilterProvincia('');
                   }}
                 >
-                  <option value="">Todas las CCAA</option>
+                  <option value="">{t('allRegions')}</option>
                   {uniqueCCAA.map((ccaa) => (
                     <option key={ccaa} value={ccaa}>
                       {ccaa}
@@ -202,7 +204,7 @@ export default function SemanaSantaLandingClient({
                   value={filterProvincia}
                   onChange={(e) => setFilterProvincia(e.target.value)}
                 >
-                  <option value="">Todas las provincias</option>
+                  <option value="">{t('allProvinces')}</option>
                   {uniqueProvincias.map((prov) => (
                     <option key={prov} value={prov}>
                       {prov}
@@ -216,7 +218,7 @@ export default function SemanaSantaLandingClient({
 
         {sortedPueblos.length === 0 ? (
           <div className="rounded-lg border border-border bg-card p-10 text-center text-muted-foreground">
-            No hay pueblos para los filtros seleccionados.
+            {t('noVillagesForFilters')}
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -225,7 +227,7 @@ export default function SemanaSantaLandingClient({
               const horizontalImage = p.cartelHorizontalUrl && p.cartelHorizontalUrl.trim();
               const image = verticalImage || horizontalImage || p.pueblo.foto_destacada;
               const isVerticalPriority = Boolean(verticalImage);
-              const badge = badgeInteres(p.interesTuristico);
+              const badge = badgeInteres(p.interesTuristico, t);
               const distanceKm =
                 userCoords && p.pueblo.lat != null && p.pueblo.lng != null
                   ? haversineKm(userCoords.lat, userCoords.lng, p.pueblo.lat, p.pueblo.lng)
@@ -239,7 +241,7 @@ export default function SemanaSantaLandingClient({
                   <div className="absolute right-3 top-3 z-20">
                     <ShareButton
                       url={`/planifica/semana-santa/pueblo/${p.pueblo.slug}`}
-                      title={`Semana Santa en ${p.pueblo.nombre}`}
+                      title={t('shareVillageTitle', { village: p.pueblo.nombre })}
                       variant="icon"
                       className="rounded-full bg-card/90 p-1 shadow hover:bg-card"
                     />
@@ -255,7 +257,7 @@ export default function SemanaSantaLandingClient({
                         }`}
                       />
                     ) : (
-                      <div className="flex h-full items-center justify-center text-muted-foreground">Semana Santa</div>
+                      <div className="flex h-full items-center justify-center text-muted-foreground">{t('defaultTitle')}</div>
                     )}
                     {badge && (
                       <span className="absolute left-3 top-3 rounded-full bg-[#b2643a]/90 px-2.5 py-1 text-[11px] font-medium text-white">
@@ -270,12 +272,12 @@ export default function SemanaSantaLandingClient({
                       {p.pueblo.provincia}, {p.pueblo.comunidad}
                     </p>
                     {distanceKm != null && (
-                      <p className="mt-2 text-xs font-medium text-primary">{distanceKm.toFixed(1)} km de ti</p>
+                      <p className="mt-2 text-xs font-medium text-primary">{t('distanceFromYou', { km: distanceKm.toFixed(1) })}</p>
                     )}
                     <p className="mt-3 text-xs text-muted-foreground">
-                      {p.agenda.length} eventos en agenda · {p.dias.length} días de procesiones
+                      {t('agendaAndProcessions', { agenda: p.agenda.length, days: p.dias.length })}
                     </p>
-                    <p className="mt-3 text-sm font-medium text-primary">Ver página del pueblo →</p>
+                    <p className="mt-3 text-sm font-medium text-primary">{t('viewVillagePage')}</p>
                   </div>
                   </Link>
                 </div>
