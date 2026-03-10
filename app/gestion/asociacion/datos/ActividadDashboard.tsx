@@ -277,6 +277,7 @@ export default function ActividadDashboard() {
   const [showInactivos, setShowInactivos] = useState(false);
   const [createdFrom, setCreatedFrom] = useState('');
   const [createdTo, setCreatedTo] = useState('');
+  const [mdirectorMsg, setMdirectorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -416,26 +417,32 @@ export default function ActividadDashboard() {
     }
   };
 
+  const fetchExportUsers = async (scope: 'all' | 'filtered') => {
+    const params = new URLSearchParams();
+    if (scope === 'filtered') {
+      if (userSearch.trim()) params.set('q', userSearch.trim());
+      if (userRolFilter) params.set('rol', userRolFilter);
+      if (!showInactivos) params.set('activo', 'true');
+      if (createdFrom) params.set('createdFrom', createdFrom);
+      if (createdTo) params.set('createdTo', createdTo);
+    }
+    params.set('order', 'desc');
+
+    const res = await fetch(`/api/admin/datos/usuarios/export?${params.toString()}`, {
+      cache: 'no-store',
+    });
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({}));
+      throw new Error(payload?.error || payload?.message || 'Error al exportar usuarios');
+    }
+
+    const payload = await res.json();
+    return Array.isArray(payload?.items) ? payload.items : [];
+  };
+
   const exportUsuariosCsv = async (scope: 'all' | 'filtered') => {
     try {
-      const params = new URLSearchParams();
-      if (scope === 'filtered') {
-        if (userSearch.trim()) params.set('q', userSearch.trim());
-        if (userRolFilter) params.set('rol', userRolFilter);
-        if (!showInactivos) params.set('activo', 'true');
-        if (createdFrom) params.set('createdFrom', createdFrom);
-        if (createdTo) params.set('createdTo', createdTo);
-      }
-      params.set('order', 'desc');
-
-      const res = await fetch(`/api/admin/datos/usuarios/export?${params.toString()}`, { cache: 'no-store' });
-      if (!res.ok) {
-        const payload = await res.json().catch(() => ({}));
-        throw new Error(payload?.error || payload?.message || 'Error al exportar usuarios');
-      }
-
-      const payload = await res.json();
-      const items = Array.isArray(payload?.items) ? payload.items : [];
+      const items = await fetchExportUsers(scope);
       const rows: string[][] = [
         [
           'id',
@@ -472,6 +479,53 @@ export default function ActividadDashboard() {
       downloadCsv(`usuarios-${mode}-${new Date().toISOString().slice(0, 10)}.csv`, rows);
     } catch (e: any) {
       alert(e?.message ?? 'No se pudo exportar usuarios');
+    }
+  };
+
+  const exportMdirectorUsuariosCsv = async (advanced = false) => {
+    try {
+      const items = await fetchExportUsers('filtered');
+      const rows: string[][] = advanced
+        ? [
+            ['email', 'nombre', 'apellidos', 'rol', 'fecha_alta', 'activo'],
+            ...items.map((u: any) => [
+              u.email ?? '',
+              u.nombre ?? '',
+              u.apellidos ?? '',
+              u.rol ?? '',
+              u.createdAt ?? '',
+              String(Boolean(u.activo)),
+            ]),
+          ]
+        : [
+            ['email'],
+            ...items.map((u: any) => [u.email ?? '']),
+          ];
+
+      const suffix = advanced ? 'mdirector-avanzado' : 'mdirector';
+      downloadCsv(`usuarios-${suffix}-${new Date().toISOString().slice(0, 10)}.csv`, rows);
+    } catch (e: any) {
+      alert(e?.message ?? 'No se pudo exportar usuarios para MDirector');
+    }
+  };
+
+  const copyMdirectorEmails = async () => {
+    try {
+      const items = await fetchExportUsers('filtered');
+      const emails = items
+        .map((u: any) => String(u.email ?? '').trim().toLowerCase())
+        .filter(Boolean);
+      const uniqueEmails = Array.from(new Set(emails));
+      if (uniqueEmails.length === 0) {
+        setMdirectorMsg('No hay emails para copiar con los filtros actuales.');
+        return;
+      }
+
+      await navigator.clipboard.writeText(uniqueEmails.join(';'));
+      setMdirectorMsg(`${uniqueEmails.length} emails copiados para MDirector.`);
+      setTimeout(() => setMdirectorMsg(null), 2500);
+    } catch {
+      setMdirectorMsg('No se pudo copiar al portapapeles.');
     }
   };
 
@@ -746,12 +800,33 @@ export default function ActividadDashboard() {
             Descargar CSV (todos los roles)
           </button>
           <button
+            onClick={() => exportMdirectorUsuariosCsv(false)}
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors whitespace-nowrap"
+          >
+            MDirector CSV (filtros/rol)
+          </button>
+          <button
+            onClick={() => exportMdirectorUsuariosCsv(true)}
+            className="rounded-lg bg-primary/90 px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary transition-colors whitespace-nowrap"
+          >
+            MDirector CSV avanzado (filtros/rol)
+          </button>
+          <button
+            onClick={copyMdirectorEmails}
+            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors whitespace-nowrap"
+          >
+            Copiar emails MDirector (;)
+          </button>
+          <button
             onClick={() => setShowCreateModal(true)}
             className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition-colors whitespace-nowrap"
           >
             + Crear usuario
           </button>
         </div>
+        {mdirectorMsg && (
+          <p className="mb-3 text-sm text-muted-foreground">{mdirectorMsg}</p>
+        )}
 
         {/* Create user modal */}
         {showCreateModal && (
