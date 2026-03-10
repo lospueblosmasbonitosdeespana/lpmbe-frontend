@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getApiUrl } from '@/lib/api';
 import AgendaInteractiva from './AgendaInteractiva';
 import { getLocale, getTranslations } from 'next-intl/server';
+import { translateHolyWeekDayLabel } from './day-labels';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -188,7 +189,9 @@ export default async function SemanaSantaPuebloPage({
                             year: 'numeric',
                           })}
                         </p>
-                        <h3 className="mt-1 text-lg font-semibold">{d.titulo || d.nombreDia}</h3>
+                        <h3 className="mt-1 text-lg font-semibold">
+                          {translateHolyWeekDayLabel(d.titulo || d.nombreDia, t)}
+                        </h3>
                       </div>
                       <span className="rounded-full border px-2.5 py-1 text-xs">
                         {t('eventsCount', { count: eventsByDate[d.fecha]?.length ?? 0 })}

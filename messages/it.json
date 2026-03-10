@@ -500,7 +500,16 @@
       "previousYearsVideoTitle": "{title} - anni precedenti",
       "backToVillageHolyWeek": "← Torna alla Settimana Santa del paese",
       "eventsOfDay": "Eventi del giorno",
-      "noEventsForDay": "Nessun evento caricato per questo giorno."
+      "noEventsForDay": "Nessun evento caricato per questo giorno.",
+      "dayPalmSunday": "Domenica delle Palme",
+      "dayHolyMonday": "Lunedì Santo",
+      "dayHolyTuesday": "Martedì Santo",
+      "dayHolyWednesday": "Mercoledì Santo",
+      "dayHolyThursday": "Giovedì Santo",
+      "dayGoodFriday": "Venerdì Santo",
+      "dayHolySaturday": "Sabato Santo",
+      "dayEasterSunday": "Domenica di Pasqua",
+      "dayEasterMonday": "Lunedì di Pasqua"
     }
   },
   "recursos": {

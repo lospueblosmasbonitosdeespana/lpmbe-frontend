@@ -500,7 +500,16 @@
       "previousYearsVideoTitle": "{title} - années précédentes",
       "backToVillageHolyWeek": "← Retour à la Semaine Sainte du village",
       "eventsOfDay": "Événements du jour",
-      "noEventsForDay": "Aucun événement chargé pour ce jour."
+      "noEventsForDay": "Aucun événement chargé pour ce jour.",
+      "dayPalmSunday": "Dimanche des Rameaux",
+      "dayHolyMonday": "Lundi saint",
+      "dayHolyTuesday": "Mardi saint",
+      "dayHolyWednesday": "Mercredi saint",
+      "dayHolyThursday": "Jeudi saint",
+      "dayGoodFriday": "Vendredi saint",
+      "dayHolySaturday": "Samedi saint",
+      "dayEasterSunday": "Dimanche de Pâques",
+      "dayEasterMonday": "Lundi de Pâques"
     }
   },
   "recursos": {

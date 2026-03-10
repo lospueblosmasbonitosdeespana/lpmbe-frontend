@@ -500,7 +500,16 @@
       "previousYearsVideoTitle": "{title} - frühere Jahre",
       "backToVillageHolyWeek": "← Zurück zur Karwoche des Dorfes",
       "eventsOfDay": "Ereignisse des Tages",
-      "noEventsForDay": "Für diesen Tag sind keine Ereignisse geladen."
+      "noEventsForDay": "Für diesen Tag sind keine Ereignisse geladen.",
+      "dayPalmSunday": "Palmsonntag",
+      "dayHolyMonday": "Karmontag",
+      "dayHolyTuesday": "Kardienstag",
+      "dayHolyWednesday": "Karmittwoch",
+      "dayHolyThursday": "Gründonnerstag",
+      "dayGoodFriday": "Karfreitag",
+      "dayHolySaturday": "Karsamstag",
+      "dayEasterSunday": "Ostersonntag",
+      "dayEasterMonday": "Ostermontag"
     }
   },
   "recursos": {

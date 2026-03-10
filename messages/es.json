@@ -533,7 +533,16 @@
       "previousYearsVideoTitle": "{title} - años anteriores",
       "backToVillageHolyWeek": "← Volver a la Semana Santa del pueblo",
       "eventsOfDay": "Eventos del día",
-      "noEventsForDay": "No hay eventos cargados para este día."
+      "noEventsForDay": "No hay eventos cargados para este día.",
+      "dayPalmSunday": "Domingo de Ramos",
+      "dayHolyMonday": "Lunes Santo",
+      "dayHolyTuesday": "Martes Santo",
+      "dayHolyWednesday": "Miércoles Santo",
+      "dayHolyThursday": "Jueves Santo",
+      "dayGoodFriday": "Viernes Santo",
+      "dayHolySaturday": "Sábado Santo",
+      "dayEasterSunday": "Domingo de Resurrección",
+      "dayEasterMonday": "Lunes de Pascua"
     }
   },
   "recursos": {

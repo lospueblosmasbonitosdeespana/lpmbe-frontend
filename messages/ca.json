@@ -500,7 +500,16 @@
       "previousYearsVideoTitle": "{title} - anys anteriors",
       "backToVillageHolyWeek": "← Tornar a la Setmana Santa del poble",
       "eventsOfDay": "Esdeveniments del dia",
-      "noEventsForDay": "No hi ha esdeveniments carregats per a aquest dia."
+      "noEventsForDay": "No hi ha esdeveniments carregats per a aquest dia.",
+      "dayPalmSunday": "Diumenge de Rams",
+      "dayHolyMonday": "Dilluns Sant",
+      "dayHolyTuesday": "Dimarts Sant",
+      "dayHolyWednesday": "Dimecres Sant",
+      "dayHolyThursday": "Dijous Sant",
+      "dayGoodFriday": "Divendres Sant",
+      "dayHolySaturday": "Dissabte Sant",
+      "dayEasterSunday": "Diumenge de Pasqua",
+      "dayEasterMonday": "Dilluns de Pasqua"
     }
   },
   "recursos": {

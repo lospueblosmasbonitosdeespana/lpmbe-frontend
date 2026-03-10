@@ -6,6 +6,7 @@ import ShareButton from '@/app/components/ShareButton';
 import EventoRecorridoMap from '../../EventoRecorridoMap';
 import ImagenConLightbox from '../../ImagenConLightbox';
 import YoutubeEmbed from '../../YoutubeEmbed';
+import { translateHolyWeekDayLabel } from '../../day-labels';
 
 type Agenda = {
   id: number;
@@ -73,7 +74,9 @@ export default async function SemanaSantaDiaPage({
 
       <header className="mt-4 rounded-xl border bg-card p-5">
         <p className="text-sm text-muted-foreground">{data.participante.pueblo.nombre}</p>
-        <h1 className="font-serif text-3xl font-medium">{day.titulo || day.nombreDia}</h1>
+        <h1 className="font-serif text-3xl font-medium">
+          {translateHolyWeekDayLabel(day.titulo || day.nombreDia, t)}
+        </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {new Date(day.fecha).toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
