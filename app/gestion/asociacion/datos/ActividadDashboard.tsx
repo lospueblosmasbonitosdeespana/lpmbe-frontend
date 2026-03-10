@@ -162,6 +162,18 @@ function downloadCsv(filename: string, rows: string[][]) {
   URL.revokeObjectURL(url);
 }
 
+function downloadTextFile(filename: string, content: string) {
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function MergedChart({
   registros,
   visitas,
@@ -509,7 +521,7 @@ export default function ActividadDashboard() {
     }
   };
 
-  const copyMdirectorEmails = async () => {
+  const downloadMdirectorEmailsTxt = async () => {
     try {
       const items = await fetchExportUsers('filtered');
       const emails = items
@@ -517,15 +529,19 @@ export default function ActividadDashboard() {
         .filter(Boolean);
       const uniqueEmails = Array.from(new Set(emails));
       if (uniqueEmails.length === 0) {
-        setMdirectorMsg('No hay emails para copiar con los filtros actuales.');
+        setMdirectorMsg('No hay emails para exportar con los filtros actuales.');
         return;
       }
 
-      await navigator.clipboard.writeText(uniqueEmails.join(';'));
-      setMdirectorMsg(`${uniqueEmails.length} emails copiados para MDirector.`);
+      const payload = uniqueEmails.join(';');
+      downloadTextFile(
+        `usuarios-mdirector-emails-${new Date().toISOString().slice(0, 10)}.txt`,
+        payload,
+      );
+      setMdirectorMsg(`${uniqueEmails.length} emails exportados en .txt para MDirector.`);
       setTimeout(() => setMdirectorMsg(null), 2500);
     } catch {
-      setMdirectorMsg('No se pudo copiar al portapapeles.');
+      setMdirectorMsg('No se pudo generar el archivo TXT.');
     }
   };
 
@@ -812,10 +828,10 @@ export default function ActividadDashboard() {
             MDirector CSV avanzado (filtros/rol)
           </button>
           <button
-            onClick={copyMdirectorEmails}
+            onClick={downloadMdirectorEmailsTxt}
             className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors whitespace-nowrap"
           >
-            Copiar emails MDirector (;)
+            Descargar TXT MDirector (;)
           </button>
           <button
             onClick={() => setShowCreateModal(true)}

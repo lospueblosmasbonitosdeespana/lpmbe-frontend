@@ -68,6 +68,18 @@ function downloadCsv(filename: string, rows: string[][]) {
   URL.revokeObjectURL(url);
 }
 
+function downloadTextFile(filename: string, content: string) {
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function KpiCard({
   label,
   value,
@@ -206,23 +218,26 @@ export default function NewsletterDashboard() {
     );
   };
 
-  const copyEmailsForMdirector = async () => {
+  const downloadEmailsTxtForMdirector = async () => {
     try {
       const emails = filtered
         .map((i) => (i.email || '').trim().toLowerCase())
         .filter(Boolean);
       const uniqueEmails = Array.from(new Set(emails));
       if (uniqueEmails.length === 0) {
-        setCopyMsg('No hay emails para copiar.');
+        setCopyMsg('No hay emails para exportar.');
         return;
       }
 
       const payload = uniqueEmails.join(';');
-      await navigator.clipboard.writeText(payload);
-      setCopyMsg(`${uniqueEmails.length} emails copiados al portapapeles.`);
+      downloadTextFile(
+        `newsletter-mdirector-emails-${new Date().toISOString().slice(0, 10)}.txt`,
+        payload,
+      );
+      setCopyMsg(`${uniqueEmails.length} emails exportados en .txt para MDirector.`);
       setTimeout(() => setCopyMsg(null), 2500);
     } catch {
-      setCopyMsg('No se pudo copiar al portapapeles.');
+      setCopyMsg('No se pudo generar el archivo TXT.');
     }
   };
 
@@ -311,10 +326,10 @@ export default function NewsletterDashboard() {
             Descargar CSV MDirector
           </button>
           <button
-            onClick={copyEmailsForMdirector}
+            onClick={downloadEmailsTxtForMdirector}
             className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
           >
-            Copiar emails MDirector (;)
+            Descargar TXT MDirector (;)
           </button>
           <button
             onClick={exportMdirectorAdvancedCsv}
