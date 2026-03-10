@@ -29,7 +29,6 @@ function getMobilePlatform(): MobilePlatform {
 export default function AppDownloadBanner() {
   const [visible, setVisible] = useState(false);
   const [platform, setPlatform] = useState<MobilePlatform>("other");
-  const [smartUrl, setSmartUrl] = useState(APP_SMART_PATH);
   const [qrUrl, setQrUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -43,7 +42,6 @@ export default function AppDownloadBanner() {
 
     if (typeof window !== "undefined") {
       const absoluteSmartUrl = `${window.location.origin}${APP_SMART_PATH}`;
-      setSmartUrl(absoluteSmartUrl);
       setQrUrl(
         `https://quickchart.io/qr?size=180&text=${encodeURIComponent(
           absoluteSmartUrl
@@ -112,12 +110,6 @@ export default function AppDownloadBanner() {
               className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
             >
               {secondaryLabel}
-            </a>
-            <a
-              href={smartUrl}
-              className="rounded-lg border border-border px-3 py-2 text-sm font-medium"
-            >
-              Abrir enlace inteligente
             </a>
             <button
               type="button"
