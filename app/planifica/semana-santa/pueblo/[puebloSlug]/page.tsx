@@ -95,7 +95,9 @@ export default async function SemanaSantaPuebloPage({
   }, {});
 
   const timeOpts = { hour: '2-digit' as const, minute: '2-digit' as const, hour12: false as const, timeZone: 'Europe/Madrid' };
-  const diasConEventos = participante.dias.filter((d) => (eventsByDate[d.fecha]?.length ?? 0) > 0);
+  const diasConEventos = participante.dias
+    .filter((d) => (eventsByDate[d.fecha]?.length ?? 0) > 0)
+    .sort((a, b) => a.fecha.localeCompare(b.fecha));
   const hasBothPosters = Boolean(participante.cartelVerticalUrl && participante.cartelHorizontalUrl);
 
   return (
