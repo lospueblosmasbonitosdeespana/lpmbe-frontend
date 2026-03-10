@@ -39,14 +39,6 @@ export default async function DatosPage({
             {t('backToAssociation')}
           </Link>
         </div>
-        {me.rol === 'ADMIN' && (
-          <Link
-            href="/gestion/asociacion/datos/puntos-pueblos"
-            className="shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
-          >
-            {t('puntosPueblosLink')}
-          </Link>
-        )}
       </div>
 
       <DatosTabs defaultTab={activeTab} canViewNewsletter={me.rol === 'ADMIN'} />
