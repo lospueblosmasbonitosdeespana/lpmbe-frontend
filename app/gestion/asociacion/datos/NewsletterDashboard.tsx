@@ -98,6 +98,7 @@ export default function NewsletterDashboard() {
   const [search, setSearch] = useState('');
   const [origen, setOrigen] = useState('');
   const [rol, setRol] = useState('');
+  const [copyMsg, setCopyMsg] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -205,6 +206,26 @@ export default function NewsletterDashboard() {
     );
   };
 
+  const copyEmailsForMdirector = async () => {
+    try {
+      const emails = filtered
+        .map((i) => (i.email || '').trim().toLowerCase())
+        .filter(Boolean);
+      const uniqueEmails = Array.from(new Set(emails));
+      if (uniqueEmails.length === 0) {
+        setCopyMsg('No hay emails para copiar.');
+        return;
+      }
+
+      const payload = uniqueEmails.join(';');
+      await navigator.clipboard.writeText(payload);
+      setCopyMsg(`${uniqueEmails.length} emails copiados al portapapeles.`);
+      setTimeout(() => setCopyMsg(null), 2500);
+    } catch {
+      setCopyMsg('No se pudo copiar al portapapeles.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center gap-2 py-20 text-muted-foreground">
@@ -290,6 +311,12 @@ export default function NewsletterDashboard() {
             Descargar CSV MDirector
           </button>
           <button
+            onClick={copyEmailsForMdirector}
+            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
+          >
+            Copiar emails MDirector (;)
+          </button>
+          <button
             onClick={exportMdirectorAdvancedCsv}
             className="rounded-lg bg-primary/90 px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary"
           >
@@ -306,6 +333,9 @@ export default function NewsletterDashboard() {
         <p className="text-sm text-muted-foreground">
           Registros visibles: {filtered.length.toLocaleString('es-ES')} de {data.total.toLocaleString('es-ES')}
         </p>
+        {copyMsg && (
+          <p className="text-sm text-muted-foreground">{copyMsg}</p>
+        )}
 
         <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
           <table className="w-full text-sm">
