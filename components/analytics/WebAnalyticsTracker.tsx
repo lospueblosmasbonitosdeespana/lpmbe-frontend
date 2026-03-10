@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 
 const SESSION_KEY = 'lpbe_analytics_session';
 const SESSION_DURATION_MS = 30 * 60 * 1000; // 30 min
+const APP_GEO_SENT_KEY = 'lpbe_analytics_app_geo_sent';
 
 function getOrCreateSessionId(): string {
   if (typeof window === 'undefined') return '';
@@ -43,6 +44,27 @@ function parseUserAgent(ua: string) {
   else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
 
   return { browser, os, deviceType };
+}
+
+function getLocaleAndTimezone() {
+  const language =
+    typeof navigator !== 'undefined'
+      ? (navigator.language || (navigator.languages && navigator.languages[0]) || '')
+      : '';
+  const timezone =
+    typeof Intl !== 'undefined' && Intl.DateTimeFormat
+      ? Intl.DateTimeFormat().resolvedOptions().timeZone || ''
+      : '';
+  return { language, timezone };
+}
+
+function guessCountryCode(language: string, timezone: string): string {
+  const lang = String(language || '').toLowerCase();
+  const tz = String(timezone || '');
+  const localeRegion = lang.includes('-') ? lang.split('-')[1]?.toUpperCase() || '' : '';
+  if (localeRegion.length === 2) return localeRegion;
+  if (tz === 'Europe/Madrid' || tz === 'Atlantic/Canary') return 'ES';
+  return 'UNK';
 }
 
 function detectAnalyticsSource(pathname: string, ua: string): 'web' | 'app' {
@@ -94,6 +116,8 @@ export function WebAnalyticsTracker() {
     const ua = navigator.userAgent;
     const { browser, os, deviceType } = parseUserAgent(ua);
     const source = detectAnalyticsSource(pathname, ua);
+    const { language, timezone } = getLocaleAndTimezone();
+    const countryCode = guessCountryCode(language, timezone);
 
     const payload = {
       path: pathname,
@@ -118,6 +142,42 @@ export function WebAnalyticsTracker() {
       body: JSON.stringify(payload),
       keepalive: true,
     }).catch(() => {});
+
+    // Registrar metadatos geo de uso app una sola vez por sesión
+    if (source === 'app') {
+      const geoSentKey = `${APP_GEO_SENT_KEY}:${sessionId}`;
+      let alreadySent = false;
+      try {
+        alreadySent = sessionStorage.getItem(geoSentKey) === '1';
+      } catch {
+        alreadySent = false;
+      }
+
+      if (!alreadySent) {
+        fetch('/api/analytics/event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventName: 'app_geo',
+            eventCategory: 'app_usage',
+            path: pathname,
+            source: 'app',
+            sessionId,
+            extra: {
+              language,
+              timezone,
+              countryCode,
+            },
+          }),
+          keepalive: true,
+        }).catch(() => {});
+        try {
+          sessionStorage.setItem(geoSentKey, '1');
+        } catch {
+          // ignore storage issues
+        }
+      }
+    }
   }, [pathname]);
 
   return null;

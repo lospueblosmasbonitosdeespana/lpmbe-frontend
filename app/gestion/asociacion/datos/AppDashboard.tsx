@@ -23,6 +23,7 @@ type DayPoint = { fecha: string; total: number };
 type DayVisita = { fecha: string; total: number; gps: number; manual: number };
 type DayActivos = { fecha: string; activos: number };
 type PathPoint = { path: string; total: number };
+type CountryPoint = { country: string; total: number };
 type PuebloVisita = { puebloId: number; nombre: string; provincia: string; total: number; gps: number; manual: number };
 type PuebloValoracion = { puebloId: number; nombre: string; provincia: string; media: number; total: number };
 type PuebloSuscripcion = { puebloId: number; nombre: string; total: number };
@@ -83,8 +84,14 @@ type AppData = {
     pageviewsPeriodo: number;
     eventosPeriodo: number;
     sesionesUnicasPeriodo: number;
+    sesionesUltimas24h?: number;
+    pageviewsConUsuarioPeriodo?: number;
+    pageviewsAnonimasPeriodo?: number;
+    sesionesEspanaPeriodo?: number;
+    sesionesExtranjeroPeriodo?: number;
     porDia?: DayPoint[];
     topRutas?: PathPoint[];
+    topPaises?: CountryPoint[];
   };
 };
 
@@ -318,8 +325,14 @@ export default function AppDashboard() {
     pageviewsPeriodo: 0,
     eventosPeriodo: 0,
     sesionesUnicasPeriodo: 0,
+    sesionesUltimas24h: 0,
+    pageviewsConUsuarioPeriodo: 0,
+    pageviewsAnonimasPeriodo: 0,
+    sesionesEspanaPeriodo: 0,
+    sesionesExtranjeroPeriodo: 0,
     porDia: [] as DayPoint[],
     topRutas: [] as PathPoint[],
+    topPaises: [] as CountryPoint[],
   };
 
   const maxRating = Math.max(...Object.values(valoraciones.distribucion ?? {}), 0);
@@ -401,7 +414,7 @@ export default function AppDashboard() {
       {/* ── 1B. NAVEGACIÓN WEB DESDE APP ───────────────────────────── */}
       <section className="space-y-4">
         <SectionTitle>📱 Navegación web desde app</SectionTitle>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
           <KpiCard
             label="Pageviews app (histórico)"
             value={navegacionApp.pageviewsTotal}
@@ -422,6 +435,22 @@ export default function AppDashboard() {
             label="Sesiones únicas app"
             value={navegacionApp.sesionesUnicasPeriodo}
             sub={`últimos ${days}d`}
+          />
+          <KpiCard
+            label="Sesiones app (24h)"
+            value={navegacionApp.sesionesUltimas24h ?? 0}
+            sub="actividad real última jornada"
+            highlight
+          />
+          <KpiCard
+            label="Pageviews app anónimas"
+            value={navegacionApp.pageviewsAnonimasPeriodo ?? 0}
+            sub={`sin userId · últimos ${days}d`}
+          />
+          <KpiCard
+            label="Pageviews app con usuario"
+            value={navegacionApp.pageviewsConUsuarioPeriodo ?? 0}
+            sub={`con userId · últimos ${days}d`}
           />
         </div>
 
@@ -452,6 +481,37 @@ export default function AppDashboard() {
             rows={(navegacionApp.topRutas ?? []).map((r) => [
               <span key="path" className="truncate">{r.path}</span>,
               <span key="total" className="font-medium">{n(r.total)}</span>,
+            ])}
+          />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <ChartCard title="Alcance geográfico app (sesiones)">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg border border-border bg-muted/20 p-4">
+                <p className="text-xs text-muted-foreground">España</p>
+                <p className="mt-1 text-2xl font-bold text-foreground">
+                  {n(navegacionApp.sesionesEspanaPeriodo ?? 0)}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/20 p-4">
+                <p className="text-xs text-muted-foreground">Extranjero</p>
+                <p className="mt-1 text-2xl font-bold text-foreground">
+                  {n(navegacionApp.sesionesExtranjeroPeriodo ?? 0)}
+                </p>
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Basado en sesiones app con metadatos geo (IP/proxy + locale).
+            </p>
+          </ChartCard>
+
+          <MiniTable
+            title={`Top países app (últimos ${days}d)`}
+            cols={['País', 'Sesiones']}
+            rows={(navegacionApp.topPaises ?? []).map((p) => [
+              p.country,
+              <span key="total" className="font-medium">{n(p.total)}</span>,
             ])}
           />
         </div>
