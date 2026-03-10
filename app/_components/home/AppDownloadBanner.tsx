@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 const DISMISS_KEY = "app_download_banner_dismissed_until";
 const DISMISS_DAYS = 14;
 
+const APP_SMART_PATH = "/app";
 const APP_STORE_URL =
   "https://apps.apple.com/es/app/los-pueblos-m%C3%A1s-bonitos-de-esp/id6755147967";
 const PLAY_STORE_URL =
@@ -28,13 +29,25 @@ function getMobilePlatform(): MobilePlatform {
 export default function AppDownloadBanner() {
   const [visible, setVisible] = useState(false);
   const [platform, setPlatform] = useState<MobilePlatform>("other");
+  const [smartUrl, setSmartUrl] = useState(APP_SMART_PATH);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isMobileDevice()) return;
-    setPlatform(getMobilePlatform());
+    const isMobile = isMobileDevice();
+    setPlatform(isMobile ? getMobilePlatform() : "other");
 
     const dismissedUntil = localStorage.getItem(DISMISS_KEY);
     if (dismissedUntil && Date.now() < Number(dismissedUntil)) return;
+
+    if (typeof window !== "undefined") {
+      const absoluteSmartUrl = `${window.location.origin}${APP_SMART_PATH}`;
+      setSmartUrl(absoluteSmartUrl);
+      setQrUrl(
+        `https://quickchart.io/qr?size=180&text=${encodeURIComponent(
+          absoluteSmartUrl
+        )}`
+      );
+    }
 
     setVisible(true);
   }, []);
@@ -80,30 +93,51 @@ export default function AppDownloadBanner() {
           </button>
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-2">
-          <a
-            href={primaryHref}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-lg bg-black px-3 py-2 text-sm font-medium text-white"
-          >
-            {primaryLabel}
-          </a>
-          <a
-            href={secondaryHref}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-lg bg-emerald-700 px-3 py-2 text-sm font-medium text-white"
-          >
-            {secondaryLabel}
-          </a>
-          <button
-            type="button"
-            onClick={dismiss}
-            className="px-2 py-2 text-sm text-muted-foreground underline"
-          >
-            Seguir en web
-          </button>
+        <div className="mt-3 grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+          <div className="flex flex-wrap gap-2">
+            <a
+              href={primaryHref}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-lg bg-black px-3 py-2 text-sm font-medium text-white"
+            >
+              {primaryLabel}
+            </a>
+            <a
+              href={secondaryHref}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-lg bg-emerald-700 px-3 py-2 text-sm font-medium text-white"
+            >
+              {secondaryLabel}
+            </a>
+            <a
+              href={smartUrl}
+              className="rounded-lg border border-border px-3 py-2 text-sm font-medium"
+            >
+              Abrir enlace inteligente
+            </a>
+            <button
+              type="button"
+              onClick={dismiss}
+              className="px-2 py-2 text-sm text-muted-foreground underline"
+            >
+              Seguir en web
+            </button>
+          </div>
+
+          <div className="hidden rounded-lg border border-border bg-background p-2 text-center md:block">
+            {qrUrl ? (
+              <img
+                src={qrUrl}
+                alt="QR para descargar la app"
+                width={120}
+                height={120}
+                className="h-[120px] w-[120px]"
+              />
+            ) : null}
+            <p className="mt-1 text-xs text-muted-foreground">Escanea para descargar</p>
+          </div>
         </div>
       </div>
     </section>
