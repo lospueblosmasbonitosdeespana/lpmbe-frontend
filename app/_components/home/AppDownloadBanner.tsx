@@ -109,7 +109,7 @@ export default function AppDownloadBanner() {
               href={secondaryHref}
               target="_blank"
               rel="noreferrer"
-              className="rounded-lg bg-emerald-700 px-3 py-2 text-sm font-medium text-white"
+              className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
             >
               {secondaryLabel}
             </a>

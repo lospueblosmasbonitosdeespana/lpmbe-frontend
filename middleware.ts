@@ -37,6 +37,9 @@ export function middleware(req: NextRequest): NextResponse {
   const idLugar = req.nextUrl.searchParams.get('id_lugar');
   const idPublicacion = req.nextUrl.searchParams.get('id_publicacion');
 
+  // /app es una ruta activa para redireccion inteligente a stores.
+  if (pathname === '/app') return NextResponse.next();
+
   // Casos legacy con querystring (WP antiguo)
   if (pathname === '/ficha-pueblo' && idLugar) {
     const target = LEGACY_FICHA_ID_REDIRECTS[idLugar];

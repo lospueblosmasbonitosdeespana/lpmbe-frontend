@@ -38,7 +38,7 @@ export default async function AppRedirectPage() {
         </a>
         <a
           href={PLAY_STORE_URL}
-          className="rounded-lg bg-emerald-700 px-4 py-3 text-center text-white"
+          className="rounded-lg bg-primary px-4 py-3 text-center text-primary-foreground"
         >
           Google Play
         </a>
