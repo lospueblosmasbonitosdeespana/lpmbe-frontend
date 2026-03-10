@@ -14,8 +14,11 @@ export default async function DatosPage({
   if (me.rol !== 'ADMIN' && me.rol !== 'EDITOR') redirect('/mi-cuenta');
 
   const { tab } = await searchParams;
-  const activeTab = ['usuarios', 'pueblos', 'web', 'app', 'interno', 'puntos'].includes(tab ?? '')
-    ? (tab as 'usuarios' | 'pueblos' | 'web' | 'app' | 'interno' | 'puntos')
+  const allowedTabs = me.rol === 'ADMIN'
+    ? ['usuarios', 'pueblos', 'web', 'app', 'interno', 'puntos', 'newsletter']
+    : ['usuarios', 'pueblos', 'web', 'app', 'interno', 'puntos'];
+  const activeTab = allowedTabs.includes(tab ?? '')
+    ? (tab as 'usuarios' | 'pueblos' | 'web' | 'app' | 'interno' | 'puntos' | 'newsletter')
     : 'usuarios';
   const t = await getTranslations('gestion');
 
@@ -46,7 +49,7 @@ export default async function DatosPage({
         )}
       </div>
 
-      <DatosTabs defaultTab={activeTab} />
+      <DatosTabs defaultTab={activeTab} canViewNewsletter={me.rol === 'ADMIN'} />
     </main>
   );
 }

@@ -11,9 +11,11 @@ const WebDashboard = lazy(() => import('./WebDashboard'));
 const AppDashboard = dynamic(() => import('./AppDashboard'), { ssr: false });
 const InternoDashboard = lazy(() => import('./InternoDashboard'));
 const PuntosPueblosClient = lazy(() => import('./puntos-pueblos/PuntosPueblosClient'));
+const NewsletterDashboard = lazy(() => import('./NewsletterDashboard'));
 
 const TABS = [
   { key: 'usuarios' as const, labelKey: 'tabUsuarios' as const },
+  { key: 'newsletter' as const, label: 'Newsletter' as const },
   { key: 'app' as const, labelKey: 'tabApp' as const },
   { key: 'interno' as const, labelKey: 'tabInterno' as const },
   { key: 'pueblos' as const, labelKey: 'tabPueblos' as const },
@@ -35,7 +37,13 @@ function Spinner({ label }: { label: string }) {
   );
 }
 
-export default function DatosTabs({ defaultTab }: { defaultTab: TabKey }) {
+export default function DatosTabs({
+  defaultTab,
+  canViewNewsletter = false,
+}: {
+  defaultTab: TabKey;
+  canViewNewsletter?: boolean;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [active, setActive] = useState<TabKey>(defaultTab);
@@ -51,7 +59,7 @@ export default function DatosTabs({ defaultTab }: { defaultTab: TabKey }) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-1 rounded-lg bg-muted p-1">
-        {TABS.map((tab) => (
+        {TABS.filter((tab) => canViewNewsletter || tab.key !== 'newsletter').map((tab) => (
           <button
             key={tab.key}
             onClick={() => switchTab(tab.key)}
@@ -61,12 +69,17 @@ export default function DatosTabs({ defaultTab }: { defaultTab: TabKey }) {
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            {t(tab.labelKey)}
+            {'label' in tab ? tab.label : t(tab.labelKey)}
           </button>
         ))}
       </div>
 
       {active === 'usuarios' && <ActividadDashboard />}
+      {active === 'newsletter' && canViewNewsletter && (
+        <Suspense fallback={<Spinner label={t('loading')} />}>
+          <NewsletterDashboard />
+        </Suspense>
+      )}
       {active === 'pueblos' && (
         <Suspense fallback={<Spinner label={t('loading')} />}>
           <PueblosDashboard />

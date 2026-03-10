@@ -63,6 +63,7 @@ type UserRow = {
   createdAt: string;
   lastLoginAt: string | null;
   totalVisitas: number;
+  totalPedidos?: number;
 };
 
 type UsersResponse = {
@@ -144,6 +145,21 @@ function formatDate(iso: string) {
 function formatChartDay(dia: string) {
   const parts = dia.split('-');
   return `${parts[2]}/${parts[1]}`;
+}
+
+function downloadCsv(filename: string, rows: string[][]) {
+  const csv = rows
+    .map((row) => row.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+  const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function MergedChart({
@@ -259,6 +275,8 @@ export default function ActividadDashboard() {
   // Delete user
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [showInactivos, setShowInactivos] = useState(false);
+  const [createdFrom, setCreatedFrom] = useState('');
+  const [createdTo, setCreatedTo] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -286,6 +304,8 @@ export default function ActividadDashboard() {
       if (userSearch.trim()) params.set('q', userSearch.trim());
       if (userRolFilter) params.set('rol', userRolFilter);
       if (!showInactivos) params.set('activo', 'true');
+      if (createdFrom) params.set('createdFrom', createdFrom);
+      if (createdTo) params.set('createdTo', createdTo);
       if (userOrderBy === 'visitas-desc') {
         params.set('orderBy', 'visitas');
         params.set('order', 'desc');
@@ -300,7 +320,7 @@ export default function ActividadDashboard() {
     } finally {
       setUsersLoading(false);
     }
-  }, [userSearch, userRolFilter, userPage, showInactivos, userOrderBy]);
+  }, [userSearch, userRolFilter, userPage, showInactivos, userOrderBy, createdFrom, createdTo]);
 
   useEffect(() => {
     fetchUsers();
@@ -308,7 +328,7 @@ export default function ActividadDashboard() {
 
   useEffect(() => {
     setUserPage(0);
-  }, [userSearch, userRolFilter, showInactivos, userOrderBy]);
+  }, [userSearch, userRolFilter, showInactivos, userOrderBy, createdFrom, createdTo]);
 
   const cycleVisitasSort = () => {
     setUserOrderBy((prev) => {
@@ -393,6 +413,65 @@ export default function ActividadDashboard() {
       alert('Error de red al eliminar');
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const exportUsuariosCsv = async (scope: 'all' | 'filtered') => {
+    try {
+      const params = new URLSearchParams();
+      if (scope === 'filtered') {
+        if (userSearch.trim()) params.set('q', userSearch.trim());
+        if (userRolFilter) params.set('rol', userRolFilter);
+        if (!showInactivos) params.set('activo', 'true');
+        if (createdFrom) params.set('createdFrom', createdFrom);
+        if (createdTo) params.set('createdTo', createdTo);
+      }
+      params.set('order', 'desc');
+
+      const res = await fetch(`/api/admin/datos/usuarios/export?${params.toString()}`, { cache: 'no-store' });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload?.error || payload?.message || 'Error al exportar usuarios');
+      }
+
+      const payload = await res.json();
+      const items = Array.isArray(payload?.items) ? payload.items : [];
+      const rows: string[][] = [
+        [
+          'id',
+          'email',
+          'nombre',
+          'apellidos',
+          'telefono',
+          'rol',
+          'activo',
+          'email_verificado',
+          'es_cliente',
+          'fecha_alta',
+          'ultimo_login',
+          'total_visitas',
+          'total_pedidos',
+        ],
+        ...items.map((u: any) => [
+          String(u.id ?? ''),
+          u.email ?? '',
+          u.nombre ?? '',
+          u.apellidos ?? '',
+          u.telefono ?? '',
+          u.rol ?? '',
+          String(Boolean(u.activo)),
+          String(Boolean(u.emailVerificado)),
+          String(Boolean(u.esCliente)),
+          u.createdAt ?? '',
+          u.lastLoginAt ?? '',
+          String(u.totalVisitas ?? 0),
+          String(u.totalPedidos ?? 0),
+        ]),
+      ];
+      const mode = scope === 'all' ? 'todos' : 'filtrado';
+      downloadCsv(`usuarios-${mode}-${new Date().toISOString().slice(0, 10)}.csv`, rows);
+    } catch (e: any) {
+      alert(e?.message ?? 'No se pudo exportar usuarios');
     }
   };
 
@@ -640,6 +719,32 @@ export default function ActividadDashboard() {
             />
             Incluir inactivos
           </label>
+          <input
+            type="date"
+            value={createdFrom}
+            onChange={(e) => setCreatedFrom(e.target.value)}
+            className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+            aria-label="Fecha alta desde"
+          />
+          <input
+            type="date"
+            value={createdTo}
+            onChange={(e) => setCreatedTo(e.target.value)}
+            className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+            aria-label="Fecha alta hasta"
+          />
+          <button
+            onClick={() => exportUsuariosCsv('filtered')}
+            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors whitespace-nowrap"
+          >
+            Descargar CSV (filtros)
+          </button>
+          <button
+            onClick={() => exportUsuariosCsv('all')}
+            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors whitespace-nowrap"
+          >
+            Descargar CSV (todos los roles)
+          </button>
           <button
             onClick={() => setShowCreateModal(true)}
             className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition-colors whitespace-nowrap"
