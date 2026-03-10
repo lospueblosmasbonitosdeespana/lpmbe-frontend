@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { HomePageNew, type NotificationItem, type CategoryCard, type RouteCard, type VillageCard, type NewsItem } from "./_components/home/HomePageNew";
+import AppDownloadBanner from "./_components/home/AppDownloadBanner";
 import { getHomeConfig, getHomeVideos } from "@/lib/homeApi";
 import { getRutas, getApiUrl, getPueblosLite, getPuebloMainPhoto, type Pueblo } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, getBaseUrl, DEFAULT_DESCRIPTION, SITE_NAME } from "@/lib/seo";
@@ -346,6 +347,7 @@ export default async function HomePage() {
       {homeVideoLds.map((ld, i) => (
         <JsonLd key={i} data={ld} />
       ))}
+      <AppDownloadBanner />
       <HomePageNew
         heroSlides={heroSlides}
         heroIntervalMs={config.hero.intervalMs ?? 4000}

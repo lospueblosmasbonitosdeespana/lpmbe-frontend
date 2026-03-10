@@ -37,6 +37,9 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   robots: { index: true, follow: true },
+  other: {
+    "apple-itunes-app": "app-id=6755147967",
+  },
 };
 
 export const viewport = {
