@@ -36,8 +36,10 @@ export default function AppDownloadBanner() {
     const isMobile = isMobileDevice();
     setPlatform(isMobile ? getMobilePlatform() : "other");
 
-    const dismissedUntil = localStorage.getItem(DISMISS_KEY);
-    if (dismissedUntil && Date.now() < Number(dismissedUntil)) return;
+    if (isMobile) {
+      const dismissedUntil = localStorage.getItem(DISMISS_KEY);
+      if (dismissedUntil && Date.now() < Number(dismissedUntil)) return;
+    }
 
     if (typeof window !== "undefined") {
       const absoluteSmartUrl = `${window.location.origin}${APP_SMART_PATH}`;
