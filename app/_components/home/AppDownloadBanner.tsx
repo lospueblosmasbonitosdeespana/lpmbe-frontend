@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 const DISMISS_KEY = "app_download_banner_dismissed_until";
-const DISMISS_DAYS = 14;
+const DISMISS_DAYS = 7; // Una vez a la semana si cierras con la X
 
 const APP_SMART_PATH = "/app";
 const APP_STORE_URL =
@@ -35,9 +35,14 @@ export default function AppDownloadBanner() {
     const isMobile = isMobileDevice();
     setPlatform(isMobile ? getMobilePlatform() : "other");
 
-    if (isMobile) {
+    // Comprobar si el usuario cerró el banner recientemente (una vez a la semana)
+    try {
       const dismissedUntil = localStorage.getItem(DISMISS_KEY);
-      if (dismissedUntil && Date.now() < Number(dismissedUntil)) return;
+      if (dismissedUntil && Date.now() < Number(dismissedUntil)) {
+        return; // No mostrar hasta que pase la semana
+      }
+    } catch {
+      // ignorar si localStorage no está disponible
     }
 
     if (typeof window !== "undefined") {
