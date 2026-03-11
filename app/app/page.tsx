@@ -1,6 +1,6 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import { getApiUrl } from '@/lib/api';
+import AppDownloadActions from './AppDownloadActions.client';
 
 const APP_STORE_URL =
   'https://apps.apple.com/es/app/los-pueblos-m%C3%A1s-bonitos-de-esp/id6755147967';
@@ -109,30 +109,10 @@ export default async function AppLandingPage() {
         <h1 className="mt-2 text-3xl font-bold md:text-4xl">{config.title}</h1>
         <p className="mt-2 text-lg text-muted-foreground">{config.subtitle}</p>
         <p className="mt-4 max-w-3xl text-sm text-muted-foreground md:text-base">{config.intro}</p>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <a
-            href={config.appStoreUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-lg bg-black px-4 py-3 text-sm font-medium text-white"
-          >
-            Descargar en App Store
-          </a>
-          <a
-            href={config.playStoreUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground"
-          >
-            Descargar en Google Play
-          </a>
-          <Link
-            href="/app/descargar"
-            className="rounded-lg border px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground"
-          >
-            Abrir página de descarga
-          </Link>
-        </div>
+        <AppDownloadActions
+          appStoreUrl={config.appStoreUrl}
+          playStoreUrl={config.playStoreUrl}
+        />
       </section>
 
       <section className="mt-8 grid gap-4 md:grid-cols-2">
