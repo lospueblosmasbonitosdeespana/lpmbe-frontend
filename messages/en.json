@@ -295,7 +295,8 @@
     "management": "Management",
     "login": "Enter",
     "languageLabel": "Language",
-    "appPage": "App"
+    "appPage": "App",
+    "prensa": "Press"
   },
   "appPage": {
     "badge": "Official app",
@@ -1564,5 +1565,31 @@
     "sending": "Sending...",
     "back": "← Back",
     "successMessage": "Your email client will open. If it does not open, please write directly to us at"
+  },
+  "pressPage": {
+    "title": "Press",
+    "intro": "Official releases, media coverage and resources for journalists.",
+    "tabReleases": "Releases",
+    "tabMedia": "Media",
+    "tabKit": "Press kit",
+    "latestOfficial": "Latest official releases",
+    "noReleases": "No releases available yet.",
+    "mediaMentions": "Coverage and articles",
+    "noMedia": "No media coverage registered yet.",
+    "readMore": "Read more →",
+    "viewAllNews": "See all news",
+    "mediaTypeNews": "News",
+    "mediaTypeEvent": "Event",
+    "mediaTypeArticle": "Article",
+    "kitTitle": "Press kit",
+    "kitDesc": "Basic resources for media and content creators.",
+    "kitLogosTitle": "Official logos",
+    "kitLogosDesc": "Versions for digital and print publication.",
+    "kitDataTitle": "Key data",
+    "kitDataDesc": "Institutional information and updated reference figures.",
+    "kitContactTitle": "Press contact",
+    "kitContactDesc": "Request interviews, additional materials and media assistance.",
+    "goContact": "Go to contact",
+    "backHome": "← Back to home"
   }
 }

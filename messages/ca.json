@@ -295,7 +295,8 @@
     "management": "Gestió",
     "login": "Entrar",
     "languageLabel": "Llengua",
-    "appPage": "App"
+    "appPage": "App",
+    "prensa": "Premsa"
   },
   "appPage": {
     "badge": "App oficial",
@@ -1564,5 +1565,31 @@
     "sending": "Enviant...",
     "back": "← Enrere",
     "successMessage": "El vostre client de correu s'obrirà. Si no s'obre, si us plau, escriviu-nos directament a"
+  },
+  "pressPage": {
+    "title": "Premsa",
+    "intro": "Comunicats oficials, aparicions als mitjans i recursos per a periodistes.",
+    "tabReleases": "Comunicats",
+    "tabMedia": "Mitjans",
+    "tabKit": "Kit de premsa",
+    "latestOfficial": "Últims comunicats oficials",
+    "noReleases": "Encara no hi ha comunicats disponibles.",
+    "mediaMentions": "Aparicions i articles",
+    "noMedia": "Encara no hi ha aparicions registrades.",
+    "readMore": "Llegir més →",
+    "viewAllNews": "Veure tota l’actualitat",
+    "mediaTypeNews": "Notícia",
+    "mediaTypeEvent": "Esdeveniment",
+    "mediaTypeArticle": "Article",
+    "kitTitle": "Kit de premsa",
+    "kitDesc": "Recursos bàsics per a mitjans i creadors de contingut.",
+    "kitLogosTitle": "Logotips oficials",
+    "kitLogosDesc": "Versions per a publicació digital i impresa.",
+    "kitDataTitle": "Dades clau",
+    "kitDataDesc": "Informació institucional i xifres de referència actualitzades.",
+    "kitContactTitle": "Contacte de premsa",
+    "kitContactDesc": "Sol·licita entrevistes, material addicional i atenció a mitjans.",
+    "goContact": "Anar a contacte",
+    "backHome": "← Tornar a l’inici"
   }
 }

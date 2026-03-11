@@ -295,7 +295,8 @@
     "management": "Verwaltung",
     "login": "Eingabe",
     "languageLabel": "Sprache",
-    "appPage": "App"
+    "appPage": "App",
+    "prensa": "Presse"
   },
   "appPage": {
     "badge": "Offizielle App",
@@ -1564,5 +1565,31 @@
     "sending": "Ich schicke...",
     "back": "← Zurück",
     "successMessage": "Ihr E-Mail-Programm wird sich öffnen. Sollte er sich nicht öffnen, schreiben Sie uns bitte direkt an"
+  },
+  "pressPage": {
+    "title": "Presse",
+    "intro": "Offizielle Mitteilungen, Medienberichte und Ressourcen für Journalisten.",
+    "tabReleases": "Mitteilungen",
+    "tabMedia": "Medien",
+    "tabKit": "Pressekit",
+    "latestOfficial": "Neueste offizielle Mitteilungen",
+    "noReleases": "Derzeit sind noch keine Mitteilungen verfügbar.",
+    "mediaMentions": "Berichte und Artikel",
+    "noMedia": "Derzeit sind noch keine Medienberichte erfasst.",
+    "readMore": "Mehr lesen →",
+    "viewAllNews": "Alle Neuigkeiten anzeigen",
+    "mediaTypeNews": "Nachricht",
+    "mediaTypeEvent": "Veranstaltung",
+    "mediaTypeArticle": "Artikel",
+    "kitTitle": "Pressekit",
+    "kitDesc": "Grundlegende Ressourcen für Medien und Content-Ersteller.",
+    "kitLogosTitle": "Offizielle Logos",
+    "kitLogosDesc": "Versionen für digitale und gedruckte Veröffentlichungen.",
+    "kitDataTitle": "Wichtige Daten",
+    "kitDataDesc": "Institutionelle Informationen und aktualisierte Referenzzahlen.",
+    "kitContactTitle": "Pressekontakt",
+    "kitContactDesc": "Fordern Sie Interviews, zusätzliches Material und Medienbetreuung an.",
+    "goContact": "Zum Kontakt",
+    "backHome": "← Zurück zur Startseite"
   }
 }

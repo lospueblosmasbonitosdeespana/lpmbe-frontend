@@ -295,7 +295,8 @@
     "management": "Gestión",
     "login": "Entrar",
     "languageLabel": "Idioma",
-    "appPage": "App"
+    "appPage": "App",
+    "prensa": "Prensa"
   },
   "appPage": {
     "badge": "App oficial",
@@ -1564,5 +1565,31 @@
     "puebloDescriptionFallback": "Información, mapa, fotos, puntos de interés y experiencias del pueblo.",
     "rutaDescriptionFallback": "Ruta turística por los pueblos más bonitos de España.",
     "mxDescriptionFallback": "Detalle de la experiencia y sus paradas."
+  },
+  "pressPage": {
+    "title": "Prensa",
+    "intro": "Comunicados oficiales, apariciones en medios y recursos para periodistas.",
+    "tabReleases": "Comunicados",
+    "tabMedia": "Medios",
+    "tabKit": "Kit de prensa",
+    "latestOfficial": "Últimos comunicados oficiales",
+    "noReleases": "Aún no hay comunicados disponibles.",
+    "mediaMentions": "Apariciones y artículos",
+    "noMedia": "Aún no hay apariciones registradas.",
+    "readMore": "Leer más →",
+    "viewAllNews": "Ver toda la actualidad",
+    "mediaTypeNews": "Noticia",
+    "mediaTypeEvent": "Evento",
+    "mediaTypeArticle": "Artículo",
+    "kitTitle": "Kit de prensa",
+    "kitDesc": "Recursos básicos para medios y creadores de contenido.",
+    "kitLogosTitle": "Logos oficiales",
+    "kitLogosDesc": "Versiones para publicación digital e impresa.",
+    "kitDataTitle": "Datos clave",
+    "kitDataDesc": "Información institucional y cifras de referencia actualizadas.",
+    "kitContactTitle": "Contacto de prensa",
+    "kitContactDesc": "Solicita entrevistas, material adicional y atención a medios.",
+    "goContact": "Ir a contacto",
+    "backHome": "← Volver al inicio"
   }
 }

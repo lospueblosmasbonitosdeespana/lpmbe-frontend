@@ -120,6 +120,7 @@ export function getNavConfig(options?: Partial<CampaignNavOptions>): NavItem[] {
           { labelKey: "noticias", href: "/noticias" },
           { labelKey: "eventos", href: "/eventos" },
           { labelKey: "articulos", href: "/articulos" },
+          { labelKey: "prensa", href: "/prensa" },
         ],
       },
     ],

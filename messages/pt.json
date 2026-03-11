@@ -295,7 +295,8 @@
     "management": "Gestão",
     "login": "Entrar",
     "languageLabel": "Língua",
-    "appPage": "App"
+    "appPage": "App",
+    "prensa": "Imprensa"
   },
   "appPage": {
     "badge": "App oficial",
@@ -1564,5 +1565,31 @@
     "sending": "Enviando...",
     "back": "← Voltar",
     "successMessage": "O seu cliente de correio eletrónico abrir-se-á. Se não abrir, escreva-nos diretamente para"
+  },
+  "pressPage": {
+    "title": "Imprensa",
+    "intro": "Comunicados oficiais, cobertura nos meios e recursos para jornalistas.",
+    "tabReleases": "Comunicados",
+    "tabMedia": "Meios",
+    "tabKit": "Kit de imprensa",
+    "latestOfficial": "Últimos comunicados oficiais",
+    "noReleases": "Ainda não existem comunicados disponíveis.",
+    "mediaMentions": "Cobertura e artigos",
+    "noMedia": "Ainda não existem menções registadas.",
+    "readMore": "Ler mais →",
+    "viewAllNews": "Ver toda a atualidade",
+    "mediaTypeNews": "Notícia",
+    "mediaTypeEvent": "Evento",
+    "mediaTypeArticle": "Artigo",
+    "kitTitle": "Kit de imprensa",
+    "kitDesc": "Recursos base para meios de comunicação e criadores de conteúdo.",
+    "kitLogosTitle": "Logótipos oficiais",
+    "kitLogosDesc": "Versões para publicação digital e impressa.",
+    "kitDataTitle": "Dados-chave",
+    "kitDataDesc": "Informação institucional e números de referência atualizados.",
+    "kitContactTitle": "Contacto de imprensa",
+    "kitContactDesc": "Peça entrevistas, materiais adicionais e apoio para meios de comunicação.",
+    "goContact": "Ir para contacto",
+    "backHome": "← Voltar ao início"
   }
 }

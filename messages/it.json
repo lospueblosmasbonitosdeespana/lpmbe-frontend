@@ -295,7 +295,8 @@
     "management": "Gestione",
     "login": "Entrare",
     "languageLabel": "Lingua",
-    "appPage": "App"
+    "appPage": "App",
+    "prensa": "Stampa"
   },
   "appPage": {
     "badge": "App ufficiale",
@@ -1564,5 +1565,31 @@
     "sending": "Invio...",
     "back": "← Indietro",
     "successMessage": "Il vostro client di posta elettronica si aprirà. Se non si apre, scriveteci direttamente a"
+  },
+  "pressPage": {
+    "title": "Stampa",
+    "intro": "Comunicati ufficiali, rassegna media e risorse per giornalisti.",
+    "tabReleases": "Comunicati",
+    "tabMedia": "Media",
+    "tabKit": "Press kit",
+    "latestOfficial": "Ultimi comunicati ufficiali",
+    "noReleases": "Non ci sono ancora comunicati disponibili.",
+    "mediaMentions": "Uscite stampa e articoli",
+    "noMedia": "Non ci sono ancora uscite media registrate.",
+    "readMore": "Leggi di più →",
+    "viewAllNews": "Vedi tutta l’attualità",
+    "mediaTypeNews": "Notizia",
+    "mediaTypeEvent": "Evento",
+    "mediaTypeArticle": "Articolo",
+    "kitTitle": "Press kit",
+    "kitDesc": "Risorse di base per media e creator di contenuti.",
+    "kitLogosTitle": "Loghi ufficiali",
+    "kitLogosDesc": "Versioni per pubblicazione digitale e stampa.",
+    "kitDataTitle": "Dati chiave",
+    "kitDataDesc": "Informazioni istituzionali e dati di riferimento aggiornati.",
+    "kitContactTitle": "Contatto stampa",
+    "kitContactDesc": "Richiedi interviste, materiali aggiuntivi e supporto media.",
+    "goContact": "Vai ai contatti",
+    "backHome": "← Torna alla home"
   }
 }
