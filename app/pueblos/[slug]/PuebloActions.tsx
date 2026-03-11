@@ -405,7 +405,7 @@ export default function PuebloActions({
                 onClick={() => setShowSuscribirseModal(true)}
               />
             )}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               <ActionButton
                 icon={<NewsIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
                 label={t("actionActualidad")}
@@ -415,12 +415,12 @@ export default function PuebloActions({
               {alertasActivasCount > 0 && (
                 <Link
                   href={`/pueblos/${puebloSlug}/alertas`}
-                  className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-amber-700 hover:bg-amber-50"
+                  className="ml-1 inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-amber-700 hover:bg-amber-50"
                   title={`Ver ${alertasActivasCount} alerta${alertasActivasCount === 1 ? "" : "s"}`}
                   aria-label={`Ver ${alertasActivasCount} alerta${alertasActivasCount === 1 ? "" : "s"}`}
                 >
-                  <AlertTriangleIcon className="h-3.5 w-3.5" />
-                  <span className="text-xs font-semibold">{alertasActivasCount}</span>
+                  <AlertTriangleIcon className="h-5 w-5" />
+                  <span className="text-sm font-semibold">{alertasActivasCount}</span>
                 </Link>
               )}
             </div>
