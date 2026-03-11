@@ -297,6 +297,16 @@
     "languageLabel": "Language",
     "appPage": "The app"
   },
+  "appPage": {
+    "badge": "Official app",
+    "downloadAppStore": "Download on the App Store",
+    "downloadGooglePlay": "Download on Google Play",
+    "alsoGooglePlay": "Also available on Google Play",
+    "alsoAppStore": "Also available on the App Store",
+    "openDownloadPage": "Open download page",
+    "qrCaption": "Scan to download",
+    "screenshotsTitle": "App screenshots"
+  },
   "footer": {
     "explore": "Explore",
     "allVillages": "All villages",

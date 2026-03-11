@@ -16,9 +16,18 @@ function getMobilePlatform(): MobilePlatform {
 export default function AppDownloadActions({
   appStoreUrl,
   playStoreUrl,
+  labels,
 }: {
   appStoreUrl: string;
   playStoreUrl: string;
+  labels: {
+    iosPrimary: string;
+    androidPrimary: string;
+    iosSecondary: string;
+    androidSecondary: string;
+    openDownloadPage: string;
+    qrCaption: string;
+  };
 }) {
   const [platform, setPlatform] = useState<MobilePlatform>("other");
   const [qrUrl, setQrUrl] = useState<string | null>(null);
@@ -34,11 +43,9 @@ export default function AppDownloadActions({
   }, []);
 
   const primaryHref = platform === "android" ? playStoreUrl : appStoreUrl;
-  const primaryLabel =
-    platform === "android" ? "Descargar en Google Play" : "Descargar en App Store";
+  const primaryLabel = platform === "android" ? labels.androidPrimary : labels.iosPrimary;
   const secondaryHref = platform === "android" ? appStoreUrl : playStoreUrl;
-  const secondaryLabel =
-    platform === "android" ? "También disponible en App Store" : "También disponible en Google Play";
+  const secondaryLabel = platform === "android" ? labels.androidSecondary : labels.iosSecondary;
 
   return (
     <div className="mt-6 grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
@@ -63,7 +70,7 @@ export default function AppDownloadActions({
           href="/app/descargar"
           className="rounded-lg border px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
-          Abrir página de descarga
+          {labels.openDownloadPage}
         </Link>
       </div>
 
@@ -77,7 +84,7 @@ export default function AppDownloadActions({
             className="h-[120px] w-[120px]"
           />
         ) : null}
-        <p className="mt-1 text-xs text-muted-foreground">Escanea para descargar</p>
+        <p className="mt-1 text-xs text-muted-foreground">{labels.qrCaption}</p>
       </div>
     </div>
   );

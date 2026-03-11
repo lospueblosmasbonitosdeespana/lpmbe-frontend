@@ -297,6 +297,16 @@
     "languageLabel": "Língua",
     "appPage": "A app"
   },
+  "appPage": {
+    "badge": "App oficial",
+    "downloadAppStore": "Transferir na App Store",
+    "downloadGooglePlay": "Transferir no Google Play",
+    "alsoGooglePlay": "Também disponível no Google Play",
+    "alsoAppStore": "Também disponível na App Store",
+    "openDownloadPage": "Abrir página de transferência",
+    "qrCaption": "Digitalize para transferir",
+    "screenshotsTitle": "Capturas da app"
+  },
   "footer": {
     "explore": "Explorar",
     "allVillages": "Todos os povos",

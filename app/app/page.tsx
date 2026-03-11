@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import { getApiUrl } from '@/lib/api';
 import AppDownloadActions from './AppDownloadActions.client';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { SUPPORTED_LOCALES, type SupportedLocale } from '@/lib/seo';
 
 const APP_STORE_URL =
   'https://apps.apple.com/es/app/los-pueblos-m%C3%A1s-bonitos-de-esp/id6755147967';
@@ -73,10 +75,14 @@ const DEFAULT_CONFIG: Required<
   playStoreUrl: PLAY_STORE_URL,
 };
 
-async function getAppWebPageConfig(): Promise<typeof DEFAULT_CONFIG> {
+async function getAppWebPageConfig(locale?: string): Promise<typeof DEFAULT_CONFIG> {
   const API_BASE = getApiUrl();
   try {
-    const res = await fetch(`${API_BASE}/home`, { cache: 'no-store' });
+    const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
+    const res = await fetch(`${API_BASE}/home${qs}`, {
+      cache: 'no-store',
+      headers: locale ? { 'Accept-Language': locale } : undefined,
+    });
     if (!res.ok) return DEFAULT_CONFIG;
     const home = await res.json();
     return { ...DEFAULT_CONFIG, ...(home?.appWebPage || {}) };
@@ -85,8 +91,20 @@ async function getAppWebPageConfig(): Promise<typeof DEFAULT_CONFIG> {
   }
 }
 
-export default async function AppLandingPage() {
-  const config = await getAppWebPageConfig();
+export default async function AppLandingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const cookieLocale = await getLocale();
+  const locale: SupportedLocale =
+    resolvedSearchParams?.lang &&
+    SUPPORTED_LOCALES.includes(resolvedSearchParams.lang as SupportedLocale)
+      ? (resolvedSearchParams.lang as SupportedLocale)
+      : (cookieLocale as SupportedLocale);
+  const t = await getTranslations({ locale, namespace: 'appPage' });
+  const config = await getAppWebPageConfig(locale);
   const screenshots = [
     config.screenshot1Url,
     config.screenshot2Url,
@@ -105,13 +123,21 @@ export default async function AppLandingPage() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 md:py-14">
       <section className="rounded-2xl border bg-card p-6 md:p-10">
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">App oficial</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-primary">{t('badge')}</p>
         <h1 className="mt-2 text-3xl font-bold md:text-4xl">{config.title}</h1>
         <p className="mt-2 text-lg text-muted-foreground">{config.subtitle}</p>
         <p className="mt-4 max-w-3xl text-sm text-muted-foreground md:text-base">{config.intro}</p>
         <AppDownloadActions
           appStoreUrl={config.appStoreUrl}
           playStoreUrl={config.playStoreUrl}
+          labels={{
+            iosPrimary: t('downloadAppStore'),
+            androidPrimary: t('downloadGooglePlay'),
+            iosSecondary: t('alsoGooglePlay'),
+            androidSecondary: t('alsoAppStore'),
+            openDownloadPage: t('openDownloadPage'),
+            qrCaption: t('qrCaption'),
+          }}
         />
       </section>
 
@@ -126,7 +152,7 @@ export default async function AppLandingPage() {
 
       {screenshots.length > 0 && (
         <section className="mt-8">
-          <h2 className="mb-4 text-xl font-semibold">Capturas de la app</h2>
+          <h2 className="mb-4 text-xl font-semibold">{t('screenshotsTitle')}</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {screenshots.map((url, index) => (
               <div key={index} className="rounded-xl border bg-card p-2">

@@ -297,6 +297,16 @@
     "languageLabel": "Langue",
     "appPage": "L'app"
   },
+  "appPage": {
+    "badge": "Application officielle",
+    "downloadAppStore": "Télécharger sur l'App Store",
+    "downloadGooglePlay": "Télécharger sur Google Play",
+    "alsoGooglePlay": "Aussi disponible sur Google Play",
+    "alsoAppStore": "Aussi disponible sur l'App Store",
+    "openDownloadPage": "Ouvrir la page de téléchargement",
+    "qrCaption": "Scannez pour télécharger",
+    "screenshotsTitle": "Captures de l'application"
+  },
   "footer": {
     "explore": "Explorer",
     "allVillages": "Tous les peuples",

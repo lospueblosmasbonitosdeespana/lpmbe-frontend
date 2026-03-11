@@ -297,6 +297,16 @@
     "languageLabel": "Llengua",
     "appPage": "L'app"
   },
+  "appPage": {
+    "badge": "App oficial",
+    "downloadAppStore": "Descarrega a l'App Store",
+    "downloadGooglePlay": "Descarrega a Google Play",
+    "alsoGooglePlay": "També disponible a Google Play",
+    "alsoAppStore": "També disponible a l'App Store",
+    "openDownloadPage": "Obrir pàgina de descàrrega",
+    "qrCaption": "Escaneja per descarregar",
+    "screenshotsTitle": "Captures de l'app"
+  },
   "footer": {
     "explore": "Explora",
     "allVillages": "Tots els pobles",
