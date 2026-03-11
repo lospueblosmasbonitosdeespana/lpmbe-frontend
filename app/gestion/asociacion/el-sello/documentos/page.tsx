@@ -7,7 +7,7 @@ import { ImageIcon, Users, FileText } from 'lucide-react';
 import type { CmsDocumento, CmsDocType } from '@/lib/cms/sello';
 import { DOC_TYPE_LABELS } from '@/lib/cms/sello';
 
-const TIPOS: CmsDocType[] = ['ESTATUTOS', 'CARTA_CALIDAD', 'REGLAMENTO', 'MEMORIA', 'OTRO'];
+const TIPOS: CmsDocType[] = ['ESTATUTOS', 'CARTA_CALIDAD', 'REGLAMENTO', 'MEMORIA', 'OTROS'];
 
 export default function DocumentosCmsPage() {
   const router = useRouter();
