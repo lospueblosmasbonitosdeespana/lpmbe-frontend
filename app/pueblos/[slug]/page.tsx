@@ -284,12 +284,13 @@ export default async function PuebloPage({
   const t = await getTranslations("puebloPage");
   const API_BASE = getApiUrl();
   const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
+  const langParam = locale ? `&lang=${encodeURIComponent(locale)}` : "";
   const [pueblo, pueblosLite, pagesRes, puntosServicioRes, alertasFeedRes] = await Promise.all([
     getPuebloBySlug(slug, locale),
     getPueblosLite(locale),
     fetch(`${API_BASE}/public/pueblos/${slug}/pages${langQs}`, { cache: "no-store" }).catch(() => null),
     fetch(`${API_BASE}/pueblos/${slug}/puntos-servicio`, { cache: "no-store" }).catch(() => null),
-    fetch(`${API_BASE}/public/notificaciones/feed?limit=200&tipos=ALERTA_PUEBLO${langQs}`, { cache: "no-store" }).catch(() => null),
+    fetch(`${API_BASE}/public/notificaciones/feed?limit=200&tipos=ALERTA_PUEBLO${langParam}`, { cache: "no-store" }).catch(() => null),
   ]);
 
   // Páginas temáticas del pueblo (contenidos temáticos) - ahora son arrays por categoría
