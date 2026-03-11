@@ -58,6 +58,26 @@ function isValidHttpUrl(value: string): boolean {
   }
 }
 
+function hasAnyExternalMediaValue(item: ExternalMediaItem): boolean {
+  return Boolean(
+    item.medio.trim() ||
+      item.titulo.trim() ||
+      item.url.trim() ||
+      item.logoUrl ||
+      item.fecha?.trim() ||
+      item.resumen?.trim(),
+  );
+}
+
+function hasAnyKitValue(item: KitItem): boolean {
+  return Boolean(
+    item.titulo.trim() ||
+      item.descripcion?.trim() ||
+      item.url?.trim() ||
+      item.imageUrl,
+  );
+}
+
 function newExternalMediaItem(): ExternalMediaItem {
   return {
     id: `media-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -155,10 +175,11 @@ export default function PrensaMediosForm() {
     () =>
       config.externalMedia.some(
         (item) =>
-          !item.medio.trim() ||
-          !item.titulo.trim() ||
-          !item.url.trim() ||
-          !isValidHttpUrl(item.url.trim()),
+          hasAnyExternalMediaValue(item) &&
+          (!item.medio.trim() ||
+            !item.titulo.trim() ||
+            !item.url.trim() ||
+            !isValidHttpUrl(item.url.trim())),
       ),
     [config.externalMedia],
   );
@@ -166,8 +187,9 @@ export default function PrensaMediosForm() {
     () =>
       config.kitItems.some(
         (item) =>
-          !item.titulo.trim() ||
-          (item.url?.trim() ? !isValidHttpUrl(item.url.trim()) : false),
+          hasAnyKitValue(item) &&
+          (!item.titulo.trim() ||
+            (item.url?.trim() ? !isValidHttpUrl(item.url.trim()) : false)),
       ),
     [config.kitItems],
   );
@@ -196,22 +218,26 @@ export default function PrensaMediosForm() {
         hiddenReleases: config.hiddenReleases
           .filter((x) => Number.isFinite(Number(x.id)))
           .map((x) => ({ type: x.type, id: Number(x.id) })),
-        externalMedia: config.externalMedia.map((item) => ({
-          ...item,
-          medio: item.medio.trim(),
-          titulo: item.titulo.trim(),
-          url: item.url.trim(),
-          fecha: item.fecha?.trim() || null,
-          resumen: item.resumen?.trim() || null,
-          logoUrl: item.logoUrl || null,
-        })),
-        kitItems: config.kitItems.map((item) => ({
-          ...item,
-          titulo: item.titulo.trim(),
-          descripcion: item.descripcion?.trim() || null,
-          url: item.url?.trim() || null,
-          imageUrl: item.imageUrl || null,
-        })),
+        externalMedia: config.externalMedia
+          .map((item) => ({
+            ...item,
+            medio: item.medio.trim(),
+            titulo: item.titulo.trim(),
+            url: item.url.trim(),
+            fecha: item.fecha?.trim() || null,
+            resumen: item.resumen?.trim() || null,
+            logoUrl: item.logoUrl || null,
+          }))
+          .filter((item) => hasAnyExternalMediaValue(item)),
+        kitItems: config.kitItems
+          .map((item) => ({
+            ...item,
+            titulo: item.titulo.trim(),
+            descripcion: item.descripcion?.trim() || null,
+            url: item.url?.trim() || null,
+            imageUrl: item.imageUrl || null,
+          }))
+          .filter((item) => hasAnyKitValue(item)),
       };
 
       if (externalMediaInvalid) {
@@ -625,7 +651,7 @@ export default function PrensaMediosForm() {
 
       <button
         onClick={save}
-        disabled={saving || externalMediaInvalid || kitInvalid}
+        disabled={saving}
         className="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
       >
         {saving ? 'Guardando...' : 'Guardar Prensa y Medios'}
