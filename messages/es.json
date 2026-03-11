@@ -294,7 +294,8 @@
     "myAccount": "Mi cuenta",
     "management": "Gestión",
     "login": "Entrar",
-    "languageLabel": "Idioma"
+    "languageLabel": "Idioma",
+    "appPage": "La app"
   },
   "footer": {
     "explore": "Explorar",
@@ -702,7 +703,7 @@
     "emptyCart": "Tu carrito está vacío",
     "continueShopping": "Seguir comprando",
     "orderSuccess": "Pedido realizado correctamente",
-    "backToShop": "Volver a la tienda",
+    "backToShop": "← Volver a la tienda",
     "heroEyebrow": "Tienda oficial",
     "heroTitle": "Productos con alma de pueblo",
     "heroDesc": "Productos oficiales de Los Pueblos Más Bonitos de España. Descubre artesanía, gastronomía y cultura de los rincones más bellos.",
@@ -816,7 +817,6 @@
     "totalTaxBase": "Total base imponible",
     "totalVat": "Total IVA",
     "totalWeight": "Peso total",
-    "backToShop": "← Volver a la tienda",
     "loadingProductError": "Error cargando producto",
     "discountApplied": "Descuento aplicado",
     "featuredBadge": "Destacado",
@@ -827,7 +827,6 @@
     "description": "Descripción",
     "quantityLabel": "Cantidad",
     "addedToCart": "✓ Añadido al carrito",
-    "addToCart": "Añadir al carrito",
     "viewCart": "Ver carrito",
     "productUnavailable": "Producto no disponible",
     "principalImage": "Principal"

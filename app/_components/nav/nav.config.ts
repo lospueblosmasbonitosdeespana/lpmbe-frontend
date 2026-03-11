@@ -78,6 +78,7 @@ export function getNavConfig(options?: Partial<CampaignNavOptions>): NavItem[] {
       {
         titleKey: "travelIdeas",
         links: [
+          { labelKey: "appPage", href: "/app" },
           { labelKey: "multiexperiencias", href: "/multiexperiencias" },
           { labelKey: "rutas", href: "/rutas" },
           { labelKey: "recursosTuristicos", href: "/recursos" },

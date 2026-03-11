@@ -24,6 +24,16 @@ export default async function AppGestionPage() {
 
       <div className="space-y-4">
         <Link
+          href="/gestion/asociacion/app/pagina-web"
+          className="block rounded-lg border border-border bg-card p-6 transition-shadow hover:shadow-md"
+        >
+          <h2 className="text-xl font-semibold">Página app en la web</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Edita el contenido público de la página /app: textos, capturas y enlaces de descarga para App Store y Google Play.
+          </p>
+        </Link>
+
+        <Link
           href="/gestion/asociacion/app/promos"
           className="block rounded-lg border border-border bg-card p-6 transition-shadow hover:shadow-md"
         >

@@ -294,7 +294,8 @@
     "myAccount": "Mein Konto",
     "management": "Verwaltung",
     "login": "Eingabe",
-    "languageLabel": "Sprache"
+    "languageLabel": "Sprache",
+    "appPage": "Die App"
   },
   "footer": {
     "explore": "Erkunden Sie",
