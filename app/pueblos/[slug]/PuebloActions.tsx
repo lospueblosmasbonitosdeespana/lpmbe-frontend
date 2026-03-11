@@ -27,6 +27,7 @@ type PuebloActionsProps = {
   semaforoCaducaEn?: string | Date | null;
   semaforoProgramado?: SemaforoProgramado | null;
   semaforoProgramadoEventos?: SemaforoProgramado[];
+  alertasActivasCount?: number;
 };
 
 type ActionBarState = "idle" | "loading" | "success" | "error";
@@ -235,6 +236,7 @@ export default function PuebloActions({
   semaforoCaducaEn,
   semaforoProgramado,
   semaforoProgramadoEventos,
+  alertasActivasCount = 0,
 }: PuebloActionsProps) {
   const t = useTranslations("pueblo");
   const locale = useLocale();
@@ -424,6 +426,20 @@ export default function PuebloActions({
                     {semaforoConfig.label}
                   </span>
                   <span className={cn("h-2 w-2 rounded-full shrink-0", semaforoConfig.dotClass)} />
+                  {alertasActivasCount > 0 && (
+                    <Link
+                      href={`/pueblos/${puebloSlug}/alertas`}
+                      className="ml-2 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold text-amber-700 hover:bg-amber-50"
+                      title={`Ver ${alertasActivasCount} alerta${alertasActivasCount === 1 ? "" : "s"}`}
+                    >
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                        <line x1="12" y1="9" x2="12" y2="13" />
+                        <line x1="12" y1="17" x2="12.01" y2="17" />
+                      </svg>
+                      {alertasActivasCount}
+                    </Link>
+                  )}
                 </div>
                 <p className="mt-0.5 text-sm text-foreground/80">
                   {semaforoMensaje?.trim() || semaforoConfig.mensajeDefault}

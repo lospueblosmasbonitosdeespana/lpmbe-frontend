@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo, memo } from "react";
+import { useState, useMemo, memo, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { AlertTriangle } from "lucide-react";
 import SemaforoBadge from "../components/pueblos/SemaforoBadge";
 import { type Pueblo, getPuebloMainPhoto } from "@/lib/api";
 import { usePuebloPhotos } from "@/app/hooks/usePuebloPhotos";
@@ -42,11 +43,13 @@ const PuebloCard = memo(function PuebloCard({
   foto,
   isPriority,
   observe,
+  alertCount,
 }: {
   pueblo: Pueblo;
   foto: string | null;
   isPriority: boolean;
   observe: (el: HTMLElement | null) => void;
+  alertCount: number;
 }) {
   const [imgError, setImgError] = useState(false);
   const showImage = foto && !imgError;
@@ -60,41 +63,58 @@ const PuebloCard = memo(function PuebloCard({
       : null);
 
   return (
-    <Link
-      href={`/pueblos/${pueblo.slug}`}
+    <article
       ref={observe}
       data-pueblo-slug={pueblo.slug}
       className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all hover:border-primary/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/50"
     >
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
-        {showImage ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            src={foto!}
-            alt={`Vista de ${pueblo.nombre}`}
-            loading={isPriority ? "eager" : "lazy"}
-            fetchPriority={isPriority ? "high" : "auto"}
-            decoding="async"
-            onError={() => setImgError(true)}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        ) : (
-          <ImagePlaceholder />
-        )}
-      </div>
+      <Link href={`/pueblos/${pueblo.slug}`} className="contents">
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+          {showImage ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={foto!}
+              alt={`Vista de ${pueblo.nombre}`}
+              loading={isPriority ? "eager" : "lazy"}
+              fetchPriority={isPriority ? "high" : "auto"}
+              decoding="async"
+              onError={() => setImgError(true)}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          ) : (
+            <ImagePlaceholder />
+          )}
+        </div>
 
-      <div className="flex flex-1 flex-col px-3 py-2">
-        <h3 className="font-display text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary">
-          {pueblo.nombre}
-        </h3>
-        <p className="mt-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-          {pueblo.provincia}, {pueblo.comunidad}
-        </p>
-        <div className="mt-auto pt-2">
+        <div className="flex flex-1 flex-col px-3 py-2">
+          <h3 className="font-display text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary">
+            {pueblo.nombre}
+          </h3>
+          <p className="mt-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+            {pueblo.provincia}, {pueblo.comunidad}
+          </p>
+        </div>
+      </Link>
+
+      <div className="mt-auto flex items-center justify-between px-3 pb-2 pt-1">
+        <div>
           <SemaforoBadge estado={estado} variant="badge" />
         </div>
+        {alertCount > 0 ? (
+          <Link
+            href={`/pueblos/${pueblo.slug}/alertas`}
+            className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-amber-600 hover:bg-amber-50"
+            title={`Ver ${alertCount} alerta${alertCount === 1 ? "" : "s"}`}
+            aria-label={`Ver ${alertCount} alerta${alertCount === 1 ? "" : "s"} de ${pueblo.nombre}`}
+          >
+            <AlertTriangle className="h-4 w-4" />
+            <span className="text-xs font-semibold">{alertCount}</span>
+          </Link>
+        ) : (
+          <span className="h-6 w-6" aria-hidden />
+        )}
       </div>
-    </Link>
+    </article>
   );
 });
 
@@ -104,6 +124,7 @@ export default function PueblosList({
   initialProvincia = "",
 }: PueblosListProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [alertCounts, setAlertCounts] = useState<Record<string, number>>({});
 
   const comunidadNorm = initialComunidad ? norm(initialComunidad) : "";
   const provinciaNorm = initialProvincia ? norm(initialProvincia) : "";
@@ -146,6 +167,38 @@ export default function PueblosList({
   const tTabs = useTranslations("tabs");
   const hasActiveFilters = comunidadNorm || provinciaNorm;
   const { photos, observe } = usePuebloPhotos(pueblosFiltrados);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAlertCounts() {
+      try {
+        const res = await fetch(
+          "/api/public/notificaciones/feed?limit=200&tipos=ALERTA_PUEBLO",
+          { cache: "no-store" },
+        );
+        if (!res.ok) return;
+        const data = await res.json().catch(() => null);
+        const feedItems = Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : []);
+        const nextCounts: Record<string, number> = {};
+
+        for (const item of feedItems) {
+          const slug = item?.pueblo?.slug;
+          if (!slug) continue;
+          nextCounts[slug] = (nextCounts[slug] ?? 0) + 1;
+        }
+
+        if (!cancelled) setAlertCounts(nextCounts);
+      } catch {
+        // Silencioso: sin alertas se mantiene vacío
+      }
+    }
+
+    loadAlertCounts();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const breadcrumbItems = [
     { label: tTabs("pueblos"), href: "/pueblos" },
@@ -240,6 +293,7 @@ export default function PueblosList({
                   foto={foto}
                   isPriority={isPriority}
                   observe={observe}
+                  alertCount={alertCounts[pueblo.slug] ?? 0}
                 />
               );
             })}

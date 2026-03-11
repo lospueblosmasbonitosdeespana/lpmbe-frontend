@@ -59,7 +59,12 @@ export default function NotificacionesList({ items }: { items: Item[] }) {
           ? (it.motivoPublico || it.contenido || "").trim() || null
           : (it.mensaje || it.contenido || it.motivoPublico || "").trim() || null;
 
-        const link = it.url || it.href || (it.id ? `/notificaciones#notif-${it.id}` : "/notificaciones");
+        const isAlertaPueblo = (it.tipo ?? "").toUpperCase() === "ALERTA_PUEBLO";
+        const link =
+          it.url ||
+          it.href ||
+          (isAlertaPueblo && it.pueblo?.slug ? `/pueblos/${it.pueblo.slug}/alertas` : null) ||
+          (it.id ? `/notificaciones#notif-${it.id}` : "/notificaciones");
         const itemId = it.id ? `notif-${it.id}` : undefined;
 
         return (

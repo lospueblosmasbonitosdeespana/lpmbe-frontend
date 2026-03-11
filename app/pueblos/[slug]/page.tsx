@@ -284,11 +284,12 @@ export default async function PuebloPage({
   const t = await getTranslations("puebloPage");
   const API_BASE = getApiUrl();
   const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
-  const [pueblo, pueblosLite, pagesRes, puntosServicioRes] = await Promise.all([
+  const [pueblo, pueblosLite, pagesRes, puntosServicioRes, alertasFeedRes] = await Promise.all([
     getPuebloBySlug(slug, locale),
     getPueblosLite(locale),
     fetch(`${API_BASE}/public/pueblos/${slug}/pages${langQs}`, { cache: "no-store" }).catch(() => null),
     fetch(`${API_BASE}/pueblos/${slug}/puntos-servicio`, { cache: "no-store" }).catch(() => null),
+    fetch(`${API_BASE}/public/notificaciones/feed?limit=200&tipos=ALERTA_PUEBLO${langQs}`, { cache: "no-store" }).catch(() => null),
   ]);
 
   // Páginas temáticas del pueblo (contenidos temáticos) - ahora son arrays por categoría
@@ -338,6 +339,19 @@ export default async function PuebloPage({
   }
 
   const rawSemaforo = (pueblo as any).semaforo;
+  let alertasActivasCount = 0;
+  if (alertasFeedRes?.ok) {
+    try {
+      const feedData = await alertasFeedRes.json();
+      const alertas = Array.isArray(feedData)
+        ? feedData
+        : (Array.isArray(feedData?.items) ? feedData.items : []);
+      alertasActivasCount = alertas.filter((item: any) => item?.pueblo?.slug === slug).length;
+    } catch {
+      // ignorar
+    }
+  }
+
   const puebloSafe: PuebloSafe = {
     id: pueblo.id,
     nombre: pueblo.nombre,
@@ -629,6 +643,7 @@ export default async function PuebloPage({
         semaforoCaducaEn={semaforoPueblo.caduca_en ?? null}
         semaforoProgramado={semaforoPueblo.programado ?? null}
         semaforoProgramadoEventos={(semaforoPueblo as any).programado_eventos_list ?? undefined}
+        alertasActivasCount={alertasActivasCount}
       />
 
       {/* RRSS DEL PUEBLO */}

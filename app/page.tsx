@@ -86,7 +86,7 @@ async function getNotifications(locale?: string): Promise<NotificationItem[]> {
     const [resNoticias, resEventos, resFeed] = await Promise.all([
       fetch(`${API_BASE}/public/noticias?limit=5${qs}`, { cache: "no-store", headers }),
       fetch(`${API_BASE}/public/eventos?limit=5${qs}`, { cache: "no-store", headers }),
-      fetch(`${API_BASE}/public/notificaciones/feed?limit=5&tipos=ALERTA,SEMAFORO${qs}`, { cache: "no-store", headers }),
+      fetch(`${API_BASE}/public/notificaciones/feed?limit=8&tipos=ALERTA,ALERTA_PUEBLO,SEMAFORO${qs}`, { cache: "no-store", headers }),
     ]);
 
     const noticias: any[] = resNoticias.ok ? await resNoticias.json().catch(() => []) : [];

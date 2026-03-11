@@ -83,6 +83,7 @@ function getItemHref(item: FeedItem): string | null {
     if (item.tipo === "NOTICIA") return `/noticias/${item.slug}`;
     if (item.tipo === "EVENTO") return `/eventos/${item.slug}`;
   }
+  if (item.tipo === "ALERTA_PUEBLO" && item.pueblo?.slug) return `/pueblos/${item.pueblo.slug}/alertas`;
   if (item.tipo === "SEMAFORO" && item.pueblo?.slug) return `/pueblos/${item.pueblo.slug}`;
   return null;
 }
