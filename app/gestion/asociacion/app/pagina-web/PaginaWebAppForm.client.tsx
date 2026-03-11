@@ -18,6 +18,9 @@ type AppWebPageConfig = {
   screenshot1Url: string | null;
   screenshot2Url: string | null;
   screenshot3Url: string | null;
+  screenshot4Url: string | null;
+  screenshot5Url: string | null;
+  screenshot6Url: string | null;
   appStoreUrl: string;
   playStoreUrl: string;
 };
@@ -38,6 +41,9 @@ const DEFAULT_CONFIG: AppWebPageConfig = {
   screenshot1Url: null,
   screenshot2Url: null,
   screenshot3Url: null,
+  screenshot4Url: null,
+  screenshot5Url: null,
+  screenshot6Url: null,
   appStoreUrl:
     'https://apps.apple.com/es/app/los-pueblos-m%C3%A1s-bonitos-de-esp/id6755147967',
   playStoreUrl:
@@ -169,28 +175,23 @@ export default function PaginaWebAppForm() {
 
       <section className="rounded-lg border p-5">
         <h2 className="mb-4 text-lg font-semibold">Capturas / fotos</h2>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Sube capturas en formato vertical de móvil. Puedes configurar hasta 6 imágenes.
+        </p>
         <div className="grid gap-4 md:grid-cols-3">
-          <R2ImageUploader
-            label="Captura 1"
-            value={config.screenshot1Url}
-            onChange={(url) => setConfig({ ...config, screenshot1Url: url })}
-            folder="app-web-page"
-            previewHeight="h-48"
-          />
-          <R2ImageUploader
-            label="Captura 2"
-            value={config.screenshot2Url}
-            onChange={(url) => setConfig({ ...config, screenshot2Url: url })}
-            folder="app-web-page"
-            previewHeight="h-48"
-          />
-          <R2ImageUploader
-            label="Captura 3"
-            value={config.screenshot3Url}
-            onChange={(url) => setConfig({ ...config, screenshot3Url: url })}
-            folder="app-web-page"
-            previewHeight="h-48"
-          />
+          {[1, 2, 3, 4, 5, 6].map((index) => {
+            const key = `screenshot${index}Url` as keyof AppWebPageConfig;
+            return (
+              <R2ImageUploader
+                key={index}
+                label={`Captura ${index}`}
+                value={config[key] as string | null}
+                onChange={(url) => setConfig({ ...config, [key]: url })}
+                folder="app-web-page"
+                previewHeight="h-72"
+              />
+            );
+          })}
         </div>
       </section>
 

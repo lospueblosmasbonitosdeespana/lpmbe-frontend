@@ -24,12 +24,33 @@ type AppWebPageConfig = {
   screenshot1Url?: string | null;
   screenshot2Url?: string | null;
   screenshot3Url?: string | null;
+  screenshot4Url?: string | null;
+  screenshot5Url?: string | null;
+  screenshot6Url?: string | null;
   appStoreUrl?: string;
   playStoreUrl?: string;
 };
 
-const DEFAULT_CONFIG: Required<Omit<AppWebPageConfig, 'screenshot1Url' | 'screenshot2Url' | 'screenshot3Url'>> &
-  Pick<AppWebPageConfig, 'screenshot1Url' | 'screenshot2Url' | 'screenshot3Url'> = {
+const DEFAULT_CONFIG: Required<
+  Omit<
+    AppWebPageConfig,
+    | 'screenshot1Url'
+    | 'screenshot2Url'
+    | 'screenshot3Url'
+    | 'screenshot4Url'
+    | 'screenshot5Url'
+    | 'screenshot6Url'
+  >
+> &
+  Pick<
+    AppWebPageConfig,
+    | 'screenshot1Url'
+    | 'screenshot2Url'
+    | 'screenshot3Url'
+    | 'screenshot4Url'
+    | 'screenshot5Url'
+    | 'screenshot6Url'
+  > = {
   title: 'La app oficial de Los Pueblos Más Bonitos de España',
   subtitle: 'Rutas, mapas y alertas para planificar tu escapada',
   intro:
@@ -45,6 +66,9 @@ const DEFAULT_CONFIG: Required<Omit<AppWebPageConfig, 'screenshot1Url' | 'screen
   screenshot1Url: null,
   screenshot2Url: null,
   screenshot3Url: null,
+  screenshot4Url: null,
+  screenshot5Url: null,
+  screenshot6Url: null,
   appStoreUrl: APP_STORE_URL,
   playStoreUrl: PLAY_STORE_URL,
 };
@@ -63,9 +87,14 @@ async function getAppWebPageConfig(): Promise<typeof DEFAULT_CONFIG> {
 
 export default async function AppLandingPage() {
   const config = await getAppWebPageConfig();
-  const screenshots = [config.screenshot1Url, config.screenshot2Url, config.screenshot3Url].filter(
-    (item): item is string => !!item,
-  );
+  const screenshots = [
+    config.screenshot1Url,
+    config.screenshot2Url,
+    config.screenshot3Url,
+    config.screenshot4Url,
+    config.screenshot5Url,
+    config.screenshot6Url,
+  ].filter((item): item is string => !!item);
   const features = [
     { title: config.feature1Title, text: config.feature1Text },
     { title: config.feature2Title, text: config.feature2Text },
@@ -118,16 +147,16 @@ export default async function AppLandingPage() {
       {screenshots.length > 0 && (
         <section className="mt-8">
           <h2 className="mb-4 text-xl font-semibold">Capturas de la app</h2>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {screenshots.map((url, index) => (
-              <div key={index} className="overflow-hidden rounded-xl border bg-card">
-                <div className="relative h-[420px] w-full">
+              <div key={index} className="rounded-xl border bg-card p-2">
+                <div className="relative mx-auto aspect-[9/19] w-full max-w-[280px] overflow-hidden rounded-lg bg-white">
                   <Image
                     src={url}
                     alt={`Captura app ${index + 1}`}
                     fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-contain"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                 </div>
               </div>
