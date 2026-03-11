@@ -306,7 +306,9 @@
     "alsoAppStore": "Also available on the App Store",
     "openDownloadPage": "Open download page",
     "qrCaption": "Scan to download",
-    "screenshotsTitle": "App screenshots"
+    "screenshotsTitle": "App screenshots",
+    "downloadTitle": "Download the official app",
+    "downloadDescription": "Choose your store to download the app of The Most Beautiful Villages of Spain."
   },
   "footer": {
     "explore": "Explore",
@@ -325,7 +327,8 @@
     "copyright": "© {year} The Most Beautiful Villages of Spain. All rights reserved.",
     "privacy": "Privacy",
     "legal": "Legal Notice",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "contactPress": "Press contact"
   },
   "actualidad": {
     "title": "News",
@@ -1590,6 +1593,7 @@
     "kitContactTitle": "Press contact",
     "kitContactDesc": "Request interviews, additional materials and media assistance.",
     "goContact": "Go to contact",
-    "backHome": "← Back to home"
+    "backHome": "← Back to home",
+    "mediaTypePress": "Press"
   }
 }

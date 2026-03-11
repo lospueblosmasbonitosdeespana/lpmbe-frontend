@@ -306,7 +306,9 @@
     "alsoAppStore": "También disponible en App Store",
     "openDownloadPage": "Abrir página de descarga",
     "qrCaption": "Escanea para descargar",
-    "screenshotsTitle": "Capturas de la app"
+    "screenshotsTitle": "Capturas de la app",
+    "downloadTitle": "Descargar app oficial",
+    "downloadDescription": "Elige tu tienda para descargar la app de Los Pueblos Más Bonitos de España."
   },
   "footer": {
     "explore": "Explorar",
@@ -325,7 +327,8 @@
     "copyright": "© {year} Los Pueblos Más Bonitos de España. Todos los derechos reservados.",
     "privacy": "Privacidad",
     "legal": "Aviso Legal",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "contactPress": "Contacto prensa"
   },
   "actualidad": {
     "title": "Actualidad",
@@ -1590,6 +1593,7 @@
     "kitContactTitle": "Contacto de prensa",
     "kitContactDesc": "Solicita entrevistas, material adicional y atención a medios.",
     "goContact": "Ir a contacto",
-    "backHome": "← Volver al inicio"
+    "backHome": "← Volver al inicio",
+    "mediaTypePress": "Medio"
   }
 }

@@ -306,7 +306,9 @@
     "alsoAppStore": "Também disponível na App Store",
     "openDownloadPage": "Abrir página de transferência",
     "qrCaption": "Digitalize para transferir",
-    "screenshotsTitle": "Capturas da app"
+    "screenshotsTitle": "Capturas da app",
+    "downloadTitle": "Transferir app oficial",
+    "downloadDescription": "Escolha a sua loja para transferir a app de As Mais Belas Aldeias de Espanha."
   },
   "footer": {
     "explore": "Explorar",
@@ -325,7 +327,8 @@
     "copyright": "© {year} As mais belas aldeias de Espanha. Todos os direitos reservados.",
     "privacy": "Privacidade",
     "legal": "Aviso legal",
-    "cookies": "Biscoitos"
+    "cookies": "Biscoitos",
+    "contactPress": "Contacto de imprensa"
   },
   "actualidad": {
     "title": "Notícias",
@@ -1590,6 +1593,7 @@
     "kitContactTitle": "Contacto de imprensa",
     "kitContactDesc": "Peça entrevistas, materiais adicionais e apoio para meios de comunicação.",
     "goContact": "Ir para contacto",
-    "backHome": "← Voltar ao início"
+    "backHome": "← Voltar ao início",
+    "mediaTypePress": "Imprensa"
   }
 }

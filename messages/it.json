@@ -306,7 +306,9 @@
     "alsoAppStore": "Disponibile anche su App Store",
     "openDownloadPage": "Apri pagina di download",
     "qrCaption": "Scansiona per scaricare",
-    "screenshotsTitle": "Screenshot dell'app"
+    "screenshotsTitle": "Screenshot dell'app",
+    "downloadTitle": "Scarica l’app ufficiale",
+    "downloadDescription": "Scegli il tuo store per scaricare l’app de I borghi più belli della Spagna."
   },
   "footer": {
     "explore": "Esplorare",
@@ -325,7 +327,8 @@
     "copyright": "© {anno} I borghi più belli della Spagna. Tutti i diritti riservati.",
     "privacy": "La privacy",
     "legal": "Avviso legale",
-    "cookies": "Biscotti"
+    "cookies": "Biscotti",
+    "contactPress": "Contatto stampa"
   },
   "actualidad": {
     "title": "Notizie",
@@ -1590,6 +1593,7 @@
     "kitContactTitle": "Contatto stampa",
     "kitContactDesc": "Richiedi interviste, materiali aggiuntivi e supporto media.",
     "goContact": "Vai ai contatti",
-    "backHome": "← Torna alla home"
+    "backHome": "← Torna alla home",
+    "mediaTypePress": "Stampa"
   }
 }

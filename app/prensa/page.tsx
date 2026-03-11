@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -16,6 +17,36 @@ type PressItem = {
   href: string;
 };
 
+type HiddenRelease = {
+  type: 'news' | 'event';
+  id: number;
+};
+
+type ExternalMediaItem = {
+  id: string;
+  medio: string;
+  titulo: string;
+  url: string;
+  logoUrl?: string | null;
+  fecha?: string | null;
+  resumen?: string | null;
+};
+
+type KitItem = {
+  id: string;
+  titulo: string;
+  descripcion?: string | null;
+  url?: string | null;
+  imageUrl?: string | null;
+};
+
+type PressPageConfig = {
+  contactEmail?: string;
+  hiddenReleases?: HiddenRelease[];
+  externalMedia?: ExternalMediaItem[];
+  kitItems?: KitItem[];
+};
+
 function PressPageContent() {
   const t = useTranslations('pressPage');
   const locale = useLocale();
@@ -24,6 +55,7 @@ function PressPageContent() {
 
   const [releases, setReleases] = useState<PressItem[]>([]);
   const [media, setMedia] = useState<PressItem[]>([]);
+  const [pressConfig, setPressConfig] = useState<PressPageConfig>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,17 +65,26 @@ function PressPageContent() {
       setLoading(true);
       try {
         const langQs = `&lang=${encodeURIComponent(locale)}`;
-        const [newsRes, eventsRes, mediaRes] = await Promise.all([
+        const [newsRes, eventsRes, mediaRes, homeRes] = await Promise.all([
           fetch(`/api/public/noticias?limit=24${langQs}`, { cache: 'no-store' }),
           fetch(`/api/public/eventos?limit=24${langQs}`, { cache: 'no-store' }),
           fetch(`/api/public/contenidos?scope=ASOCIACION&tipo=ARTICULO&limit=24${langQs}`, {
             cache: 'no-store',
           }),
+          fetch(`/api/public/home?lang=${encodeURIComponent(locale)}`, { cache: 'no-store' }),
         ]);
 
         const news = newsRes.ok ? await newsRes.json().catch(() => []) : [];
         const events = eventsRes.ok ? await eventsRes.json().catch(() => []) : [];
         const articles = mediaRes.ok ? await mediaRes.json().catch(() => []) : [];
+        const home = homeRes.ok ? await homeRes.json().catch(() => ({})) : {};
+        const currentPressConfig: PressPageConfig =
+          home?.pressPage && typeof home.pressPage === 'object' ? home.pressPage : {};
+
+        const hiddenSet = new Set(
+          (Array.isArray(currentPressConfig.hiddenReleases) ? currentPressConfig.hiddenReleases : [])
+            .map((item) => `${item?.type}:${item?.id}`),
+        );
 
         const releaseItems: PressItem[] = [
           ...(Array.isArray(news)
@@ -71,7 +112,7 @@ function PressPageContent() {
         ].sort(
           (a, b) =>
             new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime(),
-        );
+        ).filter((item) => !hiddenSet.has(`${item.type}:${item.id}`));
 
         const mediaItems: PressItem[] = (Array.isArray(articles) ? articles : [])
           .map((item: any) => ({
@@ -91,6 +132,7 @@ function PressPageContent() {
         if (!cancelled) {
           setReleases(releaseItems);
           setMedia(mediaItems);
+          setPressConfig(currentPressConfig);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -108,6 +150,12 @@ function PressPageContent() {
     event: t('mediaTypeEvent'),
     article: t('mediaTypeArticle'),
   };
+  const contactEmail =
+    pressConfig.contactEmail?.trim() || 'prensa@lospueblosmasbonitosdeespana.org';
+  const externalMedia = Array.isArray(pressConfig.externalMedia)
+    ? pressConfig.externalMedia
+    : [];
+  const kitItems = Array.isArray(pressConfig.kitItems) ? pressConfig.kitItems : [];
 
   const dateLocale =
     locale === 'es'
@@ -160,12 +208,63 @@ function PressPageContent() {
       ) : section === 'medios' ? (
         <section>
           <h2 className="mb-4 text-2xl font-semibold">{t('mediaMentions')}</h2>
-          {media.length === 0 ? (
+          {media.length === 0 && externalMedia.length === 0 ? (
             <div className="rounded-md border border-border p-6 text-muted-foreground">
               {t('noMedia')}
             </div>
           ) : (
             <div className="space-y-5">
+              {externalMedia.map((item) => (
+                <article key={`external-${item.id}`} className="rounded-lg border p-4">
+                  <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="uppercase">{t('mediaTypePress')}</span>
+                    {item.fecha && (
+                      <>
+                        <span>·</span>
+                        <span>
+                          {new Date(item.fecha).toLocaleDateString(dateLocale, {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                          })}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex items-start gap-3">
+                    {item.logoUrl && (
+                      <div className="relative h-10 w-24 shrink-0 overflow-hidden rounded bg-muted/30">
+                        <Image
+                          src={item.logoUrl}
+                          alt={item.medio || 'Medio'}
+                          fill
+                          className="object-contain p-1"
+                          sizes="96px"
+                        />
+                      </div>
+                    )}
+                    <div>
+                      <h3 className="text-xl font-semibold">{item.titulo}</h3>
+                      {item.medio ? (
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">{item.medio}</p>
+                      ) : null}
+                    </div>
+                  </div>
+                  {item.resumen && (
+                    <p className="mt-2 text-sm text-muted-foreground line-clamp-3">
+                      {stripHtml(item.resumen)}
+                    </p>
+                  )}
+                  <a
+                    className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t('readMore')}
+                  </a>
+                </article>
+              ))}
               {media.map((item) => (
                 <article key={`m-${item.id}`} className="rounded-lg border p-4">
                   <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
@@ -202,20 +301,44 @@ function PressPageContent() {
           <h2 className="mb-2 text-2xl font-semibold">{t('kitTitle')}</h2>
           <p className="mb-5 text-muted-foreground">{t('kitDesc')}</p>
           <div className="grid gap-4 md:grid-cols-3">
-            <article className="rounded-lg border p-4">
-              <h3 className="text-lg font-semibold">{t('kitLogosTitle')}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{t('kitLogosDesc')}</p>
-            </article>
-            <article className="rounded-lg border p-4">
-              <h3 className="text-lg font-semibold">{t('kitDataTitle')}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{t('kitDataDesc')}</p>
-            </article>
+            {kitItems.map((item) => (
+              <article key={item.id} className="rounded-lg border p-4">
+                {item.imageUrl ? (
+                  <div className="relative mb-3 aspect-[16/9] w-full overflow-hidden rounded-md bg-muted/30">
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.titulo}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                  </div>
+                ) : null}
+                <h3 className="text-lg font-semibold">{item.titulo}</h3>
+                {item.descripcion ? (
+                  <p className="mt-2 text-sm text-muted-foreground">{item.descripcion}</p>
+                ) : null}
+                {item.url ? (
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
+                  >
+                    {t('readMore')}
+                  </a>
+                ) : null}
+              </article>
+            ))}
             <article className="rounded-lg border p-4">
               <h3 className="text-lg font-semibold">{t('kitContactTitle')}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{t('kitContactDesc')}</p>
-              <Link href="/contacto" className="mt-3 inline-block text-sm font-medium text-primary hover:underline">
-                {t('goContact')}
-              </Link>
+              <a
+                href={`mailto:${contactEmail}`}
+                className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
+              >
+                {contactEmail}
+              </a>
             </article>
           </div>
         </section>

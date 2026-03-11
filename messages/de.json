@@ -306,7 +306,9 @@
     "alsoAppStore": "Auch im App Store verfügbar",
     "openDownloadPage": "Download-Seite öffnen",
     "qrCaption": "Zum Download scannen",
-    "screenshotsTitle": "App-Screenshots"
+    "screenshotsTitle": "App-Screenshots",
+    "downloadTitle": "Offizielle App herunterladen",
+    "downloadDescription": "Wählen Sie Ihren Store, um die App der schönsten Dörfer Spaniens herunterzuladen."
   },
   "footer": {
     "explore": "Erkunden Sie",
@@ -325,7 +327,8 @@
     "copyright": "© {Jahr} Die schönsten Dörfer Spaniens. Alle Rechte vorbehalten.",
     "privacy": "Datenschutz",
     "legal": "Rechtlicher Hinweis",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "contactPress": "Pressekontakt"
   },
   "actualidad": {
     "title": "Nachrichten",
@@ -1590,6 +1593,7 @@
     "kitContactTitle": "Pressekontakt",
     "kitContactDesc": "Fordern Sie Interviews, zusätzliches Material und Medienbetreuung an.",
     "goContact": "Zum Kontakt",
-    "backHome": "← Zurück zur Startseite"
+    "backHome": "← Zurück zur Startseite",
+    "mediaTypePress": "Presse"
   }
 }

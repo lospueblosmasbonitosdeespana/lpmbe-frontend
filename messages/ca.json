@@ -306,7 +306,9 @@
     "alsoAppStore": "També disponible a l'App Store",
     "openDownloadPage": "Obrir pàgina de descàrrega",
     "qrCaption": "Escaneja per descarregar",
-    "screenshotsTitle": "Captures de l'app"
+    "screenshotsTitle": "Captures de l'app",
+    "downloadTitle": "Descarrega l’app oficial",
+    "downloadDescription": "Tria la teva botiga per descarregar l’app dels Pobles Més Bonics d’Espanya."
   },
   "footer": {
     "explore": "Explora",
@@ -325,7 +327,8 @@
     "copyright": "© {any} Els pobles més bonics d'Espanya. Tots els drets reservats.",
     "privacy": "Privacitat",
     "legal": "Avís legal",
-    "cookies": "Galetes"
+    "cookies": "Galetes",
+    "contactPress": "Contacte de premsa"
   },
   "actualidad": {
     "title": "Esdeveniments actuals",
@@ -1590,6 +1593,7 @@
     "kitContactTitle": "Contacte de premsa",
     "kitContactDesc": "Sol·licita entrevistes, material addicional i atenció a mitjans.",
     "goContact": "Anar a contacte",
-    "backHome": "← Tornar a l’inici"
+    "backHome": "← Tornar a l’inici",
+    "mediaTypePress": "Premsa"
   }
 }

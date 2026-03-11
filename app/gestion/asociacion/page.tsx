@@ -81,6 +81,12 @@ const ACCESOS = [
     icon: <IconApp />,
   },
   {
+    href: '/gestion/asociacion/prensa-medios',
+    title: 'Prensa y Medios',
+    description: 'Gestiona comunicados visibles en prensa, medios externos y kit de prensa',
+    icon: <IconContenidos />,
+  },
+  {
     href: '/gestion/asociacion/newsletters',
     title: 'Newsletters',
     description: 'Ediciones (PDF, Canva) y suscriptores',
