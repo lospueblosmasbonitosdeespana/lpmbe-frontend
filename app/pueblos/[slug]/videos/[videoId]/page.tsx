@@ -117,6 +117,7 @@ export default async function VideoWatchPage({
     contentUrl: watchUrl,
     embedUrl,
     url: pageUrl,
+    uploadDate: (video as { createdAt?: string }).createdAt ?? "2024-01-01",
     publisher: {
       "@type": "Organization",
       name: "Los Pueblos Más Bonitos de España",

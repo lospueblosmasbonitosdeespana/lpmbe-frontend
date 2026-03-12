@@ -613,6 +613,7 @@ export default async function PuebloPage({
         embedUrl,
         contentUrl: `https://www.youtube.com/watch?v=${videoId}`,
         thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+        uploadDate: (v as { createdAt?: string }).createdAt ?? "2024-01-01",
       };
     })
     .filter(Boolean);
