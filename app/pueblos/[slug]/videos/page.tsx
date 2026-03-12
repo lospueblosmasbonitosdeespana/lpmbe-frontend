@@ -13,21 +13,22 @@ type Video = {
 };
 
 function extractYoutubeEmbedUrl(url: string): string {
-  // youtube.com/watch?v=ID
   const watchMatch = url.match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
-  if (watchMatch) {
-    return `https://www.youtube.com/embed/${watchMatch[1]}`;
-  }
-  // youtu.be/ID
+  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
   const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
-  if (shortMatch) {
-    return `https://www.youtube.com/embed/${shortMatch[1]}`;
-  }
-  // Ya es embed
-  if (url.includes("/embed/")) {
-    return url;
-  }
+  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+  if (url.includes("/embed/")) return url;
   return url;
+}
+
+function extractYoutubeId(url: string): string | null {
+  const watchMatch = url.match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
+  if (watchMatch) return watchMatch[1];
+  const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+  if (shortMatch) return shortMatch[1];
+  const embedMatch = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+  if (embedMatch) return embedMatch[1];
+  return null;
 }
 
 export default async function VideosPuebloPage({
@@ -101,11 +102,10 @@ export default async function VideosPuebloPage({
           <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
             {videos.map((video) => {
               const embedUrl = extractYoutubeEmbedUrl(video.url);
-              return (
-                <div
-                  key={video.id}
-                  className="overflow-hidden rounded-lg border border-border bg-card"
-                >
+              const ytId = extractYoutubeId(video.url);
+              const watchHref = ytId ? `/pueblos/${pueblo.slug}/videos/${ytId}` : null;
+              const card = (
+                <>
                   <div className="aspect-video w-full bg-muted">
                     <iframe
                       src={embedUrl}
@@ -118,6 +118,20 @@ export default async function VideosPuebloPage({
                   <div className="p-4">
                     <h2 className="font-semibold">{video.titulo}</h2>
                   </div>
+                </>
+              );
+              return (
+                <div
+                  key={video.id}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  {watchHref ? (
+                    <Link href={watchHref} className="block">
+                      {card}
+                    </Link>
+                  ) : (
+                    card
+                  )}
                 </div>
               );
             })}

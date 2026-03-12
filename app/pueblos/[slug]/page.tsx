@@ -602,14 +602,17 @@ export default async function PuebloPage({
   const videoLds = (puebloSafe.videos ?? [])
     .map((v: { id: number; titulo?: string; url?: string }) => {
       const { embedUrl, videoId } = getEmbedUrlAndId(v.url || "");
-      if (!embedUrl || !embedUrl.includes("youtube")) return null;
+      if (!embedUrl || !embedUrl.includes("youtube") || !videoId) return null;
+      const watchPageUrl = `${base}/pueblos/${puebloSafe.slug}/videos/${videoId}`;
       return {
         "@context": "https://schema.org",
         "@type": "VideoObject" as const,
         name: (v.titulo || puebloSafe.nombre).slice(0, 200),
+        description: `Video sobre ${puebloSafe.nombre}: ${(v.titulo || "").slice(0, 200)}`,
+        url: watchPageUrl,
         embedUrl,
-        thumbnailUrl: videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : undefined,
-        uploadDate: undefined,
+        contentUrl: `https://www.youtube.com/watch?v=${videoId}`,
+        thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
       };
     })
     .filter(Boolean);
@@ -1040,8 +1043,13 @@ export default async function PuebloPage({
                   if (v.url.includes("/embed/")) return v.url;
                   return v.url;
                 })();
-                return (
-                  <div key={v.id} className="overflow-hidden rounded-xl border border-border bg-card">
+                const ytId = (() => {
+                  const m = v.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+                  return m ? m[1] : null;
+                })();
+                const watchHref = ytId ? `/pueblos/${puebloSafe.slug}/videos/${ytId}` : null;
+                const card = (
+                  <>
                     <div className="aspect-video w-full bg-muted">
                       <iframe
                         src={embedUrl}
@@ -1054,6 +1062,11 @@ export default async function PuebloPage({
                     <div className="p-4">
                       <h3 className="font-semibold">{v.titulo}</h3>
                     </div>
+                  </>
+                );
+                return (
+                  <div key={v.id} className="overflow-hidden rounded-xl border border-border bg-card">
+                    {watchHref ? <Link href={watchHref} className="block">{card}</Link> : card}
                   </div>
                 );
               })}
