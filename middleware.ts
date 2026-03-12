@@ -93,10 +93,6 @@ export function middleware(req: NextRequest): NextResponse {
   // Legacy login/proxy (informe noindex GSC).
   if (pathname === '/wp-login.php' || pathname === '/proxy-oauth') return permanentRedirect(req, '/entrar');
 
-  // POI por ID numérico (legacy WP): redirigir a la ficha del pueblo.
-  const poisNumericMatch = pathname.match(/^\/pueblos\/([^/]+)\/pois\/(\d+)$/);
-  if (poisNumericMatch) return permanentRedirect(req, `/pueblos/${poisNumericMatch[1]}`);
-
   // ficha-pueblo con segmento (ej. /ficha-pueblo/[lpbe_link_semaforo]): enlace roto con placeholder → listado
   if (pathname.startsWith('/ficha-pueblo/')) return permanentRedirect(req, '/pueblos');
 

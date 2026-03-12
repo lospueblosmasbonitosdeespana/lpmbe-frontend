@@ -39,6 +39,7 @@ const CATEGORIA_DESCRIPTIONS: Record<string, string> = {
 
 type Poi = {
   id: number;
+  slug?: string | null;
   nombre: string;
   descripcion_corta: string | null;
   descripcion_larga: string | null;
@@ -133,12 +134,12 @@ export default async function CategoriaPage({
                     name: poi.nombre,
                     type: CATEGORIA_TEMATICA_LABELS[categoriaKey] ?? label,
                     description:
-                      poi.descripcion_corta ??
                       poi.descripcion_larga?.replace(/<[^>]*>/g, "").slice(0, 120) ??
+                      poi.descripcion_corta ??
                       "",
                     image: poi.foto,
                     rotation: poi.rotation,
-                    href: `/pueblos/${slug}/pois/${poi.id}`,
+                    href: `/pueblos/${slug}/pois/${poi.slug || poi.id}`,
                   }))}
                 />
               )}

@@ -194,10 +194,10 @@ export default async function LugaresPage({
                 id: poi.id,
                 name: poi.nombre,
                 type: CATEGORIA_TEMATICA_LABELS[poi.categoriaTematica ?? ""] ?? poi.categoria ?? "Punto de interés",
-                description: poi.descripcion_corta ?? poi.descripcion_larga?.replace(/<[^>]*>/g, "").slice(0, 120) ?? "",
+                description: poi.descripcion_larga?.replace(/<[^>]*>/g, "").slice(0, 120) ?? poi.descripcion_corta ?? "",
                 image: poi.foto,
                 rotation: poi.rotation,
-                href: `/pueblos/${slug}/pois/${poi.id}`,
+                href: `/pueblos/${slug}/pois/${poi.slug || poi.id}`,
               }))}
               />
             </>

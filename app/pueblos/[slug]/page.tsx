@@ -70,6 +70,7 @@ function getPhotoAlt(foto: FotoPueblo, puebloNombre: string, provincia: string, 
 
 type Poi = {
   id: number;
+  slug?: string | null;
   nombre: string;
   descripcion_corta: string | null;
   descripcion_larga: string | null;
@@ -82,6 +83,16 @@ type Poi = {
   orden: number | null;
   puebloId: number;
 };
+
+function getPoiHref(puebloSlug: string, poi: Poi): string {
+  return `/pueblos/${puebloSlug}/pois/${poi.slug || poi.id}`;
+}
+
+function getPoiCardDescription(poi: Poi): string {
+  const longText = poi.descripcion_larga?.replace(/<[^>]*>/g, "").trim() ?? "";
+  if (longText) return longText.slice(0, 120);
+  return poi.descripcion_corta?.trim() ?? "";
+}
 
 /** Normaliza etiqueta para lookup: mayúsculas, sin acentos, espacios simples */
 function normalizeStatEtiqueta(s: string): string {
@@ -776,10 +787,10 @@ export default async function PuebloPage({
             id: poi.id,
             name: poi.nombre,
             type: (CATEGORIA_TEMATICA_LABELS[poi.categoriaTematica ?? ""] ?? poi.categoria ?? t("pointOfInterest")),
-            description: poi.descripcion_corta ?? poi.descripcion_larga?.replace(/<[^>]*>/g, "").slice(0, 120) ?? "",
+            description: getPoiCardDescription(poi),
             image: poi.foto,
             rotation: poi.rotation,
-            href: `/pueblos/${puebloSafe.slug}/pois/${poi.id}`,
+            href: getPoiHref(puebloSafe.slug, poi),
           }))}
         />
       )}
@@ -799,7 +810,7 @@ export default async function PuebloPage({
             {poisMultiexperiencia.map((poi: Poi) => (
               <Link
                 key={`${puebloSafe.id}-mx-${poi.id}`}
-                href={`/pueblos/${puebloSafe.slug}/pois/${poi.id}`}
+                href={getPoiHref(puebloSafe.slug, poi)}
                 style={{
                   border: "1px solid #ddd",
                   borderRadius: "8px",
@@ -887,7 +898,7 @@ export default async function PuebloPage({
             {poisOtros.map((poi: Poi) => (
               <Link
                 key={`${puebloSafe.id}-otros-${poi.id}`}
-                href={`/pueblos/${puebloSafe.slug}/pois/${poi.id}`}
+                href={getPoiHref(puebloSafe.slug, poi)}
                 className="flex flex-col overflow-hidden rounded-lg border border-border dark:border-border bg-card no-underline text-inherit transition-shadow hover:shadow-md"
               >
                 {poi.foto ? (
@@ -942,7 +953,7 @@ export default async function PuebloPage({
             title: t("categoryNature"),
             description: t("categoryNatureDesc"),
             items: [
-              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "NATURALEZA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
+              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "NATURALEZA").map((p: Poi) => ({ title: p.nombre, href: getPoiHref(puebloSafe.slug, p) }))),
               ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "NATURALEZA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
               ...(paginasPorCategoria["NATURALEZA"] ?? []).map((p) => ({ title: p.titulo, href: `/pueblos/${puebloSafe.slug}/categoria/naturaleza` })),
             ],
@@ -953,7 +964,7 @@ export default async function PuebloPage({
             title: t("categoryCulture"),
             description: t("categoryCultureDesc"),
             items: [
-              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "CULTURA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
+              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "CULTURA").map((p: Poi) => ({ title: p.nombre, href: getPoiHref(puebloSafe.slug, p) }))),
               ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "CULTURA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
               ...(paginasPorCategoria["CULTURA"] ?? []).map((p) => ({ title: p.titulo, href: `/pueblos/${puebloSafe.slug}/categoria/cultura` })),
             ],
@@ -964,7 +975,7 @@ export default async function PuebloPage({
             title: t("categoryFamily"),
             description: t("categoryFamilyDesc"),
             items: [
-              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "EN_FAMILIA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
+              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "EN_FAMILIA").map((p: Poi) => ({ title: p.nombre, href: getPoiHref(puebloSafe.slug, p) }))),
               ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "EN_FAMILIA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
               ...(paginasPorCategoria["EN_FAMILIA"] ?? []).map((p) => ({ title: p.titulo, href: `/pueblos/${puebloSafe.slug}/categoria/en-familia` })),
             ],
@@ -975,7 +986,7 @@ export default async function PuebloPage({
             title: t("categoryHeritage"),
             description: t("categoryHeritageDesc"),
             items: [
-              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "PATRIMONIO").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
+              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "PATRIMONIO").map((p: Poi) => ({ title: p.nombre, href: getPoiHref(puebloSafe.slug, p) }))),
               ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "PATRIMONIO").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
               ...(paginasPorCategoria["PATRIMONIO"] ?? []).map((p) => ({ title: p.titulo, href: `/pueblos/${puebloSafe.slug}/categoria/patrimonio` })),
             ],
@@ -986,7 +997,7 @@ export default async function PuebloPage({
             title: t("categoryPetfriendly"),
             description: t("categoryPetfriendlyDesc"),
             items: [
-              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "PETFRIENDLY").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
+              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "PETFRIENDLY").map((p: Poi) => ({ title: p.nombre, href: getPoiHref(puebloSafe.slug, p) }))),
               ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "PETFRIENDLY").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
               ...(paginasPorCategoria["PETFRIENDLY"] ?? []).map((p) => ({ title: p.titulo, href: `/pueblos/${puebloSafe.slug}/categoria/petfriendly` })),
             ],
@@ -997,7 +1008,7 @@ export default async function PuebloPage({
             title: t("categoryGastronomy"),
             description: t("categoryGastronomyDesc"),
             items: [
-              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "GASTRONOMIA").map((p: Poi) => ({ title: p.nombre, href: `/pueblos/${puebloSafe.slug}/pois/${p.id}` }))),
+              ...(poisPOI.filter((p: Poi) => (p.categoriaTematica ?? "").toUpperCase() === "GASTRONOMIA").map((p: Poi) => ({ title: p.nombre, href: getPoiHref(puebloSafe.slug, p) }))),
               ...(puebloSafe.multiexperiencias ?? []).filter((m) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === "GASTRONOMIA").map((m) => ({ title: m.multiexperiencia.titulo, href: `/pueblos/${puebloSafe.slug}/experiencias/${m.multiexperiencia.slug}` })),
               ...(paginasPorCategoria["GASTRONOMIA"] ?? []).map((p) => ({ title: p.titulo, href: `/pueblos/${puebloSafe.slug}/categoria/gastronomia` })),
             ],

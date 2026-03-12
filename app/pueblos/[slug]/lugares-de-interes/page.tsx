@@ -88,6 +88,7 @@ export default async function LugaresDeInteresPage({
 
   const pointsForList = pois.map((poi: {
     id: number;
+    slug?: string | null;
     nombre: string;
     descripcion_corta?: string | null;
     descripcion_larga?: string | null;
@@ -96,7 +97,7 @@ export default async function LugaresDeInteresPage({
     categoriaTematica?: string | null;
     categoria?: string | null;
   }) => {
-    const descLimpia = (poi.descripcion_corta ?? poi.descripcion_larga?.replace(/<[^>]*>/g, "") ?? "").trim();
+    const descLimpia = (poi.descripcion_larga?.replace(/<[^>]*>/g, "") ?? poi.descripcion_corta ?? "").trim();
     return {
       id: poi.id,
       name: poi.nombre,
@@ -104,7 +105,7 @@ export default async function LugaresDeInteresPage({
       description: descLimpia || "",
       image: poi.foto,
       rotation: poi.rotation,
-      href: `/pueblos/${slug}/pois/${poi.id}`,
+      href: `/pueblos/${slug}/pois/${poi.slug || poi.id}`,
     };
   });
 
