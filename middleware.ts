@@ -7,8 +7,31 @@ import {
   LEGACY_NOTICIA_ID_REDIRECTS,
   LEGACY_SEMAFORO_ID_REDIRECTS,
 } from './lib/legacy-seo.generated';
+import {
+  SEARCH_CONSOLE_404_PATHS,
+  SEARCH_CONSOLE_404_WITH_QUERY,
+} from './lib/search-console-legacy-404';
 
 const EXACT_GONE_PATHS = new Set(LEGACY_EXACT_GONE_PATHS);
+const CANONICAL_DROP_QUERY_PARAMS = new Set([
+  'lang',
+  'fbclid',
+  'gclid',
+  'tblci',
+  'ref',
+  'at_medium',
+  'at_campaign',
+  'at_platform',
+  'at_creation',
+  '_thumbnail_id',
+  'channel',
+  'amp',
+  'app',
+  'add-to-cart',
+  'add_to_wishlist',
+  'remove_item',
+  '_wpnonce',
+]);
 
 function normalizePath(pathname: string): string {
   const lower = pathname.toLowerCase();
@@ -22,23 +45,48 @@ function permanentRedirect(req: NextRequest, destination: string): NextResponse 
   return NextResponse.redirect(url, 308);
 }
 
-function gone(): NextResponse {
-  return new NextResponse('Gone', {
-    status: 410,
-    headers: {
-      'X-Robots-Tag': 'noindex, nofollow',
-      'Cache-Control': 'public, max-age=3600',
-    },
+function normalizeSearchParams(searchParams: URLSearchParams): string {
+  const entries = [...searchParams.entries()].sort((a, b) => {
+    if (a[0] === b[0]) return a[1].localeCompare(b[1]);
+    return a[0].localeCompare(b[0]);
   });
+  return new URLSearchParams(entries).toString();
+}
+
+function stripNonCanonicalParams(req: NextRequest): NextResponse | null {
+  const url = req.nextUrl.clone();
+  let changed = false;
+  const keys = [...url.searchParams.keys()];
+
+  for (const key of keys) {
+    const lowerKey = key.toLowerCase();
+    if (lowerKey.startsWith('utm_') || CANONICAL_DROP_QUERY_PARAMS.has(lowerKey)) {
+      url.searchParams.delete(key);
+      changed = true;
+    }
+  }
+
+  if (!changed) return null;
+  return NextResponse.redirect(url, 308);
 }
 
 export function middleware(req: NextRequest): NextResponse {
   const pathname = normalizePath(req.nextUrl.pathname);
+  const normalizedSearch = normalizeSearchParams(req.nextUrl.searchParams);
+  const pathWithQuery = normalizedSearch ? `${pathname}?${normalizedSearch}` : pathname;
   const idLugar = req.nextUrl.searchParams.get('id_lugar');
   const idPublicacion = req.nextUrl.searchParams.get('id_publicacion');
 
   // /app es una ruta activa para redireccion inteligente a stores.
   if (pathname === '/app') return NextResponse.next();
+
+  // URLs reportadas por Search Console como 404/Gone: enviar a home.
+  if (
+    SEARCH_CONSOLE_404_PATHS.has(pathname) ||
+    SEARCH_CONSOLE_404_WITH_QUERY.has(pathWithQuery)
+  ) {
+    return permanentRedirect(req, '/');
+  }
 
   // Casos legacy con querystring (WP antiguo)
   if (pathname === '/ficha-pueblo' && idLugar) {
@@ -58,12 +106,16 @@ export function middleware(req: NextRequest): NextResponse {
     if (target) return permanentRedirect(req, target);
   }
 
+  // Eliminar query params de tracking/legacy para consolidar canónicas.
+  const strippedParamsRedirect = stripNonCanonicalParams(req);
+  if (strippedParamsRedirect) return strippedParamsRedirect;
+
   // Redirecciones legacy con equivalente actual.
   const redirectTarget = LEGACY_DIRECT_REDIRECTS[pathname];
   if (redirectTarget) return permanentRedirect(req, redirectTarget);
 
-  // URLs antiguas sin reemplazo: responder 410 para desindexado limpio.
-  if (EXACT_GONE_PATHS.has(pathname)) return gone();
+  // URLs antiguas sin reemplazo: redirigir a home para evitar 404/410 en el rastreo.
+  if (EXACT_GONE_PATHS.has(pathname)) return permanentRedirect(req, '/');
 
   return NextResponse.next();
 }
