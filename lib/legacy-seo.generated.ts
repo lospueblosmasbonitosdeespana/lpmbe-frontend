@@ -3,6 +3,13 @@
  * Objetivo: recuperar SEO de URLs legacy (redirect) y limpiar basura (410 Gone).
  */
 
+import {
+  LEGACY_FICHA_ID_REDIRECTS,
+  LEGACY_SEMAFORO_ID_REDIRECTS,
+} from './legacy-seo-id-redirects.generated';
+
+export { LEGACY_FICHA_ID_REDIRECTS, LEGACY_SEMAFORO_ID_REDIRECTS };
+
 export const LEGACY_DIRECT_REDIRECTS: Record<string, string> = {
   '/ainsa': '/pueblos/ainsa',
   '/ainsa-3': '/pueblos/ainsa',
@@ -68,21 +75,6 @@ export const LEGACY_DIRECT_REDIRECTS: Record<string, string> = {
   '/suscripcion-newsletter': '/newsletter',
   '/tiendapueblos': '/tienda',
   '/tiendapueblos/inicio/42-guia-2021.html': '/tienda',
-};
-export const LEGACY_FICHA_ID_REDIRECTS: Record<string, string> = {
-  '113': '/pueblos/banos-de-la-encina',
-  '36': '/pueblos/vilafames',
-  '39': '/pueblos/almagro',
-  '76': '/pueblos/briones',
-  '93': '/pueblos/nijar',
-};
-export const LEGACY_SEMAFORO_ID_REDIRECTS: Record<string, string> = {
-  '12': '/pueblos/calaceite',
-  '19': '/pueblos/rubielos-de-mora',
-  '38': '/pueblos/anento',
-  '56': '/pueblos/capileira',
-  '59': '/pueblos/fornalutx',
-  '93': '/pueblos/nijar',
 };
 export const LEGACY_EXPERIENCIAS_ID_REDIRECTS: Record<string, string> = {
   '130': '/pueblos/el-burgo-de-osma',
