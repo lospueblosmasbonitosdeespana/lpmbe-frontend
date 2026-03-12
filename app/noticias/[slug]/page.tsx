@@ -59,18 +59,20 @@ export async function generateMetadata({
 
   const description = noticia.resumen ?? '';
 
-  const path = `/noticias/${slug}`;
+  // Path sin barra final; canonical absoluta única para que Google no elija otra variante.
+  const path = `/noticias/${String(slug).replace(/\/$/, '')}`;
+  const canonicalUrl = getCanonicalUrl(path);
   return {
     title: `${noticia.titulo} | Los Pueblos Más Bonitos de España`,
     description: description || undefined,
     alternates: {
-      canonical: getCanonicalUrl(path),
+      canonical: canonicalUrl,
       languages: getLocaleAlternates(path),
     },
     openGraph: {
       title: noticia.titulo,
       description: description || undefined,
-      url: getCanonicalUrl(path),
+      url: canonicalUrl,
       images: noticia.coverUrl ? [{ url: noticia.coverUrl }] : [],
     },
     twitter: {

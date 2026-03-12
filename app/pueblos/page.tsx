@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPueblosLite } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, getOGLocale, pathForLocale, type SupportedLocale } from "@/lib/seo";
+import { DEFAULT_LOCALE, getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
 import PueblosList from "./PueblosList";
 
 // 🔒 Evita SSG / paths raros
@@ -13,13 +13,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = "/pueblos";
   const title = t("pueblosListTitle");
   const description = t("pueblosListDescription");
-  // Canonical en ruta relativa para que Next resuelva con metadataBase y no herede "/" del layout
-  const canonicalPath = pathForLocale(path, locale);
+  // Canonical absoluta única (siempre URL por defecto) para que Google no elija otra variante.
+  const canonicalUrl = getCanonicalUrl(path, DEFAULT_LOCALE);
   return {
     title,
     description,
     alternates: {
-      canonical: canonicalPath,
+      canonical: canonicalUrl,
       languages: getLocaleAlternates(path),
     },
     openGraph: {
