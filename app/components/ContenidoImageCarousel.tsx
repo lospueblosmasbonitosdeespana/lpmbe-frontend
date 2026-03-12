@@ -40,7 +40,7 @@ export default function ContenidoImageCarousel({ images, alt }: Props) {
             <button
               type="button"
               onClick={prev}
-              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/55 px-3 py-2 text-white hover:bg-black/70"
+              className="absolute left-3 top-1/2 z-[3] -translate-y-1/2 rounded-full bg-black/65 px-3 py-2 text-xl leading-none text-white shadow-md hover:bg-black/80"
               aria-label="Imagen anterior"
             >
               ‹
@@ -48,7 +48,7 @@ export default function ContenidoImageCarousel({ images, alt }: Props) {
             <button
               type="button"
               onClick={next}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/55 px-3 py-2 text-white hover:bg-black/70"
+              className="absolute right-3 top-1/2 z-[3] -translate-y-1/2 rounded-full bg-black/65 px-3 py-2 text-xl leading-none text-white shadow-md hover:bg-black/80"
               aria-label="Imagen siguiente"
             >
               ›
