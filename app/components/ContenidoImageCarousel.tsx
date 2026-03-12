@@ -21,13 +21,18 @@ export default function ContenidoImageCarousel({ images, alt }: Props) {
 
   return (
     <div className="max-w-[900px] mx-auto mb-12">
-      <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-muted">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted">
+        <img
+          src={validImages[index]}
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl brightness-75 saturate-125"
+        />
         <img
           src={validImages[index]}
           alt={`${alt} (${index + 1}/${validImages.length})`}
-          className="h-full w-full object-cover"
+          className="relative z-[1] h-full w-full object-contain p-3 md:p-4"
           width={900}
-          height={563}
+          height={675}
         />
 
         {validImages.length > 1 && (

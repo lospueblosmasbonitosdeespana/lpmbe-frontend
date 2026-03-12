@@ -8,6 +8,7 @@ type CoverPickerProps = {
   buttonLabel?: string;
   buttonLabelWithFile?: string;
   clearLabel?: string;
+  currentLabel?: string;
 };
 
 export default function CoverPicker({
@@ -16,6 +17,7 @@ export default function CoverPicker({
   buttonLabel,
   buttonLabelWithFile,
   clearLabel,
+  currentLabel,
 }: CoverPickerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -96,7 +98,7 @@ export default function CoverPicker({
 
       {!selectedFile && currentCoverUrl && (
         <div className="mt-2 text-sm text-gray-600">
-          <p>Portada actual:</p>
+          <p>{currentLabel ?? 'Portada actual:'}</p>
           <div className="mt-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img

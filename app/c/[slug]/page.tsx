@@ -308,6 +308,15 @@ export default async function ContenidoPage({
 
   // Contenido (noticias, eventos, páginas CMS) — titulo/contenidoMd ya vienen en el idioma pedido (API ?lang=)
   const contenido = page.data;
+  const galleryUrls = Array.isArray(contenido.galleryUrls) ? contenido.galleryUrls : [];
+  const headerImages = Array.from(
+    new Set(
+      [contenido.coverUrl, ...galleryUrls]
+        .map((u) => (u || '').trim())
+        .filter(Boolean)
+        .slice(0, 3),
+    ),
+  );
   const fechaPublicacion = contenido.publishedAt ?? contenido.createdAt;
   const fechaPublicacionFormateada = fechaPublicacion ? formatDateTimeEs(fechaPublicacion, locale) : '';
   const esEvento = contenido.tipo === 'EVENTO';
@@ -324,12 +333,10 @@ export default async function ContenidoPage({
   return (
     <main className="px-5 py-10 md:py-[40px]">
       <article>
-        {Array.isArray(contenido.galleryUrls) && contenido.galleryUrls.length > 0 ? (
-          <ContenidoImageCarousel images={contenido.galleryUrls} alt={contenido.titulo} />
+        {headerImages.length > 1 ? (
+          <ContenidoImageCarousel images={headerImages} alt={contenido.titulo} />
         ) : (
-          contenido.coverUrl && contenido.coverUrl.trim() && (
-            <SmartCoverImage src={contenido.coverUrl.trim()} alt={contenido.titulo} />
-          )
+          headerImages[0] && <SmartCoverImage src={headerImages[0]} alt={contenido.titulo} />
         )}
 
         <div className="max-w-[720px] mx-auto px-5">

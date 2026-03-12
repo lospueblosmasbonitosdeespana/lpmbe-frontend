@@ -242,6 +242,14 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
   }
 
   const isPaginaTematica = String(id ?? '').startsWith('page-');
+  const fotosCombinadas = Array.from(
+    new Set(
+      [coverUrl, ...(Array.isArray(galleryUrls) ? galleryUrls : [])]
+        .map((u) => (u || '').trim())
+        .filter(Boolean)
+        .slice(0, 3),
+    ),
+  );
 
   return (
     <main className="mx-auto max-w-3xl p-6">
@@ -410,6 +418,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
                       buttonLabel={`📷 Añadir foto ${idx + 1}`}
                       buttonLabelWithFile={`🖼️ Cambiar foto ${idx + 1}`}
                       clearLabel={`Quitar foto ${idx + 1}`}
+                      currentLabel={`Foto ${idx + 1} actual:`}
                       onFileSelected={(file) => {
                         setGalleryFiles((prev) => {
                           const next = [...prev];
@@ -427,6 +436,24 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
                     />
                   </div>
                 ))}
+              </div>
+              <div className="mt-3">
+                <p className="text-xs font-medium text-gray-700">
+                  Fotos cargadas: {fotosCombinadas.length}/3
+                </p>
+                {fotosCombinadas.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {fotosCombinadas.map((url, idx) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        key={`foto-combinada-${idx}`}
+                        src={url}
+                        alt={`Foto cargada ${idx + 1}`}
+                        className="h-16 w-16 rounded border bg-gray-100 object-contain p-1"
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

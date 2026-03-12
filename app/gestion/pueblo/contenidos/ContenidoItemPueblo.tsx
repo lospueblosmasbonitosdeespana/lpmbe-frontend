@@ -24,6 +24,16 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
   const [togglingPlanifica, setTogglingPlanifica] = useState(false);
   const isPaginaTematica = contenido.tipo === 'PAGINA_TEMATICA' || String(contenido.id ?? '').startsWith('page-');
   const isEvento = contenido.tipo === 'EVENTO' && !isPaginaTematica;
+  const galleryUrls = Array.isArray(contenido.galleryUrls) ? contenido.galleryUrls : [];
+  const fotosCombinadas = Array.from(
+    new Set(
+      [contenido.coverUrl, ...galleryUrls]
+        .map((u: string | null | undefined) => (u || '').trim())
+        .filter(Boolean)
+        .slice(0, 3),
+    ),
+  );
+  const portadaNorm = typeof contenido.coverUrl === 'string' ? contenido.coverUrl.trim() : '';
 
   useEffect(() => {
     fetch('/api/auth/me', { credentials: 'include' })
@@ -128,14 +138,26 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
             </div>
           )}
 
-          {contenido.coverUrl && contenido.coverUrl.trim() && (
+          {fotosCombinadas.length > 0 && (
             <div className="mt-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={contenido.coverUrl.trim()}
-                alt={contenido.titulo}
-                className="h-16 w-auto rounded object-cover"
-              />
+              <div className="mb-1 text-xs text-gray-600">
+                {fotosCombinadas.length} foto{fotosCombinadas.length === 1 ? '' : 's'} subida{fotosCombinadas.length === 1 ? '' : 's'}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {fotosCombinadas.map((url, idx) => (
+                  <div key={`thumb-${contenido.id}-${idx}`} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={url}
+                      alt={`${contenido.titulo} foto ${idx + 1}`}
+                      className="h-16 w-16 rounded border bg-gray-100 object-contain p-1"
+                    />
+                    <span className="absolute left-1 top-1 rounded bg-black/65 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                      {url === portadaNorm ? 'Portada' : `Galería ${idx + 1}`}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

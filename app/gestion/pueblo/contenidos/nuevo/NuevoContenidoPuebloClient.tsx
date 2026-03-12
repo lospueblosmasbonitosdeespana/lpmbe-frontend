@@ -393,6 +393,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
                       buttonLabel={`📷 Añadir foto ${idx + 1}`}
                       buttonLabelWithFile={`🖼️ Cambiar foto ${idx + 1}`}
                       clearLabel={`Quitar foto ${idx + 1}`}
+                    currentLabel={`Foto ${idx + 1} actual:`}
                       onFileSelected={(file) => {
                         setGalleryFiles((prev) => {
                           const next = [...prev];
