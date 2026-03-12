@@ -39,6 +39,8 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
   const [fechaFinLocal, setFechaFinLocal] = useState('');
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [galleryFiles, setGalleryFiles] = useState<Array<File | null>>([null, null, null]);
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
 
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -56,6 +58,8 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
     setResumen('');
     setContenido('');
     setCoverUrl(null);
+    setGalleryUrls([]);
+    setGalleryFiles([null, null, null]);
     setEstado('BORRADOR');
   }, [tipo, categoria]);
 
@@ -111,19 +115,40 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
     setSaving(true);
     try {
       // 1. Subir cover si existe
-      let coverUrl: string | null = null;
+      let uploadedCoverUrl: string | null = null;
+      const nextGalleryUrls = [...galleryUrls];
 
       if (coverFile) {
         try {
           const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
           const { url } = await uploadImageToR2(coverFile, 'contenidos', '/api/media/upload');
-          coverUrl = url;
+          uploadedCoverUrl = url;
         } catch (e: any) {
           setError(`Error subiendo portada: ${e?.message || 'Error desconocido'}`);
           setSaving(false);
           return;
         }
       }
+
+      for (let i = 0; i < galleryFiles.length; i++) {
+        const file = galleryFiles[i];
+        if (!file) continue;
+        try {
+          const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+          const { url } = await uploadImageToR2(file, 'contenidos', '/api/media/upload');
+          nextGalleryUrls[i] = url;
+        } catch (e: any) {
+          setError(`Error subiendo imagen ${i + 1}: ${e?.message || 'Error desconocido'}`);
+          setSaving(false);
+          return;
+        }
+      }
+
+      const normalizedGalleryUrls = nextGalleryUrls
+        .map((u) => (u || '').trim())
+        .filter(Boolean)
+        .slice(0, 3);
+      const effectiveCoverUrl = uploadedCoverUrl || coverUrl || normalizedGalleryUrls[0] || null;
 
       // 2. Si es PÁGINA, usar endpoint /admin/pages
       if (tipo === 'PAGINA') {
@@ -135,7 +160,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
           contenido: contenido,
           published: estado === 'PUBLICADA',
         };
-        if (coverUrl) payload.coverUrl = coverUrl;
+        if (effectiveCoverUrl) payload.coverUrl = effectiveCoverUrl;
 
         console.log('[POST /admin/pages] Payload:', JSON.stringify(payload, null, 2));
 
@@ -166,7 +191,8 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
         estado,
         puebloId,
       };
-      if (coverUrl) payload.coverUrl = coverUrl;
+      if (effectiveCoverUrl) payload.coverUrl = effectiveCoverUrl;
+      if (normalizedGalleryUrls.length > 0) payload.galleryUrls = normalizedGalleryUrls;
       if (estado === 'PROGRAMADA' && publishedAt) {
         payload.publishedAt = datetimeLocalToIsoUtc(publishedAt);
       }
@@ -352,6 +378,39 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
             }} 
           />
         </div>
+
+        {(tipo === 'NOTICIA' || tipo === 'EVENTO') && (
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Fotos del carrusel (máx. 3)</label>
+            <p className="text-xs text-gray-600">
+              Estas imágenes se mostrarán como carrusel en web y app.
+            </p>
+            <div className="grid gap-3 md:grid-cols-3">
+              {[0, 1, 2].map((idx) => (
+                <div key={`gallery-slot-${idx}`} className="rounded-md border p-3">
+                  <p className="mb-2 text-xs font-medium text-gray-700">Imagen {idx + 1}</p>
+                  <CoverPicker
+                    currentCoverUrl={galleryUrls[idx] ?? null}
+                    onFileSelected={(file) => {
+                      setGalleryFiles((prev) => {
+                        const next = [...prev];
+                        next[idx] = file;
+                        return next;
+                      });
+                      if (file === null) {
+                        setGalleryUrls((prev) => {
+                          const next = [...prev];
+                          next[idx] = '';
+                          return next;
+                        });
+                      }
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* SISTEMA DE 3 MODOS: Editor, HTML, Vista previa */}
         <div className="space-y-2">

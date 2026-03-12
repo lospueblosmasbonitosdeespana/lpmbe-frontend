@@ -23,7 +23,17 @@ type ActualidadPuebloClientProps = {
   puebloNombre: string;
   puebloSlug: string;
   tipo?: string;
+  modo?: string;
 };
+const NEWS_VISIBLE_DAYS = 30;
+
+function isOlderThanDays(value?: string | null, days = NEWS_VISIBLE_DAYS): boolean {
+  if (!value) return false;
+  const ts = new Date(value).getTime();
+  if (Number.isNaN(ts)) return false;
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  return ts < cutoff;
+}
 
 function procesarContenidos(contenidos: Contenido[]) {
   const ahora = new Date();
@@ -55,6 +65,21 @@ function procesarContenidos(contenidos: Contenido[]) {
     if (!pa || !pb) return 0;
     return new Date(pb).getTime() - new Date(pa).getTime();
   });
+  const noticiasActivas = noticiasOrdenadas.filter((n) => !isOlderThanDays(n.publishedAt ?? n.createdAt ?? null));
+  const noticiasAnteriores = noticiasOrdenadas.filter((n) => isOlderThanDays(n.publishedAt ?? n.createdAt ?? null));
+
+  const eventosAnteriores = eventos
+    .filter((e) => {
+      const fin = e.fechaFin ?? e.fechaInicio;
+      if (!fin) return false;
+      return new Date(fin) < ahora;
+    })
+    .sort((a, b) => {
+      const fa = a.fechaInicio ? new Date(a.fechaInicio) : null;
+      const fb = b.fechaInicio ? new Date(b.fechaInicio) : null;
+      if (!fa || !fb) return 0;
+      return fb.getTime() - fa.getTime();
+    });
 
   const articulosOrdenados = [...articulos].sort((a, b) => {
     const pa = a.publishedAt ?? a.createdAt ?? '';
@@ -64,8 +89,10 @@ function procesarContenidos(contenidos: Contenido[]) {
   });
 
   return {
-    noticias: noticiasOrdenadas,
-    eventos: eventosActivos,
+    noticiasActivas,
+    noticiasAnteriores,
+    eventosActivos,
+    eventosAnteriores,
     articulos: articulosOrdenados,
   };
 }
@@ -147,6 +174,7 @@ export default function ActualidadPuebloClient({
   puebloNombre,
   puebloSlug,
   tipo,
+  modo,
 }: ActualidadPuebloClientProps) {
   const [items, setItems] = useState<Contenido[]>([]);
   const [loading, setLoading] = useState(true);
@@ -182,21 +210,22 @@ export default function ActualidadPuebloClient({
     };
   }, [puebloId]);
 
-  const { noticias, eventos, articulos } = useMemo(
+  const { noticiasActivas, noticiasAnteriores, eventosActivos, eventosAnteriores, articulos } = useMemo(
     () => procesarContenidos(items),
     [items]
   );
 
   const baseUrl = `/pueblos/${puebloSlug}/actualidad`;
 
-  const verMasNoticias = noticias.length > LIMIT_RESUMEN;
-  const verMasEventos = eventos.length > LIMIT_RESUMEN;
+  const verMasNoticias = noticiasActivas.length > LIMIT_RESUMEN;
+  const verMasEventos = eventosActivos.length > LIMIT_RESUMEN;
   const verMasArticulos = articulos.length > LIMIT_RESUMEN;
+  const isArchivoMode = modo === 'ARCHIVO';
 
   // Vista filtrada por tipo
   if (tipo && ['NOTICIA', 'EVENTO', 'ARTICULO'].includes(tipo)) {
     const list =
-      tipo === 'NOTICIA' ? noticias : tipo === 'EVENTO' ? eventos : articulos;
+      tipo === 'NOTICIA' ? noticiasActivas : tipo === 'EVENTO' ? eventosActivos : articulos;
     const tituloSeccion =
       tipo === 'NOTICIA'
         ? 'Noticias'
@@ -248,9 +277,67 @@ export default function ActualidadPuebloClient({
     );
   }
 
+  // Vista archivo: noticias + eventos anteriores
+  if (isArchivoMode) {
+    const hayArchivo = noticiasAnteriores.length > 0 || eventosAnteriores.length > 0;
+    return (
+      <main className="mx-auto max-w-4xl px-6 py-10">
+        <div className="mb-8">
+          <Link
+            href={baseUrl}
+            className="text-sm text-gray-600 hover:underline mb-4 inline-block"
+          >
+            ← Volver a Actualidad
+          </Link>
+          <h1 className="text-4xl font-semibold">
+            Archivo · {puebloNombre}
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Noticias y eventos anteriores de {puebloNombre}
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="text-gray-600">Cargando...</div>
+        ) : !hayArchivo ? (
+          <div className="rounded-md border p-6 text-gray-600">
+            No hay noticias ni eventos anteriores.
+          </div>
+        ) : (
+          <div className="space-y-10">
+            <section>
+              <h2 className="text-xl font-semibold mb-4">Noticias anteriores</h2>
+              {noticiasAnteriores.length === 0 ? (
+                <p className="text-gray-500">No hay noticias anteriores.</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {noticiasAnteriores.map((item) => (
+                    <TarjetaContenido key={`na-${item.id}`} item={item} esEvento={false} />
+                  ))}
+                </div>
+              )}
+            </section>
+            <section>
+              <h2 className="text-xl font-semibold mb-4">Eventos anteriores</h2>
+              {eventosAnteriores.length === 0 ? (
+                <p className="text-gray-500">No hay eventos anteriores.</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {eventosAnteriores.map((item) => (
+                    <TarjetaContenido key={`ea-${item.id}`} item={item} esEvento />
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        )}
+      </main>
+    );
+  }
+
   // Vista principal: 3 secciones con 3 tarjetas cada una
-  const noticiasMostrar = noticias.slice(0, LIMIT_RESUMEN);
-  const eventosMostrar = eventos.slice(0, LIMIT_RESUMEN);
+  const noticiasMostrar = noticiasActivas.slice(0, LIMIT_RESUMEN);
+  const eventosMostrar = eventosActivos.slice(0, LIMIT_RESUMEN);
   const articulosMostrar = articulos.slice(0, LIMIT_RESUMEN);
   const hayContenido =
     noticiasMostrar.length > 0 ||
@@ -370,7 +457,7 @@ export default function ActualidadPuebloClient({
       {!loading && (
         <div className="mt-12 text-center">
           <Link
-            href={`/pueblos/${puebloSlug}/archivo`}
+            href={`${baseUrl}?modo=ARCHIVO`}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-400 transition"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

@@ -9,6 +9,7 @@ import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
 import { getCanonicalUrl, getLocaleAlternates } from '@/lib/seo';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
+import ContenidoImageCarousel from '@/app/components/ContenidoImageCarousel';
 
 const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'] as const;
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
@@ -95,6 +96,7 @@ type Contenido = {
   resumen?: string;
   contenidoMd?: string;
   coverUrl?: string;
+  galleryUrls?: string[];
   tipo: string;
   estado: string;
   publishedAt?: string;
@@ -200,7 +202,10 @@ export async function generateMetadata({
       : page.type === 'static' && page.data.contenido
         ? plainDescription(page.data.contenido)
         : '';
-  const coverUrl = page.type === 'contenido' ? page.data.coverUrl : undefined;
+  const coverUrl =
+    page.type === 'contenido'
+      ? (page.data.coverUrl || page.data.galleryUrls?.[0])
+      : undefined;
 
   const path = `/c/${slug}`;
   return {
@@ -319,8 +324,12 @@ export default async function ContenidoPage({
   return (
     <main className="px-5 py-10 md:py-[40px]">
       <article>
-        {contenido.coverUrl && contenido.coverUrl.trim() && (
-          <SmartCoverImage src={contenido.coverUrl.trim()} alt={contenido.titulo} />
+        {Array.isArray(contenido.galleryUrls) && contenido.galleryUrls.length > 0 ? (
+          <ContenidoImageCarousel images={contenido.galleryUrls} alt={contenido.titulo} />
+        ) : (
+          contenido.coverUrl && contenido.coverUrl.trim() && (
+            <SmartCoverImage src={contenido.coverUrl.trim()} alt={contenido.titulo} />
+          )
         )}
 
         <div className="max-w-[720px] mx-auto px-5">

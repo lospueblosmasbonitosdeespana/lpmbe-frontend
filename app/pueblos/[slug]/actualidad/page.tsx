@@ -30,10 +30,10 @@ export default async function ActualidadPuebloPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ tipo?: string }>;
+  searchParams: Promise<{ tipo?: string; modo?: string }>;
 }) {
   const { slug } = await params;
-  const { tipo } = await searchParams;
+  const { tipo, modo } = await searchParams;
   const pueblo = await fetchPueblo(slug);
 
   if (!pueblo) {
@@ -46,6 +46,7 @@ export default async function ActualidadPuebloPage({
       puebloNombre={pueblo.nombre}
       puebloSlug={pueblo.slug}
       tipo={tipo}
+      modo={modo}
     />
   );
 }

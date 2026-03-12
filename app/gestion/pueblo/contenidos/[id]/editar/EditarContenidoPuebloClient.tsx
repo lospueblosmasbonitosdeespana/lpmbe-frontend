@@ -36,6 +36,8 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
   const [fechaFinLocal, setFechaFinLocal] = useState('');
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [galleryFiles, setGalleryFiles] = useState<Array<File | null>>([null, null, null]);
   const [editorMode, setEditorMode] = useState<EditorMode>('edit');
   const [ocultoEnPlanifica, setOcultoEnPlanifica] = useState(false);
   const [rol, setRol] = useState<string | null>(null);
@@ -61,6 +63,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
         setContenidoMd(data.contenidoMd ?? '');
         setEstado(data.estado ?? 'BORRADOR');
         setCoverUrl(data.coverUrl ?? null);
+        setGalleryUrls(Array.isArray(data.galleryUrls) ? data.galleryUrls.slice(0, 3) : []);
 
         if (data.publishedAt) {
           setPublishedAt(toDatetimeLocal(data.publishedAt));
@@ -136,6 +139,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
     try {
       // 1. Subir cover si existe
       let newCoverUrl: string | null = coverUrl;
+      const nextGalleryUrls = [...galleryUrls];
 
       if (coverFile) {
         try {
@@ -149,6 +153,28 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
         }
       }
 
+      for (let i = 0; i < galleryFiles.length; i++) {
+        const file = galleryFiles[i];
+        if (!file) continue;
+        try {
+          const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+          const { url } = await uploadImageToR2(file, 'contenidos', '/api/media/upload');
+          nextGalleryUrls[i] = url;
+        } catch (e: any) {
+          setError(`Error subiendo imagen ${i + 1}: ${e?.message || 'Error desconocido'}`);
+          setSaving(false);
+          return;
+        }
+      }
+
+      const normalizedGalleryUrls = nextGalleryUrls
+        .map((u) => (u || '').trim())
+        .filter(Boolean)
+        .slice(0, 3);
+      if (!newCoverUrl && normalizedGalleryUrls.length > 0) {
+        newCoverUrl = normalizedGalleryUrls[0];
+      }
+
       // 2. Actualizar contenido
       const payload: any = {
         tipo,
@@ -158,6 +184,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
         estado,
       };
       if (newCoverUrl) payload.coverUrl = newCoverUrl;
+      payload.galleryUrls = normalizedGalleryUrls;
       if (estado === 'PROGRAMADA' && publishedAt) {
         payload.publishedAt = datetimeLocalToIsoUtc(publishedAt);
       }
@@ -366,6 +393,39 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
             </div>
           )}
         </div>
+
+        {!isPaginaTematica && (tipo === 'NOTICIA' || tipo === 'EVENTO') && (
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Fotos del carrusel (máx. 3)</label>
+            <p className="text-xs text-gray-600">
+              Estas imágenes se mostrarán como carrusel en web y app.
+            </p>
+            <div className="grid gap-3 md:grid-cols-3">
+              {[0, 1, 2].map((idx) => (
+                <div key={`gallery-slot-${idx}`} className="rounded-md border p-3">
+                  <p className="mb-2 text-xs font-medium text-gray-700">Imagen {idx + 1}</p>
+                  <CoverPicker
+                    currentCoverUrl={galleryUrls[idx] ?? null}
+                    onFileSelected={(file) => {
+                      setGalleryFiles((prev) => {
+                        const next = [...prev];
+                        next[idx] = file;
+                        return next;
+                      });
+                      if (file === null) {
+                        setGalleryUrls((prev) => {
+                          const next = [...prev];
+                          next[idx] = '';
+                          return next;
+                        });
+                      }
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* SISTEMA DE 3 MODOS: Editor TipTap, HTML directo, Vista previa */}
         <div className="space-y-2">
