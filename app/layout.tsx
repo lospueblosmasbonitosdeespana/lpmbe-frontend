@@ -22,16 +22,23 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: DEFAULT_DESCRIPTION,
+  icons: {
+    icon: [
+      { url: "/brand/logo-lpbe-1.png", sizes: "48x48", type: "image/png" },
+      { url: "/brand/logo-lpbe-1.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/brand/logo-lpbe-1.png",
+  },
   openGraph: {
     siteName: SITE_NAME,
     locale: "es_ES",
     type: "website",
     description: DEFAULT_DESCRIPTION,
-    images: [{ url: `${baseUrl}/logo.png`, width: 512, height: 512, alt: SITE_NAME }],
+    images: [{ url: `${baseUrl}/brand/logo-lpbe-1.png`, width: 512, height: 512, alt: SITE_NAME }],
   },
   twitter: {
     card: "summary_large_image",
-    images: [`${baseUrl}/logo.png`],
+    images: [`${baseUrl}/brand/logo-lpbe-1.png`],
   },
   alternates: {
     canonical: "/",
@@ -61,7 +68,7 @@ export default async function RootLayout({
     "@type": "Organization",
     name: SITE_NAME,
     url: getBaseUrl(),
-    logo: `${getBaseUrl()}/logo.png`,
+    logo: `${getBaseUrl()}/brand/logo-lpbe-1.png`,
     sameAs: [
       "https://www.facebook.com/lospueblosmasbonitos",
       "https://www.instagram.com/lospueblosmasbonitosdeespana",
