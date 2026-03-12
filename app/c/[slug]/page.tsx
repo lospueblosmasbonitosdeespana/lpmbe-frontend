@@ -206,6 +206,7 @@ export async function generateMetadata({
   return {
     title: `${titulo} | Los Pueblos Más Bonitos de España`,
     description: description || undefined,
+    robots: { index: true, follow: true },
     alternates: {
       canonical: getCanonicalUrl(path),
       languages: getLocaleAlternates(path),

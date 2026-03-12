@@ -16,6 +16,7 @@ const EXACT_GONE_PATHS = new Set(LEGACY_EXACT_GONE_PATHS);
 const CANONICAL_DROP_QUERY_PARAMS = new Set([
   'lang',
   'fbclid',
+  'fb_comment_id',
   'gclid',
   'tblci',
   'ref',
@@ -85,6 +86,12 @@ export function middleware(req: NextRequest): NextResponse {
   if (pathname.startsWith('/wp-content/') || pathname.startsWith('/wp-includes/')) return permanentRedirect(req, '/');
   if (pathname === '/noticias-y-eventos') return permanentRedirect(req, '/actualidad');
   if (/^\/noticias-y-eventos\/\d+$/.test(pathname)) return permanentRedirect(req, '/actualidad');
+  // WP date archives (informe noindex GSC): /2025/07, /2026/01/19, etc.
+  if (/^\/20(25|26)\/\d{2}(\/\d{2})?$/.test(pathname)) return permanentRedirect(req, '/actualidad');
+  // WP category (informe noindex GSC): /category/office, etc.
+  if (pathname.startsWith('/category/')) return permanentRedirect(req, '/tienda');
+  // Legacy login/proxy (informe noindex GSC).
+  if (pathname === '/wp-login.php' || pathname === '/proxy-oauth') return permanentRedirect(req, '/entrar');
 
   // POI por ID numérico (legacy WP): redirigir a la ficha del pueblo.
   const poisNumericMatch = pathname.match(/^\/pueblos\/([^/]+)\/pois\/(\d+)$/);

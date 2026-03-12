@@ -44,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       fetchSlugs('/rutas'),
       fetchSlugs('/public/noticias?limit=1000'),
       fetchSlugs('/public/eventos?limit=1000'),
-      fetchSlugs('/public/contenidos?limit=1000'),
+      fetchSlugs('/public/contenidos?limit=2000'),
       fetchSlugs('/semana-santa/pueblos', 'pueblo.slug'),
     ]);
 
@@ -92,9 +92,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const pueblos = puebloSlugs.map((s) => entry(`/pueblos/${s}`, 0.9, 'weekly'));
   const rutas = rutaSlugs.map((s) => entry(`/rutas/${s}`, 0.8, 'weekly'));
-  const noticias = noticiaSlugs.map((s) => entry(`/noticias/${s}`, 0.6, 'monthly'));
-  const eventos = eventoSlugs.map((s) => entry(`/eventos/${s}`, 0.6, 'monthly'));
-  const contenidos = contenidoSlugs.map((s) => entry(`/c/${s}`, 0.5, 'monthly'));
+  // Noticias, eventos y contenidos /c/ (lo que publican alcaldes): prioridad alta para que Google indexe
+  const noticias = noticiaSlugs.map((s) => entry(`/noticias/${s}`, 0.75, 'weekly'));
+  const eventos = eventoSlugs.map((s) => entry(`/eventos/${s}`, 0.75, 'weekly'));
+  const contenidos = contenidoSlugs.map((s) => entry(`/c/${s}`, 0.7, 'weekly'));
   const semanaSanta = semanaSantaPueblos.map((s) => entry(`/planifica/semana-santa/pueblo/${s}`, 0.6, 'weekly'));
 
   return [...staticPages, ...pueblos, ...rutas, ...noticias, ...eventos, ...contenidos, ...semanaSanta];
