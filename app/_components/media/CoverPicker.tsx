@@ -5,9 +5,18 @@ import { useRef, useState } from 'react';
 type CoverPickerProps = {
   currentCoverUrl?: string | null;
   onFileSelected: (file: File | null) => void;
+  buttonLabel?: string;
+  buttonLabelWithFile?: string;
+  clearLabel?: string;
 };
 
-export default function CoverPicker({ currentCoverUrl, onFileSelected }: CoverPickerProps) {
+export default function CoverPicker({
+  currentCoverUrl,
+  onFileSelected,
+  buttonLabel,
+  buttonLabelWithFile,
+  clearLabel,
+}: CoverPickerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -47,7 +56,9 @@ export default function CoverPicker({ currentCoverUrl, onFileSelected }: CoverPi
         onClick={handleClick}
         className="rounded border px-4 py-2 text-sm hover:bg-gray-50 transition"
       >
-        {hasFile ? '🖼️ Cambiar portada' : '📷 Insertar portada'}
+        {hasFile
+          ? (buttonLabelWithFile ?? '🖼️ Cambiar portada')
+          : (buttonLabel ?? '📷 Insertar portada')}
       </button>
 
       <input
@@ -76,7 +87,7 @@ export default function CoverPicker({ currentCoverUrl, onFileSelected }: CoverPi
                 onClick={handleClear}
                 className="mt-2 block text-sm text-red-600 hover:underline"
               >
-                Quitar portada
+                {clearLabel ?? 'Quitar portada'}
               </button>
             </div>
           )}

@@ -370,9 +370,13 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
           </div>
         )}
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Foto de portada</label>
-          <CoverPicker onFileSelected={(file) => setCoverFile(file)} />
+        <div className="space-y-3">
+          <label className="block text-sm font-medium">Foto de portada y galería (máx. 3)</label>
+          <CoverPicker
+            buttonLabel="📷 Añadir portada"
+            buttonLabelWithFile="🖼️ Cambiar portada"
+            onFileSelected={(file) => setCoverFile(file)}
+          />
           
           {/* Preview de portada existente */}
           {coverUrl && coverUrl.trim() && (
@@ -392,40 +396,41 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
               </button>
             </div>
           )}
-        </div>
-
-        {!isPaginaTematica && (tipo === 'NOTICIA' || tipo === 'EVENTO') && (
-          <div className="space-y-2">
-            <label className="block text-sm font-medium">Fotos del carrusel (máx. 3)</label>
-            <p className="text-xs text-gray-600">
-              Estas imágenes se mostrarán como carrusel en web y app.
-            </p>
-            <div className="grid gap-3 md:grid-cols-3">
-              {[0, 1, 2].map((idx) => (
-                <div key={`gallery-slot-${idx}`} className="rounded-md border p-3">
-                  <p className="mb-2 text-xs font-medium text-gray-700">Imagen {idx + 1}</p>
-                  <CoverPicker
-                    currentCoverUrl={galleryUrls[idx] ?? null}
-                    onFileSelected={(file) => {
-                      setGalleryFiles((prev) => {
-                        const next = [...prev];
-                        next[idx] = file;
-                        return next;
-                      });
-                      if (file === null) {
-                        setGalleryUrls((prev) => {
+          {!isPaginaTematica && (tipo === 'NOTICIA' || tipo === 'EVENTO') && (
+            <div className="rounded-md border border-gray-200 bg-gray-50 p-3">
+              <p className="mb-2 text-xs text-gray-700">
+                Galería: añade hasta 3 fotos. Se verán en carrusel en web y app.
+              </p>
+              <div className="grid gap-3 md:grid-cols-3">
+                {[0, 1, 2].map((idx) => (
+                  <div key={`gallery-slot-${idx}`} className="rounded-md border bg-white p-3">
+                    <p className="mb-2 text-xs font-medium text-gray-700">Foto {idx + 1}</p>
+                    <CoverPicker
+                      currentCoverUrl={galleryUrls[idx] ?? null}
+                      buttonLabel={`📷 Añadir foto ${idx + 1}`}
+                      buttonLabelWithFile={`🖼️ Cambiar foto ${idx + 1}`}
+                      clearLabel={`Quitar foto ${idx + 1}`}
+                      onFileSelected={(file) => {
+                        setGalleryFiles((prev) => {
                           const next = [...prev];
-                          next[idx] = '';
+                          next[idx] = file;
                           return next;
                         });
-                      }
-                    }}
-                  />
-                </div>
-              ))}
+                        if (file === null) {
+                          setGalleryUrls((prev) => {
+                            const next = [...prev];
+                            next[idx] = '';
+                            return next;
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* SISTEMA DE 3 MODOS: Editor TipTap, HTML directo, Vista previa */}
         <div className="space-y-2">
