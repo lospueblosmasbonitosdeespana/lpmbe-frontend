@@ -20,8 +20,6 @@ export default function robots(): MetadataRoute.Robots {
           '/cuenta/',
           '/gestion/',
           '/colaborador/',
-          '/entrar',
-          '/registro',
           '/recuperar/',
           '/checkout/',
           '/validador/',
