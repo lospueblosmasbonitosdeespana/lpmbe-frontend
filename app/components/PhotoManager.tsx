@@ -69,13 +69,22 @@ function SortablePhotoRow({
   index,
   onRotate,
   onDelete,
+  onUpdateAlt,
 }: {
   photo: any;
   index: number;
   onRotate: (id: number | string) => void;
   onDelete: (id: number | string) => void;
+  onUpdateAlt?: (id: number | string, alt: string) => Promise<void>;
 }) {
+  const [editingAlt, setEditingAlt] = useState(false);
+  const [altValue, setAltValue] = useState(photo.altText ?? "");
+  const isLegacy = String(photo.id).startsWith("legacy-");
   const id = photo.id;
+
+  useEffect(() => {
+    if (!editingAlt) setAltValue(photo.altText ?? "");
+  }, [photo.altText, editingAlt]);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: String(id),
   });
@@ -135,7 +144,7 @@ function SortablePhotoRow({
       />
 
       {/* Info */}
-      <div style={{ fontSize: "14px" }}>
+      <div style={{ fontSize: "14px", minWidth: 0 }}>
         <div style={{ fontWeight: "500", marginBottom: "4px" }}>
           Foto #{index + 1}
           {index === 0 && (
@@ -172,6 +181,83 @@ function SortablePhotoRow({
         </div>
         <div style={{ color: "#6b7280", fontSize: "12px", wordBreak: "break-all" }}>
           {photo.publicUrl}
+        </div>
+        {/* Alt (SEO): mostrar y editar */}
+        <div style={{ marginTop: "6px" }}>
+          {editingAlt && !isLegacy ? (
+            <input
+              type="text"
+              value={altValue}
+              onChange={(e) => setAltValue(e.target.value)}
+              onBlur={async () => {
+                if (onUpdateAlt && altValue !== (photo.altText ?? "")) {
+                  await onUpdateAlt(photo.id, altValue);
+                }
+                setEditingAlt(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  (e.target as HTMLInputElement).blur();
+                }
+                if (e.key === "Escape") {
+                  setAltValue(photo.altText ?? "");
+                  setEditingAlt(false);
+                }
+              }}
+              placeholder="Descripción (alt) para SEO"
+              style={{
+                width: "100%",
+                padding: "4px 8px",
+                fontSize: "12px",
+                border: "1px solid #94a3b8",
+                borderRadius: "4px",
+              }}
+              autoFocus
+            />
+          ) : (
+            <div style={{ fontSize: "12px", color: "#64748b" }}>
+              {photo.altText ? (
+                <>
+                  <span title="Alt (SEO)">📝 {photo.altText}</span>
+                  {!isLegacy && onUpdateAlt && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingAlt(true)}
+                      style={{
+                        marginLeft: "6px",
+                        background: "none",
+                        border: "none",
+                        color: "#2563eb",
+                        cursor: "pointer",
+                        fontSize: "11px",
+                        textDecoration: "underline",
+                      }}
+                    >
+                      Editar
+                    </button>
+                  )}
+                </>
+              ) : (
+                !isLegacy &&
+                onUpdateAlt && (
+                  <button
+                    type="button"
+                    onClick={() => setEditingAlt(true)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "#64748b",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      textDecoration: "underline",
+                    }}
+                  >
+                    + Añadir descripción (alt) para SEO
+                  </button>
+                )
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -219,6 +305,7 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadAlt, setUploadAlt] = useState("");
   const rotationCacheRef = useRef<Map<string, number>>(new Map());
 
   const sensors = useSensors(
@@ -292,7 +379,7 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
           publicUrl: f.url ?? f.publicUrl,
           order: Number(f.order ?? f.orden ?? 999),
           activo: f.activo,
-          altText: f.altText ?? null,
+          altText: f.alt ?? f.altText ?? null,
           rotation,
         };
       });
@@ -344,7 +431,10 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
       const attachRes = await fetch(attachEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: uploadedUrl }),
+        body: JSON.stringify({
+          url: uploadedUrl,
+          ...(uploadAlt?.trim() && { alt: uploadAlt.trim() }),
+        }),
         credentials: "include",
       });
 
@@ -356,8 +446,9 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
       // Recargar lista
       await loadPhotos();
 
-      // Reset input
+      // Reset input y campo alt
       e.target.value = "";
+      setUploadAlt("");
     } catch (e: any) {
       setError(e?.message ?? "Error subiendo foto");
     } finally {
@@ -491,6 +582,26 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
     }
   }
 
+  // Actualizar alt (SEO) de una foto
+  async function handleUpdateAlt(fotoId: number | string, alt: string) {
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/fotos/${fotoId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ alt: alt.trim() || null }),
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error ?? `Error actualizando alt (${res.status})`);
+      }
+      await loadPhotos();
+    } catch (e: any) {
+      setError(e?.message ?? "Error guardando descripción");
+    }
+  }
+
   // Rotar foto 90 grados (AUTOSAVE inmediato, igual que pueblo)
   async function handleRotate(fotoId: number | string) {
     setError(null);
@@ -583,7 +694,25 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
         <h3 style={{ margin: "0 0 10px 0", fontSize: "18px", fontWeight: "600" }}>
           Fotos
         </h3>
-        
+        <p style={{ margin: "0 0 10px 0", fontSize: "13px", color: "#6b7280" }}>
+          Descripción (alt) para SEO: opcional. Mejora accesibilidad y posicionamiento en Google.
+        </p>
+        <div style={{ marginBottom: "10px", maxWidth: "400px" }}>
+          <input
+            type="text"
+            placeholder="Ej: Plaza mayor, iglesia de Santa María..."
+            value={uploadAlt}
+            onChange={(e) => setUploadAlt(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px 12px",
+              border: "1px solid #d1d5db",
+              borderRadius: "6px",
+              fontSize: "14px",
+            }}
+            aria-label="Descripción de la siguiente foto (alt, para SEO)"
+          />
+        </div>
         <label
           style={{
             display: "inline-block",
@@ -662,6 +791,7 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
                   index={index}
                   onRotate={handleRotate}
                   onDelete={handleDelete}
+                  onUpdateAlt={handleUpdateAlt}
                 />
               ))}
             </div>

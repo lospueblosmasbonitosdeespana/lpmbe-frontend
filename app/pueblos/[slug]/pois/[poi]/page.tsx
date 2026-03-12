@@ -74,7 +74,9 @@ export async function generateMetadata({
       title,
       url: getCanonicalUrl(path, locale as SupportedLocale),
       type: "article",
-      images: foto ? [{ url: foto, alt: data.nombre }] : undefined,
+      images: foto
+        ? [{ url: foto, alt: `${data.nombre}${puebloNombre ? ` · ${puebloNombre}` : ""} - Los Pueblos Más Bonitos de España` }]
+        : undefined,
     },
     twitter: {
       card: foto ? "summary_large_image" : "summary",
@@ -137,6 +139,8 @@ export default async function PoiPage({
             <img
               src={foto}
               alt={data?.nombre ?? "POI"}
+              width={800}
+              height={600}
               referrerPolicy="no-referrer"
               className="h-full w-full object-cover"
               style={{
@@ -174,6 +178,8 @@ export default async function PoiPage({
                   <img
                     src={foto.url}
                     alt={foto.alt ?? `${data.nombre} - Foto ${idx + 1}`}
+                    width={400}
+                    height={300}
                     referrerPolicy="no-referrer"
                     className="absolute inset-0 h-full w-full object-cover"
                     style={{

@@ -57,9 +57,16 @@ function cut(input: string, max = 160) {
 type FotoPueblo = {
   id: number;
   url: string;
-  orden?: number; // Orden de la foto (1, 2, 3...)
-  rotation?: number; // Grados de rotación (0, 90, 180, 270)
+  alt?: string | null;
+  orden?: number;
+  rotation?: number;
 };
+
+/** Alt SEO para fotos: incluye pueblo, provincia y marca para indexación en Google. */
+function getPhotoAlt(foto: FotoPueblo, puebloNombre: string, provincia: string, index: number): string {
+  if (foto.alt && foto.alt.trim()) return foto.alt.trim();
+  return `${puebloNombre}, ${provincia} - Los Pueblos Más Bonitos de España - Galería foto ${index + 1}`;
+}
 
 type Poi = {
   id: number;
@@ -214,7 +221,7 @@ type PuebloSafe = {
   highlights?: Array<{ orden: number; valor: string; etiqueta: string }>;
   boldestMapId?: string | null;
   foto_destacada?: string | null;
-  fotosPueblo?: Array<{ id: number; url: string }>;
+  fotosPueblo?: Array<{ id: number; url: string; alt?: string | null }>;
   pois: any[];
   eventos: any[];
   noticias: any[];
@@ -263,7 +270,20 @@ export async function generateMetadata({
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
       type: "article",
-      images: heroImage ? [{ url: heroImage, alt: baseTitle }] : undefined,
+      images: (() => {
+        const imgs: { url: string; alt: string }[] = [];
+        if (heroImage) imgs.push({ url: heroImage, alt: `${baseTitle} · Los Pueblos Más Bonitos de España` });
+        const fotos = Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [];
+        fotos.slice(0, 3).forEach((f: { url: string; alt?: string | null }, i: number) => {
+          if (f.url && f.url !== heroImage) {
+            imgs.push({
+              url: f.url,
+              alt: (f.alt && f.alt.trim()) ? f.alt : `${pueblo.nombre}, ${pueblo.provincia} - Galería · Los Pueblos Más Bonitos de España - Foto ${i + 1}`,
+            });
+          }
+        });
+        return imgs.length > 0 ? imgs : undefined;
+      })(),
     },
     twitter: {
       card: heroImage ? "summary_large_image" : "summary",
@@ -552,6 +572,7 @@ export default async function PuebloPage({
   );
 
   const base = getBaseUrl();
+  const galleryImageUrls = [heroImage, ...fotosGalería.map((f: FotoPueblo) => f.url)].filter(Boolean).slice(0, 10) as string[];
   const puebloLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "TouristAttraction",
@@ -560,7 +581,7 @@ export default async function PuebloPage({
       ? puebloSafe.descripcion.replace(/<[^>]*>/g, "").slice(0, 300)
       : undefined,
     url: `${base}/pueblos/${puebloSafe.slug}`,
-    image: heroImage || undefined,
+    image: galleryImageUrls.length > 0 ? galleryImageUrls : heroImage || undefined,
     address: {
       "@type": "PostalAddress",
       addressLocality: puebloSafe.nombre,
@@ -631,7 +652,7 @@ export default async function PuebloPage({
         eyebrow={`${puebloSafe.comunidad} / ${puebloSafe.provincia}`}
         metadata={heroMetadata}
         image={heroImage}
-        imageAlt={puebloSafe.nombre}
+        imageAlt={`${puebloSafe.nombre}, ${puebloSafe.provincia} - Uno de los pueblos más bonitos de España`}
         breadcrumbs={breadcrumbs}
         variant="fullscreen"
         overlay="gradient"
@@ -736,9 +757,9 @@ export default async function PuebloPage({
         <DetailGallerySection
           eyebrow={t("gallery")}
           title={t("galleryTitle", { nombre: puebloSafe.nombre })}
-          images={fotosGalería.map((f: FotoPueblo) => ({
+          images={fotosGalería.map((f: FotoPueblo, idx: number) => ({
             src: f.url,
-            alt: `${puebloSafe.nombre} - foto ${f.id}`,
+            alt: getPhotoAlt(f, puebloSafe.nombre, puebloSafe.provincia, idx),
             rotation: f.rotation ?? 0,
           }))}
           layout="featured"

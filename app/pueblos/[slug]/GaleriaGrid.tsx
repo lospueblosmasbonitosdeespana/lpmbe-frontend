@@ -34,6 +34,8 @@ export default function GaleriaGrid({ fotos, puebloNombre }: GaleriaGridProps) {
             <img
               src={foto.url}
               alt={`${puebloNombre} - Foto ${index + 1}`}
+              width={400}
+              height={300}
               loading="lazy"
               style={{
                 width: '100%',

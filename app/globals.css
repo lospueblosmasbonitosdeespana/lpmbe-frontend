@@ -1,4 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap");
+/* display=optional reduce CLS: evita el “swap” que cambia métricas de texto al cargar la fuente */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=optional");
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -152,6 +153,12 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* CLS: reservar espacio mínimo para imágenes en contenido (prose) hasta que carguen */
+.prose-contenido img {
+  min-height: 120px;
+  background: var(--muted);
 }
 
 /* TipTap Editor */

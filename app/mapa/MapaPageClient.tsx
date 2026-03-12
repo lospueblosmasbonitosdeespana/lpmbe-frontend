@@ -22,7 +22,9 @@ export default function MapaPageClient() {
               para ver su nombre, provincia y acceder a su ficha.
             </Muted>
           </div>
-          <PueblosMap />
+          <div className="min-h-[500px] w-full">
+            <PueblosMap />
+          </div>
         </Container>
       </Section>
     </main>

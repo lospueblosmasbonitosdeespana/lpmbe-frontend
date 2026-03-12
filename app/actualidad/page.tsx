@@ -145,7 +145,9 @@ function ActualidadContent() {
       </div>
 
       {loading ? (
-        <div className="text-muted-foreground">{t('loading')}</div>
+        <div className="min-h-[320px] flex items-center justify-center text-muted-foreground" aria-busy="true">
+          {t('loading')}
+        </div>
       ) : items.length === 0 ? (
         <div className="rounded-md border border-border p-6 text-muted-foreground">
           {t('noContent')}
@@ -180,11 +182,13 @@ function ActualidadContent() {
                 <div className="flex items-start justify-between gap-4">
                   <Link href={href} className="group flex-1 min-w-0">
                     {item.coverUrl && item.coverUrl.trim() && (
-                    <div className="mb-4 overflow-hidden rounded-lg">
+                    <div className="mb-4 overflow-hidden rounded-lg aspect-video bg-muted">
                       <img
                         src={item.coverUrl.trim()}
                         alt={item.titulo}
-                        className="h-64 w-full object-cover transition group-hover:scale-105"
+                        width={640}
+                        height={360}
+                        className="h-full w-full object-cover transition group-hover:scale-105"
                       />
                     </div>
                   )}

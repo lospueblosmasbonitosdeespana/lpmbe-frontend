@@ -74,7 +74,9 @@ const PuebloCard = memo(function PuebloCard({
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={foto!}
-              alt={`Vista de ${pueblo.nombre}`}
+              alt={`${pueblo.nombre}, ${pueblo.provincia} - Los Pueblos Más Bonitos de España`}
+              width={400}
+              height={250}
               loading={isPriority ? "eager" : "lazy"}
               fetchPriority={isPriority ? "high" : "auto"}
               decoding="async"

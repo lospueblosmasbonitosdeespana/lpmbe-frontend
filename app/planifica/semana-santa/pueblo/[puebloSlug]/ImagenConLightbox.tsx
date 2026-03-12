@@ -17,9 +17,15 @@ export default function ImagenConLightbox({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="block w-full cursor-zoom-in text-left"
+        className="block w-full cursor-zoom-in text-left aspect-[4/3] overflow-hidden rounded-lg bg-muted"
       >
-        <img src={src} alt={alt} className={className} />
+        <img
+          src={src}
+          alt={alt}
+          className={`h-full w-full object-cover ${className}`}
+          width={800}
+          height={600}
+        />
       </button>
       {open && (
         <div

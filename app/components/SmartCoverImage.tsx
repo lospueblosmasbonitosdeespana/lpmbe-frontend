@@ -28,47 +28,25 @@ export default function SmartCoverImage({ src, alt }: Props) {
     else setOrientation('square');
   }
 
+  // Reservar espacio desde el inicio para evitar CLS: aspect-ratio fijo según orientación
   if (orientation === 'landscape') {
     return (
-      <div
-        style={{
-          maxWidth: '900px',
-          margin: '0 auto 48px',
-          borderRadius: '12px',
-          overflow: 'hidden',
-        }}
-      >
+      <div className="max-w-[900px] mx-auto mb-12 rounded-xl overflow-hidden aspect-[16/10] bg-muted">
         <img
           src={src}
           alt={alt}
           onLoad={handleLoad}
-          style={{
-            width: '100%',
-            maxHeight: '520px',
-            objectFit: 'cover',
-            display: 'block',
-          }}
+          className="w-full h-full object-cover block"
+          width={900}
+          height={563}
         />
       </div>
     );
   }
 
-  // Portrait, square o unknown → blurred backdrop a ancho completo
+  // Portrait, square o unknown → blurred backdrop; mismo aspecto reservado siempre para evitar CLS al cambiar orientación
   return (
-    <div
-      style={{
-        position: 'relative',
-        width: '100%',
-        maxWidth: '900px',
-        margin: '0 auto 48px',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: orientation === 'unknown' ? '300px' : undefined,
-      }}
-    >
+    <div className="relative w-full max-w-[900px] mx-auto mb-12 rounded-xl overflow-hidden flex items-center justify-center bg-muted aspect-[4/3]">
       {/* Fondo desenfocado: misma imagen estirada */}
       <img
         src={src}
@@ -83,22 +61,16 @@ export default function SmartCoverImage({ src, alt }: Props) {
           transform: 'scale(1.1)',
         }}
       />
-      {/* Imagen real centrada encima */}
+      {/* Imagen real centrada encima; dimensiones para evitar CLS */}
       <img
         src={src}
         alt={alt}
         onLoad={handleLoad}
+        width={orientation === 'portrait' ? 420 : 560}
+        height={orientation === 'portrait' ? 560 : 420}
+        className="relative z-[1] max-w-[420px] w-full max-h-[720px] object-contain block rounded-md mx-8 my-8 shadow-lg"
         style={{
-          position: 'relative',
-          zIndex: 1,
           maxWidth: orientation === 'portrait' ? '420px' : '560px',
-          width: '100%',
-          height: 'auto',
-          maxHeight: orientation === 'portrait' ? '720px' : '640px',
-          objectFit: 'contain',
-          display: 'block',
-          borderRadius: '6px',
-          margin: '32px auto',
           boxShadow: '0 8px 40px rgba(0,0,0,0.35)',
         }}
       />
