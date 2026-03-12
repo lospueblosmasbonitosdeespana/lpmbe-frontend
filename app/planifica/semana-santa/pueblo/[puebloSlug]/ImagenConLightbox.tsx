@@ -27,7 +27,7 @@ export default function ImagenConLightbox({
           tabIndex={0}
           onClick={() => setOpen(false)}
           onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
-          className="fixed inset-0 z-[100] flex cursor-zoom-out items-center justify-center bg-black/90 p-4"
+          className="fixed inset-0 z-[10000] flex cursor-zoom-out items-center justify-center bg-black/90 p-4"
           aria-label="Cerrar (clic o Escape)"
         >
           <img
