@@ -97,6 +97,9 @@ export function middleware(req: NextRequest): NextResponse {
   const poisNumericMatch = pathname.match(/^\/pueblos\/([^/]+)\/pois\/(\d+)$/);
   if (poisNumericMatch) return permanentRedirect(req, `/pueblos/${poisNumericMatch[1]}`);
 
+  // ficha-pueblo con segmento (ej. /ficha-pueblo/[lpbe_link_semaforo]): enlace roto con placeholder → listado
+  if (pathname.startsWith('/ficha-pueblo/')) return permanentRedirect(req, '/pueblos');
+
   // URLs reportadas por Search Console como 404/Gone: enviar a home.
   if (
     SEARCH_CONSOLE_404_PATHS.has(pathname) ||
