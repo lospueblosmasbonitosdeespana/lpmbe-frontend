@@ -10,6 +10,9 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
         disallow: [
+          '/_next/',
+          '/wp-content/',
+          '/wp-includes/',
           '/mi-cuenta/',
           '/cuenta/',
           '/gestion/',
@@ -20,7 +23,7 @@ export default function robots(): MetadataRoute.Robots {
           '/checkout/',
           '/validador/',
           '/api/',
-          // Feeds WP antiguos (404): evitar que Google los rastree
+          '/auth/',
           '/feed/',
           '/*/feed/',
         ],

@@ -80,6 +80,16 @@ export function middleware(req: NextRequest): NextResponse {
   // /app es una ruta activa para redireccion inteligente a stores.
   if (pathname === '/app') return NextResponse.next();
 
+  // URLs basura (WP feeds, assets, noticias-y-eventos sin id): redirigir a home o actualidad.
+  if (pathname.endsWith('/feed') || pathname.endsWith('/feed/')) return permanentRedirect(req, '/');
+  if (pathname.startsWith('/wp-content/') || pathname.startsWith('/wp-includes/')) return permanentRedirect(req, '/');
+  if (pathname === '/noticias-y-eventos') return permanentRedirect(req, '/actualidad');
+  if (/^\/noticias-y-eventos\/\d+$/.test(pathname)) return permanentRedirect(req, '/actualidad');
+
+  // POI por ID numérico (legacy WP): redirigir a la ficha del pueblo.
+  const poisNumericMatch = pathname.match(/^\/pueblos\/([^/]+)\/pois\/(\d+)$/);
+  if (poisNumericMatch) return permanentRedirect(req, `/pueblos/${poisNumericMatch[1]}`);
+
   // URLs reportadas por Search Console como 404/Gone: enviar a home.
   if (
     SEARCH_CONSOLE_404_PATHS.has(pathname) ||
