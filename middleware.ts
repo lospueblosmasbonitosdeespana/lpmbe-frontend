@@ -92,6 +92,10 @@ export function middleware(req: NextRequest): NextResponse {
   if (pathname.startsWith('/category/')) return permanentRedirect(req, '/tienda');
   // Legacy login/proxy (informe noindex GSC).
   if (pathname === '/wp-login.php' || pathname === '/proxy-oauth') return permanentRedirect(req, '/entrar');
+  // Folletos físicos con QR legacy de Pirineos.
+  if (pathname === '/pueblos-bonitos-pirineos') {
+    return permanentRedirect(req, '/rutas/mas-bonitos-de-los-pirineos');
+  }
 
   // ficha-pueblo con segmento (ej. /ficha-pueblo/[lpbe_link_semaforo]): enlace roto con placeholder → listado
   if (pathname.startsWith('/ficha-pueblo/')) return permanentRedirect(req, '/pueblos');
