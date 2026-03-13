@@ -35,6 +35,18 @@ export function findCcaaBySlug(slug: string) {
 }
 
 export function norm(s: string) {
-  return s.trim().toLowerCase();
+  return s
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[-_/.,()]/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/^principado de /, "")
+    .replace(/^comunidad autonoma de /, "")
+    .replace(/^comunidad foral de /, "")
+    .replace(/^comunidad de /, "")
+    .replace(/^region de /, "")
+    .trim();
 }
 
