@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPueblosLite } from "@/lib/api";
-import { DEFAULT_LOCALE, getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
 import PueblosList from "./PueblosList";
 
 // 🔒 Evita SSG / paths raros
@@ -13,8 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = "/pueblos";
   const title = 'Pueblos de la red';
   const description = t("pueblosListDescription");
-  // Canonical absoluta única (siempre URL por defecto) para que Google no elija otra variante.
-  const canonicalUrl = getCanonicalUrl(path, DEFAULT_LOCALE);
+  const canonicalUrl = getCanonicalUrl(path, locale);
   return {
     title,
     description,
