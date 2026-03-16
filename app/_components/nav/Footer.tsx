@@ -3,6 +3,7 @@ import Image from "next/image";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { LocaleSwitcher } from "./LocaleSwitcher";
+import { pathForLocale, type SupportedLocale } from "@/lib/seo";
 
 // RRSS oficiales Los Pueblos Más Bonitos de España
 const RRSS = [
@@ -70,9 +71,29 @@ async function fetchSiteSettings(): Promise<SiteSettings> {
 
 type FooterProps = { locale: string };
 
+const LOCALE_LINKS: { code: SupportedLocale; label: string }[] = [
+  { code: "es", label: "Español" },
+  { code: "en", label: "English" },
+  { code: "fr", label: "Français" },
+  { code: "de", label: "Deutsch" },
+  { code: "pt", label: "Português" },
+  { code: "it", label: "Italiano" },
+  { code: "ca", label: "Català" },
+];
+
+function normalizeCurrentPath(pathname: string | null): string {
+  if (!pathname || pathname.trim() === "") return "/";
+  const clean = pathname.split("?")[0].trim();
+  if (!clean.startsWith("/")) return `/${clean}`;
+  if (clean.length > 1 && clean.endsWith("/")) return clean.slice(0, -1);
+  return clean;
+}
+
 export async function Footer({ locale }: FooterProps) {
+  const h = await headers();
   const t = await getTranslations("footer");
   const settings = await fetchSiteSettings();
+  const currentPath = normalizeCurrentPath(h.get("x-current-path"));
 
   // En footer: logo variante (letras blancas) si existe; si no, logo principal con filter; si no, texto
   const logoVariant = settings.logoVariantUrl;
@@ -243,6 +264,25 @@ export async function Footer({ locale }: FooterProps) {
         <div className="mt-12 border-t border-white/20 pt-8">
           <div className="mb-4 flex justify-center">
             <LocaleSwitcher currentLocale={locale} variant="footer" />
+          </div>
+          <div className="mb-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
+            {LOCALE_LINKS.map(({ code, label }) => {
+              const href = pathForLocale(currentPath, code);
+              const isCurrent = locale === code;
+              return (
+                <Link
+                  key={code}
+                  href={href}
+                  hrefLang={code}
+                  aria-current={isCurrent ? "page" : undefined}
+                  className={`text-xs transition-colors ${
+                    isCurrent ? "text-white" : "text-white/70 hover:text-white"
+                  }`}
+                >
+                  {label}
+                </Link>
+              );
+            })}
           </div>
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <p className="text-sm text-white/60">
