@@ -46,7 +46,7 @@ export async function generateMetadata({
   const locale = await getLocale();
   const pueblo = await getPuebloBySlug(slug, locale);
   return {
-    title: `Lugares a visitar en ${pueblo.nombre} – Los Pueblos Más Bonitos de España`,
+    title: `Lugares a visitar en ${pueblo.nombre}`,
     description: `Puntos de interés, rutas y experiencias para descubrir ${pueblo.nombre}.`,
   };
 }

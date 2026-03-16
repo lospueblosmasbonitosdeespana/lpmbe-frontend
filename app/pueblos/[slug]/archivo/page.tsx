@@ -35,11 +35,11 @@ export async function generateMetadata({
   const pueblo = await fetchPueblo(slug);
 
   if (!pueblo) {
-    return { title: 'Archivo no encontrado | Los Pueblos Más Bonitos de España' };
+    return { title: 'Archivo no encontrado' };
   }
 
   return {
-    title: `Noticias y eventos anteriores de ${pueblo.nombre} | Los Pueblos Más Bonitos de España`,
+    title: `Noticias y eventos anteriores de ${pueblo.nombre}`,
     description: `Archivo de noticias y eventos pasados de ${pueblo.nombre}. Consulta el historial de actividades y acontecimientos del pueblo.`,
     openGraph: {
       title: `Noticias y eventos anteriores de ${pueblo.nombre}`,

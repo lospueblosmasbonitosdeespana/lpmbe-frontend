@@ -53,7 +53,7 @@ const DEFAULT_CONFIG: Required<
     | 'screenshot5Url'
     | 'screenshot6Url'
   > = {
-  title: 'La app oficial de Los Pueblos Más Bonitos de España',
+  title: 'La app oficial',
   subtitle: 'Rutas, mapas y alertas para planificar tu escapada',
   intro:
     'Descubre pueblos, organiza fines de semana y consulta información útil en tiempo real desde tu móvil.',

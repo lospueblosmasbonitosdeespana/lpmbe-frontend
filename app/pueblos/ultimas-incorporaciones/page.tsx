@@ -10,7 +10,7 @@ import { Container } from "@/app/components/ui/container";
 import { Display, Lead } from "@/app/components/ui/typography";
 
 export const metadata: Metadata = {
-  title: "Certificaciones por año | Los Pueblos Más Bonitos de España",
+  title: "Certificaciones por año",
   description:
     "Descubre todos los pueblos certificados por la red de Los Pueblos Más Bonitos de España, año por año, desde 2013.",
 };

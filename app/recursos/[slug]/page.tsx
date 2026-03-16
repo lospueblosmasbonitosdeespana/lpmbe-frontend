@@ -186,9 +186,9 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
   const recurso = await getRecursoBySlug(slug, locale);
-  if (!recurso) return { title: "Recurso no encontrado | Los Pueblos Más Bonitos de España" };
+  if (!recurso) return { title: "Recurso no encontrado" };
 
-  const title = `${recurso.nombre} – Recursos turísticos | Los Pueblos Más Bonitos de España`;
+  const title = `${recurso.nombre} – Recursos turísticos`;
   const descText = recurso.descripcion ? stripHtml(recurso.descripcion) : "";
   const description = descText
     ? cut(descText, 160)

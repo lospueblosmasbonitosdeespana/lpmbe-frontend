@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
-import { getCanonicalUrl, getLocaleAlternates, SITE_NAME, type SupportedLocale } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,9 +71,9 @@ export async function generateMetadata({
   const t = await getTranslations('experienciasPage');
   const config = CATEGORY_MAP[slug];
   if (!config) {
-    return { title: `${SITE_NAME}` };
+    return { title: 'Experiencia' };
   }
-  const title = `${t(config.titleKey)} – ${SITE_NAME}`;
+  const title = t(config.titleKey);
   const description = t(config.descKey);
   const path = `/experiencias/${slug}`;
   return {

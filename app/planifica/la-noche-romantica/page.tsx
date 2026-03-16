@@ -5,7 +5,7 @@ import { Container } from "@/app/components/ui/container";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "La Noche Romántica | Los Pueblos Más Bonitos de España",
+  title: "La Noche Romántica",
   description:
     "Evento destacado de la asociación. Pueblos, hoteles y restaurantes participan en La Noche Romántica.",
 };

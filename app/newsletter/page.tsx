@@ -4,7 +4,7 @@ import { Metadata } from 'next';
 import { NewsletterPageClient } from './NewsletterPageClient';
 
 export const metadata: Metadata = {
-  title: 'Newsletter | Los Pueblos Más Bonitos de España',
+  title: 'Newsletter',
   description: 'Lee nuestras últimas newsletters y suscríbete para recibir novedades.',
 };
 

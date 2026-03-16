@@ -57,7 +57,7 @@ export async function generateMetadata({
   const foto = pickFotoPrincipal(data);
   const descripcionHtml = pickDescripcionHtml(data);
   const puebloNombre = data.pueblo?.nombre ?? "";
-  const title = `${data.nombre}${puebloNombre ? ` · ${puebloNombre}` : ""} – Los Pueblos Más Bonitos de España`;
+  const title = `${data.nombre}${puebloNombre ? ` · ${puebloNombre}` : ""}`;
   const path = `/pueblos/${slug}/pois/${data.slug ?? poi}`;
 
   return {

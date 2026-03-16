@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = "/";
   return {
-    title: `${SITE_NAME} – Pueblos, rutas y experiencias`,
+    title: { absolute: `${SITE_NAME} – Pueblos, rutas y experiencias` },
     description: DEFAULT_DESCRIPTION,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
