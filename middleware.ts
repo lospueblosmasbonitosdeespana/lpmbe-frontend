@@ -33,11 +33,17 @@ const CANONICAL_DROP_QUERY_PARAMS = new Set([
   'remove_item',
   '_wpnonce',
 ]);
+const SUPPORTED_LOCALES = new Set(['es', 'en', 'fr', 'de', 'pt', 'it', 'ca']);
 
 function normalizePath(pathname: string): string {
   const lower = pathname.toLowerCase();
   if (lower !== '/' && lower.endsWith('/')) return lower.slice(0, -1);
   return lower;
+}
+
+function normalizeCanonicalPath(pathname: string): string {
+  if (pathname !== '/' && pathname.endsWith('/')) return pathname.slice(0, -1);
+  return pathname || '/';
 }
 
 function permanentRedirect(req: NextRequest, destination: string): NextResponse {
@@ -73,10 +79,17 @@ function stripNonCanonicalParams(req: NextRequest): NextResponse | null {
 
 export function middleware(req: NextRequest): NextResponse {
   const pathname = normalizePath(req.nextUrl.pathname);
+  const canonicalPath = normalizeCanonicalPath(req.nextUrl.pathname);
   const normalizedSearch = normalizeSearchParams(req.nextUrl.searchParams);
   const pathWithQuery = normalizedSearch ? `${pathname}?${normalizedSearch}` : pathname;
   const idLugar = req.nextUrl.searchParams.get('id_lugar');
   const idPublicacion = req.nextUrl.searchParams.get('id_publicacion');
+  const queryLang = req.nextUrl.searchParams.get('lang')?.toLowerCase();
+  const cookieLang = req.cookies.get('NEXT_LOCALE')?.value?.toLowerCase();
+  const activeLocale =
+    (queryLang && SUPPORTED_LOCALES.has(queryLang) && queryLang) ||
+    (cookieLang && SUPPORTED_LOCALES.has(cookieLang) && cookieLang) ||
+    'es';
 
   // /app es una ruta activa para redireccion inteligente a stores.
   if (pathname === '/app') return NextResponse.next();
@@ -90,6 +103,14 @@ export function middleware(req: NextRequest): NextResponse {
   if (/^\/20(25|26)\/\d{2}(\/\d{2})?$/.test(pathname)) return permanentRedirect(req, '/actualidad');
   // WP category (informe noindex GSC): /category/office, etc.
   if (pathname.startsWith('/category/')) return permanentRedirect(req, '/tienda');
+  // Taxonomías/tag legacy de WordPress.
+  if (pathname.startsWith('/tag/')) return permanentRedirect(req, '/actualidad');
+  if (pathname.startsWith('/categoria/')) return permanentRedirect(req, '/actualidad');
+  if (pathname.startsWith('/categoria-producto/')) return permanentRedirect(req, '/tienda');
+  if (pathname.startsWith('/producto/')) return permanentRedirect(req, '/tienda');
+  if (pathname.startsWith('/tiendapueblos')) return permanentRedirect(req, '/tienda');
+  if (pathname.startsWith('/author/')) return permanentRedirect(req, '/actualidad');
+  if (pathname === '/author') return permanentRedirect(req, '/actualidad');
   // Legacy login/proxy (informe noindex GSC).
   if (pathname === '/wp-login.php' || pathname === '/proxy-oauth') return permanentRedirect(req, '/entrar');
   // Folletos físicos con QR legacy de Pirineos.
@@ -137,7 +158,15 @@ export function middleware(req: NextRequest): NextResponse {
   // URLs antiguas sin reemplazo: redirigir a home para evitar 404/410 en el rastreo.
   if (EXACT_GONE_PATHS.has(pathname)) return permanentRedirect(req, '/');
 
-  return NextResponse.next();
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set('x-current-path', canonicalPath);
+  requestHeaders.set('x-current-locale', activeLocale);
+
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {
