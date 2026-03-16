@@ -9,11 +9,11 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "Club de Amigos | Los Pueblos Más Bonitos de España",
+  title: "Club de Amigos",
   description:
     "En pocos días el Club de Amigos será una realidad. Suscríbete a la newsletter y noticias de la asociación.",
   openGraph: {
-    title: "Club de Amigos | Los Pueblos Más Bonitos de España",
+    title: "Club de Amigos",
     description:
       "En pocos días el Club de Amigos será una realidad. Suscríbete a la newsletter y noticias de la asociación.",
   },

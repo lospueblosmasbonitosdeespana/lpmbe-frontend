@@ -106,8 +106,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry('/pueblos/provincias', 0.7, 'monthly'),
     entry('/pueblos/ultimas-incorporaciones', 0.6, 'monthly'),
     entry('/rutas', 0.8, 'weekly'),
-    entry('/noticias', 0.8, 'daily'),
-    entry('/eventos', 0.8, 'daily'),
     entry('/recursos', 0.5, 'monthly'),
     entry('/redes-sociales', 0.3, 'yearly'),
     entry('/aviso-legal', 0.1, 'yearly'),

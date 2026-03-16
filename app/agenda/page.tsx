@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 
 export default function AgendaPublicPage() {
-  // Redirect a actualidad con filtro de eventos
-  redirect('/actualidad?tipo=EVENTO');
+  permanentRedirect('/actualidad?tipo=EVENTO');
 }

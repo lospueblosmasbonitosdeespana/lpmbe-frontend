@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
   const t = await getTranslations("seo");
   const path = "/pueblos";
-  const title = t("pueblosListTitle");
+  const title = 'Pueblos de la red';
   const description = t("pueblosListDescription");
   // Canonical absoluta única (siempre URL por defecto) para que Google no elija otra variante.
   const canonicalUrl = getCanonicalUrl(path, DEFAULT_LOCALE);

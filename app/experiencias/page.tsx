@@ -57,7 +57,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = "/experiencias";
   return {
-    title: `Experiencias temáticas – ${SITE_NAME}`,
+    title: 'Experiencias temáticas',
     description:
       "Descubre nuestros pueblos por temática: gastronomía, naturaleza, cultura, en familia, petfriendly.",
     alternates: {
