@@ -1,28 +1,32 @@
-import { headers } from 'next/headers';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getLocale } from 'next-intl/server';
 import ActualidadPuebloClient from './ActualidadPuebloClient';
+import { getPuebloBySlug } from '@/lib/api';
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-type Pueblo = {
-  id: number;
-  nombre: string;
-  slug: string;
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const locale = await getLocale();
+  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+  if (!pueblo) return { title: 'Actualidad | Los Pueblos Más Bonitos de España' };
 
-async function fetchPueblo(slug: string): Promise<Pueblo | null> {
-  const h = await headers();
-  const host = h.get('host');
-  const proto = h.get('x-forwarded-proto') ?? 'http';
-  const baseUrl = `${proto}://${host}`;
-
-  const res = await fetch(`${baseUrl}/api/pueblos/${slug}`, {
-    cache: 'no-store',
-  });
-
-  if (!res.ok) return null;
-  return res.json();
+  const path = `/pueblos/${pueblo.slug}/actualidad`;
+  return {
+    title: `Actualidad de ${pueblo.nombre} | Los Pueblos Más Bonitos de España`,
+    description: `Noticias, eventos y novedades de ${pueblo.nombre}.`,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+  };
 }
 
 export default async function ActualidadPuebloPage({
@@ -34,7 +38,8 @@ export default async function ActualidadPuebloPage({
 }) {
   const { slug } = await params;
   const { tipo, modo } = await searchParams;
-  const pueblo = await fetchPueblo(slug);
+  const locale = await getLocale();
+  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
 
   if (!pueblo) {
     notFound();

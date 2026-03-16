@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale } from "next-intl/server";
 import { getPuebloBySlug } from "@/lib/api";
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Title, Body, Eyebrow } from "@/app/components/ui/typography";
@@ -27,9 +28,14 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const pueblo = await getPuebloBySlug(slug, locale);
+  const path = `/pueblos/${pueblo.slug}/lugares-de-interes`;
   return {
     title: `Lugares de interés en ${pueblo.nombre} – Los Pueblos Más Bonitos de España`,
     description: `Descubre los puntos de interés y lugares que no te puedes perder en ${pueblo.nombre}.`,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
   };
 }
 

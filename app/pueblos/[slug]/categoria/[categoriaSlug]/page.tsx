@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale } from "next-intl/server";
 import { getPuebloBySlug } from "@/lib/api";
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Headline, Eyebrow, Body } from "@/app/components/ui/typography";
@@ -49,6 +50,19 @@ type Poi = {
   categoriaTematica: string | null;
 };
 
+type MultiexperienciaLite = {
+  id?: number;
+  slug?: string | null;
+  titulo?: string | null;
+  descripcion?: string | null;
+  foto?: string | null;
+  categoria?: string | null;
+};
+
+type MultiexperienciaEntry = {
+  multiexperiencia?: MultiexperienciaLite | null;
+};
+
 const CATEGORIA_TEMATICA_LABELS: Record<string, string> = {
   GASTRONOMIA: "Gastronomía",
   NATURALEZA: "Naturaleza",
@@ -68,9 +82,14 @@ export async function generateMetadata({
   const locale = await getLocale();
   const pueblo = await getPuebloBySlug(slug, locale);
   const label = CATEGORIA_LABELS[categoriaSlug];
+  const path = `/pueblos/${pueblo.slug}/categoria/${categoriaSlug}`;
   return {
     title: `${label} en ${pueblo.nombre} – Los Pueblos Más Bonitos de España`,
     description: `${CATEGORIA_DESCRIPTIONS[categoriaSlug]} en ${pueblo.nombre}.`,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
   };
 }
 
@@ -86,13 +105,14 @@ export default async function CategoriaPage({
 
   const pueblo = await getPuebloBySlug(slug, locale);
   const pois = (pueblo.pois ?? []) as Poi[];
-  const multiexperiencias = (pueblo as any).multiexperiencias ?? [];
+  const multiexperiencias =
+    ((pueblo as { multiexperiencias?: MultiexperienciaEntry[] }).multiexperiencias ?? []);
 
   const poisFiltrados = pois.filter(
     (p) => p.categoria === "POI" && (p.categoriaTematica ?? "").toUpperCase() === categoriaKey
   );
   const multiexFiltradas = multiexperiencias.filter(
-    (m: any) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === categoriaKey
+    (m: MultiexperienciaEntry) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === categoriaKey
   );
 
   const tieneContenido = poisFiltrados.length > 0 || multiexFiltradas.length > 0;
@@ -149,7 +169,7 @@ export default async function CategoriaPage({
                 <Section spacing="md" className="mt-8">
                   <h2 className="mb-4 font-serif text-xl font-medium">Experiencias</h2>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {multiexFiltradas.map((m: any) => (
+                    {multiexFiltradas.map((m: MultiexperienciaEntry) => (
                       <Link
                         key={m.multiexperiencia?.id}
                         href={`/pueblos/${slug}/experiencias/${m.multiexperiencia?.slug}`}
@@ -159,7 +179,7 @@ export default async function CategoriaPage({
                           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-sm bg-muted">
                             <img
                               src={m.multiexperiencia.foto}
-                              alt={m.multiexperiencia.titulo}
+                              alt={m.multiexperiencia.titulo ?? label}
                               className="h-full w-full object-cover"
                             />
                           </div>

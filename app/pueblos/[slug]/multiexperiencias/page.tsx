@@ -3,11 +3,22 @@ import Link from "next/link";
 import Image from "next/image";
 import { getLocale } from "next-intl/server";
 import { getPuebloBySlug } from "@/lib/api";
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Title, Body, Eyebrow } from "@/app/components/ui/typography";
 
 export const dynamic = "force-dynamic";
+
+type MultiexItem = {
+  multiexperiencia?: {
+    id: number;
+    titulo: string;
+    slug: string;
+    descripcion?: string | null;
+    foto?: string | null;
+  } | null;
+};
 
 export async function generateMetadata({
   params,
@@ -17,9 +28,14 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const pueblo = await getPuebloBySlug(slug, locale);
+  const path = `/pueblos/${pueblo.slug}/multiexperiencias`;
   return {
     title: `Multiexperiencias en ${pueblo.nombre} – Los Pueblos Más Bonitos de España`,
     description: `Experiencias y actividades para descubrir ${pueblo.nombre}.`,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
   };
 }
 
@@ -31,7 +47,7 @@ export default async function MultiexperienciasPage({
   const { slug } = await params;
   const locale = await getLocale();
   const pueblo = await getPuebloBySlug(slug, locale);
-  const multiexperiencias = (pueblo as any).multiexperiencias ?? [];
+  const multiexperiencias = ((pueblo as { multiexperiencias?: MultiexItem[] }).multiexperiencias ?? []);
 
   if (multiexperiencias.length === 0) {
     return (
@@ -90,7 +106,7 @@ export default async function MultiexperienciasPage({
           </div>
 
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {multiexperiencias.map((m: any) => {
+            {multiexperiencias.map((m: MultiexItem) => {
               const mx = m.multiexperiencia;
               if (!mx) return null;
               return (

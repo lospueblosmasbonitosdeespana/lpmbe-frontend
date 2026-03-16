@@ -1,9 +1,32 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const locale = await getLocale();
+  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+  if (!pueblo) return { title: "Videos | Los Pueblos Más Bonitos de España" };
+
+  const path = `/pueblos/${pueblo.slug}/videos`;
+  return {
+    title: `Videos de ${pueblo.nombre} | Los Pueblos Más Bonitos de España`,
+    description: `Videos y contenidos audiovisuales para descubrir ${pueblo.nombre}.`,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+  };
+}
 
 type Video = {
   id: number;
