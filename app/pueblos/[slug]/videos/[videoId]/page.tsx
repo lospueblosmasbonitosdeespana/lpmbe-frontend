@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
-import { getBaseUrl, getCanonicalUrl } from "@/lib/seo";
+import { getBaseUrl, getCanonicalUrl, type SupportedLocale } from "@/lib/seo";
 import JsonLd from "@/app/components/seo/JsonLd";
 
 export const dynamic = "force-dynamic";
@@ -62,11 +62,11 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: getCanonicalUrl(path) },
+    alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale) },
     openGraph: {
       title: video.titulo,
       description,
-      url: getCanonicalUrl(path),
+      url: getCanonicalUrl(path, locale as SupportedLocale),
       type: "video.other",
       videos: videoId
         ? [{ url: `https://www.youtube.com/watch?v=${videoId}` }]
@@ -106,7 +106,7 @@ export default async function VideoWatchPage({
   const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
   const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
   const path = `/pueblos/${pueblo.slug}/videos/${videoId}`;
-  const pageUrl = getCanonicalUrl(path);
+  const pageUrl = getCanonicalUrl(path, locale as SupportedLocale);
 
   const videoLd = {
     "@context": "https://schema.org",

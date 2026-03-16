@@ -3,7 +3,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { getHomeConfig } from "@/lib/homeApi";
-import { getCanonicalUrl, getLocaleAlternates, SITE_NAME } from "@/lib/seo";
+import { getCanonicalUrl, getLocaleAlternates, SITE_NAME, type SupportedLocale } from "@/lib/seo";
 import { getApiUrl } from "@/lib/api";
 import { Container } from "@/app/components/ui/container";
 import { Section } from "@/app/components/ui/section";
@@ -54,13 +54,14 @@ async function getPueblosByTematica(
 }
 
 export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
   const path = "/experiencias";
   return {
     title: `Experiencias temáticas – ${SITE_NAME}`,
     description:
       "Descubre nuestros pueblos por temática: gastronomía, naturaleza, cultura, en familia, petfriendly.",
     alternates: {
-      canonical: getCanonicalUrl(path),
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
     robots: { index: true, follow: true },

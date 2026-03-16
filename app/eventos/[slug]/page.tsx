@@ -53,6 +53,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const locale = await getLocale();
+  const lang = SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? (locale as SupportedLocale) : 'es';
   const evento = await fetchEvento(slug);
 
   if (!evento) {
@@ -66,13 +68,13 @@ export async function generateMetadata({
     title: `${evento.titulo} | Los Pueblos Más Bonitos de España`,
     description: description || undefined,
     alternates: {
-      canonical: getCanonicalUrl(path),
+      canonical: getCanonicalUrl(path, lang),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
       title: evento.titulo,
       description: description || undefined,
-      url: getCanonicalUrl(path),
+      url: getCanonicalUrl(path, lang),
       images: evento.coverUrl ? [{ url: evento.coverUrl }] : [],
     },
     twitter: {

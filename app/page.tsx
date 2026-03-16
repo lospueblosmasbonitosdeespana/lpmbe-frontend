@@ -4,7 +4,14 @@ import { HomePageNew, type NotificationItem, type CategoryCard, type RouteCard, 
 import AppDownloadBanner from "./_components/home/AppDownloadBanner";
 import { getHomeConfig, getHomeVideos } from "@/lib/homeApi";
 import { getRutas, getApiUrl, getPueblosLite, getPuebloMainPhoto, type Pueblo } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, getBaseUrl, DEFAULT_DESCRIPTION, SITE_NAME } from "@/lib/seo";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  getBaseUrl,
+  DEFAULT_DESCRIPTION,
+  SITE_NAME,
+  type SupportedLocale,
+} from "@/lib/seo";
 import JsonLd from "./components/seo/JsonLd";
 
 // Forzar render dinámico para evitar que el build falle si el backend no responde
@@ -12,12 +19,13 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
   const path = "/";
   return {
     title: `${SITE_NAME} – Pueblos, rutas y experiencias`,
     description: DEFAULT_DESCRIPTION,
     alternates: {
-      canonical: getCanonicalUrl(path),
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {

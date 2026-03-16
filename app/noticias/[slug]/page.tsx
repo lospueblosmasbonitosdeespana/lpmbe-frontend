@@ -51,6 +51,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const locale = await getLocale();
+  const lang = SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? (locale as SupportedLocale) : 'es';
   const noticia = await fetchNoticia(slug);
 
   if (!noticia) {
@@ -61,7 +63,7 @@ export async function generateMetadata({
 
   // Path sin barra final; canonical absoluta única para que Google no elija otra variante.
   const path = `/noticias/${String(slug).replace(/\/$/, '')}`;
-  const canonicalUrl = getCanonicalUrl(path);
+  const canonicalUrl = getCanonicalUrl(path, lang);
   return {
     title: `${noticia.titulo} | Los Pueblos Más Bonitos de España`,
     description: description || undefined,

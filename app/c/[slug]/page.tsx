@@ -213,13 +213,13 @@ export async function generateMetadata({
     description: description || undefined,
     robots: { index: true, follow: true },
     alternates: {
-      canonical: getCanonicalUrl(path),
+      canonical: getCanonicalUrl(path, lang),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
       title: titulo,
       description: description || undefined,
-      url: getCanonicalUrl(path),
+      url: getCanonicalUrl(path, lang),
       images: coverUrl ? [{ url: coverUrl }] : [],
     },
     twitter: {
