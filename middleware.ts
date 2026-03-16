@@ -58,8 +58,7 @@ function injectLocaleCookie(cookieHeader: string | null, locale: string): string
 
 function permanentRedirect(req: NextRequest, destination: string): NextResponse {
   const url = new URL(destination, req.url);
-  // 308 = redireccion permanente (equivalente SEO de 301 para Google).
-  return NextResponse.redirect(url, 308);
+  return NextResponse.redirect(url, 301);
 }
 
 function normalizeSearchParams(searchParams: URLSearchParams): string {
@@ -84,7 +83,7 @@ function stripNonCanonicalParams(req: NextRequest): NextResponse | null {
   }
 
   if (!changed) return null;
-  return NextResponse.redirect(url, 308);
+  return NextResponse.redirect(url, 301);
 }
 
 export function middleware(req: NextRequest): NextResponse {
@@ -104,6 +103,24 @@ export function middleware(req: NextRequest): NextResponse {
   // /app es una ruta activa para redireccion inteligente a stores.
   if (pathname === '/app') return NextResponse.next();
 
+  // === FICHA-PUEBLO legacy WP: /ficha-pueblo/SLUG → /pueblos/SLUG (301, un solo salto) ===
+  const fichaMatch = pathname.match(/^(?:\/(en|fr|de|pt|it|ca))?\/ficha-pueblo(?:\/(.+))?$/);
+  if (fichaMatch) {
+    const fLocale = fichaMatch[1];
+    const slug = (fichaMatch[2] || '').replace(/\/$/, '');
+    let target: string;
+    if (slug && !slug.startsWith('[')) {
+      target = `/pueblos/${slug}`;
+    } else if (idLugar && LEGACY_FICHA_ID_REDIRECTS[idLugar]) {
+      target = LEGACY_FICHA_ID_REDIRECTS[idLugar];
+    } else {
+      target = '/pueblos';
+    }
+    const destUrl = new URL(target, req.url);
+    if (fLocale) destUrl.searchParams.set('lang', fLocale);
+    return NextResponse.redirect(destUrl, 301);
+  }
+
   // Legacy i18n con prefijo en path (/en/..., /fr/...) -> formato actual con ?lang=xx.
   const localePrefixMatch = pathname.match(/^\/(en|fr|de|pt|it|ca)(\/.*)?$/);
   if (localePrefixMatch) {
@@ -111,7 +128,7 @@ export function middleware(req: NextRequest): NextResponse {
     const restPath = normalizeCanonicalPath(localePrefixMatch[2] ?? '/');
     const destination = new URL(restPath, req.url);
     destination.searchParams.set('lang', legacyLocale);
-    return NextResponse.redirect(destination, 308);
+    return NextResponse.redirect(destination, 301);
   }
 
   // URLs basura (WP feeds, assets, noticias-y-eventos sin id): redirigir a home o actualidad.
@@ -138,9 +155,6 @@ export function middleware(req: NextRequest): NextResponse {
     return permanentRedirect(req, '/rutas/mas-bonitos-de-los-pirineos');
   }
 
-  // ficha-pueblo con segmento (ej. /ficha-pueblo/[lpbe_link_semaforo]): enlace roto con placeholder → listado
-  if (pathname.startsWith('/ficha-pueblo/')) return permanentRedirect(req, '/pueblos');
-
   // URLs reportadas por Search Console como 404/Gone: enviar a home.
   if (
     SEARCH_CONSOLE_404_PATHS.has(pathname) ||
@@ -150,10 +164,6 @@ export function middleware(req: NextRequest): NextResponse {
   }
 
   // Casos legacy con querystring (WP antiguo)
-  if (pathname === '/ficha-pueblo' && idLugar) {
-    const target = LEGACY_FICHA_ID_REDIRECTS[idLugar];
-    if (target) return permanentRedirect(req, target);
-  }
   if (pathname === '/semaforo' && idLugar) {
     const target = LEGACY_SEMAFORO_ID_REDIRECTS[idLugar];
     if (target) return permanentRedirect(req, target);
