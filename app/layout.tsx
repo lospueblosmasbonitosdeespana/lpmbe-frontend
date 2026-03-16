@@ -16,6 +16,7 @@ import {
   SITE_NAME,
   DEFAULT_DESCRIPTION,
   getLocaleAlternates,
+  pathForLocale,
   getOGLocale,
   type SupportedLocale,
 } from "@/lib/seo";
@@ -53,6 +54,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const metadataPath = normalizeMetadataPath(hdrs.get("x-current-path"));
   const requestLocale = resolveLocale(hdrs.get("x-current-locale"));
   const languageAlternates = getLocaleAlternates(metadataPath);
+  const canonicalPath = pathForLocale(metadataPath, requestLocale);
 
   return {
     metadataBase: new URL(baseUrl),
@@ -80,7 +82,7 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [`${baseUrl}/brand/logo-favicon.png`],
     },
     alternates: {
-      canonical: metadataPath,
+      canonical: canonicalPath,
       languages: languageAlternates,
     },
     robots: { index: true, follow: true },
