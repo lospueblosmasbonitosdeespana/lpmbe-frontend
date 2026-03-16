@@ -23,6 +23,9 @@ import JsonLd from "./components/seo/JsonLd";
 
 const baseUrl = getBaseUrl();
 
+// Evitar cache para que generateMetadata use siempre la ruta real (x-current-path) y los hreflang sean correctos.
+export const dynamic = 'force-dynamic';
+
 function normalizeMetadataPath(pathname: string | null): string {
   if (!pathname || pathname.trim() === "") return "/";
   const clean = pathname.split("?")[0].trim();

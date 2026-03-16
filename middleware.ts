@@ -13,8 +13,8 @@ import {
 } from './lib/search-console-legacy-404';
 
 const EXACT_GONE_PATHS = new Set(LEGACY_EXACT_GONE_PATHS);
+// No quitar 'lang': las URLs ?lang=en|fr|... deben devolver 200 para que hreflang no sea 3XX.
 const CANONICAL_DROP_QUERY_PARAMS = new Set([
-  'lang',
   'fbclid',
   'fb_comment_id',
   'gclid',
