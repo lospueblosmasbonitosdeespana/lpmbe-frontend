@@ -72,7 +72,10 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale) },
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
     openGraph: {
       title: video.titulo,
       description,

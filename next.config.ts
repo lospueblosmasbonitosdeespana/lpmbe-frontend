@@ -11,32 +11,32 @@ const nextConfig: NextConfig = {
       {
         source: '/tag/:path*',
         destination: '/actualidad',
-        permanent: true,
+        statusCode: 301,
       },
       {
         source: '/categoria/:path*',
         destination: '/actualidad',
-        permanent: true,
+        statusCode: 301,
       },
       {
         source: '/categoria-producto/:path*',
         destination: '/tienda',
-        permanent: true,
+        statusCode: 301,
       },
       {
         source: '/producto/:path*',
         destination: '/tienda',
-        permanent: true,
+        statusCode: 301,
       },
       {
         source: '/author/:path*',
         destination: '/actualidad',
-        permanent: true,
+        statusCode: 301,
       },
       {
         source: '/tiendapueblos/:path*',
         destination: '/tienda',
-        permanent: true,
+        statusCode: 301,
       },
     ];
   },
