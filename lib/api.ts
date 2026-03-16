@@ -82,11 +82,23 @@ export async function getPuebloBySlug(slug: string, locale?: string): Promise<Pu
     headers: locale ? { 'Accept-Language': locale } : undefined,
   });
 
-  if (!res.ok) {
-    throw new Error(`Error cargando pueblo (${res.status})`);
+  if (res.ok) {
+    return await res.json();
   }
 
-  return await res.json();
+  // Fallback robusto para SEO/i18n:
+  // si la variante traducida falla puntualmente, devolvemos versión ES en vez de romper metadata/página.
+  if (locale && locale !== 'es') {
+    const fallbackRes = await fetchWithTimeout(`${API_BASE}/pueblos/${slug}`, {
+      cache: 'no-store',
+      headers: { 'Accept-Language': 'es' },
+    });
+    if (fallbackRes.ok) {
+      return await fallbackRes.json();
+    }
+  }
+
+  throw new Error(`Error cargando pueblo (${res.status})`);
 }
 
 export async function getLugarLegacyBySlug(slug: string, locale?: string): Promise<Pueblo> {

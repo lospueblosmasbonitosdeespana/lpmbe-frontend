@@ -137,6 +137,16 @@ export function middleware(req: NextRequest): NextResponse {
   if (pathname === '/agenda') return permanentRedirect(req, '/actualidad?tipo=EVENTO');
   if (pathname === '/articulos') return permanentRedirect(req, '/actualidad?tipo=ARTICULO');
 
+  // Canonicalizar legacy /c/* para evitar duplicados de contenido con /noticias/* y páginas legales.
+  if (pathname.startsWith('/c/')) {
+    const slug = pathname.slice(3);
+    if (slug === 'contacto') return permanentRedirect(req, '/contacto');
+    if (slug === 'privacidad') return permanentRedirect(req, '/privacidad');
+    if (slug === 'aviso-legal') return permanentRedirect(req, '/aviso-legal');
+    if (slug === 'cookies') return permanentRedirect(req, '/cookies');
+    if (slug) return permanentRedirect(req, `/noticias/${slug}`);
+  }
+
   // URLs basura (WP feeds, assets, noticias-y-eventos sin id): redirigir a home o actualidad.
   if (pathname.endsWith('/feed') || pathname.endsWith('/feed/')) return permanentRedirect(req, '/');
   if (pathname.startsWith('/wp-content/') || pathname.startsWith('/wp-includes/')) return permanentRedirect(req, '/');
