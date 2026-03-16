@@ -46,6 +46,16 @@ function normalizeCanonicalPath(pathname: string): string {
   return pathname || '/';
 }
 
+function injectLocaleCookie(cookieHeader: string | null, locale: string): string {
+  const parts = (cookieHeader ?? '')
+    .split(';')
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .filter((p) => !p.toLowerCase().startsWith('next_locale='));
+  parts.push(`NEXT_LOCALE=${locale}`);
+  return parts.join('; ');
+}
+
 function permanentRedirect(req: NextRequest, destination: string): NextResponse {
   const url = new URL(destination, req.url);
   // 308 = redireccion permanente (equivalente SEO de 301 para Google).
@@ -161,6 +171,10 @@ export function middleware(req: NextRequest): NextResponse {
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set('x-current-path', canonicalPath);
   requestHeaders.set('x-current-locale', activeLocale);
+  if (queryLang && SUPPORTED_LOCALES.has(queryLang)) {
+    const currentCookie = requestHeaders.get('cookie');
+    requestHeaders.set('cookie', injectLocaleCookie(currentCookie, queryLang));
+  }
 
   return NextResponse.next({
     request: {
