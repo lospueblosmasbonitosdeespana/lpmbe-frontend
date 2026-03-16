@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
 import { getLocale } from 'next-intl/server';
@@ -93,7 +93,7 @@ export default async function EventoPage({
   const { slug } = await params;
   const evento = await fetchEvento(slug);
 
-  if (!evento) notFound();
+  if (!evento) permanentRedirect('/actualidad');
 
   const locale = await getLocale();
   const lang = SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? (locale as SupportedLocale) : 'es';

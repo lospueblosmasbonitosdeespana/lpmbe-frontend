@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
@@ -46,7 +46,7 @@ export default async function WebcamPuebloPage({
   const API_BASE = getApiUrl();
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
   if (!pueblo) {
-    notFound();
+    permanentRedirect("/pueblos");
   }
 
   const webcamsRes = await fetch(`${API_BASE}/pueblos/${pueblo.id}/webcams`, {

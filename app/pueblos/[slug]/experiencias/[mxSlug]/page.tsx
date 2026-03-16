@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getLugarLegacyBySlug, getApiUrl, type Pueblo } from "@/lib/api";
@@ -57,7 +58,13 @@ export async function generateMetadata({
   const { slug, mxSlug } = await params;
   const locale = await getLocale();
   const t = await getTranslations("mxPage");
-  const pueblo = await getLugarLegacyBySlug(slug, locale);
+  const pueblo = await getLugarLegacyBySlug(slug, locale).catch(() => null);
+  if (!pueblo) {
+    return {
+      title: "Experiencia | Los Pueblos Más Bonitos de España",
+      robots: { index: false, follow: true },
+    };
+  }
 
   // Buscar la multiexperiencia por slug (soportar formato plano y anidado)
   const mxItem = (pueblo.multiexperiencias ?? []).find((x: any) => {
@@ -118,7 +125,8 @@ export default async function MultiexperienciaPage({
   const { slug, mxSlug } = await params;
   const locale = await getLocale();
   const t = await getTranslations("mxPage");
-  const pueblo = await getLugarLegacyBySlug(slug, locale);
+  const pueblo = await getLugarLegacyBySlug(slug, locale).catch(() => null);
+  if (!pueblo) permanentRedirect("/pueblos");
 
   // Buscar la multiexperiencia por slug (soportar formato plano y anidado)
   const mxItem = (pueblo.multiexperiencias ?? []).find((x: any) => {
@@ -130,7 +138,7 @@ export default async function MultiexperienciaPage({
   const mx = (mxItem?.multiexperiencia ?? mxItem ?? null) as Multiexperiencia | null;
 
   if (!mx) {
-    throw new Error("Multiexperiencia no encontrada");
+    permanentRedirect(`/pueblos/${slug}/multiexperiencias`);
   }
 
   // Obtener paradas fusionadas (legacy + overrides + custom) desde el endpoint público del backend

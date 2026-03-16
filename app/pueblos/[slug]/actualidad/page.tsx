@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 import { getLocale } from 'next-intl/server';
 import ActualidadPuebloClient from './ActualidadPuebloClient';
 import { getPuebloBySlug } from '@/lib/api';
@@ -42,7 +42,7 @@ export default async function ActualidadPuebloPage({
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
 
   if (!pueblo) {
-    notFound();
+    permanentRedirect('/pueblos');
   }
 
   return (

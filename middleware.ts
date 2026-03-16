@@ -104,6 +104,16 @@ export function middleware(req: NextRequest): NextResponse {
   // /app es una ruta activa para redireccion inteligente a stores.
   if (pathname === '/app') return NextResponse.next();
 
+  // Legacy i18n con prefijo en path (/en/..., /fr/...) -> formato actual con ?lang=xx.
+  const localePrefixMatch = pathname.match(/^\/(en|fr|de|pt|it|ca)(\/.*)?$/);
+  if (localePrefixMatch) {
+    const legacyLocale = localePrefixMatch[1];
+    const restPath = normalizeCanonicalPath(localePrefixMatch[2] ?? '/');
+    const destination = new URL(restPath, req.url);
+    destination.searchParams.set('lang', legacyLocale);
+    return NextResponse.redirect(destination, 308);
+  }
+
   // URLs basura (WP feeds, assets, noticias-y-eventos sin id): redirigir a home o actualidad.
   if (pathname.endsWith('/feed') || pathname.endsWith('/feed/')) return permanentRedirect(req, '/');
   if (pathname.startsWith('/wp-content/') || pathname.startsWith('/wp-includes/')) return permanentRedirect(req, '/');

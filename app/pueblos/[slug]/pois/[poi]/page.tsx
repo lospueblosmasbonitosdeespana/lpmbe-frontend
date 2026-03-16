@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { permanentRedirect, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -95,7 +95,7 @@ export default async function PoiPage({
   const locale = await getLocale();
   const t = await getTranslations("poiPage");
   const data = await fetchPoi(puebloSlug, poi, locale);
-  if (!data) notFound();
+  if (!data) permanentRedirect(`/pueblos/${puebloSlug}/lugares-de-interes`);
 
   // Redirect 301 desde URL legacy numérica a URL SEO
   if (isNumeric(poi) && data.slug) {

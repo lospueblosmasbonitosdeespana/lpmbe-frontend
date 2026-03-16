@@ -1,5 +1,5 @@
 import { cookies, headers } from 'next/headers';
-import { notFound } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
 import { getLocale, getTranslations } from 'next-intl/server';
@@ -243,7 +243,7 @@ export default async function ContenidoPage({
   const page = await fetchPageData(slug, locale);
 
   if (!page) {
-    notFound();
+    permanentRedirect('/actualidad');
   }
 
   // Páginas estáticas (contacto, privacidad, aviso-legal, cookies): traducidas con DeepL

@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale } from "next-intl/server";
@@ -101,9 +101,10 @@ export default async function CategoriaPage({
   const { slug, categoriaSlug } = await params;
   const locale = await getLocale();
   const categoriaKey = CATEGORIA_SLUG_TO_KEY[categoriaSlug];
-  if (!categoriaKey) notFound();
+  if (!categoriaKey) permanentRedirect(`/pueblos/${slug}`);
 
-  const pueblo = await getPuebloBySlug(slug, locale);
+  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+  if (!pueblo) permanentRedirect("/pueblos");
   const pois = (pueblo.pois ?? []) as Poi[];
   const multiexperiencias =
     ((pueblo as { multiexperiencias?: MultiexperienciaEntry[] }).multiexperiencias ?? []);

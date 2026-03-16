@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
@@ -41,7 +41,12 @@ export async function generateMetadata({
   const locale = await getLocale();
   const API_BASE = getApiUrl();
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-  if (!pueblo) return { title: "Pueblo no encontrado" };
+  if (!pueblo) {
+    return {
+      title: "Video | Los Pueblos Más Bonitos de España",
+      robots: { index: false, follow: true },
+    };
+  }
 
   const videosRes = await fetch(`${API_BASE}/pueblos/${pueblo.id}/videos`, { cache: "no-store" });
   let videos: Video[] = [];
@@ -53,7 +58,12 @@ export async function generateMetadata({
     }
   }
   const video = videos.find((v) => extractYoutubeId(v.url) === videoId);
-  if (!video) return { title: "Video no encontrado" };
+  if (!video) {
+    return {
+      title: `Videos de ${pueblo.nombre} | Los Pueblos Más Bonitos de España`,
+      robots: { index: false, follow: true },
+    };
+  }
 
   const path = `/pueblos/${pueblo.slug}/videos/${videoId}`;
   const title = `Video: ${video.titulo} | ${pueblo.nombre} | Los Pueblos Más Bonitos de España`;
@@ -87,7 +97,7 @@ export default async function VideoWatchPage({
   const base = getBaseUrl();
 
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-  if (!pueblo) notFound();
+  if (!pueblo) permanentRedirect("/pueblos");
 
   const videosRes = await fetch(`${API_BASE}/pueblos/${pueblo.id}/videos`, { cache: "no-store" });
   let videos: Video[] = [];
@@ -100,7 +110,7 @@ export default async function VideoWatchPage({
   }
 
   const video = videos.find((v) => extractYoutubeId(v.url) === videoId);
-  if (!video) notFound();
+  if (!video) permanentRedirect(`/pueblos/${pueblo.slug}/videos`);
 
   const embedUrl = getEmbedUrl(video.url);
   const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
