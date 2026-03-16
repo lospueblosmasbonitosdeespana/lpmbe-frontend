@@ -58,14 +58,14 @@ export async function generateMetadata({
   const evento = await fetchEvento(slug);
 
   if (!evento) {
-    return { title: 'Evento no encontrado | Los Pueblos Más Bonitos de España' };
+    return { title: 'Evento no encontrado' };
   }
 
   const description = evento.resumen ?? '';
 
   const path = `/eventos/${slug}`;
   return {
-    title: `${evento.titulo} | Los Pueblos Más Bonitos de España`,
+    title: evento.titulo,
     description: description || undefined,
     alternates: {
       canonical: getCanonicalUrl(path, lang),

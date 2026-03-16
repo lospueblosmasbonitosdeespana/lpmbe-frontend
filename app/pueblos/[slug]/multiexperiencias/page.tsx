@@ -30,7 +30,7 @@ export async function generateMetadata({
   const pueblo = await getPuebloBySlug(slug, locale);
   const path = `/pueblos/${pueblo.slug}/multiexperiencias`;
   return {
-    title: `Multiexperiencias en ${pueblo.nombre} – Los Pueblos Más Bonitos de España`,
+    title: `Multiexperiencias en ${pueblo.nombre}`,
     description: `Experiencias y actividades para descubrir ${pueblo.nombre}.`,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),

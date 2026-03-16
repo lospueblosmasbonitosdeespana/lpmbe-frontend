@@ -16,11 +16,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-  if (!pueblo) return { title: 'Actualidad | Los Pueblos Más Bonitos de España' };
+  if (!pueblo) return { title: 'Actualidad' };
 
   const path = `/pueblos/${pueblo.slug}/actualidad`;
   return {
-    title: `Actualidad de ${pueblo.nombre} | Los Pueblos Más Bonitos de España`,
+    title: `Actualidad de ${pueblo.nombre}`,
     description: `Noticias, eventos y novedades de ${pueblo.nombre}.`,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),

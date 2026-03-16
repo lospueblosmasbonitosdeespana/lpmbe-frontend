@@ -43,7 +43,7 @@ export async function generateMetadata({
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
   if (!pueblo) {
     return {
-      title: "Video | Los Pueblos Más Bonitos de España",
+      title: "Video",
       robots: { index: false, follow: true },
     };
   }
@@ -60,13 +60,13 @@ export async function generateMetadata({
   const video = videos.find((v) => extractYoutubeId(v.url) === videoId);
   if (!video) {
     return {
-      title: `Videos de ${pueblo.nombre} | Los Pueblos Más Bonitos de España`,
+      title: `Videos de ${pueblo.nombre}`,
       robots: { index: false, follow: true },
     };
   }
 
   const path = `/pueblos/${pueblo.slug}/videos/${videoId}`;
-  const title = `Video: ${video.titulo} | ${pueblo.nombre} | Los Pueblos Más Bonitos de España`;
+  const title = `Video: ${video.titulo} | ${pueblo.nombre}`;
   const description = `Video sobre ${pueblo.nombre}: ${video.titulo}.`;
 
   return {

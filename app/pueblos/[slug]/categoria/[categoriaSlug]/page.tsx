@@ -84,7 +84,7 @@ export async function generateMetadata({
   const label = CATEGORIA_LABELS[categoriaSlug];
   const path = `/pueblos/${pueblo.slug}/categoria/${categoriaSlug}`;
   return {
-    title: `${label} en ${pueblo.nombre} – Los Pueblos Más Bonitos de España`,
+    title: `${label} en ${pueblo.nombre}`,
     description: `${CATEGORIA_DESCRIPTIONS[categoriaSlug]} en ${pueblo.nombre}.`,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),

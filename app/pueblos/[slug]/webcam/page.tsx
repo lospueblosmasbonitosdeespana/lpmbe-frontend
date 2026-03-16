@@ -15,11 +15,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-  if (!pueblo) return { title: "Webcam | Los Pueblos Más Bonitos de España" };
+  if (!pueblo) return { title: "Webcam" };
 
   const path = `/pueblos/${pueblo.slug}/webcam`;
   return {
-    title: `Webcam de ${pueblo.nombre} | Los Pueblos Más Bonitos de España`,
+    title: `Webcam de ${pueblo.nombre}`,
     description: `Webcams y vistas en directo de ${pueblo.nombre}.`,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),

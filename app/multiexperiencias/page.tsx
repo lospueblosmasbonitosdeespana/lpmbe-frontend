@@ -1,9 +1,24 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 import { getApiUrl } from '@/lib/api';
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const path = '/multiexperiencias';
+  return {
+    title: 'Multiexperiencias',
+    description: 'Descubre experiencias únicas en nuestros pueblos.',
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+  };
+}
 
 type Multiexperiencia = {
   id: number;

@@ -1,4 +1,5 @@
 import { getProducts } from '@/src/lib/tiendaApi';
+import type { Metadata } from 'next';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import { Grid } from '@/app/components/ui/grid';
@@ -7,9 +8,24 @@ import { ProductCard } from '@/app/_components/tienda/ProductCard';
 import { NewsletterCta } from '@/app/_components/tienda/NewsletterCta';
 import type { Product } from '@/src/types/tienda';
 import { cn } from '@/lib/utils';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('tienda');
+  const locale = await getLocale();
+  const path = '/tienda';
+  return {
+    title: t('heroTitle'),
+    description: t('heroDesc'),
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+  };
+}
 
 export default async function TiendaPage() {
   const t = await getTranslations('tienda');

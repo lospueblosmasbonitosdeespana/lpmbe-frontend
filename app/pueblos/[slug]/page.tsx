@@ -257,7 +257,7 @@ export async function generateMetadata({
   const fotos = Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [];
   const heroImage = pueblo.foto_destacada ?? fotos[0]?.url ?? null;
   const baseTitle = `${pueblo.nombre} · ${pueblo.provincia} · ${pueblo.comunidad}`;
-  const title = `${pueblo.nombre}${tSeo("siteNameSuffix")}`;
+  const title = `${pueblo.nombre} (${pueblo.provincia})`;
   // Extraer texto plano del HTML para la descripción (sin tags)
   const descText = pueblo.descripcion
     ? cleanText(pueblo.descripcion.replace(/<[^>]*>/g, ""))

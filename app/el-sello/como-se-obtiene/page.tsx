@@ -1,12 +1,26 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Display, Lead, Title, Body } from "@/app/components/ui/typography";
 import SafeHtml from "@/app/_components/ui/SafeHtml";
 import type { SelloPage } from "@/lib/cms/sello";
 import { getLocale, getTranslations } from "next-intl/server";
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const path = "/el-sello/como-se-obtiene";
+  return {
+    title: "Cómo se obtiene el Sello",
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+  };
+}
 
 /* ===== ICONS ===== */
 function ProcessIcon({ className }: { className?: string }) {

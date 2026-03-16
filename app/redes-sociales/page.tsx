@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -12,14 +13,23 @@ import {
   Caption,
 } from "@/app/components/ui/typography";
 import { cn } from "@/lib/utils";
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Redes sociales | Los Pueblos Más Bonitos de España",
-  description:
-    "Síguenos en Instagram, Facebook, X, TikTok y YouTube. Colaboraciones con creadores de contenido e influencers. Únete a nuestra comunidad.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const path = "/redes-sociales";
+  return {
+    title: "Redes sociales",
+    description:
+      "Síguenos en Instagram, Facebook, X, TikTok y YouTube. Colaboraciones con creadores de contenido e influencers. Únete a nuestra comunidad.",
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+  };
+}
 
 const EMAIL_RRSS = "socialmedia@lospueblosmasbonitosdeespana.org";
 

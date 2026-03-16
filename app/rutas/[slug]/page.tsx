@@ -83,11 +83,11 @@ export async function generateMetadata({
 
   if (!ruta) {
     return {
-      title: `${tSeo("routeNotFoundTitle")}${tSeo("siteNameSuffix")}`,
+      title: tSeo("routeNotFoundTitle"),
     };
   }
 
-  const title = `${ruta.titulo}${tSeo("siteNameSuffix")}`;
+  const title = ruta.titulo;
   const description = ruta.descripcion
     ? createExcerpt(ruta.descripcion, 160)
     : tSeo("rutaDescriptionFallback");

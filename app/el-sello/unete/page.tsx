@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
@@ -12,8 +13,21 @@ import {
 import type { SelloPage } from '@/lib/cms/sello';
 import { CONTENIDO_UNETE } from '@/lib/cms/sello-content';
 import { getLocale, getTranslations } from 'next-intl/server';
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const path = '/el-sello/unete';
+  return {
+    title: 'Únete',
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+  };
+}
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 

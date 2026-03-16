@@ -191,7 +191,7 @@ export async function generateMetadata({
 
   if (!page) {
     return {
-      title: 'Contenido no encontrado | Los Pueblos Más Bonitos de España',
+      title: 'Contenido no encontrado',
     };
   }
 
@@ -209,7 +209,7 @@ export async function generateMetadata({
 
   const path = `/c/${slug}`;
   return {
-    title: `${titulo} | Los Pueblos Más Bonitos de España`,
+    title: titulo,
     description: description || undefined,
     robots: { index: true, follow: true },
     alternates: {

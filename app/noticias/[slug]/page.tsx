@@ -56,7 +56,7 @@ export async function generateMetadata({
   const noticia = await fetchNoticia(slug);
 
   if (!noticia) {
-    return { title: 'Noticia no encontrada | Los Pueblos Más Bonitos de España' };
+    return { title: 'Noticia no encontrada' };
   }
 
   const description = noticia.resumen ?? '';
@@ -65,7 +65,7 @@ export async function generateMetadata({
   const path = `/noticias/${String(slug).replace(/\/$/, '')}`;
   const canonicalUrl = getCanonicalUrl(path, lang);
   return {
-    title: `${noticia.titulo} | Los Pueblos Más Bonitos de España`,
+    title: noticia.titulo,
     description: description || undefined,
     alternates: {
       canonical: canonicalUrl,

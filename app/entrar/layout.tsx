@@ -1,16 +1,13 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
-import LegalPage from '@/app/_components/LegalPage';
 import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from '@/lib/seo';
-
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const path = '/aviso-legal';
+  const path = '/entrar';
   return {
-    title: 'Aviso legal',
+    title: 'Entrar',
+    description: 'Accede a tu cuenta de Los Pueblos Más Bonitos de España.',
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
@@ -18,6 +15,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function AvisoLegalPage() {
-  return <LegalPage staticKey="AVISO_LEGAL" slug="aviso-legal" />;
+export default function EntrarLayout({ children }: { children: React.ReactNode }) {
+  return children;
 }

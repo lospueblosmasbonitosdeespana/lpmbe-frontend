@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import SafeHtml from "@/app/_components/ui/SafeHtml";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -6,8 +7,21 @@ import { Display, Lead } from "@/app/components/ui/typography";
 import type { SelloPage } from "@/lib/cms/sello";
 import { CONTENIDO_INTERNACIONAL } from "@/lib/cms/sello-content";
 import { getLocale, getTranslations } from "next-intl/server";
+import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const path = "/el-sello/internacional";
+  return {
+    title: "Red internacional del Sello",
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+  };
+}
 
 function GlobeIcon({ className }: { className?: string }) {
   return (

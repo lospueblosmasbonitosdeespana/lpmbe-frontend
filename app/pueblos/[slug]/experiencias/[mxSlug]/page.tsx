@@ -61,7 +61,7 @@ export async function generateMetadata({
   const pueblo = await getLugarLegacyBySlug(slug, locale).catch(() => null);
   if (!pueblo) {
     return {
-      title: "Experiencia | Los Pueblos Más Bonitos de España",
+      title: "Experiencia",
       robots: { index: false, follow: true },
     };
   }
@@ -78,7 +78,7 @@ export async function generateMetadata({
   const tSeo = await getTranslations("seo");
   const tPueblo = await getTranslations("puebloPage");
   const expTitle = mx?.titulo ?? t("experienceFallback");
-  const title = `${expTitle} – ${pueblo.nombre}${tSeo("siteNameSuffix")}`;
+  const title = `${expTitle} – ${pueblo.nombre}`;
   const heroImage =
     mx?.foto ??
     pueblo.foto_destacada ??
