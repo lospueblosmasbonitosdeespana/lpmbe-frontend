@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale } from "next-intl/server";
 import { getPuebloBySlug } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
+import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Headline, Eyebrow, Body } from "@/app/components/ui/typography";
@@ -84,8 +84,8 @@ export async function generateMetadata({
   const label = CATEGORIA_LABELS[categoriaSlug];
   const path = `/pueblos/${pueblo.slug}/categoria/${categoriaSlug}`;
   return {
-    title: `${label} en ${pueblo.nombre}`,
-    description: `${CATEGORIA_DESCRIPTIONS[categoriaSlug]} en ${pueblo.nombre}.`,
+    title: seoTitle(`${label} en ${pueblo.nombre}`),
+    description: seoDescription(`${CATEGORIA_DESCRIPTIONS[categoriaSlug]} en ${pueblo.nombre}.`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug, getPueblosLite, getApiUrl } from "@/lib/api";
-import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, type SupportedLocale } from "@/lib/seo";
 import JsonLd from "@/app/components/seo/JsonLd";
 import PuebloActions from "./PuebloActions";
 import DescripcionPueblo from "./DescripcionPueblo";
@@ -257,7 +257,7 @@ export async function generateMetadata({
   const fotos = Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [];
   const heroImage = pueblo.foto_destacada ?? fotos[0]?.url ?? null;
   const baseTitle = `${pueblo.nombre} · ${pueblo.provincia} · ${pueblo.comunidad}`;
-  const title = `${pueblo.nombre} (${pueblo.provincia})`;
+  const title = seoTitle(`${pueblo.nombre} (${pueblo.provincia})`);
   // Extraer texto plano del HTML para la descripción (sin tags)
   const descText = pueblo.descripcion
     ? cleanText(pueblo.descripcion.replace(/<[^>]*>/g, ""))

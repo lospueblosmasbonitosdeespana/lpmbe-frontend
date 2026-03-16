@@ -6,7 +6,7 @@ import BackButton from '@/app/c/[slug]/BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
-import { getCanonicalUrl, getLocaleAlternates } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription } from '@/lib/seo';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 
 const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'] as const;
@@ -59,28 +59,29 @@ export async function generateMetadata({
     return { title: 'Noticia no encontrada' };
   }
 
-  const description = noticia.resumen ?? '';
+  const description = noticia.resumen ? seoDescription(noticia.resumen, 160) : undefined;
 
   // Path sin barra final; canonical absoluta única para que Google no elija otra variante.
   const path = `/noticias/${String(slug).replace(/\/$/, '')}`;
   const canonicalUrl = getCanonicalUrl(path, lang);
+  const title = seoTitle(noticia.titulo);
   return {
-    title: noticia.titulo,
-    description: description || undefined,
+    title,
+    description,
     alternates: {
       canonical: canonicalUrl,
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: noticia.titulo,
-      description: description || undefined,
+      title,
+      description,
       url: canonicalUrl,
       images: noticia.coverUrl ? [{ url: noticia.coverUrl }] : [],
     },
     twitter: {
       card: noticia.coverUrl ? 'summary_large_image' : 'summary',
-      title: noticia.titulo,
-      description: description || undefined,
+      title,
+      description,
     },
   };
 }

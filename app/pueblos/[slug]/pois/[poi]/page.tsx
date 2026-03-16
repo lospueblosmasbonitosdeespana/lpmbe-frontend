@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
+import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -57,14 +57,15 @@ export async function generateMetadata({
   const foto = pickFotoPrincipal(data);
   const descripcionHtml = pickDescripcionHtml(data);
   const puebloNombre = data.pueblo?.nombre ?? "";
-  const title = `${data.nombre}${puebloNombre ? ` · ${puebloNombre}` : ""}`;
+  const title = seoTitle(`${data.nombre}${puebloNombre ? ` · ${puebloNombre}` : ""}`);
   const path = `/pueblos/${slug}/pois/${data.slug ?? poi}`;
+  const rawDesc = descripcionHtml
+    ? descripcionHtml.replace(/<[^>]*>/g, "").trim()
+    : `Información sobre ${data.nombre}${puebloNombre ? ` en ${puebloNombre}` : ""}.`;
 
   return {
     title,
-    description: descripcionHtml
-      ? descripcionHtml.replace(/<[^>]*>/g, "").slice(0, 160)
-      : `Información sobre ${data.nombre}${puebloNombre ? ` en ${puebloNombre}` : ""}.`,
+    description: seoDescription(rawDesc, 160),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

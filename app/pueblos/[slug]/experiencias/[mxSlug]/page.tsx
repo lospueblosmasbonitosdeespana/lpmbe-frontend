@@ -3,20 +3,10 @@ import { permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getLugarLegacyBySlug, getApiUrl, type Pueblo } from "@/lib/api";
-import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 import ParadasMap from "@/app/_components/ParadasMap";
 import ParadaFoto from "./ParadaFoto";
 import JsonLd from "@/app/components/seo/JsonLd";
-
-// Helpers para SEO
-function cleanText(input: string) {
-  return input.replace(/\s+/g, " ").trim();
-}
-
-function cut(input: string, max = 160) {
-  const s = cleanText(input);
-  return s.length > max ? s.slice(0, max - 1).trimEnd() + "…" : s;
-}
 
 type Poi = {
   id: number;
@@ -78,7 +68,7 @@ export async function generateMetadata({
   const tSeo = await getTranslations("seo");
   const tPueblo = await getTranslations("puebloPage");
   const expTitle = mx?.titulo ?? t("experienceFallback");
-  const title = `${expTitle} – ${pueblo.nombre}`;
+  const title = seoTitle(`${expTitle} – ${pueblo.nombre}`);
   const heroImage =
     mx?.foto ??
     pueblo.foto_destacada ??
@@ -86,7 +76,7 @@ export async function generateMetadata({
     null;
   const descSource = mx?.descripcion ?? null;
   const description = descSource
-    ? cut(descSource, 160)
+    ? seoDescription(descSource, 160)
     : tSeo("mxDescriptionFallback");
   const path = `/pueblos/${pueblo.slug}/experiencias/${mxSlug}`;
 

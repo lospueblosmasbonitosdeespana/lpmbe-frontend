@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getLocale } from "next-intl/server";
 import { getPuebloBySlug } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
+import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Title, Body, Eyebrow } from "@/app/components/ui/typography";
@@ -30,8 +30,8 @@ export async function generateMetadata({
   const pueblo = await getPuebloBySlug(slug, locale);
   const path = `/pueblos/${pueblo.slug}/multiexperiencias`;
   return {
-    title: `Multiexperiencias en ${pueblo.nombre}`,
-    description: `Experiencias y actividades para descubrir ${pueblo.nombre}.`,
+    title: seoTitle(`Multiexperiencias en ${pueblo.nombre}`),
+    description: seoDescription(`Experiencias y actividades para descubrir ${pueblo.nombre}.`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

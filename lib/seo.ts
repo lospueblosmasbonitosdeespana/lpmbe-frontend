@@ -85,3 +85,25 @@ const OG_LOCALE_MAP: Record<SupportedLocale, string> = {
 export function getOGLocale(locale: SupportedLocale): string {
   return OG_LOCALE_MAP[locale] ?? 'es_ES';
 }
+
+const TEMPLATE_SUFFIX_LEN = ` | ${SITE_NAME}`.length; // 37
+const MAX_TITLE_TOTAL = 60;
+const MAX_PAGE_TITLE = MAX_TITLE_TOTAL - TEMPLATE_SUFFIX_LEN; // 23
+
+/**
+ * Trunca un título de página para que al aplicar el template no exceda 60 chars.
+ * Si cabe entero, lo devuelve tal cual. Si no, corta con "…".
+ */
+export function seoTitle(title: string): string {
+  if (title.length <= MAX_PAGE_TITLE) return title;
+  return title.slice(0, MAX_PAGE_TITLE - 1).trimEnd() + '…';
+}
+
+/**
+ * Trunca una meta description a max chars (por defecto 155).
+ */
+export function seoDescription(text: string, max = 155): string {
+  const clean = text.replace(/\s+/g, ' ').trim();
+  if (clean.length <= max) return clean;
+  return clean.slice(0, max - 1).trimEnd() + '…';
+}

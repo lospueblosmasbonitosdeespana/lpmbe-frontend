@@ -3,7 +3,7 @@ import { permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
+import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +19,8 @@ export async function generateMetadata({
 
   const path = `/pueblos/${pueblo.slug}/webcam`;
   return {
-    title: `Webcam de ${pueblo.nombre}`,
-    description: `Webcams y vistas en directo de ${pueblo.nombre}.`,
+    title: seoTitle(`Webcam de ${pueblo.nombre}`),
+    description: seoDescription(`Webcams y vistas en directo de ${pueblo.nombre}.`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

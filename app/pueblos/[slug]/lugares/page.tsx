@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getLocale } from "next-intl/server";
 import { getPuebloBySlug, getApiUrl } from "@/lib/api";
+import { seoTitle, seoDescription } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Title, Body, Eyebrow } from "@/app/components/ui/typography";
@@ -46,8 +47,8 @@ export async function generateMetadata({
   const locale = await getLocale();
   const pueblo = await getPuebloBySlug(slug, locale);
   return {
-    title: `Lugares a visitar en ${pueblo.nombre}`,
-    description: `Puntos de interés, rutas y experiencias para descubrir ${pueblo.nombre}.`,
+    title: seoTitle(`Lugares a visitar en ${pueblo.nombre}`),
+    description: seoDescription(`Puntos de interés, rutas y experiencias para descubrir ${pueblo.nombre}.`),
   };
 }
 

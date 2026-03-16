@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getRutas, getRutaById, getRutaMapa } from "@/lib/api";
-import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 import { sanitizeHtml, createExcerpt } from "@/lib/sanitizeHtml";
 import RutaParadasConMapa from "@/app/_components/RutaParadasConMapa";
 import JsonLd from "@/app/components/seo/JsonLd";
@@ -87,9 +87,9 @@ export async function generateMetadata({
     };
   }
 
-  const title = ruta.titulo;
+  const title = seoTitle(ruta.titulo);
   const description = ruta.descripcion
-    ? createExcerpt(ruta.descripcion, 160)
+    ? seoDescription(createExcerpt(ruta.descripcion, 160), 160)
     : tSeo("rutaDescriptionFallback");
   const path = `/rutas/${ruta.slug}`;
 

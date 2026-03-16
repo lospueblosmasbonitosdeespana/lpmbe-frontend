@@ -3,7 +3,7 @@ import { permanentRedirect } from 'next/navigation';
 import { getLocale } from 'next-intl/server';
 import ActualidadPuebloClient from './ActualidadPuebloClient';
 import { getPuebloBySlug } from '@/lib/api';
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -20,8 +20,8 @@ export async function generateMetadata({
 
   const path = `/pueblos/${pueblo.slug}/actualidad`;
   return {
-    title: `Actualidad de ${pueblo.nombre}`,
-    description: `Noticias, eventos y novedades de ${pueblo.nombre}.`,
+    title: seoTitle(`Actualidad de ${pueblo.nombre}`),
+    description: seoDescription(`Noticias, eventos y novedades de ${pueblo.nombre}.`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
