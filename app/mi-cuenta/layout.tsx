@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 import { redirect } from "next/navigation";
 import { getMeServer } from "@/lib/me";
 import MiCuentaBreadcrumbs from "./components/MiCuentaBreadcrumbs";
 import { Container } from "@/app/components/ui/container";
+
+export const metadata: Metadata = {
+  title: 'Mi cuenta',
+  robots: { index: false, follow: false },
+};
 
 export default async function MiCuentaLayout({
   children,
