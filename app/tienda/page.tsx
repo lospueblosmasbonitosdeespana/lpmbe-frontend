@@ -17,9 +17,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('tienda');
   const locale = await getLocale();
   const path = '/tienda';
+  const rawTitle = t('heroTitle');
+  const rawDesc = t('heroDesc');
+  const normalizedTitle = rawTitle.replace(/&#x27;|&#39;|['’]/g, '');
+  const normalizedDesc = rawDesc.replace(/&#x27;|&#39;/g, "'");
   return {
-    title: seoTitle(t('heroTitle')),
-    description: seoDescription(t('heroDesc')),
+    title: seoTitle(normalizedTitle),
+    description: seoDescription(normalizedDesc),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
