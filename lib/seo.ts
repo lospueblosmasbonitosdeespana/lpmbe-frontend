@@ -90,20 +90,30 @@ const TEMPLATE_SUFFIX_LEN = ` | ${SITE_NAME}`.length; // 37
 const MAX_TITLE_TOTAL = 60;
 const MAX_PAGE_TITLE = MAX_TITLE_TOTAL - TEMPLATE_SUFFIX_LEN; // 23
 
+function decodeBasicHtmlEntities(text: string): string {
+  return text
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;|&#39;/g, "'");
+}
+
 /**
  * Trunca un título de página para que al aplicar el template no exceda 60 chars.
  * Si cabe entero, lo devuelve tal cual. Si no, corta con "…".
  */
 export function seoTitle(title: string): string {
-  if (title.length <= MAX_PAGE_TITLE) return title;
-  return title.slice(0, MAX_PAGE_TITLE - 1).trimEnd() + '…';
+  const normalized = decodeBasicHtmlEntities(title).replace(/\s+/g, " ").trim();
+  if (normalized.length <= MAX_PAGE_TITLE) return normalized;
+  return normalized.slice(0, MAX_PAGE_TITLE - 1).trimEnd() + '…';
 }
 
 /**
  * Trunca una meta description a max chars (por defecto 155).
  */
 export function seoDescription(text: string, max = 155): string {
-  const clean = text.replace(/\s+/g, ' ').trim();
+  const clean = decodeBasicHtmlEntities(text).replace(/\s+/g, ' ').trim();
   const safeMax = Math.min(max, 155);
   if (clean.length <= safeMax) return clean;
   return clean.slice(0, safeMax - 1).trimEnd() + '…';
