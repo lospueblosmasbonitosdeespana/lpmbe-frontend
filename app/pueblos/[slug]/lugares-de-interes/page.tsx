@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale } from "next-intl/server";
 import { getPuebloBySlug } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
+import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Title, Body, Eyebrow } from "@/app/components/ui/typography";
@@ -27,11 +27,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
-  const pueblo = await getPuebloBySlug(slug, locale);
-  const path = `/pueblos/${pueblo.slug}/lugares-de-interes`;
+  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+  const safeSlug = pueblo?.slug ?? slug;
+  const safeName = pueblo?.nombre ?? slugToTitle(slug) ?? "Pueblo";
+  const path = `/pueblos/${safeSlug}/lugares-de-interes`;
   return {
-    title: `Lugares de interés en ${pueblo.nombre}`,
-    description: `Descubre los puntos de interés y lugares que no te puedes perder en ${pueblo.nombre}.`,
+    title: seoTitle(`Lugares de interés en ${safeName}`),
+    description: seoDescription(`Descubre los puntos de interés y lugares que no te puedes perder en ${safeName}.`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

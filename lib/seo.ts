@@ -104,6 +104,16 @@ export function seoTitle(title: string): string {
  */
 export function seoDescription(text: string, max = 155): string {
   const clean = text.replace(/\s+/g, ' ').trim();
-  if (clean.length <= max) return clean;
-  return clean.slice(0, max - 1).trimEnd() + '…';
+  const safeMax = Math.min(max, 155);
+  if (clean.length <= safeMax) return clean;
+  return clean.slice(0, safeMax - 1).trimEnd() + '…';
+}
+
+/** Convierte un slug URL en texto legible para fallbacks SEO. */
+export function slugToTitle(slug: string): string {
+  return decodeURIComponent(slug)
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }

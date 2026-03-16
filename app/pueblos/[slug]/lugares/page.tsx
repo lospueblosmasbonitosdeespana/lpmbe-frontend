@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getLocale } from "next-intl/server";
 import { getPuebloBySlug, getApiUrl } from "@/lib/api";
-import { seoTitle, seoDescription } from "@/lib/seo";
+import { seoTitle, seoDescription, slugToTitle } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Title, Body, Eyebrow } from "@/app/components/ui/typography";
@@ -45,10 +45,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
-  const pueblo = await getPuebloBySlug(slug, locale);
+  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+  const safeName = pueblo?.nombre ?? slugToTitle(slug) ?? "Pueblo";
   return {
-    title: seoTitle(`Lugares a visitar en ${pueblo.nombre}`),
-    description: seoDescription(`Puntos de interés, rutas y experiencias para descubrir ${pueblo.nombre}.`),
+    title: seoTitle(`Lugares a visitar en ${safeName}`),
+    description: seoDescription(`Puntos de interés, rutas y experiencias para descubrir ${safeName}.`),
   };
 }
 

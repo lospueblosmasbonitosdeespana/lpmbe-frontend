@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getLocale } from "next-intl/server";
 import { getPuebloBySlug } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
+import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Title, Body, Eyebrow } from "@/app/components/ui/typography";
@@ -27,11 +27,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
-  const pueblo = await getPuebloBySlug(slug, locale);
-  const path = `/pueblos/${pueblo.slug}/multiexperiencias`;
+  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+  const safeSlug = pueblo?.slug ?? slug;
+  const safeName = pueblo?.nombre ?? slugToTitle(slug) ?? "Pueblo";
+  const path = `/pueblos/${safeSlug}/multiexperiencias`;
   return {
-    title: seoTitle(`Multiexperiencias en ${pueblo.nombre}`),
-    description: seoDescription(`Experiencias y actividades para descubrir ${pueblo.nombre}.`),
+    title: seoTitle(`Multiexperiencias en ${safeName}`),
+    description: seoDescription(`Experiencias y actividades para descubrir ${safeName}.`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

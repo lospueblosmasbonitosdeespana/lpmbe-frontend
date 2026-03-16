@@ -7,7 +7,7 @@ import BackButton from './BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
-import { getCanonicalUrl, getLocaleAlternates } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle } from '@/lib/seo';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 import ContenidoImageCarousel from '@/app/components/ContenidoImageCarousel';
 
@@ -168,7 +168,14 @@ async function fetchPageData(slug: string, lang: string): Promise<
 }
 
 function plainDescription(htmlOrMd: string): string {
-  const plainText = htmlOrMd
+  const unescaped = htmlOrMd
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&nbsp;/g, ' ');
+  const plainText = unescaped
     .replace(/<[^>]+>/g, '')
     .replace(/[#*\[\]()]/g, '')
     .replace(/\n+/g, ' ')
@@ -196,12 +203,13 @@ export async function generateMetadata({
   }
 
   const titulo = page.data.titulo;
-  const description =
+  const rawDescription =
     page.type === 'contenido'
       ? (page.data.resumen ?? (page.data.contenidoMd ? plainDescription(page.data.contenidoMd) : ''))
       : page.type === 'static' && page.data.contenido
         ? plainDescription(page.data.contenido)
         : '';
+  const description = rawDescription ? seoDescription(plainDescription(rawDescription), 155) : '';
   const coverUrl =
     page.type === 'contenido'
       ? (page.data.coverUrl || page.data.galleryUrls?.[0])
@@ -209,7 +217,7 @@ export async function generateMetadata({
 
   const path = `/c/${slug}`;
   return {
-    title: titulo,
+    title: seoTitle(titulo),
     description: description || undefined,
     robots: { index: true, follow: true },
     alternates: {
@@ -217,14 +225,14 @@ export async function generateMetadata({
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: titulo,
+      title: seoTitle(titulo),
       description: description || undefined,
       url: getCanonicalUrl(path, lang),
       images: coverUrl ? [{ url: coverUrl }] : [],
     },
     twitter: {
       card: coverUrl ? 'summary_large_image' : 'summary',
-      title: titulo,
+      title: seoTitle(titulo),
       description: description || undefined,
     },
   };

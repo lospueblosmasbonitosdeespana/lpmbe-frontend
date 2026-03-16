@@ -9,7 +9,7 @@ import { NewsletterCta } from '@/app/_components/tienda/NewsletterCta';
 import type { Product } from '@/src/types/tienda';
 import { cn } from '@/lib/utils';
 import { getLocale, getTranslations } from 'next-intl/server';
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,8 +18,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = '/tienda';
   return {
-    title: t('heroTitle'),
-    description: t('heroDesc'),
+    title: seoTitle(t('heroTitle')),
+    description: seoDescription(t('heroDesc')),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

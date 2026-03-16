@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug, getPueblosLite, getApiUrl } from "@/lib/api";
-import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, type SupportedLocale } from "@/lib/seo";
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import JsonLd from "@/app/components/seo/JsonLd";
 import PuebloActions from "./PuebloActions";
 import DescripcionPueblo from "./DescripcionPueblo";
@@ -253,7 +253,20 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const tSeo = await getTranslations("seo");
-  const pueblo = await getPuebloBySlug(slug, locale);
+  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+  if (!pueblo) {
+    const safeName = slugToTitle(slug) || "Pueblo";
+    const path = `/pueblos/${slug}`;
+    return {
+      title: seoTitle(safeName),
+      description: seoDescription(tSeo("puebloDescriptionFallback")),
+      alternates: {
+        canonical: getCanonicalUrl(path, locale as SupportedLocale),
+        languages: getLocaleAlternates(path),
+      },
+      robots: { index: true, follow: true },
+    };
+  }
   const fotos = Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [];
   const heroImage = pueblo.foto_destacada ?? fotos[0]?.url ?? null;
   const baseTitle = `${pueblo.nombre} · ${pueblo.provincia} · ${pueblo.comunidad}`;
@@ -263,8 +276,8 @@ export async function generateMetadata({
     ? cleanText(pueblo.descripcion.replace(/<[^>]*>/g, ""))
     : null;
   const description = descText
-    ? cut(descText, 160)
-    : tSeo("puebloDescriptionFallback");
+    ? seoDescription(descText, 155)
+    : seoDescription(tSeo("puebloDescriptionFallback"));
   const path = `/pueblos/${pueblo.slug}`;
 
   return {
