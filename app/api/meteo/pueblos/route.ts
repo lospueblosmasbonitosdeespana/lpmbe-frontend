@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fetchWithTimeout } from "@/lib/fetch-safe";
 
 export const dynamic = "force-dynamic";
 
@@ -20,26 +21,31 @@ export async function GET() {
   console.log("[api/meteo/pueblos] Fetching:", url);
   
   try {
-    const r = await fetch(url, { cache: "no-store" });
+    const r = await fetchWithTimeout(url, { cache: "no-store", timeoutMs: 7000, retries: 0 });
     const text = await r.text();
     
     console.log("[api/meteo/pueblos] Backend response:", r.status);
     
     if (!r.ok) {
       console.error("[api/meteo/pueblos] Backend error:", text.substring(0, 500));
+      // Evita 5XX/timeout hacia el frontend y crawlers: devolvemos lista vacía temporal.
+      return NextResponse.json([], {
+        status: 200,
+        headers: { "x-meteo-fallback": `backend-${r.status}` },
+      });
     }
-    
+
     return new NextResponse(text, {
-      status: r.status,
+      status: 200,
       headers: {
         "content-type": r.headers.get("content-type") ?? "application/json",
       },
     });
   } catch (err: any) {
     console.error("[api/meteo/pueblos] Fetch error:", err.message);
-    return new NextResponse(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { "content-type": "application/json" },
+    return NextResponse.json([], {
+      status: 200,
+      headers: { "x-meteo-fallback": "exception" },
     });
   }
 }

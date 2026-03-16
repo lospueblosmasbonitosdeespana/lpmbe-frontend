@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { getComunidadFlagSrc } from "@/lib/flags";
 import { SortBar } from "./SortBar";
+import { fetchWithTimeout } from "@/lib/fetch-safe";
 
 type MeteoAlerta = {
   kind: "RAIN" | "SNOW" | "WIND" | "FROST" | "HEAT" | string;
@@ -200,10 +201,23 @@ export default async function MeteoPage(props: { searchParams: Promise<{ sort?: 
   };
 
   const origin = await getOrigin();
-  const res = await fetch(`${origin}/api/meteo/pueblos`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`Meteo agregada: HTTP ${res.status}`);
+  let items: MeteoItem[] = [];
+  try {
+    const res = await fetchWithTimeout(`${origin}/api/meteo/pueblos`, {
+      cache: "no-store",
+      timeoutMs: 7000,
+      retries: 0,
+    });
+    if (res.ok) {
+      const data = await res.json();
+      items = Array.isArray(data) ? data : [];
+    } else {
+      console.error(`[METEO] /api/meteo/pueblos -> HTTP ${res.status}`);
+    }
+  } catch (err) {
+    console.error("[METEO] Timeout/error cargando datos:", err);
+  }
 
-  const items: MeteoItem[] = await res.json();
   const sorted = sortItems(items, sortMode);
 
   return (
