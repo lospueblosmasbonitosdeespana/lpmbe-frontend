@@ -21,15 +21,16 @@ export const revalidate = 0;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = "/";
+  const homeTitle = "Pueblos, rutas y experiencias en Espana";
   return {
-    title: { absolute: `${SITE_NAME} – Pueblos, rutas y experiencias` },
+    title: { absolute: homeTitle },
     description: DEFAULT_DESCRIPTION,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: `${SITE_NAME} – Pueblos, rutas y experiencias`,
+      title: homeTitle,
       description: DEFAULT_DESCRIPTION,
     },
   };
