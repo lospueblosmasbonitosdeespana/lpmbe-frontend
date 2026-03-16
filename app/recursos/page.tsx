@@ -11,13 +11,13 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "Recursos turísticos | Los Pueblos Más Bonitos de España",
+  title: "Recursos turísticos",
   description:
-    "Experiencias y lugares únicos que no te puedes perder cuando hagas rutas por nuestros pueblos. Los socios del Club de Amigos disfrutan de descuentos exclusivos.",
+    "Experiencias y lugares únicos en nuestros pueblos. Descuentos exclusivos para socios del Club de Amigos.",
   openGraph: {
-    title: "Recursos turísticos | Los Pueblos Más Bonitos de España",
+    title: "Recursos turísticos",
     description:
-      "Experiencias y lugares únicos que no te puedes perder cuando hagas rutas por nuestros pueblos. Los socios del Club de Amigos disfrutan de descuentos exclusivos.",
+      "Experiencias y lugares únicos en nuestros pueblos. Descuentos exclusivos para socios del Club de Amigos.",
   },
 };
 

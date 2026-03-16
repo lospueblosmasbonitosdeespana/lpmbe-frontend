@@ -131,6 +131,12 @@ export function middleware(req: NextRequest): NextResponse {
     return NextResponse.redirect(destination, 301);
   }
 
+  // Secciones consolidadas en /actualidad (301 en middleware para evitar 308 de permanentRedirect).
+  if (pathname === '/noticias') return permanentRedirect(req, '/actualidad?tipo=NOTICIA');
+  if (pathname === '/eventos') return permanentRedirect(req, '/actualidad?tipo=EVENTO');
+  if (pathname === '/agenda') return permanentRedirect(req, '/actualidad?tipo=EVENTO');
+  if (pathname === '/articulos') return permanentRedirect(req, '/actualidad?tipo=ARTICULO');
+
   // URLs basura (WP feeds, assets, noticias-y-eventos sin id): redirigir a home o actualidad.
   if (pathname.endsWith('/feed') || pathname.endsWith('/feed/')) return permanentRedirect(req, '/');
   if (pathname.startsWith('/wp-content/') || pathname.startsWith('/wp-includes/')) return permanentRedirect(req, '/');
