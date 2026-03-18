@@ -112,18 +112,16 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
         typeRaw === 'heading' || typeRaw === 'text' || typeRaw === 'image' || typeRaw === 'button' || typeRaw === 'divider'
           ? (typeRaw as NewsletterBlockType)
           : 'text';
+      const alignRaw = String(b.align || 'left');
+      const align: 'left' | 'center' | 'right' =
+        alignRaw === 'center' ? 'center' : alignRaw === 'right' ? 'right' : 'left';
       return {
         id: String(b.id || `${Date.now()}-${Math.random().toString(36).slice(2)}`),
         type,
         content: String(b.content || ''),
         url: String(b.url || ''),
         label: String(b.label || ''),
-        align:
-          String(b.align || 'left') === 'center'
-            ? 'center'
-            : String(b.align || 'left') === 'right'
-              ? 'right'
-              : 'left',
+        align,
       };
     })
     .filter((b) => b.id);

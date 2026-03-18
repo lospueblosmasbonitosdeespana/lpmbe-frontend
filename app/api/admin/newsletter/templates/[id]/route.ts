@@ -8,10 +8,14 @@ function parseTemplateId(raw: string): number | null {
   return id;
 }
 
-export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  _: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const token = await getToken();
   if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  const id = parseTemplateId(params.id);
+  const resolvedParams = await params;
+  const id = parseTemplateId(resolvedParams.id);
   if (!id) return NextResponse.json({ message: 'ID inválido' }, { status: 400 });
 
   try {
@@ -29,10 +33,14 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const token = await getToken();
   if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  const id = parseTemplateId(params.id);
+  const resolvedParams = await params;
+  const id = parseTemplateId(resolvedParams.id);
   if (!id) return NextResponse.json({ message: 'ID inválido' }, { status: 400 });
 
   try {
@@ -56,10 +64,14 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const token = await getToken();
   if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  const id = parseTemplateId(params.id);
+  const resolvedParams = await params;
+  const id = parseTemplateId(resolvedParams.id);
   if (!id) return NextResponse.json({ message: 'ID inválido' }, { status: 400 });
 
   try {
