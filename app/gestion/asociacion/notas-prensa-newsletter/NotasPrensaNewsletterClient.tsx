@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 
@@ -94,6 +94,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [provinciaInput, setProvinciaInput] = useState('');
   const [selectedCcaas, setSelectedCcaas] = useState<string[]>([]);
   const [selectedProvincias, setSelectedProvincias] = useState<string[]>([]);
+  const pdfInputRef = useRef<HTMLInputElement | null>(null);
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -421,9 +422,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   }
 
   async function uploadPressPdf() {
-    if (!pressPdfFile) {
-      throw new Error('Selecciona un PDF primero');
-    }
+    if (!pressPdfFile) return '';
     if (!/\.pdf$/i.test(pressPdfFile.name) && pressPdfFile.type !== 'application/pdf') {
       throw new Error('El archivo debe ser PDF');
     }
@@ -446,6 +445,20 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       return url;
     } finally {
       setUploadingPdf(false);
+    }
+  }
+
+  async function handlePdfButtonClick() {
+    if (!pressPdfFile) {
+      pdfInputRef.current?.click();
+      return;
+    }
+    setError(null);
+    try {
+      await uploadPressPdf();
+      setMessage('PDF subido correctamente.');
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, 'Error subiendo PDF'));
     }
   }
 
@@ -916,6 +929,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
               <label className="block text-sm">
                 Subir PDF de la nota
                 <input
+                  ref={pdfInputRef}
                   type="file"
                   accept="application/pdf,.pdf"
                   onChange={(e) => {
@@ -928,23 +942,11 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  onClick={async () => {
-                    setError(null);
-                    try {
-                      if (!pressPdfFile && pressPdfUrl) {
-                        setMessage('PDF ya subido. Ya puedes pulsar "Enviar campaña".');
-                        return;
-                      }
-                      await uploadPressPdf();
-                      setMessage('PDF subido correctamente.');
-                    } catch (e: unknown) {
-                      setError(getErrorMessage(e, 'Error subiendo PDF'));
-                    }
-                  }}
+                  onClick={handlePdfButtonClick}
                   disabled={uploadingPdf || loading}
                   className="rounded-lg border border-border px-3 py-2 text-sm font-medium disabled:opacity-50"
                 >
-                  {uploadingPdf ? 'Subiendo PDF...' : 'Subir PDF'}
+                  {uploadingPdf ? 'Subiendo PDF...' : pressPdfFile ? 'Subir PDF' : 'Seleccionar PDF'}
                 </button>
                 <span className="text-xs text-muted-foreground">
                   {pressPdfFile ? `Seleccionado: ${pressPdfFile.name}` : pressPdfUrl ? 'PDF listo para enviar' : 'Aún no subido'}
