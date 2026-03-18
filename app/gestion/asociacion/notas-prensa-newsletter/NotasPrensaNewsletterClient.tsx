@@ -5,6 +5,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
+import Image from '@tiptap/extension-image';
 
 type Campaign = {
   id: number;
@@ -96,8 +97,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [provinciaInput, setProvinciaInput] = useState('');
   const [selectedCcaas, setSelectedCcaas] = useState<string[]>([]);
   const [selectedProvincias, setSelectedProvincias] = useState<string[]>([]);
+  const [insertedPhotoUrls, setInsertedPhotoUrls] = useState<string[]>([]);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const photosInputRef = useRef<HTMLInputElement | null>(null);
+  const htmlTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const editor = useEditor({
     extensions: [
@@ -107,6 +110,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       Link.configure({
         openOnClick: false,
         autolink: true,
+      }),
+      Image.configure({
+        inline: false,
+        allowBase64: false,
       }),
       Placeholder.configure({
         placeholder: 'Escribe aquí la nota de prensa...',
@@ -366,7 +373,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         photoUrlsForSend = await uploadPressPhotos();
       }
       if (mode === 'press' && photoUrlsForSend.length > 0) {
-        finalHtml = appendPressPhotos(finalHtml, photoUrlsForSend);
+        const pendingPhotoUrls = photoUrlsForSend.filter((u) => !insertedPhotoUrls.includes(u));
+        if (pendingPhotoUrls.length > 0) {
+          finalHtml = appendPressPhotos(finalHtml, pendingPhotoUrls);
+        }
       }
     }
 
@@ -422,6 +432,33 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     `;
   }
 
+  function insertPhotoIntoContent(url: string) {
+    const cleanUrl = String(url || '').trim();
+    if (!cleanUrl) return;
+
+    if (editorMode === 'visual' && editor) {
+      editor.chain().focus().setImage({ src: cleanUrl, alt: 'Imagen nota de prensa' }).run();
+      setInsertedPhotoUrls((prev) => (prev.includes(cleanUrl) ? prev : [...prev, cleanUrl]));
+      return;
+    }
+
+    const textarea = htmlTextareaRef.current;
+    const snippet = `<p><img src="${cleanUrl}" alt="Imagen nota de prensa" style="max-width:100%;height:auto;border-radius:8px;" /></p>`;
+    if (!textarea) {
+      setCampaignForm((s) => ({ ...s, html: `${s.html}\n${snippet}`.trim() }));
+      setInsertedPhotoUrls((prev) => (prev.includes(cleanUrl) ? prev : [...prev, cleanUrl]));
+      return;
+    }
+
+    const start = textarea.selectionStart ?? textarea.value.length;
+    const end = textarea.selectionEnd ?? textarea.value.length;
+    const before = campaignForm.html.slice(0, start);
+    const after = campaignForm.html.slice(end);
+    const next = `${before}${snippet}${after}`;
+    setCampaignForm((s) => ({ ...s, html: next }));
+    setInsertedPhotoUrls((prev) => (prev.includes(cleanUrl) ? prev : [...prev, cleanUrl]));
+  }
+
   async function uploadPressPhotos() {
     if (pressPhotoFiles.length === 0) return [];
     if (pressPhotoFiles.length > 10) {
@@ -446,6 +483,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         urls.push(String(data.url));
       }
       setPressPhotoUrls(urls);
+      setInsertedPhotoUrls([]);
       return urls;
     } finally {
       setUploadingPhotos(false);
@@ -550,7 +588,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         uploadedPhotoUrls = await uploadPressPhotos();
       }
       if (uploadedPhotoUrls.length > 0) {
-        finalHtml = appendPressPhotos(finalHtml, uploadedPhotoUrls);
+        const pendingPhotoUrls = uploadedPhotoUrls.filter((u) => !insertedPhotoUrls.includes(u));
+        if (pendingPhotoUrls.length > 0) {
+          finalHtml = appendPressPhotos(finalHtml, pendingPhotoUrls);
+        }
       }
 
       const res = await fetch('/api/admin/newsletter/publish-web', {
@@ -608,7 +649,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       html = editor.getHTML().trim();
     }
     if (pressPhotoUrls.length > 0) {
-      html = appendPressPhotos(html, pressPhotoUrls);
+      const pendingPhotoUrls = pressPhotoUrls.filter((u) => !insertedPhotoUrls.includes(u));
+      if (pendingPhotoUrls.length > 0) {
+        html = appendPressPhotos(html, pendingPhotoUrls);
+      }
     }
     return html;
   }
@@ -1066,6 +1110,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   </div>
                 ) : (
                   <textarea
+                    ref={htmlTextareaRef}
                     rows={8}
                     value={campaignForm.html}
                     onChange={(e) => setCampaignForm((s) => ({ ...s, html: e.target.value }))}
@@ -1106,7 +1151,16 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   {pressPhotoUrls.length > 0 ? (
                     <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
                       {pressPhotoUrls.map((url) => (
-                        <img key={url} src={url} alt="Foto nota de prensa" className="h-24 w-full rounded border object-cover" />
+                        <div key={url} className="space-y-1">
+                          <img src={url} alt="Foto nota de prensa" className="h-24 w-full rounded border object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => insertPhotoIntoContent(url)}
+                            className="w-full rounded border border-border px-2 py-1 text-xs font-medium hover:bg-muted"
+                          >
+                            Insertar en contenido
+                          </button>
+                        </div>
                       ))}
                     </div>
                   ) : null}
