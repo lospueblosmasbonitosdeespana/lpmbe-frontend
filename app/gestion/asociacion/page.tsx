@@ -81,6 +81,12 @@ const ACCESOS = [
     icon: <IconApp />,
   },
   {
+    href: '/gestion/asociacion/notas-prensa-newsletter',
+    title: 'Notas de prensa y Newsletter',
+    description: 'Envíos masivos, segmentación prensa y métricas de aperturas/clics',
+    icon: <IconNewsletter />,
+  },
+  {
     href: '/gestion/asociacion/prensa-medios',
     title: 'Prensa y Medios',
     description: 'Gestiona comunicados visibles en prensa, medios externos y kit de prensa',
