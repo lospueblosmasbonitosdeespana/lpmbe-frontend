@@ -5,7 +5,7 @@ import { getPuebloBySlug } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
-import { Title, Body, Eyebrow } from "@/app/components/ui/typography";
+import { Body, Eyebrow } from "@/app/components/ui/typography";
 import { PointsOfInterest } from "@/app/components/pueblos/PointsOfInterest";
 import ParadasMap from "@/app/_components/ParadasMap";
 
@@ -26,20 +26,35 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const locale = await getLocale();
-  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-  const safeSlug = pueblo?.slug ?? slug;
-  const safeName = pueblo?.nombre ?? slugToTitle(slug) ?? "Pueblo";
-  const path = `/pueblos/${safeSlug}/lugares-de-interes`;
-  return {
-    title: seoTitle(`Lugares de interés en ${safeName}${localeSuffix}`),
-    description: seoDescription(`Descubre los puntos de interés y lugares que no te puedes perder en ${safeName}.${localeSuffix}`),
-    alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
-      languages: getLocaleAlternates(path),
-    },
-  };
+  const fallbackName = slugToTitle(slug) || "Pueblo";
+  const fallbackPath = `/pueblos/${slug}/lugares-de-interes`;
+  try {
+    const locale = await getLocale();
+    const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+    const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+    const safeSlug = pueblo?.slug ?? slug;
+    const safeName = pueblo?.nombre ?? fallbackName;
+    const path = `/pueblos/${safeSlug}/lugares-de-interes`;
+    return {
+      title: seoTitle(`Lugares de interés en ${safeName}${localeSuffix}`),
+      description: seoDescription(`Descubre los puntos de interés y lugares que no te puedes perder en ${safeName}.${localeSuffix}`),
+      alternates: {
+        canonical: getCanonicalUrl(path, locale as SupportedLocale),
+        languages: getLocaleAlternates(path),
+      },
+      robots: { index: true, follow: true },
+    };
+  } catch {
+    return {
+      title: seoTitle(`Lugares de interés en ${fallbackName}`),
+      description: seoDescription(`Descubre los puntos de interés y lugares que no te puedes perder en ${fallbackName}.`),
+      alternates: {
+        canonical: getCanonicalUrl(fallbackPath),
+        languages: getLocaleAlternates(fallbackPath),
+      },
+      robots: { index: true, follow: true },
+    };
+  }
 }
 
 export default async function LugaresDeInteresPage({
@@ -89,7 +104,9 @@ export default async function LugaresDeInteresPage({
             </nav>
             <div className="mb-10">
               <Eyebrow className="mb-2">Qué ver</Eyebrow>
-              <Title as="h1">Lugares de interés en {pueblo.nombre}</Title>
+              <h1 className="font-serif text-2xl font-medium tracking-tight sm:text-3xl">
+                Lugares de interés en {pueblo.nombre}
+              </h1>
               <Body className="mt-2 text-muted-foreground">
                 No hay lugares de interés disponibles para este pueblo.
               </Body>
@@ -154,7 +171,9 @@ export default async function LugaresDeInteresPage({
 
           <div className="mb-10">
             <Eyebrow className="mb-2">Qué ver</Eyebrow>
-            <Title as="h1">Lugares de interés en {pueblo.nombre}</Title>
+            <h1 className="font-serif text-2xl font-medium tracking-tight sm:text-3xl">
+              Lugares de interés en {pueblo.nombre}
+            </h1>
             <Body className="mt-2 text-muted-foreground">
               {pois.length} {pois.length === 1 ? "punto de interés" : "puntos de interés"} para descubrir
             </Body>

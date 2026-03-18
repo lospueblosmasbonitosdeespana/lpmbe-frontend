@@ -6,7 +6,7 @@ import { getPuebloBySlug } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
-import { Title, Body, Eyebrow } from "@/app/components/ui/typography";
+import { Body, Eyebrow } from "@/app/components/ui/typography";
 
 export const dynamic = "force-dynamic";
 
@@ -26,20 +26,35 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const locale = await getLocale();
-  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-  const safeSlug = pueblo?.slug ?? slug;
-  const safeName = pueblo?.nombre ?? slugToTitle(slug) ?? "Pueblo";
-  const path = `/pueblos/${safeSlug}/multiexperiencias`;
-  return {
-    title: seoTitle(`Multiexperiencias en ${safeName}${localeSuffix}`),
-    description: seoDescription(`Experiencias y actividades para descubrir ${safeName}.${localeSuffix}`),
-    alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
-      languages: getLocaleAlternates(path),
-    },
-  };
+  const fallbackName = slugToTitle(slug) || "Pueblo";
+  const fallbackPath = `/pueblos/${slug}/multiexperiencias`;
+  try {
+    const locale = await getLocale();
+    const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+    const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+    const safeSlug = pueblo?.slug ?? slug;
+    const safeName = pueblo?.nombre ?? fallbackName;
+    const path = `/pueblos/${safeSlug}/multiexperiencias`;
+    return {
+      title: seoTitle(`Multiexperiencias en ${safeName}${localeSuffix}`),
+      description: seoDescription(`Experiencias y actividades para descubrir ${safeName}.${localeSuffix}`),
+      alternates: {
+        canonical: getCanonicalUrl(path, locale as SupportedLocale),
+        languages: getLocaleAlternates(path),
+      },
+      robots: { index: true, follow: true },
+    };
+  } catch {
+    return {
+      title: seoTitle(`Multiexperiencias en ${fallbackName}`),
+      description: seoDescription(`Experiencias y actividades para descubrir ${fallbackName}.`),
+      alternates: {
+        canonical: getCanonicalUrl(fallbackPath),
+        languages: getLocaleAlternates(fallbackPath),
+      },
+      robots: { index: true, follow: true },
+    };
+  }
 }
 
 export default async function MultiexperienciasPage({
@@ -88,7 +103,9 @@ export default async function MultiexperienciasPage({
             </nav>
             <div className="mb-10">
               <Eyebrow className="mb-2">Qué hacer</Eyebrow>
-              <Title as="h1">Multiexperiencias en {pueblo.nombre}</Title>
+              <h1 className="font-serif text-2xl font-medium tracking-tight sm:text-3xl">
+                Multiexperiencias en {pueblo.nombre}
+              </h1>
               <Body className="mt-2 text-muted-foreground">
                 Experiencias y actividades para descubrir el pueblo.
               </Body>
@@ -124,7 +141,9 @@ export default async function MultiexperienciasPage({
 
           <div className="mb-10">
             <Eyebrow className="mb-2 text-red-600">Qué hacer</Eyebrow>
-            <Title as="h1">Multiexperiencias en {pueblo.nombre}</Title>
+            <h1 className="font-serif text-2xl font-medium tracking-tight sm:text-3xl">
+              Multiexperiencias en {pueblo.nombre}
+            </h1>
             <Body className="mt-2 text-muted-foreground">
               Experiencias y actividades para descubrir el pueblo.
             </Body>

@@ -105,6 +105,7 @@ function decodeBasicHtmlEntities(text: string): string {
  */
 export function seoTitle(title: string): string {
   const normalized = decodeBasicHtmlEntities(title).replace(/\s+/g, " ").trim();
+  if (!normalized) return "Contenido";
   if (normalized.length <= MAX_PAGE_TITLE) return normalized;
   return normalized.slice(0, MAX_PAGE_TITLE - 1).trimEnd() + '…';
 }
@@ -114,6 +115,7 @@ export function seoTitle(title: string): string {
  */
 export function seoDescription(text: string, max = 155): string {
   const clean = decodeBasicHtmlEntities(text).replace(/\s+/g, ' ').trim();
+  if (!clean) return DEFAULT_DESCRIPTION;
   const safeMax = Math.min(max, 155);
   if (clean.length <= safeMax) return clean;
   return clean.slice(0, safeMax - 1).trimEnd() + '…';
@@ -121,7 +123,15 @@ export function seoDescription(text: string, max = 155): string {
 
 /** Convierte un slug URL en texto legible para fallbacks SEO. */
 export function slugToTitle(slug: string): string {
-  return decodeURIComponent(slug)
+  const decoded = (() => {
+    try {
+      return decodeURIComponent(slug);
+    } catch {
+      // Preserve the raw slug when malformed percent-encoding appears.
+      return slug;
+    }
+  })();
+  return decoded
     .split("-")
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))

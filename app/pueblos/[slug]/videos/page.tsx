@@ -12,33 +12,48 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const locale = await getLocale();
-  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-  const safeSlug = pueblo?.slug ?? slug;
-  const safeName = pueblo?.nombre ?? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const path = `/pueblos/${safeSlug}/videos`;
-  if (!pueblo) {
+  const fallbackName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const fallbackPath = `/pueblos/${slug}/videos`;
+
+  try {
+    const locale = await getLocale();
+    const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+    const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+    const safeSlug = pueblo?.slug ?? slug;
+    const safeName = pueblo?.nombre ?? fallbackName;
+    const path = `/pueblos/${safeSlug}/videos`;
+    if (!pueblo) {
+      return {
+        title: seoTitle(`Videos de ${safeName}${localeSuffix}`),
+        description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${safeName}.${localeSuffix}`),
+        alternates: {
+          canonical: getCanonicalUrl(path, locale as SupportedLocale),
+          languages: getLocaleAlternates(path),
+        },
+        robots: { index: true, follow: true },
+      };
+    }
+
+    const canonicalPath = `/pueblos/${pueblo.slug}/videos`;
     return {
-      title: seoTitle(`Videos de ${safeName}${localeSuffix}`),
-      description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${safeName}.${localeSuffix}`),
+      title: seoTitle(`Videos de ${pueblo.nombre}${localeSuffix}`),
+      description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${pueblo.nombre}.${localeSuffix}`),
       alternates: {
-        canonical: getCanonicalUrl(path, locale as SupportedLocale),
-        languages: getLocaleAlternates(path),
+        canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
+        languages: getLocaleAlternates(canonicalPath),
+      },
+    };
+  } catch {
+    return {
+      title: seoTitle(`Videos de ${fallbackName}`),
+      description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${fallbackName}.`),
+      alternates: {
+        canonical: getCanonicalUrl(fallbackPath),
+        languages: getLocaleAlternates(fallbackPath),
       },
       robots: { index: true, follow: true },
     };
   }
-
-  const canonicalPath = `/pueblos/${pueblo.slug}/videos`;
-  return {
-    title: seoTitle(`Videos de ${pueblo.nombre}${localeSuffix}`),
-    description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${pueblo.nombre}.${localeSuffix}`),
-    alternates: {
-      canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
-      languages: getLocaleAlternates(canonicalPath),
-    },
-  };
 }
 
 type Video = {
