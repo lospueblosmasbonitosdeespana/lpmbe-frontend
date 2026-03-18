@@ -49,7 +49,29 @@ export default async function LugaresDeInteresPage({
 }) {
   const { slug } = await params;
   const locale = await getLocale();
-  const pueblo = await getPuebloBySlug(slug, locale);
+  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+  if (!pueblo) {
+    return (
+      <main className="min-h-screen bg-background">
+        <Section spacing="md">
+          <Container>
+            <div className="rounded-xl border border-dashed border-border bg-card/50 px-8 py-16 text-center">
+              <h1 className="font-serif text-2xl font-medium text-foreground">Lugares de interés</h1>
+              <p className="mt-3 text-muted-foreground">
+                No se ha podido cargar este pueblo en este momento.
+              </p>
+              <Link
+                href="/pueblos"
+                className="mt-6 inline-block text-sm font-medium text-primary hover:underline"
+              >
+                Volver a pueblos
+              </Link>
+            </div>
+          </Container>
+        </Section>
+      </main>
+    );
+  }
 
   const pois = (pueblo.pois ?? []).filter((p: { categoria?: string }) => p.categoria === "POI");
 
