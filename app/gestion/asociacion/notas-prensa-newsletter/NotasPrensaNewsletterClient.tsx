@@ -294,86 +294,41 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     };
   }
 
-  async function handleSendCampaign(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setMessage(null);
-    try {
-      if (!campaignForm.subject.trim()) {
-        throw new Error('El asunto es obligatorio');
+  async function runSendCampaign() {
+    if (!campaignForm.subject.trim()) {
+      throw new Error('El asunto es obligatorio');
+    }
+
+    let finalHtml = '';
+    let photoUrlsForSend = [...pressPhotoUrls];
+
+    if (mode === 'press' && pressSendMode === 'pdf') {
+      let pdfUrl = pressPdfUrl.trim();
+      let pdfFilename = '';
+      if (!pdfUrl && pressPdfFile) {
+        pdfUrl = await uploadPressPdf();
       }
-
-      let finalHtml = '';
-      let photoUrlsForSend = [...pressPhotoUrls];
-
-      if (mode === 'press' && pressSendMode === 'pdf') {
-        let pdfUrl = pressPdfUrl.trim();
-        let pdfFilename = '';
-        if (!pdfUrl && pressPdfFile) {
-          pdfUrl = await uploadPressPdf();
-        }
-        if (pressPdfFile?.name) {
-          pdfFilename = pressPdfFile.name;
-        }
-        if (!pdfFilename && pdfUrl) {
-          const fromUrl = pdfUrl.split('/').pop() || '';
-          pdfFilename = fromUrl.split('?')[0] || '';
-        }
-        if (!pdfUrl) {
-          throw new Error('Debes subir un PDF para el envío');
-        }
-        finalHtml = buildPdfEmailHtml(campaignForm.subject.trim(), pdfUrl);
-        const safeFilename = pdfFilename || `nota-prensa-${Date.now()}.pdf`;
-        const attachmentUrls = [
-          {
-            url: pdfUrl,
-            filename: safeFilename.toLowerCase().endsWith('.pdf')
-              ? safeFilename
-              : `${safeFilename}.pdf`,
-            contentType: 'application/pdf',
-          },
-        ];
-
-        const filters = mode === 'press' ? buildPressFilters() : { source: campaignForm.source };
-
-        const res = await fetch('/api/admin/newsletter/campaigns/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            kind: mode === 'press' ? 'PRESS' : 'NEWSLETTER',
-            subject: campaignForm.subject,
-            html: finalHtml,
-            filters,
-            attachmentUrls,
-          }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data?.message || 'Error enviando campaña');
-        setMessage(
-          `Campaña enviada. Destinatarios: ${data.totalRecipients}. Enviados: ${data.sentCount}. Fallidos: ${data.failedCount}.`,
-        );
-        setPressPhotoFiles([]);
-        setPressPhotoUrls([]);
-        setPressPdfFile(null);
-        setPressPdfUrl('');
-        await loadData();
-        return;
-      } else {
-        finalHtml = campaignForm.html.trim();
-        if (mode === 'press' && editorMode === 'visual' && editor) {
-          finalHtml = editor.getHTML().trim();
-        }
-        if (!finalHtml) {
-          throw new Error('El contenido es obligatorio');
-        }
-        if (mode === 'press' && pressPhotoFiles.length > 0 && pressPhotoUrls.length === 0) {
-          photoUrlsForSend = await uploadPressPhotos();
-        }
-        if (mode === 'press' && photoUrlsForSend.length > 0) {
-          finalHtml = appendPressPhotos(finalHtml, photoUrlsForSend);
-        }
+      if (pressPdfFile?.name) {
+        pdfFilename = pressPdfFile.name;
       }
+      if (!pdfFilename && pdfUrl) {
+        const fromUrl = pdfUrl.split('/').pop() || '';
+        pdfFilename = fromUrl.split('?')[0] || '';
+      }
+      if (!pdfUrl) {
+        throw new Error('Debes subir un PDF para el envío');
+      }
+      finalHtml = buildPdfEmailHtml(campaignForm.subject.trim(), pdfUrl);
+      const safeFilename = pdfFilename || `nota-prensa-${Date.now()}.pdf`;
+      const attachmentUrls = [
+        {
+          url: pdfUrl,
+          filename: safeFilename.toLowerCase().endsWith('.pdf')
+            ? safeFilename
+            : `${safeFilename}.pdf`,
+          contentType: 'application/pdf',
+        },
+      ];
 
       const filters = mode === 'press' ? buildPressFilters() : { source: campaignForm.source };
 
@@ -385,6 +340,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           subject: campaignForm.subject,
           html: finalHtml,
           filters,
+          attachmentUrls,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -397,6 +353,54 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       setPressPdfFile(null);
       setPressPdfUrl('');
       await loadData();
+      return;
+    } else {
+      finalHtml = campaignForm.html.trim();
+      if (mode === 'press' && editorMode === 'visual' && editor) {
+        finalHtml = editor.getHTML().trim();
+      }
+      if (!finalHtml) {
+        throw new Error('El contenido es obligatorio');
+      }
+      if (mode === 'press' && pressPhotoFiles.length > 0 && pressPhotoUrls.length === 0) {
+        photoUrlsForSend = await uploadPressPhotos();
+      }
+      if (mode === 'press' && photoUrlsForSend.length > 0) {
+        finalHtml = appendPressPhotos(finalHtml, photoUrlsForSend);
+      }
+    }
+
+    const filters = mode === 'press' ? buildPressFilters() : { source: campaignForm.source };
+
+    const res = await fetch('/api/admin/newsletter/campaigns/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        kind: mode === 'press' ? 'PRESS' : 'NEWSLETTER',
+        subject: campaignForm.subject,
+        html: finalHtml,
+        filters,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.message || 'Error enviando campaña');
+    setMessage(
+      `Campaña enviada. Destinatarios: ${data.totalRecipients}. Enviados: ${data.sentCount}. Fallidos: ${data.failedCount}.`,
+    );
+    setPressPhotoFiles([]);
+    setPressPhotoUrls([]);
+    setPressPdfFile(null);
+    setPressPdfUrl('');
+    await loadData();
+  }
+
+  async function handleSendCampaign(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setMessage(null);
+    try {
+      await runSendCampaign();
     } catch (e: unknown) {
       setError(getErrorMessage(e, 'Error enviando campaña'));
     } finally {
@@ -570,10 +574,31 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       } else {
         setMessage(`Publicado en web como ${target}: asociación.`);
       }
+      return true;
     } catch (e: unknown) {
       setError(getErrorMessage(e, 'Error publicando en web'));
+      return false;
     } finally {
       setPublishingWeb(false);
+    }
+  }
+
+  async function handlePublishAndSend() {
+    setError(null);
+    setMessage(null);
+    setLoading(true);
+    const published = await handlePublishWeb();
+    if (!published) {
+      setLoading(false);
+      return;
+    }
+    try {
+      await runSendCampaign();
+      setMessage('Publicado en web y campaña enviada correctamente.');
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, 'Se publicó en web, pero falló el envío de campaña'));
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -1180,14 +1205,24 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                 </div>
               ) : null}
 
-              <button
-                type="button"
-                onClick={handlePublishWeb}
-                disabled={publishingWeb || loading}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium disabled:opacity-50"
-              >
-                {publishingWeb ? 'Subiendo a la web…' : 'Subir a la web'}
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handlePublishWeb}
+                  disabled={publishingWeb || loading}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                >
+                  {publishingWeb ? 'Subiendo a la web…' : 'Subir a la web'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePublishAndSend}
+                  disabled={publishingWeb || loading}
+                  className="rounded-lg bg-primary/90 px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                >
+                  {loading ? 'Subiendo y enviando…' : 'Subir a la web y enviar campaña'}
+                </button>
+              </div>
             </div>
           ) : null}
 
