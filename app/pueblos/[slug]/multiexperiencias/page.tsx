@@ -27,13 +27,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
   const safeSlug = pueblo?.slug ?? slug;
   const safeName = pueblo?.nombre ?? slugToTitle(slug) ?? "Pueblo";
   const path = `/pueblos/${safeSlug}/multiexperiencias`;
   return {
-    title: seoTitle(`Multiexperiencias en ${safeName}`),
-    description: seoDescription(`Experiencias y actividades para descubrir ${safeName}.`),
+    title: seoTitle(`Multiexperiencias en ${safeName}${localeSuffix}`),
+    description: seoDescription(`Experiencias y actividades para descubrir ${safeName}.${localeSuffix}`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

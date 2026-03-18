@@ -15,14 +15,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
   const safeSlug = pueblo?.slug ?? slug;
   const safeName = pueblo?.nombre ?? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${safeSlug}/actualidad`;
   if (!pueblo) {
     return {
-      title: seoTitle(`Actualidad de ${safeName}`),
-      description: seoDescription(`Noticias, eventos y novedades de ${safeName}.`),
+      title: seoTitle(`Actualidad de ${safeName}${localeSuffix}`),
+      description: seoDescription(`Noticias, eventos y novedades de ${safeName}.${localeSuffix}`),
       alternates: {
         canonical: getCanonicalUrl(path, locale as SupportedLocale),
         languages: getLocaleAlternates(path),
@@ -33,8 +34,8 @@ export async function generateMetadata({
 
   const canonicalPath = `/pueblos/${pueblo.slug}/actualidad`;
   return {
-    title: seoTitle(`Actualidad de ${pueblo.nombre}`),
-    description: seoDescription(`Noticias, eventos y novedades de ${pueblo.nombre}.`),
+    title: seoTitle(`Actualidad de ${pueblo.nombre}${localeSuffix}`),
+    description: seoDescription(`Noticias, eventos y novedades de ${pueblo.nombre}.${localeSuffix}`),
     alternates: {
       canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
       languages: getLocaleAlternates(canonicalPath),

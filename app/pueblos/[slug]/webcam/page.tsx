@@ -14,14 +14,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
   const safeSlug = pueblo?.slug ?? slug;
   const safeName = pueblo?.nombre ?? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${safeSlug}/webcam`;
   if (!pueblo) {
     return {
-      title: seoTitle(`Webcam de ${safeName}`),
-      description: seoDescription(`Webcams y vistas en directo de ${safeName}.`),
+      title: seoTitle(`Webcam de ${safeName}${localeSuffix}`),
+      description: seoDescription(`Webcams y vistas en directo de ${safeName}.${localeSuffix}`),
       alternates: {
         canonical: getCanonicalUrl(path, locale as SupportedLocale),
         languages: getLocaleAlternates(path),
@@ -32,8 +33,8 @@ export async function generateMetadata({
 
   const canonicalPath = `/pueblos/${pueblo.slug}/webcam`;
   return {
-    title: seoTitle(`Webcam de ${pueblo.nombre}`),
-    description: seoDescription(`Webcams y vistas en directo de ${pueblo.nombre}.`),
+    title: seoTitle(`Webcam de ${pueblo.nombre}${localeSuffix}`),
+    description: seoDescription(`Webcams y vistas en directo de ${pueblo.nombre}.${localeSuffix}`),
     alternates: {
       canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
       languages: getLocaleAlternates(canonicalPath),

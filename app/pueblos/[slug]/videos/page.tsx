@@ -14,14 +14,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
   const safeSlug = pueblo?.slug ?? slug;
   const safeName = pueblo?.nombre ?? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${safeSlug}/videos`;
   if (!pueblo) {
     return {
-      title: seoTitle(`Videos de ${safeName}`),
-      description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${safeName}.`),
+      title: seoTitle(`Videos de ${safeName}${localeSuffix}`),
+      description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${safeName}.${localeSuffix}`),
       alternates: {
         canonical: getCanonicalUrl(path, locale as SupportedLocale),
         languages: getLocaleAlternates(path),
@@ -32,8 +33,8 @@ export async function generateMetadata({
 
   const canonicalPath = `/pueblos/${pueblo.slug}/videos`;
   return {
-    title: seoTitle(`Videos de ${pueblo.nombre}`),
-    description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${pueblo.nombre}.`),
+    title: seoTitle(`Videos de ${pueblo.nombre}${localeSuffix}`),
+    description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${pueblo.nombre}.${localeSuffix}`),
     alternates: {
       canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
       languages: getLocaleAlternates(canonicalPath),

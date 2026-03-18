@@ -39,13 +39,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, videoId } = await params;
   const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const API_BASE = getApiUrl();
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
   const fallbackPath = `/pueblos/${slug}/videos/${videoId}`;
   if (!pueblo) {
     return {
       title: seoTitle("Video del pueblo"),
-      description: seoDescription("Contenido de video del pueblo."),
+      description: seoDescription(`Contenido de video del pueblo.${localeSuffix}`),
       alternates: {
         canonical: getCanonicalUrl(fallbackPath, locale as SupportedLocale),
         languages: getLocaleAlternates(fallbackPath),
@@ -68,7 +69,7 @@ export async function generateMetadata({
     const noVideoPath = `/pueblos/${pueblo.slug}/videos/${videoId}`;
     return {
       title: seoTitle(`Videos de ${pueblo.nombre}`),
-      description: seoDescription(`Videos y contenidos audiovisuales sobre ${pueblo.nombre}.`),
+      description: seoDescription(`Videos y contenidos audiovisuales sobre ${pueblo.nombre}.${localeSuffix}`),
       alternates: {
         canonical: getCanonicalUrl(noVideoPath, locale as SupportedLocale),
         languages: getLocaleAlternates(noVideoPath),
@@ -78,8 +79,8 @@ export async function generateMetadata({
   }
 
   const path = `/pueblos/${pueblo.slug}/videos/${videoId}`;
-  const title = seoTitle(`Video: ${video.titulo} · ${pueblo.nombre}`);
-  const description = seoDescription(`Video sobre ${pueblo.nombre}: ${video.titulo}.`);
+  const title = seoTitle(`Video: ${video.titulo} · ${pueblo.nombre}${localeSuffix}`);
+  const description = seoDescription(`Video sobre ${pueblo.nombre}: ${video.titulo}.${localeSuffix}`);
 
   return {
     title,

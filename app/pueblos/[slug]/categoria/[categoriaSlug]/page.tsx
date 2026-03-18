@@ -79,11 +79,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, categoriaSlug } = await params;
   const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   if (!CATEGORIA_SLUG_TO_KEY[categoriaSlug]) {
     const path = `/pueblos/${slug}/categoria/${categoriaSlug}`;
     return {
       title: seoTitle("Categoría"),
-      description: seoDescription("Categoría temática del pueblo."),
+      description: seoDescription(`Categoría temática del pueblo.${localeSuffix}`),
       alternates: {
         canonical: getCanonicalUrl(path, locale as SupportedLocale),
         languages: getLocaleAlternates(path),
@@ -97,8 +98,8 @@ export async function generateMetadata({
   const label = CATEGORIA_LABELS[categoriaSlug];
   const path = `/pueblos/${safeSlug}/categoria/${categoriaSlug}`;
   return {
-    title: seoTitle(`${label} en ${safeName}`),
-    description: seoDescription(`${CATEGORIA_DESCRIPTIONS[categoriaSlug]} en ${safeName}.`),
+    title: seoTitle(`${label} en ${safeName}${localeSuffix}`),
+    description: seoDescription(`${CATEGORIA_DESCRIPTIONS[categoriaSlug]} en ${safeName}.${localeSuffix}`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

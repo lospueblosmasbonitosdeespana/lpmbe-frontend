@@ -27,13 +27,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
   const safeSlug = pueblo?.slug ?? slug;
   const safeName = pueblo?.nombre ?? slugToTitle(slug) ?? "Pueblo";
   const path = `/pueblos/${safeSlug}/lugares-de-interes`;
   return {
-    title: seoTitle(`Lugares de interés en ${safeName}`),
-    description: seoDescription(`Descubre los puntos de interés y lugares que no te puedes perder en ${safeName}.`),
+    title: seoTitle(`Lugares de interés en ${safeName}${localeSuffix}`),
+    description: seoDescription(`Descubre los puntos de interés y lugares que no te puedes perder en ${safeName}.${localeSuffix}`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
