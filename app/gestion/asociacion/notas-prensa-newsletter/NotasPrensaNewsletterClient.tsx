@@ -32,6 +32,47 @@ type Overview = {
 type Mode = 'newsletter' | 'press';
 type PressSendMode = 'editor' | 'pdf';
 type GeoPueblo = { slug: string; provincia: string; comunidad: string };
+type NewsletterBlockType = 'heading' | 'text' | 'image' | 'button' | 'divider';
+type NewsletterBlock = {
+  id: string;
+  type: NewsletterBlockType;
+  content?: string;
+  url?: string;
+  label?: string;
+  align?: 'left' | 'center' | 'right';
+};
+type NewsletterTemplate = {
+  id: number;
+  kind: 'NEWSLETTER' | 'PRESS';
+  name: string;
+  subject: string;
+  contentHtml: string;
+  blocksJson: unknown;
+  updatedAt?: string;
+};
+
+function newBlockId(): string {
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function createBlock(type: NewsletterBlockType, patch: Partial<NewsletterBlock> = {}): NewsletterBlock {
+  return {
+    id: newBlockId(),
+    type,
+    content:
+      type === 'heading'
+        ? 'Nuevo titular'
+        : type === 'text'
+          ? 'Nuevo párrafo de contenido'
+          : type === 'button'
+            ? 'Llamada a la acción'
+            : '',
+    label: type === 'button' ? 'Leer más' : '',
+    url: type === 'image' ? 'https://...' : type === 'button' ? 'https://...' : '',
+    align: 'left',
+    ...patch,
+  };
+}
 
 function fmtDate(value?: string | null) {
   if (!value) return '—';
@@ -50,6 +91,86 @@ function normalizeForSearch(value: string): string {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .trim();
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => {
+      const b = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
+      const typeRaw = String(b.type || '').trim().toLowerCase();
+      const type: NewsletterBlockType =
+        typeRaw === 'heading' || typeRaw === 'text' || typeRaw === 'image' || typeRaw === 'button' || typeRaw === 'divider'
+          ? (typeRaw as NewsletterBlockType)
+          : 'text';
+      return {
+        id: String(b.id || `${Date.now()}-${Math.random().toString(36).slice(2)}`),
+        type,
+        content: String(b.content || ''),
+        url: String(b.url || ''),
+        label: String(b.label || ''),
+        align:
+          String(b.align || 'left') === 'center'
+            ? 'center'
+            : String(b.align || 'left') === 'right'
+              ? 'right'
+              : 'left',
+      };
+    })
+    .filter((b) => b.id);
+}
+
+function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
+  if (!blocks.length) return '';
+  const body = blocks
+    .map((block) => {
+      const align = block.align || 'left';
+      if (block.type === 'heading') {
+        return `<h2 style="margin:0 0 14px 0;font-size:26px;line-height:1.25;text-align:${align};">${escapeHtml(
+          block.content || 'Título',
+        )}</h2>`;
+      }
+      if (block.type === 'text') {
+        return `<p style="margin:0 0 14px 0;font-size:16px;line-height:1.6;text-align:${align};">${escapeHtml(
+          block.content || '',
+        ).replace(/\n/g, '<br/>')}</p>`;
+      }
+      if (block.type === 'image') {
+        const url = String(block.url || '').trim();
+        if (!url) return '';
+        return `<p style="margin:0 0 16px 0;text-align:${align};"><img src="${escapeHtml(
+          url,
+        )}" alt="${escapeHtml(block.content || 'Imagen newsletter')}" style="max-width:100%;height:auto;border-radius:10px;" /></p>`;
+      }
+      if (block.type === 'button') {
+        const url = String(block.url || '').trim();
+        const label = String(block.label || 'Abrir enlace').trim();
+        if (!url) return '';
+        return `<p style="margin:0 0 18px 0;text-align:${align};"><a href="${escapeHtml(
+          url,
+        )}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:#8B5E3C;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:600;">${escapeHtml(
+          label,
+        )}</a></p>`;
+      }
+      return `<hr style="margin:20px 0;border:none;border-top:1px solid #ddd;" />`;
+    })
+    .filter(Boolean)
+    .join('\n');
+
+  return `
+    <div style="font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.55;max-width:680px;margin:0 auto;">
+      ${body}
+    </div>
+  `.trim();
 }
 
 export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
@@ -99,6 +220,12 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [selectedProvincias, setSelectedProvincias] = useState<string[]>([]);
   const [insertedPhotoUrls, setInsertedPhotoUrls] = useState<string[]>([]);
   const [webGallerySelection, setWebGallerySelection] = useState<string[]>([]);
+  const [newsletterComposerMode, setNewsletterComposerMode] = useState<'editor' | 'builder'>('builder');
+  const [newsletterTemplates, setNewsletterTemplates] = useState<NewsletterTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
+  const [templateName, setTemplateName] = useState('');
+  const [templateSaving, setTemplateSaving] = useState(false);
+  const [newsletterBlocks, setNewsletterBlocks] = useState<NewsletterBlock[]>([]);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const photosInputRef = useRef<HTMLInputElement | null>(null);
   const htmlTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -148,10 +275,14 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
 
   async function loadData() {
     try {
-      const [overviewRes, campaignsRes] = await Promise.all([
+      const requests: Promise<Response>[] = [
         fetch('/api/admin/newsletter/overview', { cache: 'no-store' }),
         fetch('/api/admin/newsletter/campaigns?limit=25', { cache: 'no-store' }),
-      ]);
+      ];
+      if (mode === 'newsletter') {
+        requests.push(fetch('/api/admin/newsletter/templates?kind=NEWSLETTER&limit=100', { cache: 'no-store' }));
+      }
+      const [overviewRes, campaignsRes, templatesRes] = await Promise.all(requests);
       if (overviewRes.ok) {
         const o = await overviewRes.json();
         setOverview({
@@ -164,6 +295,24 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       if (campaignsRes.ok) {
         const c = await campaignsRes.json();
         setCampaigns(Array.isArray(c) ? c : []);
+      }
+      if (mode === 'newsletter' && templatesRes?.ok) {
+        const items = await templatesRes.json().catch(() => []);
+        const normalized: NewsletterTemplate[] = Array.isArray(items)
+          ? items.map((item) => {
+              const row = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
+              return {
+                id: Number(row.id || 0),
+                kind: String(row.kind || 'NEWSLETTER').toUpperCase() === 'PRESS' ? 'PRESS' : 'NEWSLETTER',
+                name: String(row.name || ''),
+                subject: String(row.subject || ''),
+                contentHtml: String(row.contentHtml || ''),
+                blocksJson: row.blocksJson,
+                updatedAt: String(row.updatedAt || ''),
+              };
+            })
+          : [];
+        setNewsletterTemplates(normalized.filter((t) => t.id > 0));
       }
     } catch {
       // ignore
@@ -302,6 +451,179 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     };
   }
 
+  function addNewsletterBlock(type: NewsletterBlockType) {
+    setNewsletterBlocks((prev) => [...prev, createBlock(type)]);
+  }
+
+  function updateNewsletterBlock(id: string, patch: Partial<NewsletterBlock>) {
+    setNewsletterBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
+  }
+
+  function moveNewsletterBlock(id: string, direction: -1 | 1) {
+    setNewsletterBlocks((prev) => {
+      const idx = prev.findIndex((b) => b.id === id);
+      if (idx < 0) return prev;
+      const nextIdx = idx + direction;
+      if (nextIdx < 0 || nextIdx >= prev.length) return prev;
+      const copy = [...prev];
+      const [item] = copy.splice(idx, 1);
+      copy.splice(nextIdx, 0, item);
+      return copy;
+    });
+  }
+
+  function removeNewsletterBlock(id: string) {
+    setNewsletterBlocks((prev) => prev.filter((b) => b.id !== id));
+  }
+
+  function duplicateNewsletterBlock(id: string) {
+    setNewsletterBlocks((prev) => {
+      const idx = prev.findIndex((b) => b.id === id);
+      if (idx < 0) return prev;
+      const source = prev[idx];
+      const clone: NewsletterBlock = {
+        ...source,
+        id: newBlockId(),
+      };
+      const copy = [...prev];
+      copy.splice(idx + 1, 0, clone);
+      return copy;
+    });
+  }
+
+  function applyNewsletterPreset(preset: 'boletin' | 'nota' | 'promo') {
+    let blocks: NewsletterBlock[] = [];
+    let suggestedSubject = '';
+    if (preset === 'boletin') {
+      suggestedSubject = 'Boletín mensual - Novedades de la asociación';
+      blocks = [
+        createBlock('heading', { content: 'Boletín mensual', align: 'center' }),
+        createBlock('text', {
+          content: 'Te compartimos las novedades más importantes de la red durante este mes.',
+        }),
+        createBlock('image', {
+          url: 'https://...',
+          content: 'Imagen destacada del boletín',
+          align: 'center',
+        }),
+        createBlock('text', {
+          content: 'Incluye aquí un resumen corto con enlaces a noticias, actividades y próximos eventos.',
+        }),
+        createBlock('button', {
+          label: 'Ver todas las novedades',
+          url: 'https://...',
+          align: 'center',
+        }),
+      ];
+    } else if (preset === 'nota') {
+      suggestedSubject = 'Nota informativa - Comunicado oficial';
+      blocks = [
+        createBlock('heading', { content: 'Comunicado oficial', align: 'left' }),
+        createBlock('text', {
+          content: 'Introduce aquí la información principal del comunicado en un párrafo claro y directo.',
+        }),
+        createBlock('divider'),
+        createBlock('text', {
+          content: 'Puedes añadir contexto adicional, declaraciones o próximos pasos.',
+        }),
+        createBlock('button', { label: 'Más información', url: 'https://...', align: 'left' }),
+      ];
+    } else {
+      suggestedSubject = 'Nueva campaña destacada';
+      blocks = [
+        createBlock('heading', { content: 'Descubre la nueva campaña', align: 'center' }),
+        createBlock('text', {
+          content: 'Presenta la propuesta de valor en dos o tres líneas.',
+          align: 'center',
+        }),
+        createBlock('image', {
+          url: 'https://...',
+          content: 'Imagen principal de campaña',
+          align: 'center',
+        }),
+        createBlock('button', { label: 'Acceder ahora', url: 'https://...', align: 'center' }),
+      ];
+    }
+    setNewsletterBlocks(blocks);
+    setNewsletterComposerMode('builder');
+    setCampaignForm((s) => ({
+      ...s,
+      subject: s.subject.trim() ? s.subject : suggestedSubject,
+      html: renderNewsletterBlocksToHtml(blocks),
+    }));
+    setMessage('Preset cargado. Puedes editar y guardar como plantilla.');
+  }
+
+  function applyNewsletterTemplate(template: NewsletterTemplate) {
+    setSelectedTemplateId(template.id);
+    setTemplateName(template.name || '');
+    setCampaignForm((s) => ({
+      ...s,
+      subject: template.subject || '',
+      html: template.contentHtml || '',
+    }));
+    const blocks = normalizeNewsletterBlocks(template.blocksJson);
+    setNewsletterBlocks(blocks);
+    if (blocks.length > 0) {
+      setNewsletterComposerMode('builder');
+    }
+  }
+
+  async function saveTemplateFromComposer() {
+    if (mode !== 'newsletter') return;
+    const name = templateName.trim();
+    if (!name) {
+      throw new Error('Pon un nombre a la plantilla');
+    }
+    const htmlFromBlocks = renderNewsletterBlocksToHtml(newsletterBlocks);
+    const payload = {
+      kind: 'NEWSLETTER',
+      name,
+      subject: campaignForm.subject.trim(),
+      contentHtml: htmlFromBlocks || campaignForm.html.trim(),
+      blocksJson: newsletterBlocks,
+      metadata: {
+        composerMode: newsletterComposerMode,
+      },
+    };
+    const endpoint = selectedTemplateId
+      ? `/api/admin/newsletter/templates/${selectedTemplateId}`
+      : '/api/admin/newsletter/templates';
+    const method = selectedTemplateId ? 'PUT' : 'POST';
+    const res = await fetch(endpoint, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data?.message || 'Error guardando plantilla');
+    }
+    setMessage(selectedTemplateId ? 'Plantilla actualizada.' : 'Plantilla guardada.');
+    if (!selectedTemplateId) {
+      setSelectedTemplateId(Number(data?.id || null) || null);
+    }
+    await loadData();
+  }
+
+  async function deleteSelectedTemplate() {
+    if (!selectedTemplateId) return;
+    const ok = window.confirm('¿Eliminar esta plantilla?');
+    if (!ok) return;
+    const res = await fetch(`/api/admin/newsletter/templates/${selectedTemplateId}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data?.message || 'Error eliminando plantilla');
+    }
+    setSelectedTemplateId(null);
+    setTemplateName('');
+    setNewsletterBlocks([]);
+    setMessage('Plantilla eliminada.');
+    await loadData();
+  }
+
   async function runSendCampaign() {
     if (!campaignForm.subject.trim()) {
       throw new Error('El asunto es obligatorio');
@@ -364,6 +686,12 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       return;
     } else {
       finalHtml = campaignForm.html.trim();
+      if (mode === 'newsletter' && newsletterComposerMode === 'builder') {
+        finalHtml = renderNewsletterBlocksToHtml(newsletterBlocks).trim();
+        if (finalHtml) {
+          setCampaignForm((s) => ({ ...s, html: finalHtml }));
+        }
+      }
       if (mode === 'press' && editorMode === 'visual' && editor) {
         finalHtml = editor.getHTML().trim();
       }
@@ -945,18 +1273,286 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
               </label>
             </div>
           ) : (
-            <label className="text-sm">
-              Origen newsletter (opcional)
-              <input
-                value={campaignForm.source}
-                onChange={(e) => setCampaignForm((s) => ({ ...s, source: e.target.value }))}
-                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-                placeholder="legacy_web_users_import, tienda, web..."
-              />
-            </label>
+            <div className="space-y-3">
+              <label className="text-sm">
+                Origen newsletter (opcional)
+                <input
+                  value={campaignForm.source}
+                  onChange={(e) => setCampaignForm((s) => ({ ...s, source: e.target.value }))}
+                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                  placeholder="legacy_web_users_import, tienda, web..."
+                />
+              </label>
+
+              <div className="space-y-3 rounded-lg border border-border p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-semibold">Constructor de newsletter (MVP tipo MDirector)</p>
+                  <button
+                    type="button"
+                    onClick={() => setNewsletterComposerMode('builder')}
+                    className={`rounded-md border px-3 py-1 text-xs ${
+                      newsletterComposerMode === 'builder' ? 'bg-muted font-semibold' : ''
+                    }`}
+                  >
+                    Constructor
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewsletterComposerMode('editor')}
+                    className={`rounded-md border px-3 py-1 text-xs ${
+                      newsletterComposerMode === 'editor' ? 'bg-muted font-semibold' : ''
+                    }`}
+                  >
+                    HTML/Editor clásico
+                  </button>
+                </div>
+
+                <div className="grid gap-2 md:grid-cols-[1fr_auto_auto]">
+                  <select
+                    value={selectedTemplateId ?? ''}
+                    onChange={(e) => {
+                      const id = Number(e.target.value || 0);
+                      if (!id) {
+                        setSelectedTemplateId(null);
+                        return;
+                      }
+                      const template = newsletterTemplates.find((t) => t.id === id);
+                      if (template) applyNewsletterTemplate(template);
+                    }}
+                    className="rounded-md border border-border px-3 py-2 text-sm"
+                  >
+                    <option value="">Selecciona plantilla guardada</option>
+                    {newsletterTemplates.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedTemplateId(null);
+                      setTemplateName('');
+                      setNewsletterBlocks([]);
+                      setCampaignForm((s) => ({ ...s, html: '' }));
+                    }}
+                    className="rounded-md border border-border px-3 py-2 text-sm"
+                  >
+                    Nueva
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setError(null);
+                      setMessage(null);
+                      setTemplateSaving(true);
+                      try {
+                        await deleteSelectedTemplate();
+                      } catch (e: unknown) {
+                        setError(getErrorMessage(e, 'Error eliminando plantilla'));
+                      } finally {
+                        setTemplateSaving(false);
+                      }
+                    }}
+                    disabled={!selectedTemplateId || templateSaving}
+                    className="rounded-md border border-red-300 px-3 py-2 text-sm text-red-700 disabled:opacity-50"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+
+                <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+                  <input
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                    className="rounded-md border border-border px-3 py-2 text-sm"
+                    placeholder="Nombre de plantilla"
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setError(null);
+                      setMessage(null);
+                      setTemplateSaving(true);
+                      try {
+                        await saveTemplateFromComposer();
+                      } catch (e: unknown) {
+                        setError(getErrorMessage(e, 'Error guardando plantilla'));
+                      } finally {
+                        setTemplateSaving(false);
+                      }
+                    }}
+                    disabled={templateSaving}
+                    className="rounded-md border border-border px-3 py-2 text-sm font-medium disabled:opacity-50"
+                  >
+                    {templateSaving ? 'Guardando...' : selectedTemplateId ? 'Actualizar plantilla' : 'Guardar plantilla'}
+                  </button>
+                </div>
+
+                {newsletterComposerMode === 'builder' ? (
+                  <div className="space-y-3 rounded-md border border-dashed border-border p-3">
+                    <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/30 p-2">
+                      <span className="text-xs font-semibold text-muted-foreground">Presets:</span>
+                      <button
+                        type="button"
+                        onClick={() => applyNewsletterPreset('boletin')}
+                        className="rounded border bg-background px-2 py-1 text-xs"
+                      >
+                        Boletín mensual
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => applyNewsletterPreset('nota')}
+                        className="rounded border bg-background px-2 py-1 text-xs"
+                      >
+                        Nota informativa
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => applyNewsletterPreset('promo')}
+                        className="rounded border bg-background px-2 py-1 text-xs"
+                      >
+                        Promo con CTA
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <button type="button" onClick={() => addNewsletterBlock('heading')} className="rounded border px-2 py-1 text-xs">
+                        + Titular
+                      </button>
+                      <button type="button" onClick={() => addNewsletterBlock('text')} className="rounded border px-2 py-1 text-xs">
+                        + Texto
+                      </button>
+                      <button type="button" onClick={() => addNewsletterBlock('image')} className="rounded border px-2 py-1 text-xs">
+                        + Imagen
+                      </button>
+                      <button type="button" onClick={() => addNewsletterBlock('button')} className="rounded border px-2 py-1 text-xs">
+                        + Botón
+                      </button>
+                      <button type="button" onClick={() => addNewsletterBlock('divider')} className="rounded border px-2 py-1 text-xs">
+                        + Separador
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCampaignForm((s) => ({
+                            ...s,
+                            html: renderNewsletterBlocksToHtml(newsletterBlocks),
+                          }))
+                        }
+                        className="rounded border border-primary px-2 py-1 text-xs font-semibold text-primary"
+                      >
+                        Sincronizar HTML
+                      </button>
+                    </div>
+
+                    {newsletterBlocks.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">
+                        Aún no hay bloques. Añade bloques para construir la newsletter.
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {newsletterBlocks.map((block, idx) => (
+                          <div key={block.id} className="space-y-2 rounded-md border border-border p-2">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="text-xs font-semibold uppercase text-muted-foreground">
+                                {idx + 1}. {block.type}
+                              </span>
+                              <div className="flex gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => moveNewsletterBlock(block.id, -1)}
+                                  className="rounded border px-2 py-1 text-xs"
+                                >
+                                  ↑
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => moveNewsletterBlock(block.id, 1)}
+                                  className="rounded border px-2 py-1 text-xs"
+                                >
+                                  ↓
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => removeNewsletterBlock(block.id)}
+                                  className="rounded border border-red-300 px-2 py-1 text-xs text-red-700"
+                                >
+                                  Quitar
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => duplicateNewsletterBlock(block.id)}
+                                  className="rounded border px-2 py-1 text-xs"
+                                >
+                                  Duplicar
+                                </button>
+                              </div>
+                            </div>
+
+                            {block.type !== 'divider' ? (
+                              <div className="grid gap-2 md:grid-cols-2">
+                                {(block.type === 'heading' || block.type === 'text' || block.type === 'image') ? (
+                                  <input
+                                    value={block.content || ''}
+                                    onChange={(e) => updateNewsletterBlock(block.id, { content: e.target.value })}
+                                    className="rounded-md border border-border px-2 py-1 text-sm"
+                                    placeholder={block.type === 'image' ? 'Texto alt' : 'Contenido'}
+                                  />
+                                ) : null}
+                                {block.type === 'image' || block.type === 'button' ? (
+                                  <input
+                                    value={block.url || ''}
+                                    onChange={(e) => updateNewsletterBlock(block.id, { url: e.target.value })}
+                                    className="rounded-md border border-border px-2 py-1 text-sm"
+                                    placeholder="https://..."
+                                  />
+                                ) : null}
+                                {block.type === 'button' ? (
+                                  <input
+                                    value={block.label || ''}
+                                    onChange={(e) => updateNewsletterBlock(block.id, { label: e.target.value })}
+                                    className="rounded-md border border-border px-2 py-1 text-sm"
+                                    placeholder="Texto del botón"
+                                  />
+                                ) : null}
+                                <select
+                                  value={block.align || 'left'}
+                                  onChange={(e) =>
+                                    updateNewsletterBlock(block.id, {
+                                      align: (e.target.value as 'left' | 'center' | 'right') || 'left',
+                                    })
+                                  }
+                                  className="rounded-md border border-border px-2 py-1 text-sm"
+                                >
+                                  <option value="left">Izquierda</option>
+                                  <option value="center">Centro</option>
+                                  <option value="right">Derecha</option>
+                                </select>
+                              </div>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="rounded-md border border-border bg-background p-3">
+                      <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Vista previa newsletter</p>
+                      <div
+                        className="prose max-w-none text-sm"
+                        dangerouslySetInnerHTML={{
+                          __html: renderNewsletterBlocksToHtml(newsletterBlocks) || '<p>Sin bloques todavía.</p>',
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
           )}
 
-          {(mode !== 'press' || pressSendMode === 'editor') ? (
+          {(mode !== 'press' || pressSendMode === 'editor') &&
+          (mode !== 'newsletter' || newsletterComposerMode === 'editor') ? (
             <>
               <label className="block text-sm">
                 Contenido
