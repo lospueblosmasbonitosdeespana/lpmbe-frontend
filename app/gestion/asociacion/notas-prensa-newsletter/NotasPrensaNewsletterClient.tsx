@@ -28,6 +28,7 @@ type Overview = {
 
 type Mode = 'newsletter' | 'press';
 type PressSendMode = 'editor' | 'pdf';
+type GeoPueblo = { slug: string; provincia: string; comunidad: string };
 
 function fmtDate(value?: string | null) {
   if (!value) return '—';
@@ -38,6 +39,14 @@ function fmtDate(value?: string | null) {
 
 function getErrorMessage(error: unknown, fallback: string): string {
   return error instanceof Error ? error.message : fallback;
+}
+
+function normalizeForSearch(value: string): string {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
 }
 
 export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
@@ -78,6 +87,13 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [webContentKind, setWebContentKind] = useState<'NOTICIA' | 'ARTICULO'>('NOTICIA');
   const [publishingWeb, setPublishingWeb] = useState(false);
   const [showWebPreview, setShowWebPreview] = useState(false);
+  const [geoPueblos, setGeoPueblos] = useState<GeoPueblo[]>([]);
+  const [geoCcaas, setGeoCcaas] = useState<string[]>([]);
+  const [geoProvincias, setGeoProvincias] = useState<string[]>([]);
+  const [ccaaInput, setCcaaInput] = useState('');
+  const [provinciaInput, setProvinciaInput] = useState('');
+  const [selectedCcaas, setSelectedCcaas] = useState<string[]>([]);
+  const [selectedProvincias, setSelectedProvincias] = useState<string[]>([]);
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -120,6 +136,48 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
 
   useEffect(() => {
     loadData();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/pueblos', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json().catch(() => []);
+        if (!Array.isArray(data)) return;
+
+        const pueblos: GeoPueblo[] = data
+          .map((item: unknown) => {
+            const p = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
+            return {
+              slug: String(p.slug || '').trim(),
+              provincia: String(p.provincia || '').trim(),
+              comunidad: String(p.comunidad || '').trim(),
+            };
+          })
+          .filter((p) => p.slug);
+
+        const ccaas = Array.from(
+          new Set(pueblos.map((p) => p.comunidad).filter(Boolean)),
+        ).sort((a, b) => a.localeCompare(b, 'es'));
+        const provincias = Array.from(
+          new Set(pueblos.map((p) => p.provincia).filter(Boolean)),
+        ).sort((a, b) => a.localeCompare(b, 'es'));
+
+        if (!cancelled) {
+          setGeoPueblos(pueblos);
+          setGeoCcaas(ccaas);
+          setGeoProvincias(provincias);
+        }
+      } catch {
+        // ignore
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -172,6 +230,42 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     }
   }
 
+  function addCcaa(valueRaw: string) {
+    const value = valueRaw.trim();
+    if (!value) return;
+    setSelectedCcaas((prev) => (prev.includes(value) ? prev : [...prev, value]));
+    setCcaaInput('');
+  }
+
+  function addProvincia(valueRaw: string) {
+    const value = valueRaw.trim();
+    if (!value) return;
+    setSelectedProvincias((prev) => (prev.includes(value) ? prev : [...prev, value]));
+    setProvinciaInput('');
+  }
+
+  function resolvePuebloSlug(valueRaw: string): string {
+    const value = valueRaw.trim();
+    if (!value) return '';
+    const exactSlug = geoPueblos.find((p) => p.slug.toLowerCase() === value.toLowerCase());
+    if (exactSlug) return exactSlug.slug;
+
+    const normalized = normalizeForSearch(value);
+    const byName = geoPueblos.find(
+      (p) => normalizeForSearch(p.slug) === normalized || normalizeForSearch(`${p.slug} ${p.provincia} ${p.comunidad}`) === normalized,
+    );
+    return byName?.slug || value;
+  }
+
+  function buildPressFilters() {
+    return {
+      includeNational: campaignForm.includeNational,
+      ccaas: selectedCcaas,
+      provincias: selectedProvincias,
+      puebloSlug: resolvePuebloSlug(campaignForm.puebloSlug),
+    };
+  }
+
   async function handleSendCampaign(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -213,21 +307,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           },
         ];
 
-        const filters =
-          mode === 'press'
-            ? {
-                includeNational: campaignForm.includeNational,
-                ccaas: campaignForm.ccaa
-                  .split(/[,;\n]/g)
-                  .map((v) => v.trim())
-                  .filter(Boolean),
-                provincias: campaignForm.provincia
-                  .split(/[,;\n]/g)
-                  .map((v) => v.trim())
-                  .filter(Boolean),
-                puebloSlug: campaignForm.puebloSlug,
-              }
-            : { source: campaignForm.source };
+        const filters = mode === 'press' ? buildPressFilters() : { source: campaignForm.source };
 
         const res = await fetch('/api/admin/newsletter/campaigns/send', {
           method: 'POST',
@@ -267,21 +347,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         }
       }
 
-      const filters =
-        mode === 'press'
-          ? {
-              includeNational: campaignForm.includeNational,
-              ccaas: campaignForm.ccaa
-                .split(/[,;\n]/g)
-                .map((v) => v.trim())
-                .filter(Boolean),
-              provincias: campaignForm.provincia
-                .split(/[,;\n]/g)
-                .map((v) => v.trim())
-                .filter(Boolean),
-              puebloSlug: campaignForm.puebloSlug,
-            }
-          : { source: campaignForm.source };
+      const filters = mode === 'press' ? buildPressFilters() : { source: campaignForm.source };
 
       const res = await fetch('/api/admin/newsletter/campaigns/send', {
         method: 'POST',
@@ -629,30 +695,123 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                 </label>
               </label>
               <label className="text-sm">
-                CCAA (una o varias)
-                <input
-                  value={campaignForm.ccaa}
-                  onChange={(e) => setCampaignForm((s) => ({ ...s, ccaa: e.target.value }))}
-                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-                  placeholder="Extremadura, Andalucía..."
-                />
+                CCAA (añade con +)
+                <div className="mt-1 flex items-center gap-2">
+                  <input
+                    value={ccaaInput}
+                    list="ccaa-suggestions"
+                    onChange={(e) => setCcaaInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addCcaa(ccaaInput);
+                      }
+                    }}
+                    className="w-full rounded-md border border-border px-3 py-2 text-sm"
+                    placeholder="Empieza a escribir CCAA..."
+                  />
+                  <button
+                    type="button"
+                    onClick={() => addCcaa(ccaaInput)}
+                    className="rounded-md border border-border px-3 py-2 text-sm font-semibold"
+                  >
+                    +
+                  </button>
+                </div>
+                <datalist id="ccaa-suggestions">
+                  {geoCcaas.map((c) => (
+                    <option key={c} value={c} />
+                  ))}
+                </datalist>
+                {selectedCcaas.length > 0 ? (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {selectedCcaas.map((ccaa) => (
+                      <span key={ccaa} className="inline-flex items-center gap-2 rounded-full border border-border px-2 py-1 text-xs">
+                        {ccaa}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCcaas((prev) => prev.filter((x) => x !== ccaa))}
+                          className="text-muted-foreground hover:text-foreground"
+                          aria-label={`Quitar ${ccaa}`}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
               </label>
               <label className="text-sm">
-                Provincia (una o varias)
-                <input
-                  value={campaignForm.provincia}
-                  onChange={(e) => setCampaignForm((s) => ({ ...s, provincia: e.target.value }))}
-                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-                  placeholder="Cáceres, Badajoz..."
-                />
+                Provincia (añade con +)
+                <div className="mt-1 flex items-center gap-2">
+                  <input
+                    value={provinciaInput}
+                    list="provincia-suggestions"
+                    onChange={(e) => setProvinciaInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addProvincia(provinciaInput);
+                      }
+                    }}
+                    className="w-full rounded-md border border-border px-3 py-2 text-sm"
+                    placeholder="Empieza a escribir provincia..."
+                  />
+                  <button
+                    type="button"
+                    onClick={() => addProvincia(provinciaInput)}
+                    className="rounded-md border border-border px-3 py-2 text-sm font-semibold"
+                  >
+                    +
+                  </button>
+                </div>
+                <datalist id="provincia-suggestions">
+                  {geoProvincias.map((p) => (
+                    <option key={p} value={p} />
+                  ))}
+                </datalist>
+                {selectedProvincias.length > 0 ? (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {selectedProvincias.map((provincia) => (
+                      <span key={provincia} className="inline-flex items-center gap-2 rounded-full border border-border px-2 py-1 text-xs">
+                        {provincia}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedProvincias((prev) => prev.filter((x) => x !== provincia))
+                          }
+                          className="text-muted-foreground hover:text-foreground"
+                          aria-label={`Quitar ${provincia}`}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
               </label>
               <label className="text-sm md:col-span-3">
                 Pueblo (slug)
                 <input
                   value={campaignForm.puebloSlug}
                   onChange={(e) => setCampaignForm((s) => ({ ...s, puebloSlug: e.target.value }))}
+                  onBlur={() =>
+                    setCampaignForm((s) => ({
+                      ...s,
+                      puebloSlug: resolvePuebloSlug(s.puebloSlug),
+                    }))
+                  }
+                  list="pueblo-slug-suggestions"
                   className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                  placeholder="Empieza a escribir slug del pueblo..."
                 />
+                <datalist id="pueblo-slug-suggestions">
+                  {geoPueblos.map((p) => (
+                    <option key={p.slug} value={p.slug}>
+                      {p.slug} · {p.provincia} · {p.comunidad}
+                    </option>
+                  ))}
+                </datalist>
               </label>
             </div>
           ) : (
