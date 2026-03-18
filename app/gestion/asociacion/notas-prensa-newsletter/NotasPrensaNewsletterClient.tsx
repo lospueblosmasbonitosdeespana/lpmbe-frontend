@@ -251,6 +251,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [uploadingNewsletterImage, setUploadingNewsletterImage] = useState(false);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const photosInputRef = useRef<HTMLInputElement | null>(null);
+  const newsletterImageInputRef = useRef<HTMLInputElement | null>(null);
   const htmlTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const editor = useEditor({
@@ -1783,9 +1784,25 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                               )}
 
                               {selectedNewsletterBlock.type === 'image' && (
-                                <label className="text-xs text-muted-foreground md:col-span-2">
-                                  Subir imagen
+                                <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3 md:col-span-2">
+                                  <p className="text-sm font-semibold text-foreground">
+                                    Imagen del bloque (paso principal)
+                                  </p>
+                                  <p className="mt-1 text-xs text-muted-foreground">
+                                    Pulsa el botón grande para subirla desde tu ordenador.
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={() => newsletterImageInputRef.current?.click()}
+                                    disabled={uploadingNewsletterImage}
+                                    className="mt-3 w-full rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+                                  >
+                                    {uploadingNewsletterImage
+                                      ? 'Subiendo imagen...'
+                                      : 'Subir imagen desde ordenador'}
+                                  </button>
                                   <input
+                                    ref={newsletterImageInputRef}
                                     type="file"
                                     accept="image/*"
                                     disabled={uploadingNewsletterImage}
@@ -1798,14 +1815,12 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                       );
                                       e.currentTarget.value = '';
                                     }}
-                                    className="mt-1 block w-full text-sm"
+                                    className="sr-only"
                                   />
-                                  <span className="mt-1 block text-[11px] text-muted-foreground">
-                                    {uploadingNewsletterImage
-                                      ? 'Subiendo imagen...'
-                                      : 'Puedes subir archivo desde tu ordenador (sin pegar URL).'}
-                                  </span>
-                                </label>
+                                  <p className="mt-2 text-[11px] text-muted-foreground">
+                                    También puedes pegar una URL manual en el campo URL de arriba.
+                                  </p>
+                                </div>
                               )}
 
                               {selectedNewsletterBlock.type === 'button' && (
