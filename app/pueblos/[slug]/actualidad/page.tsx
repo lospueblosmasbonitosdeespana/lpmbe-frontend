@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { permanentRedirect } from 'next/navigation';
 import { getLocale } from 'next-intl/server';
 import ActualidadPuebloClient from './ActualidadPuebloClient';
 import { getPuebloBySlug } from '@/lib/api';
@@ -56,7 +55,16 @@ export default async function ActualidadPuebloPage({
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
 
   if (!pueblo) {
-    permanentRedirect('/pueblos');
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="mx-auto max-w-5xl px-4 py-12">
+          <h1 className="text-3xl font-semibold">Actualidad</h1>
+          <p className="mt-3 text-muted-foreground">
+            No se ha podido cargar la actualidad de este pueblo en este momento.
+          </p>
+        </div>
+      </main>
+    );
   }
 
   return (

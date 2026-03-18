@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
@@ -78,7 +77,19 @@ export default async function VideosPuebloPage({
   const API_BASE = getApiUrl();
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
   if (!pueblo) {
-    permanentRedirect("/pueblos");
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="mx-auto max-w-4xl px-4 py-8">
+          <h1 className="text-2xl font-bold">Videos</h1>
+          <p className="mt-2 text-muted-foreground">
+            No se ha podido cargar el pueblo para mostrar los videos.
+          </p>
+          <Link href="/pueblos" className="mt-4 inline-block text-primary hover:underline">
+            Volver a pueblos
+          </Link>
+        </div>
+      </main>
+    );
   }
 
   const videosRes = await fetch(`${API_BASE}/pueblos/${pueblo.id}/videos`, {

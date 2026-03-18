@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
@@ -113,7 +112,19 @@ export default async function VideoWatchPage({
   const base = getBaseUrl();
 
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-  if (!pueblo) permanentRedirect("/pueblos");
+  if (!pueblo) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="mx-auto max-w-4xl px-4 py-8">
+          <h1 className="text-2xl font-bold">Video</h1>
+          <p className="mt-2 text-muted-foreground">No se ha podido cargar el pueblo para mostrar el video.</p>
+          <Link href="/pueblos" className="mt-4 inline-block text-primary hover:underline">
+            Volver a pueblos
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   const videosRes = await fetch(`${API_BASE}/pueblos/${pueblo.id}/videos`, { cache: "no-store" });
   let videos: Video[] = [];
@@ -126,7 +137,19 @@ export default async function VideoWatchPage({
   }
 
   const video = videos.find((v) => extractYoutubeId(v.url) === videoId);
-  if (!video) permanentRedirect(`/pueblos/${pueblo.slug}/videos`);
+  if (!video) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="mx-auto max-w-4xl px-4 py-8">
+          <h1 className="text-2xl font-bold">Video no disponible</h1>
+          <p className="mt-2 text-muted-foreground">No se ha encontrado el video solicitado.</p>
+          <Link href={`/pueblos/${pueblo.slug}/videos`} className="mt-4 inline-block text-primary hover:underline">
+            Ver todos los videos
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   const embedUrl = getEmbedUrl(video.url);
   const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;

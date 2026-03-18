@@ -1,4 +1,3 @@
-import { permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale } from "next-intl/server";
@@ -115,10 +114,46 @@ export default async function CategoriaPage({
   const { slug, categoriaSlug } = await params;
   const locale = await getLocale();
   const categoriaKey = CATEGORIA_SLUG_TO_KEY[categoriaSlug];
-  if (!categoriaKey) permanentRedirect(`/pueblos/${slug}`);
+  if (!categoriaKey) {
+    return (
+      <main className="bg-background min-h-screen">
+        <Section spacing="md">
+          <Container>
+            <div className="rounded-xl border border-dashed border-border bg-card/50 px-8 py-16 text-center">
+              <h1 className="font-serif text-2xl font-medium text-foreground">Categoría</h1>
+              <p className="mt-3 text-muted-foreground">
+                La categoría solicitada no está disponible.
+              </p>
+              <Link href={`/pueblos/${slug}`} className="mt-6 inline-block text-sm font-medium text-primary hover:underline">
+                Volver al pueblo
+              </Link>
+            </div>
+          </Container>
+        </Section>
+      </main>
+    );
+  }
 
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-  if (!pueblo) permanentRedirect("/pueblos");
+  if (!pueblo) {
+    return (
+      <main className="bg-background min-h-screen">
+        <Section spacing="md">
+          <Container>
+            <div className="rounded-xl border border-dashed border-border bg-card/50 px-8 py-16 text-center">
+              <h1 className="font-serif text-2xl font-medium text-foreground">Categoría</h1>
+              <p className="mt-3 text-muted-foreground">
+                No se ha podido cargar este pueblo en este momento.
+              </p>
+              <Link href="/pueblos" className="mt-6 inline-block text-sm font-medium text-primary hover:underline">
+                Volver a pueblos
+              </Link>
+            </div>
+          </Container>
+        </Section>
+      </main>
+    );
+  }
   const pois = (pueblo.pois ?? []) as Poi[];
   const multiexperiencias =
     ((pueblo as { multiexperiencias?: MultiexperienciaEntry[] }).multiexperiencias ?? []);

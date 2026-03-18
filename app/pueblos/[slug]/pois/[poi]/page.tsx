@@ -1,4 +1,3 @@
-import { permanentRedirect, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -131,11 +130,19 @@ export default async function PoiPage({
   const locale = await getLocale();
   const t = await getTranslations("poiPage");
   const data = await fetchPoi(puebloSlug, poi, locale);
-  if (!data) permanentRedirect(`/pueblos/${puebloSlug}/lugares-de-interes`);
-
-  // Redirect 301 desde URL legacy numérica a URL SEO
-  if (isNumeric(poi) && data.slug) {
-    redirect(`/pueblos/${puebloSlug}/pois/${data.slug}`);
+  if (!data) {
+    return (
+      <main className="mx-auto max-w-[1200px] px-6 py-8 bg-background">
+        <h1 className="text-3xl font-bold text-foreground my-4">Punto de interés no disponible</h1>
+        <p className="text-muted-foreground">No se ha podido cargar este punto de interés.</p>
+        <Link
+          href={`/pueblos/${puebloSlug}/lugares-de-interes`}
+          className="mt-6 inline-block text-primary hover:underline"
+        >
+          Volver a lugares de interés
+        </Link>
+      </main>
+    );
   }
 
   const foto = pickFotoPrincipal(data);
