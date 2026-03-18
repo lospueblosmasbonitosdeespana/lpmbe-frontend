@@ -226,6 +226,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [templateName, setTemplateName] = useState('');
   const [templateSaving, setTemplateSaving] = useState(false);
   const [newsletterBlocks, setNewsletterBlocks] = useState<NewsletterBlock[]>([]);
+  const [draggingBlockId, setDraggingBlockId] = useState<string | null>(null);
+  const [dragOverBlockId, setDragOverBlockId] = useState<string | null>(null);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const photosInputRef = useRef<HTMLInputElement | null>(null);
   const htmlTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -474,6 +476,19 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
 
   function removeNewsletterBlock(id: string) {
     setNewsletterBlocks((prev) => prev.filter((b) => b.id !== id));
+  }
+
+  function reorderNewsletterBlocks(draggedId: string, targetId: string) {
+    if (!draggedId || !targetId || draggedId === targetId) return;
+    setNewsletterBlocks((prev) => {
+      const fromIdx = prev.findIndex((b) => b.id === draggedId);
+      const toIdx = prev.findIndex((b) => b.id === targetId);
+      if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return prev;
+      const copy = [...prev];
+      const [item] = copy.splice(fromIdx, 1);
+      copy.splice(toIdx, 0, item);
+      return copy;
+    });
   }
 
   function duplicateNewsletterBlock(id: string) {
@@ -1453,11 +1468,51 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                     ) : (
                       <div className="space-y-2">
                         {newsletterBlocks.map((block, idx) => (
-                          <div key={block.id} className="space-y-2 rounded-md border border-border p-2">
+                          <div
+                            key={block.id}
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData('text/plain', block.id);
+                              e.dataTransfer.effectAllowed = 'move';
+                              setDraggingBlockId(block.id);
+                            }}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              if (dragOverBlockId !== block.id) {
+                                setDragOverBlockId(block.id);
+                              }
+                            }}
+                            onDragLeave={() => {
+                              if (dragOverBlockId === block.id) {
+                                setDragOverBlockId(null);
+                              }
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              const draggedId = e.dataTransfer.getData('text/plain') || draggingBlockId || '';
+                              reorderNewsletterBlocks(draggedId, block.id);
+                              setDragOverBlockId(null);
+                              setDraggingBlockId(null);
+                            }}
+                            onDragEnd={() => {
+                              setDragOverBlockId(null);
+                              setDraggingBlockId(null);
+                            }}
+                            className={`space-y-2 rounded-md border p-2 transition ${
+                              dragOverBlockId === block.id
+                                ? 'border-primary bg-primary/5'
+                                : 'border-border'
+                            }`}
+                          >
                             <div className="flex flex-wrap items-center justify-between gap-2">
-                              <span className="text-xs font-semibold uppercase text-muted-foreground">
-                                {idx + 1}. {block.type}
-                              </span>
+                              <div className="inline-flex items-center gap-2">
+                                <span className="cursor-grab select-none rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                                  Arrastrar
+                                </span>
+                                <span className="text-xs font-semibold uppercase text-muted-foreground">
+                                  {idx + 1}. {block.type}
+                                </span>
+                              </div>
                               <div className="flex gap-1">
                                 <button
                                   type="button"
