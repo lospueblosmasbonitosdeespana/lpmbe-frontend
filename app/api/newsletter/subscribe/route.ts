@@ -3,8 +3,10 @@ import { getApiUrl } from '@/lib/api';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const email = body?.email?.trim?.();
+    const body = await req.json().catch(() => ({}));
+    const email = String(body?.email || '').trim();
+    const origen = String(body?.origen || 'web').trim();
+
     if (!email) {
       return NextResponse.json({ message: 'Email requerido' }, { status: 400 });
     }
@@ -13,19 +15,17 @@ export async function POST(req: NextRequest) {
     const res = await fetch(`${API_BASE}/newsletter/subscribe`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, origen: body?.origen || 'web' }),
+      body: JSON.stringify({ email, origen }),
       cache: 'no-store',
     });
 
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      return NextResponse.json(data, { status: res.status });
-    }
+    if (!res.ok) return NextResponse.json(data, { status: res.status });
     return NextResponse.json(data);
   } catch (e: any) {
     return NextResponse.json(
-      { message: e?.message ?? 'Error interno' },
-      { status: 500 }
+      { message: e?.message || 'Error interno' },
+      { status: 500 },
     );
   }
 }
