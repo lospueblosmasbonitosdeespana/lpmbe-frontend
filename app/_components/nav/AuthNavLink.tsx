@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { shouldShowGestion, getGestionHref } from '@/lib/auth-nav';
 
 type Me = {
   id?: number;
@@ -64,39 +63,44 @@ export default function AuthNavLink({ variant = 'default' }: AuthNavLinkProps) {
     };
   }, [fetchMe]);
 
+  const linkClass = variant === 'drawer'
+    ? 'block py-3 text-base font-medium text-foreground hover:text-primary border-b border-border'
+    : 'text-sm font-medium hover:underline';
+
   if (loading) {
     return (
-      <Link href="/entrar" className="text-sm font-medium opacity-70 hover:underline">
-        {t('login')}
-      </Link>
+      <span className={variant === 'drawer' ? 'flex flex-col' : 'flex items-center gap-4'}>
+        <Link href="/entrar" className={`${linkClass} opacity-70`}>
+          {t('login')}
+        </Link>
+        <Link href="/gestion" className={linkClass}>
+          {t('management')}
+        </Link>
+      </span>
     );
   }
 
   if (!me) {
     return (
-      <Link href="/entrar" className="text-sm font-medium hover:underline">
-        {t('login')}
-      </Link>
+      <span className={variant === 'drawer' ? 'flex flex-col' : 'flex items-center gap-4'}>
+        <Link href="/entrar" className={linkClass}>
+          {t('login')}
+        </Link>
+        <Link href="/gestion" className={linkClass}>
+          {t('management')}
+        </Link>
+      </span>
     );
   }
-
-  const showGestion = shouldShowGestion(me.rol);
-  const gestionHref = getGestionHref(me.rol);
-
-  const linkClass = variant === 'drawer'
-    ? 'block py-3 text-base font-medium text-foreground hover:text-primary border-b border-border'
-    : 'text-sm font-medium hover:underline';
 
   return (
     <span className={variant === 'drawer' ? 'flex flex-col' : 'flex items-center gap-4'}>
       <Link href="/mi-cuenta" className={linkClass}>
         {t('myAccount')}
       </Link>
-      {showGestion && (
-        <Link href={gestionHref} className={linkClass}>
-          {t('management')}
-        </Link>
-      )}
+      <Link href="/gestion" className={linkClass}>
+        {t('management')}
+      </Link>
     </span>
   );
 }
