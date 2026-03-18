@@ -16,6 +16,14 @@ export default async function NotasPrensaPage() {
       <p className="mt-1 text-sm text-muted-foreground">
         Gestión de contactos de prensa y campañas segmentadas.
       </p>
+      <div className="mt-4">
+        <Link
+          href="/gestion/asociacion/notas-prensa-newsletter/notas-prensa/contactos"
+          className="inline-flex rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+        >
+          Gestionar contactos de prensa
+        </Link>
+      </div>
 
       <NotasPrensaNewsletterClient mode="press" />
 
