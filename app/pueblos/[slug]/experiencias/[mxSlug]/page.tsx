@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getLugarLegacyBySlug, getApiUrl, type Pueblo } from "@/lib/api";
@@ -49,10 +48,16 @@ export async function generateMetadata({
   const { slug, mxSlug } = await params;
   const locale = await getLocale();
   const t = await getTranslations("mxPage");
+  const fallbackPath = `/pueblos/${slug}/experiencias/${mxSlug}`;
   const pueblo = await getLugarLegacyBySlug(slug, locale).catch(() => null);
   if (!pueblo) {
     return {
-      title: "Experiencia",
+      title: seoTitle("Experiencia del pueblo"),
+      description: seoDescription("Contenido de experiencia del pueblo."),
+      alternates: {
+        canonical: getCanonicalUrl(fallbackPath, locale as SupportedLocale),
+        languages: getLocaleAlternates(fallbackPath),
+      },
       robots: { index: false, follow: true },
     };
   }
@@ -117,7 +122,17 @@ export default async function MultiexperienciaPage({
   const locale = await getLocale();
   const t = await getTranslations("mxPage");
   const pueblo = await getLugarLegacyBySlug(slug, locale).catch(() => null);
-  if (!pueblo) permanentRedirect("/pueblos");
+  if (!pueblo) {
+    return (
+      <main className="mx-auto max-w-[1200px] px-6 py-8 bg-background">
+        <h1 className="text-foreground text-3xl font-bold">{t("experienceFallback")}</h1>
+        <p className="mt-3 text-muted-foreground">No se ha podido cargar esta experiencia en este momento.</p>
+        <Link href="/pueblos" className="mt-6 inline-block text-primary hover:underline">
+          {t("backToVillage")}
+        </Link>
+      </main>
+    );
+  }
 
   // Buscar la multiexperiencia por slug (soportar formato plano y anidado)
   const mxItem = (pueblo.multiexperiencias ?? []).find((x: any) => {
@@ -129,7 +144,15 @@ export default async function MultiexperienciaPage({
   const mx = (mxItem?.multiexperiencia ?? mxItem ?? null) as Multiexperiencia | null;
 
   if (!mx) {
-    permanentRedirect(`/pueblos/${slug}/multiexperiencias`);
+    return (
+      <main className="mx-auto max-w-[1200px] px-6 py-8 bg-background">
+        <h1 className="text-foreground text-3xl font-bold">{t("experienceFallback")}</h1>
+        <p className="mt-3 text-muted-foreground">La experiencia solicitada no est\u00e1 disponible.</p>
+        <Link href={`/pueblos/${pueblo.slug}/multiexperiencias`} className="mt-6 inline-block text-primary hover:underline">
+          {t("backTo", { nombre: pueblo.nombre })}
+        </Link>
+      </main>
+    );
   }
 
   // Obtener paradas fusionadas (legacy + overrides + custom) desde el endpoint público del backend
