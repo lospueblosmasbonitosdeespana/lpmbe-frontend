@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
+import ZoomableImage from '@/app/components/ZoomableImage';
 
 export const dynamic = 'force-dynamic';
 
@@ -99,12 +100,12 @@ export default async function PuebloTematicaPage({
 
         {page.coverUrl && page.coverUrl.trim() && (
           <div className="my-8">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <ZoomableImage
               src={page.coverUrl.trim()}
               alt={page.titulo}
-              className="w-full rounded-lg object-cover"
-              style={{ maxHeight: '500px' }}
+              fit="contain"
+              wrapperClassName="aspect-[4/3] max-h-[500px] rounded-lg"
+              className="rounded-lg"
             />
           </div>
         )}

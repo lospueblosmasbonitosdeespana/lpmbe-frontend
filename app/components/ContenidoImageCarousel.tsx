@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import ZoomableImage from '@/app/components/ZoomableImage';
 
 type Props = {
   images: string[];
@@ -27,13 +28,16 @@ export default function ContenidoImageCarousel({ images, alt }: Props) {
           aria-hidden="true"
           className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl brightness-75 saturate-125"
         />
-        <img
-          src={validImages[index]}
-          alt={`${alt} (${index + 1}/${validImages.length})`}
-          className="relative z-[1] h-full w-full object-contain p-3 md:p-4"
-          width={900}
-          height={675}
-        />
+        <div className="relative z-[1] h-full w-full p-3 md:p-4">
+          <ZoomableImage
+            src={validImages[index]}
+            alt={`${alt} (${index + 1}/${validImages.length})`}
+            fit="contain"
+            wrapperClassName="h-full rounded-md"
+            className="h-full w-full"
+            loading="eager"
+          />
+        </div>
 
         {validImages.length > 1 && (
           <>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import ZoomableImage from '@/app/components/ZoomableImage';
 
 type Props = {
   src: string;
@@ -32,13 +33,12 @@ export default function SmartCoverImage({ src, alt }: Props) {
   if (orientation === 'landscape') {
     return (
       <div className="max-w-[900px] mx-auto mb-12 rounded-xl overflow-hidden aspect-[16/10] bg-muted">
-        <img
+        <ZoomableImage
           src={src}
           alt={alt}
-          onLoad={handleLoad}
-          className="w-full h-full object-cover block"
-          width={900}
-          height={563}
+          fit="contain"
+          wrapperClassName="h-full"
+          className="block"
         />
       </div>
     );
@@ -47,6 +47,14 @@ export default function SmartCoverImage({ src, alt }: Props) {
   // Portrait, square o unknown → blurred backdrop; mismo aspecto reservado siempre para evitar CLS al cambiar orientación
   return (
     <div className="relative w-full max-w-[900px] mx-auto mb-12 rounded-xl overflow-hidden flex items-center justify-center bg-muted aspect-[4/3]">
+      {/* Imagen oculta para detectar orientación real sin afectar layout */}
+      <img
+        src={src}
+        alt=""
+        aria-hidden="true"
+        onLoad={handleLoad}
+        className="hidden"
+      />
       {/* Fondo desenfocado: misma imagen estirada */}
       <img
         src={src}
@@ -62,18 +70,18 @@ export default function SmartCoverImage({ src, alt }: Props) {
         }}
       />
       {/* Imagen real centrada encima; dimensiones para evitar CLS */}
-      <img
-        src={src}
-        alt={alt}
-        onLoad={handleLoad}
-        width={orientation === 'portrait' ? 420 : 560}
-        height={orientation === 'portrait' ? 560 : 420}
-        className="relative z-[1] max-w-[420px] w-full max-h-[720px] object-contain block rounded-md mx-8 my-8 shadow-lg"
-        style={{
-          maxWidth: orientation === 'portrait' ? '420px' : '560px',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.35)',
-        }}
-      />
+      <div
+        className="relative z-[1] mx-8 my-8 w-full"
+        style={{ maxWidth: orientation === 'portrait' ? '420px' : '560px' }}
+      >
+        <ZoomableImage
+          src={src}
+          alt={alt}
+          fit="contain"
+          wrapperClassName="w-full rounded-md"
+          className="max-h-[720px] rounded-md shadow-lg"
+        />
+      </div>
     </div>
   );
 }

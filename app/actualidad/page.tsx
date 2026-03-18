@@ -188,7 +188,7 @@ function ActualidadContent() {
                         alt={item.titulo}
                         width={640}
                         height={360}
-                        className="h-full w-full object-cover transition group-hover:scale-105"
+                        className="h-full w-full object-contain p-2"
                       />
                     </div>
                   )}
