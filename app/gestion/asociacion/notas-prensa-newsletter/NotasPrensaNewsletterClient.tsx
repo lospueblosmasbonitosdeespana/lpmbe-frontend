@@ -395,6 +395,15 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     }
   }, [campaignForm.html, editor]);
 
+  useEffect(() => {
+    const handleMouseUp = () => {
+      setDraggingBlockId(null);
+      setDragOverBlockId(null);
+    };
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => window.removeEventListener('mouseup', handleMouseUp);
+  }, []);
+
   async function handleAddPressContact(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -1520,35 +1529,13 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                               {newsletterBlocks.map((block, idx) => (
                                 <div
                                   key={block.id}
-                                  draggable
                                   onClick={() => setSelectedNewsletterBlockId(block.id)}
-                                  onDragStart={(e) => {
-                                    e.dataTransfer.setData('text/plain', block.id);
-                                    e.dataTransfer.effectAllowed = 'move';
-                                    setDraggingBlockId(block.id);
-                                  }}
-                                  onDragOver={(e) => {
-                                    e.preventDefault();
-                                    if (dragOverBlockId !== block.id) {
+                                  onMouseEnter={() => {
+                                    if (draggingBlockId && draggingBlockId !== block.id) {
+                                      reorderNewsletterBlocks(draggingBlockId, block.id);
+                                      setDraggingBlockId(block.id);
                                       setDragOverBlockId(block.id);
                                     }
-                                  }}
-                                  onDragLeave={() => {
-                                    if (dragOverBlockId === block.id) {
-                                      setDragOverBlockId(null);
-                                    }
-                                  }}
-                                  onDrop={(e) => {
-                                    e.preventDefault();
-                                    const draggedId =
-                                      e.dataTransfer.getData('text/plain') || draggingBlockId || '';
-                                    reorderNewsletterBlocks(draggedId, block.id);
-                                    setDragOverBlockId(null);
-                                    setDraggingBlockId(null);
-                                  }}
-                                  onDragEnd={() => {
-                                    setDragOverBlockId(null);
-                                    setDraggingBlockId(null);
                                   }}
                                   className={`space-y-2 rounded-md border p-2 transition ${
                                     selectedNewsletterBlockId === block.id
@@ -1561,9 +1548,15 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                   <div className="flex flex-wrap items-center justify-between gap-2">
                                     <div className="inline-flex items-center gap-2">
                                       <span
+                                        onMouseDown={(e) => {
+                                          e.preventDefault();
+                                          setDraggingBlockId(block.id);
+                                          setDragOverBlockId(block.id);
+                                          setSelectedNewsletterBlockId(block.id);
+                                        }}
                                         className="cursor-grab select-none rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground"
                                       >
-                                        Arrastrar
+                                        {draggingBlockId === block.id ? 'Moviendo...' : 'Arrastrar'}
                                       </span>
                                       <span className="text-xs font-semibold uppercase text-muted-foreground">
                                         {idx + 1}. {block.type}
