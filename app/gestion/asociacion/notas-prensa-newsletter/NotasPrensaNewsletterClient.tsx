@@ -268,6 +268,66 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
   `.trim();
 }
 
+function renderPaletteIcon(type: NewsletterBlockType) {
+  if (type === 'heading') {
+    return (
+      <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="3" rx="1.5" fill="currentColor" />
+        <rect x="3" y="10.5" width="12" height="2.5" rx="1.25" fill="currentColor" opacity="0.85" />
+        <rect x="3" y="15.5" width="14" height="2.5" rx="1.25" fill="currentColor" opacity="0.65" />
+      </svg>
+    );
+  }
+  if (type === 'text') {
+    return (
+      <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
+        <rect x="3" y="6" width="18" height="2.2" rx="1.1" fill="currentColor" />
+        <rect x="3" y="10.2" width="18" height="2.2" rx="1.1" fill="currentColor" opacity="0.85" />
+        <rect x="3" y="14.4" width="16" height="2.2" rx="1.1" fill="currentColor" opacity="0.7" />
+      </svg>
+    );
+  }
+  if (type === 'image') {
+    return (
+      <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" />
+        <circle cx="9" cy="9" r="1.7" fill="currentColor" />
+        <path d="M5.5 18l4.8-5 3.3 3.2 2.5-2.4 2.4 4.2z" fill="currentColor" opacity="0.85" />
+      </svg>
+    );
+  }
+  if (type === 'button') {
+    return (
+      <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
+        <rect x="4" y="7" width="16" height="10" rx="3" fill="currentColor" />
+        <rect x="8" y="11" width="8" height="2" rx="1" fill="#fff" />
+      </svg>
+    );
+  }
+  if (type === 'iconButton') {
+    return (
+      <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
+        <rect x="5" y="5" width="14" height="14" rx="3" fill="currentColor" />
+        <circle cx="12" cy="12" r="3" fill="#fff" />
+      </svg>
+    );
+  }
+  if (type === 'columns2') {
+    return (
+      <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" />
+        <rect x="5.2" y="7.2" width="5.8" height="9.6" rx="1.2" fill="currentColor" opacity="0.9" />
+        <rect x="13" y="7.2" width="5.8" height="9.6" rx="1.2" fill="currentColor" opacity="0.65" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
+      <rect x="3" y="11" width="18" height="2" rx="1" fill="currentColor" />
+    </svg>
+  );
+}
+
 export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -1709,7 +1769,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
 
                         <div>
                           <p className="text-xs font-semibold uppercase text-muted-foreground">Bloques</p>
-                          <div className="mt-2 grid gap-2">
+                          <div className="mt-2 grid grid-cols-2 gap-2">
                             <button
                               type="button"
                               draggable
@@ -1720,9 +1780,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                               }}
                               onDragEnd={() => setDraggingPaletteType(null)}
                               onClick={() => addNewsletterBlock('heading')}
-                              className="rounded border bg-background px-2 py-1.5 text-xs"
+                              className="flex flex-col items-center justify-center gap-1 rounded-md border bg-background px-2 py-2 text-center text-[11px] font-medium hover:border-primary/60 hover:bg-primary/5"
                             >
-                              + Titular
+                              {renderPaletteIcon('heading')}
+                              Titular
                             </button>
                             <button
                               type="button"
@@ -1734,9 +1795,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                               }}
                               onDragEnd={() => setDraggingPaletteType(null)}
                               onClick={() => addNewsletterBlock('text')}
-                              className="rounded border bg-background px-2 py-1.5 text-xs"
+                              className="flex flex-col items-center justify-center gap-1 rounded-md border bg-background px-2 py-2 text-center text-[11px] font-medium hover:border-primary/60 hover:bg-primary/5"
                             >
-                              + Texto
+                              {renderPaletteIcon('text')}
+                              Texto
                             </button>
                             <button
                               type="button"
@@ -1748,9 +1810,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                               }}
                               onDragEnd={() => setDraggingPaletteType(null)}
                               onClick={() => addNewsletterBlock('image')}
-                              className="rounded border bg-background px-2 py-1.5 text-xs"
+                              className="flex flex-col items-center justify-center gap-1 rounded-md border bg-background px-2 py-2 text-center text-[11px] font-medium hover:border-primary/60 hover:bg-primary/5"
                             >
-                              + Imagen
+                              {renderPaletteIcon('image')}
+                              Imagen
                             </button>
                             <button
                               type="button"
@@ -1762,9 +1825,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                               }}
                               onDragEnd={() => setDraggingPaletteType(null)}
                               onClick={() => addNewsletterBlock('button')}
-                              className="rounded border bg-background px-2 py-1.5 text-xs"
+                              className="flex flex-col items-center justify-center gap-1 rounded-md border bg-background px-2 py-2 text-center text-[11px] font-medium hover:border-primary/60 hover:bg-primary/5"
                             >
-                              + Botón
+                              {renderPaletteIcon('button')}
+                              Botón
                             </button>
                             <button
                               type="button"
@@ -1776,9 +1840,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                               }}
                               onDragEnd={() => setDraggingPaletteType(null)}
                               onClick={() => addNewsletterBlock('iconButton')}
-                              className="rounded border bg-background px-2 py-1.5 text-xs"
+                              className="flex flex-col items-center justify-center gap-1 rounded-md border bg-background px-2 py-2 text-center text-[11px] font-medium hover:border-primary/60 hover:bg-primary/5"
                             >
-                              + Botón icono cuadrado
+                              {renderPaletteIcon('iconButton')}
+                              Botón icono
                             </button>
                             <button
                               type="button"
@@ -1790,9 +1855,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                               }}
                               onDragEnd={() => setDraggingPaletteType(null)}
                               onClick={() => addNewsletterBlock('columns2')}
-                              className="rounded border bg-background px-2 py-1.5 text-xs"
+                              className="flex flex-col items-center justify-center gap-1 rounded-md border bg-background px-2 py-2 text-center text-[11px] font-medium hover:border-primary/60 hover:bg-primary/5"
                             >
-                              + 2 columnas
+                              {renderPaletteIcon('columns2')}
+                              2 columnas
                             </button>
                             <button
                               type="button"
@@ -1804,9 +1870,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                               }}
                               onDragEnd={() => setDraggingPaletteType(null)}
                               onClick={() => addNewsletterBlock('divider')}
-                              className="rounded border bg-background px-2 py-1.5 text-xs"
+                              className="flex flex-col items-center justify-center gap-1 rounded-md border bg-background px-2 py-2 text-center text-[11px] font-medium hover:border-primary/60 hover:bg-primary/5"
                             >
-                              + Separador
+                              {renderPaletteIcon('divider')}
+                              Separador
                             </button>
                           </div>
                         </div>
