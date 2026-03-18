@@ -15,15 +15,28 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-  if (!pueblo) return { title: "Videos" };
+  const safeSlug = pueblo?.slug ?? slug;
+  const safeName = pueblo?.nombre ?? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const path = `/pueblos/${safeSlug}/videos`;
+  if (!pueblo) {
+    return {
+      title: seoTitle(`Videos de ${safeName}`),
+      description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${safeName}.`),
+      alternates: {
+        canonical: getCanonicalUrl(path, locale as SupportedLocale),
+        languages: getLocaleAlternates(path),
+      },
+      robots: { index: true, follow: true },
+    };
+  }
 
-  const path = `/pueblos/${pueblo.slug}/videos`;
+  const canonicalPath = `/pueblos/${pueblo.slug}/videos`;
   return {
     title: seoTitle(`Videos de ${pueblo.nombre}`),
     description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${pueblo.nombre}.`),
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
-      languages: getLocaleAlternates(path),
+      canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
+      languages: getLocaleAlternates(canonicalPath),
     },
   };
 }

@@ -219,21 +219,34 @@ export type RutaMapa = {
 // Obtener todas las rutas activas
 export async function getRutas(locale?: string): Promise<Ruta[]> {
   const API_BASE = getApiUrl();
-  const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
-  try {
-    const res = await fetchWithTimeout(`${API_BASE}/rutas${qs}`, {
+  const fetchRutas = async (lang?: string): Promise<Response> => {
+    const qs = lang ? `?lang=${encodeURIComponent(lang)}` : '';
+    return fetchWithTimeout(`${API_BASE}/rutas${qs}`, {
       cache: "no-store",
-      headers: locale ? { 'Accept-Language': locale } : undefined,
+      headers: lang ? { 'Accept-Language': lang } : undefined,
     });
+  };
 
-    // Si no es OK, devolver array vacío en lugar de lanzar error
-    if (!res.ok) {
-      console.warn(`[RUTAS] Backend respondió ${res.status}, devolviendo []`);
-      return [];
+  try {
+    const res = await fetchRutas(locale);
+    if (res.ok) return await res.json();
+
+    if (locale && locale !== 'es') {
+      const fallbackRes = await fetchRutas('es');
+      if (fallbackRes.ok) return await fallbackRes.json();
     }
 
-    return await res.json();
+    console.warn(`[RUTAS] Backend respondió ${res.status}, devolviendo []`);
+    return [];
   } catch (err) {
+    if (locale && locale !== 'es') {
+      try {
+        const fallbackRes = await fetchRutas('es');
+        if (fallbackRes.ok) return await fallbackRes.json();
+      } catch {
+        // ignore secondary error
+      }
+    }
     console.error('[RUTAS] Error fetching:', err);
     return [];
   }

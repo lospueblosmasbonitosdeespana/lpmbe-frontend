@@ -15,15 +15,28 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-  if (!pueblo) return { title: "Webcam" };
+  const safeSlug = pueblo?.slug ?? slug;
+  const safeName = pueblo?.nombre ?? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const path = `/pueblos/${safeSlug}/webcam`;
+  if (!pueblo) {
+    return {
+      title: seoTitle(`Webcam de ${safeName}`),
+      description: seoDescription(`Webcams y vistas en directo de ${safeName}.`),
+      alternates: {
+        canonical: getCanonicalUrl(path, locale as SupportedLocale),
+        languages: getLocaleAlternates(path),
+      },
+      robots: { index: true, follow: true },
+    };
+  }
 
-  const path = `/pueblos/${pueblo.slug}/webcam`;
+  const canonicalPath = `/pueblos/${pueblo.slug}/webcam`;
   return {
     title: seoTitle(`Webcam de ${pueblo.nombre}`),
     description: seoDescription(`Webcams y vistas en directo de ${pueblo.nombre}.`),
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
-      languages: getLocaleAlternates(path),
+      canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
+      languages: getLocaleAlternates(canonicalPath),
     },
   };
 }

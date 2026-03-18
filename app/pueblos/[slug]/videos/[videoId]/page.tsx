@@ -3,7 +3,7 @@ import { permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
-import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, type SupportedLocale } from "@/lib/seo";
 import JsonLd from "@/app/components/seo/JsonLd";
 
 export const dynamic = "force-dynamic";
@@ -41,9 +41,15 @@ export async function generateMetadata({
   const locale = await getLocale();
   const API_BASE = getApiUrl();
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+  const fallbackPath = `/pueblos/${slug}/videos/${videoId}`;
   if (!pueblo) {
     return {
-      title: "Video",
+      title: seoTitle("Video del pueblo"),
+      description: seoDescription("Contenido de video del pueblo."),
+      alternates: {
+        canonical: getCanonicalUrl(fallbackPath, locale as SupportedLocale),
+        languages: getLocaleAlternates(fallbackPath),
+      },
       robots: { index: false, follow: true },
     };
   }
@@ -59,15 +65,21 @@ export async function generateMetadata({
   }
   const video = videos.find((v) => extractYoutubeId(v.url) === videoId);
   if (!video) {
+    const noVideoPath = `/pueblos/${pueblo.slug}/videos/${videoId}`;
     return {
-      title: `Videos de ${pueblo.nombre}`,
+      title: seoTitle(`Videos de ${pueblo.nombre}`),
+      description: seoDescription(`Videos y contenidos audiovisuales sobre ${pueblo.nombre}.`),
+      alternates: {
+        canonical: getCanonicalUrl(noVideoPath, locale as SupportedLocale),
+        languages: getLocaleAlternates(noVideoPath),
+      },
       robots: { index: false, follow: true },
     };
   }
 
   const path = `/pueblos/${pueblo.slug}/videos/${videoId}`;
-  const title = `Video: ${video.titulo} | ${pueblo.nombre}`;
-  const description = `Video sobre ${pueblo.nombre}: ${video.titulo}.`;
+  const title = seoTitle(`Video: ${video.titulo} · ${pueblo.nombre}`);
+  const description = seoDescription(`Video sobre ${pueblo.nombre}: ${video.titulo}.`);
 
   return {
     title,

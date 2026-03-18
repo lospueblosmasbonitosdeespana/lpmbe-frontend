@@ -6,7 +6,7 @@ import { getPuebloBySlug } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
-import { Headline, Eyebrow, Body } from "@/app/components/ui/typography";
+import { Eyebrow, Body } from "@/app/components/ui/typography";
 import { PointsOfInterest } from "@/app/components/pueblos/PointsOfInterest";
 
 export const dynamic = "force-dynamic";
@@ -78,8 +78,19 @@ export async function generateMetadata({
   params: Promise<{ slug: string; categoriaSlug: string }>;
 }): Promise<Metadata> {
   const { slug, categoriaSlug } = await params;
-  if (!CATEGORIA_SLUG_TO_KEY[categoriaSlug]) return { title: "Categoría" };
   const locale = await getLocale();
+  if (!CATEGORIA_SLUG_TO_KEY[categoriaSlug]) {
+    const path = `/pueblos/${slug}/categoria/${categoriaSlug}`;
+    return {
+      title: seoTitle("Categoría"),
+      description: seoDescription("Categoría temática del pueblo."),
+      alternates: {
+        canonical: getCanonicalUrl(path, locale as SupportedLocale),
+        languages: getLocaleAlternates(path),
+      },
+      robots: { index: true, follow: true },
+    };
+  }
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
   const safeSlug = pueblo?.slug ?? slug;
   const safeName = pueblo?.nombre ?? slugToTitle(slug) ?? "Pueblo";
@@ -141,7 +152,7 @@ export default async function CategoriaPage({
 
           <div className="mb-10">
             <Eyebrow className="mb-2">Qué hacer</Eyebrow>
-            <Headline>{label} en {pueblo.nombre}</Headline>
+            <h1 className="font-serif text-4xl font-medium tracking-tight">{label} en {pueblo.nombre}</h1>
             <Body className="mt-2 text-muted-foreground">{descripcion}</Body>
           </div>
 

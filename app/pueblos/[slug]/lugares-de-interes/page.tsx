@@ -66,7 +66,7 @@ export default async function LugaresDeInteresPage({
             </nav>
             <div className="mb-10">
               <Eyebrow className="mb-2">Qué ver</Eyebrow>
-              <Title as="h2">Lugares de interés en {pueblo.nombre}</Title>
+              <Title as="h1">Lugares de interés en {pueblo.nombre}</Title>
               <Body className="mt-2 text-muted-foreground">
                 No hay lugares de interés disponibles para este pueblo.
               </Body>
@@ -131,7 +131,7 @@ export default async function LugaresDeInteresPage({
 
           <div className="mb-10">
             <Eyebrow className="mb-2">Qué ver</Eyebrow>
-            <Title as="h2">Lugares de interés en {pueblo.nombre}</Title>
+            <Title as="h1">Lugares de interés en {pueblo.nombre}</Title>
             <Body className="mt-2 text-muted-foreground">
               {pois.length} {pois.length === 1 ? "punto de interés" : "puntos de interés"} para descubrir
             </Body>

@@ -82,8 +82,15 @@ export async function generateMetadata({
   const ruta = rutas.find((r) => r.slug === slug);
 
   if (!ruta) {
+    const path = `/rutas/${slug}`;
     return {
-      title: tSeo("routeNotFoundTitle"),
+      title: seoTitle(tSeo("routeNotFoundTitle")),
+      description: seoDescription(tSeo("rutaDescriptionFallback")),
+      alternates: {
+        canonical: getCanonicalUrl(path, locale as SupportedLocale),
+        languages: getLocaleAlternates(path),
+      },
+      robots: { index: true, follow: true },
     };
   }
 

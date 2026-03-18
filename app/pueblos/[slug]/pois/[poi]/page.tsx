@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
+import { fetchWithTimeout } from "@/lib/fetch-safe";
 import ZoomableImage from "@/app/components/ZoomableImage";
 
 export const dynamic = "force-dynamic";
@@ -33,16 +34,38 @@ function pickFotoPrincipal(poi: any): string | null {
 
 async function fetchPoi(puebloSlug: string, poiParam: string, locale?: string) {
   const API_BASE = getApiUrl();
-  const qs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
-  const url = isNumeric(poiParam)
-    ? `${API_BASE}/pueblos/${puebloSlug}/pois/${poiParam}${qs}`
-    : `${API_BASE}/pueblos/${puebloSlug}/pois/slug/${poiParam}${qs}`;
-  const res = await fetch(url, {
-    cache: "no-store",
-    headers: locale ? { "Accept-Language": locale } : undefined,
-  });
-  if (!res.ok) return null;
-  return res.json();
+  const buildUrl = (lang?: string) => {
+    const qs = lang ? `?lang=${encodeURIComponent(lang)}` : "";
+    return isNumeric(poiParam)
+      ? `${API_BASE}/pueblos/${puebloSlug}/pois/${poiParam}${qs}`
+      : `${API_BASE}/pueblos/${puebloSlug}/pois/slug/${poiParam}${qs}`;
+  };
+
+  const fetchOne = async (lang?: string) =>
+    fetchWithTimeout(buildUrl(lang), {
+      cache: "no-store",
+      headers: lang ? { "Accept-Language": lang } : undefined,
+    });
+
+  try {
+    const res = await fetchOne(locale);
+    if (res.ok) return res.json();
+    if (locale && locale !== "es") {
+      const fallbackRes = await fetchOne("es");
+      if (fallbackRes.ok) return fallbackRes.json();
+    }
+    return null;
+  } catch {
+    if (locale && locale !== "es") {
+      try {
+        const fallbackRes = await fetchOne("es");
+        if (fallbackRes.ok) return fallbackRes.json();
+      } catch {
+        // ignore fallback error
+      }
+    }
+    return null;
+  }
 }
 
 export async function generateMetadata({
@@ -53,13 +76,24 @@ export async function generateMetadata({
   const { slug, poi } = await params;
   const locale = await getLocale();
   const data = await fetchPoi(slug, poi, locale);
-  if (!data) return {};
+  const path = `/pueblos/${slug}/pois/${poi}`;
+  if (!data) {
+    return {
+      title: seoTitle(`Punto de interés · ${slug.replace(/-/g, " ")}`),
+      description: seoDescription(`Información del punto de interés en ${slug.replace(/-/g, " ")}.`),
+      alternates: {
+        canonical: getCanonicalUrl(path, locale as SupportedLocale),
+        languages: getLocaleAlternates(path),
+      },
+      robots: { index: true, follow: true },
+    };
+  }
 
   const foto = pickFotoPrincipal(data);
   const descripcionHtml = pickDescripcionHtml(data);
   const puebloNombre = data.pueblo?.nombre ?? "";
   const title = seoTitle(`${data.nombre}${puebloNombre ? ` · ${puebloNombre}` : ""}`);
-  const path = `/pueblos/${slug}/pois/${data.slug ?? poi}`;
+  const canonicalPath = `/pueblos/${slug}/pois/${data.slug ?? poi}`;
   const rawDesc = descripcionHtml
     ? descripcionHtml.replace(/<[^>]*>/g, "").trim()
     : `Información sobre ${data.nombre}${puebloNombre ? ` en ${puebloNombre}` : ""}.`;
@@ -68,8 +102,8 @@ export async function generateMetadata({
     title,
     description: seoDescription(rawDesc, 160),
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
-      languages: getLocaleAlternates(path),
+      canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
+      languages: getLocaleAlternates(canonicalPath),
     },
     robots: { index: true, follow: true },
     openGraph: {

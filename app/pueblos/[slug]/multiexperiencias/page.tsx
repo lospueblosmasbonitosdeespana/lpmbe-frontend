@@ -65,7 +65,7 @@ export default async function MultiexperienciasPage({
             </nav>
             <div className="mb-10">
               <Eyebrow className="mb-2">Qué hacer</Eyebrow>
-              <Title as="h2">Multiexperiencias en {pueblo.nombre}</Title>
+              <Title as="h1">Multiexperiencias en {pueblo.nombre}</Title>
               <Body className="mt-2 text-muted-foreground">
                 Experiencias y actividades para descubrir el pueblo.
               </Body>
@@ -101,7 +101,7 @@ export default async function MultiexperienciasPage({
 
           <div className="mb-10">
             <Eyebrow className="mb-2 text-red-600">Qué hacer</Eyebrow>
-            <Title as="h2">Multiexperiencias en {pueblo.nombre}</Title>
+            <Title as="h1">Multiexperiencias en {pueblo.nombre}</Title>
             <Body className="mt-2 text-muted-foreground">
               Experiencias y actividades para descubrir el pueblo.
             </Body>

@@ -16,15 +16,28 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-  if (!pueblo) return { title: 'Actualidad' };
+  const safeSlug = pueblo?.slug ?? slug;
+  const safeName = pueblo?.nombre ?? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const path = `/pueblos/${safeSlug}/actualidad`;
+  if (!pueblo) {
+    return {
+      title: seoTitle(`Actualidad de ${safeName}`),
+      description: seoDescription(`Noticias, eventos y novedades de ${safeName}.`),
+      alternates: {
+        canonical: getCanonicalUrl(path, locale as SupportedLocale),
+        languages: getLocaleAlternates(path),
+      },
+      robots: { index: true, follow: true },
+    };
+  }
 
-  const path = `/pueblos/${pueblo.slug}/actualidad`;
+  const canonicalPath = `/pueblos/${pueblo.slug}/actualidad`;
   return {
     title: seoTitle(`Actualidad de ${pueblo.nombre}`),
     description: seoDescription(`Noticias, eventos y novedades de ${pueblo.nombre}.`),
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
-      languages: getLocaleAlternates(path),
+      canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
+      languages: getLocaleAlternates(canonicalPath),
     },
   };
 }
