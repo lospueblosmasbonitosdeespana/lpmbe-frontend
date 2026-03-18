@@ -1548,10 +1548,10 @@
     "datosDescription": "Panneau de mesures de la plateforme : utilisateurs, villages et analyse web.",
     "backToAssociation": "← Retour au partenariat",
     "puntosPueblosLink": "Points Villages",
-    "accessRestrictedTitle": "Acces restreint",
-    "accessRestrictedOnlyAdmins": "Cette page est reservee aux villages ou aux administrateurs du site.",
-    "accessRestrictedUsersToAccount": "Si vous etes utilisateur ou client, vous devez acceder via Mon compte.",
-    "goToMyAccount": "Aller a Mon compte"
+    "accessRestrictedTitle": "Accès restreint",
+    "accessRestrictedOnlyAdmins": "Cette page est réservée aux mairies et aux administrateurs du site.",
+    "accessRestrictedUsersToAccount": "Si vous êtes un utilisateur ou un client, accédez via Mon compte.",
+    "goToMyAccount": "Aller à Mon compte"
   },
   "contact": {
     "title": "Contact",

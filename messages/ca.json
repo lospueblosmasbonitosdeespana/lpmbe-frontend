@@ -1548,9 +1548,9 @@
     "datosDescription": "Panell de mètriques de la plataforma: usuaris, ciutats i anàlisi web.",
     "backToAssociation": "← Tornar a l'Associació",
     "puntosPueblosLink": "Punts de ciutats",
-    "accessRestrictedTitle": "Acces restringit",
-    "accessRestrictedOnlyAdmins": "Aquesta pagina es nomes per a pobles o administradors del lloc web.",
-    "accessRestrictedUsersToAccount": "Si ets usuari o client, has dentrar per El meu compte.",
+    "accessRestrictedTitle": "Accés restringit",
+    "accessRestrictedOnlyAdmins": "Aquesta pàgina és només per a ajuntaments i administradors del lloc web.",
+    "accessRestrictedUsersToAccount": "Si ets usuari o client, entra des d'El meu compte.",
     "goToMyAccount": "Anar a El meu compte"
   },
   "contact": {

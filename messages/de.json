@@ -1548,9 +1548,9 @@
     "datosDescription": "Metrik-Panel der Plattform: Nutzer, Dörfer und Webanalyse.",
     "backToAssociation": "← Zurück zur Partnerschaft",
     "puntosPueblosLink": "Punkte Dörfer",
-    "accessRestrictedTitle": "Eingeschrankter Zugang",
-    "accessRestrictedOnlyAdmins": "Diese Seite ist nur fur Dorfer oder Administratoren der Website.",
-    "accessRestrictedUsersToAccount": "Wenn Sie Benutzer oder Kunde sind, gehen Sie bitte zu Mein Konto.",
+    "accessRestrictedTitle": "Eingeschränkter Zugriff",
+    "accessRestrictedOnlyAdmins": "Diese Seite ist nur für Gemeinden und Administratoren der Website.",
+    "accessRestrictedUsersToAccount": "Wenn Sie Benutzer oder Kunde sind, gehen Sie bitte über Mein Konto.",
     "goToMyAccount": "Zu Mein Konto"
   },
   "contact": {

@@ -397,8 +397,8 @@
     "backToAssociation": "← Volver a Asociación",
     "puntosPueblosLink": "Puntos Pueblos",
     "accessRestrictedTitle": "Acceso restringido",
-    "accessRestrictedOnlyAdmins": "Esta pagina es solo para pueblos o administradores de la pagina.",
-    "accessRestrictedUsersToAccount": "Si eres usuario o cliente, debes entrar por Mi cuenta.",
+    "accessRestrictedOnlyAdmins": "Esta página es solo para ayuntamientos y administradores de la web.",
+    "accessRestrictedUsersToAccount": "Si eres usuario o cliente, entra desde Mi cuenta.",
     "goToMyAccount": "Ir a Mi cuenta"
   },
   "contact": {
