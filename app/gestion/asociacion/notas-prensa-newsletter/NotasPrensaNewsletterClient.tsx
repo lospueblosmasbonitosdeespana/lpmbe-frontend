@@ -55,6 +55,34 @@ type NewsletterTemplate = {
   updatedAt?: string;
 };
 
+type NewsletterDraftPayload = {
+  version: number;
+  savedAt: string;
+  mode: Mode;
+  campaignForm?: Partial<{
+    kind: 'PRESS' | 'NEWSLETTER';
+    subject: string;
+    html: string;
+    includeNational: boolean;
+    ccaa: string;
+    provincia: string;
+    puebloSlug: string;
+    source: string;
+  }>;
+  pressSendMode?: PressSendMode;
+  editorMode?: 'visual' | 'html';
+  newsletterComposerMode?: 'editor' | 'builder';
+  selectedCcaas?: string[];
+  selectedProvincias?: string[];
+  pressPdfUrl?: string;
+  pressPhotoUrls?: string[];
+  insertedPhotoUrls?: string[];
+  webGallerySelection?: string[];
+  webContentKind?: 'NOTICIA' | 'ARTICULO';
+  newsletterBlocks?: unknown;
+  templateName?: string;
+};
+
 function newBlockId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
@@ -249,6 +277,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [reorderPickSourceId, setReorderPickSourceId] = useState<string | null>(null);
   const [draggingPaletteType, setDraggingPaletteType] = useState<NewsletterBlockType | null>(null);
   const [uploadingNewsletterImage, setUploadingNewsletterImage] = useState(false);
+  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
+  const [hasStoredDraft, setHasStoredDraft] = useState(false);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const photosInputRef = useRef<HTMLInputElement | null>(null);
   const newsletterImageInputRef = useRef<HTMLInputElement | null>(null);
@@ -295,6 +325,110 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       return;
     }
     editor.chain().focus().extendMarkRange('link').setLink({ href: trimmed }).run();
+  }
+
+  function getDraftStorageKey() {
+    return `lpmbe-newsletter-draft-${mode}`;
+  }
+
+  function buildDraftPayload() {
+    const htmlFromComposer =
+      mode === 'newsletter' && newsletterComposerMode === 'builder'
+        ? renderNewsletterBlocksToHtml(newsletterBlocks).trim()
+        : mode === 'press' && pressSendMode === 'editor' && editorMode === 'visual' && editor
+          ? editor.getHTML().trim()
+          : campaignForm.html.trim();
+
+    return {
+      version: 1,
+      savedAt: new Date().toISOString(),
+      mode,
+      campaignForm: {
+        ...campaignForm,
+        html: htmlFromComposer || campaignForm.html || '',
+      },
+      pressSendMode,
+      editorMode,
+      newsletterComposerMode,
+      selectedCcaas,
+      selectedProvincias,
+      pressPdfUrl,
+      pressPhotoUrls,
+      insertedPhotoUrls,
+      webGallerySelection,
+      webContentKind,
+      newsletterBlocks,
+      templateName,
+    };
+  }
+
+  function applyDraftPayload(payload: NewsletterDraftPayload) {
+    if (!payload || typeof payload !== 'object') return;
+    if (payload.campaignForm && typeof payload.campaignForm === 'object') {
+      setCampaignForm((prev) => ({
+        ...prev,
+        ...payload.campaignForm,
+        kind: mode === 'newsletter' ? 'NEWSLETTER' : 'PRESS',
+      }));
+    }
+    if (payload.pressSendMode === 'editor' || payload.pressSendMode === 'pdf') {
+      setPressSendMode(payload.pressSendMode);
+    }
+    if (payload.editorMode === 'visual' || payload.editorMode === 'html') {
+      setEditorMode(payload.editorMode);
+    }
+    if (payload.newsletterComposerMode === 'editor' || payload.newsletterComposerMode === 'builder') {
+      setNewsletterComposerMode(payload.newsletterComposerMode);
+    }
+    if (Array.isArray(payload.selectedCcaas)) setSelectedCcaas(payload.selectedCcaas.map(String));
+    if (Array.isArray(payload.selectedProvincias)) {
+      setSelectedProvincias(payload.selectedProvincias.map(String));
+    }
+    if (typeof payload.pressPdfUrl === 'string') setPressPdfUrl(payload.pressPdfUrl);
+    if (Array.isArray(payload.pressPhotoUrls)) setPressPhotoUrls(payload.pressPhotoUrls.map(String));
+    if (Array.isArray(payload.insertedPhotoUrls)) setInsertedPhotoUrls(payload.insertedPhotoUrls.map(String));
+    if (Array.isArray(payload.webGallerySelection)) {
+      setWebGallerySelection(payload.webGallerySelection.map(String));
+    }
+    if (payload.webContentKind === 'NOTICIA' || payload.webContentKind === 'ARTICULO') {
+      setWebContentKind(payload.webContentKind);
+    }
+    if (Array.isArray(payload.newsletterBlocks)) {
+      const blocks = normalizeNewsletterBlocks(payload.newsletterBlocks);
+      setNewsletterBlocks(blocks);
+      if (blocks.length > 0) {
+        setSelectedNewsletterBlockId(blocks[0].id);
+      }
+    }
+    if (typeof payload.templateName === 'string') setTemplateName(payload.templateName);
+    if (typeof payload.savedAt === 'string') setDraftSavedAt(payload.savedAt);
+  }
+
+  function saveDraftToLocal() {
+    if (typeof window === 'undefined') return;
+    const key = getDraftStorageKey();
+    const payload = buildDraftPayload();
+    localStorage.setItem(key, JSON.stringify(payload));
+    setDraftSavedAt(payload.savedAt);
+    setHasStoredDraft(true);
+    setMessage(`Borrador guardado (${new Date(payload.savedAt).toLocaleTimeString('es-ES')}).`);
+  }
+
+  function loadDraftFromLocal(showMessage = false) {
+    if (typeof window === 'undefined') return false;
+    const raw = localStorage.getItem(getDraftStorageKey());
+    if (!raw) return false;
+    try {
+      const payload = JSON.parse(raw) as NewsletterDraftPayload;
+      applyDraftPayload(payload);
+      setHasStoredDraft(true);
+      if (showMessage) {
+        setMessage('Borrador cargado correctamente.');
+      }
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async function loadData() {
@@ -346,6 +480,21 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hasDraft = Boolean(localStorage.getItem(getDraftStorageKey()));
+    setHasStoredDraft(hasDraft);
+    if (!hasDraft) return;
+    const isCurrentFormEmpty =
+      !campaignForm.subject.trim() &&
+      !campaignForm.html.trim() &&
+      !campaignForm.puebloSlug.trim();
+    if (isCurrentFormEmpty) {
+      loadDraftFromLocal();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2280,13 +2429,44 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
             </div>
           ) : null}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
-          >
-            {loading ? 'Enviando…' : 'Enviar campaña'}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                saveDraftToLocal();
+              }}
+              disabled={loading}
+              className="rounded-lg border border-amber-400 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-900 disabled:opacity-60"
+            >
+              Guardar borrador
+            </button>
+            {hasStoredDraft ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  loadDraftFromLocal(true);
+                }}
+                disabled={loading}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium disabled:opacity-60"
+              >
+                Cargar borrador
+              </button>
+            ) : null}
+            <button
+              type="submit"
+              disabled={loading}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
+            >
+              {loading ? 'Enviando…' : 'Enviar campaña'}
+            </button>
+            {draftSavedAt ? (
+              <span className="text-xs text-muted-foreground">
+                Borrador guardado: {new Date(draftSavedAt).toLocaleTimeString('es-ES')}
+              </span>
+            ) : null}
+          </div>
         </form>
       </section>
 
