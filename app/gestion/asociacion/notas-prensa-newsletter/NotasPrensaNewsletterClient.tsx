@@ -246,9 +246,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [templateSaving, setTemplateSaving] = useState(false);
   const [newsletterBlocks, setNewsletterBlocks] = useState<NewsletterBlock[]>([]);
   const [selectedNewsletterBlockId, setSelectedNewsletterBlockId] = useState<string | null>(null);
-  const [draggingBlockId, setDraggingBlockId] = useState<string | null>(null);
-  const [dragOverBlockId, setDragOverBlockId] = useState<string | null>(null);
   const [reorderPickSourceId, setReorderPickSourceId] = useState<string | null>(null);
+  const [draggingPaletteType, setDraggingPaletteType] = useState<NewsletterBlockType | null>(null);
+  const [uploadingNewsletterImage, setUploadingNewsletterImage] = useState(false);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const photosInputRef = useRef<HTMLInputElement | null>(null);
   const htmlTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -396,36 +396,6 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     }
   }, [campaignForm.html, editor]);
 
-  useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      if (!draggingBlockId) return;
-      if ((event.buttons & 1) !== 1) return;
-      const target = document.elementFromPoint(event.clientX, event.clientY);
-      const dropHost = target instanceof HTMLElement
-        ? target.closest<HTMLElement>('[data-newsletter-block-id]')
-        : null;
-      const overId = dropHost?.dataset.newsletterBlockId || null;
-      if (!overId) return;
-      if (overId === draggingBlockId) {
-        setDragOverBlockId(overId);
-        return;
-      }
-      reorderNewsletterBlocks(draggingBlockId, overId);
-      setDraggingBlockId(overId);
-      setDragOverBlockId(overId);
-    };
-    const handleMouseUp = () => {
-      setDraggingBlockId(null);
-      setDragOverBlockId(null);
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [draggingBlockId]);
-
   async function handleAddPressContact(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -553,13 +523,36 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   }
 
   function moveBlockToTarget(targetId: string) {
-    const sourceId = reorderPickSourceId || draggingBlockId;
+    const sourceId = reorderPickSourceId;
     if (!sourceId || sourceId === targetId) return;
     reorderNewsletterBlocks(sourceId, targetId);
     setReorderPickSourceId(null);
-    setDraggingBlockId(null);
-    setDragOverBlockId(null);
     setSelectedNewsletterBlockId(sourceId);
+  }
+
+  async function uploadNewsletterImageForBlock(file: File, blockId: string) {
+    if (!file) return;
+    setUploadingNewsletterImage(true);
+    setError(null);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', 'newsletter/templates');
+      const res = await fetch('/api/admin/uploads', {
+        method: 'POST',
+        body: fd,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.url) {
+        throw new Error(data?.error || data?.message || 'Error subiendo imagen');
+      }
+      updateNewsletterBlock(blockId, { url: String(data.url) });
+      setMessage('Imagen subida correctamente al bloque.');
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, 'Error subiendo imagen'));
+    } finally {
+      setUploadingNewsletterImage(false);
+    }
   }
 
   function duplicateNewsletterBlock(id: string) {
@@ -1514,19 +1507,74 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                         <div>
                           <p className="text-xs font-semibold uppercase text-muted-foreground">Bloques</p>
                           <div className="mt-2 grid gap-2">
-                            <button type="button" onClick={() => addNewsletterBlock('heading')} className="rounded border bg-background px-2 py-1.5 text-xs">
+                            <button
+                              type="button"
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggingPaletteType('heading');
+                                e.dataTransfer.setData('text/newsletter-block-type', 'heading');
+                                e.dataTransfer.effectAllowed = 'copy';
+                              }}
+                              onDragEnd={() => setDraggingPaletteType(null)}
+                              onClick={() => addNewsletterBlock('heading')}
+                              className="rounded border bg-background px-2 py-1.5 text-xs"
+                            >
                               + Titular
                             </button>
-                            <button type="button" onClick={() => addNewsletterBlock('text')} className="rounded border bg-background px-2 py-1.5 text-xs">
+                            <button
+                              type="button"
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggingPaletteType('text');
+                                e.dataTransfer.setData('text/newsletter-block-type', 'text');
+                                e.dataTransfer.effectAllowed = 'copy';
+                              }}
+                              onDragEnd={() => setDraggingPaletteType(null)}
+                              onClick={() => addNewsletterBlock('text')}
+                              className="rounded border bg-background px-2 py-1.5 text-xs"
+                            >
                               + Texto
                             </button>
-                            <button type="button" onClick={() => addNewsletterBlock('image')} className="rounded border bg-background px-2 py-1.5 text-xs">
+                            <button
+                              type="button"
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggingPaletteType('image');
+                                e.dataTransfer.setData('text/newsletter-block-type', 'image');
+                                e.dataTransfer.effectAllowed = 'copy';
+                              }}
+                              onDragEnd={() => setDraggingPaletteType(null)}
+                              onClick={() => addNewsletterBlock('image')}
+                              className="rounded border bg-background px-2 py-1.5 text-xs"
+                            >
                               + Imagen
                             </button>
-                            <button type="button" onClick={() => addNewsletterBlock('button')} className="rounded border bg-background px-2 py-1.5 text-xs">
+                            <button
+                              type="button"
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggingPaletteType('button');
+                                e.dataTransfer.setData('text/newsletter-block-type', 'button');
+                                e.dataTransfer.effectAllowed = 'copy';
+                              }}
+                              onDragEnd={() => setDraggingPaletteType(null)}
+                              onClick={() => addNewsletterBlock('button')}
+                              className="rounded border bg-background px-2 py-1.5 text-xs"
+                            >
                               + Botón
                             </button>
-                            <button type="button" onClick={() => addNewsletterBlock('divider')} className="rounded border bg-background px-2 py-1.5 text-xs">
+                            <button
+                              type="button"
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggingPaletteType('divider');
+                                e.dataTransfer.setData('text/newsletter-block-type', 'divider');
+                                e.dataTransfer.effectAllowed = 'copy';
+                              }}
+                              onDragEnd={() => setDraggingPaletteType(null)}
+                              onClick={() => addNewsletterBlock('divider')}
+                              className="rounded border bg-background px-2 py-1.5 text-xs"
+                            >
                               + Separador
                             </button>
                           </div>
@@ -1555,7 +1603,20 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                       </aside>
 
                       <div className="space-y-3">
-                        <div className="rounded-md border border-border bg-background p-3">
+                        <div
+                          className="rounded-md border border-border bg-background p-3"
+                          onDragOver={(e) => {
+                            if (!draggingPaletteType) return;
+                            e.preventDefault();
+                            e.dataTransfer.dropEffect = 'copy';
+                          }}
+                          onDrop={(e) => {
+                            if (!draggingPaletteType) return;
+                            e.preventDefault();
+                            addNewsletterBlock(draggingPaletteType);
+                            setDraggingPaletteType(null);
+                          }}
+                        >
                           <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Lienzo de bloques</p>
                           {newsletterBlocks.length === 0 ? (
                             <p className="text-xs text-muted-foreground">
@@ -1571,21 +1632,12 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                   className={`space-y-2 rounded-md border p-2 transition ${
                                     selectedNewsletterBlockId === block.id
                                       ? 'border-primary bg-primary/5'
-                                      : dragOverBlockId === block.id
-                                        ? 'border-primary bg-primary/5'
                                         : 'border-border'
                                   }`}
                                 >
                                   <div className="flex flex-wrap items-center justify-between gap-2">
                                     <div className="inline-flex items-center gap-2">
                                       <span
-                                        onMouseDown={(e) => {
-                                          e.preventDefault();
-                                          setDraggingBlockId(block.id);
-                                          setDragOverBlockId(block.id);
-                                          setSelectedNewsletterBlockId(block.id);
-                                          setReorderPickSourceId(block.id);
-                                        }}
                                         onClick={(e) => {
                                           e.preventDefault();
                                           setReorderPickSourceId((prev) =>
@@ -1593,11 +1645,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                           );
                                           setSelectedNewsletterBlockId(block.id);
                                         }}
-                                        className={`select-none rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground ${
-                                          draggingBlockId === block.id ? 'cursor-grabbing' : 'cursor-grab'
-                                        }`}
+                                        className="cursor-pointer select-none rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground"
                                       >
-                                        {draggingBlockId === block.id ? 'Moviendo...' : 'Arrastrar'}
+                                        {reorderPickSourceId === block.id ? 'Seleccionado' : 'Mover'}
                                       </span>
                                       <span className="text-xs font-semibold uppercase text-muted-foreground">
                                         {idx + 1}. {block.type}
@@ -1729,6 +1779,32 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                     className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
                                     placeholder="https://..."
                                   />
+                                </label>
+                              )}
+
+                              {selectedNewsletterBlock.type === 'image' && (
+                                <label className="text-xs text-muted-foreground md:col-span-2">
+                                  Subir imagen
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    disabled={uploadingNewsletterImage}
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0];
+                                      if (!file) return;
+                                      await uploadNewsletterImageForBlock(
+                                        file,
+                                        selectedNewsletterBlock.id,
+                                      );
+                                      e.currentTarget.value = '';
+                                    }}
+                                    className="mt-1 block w-full text-sm"
+                                  />
+                                  <span className="mt-1 block text-[11px] text-muted-foreground">
+                                    {uploadingNewsletterImage
+                                      ? 'Subiendo imagen...'
+                                      : 'Puedes subir archivo desde tu ordenador (sin pegar URL).'}
+                                  </span>
                                 </label>
                               )}
 
