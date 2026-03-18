@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Link from '@tiptap/extension-link';
+import Placeholder from '@tiptap/extension-placeholder';
 
 type Campaign = {
   id: number;
@@ -97,7 +99,18 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
 
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [2, 3] },
+      }),
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+      }),
+      Placeholder.configure({
+        placeholder: 'Escribe aquí la nota de prensa...',
+      }),
+    ],
     content: campaignForm.html || '<p></p>',
     onUpdate: ({ editor }) => {
       setCampaignForm((s) => ({ ...s, html: editor.getHTML() }));
@@ -110,6 +123,19 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     },
     immediatelyRender: false,
   });
+
+  function toggleLinkOnEditor() {
+    if (!editor) return;
+    const previousUrl = editor.getAttributes('link').href as string | undefined;
+    const url = window.prompt('URL del enlace', previousUrl || 'https://');
+    if (url === null) return;
+    const trimmed = url.trim();
+    if (!trimmed) {
+      editor.chain().focus().extendMarkRange('link').unsetLink().run();
+      return;
+    }
+    editor.chain().focus().extendMarkRange('link').setLink({ href: trimmed }).run();
+  }
 
   async function loadData() {
     try {
@@ -684,14 +710,22 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                 <button
                   type="button"
                   onClick={() => setPressSendMode('editor')}
-                  className={`rounded-md border px-3 py-1 text-xs ${pressSendMode === 'editor' ? 'bg-muted font-semibold' : ''}`}
+                  className={`rounded-xl border px-6 py-3 text-base font-semibold shadow-sm transition ${
+                    pressSendMode === 'editor'
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-background hover:bg-muted'
+                  }`}
                 >
                   1) Crear en editor
                 </button>
                 <button
                   type="button"
                   onClick={() => setPressSendMode('pdf')}
-                  className={`rounded-md border px-3 py-1 text-xs ${pressSendMode === 'pdf' ? 'bg-muted font-semibold' : ''}`}
+                  className={`rounded-xl border px-6 py-3 text-base font-semibold shadow-sm transition ${
+                    pressSendMode === 'pdf'
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-background hover:bg-muted'
+                  }`}
                 >
                   2) Enviar desde PDF
                 </button>
@@ -870,7 +904,124 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   </button>
                 </div>
                 {editorMode === 'visual' ? (
-                  <div className="mt-2">
+                  <div className="mt-2 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/40 p-2">
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().toggleBold().run()}
+                        className={`rounded border px-2 py-1 text-xs font-semibold ${
+                          editor?.isActive('bold') ? 'bg-primary text-primary-foreground' : 'bg-background'
+                        }`}
+                      >
+                        Negrita
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().toggleItalic().run()}
+                        className={`rounded border px-2 py-1 text-xs font-semibold ${
+                          editor?.isActive('italic') ? 'bg-primary text-primary-foreground' : 'bg-background'
+                        }`}
+                      >
+                        Cursiva
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().toggleStrike().run()}
+                        className={`rounded border px-2 py-1 text-xs font-semibold ${
+                          editor?.isActive('strike') ? 'bg-primary text-primary-foreground' : 'bg-background'
+                        }`}
+                      >
+                        Tachado
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().setParagraph().run()}
+                        className={`rounded border px-2 py-1 text-xs font-semibold ${
+                          editor?.isActive('paragraph') ? 'bg-primary text-primary-foreground' : 'bg-background'
+                        }`}
+                      >
+                        Párrafo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+                        className={`rounded border px-2 py-1 text-xs font-semibold ${
+                          editor?.isActive('heading', { level: 2 })
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-background'
+                        }`}
+                      >
+                        H2
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
+                        className={`rounded border px-2 py-1 text-xs font-semibold ${
+                          editor?.isActive('heading', { level: 3 })
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-background'
+                        }`}
+                      >
+                        H3
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().toggleBulletList().run()}
+                        className={`rounded border px-2 py-1 text-xs font-semibold ${
+                          editor?.isActive('bulletList') ? 'bg-primary text-primary-foreground' : 'bg-background'
+                        }`}
+                      >
+                        Lista
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+                        className={`rounded border px-2 py-1 text-xs font-semibold ${
+                          editor?.isActive('orderedList') ? 'bg-primary text-primary-foreground' : 'bg-background'
+                        }`}
+                      >
+                        Numerada
+                      </button>
+                      <button
+                        type="button"
+                        onClick={toggleLinkOnEditor}
+                        className={`rounded border px-2 py-1 text-xs font-semibold ${
+                          editor?.isActive('link') ? 'bg-primary text-primary-foreground' : 'bg-background'
+                        }`}
+                      >
+                        Enlace
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().toggleBlockquote().run()}
+                        className={`rounded border px-2 py-1 text-xs font-semibold ${
+                          editor?.isActive('blockquote') ? 'bg-primary text-primary-foreground' : 'bg-background'
+                        }`}
+                      >
+                        Cita
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().setHorizontalRule().run()}
+                        className="rounded border bg-background px-2 py-1 text-xs font-semibold"
+                      >
+                        Línea
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().undo().run()}
+                        className="rounded border bg-background px-2 py-1 text-xs font-semibold"
+                      >
+                        Deshacer
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().redo().run()}
+                        className="rounded border bg-background px-2 py-1 text-xs font-semibold"
+                      >
+                        Rehacer
+                      </button>
+                    </div>
                     <EditorContent editor={editor} />
                   </div>
                 ) : (
