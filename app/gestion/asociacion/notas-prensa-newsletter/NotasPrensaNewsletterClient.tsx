@@ -38,12 +38,17 @@ type Overview = {
 };
 
 type Mode = 'newsletter' | 'press';
+type PressSendMode = 'editor' | 'pdf';
 
 function fmtDate(value?: string | null) {
   if (!value) return '—';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '—';
   return d.toLocaleString('es-ES');
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback;
 }
 
 export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
@@ -75,9 +80,16 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   });
   const [pressFormExpanded, setPressFormExpanded] = useState(false);
   const [editorMode, setEditorMode] = useState<'visual' | 'html'>('visual');
+  const [pressSendMode, setPressSendMode] = useState<PressSendMode>('editor');
   const [pressPhotoFiles, setPressPhotoFiles] = useState<File[]>([]);
   const [pressPhotoUrls, setPressPhotoUrls] = useState<string[]>([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [pressPdfFile, setPressPdfFile] = useState<File | null>(null);
+  const [pressPdfUrl, setPressPdfUrl] = useState('');
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [webContentKind, setWebContentKind] = useState<'NOTICIA' | 'ARTICULO'>('NOTICIA');
+  const [publishingWeb, setPublishingWeb] = useState(false);
+  const [showWebPreview, setShowWebPreview] = useState(false);
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -170,8 +182,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         puebloSlug: '',
       });
       await loadData();
-    } catch (e: any) {
-      setError(e?.message || 'Error guardando contacto');
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, 'Error guardando contacto'));
     } finally {
       setLoading(false);
     }
@@ -183,21 +195,93 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     setError(null);
     setMessage(null);
     try {
-      let finalHtml = campaignForm.html.trim();
-      if (mode === 'press' && editorMode === 'visual' && editor) {
-        finalHtml = editor.getHTML().trim();
+      if (!campaignForm.subject.trim()) {
+        throw new Error('El asunto es obligatorio');
       }
 
-      if (!campaignForm.subject.trim() || !finalHtml) {
-        throw new Error('Asunto y contenido son obligatorios');
-      }
-
+      let finalHtml = '';
       let photoUrlsForSend = [...pressPhotoUrls];
-      if (mode === 'press' && pressPhotoFiles.length > 0 && pressPhotoUrls.length === 0) {
-        photoUrlsForSend = await uploadPressPhotos();
-      }
-      if (mode === 'press' && photoUrlsForSend.length > 0) {
-        finalHtml = appendPressPhotos(finalHtml, photoUrlsForSend);
+
+      if (mode === 'press' && pressSendMode === 'pdf') {
+        let pdfUrl = pressPdfUrl.trim();
+        let pdfFilename = '';
+        if (!pdfUrl && pressPdfFile) {
+          pdfUrl = await uploadPressPdf();
+        }
+        if (pressPdfFile?.name) {
+          pdfFilename = pressPdfFile.name;
+        }
+        if (!pdfFilename && pdfUrl) {
+          const fromUrl = pdfUrl.split('/').pop() || '';
+          pdfFilename = fromUrl.split('?')[0] || '';
+        }
+        if (!pdfUrl) {
+          throw new Error('Debes subir un PDF para el envío');
+        }
+        finalHtml = buildPdfEmailHtml(campaignForm.subject.trim(), pdfUrl);
+        const safeFilename = pdfFilename || `nota-prensa-${Date.now()}.pdf`;
+        const attachmentUrls = [
+          {
+            url: pdfUrl,
+            filename: safeFilename.toLowerCase().endsWith('.pdf')
+              ? safeFilename
+              : `${safeFilename}.pdf`,
+            contentType: 'application/pdf',
+          },
+        ];
+
+        const filters =
+          mode === 'press'
+            ? {
+                includeNational: campaignForm.includeNational,
+                ccaas: campaignForm.ccaa
+                  .split(/[,;\n]/g)
+                  .map((v) => v.trim())
+                  .filter(Boolean),
+                provincias: campaignForm.provincia
+                  .split(/[,;\n]/g)
+                  .map((v) => v.trim())
+                  .filter(Boolean),
+                puebloSlug: campaignForm.puebloSlug,
+              }
+            : { source: campaignForm.source };
+
+        const res = await fetch('/api/admin/newsletter/campaigns/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            kind: mode === 'press' ? 'PRESS' : 'NEWSLETTER',
+            subject: campaignForm.subject,
+            html: finalHtml,
+            filters,
+            attachmentUrls,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.message || 'Error enviando campaña');
+        setMessage(
+          `Campaña enviada. Destinatarios: ${data.totalRecipients}. Enviados: ${data.sentCount}. Fallidos: ${data.failedCount}.`,
+        );
+        setPressPhotoFiles([]);
+        setPressPhotoUrls([]);
+        setPressPdfFile(null);
+        setPressPdfUrl('');
+        await loadData();
+        return;
+      } else {
+        finalHtml = campaignForm.html.trim();
+        if (mode === 'press' && editorMode === 'visual' && editor) {
+          finalHtml = editor.getHTML().trim();
+        }
+        if (!finalHtml) {
+          throw new Error('El contenido es obligatorio');
+        }
+        if (mode === 'press' && pressPhotoFiles.length > 0 && pressPhotoUrls.length === 0) {
+          photoUrlsForSend = await uploadPressPhotos();
+        }
+        if (mode === 'press' && photoUrlsForSend.length > 0) {
+          finalHtml = appendPressPhotos(finalHtml, photoUrlsForSend);
+        }
       }
 
       const filters =
@@ -233,9 +317,11 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       );
       setPressPhotoFiles([]);
       setPressPhotoUrls([]);
+      setPressPdfFile(null);
+      setPressPdfUrl('');
       await loadData();
-    } catch (e: any) {
-      setError(e?.message || 'Error enviando campaña');
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, 'Error enviando campaña'));
     } finally {
       setLoading(false);
     }
@@ -283,6 +369,110 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     } finally {
       setUploadingPhotos(false);
     }
+  }
+
+  async function uploadPressPdf() {
+    if (!pressPdfFile) {
+      throw new Error('Selecciona un PDF primero');
+    }
+    if (!/\.pdf$/i.test(pressPdfFile.name) && pressPdfFile.type !== 'application/pdf') {
+      throw new Error('El archivo debe ser PDF');
+    }
+
+    setUploadingPdf(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', pressPdfFile);
+      fd.append('folder', 'newsletter/press-pdf');
+      const res = await fetch('/api/admin/uploads', {
+        method: 'POST',
+        body: fd,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.url) {
+        throw new Error(data?.error || data?.message || 'Error subiendo PDF');
+      }
+      const url = String(data.url);
+      setPressPdfUrl(url);
+      return url;
+    } finally {
+      setUploadingPdf(false);
+    }
+  }
+
+  function buildPdfEmailHtml(subject: string, pdfUrl: string) {
+    const safeSubject = subject.replace(/[<>"']/g, '');
+    return `
+      <div style="font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.5;">
+        <h2 style="margin:0 0 12px 0;">${safeSubject}</h2>
+        <p style="margin:0 0 18px 0;">Adjuntamos la nota de prensa en formato PDF.</p>
+        <p>
+          <a href="${pdfUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:#111;color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;">
+            Ver nota de prensa (PDF)
+          </a>
+        </p>
+      </div>
+    `.trim();
+  }
+
+  async function handlePublishWeb() {
+    setError(null);
+    setMessage(null);
+    setPublishingWeb(true);
+    try {
+      let finalHtml = campaignForm.html.trim();
+      if (editorMode === 'visual' && editor) {
+        finalHtml = editor.getHTML().trim();
+      }
+      if (!campaignForm.subject.trim() || !finalHtml) {
+        throw new Error('Asunto y contenido son obligatorios para subir a la web');
+      }
+
+      let uploadedPhotoUrls = [...pressPhotoUrls];
+      if (pressPhotoFiles.length > 0 && pressPhotoUrls.length === 0) {
+        uploadedPhotoUrls = await uploadPressPhotos();
+      }
+      if (uploadedPhotoUrls.length > 0) {
+        finalHtml = appendPressPhotos(finalHtml, uploadedPhotoUrls);
+      }
+
+      const res = await fetch('/api/admin/newsletter/publish-web', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: campaignForm.subject.trim(),
+          html: finalHtml,
+          kind: webContentKind,
+          puebloSlug: campaignForm.puebloSlug.trim() || undefined,
+          coverUrl: uploadedPhotoUrls[0] || undefined,
+          galleryUrls: uploadedPhotoUrls.slice(1, 4),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.message || 'Error publicando en web');
+
+      const target = webContentKind === 'NOTICIA' ? 'noticia' : 'artículo';
+      if (data?.publishedToPueblo) {
+        setMessage(`Publicado en web como ${target}: asociación + pueblo.`);
+      } else {
+        setMessage(`Publicado en web como ${target}: asociación.`);
+      }
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, 'Error publicando en web'));
+    } finally {
+      setPublishingWeb(false);
+    }
+  }
+
+  function buildPreviewHtml() {
+    let html = campaignForm.html.trim();
+    if (editorMode === 'visual' && editor) {
+      html = editor.getHTML().trim();
+    }
+    if (pressPhotoUrls.length > 0) {
+      html = appendPressPhotos(html, pressPhotoUrls);
+    }
+    return html;
   }
 
   return (
@@ -416,6 +606,28 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           </div>
 
           {mode === 'press' ? (
+            <div className="space-y-2 rounded-lg border border-border p-3">
+              <p className="text-sm font-medium">Modo de envío</p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPressSendMode('editor')}
+                  className={`rounded-md border px-3 py-1 text-xs ${pressSendMode === 'editor' ? 'bg-muted font-semibold' : ''}`}
+                >
+                  1) Crear en editor
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPressSendMode('pdf')}
+                  className={`rounded-md border px-3 py-1 text-xs ${pressSendMode === 'pdf' ? 'bg-muted font-semibold' : ''}`}
+                >
+                  2) Enviar desde PDF
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          {mode === 'press' ? (
             <div className="grid gap-3 md:grid-cols-3">
               <label className="text-sm">
                 <span className="mb-1 block">Ámbitos</span>
@@ -472,50 +684,99 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
             </label>
           )}
 
-          <label className="block text-sm">
-            Contenido
-            <div className="mt-1 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setEditorMode('visual')}
-                className={`rounded-md border px-3 py-1 text-xs ${editorMode === 'visual' ? 'bg-muted font-semibold' : ''}`}
-              >
-                Editor visual
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditorMode('html')}
-                className={`rounded-md border px-3 py-1 text-xs ${editorMode === 'html' ? 'bg-muted font-semibold' : ''}`}
-              >
-                HTML
-              </button>
-            </div>
-            {editorMode === 'visual' ? (
-              <div className="mt-2">
-                <EditorContent editor={editor} />
-              </div>
-            ) : (
-              <textarea
-                rows={8}
-                value={campaignForm.html}
-                onChange={(e) => setCampaignForm((s) => ({ ...s, html: e.target.value }))}
-                className="mt-2 w-full rounded-md border border-border px-3 py-2 font-mono text-sm"
-                placeholder="<h1>Nota de prensa</h1><p>Contenido...</p>"
-              />
-            )}
-          </label>
-
-          {mode === 'press' ? (
-            <div className="space-y-3">
+          {(mode !== 'press' || pressSendMode === 'editor') ? (
+            <>
               <label className="block text-sm">
-                Fotos para la nota (máximo 10)
+                Contenido
+                <div className="mt-1 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditorMode('visual')}
+                    className={`rounded-md border px-3 py-1 text-xs ${editorMode === 'visual' ? 'bg-muted font-semibold' : ''}`}
+                  >
+                    Editor visual
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditorMode('html')}
+                    className={`rounded-md border px-3 py-1 text-xs ${editorMode === 'html' ? 'bg-muted font-semibold' : ''}`}
+                  >
+                    HTML
+                  </button>
+                </div>
+                {editorMode === 'visual' ? (
+                  <div className="mt-2">
+                    <EditorContent editor={editor} />
+                  </div>
+                ) : (
+                  <textarea
+                    rows={8}
+                    value={campaignForm.html}
+                    onChange={(e) => setCampaignForm((s) => ({ ...s, html: e.target.value }))}
+                    className="mt-2 w-full rounded-md border border-border px-3 py-2 font-mono text-sm"
+                    placeholder="<h1>Nota de prensa</h1><p>Contenido...</p>"
+                  />
+                )}
+              </label>
+
+              {mode === 'press' ? (
+                <div className="space-y-3">
+                  <label className="block text-sm">
+                    Fotos para la nota (máximo 10)
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) =>
+                        setPressPhotoFiles(Array.from(e.target.files || []).slice(0, 10))
+                      }
+                      className="mt-1 block text-sm"
+                    />
+                  </label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setError(null);
+                        try {
+                          if (pressPhotoFiles.length === 0) {
+                            throw new Error('Selecciona al menos una foto');
+                          }
+                          await uploadPressPhotos();
+                          setMessage('Fotos subidas y optimizadas correctamente.');
+                        } catch (e: unknown) {
+                          setError(getErrorMessage(e, 'Error subiendo fotos'));
+                        }
+                      }}
+                      disabled={uploadingPhotos || loading}
+                      className="rounded-lg border border-border px-3 py-2 text-sm font-medium disabled:opacity-50"
+                    >
+                      {uploadingPhotos ? 'Subiendo fotos...' : 'Subir fotos'}
+                    </button>
+                    <span className="text-xs text-muted-foreground">
+                      {pressPhotoFiles.length} seleccionadas · {pressPhotoUrls.length} subidas
+                    </span>
+                  </div>
+                  {pressPhotoUrls.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
+                      {pressPhotoUrls.map((url) => (
+                        <img key={url} src={url} alt="Foto nota de prensa" className="h-24 w-full rounded border object-cover" />
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </>
+          ) : null}
+
+          {mode === 'press' && pressSendMode === 'pdf' ? (
+            <div className="space-y-3 rounded-lg border border-border p-3">
+              <label className="block text-sm">
+                Subir PDF de la nota
                 <input
                   type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(e) =>
-                    setPressPhotoFiles(Array.from(e.target.files || []).slice(0, 10))
-                  }
+                  accept="application/pdf,.pdf"
+                  onChange={(e) => setPressPdfFile(e.target.files?.[0] || null)}
                   className="mt-1 block text-sm"
                 />
               </label>
@@ -525,31 +786,81 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   onClick={async () => {
                     setError(null);
                     try {
-                      if (pressPhotoFiles.length === 0) {
-                        throw new Error('Selecciona al menos una foto');
-                      }
-                      await uploadPressPhotos();
-                      setMessage('Fotos subidas y optimizadas correctamente.');
-                    } catch (e: any) {
-                      setError(e?.message || 'Error subiendo fotos');
+                      await uploadPressPdf();
+                      setMessage('PDF subido correctamente.');
+                    } catch (e: unknown) {
+                      setError(getErrorMessage(e, 'Error subiendo PDF'));
                     }
                   }}
-                  disabled={uploadingPhotos || loading}
+                  disabled={uploadingPdf || loading || !pressPdfFile}
                   className="rounded-lg border border-border px-3 py-2 text-sm font-medium disabled:opacity-50"
                 >
-                  {uploadingPhotos ? 'Subiendo fotos...' : 'Subir fotos'}
+                  {uploadingPdf ? 'Subiendo PDF...' : 'Subir PDF'}
                 </button>
                 <span className="text-xs text-muted-foreground">
-                  {pressPhotoFiles.length} seleccionadas · {pressPhotoUrls.length} subidas
+                  {pressPdfUrl ? 'PDF listo para enviar' : 'Aún no subido'}
                 </span>
               </div>
-              {pressPhotoUrls.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
-                  {pressPhotoUrls.map((url) => (
-                    <img key={url} src={url} alt="Foto nota de prensa" className="h-24 w-full rounded border object-cover" />
-                  ))}
+              {pressPdfUrl ? (
+                <a
+                  href={pressPdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex text-sm text-blue-700 underline"
+                >
+                  Ver PDF subido
+                </a>
+              ) : null}
+            </div>
+          ) : null}
+
+          {mode === 'press' && pressSendMode === 'editor' ? (
+            <div className="space-y-3 rounded-lg border border-border p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-medium">Publicación en web (opcional)</p>
+                <button
+                  type="button"
+                  onClick={() => setShowWebPreview((v) => !v)}
+                  className="rounded-md border border-border px-3 py-1 text-xs"
+                >
+                  {showWebPreview ? 'Ocultar vista previa' : 'Ver vista previa'}
+                </button>
+              </div>
+
+              <label className="text-sm">
+                Guardar como
+                <select
+                  value={webContentKind}
+                  onChange={(e) => setWebContentKind(e.target.value as 'NOTICIA' | 'ARTICULO')}
+                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm md:w-80"
+                >
+                  <option value="NOTICIA">Noticia de la asociación</option>
+                  <option value="ARTICULO">Artículo de la asociación</option>
+                </select>
+              </label>
+
+              <p className="text-xs text-muted-foreground">
+                Si indicas un `slug` de pueblo, se publicará también en ese pueblo sin quitarlo de asociación.
+              </p>
+
+              {showWebPreview ? (
+                <div className="rounded-md border border-border bg-background p-3">
+                  <h3 className="mb-2 text-base font-semibold">{campaignForm.subject || 'Vista previa sin título'}</h3>
+                  <div
+                    className="prose max-w-none text-sm"
+                    dangerouslySetInnerHTML={{ __html: buildPreviewHtml() || '<p>Sin contenido</p>' }}
+                  />
                 </div>
               ) : null}
+
+              <button
+                type="button"
+                onClick={handlePublishWeb}
+                disabled={publishingWeb || loading}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium disabled:opacity-50"
+              >
+                {publishingWeb ? 'Subiendo a la web…' : 'Subir a la web'}
+              </button>
             </div>
           ) : null}
 
