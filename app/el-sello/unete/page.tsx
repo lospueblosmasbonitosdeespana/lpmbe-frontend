@@ -22,6 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = '/el-sello/unete';
   return {
     title: 'Únete',
+    description: 'Informacion para municipios y colaboradores que quieran unirse a la red y al sello.',
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

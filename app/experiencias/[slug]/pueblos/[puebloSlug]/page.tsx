@@ -1,7 +1,9 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 import ZoomableImage from '@/app/components/ZoomableImage';
+import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +26,29 @@ const CATEGORY_MAP: Record<string, CategoryConfig> = {
   'en-familia': { titleKey: 'titleEnFamilia', category: 'EN_FAMILIA' },
   petfriendly: { titleKey: 'titlePetfriendly', category: 'PETFRIENDLY' },
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string; puebloSlug: string }>;
+}): Promise<Metadata> {
+  const { slug, puebloSlug } = await params;
+  const locale = await getLocale();
+  const t = await getTranslations('experienciasPage');
+  const config = CATEGORY_MAP[slug];
+  const categoryTitle = config ? t(config.titleKey) : slugToTitle(slug);
+  const villageTitle = slugToTitle(puebloSlug) || "Pueblo";
+  const path = `/experiencias/${slug}/pueblos/${puebloSlug}`;
+
+  return {
+    title: seoTitle(`${categoryTitle} en ${villageTitle}`),
+    description: seoDescription(`Experiencias de ${categoryTitle.toLowerCase()} para descubrir ${villageTitle}.`),
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+  };
+}
 
 type PuebloPages = {
   GASTRONOMIA?: TematicaPage;

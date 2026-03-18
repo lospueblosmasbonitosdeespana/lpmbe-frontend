@@ -11,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = '/privacidad';
   return {
     title: 'Política de privacidad',
+    description: 'Informacion sobre tratamiento de datos personales, derechos y politica de privacidad del sitio web.',
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

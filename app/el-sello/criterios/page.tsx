@@ -21,6 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = '/el-sello/criterios';
   return {
     title: 'Criterios de evaluación del Sello',
+    description: 'Criterios oficiales de evaluacion para formar parte de Los Pueblos Mas Bonitos de Espana.',
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

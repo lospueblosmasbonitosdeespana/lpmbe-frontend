@@ -1,7 +1,9 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 import ZoomableImage from '@/app/components/ZoomableImage';
+import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +26,28 @@ const CATEGORY_MAP: Record<string, CategoryConfig> = {
   'en-familia': { titleKey: 'titleEnFamilia', category: 'EN_FAMILIA' },
   petfriendly: { titleKey: 'titlePetfriendly', category: 'PETFRIENDLY' },
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const locale = await getLocale();
+  const t = await getTranslations('experienciasPage');
+  const config = CATEGORY_MAP[slug];
+  const title = config ? t(config.titleKey) : slugToTitle(slug);
+  const path = `/experiencias/${slug}/asociacion`;
+
+  return {
+    title: seoTitle(`${title} · Asociacion`),
+    description: seoDescription(`Contenido de la asociacion para la tematica ${title}.`),
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+  };
+}
 
 async function getAsociacionPage(category: string, locale?: string): Promise<TematicaPage | null> {
   try {

@@ -21,6 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = '/el-sello/proceso';
   return {
     title: 'Proceso de selección del Sello',
+    description: 'Fases del proceso de seleccion y evaluacion para obtener el sello en un municipio.',
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

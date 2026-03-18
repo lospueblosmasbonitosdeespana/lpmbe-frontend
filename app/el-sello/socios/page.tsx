@@ -21,6 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = '/el-sello/socios';
   return {
     title: 'Socios del Sello',
+    description: 'Instituciones y colaboradores que apoyan el sello de calidad de la red de pueblos.',
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

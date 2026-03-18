@@ -11,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = '/aviso-legal';
   return {
     title: 'Aviso legal',
+    description: 'Condiciones legales, titularidad del sitio y terminos de uso de Los Pueblos Mas Bonitos de Espana.',
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

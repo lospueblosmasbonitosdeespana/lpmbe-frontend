@@ -21,17 +21,36 @@ export const revalidate = 0;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = "/";
-  const homeTitle = "Pueblos, rutas y experiencias en Espana";
+  const homeTitleByLocale: Record<string, string> = {
+    es: "Pueblos, rutas y experiencias en Espana",
+    en: "Villages, routes and experiences in Spain",
+    fr: "Villages, routes et experiences en Espagne",
+    de: "Dorfer, Routen und Erlebnisse in Spanien",
+    pt: "Aldeias, rotas e experiencias em Espanha",
+    it: "Borghi, itinerari ed esperienze in Spagna",
+    ca: "Pobles, rutes i experiencies a Espanya",
+  };
+  const homeDescriptionByLocale: Record<string, string> = {
+    es: DEFAULT_DESCRIPTION,
+    en: "Discover the most beautiful villages in Spain: maps, routes, experiences and travel inspiration.",
+    fr: "Decouvrez les plus beaux villages d'Espagne: cartes, routes et experiences pour planifier votre voyage.",
+    de: "Entdecken Sie die schonsten Dorfer Spaniens: Karten, Routen und Erlebnisse fur Ihre Reiseplanung.",
+    pt: "Descubra as aldeias mais bonitas de Espanha: mapas, rotas e experiencias para planear a sua viagem.",
+    it: "Scopri i borghi piu belli della Spagna: mappe, itinerari ed esperienze per il tuo viaggio.",
+    ca: "Descobreix els pobles mes bonics d'Espanya: mapes, rutes i experiencies per planificar el viatge.",
+  };
+  const homeTitle = homeTitleByLocale[locale] ?? homeTitleByLocale.es;
+  const homeDescription = homeDescriptionByLocale[locale] ?? homeDescriptionByLocale.es;
   return {
     title: { absolute: homeTitle },
-    description: DEFAULT_DESCRIPTION,
+    description: homeDescription,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
       title: homeTitle,
-      description: DEFAULT_DESCRIPTION,
+      description: homeDescription,
     },
   };
 }

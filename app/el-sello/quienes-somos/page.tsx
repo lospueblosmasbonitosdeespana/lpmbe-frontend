@@ -20,6 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = '/el-sello/quienes-somos';
   return {
     title: 'Quiénes somos',
+    description: 'Equipo, historia y mision de la asociacion Los Pueblos Mas Bonitos de Espana.',
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

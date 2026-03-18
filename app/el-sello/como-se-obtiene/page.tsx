@@ -15,6 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = "/el-sello/como-se-obtiene";
   return {
     title: "Cómo se obtiene el Sello",
+    description: "Proceso y requisitos para obtener el Sello de Los Pueblos Mas Bonitos de Espana.",
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

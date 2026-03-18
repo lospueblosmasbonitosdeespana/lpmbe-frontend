@@ -16,6 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = "/el-sello/internacional";
   return {
     title: "Red internacional del Sello",
+    description: "Conoce la red internacional de pueblos y asociaciones vinculadas al sello de calidad turistica.",
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

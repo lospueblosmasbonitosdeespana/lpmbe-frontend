@@ -11,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = '/cookies';
   return {
     title: 'Política de cookies',
+    description: 'Detalle del uso de cookies, tipos, finalidad y configuracion en Los Pueblos Mas Bonitos de Espana.',
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
