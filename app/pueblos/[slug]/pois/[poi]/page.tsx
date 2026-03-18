@@ -150,12 +150,22 @@ export default async function PoiPage({
   const puebloNombre = data.pueblo?.nombre ?? "Pueblo";
   const puebloProvincia = data.pueblo?.provincia ?? null;
   const puebloComunidad = data.pueblo?.comunidad ?? null;
+  const backToVars = {
+    nombre: puebloNombre,
+    name: puebloNombre,
+    Name: puebloNombre,
+    nom: puebloNombre,
+    nome: puebloNombre,
+    titulo: puebloNombre,
+    title: puebloNombre,
+    Titel: puebloNombre,
+  };
 
   return (
     <main className="mx-auto max-w-[1200px] px-6 py-8 bg-background">
       <div className="mb-6">
         <Link href={`/pueblos/${puebloSlug}`} className="text-primary hover:underline">
-          {t("backTo", { nombre: puebloNombre })}
+          {t("backTo", backToVars)}
         </Link>
       </div>
 
