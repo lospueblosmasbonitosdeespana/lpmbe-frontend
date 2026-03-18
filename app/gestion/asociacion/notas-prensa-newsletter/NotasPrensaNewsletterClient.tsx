@@ -56,7 +56,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     kind: (mode === 'newsletter' ? 'NEWSLETTER' : 'PRESS') as 'PRESS' | 'NEWSLETTER',
     subject: '',
     html: '',
-    scope: 'NACIONAL',
+    includeNational: true,
     ccaa: '',
     provincia: '',
     puebloSlug: '',
@@ -161,9 +161,15 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       const filters =
         mode === 'press'
           ? {
-              scope: campaignForm.scope,
-              ccaa: campaignForm.ccaa,
-              provincia: campaignForm.provincia,
+              includeNational: campaignForm.includeNational,
+              ccaas: campaignForm.ccaa
+                .split(/[,;\n]/g)
+                .map((v) => v.trim())
+                .filter(Boolean),
+              provincias: campaignForm.provincia
+                .split(/[,;\n]/g)
+                .map((v) => v.trim())
+                .filter(Boolean),
               puebloSlug: campaignForm.puebloSlug,
             }
           : { source: campaignForm.source };
@@ -322,37 +328,42 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           </div>
 
           {mode === 'press' ? (
-            <div className="grid gap-3 md:grid-cols-4">
+            <div className="grid gap-3 md:grid-cols-3">
               <label className="text-sm">
-                Scope
-                <select
-                  value={campaignForm.scope}
-                  onChange={(e) => setCampaignForm((s) => ({ ...s, scope: e.target.value }))}
-                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-                >
-                  <option value="NACIONAL">Nacional</option>
-                  <option value="CCAA">CCAA</option>
-                  <option value="PROVINCIA">Provincia</option>
-                  <option value="LOCAL">Local</option>
-                </select>
+                <span className="mb-1 block">Ámbitos</span>
+                <label className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={campaignForm.includeNational}
+                    onChange={(e) =>
+                      setCampaignForm((s) => ({
+                        ...s,
+                        includeNational: e.target.checked,
+                      }))
+                    }
+                  />
+                  Incluir medios nacionales
+                </label>
               </label>
               <label className="text-sm">
-                CCAA
+                CCAA (una o varias)
                 <input
                   value={campaignForm.ccaa}
                   onChange={(e) => setCampaignForm((s) => ({ ...s, ccaa: e.target.value }))}
                   className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                  placeholder="Extremadura, Andalucía..."
                 />
               </label>
               <label className="text-sm">
-                Provincia
+                Provincia (una o varias)
                 <input
                   value={campaignForm.provincia}
                   onChange={(e) => setCampaignForm((s) => ({ ...s, provincia: e.target.value }))}
                   className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                  placeholder="Cáceres, Badajoz..."
                 />
               </label>
-              <label className="text-sm">
+              <label className="text-sm md:col-span-3">
                 Pueblo (slug)
                 <input
                   value={campaignForm.puebloSlug}
