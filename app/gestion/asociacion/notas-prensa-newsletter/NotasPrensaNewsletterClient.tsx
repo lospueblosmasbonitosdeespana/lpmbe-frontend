@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 
 type Campaign = {
   id: number;
@@ -72,6 +74,25 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     puebloSlug: '',
   });
   const [pressFormExpanded, setPressFormExpanded] = useState(false);
+  const [editorMode, setEditorMode] = useState<'visual' | 'html'>('visual');
+  const [pressPhotoFiles, setPressPhotoFiles] = useState<File[]>([]);
+  const [pressPhotoUrls, setPressPhotoUrls] = useState<string[]>([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: campaignForm.html || '<p></p>',
+    onUpdate: ({ editor }) => {
+      setCampaignForm((s) => ({ ...s, html: editor.getHTML() }));
+    },
+    editorProps: {
+      attributes: {
+        class:
+          'min-h-[200px] rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none',
+      },
+    },
+    immediatelyRender: false,
+  });
 
   async function loadData() {
     try {
@@ -105,6 +126,14 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (!editor) return;
+    const current = editor.getHTML();
+    if (campaignForm.html && campaignForm.html !== current) {
+      editor.commands.setContent(campaignForm.html, { emitUpdate: false });
+    }
+  }, [campaignForm.html, editor]);
 
   async function handleAddPressContact(e: React.FormEvent) {
     e.preventDefault();
@@ -154,8 +183,21 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     setError(null);
     setMessage(null);
     try {
-      if (!campaignForm.subject.trim() || !campaignForm.html.trim()) {
+      let finalHtml = campaignForm.html.trim();
+      if (mode === 'press' && editorMode === 'visual' && editor) {
+        finalHtml = editor.getHTML().trim();
+      }
+
+      if (!campaignForm.subject.trim() || !finalHtml) {
         throw new Error('Asunto y contenido son obligatorios');
+      }
+
+      let photoUrlsForSend = [...pressPhotoUrls];
+      if (mode === 'press' && pressPhotoFiles.length > 0 && pressPhotoUrls.length === 0) {
+        photoUrlsForSend = await uploadPressPhotos();
+      }
+      if (mode === 'press' && photoUrlsForSend.length > 0) {
+        finalHtml = appendPressPhotos(finalHtml, photoUrlsForSend);
       }
 
       const filters =
@@ -180,7 +222,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         body: JSON.stringify({
           kind: mode === 'press' ? 'PRESS' : 'NEWSLETTER',
           subject: campaignForm.subject,
-          html: campaignForm.html,
+          html: finalHtml,
           filters,
         }),
       });
@@ -189,11 +231,57 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       setMessage(
         `Campaña enviada. Destinatarios: ${data.totalRecipients}. Enviados: ${data.sentCount}. Fallidos: ${data.failedCount}.`,
       );
+      setPressPhotoFiles([]);
+      setPressPhotoUrls([]);
       await loadData();
     } catch (e: any) {
       setError(e?.message || 'Error enviando campaña');
     } finally {
       setLoading(false);
+    }
+  }
+
+  function appendPressPhotos(html: string, urls: string[]) {
+    const gallery = urls
+      .map(
+        (url, i) =>
+          `<p style="margin:0 0 10px 0;"><img src="${url}" alt="Imagen nota de prensa ${i + 1}" style="max-width:100%;height:auto;border-radius:8px;" /></p>`,
+      )
+      .join('');
+    return `${html}
+      <hr style="margin:24px 0;border:none;border-top:1px solid #ddd;" />
+      <h3 style="margin:0 0 12px 0;">Imágenes de la nota de prensa</h3>
+      ${gallery}
+    `;
+  }
+
+  async function uploadPressPhotos() {
+    if (pressPhotoFiles.length === 0) return [];
+    if (pressPhotoFiles.length > 10) {
+      throw new Error('Puedes subir un máximo de 10 fotos por nota de prensa');
+    }
+
+    setUploadingPhotos(true);
+    try {
+      const urls: string[] = [];
+      for (const file of pressPhotoFiles) {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('folder', 'newsletter/press');
+        const res = await fetch('/api/admin/uploads', {
+          method: 'POST',
+          body: fd,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data?.url) {
+          throw new Error(data?.error || data?.message || 'Error subiendo una de las fotos');
+        }
+        urls.push(String(data.url));
+      }
+      setPressPhotoUrls(urls);
+      return urls;
+    } finally {
+      setUploadingPhotos(false);
     }
   }
 
@@ -231,7 +319,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       {mode === 'press' ? (
         <section className="rounded-xl border border-border bg-card p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold">1) Añadir contacto de prensa a la base de datos</h2>
+            <h2 className="text-lg font-semibold">Añadir contacto de prensa a la base de datos</h2>
             <button
               type="button"
               onClick={() => setPressFormExpanded((v) => !v)}
@@ -385,15 +473,85 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           )}
 
           <label className="block text-sm">
-            HTML (contenido)
-            <textarea
-              rows={8}
-              value={campaignForm.html}
-              onChange={(e) => setCampaignForm((s) => ({ ...s, html: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-border px-3 py-2 font-mono text-sm"
-              placeholder="<h1>Nota de prensa</h1><p>Contenido...</p>"
-            />
+            Contenido
+            <div className="mt-1 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setEditorMode('visual')}
+                className={`rounded-md border px-3 py-1 text-xs ${editorMode === 'visual' ? 'bg-muted font-semibold' : ''}`}
+              >
+                Editor visual
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditorMode('html')}
+                className={`rounded-md border px-3 py-1 text-xs ${editorMode === 'html' ? 'bg-muted font-semibold' : ''}`}
+              >
+                HTML
+              </button>
+            </div>
+            {editorMode === 'visual' ? (
+              <div className="mt-2">
+                <EditorContent editor={editor} />
+              </div>
+            ) : (
+              <textarea
+                rows={8}
+                value={campaignForm.html}
+                onChange={(e) => setCampaignForm((s) => ({ ...s, html: e.target.value }))}
+                className="mt-2 w-full rounded-md border border-border px-3 py-2 font-mono text-sm"
+                placeholder="<h1>Nota de prensa</h1><p>Contenido...</p>"
+              />
+            )}
           </label>
+
+          {mode === 'press' ? (
+            <div className="space-y-3">
+              <label className="block text-sm">
+                Fotos para la nota (máximo 10)
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) =>
+                    setPressPhotoFiles(Array.from(e.target.files || []).slice(0, 10))
+                  }
+                  className="mt-1 block text-sm"
+                />
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setError(null);
+                    try {
+                      if (pressPhotoFiles.length === 0) {
+                        throw new Error('Selecciona al menos una foto');
+                      }
+                      await uploadPressPhotos();
+                      setMessage('Fotos subidas y optimizadas correctamente.');
+                    } catch (e: any) {
+                      setError(e?.message || 'Error subiendo fotos');
+                    }
+                  }}
+                  disabled={uploadingPhotos || loading}
+                  className="rounded-lg border border-border px-3 py-2 text-sm font-medium disabled:opacity-50"
+                >
+                  {uploadingPhotos ? 'Subiendo fotos...' : 'Subir fotos'}
+                </button>
+                <span className="text-xs text-muted-foreground">
+                  {pressPhotoFiles.length} seleccionadas · {pressPhotoUrls.length} subidas
+                </span>
+              </div>
+              {pressPhotoUrls.length > 0 ? (
+                <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
+                  {pressPhotoUrls.map((url) => (
+                    <img key={url} src={url} alt="Foto nota de prensa" className="h-24 w-full rounded border object-cover" />
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           <button
             type="submit"
