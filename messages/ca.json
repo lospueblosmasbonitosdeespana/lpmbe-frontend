@@ -1547,7 +1547,11 @@
     "datosTitle": "Dades · Mètriques",
     "datosDescription": "Panell de mètriques de la plataforma: usuaris, ciutats i anàlisi web.",
     "backToAssociation": "← Tornar a l'Associació",
-    "puntosPueblosLink": "Punts de ciutats"
+    "puntosPueblosLink": "Punts de ciutats",
+    "accessRestrictedTitle": "Acces restringit",
+    "accessRestrictedOnlyAdmins": "Aquesta pagina es nomes per a pobles o administradors del lloc web.",
+    "accessRestrictedUsersToAccount": "Si ets usuari o client, has dentrar per El meu compte.",
+    "goToMyAccount": "Anar a El meu compte"
   },
   "contact": {
     "title": "Contacte",

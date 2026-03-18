@@ -1547,7 +1547,11 @@
     "datosTitle": "Dados - Métricas",
     "datosDescription": "Painel de métricas da plataforma: utilizadores, aldeias e análise da Web.",
     "backToAssociation": "← Voltar à parceria",
-    "puntosPueblosLink": "Pontos Aldeias"
+    "puntosPueblosLink": "Pontos Aldeias",
+    "accessRestrictedTitle": "Acesso restrito",
+    "accessRestrictedOnlyAdmins": "Esta pagina e apenas para aldeias ou administradores do site.",
+    "accessRestrictedUsersToAccount": "Se for utilizador ou cliente, deve entrar por A minha conta.",
+    "goToMyAccount": "Ir para A minha conta"
   },
   "contact": {
     "title": "Contacto",

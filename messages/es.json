@@ -395,7 +395,11 @@
     "datosTitle": "Datos · Métricas",
     "datosDescription": "Panel de métricas de la plataforma: usuarios, pueblos y analítica web.",
     "backToAssociation": "← Volver a Asociación",
-    "puntosPueblosLink": "Puntos Pueblos"
+    "puntosPueblosLink": "Puntos Pueblos",
+    "accessRestrictedTitle": "Acceso restringido",
+    "accessRestrictedOnlyAdmins": "Esta pagina es solo para pueblos o administradores de la pagina.",
+    "accessRestrictedUsersToAccount": "Si eres usuario o cliente, debes entrar por Mi cuenta.",
+    "goToMyAccount": "Ir a Mi cuenta"
   },
   "contact": {
     "title": "Contacto",

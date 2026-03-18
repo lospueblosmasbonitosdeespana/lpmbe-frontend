@@ -1547,7 +1547,11 @@
     "datosTitle": "Dati - Metriche",
     "datosDescription": "Pannello delle metriche della piattaforma: utenti, villaggi e analisi web.",
     "backToAssociation": "← Torna alla partnership",
-    "puntosPueblosLink": "Punti Villaggi"
+    "puntosPueblosLink": "Punti Villaggi",
+    "accessRestrictedTitle": "Accesso limitato",
+    "accessRestrictedOnlyAdmins": "Questa pagina e riservata ai borghi o agli amministratori del sito.",
+    "accessRestrictedUsersToAccount": "Se sei un utente o cliente, devi entrare da Il mio account.",
+    "goToMyAccount": "Vai a Il mio account"
   },
   "contact": {
     "title": "Contatto",

@@ -1547,7 +1547,11 @@
     "datosTitle": "Data - Metrics",
     "datosDescription": "Platform metrics panel: users, towns and web analytics.",
     "backToAssociation": "← Back to Association",
-    "puntosPueblosLink": "Points Villages"
+    "puntosPueblosLink": "Points Villages",
+    "accessRestrictedTitle": "Restricted access",
+    "accessRestrictedOnlyAdmins": "This page is only for villages or site administrators.",
+    "accessRestrictedUsersToAccount": "If you are a user or customer, please use My account.",
+    "goToMyAccount": "Go to My account"
   },
   "contact": {
     "title": "Contact",

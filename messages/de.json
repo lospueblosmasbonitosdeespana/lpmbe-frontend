@@ -1547,7 +1547,11 @@
     "datosTitle": "Daten - Metriken",
     "datosDescription": "Metrik-Panel der Plattform: Nutzer, Dörfer und Webanalyse.",
     "backToAssociation": "← Zurück zur Partnerschaft",
-    "puntosPueblosLink": "Punkte Dörfer"
+    "puntosPueblosLink": "Punkte Dörfer",
+    "accessRestrictedTitle": "Eingeschrankter Zugang",
+    "accessRestrictedOnlyAdmins": "Diese Seite ist nur fur Dorfer oder Administratoren der Website.",
+    "accessRestrictedUsersToAccount": "Wenn Sie Benutzer oder Kunde sind, gehen Sie bitte zu Mein Konto.",
+    "goToMyAccount": "Zu Mein Konto"
   },
   "contact": {
     "title": "Kontakt",
