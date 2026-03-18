@@ -224,6 +224,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [templateName, setTemplateName] = useState('');
   const [templateSaving, setTemplateSaving] = useState(false);
   const [newsletterBlocks, setNewsletterBlocks] = useState<NewsletterBlock[]>([]);
+  const [selectedNewsletterBlockId, setSelectedNewsletterBlockId] = useState<string | null>(null);
   const [draggingBlockId, setDraggingBlockId] = useState<string | null>(null);
   const [dragOverBlockId, setDragOverBlockId] = useState<string | null>(null);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
@@ -452,7 +453,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   }
 
   function addNewsletterBlock(type: NewsletterBlockType) {
-    setNewsletterBlocks((prev) => [...prev, createBlock(type)]);
+    const block = createBlock(type);
+    setNewsletterBlocks((prev) => [...prev, block]);
+    setSelectedNewsletterBlockId(block.id);
   }
 
   function updateNewsletterBlock(id: string, patch: Partial<NewsletterBlock>) {
@@ -474,6 +477,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
 
   function removeNewsletterBlock(id: string) {
     setNewsletterBlocks((prev) => prev.filter((b) => b.id !== id));
+    if (selectedNewsletterBlockId === id) {
+      setSelectedNewsletterBlockId(null);
+    }
   }
 
   function reorderNewsletterBlocks(draggedId: string, targetId: string) {
@@ -500,6 +506,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       };
       const copy = [...prev];
       copy.splice(idx + 1, 0, clone);
+      setSelectedNewsletterBlockId(clone.id);
       return copy;
     });
   }
@@ -558,6 +565,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       ];
     }
     setNewsletterBlocks(blocks);
+    setSelectedNewsletterBlockId(blocks[0]?.id || null);
     setNewsletterComposerMode('builder');
     setCampaignForm((s) => ({
       ...s,
@@ -1404,199 +1412,242 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
 
                 {newsletterComposerMode === 'builder' ? (
                   <div className="space-y-3 rounded-md border border-dashed border-border p-3">
-                    <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/30 p-2">
-                      <span className="text-xs font-semibold text-muted-foreground">Presets:</span>
-                      <button
-                        type="button"
-                        onClick={() => applyNewsletterPreset('boletin')}
-                        className="rounded border bg-background px-2 py-1 text-xs"
-                      >
-                        Boletín mensual
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => applyNewsletterPreset('nota')}
-                        className="rounded border bg-background px-2 py-1 text-xs"
-                      >
-                        Nota informativa
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => applyNewsletterPreset('promo')}
-                        className="rounded border bg-background px-2 py-1 text-xs"
-                      >
-                        Promo con CTA
-                      </button>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      <button type="button" onClick={() => addNewsletterBlock('heading')} className="rounded border px-2 py-1 text-xs">
-                        + Titular
-                      </button>
-                      <button type="button" onClick={() => addNewsletterBlock('text')} className="rounded border px-2 py-1 text-xs">
-                        + Texto
-                      </button>
-                      <button type="button" onClick={() => addNewsletterBlock('image')} className="rounded border px-2 py-1 text-xs">
-                        + Imagen
-                      </button>
-                      <button type="button" onClick={() => addNewsletterBlock('button')} className="rounded border px-2 py-1 text-xs">
-                        + Botón
-                      </button>
-                      <button type="button" onClick={() => addNewsletterBlock('divider')} className="rounded border px-2 py-1 text-xs">
-                        + Separador
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setCampaignForm((s) => ({
-                            ...s,
-                            html: renderNewsletterBlocksToHtml(newsletterBlocks),
-                          }))
-                        }
-                        className="rounded border border-primary px-2 py-1 text-xs font-semibold text-primary"
-                      >
-                        Sincronizar HTML
-                      </button>
-                    </div>
-
-                    {newsletterBlocks.length === 0 ? (
-                      <p className="text-xs text-muted-foreground">
-                        Aún no hay bloques. Añade bloques para construir la newsletter.
-                      </p>
-                    ) : (
-                      <div className="space-y-2">
-                        {newsletterBlocks.map((block, idx) => (
-                          <div
-                            key={block.id}
-                            draggable
-                            onDragStart={(e) => {
-                              e.dataTransfer.setData('text/plain', block.id);
-                              e.dataTransfer.effectAllowed = 'move';
-                              setDraggingBlockId(block.id);
-                            }}
-                            onDragOver={(e) => {
-                              e.preventDefault();
-                              if (dragOverBlockId !== block.id) {
-                                setDragOverBlockId(block.id);
-                              }
-                            }}
-                            onDragLeave={() => {
-                              if (dragOverBlockId === block.id) {
-                                setDragOverBlockId(null);
-                              }
-                            }}
-                            onDrop={(e) => {
-                              e.preventDefault();
-                              const draggedId = e.dataTransfer.getData('text/plain') || draggingBlockId || '';
-                              reorderNewsletterBlocks(draggedId, block.id);
-                              setDragOverBlockId(null);
-                              setDraggingBlockId(null);
-                            }}
-                            onDragEnd={() => {
-                              setDragOverBlockId(null);
-                              setDraggingBlockId(null);
-                            }}
-                            className={`space-y-2 rounded-md border p-2 transition ${
-                              dragOverBlockId === block.id
-                                ? 'border-primary bg-primary/5'
-                                : 'border-border'
-                            }`}
-                          >
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <div className="inline-flex items-center gap-2">
-                                <span className="cursor-grab select-none rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                                  Arrastrar
-                                </span>
-                                <span className="text-xs font-semibold uppercase text-muted-foreground">
-                                  {idx + 1}. {block.type}
-                                </span>
-                              </div>
-                              <div className="flex gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => moveNewsletterBlock(block.id, -1)}
-                                  className="rounded border px-2 py-1 text-xs"
-                                >
-                                  ↑
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => moveNewsletterBlock(block.id, 1)}
-                                  className="rounded border px-2 py-1 text-xs"
-                                >
-                                  ↓
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => removeNewsletterBlock(block.id)}
-                                  className="rounded border border-red-300 px-2 py-1 text-xs text-red-700"
-                                >
-                                  Quitar
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => duplicateNewsletterBlock(block.id)}
-                                  className="rounded border px-2 py-1 text-xs"
-                                >
-                                  Duplicar
-                                </button>
-                              </div>
-                            </div>
-
-                            {block.type !== 'divider' ? (
-                              <div className="grid gap-2 md:grid-cols-2">
-                                {(block.type === 'heading' || block.type === 'text' || block.type === 'image') ? (
-                                  <input
-                                    value={block.content || ''}
-                                    onChange={(e) => updateNewsletterBlock(block.id, { content: e.target.value })}
-                                    className="rounded-md border border-border px-2 py-1 text-sm"
-                                    placeholder={block.type === 'image' ? 'Texto alt' : 'Contenido'}
-                                  />
-                                ) : null}
-                                {block.type === 'image' || block.type === 'button' ? (
-                                  <input
-                                    value={block.url || ''}
-                                    onChange={(e) => updateNewsletterBlock(block.id, { url: e.target.value })}
-                                    className="rounded-md border border-border px-2 py-1 text-sm"
-                                    placeholder="https://..."
-                                  />
-                                ) : null}
-                                {block.type === 'button' ? (
-                                  <input
-                                    value={block.label || ''}
-                                    onChange={(e) => updateNewsletterBlock(block.id, { label: e.target.value })}
-                                    className="rounded-md border border-border px-2 py-1 text-sm"
-                                    placeholder="Texto del botón"
-                                  />
-                                ) : null}
-                                <select
-                                  value={block.align || 'left'}
-                                  onChange={(e) =>
-                                    updateNewsletterBlock(block.id, {
-                                      align: (e.target.value as 'left' | 'center' | 'right') || 'left',
-                                    })
-                                  }
-                                  className="rounded-md border border-border px-2 py-1 text-sm"
-                                >
-                                  <option value="left">Izquierda</option>
-                                  <option value="center">Centro</option>
-                                  <option value="right">Derecha</option>
-                                </select>
-                              </div>
-                            ) : null}
+                    <div className="grid gap-3 xl:grid-cols-[260px_1fr]">
+                      <aside className="space-y-3 rounded-md border border-border bg-muted/20 p-3">
+                        <div>
+                          <p className="text-xs font-semibold uppercase text-muted-foreground">Presets</p>
+                          <div className="mt-2 space-y-2">
+                            <button
+                              type="button"
+                              onClick={() => applyNewsletterPreset('boletin')}
+                              className="w-full rounded-md border bg-background px-2 py-2 text-left text-xs"
+                            >
+                              Boletín mensual
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => applyNewsletterPreset('nota')}
+                              className="w-full rounded-md border bg-background px-2 py-2 text-left text-xs"
+                            >
+                              Nota informativa
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => applyNewsletterPreset('promo')}
+                              className="w-full rounded-md border bg-background px-2 py-2 text-left text-xs"
+                            >
+                              Promo con CTA
+                            </button>
                           </div>
-                        ))}
-                      </div>
-                    )}
+                        </div>
 
-                    <div className="rounded-md border border-border bg-background p-3">
-                      <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Vista previa newsletter</p>
-                      <div
-                        className="prose max-w-none text-sm"
-                        dangerouslySetInnerHTML={{
-                          __html: renderNewsletterBlocksToHtml(newsletterBlocks) || '<p>Sin bloques todavía.</p>',
-                        }}
-                      />
+                        <div>
+                          <p className="text-xs font-semibold uppercase text-muted-foreground">Bloques</p>
+                          <div className="mt-2 grid gap-2">
+                            <button type="button" onClick={() => addNewsletterBlock('heading')} className="rounded border bg-background px-2 py-1.5 text-xs">
+                              + Titular
+                            </button>
+                            <button type="button" onClick={() => addNewsletterBlock('text')} className="rounded border bg-background px-2 py-1.5 text-xs">
+                              + Texto
+                            </button>
+                            <button type="button" onClick={() => addNewsletterBlock('image')} className="rounded border bg-background px-2 py-1.5 text-xs">
+                              + Imagen
+                            </button>
+                            <button type="button" onClick={() => addNewsletterBlock('button')} className="rounded border bg-background px-2 py-1.5 text-xs">
+                              + Botón
+                            </button>
+                            <button type="button" onClick={() => addNewsletterBlock('divider')} className="rounded border bg-background px-2 py-1.5 text-xs">
+                              + Separador
+                            </button>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setCampaignForm((s) => ({
+                              ...s,
+                              html: renderNewsletterBlocksToHtml(newsletterBlocks),
+                            }))
+                          }
+                          className="w-full rounded border border-primary bg-background px-2 py-2 text-xs font-semibold text-primary"
+                        >
+                          Sincronizar HTML
+                        </button>
+                        <p className="text-[11px] text-muted-foreground">
+                          Bloques: {newsletterBlocks.length} {selectedNewsletterBlockId ? '· bloque seleccionado' : ''}
+                        </p>
+                      </aside>
+
+                      <div className="space-y-3">
+                        <div className="rounded-md border border-border bg-background p-3">
+                          <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Lienzo de bloques</p>
+                          {newsletterBlocks.length === 0 ? (
+                            <p className="text-xs text-muted-foreground">
+                              Aún no hay bloques. Añade bloques desde la columna izquierda para empezar.
+                            </p>
+                          ) : (
+                            <div className="space-y-2">
+                              {newsletterBlocks.map((block, idx) => (
+                                <div
+                                  key={block.id}
+                                  onClick={() => setSelectedNewsletterBlockId(block.id)}
+                                  onDragOver={(e) => {
+                                    e.preventDefault();
+                                    if (dragOverBlockId !== block.id) {
+                                      setDragOverBlockId(block.id);
+                                    }
+                                  }}
+                                  onDragLeave={() => {
+                                    if (dragOverBlockId === block.id) {
+                                      setDragOverBlockId(null);
+                                    }
+                                  }}
+                                  onDrop={(e) => {
+                                    e.preventDefault();
+                                    const draggedId =
+                                      e.dataTransfer.getData('text/plain') || draggingBlockId || '';
+                                    reorderNewsletterBlocks(draggedId, block.id);
+                                    setDragOverBlockId(null);
+                                    setDraggingBlockId(null);
+                                  }}
+                                  onDragEnd={() => {
+                                    setDragOverBlockId(null);
+                                    setDraggingBlockId(null);
+                                  }}
+                                  className={`space-y-2 rounded-md border p-2 transition ${
+                                    selectedNewsletterBlockId === block.id
+                                      ? 'border-primary bg-primary/5'
+                                      : dragOverBlockId === block.id
+                                        ? 'border-primary bg-primary/5'
+                                        : 'border-border'
+                                  }`}
+                                >
+                                  <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="inline-flex items-center gap-2">
+                                      <span
+                                        draggable
+                                        onDragStart={(e) => {
+                                          e.dataTransfer.setData('text/plain', block.id);
+                                          e.dataTransfer.effectAllowed = 'move';
+                                          setDraggingBlockId(block.id);
+                                        }}
+                                        className="cursor-grab select-none rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                                      >
+                                        Arrastrar
+                                      </span>
+                                      <span className="text-xs font-semibold uppercase text-muted-foreground">
+                                        {idx + 1}. {block.type}
+                                      </span>
+                                    </div>
+                                    <div className="flex gap-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => moveNewsletterBlock(block.id, -1)}
+                                        className="rounded border px-2 py-1 text-xs"
+                                      >
+                                        ↑
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => moveNewsletterBlock(block.id, 1)}
+                                        className="rounded border px-2 py-1 text-xs"
+                                      >
+                                        ↓
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => duplicateNewsletterBlock(block.id)}
+                                        className="rounded border px-2 py-1 text-xs"
+                                      >
+                                        Duplicar
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => removeNewsletterBlock(block.id)}
+                                        className="rounded border border-red-300 px-2 py-1 text-xs text-red-700"
+                                      >
+                                        Quitar
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {block.type !== 'divider' ? (
+                                    <div className="grid gap-2 md:grid-cols-2">
+                                      {(block.type === 'heading' ||
+                                        block.type === 'text' ||
+                                        block.type === 'image') ? (
+                                        <input
+                                          value={block.content || ''}
+                                          onChange={(e) =>
+                                            updateNewsletterBlock(block.id, {
+                                              content: e.target.value,
+                                            })
+                                          }
+                                          className="rounded-md border border-border px-2 py-1 text-sm"
+                                          placeholder={block.type === 'image' ? 'Texto alt' : 'Contenido'}
+                                        />
+                                      ) : null}
+                                      {block.type === 'image' || block.type === 'button' ? (
+                                        <input
+                                          value={block.url || ''}
+                                          onChange={(e) =>
+                                            updateNewsletterBlock(block.id, { url: e.target.value })
+                                          }
+                                          className="rounded-md border border-border px-2 py-1 text-sm"
+                                          placeholder="https://..."
+                                        />
+                                      ) : null}
+                                      {block.type === 'button' ? (
+                                        <input
+                                          value={block.label || ''}
+                                          onChange={(e) =>
+                                            updateNewsletterBlock(block.id, { label: e.target.value })
+                                          }
+                                          className="rounded-md border border-border px-2 py-1 text-sm"
+                                          placeholder="Texto del botón"
+                                        />
+                                      ) : null}
+                                      <select
+                                        value={block.align || 'left'}
+                                        onChange={(e) =>
+                                          updateNewsletterBlock(block.id, {
+                                            align:
+                                              (e.target.value as 'left' | 'center' | 'right') || 'left',
+                                          })
+                                        }
+                                        className="rounded-md border border-border px-2 py-1 text-sm"
+                                      >
+                                        <option value="left">Izquierda</option>
+                                        <option value="center">Centro</option>
+                                        <option value="right">Derecha</option>
+                                      </select>
+                                    </div>
+                                  ) : (
+                                    <div className="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
+                                      Separador horizontal
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="rounded-md border border-border bg-background p-3">
+                          <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+                            Vista previa newsletter
+                          </p>
+                          <div
+                            className="mx-auto max-w-[700px] rounded-md border border-border bg-white p-4 shadow-sm"
+                            dangerouslySetInnerHTML={{
+                              __html:
+                                renderNewsletterBlocksToHtml(newsletterBlocks) ||
+                                '<p>Sin bloques todavía.</p>',
+                            }}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ) : null}
