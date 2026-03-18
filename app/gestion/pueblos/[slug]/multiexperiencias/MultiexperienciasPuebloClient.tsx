@@ -220,7 +220,15 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
       ? `¿Eliminar la multiexperiencia legacy "${mx.titulo}"?\n\nEsta acción la quitará de este pueblo en gestión.`
       : `¿Eliminar la multiexperiencia "${mx.titulo}"?`;
     if (!confirm(confirmMessage)) return;
-    const res = await fetch(`/api/admin/multiexperiencias/${mx.id}`, { method: "DELETE" });
+    const puebloId = pueblo?.id ? String(pueblo.id) : null;
+    if (isLegacy && !puebloId) {
+      alert("No se pudo identificar el pueblo para desasociar esta multiexperiencia legacy.");
+      return;
+    }
+    const deleteUrl = isLegacy
+      ? `/api/admin/multiexperiencias/${mx.id}?puebloId=${encodeURIComponent(puebloId!)}`
+      : `/api/admin/multiexperiencias/${mx.id}`;
+    const res = await fetch(deleteUrl, { method: "DELETE" });
     const text = await res.text();
     if (!res.ok) {
       alert(`Error ${res.status}: ${text}`);

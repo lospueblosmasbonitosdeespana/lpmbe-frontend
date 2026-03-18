@@ -77,7 +77,11 @@ export async function DELETE(
 
   const { mxId } = await params;
   const API_BASE = getApiUrl();
-  const upstreamUrl = `${API_BASE}/admin/multiexperiencias/${mxId}`;
+  const requestUrl = new URL(req.url);
+  const puebloId = requestUrl.searchParams.get('puebloId');
+  const upstreamUrl = puebloId
+    ? `${API_BASE}/admin/multiexperiencias/${mxId}?puebloId=${encodeURIComponent(puebloId)}`
+    : `${API_BASE}/admin/multiexperiencias/${mxId}`;
 
   if (DEV_LOGS) {
     console.error('[admin/multiexperiencias DELETE] upstreamUrl:', upstreamUrl);
