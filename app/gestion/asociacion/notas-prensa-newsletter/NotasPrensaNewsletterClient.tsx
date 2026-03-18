@@ -28,6 +28,13 @@ type PressContact = {
   puebloSlug: string;
 };
 
+type Overview = {
+  usersTotal: number;
+  newsletterSubscribersTotal: number;
+  pressContactsTotal: number;
+  campaignsTotal: number;
+};
+
 function fmtDate(value?: string | null) {
   if (!value) return '—';
   const d = new Date(value);
@@ -43,6 +50,7 @@ export default function NotasPrensaNewsletterClient() {
 
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [pressContacts, setPressContacts] = useState<PressContact[]>([]);
+  const [overview, setOverview] = useState<Overview | null>(null);
   const [campaignForm, setCampaignForm] = useState({
     kind: 'PRESS' as 'PRESS' | 'NEWSLETTER',
     subject: '',
@@ -56,13 +64,19 @@ export default function NotasPrensaNewsletterClient() {
 
   async function loadData() {
     try {
-      const [campaignsRes, contactsRes] = await Promise.all([
+      const [overviewRes, campaignsRes, contactsRes] = await Promise.all([
+        fetch('/api/admin/newsletter/overview', { cache: 'no-store' }),
         fetch('/api/admin/newsletter/campaigns?limit=25', { cache: 'no-store' }),
         fetch('/api/admin/newsletter/press-contacts?limit=20', { cache: 'no-store' }),
       ]);
-      if (campaignsRes.ok) {
-        const c = await campaignsRes.json();
-        setCampaigns(Array.isArray(c) ? c : []);
+      if (overviewRes.ok) {
+        const o = await overviewRes.json();
+        setOverview({
+          usersTotal: Number(o?.usersTotal || 0),
+          newsletterSubscribersTotal: Number(o?.newsletterSubscribersTotal || 0),
+          pressContactsTotal: Number(o?.pressContactsTotal || 0),
+          campaignsTotal: Number(o?.campaignsTotal || 0),
+        });
       }
       if (contactsRes.ok) {
         const data = await contactsRes.json();
@@ -88,6 +102,7 @@ export default function NotasPrensaNewsletterClient() {
       setMessage(
         `Importación completada. Importados: ${data.imported ?? 0}. Usuarios fuente: ${data.totalSourceUsers ?? 0}.`,
       );
+      await loadData();
     } catch (e: any) {
       setError(e?.message || 'Error importando usuarios');
     } finally {
@@ -165,6 +180,25 @@ export default function NotasPrensaNewsletterClient() {
 
   return (
     <div className="mt-8 space-y-8">
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <article className="rounded-xl border border-border bg-card p-4">
+          <p className="text-xs uppercase text-muted-foreground">Usuarios web</p>
+          <p className="mt-2 text-2xl font-semibold">{overview?.usersTotal ?? '—'}</p>
+        </article>
+        <article className="rounded-xl border border-border bg-card p-4">
+          <p className="text-xs uppercase text-muted-foreground">Suscriptores newsletter</p>
+          <p className="mt-2 text-2xl font-semibold">{overview?.newsletterSubscribersTotal ?? '—'}</p>
+        </article>
+        <article className="rounded-xl border border-border bg-card p-4">
+          <p className="text-xs uppercase text-muted-foreground">Contactos de prensa</p>
+          <p className="mt-2 text-2xl font-semibold">{overview?.pressContactsTotal ?? '—'}</p>
+        </article>
+        <article className="rounded-xl border border-border bg-card p-4">
+          <p className="text-xs uppercase text-muted-foreground">Campañas registradas</p>
+          <p className="mt-2 text-2xl font-semibold">{overview?.campaignsTotal ?? '—'}</p>
+        </article>
+      </section>
+
       {message ? (
         <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{message}</div>
       ) : null}

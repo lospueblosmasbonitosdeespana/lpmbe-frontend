@@ -9,6 +9,7 @@ export default function RegistroPage() {
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [subscribeNewsletter, setSubscribeNewsletter] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +23,12 @@ export default function RegistroPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre: nombre || null, email, password }),
+        body: JSON.stringify({
+          nombre: nombre || null,
+          email,
+          password,
+          subscribeNewsletter,
+        }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -81,6 +87,18 @@ export default function RegistroPage() {
             required
           />
         </div>
+
+        <label className="flex items-start gap-2 rounded-md border p-3 text-sm">
+          <input
+            type="checkbox"
+            checked={subscribeNewsletter}
+            onChange={(e) => setSubscribeNewsletter(e.target.checked)}
+            className="mt-0.5 h-4 w-4"
+          />
+          <span>
+            Quiero suscribirme a la newsletter para recibir novedades.
+          </span>
+        </label>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

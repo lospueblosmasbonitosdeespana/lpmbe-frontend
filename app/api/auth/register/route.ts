@@ -29,6 +29,7 @@ export async function POST(req: Request) {
       email,
       password,
       nombre: body?.nombre ?? null,
+      subscribeNewsletter: body?.subscribeNewsletter === true,
     }),
   });
 
