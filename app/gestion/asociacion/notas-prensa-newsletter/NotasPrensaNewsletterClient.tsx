@@ -71,6 +71,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     provincia: '',
     puebloSlug: '',
   });
+  const [pressFormExpanded, setPressFormExpanded] = useState(false);
 
   async function loadData() {
     try {
@@ -223,74 +224,86 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
 
       {mode === 'press' ? (
         <section className="rounded-xl border border-border bg-card p-5">
-          <h2 className="text-lg font-semibold">1) Añadir contacto de prensa</h2>
-          <form onSubmit={handleAddPressContact} className="mt-4 grid gap-3 md:grid-cols-2">
-            <label className="text-sm">
-              Medio
-              <input
-                value={pressForm.mediaOutlet}
-                onChange={(e) => setPressForm((s) => ({ ...s, mediaOutlet: e.target.value }))}
-                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-                placeholder="Nombre del medio"
-              />
-            </label>
-            <label className="text-sm">
-              Email
-              <input
-                type="email"
-                value={pressForm.email}
-                onChange={(e) => setPressForm((s) => ({ ...s, email: e.target.value }))}
-                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-                placeholder="contacto@medio.com"
-              />
-            </label>
-            <label className="text-sm">
-              Nombre (opcional)
-              <input
-                value={pressForm.name}
-                onChange={(e) => setPressForm((s) => ({ ...s, name: e.target.value }))}
-                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-              />
-            </label>
-            <label className="text-sm">
-              Ámbito
-              <select
-                value={pressForm.scope}
-                onChange={(e) => setPressForm((s) => ({ ...s, scope: e.target.value }))}
-                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-              >
-                <option value="NACIONAL">Nacional</option>
-                <option value="CCAA">CCAA</option>
-                <option value="PROVINCIA">Provincia</option>
-                <option value="LOCAL">Local</option>
-              </select>
-            </label>
-            <label className="text-sm">
-              CCAA (opcional)
-              <input
-                value={pressForm.ccaa}
-                onChange={(e) => setPressForm((s) => ({ ...s, ccaa: e.target.value }))}
-                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-              />
-            </label>
-            <label className="text-sm">
-              Provincia (opcional)
-              <input
-                value={pressForm.provincia}
-                onChange={(e) => setPressForm((s) => ({ ...s, provincia: e.target.value }))}
-                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-              />
-            </label>
-            <div className="md:col-span-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium disabled:opacity-50"
-              >
-                {loading ? 'Guardando…' : 'Guardar contacto'}
-              </button>
-            </div>
-          </form>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold">1) Añadir contacto de prensa a la base de datos</h2>
+            <button
+              type="button"
+              onClick={() => setPressFormExpanded((v) => !v)}
+              className="rounded-md border border-border px-3 py-1 text-sm font-medium hover:bg-muted"
+            >
+              {pressFormExpanded ? '▼ Ocultar formulario' : '▶ Mostrar formulario'}
+            </button>
+          </div>
+
+          {pressFormExpanded ? (
+            <form onSubmit={handleAddPressContact} className="mt-4 grid gap-3 md:grid-cols-2">
+              <label className="text-sm">
+                Medio
+                <input
+                  value={pressForm.mediaOutlet}
+                  onChange={(e) => setPressForm((s) => ({ ...s, mediaOutlet: e.target.value }))}
+                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                  placeholder="Nombre del medio"
+                />
+              </label>
+              <label className="text-sm">
+                Email
+                <input
+                  type="email"
+                  value={pressForm.email}
+                  onChange={(e) => setPressForm((s) => ({ ...s, email: e.target.value }))}
+                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                  placeholder="contacto@medio.com"
+                />
+              </label>
+              <label className="text-sm">
+                Nombre (opcional)
+                <input
+                  value={pressForm.name}
+                  onChange={(e) => setPressForm((s) => ({ ...s, name: e.target.value }))}
+                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                />
+              </label>
+              <label className="text-sm">
+                Ámbito
+                <select
+                  value={pressForm.scope}
+                  onChange={(e) => setPressForm((s) => ({ ...s, scope: e.target.value }))}
+                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                >
+                  <option value="NACIONAL">Nacional</option>
+                  <option value="CCAA">CCAA</option>
+                  <option value="PROVINCIA">Provincia</option>
+                  <option value="LOCAL">Local</option>
+                </select>
+              </label>
+              <label className="text-sm">
+                CCAA (opcional)
+                <input
+                  value={pressForm.ccaa}
+                  onChange={(e) => setPressForm((s) => ({ ...s, ccaa: e.target.value }))}
+                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                />
+              </label>
+              <label className="text-sm">
+                Provincia (opcional)
+                <input
+                  value={pressForm.provincia}
+                  onChange={(e) => setPressForm((s) => ({ ...s, provincia: e.target.value }))}
+                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                />
+              </label>
+              <div className="md:col-span-2">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium disabled:opacity-50"
+                >
+                  {loading ? 'Guardando…' : 'Guardar contacto'}
+                </button>
+              </div>
+            </form>
+          ) : null}
         </section>
       ) : null}
 
