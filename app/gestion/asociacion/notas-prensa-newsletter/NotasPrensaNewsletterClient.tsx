@@ -35,6 +35,8 @@ type Overview = {
   campaignsTotal: number;
 };
 
+type Mode = 'newsletter' | 'press';
+
 function fmtDate(value?: string | null) {
   if (!value) return '—';
   const d = new Date(value);
@@ -42,17 +44,16 @@ function fmtDate(value?: string | null) {
   return d.toLocaleString('es-ES');
 }
 
-export default function NotasPrensaNewsletterClient() {
+export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [csvFile, setCsvFile] = useState<File | null>(null);
 
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [pressContacts, setPressContacts] = useState<PressContact[]>([]);
   const [overview, setOverview] = useState<Overview | null>(null);
   const [campaignForm, setCampaignForm] = useState({
-    kind: 'PRESS' as 'PRESS' | 'NEWSLETTER',
+    kind: (mode === 'newsletter' ? 'NEWSLETTER' : 'PRESS') as 'PRESS' | 'NEWSLETTER',
     subject: '',
     html: '',
     scope: 'NACIONAL',
@@ -60,6 +61,15 @@ export default function NotasPrensaNewsletterClient() {
     provincia: '',
     puebloSlug: '',
     source: '',
+  });
+  const [pressForm, setPressForm] = useState({
+    email: '',
+    name: '',
+    mediaOutlet: '',
+    scope: 'NACIONAL',
+    ccaa: '',
+    provincia: '',
+    puebloSlug: '',
   });
 
   async function loadData() {
@@ -78,6 +88,10 @@ export default function NotasPrensaNewsletterClient() {
           campaignsTotal: Number(o?.campaignsTotal || 0),
         });
       }
+      if (campaignsRes.ok) {
+        const c = await campaignsRes.json();
+        setCampaigns(Array.isArray(c) ? c : []);
+      }
       if (contactsRes.ok) {
         const data = await contactsRes.json();
         setPressContacts(Array.isArray(data?.items) ? data.items : []);
@@ -91,26 +105,43 @@ export default function NotasPrensaNewsletterClient() {
     loadData();
   }, []);
 
-  async function handleImportPressCsv(e: React.FormEvent) {
+  async function handleAddPressContact(e: React.FormEvent) {
     e.preventDefault();
-    if (!csvFile) return;
     setLoading(true);
     setError(null);
     setMessage(null);
     try {
-      const fd = new FormData();
-      fd.append('file', csvFile);
-      const res = await fetch('/api/admin/newsletter/press-contacts/import-csv', {
+      if (!pressForm.email.trim() || !pressForm.mediaOutlet.trim()) {
+        throw new Error('Email y medio son obligatorios');
+      }
+      const res = await fetch('/api/admin/newsletter/press-contacts', {
         method: 'POST',
-        body: fd,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: pressForm.email.trim(),
+          name: pressForm.name.trim() || undefined,
+          mediaOutlet: pressForm.mediaOutlet.trim(),
+          scope: pressForm.scope,
+          ccaa: pressForm.ccaa.trim(),
+          provincia: pressForm.provincia.trim(),
+          puebloSlug: pressForm.puebloSlug.trim(),
+        }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.message || 'Error importando CSV');
-      setMessage(`CSV de prensa importado. Filas procesadas: ${data.imported ?? 0}.`);
-      setCsvFile(null);
+      if (!res.ok) throw new Error(data?.message || 'Error creando contacto de prensa');
+      setMessage('Contacto de prensa guardado correctamente.');
+      setPressForm({
+        email: '',
+        name: '',
+        mediaOutlet: '',
+        scope: 'NACIONAL',
+        ccaa: '',
+        provincia: '',
+        puebloSlug: '',
+      });
       await loadData();
     } catch (e: any) {
-      setError(e?.message || 'Error importando CSV');
+      setError(e?.message || 'Error guardando contacto');
     } finally {
       setLoading(false);
     }
@@ -127,7 +158,7 @@ export default function NotasPrensaNewsletterClient() {
       }
 
       const filters =
-        campaignForm.kind === 'PRESS'
+        mode === 'press'
           ? {
               scope: campaignForm.scope,
               ccaa: campaignForm.ccaa,
@@ -140,7 +171,7 @@ export default function NotasPrensaNewsletterClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          kind: campaignForm.kind,
+          kind: mode === 'press' ? 'PRESS' : 'NEWSLETTER',
           subject: campaignForm.subject,
           html: campaignForm.html,
           filters,
@@ -166,14 +197,17 @@ export default function NotasPrensaNewsletterClient() {
           <p className="text-xs uppercase text-muted-foreground">Usuarios web</p>
           <p className="mt-2 text-2xl font-semibold">{overview?.usersTotal ?? '—'}</p>
         </article>
-        <article className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs uppercase text-muted-foreground">Suscriptores newsletter</p>
-          <p className="mt-2 text-2xl font-semibold">{overview?.newsletterSubscribersTotal ?? '—'}</p>
-        </article>
-        <article className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs uppercase text-muted-foreground">Contactos de prensa</p>
-          <p className="mt-2 text-2xl font-semibold">{overview?.pressContactsTotal ?? '—'}</p>
-        </article>
+        {mode === 'newsletter' ? (
+          <article className="rounded-xl border border-border bg-card p-4">
+            <p className="text-xs uppercase text-muted-foreground">Suscriptores newsletter</p>
+            <p className="mt-2 text-2xl font-semibold">{overview?.newsletterSubscribersTotal ?? '—'}</p>
+          </article>
+        ) : (
+          <article className="rounded-xl border border-border bg-card p-4">
+            <p className="text-xs uppercase text-muted-foreground">Contactos de prensa</p>
+            <p className="mt-2 text-2xl font-semibold">{overview?.pressContactsTotal ?? '—'}</p>
+          </article>
+        )}
         <article className="rounded-xl border border-border bg-card p-4">
           <p className="text-xs uppercase text-muted-foreground">Campañas registradas</p>
           <p className="mt-2 text-2xl font-semibold">{overview?.campaignsTotal ?? '—'}</p>
@@ -187,43 +221,83 @@ export default function NotasPrensaNewsletterClient() {
         <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
       ) : null}
 
-      <section className="rounded-xl border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold">1) Importar contactos de prensa (CSV)</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Cabeceras recomendadas: email,name,media_outlet,scope,ccaa,provincia,pueblo_slug
-        </p>
-        <form onSubmit={handleImportPressCsv} className="mt-4 flex flex-wrap items-center gap-3">
-          <input
-            type="file"
-            accept=".csv,text/csv"
-            onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
-            className="text-sm"
-          />
-          <button
-            type="submit"
-            disabled={!csvFile || loading}
-            className="rounded-lg border border-border px-4 py-2 text-sm font-medium disabled:opacity-50"
-          >
-            {loading ? 'Importando…' : 'Importar CSV'}
-          </button>
-        </form>
-      </section>
-
-      <section className="rounded-xl border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold">2) Enviar campaña</h2>
-        <form onSubmit={handleSendCampaign} className="mt-4 space-y-3">
-          <div className="grid gap-3 md:grid-cols-2">
+      {mode === 'press' ? (
+        <section className="rounded-xl border border-border bg-card p-5">
+          <h2 className="text-lg font-semibold">1) Añadir contacto de prensa</h2>
+          <form onSubmit={handleAddPressContact} className="mt-4 grid gap-3 md:grid-cols-2">
             <label className="text-sm">
-              Tipo de campaña
+              Medio
+              <input
+                value={pressForm.mediaOutlet}
+                onChange={(e) => setPressForm((s) => ({ ...s, mediaOutlet: e.target.value }))}
+                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                placeholder="Nombre del medio"
+              />
+            </label>
+            <label className="text-sm">
+              Email
+              <input
+                type="email"
+                value={pressForm.email}
+                onChange={(e) => setPressForm((s) => ({ ...s, email: e.target.value }))}
+                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                placeholder="contacto@medio.com"
+              />
+            </label>
+            <label className="text-sm">
+              Nombre (opcional)
+              <input
+                value={pressForm.name}
+                onChange={(e) => setPressForm((s) => ({ ...s, name: e.target.value }))}
+                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="text-sm">
+              Ámbito
               <select
-                value={campaignForm.kind}
-                onChange={(e) => setCampaignForm((s) => ({ ...s, kind: e.target.value as 'PRESS' | 'NEWSLETTER' }))}
+                value={pressForm.scope}
+                onChange={(e) => setPressForm((s) => ({ ...s, scope: e.target.value }))}
                 className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
               >
-                <option value="PRESS">Nota de prensa</option>
-                <option value="NEWSLETTER">Newsletter</option>
+                <option value="NACIONAL">Nacional</option>
+                <option value="CCAA">CCAA</option>
+                <option value="PROVINCIA">Provincia</option>
+                <option value="LOCAL">Local</option>
               </select>
             </label>
+            <label className="text-sm">
+              CCAA (opcional)
+              <input
+                value={pressForm.ccaa}
+                onChange={(e) => setPressForm((s) => ({ ...s, ccaa: e.target.value }))}
+                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="text-sm">
+              Provincia (opcional)
+              <input
+                value={pressForm.provincia}
+                onChange={(e) => setPressForm((s) => ({ ...s, provincia: e.target.value }))}
+                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+              />
+            </label>
+            <div className="md:col-span-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium disabled:opacity-50"
+              >
+                {loading ? 'Guardando…' : 'Guardar contacto'}
+              </button>
+            </div>
+          </form>
+        </section>
+      ) : null}
+
+      <section className="rounded-xl border border-border bg-card p-5">
+        <h2 className="text-lg font-semibold">{mode === 'press' ? '2) Enviar nota de prensa' : '1) Enviar newsletter'}</h2>
+        <form onSubmit={handleSendCampaign} className="mt-4 space-y-3">
+          <div className="grid gap-3 md:grid-cols-2">
             <label className="text-sm">
               Asunto
               <input
@@ -234,7 +308,7 @@ export default function NotasPrensaNewsletterClient() {
             </label>
           </div>
 
-          {campaignForm.kind === 'PRESS' ? (
+          {mode === 'press' ? (
             <div className="grid gap-3 md:grid-cols-4">
               <label className="text-sm">
                 Scope
@@ -349,8 +423,9 @@ export default function NotasPrensaNewsletterClient() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold">Muestra de contactos de prensa</h2>
+      {mode === 'press' ? (
+        <section className="rounded-xl border border-border bg-card p-5">
+          <h2 className="text-lg font-semibold">Muestra de contactos de prensa</h2>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -383,7 +458,8 @@ export default function NotasPrensaNewsletterClient() {
             </tbody>
           </table>
         </div>
-      </section>
+        </section>
+      ) : null}
     </div>
   );
 }
