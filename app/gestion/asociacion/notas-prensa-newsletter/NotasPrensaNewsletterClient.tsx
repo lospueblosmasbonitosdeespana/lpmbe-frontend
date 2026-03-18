@@ -97,6 +97,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [selectedCcaas, setSelectedCcaas] = useState<string[]>([]);
   const [selectedProvincias, setSelectedProvincias] = useState<string[]>([]);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
+  const photosInputRef = useRef<HTMLInputElement | null>(null);
 
   const editor = useEditor({
     extensions: [
@@ -444,6 +445,20 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       return urls;
     } finally {
       setUploadingPhotos(false);
+    }
+  }
+
+  async function handlePhotosButtonClick() {
+    if (pressPhotoFiles.length === 0) {
+      photosInputRef.current?.click();
+      return;
+    }
+    setError(null);
+    try {
+      await uploadPressPhotos();
+      setMessage('Fotos subidas y optimizadas correctamente.');
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, 'Error subiendo fotos'));
     }
   }
 
@@ -1040,6 +1055,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   <label className="block text-sm">
                     Fotos para la nota (máximo 10)
                     <input
+                      ref={photosInputRef}
                       type="file"
                       accept="image/*"
                       multiple
@@ -1052,22 +1068,11 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
-                      onClick={async () => {
-                        setError(null);
-                        try {
-                          if (pressPhotoFiles.length === 0) {
-                            throw new Error('Selecciona al menos una foto');
-                          }
-                          await uploadPressPhotos();
-                          setMessage('Fotos subidas y optimizadas correctamente.');
-                        } catch (e: unknown) {
-                          setError(getErrorMessage(e, 'Error subiendo fotos'));
-                        }
-                      }}
+                      onClick={handlePhotosButtonClick}
                       disabled={uploadingPhotos || loading}
                       className="rounded-lg border border-border px-3 py-2 text-sm font-medium disabled:opacity-50"
                     >
-                      {uploadingPhotos ? 'Subiendo fotos...' : 'Subir fotos'}
+                      {uploadingPhotos ? 'Subiendo fotos...' : pressPhotoFiles.length > 0 ? 'Subir fotos' : 'Seleccionar fotos'}
                     </button>
                     <span className="text-xs text-muted-foreground">
                       {pressPhotoFiles.length} seleccionadas · {pressPhotoUrls.length} subidas
