@@ -396,13 +396,34 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   }, [campaignForm.html, editor]);
 
   useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!draggingBlockId) return;
+      if ((event.buttons & 1) !== 1) return;
+      const target = document.elementFromPoint(event.clientX, event.clientY);
+      const dropHost = target instanceof HTMLElement
+        ? target.closest<HTMLElement>('[data-newsletter-block-id]')
+        : null;
+      const overId = dropHost?.dataset.newsletterBlockId || null;
+      if (!overId) return;
+      if (overId === draggingBlockId) {
+        setDragOverBlockId(overId);
+        return;
+      }
+      reorderNewsletterBlocks(draggingBlockId, overId);
+      setDraggingBlockId(overId);
+      setDragOverBlockId(overId);
+    };
     const handleMouseUp = () => {
       setDraggingBlockId(null);
       setDragOverBlockId(null);
     };
+    window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
-    return () => window.removeEventListener('mouseup', handleMouseUp);
-  }, []);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [draggingBlockId]);
 
   async function handleAddPressContact(e: React.FormEvent) {
     e.preventDefault();
@@ -1529,14 +1550,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                               {newsletterBlocks.map((block, idx) => (
                                 <div
                                   key={block.id}
+                                  data-newsletter-block-id={block.id}
                                   onClick={() => setSelectedNewsletterBlockId(block.id)}
-                                  onMouseEnter={() => {
-                                    if (draggingBlockId && draggingBlockId !== block.id) {
-                                      reorderNewsletterBlocks(draggingBlockId, block.id);
-                                      setDraggingBlockId(block.id);
-                                      setDragOverBlockId(block.id);
-                                    }
-                                  }}
                                   className={`space-y-2 rounded-md border p-2 transition ${
                                     selectedNewsletterBlockId === block.id
                                       ? 'border-primary bg-primary/5'
@@ -1554,7 +1569,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                           setDragOverBlockId(block.id);
                                           setSelectedNewsletterBlockId(block.id);
                                         }}
-                                        className="cursor-grab select-none rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                                        className={`select-none rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground ${
+                                          draggingBlockId === block.id ? 'cursor-grabbing' : 'cursor-grab'
+                                        }`}
                                       >
                                         {draggingBlockId === block.id ? 'Moviendo...' : 'Arrastrar'}
                                       </span>
