@@ -91,25 +91,6 @@ export default function NotasPrensaNewsletterClient() {
     loadData();
   }, []);
 
-  async function handleImportUsers() {
-    setLoading(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const res = await fetch('/api/admin/newsletter/import-users', { method: 'POST' });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.message || 'Error importando usuarios');
-      setMessage(
-        `Importación completada. Importados: ${data.imported ?? 0}. Usuarios fuente: ${data.totalSourceUsers ?? 0}.`,
-      );
-      await loadData();
-    } catch (e: any) {
-      setError(e?.message || 'Error importando usuarios');
-    } finally {
-      setLoading(false);
-    }
-  }
-
   async function handleImportPressCsv(e: React.FormEvent) {
     e.preventDefault();
     if (!csvFile) return;
@@ -207,21 +188,7 @@ export default function NotasPrensaNewsletterClient() {
       ) : null}
 
       <section className="rounded-xl border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold">1) Importar usuarios actuales a newsletter (regla de oro activa)</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Esto crea/actualiza contactos en la base de datos separada de newsletter y no toca cuentas de usuario.
-        </p>
-        <button
-          onClick={handleImportUsers}
-          disabled={loading}
-          className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
-        >
-          {loading ? 'Procesando…' : 'Importar usuarios actuales'}
-        </button>
-      </section>
-
-      <section className="rounded-xl border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold">2) Importar contactos de prensa (CSV)</h2>
+        <h2 className="text-lg font-semibold">1) Importar contactos de prensa (CSV)</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Cabeceras recomendadas: email,name,media_outlet,scope,ccaa,provincia,pueblo_slug
         </p>
@@ -243,7 +210,7 @@ export default function NotasPrensaNewsletterClient() {
       </section>
 
       <section className="rounded-xl border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold">3) Enviar campaña</h2>
+        <h2 className="text-lg font-semibold">2) Enviar campaña</h2>
         <form onSubmit={handleSendCampaign} className="mt-4 space-y-3">
           <div className="grid gap-3 md:grid-cols-2">
             <label className="text-sm">
