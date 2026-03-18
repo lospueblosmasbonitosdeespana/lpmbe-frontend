@@ -1520,7 +1520,13 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                               {newsletterBlocks.map((block, idx) => (
                                 <div
                                   key={block.id}
+                                  draggable
                                   onClick={() => setSelectedNewsletterBlockId(block.id)}
+                                  onDragStart={(e) => {
+                                    e.dataTransfer.setData('text/plain', block.id);
+                                    e.dataTransfer.effectAllowed = 'move';
+                                    setDraggingBlockId(block.id);
+                                  }}
                                   onDragOver={(e) => {
                                     e.preventDefault();
                                     if (dragOverBlockId !== block.id) {
@@ -1555,12 +1561,6 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                   <div className="flex flex-wrap items-center justify-between gap-2">
                                     <div className="inline-flex items-center gap-2">
                                       <span
-                                        draggable
-                                        onDragStart={(e) => {
-                                          e.dataTransfer.setData('text/plain', block.id);
-                                          e.dataTransfer.effectAllowed = 'move';
-                                          setDraggingBlockId(block.id);
-                                        }}
                                         className="cursor-grab select-none rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground"
                                       >
                                         Arrastrar
