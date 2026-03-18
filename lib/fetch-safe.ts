@@ -5,7 +5,7 @@
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 const RETRY_DELAY_MS = 800;
-const MAX_RETRIES = 1;
+const MAX_RETRIES = 2;
 
 export async function fetchWithTimeout(
   url: string,
@@ -27,7 +27,8 @@ export async function fetchWithTimeout(
 
       clearTimeout(timer);
 
-      if (res.status >= 502 && res.status <= 504 && attempt < retries) {
+      // Retry transient server/rate-limit responses common during crawls.
+      if ((res.status === 429 || (res.status >= 500 && res.status <= 504)) && attempt < retries) {
         await delay(RETRY_DELAY_MS);
         continue;
       }

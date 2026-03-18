@@ -76,17 +76,32 @@ export function resolvePuebloMainPhotoUrl(pueblo: any): string | null {
 /** locale: idioma para contenido (es, en, fr, de, pt, it). Si no se pasa, el backend devuelve es. */
 export async function getPuebloBySlug(slug: string, locale?: string): Promise<Pueblo> {
   const API_BASE = getApiUrl();
-  const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
-  const res = await fetchWithTimeout(`${API_BASE}/pueblos/${slug}${qs}`, {
-    cache: 'no-store',
-    headers: locale ? { 'Accept-Language': locale } : undefined,
-  });
+  const fetchPueblo = async (lang?: string): Promise<Response> => {
+    const qs = lang ? `?lang=${encodeURIComponent(lang)}` : '';
+    return fetchWithTimeout(`${API_BASE}/pueblos/${slug}${qs}`, {
+      cache: 'no-store',
+      headers: lang ? { 'Accept-Language': lang } : undefined,
+    });
+  };
 
-  if (!res.ok) {
+  try {
+    const res = await fetchPueblo(locale);
+    if (res.ok) return await res.json();
+
+    // Fallback to Spanish when locale-specific content fails during crawls.
+    if (locale && locale !== 'es') {
+      const fallbackRes = await fetchPueblo('es');
+      if (fallbackRes.ok) return await fallbackRes.json();
+    }
+
     throw new Error(`Error cargando pueblo (${res.status})`);
+  } catch (error) {
+    if (locale && locale !== 'es') {
+      const fallbackRes = await fetchPueblo('es');
+      if (fallbackRes.ok) return await fallbackRes.json();
+    }
+    throw error;
   }
-
-  return await res.json();
 }
 
 export async function getLugarLegacyBySlug(slug: string, locale?: string): Promise<Pueblo> {
