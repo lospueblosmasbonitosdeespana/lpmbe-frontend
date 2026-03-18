@@ -819,14 +819,12 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                         Editar
                       </button>
                     )}
-                    {mx.legacyId == null && (
-                      <button
-                        onClick={() => handleDeleteMultiexperiencia(mx)}
-                        className="rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700 whitespace-nowrap"
-                      >
-                        Eliminar
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleDeleteMultiexperiencia(mx)}
+                      className="rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700 whitespace-nowrap"
+                    >
+                      Eliminar
+                    </button>
                   </div>
                 </div>
               </div>
