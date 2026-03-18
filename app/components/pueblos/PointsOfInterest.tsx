@@ -91,7 +91,13 @@ function PointOfInterestCard({ point, index, showFullDescription }: { point: Poi
             src={point.image}
             alt={point.name}
             referrerPolicy="no-referrer"
-            className="h-full w-full object-cover"
+            loading="lazy"
+            className="h-full w-full bg-muted/30"
+            style={{
+              objectFit: "contain",
+              transform: point.rotation ? `rotate(${point.rotation}deg)` : undefined,
+              transformOrigin: "center",
+            }}
           />
         </div>
       )}
