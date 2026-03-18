@@ -215,7 +215,11 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
   /* ── Eliminar multiexperiencia ───────────────── */
 
   async function handleDeleteMultiexperiencia(mx: Multiexperiencia) {
-    if (!confirm(`¿Eliminar la multiexperiencia "${mx.titulo}"?`)) return;
+    const isLegacy = mx.legacyId != null;
+    const confirmMessage = isLegacy
+      ? `¿Eliminar la multiexperiencia legacy "${mx.titulo}"?\n\nEsta acción la quitará de este pueblo en gestión.`
+      : `¿Eliminar la multiexperiencia "${mx.titulo}"?`;
+    if (!confirm(confirmMessage)) return;
     const res = await fetch(`/api/admin/multiexperiencias/${mx.id}`, { method: "DELETE" });
     const text = await res.text();
     if (!res.ok) {
@@ -224,7 +228,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
     }
     setMultiexperiencias((prev) => prev.filter((x) => x.id !== mx.id));
     if (expandedMxId === mx.id) setExpandedMxId(null);
-    alert("Multiexperiencia eliminada correctamente");
+    alert(isLegacy ? "Multiexperiencia legacy eliminada correctamente" : "Multiexperiencia eliminada correctamente");
   }
 
   /* ── Crear parada (custom nueva) ─────────────── */
