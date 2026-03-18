@@ -4,6 +4,7 @@ import { getApiUrl } from '@/lib/api';
 import AgendaInteractiva from './AgendaInteractiva';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { translateHolyWeekDayLabel } from './day-labels';
+import ImagenConLightbox from './ImagenConLightbox';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -144,19 +145,23 @@ export default async function SemanaSantaPuebloPage({
             <div className={hasBothPosters ? 'grid gap-4 md:grid-cols-2' : 'flex justify-center'}>
               {participante.cartelVerticalUrl && (
                 <div className="flex justify-center">
-                  <img
+                  <ImagenConLightbox
                     src={participante.cartelVerticalUrl}
                     alt={t('verticalPosterAlt', { village: participante.pueblo.nombre })}
-                    className="max-h-[70vh] w-full max-w-2xl rounded-xl border object-contain"
+                    wrapperClassName="w-full max-w-2xl rounded-xl border"
+                    className="max-h-[70vh]"
+                    fit="contain"
                   />
                 </div>
               )}
               {participante.cartelHorizontalUrl && (
                 <div className="flex justify-center">
-                  <img
+                  <ImagenConLightbox
                     src={participante.cartelHorizontalUrl}
                     alt={t('horizontalPosterAlt', { village: participante.pueblo.nombre })}
-                    className="max-h-[70vh] w-full max-w-2xl rounded-xl border object-contain"
+                    wrapperClassName="w-full max-w-2xl rounded-xl border"
+                    className="max-h-[70vh]"
+                    fit="contain"
                   />
                 </div>
               )}

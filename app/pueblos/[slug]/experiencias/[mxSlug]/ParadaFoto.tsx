@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import ZoomableImage from '@/app/components/ZoomableImage';
 
 interface ParadaFotoProps {
   src: string;
@@ -18,14 +19,14 @@ export default function ParadaFoto({ src, alt }: ParadaFotoProps) {
   if (failed) return null;
 
   return (
-    <div className="relative aspect-video w-full overflow-hidden bg-muted">
-      <img
-        src={src}
-        alt={alt}
-        onError={() => setFailed(true)}
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        loading="lazy"
-      />
-    </div>
+    <ZoomableImage
+      src={src}
+      alt={alt}
+      fit="contain"
+      wrapperClassName="relative aspect-video w-full"
+      className="bg-muted"
+      loading="lazy"
+      onError={() => setFailed(true)}
+    />
   );
 }

@@ -7,6 +7,7 @@ import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle
 import ParadasMap from "@/app/_components/ParadasMap";
 import ParadaFoto from "./ParadaFoto";
 import JsonLd from "@/app/components/seo/JsonLd";
+import ZoomableImage from "@/app/components/ZoomableImage";
 
 type Poi = {
   id: number;
@@ -191,10 +192,12 @@ export default async function MultiexperienciaPage({
       {/* Foto padre */}
       {mx.foto && (
         <div className="mt-6">
-          <img
+          <ZoomableImage
             src={mx.foto}
             alt={mx.titulo}
-            className="w-full max-h-[400px] object-cover rounded-lg"
+            wrapperClassName="w-full max-h-[420px] rounded-lg"
+            className="max-h-[420px] bg-muted"
+            fit="contain"
           />
         </div>
       )}

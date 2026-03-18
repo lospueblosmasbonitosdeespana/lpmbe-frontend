@@ -226,7 +226,6 @@ export default function SemanaSantaLandingClient({
               const verticalImage = p.cartelVerticalUrl && p.cartelVerticalUrl.trim();
               const horizontalImage = p.cartelHorizontalUrl && p.cartelHorizontalUrl.trim();
               const image = verticalImage || horizontalImage || p.pueblo.foto_destacada;
-              const isVerticalPriority = Boolean(verticalImage);
               const badge = badgeInteres(p.interesTuristico, t);
               const distanceKm =
                 userCoords && p.pueblo.lat != null && p.pueblo.lng != null
@@ -247,14 +246,12 @@ export default function SemanaSantaLandingClient({
                     />
                   </div>
                   <Link href={`/planifica/semana-santa/pueblo/${p.pueblo.slug}`} className="block">
-                  <div className={`relative bg-muted ${isVerticalPriority ? 'h-72' : 'h-52'}`}>
+                  <div className="relative h-72 bg-muted">
                     {image ? (
                       <img
                         src={image}
                         alt={p.pueblo.nombre}
-                        className={`h-full w-full transition-transform duration-300 group-hover:scale-105 ${
-                          isVerticalPriority ? 'bg-stone-100 object-contain p-2' : 'object-cover'
-                        }`}
+                        className="h-full w-full bg-stone-100 object-contain p-2 transition-transform duration-300 group-hover:scale-[1.02]"
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center text-muted-foreground">{t('defaultTitle')}</div>

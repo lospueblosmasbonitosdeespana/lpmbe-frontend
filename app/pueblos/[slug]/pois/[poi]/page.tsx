@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
+import ZoomableImage from "@/app/components/ZoomableImage";
 
 export const dynamic = "force-dynamic";
 
@@ -136,25 +137,18 @@ export default async function PoiPage({
       {/* FOTO PRINCIPAL Y DESCRIPCIÓN: mismo ancho para alinear */}
       {foto ? (
         <section className="mt-8 w-full max-w-3xl">
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-muted">
-            <img
-              src={foto}
-              alt={data?.nombre ?? "POI"}
-              width={800}
-              height={600}
-              referrerPolicy="no-referrer"
-              className="h-full w-full object-cover"
-              style={{
-                transform: (() => {
-                  const fotos = Array.isArray(data?.fotosPoi) ? data.fotosPoi : [];
-                  const principal = fotos.find((f: any) => f?.orden === 1) ?? fotos[0];
-                  const rotation = principal?.rotation ?? 0;
-                  return rotation !== 0 ? `rotate(${rotation}deg)` : undefined;
-                })(),
-              }}
-              loading="eager"
-            />
-          </div>
+          <ZoomableImage
+            src={foto}
+            alt={data?.nombre ?? "POI"}
+            rotation={(() => {
+              const fotos = Array.isArray(data?.fotosPoi) ? data.fotosPoi : [];
+              const principal = fotos.find((f: any) => f?.orden === 1) ?? fotos[0];
+              return principal?.rotation ?? 0;
+            })()}
+            wrapperClassName="relative aspect-[4/3] w-full rounded-xl bg-muted"
+            fit="contain"
+            loading="eager"
+          />
         </section>
       ) : null}
 
@@ -172,28 +166,14 @@ export default async function PoiPage({
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {fotosSorted.map((foto: any, idx: number) => (
-                <div
+                <ZoomableImage
                   key={foto.id ?? idx}
-                  className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted"
-                >
-                  <img
-                    src={foto.url}
-                    alt={foto.alt ?? `${data.nombre} - Foto ${idx + 1}`}
-                    width={400}
-                    height={300}
-                    referrerPolicy="no-referrer"
-                    className="absolute inset-0 h-full w-full object-cover"
-                    style={{
-                      transform: foto.rotation ? `rotate(${foto.rotation}deg)` : undefined,
-                    }}
-                    loading="lazy"
-                  />
-                  {foto.orden === 1 && (
-                    <span className="absolute top-2 left-2 rounded-md bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground">
-                      {t("principal")}
-                    </span>
-                  )}
-                </div>
+                  src={foto.url}
+                  alt={foto.alt ?? `${data.nombre} - Foto ${idx + 1}`}
+                  rotation={foto.rotation}
+                  wrapperClassName="relative aspect-[4/3] rounded-xl bg-muted"
+                  fit="contain"
+                />
               ))}
             </div>
           </section>

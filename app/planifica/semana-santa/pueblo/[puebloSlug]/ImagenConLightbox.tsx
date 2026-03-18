@@ -6,10 +6,14 @@ export default function ImagenConLightbox({
   src,
   alt,
   className = '',
+  wrapperClassName = '',
+  fit = 'contain',
 }: {
   src: string;
   alt: string;
   className?: string;
+  wrapperClassName?: string;
+  fit?: 'contain' | 'cover';
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -17,12 +21,12 @@ export default function ImagenConLightbox({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="block w-full cursor-zoom-in text-left aspect-[4/3] overflow-hidden rounded-lg bg-muted"
+        className={`block w-full cursor-zoom-in overflow-hidden rounded-lg bg-muted ${wrapperClassName}`}
       >
         <img
           src={src}
           alt={alt}
-          className={`h-full w-full object-cover ${className}`}
+          className={`h-full w-full ${fit === 'cover' ? 'object-cover' : 'object-contain'} ${className}`}
           width={800}
           height={600}
         />

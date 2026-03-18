@@ -1,8 +1,8 @@
 /**
  * RotatedImage - Componente para renderizar imágenes con rotación adaptativa
  * 
- * Si rotation es 90/270 (vertical): contenedor más alto + contain
- * Si rotation es 0/180 (horizontal): contenedor normal + cover
+ * Respeta siempre la foto completa con object-fit contain.
+ * Si rotation es 90/270 (vertical): usa contenedor más alto para mejorar legibilidad.
  */
 
 type RotatedImageProps = {
@@ -50,7 +50,7 @@ export default function RotatedImage({
           width: "100%",
           height: "100%",
           display: "block",
-          objectFit: isVertical ? "contain" : "cover",
+          objectFit: "contain",
           transform: rot !== 0 ? `rotate(${rot}deg)` : undefined,
           transformOrigin: "center",
         }}
