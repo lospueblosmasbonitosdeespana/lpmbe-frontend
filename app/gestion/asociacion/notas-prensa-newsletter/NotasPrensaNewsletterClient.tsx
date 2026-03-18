@@ -248,6 +248,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [selectedNewsletterBlockId, setSelectedNewsletterBlockId] = useState<string | null>(null);
   const [draggingBlockId, setDraggingBlockId] = useState<string | null>(null);
   const [dragOverBlockId, setDragOverBlockId] = useState<string | null>(null);
+  const [reorderPickSourceId, setReorderPickSourceId] = useState<string | null>(null);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const photosInputRef = useRef<HTMLInputElement | null>(null);
   const htmlTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -549,6 +550,16 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       copy.splice(toIdx, 0, item);
       return copy;
     });
+  }
+
+  function moveBlockToTarget(targetId: string) {
+    const sourceId = reorderPickSourceId || draggingBlockId;
+    if (!sourceId || sourceId === targetId) return;
+    reorderNewsletterBlocks(sourceId, targetId);
+    setReorderPickSourceId(null);
+    setDraggingBlockId(null);
+    setDragOverBlockId(null);
+    setSelectedNewsletterBlockId(sourceId);
   }
 
   function duplicateNewsletterBlock(id: string) {
@@ -1536,6 +1547,11 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                         <p className="text-[11px] text-muted-foreground">
                           Bloques: {newsletterBlocks.length} {selectedNewsletterBlockId ? '· bloque seleccionado' : ''}
                         </p>
+                        {reorderPickSourceId ? (
+                          <p className="rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] text-amber-900">
+                            Modo mover activo: pulsa <strong>Soltar aquí</strong> en el bloque destino.
+                          </p>
+                        ) : null}
                       </aside>
 
                       <div className="space-y-3">
@@ -1567,6 +1583,14 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                           e.preventDefault();
                                           setDraggingBlockId(block.id);
                                           setDragOverBlockId(block.id);
+                                          setSelectedNewsletterBlockId(block.id);
+                                          setReorderPickSourceId(block.id);
+                                        }}
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          setReorderPickSourceId((prev) =>
+                                            prev === block.id ? null : block.id,
+                                          );
                                           setSelectedNewsletterBlockId(block.id);
                                         }}
                                         className={`select-none rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground ${
@@ -1608,6 +1632,16 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                       >
                                         Quitar
                                       </button>
+                                      {reorderPickSourceId &&
+                                      reorderPickSourceId !== block.id ? (
+                                        <button
+                                          type="button"
+                                          onClick={() => moveBlockToTarget(block.id)}
+                                          className="rounded border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-900"
+                                        >
+                                          Soltar aquí
+                                        </button>
+                                      ) : null}
                                     </div>
                                   </div>
 
