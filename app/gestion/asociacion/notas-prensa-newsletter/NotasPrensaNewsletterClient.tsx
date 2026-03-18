@@ -40,6 +40,10 @@ type NewsletterBlock = {
   url?: string;
   label?: string;
   align?: 'left' | 'center' | 'right';
+  backgroundColor?: string;
+  textColor?: string;
+  paddingY?: number;
+  borderRadius?: number;
 };
 type NewsletterTemplate = {
   id: number;
@@ -70,6 +74,10 @@ function createBlock(type: NewsletterBlockType, patch: Partial<NewsletterBlock> 
     label: type === 'button' ? 'Leer más' : '',
     url: type === 'image' ? 'https://...' : type === 'button' ? 'https://...' : '',
     align: 'left',
+    backgroundColor: '#ffffff',
+    textColor: '#111111',
+    paddingY: 10,
+    borderRadius: 8,
     ...patch,
   };
 }
@@ -115,6 +123,10 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
       const alignRaw = String(b.align || 'left');
       const align: 'left' | 'center' | 'right' =
         alignRaw === 'center' ? 'center' : alignRaw === 'right' ? 'right' : 'left';
+      const paddingY = Number.isFinite(Number(b.paddingY)) ? Number(b.paddingY) : 10;
+      const borderRadius = Number.isFinite(Number(b.borderRadius))
+        ? Number(b.borderRadius)
+        : 8;
       return {
         id: String(b.id || `${Date.now()}-${Math.random().toString(36).slice(2)}`),
         type,
@@ -122,6 +134,10 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
         url: String(b.url || ''),
         label: String(b.label || ''),
         align,
+        backgroundColor: String(b.backgroundColor || '#ffffff'),
+        textColor: String(b.textColor || '#111111'),
+        paddingY: Math.max(0, Math.min(40, paddingY)),
+        borderRadius: Math.max(0, Math.min(30, borderRadius)),
       };
     })
     .filter((b) => b.id);
@@ -132,32 +148,37 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
   const body = blocks
     .map((block) => {
       const align = block.align || 'left';
+      const background = String(block.backgroundColor || '#ffffff');
+      const textColor = String(block.textColor || '#111111');
+      const paddingY = Math.max(0, Math.min(40, Number(block.paddingY || 10)));
+      const borderRadius = Math.max(0, Math.min(30, Number(block.borderRadius || 8)));
+      const boxStyle = `background:${background};color:${textColor};padding:${paddingY}px 14px;border-radius:${borderRadius}px;margin:0 0 12px 0;`;
       if (block.type === 'heading') {
-        return `<h2 style="margin:0 0 14px 0;font-size:26px;line-height:1.25;text-align:${align};">${escapeHtml(
+        return `<div style="${boxStyle}"><h2 style="margin:0;font-size:26px;line-height:1.25;text-align:${align};color:${textColor};">${escapeHtml(
           block.content || 'Título',
-        )}</h2>`;
+        )}</h2></div>`;
       }
       if (block.type === 'text') {
-        return `<p style="margin:0 0 14px 0;font-size:16px;line-height:1.6;text-align:${align};">${escapeHtml(
+        return `<div style="${boxStyle}"><p style="margin:0;font-size:16px;line-height:1.6;text-align:${align};color:${textColor};">${escapeHtml(
           block.content || '',
-        ).replace(/\n/g, '<br/>')}</p>`;
+        ).replace(/\n/g, '<br/>')}</p></div>`;
       }
       if (block.type === 'image') {
         const url = String(block.url || '').trim();
         if (!url) return '';
-        return `<p style="margin:0 0 16px 0;text-align:${align};"><img src="${escapeHtml(
+        return `<div style="${boxStyle}"><p style="margin:0;text-align:${align};"><img src="${escapeHtml(
           url,
-        )}" alt="${escapeHtml(block.content || 'Imagen newsletter')}" style="max-width:100%;height:auto;border-radius:10px;" /></p>`;
+        )}" alt="${escapeHtml(block.content || 'Imagen newsletter')}" style="max-width:100%;height:auto;border-radius:10px;" /></p></div>`;
       }
       if (block.type === 'button') {
         const url = String(block.url || '').trim();
         const label = String(block.label || 'Abrir enlace').trim();
         if (!url) return '';
-        return `<p style="margin:0 0 18px 0;text-align:${align};"><a href="${escapeHtml(
+        return `<div style="${boxStyle}"><p style="margin:0;text-align:${align};"><a href="${escapeHtml(
           url,
         )}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:#8B5E3C;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:600;">${escapeHtml(
           label,
-        )}</a></p>`;
+        )}</a></p></div>`;
       }
       return `<hr style="margin:20px 0;border:none;border-top:1px solid #ddd;" />`;
     })
@@ -460,6 +481,11 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
 
   function updateNewsletterBlock(id: string, patch: Partial<NewsletterBlock>) {
     setNewsletterBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
+  }
+
+  function updateSelectedNewsletterBlock(patch: Partial<NewsletterBlock>) {
+    if (!selectedNewsletterBlockId) return;
+    updateNewsletterBlock(selectedNewsletterBlockId, patch);
   }
 
   function moveNewsletterBlock(id: string, direction: -1 | 1) {
@@ -994,6 +1020,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     }
     return html;
   }
+
+  const selectedNewsletterBlock =
+    newsletterBlocks.find((b) => b.id === selectedNewsletterBlockId) || null;
 
   return (
     <div className="mt-8 space-y-8">
@@ -1573,55 +1602,12 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                   </div>
 
                                   {block.type !== 'divider' ? (
-                                    <div className="grid gap-2 md:grid-cols-2">
-                                      {(block.type === 'heading' ||
-                                        block.type === 'text' ||
-                                        block.type === 'image') ? (
-                                        <input
-                                          value={block.content || ''}
-                                          onChange={(e) =>
-                                            updateNewsletterBlock(block.id, {
-                                              content: e.target.value,
-                                            })
-                                          }
-                                          className="rounded-md border border-border px-2 py-1 text-sm"
-                                          placeholder={block.type === 'image' ? 'Texto alt' : 'Contenido'}
-                                        />
-                                      ) : null}
-                                      {block.type === 'image' || block.type === 'button' ? (
-                                        <input
-                                          value={block.url || ''}
-                                          onChange={(e) =>
-                                            updateNewsletterBlock(block.id, { url: e.target.value })
-                                          }
-                                          className="rounded-md border border-border px-2 py-1 text-sm"
-                                          placeholder="https://..."
-                                        />
-                                      ) : null}
-                                      {block.type === 'button' ? (
-                                        <input
-                                          value={block.label || ''}
-                                          onChange={(e) =>
-                                            updateNewsletterBlock(block.id, { label: e.target.value })
-                                          }
-                                          className="rounded-md border border-border px-2 py-1 text-sm"
-                                          placeholder="Texto del botón"
-                                        />
-                                      ) : null}
-                                      <select
-                                        value={block.align || 'left'}
-                                        onChange={(e) =>
-                                          updateNewsletterBlock(block.id, {
-                                            align:
-                                              (e.target.value as 'left' | 'center' | 'right') || 'left',
-                                          })
-                                        }
-                                        className="rounded-md border border-border px-2 py-1 text-sm"
-                                      >
-                                        <option value="left">Izquierda</option>
-                                        <option value="center">Centro</option>
-                                        <option value="right">Derecha</option>
-                                      </select>
+                                    <div className="rounded border border-dashed border-border bg-muted/20 px-2 py-1.5 text-xs text-muted-foreground">
+                                      {block.type === 'button'
+                                        ? `${block.label || 'Botón'} -> ${block.url || 'sin URL'}`
+                                        : block.type === 'image'
+                                          ? `Imagen: ${block.url || 'sin URL'}`
+                                          : block.content || 'Bloque sin contenido'}
                                     </div>
                                   ) : (
                                     <div className="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
@@ -1631,6 +1617,159 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                 </div>
                               ))}
                             </div>
+                          )}
+                        </div>
+
+                        <div className="rounded-md border border-border bg-background p-3">
+                          <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+                            Inspector de bloque
+                          </p>
+                          {selectedNewsletterBlock ? (
+                            <div className="grid gap-2 md:grid-cols-2">
+                              <label className="text-xs text-muted-foreground">
+                                Tipo
+                                <input
+                                  value={selectedNewsletterBlock.type}
+                                  readOnly
+                                  className="mt-1 w-full rounded-md border border-border bg-muted px-2 py-1 text-sm"
+                                />
+                              </label>
+
+                              <label className="text-xs text-muted-foreground">
+                                Alineación
+                                <select
+                                  value={selectedNewsletterBlock.align || 'left'}
+                                  onChange={(e) =>
+                                    updateSelectedNewsletterBlock({
+                                      align:
+                                        (e.target.value as 'left' | 'center' | 'right') || 'left',
+                                    })
+                                  }
+                                  className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                >
+                                  <option value="left">Izquierda</option>
+                                  <option value="center">Centro</option>
+                                  <option value="right">Derecha</option>
+                                </select>
+                              </label>
+
+                              {(selectedNewsletterBlock.type === 'heading' ||
+                                selectedNewsletterBlock.type === 'text' ||
+                                selectedNewsletterBlock.type === 'image') && (
+                                <label className="text-xs text-muted-foreground md:col-span-2">
+                                  {selectedNewsletterBlock.type === 'image'
+                                    ? 'Texto alt'
+                                    : 'Contenido'}
+                                  <textarea
+                                    rows={selectedNewsletterBlock.type === 'text' ? 4 : 2}
+                                    value={selectedNewsletterBlock.content || ''}
+                                    onChange={(e) =>
+                                      updateSelectedNewsletterBlock({
+                                        content: e.target.value,
+                                      })
+                                    }
+                                    className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                  />
+                                </label>
+                              )}
+
+                              {(selectedNewsletterBlock.type === 'image' ||
+                                selectedNewsletterBlock.type === 'button') && (
+                                <label className="text-xs text-muted-foreground md:col-span-2">
+                                  URL
+                                  <input
+                                    value={selectedNewsletterBlock.url || ''}
+                                    onChange={(e) =>
+                                      updateSelectedNewsletterBlock({ url: e.target.value })
+                                    }
+                                    className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                    placeholder="https://..."
+                                  />
+                                </label>
+                              )}
+
+                              {selectedNewsletterBlock.type === 'button' && (
+                                <label className="text-xs text-muted-foreground md:col-span-2">
+                                  Texto del botón
+                                  <input
+                                    value={selectedNewsletterBlock.label || ''}
+                                    onChange={(e) =>
+                                      updateSelectedNewsletterBlock({
+                                        label: e.target.value,
+                                      })
+                                    }
+                                    className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                  />
+                                </label>
+                              )}
+
+                              <label className="text-xs text-muted-foreground">
+                                Fondo
+                                <input
+                                  type="color"
+                                  value={selectedNewsletterBlock.backgroundColor || '#ffffff'}
+                                  onChange={(e) =>
+                                    updateSelectedNewsletterBlock({
+                                      backgroundColor: e.target.value,
+                                    })
+                                  }
+                                  className="mt-1 h-9 w-full rounded-md border border-border p-1"
+                                />
+                              </label>
+                              <label className="text-xs text-muted-foreground">
+                                Color texto
+                                <input
+                                  type="color"
+                                  value={selectedNewsletterBlock.textColor || '#111111'}
+                                  onChange={(e) =>
+                                    updateSelectedNewsletterBlock({
+                                      textColor: e.target.value,
+                                    })
+                                  }
+                                  className="mt-1 h-9 w-full rounded-md border border-border p-1"
+                                />
+                              </label>
+                              <label className="text-xs text-muted-foreground">
+                                Padding vertical
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={40}
+                                  value={selectedNewsletterBlock.paddingY ?? 10}
+                                  onChange={(e) =>
+                                    updateSelectedNewsletterBlock({
+                                      paddingY: Math.max(
+                                        0,
+                                        Math.min(40, Number(e.target.value || 0)),
+                                      ),
+                                    })
+                                  }
+                                  className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                />
+                              </label>
+                              <label className="text-xs text-muted-foreground">
+                                Radio borde
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={30}
+                                  value={selectedNewsletterBlock.borderRadius ?? 8}
+                                  onChange={(e) =>
+                                    updateSelectedNewsletterBlock({
+                                      borderRadius: Math.max(
+                                        0,
+                                        Math.min(30, Number(e.target.value || 0)),
+                                      ),
+                                    })
+                                  }
+                                  className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                />
+                              </label>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-muted-foreground">
+                              Selecciona un bloque en el lienzo para editar sus propiedades.
+                            </p>
                           )}
                         </div>
 
