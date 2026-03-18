@@ -98,6 +98,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [selectedCcaas, setSelectedCcaas] = useState<string[]>([]);
   const [selectedProvincias, setSelectedProvincias] = useState<string[]>([]);
   const [insertedPhotoUrls, setInsertedPhotoUrls] = useState<string[]>([]);
+  const [webGallerySelection, setWebGallerySelection] = useState<string[]>([]);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const photosInputRef = useRef<HTMLInputElement | null>(null);
   const htmlTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -484,6 +485,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       }
       setPressPhotoUrls(urls);
       setInsertedPhotoUrls([]);
+      setWebGallerySelection([]);
       return urls;
     } finally {
       setUploadingPhotos(false);
@@ -594,6 +596,12 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         }
       }
 
+      const firstPhoto = uploadedPhotoUrls[0];
+      const selectedForWeb = webGallerySelection.filter((u) => uploadedPhotoUrls.includes(u));
+      const galleryForWeb = selectedForWeb
+        .filter((u) => u !== firstPhoto)
+        .slice(0, 3);
+
       const res = await fetch('/api/admin/newsletter/publish-web', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -602,8 +610,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           html: finalHtml,
           kind: webContentKind,
           puebloSlug: campaignForm.puebloSlug.trim() || undefined,
-          coverUrl: uploadedPhotoUrls[0] || undefined,
-          galleryUrls: uploadedPhotoUrls.slice(1, 4),
+          coverUrl: firstPhoto || undefined,
+          galleryUrls: galleryForWeb.length > 0 ? galleryForWeb : undefined,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -621,25 +629,6 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       return false;
     } finally {
       setPublishingWeb(false);
-    }
-  }
-
-  async function handlePublishAndSend() {
-    setError(null);
-    setMessage(null);
-    setLoading(true);
-    const published = await handlePublishWeb();
-    if (!published) {
-      setLoading(false);
-      return;
-    }
-    try {
-      await runSendCampaign();
-      setMessage('Publicado en web y campaña enviada correctamente.');
-    } catch (e: unknown) {
-      setError(getErrorMessage(e, 'Se publicó en web, pero falló el envío de campaña'));
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -1249,6 +1238,51 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                 Si indicas un `slug` de pueblo, se publicará también en ese pueblo sin quitarlo de asociación.
               </p>
 
+              {pressPhotoUrls.length > 0 ? (
+                <div className="space-y-2 rounded-md border border-border p-3">
+                  <p className="text-sm font-medium">Fotos para la web</p>
+                  <p className="text-xs text-muted-foreground">
+                    La foto 1 será la principal (hero). Opcionalmente puedes seleccionar hasta 3 fotos para galería web.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
+                    {pressPhotoUrls.map((url, idx) => {
+                      const checked = webGallerySelection.includes(url);
+                      const lockedMain = idx === 0;
+                      return (
+                        <label
+                          key={`web-select-${url}`}
+                          className={`space-y-1 rounded border p-1 text-xs ${
+                            lockedMain ? 'border-amber-300 bg-amber-50' : 'border-border'
+                          }`}
+                        >
+                          <img src={url} alt="Foto para web" className="h-20 w-full rounded object-cover" />
+                          {lockedMain ? (
+                            <span className="block text-[11px] font-semibold text-amber-900">Principal (hero)</span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setWebGallerySelection((prev) =>
+                                      prev.includes(url) ? prev : [...prev, url].slice(0, 3),
+                                    );
+                                  } else {
+                                    setWebGallerySelection((prev) => prev.filter((x) => x !== url));
+                                  }
+                                }}
+                              />
+                              Incluir en galería
+                            </span>
+                          )}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+
               {showWebPreview ? (
                 <div className="rounded-md border border-border bg-background p-3">
                   <h3 className="mb-2 text-base font-semibold">{campaignForm.subject || 'Vista previa sin título'}</h3>
@@ -1267,14 +1301,6 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
                 >
                   {publishingWeb ? 'Subiendo a la web…' : 'Subir a la web'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handlePublishAndSend}
-                  disabled={publishingWeb || loading}
-                  className="rounded-lg bg-primary/90 px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
-                >
-                  {loading ? 'Subiendo y enviando…' : 'Subir a la web y enviar campaña'}
                 </button>
               </div>
             </div>
