@@ -462,6 +462,16 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     }
   }
 
+  function handleRemovePdf() {
+    setPressPdfFile(null);
+    setPressPdfUrl('');
+    if (pdfInputRef.current) {
+      pdfInputRef.current.value = '';
+    }
+    setMessage('PDF eliminado del envío.');
+    setError(null);
+  }
+
   function buildPdfEmailHtml(subject: string, pdfUrl: string) {
     const safeSubject = subject.replace(/[<>"']/g, '');
     return `
@@ -948,6 +958,16 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                 >
                   {uploadingPdf ? 'Subiendo PDF...' : pressPdfFile ? 'Subir PDF' : 'Seleccionar PDF'}
                 </button>
+                {pressPdfFile || pressPdfUrl ? (
+                  <button
+                    type="button"
+                    onClick={handleRemovePdf}
+                    disabled={uploadingPdf || loading}
+                    className="rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-700 disabled:opacity-50"
+                  >
+                    Quitar PDF
+                  </button>
+                ) : null}
                 <span className="text-xs text-muted-foreground">
                   {pressPdfFile ? `Seleccionado: ${pressPdfFile.name}` : pressPdfUrl ? 'PDF listo para enviar' : 'Aún no subido'}
                 </span>
