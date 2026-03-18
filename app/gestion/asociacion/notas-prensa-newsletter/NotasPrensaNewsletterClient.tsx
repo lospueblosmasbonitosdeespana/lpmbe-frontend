@@ -19,17 +19,6 @@ type Campaign = {
   createdAt: string;
 };
 
-type PressContact = {
-  id: number;
-  email: string;
-  name?: string | null;
-  mediaOutlet?: string | null;
-  scope: string;
-  ccaa: string;
-  provincia: string;
-  puebloSlug: string;
-};
-
 type Overview = {
   usersTotal: number;
   newsletterSubscribersTotal: number;
@@ -57,7 +46,6 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [error, setError] = useState<string | null>(null);
 
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [pressContacts, setPressContacts] = useState<PressContact[]>([]);
   const [overview, setOverview] = useState<Overview | null>(null);
   const [campaignForm, setCampaignForm] = useState({
     kind: (mode === 'newsletter' ? 'NEWSLETTER' : 'PRESS') as 'PRESS' | 'NEWSLETTER',
@@ -108,10 +96,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
 
   async function loadData() {
     try {
-      const [overviewRes, campaignsRes, contactsRes] = await Promise.all([
+      const [overviewRes, campaignsRes] = await Promise.all([
         fetch('/api/admin/newsletter/overview', { cache: 'no-store' }),
         fetch('/api/admin/newsletter/campaigns?limit=25', { cache: 'no-store' }),
-        fetch('/api/admin/newsletter/press-contacts?limit=20', { cache: 'no-store' }),
       ]);
       if (overviewRes.ok) {
         const o = await overviewRes.json();
@@ -125,10 +112,6 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       if (campaignsRes.ok) {
         const c = await campaignsRes.json();
         setCampaigns(Array.isArray(c) ? c : []);
-      }
-      if (contactsRes.ok) {
-        const data = await contactsRes.json();
-        setPressContacts(Array.isArray(data?.items) ? data.items : []);
       }
     } catch {
       // ignore
@@ -776,7 +759,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                 <input
                   type="file"
                   accept="application/pdf,.pdf"
-                  onChange={(e) => setPressPdfFile(e.target.files?.[0] || null)}
+                  onChange={(e) => {
+                    setPressPdfFile(e.target.files?.[0] || null);
+                    setPressPdfUrl('');
+                  }}
                   className="mt-1 block text-sm"
                 />
               </label>
@@ -786,19 +772,23 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   onClick={async () => {
                     setError(null);
                     try {
+                      if (!pressPdfFile && pressPdfUrl) {
+                        setMessage('PDF ya subido. Ya puedes pulsar "Enviar campaña".');
+                        return;
+                      }
                       await uploadPressPdf();
                       setMessage('PDF subido correctamente.');
                     } catch (e: unknown) {
                       setError(getErrorMessage(e, 'Error subiendo PDF'));
                     }
                   }}
-                  disabled={uploadingPdf || loading || !pressPdfFile}
+                  disabled={uploadingPdf || loading}
                   className="rounded-lg border border-border px-3 py-2 text-sm font-medium disabled:opacity-50"
                 >
                   {uploadingPdf ? 'Subiendo PDF...' : 'Subir PDF'}
                 </button>
                 <span className="text-xs text-muted-foreground">
-                  {pressPdfUrl ? 'PDF listo para enviar' : 'Aún no subido'}
+                  {pressPdfFile ? `Seleccionado: ${pressPdfFile.name}` : pressPdfUrl ? 'PDF listo para enviar' : 'Aún no subido'}
                 </span>
               </div>
               {pressPdfUrl ? (
@@ -916,43 +906,6 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         </div>
       </section>
 
-      {mode === 'press' ? (
-        <section className="rounded-xl border border-border bg-card p-5">
-          <h2 className="text-lg font-semibold">Muestra de contactos de prensa</h2>
-        <div className="mt-3 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="px-2 py-2 text-left">Email</th>
-                <th className="px-2 py-2 text-left">Medio</th>
-                <th className="px-2 py-2 text-left">Scope</th>
-                <th className="px-2 py-2 text-left">CCAA</th>
-                <th className="px-2 py-2 text-left">Provincia</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pressContacts.length === 0 ? (
-                <tr>
-                  <td className="px-2 py-3 text-muted-foreground" colSpan={5}>
-                    Sin contactos cargados.
-                  </td>
-                </tr>
-              ) : (
-                pressContacts.map((c) => (
-                  <tr key={c.id} className="border-b border-border">
-                    <td className="px-2 py-2">{c.email}</td>
-                    <td className="px-2 py-2">{c.mediaOutlet || '—'}</td>
-                    <td className="px-2 py-2">{c.scope}</td>
-                    <td className="px-2 py-2">{c.ccaa || '—'}</td>
-                    <td className="px-2 py-2">{c.provincia || '—'}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-        </section>
-      ) : null}
     </div>
   );
 }
