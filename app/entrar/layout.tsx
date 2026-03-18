@@ -8,6 +8,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Entrar',
     description: 'Accede a tu cuenta de Los Pueblos Más Bonitos de España.',
+    robots: {
+      index: false,
+      follow: false,
+    },
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

@@ -117,7 +117,7 @@ async function getNotifications(locale?: string): Promise<NotificationItem[]> {
           if (t === 'EVENTO') return `/eventos/${item.slug}`;
           return `/c/${item.slug}`;
         }
-        return item.url || "/notificaciones";
+        return item.url || "/actualidad";
       })(),
       message: (item.motivoPublico?.trim() || item.contenido?.trim()) || undefined,
       createdAt: item.fechaInicio ?? item.fecha ?? item.createdAt ?? new Date().toISOString(),

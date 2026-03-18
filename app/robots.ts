@@ -10,7 +10,6 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
         disallow: [
-          '/_next/',
           '/wp-content/',
           '/wp-includes/',
           '/ficha-pueblo',
@@ -33,8 +32,6 @@ export default function robots(): MetadataRoute.Robots {
           '/feed/',
           '/*/feed/',
           '/registro/',
-          '/notificaciones/',
-          '/entrar',
         ],
       },
     ],
