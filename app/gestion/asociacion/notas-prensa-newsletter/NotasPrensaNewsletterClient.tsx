@@ -32,13 +32,23 @@ type Overview = {
 type Mode = 'newsletter' | 'press';
 type PressSendMode = 'editor' | 'pdf';
 type GeoPueblo = { slug: string; provincia: string; comunidad: string };
-type NewsletterBlockType = 'heading' | 'text' | 'image' | 'button' | 'divider';
+type NewsletterBlockType =
+  | 'heading'
+  | 'text'
+  | 'image'
+  | 'button'
+  | 'iconButton'
+  | 'columns2'
+  | 'divider';
 type NewsletterBlock = {
   id: string;
   type: NewsletterBlockType;
   content?: string;
   url?: string;
+  iconUrl?: string;
   label?: string;
+  colLeft?: string;
+  colRight?: string;
   align?: 'left' | 'center' | 'right';
   backgroundColor?: string;
   textColor?: string;
@@ -98,9 +108,14 @@ function createBlock(type: NewsletterBlockType, patch: Partial<NewsletterBlock> 
           ? 'Nuevo párrafo de contenido'
           : type === 'button'
             ? 'Llamada a la acción'
+            : type === 'columns2'
+              ? ''
             : '',
-    label: type === 'button' ? 'Leer más' : '',
+    label: type === 'button' ? 'Leer más' : type === 'iconButton' ? 'Icono' : '',
     url: type === 'image' ? 'https://...' : type === 'button' ? 'https://...' : '',
+    iconUrl: type === 'iconButton' ? 'https://...' : '',
+    colLeft: type === 'columns2' ? 'Columna izquierda' : '',
+    colRight: type === 'columns2' ? 'Columna derecha' : '',
     align: 'left',
     backgroundColor: '#ffffff',
     textColor: '#111111',
@@ -145,9 +160,21 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
       const b = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
       const typeRaw = String(b.type || '').trim().toLowerCase();
       const type: NewsletterBlockType =
-        typeRaw === 'heading' || typeRaw === 'text' || typeRaw === 'image' || typeRaw === 'button' || typeRaw === 'divider'
-          ? (typeRaw as NewsletterBlockType)
-          : 'text';
+        typeRaw === 'heading'
+          ? 'heading'
+          : typeRaw === 'text'
+            ? 'text'
+            : typeRaw === 'image'
+              ? 'image'
+              : typeRaw === 'button'
+                ? 'button'
+                : typeRaw === 'iconbutton' || typeRaw === 'icon_button' || typeRaw === 'icon-button'
+                  ? 'iconButton'
+                  : typeRaw === 'columns2' || typeRaw === '2columns' || typeRaw === 'two-columns'
+                    ? 'columns2'
+                    : typeRaw === 'divider'
+                      ? 'divider'
+                      : 'text';
       const alignRaw = String(b.align || 'left');
       const align: 'left' | 'center' | 'right' =
         alignRaw === 'center' ? 'center' : alignRaw === 'right' ? 'right' : 'left';
@@ -160,7 +187,10 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
         type,
         content: String(b.content || ''),
         url: String(b.url || ''),
+        iconUrl: String(b.iconUrl || ''),
         label: String(b.label || ''),
+        colLeft: String(b.colLeft || ''),
+        colRight: String(b.colRight || ''),
         align,
         backgroundColor: String(b.backgroundColor || '#ffffff'),
         textColor: String(b.textColor || '#111111'),
@@ -207,6 +237,24 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         )}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:#8B5E3C;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:600;">${escapeHtml(
           label,
         )}</a></p></div>`;
+      }
+      if (block.type === 'iconButton') {
+        const url = String(block.url || '').trim();
+        const iconUrl = String(block.iconUrl || '').trim();
+        const label = String(block.label || 'Icono').trim();
+        if (!url || !iconUrl) return '';
+        return `<div style="${boxStyle}"><p style="margin:0;text-align:${align};"><a href="${escapeHtml(
+          url,
+        )}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(
+          label,
+        )}" style="display:inline-flex;align-items:center;justify-content:center;width:62px;height:62px;background:#173f2b;border-radius:12px;text-decoration:none;"><img src="${escapeHtml(
+          iconUrl,
+        )}" alt="${escapeHtml(label)}" style="width:30px;height:30px;object-fit:contain;" /></a></p></div>`;
+      }
+      if (block.type === 'columns2') {
+        const left = escapeHtml(block.colLeft || '').replace(/\n/g, '<br/>');
+        const right = escapeHtml(block.colRight || '').replace(/\n/g, '<br/>');
+        return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="50%" valign="top" style="padding:0 8px 0 0;font-size:15px;line-height:1.6;color:${textColor};">${left}</td><td width="50%" valign="top" style="padding:0 0 0 8px;font-size:15px;line-height:1.6;color:${textColor};">${right}</td></tr></table></div>`;
       }
       return `<hr style="margin:20px 0;border:none;border-top:1px solid #ddd;" />`;
     })
@@ -282,6 +330,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const photosInputRef = useRef<HTMLInputElement | null>(null);
   const newsletterImageInputRef = useRef<HTMLInputElement | null>(null);
+  const newsletterIconInputRef = useRef<HTMLInputElement | null>(null);
   const htmlTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const editor = useEditor({
@@ -680,7 +729,11 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     setSelectedNewsletterBlockId(sourceId);
   }
 
-  async function uploadNewsletterImageForBlock(file: File, blockId: string) {
+  async function uploadNewsletterImageForBlock(
+    file: File,
+    blockId: string,
+    targetField: 'url' | 'iconUrl' = 'url',
+  ) {
     if (!file) return;
     setUploadingNewsletterImage(true);
     setError(null);
@@ -696,8 +749,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       if (!res.ok || !data?.url) {
         throw new Error(data?.error || data?.message || 'Error subiendo imagen');
       }
-      updateNewsletterBlock(blockId, { url: String(data.url) });
-      setMessage('Imagen subida correctamente al bloque.');
+      updateNewsletterBlock(blockId, { [targetField]: String(data.url) } as Partial<NewsletterBlock>);
+      setMessage(targetField === 'iconUrl' ? 'Icono subido correctamente.' : 'Imagen subida correctamente al bloque.');
     } catch (e: unknown) {
       setError(getErrorMessage(e, 'Error subiendo imagen'));
     } finally {
@@ -1717,6 +1770,34 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                               type="button"
                               draggable
                               onDragStart={(e) => {
+                                setDraggingPaletteType('iconButton');
+                                e.dataTransfer.setData('text/newsletter-block-type', 'iconButton');
+                                e.dataTransfer.effectAllowed = 'copy';
+                              }}
+                              onDragEnd={() => setDraggingPaletteType(null)}
+                              onClick={() => addNewsletterBlock('iconButton')}
+                              className="rounded border bg-background px-2 py-1.5 text-xs"
+                            >
+                              + Botón icono cuadrado
+                            </button>
+                            <button
+                              type="button"
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggingPaletteType('columns2');
+                                e.dataTransfer.setData('text/newsletter-block-type', 'columns2');
+                                e.dataTransfer.effectAllowed = 'copy';
+                              }}
+                              onDragEnd={() => setDraggingPaletteType(null)}
+                              onClick={() => addNewsletterBlock('columns2')}
+                              className="rounded border bg-background px-2 py-1.5 text-xs"
+                            >
+                              + 2 columnas
+                            </button>
+                            <button
+                              type="button"
+                              draggable
+                              onDragStart={(e) => {
                                 setDraggingPaletteType('divider');
                                 e.dataTransfer.setData('text/newsletter-block-type', 'divider');
                                 e.dataTransfer.effectAllowed = 'copy';
@@ -1849,6 +1930,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                     <div className="rounded border border-dashed border-border bg-muted/20 px-2 py-1.5 text-xs text-muted-foreground">
                                       {block.type === 'button'
                                         ? `${block.label || 'Botón'} -> ${block.url || 'sin URL'}`
+                                        : block.type === 'iconButton'
+                                          ? `Icono cuadrado: ${block.label || 'sin etiqueta'} -> ${block.url || 'sin URL'}`
+                                          : block.type === 'columns2'
+                                            ? `2 columnas: ${block.colLeft || 'izquierda vacía'} | ${block.colRight || 'derecha vacía'}`
                                         : block.type === 'image'
                                           ? `Imagen: ${block.url || 'sin URL'}`
                                           : block.content || 'Bloque sin contenido'}
@@ -1917,14 +2002,60 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                 </label>
                               )}
 
+                              {selectedNewsletterBlock.type === 'columns2' && (
+                                <>
+                                  <label className="text-xs text-muted-foreground md:col-span-2">
+                                    Columna izquierda
+                                    <textarea
+                                      rows={4}
+                                      value={selectedNewsletterBlock.colLeft || ''}
+                                      onChange={(e) =>
+                                        updateSelectedNewsletterBlock({
+                                          colLeft: e.target.value,
+                                        })
+                                      }
+                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                    />
+                                  </label>
+                                  <label className="text-xs text-muted-foreground md:col-span-2">
+                                    Columna derecha
+                                    <textarea
+                                      rows={4}
+                                      value={selectedNewsletterBlock.colRight || ''}
+                                      onChange={(e) =>
+                                        updateSelectedNewsletterBlock({
+                                          colRight: e.target.value,
+                                        })
+                                      }
+                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                    />
+                                  </label>
+                                </>
+                              )}
+
                               {(selectedNewsletterBlock.type === 'image' ||
-                                selectedNewsletterBlock.type === 'button') && (
+                                selectedNewsletterBlock.type === 'button' ||
+                                selectedNewsletterBlock.type === 'iconButton') && (
                                 <label className="text-xs text-muted-foreground md:col-span-2">
                                   URL
                                   <input
                                     value={selectedNewsletterBlock.url || ''}
                                     onChange={(e) =>
                                       updateSelectedNewsletterBlock({ url: e.target.value })
+                                    }
+                                    className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                    placeholder="https://..."
+                                  />
+                                </label>
+                              )}
+
+                              {selectedNewsletterBlock.type === 'iconButton' && (
+                                <label className="text-xs text-muted-foreground md:col-span-2">
+                                  URL icono
+                                  <input
+                                    value={selectedNewsletterBlock.iconUrl || ''}
+                                    onChange={(e) =>
+                                      updateSelectedNewsletterBlock({ iconUrl: e.target.value })
                                     }
                                     className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
                                     placeholder="https://..."
@@ -1972,9 +2103,51 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                 </div>
                               )}
 
-                              {selectedNewsletterBlock.type === 'button' && (
+                              {selectedNewsletterBlock.type === 'iconButton' && (
+                                <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3 md:col-span-2">
+                                  <p className="text-sm font-semibold text-foreground">
+                                    Icono del botón cuadrado
+                                  </p>
+                                  <p className="mt-1 text-xs text-muted-foreground">
+                                    Sube tu icono oficial para usarlo dentro del botón.
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={() => newsletterIconInputRef.current?.click()}
+                                    disabled={uploadingNewsletterImage}
+                                    className="mt-3 w-full rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+                                  >
+                                    {uploadingNewsletterImage ? 'Subiendo icono...' : 'Subir icono desde ordenador'}
+                                  </button>
+                                  <input
+                                    ref={newsletterIconInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    disabled={uploadingNewsletterImage}
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0];
+                                      if (!file) return;
+                                      await uploadNewsletterImageForBlock(
+                                        file,
+                                        selectedNewsletterBlock.id,
+                                        'iconUrl',
+                                      );
+                                      e.currentTarget.value = '';
+                                    }}
+                                    className="sr-only"
+                                  />
+                                  <p className="mt-2 text-[11px] text-muted-foreground">
+                                    Recomendado: icono PNG/SVG cuadrado.
+                                  </p>
+                                </div>
+                              )}
+
+                              {(selectedNewsletterBlock.type === 'button' ||
+                                selectedNewsletterBlock.type === 'iconButton') && (
                                 <label className="text-xs text-muted-foreground md:col-span-2">
-                                  Texto del botón
+                                  {selectedNewsletterBlock.type === 'iconButton'
+                                    ? 'Etiqueta icono'
+                                    : 'Texto del botón'}
                                   <input
                                     value={selectedNewsletterBlock.label || ''}
                                     onChange={(e) =>
