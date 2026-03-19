@@ -67,13 +67,16 @@ export default function AuthNavLink({ variant = 'default' }: AuthNavLinkProps) {
     ? 'block py-3 text-base font-medium text-foreground hover:text-primary border-b border-border'
     : 'text-sm font-medium hover:underline';
 
+  /** Sin sesión: /entrar?redirect=… (no /gestion) para evitar 3xx internas en el rastreo; mismo param que `app/entrar/page.tsx`. */
+  const entrarParaGestionHref = '/entrar?redirect=%2Fgestion';
+
   if (loading) {
     return (
       <span className={variant === 'drawer' ? 'flex flex-col' : 'flex items-center gap-4'}>
         <Link href="/entrar" className={`${linkClass} opacity-70`}>
           {t('login')}
         </Link>
-        <Link href="/gestion" className={linkClass}>
+        <Link href={entrarParaGestionHref} className={linkClass}>
           {t('management')}
         </Link>
       </span>
@@ -86,7 +89,7 @@ export default function AuthNavLink({ variant = 'default' }: AuthNavLinkProps) {
         <Link href="/entrar" className={linkClass}>
           {t('login')}
         </Link>
-        <Link href="/gestion" className={linkClass}>
+        <Link href={entrarParaGestionHref} className={linkClass}>
           {t('management')}
         </Link>
       </span>
