@@ -139,8 +139,9 @@ export async function Header({ locale }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm dark:bg-card dark:border-b dark:border-border dark:shadow-none">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5">
-        <Link href="/" className="block text-foreground dark:text-white">
+        <Link href="/" className="block text-foreground dark:text-white" aria-label="Inicio">
           {logoContent}
+          <span className="sr-only">Los Pueblos Más Bonitos de España - Inicio</span>
         </Link>
 
         <div className="hidden md:block">

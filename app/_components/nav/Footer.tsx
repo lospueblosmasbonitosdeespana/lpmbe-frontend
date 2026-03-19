@@ -107,7 +107,7 @@ export async function Footer({ locale }: FooterProps) {
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
           {/* Brand + Logo */}
           <div className="lg:col-span-1">
-            <Link href="/" className="mb-6 block">
+            <Link href="/" className="mb-6 block" aria-label="Inicio">
               {logoUrl ? (
                 <Image
                   src={logoUrl}
@@ -122,6 +122,7 @@ export async function Footer({ locale }: FooterProps) {
                   {settings.brandName}
                 </span>
               )}
+              <span className="sr-only">Los Pueblos Más Bonitos de España - Inicio</span>
             </Link>
             <p className="text-sm leading-relaxed text-white/70">
               {t("aboutText")}
@@ -251,9 +252,10 @@ export async function Footer({ locale }: FooterProps) {
                   className="text-white/70 transition-colors hover:text-white"
                   aria-label={r.label}
                 >
-                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     {r.icon}
                   </svg>
+                  <span className="sr-only">{r.label}</span>
                 </a>
               ))}
             </div>

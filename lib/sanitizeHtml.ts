@@ -97,6 +97,9 @@ function cleanHtmlServer(html: string): string {
   // Eliminar scripts y styles completamente
   cleaned = cleaned.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
   cleaned = cleaned.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+
+  // Eliminar <a> vacíos (sin texto ni hijos visibles)
+  cleaned = cleaned.replace(/<a\b[^>]*>\s*<\/a>/gi, '');
   
   return cleaned;
 }
