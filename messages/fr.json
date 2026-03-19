@@ -331,7 +331,7 @@
     "contactPress": "Contact presse"
   },
   "actualidad": {
-    "title": "Actualités",
+    "title": "Actualités — Nouvelles et événements des plus beaux villages d'Espagne",
     "pageDesc": "Nouvelles, événements et articles des Plus beaux villages d'Espagne",
     "all": "Tous",
     "news": "Actualités",
@@ -346,7 +346,7 @@
     "backToHome": "← Haut de page"
   },
   "rutas": {
-    "title": "Itinéraires",
+    "title": "Itinéraires touristiques dans les plus beaux villages d'Espagne",
     "pageDesc": "Découvrez les itinéraires touristiques à travers les plus beaux villages d'Espagne",
     "noRoutes": "Pas d'itinéraires disponibles",
     "routeNotFound": "Itinéraire non trouvé",
@@ -1288,7 +1288,7 @@
     "pending": "Carte des villages visités (en attente)."
   },
   "meteoPage": {
-    "title": "Météo",
+    "title": "Météo dans les plus beaux villages d'Espagne",
     "metaDescription": "Météo actuelle et prévisions dans les villages des Plus Beaux Villages d'Espagne.",
     "villagesCount": "villages {count}",
     "noData": "Pas de données météorologiques disponibles",

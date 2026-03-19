@@ -331,7 +331,7 @@
     "contactPress": "Pressekontakt"
   },
   "actualidad": {
-    "title": "Nachrichten",
+    "title": "Nachrichten und Veranstaltungen aus den schönsten Dörfern Spaniens",
     "pageDesc": "Nachrichten, Veranstaltungen und Artikel aus Die schönsten Dörfer Spaniens",
     "all": "Alle",
     "news": "Nachrichten",
@@ -346,7 +346,7 @@
     "backToHome": "← Zurück zum Anfang"
   },
   "rutas": {
-    "title": "Routen",
+    "title": "Touristische Routen durch die schönsten Dörfer Spaniens",
     "pageDesc": "Entdecken Sie touristische Routen durch die schönsten Dörfer Spaniens",
     "noRoutes": "Keine Routen verfügbar",
     "routeNotFound": "Route nicht gefunden",
@@ -1288,7 +1288,7 @@
     "pending": "Karte der besuchten Dörfer (in Vorbereitung)."
   },
   "meteoPage": {
-    "title": "Wetter",
+    "title": "Wetter in den schönsten Dörfern Spaniens",
     "metaDescription": "Aktuelles Wetter und Vorhersagen in den Dörfern der Schönsten Dörfer Spaniens.",
     "villagesCount": "{Anzahl} Dörfer",
     "noData": "Keine meteorologischen Daten verfügbar",

@@ -140,18 +140,25 @@ export function seoTitleVideoWithId(
 }
 
 /**
- * Título de página de POI: añade un sello corto del parámetro de ruta para evitar colisiones al truncar.
+ * Título de página de POI: siempre incluye el nombre del pueblo para evitar colisiones entre
+ * distintos pueblos que tengan un POI con el mismo nombre (ej. «Ermita del Humilladero» en Robledillo,
+ * Guadalupe y Lerma). El stamp (ID numérico o sufijo del slug del pueblo) garantiza unicidad final.
  */
 export function seoTitlePoiWithStamp(
   poiParam: string,
-  isNumeric: boolean,
+  isNumericParam: boolean,
   poiReadable: string,
   puebloName: string,
   locSuf: string,
+  puebloSlug?: string,
 ): string {
-  const stamp = isNumeric
+  // Usamos el slug del pueblo como desambiguador cuando el POI es un slug (evita colisiones
+  // entre pueblos con mismo nombre de POI). Con ID numérico el ID es suficiente.
+  const stamp = isNumericParam
     ? poiParam
-    : poiParam.replace(/[^a-zA-Z0-9]/g, "").slice(-8) || poiParam.slice(-8);
+    : puebloSlug
+      ? puebloSlug.replace(/[^a-zA-Z0-9]/g, "").slice(-8) || poiParam.slice(-8)
+      : poiParam.replace(/[^a-zA-Z0-9]/g, "").slice(-8) || poiParam.slice(-8);
   return seoTitle(`${poiReadable} · ${puebloName}${locSuf} · ${stamp}`);
 }
 

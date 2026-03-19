@@ -331,7 +331,7 @@
     "contactPress": "Contacto de imprensa"
   },
   "actualidad": {
-    "title": "Notícias",
+    "title": "Notícias e eventos das aldeias mais bonitas de Espanha",
     "pageDesc": "Notícias, eventos e artigos de As mais belas aldeias de Espanha",
     "all": "Todos",
     "news": "Notícias",
@@ -346,7 +346,7 @@
     "backToHome": "← Voltar ao topo"
   },
   "rutas": {
-    "title": "Rotas",
+    "title": "Rotas turísticas pelas aldeias mais bonitas de Espanha",
     "pageDesc": "Descubra as rotas turísticas pelas aldeias mais bonitas de Espanha",
     "noRoutes": "Não existem itinerários disponíveis",
     "routeNotFound": "Rota não encontrada",
@@ -1288,7 +1288,7 @@
     "pending": "Mapa das aldeias visitadas (pendente)."
   },
   "meteoPage": {
-    "title": "Tempo",
+    "title": "Tempo meteorológico nas aldeias mais bonitas de Espanha",
     "metaDescription": "Meteorologia atual e previsões nas aldeias das Aldeias Mais Bonitas de Espanha.",
     "villagesCount": "Aldeias {count}",
     "noData": "Não existem dados meteorológicos disponíveis",

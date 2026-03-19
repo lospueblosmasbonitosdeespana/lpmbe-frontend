@@ -118,7 +118,7 @@ export async function generateMetadata({
     data?.nombre?.trim() ||
     (isNumeric(poi) ? `Punto de interés (${poi})` : poi.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
   const path = `/pueblos/${slug}/pois/${poi}`;
-  const title = seoTitlePoiWithStamp(poi, isNumeric(poi), poiReadable, puebloName, locSuf);
+  const title = seoTitlePoiWithStamp(poi, isNumeric(poi), poiReadable, puebloName, locSuf, slug);
   const refStamp = isNumeric(poi) ? `id ${poi}` : `slug ${poi}`;
   return {
     title,

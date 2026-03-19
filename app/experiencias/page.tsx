@@ -6,6 +6,7 @@ import { getHomeConfig } from "@/lib/homeApi";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  metaLocaleLead,
   seoDescription,
   seoTitle,
   titleLocaleSuffix,
@@ -61,15 +62,24 @@ async function getPueblosByTematica(
   }
 }
 
+const EXP_DESC: Record<string, string> = {
+  es: 'Descubre los pueblos más bonitos de España por temática: gastronomía, naturaleza, cultura, en familia y petfriendly.',
+  en: 'Discover Spain\'s most beautiful villages by theme: gastronomy, nature, culture, family and pet-friendly.',
+  fr: 'Découvrez les plus beaux villages d\'Espagne par thème : gastronomie, nature, culture, en famille et petfriendly.',
+  de: 'Entdecken Sie Spaniens schönste Dörfer nach Thema: Gastronomie, Natur, Kultur, Familie und tierfreundlich.',
+  pt: 'Descubra as aldeias mais bonitas de Espanha por tema: gastronomia, natureza, cultura, família e petfriendly.',
+  it: 'Scopri i borghi più belli della Spagna per tema: gastronomia, natura, cultura, famiglia e petfriendly.',
+  ca: 'Descobreix els pobles més bonics d\'Espanya per temàtica: gastronomia, natura, cultura, família i petfriendly.',
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = "/experiencias";
   const locSuf = titleLocaleSuffix(locale);
+  const desc = EXP_DESC[locale] ?? `${metaLocaleLead(locale)}${EXP_DESC.es}`;
   return {
     title: seoTitle(`Experiencias temáticas${locSuf}`),
-    description: seoDescription(
-      "Descubre nuestros pueblos por temática: gastronomía, naturaleza, cultura, en familia, petfriendly."
-    ),
+    description: seoDescription(desc),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

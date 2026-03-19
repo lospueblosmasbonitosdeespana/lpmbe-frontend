@@ -331,7 +331,7 @@
     "contactPress": "Contacte de premsa"
   },
   "actualidad": {
-    "title": "Esdeveniments actuals",
+    "title": "Actualitat — Notícies i events dels pobles més bonics d'Espanya",
     "pageDesc": "Notícies, esdeveniments i articles sobre els pobles més bonics d'Espanya",
     "all": "Tot",
     "news": "Notícies",
@@ -346,7 +346,7 @@
     "backToHome": "← Torna amunt"
   },
   "rutas": {
-    "title": "Rutes",
+    "title": "Rutes turístiques pels pobles més bonics d'Espanya",
     "pageDesc": "Descobreix rutes turístiques pels pobles més bonics d'Espanya",
     "noRoutes": "No hi ha rutes disponibles",
     "routeNotFound": "Ruta no trobada",
@@ -1288,7 +1288,7 @@
     "pending": "Mapa de les poblacions visitades (pendent)."
   },
   "meteoPage": {
-    "title": "Meteo",
+    "title": "Temps i meteorologia als pobles més bonics d'Espanya",
     "metaDescription": "Temps actual i previsions als pobles dels Pobles Més Bonics d'Espanya.",
     "villagesCount": "{count} pobles",
     "noData": "No hi ha dades meteorològiques disponibles",

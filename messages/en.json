@@ -331,7 +331,8 @@
     "contactPress": "Press contact"
   },
   "actualidad": {
-    "title": "News",
+    
+    "title": "News and events from the most beautiful villages of Spain",
     "pageDesc": "News, events and articles from The Most Beautiful Villages of Spain",
     "all": "All",
     "news": "News",
@@ -346,7 +347,8 @@
     "backToHome": "← Back to top"
   },
   "rutas": {
-    "title": "Routes",
+    
+    "title": "Tourist routes through the most beautiful villages of Spain",
     "pageDesc": "Discover tourist routes through Spain's most beautiful villages",
     "noRoutes": "No routes available",
     "routeNotFound": "Route not found",
@@ -1288,7 +1290,7 @@
     "pending": "Map of villages visited (pending)."
   },
   "meteoPage": {
-    "title": "Weather",
+    "title": "Weather forecast in the most beautiful villages of Spain",
     "metaDescription": "Current weather and forecasts in the villages of Los Pueblos Más Bonitos de España.",
     "villagesCount": "{count} towns",
     "noData": "No weather data available",

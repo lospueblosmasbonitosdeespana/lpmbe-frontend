@@ -5,6 +5,7 @@ import { getApiUrl } from '@/lib/api';
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  metaLocaleLead,
   seoDescription,
   seoTitle,
   titleLocaleSuffix,
@@ -14,13 +15,24 @@ import {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+const MX_DESC: Record<string, string> = {
+  es: 'Descubre experiencias únicas organizadas por los pueblos más bonitos de España.',
+  en: 'Discover unique experiences organised by the most beautiful villages of Spain.',
+  fr: 'Découvrez des expériences uniques organisées par les plus beaux villages d\'Espagne.',
+  de: 'Entdecken Sie einzigartige Erlebnisse in den schönsten Dörfern Spaniens.',
+  pt: 'Descubra experiências únicas organizadas pelos mais belos vilarejos de Espanha.',
+  it: 'Scopri esperienze uniche organizzate dai borghi più belli della Spagna.',
+  ca: 'Descobreix experiències úniques organitzades pels pobles més bonics d\'Espanya.',
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = '/multiexperiencias';
   const locSuf = titleLocaleSuffix(locale);
+  const desc = MX_DESC[locale] ?? `${metaLocaleLead(locale)}${MX_DESC.es}`;
   return {
     title: seoTitle(`Multiexperiencias${locSuf}`),
-    description: seoDescription('Descubre experiencias únicas en nuestros pueblos.'),
+    description: seoDescription(desc),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
@@ -84,9 +96,9 @@ export default async function MultiexperienciasPage() {
   return (
     <main className="mx-auto max-w-7xl px-4 py-12">
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold">Multiexperiencias</h1>
+        <h1 className="text-3xl font-semibold">Multiexperiencias en los pueblos más bonitos de España</h1>
         <p className="mt-2 text-gray-600">
-          Descubre experiencias únicas en nuestros pueblos
+          Descubre experiencias únicas organizadas por los pueblos más bonitos de España
         </p>
       </div>
 

@@ -331,7 +331,7 @@
     "contactPress": "Contatto stampa"
   },
   "actualidad": {
-    "title": "Notizie",
+    "title": "Notizie ed eventi dei borghi più belli della Spagna",
     "pageDesc": "Notizie, eventi e articoli da I borghi più belli della Spagna",
     "all": "Tutti",
     "news": "Notizie",
@@ -346,7 +346,7 @@
     "backToHome": "← Torna all'inizio"
   },
   "rutas": {
-    "title": "Percorsi",
+    "title": "Percorsi turistici nei borghi più belli della Spagna",
     "pageDesc": "Scoprite gli itinerari turistici attraverso i villaggi più belli della Spagna",
     "noRoutes": "Nessun percorso disponibile",
     "routeNotFound": "Percorso non trovato",
@@ -1288,7 +1288,7 @@
     "pending": "Mappa dei villaggi visitati (in attesa)."
   },
   "meteoPage": {
-    "title": "Il tempo",
+    "title": "Tempo meteorologico nei borghi più belli della Spagna",
     "metaDescription": "Meteo attuale e previsioni nei borghi de I Borghi più Belli di Spagna.",
     "villagesCount": "{villaggi",
     "noData": "Non sono disponibili dati meteorologici",

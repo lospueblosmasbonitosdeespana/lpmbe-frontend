@@ -331,7 +331,7 @@
     "contactPress": "Contacto prensa"
   },
   "actualidad": {
-    "title": "Actualidad",
+    "title": "Actualidad — Noticias y eventos de los pueblos más bonitos de España",
     "pageDesc": "Noticias, eventos y artículos de Los Pueblos Más Bonitos de España",
     "all": "Todos",
     "news": "Noticias",
@@ -346,7 +346,7 @@
     "backToHome": "← Volver al inicio"
   },
   "rutas": {
-    "title": "Rutas",
+    "title": "Rutas turísticas por los pueblos más bonitos de España",
     "pageDesc": "Descubre rutas turísticas por los pueblos más bonitos de España",
     "noRoutes": "No hay rutas disponibles",
     "routeNotFound": "Ruta no encontrada",
@@ -1325,7 +1325,7 @@
     "pending": "Mapa de pueblos visitados (pendiente)."
   },
   "meteoPage": {
-    "title": "Meteo",
+    "title": "Tiempo y meteorología en los pueblos más bonitos de España",
     "metaDescription": "Tiempo actual y previsiones en los pueblos de Los Pueblos Más Bonitos de España.",
     "villagesCount": "{count} pueblos",
     "noData": "No hay datos meteorológicos disponibles",
