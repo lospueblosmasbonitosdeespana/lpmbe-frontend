@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
-import { getApiUrl, getPuebloBySlug, getPuebloBySlugFast } from "@/lib/api";
+import { getApiUrl, getPuebloBySlug } from "@/lib/api";
 import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, type SupportedLocale } from "@/lib/seo";
 import JsonLd from "@/app/components/seo/JsonLd";
 
@@ -39,47 +39,10 @@ export async function generateMetadata({
   const { slug, videoId } = await params;
   const locale = await getLocale();
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-  const API_BASE = getApiUrl();
-  const pueblo = await getPuebloBySlugFast(slug, locale);
-  const fallbackPath = `/pueblos/${slug}/videos/${videoId}`;
-  if (!pueblo) {
-    return {
-      title: seoTitle("Video del pueblo"),
-      description: seoDescription(`Contenido de video del pueblo.${localeSuffix}`),
-      alternates: {
-        canonical: getCanonicalUrl(fallbackPath, locale as SupportedLocale),
-        languages: getLocaleAlternates(fallbackPath),
-      },
-      robots: { index: false, follow: true },
-    };
-  }
-
-  const videosRes = await fetch(`${API_BASE}/pueblos/${pueblo.id}/videos`, { cache: "no-store" });
-  let videos: Video[] = [];
-  if (videosRes?.ok) {
-    try {
-      videos = await videosRes.json();
-    } catch {
-      // ignore
-    }
-  }
-  const video = videos.find((v) => extractYoutubeId(v.url) === videoId);
-  if (!video) {
-    const noVideoPath = `/pueblos/${pueblo.slug}/videos/${videoId}`;
-    return {
-      title: seoTitle(`Videos de ${pueblo.nombre}`),
-      description: seoDescription(`Videos y contenidos audiovisuales sobre ${pueblo.nombre}.${localeSuffix}`),
-      alternates: {
-        canonical: getCanonicalUrl(noVideoPath, locale as SupportedLocale),
-        languages: getLocaleAlternates(noVideoPath),
-      },
-      robots: { index: false, follow: true },
-    };
-  }
-
-  const path = `/pueblos/${pueblo.slug}/videos/${videoId}`;
-  const title = seoTitle(`Video: ${video.titulo} · ${pueblo.nombre}${localeSuffix}`);
-  const description = seoDescription(`Video sobre ${pueblo.nombre}: ${video.titulo}.${localeSuffix}`);
+  const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const path = `/pueblos/${slug}/videos/${videoId}`;
+  const title = seoTitle(`Video de ${name}${localeSuffix}`);
+  const description = seoDescription(`Video y contenido audiovisual sobre ${name}.${localeSuffix}`);
 
   return {
     title,
@@ -89,7 +52,7 @@ export async function generateMetadata({
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: video.titulo,
+      title,
       description,
       url: getCanonicalUrl(path, locale as SupportedLocale),
       type: "video.other",

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getApiUrl, getPuebloBySlug, getPuebloBySlugFast } from "@/lib/api";
+import { getApiUrl, getPuebloBySlug } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -12,35 +12,18 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const fallbackName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const fallbackPath = `/pueblos/${slug}/videos`;
-
   const locale = await getLocale();
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-  const pueblo = await getPuebloBySlugFast(slug, locale);
-  const safeSlug = pueblo?.slug ?? slug;
-  const safeName = pueblo?.nombre ?? fallbackName;
-  const path = `/pueblos/${safeSlug}/videos`;
-  if (!pueblo) {
-    return {
-      title: seoTitle(`Videos de ${safeName}${localeSuffix}`),
-      description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${safeName}.${localeSuffix}`),
-      alternates: {
-        canonical: getCanonicalUrl(path, locale as SupportedLocale),
-        languages: getLocaleAlternates(path),
-      },
-      robots: { index: true, follow: true },
-    };
-  }
-
-  const canonicalPath = `/pueblos/${pueblo.slug}/videos`;
+  const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const path = `/pueblos/${slug}/videos`;
   return {
-    title: seoTitle(`Videos de ${pueblo.nombre}${localeSuffix}`),
-    description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${pueblo.nombre}.${localeSuffix}`),
+    title: seoTitle(`Videos de ${name}${localeSuffix}`),
+    description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${name}.${localeSuffix}`),
     alternates: {
-      canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
-      languages: getLocaleAlternates(canonicalPath),
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
     },
+    robots: { index: true, follow: true },
   };
 }
 

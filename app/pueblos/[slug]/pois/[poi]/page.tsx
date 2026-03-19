@@ -103,49 +103,26 @@ export async function generateMetadata({
   const { slug, poi } = await params;
   const locale = await getLocale();
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-  const data = await fetchPoiFast(slug, poi, locale);
+  const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const poiName = (isNumeric(poi) ? "Punto de interés" : poi.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
   const path = `/pueblos/${slug}/pois/${poi}`;
-  if (!data) {
-    return {
-      title: seoTitle(`Punto de interés · ${slug.replace(/-/g, " ")}${localeSuffix}`),
-      description: seoDescription(`Información del punto de interés en ${slug.replace(/-/g, " ")}.${localeSuffix}`),
-      alternates: {
-        canonical: getCanonicalUrl(path, locale as SupportedLocale),
-        languages: getLocaleAlternates(path),
-      },
-      robots: { index: true, follow: true },
-    };
-  }
-
-  const foto = pickFotoPrincipal(data);
-  const descripcionHtml = pickDescripcionHtml(data);
-  const puebloNombre = data.pueblo?.nombre ?? "";
-  const title = seoTitle(`${data.nombre}${puebloNombre ? ` · ${puebloNombre}` : ""}${localeSuffix}`);
-  const canonicalPath = `/pueblos/${slug}/pois/${data.slug ?? poi}`;
-  const rawDesc = descripcionHtml
-    ? descripcionHtml.replace(/<[^>]*>/g, "").trim()
-    : `Información sobre ${data.nombre}${puebloNombre ? ` en ${puebloNombre}` : ""}.`;
-
+  const title = seoTitle(`${poiName} · ${puebloName}${localeSuffix}`);
   return {
     title,
-    description: seoDescription(rawDesc, 160),
+    description: seoDescription(`Información sobre ${poiName} en ${puebloName}.${localeSuffix}`, 160),
     alternates: {
-      canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
-      languages: getLocaleAlternates(canonicalPath),
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
     },
     robots: { index: true, follow: true },
     openGraph: {
       title,
       url: getCanonicalUrl(path, locale as SupportedLocale),
       type: "article",
-      images: foto
-        ? [{ url: foto, alt: `${data.nombre}${puebloNombre ? ` · ${puebloNombre}` : ""} - Los Pueblos Más Bonitos de España` }]
-        : undefined,
     },
     twitter: {
-      card: foto ? "summary_large_image" : "summary",
+      card: "summary",
       title,
-      images: foto ? [foto] : undefined,
     },
   };
 }

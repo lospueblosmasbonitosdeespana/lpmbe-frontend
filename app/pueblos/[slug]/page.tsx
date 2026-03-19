@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getPuebloBySlug, getPuebloBySlugFast, getPueblosLite, getApiUrl } from "@/lib/api";
+import { getPuebloBySlug, getPueblosLite, getApiUrl } from "@/lib/api";
 import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import JsonLd from "@/app/components/seo/JsonLd";
 import PuebloActions from "./PuebloActions";
@@ -276,34 +276,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
-  const tSeo = await getTranslations("seo");
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-  const pueblo = await getPuebloBySlugFast(slug, locale);
-  if (!pueblo) {
-    const safeName = slugToTitle(slug) || "Pueblo";
-    const path = `/pueblos/${slug}`;
-    return {
-      title: seoTitle(`${safeName}${localeSuffix}`),
-      description: seoDescription(tSeo("puebloDescriptionFallback")),
-      alternates: {
-        canonical: getCanonicalUrl(path, locale as SupportedLocale),
-        languages: getLocaleAlternates(path),
-      },
-      robots: { index: true, follow: true },
-    };
-  }
-  const fotos = Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [];
-  const heroImage = pueblo.foto_destacada ?? fotos[0]?.url ?? null;
-  const baseTitle = `${pueblo.nombre} · ${pueblo.provincia} · ${pueblo.comunidad}`;
-  const title = seoTitle(`${pueblo.nombre} (${pueblo.provincia})${localeSuffix}`);
-  // Extraer texto plano del HTML para la descripción (sin tags)
-  const descText = pueblo.descripcion
-    ? cleanText(pueblo.descripcion.replace(/<[^>]*>/g, ""))
-    : null;
-  const description = descText
-    ? seoDescription(descText, 155)
-    : seoDescription(tSeo("puebloDescriptionFallback"));
-  const path = `/pueblos/${pueblo.slug}`;
+  const name = slugToTitle(slug) || "Pueblo";
+  const path = `/pueblos/${slug}`;
+  const title = seoTitle(`${name}${localeSuffix}`);
+  const description = seoDescription(`Descubre ${name}, uno de los pueblos más bonitos de España. Información, mapas, experiencias y rutas.${localeSuffix}`);
 
   return {
     title,
@@ -319,26 +296,11 @@ export async function generateMetadata({
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
       type: "article",
-      images: (() => {
-        const imgs: { url: string; alt: string }[] = [];
-        if (heroImage) imgs.push({ url: heroImage, alt: `${baseTitle} · Los Pueblos Más Bonitos de España` });
-        const fotos = Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [];
-        fotos.slice(0, 3).forEach((f: { url: string; alt?: string | null }, i: number) => {
-          if (f.url && f.url !== heroImage) {
-            imgs.push({
-              url: f.url,
-              alt: (f.alt && f.alt.trim()) ? f.alt : `${pueblo.nombre}, ${pueblo.provincia} - Galería · Los Pueblos Más Bonitos de España - Foto ${i + 1}`,
-            });
-          }
-        });
-        return imgs.length > 0 ? imgs : undefined;
-      })(),
     },
     twitter: {
-      card: heroImage ? "summary_large_image" : "summary",
+      card: "summary",
       title,
       description,
-      images: heroImage ? [heroImage] : undefined,
     },
   };
 }

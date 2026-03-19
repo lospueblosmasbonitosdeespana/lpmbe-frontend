@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getPuebloBySlug, getPuebloBySlugFast } from "@/lib/api";
+import { getPuebloBySlug } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -26,17 +26,13 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const fallbackName = slugToTitle(slug) || "Pueblo";
-  const fallbackPath = `/pueblos/${slug}/lugares-de-interes`;
   const locale = await getLocale();
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-  const pueblo = await getPuebloBySlugFast(slug, locale);
-  const safeSlug = pueblo?.slug ?? slug;
-  const safeName = pueblo?.nombre ?? fallbackName;
-  const path = `/pueblos/${safeSlug}/lugares-de-interes`;
+  const name = slugToTitle(slug) || "Pueblo";
+  const path = `/pueblos/${slug}/lugares-de-interes`;
   return {
-    title: seoTitle(`Lugares de interés en ${safeName}${localeSuffix}`),
-    description: seoDescription(`Descubre los puntos de interés y lugares que no te puedes perder en ${safeName}.${localeSuffix}`),
+    title: seoTitle(`Lugares de interés en ${name}${localeSuffix}`),
+    description: seoDescription(`Descubre los puntos de interés y lugares que no te puedes perder en ${name}.${localeSuffix}`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

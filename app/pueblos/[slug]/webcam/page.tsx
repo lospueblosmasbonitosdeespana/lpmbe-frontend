@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getApiUrl, getPuebloBySlug, getPuebloBySlugFast } from "@/lib/api";
+import { getApiUrl, getPuebloBySlug } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -14,30 +14,16 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-  const pueblo = await getPuebloBySlugFast(slug, locale);
-  const safeSlug = pueblo?.slug ?? slug;
-  const safeName = pueblo?.nombre ?? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const path = `/pueblos/${safeSlug}/webcam`;
-  if (!pueblo) {
-    return {
-      title: seoTitle(`Webcam de ${safeName}${localeSuffix}`),
-      description: seoDescription(`Webcams y vistas en directo de ${safeName}.${localeSuffix}`),
-      alternates: {
-        canonical: getCanonicalUrl(path, locale as SupportedLocale),
-        languages: getLocaleAlternates(path),
-      },
-      robots: { index: true, follow: true },
-    };
-  }
-
-  const canonicalPath = `/pueblos/${pueblo.slug}/webcam`;
+  const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const path = `/pueblos/${slug}/webcam`;
   return {
-    title: seoTitle(`Webcam de ${pueblo.nombre}${localeSuffix}`),
-    description: seoDescription(`Webcams y vistas en directo de ${pueblo.nombre}.${localeSuffix}`),
+    title: seoTitle(`Webcam de ${name}${localeSuffix}`),
+    description: seoDescription(`Webcams y vistas en directo de ${name}.${localeSuffix}`),
     alternates: {
-      canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
-      languages: getLocaleAlternates(canonicalPath),
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
     },
+    robots: { index: true, follow: true },
   };
 }
 

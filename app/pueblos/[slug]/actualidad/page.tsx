@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import ActualidadPuebloClient from './ActualidadPuebloClient';
-import { getPuebloBySlug, getPuebloBySlugFast } from '@/lib/api';
+import { getPuebloBySlug } from '@/lib/api';
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -13,34 +13,16 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const fallbackName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const fallbackPath = `/pueblos/${slug}/actualidad`;
-
   const locale = await getLocale();
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-  const pueblo = await getPuebloBySlugFast(slug, locale);
-  const safeSlug = pueblo?.slug ?? slug;
-  const safeName = pueblo?.nombre ?? fallbackName;
-  const path = `/pueblos/${safeSlug}/actualidad`;
-  if (!pueblo) {
-    return {
-      title: seoTitle(`Actualidad de ${safeName}${localeSuffix}`),
-      description: seoDescription(`Noticias, eventos y novedades de ${safeName}.${localeSuffix}`),
-      alternates: {
-        canonical: getCanonicalUrl(path, locale as SupportedLocale),
-        languages: getLocaleAlternates(path),
-      },
-      robots: { index: true, follow: true },
-    };
-  }
-
-  const canonicalPath = `/pueblos/${pueblo.slug}/actualidad`;
+  const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const path = `/pueblos/${slug}/actualidad`;
   return {
-    title: seoTitle(`Actualidad de ${pueblo.nombre}${localeSuffix}`),
-    description: seoDescription(`Noticias, eventos y novedades de ${pueblo.nombre}.${localeSuffix}`),
+    title: seoTitle(`Actualidad de ${name}${localeSuffix}`),
+    description: seoDescription(`Noticias, eventos y novedades de ${name}.${localeSuffix}`),
     alternates: {
-      canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
-      languages: getLocaleAlternates(canonicalPath),
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
     },
     robots: { index: true, follow: true },
   };

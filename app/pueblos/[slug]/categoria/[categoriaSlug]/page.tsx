@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getPuebloBySlug, getPuebloBySlugFast } from "@/lib/api";
+import { getPuebloBySlug } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -77,50 +77,20 @@ export async function generateMetadata({
   params: Promise<{ slug: string; categoriaSlug: string }>;
 }): Promise<Metadata> {
   const { slug, categoriaSlug } = await params;
-  const fallbackPath = `/pueblos/${slug}/categoria/${categoriaSlug}`;
-  const fallbackName = slugToTitle(slug) || "Pueblo";
-  const fallbackLabel = CATEGORIA_LABELS[categoriaSlug] ?? "Categoría";
-
-  try {
-    const locale = await getLocale();
-    const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-    if (!CATEGORIA_SLUG_TO_KEY[categoriaSlug]) {
-      const path = `/pueblos/${slug}/categoria/${categoriaSlug}`;
-      return {
-        title: seoTitle(`Categoría${localeSuffix}`),
-        description: seoDescription(`Categoría temática del pueblo.${localeSuffix}`),
-        alternates: {
-          canonical: getCanonicalUrl(path, locale as SupportedLocale),
-          languages: getLocaleAlternates(path),
-        },
-        robots: { index: true, follow: true },
-      };
-    }
-    const pueblo = await getPuebloBySlugFast(slug, locale);
-    const safeSlug = pueblo?.slug ?? slug;
-    const safeName = pueblo?.nombre ?? fallbackName;
-    const label = CATEGORIA_LABELS[categoriaSlug];
-    const path = `/pueblos/${safeSlug}/categoria/${categoriaSlug}`;
-    return {
-      title: seoTitle(`${label} en ${safeName}${localeSuffix}`),
-      description: seoDescription(`${CATEGORIA_DESCRIPTIONS[categoriaSlug]} en ${safeName}.${localeSuffix}`),
-      alternates: {
-        canonical: getCanonicalUrl(path, locale as SupportedLocale),
-        languages: getLocaleAlternates(path),
-      },
-      robots: { index: true, follow: true },
-    };
-  } catch {
-    return {
-      title: seoTitle(`${fallbackLabel} en ${fallbackName}`),
-      description: seoDescription(`Información sobre ${fallbackLabel.toLowerCase()} en ${fallbackName}.`),
-      alternates: {
-        canonical: getCanonicalUrl(fallbackPath),
-        languages: getLocaleAlternates(fallbackPath),
-      },
-      robots: { index: true, follow: true },
-    };
-  }
+  const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+  const name = slugToTitle(slug) || "Pueblo";
+  const label = CATEGORIA_LABELS[categoriaSlug] ?? "Categoría";
+  const path = `/pueblos/${slug}/categoria/${categoriaSlug}`;
+  return {
+    title: seoTitle(`${label} en ${name}${localeSuffix}`),
+    description: seoDescription(`${CATEGORIA_DESCRIPTIONS[categoriaSlug] ?? "Categoría temática"} en ${name}.${localeSuffix}`),
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+    robots: { index: true, follow: true },
+  };
 }
 
 export default async function CategoriaPage({

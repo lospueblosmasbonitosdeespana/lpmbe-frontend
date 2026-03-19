@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getPuebloBySlug, getPuebloBySlugFast } from "@/lib/api";
+import { getPuebloBySlug } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -26,17 +26,13 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const fallbackName = slugToTitle(slug) || "Pueblo";
-  const fallbackPath = `/pueblos/${slug}/multiexperiencias`;
   const locale = await getLocale();
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-  const pueblo = await getPuebloBySlugFast(slug, locale);
-  const safeSlug = pueblo?.slug ?? slug;
-  const safeName = pueblo?.nombre ?? fallbackName;
-  const path = `/pueblos/${safeSlug}/multiexperiencias`;
+  const name = slugToTitle(slug) || "Pueblo";
+  const path = `/pueblos/${slug}/multiexperiencias`;
   return {
-    title: seoTitle(`Multiexperiencias en ${safeName}${localeSuffix}`),
-    description: seoDescription(`Experiencias y actividades para descubrir ${safeName}.${localeSuffix}`),
+    title: seoTitle(`Multiexperiencias en ${name}${localeSuffix}`),
+    description: seoDescription(`Experiencias y actividades para descubrir ${name}.${localeSuffix}`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
