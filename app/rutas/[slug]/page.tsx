@@ -183,7 +183,12 @@ export default async function RutaPage({
           "@context": "https://schema.org",
           "@type": "ItemList",
           name: ruta.titulo,
-          description: ruta.descripcion ? createExcerpt(ruta.descripcion, 200) : undefined,
+          description: ruta.descripcion
+            ? seoDescription(
+                ruta.descripcion.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
+                200
+              )
+            : undefined,
           numberOfItems: pueblosOrdenados.length,
           itemListElement: pueblosOrdenados.map((p: any, i: number) => ({
             "@type": "ListItem",

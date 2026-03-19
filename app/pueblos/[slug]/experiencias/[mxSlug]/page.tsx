@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getApiUrl, type Pueblo } from "@/lib/api";
+import { getApiUrl, getPuebloBySlug, type Pueblo } from "@/lib/api";
 import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 import ParadasMap from "@/app/_components/ParadasMap";
 import ParadaFoto from "./ParadaFoto";
@@ -84,7 +84,7 @@ export default async function MultiexperienciaPage({
   const { slug, mxSlug } = await params;
   const locale = await getLocale();
   const t = await getTranslations("mxPage");
-  const pueblo = await getLugarLegacyBySlug(slug, locale).catch(() => null);
+  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
   if (!pueblo) {
     return (
       <main className="mx-auto max-w-[1200px] px-6 py-8 bg-background">
