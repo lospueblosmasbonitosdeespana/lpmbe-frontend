@@ -2058,29 +2058,57 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                 />
               </label>
 
-              <div className="space-y-3 rounded-lg border border-border p-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-sm font-semibold">Constructor de newsletter (MVP tipo MDirector)</p>
+              <div className="space-y-4 rounded-lg border border-border p-4">
+                {/* Selector de modo: Constructor vs HTML */}
+                <div className="flex flex-wrap items-stretch gap-3">
                   <button
                     type="button"
                     onClick={() => setNewsletterComposerMode('builder')}
-                    className={`rounded-md border px-3 py-1 text-xs ${
-                      newsletterComposerMode === 'builder' ? 'bg-muted font-semibold' : ''
+                    className={`flex flex-1 items-center gap-3 rounded-lg border-2 px-4 py-3 text-left transition-all ${
+                      newsletterComposerMode === 'builder'
+                        ? 'border-primary bg-primary text-primary-foreground shadow-md'
+                        : 'border-border bg-background hover:border-primary/50 hover:bg-muted/40'
                     }`}
                   >
-                    Constructor
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white/20">
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+                      </svg>
+                    </span>
+                    <span>
+                      <span className="block text-sm font-bold leading-tight">Constructor visual</span>
+                      <span className={`block text-xs leading-tight ${newsletterComposerMode === 'builder' ? 'opacity-80' : 'text-muted-foreground'}`}>Arrastra bloques estilo MDirector</span>
+                    </span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => setNewsletterComposerMode('editor')}
-                    className={`rounded-md border px-3 py-1 text-xs ${
-                      newsletterComposerMode === 'editor' ? 'bg-muted font-semibold' : ''
+                    onClick={() => {
+                      setNewsletterComposerMode('editor');
+                      setShowTemplateGallery(false);
+                    }}
+                    className={`flex flex-1 items-center gap-3 rounded-lg border-2 px-4 py-3 text-left transition-all ${
+                      newsletterComposerMode === 'editor'
+                        ? 'border-primary bg-primary text-primary-foreground shadow-md'
+                        : 'border-border bg-background hover:border-primary/50 hover:bg-muted/40'
                     }`}
                   >
-                    HTML/Editor clásico
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white/20">
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="16 18 22 12 16 6"/>
+                        <polyline points="8 6 2 12 8 18"/>
+                      </svg>
+                    </span>
+                    <span>
+                      <span className="block text-sm font-bold leading-tight">HTML / Editor clásico</span>
+                      <span className={`block text-xs leading-tight ${newsletterComposerMode === 'editor' ? 'opacity-80' : 'text-muted-foreground'}`}>Editor de texto enriquecido o HTML directo</span>
+                    </span>
                   </button>
                 </div>
 
+                {newsletterComposerMode === 'builder' && (
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
@@ -2151,6 +2179,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                     ) : null}
                   </div>
                 </div>
+                )}
 
                 {showTemplateGallery && (
                   <div className="rounded-lg border border-border bg-card p-4">
