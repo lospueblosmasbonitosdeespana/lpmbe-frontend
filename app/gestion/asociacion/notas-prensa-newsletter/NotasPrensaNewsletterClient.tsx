@@ -6,6 +6,13 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import Image from '@tiptap/extension-image';
+import Underline from '@tiptap/extension-underline';
+import TextAlign from '@tiptap/extension-text-align';
+import Color from '@tiptap/extension-color';
+import { TextStyle } from '@tiptap/extension-text-style';
+import Highlight from '@tiptap/extension-highlight';
+import Subscript from '@tiptap/extension-subscript';
+import Superscript from '@tiptap/extension-superscript';
 
 type Campaign = {
   id: number;
@@ -263,14 +270,14 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
       const borderRadius = Math.max(0, Math.min(30, Number(block.borderRadius || 8)));
       const boxStyle = `background:${background};color:${textColor};padding:${paddingY}px 14px;border-radius:${borderRadius}px;margin:0 0 12px 0;`;
       if (block.type === 'heading') {
-        return `<div style="${boxStyle}"><h2 style="margin:0;font-size:26px;line-height:1.25;text-align:${align};color:${textColor};">${escapeHtml(
-          block.content || 'Título',
-        )}</h2></div>`;
+        const raw = block.content || 'Título';
+        const isHtml = raw.includes('<');
+        return `<div style="${boxStyle}"><div style="margin:0;font-size:26px;line-height:1.25;text-align:${align};color:${textColor};">${isHtml ? raw : escapeHtml(raw)}</div></div>`;
       }
       if (block.type === 'text') {
-        return `<div style="${boxStyle}"><p style="margin:0;font-size:16px;line-height:1.6;text-align:${align};color:${textColor};">${escapeHtml(
-          block.content || '',
-        ).replace(/\n/g, '<br/>')}</p></div>`;
+        const raw = block.content || '';
+        const isHtml = raw.includes('<');
+        return `<div style="${boxStyle}"><div style="margin:0;font-size:16px;line-height:1.6;text-align:${align};color:${textColor};">${isHtml ? raw : escapeHtml(raw).replace(/\n/g, '<br/>')}</div></div>`;
       }
       if (block.type === 'image') {
         const url = String(block.url || '').trim();
@@ -332,8 +339,10 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
       }
       if (block.type === 'imgText') {
         const url = String(block.url || '').trim();
-        const text = escapeHtml(block.content || '').replace(/\n/g, '<br/>');
-        if (!url) return `<div style="${boxStyle}"><p style="margin:0;font-size:16px;line-height:1.6;color:${textColor};">${text}</p></div>`;
+        const raw = block.content || '';
+        const isHtml = raw.includes('<');
+        const text = isHtml ? raw : escapeHtml(raw).replace(/\n/g, '<br/>');
+        if (!url) return `<div style="${boxStyle}"><div style="margin:0;font-size:16px;line-height:1.6;color:${textColor};">${text}</div></div>`;
         return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="40%" valign="top" style="padding:0 12px 0 0;"><img src="${escapeHtml(url)}" alt="" style="width:100%;height:auto;border-radius:8px;display:block;" /></td><td width="60%" valign="top" style="font-size:15px;line-height:1.6;color:${textColor};">${text}</td></tr></table></div>`;
       }
       if (block.type === 'socialLinks') {
@@ -362,6 +371,160 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
       ${body}
     </div>
   `.trim();
+}
+
+function BlockRichEditor({
+  content,
+  onChange,
+  placeholder,
+}: {
+  content: string;
+  onChange: (html: string) => void;
+  placeholder?: string;
+}) {
+  const blockEditor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [1, 2, 3] },
+      }),
+      Underline,
+      TextStyle,
+      Color,
+      Highlight.configure({ multicolor: true }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Subscript,
+      Superscript,
+      Link.configure({ openOnClick: false, autolink: true }),
+      Image.configure({ inline: false, allowBase64: false }),
+      Placeholder.configure({ placeholder: placeholder || 'Escribe aquí...' }),
+    ],
+    content: content || '<p></p>',
+    onUpdate: ({ editor: e }) => onChange(e.getHTML()),
+    editorProps: {
+      attributes: {
+        class:
+          'min-h-[120px] rounded-b-md border border-t-0 border-border bg-background px-3 py-2 text-sm focus:outline-none prose prose-sm max-w-none',
+      },
+    },
+    immediatelyRender: false,
+  });
+
+  useEffect(() => {
+    if (!blockEditor) return;
+    if (blockEditor.getHTML() !== content && content !== undefined) {
+      blockEditor.commands.setContent(content || '<p></p>', { emitUpdate: false });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content]);
+
+  if (!blockEditor) return null;
+
+  const btnCls = (active: boolean) =>
+    `px-1.5 py-1 rounded text-xs font-semibold transition ${active ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`;
+
+  function promptLink() {
+    if (!blockEditor) return;
+    const prev = blockEditor.getAttributes('link').href as string | undefined;
+    const url = window.prompt('URL del enlace', prev || 'https://');
+    if (url === null) return;
+    const trimmed = url.trim();
+    if (!trimmed) {
+      blockEditor.chain().focus().extendMarkRange('link').unsetLink().run();
+      return;
+    }
+    blockEditor.chain().focus().extendMarkRange('link').setLink({ href: trimmed }).run();
+  }
+
+  function promptColor() {
+    if (!blockEditor) return;
+    const color = window.prompt('Color de texto (hex)', '#000000');
+    if (!color) return;
+    blockEditor.chain().focus().setColor(color.trim()).run();
+  }
+
+  function promptHighlight() {
+    if (!blockEditor) return;
+    const color = window.prompt('Color de resaltado (hex)', '#ffe066');
+    if (!color) return;
+    blockEditor.chain().focus().toggleHighlight({ color: color.trim() }).run();
+  }
+
+  return (
+    <div className="md:col-span-2">
+      <div className="flex flex-wrap items-center gap-0.5 rounded-t-md border border-border bg-muted/50 px-1.5 py-1">
+        <button type="button" onClick={() => blockEditor.chain().focus().toggleBold().run()} className={btnCls(blockEditor.isActive('bold'))} title="Negrita">
+          <strong>B</strong>
+        </button>
+        <button type="button" onClick={() => blockEditor.chain().focus().toggleItalic().run()} className={btnCls(blockEditor.isActive('italic'))} title="Cursiva">
+          <em>I</em>
+        </button>
+        <button type="button" onClick={() => blockEditor.chain().focus().toggleUnderline().run()} className={btnCls(blockEditor.isActive('underline'))} title="Subrayado">
+          <span className="underline">U</span>
+        </button>
+        <button type="button" onClick={() => blockEditor.chain().focus().toggleStrike().run()} className={btnCls(blockEditor.isActive('strike'))} title="Tachado">
+          <span className="line-through">S</span>
+        </button>
+        <span className="mx-0.5 h-4 w-px bg-border" />
+        <button type="button" onClick={() => blockEditor.chain().focus().toggleSubscript().run()} className={btnCls(blockEditor.isActive('subscript'))} title="Subíndice">
+          x<sub>2</sub>
+        </button>
+        <button type="button" onClick={() => blockEditor.chain().focus().toggleSuperscript().run()} className={btnCls(blockEditor.isActive('superscript'))} title="Superíndice">
+          x<sup>2</sup>
+        </button>
+        <span className="mx-0.5 h-4 w-px bg-border" />
+        <button type="button" onClick={() => blockEditor.chain().focus().toggleHeading({ level: 1 }).run()} className={btnCls(blockEditor.isActive('heading', { level: 1 }))} title="Título 1">
+          H1
+        </button>
+        <button type="button" onClick={() => blockEditor.chain().focus().toggleHeading({ level: 2 }).run()} className={btnCls(blockEditor.isActive('heading', { level: 2 }))} title="Título 2">
+          H2
+        </button>
+        <button type="button" onClick={() => blockEditor.chain().focus().toggleHeading({ level: 3 }).run()} className={btnCls(blockEditor.isActive('heading', { level: 3 }))} title="Título 3">
+          H3
+        </button>
+        <span className="mx-0.5 h-4 w-px bg-border" />
+        <button type="button" onClick={() => blockEditor.chain().focus().toggleBulletList().run()} className={btnCls(blockEditor.isActive('bulletList'))} title="Lista">
+          <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><circle cx="3" cy="5" r="1.5" /><rect x="7" y="4" width="11" height="2" rx="1" /><circle cx="3" cy="10" r="1.5" /><rect x="7" y="9" width="11" height="2" rx="1" /><circle cx="3" cy="15" r="1.5" /><rect x="7" y="14" width="11" height="2" rx="1" /></svg>
+        </button>
+        <button type="button" onClick={() => blockEditor.chain().focus().toggleOrderedList().run()} className={btnCls(blockEditor.isActive('orderedList'))} title="Lista numerada">
+          <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><text x="1" y="7" fontSize="6" fontWeight="bold">1</text><rect x="7" y="4" width="11" height="2" rx="1" /><text x="1" y="12" fontSize="6" fontWeight="bold">2</text><rect x="7" y="9" width="11" height="2" rx="1" /><text x="1" y="17" fontSize="6" fontWeight="bold">3</text><rect x="7" y="14" width="11" height="2" rx="1" /></svg>
+        </button>
+        <span className="mx-0.5 h-4 w-px bg-border" />
+        <button type="button" onClick={() => blockEditor.chain().focus().setTextAlign('left').run()} className={btnCls(blockEditor.isActive({ textAlign: 'left' }))} title="Alinear izquierda">
+          <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><rect x="2" y="4" width="16" height="2" rx="1" /><rect x="2" y="9" width="10" height="2" rx="1" /><rect x="2" y="14" width="14" height="2" rx="1" /></svg>
+        </button>
+        <button type="button" onClick={() => blockEditor.chain().focus().setTextAlign('center').run()} className={btnCls(blockEditor.isActive({ textAlign: 'center' }))} title="Centrar">
+          <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><rect x="2" y="4" width="16" height="2" rx="1" /><rect x="5" y="9" width="10" height="2" rx="1" /><rect x="3" y="14" width="14" height="2" rx="1" /></svg>
+        </button>
+        <button type="button" onClick={() => blockEditor.chain().focus().setTextAlign('right').run()} className={btnCls(blockEditor.isActive({ textAlign: 'right' }))} title="Alinear derecha">
+          <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><rect x="2" y="4" width="16" height="2" rx="1" /><rect x="8" y="9" width="10" height="2" rx="1" /><rect x="4" y="14" width="14" height="2" rx="1" /></svg>
+        </button>
+        <button type="button" onClick={() => blockEditor.chain().focus().setTextAlign('justify').run()} className={btnCls(blockEditor.isActive({ textAlign: 'justify' }))} title="Justificar">
+          <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><rect x="2" y="4" width="16" height="2" rx="1" /><rect x="2" y="9" width="16" height="2" rx="1" /><rect x="2" y="14" width="16" height="2" rx="1" /></svg>
+        </button>
+        <span className="mx-0.5 h-4 w-px bg-border" />
+        <button type="button" onClick={promptLink} className={btnCls(blockEditor.isActive('link'))} title="Enlace">
+          <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><path d="M8.5 11.5a3.5 3.5 0 004.95 0l2.12-2.12a3.5 3.5 0 00-4.95-4.95L9.5 5.55" stroke="currentColor" strokeWidth="1.5" fill="none" /><path d="M11.5 8.5a3.5 3.5 0 00-4.95 0l-2.12 2.12a3.5 3.5 0 004.95 4.95l1.12-1.12" stroke="currentColor" strokeWidth="1.5" fill="none" /></svg>
+        </button>
+        <button type="button" onClick={promptColor} className={btnCls(false)} title="Color de texto">
+          <span className="flex flex-col items-center leading-none"><span className="text-[11px] font-bold">A</span><span className="mt-px h-1 w-3 rounded-sm bg-red-500" /></span>
+        </button>
+        <button type="button" onClick={promptHighlight} className={btnCls(blockEditor.isActive('highlight'))} title="Resaltar">
+          <span className="flex flex-col items-center leading-none"><span className="rounded bg-yellow-200 px-0.5 text-[11px] font-bold">A</span></span>
+        </button>
+        <span className="mx-0.5 h-4 w-px bg-border" />
+        <button type="button" onClick={() => blockEditor.chain().focus().undo().run()} className={btnCls(false)} title="Deshacer">
+          <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><path d="M5 8l-3-3 3-3" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" /><path d="M2 5h10a5 5 0 010 10H8" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" /></svg>
+        </button>
+        <button type="button" onClick={() => blockEditor.chain().focus().redo().run()} className={btnCls(false)} title="Rehacer">
+          <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><path d="M15 8l3-3-3-3" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" /><path d="M18 5H8a5 5 0 000 10h4" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" /></svg>
+        </button>
+        <button type="button" onClick={() => blockEditor.chain().focus().clearNodes().unsetAllMarks().run()} className={btnCls(false)} title="Limpiar formato">
+          <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><path d="M4 4l12 12M16 4L4 16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /><text x="7" y="12" fontSize="8" fontWeight="bold" fill="currentColor">T</text></svg>
+        </button>
+      </div>
+      <EditorContent editor={blockEditor} />
+    </div>
+  );
 }
 
 function renderPaletteIcon(type: NewsletterBlockType) {
@@ -2298,18 +2461,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                 </select>
                               </label>
 
-                              {(selectedNewsletterBlock.type === 'heading' ||
-                                selectedNewsletterBlock.type === 'text' ||
-                                selectedNewsletterBlock.type === 'image' ||
-                                selectedNewsletterBlock.type === 'imgText') && (
+                              {selectedNewsletterBlock.type === 'image' && (
                                 <label className="text-xs text-muted-foreground md:col-span-2">
-                                  {selectedNewsletterBlock.type === 'image'
-                                    ? 'Texto alt'
-                                    : selectedNewsletterBlock.type === 'imgText'
-                                      ? 'Texto junto a la imagen'
-                                      : 'Contenido'}
-                                  <textarea
-                                    rows={selectedNewsletterBlock.type === 'text' || selectedNewsletterBlock.type === 'imgText' ? 4 : 2}
+                                  Texto alt
+                                  <input
                                     value={selectedNewsletterBlock.content || ''}
                                     onChange={(e) =>
                                       updateSelectedNewsletterBlock({
@@ -2317,8 +2472,34 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                       })
                                     }
                                     className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                    placeholder="Texto alternativo de la imagen"
                                   />
                                 </label>
+                              )}
+
+                              {(selectedNewsletterBlock.type === 'heading' ||
+                                selectedNewsletterBlock.type === 'text' ||
+                                selectedNewsletterBlock.type === 'imgText') && (
+                                <div className="md:col-span-2">
+                                  <p className="mb-1 text-xs text-muted-foreground">
+                                    {selectedNewsletterBlock.type === 'heading'
+                                      ? 'Contenido del titular'
+                                      : selectedNewsletterBlock.type === 'imgText'
+                                        ? 'Texto junto a la imagen'
+                                        : 'Contenido del bloque'}
+                                  </p>
+                                  <BlockRichEditor
+                                    content={selectedNewsletterBlock.content || ''}
+                                    onChange={(html) =>
+                                      updateSelectedNewsletterBlock({ content: html })
+                                    }
+                                    placeholder={
+                                      selectedNewsletterBlock.type === 'heading'
+                                        ? 'Escribe el titular...'
+                                        : 'Escribe el contenido...'
+                                    }
+                                  />
+                                </div>
                               )}
 
                               {selectedNewsletterBlock.type === 'columns2' && (
