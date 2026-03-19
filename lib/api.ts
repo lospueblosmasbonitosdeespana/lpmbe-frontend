@@ -25,22 +25,45 @@ export type Pueblo = {
   [key: string]: any; // Para propiedades adicionales como semaforo
 };
 
+/**
+ * Convierte respuestas de API (string, MediaItem, { url }, etc.) en URL usable.
+ * Evita que objetos acaben en el sitemap como el literal "[object Object]" en &lt;image:loc&gt;.
+ */
+export function coerceImageUrlString(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value === 'string') {
+    const t = value.trim();
+    return t.length ? t : null;
+  }
+  if (typeof value === 'object') {
+    const o = value as Record<string, unknown>;
+    for (const key of ['url', 'publicUrl', 'src', 'href'] as const) {
+      const inner = o[key];
+      if (typeof inner === 'string' && inner.trim()) return inner.trim();
+    }
+    if (o.media && typeof o.media === 'object') {
+      const m = (o.media as Record<string, unknown>).url;
+      if (typeof m === 'string' && m.trim()) return m.trim();
+    }
+  }
+  return null;
+}
+
 // Helper para obtener la foto principal de un pueblo
 export function getPuebloMainPhoto(pueblo: any): string | null {
   if (!pueblo) return null;
 
-  // ✅ PRIORIDAD 1: backend canonical main photo
-  const main =
-    pueblo.mainPhotoUrl ??
-    pueblo.main_photo_url ??
-    pueblo?.mainPhoto?.url ??
-    pueblo?.main_photo?.url;
-
-  if (typeof main === "string" && main.trim()) return main.trim();
-
-  // ✅ PRIORIDAD 2: foto_destacada (campo legacy del listado)
-  if (typeof pueblo.foto_destacada === "string" && pueblo.foto_destacada.trim()) {
-    return pueblo.foto_destacada.trim();
+  // ✅ PRIORIDAD 1–2: main photo / legacy (cada campo puede ser string u objeto anidado)
+  const priority: unknown[] = [
+    pueblo.mainPhotoUrl,
+    pueblo.main_photo_url,
+    pueblo?.mainPhoto,
+    pueblo?.main_photo,
+    pueblo.foto_destacada,
+  ];
+  for (const raw of priority) {
+    const u = coerceImageUrlString(raw);
+    if (u) return u;
   }
 
   // ✅ PRIORIDAD 3: fallback a array de fotos (solo si viene array; en listas NO viene)
@@ -57,20 +80,21 @@ export function getPuebloMainPhoto(pueblo: any): string | null {
     (a, b) => (a?.orden ?? a?.order ?? 999999) - (b?.orden ?? b?.order ?? 999999)
   );
 
-  return (sorted[0]?.url ?? null) as string | null;
+  const first = sorted[0];
+  return coerceImageUrlString(first) ?? coerceImageUrlString((first as { url?: unknown })?.url);
 }
 
 // Helper puro para resolver foto principal desde detalle de pueblo
 export function resolvePuebloMainPhotoUrl(pueblo: any): string | null {
-  const direct = pueblo?.mainPhotoUrl;
-  if (typeof direct === "string" && direct.trim()) return direct.trim();
+  const direct = coerceImageUrlString(pueblo?.mainPhotoUrl);
+  if (direct) return direct;
 
   const fotos = Array.isArray(pueblo?.fotosPueblo) ? pueblo.fotosPueblo : [];
   if (!fotos.length) return null;
 
   const sorted = [...fotos].sort((a, b) => (a?.orden ?? 999999) - (b?.orden ?? 999999));
-  const url = sorted[0]?.url;
-  return typeof url === "string" && url.trim() ? url.trim() : null;
+  const first = sorted[0];
+  return coerceImageUrlString(first) ?? coerceImageUrlString(first?.url);
 }
 
 /** locale: idioma para contenido (es, en, fr, de, pt, it). Si no se pasa, el backend devuelve es. */

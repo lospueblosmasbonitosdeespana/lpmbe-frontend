@@ -5,6 +5,25 @@ import { getApiUrl, getPuebloMainPhoto } from '@/lib/api';
 type SitemapEntry = MetadataRoute.Sitemap[number];
 
 const BASE = getBaseUrl();
+
+/** Solo URLs absolutas http(s) en image:image; evita basura y relativa inválida para Google. */
+function normalizeSitemapImageUrls(images?: string[]): string[] | undefined {
+  if (!images?.length) return undefined;
+  const out: string[] = [];
+  for (const raw of images) {
+    if (typeof raw !== 'string') continue;
+    const t = raw.trim();
+    if (!t || t === '[object Object]') continue;
+    const abs =
+      t.startsWith('http://') || t.startsWith('https://')
+        ? t
+        : t.startsWith('/')
+          ? `${BASE}${t}`
+          : null;
+    if (abs && (abs.startsWith('http://') || abs.startsWith('https://'))) out.push(abs);
+  }
+  return out.length ? out : undefined;
+}
 const API = getApiUrl();
 
 async function fetchSlugs(endpoint: string, slugField = 'slug'): Promise<string[]> {
@@ -56,8 +75,9 @@ function entry(
     priority,
     alternates: { languages },
   };
-  if (images?.length) {
-    (out as { images?: { url: string }[] }).images = images.map((url) => ({ url }));
+  const safeImages = normalizeSitemapImageUrls(images);
+  if (safeImages?.length) {
+    (out as { images?: { url: string }[] }).images = safeImages.map((url) => ({ url }));
   }
   return out;
 }
