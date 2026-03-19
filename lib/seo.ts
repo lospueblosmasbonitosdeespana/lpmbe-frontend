@@ -121,6 +121,26 @@ export function titleLocaleSuffix(locale: SupportedLocale | string): string {
 }
 
 /**
+ * Locale para `generateMetadata()` sin `await getLocale()` (next-intl puede retrasar
+ * la resolución y provocar que auditorías marquen meta/título fuera de `<head>` con streaming).
+ * El middleware ya envía `x-current-locale` en cada petición.
+ */
+export function getLocaleFromRequestHeaders(h: Headers): SupportedLocale {
+  const raw = h.get("x-current-locale")?.toLowerCase();
+  switch (raw) {
+    case "en":
+    case "fr":
+    case "de":
+    case "pt":
+    case "it":
+    case "ca":
+      return raw;
+    default:
+      return "es";
+  }
+}
+
+/**
  * Fragmento único a partir del slug del pueblo (p. ej. bonilla-de-la-sierra vs segura-de-la-sierra:
  * solo el sufijo "-sierra" colisionaba al truncar).
  */

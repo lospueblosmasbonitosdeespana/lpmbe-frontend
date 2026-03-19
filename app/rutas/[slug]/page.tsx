@@ -1,9 +1,21 @@
 import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getRutas, getRutaById, getRutaMapa } from "@/lib/api";
-import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
+import {
+  getBaseUrl,
+  getCanonicalUrl,
+  getLocaleAlternates,
+  getLocaleFromRequestHeaders,
+  getOGLocale,
+  seoTitle,
+  seoDescription,
+  slugDisambiguatorForTitle,
+  titleLocaleSuffix,
+  type SupportedLocale,
+} from "@/lib/seo";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import RutaParadasConMapa from "@/app/_components/RutaParadasConMapa";
 import JsonLd from "@/app/components/seo/JsonLd";
@@ -76,12 +88,16 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const locale = await getLocale();
-  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+  const hdrs = await headers();
+  const locale = getLocaleFromRequestHeaders(hdrs);
+  const locSuf = titleLocaleSuffix(locale);
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/rutas/${slug}`;
-  const title = seoTitle(`${name}${localeSuffix}`);
-  const description = seoDescription(`Ruta turística por los pueblos más bonitos de España: ${name}.${localeSuffix}`);
+  const slugDis = slugDisambiguatorForTitle(slug);
+  const title = seoTitle(`${name}${slugDis}${locSuf}`);
+  const description = seoDescription(
+    `Ruta turística por los pueblos más bonitos de España: ${name}.${locSuf}`
+  );
   return {
     title,
     description,

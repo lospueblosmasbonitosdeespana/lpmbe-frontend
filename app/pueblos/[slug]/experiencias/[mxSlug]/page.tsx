@@ -1,8 +1,20 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug, type Pueblo } from "@/lib/api";
-import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
+import {
+  getBaseUrl,
+  getCanonicalUrl,
+  getLocaleAlternates,
+  getLocaleFromRequestHeaders,
+  getOGLocale,
+  seoTitle,
+  seoDescription,
+  slugDisambiguatorForTitle,
+  titleLocaleSuffix,
+  type SupportedLocale,
+} from "@/lib/seo";
 import ParadasMap from "@/app/_components/ParadasMap";
 import ParadaFoto from "./ParadaFoto";
 import JsonLd from "@/app/components/seo/JsonLd";
@@ -46,13 +58,15 @@ export async function generateMetadata({
   params: Promise<{ slug: string; mxSlug: string }>;
 }): Promise<Metadata> {
   const { slug, mxSlug } = await params;
-  const locale = await getLocale();
-  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+  const hdrs = await headers();
+  const locale = getLocaleFromRequestHeaders(hdrs);
+  const locSuf = titleLocaleSuffix(locale);
   const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const expName = mxSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/experiencias/${mxSlug}`;
-  const title = seoTitle(`${expName} · ${puebloName}${localeSuffix}`);
-  const description = seoDescription(`Experiencia ${expName} en ${puebloName}.${localeSuffix}`);
+  const mxDis = slugDisambiguatorForTitle(mxSlug);
+  const title = seoTitle(`${expName} · ${puebloName}${mxDis}${locSuf}`);
+  const description = seoDescription(`Experiencia ${expName} en ${puebloName}.${locSuf}`);
   return {
     title,
     description,
