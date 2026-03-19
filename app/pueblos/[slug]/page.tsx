@@ -645,7 +645,7 @@ export default async function PuebloPage({
     .map((v: { id: number; titulo?: string; url?: string }) => {
       const { embedUrl, videoId } = getEmbedUrlAndId(v.url || "");
       if (!embedUrl || !embedUrl.includes("youtube") || !videoId) return null;
-      const watchPageUrl = `${base}/pueblos/${puebloSafe.slug}/videos/${videoId}`;
+      const watchPageUrl = `${base}/pueblos/${puebloSafe.slug}/videos/${v.id}`;
       return {
         "@context": "https://schema.org",
         "@type": "VideoObject" as const,
@@ -1092,11 +1092,7 @@ export default async function PuebloPage({
                   if (v.url.includes("/embed/")) return v.url;
                   return v.url;
                 })();
-                const ytId = (() => {
-                  const m = v.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
-                  return m ? m[1] : null;
-                })();
-                const watchHref = ytId ? `/pueblos/${puebloSafe.slug}/videos/${ytId}` : null;
+                const watchHref = `/pueblos/${puebloSafe.slug}/videos/${v.id}`;
                 const card = (
                   <>
                     <div className="aspect-video w-full bg-muted">
@@ -1115,7 +1111,7 @@ export default async function PuebloPage({
                 );
                 return (
                   <div key={v.id} className="overflow-hidden rounded-xl border border-border bg-card">
-                    {watchHref ? <Link href={watchHref} className="block">{card}</Link> : card}
+                    <Link href={watchHref} className="block">{card}</Link>
                   </div>
                 );
               })}

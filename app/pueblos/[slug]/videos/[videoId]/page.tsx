@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { permanentRedirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
 import {
@@ -7,6 +8,7 @@ import {
   getCanonicalUrl,
   getLocaleAlternates,
   seoDescription,
+  seoTitle,
   seoTitleVideoWithId,
   titleLocaleSuffix,
   uniqueH1ForLocale,
@@ -40,6 +42,42 @@ function getEmbedUrl(url: string): string {
   return url;
 }
 
+/** Resuelve por id numérico de BD o por id de YouTube (rutas antiguas). */
+function resolveVideo(videos: Video[], segment: string): Video | undefined {
+  if (/^\d+$/.test(segment)) {
+    const id = Number(segment);
+    const byId = videos.find((v) => v.id === id);
+    if (byId) return byId;
+  }
+  return videos.find((v) => extractYoutubeId(v.url) === segment);
+}
+
+async function fetchPuebloVideos(slug: string, locale: string | undefined) {
+  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+  if (!pueblo) return { pueblo: null as Awaited<ReturnType<typeof getPuebloBySlug>> | null, videos: [] as Video[] };
+  const API_BASE = getApiUrl();
+  const videosRes = await fetch(`${API_BASE}/pueblos/${pueblo.id}/videos`, { cache: "no-store" });
+  let videos: Video[] = [];
+  if (videosRes?.ok) {
+    try {
+      videos = await videosRes.json();
+    } catch {
+      // ignore
+    }
+  }
+  return { pueblo, videos };
+}
+
+function withPreservedSearch(path: string, sp: Record<string, string | string[] | undefined>): string {
+  const q = new URLSearchParams();
+  for (const [k, v] of Object.entries(sp)) {
+    if (typeof v === "string" && v) q.set(k, v);
+    else if (Array.isArray(v) && v[0]) q.set(k, v[0]);
+  }
+  const s = q.toString();
+  return s ? `${path}?${s}` : path;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -49,8 +87,14 @@ export async function generateMetadata({
   const locale = await getLocale();
   const locSuf = titleLocaleSuffix(locale);
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const path = `/pueblos/${slug}/videos/${videoId}`;
-  const title = seoTitleVideoWithId(videoId, name, locSuf);
+  const { pueblo, videos } = await fetchPuebloVideos(slug, locale);
+  const video = pueblo ? resolveVideo(videos, videoId) : undefined;
+  const canonicalSeg = video ? String(video.id) : videoId;
+  const path = `/pueblos/${slug}/videos/${canonicalSeg}`;
+  const ytId = video ? extractYoutubeId(video.url) : null;
+  const title = video
+    ? seoTitle(`${video.titulo} · ${name}${locSuf}`)
+    : seoTitleVideoWithId(videoId, name, locSuf);
   const description = seoDescription(`Video y contenido audiovisual sobre ${name}.${locSuf}`);
 
   return {
@@ -65,9 +109,7 @@ export async function generateMetadata({
       description,
       url: getCanonicalUrl(path, locale as SupportedLocale),
       type: "video.other",
-      videos: videoId
-        ? [{ url: `https://www.youtube.com/watch?v=${videoId}` }]
-        : undefined,
+      videos: ytId ? [{ url: `https://www.youtube.com/watch?v=${ytId}` }] : undefined,
     },
     robots: { index: true, follow: true },
   };
@@ -75,10 +117,13 @@ export async function generateMetadata({
 
 export default async function VideoWatchPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string; videoId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug, videoId } = await params;
+  const sp = await searchParams;
   const locale = await getLocale();
   const API_BASE = getApiUrl();
   const base = getBaseUrl();
@@ -88,7 +133,7 @@ export default async function VideoWatchPage({
     return (
       <main className="min-h-screen bg-background">
         <div className="mx-auto max-w-4xl px-4 py-8">
-          <h1 className="text-2xl font-bold">Video</h1>
+          <h1 className="text-2xl font-bold">{uniqueH1ForLocale("Video", locale)}</h1>
           <p className="mt-2 text-muted-foreground">No se ha podido cargar el pueblo para mostrar el video.</p>
           <Link href="/pueblos" className="mt-4 inline-block text-primary hover:underline">
             Volver a pueblos
@@ -108,7 +153,7 @@ export default async function VideoWatchPage({
     }
   }
 
-  const video = videos.find((v) => extractYoutubeId(v.url) === videoId);
+  const video = resolveVideo(videos, videoId);
   if (!video) {
     return (
       <main className="min-h-screen bg-background">
@@ -123,10 +168,16 @@ export default async function VideoWatchPage({
     );
   }
 
+  const canonicalSeg = String(video.id);
+  if (videoId !== canonicalSeg) {
+    permanentRedirect(withPreservedSearch(`/pueblos/${pueblo.slug}/videos/${canonicalSeg}`, sp));
+  }
+
   const embedUrl = getEmbedUrl(video.url);
-  const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
-  const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-  const path = `/pueblos/${pueblo.slug}/videos/${videoId}`;
+  const ytId = extractYoutubeId(video.url);
+  const watchUrl = ytId ? `https://www.youtube.com/watch?v=${ytId}` : video.url;
+  const thumbnailUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : "";
+  const path = `/pueblos/${pueblo.slug}/videos/${canonicalSeg}`;
   const pageUrl = getCanonicalUrl(path, locale as SupportedLocale);
 
   const videoLd = {
@@ -134,7 +185,7 @@ export default async function VideoWatchPage({
     "@type": "VideoObject",
     name: video.titulo,
     description: `Video sobre ${pueblo.nombre}: ${video.titulo}.`,
-    thumbnailUrl,
+    thumbnailUrl: thumbnailUrl || undefined,
     contentUrl: watchUrl,
     embedUrl,
     url: pageUrl,

@@ -132,10 +132,10 @@ export function middleware(req: NextRequest): NextResponse {
   }
 
   // Secciones consolidadas en /actualidad (301 en middleware para evitar 308 de permanentRedirect).
-  if (pathname === '/noticias') return permanentRedirect(req, '/actualidad?tipo=NOTICIA');
-  if (pathname === '/eventos') return permanentRedirect(req, '/actualidad?tipo=EVENTO');
-  if (pathname === '/agenda') return permanentRedirect(req, '/actualidad?tipo=EVENTO');
-  if (pathname === '/articulos') return permanentRedirect(req, '/actualidad?tipo=ARTICULO');
+  if (pathname === '/noticias') return permanentRedirect(req, '/actualidad?tipo=noticia');
+  if (pathname === '/eventos') return permanentRedirect(req, '/actualidad?tipo=evento');
+  if (pathname === '/agenda') return permanentRedirect(req, '/actualidad?tipo=evento');
+  if (pathname === '/articulos') return permanentRedirect(req, '/actualidad?tipo=articulo');
 
   // URLs basura (WP feeds, assets, noticias-y-eventos sin id): redirigir a home o actualidad.
   if (pathname.endsWith('/feed') || pathname.endsWith('/feed/')) return permanentRedirect(req, '/');
@@ -184,6 +184,25 @@ export function middleware(req: NextRequest): NextResponse {
   if (pathname === '/noticias-y-eventos' && idPublicacion) {
     const target = LEGACY_NOTICIA_ID_REDIRECTS[idPublicacion];
     if (target) return permanentRedirect(req, target);
+  }
+
+  // Actualidad (global y por pueblo): ?tipo= / ?modo= siempre en minúsculas (SEO).
+  const isActualidadSection =
+    pathname === '/actualidad' || /^\/pueblos\/[^/]+\/actualidad$/.test(pathname);
+  if (isActualidadSection) {
+    const tipoP = req.nextUrl.searchParams.get('tipo');
+    const modoP = req.nextUrl.searchParams.get('modo');
+    let needsLowercase = false;
+    const urlLower = req.nextUrl.clone();
+    if (tipoP && tipoP !== tipoP.toLowerCase()) {
+      urlLower.searchParams.set('tipo', tipoP.toLowerCase());
+      needsLowercase = true;
+    }
+    if (modoP && modoP !== modoP.toLowerCase()) {
+      urlLower.searchParams.set('modo', modoP.toLowerCase());
+      needsLowercase = true;
+    }
+    if (needsLowercase) return NextResponse.redirect(urlLower, 301);
   }
 
   // Eliminar query params de tracking/legacy para consolidar canónicas.

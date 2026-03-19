@@ -227,7 +227,7 @@ export default function ActualidadPuebloClient({
   const verMasNoticias = noticiasActivas.length > LIMIT_RESUMEN;
   const verMasEventos = eventosActivos.length > LIMIT_RESUMEN;
   const verMasArticulos = articulos.length > LIMIT_RESUMEN;
-  const isArchivoMode = modo === 'ARCHIVO';
+  const isArchivoMode = (modo ?? '').toLowerCase() === 'archivo';
 
   // Vista filtrada por tipo
   const tipoNorm = tipo?.toUpperCase();
@@ -467,7 +467,7 @@ export default function ActualidadPuebloClient({
       {!loading && (
         <div className="mt-12 text-center">
           <Link
-            href={`${baseUrl}?modo=ARCHIVO`}
+            href={`${baseUrl}?modo=archivo`}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-400 transition"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

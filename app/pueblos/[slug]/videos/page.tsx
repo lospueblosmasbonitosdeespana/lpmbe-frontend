@@ -53,16 +53,6 @@ function extractYoutubeEmbedUrl(url: string): string {
   return url;
 }
 
-function extractYoutubeId(url: string): string | null {
-  const watchMatch = url.match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
-  if (watchMatch) return watchMatch[1];
-  const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
-  if (shortMatch) return shortMatch[1];
-  const embedMatch = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
-  if (embedMatch) return embedMatch[1];
-  return null;
-}
-
 export default async function VideosPuebloPage({
   params,
 }: {
@@ -77,7 +67,9 @@ export default async function VideosPuebloPage({
     return (
       <main className="min-h-screen bg-background">
         <div className="mx-auto max-w-4xl px-4 py-8">
-          <h1 className="text-2xl font-bold">{tPueblo("h1Videos", { nombre: slug })}</h1>
+          <h1 className="text-2xl font-bold">
+            {uniqueH1ForLocale(tPueblo("h1Videos", { nombre: slug }), locale)}
+          </h1>
           <p className="mt-2 text-muted-foreground">
             No se ha podido cargar el pueblo para mostrar los videos.
           </p>
@@ -149,8 +141,7 @@ export default async function VideosPuebloPage({
           <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
             {videos.map((video) => {
               const embedUrl = extractYoutubeEmbedUrl(video.url);
-              const ytId = extractYoutubeId(video.url);
-              const watchHref = ytId ? `/pueblos/${pueblo.slug}/videos/${ytId}` : null;
+              const watchHref = `/pueblos/${pueblo.slug}/videos/${video.id}`;
               const card = (
                 <>
                   <div className="aspect-video w-full bg-muted">
@@ -172,13 +163,9 @@ export default async function VideosPuebloPage({
                   key={video.id}
                   className="overflow-hidden rounded-lg border border-border bg-card"
                 >
-                  {watchHref ? (
-                    <Link href={watchHref} className="block">
-                      {card}
-                    </Link>
-                  ) : (
-                    card
-                  )}
+                  <Link href={watchHref} className="block">
+                    {card}
+                  </Link>
                 </div>
               );
             })}
