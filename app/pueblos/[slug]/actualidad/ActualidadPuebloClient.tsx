@@ -227,13 +227,14 @@ export default function ActualidadPuebloClient({
   const isArchivoMode = modo === 'ARCHIVO';
 
   // Vista filtrada por tipo
-  if (tipo && ['NOTICIA', 'EVENTO', 'ARTICULO'].includes(tipo)) {
+  const tipoNorm = tipo?.toUpperCase();
+  if (tipoNorm && ['NOTICIA', 'EVENTO', 'ARTICULO'].includes(tipoNorm)) {
     const list =
-      tipo === 'NOTICIA' ? noticiasActivas : tipo === 'EVENTO' ? eventosActivos : articulos;
+      tipoNorm === 'NOTICIA' ? noticiasActivas : tipoNorm === 'EVENTO' ? eventosActivos : articulos;
     const tituloSeccion =
-      tipo === 'NOTICIA'
+      tipoNorm === 'NOTICIA'
         ? 'Noticias'
-        : tipo === 'EVENTO'
+        : tipoNorm === 'EVENTO'
           ? 'Eventos'
           : 'Artículos';
 
@@ -382,7 +383,7 @@ export default function ActualidadPuebloClient({
                 {verMasNoticias && (
                   <div className="mt-4">
                     <Link
-                      href={`${baseUrl}?tipo=NOTICIA`}
+                      href={`${baseUrl}?tipo=noticia`}
                       className="text-blue-600 font-medium hover:underline"
                     >
                       Ver noticias anteriores →
@@ -412,7 +413,7 @@ export default function ActualidadPuebloClient({
                 {verMasEventos && (
                   <div className="mt-4">
                     <Link
-                      href={`${baseUrl}?tipo=EVENTO`}
+                      href={`${baseUrl}?tipo=evento`}
                       className="text-blue-600 font-medium hover:underline"
                     >
                       Ver más eventos →
@@ -442,7 +443,7 @@ export default function ActualidadPuebloClient({
                 {verMasArticulos && (
                   <div className="mt-4">
                     <Link
-                      href={`${baseUrl}?tipo=ARTICULO`}
+                      href={`${baseUrl}?tipo=articulo`}
                       className="text-blue-600 font-medium hover:underline"
                     >
                       Ver más artículos →
