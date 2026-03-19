@@ -34,6 +34,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, puebloSlug } = await params;
   const locale = await getLocale();
+  const localeSuffix = locale === 'es' ? '' : ` (${locale.toUpperCase()})`;
   const t = await getTranslations('experienciasPage');
   const config = CATEGORY_MAP[slug];
   const categoryTitle = config ? t(config.titleKey) : slugToTitle(slug);
@@ -41,8 +42,8 @@ export async function generateMetadata({
   const path = `/experiencias/${slug}/pueblos/${puebloSlug}`;
 
   return {
-    title: seoTitle(`${categoryTitle} en ${villageTitle}`),
-    description: seoDescription(`Experiencias de ${categoryTitle.toLowerCase()} para descubrir ${villageTitle}.`),
+    title: seoTitle(`${categoryTitle} en ${villageTitle}${localeSuffix}`),
+    description: seoDescription(`Experiencias de ${categoryTitle.toLowerCase()} para descubrir ${villageTitle}.${localeSuffix}`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

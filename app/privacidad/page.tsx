@@ -8,10 +8,11 @@ export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
+  const localeSuffix = locale === 'es' ? '' : ` (${locale.toUpperCase()})`;
   const path = '/privacidad';
   return {
-    title: 'Política de privacidad',
-    description: 'Informacion sobre tratamiento de datos personales, derechos y politica de privacidad del sitio web.',
+    title: `Política de privacidad${localeSuffix}`,
+    description: `Informacion sobre tratamiento de datos personales, derechos y politica de privacidad del sitio web.${localeSuffix}`,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

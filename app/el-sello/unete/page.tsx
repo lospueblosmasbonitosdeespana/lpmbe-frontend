@@ -19,10 +19,11 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
+  const localeSuffix = locale === 'es' ? '' : ` (${locale.toUpperCase()})`;
   const path = '/el-sello/unete';
   return {
-    title: 'Únete',
-    description: 'Informacion para municipios y colaboradores que quieran unirse a la red y al sello.',
+    title: `Únete${localeSuffix}`,
+    description: `Informacion para municipios y colaboradores que quieran unirse a la red y al sello.${localeSuffix}`,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

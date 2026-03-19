@@ -47,13 +47,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, mxSlug } = await params;
   const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const t = await getTranslations("mxPage");
   const fallbackPath = `/pueblos/${slug}/experiencias/${mxSlug}`;
   const pueblo = await getLugarLegacyBySlug(slug, locale).catch(() => null);
   if (!pueblo) {
     return {
-      title: seoTitle("Experiencia del pueblo"),
-      description: seoDescription("Contenido de experiencia del pueblo."),
+      title: seoTitle(`Experiencia del pueblo${localeSuffix}`),
+      description: seoDescription(`Contenido de experiencia del pueblo.${localeSuffix}`),
       alternates: {
         canonical: getCanonicalUrl(fallbackPath, locale as SupportedLocale),
         languages: getLocaleAlternates(fallbackPath),
@@ -74,7 +75,7 @@ export async function generateMetadata({
   const tSeo = await getTranslations("seo");
   const tPueblo = await getTranslations("puebloPage");
   const expTitle = mx?.titulo ?? t("experienceFallback");
-  const title = seoTitle(`${expTitle} – ${pueblo.nombre}`);
+  const title = seoTitle(`${expTitle} – ${pueblo.nombre}${localeSuffix}`);
   const heroImage =
     mx?.foto ??
     pueblo.foto_destacada ??

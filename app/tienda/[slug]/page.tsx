@@ -14,6 +14,7 @@ type PageProps = {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
+  const localeSuffix = locale === 'es' ? '' : ` (${locale.toUpperCase()})`;
   const path = `/tienda/${slug}`;
   const fallbackName = slugToTitle(slug) || "Producto";
 
@@ -21,8 +22,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const product = await getProductBySlugFast(slug);
     if (!product) {
       return {
-        title: seoTitle(`Producto: ${fallbackName}`),
-        description: seoDescription(`Informacion y detalles del producto ${fallbackName}.`),
+        title: seoTitle(`Producto: ${fallbackName}${localeSuffix}`),
+        description: seoDescription(`Informacion y detalles del producto ${fallbackName}.${localeSuffix}`),
         alternates: {
           canonical: getCanonicalUrl(path, locale as SupportedLocale),
           languages: getLocaleAlternates(path),
@@ -33,8 +34,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const productName = product.nombre?.trim() || fallbackName;
     const rawDesc = product.descripcion?.replace(/<[^>]*>/g, " ").trim();
     return {
-      title: seoTitle(productName),
-      description: seoDescription(rawDesc || `Compra ${productName} en la tienda oficial.`),
+      title: seoTitle(`${productName}${localeSuffix}`),
+      description: seoDescription(`${rawDesc || `Compra ${productName} en la tienda oficial.`}${localeSuffix}`),
       alternates: {
         canonical: getCanonicalUrl(path, locale as SupportedLocale),
         languages: getLocaleAlternates(path),

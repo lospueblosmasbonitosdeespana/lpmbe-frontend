@@ -12,10 +12,11 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const path = "/el-sello/como-se-obtiene";
   return {
-    title: "Cómo se obtiene el Sello",
-    description: "Proceso y requisitos para obtener el Sello de Los Pueblos Mas Bonitos de Espana.",
+    title: `Cómo se obtiene el Sello${localeSuffix}`,
+    description: `Proceso y requisitos para obtener el Sello de Los Pueblos Mas Bonitos de Espana.${localeSuffix}`,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

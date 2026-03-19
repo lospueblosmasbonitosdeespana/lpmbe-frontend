@@ -77,6 +77,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const tSeo = await getTranslations("seo");
   const rutas = await getRutasFast(locale);
   const ruta = rutas.find((r) => r.slug === slug);
@@ -84,8 +85,8 @@ export async function generateMetadata({
   if (!ruta) {
     const path = `/rutas/${slug}`;
     return {
-      title: seoTitle(tSeo("routeNotFoundTitle")),
-      description: seoDescription(tSeo("rutaDescriptionFallback")),
+      title: seoTitle(`${tSeo("routeNotFoundTitle")}${localeSuffix}`),
+      description: seoDescription(`${tSeo("rutaDescriptionFallback")}${localeSuffix}`),
       alternates: {
         canonical: getCanonicalUrl(path, locale as SupportedLocale),
         languages: getLocaleAlternates(path),
@@ -94,10 +95,10 @@ export async function generateMetadata({
     };
   }
 
-  const title = seoTitle(ruta.titulo);
+  const title = seoTitle(`${ruta.titulo}${localeSuffix}`);
   const description = ruta.descripcion
-    ? seoDescription(createExcerpt(ruta.descripcion, 160), 160)
-    : tSeo("rutaDescriptionFallback");
+    ? seoDescription(`${createExcerpt(ruta.descripcion, 150)}${localeSuffix}`, 155)
+    : `${tSeo("rutaDescriptionFallback")}${localeSuffix}`;
   const path = `/rutas/${ruta.slug}`;
 
   return {

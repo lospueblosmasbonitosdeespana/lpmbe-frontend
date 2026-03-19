@@ -13,10 +13,11 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const path = "/el-sello/internacional";
   return {
-    title: "Red internacional del Sello",
-    description: "Conoce la red internacional de pueblos y asociaciones vinculadas al sello de calidad turistica.",
+    title: `Red internacional del Sello${localeSuffix}`,
+    description: `Conoce la red internacional de pueblos y asociaciones vinculadas al sello de calidad turistica.${localeSuffix}`,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

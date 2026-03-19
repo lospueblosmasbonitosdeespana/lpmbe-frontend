@@ -87,8 +87,8 @@ export function getOGLocale(locale: SupportedLocale): string {
 }
 
 const TEMPLATE_SUFFIX_LEN = ` | ${SITE_NAME}`.length; // 37
-const MAX_TITLE_TOTAL = 60;
-const MAX_PAGE_TITLE = MAX_TITLE_TOTAL - TEMPLATE_SUFFIX_LEN; // 23
+const MAX_TITLE_TOTAL = 70;
+const MAX_PAGE_TITLE = MAX_TITLE_TOTAL - TEMPLATE_SUFFIX_LEN; // 33
 
 function decodeBasicHtmlEntities(text: string): string {
   return text

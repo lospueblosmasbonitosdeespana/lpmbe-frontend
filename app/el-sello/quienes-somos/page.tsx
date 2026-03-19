@@ -17,10 +17,11 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
+  const localeSuffix = locale === 'es' ? '' : ` (${locale.toUpperCase()})`;
   const path = '/el-sello/quienes-somos';
   return {
-    title: 'Quiénes somos',
-    description: 'Equipo, historia y mision de la asociacion Los Pueblos Mas Bonitos de Espana.',
+    title: `Quiénes somos${localeSuffix}`,
+    description: `Equipo, historia y mision de la asociacion Los Pueblos Mas Bonitos de Espana.${localeSuffix}`,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

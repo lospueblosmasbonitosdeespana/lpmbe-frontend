@@ -102,12 +102,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, poi } = await params;
   const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const data = await fetchPoiFast(slug, poi, locale);
   const path = `/pueblos/${slug}/pois/${poi}`;
   if (!data) {
     return {
-      title: seoTitle(`Punto de interés · ${slug.replace(/-/g, " ")}`),
-      description: seoDescription(`Información del punto de interés en ${slug.replace(/-/g, " ")}.`),
+      title: seoTitle(`Punto de interés · ${slug.replace(/-/g, " ")}${localeSuffix}`),
+      description: seoDescription(`Información del punto de interés en ${slug.replace(/-/g, " ")}.${localeSuffix}`),
       alternates: {
         canonical: getCanonicalUrl(path, locale as SupportedLocale),
         languages: getLocaleAlternates(path),
@@ -119,7 +120,7 @@ export async function generateMetadata({
   const foto = pickFotoPrincipal(data);
   const descripcionHtml = pickDescripcionHtml(data);
   const puebloNombre = data.pueblo?.nombre ?? "";
-  const title = seoTitle(`${data.nombre}${puebloNombre ? ` · ${puebloNombre}` : ""}`);
+  const title = seoTitle(`${data.nombre}${puebloNombre ? ` · ${puebloNombre}` : ""}${localeSuffix}`);
   const canonicalPath = `/pueblos/${slug}/pois/${data.slug ?? poi}`;
   const rawDesc = descripcionHtml
     ? descripcionHtml.replace(/<[^>]*>/g, "").trim()

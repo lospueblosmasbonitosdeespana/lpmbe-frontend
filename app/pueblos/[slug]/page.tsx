@@ -277,12 +277,13 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const tSeo = await getTranslations("seo");
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const pueblo = await getPuebloBySlugFast(slug, locale);
   if (!pueblo) {
     const safeName = slugToTitle(slug) || "Pueblo";
     const path = `/pueblos/${slug}`;
     return {
-      title: seoTitle(safeName),
+      title: seoTitle(`${safeName}${localeSuffix}`),
       description: seoDescription(tSeo("puebloDescriptionFallback")),
       alternates: {
         canonical: getCanonicalUrl(path, locale as SupportedLocale),
@@ -294,7 +295,7 @@ export async function generateMetadata({
   const fotos = Array.isArray(pueblo.fotosPueblo) ? pueblo.fotosPueblo : [];
   const heroImage = pueblo.foto_destacada ?? fotos[0]?.url ?? null;
   const baseTitle = `${pueblo.nombre} · ${pueblo.provincia} · ${pueblo.comunidad}`;
-  const title = seoTitle(`${pueblo.nombre} (${pueblo.provincia})`);
+  const title = seoTitle(`${pueblo.nombre} (${pueblo.provincia})${localeSuffix}`);
   // Extraer texto plano del HTML para la descripción (sin tags)
   const descText = pueblo.descripcion
     ? cleanText(pueblo.descripcion.replace(/<[^>]*>/g, ""))

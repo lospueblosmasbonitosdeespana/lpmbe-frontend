@@ -9,10 +9,11 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
+  const localeSuffix = locale === 'es' ? '' : ` (${locale.toUpperCase()})`;
   const t = await getTranslations("seo");
   const path = "/pueblos";
-  const title = 'Pueblos de la red';
-  const description = t("pueblosListDescription");
+  const title = `Pueblos de la red${localeSuffix}`;
+  const description = `${t("pueblosListDescription")}${localeSuffix}`;
   const canonicalUrl = getCanonicalUrl(path, locale);
   return {
     title,
