@@ -86,7 +86,14 @@ type NewsletterTemplate = {
   contentHtml: string;
   blocksJson: unknown;
   isDefault?: boolean;
-  metadata?: { category?: string; description?: string; thumbnailUrl?: string };
+  metadata?: {
+    category?: string;
+    description?: string;
+    thumbnailUrl?: string;
+    /** Clave para filtrar en la galería (prensa, articulo, evento, cartel_pueblo, tema_gastronomia, …) */
+    theme?: string;
+    themeLabel?: string;
+  };
   updatedAt?: string;
 };
 
@@ -194,6 +201,50 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+
+/** Clave de temática para filtros (plantillas antiguas sin `theme` se infieren de `category`). */
+function getTemplateThemeKey(t: NewsletterTemplate): string {
+  const m = t.metadata;
+  if (m?.theme) return m.theme;
+  if (m?.category === 'prensa') return 'prensa';
+  if (m?.category === 'articulo') return 'articulo';
+  if (m?.category === 'newsletter') return 'newsletter';
+  return 'otros';
+}
+
+function getTemplateThemeLabel(t: NewsletterTemplate): string | undefined {
+  const m = t.metadata;
+  if (m?.themeLabel) return m.themeLabel;
+  const k = getTemplateThemeKey(t);
+  const map: Record<string, string> = {
+    prensa: 'Notas de prensa',
+    articulo: 'Artículos',
+    newsletter: 'Newsletter general',
+    evento: 'Eventos',
+    cartel_pueblo: 'Carteles pueblos',
+    tema_gastronomia: 'Gastronomía',
+    tema_naturaleza: 'Naturaleza',
+    tema_cultura: 'Cultura',
+    tema_familia: 'En familia',
+    tema_petfriendly: 'Pet friendly',
+    otros: 'Otros',
+  };
+  return map[k];
+}
+
+const TEMPLATE_THEME_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: '', label: 'Todas las temáticas' },
+  { value: 'newsletter', label: 'Newsletter general' },
+  { value: 'prensa', label: 'Notas de prensa' },
+  { value: 'articulo', label: 'Artículos' },
+  { value: 'evento', label: 'Eventos' },
+  { value: 'cartel_pueblo', label: 'Carteles pueblos' },
+  { value: 'tema_gastronomia', label: 'Pág. Gastronomía' },
+  { value: 'tema_naturaleza', label: 'Pág. Naturaleza' },
+  { value: 'tema_cultura', label: 'Pág. Cultura' },
+  { value: 'tema_familia', label: 'Pág. En familia' },
+  { value: 'tema_petfriendly', label: 'Pág. Pet friendly' },
+];
 
 function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
   if (!Array.isArray(value)) return [];
@@ -729,6 +780,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [templateSaving, setTemplateSaving] = useState(false);
   const [showTemplateGallery, setShowTemplateGallery] = useState(false);
   const [templateGalleryTab, setTemplateGalleryTab] = useState<'all' | 'predefined' | 'mine'>('all');
+  const [templateThemeFilter, setTemplateThemeFilter] = useState('');
   const [templatePreviewHtml, setTemplatePreviewHtml] = useState<string | null>(null);
   const [newsletterBlocks, setNewsletterBlocks] = useState<NewsletterBlock[]>([]);
   const [selectedNewsletterBlockId, setSelectedNewsletterBlockId] = useState<string | null>(null);
@@ -2100,7 +2152,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
 
                 {showTemplateGallery && (
                   <div className="rounded-lg border border-border bg-card p-4">
-                    <div className="mb-4 flex items-center gap-3">
+                    <div className="mb-3 flex flex-wrap items-center gap-3">
                       <h3 className="text-sm font-bold uppercase text-muted-foreground">Plantillas</h3>
                       <div className="flex rounded-md border border-border text-xs">
                         {(['all', 'predefined', 'mine'] as const).map((tab) => (
@@ -2115,12 +2167,35 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                         ))}
                       </div>
                     </div>
+                    <div className="mb-4">
+                      <p className="mb-2 text-xs font-semibold text-muted-foreground">Temática</p>
+                      <div className="flex max-h-28 flex-wrap gap-1.5 overflow-y-auto">
+                        {TEMPLATE_THEME_FILTER_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.value || 'all-themes'}
+                            type="button"
+                            onClick={() => setTemplateThemeFilter(opt.value)}
+                            className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition ${
+                              templateThemeFilter === opt.value
+                                ? 'border-primary bg-primary text-primary-foreground'
+                                : 'border-border bg-background hover:bg-muted'
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                       {newsletterTemplates
                         .filter((t) => {
                           if (templateGalleryTab === 'predefined') return t.isDefault;
                           if (templateGalleryTab === 'mine') return !t.isDefault;
                           return true;
+                        })
+                        .filter((t) => {
+                          if (!templateThemeFilter) return true;
+                          return getTemplateThemeKey(t) === templateThemeFilter;
                         })
                         .map((t) => (
                           <div
@@ -2146,6 +2221,11 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                   Predefinida
                                 </span>
                               )}
+                              {getTemplateThemeLabel(t) ? (
+                                <span className="absolute left-1 top-1 max-w-[85%] truncate rounded bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                                  {getTemplateThemeLabel(t)}
+                                </span>
+                              ) : null}
                             </div>
                             <div className="p-3">
                               <p className="truncate text-sm font-semibold">{t.name}</p>
@@ -2201,6 +2281,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                         if (templateGalleryTab === 'predefined') return t.isDefault;
                         if (templateGalleryTab === 'mine') return !t.isDefault;
                         return true;
+                      }).filter((t) => {
+                        if (!templateThemeFilter) return true;
+                        return getTemplateThemeKey(t) === templateThemeFilter;
                       }).length === 0 && (
                         <p className="col-span-full py-8 text-center text-sm text-muted-foreground">
                           No hay plantillas en esta categoría.
