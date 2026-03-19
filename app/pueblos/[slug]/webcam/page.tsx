@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug, getPuebloBySlugFast } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 
@@ -56,13 +56,14 @@ export default async function WebcamPuebloPage({
 }) {
   const { slug } = await params;
   const locale = await getLocale();
+  const tPueblo = await getTranslations("puebloPage");
   const API_BASE = getApiUrl();
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
   if (!pueblo) {
     return (
       <main className="min-h-screen bg-background">
         <div className="mx-auto max-w-4xl px-4 py-8">
-          <h1 className="text-2xl font-bold">Webcam</h1>
+          <h1 className="text-2xl font-bold">{tPueblo("h1Webcam", { nombre: slug })}</h1>
           <p className="mt-2 text-muted-foreground">
             No se ha podido cargar el pueblo para mostrar la webcam.
           </p>
@@ -108,7 +109,7 @@ export default async function WebcamPuebloPage({
               </span>
             ))}
           </nav>
-          <h1 className="text-2xl font-bold">Webcam de {pueblo.nombre}</h1>
+          <h1 className="text-2xl font-bold">{tPueblo("h1Webcam", { nombre: pueblo.nombre })}</h1>
           <p className="mt-1 text-muted-foreground">
             Imagen en directo de las webcams del pueblo.
           </p>

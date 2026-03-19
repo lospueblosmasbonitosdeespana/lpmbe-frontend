@@ -24,6 +24,8 @@ type ActualidadPuebloClientProps = {
   puebloSlug: string;
   tipo?: string;
   modo?: string;
+  h1Label?: string;
+  h1Archivo?: string;
 };
 const NEWS_VISIBLE_DAYS = 30;
 
@@ -175,6 +177,8 @@ export default function ActualidadPuebloClient({
   puebloSlug,
   tipo,
   modo,
+  h1Label,
+  h1Archivo,
 }: ActualidadPuebloClientProps) {
   const [items, setItems] = useState<Contenido[]>([]);
   const [loading, setLoading] = useState(true);
@@ -290,7 +294,7 @@ export default function ActualidadPuebloClient({
             ← Volver a Actualidad
           </Link>
           <h1 className="text-4xl font-semibold">
-            Archivo · {puebloNombre}
+            {h1Archivo ?? `Archivo · ${puebloNombre}`}
           </h1>
           <p className="mt-2 text-gray-600">
             Noticias y eventos anteriores de {puebloNombre}
@@ -347,7 +351,7 @@ export default function ActualidadPuebloClient({
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
       <div className="mb-8">
-        <h1 className="text-4xl font-semibold">Actualidad · {puebloNombre}</h1>
+        <h1 className="text-4xl font-semibold">{h1Label ?? `Actualidad · ${puebloNombre}`}</h1>
         <p className="mt-2 text-gray-600">
           Noticias, eventos y artículos de {puebloNombre}
         </p>

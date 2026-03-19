@@ -199,13 +199,13 @@ export default async function PoiPage({
       </div>
 
       <h1 className="text-3xl font-bold text-foreground my-4">
-        {data.nombre}
+        {data.nombre} · {puebloNombre}
       </h1>
 
       <p className="text-sm text-muted-foreground my-2">
-        {puebloNombre}
-        {puebloProvincia ? ` · ${puebloProvincia}` : ""}
-        {puebloComunidad ? ` · ${puebloComunidad}` : ""}
+        {puebloProvincia ?? ""}
+        {puebloProvincia && puebloComunidad ? " · " : ""}
+        {puebloComunidad ?? ""}
       </p>
 
       {data.categoria && (

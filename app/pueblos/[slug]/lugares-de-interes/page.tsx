@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug, getPuebloBySlugFast } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
@@ -52,6 +52,7 @@ export default async function LugaresDeInteresPage({
 }) {
   const { slug } = await params;
   const locale = await getLocale();
+  const tPueblo = await getTranslations("puebloPage");
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
   if (!pueblo) {
     return (
@@ -59,7 +60,7 @@ export default async function LugaresDeInteresPage({
         <Section spacing="md">
           <Container>
             <div className="rounded-xl border border-dashed border-border bg-card/50 px-8 py-16 text-center">
-              <h1 className="font-serif text-2xl font-medium text-foreground">Lugares de interés</h1>
+              <h1 className="font-serif text-2xl font-medium text-foreground">{tPueblo("h1LugaresDeInteres", { nombre: slug })}</h1>
               <p className="mt-3 text-muted-foreground">
                 No se ha podido cargar este pueblo en este momento.
               </p>
@@ -93,7 +94,7 @@ export default async function LugaresDeInteresPage({
             <div className="mb-10">
               <Eyebrow className="mb-2">Qué ver</Eyebrow>
               <h1 className="font-serif text-2xl font-medium tracking-tight sm:text-3xl">
-                Lugares de interés en {pueblo.nombre}
+                {tPueblo("h1LugaresDeInteres", { nombre: pueblo.nombre })}
               </h1>
               <Body className="mt-2 text-muted-foreground">
                 No hay lugares de interés disponibles para este pueblo.
@@ -160,7 +161,7 @@ export default async function LugaresDeInteresPage({
           <div className="mb-10">
             <Eyebrow className="mb-2">Qué ver</Eyebrow>
             <h1 className="font-serif text-2xl font-medium tracking-tight sm:text-3xl">
-              Lugares de interés en {pueblo.nombre}
+              {tPueblo("h1LugaresDeInteres", { nombre: pueblo.nombre })}
             </h1>
             <Body className="mt-2 text-muted-foreground">
               {pois.length} {pois.length === 1 ? "punto de interés" : "puntos de interés"} para descubrir

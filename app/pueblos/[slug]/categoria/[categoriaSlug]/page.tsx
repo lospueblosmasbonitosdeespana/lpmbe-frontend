@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug, getPuebloBySlugFast } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
@@ -130,6 +130,7 @@ export default async function CategoriaPage({
 }) {
   const { slug, categoriaSlug } = await params;
   const locale = await getLocale();
+  const tPueblo = await getTranslations("puebloPage");
   const categoriaKey = CATEGORIA_SLUG_TO_KEY[categoriaSlug];
   if (!categoriaKey) {
     return (
@@ -186,11 +187,23 @@ export default async function CategoriaPage({
   const label = CATEGORIA_LABELS[categoriaSlug];
   const descripcion = CATEGORIA_DESCRIPTIONS[categoriaSlug];
 
+  const CAT_I18N_KEY: Record<string, string> = {
+    naturaleza: "catNaturaleza",
+    cultura: "catCultura",
+    "en-familia": "catEnFamilia",
+    patrimonio: "catPatrimonio",
+    petfriendly: "catPetfriendly",
+    gastronomia: "catGastronomia",
+  };
+  const i18nCatLabel = CAT_I18N_KEY[categoriaSlug]
+    ? tPueblo(CAT_I18N_KEY[categoriaSlug] as any)
+    : label;
+  const h1Text = tPueblo("h1CategoriaEn", { categoria: i18nCatLabel, nombre: pueblo.nombre });
+
   return (
     <main className="bg-background min-h-screen">
       <Section spacing="md">
         <Container>
-          {/* Breadcrumb */}
           <nav className="mb-6 text-sm text-muted-foreground">
             <Link href="/pueblos" className="hover:text-foreground">
               Pueblos
@@ -200,12 +213,12 @@ export default async function CategoriaPage({
               {pueblo.nombre}
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-foreground">{label}</span>
+            <span className="text-foreground">{i18nCatLabel}</span>
           </nav>
 
           <div className="mb-10">
             <Eyebrow className="mb-2">Qué hacer</Eyebrow>
-            <h1 className="font-serif text-4xl font-medium tracking-tight">{label} en {pueblo.nombre}</h1>
+            <h1 className="font-serif text-4xl font-medium tracking-tight">{h1Text}</h1>
             <Body className="mt-2 text-muted-foreground">{descripcion}</Body>
           </div>
 
