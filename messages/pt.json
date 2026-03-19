@@ -627,7 +627,20 @@
     "nearbyTitle": "Aldeias próximas",
     "coordinates": "Coordenadas: {lat}, {lng}, {lng}, {lng}, {lng}, {lng}, {lng}, {lng}.",
     "viewOnGoogleMaps": "Ver no Google Maps",
-    "videos": "Vídeos"
+    "videos": "Vídeos",
+    "h1Videos": "Vídeos de {nombre}",
+    "h1Webcam": "Webcam de {nombre}",
+    "h1Actualidad": "Atualidade de {nombre}",
+    "h1Multiexperiencias": "Multi-experiências em {nombre}",
+    "h1LugaresDeInteres": "Locais de interesse em {nombre}",
+    "h1Archivo": "Arquivo de {nombre}",
+    "h1CategoriaEn": "{categoria} em {nombre}",
+    "catNaturaleza": "Natureza",
+    "catCultura": "Cultura",
+    "catEnFamilia": "Em família",
+    "catPatrimonio": "Património",
+    "catPetfriendly": "Pet-friendly",
+    "catGastronomia": "Gastronomia"
   },
   "poiPage": {
     "backTo": "← Voltar a {nome}",

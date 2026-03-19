@@ -627,7 +627,20 @@
     "nearbyTitle": "Nearby Towns",
     "coordinates": "Coordinates: {lat}, {lng}",
     "viewOnGoogleMaps": "View in Google Maps",
-    "videos": "Videos"
+    "videos": "Videos",
+    "h1Videos": "Videos of {nombre}",
+    "h1Webcam": "Webcam of {nombre}",
+    "h1Actualidad": "News from {nombre}",
+    "h1Multiexperiencias": "Multi-experiences in {nombre}",
+    "h1LugaresDeInteres": "Points of interest in {nombre}",
+    "h1Archivo": "Archive of {nombre}",
+    "h1CategoriaEn": "{categoria} in {nombre}",
+    "catNaturaleza": "Nature",
+    "catCultura": "Culture",
+    "catEnFamilia": "Family",
+    "catPatrimonio": "Heritage",
+    "catPetfriendly": "Pet-friendly",
+    "catGastronomia": "Gastronomy"
   },
   "poiPage": {
     "backTo": "← Back to {name}",

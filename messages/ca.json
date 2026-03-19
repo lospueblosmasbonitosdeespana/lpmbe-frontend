@@ -627,7 +627,20 @@
     "nearbyTitle": "Pobles propers",
     "coordinates": "Coordenades: {lat}, {lng}",
     "viewOnGoogleMaps": "Veure a Google Maps",
-    "videos": "Vídeos"
+    "videos": "Vídeos",
+    "h1Videos": "Vídeos de {nombre}",
+    "h1Webcam": "Webcam de {nombre}",
+    "h1Actualidad": "Actualitat de {nombre}",
+    "h1Multiexperiencias": "Multiexperiències a {nombre}",
+    "h1LugaresDeInteres": "Llocs d'interès a {nombre}",
+    "h1Archivo": "Arxiu de {nombre}",
+    "h1CategoriaEn": "{categoria} a {nombre}",
+    "catNaturaleza": "Natura",
+    "catCultura": "Cultura",
+    "catEnFamilia": "En família",
+    "catPatrimonio": "Patrimoni",
+    "catPetfriendly": "Pet-friendly",
+    "catGastronomia": "Gastronomia"
   },
   "poiPage": {
     "backTo": "← Tornar a {name}",

@@ -627,7 +627,20 @@
     "nearbyTitle": "Villaggi vicini",
     "coordinates": "Coordinate: {lat}, {lng}, {lng}, {lng}, {lng}, {lng}, {lng}, {lng}.",
     "viewOnGoogleMaps": "Visualizza su Google Maps",
-    "videos": "Video"
+    "videos": "Video",
+    "h1Videos": "Video di {nombre}",
+    "h1Webcam": "Webcam di {nombre}",
+    "h1Actualidad": "Attualità di {nombre}",
+    "h1Multiexperiencias": "Multi-esperienze a {nombre}",
+    "h1LugaresDeInteres": "Luoghi di interesse a {nombre}",
+    "h1Archivo": "Archivio di {nombre}",
+    "h1CategoriaEn": "{categoria} a {nombre}",
+    "catNaturaleza": "Natura",
+    "catCultura": "Cultura",
+    "catEnFamilia": "In famiglia",
+    "catPatrimonio": "Patrimonio",
+    "catPetfriendly": "Pet-friendly",
+    "catGastronomia": "Gastronomia"
   },
   "poiPage": {
     "backTo": "← Torna a {nome}",

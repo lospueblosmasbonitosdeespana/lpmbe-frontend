@@ -627,7 +627,20 @@
     "nearbyTitle": "Nahegelegene Dörfer",
     "coordinates": "Koordinaten: {lat}, {lng}, {lng}, {lng}, {lng}, {lng}, {lng}, {lng}.",
     "viewOnGoogleMaps": "Ansicht auf Google Maps",
-    "videos": "Videos"
+    "videos": "Videos",
+    "h1Videos": "Videos von {nombre}",
+    "h1Webcam": "Webcam von {nombre}",
+    "h1Actualidad": "Aktuelles aus {nombre}",
+    "h1Multiexperiencias": "Multi-Erlebnisse in {nombre}",
+    "h1LugaresDeInteres": "Sehenswürdigkeiten in {nombre}",
+    "h1Archivo": "Archiv von {nombre}",
+    "h1CategoriaEn": "{categoria} in {nombre}",
+    "catNaturaleza": "Natur",
+    "catCultura": "Kultur",
+    "catEnFamilia": "Familie",
+    "catPatrimonio": "Kulturerbe",
+    "catPetfriendly": "Haustierfreundlich",
+    "catGastronomia": "Gastronomie"
   },
   "poiPage": {
     "backTo": "← Zurück zu {Name}",

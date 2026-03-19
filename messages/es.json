@@ -664,7 +664,20 @@
     "nearbyTitle": "Pueblos Cercanos",
     "coordinates": "Coordenadas: {lat}, {lng}",
     "viewOnGoogleMaps": "Ver en Google Maps",
-    "videos": "Videos"
+    "videos": "Videos",
+    "h1Videos": "Videos de {nombre}",
+    "h1Webcam": "Webcam de {nombre}",
+    "h1Actualidad": "Actualidad de {nombre}",
+    "h1Multiexperiencias": "Multiexperiencias en {nombre}",
+    "h1LugaresDeInteres": "Lugares de interés en {nombre}",
+    "h1Archivo": "Archivo de {nombre}",
+    "h1CategoriaEn": "{categoria} en {nombre}",
+    "catNaturaleza": "Naturaleza",
+    "catCultura": "Cultura",
+    "catEnFamilia": "En familia",
+    "catPatrimonio": "Patrimonio",
+    "catPetfriendly": "Petfriendly",
+    "catGastronomia": "Gastronomía"
   },
   "poiPage": {
     "backTo": "← Volver a {nombre}",
