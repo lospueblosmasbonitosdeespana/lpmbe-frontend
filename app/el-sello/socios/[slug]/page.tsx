@@ -6,7 +6,15 @@ import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import { Display, Headline, Body, Lead } from '@/app/components/ui/typography';
 import { getLocale, getTranslations } from 'next-intl/server';
-import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from '@/lib/seo';
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  seoTitle,
+  seoDescription,
+  slugToTitle,
+  titleLocaleSuffix,
+  type SupportedLocale,
+} from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,12 +25,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
-  const localeSuffix = locale === 'es' ? '' : ` (${locale.toUpperCase()})`;
+  const locSuf = titleLocaleSuffix(locale);
   const name = slugToTitle(slug) || 'Socio';
   const path = `/el-sello/socios/${slug}`;
   return {
-    title: seoTitle(`${name} · Socios · ${slug}${localeSuffix}`),
-    description: seoDescription(`${name}, socio y colaborador de Los Pueblos Más Bonitos de España.${localeSuffix}`),
+    title: seoTitle(`${name} · Socios · ${slug}${locSuf}`),
+    description: seoDescription(`${name}, socio y colaborador de Los Pueblos Más Bonitos de España.${locSuf}`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

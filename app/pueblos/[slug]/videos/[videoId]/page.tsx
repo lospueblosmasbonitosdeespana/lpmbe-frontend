@@ -7,7 +7,7 @@ import {
   getCanonicalUrl,
   getLocaleAlternates,
   seoDescription,
-  seoTitle,
+  seoTitleVideoWithId,
   titleLocaleSuffix,
   type SupportedLocale,
 } from "@/lib/seo";
@@ -49,8 +49,7 @@ export async function generateMetadata({
   const locSuf = titleLocaleSuffix(locale);
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/videos/${videoId}`;
-  // ID completo del vídeo (YouTube u otro) para títulos únicos por URL
-  const title = seoTitle(`Video ${videoId} · ${name}${locSuf}`);
+  const title = seoTitleVideoWithId(videoId, name, locSuf);
   const description = seoDescription(`Video y contenido audiovisual sobre ${name}.${locSuf}`);
 
   return {

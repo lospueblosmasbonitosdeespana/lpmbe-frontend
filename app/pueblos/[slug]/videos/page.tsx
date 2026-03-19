@@ -2,7 +2,15 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  seoDescription,
+  seoTitle,
+  slugDisambiguatorForTitle,
+  titleLocaleSuffix,
+  type SupportedLocale,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -13,12 +21,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
-  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+  const locSuf = titleLocaleSuffix(locale);
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/videos`;
+  const slugDis = slugDisambiguatorForTitle(slug);
   return {
-    title: seoTitle(`Videos de ${name}${localeSuffix}`),
-    description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${name}.${localeSuffix}`),
+    title: seoTitle(`Videos · ${name}${slugDis}${locSuf}`),
+    description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${name}.${locSuf}`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

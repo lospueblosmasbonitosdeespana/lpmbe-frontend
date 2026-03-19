@@ -5,8 +5,8 @@ import { getApiUrl } from "@/lib/api";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
-  seoTitle,
   seoDescription,
+  seoTitlePoiWithStamp,
   titleLocaleSuffix,
   type SupportedLocale,
 } from "@/lib/seo";
@@ -113,12 +113,7 @@ export async function generateMetadata({
   const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const poiName = (isNumeric(poi) ? `POI ${poi}` : poi.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
   const path = `/pueblos/${slug}/pois/${poi}`;
-  const poiKey = isNumeric(poi)
-    ? poi
-    : poi.replace(/[^a-z0-9]/gi, "").slice(-8) || poi.slice(-8);
-  const title = isNumeric(poi)
-    ? seoTitle(`${poiName} · ${puebloName}${locSuf}`)
-    : seoTitle(`${poiName} · ${puebloName} · ${poiKey}${locSuf}`);
+  const title = seoTitlePoiWithStamp(poi, isNumeric(poi), poiName, puebloName, locSuf);
   return {
     title,
     description: seoDescription(`Información sobre ${poiName} en ${puebloName}.${locSuf}`, 160),

@@ -81,7 +81,7 @@ export async function generateMetadata({
     return { title: 'Experiencia' };
   }
   const locSuf = titleLocaleSuffix(locale);
-  const title = seoTitle(`${t(config.titleKey)}${locSuf}`);
+  const title = seoTitle(`${t(config.titleKey)} · ${slug}${locSuf}`);
   const description = seoDescription(t(config.descKey));
   const path = `/experiencias/${slug}`;
   return {

@@ -87,8 +87,9 @@ export function getOGLocale(locale: SupportedLocale): string {
 }
 
 const TEMPLATE_SUFFIX_LEN = ` | ${SITE_NAME}`.length; // 37
-const MAX_TITLE_TOTAL = 70;
-const MAX_PAGE_TITLE = MAX_TITLE_TOTAL - TEMPLATE_SUFFIX_LEN; // 33
+/** Un poco más de margen para títulos únicos (IDs de vídeo, POI, slugs) antes del truncado. */
+const MAX_TITLE_TOTAL = 78;
+const MAX_PAGE_TITLE = MAX_TITLE_TOTAL - TEMPLATE_SUFFIX_LEN; // 41
 
 function decodeBasicHtmlEntities(text: string): string {
   return text
@@ -112,6 +113,46 @@ export function seoTitle(title: string): string {
   const headLen = Math.ceil((MAX_PAGE_TITLE - 1) * 0.6);
   const tailLen = (MAX_PAGE_TITLE - 1) - headLen;
   return `${normalized.slice(0, headLen).trimEnd()}…${normalized.slice(-tailLen).trimStart()}`;
+}
+
+/**
+ * Título de página de vídeo: no trunca el ID del vídeo (YouTube u otro); solo acorta el nombre del pueblo si hace falta.
+ */
+export function seoTitleVideoWithId(
+  videoId: string,
+  puebloLabel: string,
+  locSuf: string,
+): string {
+  const vid = videoId.trim();
+  const prefix = `Video ${vid} · `;
+  const tail = `${puebloLabel}${locSuf}`.replace(/\s+/g, " ").trim();
+  const full = decodeBasicHtmlEntities(`${prefix}${tail}`)
+    .replace(/\s+/g, " ")
+    .trim();
+  if (full.length <= MAX_PAGE_TITLE) return full;
+  const room = MAX_PAGE_TITLE - prefix.length;
+  if (room <= 4) {
+    return `${prefix.slice(0, Math.max(0, MAX_PAGE_TITLE - 1)).trimEnd()}…`;
+  }
+  const cut = tail.length > room ? `${tail.slice(0, room - 1).trimEnd()}…` : tail;
+  const out = `${prefix}${cut}`;
+  return out.length <= MAX_PAGE_TITLE ? out : out.slice(0, MAX_PAGE_TITLE - 1) + "…";
+}
+
+/**
+ * Título de página de POI: añade un sello corto del parámetro de ruta para evitar colisiones al truncar.
+ */
+export function seoTitlePoiWithStamp(
+  poiParam: string,
+  isNumeric: boolean,
+  poiReadable: string,
+  puebloName: string,
+  locSuf: string,
+): string {
+  const stamp = isNumeric
+    ? poiParam
+    : poiParam.replace(/[^a-zA-Z0-9]/g, "").slice(-8) || poiParam.slice(-8);
+  return seoTitle(`${poiReadable} · ${puebloName}${locSuf} · ${stamp}`);
 }
 
 /** Sufijo visible en el título para diferenciar variantes ?lang= (evita duplicados en auditorías). */
