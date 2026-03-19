@@ -1,6 +1,8 @@
 {
-  "regions": ["iad1"],
-  "rewrites": [
-    {"source": "/wp-json/:path*", "destination": "https://lpmbe-backend-production.up.railway.app/wp-json/:path*"}
+  "crons": [
+    {
+      "path": "/api/cron/warm",
+      "schedule": "*/10 * * * *"
+    }
   ]
 }
