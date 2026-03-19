@@ -156,7 +156,8 @@ export function middleware(req: NextRequest): NextResponse {
   if (pathname.startsWith('/tiendapueblos')) return permanentRedirect(req, '/tienda');
   if (pathname.startsWith('/author/')) return permanentRedirect(req, '/actualidad');
   if (pathname === '/author') return permanentRedirect(req, '/actualidad');
-  // Legacy login/proxy (informe noindex GSC).
+  // Legacy login/proxy/gestion (informe noindex GSC + Sitebulb).
+  if (pathname === '/gestion') return permanentRedirect(req, '/entrar');
   if (pathname === '/wp-login.php' || pathname === '/proxy-oauth') return permanentRedirect(req, '/entrar');
   // Folletos físicos con QR legacy de Pirineos.
   if (pathname === '/pueblos-bonitos-pirineos') {

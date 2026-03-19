@@ -39,6 +39,11 @@ type NewsletterBlockType =
   | 'button'
   | 'iconButton'
   | 'columns2'
+  | 'columns3'
+  | 'gallery'
+  | 'figure'
+  | 'imgText'
+  | 'socialLinks'
   | 'divider';
 type NewsletterBlock = {
   id: string;
@@ -49,6 +54,14 @@ type NewsletterBlock = {
   label?: string;
   colLeft?: string;
   colRight?: string;
+  colCenter?: string;
+  caption?: string;
+  imageUrls?: string[];
+  socialFacebook?: string;
+  socialTwitter?: string;
+  socialInstagram?: string;
+  socialLinkedin?: string;
+  socialYoutube?: string;
   align?: 'left' | 'center' | 'right';
   backgroundColor?: string;
   textColor?: string;
@@ -108,15 +121,30 @@ function createBlock(type: NewsletterBlockType, patch: Partial<NewsletterBlock> 
           ? 'Nuevo párrafo de contenido'
           : type === 'button'
             ? 'Llamada a la acción'
-            : type === 'columns2'
+            : type === 'figure'
               ? ''
-            : '',
+              : type === 'imgText'
+                ? 'Texto al lado de la imagen'
+                : '',
     label: type === 'button' ? 'Leer más' : type === 'iconButton' ? 'Icono' : '',
-    url: type === 'image' ? 'https://...' : type === 'button' ? 'https://...' : '',
+    url:
+      type === 'image' || type === 'figure' || type === 'imgText'
+        ? 'https://...'
+        : type === 'button'
+          ? 'https://...'
+          : '',
     iconUrl: type === 'iconButton' ? 'https://...' : '',
-    colLeft: type === 'columns2' ? 'Columna izquierda' : '',
-    colRight: type === 'columns2' ? 'Columna derecha' : '',
-    align: 'left',
+    caption: type === 'figure' ? 'Pie de imagen' : '',
+    colLeft: type === 'columns2' || type === 'columns3' ? 'Columna izquierda' : '',
+    colRight: type === 'columns2' || type === 'columns3' ? 'Columna derecha' : '',
+    colCenter: type === 'columns3' ? 'Columna central' : '',
+    imageUrls: type === 'gallery' ? [] : undefined,
+    socialFacebook: type === 'socialLinks' ? 'https://facebook.com/lospueblosmasbonitosdeespana' : '',
+    socialTwitter: type === 'socialLinks' ? 'https://twitter.com/pueblosbonitos' : '',
+    socialInstagram: type === 'socialLinks' ? 'https://instagram.com/lospueblosmasbonitosdeespana' : '',
+    socialLinkedin: type === 'socialLinks' ? '' : '',
+    socialYoutube: type === 'socialLinks' ? '' : '',
+    align: type === 'socialLinks' || type === 'gallery' ? 'center' : 'left',
     backgroundColor: '#ffffff',
     textColor: '#111111',
     paddingY: 10,
@@ -159,22 +187,35 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
     .map((item) => {
       const b = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
       const typeRaw = String(b.type || '').trim().toLowerCase();
-      const type: NewsletterBlockType =
-        typeRaw === 'heading'
-          ? 'heading'
-          : typeRaw === 'text'
-            ? 'text'
-            : typeRaw === 'image'
-              ? 'image'
-              : typeRaw === 'button'
-                ? 'button'
-                : typeRaw === 'iconbutton' || typeRaw === 'icon_button' || typeRaw === 'icon-button'
-                  ? 'iconButton'
-                  : typeRaw === 'columns2' || typeRaw === '2columns' || typeRaw === 'two-columns'
-                    ? 'columns2'
-                    : typeRaw === 'divider'
-                      ? 'divider'
-                      : 'text';
+      const typeMap: Record<string, NewsletterBlockType> = {
+        heading: 'heading',
+        text: 'text',
+        image: 'image',
+        button: 'button',
+        iconbutton: 'iconButton',
+        icon_button: 'iconButton',
+        'icon-button': 'iconButton',
+        columns2: 'columns2',
+        '2columns': 'columns2',
+        'two-columns': 'columns2',
+        columns3: 'columns3',
+        '3columns': 'columns3',
+        'three-columns': 'columns3',
+        gallery: 'gallery',
+        galeria: 'gallery',
+        figure: 'figure',
+        figura: 'figure',
+        imgtext: 'imgText',
+        img_text: 'imgText',
+        'img-text': 'imgText',
+        imgtexto: 'imgText',
+        sociallinks: 'socialLinks',
+        social_links: 'socialLinks',
+        'social-links': 'socialLinks',
+        social: 'socialLinks',
+        divider: 'divider',
+      };
+      const type: NewsletterBlockType = typeMap[typeRaw] ?? 'text';
       const alignRaw = String(b.align || 'left');
       const align: 'left' | 'center' | 'right' =
         alignRaw === 'center' ? 'center' : alignRaw === 'right' ? 'right' : 'left';
@@ -191,6 +232,16 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
         label: String(b.label || ''),
         colLeft: String(b.colLeft || ''),
         colRight: String(b.colRight || ''),
+        colCenter: String(b.colCenter || ''),
+        caption: String(b.caption || ''),
+        imageUrls: Array.isArray(b.imageUrls)
+          ? (b.imageUrls as unknown[]).map((u) => String(u))
+          : undefined,
+        socialFacebook: String(b.socialFacebook || ''),
+        socialTwitter: String(b.socialTwitter || ''),
+        socialInstagram: String(b.socialInstagram || ''),
+        socialLinkedin: String(b.socialLinkedin || ''),
+        socialYoutube: String(b.socialYoutube || ''),
         align,
         backgroundColor: String(b.backgroundColor || '#ffffff'),
         textColor: String(b.textColor || '#111111'),
@@ -256,6 +307,51 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         const right = escapeHtml(block.colRight || '').replace(/\n/g, '<br/>');
         return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="50%" valign="top" style="padding:0 8px 0 0;font-size:15px;line-height:1.6;color:${textColor};">${left}</td><td width="50%" valign="top" style="padding:0 0 0 8px;font-size:15px;line-height:1.6;color:${textColor};">${right}</td></tr></table></div>`;
       }
+      if (block.type === 'columns3') {
+        const left = escapeHtml(block.colLeft || '').replace(/\n/g, '<br/>');
+        const center = escapeHtml(block.colCenter || '').replace(/\n/g, '<br/>');
+        const right = escapeHtml(block.colRight || '').replace(/\n/g, '<br/>');
+        return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="33%" valign="top" style="padding:0 6px 0 0;font-size:15px;line-height:1.6;color:${textColor};">${left}</td><td width="34%" valign="top" style="padding:0 6px;font-size:15px;line-height:1.6;color:${textColor};">${center}</td><td width="33%" valign="top" style="padding:0 0 0 6px;font-size:15px;line-height:1.6;color:${textColor};">${right}</td></tr></table></div>`;
+      }
+      if (block.type === 'gallery') {
+        const urls = (block.imageUrls || []).filter((u) => u.trim());
+        if (!urls.length) return `<div style="${boxStyle}"><p style="color:#999;text-align:center;">Galería sin imágenes</p></div>`;
+        const imgs = urls
+          .map(
+            (u) =>
+              `<td style="padding:4px;"><img src="${escapeHtml(u)}" alt="" style="width:100%;height:auto;border-radius:6px;display:block;" /></td>`,
+          )
+          .join('');
+        return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr>${imgs}</tr></table></div>`;
+      }
+      if (block.type === 'figure') {
+        const url = String(block.url || '').trim();
+        const cap = String(block.caption || '').trim();
+        if (!url) return '';
+        return `<div style="${boxStyle}"><figure style="margin:0;text-align:${align};"><img src="${escapeHtml(url)}" alt="${escapeHtml(cap)}" style="max-width:100%;height:auto;border-radius:10px;" />${cap ? `<figcaption style="margin-top:6px;font-size:13px;color:#666;text-align:center;">${escapeHtml(cap)}</figcaption>` : ''}</figure></div>`;
+      }
+      if (block.type === 'imgText') {
+        const url = String(block.url || '').trim();
+        const text = escapeHtml(block.content || '').replace(/\n/g, '<br/>');
+        if (!url) return `<div style="${boxStyle}"><p style="margin:0;font-size:16px;line-height:1.6;color:${textColor};">${text}</p></div>`;
+        return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="40%" valign="top" style="padding:0 12px 0 0;"><img src="${escapeHtml(url)}" alt="" style="width:100%;height:auto;border-radius:8px;display:block;" /></td><td width="60%" valign="top" style="font-size:15px;line-height:1.6;color:${textColor};">${text}</td></tr></table></div>`;
+      }
+      if (block.type === 'socialLinks') {
+        const links: { url: string; label: string; color: string }[] = [];
+        if (block.socialFacebook) links.push({ url: block.socialFacebook, label: 'Facebook', color: '#1877F2' });
+        if (block.socialTwitter) links.push({ url: block.socialTwitter, label: 'X / Twitter', color: '#000' });
+        if (block.socialInstagram) links.push({ url: block.socialInstagram, label: 'Instagram', color: '#E4405F' });
+        if (block.socialLinkedin) links.push({ url: block.socialLinkedin, label: 'LinkedIn', color: '#0A66C2' });
+        if (block.socialYoutube) links.push({ url: block.socialYoutube, label: 'YouTube', color: '#FF0000' });
+        if (!links.length) return '';
+        const items = links
+          .map(
+            (l) =>
+              `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:0 6px;padding:8px 14px;background:${l.color};color:#fff;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;">${escapeHtml(l.label)}</a>`,
+          )
+          .join('');
+        return `<div style="${boxStyle}"><p style="margin:0;text-align:${align};">${items}</p></div>`;
+      }
       return `<hr style="margin:20px 0;border:none;border-top:1px solid #ddd;" />`;
     })
     .filter(Boolean)
@@ -318,6 +414,58 @@ function renderPaletteIcon(type: NewsletterBlockType) {
         <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" />
         <rect x="5.2" y="7.2" width="5.8" height="9.6" rx="1.2" fill="currentColor" opacity="0.9" />
         <rect x="13" y="7.2" width="5.8" height="9.6" rx="1.2" fill="currentColor" opacity="0.65" />
+      </svg>
+    );
+  }
+  if (type === 'columns3') {
+    return (
+      <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" />
+        <rect x="4.8" y="7.2" width="3.8" height="9.6" rx="1" fill="currentColor" opacity="0.9" />
+        <rect x="10.1" y="7.2" width="3.8" height="9.6" rx="1" fill="currentColor" opacity="0.75" />
+        <rect x="15.4" y="7.2" width="3.8" height="9.6" rx="1" fill="currentColor" opacity="0.6" />
+      </svg>
+    );
+  }
+  if (type === 'gallery') {
+    return (
+      <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
+        <rect x="2" y="5" width="8.5" height="6.5" rx="1.5" fill="currentColor" opacity="0.9" />
+        <rect x="13.5" y="5" width="8.5" height="6.5" rx="1.5" fill="currentColor" opacity="0.7" />
+        <rect x="2" y="13.5" width="8.5" height="6.5" rx="1.5" fill="currentColor" opacity="0.6" />
+        <rect x="13.5" y="13.5" width="8.5" height="6.5" rx="1.5" fill="currentColor" opacity="0.45" />
+      </svg>
+    );
+  }
+  if (type === 'figure') {
+    return (
+      <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" />
+        <circle cx="9" cy="8" r="1.5" fill="currentColor" />
+        <path d="M5.5 15l4.2-4.3 3 2.8 2.3-2.1 2.5 3.6z" fill="currentColor" opacity="0.8" />
+        <rect x="5" y="19" width="14" height="2" rx="1" fill="currentColor" opacity="0.5" />
+      </svg>
+    );
+  }
+  if (type === 'imgText') {
+    return (
+      <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
+        <rect x="2" y="5" width="9" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none" />
+        <circle cx="6.5" cy="10" r="1.2" fill="currentColor" />
+        <path d="M3.5 16l2.5-3 2 1.8 1.5-1.3 1.5 2.5z" fill="currentColor" opacity="0.7" />
+        <rect x="13.5" y="6" width="8.5" height="2" rx="1" fill="currentColor" opacity="0.9" />
+        <rect x="13.5" y="10" width="8.5" height="1.6" rx="0.8" fill="currentColor" opacity="0.7" />
+        <rect x="13.5" y="13.2" width="7" height="1.6" rx="0.8" fill="currentColor" opacity="0.55" />
+        <rect x="13.5" y="16.4" width="6" height="1.6" rx="0.8" fill="currentColor" opacity="0.4" />
+      </svg>
+    );
+  }
+  if (type === 'socialLinks') {
+    return (
+      <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
+        <rect x="2" y="8" width="6" height="8" rx="2" fill="#1877F2" />
+        <rect x="9" y="8" width="6" height="8" rx="2" fill="#E4405F" />
+        <rect x="16" y="8" width="6" height="8" rx="2" fill="#000" />
       </svg>
     );
   }
@@ -792,7 +940,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   async function uploadNewsletterImageForBlock(
     file: File,
     blockId: string,
-    targetField: 'url' | 'iconUrl' = 'url',
+    targetField: 'url' | 'iconUrl' | 'gallery' = 'url',
   ) {
     if (!file) return;
     setUploadingNewsletterImage(true);
@@ -809,8 +957,24 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       if (!res.ok || !data?.url) {
         throw new Error(data?.error || data?.message || 'Error subiendo imagen');
       }
-      updateNewsletterBlock(blockId, { [targetField]: String(data.url) } as Partial<NewsletterBlock>);
-      setMessage(targetField === 'iconUrl' ? 'Icono subido correctamente.' : 'Imagen subida correctamente al bloque.');
+      if (targetField === 'gallery') {
+        setNewsletterBlocks((prev) =>
+          prev.map((b) =>
+            b.id === blockId
+              ? { ...b, imageUrls: [...(b.imageUrls || []), String(data.url)] }
+              : b,
+          ),
+        );
+      } else {
+        updateNewsletterBlock(blockId, { [targetField]: String(data.url) } as Partial<NewsletterBlock>);
+      }
+      setMessage(
+        targetField === 'iconUrl'
+          ? 'Icono subido correctamente.'
+          : targetField === 'gallery'
+            ? 'Imagen añadida a la galería.'
+            : 'Imagen subida correctamente al bloque.',
+      );
     } catch (e: unknown) {
       setError(getErrorMessage(e, 'Error subiendo imagen'));
     } finally {
@@ -1864,6 +2028,81 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                               type="button"
                               draggable
                               onDragStart={(e) => {
+                                setDraggingPaletteType('gallery');
+                                e.dataTransfer.setData('text/newsletter-block-type', 'gallery');
+                                e.dataTransfer.effectAllowed = 'copy';
+                              }}
+                              onDragEnd={() => setDraggingPaletteType(null)}
+                              onClick={() => addNewsletterBlock('gallery')}
+                              className="flex flex-col items-center justify-center gap-1 rounded-md border bg-background px-2 py-2 text-center text-[11px] font-medium hover:border-primary/60 hover:bg-primary/5"
+                            >
+                              {renderPaletteIcon('gallery')}
+                              Galería
+                            </button>
+                            <button
+                              type="button"
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggingPaletteType('figure');
+                                e.dataTransfer.setData('text/newsletter-block-type', 'figure');
+                                e.dataTransfer.effectAllowed = 'copy';
+                              }}
+                              onDragEnd={() => setDraggingPaletteType(null)}
+                              onClick={() => addNewsletterBlock('figure')}
+                              className="flex flex-col items-center justify-center gap-1 rounded-md border bg-background px-2 py-2 text-center text-[11px] font-medium hover:border-primary/60 hover:bg-primary/5"
+                            >
+                              {renderPaletteIcon('figure')}
+                              Figura
+                            </button>
+                            <button
+                              type="button"
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggingPaletteType('imgText');
+                                e.dataTransfer.setData('text/newsletter-block-type', 'imgText');
+                                e.dataTransfer.effectAllowed = 'copy';
+                              }}
+                              onDragEnd={() => setDraggingPaletteType(null)}
+                              onClick={() => addNewsletterBlock('imgText')}
+                              className="flex flex-col items-center justify-center gap-1 rounded-md border bg-background px-2 py-2 text-center text-[11px] font-medium hover:border-primary/60 hover:bg-primary/5"
+                            >
+                              {renderPaletteIcon('imgText')}
+                              Img+Texto
+                            </button>
+                            <button
+                              type="button"
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggingPaletteType('socialLinks');
+                                e.dataTransfer.setData('text/newsletter-block-type', 'socialLinks');
+                                e.dataTransfer.effectAllowed = 'copy';
+                              }}
+                              onDragEnd={() => setDraggingPaletteType(null)}
+                              onClick={() => addNewsletterBlock('socialLinks')}
+                              className="flex flex-col items-center justify-center gap-1 rounded-md border bg-background px-2 py-2 text-center text-[11px] font-medium hover:border-primary/60 hover:bg-primary/5"
+                            >
+                              {renderPaletteIcon('socialLinks')}
+                              Social Links
+                            </button>
+                            <button
+                              type="button"
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggingPaletteType('columns3');
+                                e.dataTransfer.setData('text/newsletter-block-type', 'columns3');
+                                e.dataTransfer.effectAllowed = 'copy';
+                              }}
+                              onDragEnd={() => setDraggingPaletteType(null)}
+                              onClick={() => addNewsletterBlock('columns3')}
+                              className="flex flex-col items-center justify-center gap-1 rounded-md border bg-background px-2 py-2 text-center text-[11px] font-medium hover:border-primary/60 hover:bg-primary/5"
+                            >
+                              {renderPaletteIcon('columns3')}
+                              3 columnas
+                            </button>
+                            <button
+                              type="button"
+                              draggable
+                              onDragStart={(e) => {
                                 setDraggingPaletteType('divider');
                                 e.dataTransfer.setData('text/newsletter-block-type', 'divider');
                                 e.dataTransfer.effectAllowed = 'copy';
@@ -2000,7 +2239,17 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                         : block.type === 'iconButton'
                                           ? `Icono cuadrado: ${block.label || 'sin etiqueta'} -> ${block.url || 'sin URL'}`
                                           : block.type === 'columns2'
-                                            ? `2 columnas: ${block.colLeft || 'izquierda vacía'} | ${block.colRight || 'derecha vacía'}`
+                                            ? `2 col: ${(block.colLeft || '').slice(0, 20)} | ${(block.colRight || '').slice(0, 20)}`
+                                            : block.type === 'columns3'
+                                              ? `3 col: ${(block.colLeft || '').slice(0, 15)} | ${(block.colCenter || '').slice(0, 15)} | ${(block.colRight || '').slice(0, 15)}`
+                                              : block.type === 'gallery'
+                                                ? `Galería: ${(block.imageUrls || []).length} imagen(es)`
+                                                : block.type === 'figure'
+                                                  ? `Figura: ${block.caption || 'sin pie'} · ${block.url || 'sin img'}`
+                                                  : block.type === 'imgText'
+                                                    ? `Img+Texto: ${(block.content || '').slice(0, 30)}`
+                                                    : block.type === 'socialLinks'
+                                                      ? `Social: ${[block.socialFacebook && 'FB', block.socialTwitter && 'X', block.socialInstagram && 'IG', block.socialLinkedin && 'LI', block.socialYoutube && 'YT'].filter(Boolean).join(', ') || 'ninguno'}`
                                         : block.type === 'image'
                                           ? `Imagen: ${block.url || 'sin URL'}`
                                           : block.content || 'Bloque sin contenido'}
@@ -2051,13 +2300,16 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
 
                               {(selectedNewsletterBlock.type === 'heading' ||
                                 selectedNewsletterBlock.type === 'text' ||
-                                selectedNewsletterBlock.type === 'image') && (
+                                selectedNewsletterBlock.type === 'image' ||
+                                selectedNewsletterBlock.type === 'imgText') && (
                                 <label className="text-xs text-muted-foreground md:col-span-2">
                                   {selectedNewsletterBlock.type === 'image'
                                     ? 'Texto alt'
-                                    : 'Contenido'}
+                                    : selectedNewsletterBlock.type === 'imgText'
+                                      ? 'Texto junto a la imagen'
+                                      : 'Contenido'}
                                   <textarea
-                                    rows={selectedNewsletterBlock.type === 'text' ? 4 : 2}
+                                    rows={selectedNewsletterBlock.type === 'text' || selectedNewsletterBlock.type === 'imgText' ? 4 : 2}
                                     value={selectedNewsletterBlock.content || ''}
                                     onChange={(e) =>
                                       updateSelectedNewsletterBlock({
@@ -2100,11 +2352,181 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                 </>
                               )}
 
+                              {selectedNewsletterBlock.type === 'columns3' && (
+                                <>
+                                  <label className="text-xs text-muted-foreground md:col-span-2">
+                                    Columna izquierda
+                                    <textarea
+                                      rows={3}
+                                      value={selectedNewsletterBlock.colLeft || ''}
+                                      onChange={(e) =>
+                                        updateSelectedNewsletterBlock({ colLeft: e.target.value })
+                                      }
+                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                    />
+                                  </label>
+                                  <label className="text-xs text-muted-foreground md:col-span-2">
+                                    Columna central
+                                    <textarea
+                                      rows={3}
+                                      value={selectedNewsletterBlock.colCenter || ''}
+                                      onChange={(e) =>
+                                        updateSelectedNewsletterBlock({ colCenter: e.target.value })
+                                      }
+                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                    />
+                                  </label>
+                                  <label className="text-xs text-muted-foreground md:col-span-2">
+                                    Columna derecha
+                                    <textarea
+                                      rows={3}
+                                      value={selectedNewsletterBlock.colRight || ''}
+                                      onChange={(e) =>
+                                        updateSelectedNewsletterBlock({ colRight: e.target.value })
+                                      }
+                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                    />
+                                  </label>
+                                </>
+                              )}
+
+                              {selectedNewsletterBlock.type === 'figure' && (
+                                <label className="text-xs text-muted-foreground md:col-span-2">
+                                  Pie de imagen
+                                  <input
+                                    value={selectedNewsletterBlock.caption || ''}
+                                    onChange={(e) =>
+                                      updateSelectedNewsletterBlock({ caption: e.target.value })
+                                    }
+                                    className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                    placeholder="Descripción bajo la imagen"
+                                  />
+                                </label>
+                              )}
+
+                              {selectedNewsletterBlock.type === 'gallery' && (
+                                <div className="space-y-2 md:col-span-2">
+                                  <p className="text-xs text-muted-foreground">
+                                    URLs de imágenes de la galería (una por línea)
+                                  </p>
+                                  <textarea
+                                    rows={5}
+                                    value={(selectedNewsletterBlock.imageUrls || []).join('\n')}
+                                    onChange={(e) =>
+                                      updateSelectedNewsletterBlock({
+                                        imageUrls: e.target.value
+                                          .split('\n')
+                                          .map((l) => l.trim())
+                                          .filter(Boolean),
+                                      })
+                                    }
+                                    className="w-full rounded-md border border-border px-2 py-1 text-sm"
+                                    placeholder={'https://imagen1.jpg\nhttps://imagen2.jpg'}
+                                  />
+                                  <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3">
+                                    <p className="text-sm font-semibold text-foreground">
+                                      Subir imagen a la galería
+                                    </p>
+                                    <button
+                                      type="button"
+                                      onClick={() => newsletterImageInputRef.current?.click()}
+                                      disabled={uploadingNewsletterImage}
+                                      className="mt-2 w-full rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+                                    >
+                                      {uploadingNewsletterImage
+                                        ? 'Subiendo...'
+                                        : 'Subir imagen desde ordenador'}
+                                    </button>
+                                    <input
+                                      ref={newsletterImageInputRef}
+                                      type="file"
+                                      accept="image/*"
+                                      disabled={uploadingNewsletterImage}
+                                      onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file || !selectedNewsletterBlock) return;
+                                        await uploadNewsletterImageForBlock(
+                                          file,
+                                          selectedNewsletterBlock.id,
+                                          'gallery',
+                                        );
+                                        e.currentTarget.value = '';
+                                      }}
+                                      className="sr-only"
+                                    />
+                                  </div>
+                                </div>
+                              )}
+
+                              {selectedNewsletterBlock.type === 'socialLinks' && (
+                                <div className="space-y-2 md:col-span-2">
+                                  <label className="text-xs text-muted-foreground">
+                                    Facebook
+                                    <input
+                                      value={selectedNewsletterBlock.socialFacebook || ''}
+                                      onChange={(e) =>
+                                        updateSelectedNewsletterBlock({ socialFacebook: e.target.value })
+                                      }
+                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                      placeholder="https://facebook.com/..."
+                                    />
+                                  </label>
+                                  <label className="text-xs text-muted-foreground">
+                                    X / Twitter
+                                    <input
+                                      value={selectedNewsletterBlock.socialTwitter || ''}
+                                      onChange={(e) =>
+                                        updateSelectedNewsletterBlock({ socialTwitter: e.target.value })
+                                      }
+                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                      placeholder="https://twitter.com/..."
+                                    />
+                                  </label>
+                                  <label className="text-xs text-muted-foreground">
+                                    Instagram
+                                    <input
+                                      value={selectedNewsletterBlock.socialInstagram || ''}
+                                      onChange={(e) =>
+                                        updateSelectedNewsletterBlock({ socialInstagram: e.target.value })
+                                      }
+                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                      placeholder="https://instagram.com/..."
+                                    />
+                                  </label>
+                                  <label className="text-xs text-muted-foreground">
+                                    LinkedIn
+                                    <input
+                                      value={selectedNewsletterBlock.socialLinkedin || ''}
+                                      onChange={(e) =>
+                                        updateSelectedNewsletterBlock({ socialLinkedin: e.target.value })
+                                      }
+                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                      placeholder="https://linkedin.com/..."
+                                    />
+                                  </label>
+                                  <label className="text-xs text-muted-foreground">
+                                    YouTube
+                                    <input
+                                      value={selectedNewsletterBlock.socialYoutube || ''}
+                                      onChange={(e) =>
+                                        updateSelectedNewsletterBlock({ socialYoutube: e.target.value })
+                                      }
+                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                      placeholder="https://youtube.com/..."
+                                    />
+                                  </label>
+                                </div>
+                              )}
+
                               {(selectedNewsletterBlock.type === 'image' ||
                                 selectedNewsletterBlock.type === 'button' ||
-                                selectedNewsletterBlock.type === 'iconButton') && (
+                                selectedNewsletterBlock.type === 'iconButton' ||
+                                selectedNewsletterBlock.type === 'figure' ||
+                                selectedNewsletterBlock.type === 'imgText') && (
                                 <label className="text-xs text-muted-foreground md:col-span-2">
-                                  URL
+                                  {selectedNewsletterBlock.type === 'figure' || selectedNewsletterBlock.type === 'imgText'
+                                    ? 'URL imagen'
+                                    : 'URL'}
                                   <input
                                     value={selectedNewsletterBlock.url || ''}
                                     onChange={(e) =>
@@ -2130,10 +2552,16 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                 </label>
                               )}
 
-                              {selectedNewsletterBlock.type === 'image' && (
+                              {(selectedNewsletterBlock.type === 'image' ||
+                                selectedNewsletterBlock.type === 'figure' ||
+                                selectedNewsletterBlock.type === 'imgText') && (
                                 <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3 md:col-span-2">
                                   <p className="text-sm font-semibold text-foreground">
-                                    Imagen del bloque (paso principal)
+                                    {selectedNewsletterBlock.type === 'figure'
+                                      ? 'Imagen de la figura'
+                                      : selectedNewsletterBlock.type === 'imgText'
+                                        ? 'Imagen del bloque Img+Texto'
+                                        : 'Imagen del bloque (paso principal)'}
                                   </p>
                                   <p className="mt-1 text-xs text-muted-foreground">
                                     Pulsa el botón grande para subirla desde tu ordenador.
