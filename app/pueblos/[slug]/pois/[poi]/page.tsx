@@ -67,6 +67,34 @@ async function fetchPoi(puebloSlug: string, poiParam: string, locale?: string) {
   }
 }
 
+async function fetchPoiFast(puebloSlug: string, poiParam: string, locale?: string) {
+  const API_BASE = getApiUrl();
+  const buildUrl = (lang?: string) => {
+    const qs = lang ? `?lang=${encodeURIComponent(lang)}` : "";
+    return isNumeric(poiParam)
+      ? `${API_BASE}/pueblos/${puebloSlug}/pois/${poiParam}${qs}`
+      : `${API_BASE}/pueblos/${puebloSlug}/pois/slug/${poiParam}${qs}`;
+  };
+  const fetchOne = async (lang?: string) =>
+    fetchWithTimeout(buildUrl(lang), {
+      cache: "no-store",
+      headers: lang ? { "Accept-Language": lang } : undefined,
+      timeoutMs: 4000,
+      retries: 0,
+    });
+  try {
+    const res = await fetchOne(locale);
+    if (res.ok) return res.json();
+    if (locale && locale !== "es") {
+      const fb = await fetchOne("es");
+      if (fb.ok) return fb.json();
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -74,7 +102,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, poi } = await params;
   const locale = await getLocale();
-  const data = await fetchPoi(slug, poi, locale);
+  const data = await fetchPoiFast(slug, poi, locale);
   const path = `/pueblos/${slug}/pois/${poi}`;
   if (!data) {
     return {

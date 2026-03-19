@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getRutas, getRutaById, getRutaMapa } from "@/lib/api";
+import { getRutas, getRutasFast, getRutaById, getRutaMapa } from "@/lib/api";
 import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 import { sanitizeHtml, createExcerpt } from "@/lib/sanitizeHtml";
 import RutaParadasConMapa from "@/app/_components/RutaParadasConMapa";
@@ -78,7 +78,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const tSeo = await getTranslations("seo");
-  const rutas = await getRutas(locale);
+  const rutas = await getRutasFast(locale);
   const ruta = rutas.find((r) => r.slug === slug);
 
   if (!ruta) {

@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getProductBySlug } from '@/src/lib/tiendaApi';
+import { getProductBySlug, getProductBySlugFast } from '@/src/lib/tiendaApi';
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from '@/lib/seo';
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const fallbackName = slugToTitle(slug) || "Producto";
 
   try {
-    const product = await getProductBySlug(slug);
+    const product = await getProductBySlugFast(slug);
     if (!product) {
       return {
         title: seoTitle(`Producto: ${fallbackName}`),

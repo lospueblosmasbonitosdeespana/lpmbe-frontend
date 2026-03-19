@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale } from "next-intl/server";
-import { getPuebloBySlug } from "@/lib/api";
+import { getPuebloBySlug, getPuebloBySlugFast } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -28,33 +28,21 @@ export async function generateMetadata({
   const { slug } = await params;
   const fallbackName = slugToTitle(slug) || "Pueblo";
   const fallbackPath = `/pueblos/${slug}/lugares-de-interes`;
-  try {
-    const locale = await getLocale();
-    const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-    const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-    const safeSlug = pueblo?.slug ?? slug;
-    const safeName = pueblo?.nombre ?? fallbackName;
-    const path = `/pueblos/${safeSlug}/lugares-de-interes`;
-    return {
-      title: seoTitle(`Lugares de interés en ${safeName}${localeSuffix}`),
-      description: seoDescription(`Descubre los puntos de interés y lugares que no te puedes perder en ${safeName}.${localeSuffix}`),
-      alternates: {
-        canonical: getCanonicalUrl(path, locale as SupportedLocale),
-        languages: getLocaleAlternates(path),
-      },
-      robots: { index: true, follow: true },
-    };
-  } catch {
-    return {
-      title: seoTitle(`Lugares de interés en ${fallbackName}`),
-      description: seoDescription(`Descubre los puntos de interés y lugares que no te puedes perder en ${fallbackName}.`),
-      alternates: {
-        canonical: getCanonicalUrl(fallbackPath),
-        languages: getLocaleAlternates(fallbackPath),
-      },
-      robots: { index: true, follow: true },
-    };
-  }
+  const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+  const pueblo = await getPuebloBySlugFast(slug, locale);
+  const safeSlug = pueblo?.slug ?? slug;
+  const safeName = pueblo?.nombre ?? fallbackName;
+  const path = `/pueblos/${safeSlug}/lugares-de-interes`;
+  return {
+    title: seoTitle(`Lugares de interés en ${safeName}${localeSuffix}`),
+    description: seoDescription(`Descubre los puntos de interés y lugares que no te puedes perder en ${safeName}.${localeSuffix}`),
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+    robots: { index: true, follow: true },
+  };
 }
 
 export default async function LugaresDeInteresPage({

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { getLocale } from "next-intl/server";
-import { getPuebloBySlug } from "@/lib/api";
+import { getPuebloBySlug, getPuebloBySlugFast } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -28,33 +28,21 @@ export async function generateMetadata({
   const { slug } = await params;
   const fallbackName = slugToTitle(slug) || "Pueblo";
   const fallbackPath = `/pueblos/${slug}/multiexperiencias`;
-  try {
-    const locale = await getLocale();
-    const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-    const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-    const safeSlug = pueblo?.slug ?? slug;
-    const safeName = pueblo?.nombre ?? fallbackName;
-    const path = `/pueblos/${safeSlug}/multiexperiencias`;
-    return {
-      title: seoTitle(`Multiexperiencias en ${safeName}${localeSuffix}`),
-      description: seoDescription(`Experiencias y actividades para descubrir ${safeName}.${localeSuffix}`),
-      alternates: {
-        canonical: getCanonicalUrl(path, locale as SupportedLocale),
-        languages: getLocaleAlternates(path),
-      },
-      robots: { index: true, follow: true },
-    };
-  } catch {
-    return {
-      title: seoTitle(`Multiexperiencias en ${fallbackName}`),
-      description: seoDescription(`Experiencias y actividades para descubrir ${fallbackName}.`),
-      alternates: {
-        canonical: getCanonicalUrl(fallbackPath),
-        languages: getLocaleAlternates(fallbackPath),
-      },
-      robots: { index: true, follow: true },
-    };
-  }
+  const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+  const pueblo = await getPuebloBySlugFast(slug, locale);
+  const safeSlug = pueblo?.slug ?? slug;
+  const safeName = pueblo?.nombre ?? fallbackName;
+  const path = `/pueblos/${safeSlug}/multiexperiencias`;
+  return {
+    title: seoTitle(`Multiexperiencias en ${safeName}${localeSuffix}`),
+    description: seoDescription(`Experiencias y actividades para descubrir ${safeName}.${localeSuffix}`),
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+    robots: { index: true, follow: true },
+  };
 }
 
 export default async function MultiexperienciasPage({

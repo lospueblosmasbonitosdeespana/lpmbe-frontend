@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale } from "next-intl/server";
-import { getPuebloBySlug } from "@/lib/api";
+import { getPuebloBySlug, getPuebloBySlugFast } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -96,7 +96,7 @@ export async function generateMetadata({
         robots: { index: true, follow: true },
       };
     }
-    const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+    const pueblo = await getPuebloBySlugFast(slug, locale);
     const safeSlug = pueblo?.slug ?? slug;
     const safeName = pueblo?.nombre ?? fallbackName;
     const label = CATEGORIA_LABELS[categoriaSlug];

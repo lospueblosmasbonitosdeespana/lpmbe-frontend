@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getPuebloBySlug, getPueblosLite, getApiUrl } from "@/lib/api";
+import { getPuebloBySlug, getPuebloBySlugFast, getPueblosLite, getApiUrl } from "@/lib/api";
 import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import JsonLd from "@/app/components/seo/JsonLd";
 import PuebloActions from "./PuebloActions";
@@ -277,7 +277,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const tSeo = await getTranslations("seo");
-  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+  const pueblo = await getPuebloBySlugFast(slug, locale);
   if (!pueblo) {
     const safeName = slugToTitle(slug) || "Pueblo";
     const path = `/pueblos/${slug}`;

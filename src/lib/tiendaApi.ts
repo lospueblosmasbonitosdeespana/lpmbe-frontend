@@ -52,6 +52,25 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   return res.json();
 }
 
+/** Version rapida para generateMetadata (4 s timeout via AbortController). */
+export async function getProductBySlugFast(slug: string): Promise<Product | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 4000);
+  try {
+    const res = await fetch(`${API_BASE}/products/slug/${slug}`, {
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (res.status === 404) return null;
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    clearTimeout(timer);
+    return null;
+  }
+}
+
 // ===== DIRECCIONES =====
 
 export async function getUserDirecciones(): Promise<Direccion[]> {

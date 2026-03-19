@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 import ActualidadPuebloClient from './ActualidadPuebloClient';
-import { getPuebloBySlug } from '@/lib/api';
+import { getPuebloBySlug, getPuebloBySlugFast } from '@/lib/api';
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -16,46 +16,34 @@ export async function generateMetadata({
   const fallbackName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const fallbackPath = `/pueblos/${slug}/actualidad`;
 
-  try {
-    const locale = await getLocale();
-    const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-    const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-    const safeSlug = pueblo?.slug ?? slug;
-    const safeName = pueblo?.nombre ?? fallbackName;
-    const path = `/pueblos/${safeSlug}/actualidad`;
-    if (!pueblo) {
-      return {
-        title: seoTitle(`Actualidad de ${safeName}${localeSuffix}`),
-        description: seoDescription(`Noticias, eventos y novedades de ${safeName}.${localeSuffix}`),
-        alternates: {
-          canonical: getCanonicalUrl(path, locale as SupportedLocale),
-          languages: getLocaleAlternates(path),
-        },
-        robots: { index: true, follow: true },
-      };
-    }
-
-    const canonicalPath = `/pueblos/${pueblo.slug}/actualidad`;
+  const locale = await getLocale();
+  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+  const pueblo = await getPuebloBySlugFast(slug, locale);
+  const safeSlug = pueblo?.slug ?? slug;
+  const safeName = pueblo?.nombre ?? fallbackName;
+  const path = `/pueblos/${safeSlug}/actualidad`;
+  if (!pueblo) {
     return {
-      title: seoTitle(`Actualidad de ${pueblo.nombre}${localeSuffix}`),
-      description: seoDescription(`Noticias, eventos y novedades de ${pueblo.nombre}.${localeSuffix}`),
+      title: seoTitle(`Actualidad de ${safeName}${localeSuffix}`),
+      description: seoDescription(`Noticias, eventos y novedades de ${safeName}.${localeSuffix}`),
       alternates: {
-        canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
-        languages: getLocaleAlternates(canonicalPath),
-      },
-      robots: { index: true, follow: true },
-    };
-  } catch {
-    return {
-      title: seoTitle(`Actualidad de ${fallbackName}`),
-      description: seoDescription(`Noticias, eventos y novedades de ${fallbackName}.`),
-      alternates: {
-        canonical: getCanonicalUrl(fallbackPath),
-        languages: getLocaleAlternates(fallbackPath),
+        canonical: getCanonicalUrl(path, locale as SupportedLocale),
+        languages: getLocaleAlternates(path),
       },
       robots: { index: true, follow: true },
     };
   }
+
+  const canonicalPath = `/pueblos/${pueblo.slug}/actualidad`;
+  return {
+    title: seoTitle(`Actualidad de ${pueblo.nombre}${localeSuffix}`),
+    description: seoDescription(`Noticias, eventos y novedades de ${pueblo.nombre}.${localeSuffix}`),
+    alternates: {
+      canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
+      languages: getLocaleAlternates(canonicalPath),
+    },
+    robots: { index: true, follow: true },
+  };
 }
 
 export default async function ActualidadPuebloPage({

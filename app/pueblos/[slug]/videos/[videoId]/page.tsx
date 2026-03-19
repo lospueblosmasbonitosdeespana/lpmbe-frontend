@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
-import { getApiUrl, getPuebloBySlug } from "@/lib/api";
+import { getApiUrl, getPuebloBySlug, getPuebloBySlugFast } from "@/lib/api";
 import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, type SupportedLocale } from "@/lib/seo";
 import JsonLd from "@/app/components/seo/JsonLd";
 
@@ -40,7 +40,7 @@ export async function generateMetadata({
   const locale = await getLocale();
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const API_BASE = getApiUrl();
-  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+  const pueblo = await getPuebloBySlugFast(slug, locale);
   const fallbackPath = `/pueblos/${slug}/videos/${videoId}`;
   if (!pueblo) {
     return {

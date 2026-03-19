@@ -108,6 +108,35 @@ export async function getLugarLegacyBySlug(slug: string, locale?: string): Promi
   return getPuebloBySlug(slug, locale);
 }
 
+/**
+ * Version optimizada para generateMetadata(): timeout corto (4 s), sin reintentos.
+ * Retorna null en vez de lanzar para que Next.js cierre el <head> rapidamente
+ * con metadatos de fallback en lugar de esperar al backend.
+ */
+export async function getPuebloBySlugFast(slug: string, locale?: string): Promise<Pueblo | null> {
+  const API_BASE = getApiUrl();
+  const fetchOne = (lang?: string) => {
+    const qs = lang ? `?lang=${encodeURIComponent(lang)}` : '';
+    return fetchWithTimeout(`${API_BASE}/pueblos/${slug}${qs}`, {
+      cache: 'no-store',
+      headers: lang ? { 'Accept-Language': lang } : undefined,
+      timeoutMs: 4000,
+      retries: 0,
+    });
+  };
+  try {
+    const res = await fetchOne(locale);
+    if (res.ok) return await res.json();
+    if (locale && locale !== 'es') {
+      const fb = await fetchOne('es');
+      if (fb.ok) return await fb.json();
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 /** Listado ligero para cálculos (pueblos cercanos, etc.) */
 export type PuebloLite = {
   id: number;
@@ -248,6 +277,24 @@ export async function getRutas(locale?: string): Promise<Ruta[]> {
       }
     }
     console.error('[RUTAS] Error fetching:', err);
+    return [];
+  }
+}
+
+/** Version rapida de getRutas para generateMetadata (4 s timeout, 0 retries). */
+export async function getRutasFast(locale?: string): Promise<Ruta[]> {
+  const API_BASE = getApiUrl();
+  const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
+  try {
+    const res = await fetchWithTimeout(`${API_BASE}/rutas${qs}`, {
+      cache: 'no-store',
+      headers: locale ? { 'Accept-Language': locale } : undefined,
+      timeoutMs: 4000,
+      retries: 0,
+    });
+    if (res.ok) return await res.json();
+    return [];
+  } catch {
     return [];
   }
 }

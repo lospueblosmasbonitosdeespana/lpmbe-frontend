@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
-import { getApiUrl, getPuebloBySlug } from "@/lib/api";
+import { getApiUrl, getPuebloBySlug, getPuebloBySlugFast } from "@/lib/api";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +14,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+  const pueblo = await getPuebloBySlugFast(slug, locale);
   const safeSlug = pueblo?.slug ?? slug;
   const safeName = pueblo?.nombre ?? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${safeSlug}/webcam`;

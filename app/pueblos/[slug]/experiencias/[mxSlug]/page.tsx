@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getLugarLegacyBySlug, getApiUrl, type Pueblo } from "@/lib/api";
+import { getLugarLegacyBySlug, getPuebloBySlugFast, getApiUrl, type Pueblo } from "@/lib/api";
 import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 import ParadasMap from "@/app/_components/ParadasMap";
 import ParadaFoto from "./ParadaFoto";
