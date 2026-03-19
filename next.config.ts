@@ -25,6 +25,16 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: '/category/rutas/',
+        destination: '/rutas',
+        statusCode: 301,
+      },
+      {
+        source: '/category/rutas',
+        destination: '/rutas',
+        statusCode: 301,
+      },
+      {
         source: '/tag/:path*',
         destination: '/actualidad',
         statusCode: 301,
