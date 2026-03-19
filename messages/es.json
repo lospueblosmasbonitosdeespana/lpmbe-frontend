@@ -1326,6 +1326,7 @@
   },
   "meteoPage": {
     "title": "Meteo",
+    "metaDescription": "Tiempo actual y previsiones en los pueblos de Los Pueblos Más Bonitos de España.",
     "villagesCount": "{count} pueblos",
     "noData": "No hay datos meteorológicos disponibles",
     "sortColdest": "Más frío",

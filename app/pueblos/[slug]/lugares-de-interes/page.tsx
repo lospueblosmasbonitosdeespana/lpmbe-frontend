@@ -2,7 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from "@/lib/seo";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  seoDescription,
+  seoTitle,
+  slugToTitle,
+  slugDisambiguatorForTitle,
+  titleLocaleSuffix,
+  type SupportedLocale,
+} from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Body, Eyebrow } from "@/app/components/ui/typography";
@@ -27,14 +36,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
-  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+  const locSuf = titleLocaleSuffix(locale);
   const name = slugToTitle(slug) || "Pueblo";
   const path = `/pueblos/${slug}/lugares-de-interes`;
-  // Include slug suffix to prevent duplicate titles when pueblo names truncate to the same string
-  const slugSuffix = slug.length > 15 ? `-${slug.slice(-6)}` : '';
+  const slugDis = slugDisambiguatorForTitle(slug);
   return {
-    title: seoTitle(`Lugares · ${name}${slugSuffix}${localeSuffix}`),
-    description: seoDescription(`Descubre los puntos de interés y lugares que no te puedes perder en ${name}.${localeSuffix}`),
+    title: seoTitle(`Lugares · ${name}${slugDis}${locSuf}`),
+    description: seoDescription(`Descubre los puntos de interés y lugares que no te puedes perder en ${name}.${locSuf}`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

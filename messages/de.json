@@ -1289,6 +1289,7 @@
   },
   "meteoPage": {
     "title": "Wetter",
+    "metaDescription": "Aktuelles Wetter und Vorhersagen in den Dörfern der Schönsten Dörfer Spaniens.",
     "villagesCount": "{Anzahl} Dörfer",
     "noData": "Keine meteorologischen Daten verfügbar",
     "sortColdest": "Kühler",

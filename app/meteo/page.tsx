@@ -1,7 +1,16 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { Suspense } from "react";
 import { getTranslations, getLocale } from "next-intl/server";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  seoDescription,
+  seoTitle,
+  titleLocaleSuffix,
+  type SupportedLocale,
+} from "@/lib/seo";
 import {
   Sun, CloudSun, Cloud, Cloudy, CloudFog,
   CloudDrizzle, CloudRain, CloudSnow, CloudLightning,
@@ -113,6 +122,22 @@ async function getOrigin() {
 }
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const path = "/meteo";
+  const t = await getTranslations("meteoPage");
+  const locSuf = titleLocaleSuffix(locale);
+  return {
+    title: seoTitle(`${t("title")}${locSuf}`),
+    description: seoDescription(t("metaDescription")),
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 export default async function MeteoPage(props: { searchParams: Promise<{ sort?: string }> }) {
   const searchParams = await props.searchParams;

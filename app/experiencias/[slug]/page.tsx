@@ -1,7 +1,14 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from '@/lib/seo';
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  seoDescription,
+  seoTitle,
+  titleLocaleSuffix,
+  type SupportedLocale,
+} from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,8 +80,9 @@ export async function generateMetadata({
   if (!config) {
     return { title: 'Experiencia' };
   }
-  const title = t(config.titleKey);
-  const description = t(config.descKey);
+  const locSuf = titleLocaleSuffix(locale);
+  const title = seoTitle(`${t(config.titleKey)}${locSuf}`);
+  const description = seoDescription(t(config.descKey));
   const path = `/experiencias/${slug}`;
   return {
     title,

@@ -2,7 +2,14 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 import { getApiUrl } from '@/lib/api';
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from '@/lib/seo';
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  seoDescription,
+  seoTitle,
+  titleLocaleSuffix,
+  type SupportedLocale,
+} from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -10,9 +17,10 @@ export const revalidate = 0;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = '/multiexperiencias';
+  const locSuf = titleLocaleSuffix(locale);
   return {
-    title: 'Multiexperiencias',
-    description: 'Descubre experiencias únicas en nuestros pueblos.',
+    title: seoTitle(`Multiexperiencias${locSuf}`),
+    description: seoDescription('Descubre experiencias únicas en nuestros pueblos.'),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

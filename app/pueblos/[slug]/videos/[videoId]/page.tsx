@@ -2,7 +2,15 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
-import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, type SupportedLocale } from "@/lib/seo";
+import {
+  getBaseUrl,
+  getCanonicalUrl,
+  getLocaleAlternates,
+  seoDescription,
+  seoTitle,
+  titleLocaleSuffix,
+  type SupportedLocale,
+} from "@/lib/seo";
 import JsonLd from "@/app/components/seo/JsonLd";
 
 export const dynamic = "force-dynamic";
@@ -38,13 +46,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, videoId } = await params;
   const locale = await getLocale();
-  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+  const locSuf = titleLocaleSuffix(locale);
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/videos/${videoId}`;
-  // Use last 4 chars of videoId to differentiate multiple videos per pueblo
-  const idSuffix = videoId.slice(-4);
-  const title = seoTitle(`Video ${idSuffix} · ${name}${localeSuffix}`);
-  const description = seoDescription(`Video y contenido audiovisual sobre ${name}.${localeSuffix}`);
+  // ID completo del vídeo (YouTube u otro) para títulos únicos por URL
+  const title = seoTitle(`Video ${videoId} · ${name}${locSuf}`);
+  const description = seoDescription(`Video y contenido audiovisual sobre ${name}.${locSuf}`);
 
   return {
     title,

@@ -1289,6 +1289,7 @@
   },
   "meteoPage": {
     "title": "Weather",
+    "metaDescription": "Current weather and forecasts in the villages of Los Pueblos Más Bonitos de España.",
     "villagesCount": "{count} towns",
     "noData": "No weather data available",
     "sortColdest": "Cooler",

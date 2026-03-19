@@ -114,6 +114,25 @@ export function seoTitle(title: string): string {
   return `${normalized.slice(0, headLen).trimEnd()}…${normalized.slice(-tailLen).trimStart()}`;
 }
 
+/** Sufijo visible en el título para diferenciar variantes ?lang= (evita duplicados en auditorías). */
+export function titleLocaleSuffix(locale: SupportedLocale | string): string {
+  const l = String(locale).toLowerCase();
+  return l === "es" ? "" : ` (${l.toUpperCase()})`;
+}
+
+/**
+ * Fragmento único a partir del slug del pueblo (p. ej. bonilla-de-la-sierra vs segura-de-la-sierra:
+ * solo el sufijo "-sierra" colisionaba al truncar).
+ */
+export function slugDisambiguatorForTitle(slug: string): string {
+  const s = slug.trim();
+  if (s.length <= 14) return "";
+  const head = s.slice(0, 6);
+  const tail = s.slice(-6);
+  if (!head || !tail || head === tail) return "";
+  return ` · ${head}-${tail}`;
+}
+
 /**
  * Trunca una meta description a max chars (por defecto 155).
  */

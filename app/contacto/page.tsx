@@ -3,7 +3,14 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import BackButton from '@/app/c/[slug]/BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import ContactForm from './ContactForm';
-import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from '@/lib/seo';
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  getOGLocale,
+  seoTitle,
+  titleLocaleSuffix,
+  type SupportedLocale,
+} from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -14,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
   const t = await getTranslations('seo');
   const path = '/contacto';
-  const title = t('contactTitle');
+  const title = seoTitle(`${t('contactTitle')}${titleLocaleSuffix(locale)}`);
   const description = t('contactDescription');
   return {
     title,

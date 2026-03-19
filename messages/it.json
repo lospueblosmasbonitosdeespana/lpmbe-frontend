@@ -1289,6 +1289,7 @@
   },
   "meteoPage": {
     "title": "Il tempo",
+    "metaDescription": "Meteo attuale e previsioni nei borghi de I Borghi più Belli di Spagna.",
     "villagesCount": "{villaggi",
     "noData": "Non sono disponibili dati meteorologici",
     "sortColdest": "Raffreddatore",

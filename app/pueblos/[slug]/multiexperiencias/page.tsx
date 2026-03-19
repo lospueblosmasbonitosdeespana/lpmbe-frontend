@@ -3,7 +3,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  seoTitle,
+  seoDescription,
+  slugToTitle,
+  slugDisambiguatorForTitle,
+  titleLocaleSuffix,
+  type SupportedLocale,
+} from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Body, Eyebrow } from "@/app/components/ui/typography";
@@ -27,13 +36,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
-  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+  const locSuf = titleLocaleSuffix(locale);
   const name = slugToTitle(slug) || "Pueblo";
   const path = `/pueblos/${slug}/multiexperiencias`;
-  const slugSuffix = slug.length > 12 ? `-${slug.slice(-6)}` : '';
+  const slugDis = slugDisambiguatorForTitle(slug);
   return {
-    title: seoTitle(`Mx · ${name}${slugSuffix}${localeSuffix}`),
-    description: seoDescription(`Experiencias y actividades para descubrir ${name}.${localeSuffix}`),
+    title: seoTitle(`Mx · ${name}${slugDis}${locSuf}`),
+    description: seoDescription(`Experiencias y actividades para descubrir ${name}.${locSuf}`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

@@ -21,7 +21,7 @@ export async function generateMetadata({
   const name = slugToTitle(slug) || 'Socio';
   const path = `/el-sello/socios/${slug}`;
   return {
-    title: seoTitle(`${name} · Socios${localeSuffix}`),
+    title: seoTitle(`${name} · Socios · ${slug}${localeSuffix}`),
     description: seoDescription(`${name}, socio y colaborador de Los Pueblos Más Bonitos de España.${localeSuffix}`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),

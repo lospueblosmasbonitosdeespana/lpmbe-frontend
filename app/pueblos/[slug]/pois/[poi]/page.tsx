@@ -2,7 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  seoTitle,
+  seoDescription,
+  titleLocaleSuffix,
+  type SupportedLocale,
+} from "@/lib/seo";
 import { fetchWithTimeout } from "@/lib/fetch-safe";
 import ZoomableImage from "@/app/components/ZoomableImage";
 
@@ -102,14 +109,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, poi } = await params;
   const locale = await getLocale();
-  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+  const locSuf = titleLocaleSuffix(locale);
   const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const poiName = (isNumeric(poi) ? `POI ${poi}` : poi.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
   const path = `/pueblos/${slug}/pois/${poi}`;
-  const title = seoTitle(`${poiName} · ${puebloName}${localeSuffix}`);
+  const poiKey = isNumeric(poi)
+    ? poi
+    : poi.replace(/[^a-z0-9]/gi, "").slice(-8) || poi.slice(-8);
+  const title = isNumeric(poi)
+    ? seoTitle(`${poiName} · ${puebloName}${locSuf}`)
+    : seoTitle(`${poiName} · ${puebloName} · ${poiKey}${locSuf}`);
   return {
     title,
-    description: seoDescription(`Información sobre ${poiName} en ${puebloName}.${localeSuffix}`, 160),
+    description: seoDescription(`Información sobre ${poiName} en ${puebloName}.${locSuf}`, 160),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

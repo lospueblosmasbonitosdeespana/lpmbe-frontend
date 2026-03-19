@@ -1289,6 +1289,7 @@
   },
   "meteoPage": {
     "title": "Meteo",
+    "metaDescription": "Temps actual i previsions als pobles dels Pobles Més Bonics d'Espanya.",
     "villagesCount": "{count} pobles",
     "noData": "No hi ha dades meteorològiques disponibles",
     "sortColdest": "Més fred",

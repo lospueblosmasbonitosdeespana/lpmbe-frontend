@@ -13,17 +13,26 @@ import {
   Caption,
 } from "@/app/components/ui/typography";
 import { cn } from "@/lib/utils";
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  seoDescription,
+  seoTitle,
+  titleLocaleSuffix,
+  type SupportedLocale,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = "/redes-sociales";
+  const locSuf = titleLocaleSuffix(locale);
   return {
-    title: "Redes sociales",
-    description:
-      "Síguenos en Instagram, Facebook, X, TikTok y YouTube. Colaboraciones con creadores de contenido e influencers. Únete a nuestra comunidad.",
+    title: seoTitle(`Redes sociales${locSuf}`),
+    description: seoDescription(
+      "Síguenos en Instagram, Facebook, X, TikTok y YouTube. Colaboraciones con creadores de contenido e influencers. Únete a nuestra comunidad."
+    ),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

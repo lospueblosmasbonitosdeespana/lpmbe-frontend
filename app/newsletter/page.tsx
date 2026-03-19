@@ -1,12 +1,33 @@
 import { getApiUrl } from '@/lib/api';
 import Link from 'next/link';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
+import { getLocale } from 'next-intl/server';
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  seoDescription,
+  seoTitle,
+  titleLocaleSuffix,
+  type SupportedLocale,
+} from '@/lib/seo';
 import { NewsletterPageClient } from './NewsletterPageClient';
 
-export const metadata: Metadata = {
-  title: 'Newsletter',
-  description: 'Lee nuestras últimas newsletters y suscríbete para recibir novedades.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const path = '/newsletter';
+  const locSuf = titleLocaleSuffix(locale);
+  return {
+    title: seoTitle(`Newsletter${locSuf}`),
+    description: seoDescription(
+      'Lee nuestras últimas newsletters y suscríbete para recibir novedades.'
+    ),
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 async function getEditions() {
   try {

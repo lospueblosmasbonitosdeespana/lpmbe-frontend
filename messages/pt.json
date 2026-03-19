@@ -1289,6 +1289,7 @@
   },
   "meteoPage": {
     "title": "Tempo",
+    "metaDescription": "Meteorologia atual e previsões nas aldeias das Aldeias Mais Bonitas de Espanha.",
     "villagesCount": "Aldeias {count}",
     "noData": "Não existem dados meteorológicos disponíveis",
     "sortColdest": "Refrigerador",

@@ -1289,6 +1289,7 @@
   },
   "meteoPage": {
     "title": "Météo",
+    "metaDescription": "Météo actuelle et prévisions dans les villages des Plus Beaux Villages d'Espagne.",
     "villagesCount": "villages {count}",
     "noData": "Pas de données météorologiques disponibles",
     "sortColdest": "Refroidisseur",
