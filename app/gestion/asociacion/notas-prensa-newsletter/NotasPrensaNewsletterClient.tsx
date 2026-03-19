@@ -949,7 +949,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         fetch('/api/admin/newsletter/campaigns?limit=25', { cache: 'no-store' }),
       ];
       if (mode === 'newsletter') {
-        requests.push(fetch('/api/admin/newsletter/templates?kind=NEWSLETTER&limit=100', { cache: 'no-store' }));
+        requests.push(fetch('/api/admin/newsletter/templates?limit=200', { cache: 'no-store' }));
       }
       const [overviewRes, campaignsRes, templatesRes] = await Promise.all(requests);
       if (overviewRes.ok) {
@@ -983,6 +983,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   category: String(meta.category || ''),
                   description: String(meta.description || ''),
                   thumbnailUrl: String(meta.thumbnailUrl || meta.thumbnail_url || ''),
+                  theme: meta.theme ? String(meta.theme) : undefined,
+                  themeLabel: meta.themeLabel ? String(meta.themeLabel) : undefined,
                 },
                 updatedAt: String(row.updatedAt || ''),
               };
