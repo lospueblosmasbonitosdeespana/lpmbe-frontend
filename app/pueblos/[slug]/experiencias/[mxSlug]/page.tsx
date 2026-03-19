@@ -1,13 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug, type Pueblo } from "@/lib/api";
 import {
+  DEFAULT_DESCRIPTION,
   getBaseUrl,
   getCanonicalUrl,
   getLocaleAlternates,
-  getLocaleFromRequestHeaders,
   getOGLocale,
   metaLocaleLead,
   seoTitle,
@@ -60,17 +59,37 @@ export async function generateMetadata({
   params: Promise<{ slug: string; mxSlug: string }>;
 }): Promise<Metadata> {
   const { slug, mxSlug } = await params;
-  const hdrs = await headers();
-  const locale = getLocaleFromRequestHeaders(hdrs);
+  const locale = (await getLocale()) as SupportedLocale;
   const locSuf = titleLocaleSuffix(locale);
   const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const expName = mxSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/experiencias/${mxSlug}`;
   const mxDis = slugDisambiguatorForTitle(mxSlug);
   const title = seoTitle(`${expName} · ${puebloName}${mxDis}${locSuf}`);
-  const description = seoDescription(
-    `${metaLocaleLead(locale)}Experiencia «${expName}» en ${puebloName}. Itinerario: ${mxSlug}.`,
-  );
+
+  let descriptionLong = `${metaLocaleLead(locale)}Experiencia «${expName}» en ${puebloName}. Itinerario: ${mxSlug}.`;
+  try {
+    const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+    if (pueblo) {
+      const mxItem = (pueblo.multiexperiencias ?? []).find((x: any) => {
+        const s = x?.slug ?? x?.multiexperiencia?.slug ?? null;
+        return s === mxSlug;
+      });
+      const mx = (mxItem?.multiexperiencia ?? mxItem ?? null) as Multiexperiencia | null;
+      if (mx?.titulo) {
+        const titulo = mx.titulo.trim();
+        const descPlain = mx.descripcion
+          ? mx.descripcion.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 130)
+          : "";
+        descriptionLong = `${metaLocaleLead(locale)}${titulo} — ${pueblo.nombre}.${descPlain ? ` ${descPlain}` : ""} Ref. ${mxSlug}.`;
+      }
+    }
+  } catch {
+    // fallback descriptionLong ya definido
+  }
+
+  const description = seoDescription(descriptionLong) || DEFAULT_DESCRIPTION;
+
   return {
     title,
     description,

@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getRutas, getRutaById, getRutaMapa } from "@/lib/api";
 import {
+  DEFAULT_DESCRIPTION,
   getBaseUrl,
   getCanonicalUrl,
   getLocaleAlternates,
@@ -95,9 +96,9 @@ export async function generateMetadata({
   const path = `/rutas/${slug}`;
   const slugDis = slugDisambiguatorForTitle(slug);
   const title = seoTitle(`${name}${slugDis}${locSuf}`);
-  const description = seoDescription(
-    `Ruta turística por los pueblos más bonitos de España: ${name}.${locSuf}`
-  );
+  const description =
+    seoDescription(`Ruta turística por los pueblos más bonitos de España: ${name}.${locSuf}`) ||
+    DEFAULT_DESCRIPTION;
   return {
     title,
     description,
