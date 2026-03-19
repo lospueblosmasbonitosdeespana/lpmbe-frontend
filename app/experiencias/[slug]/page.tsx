@@ -7,6 +7,7 @@ import {
   seoDescription,
   seoTitle,
   titleLocaleSuffix,
+  uniqueH1ForLocale,
   type SupportedLocale,
 } from '@/lib/seo';
 
@@ -139,7 +140,9 @@ export default async function TematicaPage({
   return (
     <main className="mx-auto max-w-7xl px-4 py-12">
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold text-foreground">{title}</h1>
+        <h1 className="text-3xl font-semibold text-foreground">
+          {uniqueH1ForLocale(`${title} · ${slug}`, locale)}
+        </h1>
         <p className="mt-2 text-gray-600 dark:text-neutral-400">{description}</p>
       </div>
 

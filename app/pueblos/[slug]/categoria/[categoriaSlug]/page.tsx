@@ -2,7 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  seoTitle,
+  seoDescription,
+  slugToTitle,
+  uniqueH1ForLocale,
+  type SupportedLocale,
+} from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Eyebrow, Body } from "@/app/components/ui/typography";
@@ -108,7 +116,9 @@ export default async function CategoriaPage({
         <Section spacing="md">
           <Container>
             <div className="rounded-xl border border-dashed border-border bg-card/50 px-8 py-16 text-center">
-              <h1 className="font-serif text-2xl font-medium text-foreground">Categoría</h1>
+              <h1 className="font-serif text-2xl font-medium text-foreground">
+                {uniqueH1ForLocale("Categoría", locale)}
+              </h1>
               <p className="mt-3 text-muted-foreground">
                 La categoría solicitada no está disponible.
               </p>
@@ -129,7 +139,9 @@ export default async function CategoriaPage({
         <Section spacing="md">
           <Container>
             <div className="rounded-xl border border-dashed border-border bg-card/50 px-8 py-16 text-center">
-              <h1 className="font-serif text-2xl font-medium text-foreground">Categoría</h1>
+              <h1 className="font-serif text-2xl font-medium text-foreground">
+                {uniqueH1ForLocale("Categoría", locale)}
+              </h1>
               <p className="mt-3 text-muted-foreground">
                 No se ha podido cargar este pueblo en este momento.
               </p>
@@ -188,7 +200,9 @@ export default async function CategoriaPage({
 
           <div className="mb-10">
             <Eyebrow className="mb-2">Qué hacer</Eyebrow>
-            <h1 className="font-serif text-4xl font-medium tracking-tight">{h1Text}</h1>
+            <h1 className="font-serif text-4xl font-medium tracking-tight">
+              {uniqueH1ForLocale(h1Text, locale)}
+            </h1>
             <Body className="mt-2 text-muted-foreground">{descripcion}</Body>
           </div>
 

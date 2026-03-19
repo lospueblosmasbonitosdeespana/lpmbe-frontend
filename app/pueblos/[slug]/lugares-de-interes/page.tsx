@@ -10,6 +10,7 @@ import {
   slugToTitle,
   slugDisambiguatorForTitle,
   titleLocaleSuffix,
+  uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
@@ -66,7 +67,9 @@ export default async function LugaresDeInteresPage({
         <Section spacing="md">
           <Container>
             <div className="rounded-xl border border-dashed border-border bg-card/50 px-8 py-16 text-center">
-              <h1 className="font-serif text-2xl font-medium text-foreground">{tPueblo("h1LugaresDeInteres", { nombre: slug })}</h1>
+              <h1 className="font-serif text-2xl font-medium text-foreground">
+                {uniqueH1ForLocale(tPueblo("h1LugaresDeInteres", { nombre: slug }), locale)}
+              </h1>
               <p className="mt-3 text-muted-foreground">
                 No se ha podido cargar este pueblo en este momento.
               </p>
@@ -100,7 +103,7 @@ export default async function LugaresDeInteresPage({
             <div className="mb-10">
               <Eyebrow className="mb-2">Qué ver</Eyebrow>
               <h1 className="font-serif text-2xl font-medium tracking-tight sm:text-3xl">
-                {tPueblo("h1LugaresDeInteres", { nombre: pueblo.nombre })}
+                {uniqueH1ForLocale(tPueblo("h1LugaresDeInteres", { nombre: pueblo.nombre }), locale)}
               </h1>
               <Body className="mt-2 text-muted-foreground">
                 No hay lugares de interés disponibles para este pueblo.
@@ -167,7 +170,7 @@ export default async function LugaresDeInteresPage({
           <div className="mb-10">
             <Eyebrow className="mb-2">Qué ver</Eyebrow>
             <h1 className="font-serif text-2xl font-medium tracking-tight sm:text-3xl">
-              {tPueblo("h1LugaresDeInteres", { nombre: pueblo.nombre })}
+              {uniqueH1ForLocale(tPueblo("h1LugaresDeInteres", { nombre: pueblo.nombre }), locale)}
             </h1>
             <Body className="mt-2 text-muted-foreground">
               {pois.length} {pois.length === 1 ? "punto de interés" : "puntos de interés"} para descubrir

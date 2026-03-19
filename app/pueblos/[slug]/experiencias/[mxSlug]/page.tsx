@@ -13,6 +13,7 @@ import {
   seoDescription,
   slugDisambiguatorForTitle,
   titleLocaleSuffix,
+  uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
 import ParadasMap from "@/app/_components/ParadasMap";
@@ -182,7 +183,7 @@ export default async function MultiexperienciaPage({
       </div>
 
       {/* Título */}
-      <h1 className="text-foreground text-3xl font-bold">{mx.titulo}</h1>
+      <h1 className="text-foreground text-3xl font-bold">{uniqueH1ForLocale(mx.titulo, locale)}</h1>
 
       {/* Información del pueblo */}
       <p className="mt-2 text-sm text-muted-foreground">

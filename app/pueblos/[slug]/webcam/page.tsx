@@ -2,7 +2,14 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  seoTitle,
+  seoDescription,
+  uniqueH1ForLocale,
+  type SupportedLocale,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -95,7 +102,9 @@ export default async function WebcamPuebloPage({
               </span>
             ))}
           </nav>
-          <h1 className="text-2xl font-bold">{tPueblo("h1Webcam", { nombre: pueblo.nombre })}</h1>
+          <h1 className="text-2xl font-bold">
+            {uniqueH1ForLocale(tPueblo("h1Webcam", { nombre: pueblo.nombre }), locale)}
+          </h1>
           <p className="mt-1 text-muted-foreground">
             Imagen en directo de las webcams del pueblo.
           </p>

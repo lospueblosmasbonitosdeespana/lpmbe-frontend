@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
+import { uniqueH1ForLocale } from '@/lib/seo';
 
 type Contenido = {
   id: number;
@@ -22,6 +23,7 @@ type ActualidadPuebloClientProps = {
   puebloId: number;
   puebloNombre: string;
   puebloSlug: string;
+  locale?: string;
   tipo?: string;
   modo?: string;
   h1Label?: string;
@@ -175,6 +177,7 @@ export default function ActualidadPuebloClient({
   puebloId,
   puebloNombre,
   puebloSlug,
+  locale,
   tipo,
   modo,
   h1Label,
@@ -248,7 +251,7 @@ export default function ActualidadPuebloClient({
             ← Volver a Actualidad
           </Link>
           <h1 className="text-4xl font-semibold">
-            {tituloSeccion} · {puebloNombre}
+            {uniqueH1ForLocale(`${tituloSeccion} · ${puebloNombre}`, locale)}
           </h1>
           <p className="mt-2 text-gray-600">
             {tituloSeccion.toLowerCase()} de {puebloNombre}
@@ -295,7 +298,7 @@ export default function ActualidadPuebloClient({
             ← Volver a Actualidad
           </Link>
           <h1 className="text-4xl font-semibold">
-            {h1Archivo ?? `Archivo · ${puebloNombre}`}
+            {uniqueH1ForLocale(h1Archivo ?? `Archivo · ${puebloNombre}`, locale)}
           </h1>
           <p className="mt-2 text-gray-600">
             Noticias y eventos anteriores de {puebloNombre}
@@ -352,7 +355,9 @@ export default function ActualidadPuebloClient({
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
       <div className="mb-8">
-        <h1 className="text-4xl font-semibold">{h1Label ?? `Actualidad · ${puebloNombre}`}</h1>
+        <h1 className="text-4xl font-semibold">
+          {uniqueH1ForLocale(h1Label ?? `Actualidad · ${puebloNombre}`, locale)}
+        </h1>
         <p className="mt-2 text-gray-600">
           Noticias, eventos y artículos de {puebloNombre}
         </p>

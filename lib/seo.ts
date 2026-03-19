@@ -162,6 +162,20 @@ export function titleLocaleSuffix(locale: SupportedLocale | string): string {
 }
 
 /**
+ * H1 distinto por variante de idioma (?lang=) para auditorías que marcan H1 duplicados entre URLs.
+ * Añade " (CA)", " (IT)", etc. solo si no es español.
+ */
+export function uniqueH1ForLocale(base: string, locale: string | undefined): string {
+  const l = String(locale ?? "es").toLowerCase();
+  const trimmed = decodeBasicHtmlEntities(base).replace(/\s+/g, " ").trim();
+  if (!trimmed) return "Contenido";
+  if (l === "es") return trimmed;
+  const tag = l.toUpperCase();
+  if (trimmed.endsWith(`(${tag})`)) return trimmed;
+  return `${trimmed} (${tag})`;
+}
+
+/**
  * Locale para `generateMetadata()` sin `await getLocale()` (next-intl puede retrasar
  * la resolución y provocar que auditorías marquen meta/título fuera de `<head>` con streaming).
  * El middleware ya envía `x-current-locale` en cada petición.

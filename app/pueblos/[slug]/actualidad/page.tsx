@@ -2,7 +2,14 @@ import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import ActualidadPuebloClient from './ActualidadPuebloClient';
 import { getPuebloBySlug } from '@/lib/api';
-import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from '@/lib/seo';
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  seoTitle,
+  seoDescription,
+  uniqueH1ForLocale,
+  type SupportedLocale,
+} from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -45,7 +52,9 @@ export default async function ActualidadPuebloPage({
     return (
       <main className="min-h-screen bg-background">
         <div className="mx-auto max-w-5xl px-4 py-12">
-          <h1 className="text-3xl font-semibold">{tPueblo("h1Actualidad", { nombre: slug })}</h1>
+          <h1 className="text-3xl font-semibold">
+            {uniqueH1ForLocale(tPueblo("h1Actualidad", { nombre: slug }), locale)}
+          </h1>
           <p className="mt-3 text-muted-foreground">
             No se ha podido cargar la actualidad de este pueblo en este momento.
           </p>
@@ -59,6 +68,7 @@ export default async function ActualidadPuebloPage({
       puebloId={pueblo.id}
       puebloNombre={pueblo.nombre}
       puebloSlug={pueblo.slug}
+      locale={locale}
       tipo={tipo}
       modo={modo}
       h1Label={tPueblo("h1Actualidad", { nombre: pueblo.nombre })}

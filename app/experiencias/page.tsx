@@ -9,6 +9,7 @@ import {
   seoDescription,
   seoTitle,
   titleLocaleSuffix,
+  uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
 import { getApiUrl } from "@/lib/api";
@@ -99,7 +100,7 @@ export default async function ExperienciasPage() {
               Ideas de viaje
             </p>
             <Display as="h1" className="mb-3">
-              Experiencias temáticas
+              {uniqueH1ForLocale("Experiencias temáticas", locale)}
             </Display>
             <Muted className="text-base max-w-2xl mx-auto">
               Los pueblos según tus deseos. En familia, para escapadas gastronómicas,

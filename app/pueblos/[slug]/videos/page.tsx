@@ -9,6 +9,7 @@ import {
   seoTitle,
   slugDisambiguatorForTitle,
   titleLocaleSuffix,
+  uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
 
@@ -122,7 +123,9 @@ export default async function VideosPuebloPage({
               </span>
             ))}
           </nav>
-          <h1 className="text-2xl font-bold">{tPueblo("h1Videos", { nombre: pueblo.nombre })}</h1>
+          <h1 className="text-2xl font-bold">
+            {uniqueH1ForLocale(tPueblo("h1Videos", { nombre: pueblo.nombre }), locale)}
+          </h1>
           <p className="mt-1 text-muted-foreground">
             Enlaces a videos de YouTube y otras plataformas sobre el pueblo.
           </p>

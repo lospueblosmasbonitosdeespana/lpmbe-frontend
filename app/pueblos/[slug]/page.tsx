@@ -3,7 +3,17 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug, getPueblosLite, getApiUrl } from "@/lib/api";
-import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
+import {
+  getBaseUrl,
+  getCanonicalUrl,
+  getLocaleAlternates,
+  getOGLocale,
+  seoTitle,
+  seoDescription,
+  slugToTitle,
+  uniqueH1ForLocale,
+  type SupportedLocale,
+} from "@/lib/seo";
 import JsonLd from "@/app/components/seo/JsonLd";
 import PuebloActions from "./PuebloActions";
 import DescripcionPueblo from "./DescripcionPueblo";
@@ -659,7 +669,7 @@ export default async function PuebloPage({
       ))}
       {/* HERO - Diseño tourism-website-design */}
       <DetailPageHero
-        title={puebloSafe.nombre}
+        title={uniqueH1ForLocale(puebloSafe.nombre, locale)}
         eyebrow={`${puebloSafe.comunidad} / ${puebloSafe.provincia}`}
         metadata={heroMetadata}
         image={heroImage}

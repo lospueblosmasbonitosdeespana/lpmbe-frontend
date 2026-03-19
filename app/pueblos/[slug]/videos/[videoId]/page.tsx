@@ -9,6 +9,7 @@ import {
   seoDescription,
   seoTitleVideoWithId,
   titleLocaleSuffix,
+  uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
 import JsonLd from "@/app/components/seo/JsonLd";
@@ -112,7 +113,7 @@ export default async function VideoWatchPage({
     return (
       <main className="min-h-screen bg-background">
         <div className="mx-auto max-w-4xl px-4 py-8">
-          <h1 className="text-2xl font-bold">Video no disponible</h1>
+          <h1 className="text-2xl font-bold">{uniqueH1ForLocale("Video no disponible", locale)}</h1>
           <p className="mt-2 text-muted-foreground">No se ha encontrado el video solicitado.</p>
           <Link href={`/pueblos/${pueblo.slug}/videos`} className="mt-4 inline-block text-primary hover:underline">
             Ver todos los videos
@@ -168,7 +169,7 @@ export default async function VideoWatchPage({
               </span>
             ))}
           </nav>
-          <h1 className="text-2xl font-bold">{video.titulo}</h1>
+          <h1 className="text-2xl font-bold">{uniqueH1ForLocale(video.titulo, locale)}</h1>
           <p className="mt-1 text-muted-foreground">
             Video de {pueblo.nombre} · Los Pueblos Más Bonitos de España
           </p>

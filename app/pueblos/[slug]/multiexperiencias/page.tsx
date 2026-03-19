@@ -11,6 +11,7 @@ import {
   slugToTitle,
   slugDisambiguatorForTitle,
   titleLocaleSuffix,
+  uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
@@ -66,7 +67,9 @@ export default async function MultiexperienciasPage({
         <Section spacing="md">
           <Container>
             <div className="rounded-xl border border-dashed border-border bg-card/50 px-8 py-16 text-center">
-              <h1 className="font-serif text-2xl font-medium text-foreground">{tPueblo("h1Multiexperiencias", { nombre: slug })}</h1>
+              <h1 className="font-serif text-2xl font-medium text-foreground">
+                {uniqueH1ForLocale(tPueblo("h1Multiexperiencias", { nombre: slug }), locale)}
+              </h1>
               <p className="mt-3 text-muted-foreground">
                 No se ha podido cargar este pueblo en este momento.
               </p>
@@ -99,7 +102,7 @@ export default async function MultiexperienciasPage({
             <div className="mb-10">
               <Eyebrow className="mb-2">Qué hacer</Eyebrow>
               <h1 className="font-serif text-2xl font-medium tracking-tight sm:text-3xl">
-                {tPueblo("h1Multiexperiencias", { nombre: pueblo.nombre })}
+                {uniqueH1ForLocale(tPueblo("h1Multiexperiencias", { nombre: pueblo.nombre }), locale)}
               </h1>
               <Body className="mt-2 text-muted-foreground">
                 Experiencias y actividades para descubrir el pueblo.
@@ -137,7 +140,7 @@ export default async function MultiexperienciasPage({
           <div className="mb-10">
             <Eyebrow className="mb-2 text-red-600">Qué hacer</Eyebrow>
             <h1 className="font-serif text-2xl font-medium tracking-tight sm:text-3xl">
-              {tPueblo("h1Multiexperiencias", { nombre: pueblo.nombre })}
+              {uniqueH1ForLocale(tPueblo("h1Multiexperiencias", { nombre: pueblo.nombre }), locale)}
             </h1>
             <Body className="mt-2 text-muted-foreground">
               Experiencias y actividades para descubrir el pueblo.

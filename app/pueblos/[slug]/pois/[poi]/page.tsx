@@ -8,6 +8,7 @@ import {
   seoDescription,
   seoTitlePoiWithStamp,
   titleLocaleSuffix,
+  uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
 import { fetchWithTimeout } from "@/lib/fetch-safe";
@@ -183,7 +184,7 @@ export default async function PoiPage({
       </div>
 
       <h1 className="text-3xl font-bold text-foreground my-4">
-        {data.nombre} · {puebloNombre}
+        {uniqueH1ForLocale(`${data.nombre} · ${puebloNombre}`, locale)}
       </h1>
 
       <p className="text-sm text-muted-foreground my-2">
