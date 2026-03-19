@@ -51,6 +51,7 @@ type NewsletterBlockType =
   | 'figure'
   | 'imgText'
   | 'socialLinks'
+  | 'countdown'
   | 'divider';
 type NewsletterBlock = {
   id: string;
@@ -69,6 +70,8 @@ type NewsletterBlock = {
   socialInstagram?: string;
   socialLinkedin?: string;
   socialYoutube?: string;
+  countdownDate?: string;
+  countdownLabel?: string;
   align?: 'left' | 'center' | 'right';
   backgroundColor?: string;
   textColor?: string;
@@ -82,6 +85,8 @@ type NewsletterTemplate = {
   subject: string;
   contentHtml: string;
   blocksJson: unknown;
+  isDefault?: boolean;
+  metadata?: { category?: string; description?: string; thumbnailUrl?: string };
   updatedAt?: string;
 };
 
@@ -151,9 +156,11 @@ function createBlock(type: NewsletterBlockType, patch: Partial<NewsletterBlock> 
     socialInstagram: type === 'socialLinks' ? 'https://instagram.com/lospueblosmasbonitosdeespana' : '',
     socialLinkedin: type === 'socialLinks' ? '' : '',
     socialYoutube: type === 'socialLinks' ? '' : '',
-    align: type === 'socialLinks' || type === 'gallery' ? 'center' : 'left',
-    backgroundColor: '#ffffff',
-    textColor: '#111111',
+    countdownDate: type === 'countdown' ? new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 16) : '',
+    countdownLabel: type === 'countdown' ? 'No te lo pierdas' : '',
+    align: type === 'socialLinks' || type === 'gallery' || type === 'countdown' ? 'center' : 'left',
+    backgroundColor: type === 'countdown' ? '#1a1a2e' : '#ffffff',
+    textColor: type === 'countdown' ? '#ffffff' : '#111111',
     paddingY: 10,
     borderRadius: 8,
     ...patch,
@@ -220,6 +227,9 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
         social_links: 'socialLinks',
         'social-links': 'socialLinks',
         social: 'socialLinks',
+        countdown: 'countdown',
+        timer: 'countdown',
+        temporizador: 'countdown',
         divider: 'divider',
       };
       const type: NewsletterBlockType = typeMap[typeRaw] ?? 'text';
@@ -249,6 +259,8 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
         socialInstagram: String(b.socialInstagram || ''),
         socialLinkedin: String(b.socialLinkedin || ''),
         socialYoutube: String(b.socialYoutube || ''),
+        countdownDate: String(b.countdownDate || ''),
+        countdownLabel: String(b.countdownLabel || ''),
         align,
         backgroundColor: String(b.backgroundColor || '#ffffff'),
         textColor: String(b.textColor || '#111111'),
@@ -360,6 +372,21 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
           )
           .join('');
         return `<div style="${boxStyle}"><p style="margin:0;text-align:${align};">${items}</p></div>`;
+      }
+      if (block.type === 'countdown') {
+        const target = block.countdownDate ? new Date(block.countdownDate) : new Date();
+        const now = new Date();
+        const diff = Math.max(0, target.getTime() - now.getTime());
+        const days = Math.floor(diff / 86400000);
+        const hours = Math.floor((diff % 86400000) / 3600000);
+        const minutes = Math.floor((diff % 3600000) / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const cellStyle = 'display:inline-block;width:80px;text-align:center;margin:0 6px;';
+        const numStyle = 'font-size:42px;font-weight:800;line-height:1.1;letter-spacing:1px;';
+        const lblStyle = 'font-size:11px;text-transform:uppercase;letter-spacing:1.5px;opacity:0.8;margin-top:4px;';
+        const lbl = block.countdownLabel ? `<p style="margin:0 0 14px 0;font-size:16px;font-weight:600;text-align:center;">${escapeHtml(block.countdownLabel)}</p>` : '';
+        return `<div style="${boxStyle}background:#1a1a2e;color:#fff;padding:28px 14px;border-radius:${borderRadius}px;text-align:center;">${lbl}<div style="display:inline-block;"><span style="${cellStyle}"><span style="${numStyle}">${pad(days)}</span><br/><span style="${lblStyle}">Días</span></span><span style="font-size:36px;font-weight:300;opacity:0.5;vertical-align:top;line-height:1.2;">:</span><span style="${cellStyle}"><span style="${numStyle}">${pad(hours)}</span><br/><span style="${lblStyle}">Horas</span></span><span style="font-size:36px;font-weight:300;opacity:0.5;vertical-align:top;line-height:1.2;">:</span><span style="${cellStyle}"><span style="${numStyle}">${pad(minutes)}</span><br/><span style="${lblStyle}">Minutos</span></span><span style="font-size:36px;font-weight:300;opacity:0.5;vertical-align:top;line-height:1.2;">:</span><span style="${cellStyle}"><span style="${numStyle}">${pad(seconds)}</span><br/><span style="${lblStyle}">Segundos</span></span></div></div>`;
       }
       return `<hr style="margin:20px 0;border:none;border-top:1px solid #ddd;" />`;
     })
@@ -632,6 +659,15 @@ function renderPaletteIcon(type: NewsletterBlockType) {
       </svg>
     );
   }
+  if (type === 'countdown') {
+    return (
+      <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
+        <circle cx="12" cy="13" r="9" stroke="currentColor" strokeWidth="1.8" fill="none" />
+        <path d="M12 7v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
+        <rect x="10" y="2" width="4" height="2.5" rx="1" fill="currentColor" />
+      </svg>
+    );
+  }
   return (
     <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
       <rect x="3" y="11" width="18" height="2" rx="1" fill="currentColor" />
@@ -691,6 +727,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [templateName, setTemplateName] = useState('');
   const [templateSaving, setTemplateSaving] = useState(false);
+  const [showTemplateGallery, setShowTemplateGallery] = useState(false);
+  const [templateGalleryTab, setTemplateGalleryTab] = useState<'all' | 'predefined' | 'mine'>('all');
+  const [templatePreviewHtml, setTemplatePreviewHtml] = useState<string | null>(null);
   const [newsletterBlocks, setNewsletterBlocks] = useState<NewsletterBlock[]>([]);
   const [selectedNewsletterBlockId, setSelectedNewsletterBlockId] = useState<string | null>(null);
   const [reorderPickSourceId, setReorderPickSourceId] = useState<string | null>(null);
@@ -879,6 +918,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         const normalized: NewsletterTemplate[] = Array.isArray(items)
           ? items.map((item) => {
               const row = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
+              const meta = (row.metadata && typeof row.metadata === 'object' ? row.metadata : {}) as Record<string, unknown>;
               return {
                 id: Number(row.id || 0),
                 kind: String(row.kind || 'NEWSLETTER').toUpperCase() === 'PRESS' ? 'PRESS' : 'NEWSLETTER',
@@ -886,6 +926,12 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                 subject: String(row.subject || ''),
                 contentHtml: String(row.contentHtml || ''),
                 blocksJson: row.blocksJson,
+                isDefault: Boolean(row.isDefault),
+                metadata: {
+                  category: String(meta.category || ''),
+                  description: String(meta.description || ''),
+                  thumbnailUrl: String(meta.thumbnailUrl || meta.thumbnail_url || ''),
+                },
                 updatedAt: String(row.updatedAt || ''),
               };
             })
@@ -1981,27 +2027,14 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   </button>
                 </div>
 
-                <div className="grid gap-2 md:grid-cols-[1fr_auto_auto]">
-                  <select
-                    value={selectedTemplateId ?? ''}
-                    onChange={(e) => {
-                      const id = Number(e.target.value || 0);
-                      if (!id) {
-                        setSelectedTemplateId(null);
-                        return;
-                      }
-                      const template = newsletterTemplates.find((t) => t.id === id);
-                      if (template) applyNewsletterTemplate(template);
-                    }}
-                    className="rounded-md border border-border px-3 py-2 text-sm"
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowTemplateGallery((v) => !v)}
+                    className="rounded-md border border-primary bg-primary/5 px-4 py-2 text-sm font-semibold text-primary"
                   >
-                    <option value="">Selecciona plantilla guardada</option>
-                    {newsletterTemplates.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
+                    {showTemplateGallery ? 'Cerrar galería' : 'Galería de plantillas'}
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -2009,67 +2042,210 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                       setTemplateName('');
                       setNewsletterBlocks([]);
                       setCampaignForm((s) => ({ ...s, html: '' }));
+                      setShowTemplateGallery(false);
                     }}
-                    className="rounded-md border border-border px-3 py-2 text-sm"
+                    className="rounded-md border border-border px-4 py-2 text-sm"
                   >
-                    Nueva
+                    Nueva en blanco
                   </button>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setError(null);
-                      setMessage(null);
-                      setTemplateSaving(true);
-                      try {
-                        await deleteSelectedTemplate();
-                      } catch (e: unknown) {
-                        setError(getErrorMessage(e, 'Error eliminando plantilla'));
-                      } finally {
-                        setTemplateSaving(false);
-                      }
-                    }}
-                    disabled={!selectedTemplateId || templateSaving}
-                    className="rounded-md border border-red-300 px-3 py-2 text-sm text-red-700 disabled:opacity-50"
-                  >
-                    Eliminar
-                  </button>
+                  <div className="ml-auto flex items-center gap-2">
+                    <input
+                      value={templateName}
+                      onChange={(e) => setTemplateName(e.target.value)}
+                      className="w-48 rounded-md border border-border px-3 py-2 text-sm"
+                      placeholder="Nombre de plantilla"
+                    />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setError(null);
+                        setMessage(null);
+                        setTemplateSaving(true);
+                        try {
+                          await saveTemplateFromComposer();
+                        } catch (e: unknown) {
+                          setError(getErrorMessage(e, 'Error guardando plantilla'));
+                        } finally {
+                          setTemplateSaving(false);
+                        }
+                      }}
+                      disabled={templateSaving}
+                      className="whitespace-nowrap rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+                    >
+                      {templateSaving ? 'Guardando...' : selectedTemplateId ? 'Actualizar' : 'Guardar como plantilla'}
+                    </button>
+                    {selectedTemplateId ? (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setError(null);
+                          setMessage(null);
+                          setTemplateSaving(true);
+                          try {
+                            await deleteSelectedTemplate();
+                          } catch (e: unknown) {
+                            setError(getErrorMessage(e, 'Error eliminando plantilla'));
+                          } finally {
+                            setTemplateSaving(false);
+                          }
+                        }}
+                        disabled={templateSaving}
+                        className="rounded-md border border-red-300 px-3 py-2 text-sm text-red-700 disabled:opacity-50"
+                      >
+                        Eliminar
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
 
-                <div className="grid gap-2 md:grid-cols-[1fr_auto]">
-                  <input
-                    value={templateName}
-                    onChange={(e) => setTemplateName(e.target.value)}
-                    className="rounded-md border border-border px-3 py-2 text-sm"
-                    placeholder="Nombre de plantilla"
-                  />
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setError(null);
-                      setMessage(null);
-                      setTemplateSaving(true);
-                      try {
-                        await saveTemplateFromComposer();
-                      } catch (e: unknown) {
-                        setError(getErrorMessage(e, 'Error guardando plantilla'));
-                      } finally {
-                        setTemplateSaving(false);
-                      }
-                    }}
-                    disabled={templateSaving}
-                    className="rounded-md border border-border px-3 py-2 text-sm font-medium disabled:opacity-50"
+                {showTemplateGallery && (
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <div className="mb-4 flex items-center gap-3">
+                      <h3 className="text-sm font-bold uppercase text-muted-foreground">Plantillas</h3>
+                      <div className="flex rounded-md border border-border text-xs">
+                        {(['all', 'predefined', 'mine'] as const).map((tab) => (
+                          <button
+                            key={tab}
+                            type="button"
+                            onClick={() => setTemplateGalleryTab(tab)}
+                            className={`px-3 py-1.5 font-medium transition ${templateGalleryTab === tab ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+                          >
+                            {tab === 'all' ? 'Todas' : tab === 'predefined' ? 'Predefinidas' : 'Mis plantillas'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                      {newsletterTemplates
+                        .filter((t) => {
+                          if (templateGalleryTab === 'predefined') return t.isDefault;
+                          if (templateGalleryTab === 'mine') return !t.isDefault;
+                          return true;
+                        })
+                        .map((t) => (
+                          <div
+                            key={t.id}
+                            className="group overflow-hidden rounded-lg border border-border bg-background transition hover:border-primary/50 hover:shadow-md"
+                          >
+                            <div className="relative h-36 overflow-hidden bg-muted/40">
+                              {t.contentHtml ? (
+                                <iframe
+                                  srcDoc={`<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;font-family:Arial,sans-serif;transform:scale(0.3);transform-origin:top left;width:333%;overflow:hidden;}</style></head><body>${t.contentHtml}</body></html>`}
+                                  className="pointer-events-none h-[480px] w-full border-0"
+                                  title={t.name}
+                                  sandbox=""
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+                                  Sin vista previa
+                                </div>
+                              )}
+                              {t.isDefault && (
+                                <span className="absolute right-1 top-1 rounded bg-primary/90 px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
+                                  Predefinida
+                                </span>
+                              )}
+                            </div>
+                            <div className="p-3">
+                              <p className="truncate text-sm font-semibold">{t.name}</p>
+                              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                                {t.metadata?.description || t.subject || 'Sin descripción'}
+                              </p>
+                              <div className="mt-2 flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    applyNewsletterTemplate(t);
+                                    setShowTemplateGallery(false);
+                                  }}
+                                  className="flex-1 rounded-md bg-primary px-2 py-1.5 text-xs font-semibold text-primary-foreground"
+                                >
+                                  Usar
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setTemplatePreviewHtml(
+                                      t.contentHtml || renderNewsletterBlocksToHtml(normalizeNewsletterBlocks(t.blocksJson)),
+                                    )
+                                  }
+                                  className="rounded-md border border-border px-2 py-1.5 text-xs font-medium"
+                                >
+                                  Vista previa
+                                </button>
+                                {!t.isDefault && (
+                                  <button
+                                    type="button"
+                                    onClick={async () => {
+                                      if (!window.confirm(`¿Eliminar "${t.name}"?`)) return;
+                                      try {
+                                        await fetch(`/api/admin/newsletter/templates/${t.id}`, { method: 'DELETE' });
+                                        setNewsletterTemplates((prev) => prev.filter((x) => x.id !== t.id));
+                                        if (selectedTemplateId === t.id) setSelectedTemplateId(null);
+                                        setMessage('Plantilla eliminada.');
+                                      } catch {
+                                        setError('Error eliminando plantilla');
+                                      }
+                                    }}
+                                    className="rounded-md border border-red-200 px-2 py-1.5 text-xs text-red-600"
+                                  >
+                                    Borrar
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      {newsletterTemplates.filter((t) => {
+                        if (templateGalleryTab === 'predefined') return t.isDefault;
+                        if (templateGalleryTab === 'mine') return !t.isDefault;
+                        return true;
+                      }).length === 0 && (
+                        <p className="col-span-full py-8 text-center text-sm text-muted-foreground">
+                          No hay plantillas en esta categoría.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {templatePreviewHtml && (
+                  <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+                    onClick={() => setTemplatePreviewHtml(null)}
                   >
-                    {templateSaving ? 'Guardando...' : selectedTemplateId ? 'Actualizar plantilla' : 'Guardar plantilla'}
-                  </button>
-                </div>
+                    <div
+                      className="relative max-h-[90vh] w-full max-w-3xl overflow-auto rounded-lg bg-white p-6 shadow-xl"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setTemplatePreviewHtml(null)}
+                        className="absolute right-3 top-3 rounded-full border px-2 py-1 text-xs font-bold"
+                      >
+                        Cerrar
+                      </button>
+                      <p className="mb-3 text-sm font-bold uppercase text-muted-foreground">Vista previa</p>
+                      <div dangerouslySetInnerHTML={{ __html: templatePreviewHtml }} />
+                    </div>
+                  </div>
+                )}
 
                 {newsletterComposerMode === 'builder' ? (
                   <div className="space-y-3 rounded-md border border-dashed border-border p-3">
                     <div className="grid gap-3 xl:grid-cols-[260px_1fr]">
                       <aside className="space-y-3 rounded-md border border-border bg-muted/20 p-3">
                         <div>
-                          <p className="text-xs font-semibold uppercase text-muted-foreground">Presets</p>
+                          <p className="text-xs font-semibold uppercase text-muted-foreground">Plantillas</p>
                           <div className="mt-2 space-y-2">
+                            <button
+                              type="button"
+                              onClick={() => setShowTemplateGallery(true)}
+                              className="w-full rounded-md border border-primary/40 bg-primary/5 px-2 py-2 text-center text-xs font-semibold text-primary"
+                            >
+                              Abrir galería
+                            </button>
                             <button
                               type="button"
                               onClick={() => applyNewsletterPreset('boletin')}
@@ -2266,6 +2442,21 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                               type="button"
                               draggable
                               onDragStart={(e) => {
+                                setDraggingPaletteType('countdown');
+                                e.dataTransfer.setData('text/newsletter-block-type', 'countdown');
+                                e.dataTransfer.effectAllowed = 'copy';
+                              }}
+                              onDragEnd={() => setDraggingPaletteType(null)}
+                              onClick={() => addNewsletterBlock('countdown')}
+                              className="flex flex-col items-center justify-center gap-1 rounded-md border bg-background px-2 py-2 text-center text-[11px] font-medium hover:border-primary/60 hover:bg-primary/5"
+                            >
+                              {renderPaletteIcon('countdown')}
+                              Temporizador
+                            </button>
+                            <button
+                              type="button"
+                              draggable
+                              onDragStart={(e) => {
                                 setDraggingPaletteType('divider');
                                 e.dataTransfer.setData('text/newsletter-block-type', 'divider');
                                 e.dataTransfer.effectAllowed = 'copy';
@@ -2413,6 +2604,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                                     ? `Img+Texto: ${(block.content || '').slice(0, 30)}`
                                                     : block.type === 'socialLinks'
                                                       ? `Social: ${[block.socialFacebook && 'FB', block.socialTwitter && 'X', block.socialInstagram && 'IG', block.socialLinkedin && 'LI', block.socialYoutube && 'YT'].filter(Boolean).join(', ') || 'ninguno'}`
+                                                      : block.type === 'countdown'
+                                                        ? `Temporizador: ${block.countdownDate || 'sin fecha'} · ${block.countdownLabel || ''}`
                                         : block.type === 'image'
                                           ? `Imagen: ${block.url || 'sin URL'}`
                                           : block.content || 'Bloque sin contenido'}
@@ -2696,6 +2889,36 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                       placeholder="https://youtube.com/..."
                                     />
                                   </label>
+                                </div>
+                              )}
+
+                              {selectedNewsletterBlock.type === 'countdown' && (
+                                <div className="space-y-2 md:col-span-2">
+                                  <label className="text-xs text-muted-foreground">
+                                    Fecha y hora objetivo
+                                    <input
+                                      type="datetime-local"
+                                      value={selectedNewsletterBlock.countdownDate || ''}
+                                      onChange={(e) =>
+                                        updateSelectedNewsletterBlock({ countdownDate: e.target.value })
+                                      }
+                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                    />
+                                  </label>
+                                  <label className="text-xs text-muted-foreground">
+                                    Texto superior (opcional)
+                                    <input
+                                      value={selectedNewsletterBlock.countdownLabel || ''}
+                                      onChange={(e) =>
+                                        updateSelectedNewsletterBlock({ countdownLabel: e.target.value })
+                                      }
+                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                      placeholder="Ej: No te lo pierdas"
+                                    />
+                                  </label>
+                                  <p className="text-[11px] text-muted-foreground">
+                                    Al sincronizar HTML se calcula la cuenta atrás respecto al momento actual.
+                                  </p>
                                 </div>
                               )}
 
