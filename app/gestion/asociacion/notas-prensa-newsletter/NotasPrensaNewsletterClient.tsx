@@ -789,6 +789,10 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [uploadingNewsletterImage, setUploadingNewsletterImage] = useState(false);
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const [hasStoredDraft, setHasStoredDraft] = useState(false);
+  const [brandLogos, setBrandLogos] = useState<{ id: number; nombre: string; url: string; etiqueta?: string }[]>([]);
+  const [showLogosPanel, setShowLogosPanel] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoUploadInputRef = useRef<HTMLInputElement | null>(null);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const photosInputRef = useRef<HTMLInputElement | null>(null);
   const newsletterImageInputRef = useRef<HTMLInputElement | null>(null);
@@ -991,6 +995,25 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
             })
           : [];
         setNewsletterTemplates(normalized.filter((t) => t.id > 0));
+      }
+      // Cargar biblioteca de logos
+      try {
+        const logosRes = await fetch('/api/admin/logos', { cache: 'no-store' });
+        if (logosRes.ok) {
+          const logosData = await logosRes.json().catch(() => []);
+          if (Array.isArray(logosData)) {
+            setBrandLogos(
+              logosData.map((l: Record<string, unknown>) => ({
+                id: Number(l.id || 0),
+                nombre: String(l.nombre || l.name || ''),
+                url: String(l.url || ''),
+                etiqueta: l.etiqueta ? String(l.etiqueta) : undefined,
+              })).filter((l) => l.url),
+            );
+          }
+        }
+      } catch {
+        // logos opcionales, ignorar error
       }
     } catch {
       // ignore
@@ -1393,6 +1416,37 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     setNewsletterBlocks([]);
     setMessage('Plantilla eliminada.');
     await loadData();
+  }
+
+  async function uploadAndSaveLogo(file: File) {
+    setUploadingLogo(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', 'brand/logos');
+      const uploadRes = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
+      const uploadData = await uploadRes.json().catch(() => ({}));
+      if (!uploadRes.ok || !uploadData?.url) throw new Error(uploadData?.error || 'Error subiendo logo');
+      const url = String(uploadData.url);
+      const nombre = file.name.replace(/\.[^.]+$/, '');
+      const saveRes = await fetch('/api/admin/logos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, url, etiqueta: 'newsletter' }),
+      });
+      if (!saveRes.ok) throw new Error('Error guardando logo en biblioteca');
+      const saved = await saveRes.json().catch(() => ({}));
+      setBrandLogos((prev) => [
+        ...prev,
+        { id: Number(saved.id || Date.now()), nombre, url, etiqueta: 'newsletter' },
+      ]);
+      setMessage(`Logo "${nombre}" añadido a la biblioteca.`);
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, 'Error subiendo logo'));
+    } finally {
+      setUploadingLogo(false);
+      if (logoUploadInputRef.current) logoUploadInputRef.current.value = '';
+    }
   }
 
   async function runSendCampaign() {
@@ -2585,6 +2639,102 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                           </div>
                         </div>
 
+                        {/* Panel de logos de la biblioteca */}
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => setShowLogosPanel((v) => !v)}
+                            className="flex w-full items-center justify-between rounded-md border border-dashed border-primary/40 bg-primary/5 px-2 py-2 text-xs font-semibold text-primary"
+                          >
+                            <span className="flex items-center gap-1.5">
+                              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M8 12h8M12 8v8"/>
+                              </svg>
+                              Logos ({brandLogos.length})
+                            </span>
+                            <svg viewBox="0 0 24 24" className={`h-3.5 w-3.5 transition-transform ${showLogosPanel ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                          </button>
+
+                          {showLogosPanel && (
+                            <div className="mt-2 space-y-2">
+                              {brandLogos.length === 0 ? (
+                                <p className="py-3 text-center text-[11px] text-muted-foreground">No hay logos en la biblioteca</p>
+                              ) : (
+                                <div className="grid grid-cols-2 gap-1.5">
+                                  {brandLogos.map((logo) => (
+                                    <div
+                                      key={logo.id}
+                                      draggable
+                                      onDragStart={(e) => {
+                                        e.dataTransfer.setData('text/newsletter-logo-url', logo.url);
+                                        e.dataTransfer.setData('text/newsletter-logo-name', logo.nombre);
+                                        e.dataTransfer.effectAllowed = 'copy';
+                                      }}
+                                      className="group relative flex cursor-grab flex-col items-center gap-1 rounded-md border bg-white p-1.5 transition hover:border-primary/60 hover:shadow-sm active:cursor-grabbing"
+                                      title={`Arrastra "${logo.nombre}" al lienzo`}
+                                    >
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img
+                                        src={logo.url}
+                                        alt={logo.nombre}
+                                        className="h-10 w-full object-contain"
+                                        loading="lazy"
+                                      />
+                                      <span className="line-clamp-1 w-full text-center text-[10px] text-muted-foreground">{logo.nombre}</span>
+                                      <button
+                                        type="button"
+                                        title="Añadir al lienzo"
+                                        onClick={() => {
+                                          const b = createBlock('image', { url: logo.url, content: logo.nombre, align: 'center' });
+                                          setNewsletterBlocks((prev) => [...prev, b]);
+                                          setSelectedNewsletterBlockId(b.id);
+                                        }}
+                                        className="absolute right-0.5 top-0.5 hidden rounded bg-primary px-1 py-0.5 text-[10px] font-bold text-white group-hover:flex"
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              <div className="pt-1">
+                                <input
+                                  ref={logoUploadInputRef}
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) await uploadAndSaveLogo(file);
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  disabled={uploadingLogo}
+                                  onClick={() => logoUploadInputRef.current?.click()}
+                                  className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed px-2 py-1.5 text-[11px] font-medium text-muted-foreground hover:border-primary/50 hover:text-primary disabled:opacity-50"
+                                >
+                                  {uploadingLogo ? (
+                                    'Subiendo...'
+                                  ) : (
+                                    <>
+                                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                        <polyline points="17 8 12 3 7 8"/>
+                                        <line x1="12" y1="3" x2="12" y2="15"/>
+                                      </svg>
+                                      Subir logo nuevo
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
                         <button
                           type="button"
                           onClick={() =>
@@ -2616,8 +2766,18 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                             e.dataTransfer.dropEffect = 'copy';
                           }}
                           onDrop={(e) => {
-                            if (!draggingPaletteType) return;
                             e.preventDefault();
+                            // Drop de logo desde la biblioteca
+                            const logoUrl = e.dataTransfer.getData('text/newsletter-logo-url');
+                            const logoName = e.dataTransfer.getData('text/newsletter-logo-name');
+                            if (logoUrl) {
+                              const b = createBlock('image', { url: logoUrl, content: logoName || 'Logo', align: 'center' });
+                              setNewsletterBlocks((prev) => [...prev, b]);
+                              setSelectedNewsletterBlockId(b.id);
+                              return;
+                            }
+                            // Drop de bloque de la paleta
+                            if (!draggingPaletteType) return;
                             addNewsletterBlock(draggingPaletteType);
                             setDraggingPaletteType(null);
                           }}
