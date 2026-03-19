@@ -30,8 +30,10 @@ export async function generateMetadata({
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const name = slugToTitle(slug) || "Pueblo";
   const path = `/pueblos/${slug}/lugares-de-interes`;
+  // Include slug suffix to prevent duplicate titles when pueblo names truncate to the same string
+  const slugSuffix = slug.length > 15 ? `-${slug.slice(-6)}` : '';
   return {
-    title: seoTitle(`Lugares de interés en ${name}${localeSuffix}`),
+    title: seoTitle(`Lugares · ${name}${slugSuffix}${localeSuffix}`),
     description: seoDescription(`Descubre los puntos de interés y lugares que no te puedes perder en ${name}.${localeSuffix}`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),

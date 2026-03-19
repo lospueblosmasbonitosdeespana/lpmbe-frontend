@@ -104,7 +104,7 @@ export async function generateMetadata({
   const locale = await getLocale();
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const poiName = (isNumeric(poi) ? "Punto de interés" : poi.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
+  const poiName = (isNumeric(poi) ? `POI ${poi}` : poi.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
   const path = `/pueblos/${slug}/pois/${poi}`;
   const title = seoTitle(`${poiName} · ${puebloName}${localeSuffix}`);
   return {

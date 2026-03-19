@@ -41,7 +41,9 @@ export async function generateMetadata({
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/videos/${videoId}`;
-  const title = seoTitle(`Video de ${name}${localeSuffix}`);
+  // Use last 4 chars of videoId to differentiate multiple videos per pueblo
+  const idSuffix = videoId.slice(-4);
+  const title = seoTitle(`Video ${idSuffix} · ${name}${localeSuffix}`);
   const description = seoDescription(`Video y contenido audiovisual sobre ${name}.${localeSuffix}`);
 
   return {

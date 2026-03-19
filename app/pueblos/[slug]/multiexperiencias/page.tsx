@@ -30,8 +30,9 @@ export async function generateMetadata({
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const name = slugToTitle(slug) || "Pueblo";
   const path = `/pueblos/${slug}/multiexperiencias`;
+  const slugSuffix = slug.length > 12 ? `-${slug.slice(-6)}` : '';
   return {
-    title: seoTitle(`Multiexperiencias en ${name}${localeSuffix}`),
+    title: seoTitle(`Mx · ${name}${slugSuffix}${localeSuffix}`),
     description: seoDescription(`Experiencias y actividades para descubrir ${name}.${localeSuffix}`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),

@@ -2,9 +2,9 @@ import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getRutas, getRutasFast, getRutaById, getRutaMapa } from "@/lib/api";
+import { getRutas, getRutaById, getRutaMapa } from "@/lib/api";
 import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
-import { sanitizeHtml, createExcerpt } from "@/lib/sanitizeHtml";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import RutaParadasConMapa from "@/app/_components/RutaParadasConMapa";
 import JsonLd from "@/app/components/seo/JsonLd";
 
@@ -78,29 +78,10 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-  const tSeo = await getTranslations("seo");
-  const rutas = await getRutasFast(locale);
-  const ruta = rutas.find((r) => r.slug === slug);
-
-  if (!ruta) {
-    const path = `/rutas/${slug}`;
-    return {
-      title: seoTitle(`${tSeo("routeNotFoundTitle")}${localeSuffix}`),
-      description: seoDescription(`${tSeo("rutaDescriptionFallback")}${localeSuffix}`),
-      alternates: {
-        canonical: getCanonicalUrl(path, locale as SupportedLocale),
-        languages: getLocaleAlternates(path),
-      },
-      robots: { index: true, follow: true },
-    };
-  }
-
-  const title = seoTitle(`${ruta.titulo}${localeSuffix}`);
-  const description = ruta.descripcion
-    ? seoDescription(`${createExcerpt(ruta.descripcion, 150)}${localeSuffix}`, 155)
-    : `${tSeo("rutaDescriptionFallback")}${localeSuffix}`;
-  const path = `/rutas/${ruta.slug}`;
-
+  const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const path = `/rutas/${slug}`;
+  const title = seoTitle(`${name}${localeSuffix}`);
+  const description = seoDescription(`Ruta turística por los pueblos más bonitos de España: ${name}.${localeSuffix}`);
   return {
     title,
     description,
@@ -115,15 +96,11 @@ export async function generateMetadata({
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
       type: "article",
-      images: ruta.foto_portada
-        ? [{ url: ruta.foto_portada, alt: ruta.titulo }]
-        : undefined,
     },
     twitter: {
-      card: ruta.foto_portada ? "summary_large_image" : "summary",
+      card: "summary",
       title,
       description,
-      images: ruta.foto_portada ? [ruta.foto_portada] : undefined,
     },
   };
 }

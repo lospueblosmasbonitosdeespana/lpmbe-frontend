@@ -1,12 +1,34 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import { Display, Headline, Body, Lead } from '@/app/components/ui/typography';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const locale = await getLocale();
+  const localeSuffix = locale === 'es' ? '' : ` (${locale.toUpperCase()})`;
+  const name = slugToTitle(slug) || 'Socio';
+  const path = `/el-sello/socios/${slug}`;
+  return {
+    title: seoTitle(`${name} · Socios${localeSuffix}`),
+    description: seoDescription(`${name}, socio y colaborador de Los Pueblos Más Bonitos de España.${localeSuffix}`),
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+  };
+}
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 

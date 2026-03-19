@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getLugarLegacyBySlug, getPuebloBySlugFast, getApiUrl, type Pueblo } from "@/lib/api";
+import { getApiUrl, type Pueblo } from "@/lib/api";
 import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 import ParadasMap from "@/app/_components/ParadasMap";
 import ParadaFoto from "./ParadaFoto";
@@ -48,45 +48,11 @@ export async function generateMetadata({
   const { slug, mxSlug } = await params;
   const locale = await getLocale();
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-  const t = await getTranslations("mxPage");
-  const fallbackPath = `/pueblos/${slug}/experiencias/${mxSlug}`;
-  const pueblo = await getLugarLegacyBySlug(slug, locale).catch(() => null);
-  if (!pueblo) {
-    return {
-      title: seoTitle(`Experiencia del pueblo${localeSuffix}`),
-      description: seoDescription(`Contenido de experiencia del pueblo.${localeSuffix}`),
-      alternates: {
-        canonical: getCanonicalUrl(fallbackPath, locale as SupportedLocale),
-        languages: getLocaleAlternates(fallbackPath),
-      },
-      robots: { index: false, follow: true },
-    };
-  }
-
-  // Buscar la multiexperiencia por slug (soportar formato plano y anidado)
-  const mxItem = (pueblo.multiexperiencias ?? []).find((x: any) => {
-    const s = x?.slug ?? x?.multiexperiencia?.slug ?? null;
-    return s === mxSlug;
-  });
-  
-  // Normalizar: si viene anidada, usa x.multiexperiencia; si viene plana, usa x
-  const mx = (mxItem?.multiexperiencia ?? mxItem ?? null) as Multiexperiencia | null;
-  
-  const tSeo = await getTranslations("seo");
-  const tPueblo = await getTranslations("puebloPage");
-  const expTitle = mx?.titulo ?? t("experienceFallback");
-  const title = seoTitle(`${expTitle} – ${pueblo.nombre}${localeSuffix}`);
-  const heroImage =
-    mx?.foto ??
-    pueblo.foto_destacada ??
-    pueblo.fotos?.[0]?.url ??
-    null;
-  const descSource = mx?.descripcion ?? null;
-  const description = descSource
-    ? seoDescription(descSource, 160)
-    : tSeo("mxDescriptionFallback");
-  const path = `/pueblos/${pueblo.slug}/experiencias/${mxSlug}`;
-
+  const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const expName = mxSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const path = `/pueblos/${slug}/experiencias/${mxSlug}`;
+  const title = seoTitle(`${expName} · ${puebloName}${localeSuffix}`);
+  const description = seoDescription(`Experiencia ${expName} en ${puebloName}.${localeSuffix}`);
   return {
     title,
     description,
@@ -101,15 +67,11 @@ export async function generateMetadata({
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
       type: "article",
-      images: heroImage
-        ? [{ url: heroImage, alt: `${expTitle} – ${pueblo.nombre}` }]
-        : undefined,
     },
     twitter: {
-      card: heroImage ? "summary_large_image" : "summary",
+      card: "summary",
       title,
       description,
-      images: heroImage ? [heroImage] : undefined,
     },
   };
 }
