@@ -5,6 +5,7 @@ import { getApiUrl } from "@/lib/api";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  metaLocaleLead,
   seoDescription,
   seoTitlePoiWithStamp,
   titleLocaleSuffix,
@@ -112,12 +113,19 @@ export async function generateMetadata({
   const locale = await getLocale();
   const locSuf = titleLocaleSuffix(locale);
   const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const poiName = (isNumeric(poi) ? `POI ${poi}` : poi.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
+  const data = await fetchPoiFast(slug, poi, locale);
+  const poiReadable =
+    data?.nombre?.trim() ||
+    (isNumeric(poi) ? `Punto de interés (${poi})` : poi.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
   const path = `/pueblos/${slug}/pois/${poi}`;
-  const title = seoTitlePoiWithStamp(poi, isNumeric(poi), poiName, puebloName, locSuf);
+  const title = seoTitlePoiWithStamp(poi, isNumeric(poi), poiReadable, puebloName, locSuf);
+  const refStamp = isNumeric(poi) ? `id ${poi}` : `slug ${poi}`;
   return {
     title,
-    description: seoDescription(`Información sobre ${poiName} en ${puebloName}.${locSuf}`, 160),
+    description: seoDescription(
+      `${metaLocaleLead(locale)}Información sobre ${poiReadable} en ${puebloName}. ${refStamp}.`,
+      160,
+    ),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

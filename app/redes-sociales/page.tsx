@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  metaLocaleLead,
   seoDescription,
   seoTitle,
   titleLocaleSuffix,
@@ -31,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: seoTitle(`Redes sociales${locSuf}`),
     description: seoDescription(
-      "Síguenos en Instagram, Facebook, X, TikTok y YouTube. Colaboraciones con creadores de contenido e influencers. Únete a nuestra comunidad."
+      `${metaLocaleLead(locale as SupportedLocale)}Síguenos en Instagram, Facebook, X, TikTok y YouTube. Colaboraciones con creadores e influencers. Comunidad Los Pueblos Más Bonitos de España.`,
     ),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),

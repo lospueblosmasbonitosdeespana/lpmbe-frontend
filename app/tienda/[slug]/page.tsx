@@ -2,7 +2,15 @@ import { notFound } from 'next/navigation';
 import { getProductBySlug, getProductBySlugFast } from '@/src/lib/tiendaApi';
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
-import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from '@/lib/seo';
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  metaLocaleLead,
+  seoDescription,
+  seoTitle,
+  slugToTitle,
+  type SupportedLocale,
+} from '@/lib/seo';
 import ProductDetailClient from './ProductDetailClient';
 
 export const dynamic = 'force-dynamic';
@@ -23,7 +31,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     if (!product) {
       return {
         title: seoTitle(`Producto: ${fallbackName}${localeSuffix}`),
-        description: seoDescription(`Informacion y detalles del producto ${fallbackName}.${localeSuffix}`),
+        description: seoDescription(
+          `${metaLocaleLead(locale as SupportedLocale)}Información del producto ${fallbackName}.${localeSuffix} · ${slug}`,
+        ),
         alternates: {
           canonical: getCanonicalUrl(path, locale as SupportedLocale),
           languages: getLocaleAlternates(path),
@@ -33,9 +43,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     const productName = product.nombre?.trim() || fallbackName;
     const rawDesc = product.descripcion?.replace(/<[^>]*>/g, " ").trim();
+    const lead = metaLocaleLead(locale as SupportedLocale);
+    const body = rawDesc || `Compra ${productName} en la tienda oficial.`;
     return {
       title: seoTitle(`${productName}${localeSuffix}`),
-      description: seoDescription(`${rawDesc || `Compra ${productName} en la tienda oficial.`}${localeSuffix}`),
+      description: seoDescription(`${lead}${body}${localeSuffix} · ${slug}`),
       alternates: {
         canonical: getCanonicalUrl(path, locale as SupportedLocale),
         languages: getLocaleAlternates(path),
@@ -44,7 +56,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   } catch {
     return {
       title: seoTitle(`Producto: ${fallbackName}`),
-      description: seoDescription(`Informacion y detalles del producto ${fallbackName}.`),
+      description: seoDescription(
+        `${metaLocaleLead(locale as SupportedLocale)}Información del producto ${fallbackName}. · ${slug}`,
+      ),
       alternates: {
         canonical: getCanonicalUrl(path, locale as SupportedLocale),
         languages: getLocaleAlternates(path),

@@ -9,6 +9,7 @@ import {
   getLocaleAlternates,
   getLocaleFromRequestHeaders,
   getOGLocale,
+  metaLocaleLead,
   seoTitle,
   seoDescription,
   slugDisambiguatorForTitle,
@@ -67,7 +68,9 @@ export async function generateMetadata({
   const path = `/pueblos/${slug}/experiencias/${mxSlug}`;
   const mxDis = slugDisambiguatorForTitle(mxSlug);
   const title = seoTitle(`${expName} · ${puebloName}${mxDis}${locSuf}`);
-  const description = seoDescription(`Experiencia ${expName} en ${puebloName}.${locSuf}`);
+  const description = seoDescription(
+    `${metaLocaleLead(locale)}Experiencia «${expName}» en ${puebloName}. Itinerario: ${mxSlug}.`,
+  );
   return {
     title,
     description,

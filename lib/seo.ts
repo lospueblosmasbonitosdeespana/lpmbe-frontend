@@ -162,6 +162,16 @@ export function titleLocaleSuffix(locale: SupportedLocale | string): string {
 }
 
 /**
+ * Prefijo al inicio de meta description para idiomas no-ES.
+ * Evita duplicados entre variantes ?lang= y que el truncado (155) elimine el sufijo final.
+ */
+export function metaLocaleLead(locale: SupportedLocale | string | undefined): string {
+  const l = String(locale ?? "es").toLowerCase();
+  if (l === "es") return "";
+  return `[${l.toUpperCase()}] `;
+}
+
+/**
  * H1 distinto por variante de idioma (?lang=) para auditorías que marcan H1 duplicados entre URLs.
  * Añade " (CA)", " (IT)", etc. solo si no es español.
  */

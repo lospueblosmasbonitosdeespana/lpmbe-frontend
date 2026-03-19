@@ -7,6 +7,7 @@ import {
   getBaseUrl,
   getCanonicalUrl,
   getLocaleAlternates,
+  metaLocaleLead,
   seoDescription,
   seoTitle,
   seoTitleVideoWithId,
@@ -95,7 +96,11 @@ export async function generateMetadata({
   const title = video
     ? seoTitle(`${video.titulo} · ${name}${locSuf}`)
     : seoTitleVideoWithId(videoId, name, locSuf);
-  const description = seoDescription(`Video y contenido audiovisual sobre ${name}.${locSuf}`);
+  const description = video
+    ? seoDescription(
+        `${metaLocaleLead(locale)}«${video.titulo}» — Vídeo en ${name}. ID ${video.id}.`,
+      )
+    : seoDescription(`${metaLocaleLead(locale)}Vídeo en ${name}.${locSuf}`);
 
   return {
     title,
