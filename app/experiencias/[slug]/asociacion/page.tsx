@@ -123,7 +123,7 @@ export default async function AsociacionTematicaPage({
             <ZoomableImage
               src={page.coverUrl.trim()}
               alt={page.titulo}
-              fit="contain"
+              fit="cover"
               wrapperClassName="aspect-[4/3] max-h-[500px] rounded-lg"
               className="rounded-lg"
             />

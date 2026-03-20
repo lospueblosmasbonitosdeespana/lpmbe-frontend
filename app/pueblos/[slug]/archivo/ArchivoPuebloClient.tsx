@@ -49,7 +49,7 @@ function TarjetaContenido({ item }: { item: Contenido }) {
     new Date(item.fechaFin) < new Date();
 
   return (
-    <div className="relative rounded-lg border border-gray-200 bg-white overflow-hidden transition hover:border-gray-300 hover:shadow-md">
+    <div className="relative rounded-lg border border-border bg-card overflow-hidden transition hover:border-primary/20 hover:shadow-md">
       <Link href={href} className="group block">
         {item.coverUrl && item.coverUrl.trim() ? (
           <div className="aspect-[16/10] overflow-hidden relative">

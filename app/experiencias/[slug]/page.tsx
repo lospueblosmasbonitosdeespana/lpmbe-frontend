@@ -168,10 +168,10 @@ export default async function TematicaPage({
               
               <Link
                 href={`/experiencias/${slug}/asociacion`}
-                className="block overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-lg dark:bg-neutral-800 dark:border-neutral-700"
+                className="block overflow-hidden rounded-lg border border-border bg-card transition-shadow hover:shadow-lg dark:bg-neutral-800 dark:border-neutral-700"
               >
                 {asociacion.coverUrl && asociacion.coverUrl.trim() && (
-                  <div className="h-64 w-full overflow-hidden rounded-t-lg bg-gray-100 dark:bg-neutral-700">
+                  <div className="h-64 w-full overflow-hidden rounded-t-lg bg-background dark:bg-neutral-700">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={asociacion.coverUrl.trim()}
@@ -209,11 +209,11 @@ export default async function TematicaPage({
                       <Link
                         key={item.id}
                         href={href}
-                        className="block overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-lg dark:bg-neutral-800 dark:border-neutral-700"
+                        className="block overflow-hidden rounded-lg border border-border bg-card transition-shadow hover:shadow-lg dark:bg-neutral-800 dark:border-neutral-700"
                       >
                         {/* Imagen */}
                         {item.coverUrl && item.coverUrl.trim() ? (
-                          <div className="h-28 w-full overflow-hidden rounded-t-lg bg-gray-100 dark:bg-neutral-700">
+                          <div className="h-28 w-full overflow-hidden rounded-t-lg bg-background dark:bg-neutral-700">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={item.coverUrl.trim()}
@@ -222,7 +222,7 @@ export default async function TematicaPage({
                             />
                           </div>
                         ) : (
-                          <div className="h-28 w-full rounded-t-lg bg-gray-200 dark:bg-neutral-700" />
+                          <div className="h-28 w-full rounded-t-lg bg-muted/60 dark:bg-neutral-700" />
                         )}
 
                         {/* Contenido */}

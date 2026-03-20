@@ -77,9 +77,9 @@ export default async function PueblosCercanosSection({
               <Link
                 key={pueblo.id}
                 href={`/pueblos/${pueblo.slug}`}
-                className="group block overflow-hidden rounded-lg bg-white dark:bg-card shadow-sm transition-shadow hover:shadow-md border border-transparent dark:border-border"
+                className="group block overflow-hidden rounded-lg bg-card dark:bg-card shadow-sm transition-shadow hover:shadow-md border border-border dark:border-border"
               >
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-200 dark:bg-muted">
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-background dark:bg-muted">
                   {foto ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img

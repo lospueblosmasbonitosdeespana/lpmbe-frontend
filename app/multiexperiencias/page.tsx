@@ -133,7 +133,7 @@ export default async function MultiexperienciasPage() {
                       <>
                         {/* Imagen */}
                         {item.foto && (
-                          <div className="h-28 w-full overflow-hidden rounded-t-lg bg-gray-100">
+                          <div className="h-28 w-full overflow-hidden rounded-t-lg bg-background">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={item.foto}

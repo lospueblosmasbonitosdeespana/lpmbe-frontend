@@ -158,7 +158,19 @@
 /* CLS: reservar espacio mínimo para imágenes en contenido (prose) hasta que carguen */
 .prose-contenido img {
   min-height: 120px;
-  background: var(--muted);
+  background: var(--background);
+}
+
+/* Global: todos los contenedores de imagen usan el fondo de la página, nunca blanco frío */
+[class*="overflow-hidden"] img,
+figure img,
+.img-wrapper img {
+  background: var(--background);
+}
+
+/* Placeholder de imagen sin fondo blanco */
+.img-placeholder {
+  background: var(--background);
 }
 
 /* TipTap Editor */

@@ -75,7 +75,7 @@ export function ThemesSection({ themes }: ThemesSectionProps) {
               <Link
                 key={theme.key}
                 href={theme.href}
-                className="group relative block h-[240px] overflow-hidden bg-gray-100"
+                className="group relative block h-[240px] overflow-hidden bg-background"
               >
                 {/* Imagen */}
                 {safeSrc ? (
@@ -119,7 +119,7 @@ export function ThemesSection({ themes }: ThemesSectionProps) {
               <Link
                 key={theme.key}
                 href={theme.href}
-                className="group relative block h-[240px] overflow-hidden bg-gray-100"
+                className="group relative block h-[240px] overflow-hidden bg-background"
               >
                 {/* Imagen */}
                 {safeSrc ? (

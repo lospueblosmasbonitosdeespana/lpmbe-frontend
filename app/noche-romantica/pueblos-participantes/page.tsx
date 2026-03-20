@@ -101,7 +101,7 @@ export default async function PueblosParticipantesPage() {
                   className="group overflow-hidden rounded-xl border bg-white shadow-sm transition hover:shadow-lg dark:bg-neutral-800 dark:border-neutral-700"
                 >
                   {/* Imagen */}
-                  <div className="relative h-56 overflow-hidden bg-gray-100">
+                  <div className="relative h-56 overflow-hidden bg-background">
                     {imageUrl ? (
                       <img
                         src={imageUrl}

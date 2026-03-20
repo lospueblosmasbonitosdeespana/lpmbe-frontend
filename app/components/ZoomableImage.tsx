@@ -24,7 +24,7 @@ export default function ZoomableImage({
   rotation,
   className = '',
   wrapperClassName = '',
-  fit = 'contain',
+  fit = 'cover',
   loading = 'lazy',
   onError,
 }: ZoomableImageProps) {
@@ -50,7 +50,7 @@ export default function ZoomableImage({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`block w-full cursor-zoom-in overflow-hidden bg-muted ${wrapperClassName}`}
+        className={`block w-full cursor-zoom-in overflow-hidden bg-background ${wrapperClassName}`}
         aria-label={`Ampliar imagen: ${alt}`}
       >
         <img

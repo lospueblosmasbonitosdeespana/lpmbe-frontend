@@ -11,9 +11,9 @@ export function PuebloCard({ slug, nombre, provincia, foto }: PuebloCardProps) {
   return (
     <Link
       href={`/pueblos/${slug}`}
-      className="group block overflow-hidden bg-gray-100"
+      className="group block overflow-hidden bg-background"
     >
-      <div className="relative h-[170px] w-full overflow-hidden bg-gray-200">
+      <div className="relative h-[170px] w-full overflow-hidden bg-background">
         {foto ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img

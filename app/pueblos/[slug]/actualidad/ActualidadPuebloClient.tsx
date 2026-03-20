@@ -125,7 +125,7 @@ function TarjetaContenido({
       : '';
 
   return (
-    <div className="relative rounded-lg border border-gray-200 bg-white overflow-hidden transition hover:border-gray-300 hover:shadow-md">
+    <div className="relative rounded-lg border border-border bg-card overflow-hidden transition hover:border-primary/20 hover:shadow-md">
     <Link
       href={href}
       className="group block"
