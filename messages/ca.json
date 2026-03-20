@@ -108,7 +108,8 @@
     "communities": "Comunitats",
     "loadError": "Error en carregar les poblacions. Torna-ho a provar més tard.",
     "loadingMap": "Cargant el mapa...",
-    "certificationsByYear": "Certificacions per any"
+    "certificationsByYear": "Certificacions per any",
+    "pueblosListDescription": "Descobreix tots els pobles que formen part d'Els Pobles Més Bonics d'Espanya."
   },
   "profile": {
     "title": "El meu perfil",
@@ -356,7 +357,11 @@
     "kmFromStart": "km {km} des de l'inici",
     "stopN": "Atura {n}",
     "tipsTitle": "Consells per a la ruta",
-    "villagesOfRoute": "Pobles al llarg de la ruta"
+    "villagesOfRoute": "Pobles al llarg de la ruta",
+    "calculating": "Calculant...",
+    "locationInSpain": "Espanya",
+    "rutasListTitle": "Rutes pels Pobles Més Bonics d'Espanya",
+    "rutasListDescription": "Explora rutes turístiques que connecten els pobles més bonics d'Espanya."
   },
   "certificationsByYear": {
     "subtitle": "Cada any, nous pobles obtenen la certificació de Los Pueblos Más Bonitos de España (Els Pobles Més Bonics d'Espanya).",
@@ -483,7 +488,14 @@
       "backToVillageHolyWeek": "← Tornar a la Setmana Santa del poble",
       "eventsOfDay": "Esdeveniments del dia",
       "noEventsForDay": "No hi ha esdeveniments carregats per a aquest dia."
-    }
+    },
+    "backToRegions": "Tornar a les regions",
+    "filterPlaceholderCCAA": "Comunitat autònoma",
+    "filterPlaceholderProvincia": "Província",
+    "nearestButton": "Pobles propers",
+    "nearestLoading": "Cercant pobles propers...",
+    "nearestTitle": "Pobles a prop teu",
+    "verMasEventos": "Veure més esdeveniments"
   },
   "recursos": {
     "eyebrow": "Club d'Amics",
@@ -872,7 +884,8 @@
     "breadcrumbMap": "El meu mapa",
     "breadcrumbResources": "Recursos",
     "breadcrumbValidations": "Validacions",
-    "breadcrumbVisited": "Visitat"
+    "breadcrumbVisited": "Visitat",
+    "breadcrumbOrders": "Les meves comandes"
   },
   "myProfile": {
     "title": "El meu perfil",
@@ -1016,7 +1029,8 @@
     "pageSubtitle": "Notícies, alertes i estat del semàfor.",
     "meteoAlerts": "Alertes meteorològiques",
     "retry": "Tornar a provar",
-    "loadCenterError": "El centre de notificacions no s'ha pogut carregar."
+    "loadCenterError": "El centre de notificacions no s'ha pogut carregar.",
+    "seeDetail": "Veure detall"
   },
   "visitedVillages": {
     "title": "Els pobles que he visitat",
@@ -1065,7 +1079,8 @@
     "noFavorites": "Encara no tens cap preferit. Puntuï les teves ciutats preferides amb 5 estrelles i apareixeran aquí.",
     "favoritesDesc": "Els vostres pobles amb una qualificació de 5 estrelles.",
     "pointsBreakdown": "Desglossament de punts",
-    "visits": "Visites"
+    "visits": "Visites",
+    "dashboardError": "Error en carregar el tauler de punts."
   },
   "clubLanding": {
     "title": "D'aquí a uns dies, el Club d'Amics serà una realitat.",
@@ -1287,7 +1302,8 @@
     "alertRain": "Pluja",
     "alertWind": "Vent",
     "alertFrost": "Gelada",
-    "alertHeat": "Calf"
+    "alertHeat": "Calf",
+    "metaDescription": "Consulta el temps als Pobles Més Bonics d'Espanya: temperatura, pluja, neu i alertes meteorològiques."
   },
   "nocheRomantica": {
     "title": "Nit romàntica",
@@ -1475,7 +1491,11 @@
     "viewAllVillages": "Veure tots els pobles",
     "wantToBePartner": "Voldríeu convertir-vos en un soci col·laborador?",
     "wantToBePartnerBody": "Si la vostra empresa o organització vol col·laborar amb l'associació, si us plau, sol·liciteu informació sobre les opcions de patrocini i col·laboració.",
-    "gallery": "Galeria"
+    "gallery": "Galeria",
+    "selloTitle": "El segell de qualitat turística",
+    "selloDescription": "Els Pobles Més Bonics d'Espanya és una associació que certifica i promou el patrimoni rural.",
+    "logoAlt": "Logo Els Pobles Més Bonics d'Espanya",
+    "sealBadgeAlt": "Segell de qualitat turística"
   },
   "seo": {
     "siteNameSuffix": " – Els pobles més bonics d'Espanya",
@@ -1508,7 +1528,11 @@
     "datosTitle": "Dades · Mètriques",
     "datosDescription": "Panell de mètriques de la plataforma: usuaris, ciutats i anàlisi web.",
     "backToAssociation": "← Tornar a l'Associació",
-    "puntosPueblosLink": "Punts de ciutats"
+    "puntosPueblosLink": "Punts de ciutats",
+    "accessRestrictedTitle": "Accés restringit",
+    "accessRestrictedOnlyAdmins": "Aquesta secció és només per a administradors.",
+    "accessRestrictedUsersToAccount": "Si tens un compte, accedeix des de El meu compte.",
+    "goToMyAccount": "Anar a El meu compte"
   },
   "contact": {
     "title": "Contacte",
@@ -1528,7 +1552,9 @@
     "send": "Envia",
     "sending": "Enviant...",
     "back": "← Enrere",
-    "successMessage": "El vostre client de correu s'obrirà. Si no s'obre, si us plau, escriviu-nos directament a"
+    "successMessage": "El vostre client de correu s'obrirà. Si no s'obre, si us plau, escriviu-nos directament a",
+    "contactTitle": "Contacte",
+    "contactDescription": "Posa't en contacte amb Els Pobles Més Bonics d'Espanya."
   },
   "pressPage": {
     "title": "Premsa i mitjans",
@@ -1551,5 +1577,17 @@
     "mediaTypeEvent": "Esdeveniment",
     "mediaTypeArticle": "Article",
     "mediaTypePress": "Premsa"
+  },
+  "appPage": {
+    "badge": "App oficial",
+    "downloadAppStore": "Descarrega a l'App Store",
+    "downloadGooglePlay": "Disponible a Google Play",
+    "alsoGooglePlay": "També a Google Play",
+    "alsoAppStore": "També a l'App Store",
+    "openDownloadPage": "Veure pàgina de descàrrega",
+    "qrCaption": "Escaneja per descarregar",
+    "screenshotsTitle": "Captures de l'app",
+    "downloadTitle": "Baixa l'app",
+    "downloadDescription": "Disponible per a iPhone i Android. Gratuït."
   }
 }

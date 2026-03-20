@@ -108,7 +108,8 @@
     "communities": "Comunidades",
     "loadError": "Error al cargar los pueblos. Por favor, intenta de nuevo más tarde.",
     "loadingMap": "Cargando mapa...",
-    "certificationsByYear": "Certificaciones por año"
+    "certificationsByYear": "Certificaciones por año",
+    "pueblosListDescription": "Descubre todos los pueblos que forman parte de Los Pueblos más Bonitos de España."
   },
   "profile": {
     "title": "Mi Perfil",
@@ -356,7 +357,11 @@
     "kmFromStart": "km {km} desde el inicio",
     "stopN": "Parada {n}",
     "tipsTitle": "Tips de la ruta",
-    "villagesOfRoute": "Pueblos de la ruta"
+    "villagesOfRoute": "Pueblos de la ruta",
+    "calculating": "Calculando...",
+    "locationInSpain": "España",
+    "rutasListTitle": "Rutas por los Pueblos más Bonitos de España",
+    "rutasListDescription": "Explora rutas turísticas que conectan los pueblos más bonitos de España."
   },
   "certificationsByYear": {
     "subtitle": "Cada año nuevos pueblos obtienen la certificación de Los Pueblos Más Bonitos de España.",
@@ -381,7 +386,11 @@
     "datosTitle": "Datos · Métricas",
     "datosDescription": "Panel de métricas de la plataforma: usuarios, pueblos y analítica web.",
     "backToAssociation": "← Volver a Asociación",
-    "puntosPueblosLink": "Puntos Pueblos"
+    "puntosPueblosLink": "Puntos Pueblos",
+    "accessRestrictedTitle": "Acceso restringido",
+    "accessRestrictedOnlyAdmins": "Esta sección es solo para administradores.",
+    "accessRestrictedUsersToAccount": "Si tienes una cuenta, accede desde Mi cuenta.",
+    "goToMyAccount": "Ir a Mi cuenta"
   },
   "contact": {
     "title": "Contacto",
@@ -401,7 +410,9 @@
     "send": "Enviar",
     "sending": "Enviando…",
     "back": "← Volver",
-    "successMessage": "Se abrirá tu cliente de correo. Si no se abre, escríbenos directamente a"
+    "successMessage": "Se abrirá tu cliente de correo. Si no se abre, escríbenos directamente a",
+    "contactTitle": "Contacto",
+    "contactDescription": "Ponte en contacto con Los Pueblos más Bonitos de España."
   },
   "planifica": {
     "creaRuta": {
@@ -517,7 +528,14 @@
       "backToVillageHolyWeek": "← Volver a la Semana Santa del pueblo",
       "eventsOfDay": "Eventos del día",
       "noEventsForDay": "No hay eventos cargados para este día."
-    }
+    },
+    "backToRegions": "Volver a regiones",
+    "filterPlaceholderCCAA": "Comunidad autónoma",
+    "filterPlaceholderProvincia": "Provincia",
+    "nearestButton": "Pueblos cercanos",
+    "nearestLoading": "Buscando pueblos cercanos...",
+    "nearestTitle": "Pueblos cercanos a ti",
+    "verMasEventos": "Ver más eventos"
   },
   "recursos": {
     "eyebrow": "Club de Amigos",
@@ -906,7 +924,8 @@
     "breadcrumbMap": "Mi mapa",
     "breadcrumbResources": "Recursos",
     "breadcrumbValidations": "Validaciones",
-    "breadcrumbVisited": "Visitados"
+    "breadcrumbVisited": "Visitados",
+    "breadcrumbOrders": "Mis pedidos"
   },
   "myProfile": {
     "title": "Mi Perfil",
@@ -1050,7 +1069,8 @@
     "pageSubtitle": "Noticias, alertas y estado de semáforos.",
     "meteoAlerts": "Alertas Meteo",
     "retry": "Reintentar",
-    "loadCenterError": "No se pudo cargar el centro de notificaciones."
+    "loadCenterError": "No se pudo cargar el centro de notificaciones.",
+    "seeDetail": "Ver detalle"
   },
   "visitedVillages": {
     "title": "Mis pueblos visitados",
@@ -1099,7 +1119,8 @@
     "noFavorites": "Aún no tienes favoritos. Valora con 5 estrellas tus pueblos preferidos y aparecerán aquí.",
     "favoritesDesc": "Tus pueblos con valoración de 5 estrellas.",
     "pointsBreakdown": "Desglose de puntos",
-    "visits": "Visitas"
+    "visits": "Visitas",
+    "dashboardError": "Error al cargar el panel de puntos."
   },
   "clubLanding": {
     "title": "En pocos días el Club de Amigos será una realidad",
@@ -1322,7 +1343,8 @@
     "alertRain": "Lluvia",
     "alertWind": "Viento",
     "alertFrost": "Helada",
-    "alertHeat": "Calor"
+    "alertHeat": "Calor",
+    "metaDescription": "Consulta el tiempo en los Pueblos más Bonitos de España: temperatura, lluvia, nieve y alertas meteorológicas."
   },
   "nocheRomantica": {
     "title": "La Noche Romántica",
@@ -1510,7 +1532,11 @@
     "viewAllVillages": "Ver todos los pueblos",
     "wantToBePartner": "¿Quieres ser socio colaborador?",
     "wantToBePartnerBody": "Si tu empresa u organización quiere colaborar con la asociación, solicita información sobre las opciones de patrocinio y colaboración.",
-    "gallery": "Galería"
+    "gallery": "Galería",
+    "selloTitle": "El sello de calidad turística",
+    "selloDescription": "Los Pueblos más Bonitos de España es una asociación que certifica y promociona el patrimonio rural.",
+    "logoAlt": "Logo Los Pueblos más Bonitos de España",
+    "sealBadgeAlt": "Sello de calidad turística"
   },
   "seo": {
     "siteNameSuffix": " – Los Pueblos Más Bonitos de España",
@@ -1552,5 +1578,17 @@
     "mediaTypeEvent": "Evento",
     "mediaTypeArticle": "Artículo",
     "mediaTypePress": "Prensa"
+  },
+  "appPage": {
+    "badge": "App oficial",
+    "downloadAppStore": "Descargar en App Store",
+    "downloadGooglePlay": "Descargar en Google Play",
+    "alsoGooglePlay": "También en Google Play",
+    "alsoAppStore": "También en App Store",
+    "openDownloadPage": "Ver página de descarga",
+    "qrCaption": "Escanea para descargar",
+    "screenshotsTitle": "Capturas de la app",
+    "downloadTitle": "Descarga la app",
+    "downloadDescription": "Disponible para iPhone y Android. Gratis."
   }
 }

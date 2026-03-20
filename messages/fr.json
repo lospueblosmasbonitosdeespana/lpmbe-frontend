@@ -108,7 +108,8 @@
     "communities": "Communautés",
     "loadError": "Erreur de chargement des villages. Veuillez réessayer plus tard.",
     "loadingMap": "Chargement de la carte...",
-    "certificationsByYear": "Certifications par an"
+    "certificationsByYear": "Certifications par an",
+    "pueblosListDescription": "Découvrez tous les villages qui font partie des Plus Beaux Villages d'Espagne."
   },
   "profile": {
     "title": "Mon profil",
@@ -356,7 +357,11 @@
     "kmFromStart": "km {km} du départ",
     "stopN": "Stop {n}",
     "tipsTitle": "Conseils pour l'itinéraire",
-    "villagesOfRoute": "Villages le long de l'itinéraire"
+    "villagesOfRoute": "Villages le long de l'itinéraire",
+    "calculating": "Calcul en cours...",
+    "locationInSpain": "Espagne",
+    "rutasListTitle": "Itinéraires dans les Plus Beaux Villages d'Espagne",
+    "rutasListDescription": "Explorez des itinéraires touristiques reliant les plus beaux villages d'Espagne."
   },
   "certificationsByYear": {
     "subtitle": "Chaque année, de nouveaux villages obtiennent la certification \"Plus beaux villages d'Espagne\".",
@@ -483,7 +488,14 @@
       "backToVillageHolyWeek": "← Retour à la Semaine Sainte du village",
       "eventsOfDay": "Événements du jour",
       "noEventsForDay": "Aucun événement chargé pour ce jour."
-    }
+    },
+    "backToRegions": "Retour aux régions",
+    "filterPlaceholderCCAA": "Communauté autonome",
+    "filterPlaceholderProvincia": "Province",
+    "nearestButton": "Villages proches",
+    "nearestLoading": "Recherche de villages proches...",
+    "nearestTitle": "Villages près de chez vous",
+    "verMasEventos": "Voir plus d'événements"
   },
   "recursos": {
     "eyebrow": "Club des amis",
@@ -872,7 +884,8 @@
     "breadcrumbMap": "Ma carte",
     "breadcrumbResources": "Ressources",
     "breadcrumbValidations": "Validations",
-    "breadcrumbVisited": "Visité"
+    "breadcrumbVisited": "Visité",
+    "breadcrumbOrders": "Mes commandes"
   },
   "myProfile": {
     "title": "Mon profil",
@@ -1016,7 +1029,8 @@
     "pageSubtitle": "Nouvelles, alertes et état des feux de circulation.",
     "meteoAlerts": "Alertes météo",
     "retry": "Réessayer",
-    "loadCenterError": "Le centre de notification n'a pas pu être chargé."
+    "loadCenterError": "Le centre de notification n'a pas pu être chargé.",
+    "seeDetail": "Voir le détail"
   },
   "visitedVillages": {
     "title": "Mes villages visités",
@@ -1065,7 +1079,8 @@
     "noFavorites": "Vous n'avez pas encore de favoris. Notez vos villages favoris avec 5 étoiles et ils apparaîtront ici.",
     "favoritesDesc": "Vos villages avec une note de 5 étoiles.",
     "pointsBreakdown": "Répartition des points",
-    "visits": "Visiter"
+    "visits": "Visiter",
+    "dashboardError": "Erreur lors du chargement du tableau de bord des points."
   },
   "clubLanding": {
     "title": "Dans quelques jours, le Club de Amigos sera une réalité.",
@@ -1287,7 +1302,8 @@
     "alertRain": "Pluie",
     "alertWind": "Le vent",
     "alertFrost": "Givre",
-    "alertHeat": "Chaleur"
+    "alertHeat": "Chaleur",
+    "metaDescription": "Consultez la météo dans les Plus Beaux Villages d'Espagne : température, pluie, neige et alertes météo."
   },
   "nocheRomantica": {
     "title": "Nuit romantique",
@@ -1475,7 +1491,11 @@
     "viewAllVillages": "Voir tous les villages",
     "wantToBePartner": "Voulez-vous devenir un partenaire collaborateur ?",
     "wantToBePartnerBody": "Si votre entreprise ou organisation souhaite collaborer avec l'association, demandez des informations sur les possibilités de parrainage et de partenariat.",
-    "gallery": "Galerie"
+    "gallery": "Galerie",
+    "selloTitle": "Le label de qualité touristique",
+    "selloDescription": "Les Plus Beaux Villages d'Espagne est une association qui certifie et promeut le patrimoine rural.",
+    "logoAlt": "Logo Les Plus Beaux Villages d'Espagne",
+    "sealBadgeAlt": "Label de qualité touristique"
   },
   "seo": {
     "siteNameSuffix": " - Les plus beaux villages d'Espagne",
@@ -1508,7 +1528,11 @@
     "datosTitle": "Données - Métriques",
     "datosDescription": "Panneau de mesures de la plateforme : utilisateurs, villages et analyse web.",
     "backToAssociation": "← Retour au partenariat",
-    "puntosPueblosLink": "Points Villages"
+    "puntosPueblosLink": "Points Villages",
+    "accessRestrictedTitle": "Accès restreint",
+    "accessRestrictedOnlyAdmins": "Cette section est réservée aux administrateurs.",
+    "accessRestrictedUsersToAccount": "Si vous avez un compte, accédez-y depuis Mon compte.",
+    "goToMyAccount": "Aller à Mon compte"
   },
   "contact": {
     "title": "Contact",
@@ -1528,7 +1552,9 @@
     "send": "Envoyer",
     "sending": "Envoi...",
     "back": "← Retour",
-    "successMessage": "Votre client de messagerie s'ouvrira. S'il ne s'ouvre pas, veuillez nous écrire directement à l'adresse suivante"
+    "successMessage": "Votre client de messagerie s'ouvrira. S'il ne s'ouvre pas, veuillez nous écrire directement à l'adresse suivante",
+    "contactTitle": "Contact",
+    "contactDescription": "Contactez Les Plus Beaux Villages d'Espagne."
   },
   "pressPage": {
     "title": "Presse et médias",
@@ -1551,5 +1577,17 @@
     "mediaTypeEvent": "Événement",
     "mediaTypeArticle": "Article",
     "mediaTypePress": "Presse"
+  },
+  "appPage": {
+    "badge": "Application officielle",
+    "downloadAppStore": "Télécharger sur l'App Store",
+    "downloadGooglePlay": "Disponible sur Google Play",
+    "alsoGooglePlay": "Aussi sur Google Play",
+    "alsoAppStore": "Aussi sur l'App Store",
+    "openDownloadPage": "Voir la page de téléchargement",
+    "qrCaption": "Scannez pour télécharger",
+    "screenshotsTitle": "Captures d'écran de l'app",
+    "downloadTitle": "Télécharger l'app",
+    "downloadDescription": "Disponible pour iPhone et Android. Gratuit."
   }
 }

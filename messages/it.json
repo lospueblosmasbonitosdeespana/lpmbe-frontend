@@ -108,7 +108,8 @@
     "communities": "Comunità",
     "loadError": "Errore nel caricamento dei villaggi. Riprovare più tardi.",
     "loadingMap": "Caricamento mappa...",
-    "certificationsByYear": "Certificazioni all'anno"
+    "certificationsByYear": "Certificazioni all'anno",
+    "pueblosListDescription": "Scopri tutti i borghi che fanno parte de I Borghi Più Belli di Spagna."
   },
   "profile": {
     "title": "Il mio profilo",
@@ -356,7 +357,11 @@
     "kmFromStart": "km {km} dalla partenza",
     "stopN": "Stop {n}",
     "tipsTitle": "Suggerimenti per il percorso",
-    "villagesOfRoute": "Villaggi lungo il percorso"
+    "villagesOfRoute": "Villaggi lungo il percorso",
+    "calculating": "Calcolo in corso...",
+    "locationInSpain": "Spagna",
+    "rutasListTitle": "Percorsi nei Borghi Più Belli di Spagna",
+    "rutasListDescription": "Esplora percorsi turistici che collegano i borghi più belli di Spagna."
   },
   "certificationsByYear": {
     "subtitle": "Ogni anno nuovi villaggi ottengono la certificazione di Villaggi più belli di Spagna.",
@@ -483,7 +488,14 @@
       "backToVillageHolyWeek": "← Torna alla Settimana Santa del paese",
       "eventsOfDay": "Eventi del giorno",
       "noEventsForDay": "Nessun evento caricato per questo giorno."
-    }
+    },
+    "backToRegions": "Torna alle regioni",
+    "filterPlaceholderCCAA": "Comunità autonoma",
+    "filterPlaceholderProvincia": "Provincia",
+    "nearestButton": "Borghi vicini",
+    "nearestLoading": "Ricerca borghi vicini...",
+    "nearestTitle": "Borghi vicino a te",
+    "verMasEventos": "Vedi altri eventi"
   },
   "recursos": {
     "eyebrow": "Club degli amici",
@@ -872,7 +884,8 @@
     "breadcrumbMap": "La mia mappa",
     "breadcrumbResources": "Risorse",
     "breadcrumbValidations": "Convalide",
-    "breadcrumbVisited": "Visitato"
+    "breadcrumbVisited": "Visitato",
+    "breadcrumbOrders": "I miei ordini"
   },
   "myProfile": {
     "title": "Il mio profilo",
@@ -1016,7 +1029,8 @@
     "pageSubtitle": "Notizie, avvisi e stato dei semafori.",
     "meteoAlerts": "Allerte meteo",
     "retry": "Riprova",
-    "loadCenterError": "Non è stato possibile caricare il centro notifiche."
+    "loadCenterError": "Non è stato possibile caricare il centro notifiche.",
+    "seeDetail": "Vedi dettaglio"
   },
   "visitedVillages": {
     "title": "I miei villaggi visitati",
@@ -1065,7 +1079,8 @@
     "noFavorites": "Non hai ancora nessun villaggio preferito. Valuta i tuoi villaggi preferiti con 5 stelle e appariranno qui.",
     "favoritesDesc": "I vostri villaggi con una valutazione a 5 stelle.",
     "pointsBreakdown": "Ripartizione dei punti",
-    "visits": "Visita"
+    "visits": "Visita",
+    "dashboardError": "Errore nel caricamento del pannello punti."
   },
   "clubLanding": {
     "title": "Tra pochi giorni il Club de Amigos sarà una realtà",
@@ -1287,7 +1302,8 @@
     "alertRain": "Pioggia",
     "alertWind": "Vento",
     "alertFrost": "Gelo",
-    "alertHeat": "Il calore"
+    "alertHeat": "Il calore",
+    "metaDescription": "Consulta il meteo nei Borghi Più Belli di Spagna: temperatura, pioggia, neve e allerte meteo."
   },
   "nocheRomantica": {
     "title": "Notte romantica",
@@ -1475,7 +1491,11 @@
     "viewAllVillages": "Vedi tutti i villaggi",
     "wantToBePartner": "Volete diventare un partner collaborativo?",
     "wantToBePartnerBody": "Se la vostra azienda o organizzazione desidera collaborare con l'associazione, chiedete informazioni sulle opzioni di sponsorizzazione e partnership.",
-    "gallery": "Galleria"
+    "gallery": "Galleria",
+    "selloTitle": "Il sigillo di qualità turistica",
+    "selloDescription": "I Borghi Più Belli di Spagna è un'associazione che certifica e promuove il patrimonio rurale.",
+    "logoAlt": "Logo I Borghi Più Belli di Spagna",
+    "sealBadgeAlt": "Sigillo di qualità turistica"
   },
   "seo": {
     "siteNameSuffix": " - I villaggi più belli della Spagna",
@@ -1508,7 +1528,11 @@
     "datosTitle": "Dati - Metriche",
     "datosDescription": "Pannello delle metriche della piattaforma: utenti, villaggi e analisi web.",
     "backToAssociation": "← Torna alla partnership",
-    "puntosPueblosLink": "Punti Villaggi"
+    "puntosPueblosLink": "Punti Villaggi",
+    "accessRestrictedTitle": "Accesso limitato",
+    "accessRestrictedOnlyAdmins": "Questa sezione è solo per amministratori.",
+    "accessRestrictedUsersToAccount": "Se hai un account, accedi da Il mio account.",
+    "goToMyAccount": "Vai a Il mio account"
   },
   "contact": {
     "title": "Contatto",
@@ -1528,7 +1552,9 @@
     "send": "Inviare",
     "sending": "Invio...",
     "back": "← Indietro",
-    "successMessage": "Il vostro client di posta elettronica si aprirà. Se non si apre, scriveteci direttamente a"
+    "successMessage": "Il vostro client di posta elettronica si aprirà. Se non si apre, scriveteci direttamente a",
+    "contactTitle": "Contatto",
+    "contactDescription": "Contatta I Borghi Più Belli di Spagna."
   },
   "pressPage": {
     "title": "Stampa e media",
@@ -1551,5 +1577,17 @@
     "mediaTypeEvent": "Evento",
     "mediaTypeArticle": "Articolo",
     "mediaTypePress": "Stampa"
+  },
+  "appPage": {
+    "badge": "App ufficiale",
+    "downloadAppStore": "Scarica su App Store",
+    "downloadGooglePlay": "Disponibile su Google Play",
+    "alsoGooglePlay": "Anche su Google Play",
+    "alsoAppStore": "Anche su App Store",
+    "openDownloadPage": "Vedi pagina di download",
+    "qrCaption": "Scansiona per scaricare",
+    "screenshotsTitle": "Screenshot dell'app",
+    "downloadTitle": "Scarica l'app",
+    "downloadDescription": "Disponibile per iPhone e Android. Gratuito."
   }
 }

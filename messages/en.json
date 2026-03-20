@@ -108,7 +108,8 @@
     "communities": "Communities",
     "loadError": "Error loading villages. Please try again later.",
     "loadingMap": "Loading map...",
-    "certificationsByYear": "Certifications per year"
+    "certificationsByYear": "Certifications per year",
+    "pueblosListDescription": "Discover all the villages that are part of The Most Beautiful Villages of Spain."
   },
   "profile": {
     "title": "My Profile",
@@ -356,7 +357,11 @@
     "kmFromStart": "km {km} from start",
     "stopN": "Stop {n}",
     "tipsTitle": "Route tips",
-    "villagesOfRoute": "Towns along the route"
+    "villagesOfRoute": "Towns along the route",
+    "calculating": "Calculating...",
+    "locationInSpain": "Spain",
+    "rutasListTitle": "Routes through the Most Beautiful Villages of Spain",
+    "rutasListDescription": "Explore tourist routes connecting Spain's most beautiful villages."
   },
   "certificationsByYear": {
     "subtitle": "Every year new villages obtain the Most Beautiful Villages of Spain certification.",
@@ -483,7 +488,14 @@
       "backToVillageHolyWeek": "← Back to the village Holy Week",
       "eventsOfDay": "Events of the day",
       "noEventsForDay": "No events loaded for this day."
-    }
+    },
+    "backToRegions": "Back to regions",
+    "filterPlaceholderCCAA": "Autonomous community",
+    "filterPlaceholderProvincia": "Province",
+    "nearestButton": "Nearby villages",
+    "nearestLoading": "Searching nearby villages...",
+    "nearestTitle": "Villages near you",
+    "verMasEventos": "See more events"
   },
   "recursos": {
     "eyebrow": "Friends Club",
@@ -872,7 +884,8 @@
     "breadcrumbMap": "My map",
     "breadcrumbResources": "Resources",
     "breadcrumbValidations": "Validations",
-    "breadcrumbVisited": "Visited"
+    "breadcrumbVisited": "Visited",
+    "breadcrumbOrders": "My orders"
   },
   "myProfile": {
     "title": "My Profile",
@@ -1016,7 +1029,8 @@
     "pageSubtitle": "News, alerts and traffic light status.",
     "meteoAlerts": "Weather Alerts",
     "retry": "Retry",
-    "loadCenterError": "The notification center could not be loaded."
+    "loadCenterError": "The notification center could not be loaded.",
+    "seeDetail": "See detail"
   },
   "visitedVillages": {
     "title": "My visited towns",
@@ -1065,7 +1079,8 @@
     "noFavorites": "You don't have favorites yet. Rate with 5 stars your favorite towns and they will appear here.",
     "favoritesDesc": "Your towns with a 5-star rating.",
     "pointsBreakdown": "Breakdown of points",
-    "visits": "Visit"
+    "visits": "Visit",
+    "dashboardError": "Error loading the points dashboard."
   },
   "clubLanding": {
     "title": "In a few days the Club de Amigos will be a reality",
@@ -1288,7 +1303,8 @@
     "alertRain": "Rain",
     "alertWind": "Wind",
     "alertFrost": "Frost",
-    "alertHeat": "Heat"
+    "alertHeat": "Heat",
+    "metaDescription": "Check the weather in the Most Beautiful Villages of Spain: temperature, rain, snow and weather alerts."
   },
   "nocheRomantica": {
     "title": "Romantic Night",
@@ -1476,7 +1492,11 @@
     "viewAllVillages": "See all towns",
     "wantToBePartner": "Do you want to become a collaborating partner?",
     "wantToBePartnerBody": "If your company or organization would like to collaborate with the association, request information about sponsorship and collaboration options.",
-    "gallery": "Gallery"
+    "gallery": "Gallery",
+    "selloTitle": "The tourism quality seal",
+    "selloDescription": "The Most Beautiful Villages of Spain is an association that certifies and promotes rural heritage.",
+    "logoAlt": "Logo The Most Beautiful Villages of Spain",
+    "sealBadgeAlt": "Tourism quality seal"
   },
   "seo": {
     "siteNameSuffix": " - The Most Beautiful Villages in Spain",
@@ -1509,7 +1529,11 @@
     "datosTitle": "Data - Metrics",
     "datosDescription": "Platform metrics panel: users, towns and web analytics.",
     "backToAssociation": "← Back to Association",
-    "puntosPueblosLink": "Points Villages"
+    "puntosPueblosLink": "Points Villages",
+    "accessRestrictedTitle": "Restricted access",
+    "accessRestrictedOnlyAdmins": "This section is for administrators only.",
+    "accessRestrictedUsersToAccount": "If you have an account, access it from My account.",
+    "goToMyAccount": "Go to My account"
   },
   "contact": {
     "title": "Contact",
@@ -1529,7 +1553,9 @@
     "send": "Send to",
     "sending": "Sending...",
     "back": "← Back",
-    "successMessage": "Your email client will open. If it does not open, please write directly to us at"
+    "successMessage": "Your email client will open. If it does not open, please write directly to us at",
+    "contactTitle": "Contact",
+    "contactDescription": "Get in touch with The Most Beautiful Villages of Spain."
   },
   "pressPage": {
     "title": "Press & Media",
@@ -1552,5 +1578,17 @@
     "mediaTypeEvent": "Event",
     "mediaTypeArticle": "Article",
     "mediaTypePress": "Press"
+  },
+  "appPage": {
+    "badge": "Official App",
+    "downloadAppStore": "Download on the App Store",
+    "downloadGooglePlay": "Get it on Google Play",
+    "alsoGooglePlay": "Also on Google Play",
+    "alsoAppStore": "Also on App Store",
+    "openDownloadPage": "View download page",
+    "qrCaption": "Scan to download",
+    "screenshotsTitle": "App screenshots",
+    "downloadTitle": "Download the app",
+    "downloadDescription": "Available for iPhone and Android. Free."
   }
 }

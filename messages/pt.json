@@ -108,7 +108,8 @@
     "communities": "Comunidades",
     "loadError": "Erro ao carregar as aldeias. Por favor, tente novamente mais tarde.",
     "loadingMap": "Carregar mapa...",
-    "certificationsByYear": "Certificações por ano"
+    "certificationsByYear": "Certificações por ano",
+    "pueblosListDescription": "Descubra todas as aldeias que fazem parte de As Aldeias Mais Bonitas de Espanha."
   },
   "profile": {
     "title": "O meu perfil",
@@ -356,7 +357,11 @@
     "kmFromStart": "km {km} desde o início",
     "stopN": "Paragem {n}",
     "tipsTitle": "Dicas de percurso",
-    "villagesOfRoute": "Aldeias ao longo do percurso"
+    "villagesOfRoute": "Aldeias ao longo do percurso",
+    "calculating": "A calcular...",
+    "locationInSpain": "Espanha",
+    "rutasListTitle": "Rotas pelas Aldeias Mais Bonitas de Espanha",
+    "rutasListDescription": "Explore rotas turísticas que ligam as aldeias mais bonitas de Espanha."
   },
   "certificationsByYear": {
     "subtitle": "Todos os anos, novas aldeias obtêm a certificação de Aldeias Mais Bonitas de Espanha.",
@@ -483,7 +488,14 @@
       "backToVillageHolyWeek": "← Voltar à Semana Santa da aldeia",
       "eventsOfDay": "Eventos do dia",
       "noEventsForDay": "Não há eventos carregados para este dia."
-    }
+    },
+    "backToRegions": "Voltar às regiões",
+    "filterPlaceholderCCAA": "Comunidade autónoma",
+    "filterPlaceholderProvincia": "Província",
+    "nearestButton": "Aldeias próximas",
+    "nearestLoading": "A procurar aldeias próximas...",
+    "nearestTitle": "Aldeias perto de si",
+    "verMasEventos": "Ver mais eventos"
   },
   "recursos": {
     "eyebrow": "Clube de amigos",
@@ -872,7 +884,8 @@
     "breadcrumbMap": "O meu mapa",
     "breadcrumbResources": "Recursos",
     "breadcrumbValidations": "Validações",
-    "breadcrumbVisited": "Visitado"
+    "breadcrumbVisited": "Visitado",
+    "breadcrumbOrders": "As minhas encomendas"
   },
   "myProfile": {
     "title": "O meu perfil",
@@ -1016,7 +1029,8 @@
     "pageSubtitle": "Notícias, alertas e estado dos semáforos.",
     "meteoAlerts": "Alertas meteorológicos",
     "retry": "Repetir",
-    "loadCenterError": "Não foi possível carregar o centro de notificações."
+    "loadCenterError": "Não foi possível carregar o centro de notificações.",
+    "seeDetail": "Ver detalhe"
   },
   "visitedVillages": {
     "title": "As minhas aldeias visitadas",
@@ -1065,7 +1079,8 @@
     "noFavorites": "Ainda não tem nenhuma aldeia favorita. Classifica as tuas aldeias favoritas com 5 estrelas e elas aparecerão aqui.",
     "favoritesDesc": "As vossas aldeias com uma classificação de 5 estrelas.",
     "pointsBreakdown": "Repartição dos pontos",
-    "visits": "Visitar"
+    "visits": "Visitar",
+    "dashboardError": "Erro ao carregar o painel de pontos."
   },
   "clubLanding": {
     "title": "Dentro de alguns dias, o Clube de Amigos será uma realidade",
@@ -1287,7 +1302,8 @@
     "alertRain": "Chuva",
     "alertWind": "Vento",
     "alertFrost": "Geada",
-    "alertHeat": "Calor"
+    "alertHeat": "Calor",
+    "metaDescription": "Consulte o tempo nas Aldeias Mais Bonitas de Espanha: temperatura, chuva, neve e alertas meteorológicos."
   },
   "nocheRomantica": {
     "title": "Noite romântica",
@@ -1475,7 +1491,11 @@
     "viewAllVillages": "Ver todas as aldeias",
     "wantToBePartner": "Deseja tornar-se um parceiro colaborador?",
     "wantToBePartnerBody": "Se a sua empresa ou organização pretender colaborar com a associação, solicite informações sobre as opções de patrocínio e parceria.",
-    "gallery": "Galeria"
+    "gallery": "Galeria",
+    "selloTitle": "O selo de qualidade turística",
+    "selloDescription": "As Aldeias Mais Bonitas de Espanha é uma associação que certifica e promove o património rural.",
+    "logoAlt": "Logo As Aldeias Mais Bonitas de Espanha",
+    "sealBadgeAlt": "Selo de qualidade turística"
   },
   "seo": {
     "siteNameSuffix": " - As aldeias mais bonitas de Espanha",
@@ -1508,7 +1528,11 @@
     "datosTitle": "Dados - Métricas",
     "datosDescription": "Painel de métricas da plataforma: utilizadores, aldeias e análise da Web.",
     "backToAssociation": "← Voltar à parceria",
-    "puntosPueblosLink": "Pontos Aldeias"
+    "puntosPueblosLink": "Pontos Aldeias",
+    "accessRestrictedTitle": "Acesso restrito",
+    "accessRestrictedOnlyAdmins": "Esta secção é apenas para administradores.",
+    "accessRestrictedUsersToAccount": "Se tem uma conta, aceda a partir de A minha conta.",
+    "goToMyAccount": "Ir para A minha conta"
   },
   "contact": {
     "title": "Contacto",
@@ -1528,7 +1552,9 @@
     "send": "Enviar",
     "sending": "Enviando...",
     "back": "← Voltar",
-    "successMessage": "O seu cliente de correio eletrónico abrir-se-á. Se não abrir, escreva-nos diretamente para"
+    "successMessage": "O seu cliente de correio eletrónico abrir-se-á. Se não abrir, escreva-nos diretamente para",
+    "contactTitle": "Contacto",
+    "contactDescription": "Entre em contacto com As Aldeias Mais Bonitas de Espanha."
   },
   "pressPage": {
     "title": "Imprensa e média",
@@ -1551,5 +1577,17 @@
     "mediaTypeEvent": "Evento",
     "mediaTypeArticle": "Artigo",
     "mediaTypePress": "Imprensa"
+  },
+  "appPage": {
+    "badge": "App oficial",
+    "downloadAppStore": "Descarregar na App Store",
+    "downloadGooglePlay": "Disponível no Google Play",
+    "alsoGooglePlay": "Também no Google Play",
+    "alsoAppStore": "Também na App Store",
+    "openDownloadPage": "Ver página de download",
+    "qrCaption": "Digitalizar para descarregar",
+    "screenshotsTitle": "Capturas da app",
+    "downloadTitle": "Baixar a app",
+    "downloadDescription": "Disponível para iPhone e Android. Gratuito."
   }
 }

@@ -108,7 +108,8 @@
     "communities": "Gemeinden",
     "loadError": "Fehler beim Laden der Dörfer. Bitte versuchen Sie es später noch einmal.",
     "loadingMap": "Karte laden...",
-    "certificationsByYear": "Zertifizierungen pro Jahr"
+    "certificationsByYear": "Zertifizierungen pro Jahr",
+    "pueblosListDescription": "Entdecken Sie alle Dörfer, die zu Den Schönsten Dörfern Spaniens gehören."
   },
   "profile": {
     "title": "Mein Profil",
@@ -356,7 +357,11 @@
     "kmFromStart": "km {km} vom Start",
     "stopN": "Stopp {n}",
     "tipsTitle": "Tipps zur Route",
-    "villagesOfRoute": "Dörfer entlang der Route"
+    "villagesOfRoute": "Dörfer entlang der Route",
+    "calculating": "Berechnung...",
+    "locationInSpain": "Spanien",
+    "rutasListTitle": "Routen durch die Schönsten Dörfer Spaniens",
+    "rutasListDescription": "Entdecken Sie touristische Routen, die Spaniens schönste Dörfer verbinden."
   },
   "certificationsByYear": {
     "subtitle": "Jedes Jahr erhalten neue Dörfer die Auszeichnung \"Schönste Dörfer Spaniens\".",
@@ -483,7 +488,14 @@
       "backToVillageHolyWeek": "← Zurück zur Karwoche des Dorfes",
       "eventsOfDay": "Ereignisse des Tages",
       "noEventsForDay": "Für diesen Tag sind keine Ereignisse geladen."
-    }
+    },
+    "backToRegions": "Zurück zu den Regionen",
+    "filterPlaceholderCCAA": "Autonome Gemeinschaft",
+    "filterPlaceholderProvincia": "Provinz",
+    "nearestButton": "Nahe Dörfer",
+    "nearestLoading": "Suche nach nahen Dörfern...",
+    "nearestTitle": "Dörfer in Ihrer Nähe",
+    "verMasEventos": "Mehr Veranstaltungen"
   },
   "recursos": {
     "eyebrow": "Club der Freunde",
@@ -872,7 +884,8 @@
     "breadcrumbMap": "Meine Karte",
     "breadcrumbResources": "Ressourcen",
     "breadcrumbValidations": "Validierungen",
-    "breadcrumbVisited": "Besucht"
+    "breadcrumbVisited": "Besucht",
+    "breadcrumbOrders": "Meine Bestellungen"
   },
   "myProfile": {
     "title": "Mein Profil",
@@ -1016,7 +1029,8 @@
     "pageSubtitle": "Nachrichten, Warnungen und Ampelstatus.",
     "meteoAlerts": "Wetterwarnungen",
     "retry": "Wiederholung",
-    "loadCenterError": "Das Benachrichtigungszentrum konnte nicht geladen werden."
+    "loadCenterError": "Das Benachrichtigungszentrum konnte nicht geladen werden.",
+    "seeDetail": "Details anzeigen"
   },
   "visitedVillages": {
     "title": "Meine besuchten Dörfer",
@@ -1065,7 +1079,8 @@
     "noFavorites": "Sie haben noch keine Favoriten. Bewerten Sie Ihre Lieblingsorte mit 5 Sternen und sie werden hier erscheinen.",
     "favoritesDesc": "Ihre Dörfer mit einer 5-Sterne-Bewertung.",
     "pointsBreakdown": "Aufschlüsselung der Punkte",
-    "visits": "Besuchen Sie"
+    "visits": "Besuchen Sie",
+    "dashboardError": "Fehler beim Laden des Punkte-Dashboards."
   },
   "clubLanding": {
     "title": "In wenigen Tagen wird der Club de Amigos Realität sein",
@@ -1287,7 +1302,8 @@
     "alertRain": "Regen",
     "alertWind": "Wind",
     "alertFrost": "Frost",
-    "alertHeat": "Wärme"
+    "alertHeat": "Wärme",
+    "metaDescription": "Wetter in den Schönsten Dörfern Spaniens: Temperatur, Regen, Schnee und Wetteralarme."
   },
   "nocheRomantica": {
     "title": "Romantische Nacht",
@@ -1475,7 +1491,11 @@
     "viewAllVillages": "Alle Dörfer sehen",
     "wantToBePartner": "Möchten Sie ein Kooperationspartner werden?",
     "wantToBePartnerBody": "Wenn Ihr Unternehmen oder Ihre Organisation mit dem Verband zusammenarbeiten möchte, fragen Sie bitte nach Informationen über Sponsoring und Partnerschaftsmöglichkeiten.",
-    "gallery": "Galerie"
+    "gallery": "Galerie",
+    "selloTitle": "Das Qualitätssiegel für Tourismus",
+    "selloDescription": "Die Schönsten Dörfer Spaniens ist ein Verband, der das ländliche Erbe zertifiziert und fördert.",
+    "logoAlt": "Logo Die Schönsten Dörfer Spaniens",
+    "sealBadgeAlt": "Qualitätssiegel für Tourismus"
   },
   "seo": {
     "siteNameSuffix": " - Die schönsten Dörfer Spaniens",
@@ -1508,7 +1528,11 @@
     "datosTitle": "Daten - Metriken",
     "datosDescription": "Metrik-Panel der Plattform: Nutzer, Dörfer und Webanalyse.",
     "backToAssociation": "← Zurück zur Partnerschaft",
-    "puntosPueblosLink": "Punkte Dörfer"
+    "puntosPueblosLink": "Punkte Dörfer",
+    "accessRestrictedTitle": "Eingeschränkter Zugang",
+    "accessRestrictedOnlyAdmins": "Dieser Bereich ist nur für Administratoren.",
+    "accessRestrictedUsersToAccount": "Wenn Sie ein Konto haben, greifen Sie über Mein Konto zu.",
+    "goToMyAccount": "Zu Mein Konto"
   },
   "contact": {
     "title": "Kontakt",
@@ -1528,7 +1552,9 @@
     "send": "Senden Sie",
     "sending": "Ich schicke...",
     "back": "← Zurück",
-    "successMessage": "Ihr E-Mail-Programm wird sich öffnen. Sollte er sich nicht öffnen, schreiben Sie uns bitte direkt an"
+    "successMessage": "Ihr E-Mail-Programm wird sich öffnen. Sollte er sich nicht öffnen, schreiben Sie uns bitte direkt an",
+    "contactTitle": "Kontakt",
+    "contactDescription": "Kontaktieren Sie Die Schönsten Dörfer Spaniens."
   },
   "pressPage": {
     "title": "Presse & Medien",
@@ -1551,5 +1577,17 @@
     "mediaTypeEvent": "Veranstaltung",
     "mediaTypeArticle": "Artikel",
     "mediaTypePress": "Presse"
+  },
+  "appPage": {
+    "badge": "Offizielle App",
+    "downloadAppStore": "Im App Store herunterladen",
+    "downloadGooglePlay": "Bei Google Play herunterladen",
+    "alsoGooglePlay": "Auch bei Google Play",
+    "alsoAppStore": "Auch im App Store",
+    "openDownloadPage": "Download-Seite anzeigen",
+    "qrCaption": "Zum Herunterladen scannen",
+    "screenshotsTitle": "App-Screenshots",
+    "downloadTitle": "App herunterladen",
+    "downloadDescription": "Verfügbar für iPhone und Android. Kostenlos."
   }
 }
