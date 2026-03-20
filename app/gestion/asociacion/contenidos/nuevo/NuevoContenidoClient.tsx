@@ -26,6 +26,7 @@ type TematicasPages = {
   CULTURA?: TematicaPage;
   EN_FAMILIA?: TematicaPage;
   PETFRIENDLY?: TematicaPage;
+  PATRIMONIO?: TematicaPage;
 };
 
 const CATEGORIAS_TEMATICAS = [
@@ -34,6 +35,7 @@ const CATEGORIAS_TEMATICAS = [
   { value: 'CULTURA', label: 'Cultura' },
   { value: 'EN_FAMILIA', label: 'En familia' },
   { value: 'PETFRIENDLY', label: 'Petfriendly' },
+  { value: 'PATRIMONIO', label: 'Patrimonio' },
 ];
 
 type Props = {

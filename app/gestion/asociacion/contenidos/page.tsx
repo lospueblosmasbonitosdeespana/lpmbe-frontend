@@ -20,6 +20,7 @@ type TematicasPages = {
   CULTURA?: TematicaPage;
   EN_FAMILIA?: TematicaPage;
   PETFRIENDLY?: TematicaPage;
+  PATRIMONIO?: TematicaPage;
 };
 
 const CATEGORIAS = [
@@ -28,6 +29,7 @@ const CATEGORIAS = [
   { key: 'CULTURA', label: 'Cultura' },
   { key: 'EN_FAMILIA', label: 'En familia' },
   { key: 'PETFRIENDLY', label: 'Petfriendly' },
+  { key: 'PATRIMONIO', label: 'Patrimonio' },
 ];
 
 async function fetchContenidos(tipo?: string) {
