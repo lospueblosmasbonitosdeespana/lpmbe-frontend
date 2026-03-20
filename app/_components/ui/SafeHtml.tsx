@@ -25,18 +25,18 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
       .replace(/&amp;/g, '&');
   }
 
-  // Adjunta handlers de click a las imágenes del contenido renderizado.
-  // Usamos delegación de eventos en el contenedor para evitar problemas con
-  // el ciclo de vida de React (StrictMode doble-mount, cleanup, etc.)
+  // Adjunta handlers a las imágenes del contenido renderizado:
+  // cursor zoom-in, bloqueo clic derecho, draggable=false y apertura lightbox.
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    // Marcar imágenes con cursor zoom-in
     const imgs = container.querySelectorAll<HTMLImageElement>('img');
-    imgs.forEach((img) => { img.style.cursor = 'zoom-in'; });
+    imgs.forEach((img) => {
+      img.style.cursor = 'zoom-in';
+      img.draggable = false;
+    });
 
-    // Un solo listener delegado en el contenedor — sobrevive al ciclo de vida
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName === 'IMG') {
@@ -45,9 +45,16 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
         setLightboxRef.current({ url: img.src, alt: img.alt || '' });
       }
     };
+    const handleContextMenu = (e: MouseEvent) => {
+      if ((e.target as HTMLElement).tagName === 'IMG') e.preventDefault();
+    };
 
     container.addEventListener('click', handleClick);
-    return () => { container.removeEventListener('click', handleClick); };
+    container.addEventListener('contextmenu', handleContextMenu);
+    return () => {
+      container.removeEventListener('click', handleClick);
+      container.removeEventListener('contextmenu', handleContextMenu);
+    };
   }, [processedHtml]);
 
   // ESC para cerrar el lightbox + bloquear scroll
@@ -107,21 +114,29 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
             ✕
           </button>
           {/* data-lightbox-img evita que el useEffect le añada handler de click */}
-          <img
-            src={lightboxImage.url}
-            alt={lightboxImage.alt}
-            data-lightbox-img="1"
+          <div
+            className="relative"
             onClick={(e) => e.stopPropagation()}
-            style={{
-              maxWidth: '90vw',
-              maxHeight: '90vh',
-              width: 'auto',
-              height: 'auto',
-              objectFit: 'contain',
-              display: 'block',
-              borderRadius: '8px',
-            }}
-          />
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            <img
+              src={lightboxImage.url}
+              alt={lightboxImage.alt}
+              data-lightbox-img="1"
+              draggable={false}
+              style={{
+                maxWidth: '90vw',
+                maxHeight: '90vh',
+                width: 'auto',
+                height: 'auto',
+                objectFit: 'contain',
+                display: 'block',
+                borderRadius: '8px',
+              }}
+            />
+            {/* Capa transparente sobre la imagen ampliada */}
+            <div style={{ position: 'absolute', inset: 0 }} aria-hidden="true" />
+          </div>
         </div>,
         document.body
       )}

@@ -155,6 +155,21 @@
   }
 }
 
+/* Protección global de imágenes: bloquear arrastre, selección y menú contextual */
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none; /* las imágenes no son el target del click/drag; los wrappers sí */
+}
+/* Restaurar pointer-events donde se necesita interacción (botones, links con imagen) */
+a img,
+button img,
+[data-interactive-img] img {
+  pointer-events: auto;
+}
+
 /* CLS: reservar espacio mínimo para imágenes en contenido (prose) hasta que carguen */
 .prose-contenido img {
   min-height: 120px;

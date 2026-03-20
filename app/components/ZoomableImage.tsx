@@ -50,8 +50,9 @@ export default function ZoomableImage({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`block w-full cursor-zoom-in overflow-hidden bg-background ${wrapperClassName}`}
+        className={`relative block w-full cursor-zoom-in overflow-hidden bg-background ${wrapperClassName}`}
         aria-label={`Ampliar imagen: ${alt}`}
+        onContextMenu={(e) => e.preventDefault()}
       >
         <img
           src={src}
@@ -59,9 +60,12 @@ export default function ZoomableImage({
           referrerPolicy="no-referrer"
           loading={loading}
           onError={onError}
+          draggable={false}
           className={`h-full w-full ${fit === 'cover' ? 'object-cover' : 'object-contain'} ${className}`}
           style={transformStyle}
         />
+        {/* Capa transparente que impide arrastrar y hace clic derecho inútil */}
+        <div className="absolute inset-0" aria-hidden="true" />
       </button>
 
       {open && (
@@ -70,6 +74,7 @@ export default function ZoomableImage({
           tabIndex={0}
           onClick={() => setOpen(false)}
           onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
+          onContextMenu={(e) => e.preventDefault()}
           className="fixed inset-0 z-[10000] flex cursor-zoom-out items-center justify-center bg-black/90 p-4"
           aria-label="Cerrar imagen ampliada"
         >
@@ -81,14 +86,22 @@ export default function ZoomableImage({
           >
             ×
           </button>
-          <img
-            src={src}
-            alt={alt}
-            referrerPolicy="no-referrer"
-            className="max-h-[92vh] max-w-full cursor-default object-contain"
-            style={transformStyle}
+          <div
+            className="relative"
             onClick={(e) => e.stopPropagation()}
-          />
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            <img
+              src={src}
+              alt={alt}
+              referrerPolicy="no-referrer"
+              draggable={false}
+              className="max-h-[92vh] max-w-full cursor-default object-contain"
+              style={transformStyle}
+            />
+            {/* Capa transparente sobre la imagen ampliada */}
+            <div className="absolute inset-0" aria-hidden="true" />
+          </div>
         </div>
       )}
     </>
