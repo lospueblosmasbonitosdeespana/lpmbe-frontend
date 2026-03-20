@@ -770,6 +770,11 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [pressPdfFile, setPressPdfFile] = useState<File | null>(null);
   const [pressPdfUrl, setPressPdfUrl] = useState('');
   const [uploadingPdf, setUploadingPdf] = useState(false);
+  // Adjuntos adicionales (vídeo, audio, Word, Excel, etc.)
+  type PressAttachment = { name: string; url: string; contentType: string; size: number };
+  const [pressAttachments, setPressAttachments] = useState<PressAttachment[]>([]);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const attachInputRef = useRef<HTMLInputElement | null>(null);
   const [webContentKind, setWebContentKind] = useState<'NOTICIA' | 'ARTICULO'>('NOTICIA');
   const [publishingWeb, setPublishingWeb] = useState(false);
   const [showWebPreview, setShowWebPreview] = useState(false);
@@ -1532,6 +1537,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
             : `${safeFilename}.pdf`,
           contentType: 'application/pdf',
         },
+        // Adjuntos adicionales (vídeo, audio, docs, etc.)
+        ...pressAttachments.map((a) => ({ url: a.url, filename: a.name, contentType: a.contentType })),
       ];
 
       const filters = mode === 'press' ? buildPressFilters() : { source: campaignForm.source };
@@ -1589,6 +1596,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     finalHtml = injectPreheader(finalHtml, campaignForm.preheader);
 
     const filters = mode === 'press' ? buildPressFilters() : { source: campaignForm.source };
+    const extraAttachmentUrls = mode === 'press' && pressAttachments.length > 0
+      ? pressAttachments.map((a) => ({ url: a.url, filename: a.name, contentType: a.contentType }))
+      : undefined;
 
     const res = await fetch('/api/admin/newsletter/campaigns/send', {
       method: 'POST',
@@ -1598,6 +1608,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         subject: campaignForm.subject,
         html: finalHtml,
         filters,
+        ...(extraAttachmentUrls ? { attachmentUrls: extraAttachmentUrls } : {}),
       }),
     });
     const data = await res.json().catch(() => ({}));
@@ -1762,6 +1773,21 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     }
     setMessage('PDF eliminado del envío.');
     setError(null);
+  }
+
+  async function uploadPressAttachmentFile(file: File): Promise<{ url: string; name: string; contentType: string; size: number }> {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('folder', 'newsletter/press-attachments');
+    const res = await fetch('/api/admin/uploads/press-attachment', { method: 'POST', body: fd });
+    const data = await res.json().catch(() => ({})) as Record<string, unknown>;
+    if (!res.ok || !data?.url) throw new Error(String(data?.error ?? data?.message ?? 'Error subiendo archivo'));
+    return {
+      url: String(data.url),
+      name: String(data.originalName ?? file.name),
+      contentType: String(data.contentType ?? file.type ?? 'application/octet-stream'),
+      size: Number(data.size ?? file.size),
+    };
   }
 
   function injectPreheader(html: string, preheader: string): string {
@@ -3825,6 +3851,74 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   Ver PDF subido
                 </a>
               ) : null}
+            </div>
+          ) : null}
+
+          {/* Adjuntos adicionales — solo en modo prensa */}
+          {mode === 'press' ? (
+            <div className="space-y-3 rounded-lg border border-border p-3">
+              <p className="text-sm font-medium">Adjuntos adicionales</p>
+              <p className="text-xs text-muted-foreground">
+                Vídeo (MP4, MOV), audio (MP3, WAV), documentos (Word, Excel, PowerPoint), imágenes o ZIP. Máx. 50MB por archivo · 5 adjuntos en total.
+              </p>
+
+              {/* Lista de adjuntos ya añadidos */}
+              {pressAttachments.length > 0 && (
+                <ul className="space-y-1">
+                  {pressAttachments.map((a, i) => (
+                    <li key={i} className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-sm">
+                      <span className="flex-1 truncate">{a.name}</span>
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {a.size > 1024 * 1024 ? `${(a.size / 1024 / 1024).toFixed(1)} MB` : `${Math.round(a.size / 1024)} KB`}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setPressAttachments((prev) => prev.filter((_, j) => j !== i))}
+                        className="shrink-0 text-red-600 hover:text-red-800"
+                        aria-label="Eliminar adjunto"
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {/* Botón añadir */}
+              {pressAttachments.length < 5 && (
+                <>
+                  <button
+                    type="button"
+                    disabled={uploadingAttachment}
+                    onClick={() => attachInputRef.current?.click()}
+                    className="rounded-lg border border-border px-3 py-2 text-sm font-medium disabled:opacity-50 hover:bg-muted/50"
+                  >
+                    {uploadingAttachment ? 'Subiendo…' : '+ Añadir adjunto'}
+                  </button>
+                  <input
+                    ref={attachInputRef}
+                    type="file"
+                    className="sr-only"
+                    disabled={uploadingAttachment}
+                    accept="video/mp4,video/quicktime,video/webm,video/x-msvideo,audio/mpeg,audio/mp3,audio/wav,audio/wave,audio/x-wav,audio/aac,audio/ogg,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/csv,application/zip,.mp4,.mov,.mp3,.wav,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.zip,.avi"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setError(null);
+                      setUploadingAttachment(true);
+                      try {
+                        const uploaded = await uploadPressAttachmentFile(file);
+                        setPressAttachments((prev) => [...prev, uploaded]);
+                      } catch (err: unknown) {
+                        setError(err instanceof Error ? err.message : 'Error subiendo adjunto');
+                      } finally {
+                        setUploadingAttachment(false);
+                        e.currentTarget.value = '';
+                      }
+                    }}
+                  />
+                </>
+              )}
             </div>
           ) : null}
 
