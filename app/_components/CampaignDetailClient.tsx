@@ -24,6 +24,7 @@ interface CampaignDetail {
   deliveredCount: number;
   sentAt: string | null;
   createdAt: string;
+  contentHtml?: string | null;
 }
 
 interface Recipient {
@@ -44,7 +45,7 @@ interface ClickLink {
   uniqueClickers: number;
 }
 
-type Tab = 'resumen' | 'destinatarios' | 'clics';
+type Tab = 'resumen' | 'destinatarios' | 'clics' | 'heatmap';
 
 const EVENT_BADGE: Record<string, string> = {
   'email.delivered': 'bg-green-100 text-green-700',
@@ -224,7 +225,7 @@ export default function CampaignDetailClient({ campaignId, backHref, kind }: {
       {/* Tabs */}
       <div className="border-b border-slate-200">
         <nav className="-mb-px flex gap-6">
-          {(['resumen', 'destinatarios', 'clics'] as Tab[]).map((t) => (
+          {(['resumen', 'destinatarios', 'clics', 'heatmap'] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -234,7 +235,7 @@ export default function CampaignDetailClient({ campaignId, backHref, kind }: {
                   : 'border-transparent text-slate-500 hover:text-slate-700'
               }`}
             >
-              {t === 'resumen' ? 'Resumen' : t === 'destinatarios' ? 'Destinatarios' : 'Clics en enlaces'}
+              {t === 'resumen' ? 'Resumen' : t === 'destinatarios' ? 'Destinatarios' : t === 'clics' ? 'Clics en enlaces' : '🔥 Mapa de calor'}
             </button>
           ))}
         </nav>
@@ -452,6 +453,141 @@ export default function CampaignDetailClient({ campaignId, backHref, kind }: {
           )}
         </div>
       )}
+
+      {/* Tab: Mapa de calor */}
+      {tab === 'heatmap' && (
+        <HeatmapTab html={campaign.contentHtml ?? null} clickLinks={clickLinks} totalRecipients={campaign.totalRecipients} />
+      )}
     </div>
   );
+}
+
+// ─── Componente Mapa de Calor ────────────────────────────────────────────────
+
+function heatColor(ratio: number): { bg: string; border: string; text: string } {
+  // ratio 0–1: de azul frío (pocos clics) a rojo caliente (muchos clics)
+  if (ratio >= 0.75) return { bg: 'rgba(220,38,38,0.18)', border: '#dc2626', text: '#991b1b' };
+  if (ratio >= 0.50) return { bg: 'rgba(234,88,12,0.18)', border: '#ea580c', text: '#9a3412' };
+  if (ratio >= 0.25) return { bg: 'rgba(234,179,8,0.18)', border: '#ca8a04', text: '#713f12' };
+  return { bg: 'rgba(99,102,241,0.12)', border: '#6366f1', text: '#3730a3' };
+}
+
+function HeatmapTab({
+  html,
+  clickLinks,
+  totalRecipients,
+}: {
+  html: string | null;
+  clickLinks: ClickLink[];
+  totalRecipients: number;
+}) {
+  if (!html) {
+    return (
+      <div className="py-12 text-center text-slate-400">
+        <p className="font-medium">HTML del email no disponible</p>
+        <p className="text-xs mt-1">Solo disponible para campañas enviadas desde esta plataforma.</p>
+      </div>
+    );
+  }
+
+  if (clickLinks.length === 0) {
+    return (
+      <div className="py-12 text-center text-slate-400">
+        <p className="font-medium">Sin datos de clics todavía</p>
+        <p className="text-xs mt-1">El mapa de calor se generará cuando los destinatarios empiecen a hacer clic en los enlaces.</p>
+      </div>
+    );
+  }
+
+  const maxClicks = clickLinks[0]?.totalClicks || 1;
+
+  // Inyectar estilos de calor en el HTML: envolver cada <a href> con un badge de clics
+  const heatmapHtml = injectHeatmapBadges(html, clickLinks, maxClicks);
+
+  const legendItems = [
+    { label: 'Muy alto', color: '#dc2626' },
+    { label: 'Alto', color: '#ea580c' },
+    { label: 'Medio', color: '#ca8a04' },
+    { label: 'Bajo', color: '#6366f1' },
+  ];
+
+  return (
+    <div className="space-y-4">
+      {/* Leyenda */}
+      <div className="flex flex-wrap items-center gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+        <span className="text-xs font-semibold text-slate-600">Intensidad de clics:</span>
+        {legendItems.map((l) => (
+          <span key={l.label} className="flex items-center gap-1.5 text-xs text-slate-600">
+            <span className="inline-block h-3 w-3 rounded-sm" style={{ background: l.color }} />
+            {l.label}
+          </span>
+        ))}
+        <span className="ml-auto text-xs text-slate-400">Los números sobre los enlaces = clics totales / únicos</span>
+      </div>
+
+      {/* Nota informativa */}
+      <p className="text-xs text-slate-500 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+        Los enlaces están resaltados con colores según su calor. Rojo = más clicado. Los porcentajes son sobre el total de {totalRecipients.toLocaleString()} destinatarios.
+      </p>
+
+      {/* Email renderizado con badges */}
+      <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+        <div
+          className="overflow-x-auto bg-white"
+          style={{ maxHeight: '75vh', overflowY: 'auto' }}
+          /* eslint-disable-next-line react/no-danger */
+          dangerouslySetInnerHTML={{ __html: heatmapHtml }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function injectHeatmapBadges(html: string, clickLinks: ClickLink[], maxClicks: number): string {
+  // Recorremos el HTML como texto y envolvemos cada <a href="..."> conocido con un wrapper de calor
+  let result = html;
+
+  // Ordenar por longitud de URL desc para evitar sustituciones parciales
+  const sorted = [...clickLinks].sort((a, b) => b.url.length - a.url.length);
+
+  for (const link of sorted) {
+    const ratio = link.totalClicks / maxClicks;
+    const colors = heatColor(ratio);
+    const pct = maxClicks > 0 ? ((link.totalClicks / maxClicks) * 100).toFixed(0) : '0';
+
+    const badge = `<span style="
+      display:inline-flex;align-items:center;gap:4px;
+      background:${colors.bg};
+      border:1.5px solid ${colors.border};
+      border-radius:999px;
+      padding:1px 7px;
+      font-size:11px;font-weight:700;
+      color:${colors.text};
+      font-family:Arial,sans-serif;
+      white-space:nowrap;
+      vertical-align:middle;
+      margin-left:3px;
+    ">🔥 ${link.totalClicks} (${link.uniqueClickers} únicos · ${pct}%)</span>`;
+
+    // Escapar caracteres especiales de la URL para usarla en regex
+    const escapedUrl = link.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // Envolver el enlace con un div que tenga el color de calor de fondo
+    const wrapperOpen = `<span style="display:inline-block;background:${colors.bg};border-radius:4px;padding:0 2px;">`;
+    const wrapperClose = `</span>${badge}`;
+
+    // Buscar <a href="url"> o <a href='url'> y envolverlo
+    result = result.replace(
+      new RegExp(`(<a[^>]*href=["']${escapedUrl}["'][^>]*>)([\\s\\S]*?)(</a>)`, 'gi'),
+      (_, open, content, close) => `${wrapperOpen}${open}${content}${close}${wrapperClose}`,
+    );
+  }
+
+  // Añadir estilos base para el wrapper del email
+  result = `<style>
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #fff; }
+    a { pointer-events: none; cursor: default; }
+  </style>${result}`;
+
+  return result;
 }
