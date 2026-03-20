@@ -3884,7 +3884,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                 <th className="px-2 py-2 text-right">Dest.</th>
                 <th className="px-2 py-2 text-right">OK</th>
                 <th className="px-2 py-2 text-right">Fallos</th>
-                <th className="px-2 py-2 text-right">Aperturas</th>
+                <th className="px-2 py-2 text-right">% Apertura</th>
+                <th className="px-2 py-2 text-right"></th>
               </tr>
             </thead>
             <tbody>
@@ -3896,15 +3897,47 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                 </tr>
               ) : (
                 campaigns.map((c) => (
-                  <tr key={c.id} className="border-b border-border">
-                    <td className="px-2 py-2">{fmtDate(c.sentAt || c.createdAt)}</td>
-                    <td className="px-2 py-2">{c.kind}</td>
-                    <td className="px-2 py-2">{c.subject}</td>
-                    <td className="px-2 py-2">{c.status}</td>
+                  <tr key={c.id} className="border-b border-border hover:bg-slate-50 transition-colors">
+                    <td className="px-2 py-2 text-xs">{fmtDate(c.sentAt || c.createdAt)}</td>
+                    <td className="px-2 py-2">
+                      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                        c.kind === 'NEWSLETTER' ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'
+                      }`}>{c.kind === 'NEWSLETTER' ? 'Newsletter' : 'Prensa'}</span>
+                    </td>
+                    <td className="px-2 py-2 max-w-xs">
+                      <a
+                        href={`/gestion/asociacion/notas-prensa-newsletter/${c.kind === 'NEWSLETTER' ? 'newsletter' : 'notas-prensa'}/campanas/${c.id}`}
+                        className="text-indigo-600 hover:underline font-medium"
+                      >
+                        {c.subject}
+                      </a>
+                    </td>
+                    <td className="px-2 py-2">
+                      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs ${
+                        c.status === 'SENT' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
+                      }`}>{c.status}</span>
+                    </td>
                     <td className="px-2 py-2 text-right">{c.totalRecipients}</td>
                     <td className="px-2 py-2 text-right">{c.sentCount}</td>
                     <td className="px-2 py-2 text-right">{c.failedCount}</td>
-                    <td className="px-2 py-2 text-right">{c.openedCount}</td>
+                    <td className="px-2 py-2 text-right">
+                      {c.totalRecipients > 0 ? (
+                        <span className={`font-medium ${(c.openedCount / c.totalRecipients * 100) > 20 ? 'text-green-600' : 'text-slate-700'}`}>
+                          {((c.openedCount / c.totalRecipients) * 100).toFixed(1)}%
+                        </span>
+                      ) : '–'}
+                    </td>
+                    <td className="px-2 py-2 text-right">
+                      <a
+                        href={`/gestion/asociacion/notas-prensa-newsletter/${c.kind === 'NEWSLETTER' ? 'newsletter' : 'notas-prensa'}/campanas/${c.id}`}
+                        className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                      >
+                        Ver métricas
+                        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                      </a>
+                    </td>
                   </tr>
                 ))
               )}

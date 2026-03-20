@@ -83,7 +83,7 @@ export async function generateMetadata({
     return { title: 'Experiencia' };
   }
   const locSuf = titleLocaleSuffix(locale);
-  const title = seoTitle(`${t(config.titleKey)} · ${slug}${locSuf}`);
+  const title = seoTitle(`${t(config.titleKey)}${locSuf}`);
   const description = seoDescription(t(config.descKey));
   const path = `/experiencias/${slug}`;
   return {
@@ -142,7 +142,7 @@ export default async function TematicaPage({
     <main className="mx-auto max-w-7xl px-4 py-12">
       <div className="mb-8">
         <h1 className="text-3xl font-semibold text-foreground">
-          {uniqueH1ForLocale(`${title} · ${slug}`, locale)}
+          {uniqueH1ForLocale(title, locale)}
         </h1>
         <p className="mt-2 text-gray-600 dark:text-neutral-400">{description}</p>
       </div>
