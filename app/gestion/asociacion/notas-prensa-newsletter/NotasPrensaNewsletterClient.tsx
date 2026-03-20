@@ -744,6 +744,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [campaignForm, setCampaignForm] = useState({
     kind: (mode === 'newsletter' ? 'NEWSLETTER' : 'PRESS') as 'PRESS' | 'NEWSLETTER',
     subject: '',
+    preheader: '',
     html: '',
     includeNational: true,
     ccaa: '',
@@ -1521,6 +1522,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         throw new Error('Debes subir un PDF para el envío');
       }
       finalHtml = buildPdfEmailHtml(campaignForm.subject.trim(), pdfUrl);
+      finalHtml = injectPreheader(finalHtml, campaignForm.preheader);
       const safeFilename = pdfFilename || `nota-prensa-${Date.now()}.pdf`;
       const attachmentUrls = [
         {
@@ -1582,6 +1584,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         }
       }
     }
+
+    // Inyectar preheader al inicio del HTML si se ha rellenado
+    finalHtml = injectPreheader(finalHtml, campaignForm.preheader);
 
     const filters = mode === 'press' ? buildPressFilters() : { source: campaignForm.source };
 
@@ -1757,6 +1762,14 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     }
     setMessage('PDF eliminado del envío.');
     setError(null);
+  }
+
+  function injectPreheader(html: string, preheader: string): string {
+    if (!preheader.trim()) return html;
+    const safe = preheader.replace(/[<>"'&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '&': '&amp;' }[c] ?? c));
+    const padding = '&zwnj;&nbsp;'.repeat(20);
+    const preheaderHtml = `<div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#f8f8f8;">${safe}${padding}</div>`;
+    return preheaderHtml + html;
   }
 
   function buildPdfEmailHtml(subject: string, pdfUrl: string) {
@@ -1973,6 +1986,16 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         <h2 className="text-lg font-semibold">{mode === 'press' ? '2) Enviar nota de prensa' : '1) Enviar newsletter'}</h2>
         <form onSubmit={handleSendCampaign} className="mt-4 space-y-3">
           <div className="grid gap-3 md:grid-cols-2">
+            <label className="text-sm">
+              Preheader <span className="text-xs text-muted-foreground">(texto de vista previa en el cliente de correo)</span>
+              <input
+                value={campaignForm.preheader}
+                onChange={(e) => setCampaignForm((s) => ({ ...s, preheader: e.target.value }))}
+                maxLength={150}
+                placeholder="Breve resumen que aparece tras el asunto en la bandeja…"
+                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+              />
+            </label>
             <label className="text-sm">
               Asunto
               <input
