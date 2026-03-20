@@ -12,10 +12,14 @@ export default async function NotasNewsletterPage() {
 
   return (
     <main className="mx-auto max-w-6xl p-6">
-      <h1 className="text-2xl font-semibold">Gestión Newsletter</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Gestión de suscriptores y campañas newsletter.
-      </p>
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-semibold">Gestión Newsletter</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Suscriptores, campañas y métricas de envío.
+          </p>
+        </div>
+      </div>
 
       <NotasPrensaNewsletterClient mode="newsletter" />
 

@@ -1883,6 +1883,49 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
       ) : null}
 
+      {/* Acceso rápido al historial de campañas con métricas */}
+      <section className="rounded-xl border border-indigo-200 bg-indigo-50 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-indigo-900">
+              {mode === 'newsletter' ? '📊 Campañas enviadas y métricas' : '📊 Notas de prensa enviadas y métricas'}
+            </h2>
+            <p className="mt-0.5 text-sm text-indigo-700">
+              Ve aperturas, clics, rebotes y lista de destinatarios de cada envío.
+            </p>
+          </div>
+          <a
+            href={mode === 'newsletter'
+              ? '#ultimas-campanias'
+              : '#ultimas-campanias'}
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('ultimas-campanias')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+          >
+            Ver historial de campañas
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 9l-7 7-7-7"/>
+            </svg>
+          </a>
+        </div>
+        {campaigns.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {campaigns.slice(0, 3).map((c) => (
+              <a
+                key={c.id}
+                href={`/gestion/asociacion/notas-prensa-newsletter/${mode === 'newsletter' ? 'newsletter' : 'notas-prensa'}/campanas/${c.id}`}
+                className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors max-w-xs truncate"
+              >
+                <span className="truncate">{c.subject}</span>
+                <span className="shrink-0 text-indigo-400">→</span>
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
+
       {mode === 'press' ? (
         <section className="rounded-xl border border-border bg-card p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -3955,7 +3998,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         </form>
       </section>
 
-      <section className="rounded-xl border border-border bg-card p-5">
+      <section id="ultimas-campanias" className="rounded-xl border border-border bg-card p-5">
         <h2 className="text-lg font-semibold">Últimas campañas</h2>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full text-sm">
