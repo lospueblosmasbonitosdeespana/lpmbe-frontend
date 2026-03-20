@@ -15,6 +15,7 @@ import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Eyebrow, Body } from "@/app/components/ui/typography";
 import { PointsOfInterest } from "@/app/components/pueblos/PointsOfInterest";
+import SafeHtml from "@/app/_components/ui/SafeHtml";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +70,38 @@ type MultiexperienciaLite = {
 type MultiexperienciaEntry = {
   multiexperiencia?: MultiexperienciaLite | null;
 };
+
+type TematicaPage = {
+  id: number;
+  titulo: string;
+  resumen?: string | null;
+  contenido: string;
+  coverUrl?: string | null;
+};
+
+type PuebloTematicasData = Record<string, TematicaPage[]>;
+
+async function getPaginasTematicas(
+  puebloSlug: string,
+  categoriaKey: string,
+  locale?: string
+): Promise<TematicaPage[]> {
+  try {
+    const qs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/public/pueblos/${puebloSlug}/pages${qs}`,
+      { cache: "no-store", headers: locale ? { "Accept-Language": locale } : undefined }
+    );
+    if (!res.ok) return [];
+    const data: PuebloTematicasData = await res.json();
+    const pages = data[categoriaKey];
+    if (!pages) return [];
+    // El backend devuelve un array por categoría
+    return Array.isArray(pages) ? pages : [pages as unknown as TematicaPage];
+  } catch {
+    return [];
+  }
+}
 
 const CATEGORIA_TEMATICA_LABELS: Record<string, string> = {
   GASTRONOMIA: "Gastronomía",
@@ -165,7 +198,10 @@ export default async function CategoriaPage({
     (m: MultiexperienciaEntry) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === categoriaKey
   );
 
-  const tieneContenido = poisFiltrados.length > 0 || multiexFiltradas.length > 0;
+  // Cargar páginas temáticas del alcalde para esta categoría
+  const paginasTematicas = await getPaginasTematicas(slug, categoriaKey, locale);
+
+  const tieneContenido = poisFiltrados.length > 0 || multiexFiltradas.length > 0 || paginasTematicas.length > 0;
   const label = CATEGORIA_LABELS[categoriaSlug];
   const descripcion = CATEGORIA_DESCRIPTIONS[categoriaSlug];
 
@@ -208,6 +244,35 @@ export default async function CategoriaPage({
 
           {tieneContenido ? (
             <>
+              {/* Páginas temáticas del alcalde */}
+              {paginasTematicas.length > 0 && (
+                <div className="space-y-12 mb-12">
+                  {paginasTematicas.map((page) => (
+                    <article key={page.id} className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                      {page.coverUrl && page.coverUrl.trim() && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={page.coverUrl.trim()}
+                          alt={page.titulo}
+                          className="h-64 w-full object-cover"
+                        />
+                      )}
+                      <div className="p-6 md:p-8">
+                        <h2 className="font-serif text-2xl font-medium text-foreground">{page.titulo}</h2>
+                        {page.resumen && (
+                          <p className="mt-2 text-muted-foreground">{page.resumen}</p>
+                        )}
+                        {page.contenido && (
+                          <div className="mt-6 prose prose-gray max-w-none [&_img]:max-w-full [&_img]:rounded-lg">
+                            <SafeHtml html={page.contenido} />
+                          </div>
+                        )}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+
               {/* POIs */}
               {poisFiltrados.length > 0 && (
                 <PointsOfInterest
