@@ -87,7 +87,7 @@ export default async function ContenidosPuebloPage({
         </div>
 
         <Link
-          className="rounded-md border px-3 py-2 text-sm hover:underline"
+          className="rounded-lg border-0 bg-[#b5472a] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#9e3d24] transition-colors"
           href={`/gestion/pueblo/contenidos/nuevo?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}`}
         >
           + Nuevo {params.tipo === 'NOTICIA' ? 'noticia' : params.tipo === 'EVENTO' ? 'evento' : 'contenido'}
