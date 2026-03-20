@@ -929,6 +929,35 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     setMessage(`Borrador guardado (${new Date(payload.savedAt).toLocaleTimeString('es-ES')}).`);
   }
 
+  function printCurrentContent() {
+    const html =
+      mode === 'newsletter' && newsletterComposerMode === 'builder'
+        ? renderNewsletterBlocksToHtml(newsletterBlocks)
+        : mode === 'press' && pressSendMode === 'editor' && editorMode === 'visual' && editor
+          ? editor.getHTML()
+          : campaignForm.html;
+
+    if (!html?.trim()) {
+      alert('No hay contenido para imprimir. Añade bloques o escribe contenido primero.');
+      return;
+    }
+
+    const titulo = campaignForm.subject || (mode === 'newsletter' ? 'Newsletter' : 'Nota de prensa');
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${titulo}</title>
+<style>
+  body { font-family: Georgia, serif; max-width: 800px; margin: 0 auto; padding: 32px; color: #333; }
+  img { max-width: 100%; height: auto; }
+  h1,h2,h3 { margin: 1em 0 0.5em; }
+  p { line-height: 1.6; margin: 0.5em 0 1em; }
+  table { width: 100%; border-collapse: collapse; }
+  @media print { body { padding: 0; } }
+</style></head><body>${html}</body></html>`);
+    win.document.close();
+    setTimeout(() => win.print(), 400);
+  }
+
   function loadDraftFromLocal(showMessage = false) {
     if (typeof window === 'undefined') return false;
     const raw = localStorage.getItem(getDraftStorageKey());
@@ -2232,6 +2261,19 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                       </button>
                     ) : null}
                   </div>
+                  <button
+                    type="button"
+                    onClick={printCurrentContent}
+                    className="flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    title="Imprimir o exportar como PDF"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M6 9V2h12v7"/>
+                      <rect x="6" y="13" width="12" height="9"/>
+                      <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+                    </svg>
+                    Imprimir / PDF
+                  </button>
                 </div>
                 )}
 
@@ -3800,6 +3842,19 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                 Cargar borrador
               </button>
             ) : null}
+            <button
+              type="button"
+              onClick={printCurrentContent}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              title="Imprimir o exportar como PDF"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M6 9V2h12v7"/>
+                <rect x="6" y="13" width="12" height="9"/>
+                <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+              </svg>
+              Imprimir / PDF
+            </button>
             <button
               type="submit"
               disabled={loading}
