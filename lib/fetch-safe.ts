@@ -1,11 +1,16 @@
 /**
  * Fetch robusto con timeout y retry automático.
  * Diseñado para llamadas al backend (Railway) que pueden tardar por cold start.
+ *
+ * Límites seguros para Vercel (maxDuration: 30s en vercel.json):
+ *   - DEFAULT_TIMEOUT_MS = 8s por intento
+ *   - MAX_RETRIES = 1 (2 intentos máximo)
+ *   - Peor caso total: 2 × 8s + 0.8s delay = ~17s → bien dentro de los 30s
  */
 
-const DEFAULT_TIMEOUT_MS = 15_000;
+const DEFAULT_TIMEOUT_MS = 8_000;
 const RETRY_DELAY_MS = 800;
-const MAX_RETRIES = 2;
+const MAX_RETRIES = 1;
 
 export async function fetchWithTimeout(
   url: string,

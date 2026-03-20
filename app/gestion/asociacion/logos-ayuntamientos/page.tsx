@@ -22,8 +22,17 @@ export default function LogosAyuntamientosPage() {
   const [deleting, setDeleting] = useState<number | null>(null);
 
   async function fetchGroups() {
+    setLoading(true);
+    setError(null);
     try {
-      const res = await fetch('/api/admin/pueblo-logos?grouped=true', { cache: 'no-store' });
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 12000);
+      let res: Response;
+      try {
+        res = await fetch('/api/admin/pueblo-logos?grouped=true', { cache: 'no-store', signal: controller.signal });
+      } finally {
+        clearTimeout(timer);
+      }
       if (res.status === 401) {
         window.location.href = '/entrar';
         return;
@@ -34,8 +43,12 @@ export default function LogosAyuntamientosPage() {
       }
       const data = await res.json();
       setGroups(Array.isArray(data) ? data : []);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error');
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name === 'AbortError') {
+        setError('Tiempo de espera agotado. El servidor tardó demasiado en responder. Pulsa "Reintentar".');
+      } else {
+        setError(e instanceof Error ? e.message : 'Error desconocido');
+      }
     } finally {
       setLoading(false);
     }
@@ -95,7 +108,16 @@ export default function LogosAyuntamientosPage() {
         <p className="text-sm text-muted-foreground animate-pulse">Cargando logos...</p>
       )}
       {error && (
-        <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+        <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700 flex items-center justify-between gap-4">
+          <span>{error}</span>
+          <button
+            type="button"
+            onClick={fetchGroups}
+            className="shrink-0 rounded-md border border-red-300 bg-white px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50"
+          >
+            Reintentar
+          </button>
+        </div>
       )}
 
       {!loading && filtered.length === 0 && (

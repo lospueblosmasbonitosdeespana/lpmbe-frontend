@@ -4,5 +4,10 @@
       "path": "/api/cron/warm",
       "schedule": "*/10 * * * *"
     }
-  ]
+  ],
+  "functions": {
+    "app/**": {
+      "maxDuration": 30
+    }
+  }
 }

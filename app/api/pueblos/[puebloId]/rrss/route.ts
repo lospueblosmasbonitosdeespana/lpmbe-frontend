@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
+import { fetchWithTimeout } from '@/lib/fetch-safe';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,10 +14,14 @@ export async function GET(
 
   const { puebloId } = await context.params;
   const API_BASE = getApiUrl();
-  const res = await fetch(`${API_BASE}/pueblos/${puebloId}/rrss`, {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: 'no-store',
-  });
-  const text = await res.text();
-  return new NextResponse(text, { status: res.status, headers: { 'Content-Type': 'application/json' } });
+  try {
+    const res = await fetchWithTimeout(`${API_BASE}/pueblos/${puebloId}/rrss`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
+    const text = await res.text();
+    return new NextResponse(text, { status: res.status, headers: { 'Content-Type': 'application/json' } });
+  } catch {
+    return NextResponse.json({ error: 'Error conectando con el servidor' }, { status: 503 });
+  }
 }

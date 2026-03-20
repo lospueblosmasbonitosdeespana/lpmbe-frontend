@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
+import { fetchWithTimeout } from '@/lib/fetch-safe';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,12 +14,16 @@ export async function GET(req: Request) {
   const qs = grouped ? `?grouped=${grouped}` : '';
 
   const API_BASE = getApiUrl();
-  const res = await fetch(`${API_BASE}/admin/pueblo-logos${qs}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: 'no-store',
-  });
-  const text = await res.text();
-  return new NextResponse(text, { status: res.status, headers: { 'Content-Type': 'application/json' } });
+  try {
+    const res = await fetchWithTimeout(`${API_BASE}/admin/pueblo-logos${qs}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
+    const text = await res.text();
+    return new NextResponse(text, { status: res.status, headers: { 'Content-Type': 'application/json' } });
+  } catch {
+    return NextResponse.json({ error: 'Error conectando con el servidor' }, { status: 503 });
+  }
 }
 
 export async function POST(req: Request) {
@@ -29,11 +34,15 @@ export async function POST(req: Request) {
   if (!body) return NextResponse.json({ message: 'Bad Request' }, { status: 400 });
 
   const API_BASE = getApiUrl();
-  const res = await fetch(`${API_BASE}/admin/pueblo-logos`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  const text = await res.text();
-  return new NextResponse(text, { status: res.status, headers: { 'Content-Type': 'application/json' } });
+  try {
+    const res = await fetchWithTimeout(`${API_BASE}/admin/pueblo-logos`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const text = await res.text();
+    return new NextResponse(text, { status: res.status, headers: { 'Content-Type': 'application/json' } });
+  } catch {
+    return NextResponse.json({ error: 'Error conectando con el servidor' }, { status: 503 });
+  }
 }
