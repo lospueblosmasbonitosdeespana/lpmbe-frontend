@@ -321,6 +321,8 @@
     "news": "Notícies",
     "events": "Esdeveniments",
     "articles": "Articles",
+    "page": "Pàgina",
+    "eventLabel": "Dates de l'esdeveniment",
     "loading": "Carregant...",
     "error": "Error en carregar el contingut",
     "noContent": "No hi ha cap contingut disponible.",

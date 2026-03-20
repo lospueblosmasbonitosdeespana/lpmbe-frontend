@@ -321,6 +321,8 @@
     "news": "Actualités",
     "events": "Evénements",
     "articles": "Articles",
+    "page": "Page",
+    "eventLabel": "Dates de l'événement",
     "loading": "Chargement...",
     "error": "Erreur de chargement du contenu",
     "noContent": "Aucun contenu disponible.",
