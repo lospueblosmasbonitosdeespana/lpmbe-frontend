@@ -120,6 +120,7 @@ type NewsletterDraftPayload = {
   pressSendMode?: PressSendMode;
   editorMode?: 'visual' | 'html';
   newsletterComposerMode?: 'editor' | 'builder';
+  pressComposerMode?: 'editor' | 'builder';
   selectedCcaas?: string[];
   selectedProvincias?: string[];
   pressPdfUrl?: string;
