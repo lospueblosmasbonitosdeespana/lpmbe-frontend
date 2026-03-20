@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface SafeHtmlProps {
   html: string;
@@ -10,6 +11,9 @@ interface SafeHtmlProps {
 export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [lightboxImage, setLightboxImage] = useState<{ url: string; alt: string } | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   let processedHtml = html || '';
   if (processedHtml.includes('&lt;') || processedHtml.includes('&gt;')) {
@@ -20,15 +24,20 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
   }
 
   // Añadir cursor zoom-in y handler de click a todas las imágenes del HTML renderizado
+  // Solo selecciona imágenes con data-content-img para no capturar las del lightbox
   useEffect(() => {
     if (!containerRef.current) return;
-    const imgs = containerRef.current.querySelectorAll<HTMLImageElement>('img');
+
+    // Marcar todas las imágenes del contenido
+    const imgs = containerRef.current.querySelectorAll<HTMLImageElement>('img:not([data-lightbox-img])');
     const handlers: Array<{ img: HTMLImageElement; handler: (e: MouseEvent) => void }> = [];
 
     imgs.forEach((img) => {
+      img.setAttribute('data-content-img', '1');
       img.style.cursor = 'zoom-in';
       const handler = (e: MouseEvent) => {
         e.preventDefault();
+        e.stopPropagation();
         setLightboxImage({ url: img.src, alt: img.alt || '' });
       };
       img.addEventListener('click', handler);
@@ -62,7 +71,7 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
         className={`safe-html-content ${className}`}
       />
 
-      {lightboxImage && (
+      {mounted && lightboxImage && createPortal(
         <div
           onClick={() => setLightboxImage(null)}
           style={{
@@ -96,9 +105,11 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
           >
             ✕
           </button>
+          {/* data-lightbox-img evita que el useEffect le añada handler de click */}
           <img
             src={lightboxImage.url}
             alt={lightboxImage.alt}
+            data-lightbox-img="1"
             onClick={(e) => e.stopPropagation()}
             style={{
               maxWidth: '90vw',
@@ -110,7 +121,8 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
               borderRadius: '8px',
             }}
           />
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
