@@ -1,8 +1,53 @@
 import Link from "next/link";
-import { getApiUrl } from "@/lib/api";
+import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
+import { getApiUrl, getPuebloBySlug } from "@/lib/api";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  metaLocaleLead,
+  seoDescription,
+  seoTitle,
+  titleLocaleSuffix,
+  type SupportedLocale,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const locale = (await getLocale()) as SupportedLocale;
+  const locSuf = titleLocaleSuffix(locale);
+  const path = `/pueblos/${slug}/alertas`;
+
+  let puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  try {
+    const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+    if (pueblo?.nombre) puebloName = pueblo.nombre;
+  } catch {
+    // fallback
+  }
+
+  const title = seoTitle(`Alertas · ${puebloName}${locSuf}`);
+  const description = seoDescription(
+    `${metaLocaleLead(locale)}Alertas activas en ${puebloName}, uno de los pueblos más bonitos de España.`,
+  );
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    robots: { index: false, follow: true },
+  };
+}
 
 type AlertaItem = {
   id: number | string;

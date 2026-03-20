@@ -119,7 +119,7 @@ export default function EntrarPage() {
   return (
     <Suspense fallback={
       <main className="mx-auto max-w-md p-6">
-        <h1 className="text-2xl font-semibold">Entrar</h1>
+        <div className="text-2xl font-semibold" aria-hidden="true">Entrar</div>
         <div className="mt-6 text-center text-gray-600">Cargando...</div>
       </main>
     }>

@@ -22,13 +22,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = "/";
   const homeTitleByLocale: Record<string, string> = {
-    es: "Pueblos, rutas y experiencias en Espana",
-    en: "Villages, routes and experiences in Spain",
-    fr: "Villages, routes et experiences en Espagne",
-    de: "Dorfer, Routen und Erlebnisse in Spanien",
-    pt: "Aldeias, rotas e experiencias em Espanha",
-    it: "Borghi, itinerari ed esperienze in Spagna",
-    ca: "Pobles, rutes i experiencies a Espanya",
+    es: "Los Pueblos Más Bonitos de España — Rutas, experiencias y turismo rural",
+    en: "The Most Beautiful Villages of Spain — Routes, experiences and rural tourism",
+    fr: "Les Plus Beaux Villages d'Espagne — Routes, expériences et tourisme rural",
+    de: "Die Schönsten Dörfer Spaniens — Routen, Erlebnisse und ländlicher Tourismus",
+    pt: "As Aldeias Mais Bonitas de Espanha — Rotas, experiências e turismo rural",
+    it: "I Borghi Più Belli della Spagna — Itinerari, esperienze e turismo rurale",
+    ca: "Els Pobles Més Bonics d'Espanya — Rutes, experiències i turisme rural",
   };
   const homeDescriptionByLocale: Record<string, string> = {
     es: DEFAULT_DESCRIPTION,

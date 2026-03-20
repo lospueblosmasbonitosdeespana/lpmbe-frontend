@@ -23,13 +23,14 @@ function ActualidadContent() {
   const t = useTranslations('actualidad');
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const tipoParam = searchParams.get('tipo') ?? 'TODOS';
+  const tipoRaw = searchParams.get('tipo') ?? 'todos';
+  const tipoParam = tipoRaw.toUpperCase();
   const langQs = `&lang=${encodeURIComponent(locale)}`;
   const TIPOS = [
-    { key: 'TODOS', label: t('all') },
-    { key: 'NOTICIA', label: t('news') },
-    { key: 'EVENTO', label: t('events') },
-    { key: 'ARTICULO', label: t('articles') },
+    { key: 'todos', label: t('all') },
+    { key: 'noticia', label: t('news') },
+    { key: 'evento', label: t('events') },
+    { key: 'articulo', label: t('articles') },
   ];
   const tipoToLabel: Record<string, string> = {
     NOTICIA: t('news'),
@@ -132,9 +133,9 @@ function ActualidadContent() {
         {TIPOS.map((t) => (
           <Link
             key={t.key}
-            href={t.key === 'TODOS' ? '/actualidad' : `/actualidad?tipo=${t.key}`}
+            href={t.key === 'todos' ? '/actualidad' : `/actualidad?tipo=${t.key}`}
             className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-              tipoParam === t.key
+              tipoParam === t.key.toUpperCase()
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-foreground hover:bg-muted/80'
             }`}
