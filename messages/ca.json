@@ -293,7 +293,10 @@
     "myAccount": "El meu compte",
     "management": "Gestió",
     "login": "Entrar",
-    "languageLabel": "Llengua"
+    "languageLabel": "Llengua",
+    "semanaSanta": "Setmana Santa",
+    "appPage": "Baixa l'app",
+    "prensa": "Premsa"
   },
   "footer": {
     "explore": "Explora",
@@ -1526,5 +1529,27 @@
     "sending": "Enviant...",
     "back": "← Enrere",
     "successMessage": "El vostre client de correu s'obrirà. Si no s'obre, si us plau, escriviu-nos directament a"
+  },
+  "pressPage": {
+    "title": "Premsa i mitjans",
+    "intro": "Recursos per a periodistes, mitjans de comunicació i creadors de contingut.",
+    "tabReleases": "Comunicats",
+    "tabMedia": "Mitjans",
+    "tabKit": "Kit de premsa",
+    "mediaMentions": "Mencions als mitjans",
+    "noMedia": "No hi ha mencions registrades.",
+    "noReleases": "No hi ha comunicats disponibles.",
+    "readMore": "Llegir més",
+    "kitTitle": "Kit de premsa",
+    "kitDesc": "Descarrega els recursos oficials per cobrir Els Pobles Més Bonics d'Espanya.",
+    "kitContactTitle": "Contacte de premsa",
+    "kitContactDesc": "Per a entrevistes, informació addicional o sol·licituds d'acreditació.",
+    "latestOfficial": "Últims comunicats",
+    "viewAllNews": "Veure totes les notícies",
+    "backHome": "Tornar a l'inici",
+    "mediaTypeNews": "Notícia",
+    "mediaTypeEvent": "Esdeveniment",
+    "mediaTypeArticle": "Article",
+    "mediaTypePress": "Premsa"
   }
 }

@@ -293,7 +293,10 @@
     "myAccount": "My account",
     "management": "Management",
     "login": "Enter",
-    "languageLabel": "Language"
+    "languageLabel": "Language",
+    "semanaSanta": "Easter Week",
+    "appPage": "Download the app",
+    "prensa": "Press"
   },
   "footer": {
     "explore": "Explore",
@@ -1527,5 +1530,27 @@
     "sending": "Sending...",
     "back": "← Back",
     "successMessage": "Your email client will open. If it does not open, please write directly to us at"
+  },
+  "pressPage": {
+    "title": "Press & Media",
+    "intro": "Resources for journalists, media outlets and content creators.",
+    "tabReleases": "Press releases",
+    "tabMedia": "Media",
+    "tabKit": "Press kit",
+    "mediaMentions": "Media mentions",
+    "noMedia": "No media mentions recorded.",
+    "noReleases": "No press releases available.",
+    "readMore": "Read more",
+    "kitTitle": "Press kit",
+    "kitDesc": "Download official resources for covering The Most Beautiful Villages of Spain.",
+    "kitContactTitle": "Press contact",
+    "kitContactDesc": "For interviews, additional information or accreditation requests.",
+    "latestOfficial": "Latest press releases",
+    "viewAllNews": "See all news",
+    "backHome": "Back to home",
+    "mediaTypeNews": "News",
+    "mediaTypeEvent": "Event",
+    "mediaTypeArticle": "Article",
+    "mediaTypePress": "Press"
   }
 }

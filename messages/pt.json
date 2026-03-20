@@ -293,7 +293,10 @@
     "myAccount": "A minha conta",
     "management": "Gestão",
     "login": "Entrar",
-    "languageLabel": "Língua"
+    "languageLabel": "Língua",
+    "semanaSanta": "Semana Santa",
+    "appPage": "Baixar a app",
+    "prensa": "Imprensa"
   },
   "footer": {
     "explore": "Explorar",
@@ -1526,5 +1529,27 @@
     "sending": "Enviando...",
     "back": "← Voltar",
     "successMessage": "O seu cliente de correio eletrónico abrir-se-á. Se não abrir, escreva-nos diretamente para"
+  },
+  "pressPage": {
+    "title": "Imprensa e média",
+    "intro": "Recursos para jornalistas, meios de comunicação e criadores de conteúdo.",
+    "tabReleases": "Comunicados",
+    "tabMedia": "Média",
+    "tabKit": "Kit de imprensa",
+    "mediaMentions": "Menções nos média",
+    "noMedia": "Sem menções registadas.",
+    "noReleases": "Sem comunicados disponíveis.",
+    "readMore": "Ler mais",
+    "kitTitle": "Kit de imprensa",
+    "kitDesc": "Descarregue os recursos oficiais para cobrir As Aldeias Mais Bonitas de Espanha.",
+    "kitContactTitle": "Contacto de imprensa",
+    "kitContactDesc": "Para entrevistas, informações adicionais ou pedidos de acreditação.",
+    "latestOfficial": "Últimos comunicados",
+    "viewAllNews": "Ver todas as notícias",
+    "backHome": "Voltar ao início",
+    "mediaTypeNews": "Notícia",
+    "mediaTypeEvent": "Evento",
+    "mediaTypeArticle": "Artigo",
+    "mediaTypePress": "Imprensa"
   }
 }

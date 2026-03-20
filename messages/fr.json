@@ -293,7 +293,10 @@
     "myAccount": "Mon compte",
     "management": "Gestion",
     "login": "Entrer",
-    "languageLabel": "Langue"
+    "languageLabel": "Langue",
+    "semanaSanta": "Semaine Sainte",
+    "appPage": "Télécharger l'app",
+    "prensa": "Presse"
   },
   "footer": {
     "explore": "Explorer",
@@ -1526,5 +1529,27 @@
     "sending": "Envoi...",
     "back": "← Retour",
     "successMessage": "Votre client de messagerie s'ouvrira. S'il ne s'ouvre pas, veuillez nous écrire directement à l'adresse suivante"
+  },
+  "pressPage": {
+    "title": "Presse et médias",
+    "intro": "Ressources pour journalistes, médias et créateurs de contenu.",
+    "tabReleases": "Communiqués",
+    "tabMedia": "Médias",
+    "tabKit": "Kit presse",
+    "mediaMentions": "Mentions dans les médias",
+    "noMedia": "Aucune mention enregistrée.",
+    "noReleases": "Aucun communiqué disponible.",
+    "readMore": "Lire la suite",
+    "kitTitle": "Kit de presse",
+    "kitDesc": "Téléchargez les ressources officielles pour couvrir Les Plus Beaux Villages d'Espagne.",
+    "kitContactTitle": "Contact presse",
+    "kitContactDesc": "Pour des interviews, informations supplémentaires ou demandes d'accréditation.",
+    "latestOfficial": "Derniers communiqués",
+    "viewAllNews": "Voir toutes les actualités",
+    "backHome": "Retour à l'accueil",
+    "mediaTypeNews": "Actualité",
+    "mediaTypeEvent": "Événement",
+    "mediaTypeArticle": "Article",
+    "mediaTypePress": "Presse"
   }
 }

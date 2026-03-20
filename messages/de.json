@@ -293,7 +293,10 @@
     "myAccount": "Mein Konto",
     "management": "Verwaltung",
     "login": "Eingabe",
-    "languageLabel": "Sprache"
+    "languageLabel": "Sprache",
+    "semanaSanta": "Karwoche",
+    "appPage": "App herunterladen",
+    "prensa": "Presse"
   },
   "footer": {
     "explore": "Erkunden Sie",
@@ -1526,5 +1529,27 @@
     "sending": "Ich schicke...",
     "back": "← Zurück",
     "successMessage": "Ihr E-Mail-Programm wird sich öffnen. Sollte er sich nicht öffnen, schreiben Sie uns bitte direkt an"
+  },
+  "pressPage": {
+    "title": "Presse & Medien",
+    "intro": "Ressourcen für Journalisten, Medien und Content-Ersteller.",
+    "tabReleases": "Pressemitteilungen",
+    "tabMedia": "Medien",
+    "tabKit": "Pressekit",
+    "mediaMentions": "Medienerwähnungen",
+    "noMedia": "Keine Medienerwähnungen vorhanden.",
+    "noReleases": "Keine Pressemitteilungen verfügbar.",
+    "readMore": "Mehr lesen",
+    "kitTitle": "Pressekit",
+    "kitDesc": "Laden Sie offizielle Ressourcen herunter, um über Die Schönsten Dörfer Spaniens zu berichten.",
+    "kitContactTitle": "Pressekontakt",
+    "kitContactDesc": "Für Interviews, weitere Informationen oder Akkreditierungsanfragen.",
+    "latestOfficial": "Neueste Pressemitteilungen",
+    "viewAllNews": "Alle Nachrichten anzeigen",
+    "backHome": "Zurück zur Startseite",
+    "mediaTypeNews": "Nachricht",
+    "mediaTypeEvent": "Veranstaltung",
+    "mediaTypeArticle": "Artikel",
+    "mediaTypePress": "Presse"
   }
 }

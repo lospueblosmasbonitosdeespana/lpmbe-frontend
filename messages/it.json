@@ -293,7 +293,10 @@
     "myAccount": "Il mio account",
     "management": "Gestione",
     "login": "Entrare",
-    "languageLabel": "Lingua"
+    "languageLabel": "Lingua",
+    "semanaSanta": "Settimana Santa",
+    "appPage": "Scarica l'app",
+    "prensa": "Stampa"
   },
   "footer": {
     "explore": "Esplorare",
@@ -1526,5 +1529,27 @@
     "sending": "Invio...",
     "back": "← Indietro",
     "successMessage": "Il vostro client di posta elettronica si aprirà. Se non si apre, scriveteci direttamente a"
+  },
+  "pressPage": {
+    "title": "Stampa e media",
+    "intro": "Risorse per giornalisti, media e creatori di contenuti.",
+    "tabReleases": "Comunicati",
+    "tabMedia": "Media",
+    "tabKit": "Kit stampa",
+    "mediaMentions": "Menzioni sui media",
+    "noMedia": "Nessuna menzione registrata.",
+    "noReleases": "Nessun comunicato disponibile.",
+    "readMore": "Leggi di più",
+    "kitTitle": "Kit stampa",
+    "kitDesc": "Scarica le risorse ufficiali per coprire I Borghi Più Belli di Spagna.",
+    "kitContactTitle": "Contatto stampa",
+    "kitContactDesc": "Per interviste, ulteriori informazioni o richieste di accreditamento.",
+    "latestOfficial": "Ultimi comunicati",
+    "viewAllNews": "Vedi tutte le notizie",
+    "backHome": "Torna alla home",
+    "mediaTypeNews": "Notizia",
+    "mediaTypeEvent": "Evento",
+    "mediaTypeArticle": "Articolo",
+    "mediaTypePress": "Stampa"
   }
 }

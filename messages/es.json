@@ -293,7 +293,10 @@
     "myAccount": "Mi cuenta",
     "management": "Gestión",
     "login": "Entrar",
-    "languageLabel": "Idioma"
+    "languageLabel": "Idioma",
+    "semanaSanta": "Semana Santa",
+    "appPage": "Descarga la app",
+    "prensa": "Prensa"
   },
   "footer": {
     "explore": "Explorar",
@@ -1527,5 +1530,27 @@
     "puebloDescriptionFallback": "Información, mapa, fotos, puntos de interés y experiencias del pueblo.",
     "rutaDescriptionFallback": "Ruta turística por los pueblos más bonitos de España.",
     "mxDescriptionFallback": "Detalle de la experiencia y sus paradas."
+  },
+  "pressPage": {
+    "title": "Prensa y medios",
+    "intro": "Recursos para periodistas, medios de comunicación y creadores de contenido.",
+    "tabReleases": "Comunicados",
+    "tabMedia": "Medios",
+    "tabKit": "Kit de prensa",
+    "mediaMentions": "Menciones en medios",
+    "noMedia": "No hay menciones registradas.",
+    "noReleases": "No hay comunicados disponibles.",
+    "readMore": "Leer más",
+    "kitTitle": "Kit de prensa",
+    "kitDesc": "Descarga los recursos oficiales para cubrir Los Pueblos más Bonitos de España.",
+    "kitContactTitle": "Contacto de prensa",
+    "kitContactDesc": "Para entrevistas, información adicional o solicitudes de acreditación.",
+    "latestOfficial": "Últimos comunicados",
+    "viewAllNews": "Ver todas las noticias",
+    "backHome": "Volver al inicio",
+    "mediaTypeNews": "Noticia",
+    "mediaTypeEvent": "Evento",
+    "mediaTypeArticle": "Artículo",
+    "mediaTypePress": "Prensa"
   }
 }
