@@ -92,6 +92,12 @@ interface ContentBlockBuilderProps {
   /** Nombre del pueblo (para mostrar en la sección de logos) */
   puebloNombre?: string;
   /**
+   * Cuando true, los bloques con fondo blanco (#ffffff) se renderizan sin background
+   * para integrarse con el fondo de la página web. Usar false para emails/newsletter
+   * donde el fondo blanco explícito es necesario. Por defecto: false.
+   */
+  webMode?: boolean;
+  /**
    * Si true, borra el borrador de localStorage al montar el componente.
    * Usar en editores de páginas YA existentes para evitar que borradores
    * de sesiones anteriores (potencialmente obsoletos) machaquen el contenido actual.
