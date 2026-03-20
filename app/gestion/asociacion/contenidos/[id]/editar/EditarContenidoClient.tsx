@@ -371,6 +371,7 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
               initialHtml={contenidoMd}
               onChange={(html) => setContenidoMd(html)}
               webMode={true}
+              clearDraftOnMount={true}
             />
           </div>
 

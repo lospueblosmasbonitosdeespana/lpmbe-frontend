@@ -92,11 +92,11 @@ interface ContentBlockBuilderProps {
   /** Nombre del pueblo (para mostrar en la sección de logos) */
   puebloNombre?: string;
   /**
-   * Cuando true, los bloques con fondo blanco (#ffffff) se renderizan sin background
-   * para integrarse con el fondo de la página web. Usar false para emails/newsletter
-   * donde el fondo blanco explícito es necesario. Por defecto: false.
+   * Si true, borra el borrador de localStorage al montar el componente.
+   * Usar en editores de páginas YA existentes para evitar que borradores
+   * de sesiones anteriores (potencialmente obsoletos) machaquen el contenido actual.
    */
-  webMode?: boolean;
+  clearDraftOnMount?: boolean;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -476,7 +476,7 @@ const PALETTE_BLOCKS: { type: BlockType; label: string }[] = [
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChange, draftKey, showBrandLogos = true, puebloId, puebloNombre, webMode = false }: ContentBlockBuilderProps) {
+export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChange, draftKey, showBrandLogos = true, puebloId, puebloNombre, webMode = false, clearDraftOnMount = false }: ContentBlockBuilderProps) {
   const [blocks, setBlocks] = useState<ContentBlock[]>(() => initialBlocks?.length ? initialBlocks : []);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reorderPickSourceId, setReorderPickSourceId] = useState<string | null>(null);
@@ -606,6 +606,15 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
   // Check for stored draft
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    // Si clearDraftOnMount=true (edición de página existente), borrar el borrador
+    // obsoleto de sesiones anteriores antes de cargar nada.
+    if (clearDraftOnMount) {
+      localStorage.removeItem(storageKey);
+      setHasDraft(false);
+      return;
+    }
+
     const stored = localStorage.getItem(storageKey);
     if (stored) {
       setHasDraft(true);

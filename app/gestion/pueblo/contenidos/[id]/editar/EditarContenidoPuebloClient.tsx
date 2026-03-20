@@ -510,6 +510,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
               puebloId={puebloId ? Number(puebloId) : undefined}
               webMode={true}
               puebloNombre={puebloNombre ?? undefined}
+              clearDraftOnMount={true}
             />
           </div>
 

@@ -465,7 +465,13 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
             <button
               type="button"
               onClick={() => {
-                // Al volver al constructor, sincronizar por si otro modo editó contenido
+                // Si hay una página existente, borrar el borrador antiguo de localStorage
+                // para que el constructor empiece limpio con el contenido actual.
+                if (existingPageId) {
+                  const draftKey = `lpmbe-contenido-asoc-PAGINA-${categoria || 'nuevo'}-draft`;
+                  localStorage.removeItem(draftKey);
+                  builderHtmlRef.current = '';
+                }
                 setEditorMode('builder');
               }}
               className={`flex items-center gap-2 rounded-lg border-2 px-4 py-2.5 text-left transition-all ${
