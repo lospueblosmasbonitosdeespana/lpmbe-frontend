@@ -24,7 +24,14 @@ export default function LogosAyuntamientosPage() {
   async function fetchGroups() {
     try {
       const res = await fetch('/api/admin/pueblo-logos?grouped=true', { cache: 'no-store' });
-      if (!res.ok) throw new Error('Error cargando logos');
+      if (res.status === 401) {
+        window.location.href = '/entrar';
+        return;
+      }
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        throw new Error(`Error ${res.status}: ${body || 'Error cargando logos'}`);
+      }
       const data = await res.json();
       setGroups(Array.isArray(data) ? data : []);
     } catch (e) {
