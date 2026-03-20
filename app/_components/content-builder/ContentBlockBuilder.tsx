@@ -484,6 +484,14 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
   const [uploadingPuebloLogo, setUploadingPuebloLogo] = useState(false);
   const puebloLogoInputRef = useRef<HTMLInputElement | null>(null);
 
+  // RRSS del pueblo (se carga cuando hay puebloId)
+  const [puebloRrss, setPuebloRrss] = useState<{
+    rrssInstagram?: string | null;
+    rrssFacebook?: string | null;
+    rrssTwitter?: string | null;
+    rrssYoutube?: string | null;
+  } | null>(null);
+
   // Draft
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const [hasDraft, setHasDraft] = useState(false);
@@ -560,6 +568,15 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
     })();
   }, [puebloId]);
 
+  // Cargar RRSS del pueblo cuando hay puebloId
+  useEffect(() => {
+    if (!puebloId) return;
+    fetch(`/api/pueblos/${puebloId}/rrss`, { cache: 'no-store' })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data) setPuebloRrss(data); })
+      .catch(() => {});
+  }, [puebloId]);
+
   // Check for stored draft
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -589,6 +606,13 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
 
   function addBlock(type: BlockType) {
     const b = createBlock(type);
+    // Auto-fill social links with pueblo's configured RRSS (if available)
+    if (type === 'socialLinks' && puebloRrss) {
+      b.socialFacebook = puebloRrss.rrssFacebook || '';
+      b.socialTwitter = puebloRrss.rrssTwitter || '';
+      b.socialInstagram = puebloRrss.rrssInstagram || '';
+      b.socialYoutube = puebloRrss.rrssYoutube || '';
+    }
     setBlocks((prev) => [...prev, b]);
     setSelectedId(b.id);
   }
@@ -1358,6 +1382,24 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                 {/* Social links */}
                 {selectedBlock.type === 'socialLinks' && (
                   <div className="space-y-2 md:col-span-2">
+                    {/* Botón para cargar las RRSS del pueblo automáticamente */}
+                    {puebloRrss && (
+                      <button
+                        type="button"
+                        onClick={() => updateSelected({
+                          socialFacebook: puebloRrss.rrssFacebook || '',
+                          socialTwitter: puebloRrss.rrssTwitter || '',
+                          socialInstagram: puebloRrss.rrssInstagram || '',
+                          socialYoutube: puebloRrss.rrssYoutube || '',
+                        })}
+                        className="flex w-full items-center justify-center gap-2 rounded-md border border-primary/60 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
+                      >
+                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M4 12v-1a8 8 0 0116 0v1"/><path d="M18 18a8 8 0 01-12 0"/><path d="M12 21v-3"/>
+                        </svg>
+                        Cargar redes del pueblo
+                      </button>
+                    )}
                     {(['socialFacebook', 'socialTwitter', 'socialInstagram', 'socialLinkedin', 'socialYoutube'] as const).map((field) => {
                       const labels: Record<string, string> = { socialFacebook: 'Facebook', socialTwitter: 'X/Twitter', socialInstagram: 'Instagram', socialLinkedin: 'LinkedIn', socialYoutube: 'YouTube' };
                       return (
