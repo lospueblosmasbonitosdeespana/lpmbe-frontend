@@ -183,13 +183,17 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
       }
 
       // 2. Actualizar contenido
+      const esPaginaTematica = String(id ?? '').startsWith('page-');
       const payload: any = {
-        tipo,
         titulo: titulo.trim(),
         resumen: resumen.trim() || null,
         contenidoMd,
         estado,
       };
+      // No enviar 'tipo' para páginas temáticas: el DTO solo acepta NOTICIA/EVENTO/ARTICULO/PAGINA
+      if (!esPaginaTematica) {
+        payload.tipo = tipo;
+      }
       if (newCoverUrl) payload.coverUrl = newCoverUrl;
       payload.galleryUrls = normalizedGalleryUrls;
       if (estado === 'PROGRAMADA' && publishedAt) {
