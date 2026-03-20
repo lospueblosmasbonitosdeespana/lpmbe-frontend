@@ -614,6 +614,15 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
     if (initialBlocks?.length) setBlocks(initialBlocks);
   }, [initialBlocks]);
 
+  // Sync blocks → parent onChange on every block change
+  // This ensures the parent always has the current HTML even without explicit saves
+  useEffect(() => {
+    if (blocks.length === 0) return; // Don't overwrite parent with empty on initial mount
+    const html = renderBlocksToHtml(blocks);
+    onChange?.(html);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blocks]);
+
   // ─── Block operations ────────────────────────────────────────────────────────
 
   function addBlock(type: BlockType) {

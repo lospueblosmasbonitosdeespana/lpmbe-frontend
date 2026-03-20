@@ -92,10 +92,9 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           setContenido(page.contenido);
           setCoverUrl(page.coverUrl || null);
           setEstado(page.published ? 'PUBLICADA' : 'BORRADOR');
-          // Cuando hay contenido existente, cambiar a modo HTML para que sea visible
-          if (page.contenido) {
-            setEditorMode('html');
-          }
+          // Mantener el modo constructor aunque haya contenido existente
+          // (el builder recibe initialHtml y puede parsearlo)
+          setEditorMode('builder');
         } else {
           // Limpiar formulario si no existe
           setExistingPageId(null);
