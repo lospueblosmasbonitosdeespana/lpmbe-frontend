@@ -12,6 +12,8 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [lightboxImage, setLightboxImage] = useState<{ url: string; alt: string } | null>(null);
   const [mounted, setMounted] = useState(false);
+  const setLightboxRef = useRef(setLightboxImage);
+  setLightboxRef.current = setLightboxImage;
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -23,30 +25,29 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
       .replace(/&amp;/g, '&');
   }
 
-  // Añadir cursor zoom-in y handler de click a todas las imágenes del HTML renderizado
-  // Solo selecciona imágenes con data-content-img para no capturar las del lightbox
+  // Adjunta handlers de click a las imágenes del contenido renderizado.
+  // Usamos delegación de eventos en el contenedor para evitar problemas con
+  // el ciclo de vida de React (StrictMode doble-mount, cleanup, etc.)
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
-    // Marcar todas las imágenes del contenido
-    const imgs = containerRef.current.querySelectorAll<HTMLImageElement>('img:not([data-lightbox-img])');
-    const handlers: Array<{ img: HTMLImageElement; handler: (e: MouseEvent) => void }> = [];
+    // Marcar imágenes con cursor zoom-in
+    const imgs = container.querySelectorAll<HTMLImageElement>('img');
+    imgs.forEach((img) => { img.style.cursor = 'zoom-in'; });
 
-    imgs.forEach((img) => {
-      img.setAttribute('data-content-img', '1');
-      img.style.cursor = 'zoom-in';
-      const handler = (e: MouseEvent) => {
+    // Un solo listener delegado en el contenedor — sobrevive al ciclo de vida
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'IMG') {
         e.preventDefault();
-        e.stopPropagation();
-        setLightboxImage({ url: img.src, alt: img.alt || '' });
-      };
-      img.addEventListener('click', handler);
-      handlers.push({ img, handler });
-    });
-
-    return () => {
-      handlers.forEach(({ img, handler }) => img.removeEventListener('click', handler));
+        const img = target as HTMLImageElement;
+        setLightboxRef.current({ url: img.src, alt: img.alt || '' });
+      }
     };
+
+    container.addEventListener('click', handleClick);
+    return () => { container.removeEventListener('click', handleClick); };
   }, [processedHtml]);
 
   // ESC para cerrar el lightbox + bloquear scroll
