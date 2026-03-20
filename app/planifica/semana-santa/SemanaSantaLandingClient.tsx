@@ -246,12 +246,12 @@ export default function SemanaSantaLandingClient({
                     />
                   </div>
                   <Link href={`/planifica/semana-santa/pueblo/${p.pueblo.slug}`} className="block">
-                  <div className="relative h-72 bg-muted">
+                  <div className="relative h-72 bg-background">
                     {image ? (
                       <img
                         src={image}
                         alt={p.pueblo.nombre}
-                        className="h-full w-full bg-stone-100 object-contain p-2 transition-transform duration-300 group-hover:scale-[1.02]"
+                        className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-[1.02]"
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center text-muted-foreground">{t('defaultTitle')}</div>
