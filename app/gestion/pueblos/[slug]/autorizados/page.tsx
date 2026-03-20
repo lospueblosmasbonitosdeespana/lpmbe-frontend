@@ -5,6 +5,7 @@ import Link from 'next/link';
 import AutorizadosClient from './AutorizadosClient';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 export const revalidate = 0;
 
 export default async function AutorizadosPage({

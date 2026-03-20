@@ -7,6 +7,7 @@ import ClubRecursos from './ClubRecursos.client';
 import MetricasResumen from './MetricasResumen.client';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 export const revalidate = 0;
 
 export default async function ClubGestionPage({

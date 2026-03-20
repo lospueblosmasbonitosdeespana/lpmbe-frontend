@@ -4,6 +4,7 @@ import Link from 'next/link';
 import ContactoPrivacidadClient from './ContactoPrivacidadClient';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function ContactoPrivacidadPage() {
   const me = await getMeServer();

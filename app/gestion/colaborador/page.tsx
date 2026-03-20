@@ -4,6 +4,7 @@ import Link from 'next/link';
 import ColaboradorClient from './ColaboradorClient';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 export const revalidate = 0;
 
 export default async function ColaboradorPage() {

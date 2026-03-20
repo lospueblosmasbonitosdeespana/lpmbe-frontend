@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import SeasonalEventForm from './SeasonalEventForm.client';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function AppEventoActivoPage() {
   const me = await getMeServer();

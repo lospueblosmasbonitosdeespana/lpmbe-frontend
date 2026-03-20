@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function NotasPrensaNewsletterPage() {
   const me = await getMeServer();

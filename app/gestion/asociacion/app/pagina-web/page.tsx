@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import PaginaWebAppForm from './PaginaWebAppForm.client';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function AppPaginaWebPage() {
   const me = await getMeServer();

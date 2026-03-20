@@ -2,6 +2,7 @@ import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function NoticiasGlobalesPage() {
   const me = await getMeServer();

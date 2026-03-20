@@ -4,6 +4,7 @@ import Link from 'next/link';
 import MisRecursosClient from './MisRecursosClient';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 export const revalidate = 0;
 
 const ALLOWED_ROLES = ['COLABORADOR', 'ALCALDE', 'ADMIN'];

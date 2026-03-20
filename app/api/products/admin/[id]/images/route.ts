@@ -3,6 +3,7 @@ import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 export const revalidate = 0;
 
 const API_BASE = getApiUrl();

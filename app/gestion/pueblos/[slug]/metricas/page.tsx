@@ -6,6 +6,7 @@ import Link from 'next/link';
 import PuebloMetricasDashboard from './PuebloMetricasDashboard';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 export const revalidate = 0;
 
 export default async function PuebloMetricasPage({

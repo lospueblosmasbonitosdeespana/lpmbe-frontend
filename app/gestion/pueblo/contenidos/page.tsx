@@ -6,6 +6,7 @@ import { headers } from 'next/headers';
 import ContenidoItemPueblo from './ContenidoItemPueblo';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 export const revalidate = 0;
 
 async function fetchContenidosPueblo(puebloId: number, tipo?: string) {

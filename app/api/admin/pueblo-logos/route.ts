@@ -4,6 +4,7 @@ import { getApiUrl } from '@/lib/api';
 import { fetchWithTimeout } from '@/lib/fetch-safe';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export async function GET(req: Request) {
   const token = await getToken();

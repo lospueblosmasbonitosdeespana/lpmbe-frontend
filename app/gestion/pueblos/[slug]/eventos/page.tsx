@@ -6,6 +6,7 @@ import { getPuebloBySlug } from '@/lib/api';
 import EventosListAdminClient from './EventosListAdmin.client';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function EventosPuebloPage({
   params,

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { getPuebloBySlug } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function NoticiasPuebloPage({
   params,

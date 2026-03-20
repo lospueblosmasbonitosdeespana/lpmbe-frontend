@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import AlertasList from './AlertasList.client';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 export const revalidate = 0;
 
 export default async function AlertasGlobalesPage() {

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import PressContactsManagerClient from './PressContactsManagerClient';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function PressContactsManagerPage() {
   const me = await getMeServer();

@@ -3,6 +3,7 @@ import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export async function POST(req: Request) {
   const token = await getToken();

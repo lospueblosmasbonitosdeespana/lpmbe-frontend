@@ -4,6 +4,7 @@ import RutaForm from '../../RutaForm.client';
 import { headers } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 export const revalidate = 0;
 
 async function fetchRuta(rutaId: string) {

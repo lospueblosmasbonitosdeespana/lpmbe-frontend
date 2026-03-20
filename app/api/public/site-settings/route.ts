@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getApiUrl } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 export const revalidate = 0;
 
 export async function GET() {

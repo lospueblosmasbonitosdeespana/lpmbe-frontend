@@ -4,6 +4,7 @@ import Link from 'next/link';
 import NotasPrensaNewsletterClient from '../NotasPrensaNewsletterClient';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function NotasPrensaPage() {
   const me = await getMeServer();

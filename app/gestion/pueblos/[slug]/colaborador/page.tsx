@@ -5,6 +5,7 @@ import Link from 'next/link';
 import ColaboradorPuebloClient from './ColaboradorPuebloClient';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 export const revalidate = 0;
 
 export default async function ColaboradorPuebloPage({

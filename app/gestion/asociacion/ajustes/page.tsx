@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import AjustesClient from './AjustesClient';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function AjustesPage() {
   const me = await getMeServer();

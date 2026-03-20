@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import RecursosAsociacionClient from './RecursosAsociacionClient';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function RecursosAsociacionPage() {
   const me = await getMeServer();

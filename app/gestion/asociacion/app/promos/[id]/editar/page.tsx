@@ -5,6 +5,7 @@ import AppPromoForm from '../../AppPromoForm.client';
 import type { AppPromoItem } from '../../AppPromosList.client';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 async function getPromo(id: number): Promise<AppPromoItem | null> {
   const { getApiUrl } = await import('@/lib/api');

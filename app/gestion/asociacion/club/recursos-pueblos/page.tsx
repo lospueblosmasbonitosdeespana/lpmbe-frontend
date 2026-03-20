@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import RecursosPueblosClient from './RecursosPueblosClient';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function RecursosPueblosPage() {
   const me = await getMeServer();

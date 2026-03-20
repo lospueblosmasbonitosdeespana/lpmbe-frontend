@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import AppPromosList from './AppPromosList.client';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function AppPromosPage() {
   const me = await getMeServer();

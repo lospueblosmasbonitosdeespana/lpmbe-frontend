@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import ContenidoItem from './ContenidoItem';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 export const revalidate = 0;
 
 type TematicaPage = {

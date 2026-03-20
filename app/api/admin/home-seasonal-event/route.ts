@@ -5,6 +5,7 @@ import { getApiUrl } from '@/lib/api';
 const VALID_EVENTS = ['SEMANA_SANTA', 'NOCHE_ROMANTICA', 'NAVIDAD'] as const;
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export async function GET() {
   const token = await getToken();

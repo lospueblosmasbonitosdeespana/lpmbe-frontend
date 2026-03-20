@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import AppPromoForm from '../AppPromoForm.client';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function NuevaAppPromoPage() {
   const me = await getMeServer();

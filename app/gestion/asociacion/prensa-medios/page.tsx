@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import PrensaMediosForm from './PrensaMediosForm.client';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function PrensaMediosPage() {
   const me = await getMeServer();

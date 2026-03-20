@@ -22,6 +22,7 @@ import {
 } from '../../_components/GestionIcons';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 export const revalidate = 0;
 
 function GridCard({
