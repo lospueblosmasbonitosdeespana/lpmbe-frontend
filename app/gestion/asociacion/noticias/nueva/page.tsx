@@ -128,14 +128,14 @@ export default function NuevaNoticiaGlobalPage() {
           <p className="text-xs text-blue-700 bg-blue-50 rounded-md px-3 py-1.5">
             Al guardar, el contenido se traduce automáticamente a 7 idiomas con DeepL para SEO multilingüe.
           </p>
-          {editorMode === 'builder' && (
+          <div style={{ display: editorMode === 'builder' ? undefined : 'none' }}>
             <ContentBlockBuilder
               draftKey="lpmbe-noticia-global-draft"
               initialHtml={contenido}
               onChange={(html) => setContenido(html)}
               webMode={true}
             />
-          )}
+          </div>
           {editorMode === 'edit' && (
             <TipTapEditor content={contenido} onChange={setContenido}
               onUploadImage={async (f) => { setUploading(true); try { const { uploadImageToR2 } = await import('@/src/lib/uploadHelper'); const { url } = await uploadImageToR2(f, 'noticias-global', '/api/media/upload'); return url; } finally { setUploading(false); } }}

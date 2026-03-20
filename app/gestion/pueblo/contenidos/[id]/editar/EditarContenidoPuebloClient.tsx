@@ -501,9 +501,8 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
             Al guardar, el contenido se traduce automáticamente a 7 idiomas (ES, EN, FR, DE, PT, IT, CA) con DeepL para SEO multilingüe.
           </p>
 
-          {editorMode === 'builder' && (
+          <div style={{ display: editorMode === 'builder' ? undefined : 'none' }}>
             <ContentBlockBuilder
-              key={loading ? 'builder-loading' : `builder-${id}`}
               draftKey={`lpmbe-editar-pueblo-contenido-${id}-draft`}
               initialHtml={contenidoMd}
               onChange={(html) => setContenidoMd(html)}
@@ -512,7 +511,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
               webMode={true}
               puebloNombre={puebloNombre ?? undefined}
             />
-          )}
+          </div>
 
           {editorMode === 'edit' && (
             <TipTapEditor

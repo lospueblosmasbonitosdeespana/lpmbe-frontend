@@ -453,7 +453,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
             Al guardar, el contenido se traduce automáticamente a 7 idiomas (ES, EN, FR, DE, PT, IT, CA) con DeepL para SEO multilingüe.
           </p>
 
-          {editorMode === 'builder' && (
+          <div style={{ display: editorMode === 'builder' ? undefined : 'none' }}>
             <ContentBlockBuilder
               draftKey={`lpmbe-contenido-pueblo-${puebloId}-${tipo}-draft`}
               initialHtml={contenido}
@@ -463,7 +463,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
               puebloNombre={puebloNombre}
               webMode={true}
             />
-          )}
+          </div>
 
           {/* Modo Editor - TipTap */}
           {editorMode === 'edit' && (

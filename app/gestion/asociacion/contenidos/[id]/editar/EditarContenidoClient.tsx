@@ -365,15 +365,14 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
             Al guardar, el contenido se traduce automáticamente a 7 idiomas (ES, EN, FR, DE, PT, IT, CA) con DeepL para SEO multilingüe.
           </p>
 
-          {editorMode === 'builder' && (
+          <div style={{ display: editorMode === 'builder' ? undefined : 'none' }}>
             <ContentBlockBuilder
-              key={loading ? 'builder-loading' : `builder-${id}`}
               draftKey={`lpmbe-editar-asoc-contenido-${id}-draft`}
               initialHtml={contenidoMd}
               onChange={(html) => setContenidoMd(html)}
               webMode={true}
             />
-          )}
+          </div>
 
           {editorMode === 'edit' && (
             <TipTapEditor

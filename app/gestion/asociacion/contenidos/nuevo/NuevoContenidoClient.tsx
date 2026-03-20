@@ -504,25 +504,16 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
             Al guardar, el contenido se traduce automáticamente a 7 idiomas (ES, EN, FR, DE, PT, IT, CA) con DeepL para SEO multilingüe.
           </p>
 
-          {/* Modo Constructor visual */}
-          {editorMode === 'builder' && (
-            <>
-              {existingPageId && (
-                <div className="mb-3 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
-                  ⚠️ <strong>El constructor empieza en blanco.</strong> El contenido guardado anteriormente no se puede cargar como bloques.
-                  Si guardas ahora, el contenido actual se <strong>reemplazará</strong> por lo que construyas aquí.
-                  Para editar el texto existente, usa el <button type="button" className="underline font-semibold" onClick={() => setEditorMode('html')}>Editor HTML</button> o el <button type="button" className="underline font-semibold" onClick={() => setEditorMode('edit')}>Editor TipTap</button>.
-                </div>
-              )}
-              <ContentBlockBuilder
-                key={loadingPage ? 'builder-loading' : `builder-asoc-${categoria || 'nuevo'}`}
-                draftKey={`lpmbe-contenido-asoc-PAGINA-${categoria || 'nuevo'}-draft`}
-                initialHtml={existingPageId ? '' : contenido}
-                onChange={(html) => setContenido(html)}
-                webMode={true}
-              />
-            </>
-          )}
+          {/* Constructor visual: siempre montado, oculto con CSS cuando no activo.
+              Esto preserva los bloques al cambiar de pestaña (evita destruir/recrear el componente). */}
+          <div style={{ display: editorMode === 'builder' ? undefined : 'none' }}>
+            <ContentBlockBuilder
+              draftKey={`lpmbe-contenido-asoc-PAGINA-${categoria || 'nuevo'}-draft`}
+              initialHtml=""
+              onChange={(html) => setContenido(html)}
+              webMode={true}
+            />
+          </div>
 
           {/* Modo Editor - TipTap */}
           {editorMode === 'edit' && (
