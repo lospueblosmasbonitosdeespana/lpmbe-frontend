@@ -5,9 +5,10 @@ import { useState, useEffect } from 'react';
 import CoverPicker from '@/app/_components/media/CoverPicker';
 import TipTapEditor from '@/app/_components/editor/TipTapEditor';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
+import ContentBlockBuilder from '@/app/_components/content-builder/ContentBlockBuilder';
 import { datetimeLocalToIsoUtc } from '@/app/_lib/dates';
 
-type EditorMode = 'edit' | 'html' | 'preview';
+type EditorMode = 'builder' | 'edit' | 'html' | 'preview';
 
 type NuevoContenidoPuebloClientProps = {
   puebloId: number;
@@ -46,8 +47,8 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Sistema de 3 modos: Editor TipTap, HTML directo, Vista previa
-  const [editorMode, setEditorMode] = useState<EditorMode>('html');
+  // Sistema de 4 modos: Constructor visual, Editor TipTap, HTML directo, Vista previa
+  const [editorMode, setEditorMode] = useState<EditorMode>('builder');
 
   // Limpiar formulario cuando cambia la categoría (ya no se carga página existente)
   // Ahora se permiten hasta 4 páginas por categoría
@@ -416,46 +417,48 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
           )}
         </div>
 
-        {/* SISTEMA DE 3 MODOS: Editor, HTML, Vista previa */}
+        {/* SISTEMA DE 4 MODOS: Constructor, Editor, HTML, Vista previa */}
         <div className="space-y-2">
           <label className="block text-sm font-medium">Contenido</label>
           
           {/* Botones de modo */}
-          <div className="flex gap-2 mb-3">
-            <button
-              type="button"
-              onClick={() => setEditorMode('edit')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                editorMode === 'edit'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Editor
+          <div className="flex flex-wrap gap-2 mb-3">
+            <button type="button" onClick={() => setEditorMode('builder')}
+              className={`flex items-center gap-2 rounded-lg border-2 px-4 py-2.5 text-left transition-all ${editorMode === 'builder' ? 'border-primary bg-primary text-primary-foreground shadow-md' : 'border-border bg-background hover:border-primary/50 hover:bg-muted/40'}`}>
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+              </svg>
+              <span>
+                <span className="block text-sm font-bold leading-tight">Constructor visual</span>
+                <span className={`block text-xs leading-tight ${editorMode === 'builder' ? 'opacity-80' : 'text-muted-foreground'}`}>Bloques arrastrables</span>
+              </span>
             </button>
-            <button
-              type="button"
-              onClick={() => setEditorMode('html')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                editorMode === 'html'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
+            <button type="button" onClick={() => setEditorMode('edit')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              Editor TipTap
+            </button>
+            <button type="button" onClick={() => setEditorMode('html')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'html' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
               HTML
             </button>
-            <button
-              type="button"
-              onClick={() => setEditorMode('preview')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                editorMode === 'preview'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
+            <button type="button" onClick={() => setEditorMode('preview')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'preview' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
               Vista previa
             </button>
           </div>
+
+          <p className="text-xs text-blue-700 bg-blue-50 rounded-md px-3 py-1.5">
+            Al guardar, el contenido se traduce automáticamente a 7 idiomas (ES, EN, FR, DE, PT, IT, CA) con DeepL para SEO multilingüe.
+          </p>
+
+          {editorMode === 'builder' && (
+            <ContentBlockBuilder
+              draftKey={`lpmbe-contenido-pueblo-${puebloId}-${tipo}-draft`}
+              initialHtml={contenido}
+              onChange={(html) => setContenido(html)}
+            />
+          )}
 
           {/* Modo Editor - TipTap */}
           {editorMode === 'edit' && (
@@ -472,7 +475,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
           {editorMode === 'html' && (
             <div className="space-y-2">
               <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
-                Modo HTML: pega aquí código HTML directamente. Útil para contenido complejo con grids, tarjetas o enlaces externos.
+                Modo HTML: pega aquí código HTML directamente.
               </p>
               <textarea
                 value={contenido}
