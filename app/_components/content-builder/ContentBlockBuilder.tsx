@@ -215,12 +215,43 @@ function renderBlocksToHtml(blocks: ContentBlock[]): string {
         parts.push(`<div style="${wrapStyle}">${b.content || ''}</div>`);
       }
     } else if (b.type === 'socialLinks') {
+      const iconSize = 40;
       const links: string[] = [];
-      if (b.socialFacebook) links.push(`<a href="${escHtml(b.socialFacebook)}" style="margin:0 6px;color:#1877F2;font-weight:600;text-decoration:none;">Facebook</a>`);
-      if (b.socialTwitter) links.push(`<a href="${escHtml(b.socialTwitter)}" style="margin:0 6px;color:#000;font-weight:600;text-decoration:none;">X/Twitter</a>`);
-      if (b.socialInstagram) links.push(`<a href="${escHtml(b.socialInstagram)}" style="margin:0 6px;color:#E1306C;font-weight:600;text-decoration:none;">Instagram</a>`);
-      if (b.socialLinkedin) links.push(`<a href="${escHtml(b.socialLinkedin)}" style="margin:0 6px;color:#0077B5;font-weight:600;text-decoration:none;">LinkedIn</a>`);
-      if (b.socialYoutube) links.push(`<a href="${escHtml(b.socialYoutube)}" style="margin:0 6px;color:#FF0000;font-weight:600;text-decoration:none;">YouTube</a>`);
+      // Facebook
+      if (b.socialFacebook) links.push(
+        `<a href="${escHtml(b.socialFacebook)}" style="display:inline-block;margin:0 6px;text-decoration:none;" title="Facebook">` +
+        `<table cellpadding="0" cellspacing="0" style="display:inline-table;"><tr><td style="background:#1877F2;border-radius:50%;width:${iconSize}px;height:${iconSize}px;text-align:center;vertical-align:middle;">` +
+        `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/facebook.svg" width="20" height="20" style="filter:invert(1);display:block;margin:10px auto;" alt="Facebook" />` +
+        `</td></tr></table></a>`
+      );
+      // X / Twitter
+      if (b.socialTwitter) links.push(
+        `<a href="${escHtml(b.socialTwitter)}" style="display:inline-block;margin:0 6px;text-decoration:none;" title="X">` +
+        `<table cellpadding="0" cellspacing="0" style="display:inline-table;"><tr><td style="background:#000000;border-radius:50%;width:${iconSize}px;height:${iconSize}px;text-align:center;vertical-align:middle;">` +
+        `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/x.svg" width="20" height="20" style="filter:invert(1);display:block;margin:10px auto;" alt="X" />` +
+        `</td></tr></table></a>`
+      );
+      // Instagram
+      if (b.socialInstagram) links.push(
+        `<a href="${escHtml(b.socialInstagram)}" style="display:inline-block;margin:0 6px;text-decoration:none;" title="Instagram">` +
+        `<table cellpadding="0" cellspacing="0" style="display:inline-table;"><tr><td style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border-radius:50%;width:${iconSize}px;height:${iconSize}px;text-align:center;vertical-align:middle;">` +
+        `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/instagram.svg" width="20" height="20" style="filter:invert(1);display:block;margin:10px auto;" alt="Instagram" />` +
+        `</td></tr></table></a>`
+      );
+      // LinkedIn
+      if (b.socialLinkedin) links.push(
+        `<a href="${escHtml(b.socialLinkedin)}" style="display:inline-block;margin:0 6px;text-decoration:none;" title="LinkedIn">` +
+        `<table cellpadding="0" cellspacing="0" style="display:inline-table;"><tr><td style="background:#0077B5;border-radius:50%;width:${iconSize}px;height:${iconSize}px;text-align:center;vertical-align:middle;">` +
+        `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/linkedin.svg" width="20" height="20" style="filter:invert(1);display:block;margin:10px auto;" alt="LinkedIn" />` +
+        `</td></tr></table></a>`
+      );
+      // YouTube
+      if (b.socialYoutube) links.push(
+        `<a href="${escHtml(b.socialYoutube)}" style="display:inline-block;margin:0 6px;text-decoration:none;" title="YouTube">` +
+        `<table cellpadding="0" cellspacing="0" style="display:inline-table;"><tr><td style="background:#FF0000;border-radius:50%;width:${iconSize}px;height:${iconSize}px;text-align:center;vertical-align:middle;">` +
+        `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/youtube.svg" width="20" height="20" style="filter:invert(1);display:block;margin:10px auto;" alt="YouTube" />` +
+        `</td></tr></table></a>`
+      );
       if (links.length) {
         parts.push(`<div style="${wrapStyle}text-align:center;">${links.join('')}</div>`);
       }

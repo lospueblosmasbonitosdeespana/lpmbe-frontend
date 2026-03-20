@@ -416,20 +416,21 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="40%" valign="top" style="padding:0 12px 0 0;"><img src="${escapeHtml(url)}" alt="" style="width:100%;height:auto;border-radius:8px;display:block;" /></td><td width="60%" valign="top" style="font-size:15px;line-height:1.6;color:${textColor};">${text}</td></tr></table></div>`;
       }
       if (block.type === 'socialLinks') {
-        const links: { url: string; label: string; color: string }[] = [];
-        if (block.socialFacebook) links.push({ url: block.socialFacebook, label: 'Facebook', color: '#1877F2' });
-        if (block.socialTwitter) links.push({ url: block.socialTwitter, label: 'X / Twitter', color: '#000' });
-        if (block.socialInstagram) links.push({ url: block.socialInstagram, label: 'Instagram', color: '#E4405F' });
-        if (block.socialLinkedin) links.push({ url: block.socialLinkedin, label: 'LinkedIn', color: '#0A66C2' });
-        if (block.socialYoutube) links.push({ url: block.socialYoutube, label: 'YouTube', color: '#FF0000' });
-        if (!links.length) return '';
-        const items = links
-          .map(
-            (l) =>
-              `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:0 6px;padding:8px 14px;background:${l.color};color:#fff;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;">${escapeHtml(l.label)}</a>`,
-          )
-          .join('');
-        return `<div style="${boxStyle}"><p style="margin:0;text-align:${align};">${items}</p></div>`;
+        const iconSize = 40;
+        const makeIcon = (url: string, bgColor: string, iconSlug: string, label: string) =>
+          `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:0 6px;text-decoration:none;" title="${label}">` +
+          `<table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table;border-collapse:collapse;"><tr>` +
+          `<td style="background:${bgColor};border-radius:50%;width:${iconSize}px;height:${iconSize}px;text-align:center;vertical-align:middle;padding:0;">` +
+          `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/${iconSlug}.svg" width="20" height="20" style="filter:invert(1);display:block;margin:10px auto;" alt="${label}" />` +
+          `</td></tr></table></a>`;
+        const items: string[] = [];
+        if (block.socialFacebook) items.push(makeIcon(block.socialFacebook, '#1877F2', 'facebook', 'Facebook'));
+        if (block.socialTwitter) items.push(makeIcon(block.socialTwitter, '#000000', 'x', 'X'));
+        if (block.socialInstagram) items.push(makeIcon(block.socialInstagram, 'linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)', 'instagram', 'Instagram'));
+        if (block.socialLinkedin) items.push(makeIcon(block.socialLinkedin, '#0077B5', 'linkedin', 'LinkedIn'));
+        if (block.socialYoutube) items.push(makeIcon(block.socialYoutube, '#FF0000', 'youtube', 'YouTube'));
+        if (!items.length) return '';
+        return `<div style="${boxStyle}"><p style="margin:0;text-align:${align};">${items.join('')}</p></div>`;
       }
       if (block.type === 'countdown') {
         const target = block.countdownDate ? new Date(block.countdownDate) : new Date();
