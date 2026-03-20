@@ -99,6 +99,12 @@ const ACCESOS = [
     icon: <IconNewsletter />,
   },
   {
+    href: '/gestion/asociacion/logos-ayuntamientos',
+    title: 'Logos de Ayuntamientos',
+    description: 'Logos subidos por los alcaldes para usar en el constructor. Descárgalos para eventos y publicaciones.',
+    icon: <span className="text-2xl">🏛</span>,
+  },
+  {
     href: '/gestion/asociacion/datos',
     title: 'Datos',
     description: 'Métricas, clientes, suscriptores newsletter',

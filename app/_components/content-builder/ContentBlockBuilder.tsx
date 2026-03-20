@@ -74,6 +74,12 @@ interface ContentBlockBuilderProps {
   onChange?: (html: string) => void;
   /** Clave para persistir borrador en localStorage */
   draftKey?: string;
+  /** Si es false, oculta la librería de logos de marca (asociación). Por defecto true. */
+  showBrandLogos?: boolean;
+  /** ID del pueblo para mostrar y gestionar logos propios del ayuntamiento */
+  puebloId?: number;
+  /** Nombre del pueblo (para mostrar en la sección de logos) */
+  puebloNombre?: string;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -397,7 +403,7 @@ const PALETTE_BLOCKS: { type: BlockType; label: string }[] = [
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChange, draftKey }: ContentBlockBuilderProps) {
+export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChange, draftKey, showBrandLogos = true, puebloId, puebloNombre }: ContentBlockBuilderProps) {
   const [blocks, setBlocks] = useState<ContentBlock[]>(() => initialBlocks?.length ? initialBlocks : []);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reorderPickSourceId, setReorderPickSourceId] = useState<string | null>(null);
@@ -416,10 +422,16 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
   const [tplName, setTplName] = useState('');
   const [tplSaving, setTplSaving] = useState(false);
 
-  // Logos
+  // Logos de marca (asociación)
   const [logos, setLogos] = useState<{ id: number; nombre: string; url: string }[]>([]);
   const [showLogos, setShowLogos] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  // Logos del ayuntamiento (pueblo)
+  const [puebloLogos, setPuebloLogos] = useState<{ id: number; nombre: string; url: string }[]>([]);
+  const [showPuebloLogos, setShowPuebloLogos] = useState(false);
+  const [uploadingPuebloLogo, setUploadingPuebloLogo] = useState(false);
+  const puebloLogoInputRef = useRef<HTMLInputElement | null>(null);
 
   // Draft
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
@@ -437,10 +449,14 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
   useEffect(() => {
     (async () => {
       try {
-        const [tplRes, logosRes] = await Promise.all([
+        const fetches: Promise<Response>[] = [
           fetch('/api/admin/newsletter/templates?limit=200', { cache: 'no-store' }),
           fetch('/api/admin/logos', { cache: 'no-store' }),
-        ]);
+        ];
+        if (puebloId) {
+          fetches.push(fetch(`/api/admin/pueblo-logos/pueblo/${puebloId}`, { cache: 'no-store' }));
+        }
+        const [tplRes, logosRes, puebloLogosRes] = await Promise.all(fetches);
         if (tplRes.ok) {
           const items = await tplRes.json().catch(() => []);
           if (Array.isArray(items)) {
@@ -477,11 +493,21 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
             })).filter((l) => l.url));
           }
         }
+        if (puebloLogosRes?.ok) {
+          const data = await puebloLogosRes.json().catch(() => []);
+          if (Array.isArray(data)) {
+            setPuebloLogos(data.map((l: Record<string, unknown>) => ({
+              id: Number(l.id || 0),
+              nombre: String(l.nombre || ''),
+              url: String(l.url || ''),
+            })).filter((l) => l.url));
+          }
+        }
       } catch {
         // non-critical
       }
     })();
-  }, []);
+  }, [puebloId]);
 
   // Check for stored draft
   useEffect(() => {
@@ -628,6 +654,64 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
       setUploadingLogo(false);
       if (logoInputRef.current) logoInputRef.current.value = '';
     }
+  }
+
+  async function uploadPuebloLogo(file: File) {
+    if (!puebloId) return;
+    setUploadingPuebloLogo(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', `pueblos/${puebloId}/logos`);
+      const uploadRes = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
+      const uploadData = await uploadRes.json().catch(() => ({})) as Record<string, unknown>;
+      if (!uploadRes.ok || !uploadData.url) throw new Error((uploadData.error as string) || 'Error subiendo logo');
+      const url = String(uploadData.url);
+      const nombre = file.name.replace(/\.[^.]+$/, '');
+      const saveRes = await fetch('/api/admin/pueblo-logos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ puebloId, nombre, url }),
+      });
+      if (!saveRes.ok) {
+        const errData = await saveRes.json().catch(() => ({})) as Record<string, unknown>;
+        throw new Error(String(errData.message || 'Error guardando logo'));
+      }
+      const saved = await saveRes.json().catch(() => ({})) as Record<string, unknown>;
+      setPuebloLogos((prev) => [...prev, { id: Number(saved.id || Date.now()), nombre, url }]);
+      setMsg(`Logo "${nombre}" guardado.`);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Error subiendo logo');
+    } finally {
+      setUploadingPuebloLogo(false);
+      if (puebloLogoInputRef.current) puebloLogoInputRef.current.value = '';
+    }
+  }
+
+  async function deletePuebloLogo(id: number) {
+    try {
+      await fetch(`/api/admin/pueblo-logos/${id}`, { method: 'DELETE' });
+      setPuebloLogos((prev) => prev.filter((l) => l.id !== id));
+    } catch {
+      setErr('Error eliminando logo');
+    }
+  }
+
+  function printContent() {
+    const html = renderBlocksToHtml(blocks);
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Imprimir contenido</title>
+<style>
+  body { font-family: Georgia, serif; max-width: 800px; margin: 0 auto; padding: 32px; color: #333; }
+  img { max-width: 100%; height: auto; }
+  h1,h2,h3 { margin: 1em 0 0.5em; }
+  p { line-height: 1.6; margin: 0.5em 0 1em; }
+  table { width: 100%; border-collapse: collapse; }
+  @media print { body { padding: 0; } }
+</style></head><body>${html}</body></html>`);
+    win.document.close();
+    setTimeout(() => win.print(), 400);
   }
 
   // ─── Draft ───────────────────────────────────────────────────────────────────
@@ -790,6 +874,11 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
           </button>
         )}
         {draftSavedAt && <span className="text-xs text-muted-foreground">Guardado: {draftSavedAt}</span>}
+        <button type="button" onClick={printContent} title="Imprimir / Exportar PDF"
+          className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-1.5">
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V2h12v7"/><rect x="6" y="13" width="12" height="9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/></svg>
+          Imprimir / PDF
+        </button>
       </div>
 
       {/* Template Gallery */}
@@ -906,40 +995,84 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
             </div>
           </div>
 
-          {/* Logos */}
-          <div>
-            <button type="button" onClick={() => setShowLogos((v) => !v)}
-              className="flex w-full items-center justify-between rounded-md border border-border bg-background px-2 py-2 text-xs font-semibold hover:bg-muted/50">
-              <span>Logos de marca</span>
-              <span>{showLogos ? '▲' : '▼'}</span>
-            </button>
-            {showLogos && (
-              <div className="mt-2 space-y-2">
-                {logos.length === 0 && <p className="text-[11px] text-muted-foreground">No hay logos guardados.</p>}
-                <div className="grid grid-cols-2 gap-1.5">
-                  {logos.map((logo) => (
-                    <div key={logo.id} className="group relative overflow-hidden rounded border border-border bg-background p-1.5"
-                      draggable
-                      onDragStart={(e) => { e.dataTransfer.setData('text/builder-logo-url', logo.url); e.dataTransfer.setData('text/builder-logo-name', logo.nombre); }}>
-                      <img src={logo.url} alt={logo.nombre} className="mx-auto h-10 max-w-full object-contain" />
-                      <p className="mt-1 truncate text-center text-[10px] text-muted-foreground">{logo.nombre}</p>
-                      <button type="button"
-                        onClick={() => { const b = createBlock('image', { url: logo.url, content: logo.nombre, align: 'center' }); setBlocks((p) => [...p, b]); setSelectedId(b.id); onChange?.(renderBlocksToHtml([...blocks, b])); }}
-                        className="absolute right-1 top-1 hidden rounded bg-primary px-1 py-0.5 text-[10px] font-bold text-white group-hover:block">+</button>
-                    </div>
-                  ))}
+          {/* Logos de marca (solo para asociación) */}
+          {showBrandLogos && (
+            <div>
+              <button type="button" onClick={() => setShowLogos((v) => !v)}
+                className="flex w-full items-center justify-between rounded-md border border-border bg-background px-2 py-2 text-xs font-semibold hover:bg-muted/50">
+                <span>Logos de marca</span>
+                <span>{showLogos ? '▲' : '▼'}</span>
+              </button>
+              {showLogos && (
+                <div className="mt-2 space-y-2">
+                  {logos.length === 0 && <p className="text-[11px] text-muted-foreground">No hay logos guardados.</p>}
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {logos.map((logo) => (
+                      <div key={logo.id} className="group relative overflow-hidden rounded border border-border bg-background p-1.5"
+                        draggable
+                        onDragStart={(e) => { e.dataTransfer.setData('text/builder-logo-url', logo.url); e.dataTransfer.setData('text/builder-logo-name', logo.nombre); }}>
+                        <img src={logo.url} alt={logo.nombre} className="mx-auto h-10 max-w-full object-contain" />
+                        <p className="mt-1 truncate text-center text-[10px] text-muted-foreground">{logo.nombre}</p>
+                        <button type="button"
+                          onClick={() => { const b = createBlock('image', { url: logo.url, content: logo.nombre, align: 'center' }); setBlocks((p) => [...p, b]); setSelectedId(b.id); onChange?.(renderBlocksToHtml([...blocks, b])); }}
+                          className="absolute right-1 top-1 hidden rounded bg-primary px-1 py-0.5 text-[10px] font-bold text-white group-hover:block">+</button>
+                      </div>
+                    ))}
+                  </div>
+                  <input ref={logoInputRef} type="file" accept="image/*" className="hidden"
+                    onChange={async (e) => { const file = e.target.files?.[0]; if (file) await uploadLogo(file); }} />
+                  <button type="button" disabled={uploadingLogo} onClick={() => logoInputRef.current?.click()}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed px-2 py-1.5 text-[11px] font-medium text-muted-foreground hover:border-primary/50 hover:text-primary disabled:opacity-50">
+                    {uploadingLogo ? 'Subiendo...' : (
+                      <><svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Subir logo nuevo</>
+                    )}
+                  </button>
                 </div>
-                <input ref={logoInputRef} type="file" accept="image/*" className="hidden"
-                  onChange={async (e) => { const file = e.target.files?.[0]; if (file) await uploadLogo(file); }} />
-                <button type="button" disabled={uploadingLogo} onClick={() => logoInputRef.current?.click()}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed px-2 py-1.5 text-[11px] font-medium text-muted-foreground hover:border-primary/50 hover:text-primary disabled:opacity-50">
-                  {uploadingLogo ? 'Subiendo...' : (
-                    <><svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Subir logo nuevo</>
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
+
+          {/* Logos del ayuntamiento (para páginas de pueblo) */}
+          {puebloId && (
+            <div>
+              <button type="button" onClick={() => setShowPuebloLogos((v) => !v)}
+                className="flex w-full items-center justify-between rounded-md border border-blue-200 bg-blue-50 px-2 py-2 text-xs font-semibold text-blue-800 hover:bg-blue-100">
+                <span>🏛 Logos del ayuntamiento{puebloNombre ? ` (${puebloNombre})` : ''}</span>
+                <span>{showPuebloLogos ? '▲' : '▼'}</span>
+              </button>
+              {showPuebloLogos && (
+                <div className="mt-2 space-y-2">
+                  <p className="text-[11px] text-muted-foreground">Arrastra o pulsa + para insertar. Máx. 6 logos.</p>
+                  {puebloLogos.length === 0 && <p className="text-[11px] text-muted-foreground">No hay logos subidos aún.</p>}
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {puebloLogos.map((logo) => (
+                      <div key={logo.id} className="group relative overflow-hidden rounded border border-blue-200 bg-white p-1.5"
+                        draggable
+                        onDragStart={(e) => { e.dataTransfer.setData('text/builder-logo-url', logo.url); e.dataTransfer.setData('text/builder-logo-name', logo.nombre); }}>
+                        <img src={logo.url} alt={logo.nombre} className="mx-auto h-10 max-w-full object-contain" />
+                        <p className="mt-1 truncate text-center text-[10px] text-muted-foreground">{logo.nombre}</p>
+                        <div className="absolute right-1 top-1 hidden flex-col gap-0.5 group-hover:flex">
+                          <button type="button"
+                            onClick={() => { const b = createBlock('image', { url: logo.url, content: logo.nombre, align: 'center' }); setBlocks((p) => [...p, b]); setSelectedId(b.id); onChange?.(renderBlocksToHtml([...blocks, b])); }}
+                            className="rounded bg-primary px-1 py-0.5 text-[10px] font-bold text-white">+</button>
+                          <button type="button" onClick={() => deletePuebloLogo(logo.id)}
+                            className="rounded bg-red-500 px-1 py-0.5 text-[10px] font-bold text-white">✕</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <input ref={puebloLogoInputRef} type="file" accept="image/*" className="hidden"
+                    onChange={async (e) => { const file = e.target.files?.[0]; if (file) await uploadPuebloLogo(file); }} />
+                  <button type="button" disabled={uploadingPuebloLogo || puebloLogos.length >= 6} onClick={() => puebloLogoInputRef.current?.click()}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-blue-300 px-2 py-1.5 text-[11px] font-medium text-blue-700 hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50">
+                    {uploadingPuebloLogo ? 'Subiendo...' : puebloLogos.length >= 6 ? 'Límite alcanzado (6)' : (
+                      <><svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Subir logo del ayuntamiento</>
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Sync button */}
           <button type="button" onClick={syncHtml}

@@ -500,6 +500,9 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
               draftKey={`lpmbe-editar-pueblo-contenido-${id}-draft`}
               initialHtml={contenidoMd}
               onChange={(html) => setContenidoMd(html)}
+              showBrandLogos={false}
+              puebloId={puebloId ? Number(puebloId) : undefined}
+              puebloNombre={puebloNombre ?? undefined}
             />
           )}
 

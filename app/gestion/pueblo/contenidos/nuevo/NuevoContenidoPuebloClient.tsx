@@ -457,6 +457,9 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
               draftKey={`lpmbe-contenido-pueblo-${puebloId}-${tipo}-draft`}
               initialHtml={contenido}
               onChange={(html) => setContenido(html)}
+              showBrandLogos={false}
+              puebloId={puebloId}
+              puebloNombre={puebloNombre}
             />
           )}
 
