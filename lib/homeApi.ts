@@ -205,6 +205,12 @@ function getFallbackHomeConfig(): HomeConfig {
         image: "https://via.placeholder.com/600x400/3498db/ffffff?text=Petfriendly",
         href: "/experiencias/petfriendly",
       },
+      {
+        key: "patrimonio",
+        title: "Patrimonio",
+        image: "https://via.placeholder.com/600x400/8e44ad/ffffff?text=Patrimonio",
+        href: "/experiencias/patrimonio",
+      },
     ],
     homeRutas: {
       enabled: true,

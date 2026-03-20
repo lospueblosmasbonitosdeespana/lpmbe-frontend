@@ -417,7 +417,7 @@ function IdeasSection({ categories = [] }: { categories: CategoryCard[] }) {
         </div>
 
         <div className="flex justify-center">
-          <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 lg:grid-cols-5 md:overflow-visible scrollbar-hide w-full max-w-5xl">
+          <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 lg:grid-cols-6 md:overflow-visible scrollbar-hide w-full max-w-6xl">
             {categories.map((cat) => (
             <Link
               key={cat.slug}
