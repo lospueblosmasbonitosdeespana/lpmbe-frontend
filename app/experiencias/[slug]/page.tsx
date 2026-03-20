@@ -40,6 +40,7 @@ const CATEGORY_MAP: Record<string, CategoryConfig> = {
   cultura: { titleKey: 'titleCultura', descKey: 'descCultura', category: 'CULTURA', tabSlug: 'cultura' },
   'en-familia': { titleKey: 'titleEnFamilia', descKey: 'descEnFamilia', category: 'EN_FAMILIA', tabSlug: 'en-familia' },
   petfriendly: { titleKey: 'titlePetfriendly', descKey: 'descPetfriendly', category: 'PETFRIENDLY', tabSlug: 'petfriendly' },
+  patrimonio: { titleKey: 'titlePatrimonio', descKey: 'descPatrimonio', category: 'PATRIMONIO', tabSlug: 'patrimonio' },
 };
 
 async function getTematicaPages(category: string, locale?: string): Promise<{ asociacion: TematicaPage | null; pueblos: TematicaPage[] }> {
@@ -147,8 +148,16 @@ export default async function TematicaPage({
       </div>
 
       {isEmpty ? (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center dark:border-neutral-700 dark:bg-neutral-800">
-          <p className="text-gray-600 dark:text-neutral-400">{t('noExperiences')}</p>
+        <div className="rounded-2xl border border-border bg-muted/30 px-8 py-16 text-center">
+          <p className="text-4xl mb-4">🏛️</p>
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t('noExperiencesTitle')}</h2>
+          <p className="text-muted-foreground max-w-md mx-auto mb-6">{t('noExperiencesDesc')}</p>
+          <Link
+            href="/pueblos"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            {t('explorePueblos')}
+          </Link>
         </div>
       ) : (
         <div className="space-y-12">
