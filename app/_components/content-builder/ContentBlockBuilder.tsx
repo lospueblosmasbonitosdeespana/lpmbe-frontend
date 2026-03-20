@@ -609,7 +609,12 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
     const stored = localStorage.getItem(storageKey);
     if (stored) {
       setHasDraft(true);
-      if (!blocks.length && !initialHtml) {
+      // En webMode siempre restauramos el borrador si los bloques están vacíos
+      // (permite recuperar bloques tras guardar y volver a la página).
+      // En modo email/newsletter solo cargamos si tampoco hay initialHtml
+      // (para no interferir con plantillas pre-cargadas).
+      const shouldLoad = !blocks.length && (webMode || !initialHtml);
+      if (shouldLoad) {
         try {
           const payload = JSON.parse(stored) as { blocks?: unknown };
           const loaded = normalizeBlocks(payload.blocks);
@@ -628,12 +633,17 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
     if (initialBlocks?.length) setBlocks(initialBlocks);
   }, [initialBlocks]);
 
-  // Sync blocks → parent onChange on every block change
-  // This ensures the parent always has the current HTML even without explicit saves
+  // Sync blocks → parent onChange on every block change + auto-save draft to localStorage
   useEffect(() => {
     if (blocks.length === 0) return; // Don't overwrite parent with empty on initial mount
     const html = renderBlocksToHtml(blocks, webMode);
     onChange?.(html);
+    // Auto-save blocks so the builder can restore them when the user returns
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify({ blocks }));
+      } catch { /* cuota o SSR */ }
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blocks]);
 
