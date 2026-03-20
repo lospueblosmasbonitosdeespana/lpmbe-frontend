@@ -1,8 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+
+const ImageEditorModal = dynamic(() => import('./ImageEditorModal'), { ssr: false });
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import Image from '@tiptap/extension-image';
@@ -45,6 +48,13 @@ export interface ContentBlock {
   textColor?: string;
   paddingY?: number;
   borderRadius?: number;
+  // Image editor fields
+  imgWidth?: number;
+  imgHeight?: number;
+  imgLinkUrl?: string;
+  imgBorderRadius?: number;
+  imgPaddingV?: number;
+  imgPaddingH?: number;
 }
 
 interface BuilderTemplate {
@@ -183,7 +193,16 @@ function renderBlocksToHtml(blocks: ContentBlock[]): string {
       parts.push(`<div style="${wrapStyle}text-align:${align};">${b.content || ''}</div>`);
     } else if (b.type === 'image') {
       if (b.url && b.url !== 'https://...') {
-        parts.push(`<div style="${wrapStyle}text-align:${align};"><img src="${escHtml(b.url)}" alt="${escHtml(b.content || '')}" style="max-width:100%;height:auto;display:inline-block;" /></div>`);
+        const imgStyle = [
+          b.imgWidth ? `width:${b.imgWidth}px` : 'max-width:100%',
+          b.imgHeight ? `height:${b.imgHeight}px` : 'height:auto',
+          'display:inline-block',
+          b.imgBorderRadius ? `border-radius:${b.imgBorderRadius}px` : '',
+          b.imgPaddingV || b.imgPaddingH ? `padding:${b.imgPaddingV || 0}px ${b.imgPaddingH || 0}px` : '',
+        ].filter(Boolean).join(';');
+        const imgTag = `<img src="${escHtml(b.url)}" alt="${escHtml(b.content || '')}" style="${imgStyle}" />`;
+        const wrapped = b.imgLinkUrl ? `<a href="${escHtml(b.imgLinkUrl)}" target="_blank" style="display:inline-block;">${imgTag}</a>` : imgTag;
+        parts.push(`<div style="${wrapStyle}text-align:${align};">${wrapped}</div>`);
       }
     } else if (b.type === 'button') {
       parts.push(`<div style="${wrapStyle}text-align:${align};"><a href="${escHtml(b.url || '#')}" style="display:inline-block;padding:12px 28px;background:#c0392b;color:#fff;border-radius:${br}px;text-decoration:none;font-weight:600;">${escHtml(b.label || b.content || 'Leer más')}</a></div>`);
@@ -440,6 +459,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
   const [reorderPickSourceId, setReorderPickSourceId] = useState<string | null>(null);
   const [draggingType, setDraggingType] = useState<BlockType | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [imageEditorBlock, setImageEditorBlock] = useState<{ blockId: string; field: 'url' | 'iconUrl' } | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -634,7 +654,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
 
   // ─── Upload ──────────────────────────────────────────────────────────────────
 
-  async function uploadImageForBlock(file: File, blockId: string, field: 'url' | 'iconUrl' | 'gallery' = 'url') {
+  async function uploadImageForBlock(file: File, blockId: string, field: 'url' | 'iconUrl' | 'gallery' = 'url'): Promise<string | undefined> {
     setUploading(true);
     setErr(null);
     try {
@@ -652,8 +672,10 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
         updateBlock(blockId, { [field]: url } as Partial<ContentBlock>);
         setMsg('Imagen subida correctamente.');
       }
+      return url;
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Error subiendo imagen');
+      return undefined;
     } finally {
       setUploading(false);
     }
@@ -1226,10 +1248,25 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                 {['image', 'figure', 'imgText'].includes(selectedBlock.type) && (
                   <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3 md:col-span-2">
                     <p className="text-sm font-semibold">Subir imagen del bloque</p>
-                    <button type="button" onClick={() => imgInputRef.current?.click()} disabled={uploading}
-                      className="mt-3 w-full rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">
-                      {uploading ? 'Subiendo...' : 'Subir imagen desde ordenador'}
-                    </button>
+                    <div className="mt-3 flex gap-2">
+                      <button type="button" onClick={() => imgInputRef.current?.click()} disabled={uploading}
+                        className="flex-1 rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">
+                        {uploading ? 'Subiendo...' : 'Subir imagen'}
+                      </button>
+                      {selectedBlock.url && (
+                        <button
+                          type="button"
+                          onClick={() => setImageEditorBlock({ blockId: selectedBlock.id, field: 'url' })}
+                          className="flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                          title="Recortar y editar imagen"
+                        >
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M6 2v14a2 2 0 002 2h14"/><path d="M18 22V8a2 2 0 00-2-2H2"/>
+                          </svg>
+                          Editar
+                        </button>
+                      )}
+                    </div>
                     <input ref={imgInputRef} type="file" accept="image/*" disabled={uploading} className="sr-only"
                       onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; await uploadImageForBlock(f, selectedBlock.id); e.currentTarget.value = ''; }} />
                   </div>
@@ -1243,10 +1280,24 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                       <input value={selectedBlock.iconUrl || ''} onChange={(e) => updateSelected({ iconUrl: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
                     </label>
                     <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3 md:col-span-2">
-                      <button type="button" onClick={() => iconInputRef.current?.click()} disabled={uploading}
-                        className="w-full rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">
-                        {uploading ? 'Subiendo icono...' : 'Subir icono desde ordenador'}
-                      </button>
+                      <div className="flex gap-2">
+                        <button type="button" onClick={() => iconInputRef.current?.click()} disabled={uploading}
+                          className="flex-1 rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">
+                          {uploading ? 'Subiendo icono...' : 'Subir icono'}
+                        </button>
+                        {selectedBlock.iconUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setImageEditorBlock({ blockId: selectedBlock.id, field: 'iconUrl' })}
+                            className="flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                          >
+                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M6 2v14a2 2 0 002 2h14"/><path d="M18 22V8a2 2 0 00-2-2H2"/>
+                            </svg>
+                            Editar
+                          </button>
+                        )}
+                      </div>
                       <input ref={iconInputRef} type="file" accept="image/*" disabled={uploading} className="sr-only"
                         onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; await uploadImageForBlock(f, selectedBlock.id, 'iconUrl'); e.currentTarget.value = ''; }} />
                     </div>
@@ -1365,6 +1416,42 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
           </div>
         </div>
       </div>
+
+      {/* Image Editor Modal */}
+      {imageEditorBlock && (() => {
+        const editBlock = blocks.find((b) => b.id === imageEditorBlock.blockId);
+        if (!editBlock) return null;
+        const currentUrl = imageEditorBlock.field === 'iconUrl' ? (editBlock.iconUrl || '') : (editBlock.url || '');
+        return (
+          <ImageEditorModal
+            imageUrl={currentUrl}
+            alt={editBlock.content || ''}
+            linkUrl={editBlock.imgLinkUrl || ''}
+            onClose={() => setImageEditorBlock(null)}
+            onUploadCropped={async (file) => {
+              const url = await uploadImageForBlock(file, editBlock.id, imageEditorBlock.field);
+              return url || currentUrl;
+            }}
+            onApply={(result) => {
+              setBlocks((prev) =>
+                prev.map((b) =>
+                  b.id === imageEditorBlock.blockId
+                    ? {
+                        ...b,
+                        [imageEditorBlock.field]: result.url,
+                        content: result.alt !== undefined ? result.alt : b.content,
+                        imgWidth: result.width,
+                        imgHeight: result.height,
+                        imgLinkUrl: result.linkUrl,
+                      }
+                    : b
+                )
+              );
+              setImageEditorBlock(null);
+            }}
+          />
+        );
+      })()}
     </div>
   );
 }
