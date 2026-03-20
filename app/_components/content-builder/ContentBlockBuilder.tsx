@@ -65,6 +65,7 @@ interface BuilderTemplate {
   contentHtml: string;
   blocksJson: unknown;
   isDefault?: boolean;
+  puebloId?: number | null;
   metadata?: {
     category?: string;
     description?: string;
@@ -519,7 +520,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
     (async () => {
       try {
         const fetches: Promise<Response>[] = [
-          fetch('/api/admin/newsletter/templates?limit=200', { cache: 'no-store' }),
+          fetch(`/api/admin/newsletter/templates?limit=200${puebloId ? `&puebloId=${puebloId}` : ''}`, { cache: 'no-store' }),
           fetch('/api/admin/logos', { cache: 'no-store' }),
         ];
         if (puebloId) {
@@ -540,6 +541,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                 contentHtml: String(row.contentHtml || ''),
                 blocksJson: row.blocksJson,
                 isDefault: Boolean(row.isDefault),
+                puebloId: row.puebloId != null ? Number(row.puebloId) : null,
                 metadata: {
                   category: String(meta.category || ''),
                   description: String(meta.description || ''),
@@ -853,7 +855,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
     setTplSaving(true);
     try {
       const htmlFromBlocks = renderBlocksToHtml(blocks);
-      const payload = {
+      const payload: Record<string, unknown> = {
         kind: 'NEWSLETTER',
         name,
         subject: name,
@@ -861,6 +863,9 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
         blocksJson: blocks,
         metadata: {},
       };
+      // Si hay puebloId, la plantilla se guarda como privada del pueblo
+      if (puebloId) payload.puebloId = puebloId;
+
       const endpoint = selectedTplId ? `/api/admin/newsletter/templates/${selectedTplId}` : '/api/admin/newsletter/templates';
       const method = selectedTplId ? 'PUT' : 'POST';
       const res = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -869,17 +874,19 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
       setMsg(selectedTplId ? 'Plantilla actualizada.' : 'Plantilla guardada.');
       if (!selectedTplId) setSelectedTplId(Number(data.id || 0) || null);
       // Reload templates
-      const tplRes = await fetch('/api/admin/newsletter/templates?limit=200', { cache: 'no-store' });
+      const tplUrl = `/api/admin/newsletter/templates?limit=200${puebloId ? `&puebloId=${puebloId}` : ''}`;
+      const tplRes = await fetch(tplUrl, { cache: 'no-store' });
       if (tplRes.ok) {
         const items = await tplRes.json().catch(() => []);
         if (Array.isArray(items)) {
-          const normalized = items.map((item) => {
+          const normalized: BuilderTemplate[] = items.map((item) => {
             const row = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
             const meta = (row.metadata && typeof row.metadata === 'object' ? row.metadata : {}) as Record<string, unknown>;
             return {
               id: Number(row.id || 0), kind: 'NEWSLETTER' as const, name: String(row.name || ''),
               subject: String(row.subject || ''), contentHtml: String(row.contentHtml || ''),
               blocksJson: row.blocksJson, isDefault: Boolean(row.isDefault),
+              puebloId: row.puebloId != null ? Number(row.puebloId) : null,
               metadata: { category: String(meta.category || ''), description: String(meta.description || ''), theme: meta.theme ? String(meta.theme) : undefined, themeLabel: meta.themeLabel ? String(meta.themeLabel) : undefined },
               updatedAt: String(row.updatedAt || ''),
             };
@@ -977,7 +984,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
               {(['all', 'predefined', 'mine'] as const).map((tab) => (
                 <button key={tab} type="button" onClick={() => setGalleryTab(tab)}
                   className={`px-3 py-1.5 font-medium transition ${galleryTab === tab ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}>
-                  {tab === 'all' ? 'Todas' : tab === 'predefined' ? 'Predefinidas' : 'Mis plantillas'}
+                  {tab === 'all' ? 'Todas' : tab === 'predefined' ? 'De la red' : 'Mis plantillas'}
                 </button>
               ))}
             </div>
@@ -992,7 +999,11 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
           </div>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {templates
-              .filter((t) => galleryTab === 'predefined' ? t.isDefault : galleryTab === 'mine' ? !t.isDefault : true)
+              .filter((t) => {
+                if (galleryTab === 'predefined') return !t.puebloId; // Compartidas (de la red / admin)
+                if (galleryTab === 'mine') return t.puebloId != null; // Propias del pueblo
+                return true; // Todas
+              })
               .filter((t) => !themeFilter || getThemeKey(t) === themeFilter)
               .map((t) => (
                 <div key={t.id} className="group overflow-hidden rounded-lg border border-border bg-background transition hover:border-primary/50 hover:shadow-md">
@@ -1003,7 +1014,8 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                     ) : (
                       <div className="flex h-full items-center justify-center text-xs text-muted-foreground">Sin vista previa</div>
                     )}
-                    {t.isDefault && <span className="absolute right-1 top-1 rounded bg-primary/90 px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">Predefinida</span>}
+                    {!t.puebloId && t.isDefault && <span className="absolute right-1 top-1 rounded bg-primary/90 px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">Red LPMBE</span>}
+                    {t.puebloId && <span className="absolute right-1 top-1 rounded bg-amber-600/90 px-1.5 py-0.5 text-[10px] font-bold text-white">Mi pueblo</span>}
                     {getThemeLabel(t) && <span className="absolute left-1 top-1 max-w-[85%] truncate rounded bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold text-white">{getThemeLabel(t)}</span>}
                   </div>
                   <div className="p-3">
@@ -1013,7 +1025,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                       <button type="button" onClick={() => applyTemplate(t)} className="flex-1 rounded-md bg-primary px-2 py-1.5 text-xs font-semibold text-primary-foreground">Usar</button>
                       <button type="button" onClick={() => setPreviewHtml(t.contentHtml || renderBlocksToHtml(normalizeBlocks(t.blocksJson)))}
                         className="rounded-md border border-border px-2 py-1.5 text-xs font-medium">Vista previa</button>
-                      {!t.isDefault && (
+                      {t.puebloId != null && (
                         <button type="button"
                           onClick={async () => {
                             if (!window.confirm(`¿Eliminar "${t.name}"?`)) return;
@@ -1030,8 +1042,14 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                   </div>
                 </div>
               ))}
-            {templates.filter((t) => galleryTab === 'predefined' ? t.isDefault : galleryTab === 'mine' ? !t.isDefault : true).filter((t) => !themeFilter || getThemeKey(t) === themeFilter).length === 0 && (
-              <p className="col-span-full py-8 text-center text-sm text-muted-foreground">No hay plantillas en esta categoría.</p>
+            {templates.filter((t) => {
+              if (galleryTab === 'predefined') return !t.puebloId;
+              if (galleryTab === 'mine') return t.puebloId != null;
+              return true;
+            }).filter((t) => !themeFilter || getThemeKey(t) === themeFilter).length === 0 && (
+              <p className="col-span-full py-8 text-center text-sm text-muted-foreground">
+                {galleryTab === 'mine' ? 'Aún no has creado plantillas propias. Usa el constructor y guarda tu primera plantilla.' : 'No hay plantillas en esta categoría.'}
+              </p>
             )}
           </div>
         </div>
