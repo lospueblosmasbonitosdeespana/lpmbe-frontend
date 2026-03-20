@@ -66,6 +66,12 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
         setCoverUrl(data.coverUrl ?? null);
         setGalleryUrls(Array.isArray(data.galleryUrls) ? data.galleryUrls.slice(0, 3) : []);
 
+        // Para páginas temáticas con contenido existente, usar modo HTML por defecto
+        // (el constructor visual no puede reconstruir bloques desde HTML guardado)
+        if ((data.tipo === 'PAGINA_TEMATICA' || String(id).startsWith('page-')) && data.contenidoMd) {
+          setEditorMode('html');
+        }
+
         if (data.publishedAt) {
           setPublishedAt(toDatetimeLocal(data.publishedAt));
         }

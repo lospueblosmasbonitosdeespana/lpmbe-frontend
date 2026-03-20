@@ -178,7 +178,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
         }
 
         alert('Página temática guardada correctamente');
-        router.replace('/gestion/pueblo/contenidos');
+        router.replace(`/gestion/pueblo/contenidos?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}`);
         router.refresh();
         return;
       }
@@ -217,7 +217,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
         return;
       }
 
-      router.replace('/gestion/pueblo/contenidos');
+      router.replace(`/gestion/pueblo/contenidos?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}`);
       router.refresh();
     } finally {
       setSaving(false);

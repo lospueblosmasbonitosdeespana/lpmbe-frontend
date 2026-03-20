@@ -25,6 +25,7 @@ const CATEGORY_MAP: Record<string, CategoryConfig> = {
   cultura: { titleKey: 'titleCultura', category: 'CULTURA' },
   'en-familia': { titleKey: 'titleEnFamilia', category: 'EN_FAMILIA' },
   petfriendly: { titleKey: 'titlePetfriendly', category: 'PETFRIENDLY' },
+  patrimonio: { titleKey: 'titlePatrimonio', category: 'PATRIMONIO' },
 };
 
 export async function generateMetadata({
@@ -52,11 +53,12 @@ export async function generateMetadata({
 }
 
 type PuebloPages = {
-  GASTRONOMIA?: TematicaPage;
-  NATURALEZA?: TematicaPage;
-  CULTURA?: TematicaPage;
-  EN_FAMILIA?: TematicaPage;
-  PETFRIENDLY?: TematicaPage;
+  GASTRONOMIA?: TematicaPage[];
+  NATURALEZA?: TematicaPage[];
+  CULTURA?: TematicaPage[];
+  EN_FAMILIA?: TematicaPage[];
+  PETFRIENDLY?: TematicaPage[];
+  PATRIMONIO?: TematicaPage[];
 };
 
 async function getPuebloPage(puebloSlug: string, category: string, locale?: string): Promise<TematicaPage | null> {
