@@ -133,6 +133,7 @@ export default function NuevaNoticiaGlobalPage() {
               draftKey="lpmbe-noticia-global-draft"
               initialHtml={contenido}
               onChange={(html) => setContenido(html)}
+              webMode={true}
             />
           )}
           {editorMode === 'edit' && (

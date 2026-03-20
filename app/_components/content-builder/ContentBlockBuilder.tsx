@@ -91,6 +91,12 @@ interface ContentBlockBuilderProps {
   puebloId?: number;
   /** Nombre del pueblo (para mostrar en la sección de logos) */
   puebloNombre?: string;
+  /**
+   * Cuando true, los bloques con fondo blanco (#ffffff) se renderizan sin background
+   * para integrarse con el fondo de la página web. Usar false para emails/newsletter
+   * donde el fondo blanco explícito es necesario. Por defecto: false.
+   */
+  webMode?: boolean;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -177,16 +183,21 @@ function normalizeBlocks(value: unknown): ContentBlock[] {
   }
 }
 
-function renderBlocksToHtml(blocks: ContentBlock[]): string {
+function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
   if (!blocks.length) return '';
   const parts: string[] = [];
   for (const b of blocks) {
-    const bg = b.backgroundColor || '#ffffff';
+    // En webMode, '#ffffff' se trata como "sin fondo" para que los bloques se integren
+    // con el fondo de la página web. Solo se aplica background si es un color distinto.
+    // En modo email/newsletter (webMode=false), siempre se aplica el background.
+    const bg = webMode
+      ? (b.backgroundColor && b.backgroundColor !== '#ffffff' ? b.backgroundColor : '')
+      : (b.backgroundColor || '#ffffff');
     const tc = b.textColor || '#111111';
     const py = b.paddingY ?? 10;
     const br = b.borderRadius ?? 8;
     const align = b.align || 'left';
-    const wrapStyle = `background:${bg};color:${tc};padding:${py}px 16px;border-radius:${br}px;`;
+    const wrapStyle = `${bg ? `background:${bg};` : ''}color:${tc};padding:${py}px 16px;border-radius:${br}px;`;
 
     if (b.type === 'heading') {
       parts.push(`<div style="${wrapStyle}text-align:${align};"><h2 style="margin:0;font-size:24px;font-weight:700;">${b.content || ''}</h2></div>`);
@@ -231,6 +242,9 @@ function renderBlocksToHtml(blocks: ContentBlock[]): string {
           rows.push(`<tr>${rowCells}</tr>`);
         }
         parts.push(`<div style="${wrapStyle}"><table width="100%" cellpadding="0" cellspacing="0">${rows.join('')}</table></div>`);
+      } else {
+        // Sin imágenes: marcador visible en el gestor (no renderiza nada en público si no hay src)
+        parts.push(`<div style="${wrapStyle}border:2px dashed #e5e7eb;text-align:center;color:#9ca3af;font-size:13px;">📷 Galería (sin imágenes subidas aún)</div>`);
       }
     } else if (b.type === 'figure') {
       if (b.url && b.url !== 'https://...') {
@@ -462,7 +476,7 @@ const PALETTE_BLOCKS: { type: BlockType; label: string }[] = [
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChange, draftKey, showBrandLogos = true, puebloId, puebloNombre }: ContentBlockBuilderProps) {
+export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChange, draftKey, showBrandLogos = true, puebloId, puebloNombre, webMode = false }: ContentBlockBuilderProps) {
   const [blocks, setBlocks] = useState<ContentBlock[]>(() => initialBlocks?.length ? initialBlocks : []);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reorderPickSourceId, setReorderPickSourceId] = useState<string | null>(null);
@@ -618,7 +632,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
   // This ensures the parent always has the current HTML even without explicit saves
   useEffect(() => {
     if (blocks.length === 0) return; // Don't overwrite parent with empty on initial mount
-    const html = renderBlocksToHtml(blocks);
+    const html = renderBlocksToHtml(blocks, webMode);
     onChange?.(html);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blocks]);
@@ -796,7 +810,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
   }
 
   function printContent() {
-    const html = renderBlocksToHtml(blocks);
+    const html = renderBlocksToHtml(blocks, webMode);
     const win = window.open('', '_blank');
     if (!win) return;
     win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Imprimir contenido</title>
@@ -839,7 +853,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
   // ─── Sync HTML (emit to parent) ───────────────────────────────────────────────
 
   function syncHtml() {
-    const html = renderBlocksToHtml(blocks);
+    const html = renderBlocksToHtml(blocks, webMode);
     onChange?.(html);
     setMsg('HTML sincronizado.');
   }
@@ -853,7 +867,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
     setBlocks(loaded);
     if (loaded.length) setSelectedId(null);
     setShowGallery(false);
-    const html = t.contentHtml || renderBlocksToHtml(loaded);
+    const html = t.contentHtml || renderBlocksToHtml(loaded, webMode);
     onChange?.(html);
     setMsg(`Plantilla "${t.name}" cargada.`);
   }
@@ -863,7 +877,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
     if (!name) { setErr('Pon un nombre a la plantilla'); return; }
     setTplSaving(true);
     try {
-      const htmlFromBlocks = renderBlocksToHtml(blocks);
+      const htmlFromBlocks = renderBlocksToHtml(blocks, webMode);
       const payload: Record<string, unknown> = {
         kind: 'NEWSLETTER',
         name,
@@ -939,7 +953,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
     }
     setBlocks(b);
     setSelectedId(null);
-    onChange?.(renderBlocksToHtml(b));
+    onChange?.(renderBlocksToHtml(b, webMode));
   }
 
   // ─── Render ───────────────────────────────────────────────────────────────────
@@ -1032,7 +1046,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                     <p className="mt-0.5 truncate text-xs text-muted-foreground">{t.metadata?.description || t.subject || 'Sin descripción'}</p>
                     <div className="mt-2 flex gap-2">
                       <button type="button" onClick={() => applyTemplate(t)} className="flex-1 rounded-md bg-primary px-2 py-1.5 text-xs font-semibold text-primary-foreground">Usar</button>
-                      <button type="button" onClick={() => setPreviewHtml(t.contentHtml || renderBlocksToHtml(normalizeBlocks(t.blocksJson)))}
+                      <button type="button" onClick={() => setPreviewHtml(t.contentHtml || renderBlocksToHtml(normalizeBlocks(t.blocksJson), webMode))}
                         className="rounded-md border border-border px-2 py-1.5 text-xs font-medium">Vista previa</button>
                       {t.puebloId != null && (
                         <button type="button"
@@ -1128,7 +1142,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                         <img src={logo.url} alt={logo.nombre} className="mx-auto h-10 max-w-full object-contain" />
                         <p className="mt-1 truncate text-center text-[10px] text-muted-foreground">{logo.nombre}</p>
                         <button type="button"
-                          onClick={() => { const b = createBlock('image', { url: logo.url, content: logo.nombre, align: 'center' }); setBlocks((p) => [...p, b]); setSelectedId(b.id); onChange?.(renderBlocksToHtml([...blocks, b])); }}
+                          onClick={() => { const b = createBlock('image', { url: logo.url, content: logo.nombre, align: 'center' }); setBlocks((p) => [...p, b]); setSelectedId(b.id); onChange?.(renderBlocksToHtml([...blocks, b], webMode)); }}
                           className="absolute right-1 top-1 hidden rounded bg-primary px-1 py-0.5 text-[10px] font-bold text-white group-hover:block">+</button>
                       </div>
                     ))}
@@ -1167,7 +1181,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                         <p className="mt-1 truncate text-center text-[10px] text-muted-foreground">{logo.nombre}</p>
                         <div className="absolute right-1 top-1 hidden flex-col gap-0.5 group-hover:flex">
                           <button type="button"
-                            onClick={() => { const b = createBlock('image', { url: logo.url, content: logo.nombre, align: 'center' }); setBlocks((p) => [...p, b]); setSelectedId(b.id); onChange?.(renderBlocksToHtml([...blocks, b])); }}
+                            onClick={() => { const b = createBlock('image', { url: logo.url, content: logo.nombre, align: 'center' }); setBlocks((p) => [...p, b]); setSelectedId(b.id); onChange?.(renderBlocksToHtml([...blocks, b], webMode)); }}
                             className="rounded bg-primary px-1 py-0.5 text-[10px] font-bold text-white">+</button>
                           <button type="button" onClick={() => deletePuebloLogo(logo.id)}
                             className="rounded bg-red-500 px-1 py-0.5 text-[10px] font-bold text-white">✕</button>
@@ -1549,7 +1563,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
           <div className="rounded-md border border-border bg-background p-3">
             <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Vista previa</p>
             <div className="mx-auto max-w-[700px] rounded-md border border-border bg-white p-4 shadow-sm"
-              dangerouslySetInnerHTML={{ __html: renderBlocksToHtml(blocks) || '<p class="text-gray-400 text-center py-4">Sin bloques todavía.</p>' }} />
+              dangerouslySetInnerHTML={{ __html: renderBlocksToHtml(blocks, webMode) || '<p class="text-gray-400 text-center py-4">Sin bloques todavía.</p>' }} />
           </div>
         </div>
       </div>

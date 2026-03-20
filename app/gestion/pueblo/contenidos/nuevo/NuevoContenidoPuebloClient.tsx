@@ -54,11 +54,12 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
   // Ahora se permiten hasta 4 páginas por categoría
   useEffect(() => {
     if (tipo !== 'PAGINA') return;
-    // Limpiar formulario al cambiar categoría
+    // Solo limpiar al cambiar categoría, pero no si ya hay contenido creado
+    // (evitar perder trabajo por cambio accidental de categoría)
     setTitulo('');
     setResumen('');
-    setContenido('');
-    setCoverUrl(null);
+    // No limpiamos contenido automáticamente para evitar pérdida de datos
+    // setCoverUrl(null);  // tampoco limpiamos la portada
     setGalleryUrls([]);
     setGalleryFiles([null, null, null]);
     setEstado('BORRADOR');
@@ -460,6 +461,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
               showBrandLogos={false}
               puebloId={puebloId}
               puebloNombre={puebloNombre}
+              webMode={true}
             />
           )}
 

@@ -66,12 +66,8 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
         setCoverUrl(data.coverUrl ?? null);
         setGalleryUrls(Array.isArray(data.galleryUrls) ? data.galleryUrls.slice(0, 3) : []);
 
-        // Para páginas temáticas con contenido existente, usar modo HTML por defecto
-        // (el constructor visual no puede reconstruir bloques desde HTML guardado)
-        if ((data.tipo === 'PAGINA_TEMATICA' || String(id).startsWith('page-')) && data.contenidoMd) {
-          setEditorMode('html');
-        }
-
+        // Para páginas temáticas con contenido existente, mantener modo builder
+        // (el ContentBlockBuilder ya recibe initialHtml correctamente via key-based remount)
         if (data.publishedAt) {
           setPublishedAt(toDatetimeLocal(data.publishedAt));
         }
@@ -507,11 +503,13 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
 
           {editorMode === 'builder' && (
             <ContentBlockBuilder
+              key={loading ? 'builder-loading' : `builder-${id}`}
               draftKey={`lpmbe-editar-pueblo-contenido-${id}-draft`}
               initialHtml={contenidoMd}
               onChange={(html) => setContenidoMd(html)}
               showBrandLogos={false}
               puebloId={puebloId ? Number(puebloId) : undefined}
+              webMode={true}
               puebloNombre={puebloNombre ?? undefined}
             />
           )}
