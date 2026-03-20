@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import CoverPicker from '@/app/_components/media/CoverPicker';
 import TipTapEditor from '@/app/_components/editor/TipTapEditor';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
@@ -65,9 +65,16 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
   const [loadingPage, setLoadingPage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Sistema de 4 modos: Constructor visual, Editor TipTap, HTML directo, Vista previa
-  // Por defecto modo Constructor visual
   const [editorMode, setEditorMode] = useState<EditorMode>('builder');
+
+  // Ref que siempre tiene el último HTML generado por el constructor visual.
+  // Se usa para sincronizar `contenido` al cambiar de pestaña o al guardar.
+  const builderHtmlRef = useRef('');
+
+  const handleBuilderChange = useCallback((html: string) => {
+    builderHtmlRef.current = html;
+    setContenido(html);
+  }, []);
 
   // Cargar páginas temáticas cuando tipo=PAGINA
   useEffect(() => {
@@ -161,6 +168,15 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
     e.preventDefault();
     setError(null);
 
+    // Si estamos en modo builder, asegurar que contenido tiene el HTML actual
+    if (editorMode === 'builder' && builderHtmlRef.current) {
+      setContenido(builderHtmlRef.current);
+    }
+    // Usar el valor más actual (ref si builder, state si otro modo)
+    const contenidoFinal = editorMode === 'builder' && builderHtmlRef.current
+      ? builderHtmlRef.current
+      : contenido;
+
     if (!titulo.trim()) return setError('Título requerido');
 
     // Si es PÁGINA, validar categoría
@@ -219,7 +235,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           category: categoria,
           titulo: titulo.trim(),
           resumen: resumen.trim() || null,
-          contenido: contenido,
+          contenido: contenidoFinal,
           published: estado === 'PUBLICADA',
           coverUrl: finalCoverUrl ?? null,
         };
@@ -249,7 +265,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
         tipo,
         titulo: titulo.trim(),
         resumen: resumen.trim() || null,
-        contenidoMd: contenido,
+        contenidoMd: contenidoFinal,
         estado,
       };
       if (finalCoverUrl) payload.coverUrl = finalCoverUrl;
@@ -448,7 +464,10 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           <div className="flex flex-wrap gap-2 mb-3">
             <button
               type="button"
-              onClick={() => setEditorMode('builder')}
+              onClick={() => {
+                // Al volver al constructor, sincronizar por si otro modo editó contenido
+                setEditorMode('builder');
+              }}
               className={`flex items-center gap-2 rounded-lg border-2 px-4 py-2.5 text-left transition-all ${
                 editorMode === 'builder'
                   ? 'border-primary bg-primary text-primary-foreground shadow-md'
@@ -466,7 +485,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
             </button>
             <button
               type="button"
-              onClick={() => setEditorMode('edit')}
+              onClick={() => { if (builderHtmlRef.current) setContenido(builderHtmlRef.current); setEditorMode('edit'); }}
               className={`px-4 py-2 rounded-lg text-sm font-medium ${
                 editorMode === 'edit'
                   ? 'bg-blue-600 text-white'
@@ -477,7 +496,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
             </button>
             <button
               type="button"
-              onClick={() => setEditorMode('html')}
+              onClick={() => { if (builderHtmlRef.current) setContenido(builderHtmlRef.current); setEditorMode('html'); }}
               className={`px-4 py-2 rounded-lg text-sm font-medium ${
                 editorMode === 'html'
                   ? 'bg-amber-600 text-white'
@@ -488,7 +507,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
             </button>
             <button
               type="button"
-              onClick={() => setEditorMode('preview')}
+              onClick={() => { if (builderHtmlRef.current) setContenido(builderHtmlRef.current); setEditorMode('preview'); }}
               className={`px-4 py-2 rounded-lg text-sm font-medium ${
                 editorMode === 'preview'
                   ? 'bg-green-600 text-white'
@@ -510,7 +529,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
             <ContentBlockBuilder
               draftKey={`lpmbe-contenido-asoc-PAGINA-${categoria || 'nuevo'}-draft`}
               initialHtml=""
-              onChange={(html) => setContenido(html)}
+              onChange={handleBuilderChange}
               webMode={true}
             />
           </div>
