@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -13,6 +14,11 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import Highlight from '@tiptap/extension-highlight';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
+
+const ContentBlockBuilder = dynamic(
+  () => import('@/app/_components/content-builder/ContentBlockBuilder'),
+  { ssr: false, loading: () => <div className="py-8 text-center text-sm text-muted-foreground">Cargando constructor...</div> },
+);
 
 type Campaign = {
   id: number;
@@ -774,6 +780,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [insertedPhotoUrls, setInsertedPhotoUrls] = useState<string[]>([]);
   const [webGallerySelection, setWebGallerySelection] = useState<string[]>([]);
   const [newsletterComposerMode, setNewsletterComposerMode] = useState<'editor' | 'builder'>('builder');
+  const [pressComposerMode, setPressComposerMode] = useState<'editor' | 'builder'>('builder');
+  const [pressBuilderHtml, setPressBuilderHtml] = useState('');
   const [newsletterTemplates, setNewsletterTemplates] = useState<NewsletterTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [templateName, setTemplateName] = useState('');
@@ -850,9 +858,11 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     const htmlFromComposer =
       mode === 'newsletter' && newsletterComposerMode === 'builder'
         ? renderNewsletterBlocksToHtml(newsletterBlocks).trim()
-        : mode === 'press' && pressSendMode === 'editor' && editorMode === 'visual' && editor
-          ? editor.getHTML().trim()
-          : campaignForm.html.trim();
+        : mode === 'press' && pressSendMode === 'editor' && pressComposerMode === 'builder'
+          ? pressBuilderHtml.trim()
+          : mode === 'press' && pressSendMode === 'editor' && editorMode === 'visual' && editor
+            ? editor.getHTML().trim()
+            : campaignForm.html.trim();
 
     return {
       version: 1,
@@ -865,6 +875,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       pressSendMode,
       editorMode,
       newsletterComposerMode,
+      pressComposerMode,
       selectedCcaas,
       selectedProvincias,
       pressPdfUrl,
@@ -894,6 +905,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     }
     if (payload.newsletterComposerMode === 'editor' || payload.newsletterComposerMode === 'builder') {
       setNewsletterComposerMode(payload.newsletterComposerMode);
+    }
+    if (payload.pressComposerMode === 'editor' || payload.pressComposerMode === 'builder') {
+      setPressComposerMode(payload.pressComposerMode);
     }
     if (Array.isArray(payload.selectedCcaas)) setSelectedCcaas(payload.selectedCcaas.map(String));
     if (Array.isArray(payload.selectedProvincias)) {
@@ -933,9 +947,11 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     const html =
       mode === 'newsletter' && newsletterComposerMode === 'builder'
         ? renderNewsletterBlocksToHtml(newsletterBlocks)
-        : mode === 'press' && pressSendMode === 'editor' && editorMode === 'visual' && editor
-          ? editor.getHTML()
-          : campaignForm.html;
+        : mode === 'press' && pressSendMode === 'editor' && pressComposerMode === 'builder'
+          ? pressBuilderHtml
+          : mode === 'press' && pressSendMode === 'editor' && editorMode === 'visual' && editor
+            ? editor.getHTML()
+            : campaignForm.html;
 
     if (!html?.trim()) {
       alert('No hay contenido para imprimir. Añade bloques o escribe contenido primero.');
@@ -1546,7 +1562,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           setCampaignForm((s) => ({ ...s, html: finalHtml }));
         }
       }
-      if (mode === 'press' && editorMode === 'visual' && editor) {
+      if (mode === 'press' && pressSendMode === 'editor' && pressComposerMode === 'builder') {
+        finalHtml = pressBuilderHtml.trim();
+      } else if (mode === 'press' && editorMode === 'visual' && editor) {
         finalHtml = editor.getHTML().trim();
       }
       if (!finalHtml) {
@@ -1760,7 +1778,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     setPublishingWeb(true);
     try {
       let finalHtml = campaignForm.html.trim();
-      if (editorMode === 'visual' && editor) {
+      if (pressSendMode === 'editor' && pressComposerMode === 'builder') {
+        finalHtml = pressBuilderHtml.trim();
+      } else if (editorMode === 'visual' && editor) {
         finalHtml = editor.getHTML().trim();
       }
       if (!campaignForm.subject.trim() || !finalHtml) {
@@ -3469,6 +3489,68 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           {(mode !== 'press' || pressSendMode === 'editor') &&
           (mode !== 'newsletter' || newsletterComposerMode === 'editor') ? (
             <>
+              {/* Selector Constructor / Editor clásico para PRENSA */}
+              {mode === 'press' && pressSendMode === 'editor' && (
+                <div className="flex flex-wrap items-stretch gap-3 rounded-lg border border-border p-3">
+                  <button
+                    type="button"
+                    onClick={() => setPressComposerMode('builder')}
+                    className={`flex flex-1 items-center gap-3 rounded-lg border-2 px-4 py-3 text-left transition-all ${
+                      pressComposerMode === 'builder'
+                        ? 'border-primary bg-primary text-primary-foreground shadow-md'
+                        : 'border-border bg-background hover:border-primary/50 hover:bg-muted/40'
+                    }`}
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white/20">
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+                      </svg>
+                    </span>
+                    <span>
+                      <span className="block text-sm font-bold leading-tight">Constructor visual</span>
+                      <span className={`block text-xs leading-tight ${pressComposerMode === 'builder' ? 'opacity-80' : 'text-muted-foreground'}`}>
+                        Arrastra bloques, logos y plantillas
+                      </span>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPressComposerMode('editor')}
+                    className={`flex flex-1 items-center gap-3 rounded-lg border-2 px-4 py-3 text-left transition-all ${
+                      pressComposerMode === 'editor'
+                        ? 'border-primary bg-primary text-primary-foreground shadow-md'
+                        : 'border-border bg-background hover:border-primary/50 hover:bg-muted/40'
+                    }`}
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white/20">
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="16 18 22 12 16 6"/>
+                        <polyline points="8 6 2 12 8 18"/>
+                      </svg>
+                    </span>
+                    <span>
+                      <span className="block text-sm font-bold leading-tight">HTML / Editor clásico</span>
+                      <span className={`block text-xs leading-tight ${pressComposerMode === 'editor' ? 'opacity-80' : 'text-muted-foreground'}`}>
+                        Editor de texto enriquecido o HTML directo
+                      </span>
+                    </span>
+                  </button>
+                </div>
+              )}
+
+              {/* Constructor visual para PRENSA */}
+              {mode === 'press' && pressSendMode === 'editor' && pressComposerMode === 'builder' ? (
+                <div className="mt-2">
+                  <ContentBlockBuilder
+                    draftKey="lpmbe-press-builder-draft"
+                    showBrandLogos={true}
+                    onChange={(html) => setPressBuilderHtml(html)}
+                  />
+                </div>
+              ) : (
               <label className="block text-sm">
                 Contenido
                 <div className="mt-1 flex flex-wrap gap-2">
@@ -3619,6 +3701,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   />
                 )}
               </label>
+              )}
 
               {mode === 'press' ? (
                 <div className="space-y-3">
