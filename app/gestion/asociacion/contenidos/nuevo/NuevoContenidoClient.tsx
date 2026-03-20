@@ -92,6 +92,10 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           setContenido(page.contenido);
           setCoverUrl(page.coverUrl || null);
           setEstado(page.published ? 'PUBLICADA' : 'BORRADOR');
+          // Cuando hay contenido existente, cambiar a modo HTML para que sea visible
+          if (page.contenido) {
+            setEditorMode('html');
+          }
         } else {
           // Limpiar formulario si no existe
           setExistingPageId(null);
@@ -100,6 +104,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           setContenido('');
           setCoverUrl(null);
           setEstado('PUBLICADA'); // Por defecto publicada para asociación
+          setEditorMode('builder'); // Modo constructor para páginas nuevas
         }
       } catch (e) {
         console.error('[LOAD TEMATICA ASOCIACION] Error:', e);
@@ -499,7 +504,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           {/* Modo Constructor visual */}
           {editorMode === 'builder' && (
             <ContentBlockBuilder
-              draftKey={`lpmbe-contenido-asoc-${tipo}-draft`}
+              draftKey={`lpmbe-contenido-asoc-PAGINA-${categoria || 'nuevo'}-draft`}
               initialHtml={contenido}
               onChange={(html) => setContenido(html)}
             />
@@ -521,6 +526,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
             <div className="space-y-2">
               <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
                 Modo HTML: pega aquí código HTML directamente. Útil para contenido complejo con grids, tarjetas o enlaces externos.
+                {existingPageId && ' El contenido actual de esta página está cargado aquí — edítalo directamente o usa el Constructor visual para empezar desde cero.'}
               </p>
               <textarea
                 value={contenido}

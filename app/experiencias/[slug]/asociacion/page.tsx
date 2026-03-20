@@ -25,6 +25,7 @@ const CATEGORY_MAP: Record<string, CategoryConfig> = {
   cultura: { titleKey: 'titleCultura', category: 'CULTURA' },
   'en-familia': { titleKey: 'titleEnFamilia', category: 'EN_FAMILIA' },
   petfriendly: { titleKey: 'titlePetfriendly', category: 'PETFRIENDLY' },
+  patrimonio: { titleKey: 'titlePatrimonio', category: 'PATRIMONIO' },
 };
 
 export async function generateMetadata({

@@ -220,8 +220,16 @@ function renderBlocksToHtml(blocks: ContentBlock[]): string {
     } else if (b.type === 'gallery') {
       const imgs = (b.imageUrls || []).filter((u) => u && u !== 'https://...');
       if (imgs.length) {
-        const cells = imgs.map((u) => `<td style="padding:4px;"><img src="${escHtml(u)}" style="width:100%;height:120px;object-fit:cover;display:block;" /></td>`).join('');
-        parts.push(`<div style="${wrapStyle}"><table width="100%" cellpadding="0" cellspacing="0"><tr>${cells}</tr></table></div>`);
+        // Renderizar en cuadrícula de 2 columnas (máx 4 imágenes, 2 filas × 2 cols)
+        const rows: string[] = [];
+        for (let i = 0; i < imgs.length; i += 2) {
+          const pair = imgs.slice(i, i + 2);
+          const cells = pair.map((u) => `<td width="50%" style="padding:4px;"><img src="${escHtml(u)}" style="width:100%;height:160px;object-fit:cover;display:block;border-radius:6px;" /></td>`).join('');
+          // Si la fila tiene solo 1 imagen, añadir celda vacía para mantener el layout
+          const rowCells = pair.length === 1 ? cells + '<td width="50%" style="padding:4px;"></td>' : cells;
+          rows.push(`<tr>${rowCells}</tr>`);
+        }
+        parts.push(`<div style="${wrapStyle}"><table width="100%" cellpadding="0" cellspacing="0">${rows.join('')}</table></div>`);
       }
     } else if (b.type === 'figure') {
       if (b.url && b.url !== 'https://...') {
@@ -495,6 +503,8 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
   // Draft
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const [hasDraft, setHasDraft] = useState(false);
+  // Slot de galería activo para upload (0-3)
+  const [galleryUploadSlot, setGalleryUploadSlot] = useState<number>(0);
 
   const imgInputRef = useRef<HTMLInputElement | null>(null);
   const iconInputRef = useRef<HTMLInputElement | null>(null);
@@ -1363,19 +1373,77 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
 
                 {/* Gallery */}
                 {selectedBlock.type === 'gallery' && (
-                  <div className="space-y-2 md:col-span-2">
-                    <p className="text-xs text-muted-foreground">URLs de imágenes (una por línea)</p>
-                    <textarea rows={4} value={(selectedBlock.imageUrls || []).join('\n')}
-                      onChange={(e) => updateSelected({ imageUrls: e.target.value.split('\n').map((l) => l.trim()).filter(Boolean) })}
-                      className="w-full rounded-md border border-border px-2 py-1 text-sm" placeholder={'https://img1.jpg\nhttps://img2.jpg'} />
-                    <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3">
-                      <button type="button" onClick={() => galleryInputRef.current?.click()} disabled={uploading}
-                        className="w-full rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">
-                        {uploading ? 'Subiendo...' : 'Subir imagen a la galería'}
-                      </button>
-                      <input ref={galleryInputRef} type="file" accept="image/*" disabled={uploading} className="sr-only"
-                        onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; await uploadImageForBlock(f, selectedBlock.id, 'gallery'); e.currentTarget.value = ''; }} />
+                  <div className="space-y-3 md:col-span-2">
+                    <p className="text-xs font-semibold text-muted-foreground">Imágenes de la galería (hasta 4)</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[0, 1, 2, 3].map((slot) => {
+                        const url = (selectedBlock.imageUrls || [])[slot] || '';
+                        return (
+                          <div key={slot} className="relative rounded-md border-2 border-dashed border-border bg-muted/20 overflow-hidden" style={{ aspectRatio: '4/3' }}>
+                            {url ? (
+                              <>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={url} alt={`Imagen ${slot + 1}`} className="h-full w-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const urls = [...(selectedBlock.imageUrls || [])];
+                                    urls[slot] = '';
+                                    updateSelected({ imageUrls: urls.filter(Boolean) });
+                                  }}
+                                  className="absolute right-1 top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow"
+                                >✕</button>
+                              </>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled={uploading}
+                                onClick={() => {
+                                  setGalleryUploadSlot(slot);
+                                  galleryInputRef.current?.click();
+                                }}
+                                className="flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground hover:bg-muted/40 disabled:opacity-50 transition-colors"
+                              >
+                                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                  <path d="M12 16V8m0 0l-3 3m3-3l3 3" strokeLinecap="round" strokeLinejoin="round"/>
+                                  <rect x="3" y="3" width="18" height="18" rx="3"/>
+                                </svg>
+                                <span className="text-[10px]">{uploading ? 'Subiendo…' : `Foto ${slot + 1}`}</span>
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
+                    <input ref={galleryInputRef} type="file" accept="image/*" disabled={uploading} className="sr-only"
+                      onChange={async (e) => {
+                        const f = e.target.files?.[0];
+                        if (!f) return;
+                        // Subir imagen y colocarla en el slot correspondiente
+                        setUploading(true);
+                        try {
+                          const fd = new FormData();
+                          fd.append('file', f);
+                          fd.append('folder', 'contenidos/gallery');
+                          const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
+                          const data = await res.json().catch(() => ({})) as Record<string, unknown>;
+                          if (!res.ok || !data.url) throw new Error(String(data.error || 'Error subiendo'));
+                          const url = String(data.url);
+                          setBlocks((prev) => prev.map((b) => {
+                            if (b.id !== selectedId) return b;
+                            const urls = [...(b.imageUrls || [])];
+                            // Insertar en el slot activo
+                            while (urls.length <= galleryUploadSlot) urls.push('');
+                            urls[galleryUploadSlot] = url;
+                            return { ...b, imageUrls: urls.filter(Boolean) };
+                          }));
+                        } catch (uploadErr) {
+                          setErr(uploadErr instanceof Error ? uploadErr.message : 'Error subiendo imagen');
+                        } finally {
+                          setUploading(false);
+                          e.currentTarget.value = '';
+                        }
+                      }} />
                   </div>
                 )}
 
