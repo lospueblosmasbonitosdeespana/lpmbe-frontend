@@ -32,6 +32,13 @@ const CANONICAL_DROP_QUERY_PARAMS = new Set([
   'add_to_wishlist',
   'remove_item',
   '_wpnonce',
+  'pueblos',
+  'order',
+  'id_category',
+  'controller',
+  '_facet_cas_client_secteurs',
+  'at_medim',
+  'multiexperiencia_id',
 ]);
 const SUPPORTED_LOCALES = new Set(['es', 'en', 'fr', 'de', 'pt', 'it', 'ca']);
 
@@ -164,6 +171,16 @@ export function middleware(req: NextRequest): NextResponse {
     return permanentRedirect(req, '/rutas/mas-bonitos-de-los-pirineos');
   }
 
+  // /account/*, /user/* → private pages, redirect to home.
+  if (pathname.startsWith('/account/') || pathname === '/account') return permanentRedirect(req, '/');
+  if (pathname.startsWith('/user/')) return permanentRedirect(req, '/');
+  // /notificaciones → private, not indexable.
+  if (pathname === '/notificaciones' || pathname.startsWith('/notificaciones/')) return permanentRedirect(req, '/');
+
+  // Orphan sub-paths under /pueblos/SLUG/ that don't have real pages.
+  const orphanSubpath = pathname.match(/^\/pueblos\/([^/]+)\/(multiexperiencias|videos|categoria(?:\/.*)?)$/);
+  if (orphanSubpath) return permanentRedirect(req, `/pueblos/${orphanSubpath[1]}`);
+
   // URLs reportadas por Search Console como 404/Gone: enviar a home.
   if (
     SEARCH_CONSOLE_404_PATHS.has(pathname) ||
@@ -205,16 +222,16 @@ export function middleware(req: NextRequest): NextResponse {
     if (needsLowercase) return NextResponse.redirect(urlLower, 301);
   }
 
-  // Eliminar query params de tracking/legacy para consolidar canónicas.
-  const strippedParamsRedirect = stripNonCanonicalParams(req);
-  if (strippedParamsRedirect) return strippedParamsRedirect;
-
-  // Redirecciones legacy con equivalente actual.
+  // Redirecciones legacy con equivalente actual (antes del strip de params para evitar 2-hop).
   const redirectTarget = LEGACY_DIRECT_REDIRECTS[pathname];
   if (redirectTarget) return permanentRedirect(req, redirectTarget);
 
   // URLs antiguas sin reemplazo: redirigir a home para evitar 404/410 en el rastreo.
   if (EXACT_GONE_PATHS.has(pathname)) return permanentRedirect(req, '/');
+
+  // Eliminar query params de tracking/legacy para consolidar canónicas.
+  const strippedParamsRedirect = stripNonCanonicalParams(req);
+  if (strippedParamsRedirect) return strippedParamsRedirect;
 
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set('x-current-path', canonicalPath);
