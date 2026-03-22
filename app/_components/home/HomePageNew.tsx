@@ -569,7 +569,7 @@ function RutasSection({ routes = [] }: { routes: RouteCard[] }) {
             </Muted>
 
             <ul className="space-y-4">
-              {routes.slice(0, 4).map((route) => (
+              {routes.slice(1, 4).map((route) => (
                 <li key={route.slug}>
                   <Link
                     href={route.href}
