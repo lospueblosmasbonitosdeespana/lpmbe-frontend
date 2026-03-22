@@ -149,8 +149,19 @@ export function middleware(req: NextRequest): NextResponse {
   if (pathname.startsWith('/wp-content/') || pathname.startsWith('/wp-includes/')) return permanentRedirect(req, '/');
   if (pathname === '/noticias-y-eventos') return permanentRedirect(req, '/actualidad');
   if (/^\/noticias-y-eventos\/\d+$/.test(pathname)) return permanentRedirect(req, '/actualidad');
-  // WP date archives (informe noindex GSC): /2025/07, /2026/01/19, etc.
-  if (/^\/20(25|26)\/\d{2}(\/\d{2})?$/.test(pathname)) return permanentRedirect(req, '/actualidad');
+  // WP date archives (informe noindex GSC): /2024/05/06, /2025/07, /2026/01/19, etc.
+  if (/^\/20(24|25|26)\/\d{2}(\/\d{2})?$/.test(pathname)) return permanentRedirect(req, '/actualidad');
+  // WP theme cruft: /pf/*, /services/*, /projects/* — all redirect to home.
+  if (pathname.startsWith('/pf/')) return permanentRedirect(req, '/');
+  if (pathname.startsWith('/services/')) return permanentRedirect(req, '/');
+  if (pathname.startsWith('/projects/') || pathname === '/projects-page') return permanentRedirect(req, '/');
+  // /lpmbe/ prefix legacy: strip prefix and re-process (e.g. /lpmbe/ficha-pueblo/?id_lugar=65).
+  if (pathname.startsWith('/lpmbe/')) {
+    const stripped = pathname.replace(/^\/lpmbe/, '');
+    const dest = new URL(stripped || '/', req.url);
+    req.nextUrl.searchParams.forEach((v, k) => dest.searchParams.set(k, v));
+    return NextResponse.redirect(dest, 301);
+  }
   // WP category (informe noindex GSC): /category/office, etc.
   // Caso especial detectado en auditoria: /category/rutas debe consolidar a /rutas.
   if (pathname === '/category/rutas') return permanentRedirect(req, '/rutas');
