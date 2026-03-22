@@ -12,11 +12,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           '/wp-content/',
           '/wp-includes/',
-          '/ficha-pueblo',
-          '/ficha-pueblo/',
-          '/semaforo',
-          '/noticias-y-eventos',
-          '/experiencias-public',
           '/carrito',
           '/tienda/carrito',
           '/tienda/checkout',
