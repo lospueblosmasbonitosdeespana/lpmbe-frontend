@@ -77,7 +77,7 @@ function entry(
   };
   const safeImages = normalizeSitemapImageUrls(images);
   if (safeImages?.length) {
-    (out as { images?: { url: string }[] }).images = safeImages.map((url) => ({ url }));
+    (out as { images?: string[] }).images = safeImages;
   }
   return out;
 }
