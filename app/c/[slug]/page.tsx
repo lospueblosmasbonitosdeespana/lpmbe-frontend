@@ -8,6 +8,7 @@ import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
 import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle } from '@/lib/seo';
+import { autoLinkUrls } from '@/app/_lib/html';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 import ContenidoImageCarousel from '@/app/components/ContenidoImageCarousel';
 
@@ -279,7 +280,7 @@ export default async function ContenidoPage({
                 {isHtmlContent(body) ? (
                   <div dangerouslySetInnerHTML={{ __html: body }} />
                 ) : (
-                  <ReactMarkdown>{body}</ReactMarkdown>
+                  <ReactMarkdown>{autoLinkUrls(body)}</ReactMarkdown>
                 )}
               </div>
             )}
@@ -378,7 +379,7 @@ export default async function ContenidoPage({
               {isHtmlContent(contenido.contenidoMd) ? (
                 <div dangerouslySetInnerHTML={{ __html: contenido.contenidoMd }} />
               ) : (
-                <ReactMarkdown>{contenido.contenidoMd}</ReactMarkdown>
+                <ReactMarkdown>{autoLinkUrls(contenido.contenidoMd)}</ReactMarkdown>
               )}
             </div>
           )}
