@@ -535,7 +535,8 @@
     "nearestButton": "Pueblos cercanos",
     "nearestLoading": "Buscando pueblos cercanos...",
     "nearestTitle": "Pueblos cercanos a ti",
-    "verMasEventos": "Ver más eventos"
+    "verMasEventos": "Ver más eventos",
+    "moreInPueblo": "Hay más eventos en {pueblo}"
   },
   "recursos": {
     "eyebrow": "Club de Amigos",
