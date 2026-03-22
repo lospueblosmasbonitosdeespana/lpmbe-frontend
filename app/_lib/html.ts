@@ -21,15 +21,21 @@ export function stripHtml(html: string): string {
 const URL_RE = /(https?:\/\/[^\s<>"')\]]+)/gi;
 
 function truncateUrl(url: string, max = 60): string {
-  if (url.length <= max) return url;
   try {
     const u = new URL(url);
     const host = u.hostname.replace(/^www\./, '');
-    const path = u.pathname.replace(/\/$/, '');
-    const short = `${host}${path}`;
-    if (short.length <= max) return short;
-    return `${short.slice(0, max - 1)}…`;
+    let decoded: string;
+    try {
+      decoded = decodeURIComponent(u.pathname + u.search).replace(/\/$/, '');
+    } catch {
+      decoded = (u.pathname + u.search).replace(/\/$/, '');
+    }
+    if (!decoded || decoded === '/') return host;
+    const full = `${host}${decoded}`;
+    if (full.length <= max) return full;
+    return host;
   } catch {
+    if (url.length <= max) return url;
     return `${url.slice(0, max - 1)}…`;
   }
 }
