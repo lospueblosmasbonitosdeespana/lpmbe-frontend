@@ -5,7 +5,6 @@
 export function stripHtml(html: string): string {
   if (typeof html !== 'string') return '';
   return html
-    .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/g, ' ')
     .replace(/&#x27;/g, "'")
     .replace(/&#39;/g, "'")
@@ -13,6 +12,8 @@ export function stripHtml(html: string): string {
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
+    .replace(/<[^>]*>/g, '')
+    .replace(/<[^>]*$/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
