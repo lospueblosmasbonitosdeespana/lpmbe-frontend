@@ -189,18 +189,18 @@ export function middleware(req: NextRequest): NextResponse {
     return permanentRedirect(req, '/');
   }
 
-  // Casos legacy con querystring (WP antiguo)
+  // Casos legacy con querystring (WP antiguo) — con fallback si el ID no está mapeado.
   if (pathname === '/semaforo' && idLugar) {
     const target = LEGACY_SEMAFORO_ID_REDIRECTS[idLugar];
-    if (target) return permanentRedirect(req, target);
+    return permanentRedirect(req, target ?? '/pueblos');
   }
   if (pathname === '/experiencias-public' && idLugar) {
     const target = LEGACY_EXPERIENCIAS_ID_REDIRECTS[idLugar];
-    if (target) return permanentRedirect(req, target);
+    return permanentRedirect(req, target ?? '/experiencias');
   }
   if (pathname === '/noticias-y-eventos' && idPublicacion) {
     const target = LEGACY_NOTICIA_ID_REDIRECTS[idPublicacion];
-    if (target) return permanentRedirect(req, target);
+    return permanentRedirect(req, target ?? '/actualidad');
   }
 
   // Actualidad (global y por pueblo): ?tipo= / ?modo= siempre en minúsculas (SEO).
