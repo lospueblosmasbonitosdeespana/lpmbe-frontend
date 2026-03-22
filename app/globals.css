@@ -1,5 +1,4 @@
-/* display=optional reduce CLS: evita el “swap” que cambia métricas de texto al cargar la fuente */
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=optional");
+/* Fuentes self-hosted via next/font en layout.tsx (con size-adjust automatico, 0 CLS) */
 @import "tailwindcss";
 @import "tw-animate-css";
 

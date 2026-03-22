@@ -2,6 +2,7 @@ import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { Playfair_Display, Source_Sans_3 } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { Header } from "./_components/nav/Header";
@@ -21,6 +22,20 @@ import {
   type SupportedLocale,
 } from "@/lib/seo";
 import JsonLd from "./components/seo/JsonLd";
+
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "optional",
+  variable: "--font-serif",
+});
+
+const sourceSans3 = Source_Sans_3({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "optional",
+  variable: "--font-sans",
+});
 
 const baseUrl = getBaseUrl();
 
@@ -120,7 +135,7 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} className={`${playfairDisplay.variable} ${sourceSans3.variable}`} suppressHydrationWarning>
       <body className="antialiased">
         <GoogleTagManager />
         <JsonLd data={organizationLd} />

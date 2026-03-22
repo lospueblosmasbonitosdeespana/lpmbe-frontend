@@ -79,6 +79,19 @@ export async function Header({ locale }: HeaderProps) {
   // En dark mode usamos el mismo logo blanco que el footer (logoVariantUrl) si existe
   let logoContent: React.ReactNode;
 
+  const logoImgProps = {
+    width: 288,
+    height: 96,
+    style: {
+      height: '96px',
+      maxHeight: '96px',
+      width: 'auto',
+      maxWidth: '288px',
+      display: 'block',
+      objectFit: 'contain' as const,
+    },
+  };
+
   if (settings.activeLogo === 'text') {
     logoContent = (
       <span className="text-base font-semibold">{settings.brandName}</span>
@@ -88,29 +101,24 @@ export async function Header({ locale }: HeaderProps) {
       <img
         src={settings.logoVariantUrl}
         alt={settings.logoAlt}
-        style={{
-          height: '96px',
-          maxHeight: '96px',
-          width: 'auto',
-          display: 'block',
-          objectFit: 'contain',
-        }}
+        {...logoImgProps}
       />
     );
   } else if (settings.activeLogo === 'default' && settings.logoUrl) {
     if (settings.logoVariantUrl) {
-      // Dos logos: normal en claro, variante blanca en dark (mismo que footer)
       logoContent = (
         <>
           <img
             src={settings.logoUrl}
             alt={settings.logoAlt}
-            className="block h-24 max-h-24 w-auto object-contain dark:hidden"
+            {...logoImgProps}
+            className="block dark:hidden"
           />
           <img
             src={settings.logoVariantUrl}
             alt={settings.logoAlt}
-            className="hidden h-24 max-h-24 w-auto object-contain dark:block"
+            {...logoImgProps}
+            className="hidden dark:block"
           />
         </>
       );
@@ -119,18 +127,11 @@ export async function Header({ locale }: HeaderProps) {
         <img
           src={settings.logoUrl}
           alt={settings.logoAlt}
-          style={{
-            height: '96px',
-            maxHeight: '96px',
-            width: 'auto',
-            display: 'block',
-            objectFit: 'contain',
-          }}
+          {...logoImgProps}
         />
       );
     }
   } else {
-    // Fallback: texto
     logoContent = (
       <span className="text-base font-semibold">{settings.brandName}</span>
     );

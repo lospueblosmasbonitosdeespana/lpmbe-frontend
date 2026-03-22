@@ -101,9 +101,6 @@ export const LEGACY_DIRECT_REDIRECTS: Record<string, string> = {
   '/ruta-pueblos-castilla-eterna': '/rutas/ruta-pueblos-castilla-eterna',
   '/pueblos-bonitos-pirineos/roncal': '/pueblos/roncal',
   '/andalucia/nijar': '/pueblos/nijar',
-  '/ruta-pueblos-iberico-frontera/olivenza': '/pueblos/olivenza',
-  '/ruta-pueblos-cuatro-reinos/vinuesa': '/pueblos/vinuesa',
-  '/peniscola': '/pueblos/peniscola',
 };
 export const LEGACY_EXPERIENCIAS_ID_REDIRECTS: Record<string, string> = {
   '0': '/experiencias',
