@@ -495,7 +495,8 @@
     "nearestButton": "Borghi vicini",
     "nearestLoading": "Ricerca borghi vicini...",
     "nearestTitle": "Borghi vicino a te",
-    "verMasEventos": "Vedi altri eventi"
+    "verMasEventos": "Vedi altri eventi",
+    "moreInPueblo": "Più eventi a {pueblo}"
   },
   "recursos": {
     "eyebrow": "Club degli amici",

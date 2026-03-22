@@ -495,7 +495,8 @@
     "nearestButton": "Aldeias próximas",
     "nearestLoading": "A procurar aldeias próximas...",
     "nearestTitle": "Aldeias perto de si",
-    "verMasEventos": "Ver mais eventos"
+    "verMasEventos": "Ver mais eventos",
+    "moreInPueblo": "Mais eventos em {pueblo}"
   },
   "recursos": {
     "eyebrow": "Clube de amigos",

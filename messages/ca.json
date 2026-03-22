@@ -495,7 +495,8 @@
     "nearestButton": "Pobles propers",
     "nearestLoading": "Cercant pobles propers...",
     "nearestTitle": "Pobles a prop teu",
-    "verMasEventos": "Veure més esdeveniments"
+    "verMasEventos": "Veure més esdeveniments",
+    "moreInPueblo": "Més esdeveniments a {pueblo}"
   },
   "recursos": {
     "eyebrow": "Club d'Amics",

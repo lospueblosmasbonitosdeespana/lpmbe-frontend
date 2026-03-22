@@ -495,7 +495,8 @@
     "nearestButton": "Nahe Dörfer",
     "nearestLoading": "Suche nach nahen Dörfern...",
     "nearestTitle": "Dörfer in Ihrer Nähe",
-    "verMasEventos": "Mehr Veranstaltungen"
+    "verMasEventos": "Mehr Veranstaltungen",
+    "moreInPueblo": "Mehr Veranstaltungen in {pueblo}"
   },
   "recursos": {
     "eyebrow": "Club der Freunde",

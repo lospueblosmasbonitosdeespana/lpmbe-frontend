@@ -495,7 +495,8 @@
     "nearestButton": "Villages proches",
     "nearestLoading": "Recherche de villages proches...",
     "nearestTitle": "Villages près de chez vous",
-    "verMasEventos": "Voir plus d'événements"
+    "verMasEventos": "Voir plus d'événements",
+    "moreInPueblo": "Plus d'événements à {pueblo}"
   },
   "recursos": {
     "eyebrow": "Club des amis",
