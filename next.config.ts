@@ -5,6 +5,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   outputFileTracingRoot: path.join(__dirname),
   async headers() {
     return [

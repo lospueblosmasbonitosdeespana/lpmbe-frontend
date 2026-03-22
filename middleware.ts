@@ -94,6 +94,14 @@ function stripNonCanonicalParams(req: NextRequest): NextResponse | null {
 }
 
 export function middleware(req: NextRequest): NextResponse {
+  // www → non-www (evitar contenido duplicado)
+  const host = req.headers.get('host') ?? '';
+  if (host.startsWith('www.')) {
+    const url = req.nextUrl.clone();
+    url.host = host.replace(/^www\./, '');
+    return NextResponse.redirect(url, 301);
+  }
+
   const pathname = normalizePath(req.nextUrl.pathname);
   const canonicalPath = normalizeCanonicalPath(req.nextUrl.pathname);
   const normalizedSearch = normalizeSearchParams(req.nextUrl.searchParams);
