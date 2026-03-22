@@ -185,16 +185,21 @@ export default async function VideoWatchPage({
   const path = `/pueblos/${pueblo.slug}/videos/${canonicalSeg}`;
   const pageUrl = getCanonicalUrl(path, locale as SupportedLocale);
 
+  const rawDate = (video as { createdAt?: string }).createdAt;
+  const uploadDate = rawDate
+    ? new Date(rawDate).toISOString()
+    : "2024-01-01T00:00:00Z";
+
   const videoLd = {
     "@context": "https://schema.org",
     "@type": "VideoObject",
     name: video.titulo,
     description: `Video sobre ${pueblo.nombre}: ${video.titulo}.`,
-    thumbnailUrl: thumbnailUrl || undefined,
+    thumbnailUrl: thumbnailUrl || `${base}/brand/logo-favicon.png`,
     contentUrl: watchUrl,
     embedUrl,
     url: pageUrl,
-    uploadDate: (video as { createdAt?: string }).createdAt ?? "2024-01-01",
+    uploadDate,
     publisher: {
       "@type": "Organization",
       name: "Los Pueblos Más Bonitos de España",

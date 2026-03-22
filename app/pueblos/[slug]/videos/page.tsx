@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
 import {
+  getBaseUrl,
   getCanonicalUrl,
   getLocaleAlternates,
   seoDescription,
@@ -12,6 +13,7 @@ import {
   uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
+import JsonLd from "@/app/components/seo/JsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +44,18 @@ type Video = {
   titulo: string;
   url: string;
   thumbnail?: string | null;
+  createdAt?: string;
 };
+
+function extractYoutubeId(url: string): string | null {
+  const watchMatch = url.match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
+  if (watchMatch) return watchMatch[1];
+  const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+  if (shortMatch) return shortMatch[1];
+  const embedMatch = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+  if (embedMatch) return embedMatch[1];
+  return null;
+}
 
 function extractYoutubeEmbedUrl(url: string): string {
   const watchMatch = url.match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
@@ -101,8 +114,32 @@ export default async function VideosPuebloPage({
     { label: "Videos", href: `/pueblos/${pueblo.slug}/videos` },
   ];
 
+  const base = getBaseUrl();
+  const videoLds = videos.map((v) => {
+    const ytId = extractYoutubeId(v.url);
+    const thumbnailUrl = ytId
+      ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`
+      : `${base}/brand/logo-favicon.png`;
+    const uploadDate = v.createdAt
+      ? new Date(v.createdAt).toISOString()
+      : "2024-01-01T00:00:00Z";
+    return {
+      "@context": "https://schema.org",
+      "@type": "VideoObject" as const,
+      name: v.titulo,
+      description: `Video sobre ${pueblo.nombre}: ${v.titulo}.`,
+      thumbnailUrl,
+      embedUrl: extractYoutubeEmbedUrl(v.url),
+      contentUrl: ytId ? `https://www.youtube.com/watch?v=${ytId}` : v.url,
+      uploadDate,
+    };
+  });
+
   return (
     <main className="min-h-screen bg-background">
+      {videoLds.map((ld, i) => (
+        <JsonLd key={i} data={ld} />
+      ))}
       <div className="border-b border-border bg-card">
         <div className="mx-auto max-w-4xl px-4 py-6">
           <nav className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">

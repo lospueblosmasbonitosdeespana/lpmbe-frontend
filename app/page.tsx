@@ -356,16 +356,26 @@ export default async function HomePage() {
   }
   const homeVideoLds = (videos ?? [])
     .filter((v: { tipo?: string }) => (v.tipo ?? "").toUpperCase() !== "R2")
-    .slice(0, 2) // Solo los 2 que se muestran en la sección de vídeos
-    .map((v: { id: number; titulo?: string; url?: string }) => {
+    .slice(0, 2)
+    .map((v: { id: number; titulo?: string; url?: string; createdAt?: string }) => {
       const { embedUrl, videoId } = getEmbedUrlAndId(v.url || "");
       if (!embedUrl || !embedUrl.includes("youtube")) return null;
+      const name = (v.titulo || "Vídeo – Los Pueblos Más Bonitos de España").slice(0, 200);
+      const thumbnailUrl = videoId
+        ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+        : `${base}/brand/logo-favicon.png`;
+      const uploadDate = v.createdAt
+        ? new Date(v.createdAt).toISOString()
+        : new Date().toISOString();
       return {
         "@context": "https://schema.org",
         "@type": "VideoObject" as const,
-        name: (v.titulo || "Vídeo – Los Pueblos Más Bonitos de España").slice(0, 200),
+        name,
+        description: name,
         embedUrl,
-        thumbnailUrl: videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : undefined,
+        thumbnailUrl,
+        uploadDate,
+        contentUrl: videoId ? `https://www.youtube.com/watch?v=${videoId}` : embedUrl,
       };
     })
     .filter(Boolean) as Record<string, unknown>[];
