@@ -65,7 +65,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
   const [loadingPage, setLoadingPage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const [editorMode, setEditorMode] = useState<EditorMode>('builder');
+  const [editorMode, setEditorMode] = useState<EditorMode>('edit');
 
   // Ref que siempre tiene el último HTML generado por el constructor visual.
   // Se usa para sincronizar `contenido` al cambiar de pestaña o al guardar.

@@ -39,7 +39,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
   const [galleryFiles, setGalleryFiles] = useState<Array<File | null>>([null, null, null]);
-  const [editorMode, setEditorMode] = useState<EditorMode>('builder');
+  const [editorMode, setEditorMode] = useState<EditorMode>('edit');
   const [ocultoEnPlanifica, setOcultoEnPlanifica] = useState(false);
   const [rol, setRol] = useState<string | null>(null);
 
@@ -295,17 +295,6 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Resumen (opcional)</label>
-          <textarea
-            className="w-full rounded-md border px-3 py-2"
-            rows={3}
-            value={resumen}
-            onChange={(e) => setResumen(e.target.value)}
-            placeholder="Descripción corta del contenido"
           />
         </div>
 

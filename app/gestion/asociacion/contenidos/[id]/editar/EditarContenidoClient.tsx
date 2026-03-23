@@ -32,7 +32,7 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [editorMode, setEditorMode] = useState<EditorMode>('builder');
+  const [editorMode, setEditorMode] = useState<EditorMode>('edit');
 
   useEffect(() => {
     (async () => {

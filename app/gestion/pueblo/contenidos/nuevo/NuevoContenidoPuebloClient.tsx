@@ -48,7 +48,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
   const [error, setError] = useState<string | null>(null);
   
   // Sistema de 4 modos: Constructor visual, Editor TipTap, HTML directo, Vista previa
-  const [editorMode, setEditorMode] = useState<EditorMode>('builder');
+  const [editorMode, setEditorMode] = useState<EditorMode>('edit');
 
   // Limpiar formulario cuando cambia la categoría (ya no se carga página existente)
   // Ahora se permiten hasta 4 páginas por categoría
@@ -287,17 +287,6 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Resumen (opcional)</label>
-          <textarea
-            className="w-full rounded-md border px-3 py-2"
-            rows={3}
-            value={resumen}
-            onChange={(e) => setResumen(e.target.value)}
-            placeholder="Descripción corta del contenido"
           />
         </div>
 
