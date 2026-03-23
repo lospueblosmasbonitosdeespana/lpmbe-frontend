@@ -118,10 +118,10 @@ const categoryColors: Record<
 function CategoryCard({ category }: { category: CategoryData }) {
   const colors = categoryColors[category.type]
 
-  const content = (
+  return (
     <article
       className={cn(
-        "group rounded-lg border p-5 transition-all hover:shadow-md",
+        "relative group rounded-lg border p-5 transition-all hover:shadow-md",
         colors.bg,
         colors.border
       )}
@@ -132,7 +132,17 @@ function CategoryCard({ category }: { category: CategoryData }) {
         </div>
         <div className="flex-1">
           <Title as="h3" className="text-base transition-colors group-hover:text-primary">
-            {category.title}
+            {/* Overlay link cubre toda la tarjeta via ::after */}
+            {category.href ? (
+              <Link
+                href={category.href}
+                className="after:absolute after:inset-0 after:z-0 focus-visible:outline-none"
+              >
+                {category.title}
+              </Link>
+            ) : (
+              category.title
+            )}
           </Title>
           {category.description && (
             <Body size="sm" className="mt-1 text-muted-foreground">
@@ -142,8 +152,17 @@ function CategoryCard({ category }: { category: CategoryData }) {
           {category.items.length > 0 && (
             <ul className="mt-3 space-y-1">
               {category.items.slice(0, 3).map((item, index) => (
-                <li key={index} className="text-sm text-foreground/80">
-                  • {item.title}
+                <li key={index} className="relative z-10 text-sm text-foreground/80">
+                  {item.href ? (
+                    <Link
+                      href={item.href}
+                      className="hover:text-primary hover:underline"
+                    >
+                      • {item.title}
+                    </Link>
+                  ) : (
+                    <span>• {item.title}</span>
+                  )}
                 </li>
               ))}
               {category.items.length > 3 && (
@@ -155,12 +174,6 @@ function CategoryCard({ category }: { category: CategoryData }) {
       </div>
     </article>
   )
-
-  if (category.href) {
-    return <Link href={category.href}>{content}</Link>
-  }
-
-  return content
 }
 
 function CategoryMoreLabel({ count }: { count: number }) {

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 import ZoomableImage from '@/app/components/ZoomableImage';
+import { getApiUrl } from '@/lib/api';
 import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -65,7 +66,7 @@ async function getPuebloPage(puebloSlug: string, category: string, locale?: stri
   try {
     const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/public/pueblos/${puebloSlug}/pages${qs}`,
+      `${getApiUrl()}/public/pueblos/${puebloSlug}/pages${qs}`,
       { cache: 'no-store', headers: locale ? { 'Accept-Language': locale } : undefined }
     );
 
