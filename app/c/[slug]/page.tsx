@@ -374,6 +374,18 @@ export default async function ContenidoPage({
             )}
           </header>
 
+          {/* resumen como cuerpo principal del artículo/evento */}
+          {contenido.resumen && (
+            <div className="prose-contenido text-base leading-relaxed text-foreground mb-8">
+              {isHtmlContent(contenido.resumen) ? (
+                <div dangerouslySetInnerHTML={{ __html: contenido.resumen }} />
+              ) : (
+                <ReactMarkdown>{autoLinkUrls(contenido.resumen)}</ReactMarkdown>
+              )}
+            </div>
+          )}
+
+          {/* contenidoMd: bloques adicionales (CTAs, galerías, etc.) */}
           {contenido.contenidoMd && (
             <div className="prose-contenido text-base leading-relaxed text-foreground">
               {isHtmlContent(contenido.contenidoMd) ? (
