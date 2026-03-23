@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getPuebloBySlug } from "@/lib/api";
+import { getApiUrl, getPuebloBySlug } from "@/lib/api";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
@@ -81,6 +81,15 @@ type TematicaPage = {
 
 type PuebloTematicasData = Record<string, TematicaPage[]>;
 
+function normalizeCategoryKey(value: string | null | undefined): string {
+  return (value ?? "")
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/\s+/g, "_");
+}
+
 async function getPaginasTematicas(
   puebloSlug: string,
   categoriaKey: string,
@@ -89,12 +98,15 @@ async function getPaginasTematicas(
   try {
     const qs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/public/pueblos/${puebloSlug}/pages${qs}`,
+      `${getApiUrl()}/public/pueblos/${puebloSlug}/pages${qs}`,
       { cache: "no-store", headers: locale ? { "Accept-Language": locale } : undefined }
     );
     if (!res.ok) return [];
     const data: PuebloTematicasData = await res.json();
-    const pages = data[categoriaKey];
+    const pagesEntry = Object.entries(data).find(
+      ([key]) => normalizeCategoryKey(key) === normalizeCategoryKey(categoriaKey)
+    );
+    const pages = pagesEntry?.[1];
     if (!pages) return [];
     // El backend devuelve un array por categoría
     return Array.isArray(pages) ? pages : [pages as unknown as TematicaPage];
@@ -192,10 +204,14 @@ export default async function CategoriaPage({
     ((pueblo as { multiexperiencias?: MultiexperienciaEntry[] }).multiexperiencias ?? []);
 
   const poisFiltrados = pois.filter(
-    (p) => p.categoria === "POI" && (p.categoriaTematica ?? "").toUpperCase() === categoriaKey
+    (p) =>
+      p.categoria === "POI" &&
+      normalizeCategoryKey(p.categoriaTematica) === normalizeCategoryKey(categoriaKey)
   );
   const multiexFiltradas = multiexperiencias.filter(
-    (m: MultiexperienciaEntry) => (m.multiexperiencia?.categoria ?? "").toUpperCase() === categoriaKey
+    (m: MultiexperienciaEntry) =>
+      normalizeCategoryKey(m.multiexperiencia?.categoria) ===
+      normalizeCategoryKey(categoriaKey)
   );
 
   // Cargar páginas temáticas del alcalde para esta categoría
