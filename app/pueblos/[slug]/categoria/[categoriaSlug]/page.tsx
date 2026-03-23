@@ -15,7 +15,6 @@ import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Eyebrow, Body } from "@/app/components/ui/typography";
 import { PointsOfInterest } from "@/app/components/pueblos/PointsOfInterest";
-import SafeHtml from "@/app/_components/ui/SafeHtml";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +45,23 @@ const CATEGORIA_DESCRIPTIONS: Record<string, string> = {
   gastronomia: "Restaurantes, productos locales y tradición culinaria",
 };
 
+const CATEGORIA_TEMATICA_LABELS: Record<string, string> = {
+  GASTRONOMIA: "Gastronomía",
+  NATURALEZA: "Naturaleza",
+  CULTURA: "Cultura",
+  PATRIMONIO: "Patrimonio",
+  EN_FAMILIA: "En familia",
+  PETFRIENDLY: "Petfriendly",
+};
+
+type TematicaPage = {
+  id: number;
+  titulo: string;
+  resumen?: string | null;
+  contenido: string;
+  coverUrl?: string | null;
+};
+
 type Poi = {
   id: number;
   slug?: string | null;
@@ -58,25 +74,15 @@ type Poi = {
   categoriaTematica: string | null;
 };
 
-type MultiexperienciaLite = {
-  id?: number;
-  slug?: string | null;
-  titulo?: string | null;
-  descripcion?: string | null;
-  foto?: string | null;
-  categoria?: string | null;
-};
-
 type MultiexperienciaEntry = {
-  multiexperiencia?: MultiexperienciaLite | null;
-};
-
-type TematicaPage = {
-  id: number;
-  titulo: string;
-  resumen?: string | null;
-  contenido: string;
-  coverUrl?: string | null;
+  multiexperiencia?: {
+    id?: number;
+    slug?: string | null;
+    titulo?: string | null;
+    descripcion?: string | null;
+    foto?: string | null;
+    categoria?: string | null;
+  } | null;
 };
 
 type PuebloTematicasData = Record<string, TematicaPage[]>;
@@ -108,21 +114,11 @@ async function getPaginasTematicas(
     );
     const pages = pagesEntry?.[1];
     if (!pages) return [];
-    // El backend devuelve un array por categoría
     return Array.isArray(pages) ? pages : [pages as unknown as TematicaPage];
   } catch {
     return [];
   }
 }
-
-const CATEGORIA_TEMATICA_LABELS: Record<string, string> = {
-  GASTRONOMIA: "Gastronomía",
-  NATURALEZA: "Naturaleza",
-  CULTURA: "Cultura",
-  PATRIMONIO: "Patrimonio",
-  EN_FAMILIA: "En familia",
-  PETFRIENDLY: "Petfriendly",
-};
 
 export async function generateMetadata({
   params,
@@ -137,7 +133,9 @@ export async function generateMetadata({
   const path = `/pueblos/${slug}/categoria/${categoriaSlug}`;
   return {
     title: seoTitle(`${label} en ${name}${localeSuffix}`),
-    description: seoDescription(`${CATEGORIA_DESCRIPTIONS[categoriaSlug] ?? "Categoría temática"} en ${name}.${localeSuffix}`),
+    description: seoDescription(
+      `${CATEGORIA_DESCRIPTIONS[categoriaSlug] ?? "Categoría temática"} en ${name}.${localeSuffix}`
+    ),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
@@ -155,6 +153,7 @@ export default async function CategoriaPage({
   const locale = await getLocale();
   const tPueblo = await getTranslations("puebloPage");
   const categoriaKey = CATEGORIA_SLUG_TO_KEY[categoriaSlug];
+
   if (!categoriaKey) {
     return (
       <main className="bg-background min-h-screen">
@@ -167,7 +166,10 @@ export default async function CategoriaPage({
               <p className="mt-3 text-muted-foreground">
                 La categoría solicitada no está disponible.
               </p>
-              <Link href={`/pueblos/${slug}`} className="mt-6 inline-block text-sm font-medium text-primary hover:underline">
+              <Link
+                href={`/pueblos/${slug}`}
+                className="mt-6 inline-block text-sm font-medium text-primary hover:underline"
+              >
                 Volver al pueblo
               </Link>
             </div>
@@ -190,7 +192,10 @@ export default async function CategoriaPage({
               <p className="mt-3 text-muted-foreground">
                 No se ha podido cargar este pueblo en este momento.
               </p>
-              <Link href="/pueblos" className="mt-6 inline-block text-sm font-medium text-primary hover:underline">
+              <Link
+                href="/pueblos"
+                className="mt-6 inline-block text-sm font-medium text-primary hover:underline"
+              >
                 Volver a pueblos
               </Link>
             </div>
@@ -199,9 +204,11 @@ export default async function CategoriaPage({
       </main>
     );
   }
+
   const pois = (pueblo.pois ?? []) as Poi[];
-  const multiexperiencias =
-    ((pueblo as { multiexperiencias?: MultiexperienciaEntry[] }).multiexperiencias ?? []);
+  const multiexperiencias = (
+    (pueblo as { multiexperiencias?: MultiexperienciaEntry[] }).multiexperiencias ?? []
+  );
 
   const poisFiltrados = pois.filter(
     (p) =>
@@ -214,10 +221,13 @@ export default async function CategoriaPage({
       normalizeCategoryKey(categoriaKey)
   );
 
-  // Cargar páginas temáticas del alcalde para esta categoría
   const paginasTematicas = await getPaginasTematicas(slug, categoriaKey, locale);
 
-  const tieneContenido = poisFiltrados.length > 0 || multiexFiltradas.length > 0 || paginasTematicas.length > 0;
+  const tieneContenido =
+    poisFiltrados.length > 0 ||
+    multiexFiltradas.length > 0 ||
+    paginasTematicas.length > 0;
+
   const label = CATEGORIA_LABELS[categoriaSlug];
   const descripcion = CATEGORIA_DESCRIPTIONS[categoriaSlug];
 
@@ -230,14 +240,18 @@ export default async function CategoriaPage({
     gastronomia: "catGastronomia",
   };
   const i18nCatLabel = CAT_I18N_KEY[categoriaSlug]
-    ? tPueblo(CAT_I18N_KEY[categoriaSlug] as any)
+    ? tPueblo(CAT_I18N_KEY[categoriaSlug] as Parameters<typeof tPueblo>[0])
     : label;
-  const h1Text = tPueblo("h1CategoriaEn", { categoria: i18nCatLabel, nombre: pueblo.nombre });
+  const h1Text = tPueblo("h1CategoriaEn", {
+    categoria: i18nCatLabel,
+    nombre: pueblo.nombre,
+  });
 
   return (
     <main className="bg-background min-h-screen">
       <Section spacing="md">
         <Container>
+          {/* Breadcrumb */}
           <nav className="mb-6 text-sm text-muted-foreground">
             <Link href="/pueblos" className="hover:text-foreground">
               Pueblos
@@ -250,6 +264,7 @@ export default async function CategoriaPage({
             <span className="text-foreground">{i18nCatLabel}</span>
           </nav>
 
+          {/* Header */}
           <div className="mb-10">
             <Eyebrow className="mb-2">Qué hacer</Eyebrow>
             <h1 className="font-serif text-4xl font-medium tracking-tight">
@@ -259,60 +274,112 @@ export default async function CategoriaPage({
           </div>
 
           {tieneContenido ? (
-            <>
-              {/* Páginas temáticas del alcalde */}
+            <div className="space-y-16">
+              {/* ── PÁGINAS TEMÁTICAS: tarjetas grandes con foto ── */}
               {paginasTematicas.length > 0 && (
-                <div className="space-y-12 mb-12">
-                  {paginasTematicas.map((page) => (
-                    <article key={page.id} className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-                      {page.coverUrl && page.coverUrl.trim() && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={page.coverUrl.trim()}
-                          alt={page.titulo}
-                          className="h-64 w-full object-cover"
-                        />
-                      )}
-                      <div className="p-6 md:p-8">
-                        <h2 className="font-serif text-2xl font-medium text-foreground">{page.titulo}</h2>
-                        {page.resumen && (
-                          <p className="mt-2 text-muted-foreground">{page.resumen}</p>
-                        )}
-                        {page.contenido && (
-                          <div className="mt-6 prose prose-gray max-w-none [&_img]:max-w-full [&_img]:rounded-lg">
-                            <SafeHtml html={page.contenido} />
+                <section>
+                  <div
+                    className={
+                      paginasTematicas.length === 1
+                        ? "grid grid-cols-1 gap-8 max-w-2xl"
+                        : "grid grid-cols-1 gap-8 sm:grid-cols-2"
+                    }
+                  >
+                    {paginasTematicas.map((page) => (
+                      <Link
+                        key={page.id}
+                        href={`/pueblos/${slug}/categoria/${categoriaSlug}/${page.id}`}
+                        className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:shadow-xl hover:-translate-y-1"
+                      >
+                        {/* Foto */}
+                        <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+                          {page.coverUrl && page.coverUrl.trim() ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={page.coverUrl.trim()}
+                              alt={page.titulo}
+                              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted/60">
+                              <span className="text-3xl text-muted-foreground opacity-40">
+                                {categoriaSlug === "gastronomia"
+                                  ? "🍽️"
+                                  : categoriaSlug === "naturaleza"
+                                  ? "🌿"
+                                  : categoriaSlug === "cultura"
+                                  ? "🏛️"
+                                  : categoriaSlug === "patrimonio"
+                                  ? "🏰"
+                                  : categoriaSlug === "en-familia"
+                                  ? "👨‍👩‍👧"
+                                  : "🐾"}
+                              </span>
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex flex-1 flex-col p-6">
+                          <Eyebrow className="mb-2 text-xs">{label}</Eyebrow>
+                          <h2 className="font-serif text-xl font-medium leading-snug text-foreground group-hover:text-primary transition-colors">
+                            {page.titulo}
+                          </h2>
+                          {page.resumen && (
+                            <p className="mt-2 text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                              {page.resumen}
+                            </p>
+                          )}
+                          <div className="mt-4 flex items-center gap-1 text-sm font-medium text-primary">
+                            <span>Ver experiencia</span>
+                            <span className="transition-transform group-hover:translate-x-1">
+                              →
+                            </span>
                           </div>
-                        )}
-                      </div>
-                    </article>
-                  ))}
-                </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
               )}
 
-              {/* POIs */}
+              {/* ── POIS ── */}
               {poisFiltrados.length > 0 && (
-                <PointsOfInterest
-                  hideHeader
-                  maxItems={0}
-                  points={poisFiltrados.map((poi) => ({
-                    id: poi.id,
-                    name: poi.nombre,
-                    type: CATEGORIA_TEMATICA_LABELS[categoriaKey] ?? label,
-                    description:
-                      poi.descripcion_larga?.replace(/<[^>]*>/g, "").slice(0, 120) ??
-                      poi.descripcion_corta ??
-                      "",
-                    image: poi.foto,
-                    rotation: poi.rotation,
-                    href: `/pueblos/${slug}/pois/${poi.slug || poi.id}`,
-                  }))}
-                />
+                <section>
+                  {paginasTematicas.length > 0 && (
+                    <h2 className="mb-6 font-serif text-2xl font-medium text-foreground">
+                      Lugares de interés
+                    </h2>
+                  )}
+                  <PointsOfInterest
+                    hideHeader
+                    maxItems={0}
+                    points={poisFiltrados.map((poi) => ({
+                      id: poi.id,
+                      name: poi.nombre,
+                      type:
+                        CATEGORIA_TEMATICA_LABELS[categoriaKey] ?? label,
+                      description:
+                        poi.descripcion_larga
+                          ?.replace(/<[^>]*>/g, "")
+                          .slice(0, 120) ??
+                        poi.descripcion_corta ??
+                        "",
+                      image: poi.foto,
+                      rotation: poi.rotation,
+                      href: `/pueblos/${slug}/pois/${poi.slug || poi.id}`,
+                    }))}
+                  />
+                </section>
               )}
 
-              {/* Multiexperiencias */}
+              {/* ── MULTIEXPERIENCIAS ── */}
               {multiexFiltradas.length > 0 && (
-                <Section spacing="md" className="mt-8">
-                  <h2 className="mb-4 font-serif text-xl font-medium">Experiencias</h2>
+                <section>
+                  <h2 className="mb-6 font-serif text-2xl font-medium text-foreground">
+                    Experiencias
+                  </h2>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {multiexFiltradas.map((m: MultiexperienciaEntry) => (
                       <Link
@@ -322,6 +389,7 @@ export default async function CategoriaPage({
                       >
                         {m.multiexperiencia?.foto && (
                           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-sm bg-muted">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={m.multiexperiencia.foto}
                               alt={m.multiexperiencia.titulo ?? label}
@@ -336,18 +404,20 @@ export default async function CategoriaPage({
                           {m.multiexperiencia?.descripcion && (
                             <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                               {m.multiexperiencia.descripcion.slice(0, 100)}
-                              {m.multiexperiencia.descripcion.length > 100 ? "…" : ""}
+                              {m.multiexperiencia.descripcion.length > 100
+                                ? "…"
+                                : ""}
                             </p>
                           )}
                         </div>
                       </Link>
                     ))}
                   </div>
-                </Section>
+                </section>
               )}
-            </>
+            </div>
           ) : (
-            /* Estado vacío - mensaje bonito */
+            /* Estado vacío */
             <div className="rounded-xl border border-dashed border-border bg-card/50 px-8 py-16 text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
                 <svg
@@ -368,8 +438,9 @@ export default async function CategoriaPage({
                 En esta categoría todavía no tenemos información
               </h2>
               <p className="mx-auto mt-3 max-w-md text-muted-foreground">
-                Estamos trabajando para añadir contenidos de {label.toLowerCase()} en {pueblo.nombre}.
-                Pronto podrás descubrir rutas, lugares y experiencias.
+                Estamos trabajando para añadir contenidos de{" "}
+                {label.toLowerCase()} en {pueblo.nombre}. Pronto podrás
+                descubrir rutas, lugares y experiencias.
               </p>
               <Link
                 href={`/pueblos/${slug}`}
@@ -380,7 +451,6 @@ export default async function CategoriaPage({
             </div>
           )}
 
-          {/* Enlace volver siempre visible cuando hay contenido */}
           {tieneContenido && (
             <div className="mt-12 text-center">
               <Link
