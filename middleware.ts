@@ -197,7 +197,12 @@ export function middleware(req: NextRequest): NextResponse {
   if (pathname === '/notificaciones' || pathname.startsWith('/notificaciones/')) return permanentRedirect(req, '/');
 
   // Orphan sub-paths under /pueblos/SLUG/ that don't have real pages.
-  // NOTE: multiexperiencias, videos y categoria SÍ tienen páginas reales — NO redirigir.
+  // multiexperiencias, videos y categoria/[cat] SÍ tienen páginas reales — NO redirigir.
+  // Solo redirigir /pueblos/SLUG/categoria (sin subcategoría) que no tiene page.tsx.
+  if (/^\/pueblos\/([^/]+)\/categoria$/.test(pathname)) {
+    const puebloSlug = pathname.match(/^\/pueblos\/([^/]+)\/categoria$/)?.[1];
+    return permanentRedirect(req, `/pueblos/${puebloSlug}`);
+  }
 
   // URLs reportadas por Search Console como 404/Gone: enviar a home.
   if (
