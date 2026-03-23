@@ -79,7 +79,7 @@ export async function Header({ locale }: HeaderProps) {
   // En dark mode usamos el mismo logo blanco que el footer (logoVariantUrl) si existe
   let logoContent: React.ReactNode;
 
-  const logoClassName = "h-16 md:h-[96px] w-auto object-contain";
+  const logoClassName = "h-16 md:h-[96px] w-auto object-contain shrink-0";
 
   if (settings.activeLogo === 'text') {
     logoContent = (
@@ -127,7 +127,7 @@ export async function Header({ locale }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm dark:bg-card dark:border-b dark:border-border dark:shadow-none">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:py-5">
-        <Link href="/" className="block text-foreground dark:text-white" aria-label="Inicio">
+        <Link href="/" className="block flex-shrink-0 text-foreground dark:text-white" aria-label="Inicio">
           {logoContent}
           <span className="sr-only">Los Pueblos Más Bonitos de España - Inicio</span>
         </Link>
@@ -136,14 +136,16 @@ export async function Header({ locale }: HeaderProps) {
           <MegaMenu items={navItems} />
         </div>
 
-        <div className="flex items-center gap-3 md:gap-4 text-foreground">
+        <div className="flex items-center gap-2 md:gap-4 text-foreground">
           <LocaleSwitcher currentLocale={locale} variant="header" />
           <MobileMenu items={navItems} />
           <CartIndicatorWrapper />
-          <Link href="/contacto" className="text-sm font-medium hover:underline">
+          <Link href="/contacto" className="hidden md:inline text-sm font-medium hover:underline">
             {t("contact")}
           </Link>
-          <AuthNavLink />
+          <div className="hidden md:inline">
+            <AuthNavLink />
+          </div>
         </div>
       </div>
     </header>
