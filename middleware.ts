@@ -197,8 +197,7 @@ export function middleware(req: NextRequest): NextResponse {
   if (pathname === '/notificaciones' || pathname.startsWith('/notificaciones/')) return permanentRedirect(req, '/');
 
   // Orphan sub-paths under /pueblos/SLUG/ that don't have real pages.
-  const orphanSubpath = pathname.match(/^\/pueblos\/([^/]+)\/(multiexperiencias|videos|categoria(?:\/.*)?)$/);
-  if (orphanSubpath) return permanentRedirect(req, `/pueblos/${orphanSubpath[1]}`);
+  // NOTE: multiexperiencias, videos y categoria SÍ tienen páginas reales — NO redirigir.
 
   // URLs reportadas por Search Console como 404/Gone: enviar a home.
   if (
