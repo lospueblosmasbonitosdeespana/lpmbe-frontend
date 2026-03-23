@@ -18,11 +18,11 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const localeSuffix = locale === 'es' ? '' : ` (${locale.toUpperCase()})`;
+  const t = await getTranslations('sello');
   const path = '/el-sello/proceso';
   return {
-    title: `Proceso de selección del Sello${localeSuffix}`,
-    description: `Fases del proceso de seleccion y evaluacion para obtener el sello en un municipio.${localeSuffix}`,
+    title: t('processTitle'),
+    description: t('processPageSubtitle'),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

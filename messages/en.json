@@ -1506,7 +1506,19 @@
     "selloTitle": "The tourism quality seal",
     "selloDescription": "The Most Beautiful Villages of Spain is an association that certifies and promotes rural heritage.",
     "logoAlt": "Logo The Most Beautiful Villages of Spain",
-    "sealBadgeAlt": "Tourism quality seal"
+    "sealBadgeAlt": "Tourism quality seal",
+    "worldNetwork1Country": "France",
+    "worldNetwork1Name": "Les Plus Beaux Villages de France",
+    "worldNetwork2Country": "Italy",
+    "worldNetwork2Name": "The most beautiful Borghi in Italy",
+    "worldNetwork3Country": "Wallonia (Belgium)",
+    "worldNetwork3Name": "Les Plus Beaux Villages de Wallonie",
+    "worldNetwork4Country": "Japan",
+    "worldNetwork4Name": "The Most Beautiful Villages in Japan",
+    "worldNetwork5Country": "Quebec (Canada)",
+    "worldNetwork5Name": "Les Plus Beaux Villages du Québec",
+    "worldNetwork6Country": "Switzerland",
+    "worldNetwork6Name": "Les Plus Beaux Villages de Suisse"
   },
   "seo": {
     "siteNameSuffix": " - The Most Beautiful Villages in Spain",

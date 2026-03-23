@@ -473,7 +473,7 @@
       "viewDayEvents": "Vedi eventi del giorno →",
       "liveStream": "Trasmissione in diretta",
       "liveTitle": "Diretta {village}",
-      "agenda": "Agenda",
+      "agenda": "Ordine del giorno",
       "hideAgenda": "Nascondi agenda",
       "viewFullAgenda": "Vedi agenda completa",
       "details": "Dettagli",
@@ -615,7 +615,7 @@
     "h1LugaresDeInteres": "Luoghi di interesse a {nombre}",
     "h1Archivo": "Archivio di {nombre}",
     "catNaturaleza": "Natura",
-    "catCultura": "Cultura",
+    "catCultura": "La cultura",
     "catEnFamilia": "In famiglia",
     "catPatrimonio": "Patrimonio",
     "catPetfriendly": "Pet-friendly",
@@ -1313,7 +1313,8 @@
     "alertWind": "Vento",
     "alertFrost": "Gelo",
     "alertHeat": "Il calore",
-    "metaDescription": "Consulta il meteo nei Borghi Più Belli di Spagna: temperatura, pioggia, neve e allerte meteo."
+    "metaDescription": "Consulta il meteo nei Borghi Più Belli di Spagna: temperatura, pioggia, neve e allerte meteo.",
+    "serverUnavailable": "Il server meteo non è disponibile. Si prega di tornare a controllare tra qualche tempo."
   },
   "nocheRomantica": {
     "title": "Notte romantica",
@@ -1505,7 +1506,19 @@
     "selloTitle": "Il sigillo di qualità turistica",
     "selloDescription": "I Borghi Più Belli di Spagna è un'associazione che certifica e promuove il patrimonio rurale.",
     "logoAlt": "Logo I Borghi Più Belli di Spagna",
-    "sealBadgeAlt": "Sigillo di qualità turistica"
+    "sealBadgeAlt": "Sigillo di qualità turistica",
+    "worldNetwork1Country": "Francia",
+    "worldNetwork1Name": "I più bei villaggi di Francia",
+    "worldNetwork2Country": "Italia",
+    "worldNetwork2Name": "I Borghi più belli d'Italia",
+    "worldNetwork3Country": "Vallonia (Belgio)",
+    "worldNetwork3Name": "I più bei villaggi della Vallonia",
+    "worldNetwork4Country": "Giappone",
+    "worldNetwork4Name": "I villaggi più belli del Giappone",
+    "worldNetwork5Country": "Québec (Canada)",
+    "worldNetwork5Name": "I più bei villaggi del Québec",
+    "worldNetwork6Country": "Svizzera",
+    "worldNetwork6Name": "I più bei villaggi della Svizzera"
   },
   "seo": {
     "siteNameSuffix": " - I villaggi più belli della Spagna",

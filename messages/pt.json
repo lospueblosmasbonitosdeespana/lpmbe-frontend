@@ -295,7 +295,7 @@
     "management": "Gestão",
     "login": "Entrar",
     "languageLabel": "Língua",
-    "semanaSanta": "Semana Santa",
+    "semanaSanta": "Páscoa",
     "appPage": "Baixar a app",
     "prensa": "Imprensa"
   },
@@ -443,7 +443,7 @@
       "errorDeleting": "Erro ao apagar"
     },
     "semanaSanta": {
-      "defaultTitle": "Semana Santa",
+      "defaultTitle": "Páscoa",
       "eyebrow": "Experiências · Planificar",
       "subtitleFallback": "Selecione uma aldeia participante para ver o cartaz, agenda e procissões por dia.",
       "edition": "Edição {year}",
@@ -468,14 +468,14 @@
       "horizontalPosterAlt": "Cartaz horizontal {village}",
       "processionsByDay": "Procissões por dia",
       "noScheduledEventDays": "Não há dias com eventos programados.",
-      "eventsCount": "{count} eventos",
+      "eventsCount": "{contagem} de eventos",
       "tourismFestivalTag": "Festa de Interesse Turístico",
       "viewDayEvents": "Ver eventos do dia →",
       "liveStream": "Transmissão em direto",
       "liveTitle": "Direto {village}",
       "agenda": "Agenda",
       "hideAgenda": "Ocultar agenda",
-      "viewFullAgenda": "Ver agenda completa",
+      "viewFullAgenda": "Ver a agenda completa",
       "details": "Detalhes",
       "importantNotices": "Avisos importantes",
       "route": "Percurso",
@@ -609,7 +609,7 @@
     "viewOnGoogleMaps": "Ver no Google Maps",
     "videos": "Vídeos",
     "h1Videos": "Vídeos de {nombre}",
-    "h1Webcam": "Webcam de {nombre}",
+    "h1Webcam": "Webcam de {nome}",
     "h1Actualidad": "Atualidade de {nombre}",
     "h1Multiexperiencias": "Multi-experiências em {nombre}",
     "h1LugaresDeInteres": "Locais de interesse em {nombre}",
@@ -1313,7 +1313,8 @@
     "alertWind": "Vento",
     "alertFrost": "Geada",
     "alertHeat": "Calor",
-    "metaDescription": "Consulte o tempo nas Aldeias Mais Bonitas de Espanha: temperatura, chuva, neve e alertas meteorológicos."
+    "metaDescription": "Consulte o tempo nas Aldeias Mais Bonitas de Espanha: temperatura, chuva, neve e alertas meteorológicos.",
+    "serverUnavailable": "O servidor meteorológico não está disponível. Volte a consultar dentro de algum tempo."
   },
   "nocheRomantica": {
     "title": "Noite romântica",
@@ -1505,7 +1506,19 @@
     "selloTitle": "O selo de qualidade turística",
     "selloDescription": "As Aldeias Mais Bonitas de Espanha é uma associação que certifica e promove o património rural.",
     "logoAlt": "Logo As Aldeias Mais Bonitas de Espanha",
-    "sealBadgeAlt": "Selo de qualidade turística"
+    "sealBadgeAlt": "Selo de qualidade turística",
+    "worldNetwork1Country": "França",
+    "worldNetwork1Name": "Les Plus Beaux Villages de França",
+    "worldNetwork2Country": "Itália",
+    "worldNetwork2Name": "Os bairros mais bonitos de Itália",
+    "worldNetwork3Country": "Valónia (Bélgica)",
+    "worldNetwork3Name": "As mais belas aldeias da Valónia",
+    "worldNetwork4Country": "Japão",
+    "worldNetwork4Name": "As aldeias mais bonitas do Japão",
+    "worldNetwork5Country": "Quebeque (Canadá)",
+    "worldNetwork5Name": "As mais belas aldeias do Quebeque",
+    "worldNetwork6Country": "Suíça",
+    "worldNetwork6Name": "As mais belas aldeias da Suíça"
   },
   "seo": {
     "siteNameSuffix": " - As aldeias mais bonitas de Espanha",
@@ -1528,7 +1541,7 @@
   },
   "gestion": {
     "tabUsuarios": "Utilizadores",
-    "tabNewsletter": "Newsletter",
+    "tabNewsletter": "Boletim informativo",
     "tabApp": "📱 Aplicação",
     "tabInterno": "Interno",
     "tabPueblos": "Aldeias",
@@ -1569,7 +1582,7 @@
   "pressPage": {
     "title": "Imprensa e média",
     "intro": "Recursos para jornalistas, meios de comunicação e criadores de conteúdo.",
-    "tabReleases": "Comunicados",
+    "tabReleases": "Comunicados de imprensa",
     "tabMedia": "Média",
     "tabKit": "Kit de imprensa",
     "mediaMentions": "Menções nos média",
@@ -1580,7 +1593,7 @@
     "kitDesc": "Descarregue os recursos oficiais para cobrir As Aldeias Mais Bonitas de Espanha.",
     "kitContactTitle": "Contacto de imprensa",
     "kitContactDesc": "Para entrevistas, informações adicionais ou pedidos de acreditação.",
-    "latestOfficial": "Últimos comunicados",
+    "latestOfficial": "Últimos comunicados de imprensa",
     "viewAllNews": "Ver todas as notícias",
     "backHome": "Voltar ao início",
     "mediaTypeNews": "Notícia",
@@ -1589,7 +1602,7 @@
     "mediaTypePress": "Imprensa"
   },
   "appPage": {
-    "badge": "App oficial",
+    "badge": "Aplicação oficial",
     "downloadAppStore": "Descarregar na App Store",
     "downloadGooglePlay": "Disponível no Google Play",
     "alsoGooglePlay": "Também no Google Play",

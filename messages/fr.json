@@ -473,7 +473,7 @@
       "viewDayEvents": "Voir les événements du jour →",
       "liveStream": "Diffusion en direct",
       "liveTitle": "Direct {village}",
-      "agenda": "Agenda",
+      "agenda": "Ordre du jour",
       "hideAgenda": "Masquer l'agenda",
       "viewFullAgenda": "Voir l'agenda complet",
       "details": "Détails",
@@ -609,7 +609,7 @@
     "viewOnGoogleMaps": "Voir sur Google Maps",
     "videos": "Vidéos",
     "h1Videos": "Vidéos de {nombre}",
-    "h1Webcam": "Webcam de {nombre}",
+    "h1Webcam": "Webcam de {nom}",
     "h1Actualidad": "Actualités de {nombre}",
     "h1Multiexperiencias": "Multi-expériences à {nombre}",
     "h1LugaresDeInteres": "Lieux d'intérêt à {nombre}",
@@ -1313,7 +1313,8 @@
     "alertWind": "Le vent",
     "alertFrost": "Givre",
     "alertHeat": "Chaleur",
-    "metaDescription": "Consultez la météo dans les Plus Beaux Villages d'Espagne : température, pluie, neige et alertes météo."
+    "metaDescription": "Consultez la météo dans les Plus Beaux Villages d'Espagne : température, pluie, neige et alertes météo.",
+    "serverUnavailable": "Le serveur météo n'est pas disponible. Veuillez revenir dans quelque temps."
   },
   "nocheRomantica": {
     "title": "Nuit romantique",
@@ -1505,7 +1506,19 @@
     "selloTitle": "Le label de qualité touristique",
     "selloDescription": "Les Plus Beaux Villages d'Espagne est une association qui certifie et promeut le patrimoine rural.",
     "logoAlt": "Logo Les Plus Beaux Villages d'Espagne",
-    "sealBadgeAlt": "Label de qualité touristique"
+    "sealBadgeAlt": "Label de qualité touristique",
+    "worldNetwork1Country": "France",
+    "worldNetwork1Name": "Les Plus Beaux Villages de France",
+    "worldNetwork2Country": "Italie",
+    "worldNetwork2Name": "Les plus beaux villages d'Italie",
+    "worldNetwork3Country": "Wallonie (Belgique)",
+    "worldNetwork3Name": "Les Plus Beaux Villages de Wallonie",
+    "worldNetwork4Country": "Japon",
+    "worldNetwork4Name": "Les plus beaux villages du Japon",
+    "worldNetwork5Country": "Québec (Canada)",
+    "worldNetwork5Name": "Les Plus Beaux Villages du Québec",
+    "worldNetwork6Country": "Suisse",
+    "worldNetwork6Name": "Les Plus Beaux Villages de Suisse"
   },
   "seo": {
     "siteNameSuffix": " - Les plus beaux villages d'Espagne",
@@ -1528,7 +1541,7 @@
   },
   "gestion": {
     "tabUsuarios": "Utilisateurs",
-    "tabNewsletter": "Newsletter",
+    "tabNewsletter": "Bulletin d'information",
     "tabApp": "📱 App",
     "tabInterno": "Interne",
     "tabPueblos": "Villages",

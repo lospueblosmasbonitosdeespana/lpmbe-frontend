@@ -473,7 +473,7 @@
       "viewDayEvents": "Tagesereignisse ansehen →",
       "liveStream": "Live-Übertragung",
       "liveTitle": "Live {village}",
-      "agenda": "Agenda",
+      "agenda": "Tagesordnung",
       "hideAgenda": "Agenda ausblenden",
       "viewFullAgenda": "Vollständige Agenda ansehen",
       "details": "Details",
@@ -1313,7 +1313,8 @@
     "alertWind": "Wind",
     "alertFrost": "Frost",
     "alertHeat": "Wärme",
-    "metaDescription": "Wetter in den Schönsten Dörfern Spaniens: Temperatur, Regen, Schnee und Wetteralarme."
+    "metaDescription": "Wetter in den Schönsten Dörfern Spaniens: Temperatur, Regen, Schnee und Wetteralarme.",
+    "serverUnavailable": "Der Wetterserver ist nicht verfügbar. Bitte schauen Sie in einer Weile wieder vorbei."
   },
   "nocheRomantica": {
     "title": "Romantische Nacht",
@@ -1505,7 +1506,19 @@
     "selloTitle": "Das Qualitätssiegel für Tourismus",
     "selloDescription": "Die Schönsten Dörfer Spaniens ist ein Verband, der das ländliche Erbe zertifiziert und fördert.",
     "logoAlt": "Logo Die Schönsten Dörfer Spaniens",
-    "sealBadgeAlt": "Qualitätssiegel für Tourismus"
+    "sealBadgeAlt": "Qualitätssiegel für Tourismus",
+    "worldNetwork1Country": "Frankreich",
+    "worldNetwork1Name": "Les Plus Beaux Villages de France",
+    "worldNetwork2Country": "Italien",
+    "worldNetwork2Name": "I Borghi più belli d'Italia",
+    "worldNetwork3Country": "Wallonien (Belgien)",
+    "worldNetwork3Name": "Les Plus Beaux Villages de Wallonie",
+    "worldNetwork4Country": "Japan",
+    "worldNetwork4Name": "Die schönsten Dörfer in Japan",
+    "worldNetwork5Country": "Quebec (Kanada)",
+    "worldNetwork5Name": "Die schönsten Dörfer von Québec",
+    "worldNetwork6Country": "Schweiz",
+    "worldNetwork6Name": "Les Plus Beaux Villages de Suisse"
   },
   "seo": {
     "siteNameSuffix": " - Die schönsten Dörfer Spaniens",
