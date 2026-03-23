@@ -487,7 +487,16 @@
       "previousYearsVideoTitle": "{title} - années précédentes",
       "backToVillageHolyWeek": "← Retour à la Semaine Sainte du village",
       "eventsOfDay": "Événements du jour",
-      "noEventsForDay": "Aucun événement chargé pour ce jour."
+      "noEventsForDay": "Aucun événement chargé pour ce jour.",
+      "dayPalmSunday": "Dimanche des Rameaux",
+      "dayHolyMonday": "Lundi Saint",
+      "dayHolyTuesday": "Mardi Saint",
+      "dayHolyWednesday": "Mercredi Saint",
+      "dayHolyThursday": "Jeudi Saint",
+      "dayGoodFriday": "Vendredi Saint",
+      "dayHolySaturday": "Samedi Saint",
+      "dayEasterSunday": "Dimanche de Pâques",
+      "dayEasterMonday": "Lundi de Pâques"
     },
     "backToRegions": "Retour aux régions",
     "filterPlaceholderCCAA": "Communauté autonome",

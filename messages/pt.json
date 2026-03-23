@@ -487,7 +487,16 @@
       "previousYearsVideoTitle": "{title} - anos anteriores",
       "backToVillageHolyWeek": "← Voltar à Semana Santa da aldeia",
       "eventsOfDay": "Eventos do dia",
-      "noEventsForDay": "Não há eventos carregados para este dia."
+      "noEventsForDay": "Não há eventos carregados para este dia.",
+      "dayPalmSunday": "Domingo de Ramos",
+      "dayHolyMonday": "Segunda-feira Santa",
+      "dayHolyTuesday": "Terça-feira Santa",
+      "dayHolyWednesday": "Quarta-feira Santa",
+      "dayHolyThursday": "Quinta-feira Santa",
+      "dayGoodFriday": "Sexta-feira Santa",
+      "dayHolySaturday": "Sábado Santo",
+      "dayEasterSunday": "Domingo de Páscoa",
+      "dayEasterMonday": "Segunda-feira de Páscoa"
     },
     "backToRegions": "Voltar às regiões",
     "filterPlaceholderCCAA": "Comunidade autónoma",

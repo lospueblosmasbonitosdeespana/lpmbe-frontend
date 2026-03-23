@@ -487,7 +487,16 @@
       "previousYearsVideoTitle": "{title} - previous years",
       "backToVillageHolyWeek": "← Back to the village Holy Week",
       "eventsOfDay": "Events of the day",
-      "noEventsForDay": "No events loaded for this day."
+      "noEventsForDay": "No events loaded for this day.",
+      "dayPalmSunday": "Palm Sunday",
+      "dayHolyMonday": "Holy Monday",
+      "dayHolyTuesday": "Holy Tuesday",
+      "dayHolyWednesday": "Holy Wednesday",
+      "dayHolyThursday": "Holy Thursday",
+      "dayGoodFriday": "Good Friday",
+      "dayHolySaturday": "Holy Saturday",
+      "dayEasterSunday": "Easter Sunday",
+      "dayEasterMonday": "Easter Monday"
     },
     "backToRegions": "Back to regions",
     "filterPlaceholderCCAA": "Autonomous community",

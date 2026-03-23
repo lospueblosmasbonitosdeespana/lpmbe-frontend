@@ -79,18 +79,7 @@ export async function Header({ locale }: HeaderProps) {
   // En dark mode usamos el mismo logo blanco que el footer (logoVariantUrl) si existe
   let logoContent: React.ReactNode;
 
-  const logoImgProps = {
-    width: 288,
-    height: 96,
-    style: {
-      height: '96px',
-      maxHeight: '96px',
-      width: 'auto',
-      maxWidth: '288px',
-      display: 'block',
-      objectFit: 'contain' as const,
-    },
-  };
+  const logoClassName = "h-10 md:h-14 w-auto object-contain";
 
   if (settings.activeLogo === 'text') {
     logoContent = (
@@ -101,7 +90,7 @@ export async function Header({ locale }: HeaderProps) {
       <img
         src={settings.logoVariantUrl}
         alt={settings.logoAlt}
-        {...logoImgProps}
+        className={logoClassName}
       />
     );
   } else if (settings.activeLogo === 'default' && settings.logoUrl) {
@@ -111,14 +100,12 @@ export async function Header({ locale }: HeaderProps) {
           <img
             src={settings.logoUrl}
             alt={settings.logoAlt}
-            {...logoImgProps}
-            className="block dark:hidden"
+            className={`${logoClassName} dark:hidden`}
           />
           <img
             src={settings.logoVariantUrl}
             alt={settings.logoAlt}
-            {...logoImgProps}
-            className="hidden dark:block"
+            className={`${logoClassName} hidden dark:block`}
           />
         </>
       );
@@ -127,7 +114,7 @@ export async function Header({ locale }: HeaderProps) {
         <img
           src={settings.logoUrl}
           alt={settings.logoAlt}
-          {...logoImgProps}
+          className={logoClassName}
         />
       );
     }
@@ -139,7 +126,7 @@ export async function Header({ locale }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm dark:bg-card dark:border-b dark:border-border dark:shadow-none">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:py-5">
         <Link href="/" className="block text-foreground dark:text-white" aria-label="Inicio">
           {logoContent}
           <span className="sr-only">Los Pueblos Más Bonitos de España - Inicio</span>
