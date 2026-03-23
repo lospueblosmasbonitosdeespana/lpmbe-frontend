@@ -79,7 +79,7 @@ export async function Header({ locale }: HeaderProps) {
   // En dark mode usamos el mismo logo blanco que el footer (logoVariantUrl) si existe
   let logoContent: React.ReactNode;
 
-  const logoClassName = "h-12 md:h-[96px] w-auto object-contain";
+  const logoClassName = "h-16 md:h-[96px] w-auto object-contain";
 
   if (settings.activeLogo === 'text') {
     logoContent = (
