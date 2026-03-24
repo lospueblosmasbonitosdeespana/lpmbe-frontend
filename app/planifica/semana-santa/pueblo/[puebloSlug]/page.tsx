@@ -5,32 +5,11 @@ import AgendaInteractiva from './AgendaInteractiva';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { translateHolyWeekDayLabel } from './day-labels';
 import ImagenConLightbox from './ImagenConLightbox';
+import StreamPlayer from './StreamPlayer';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-function toYouTubeEmbedUrl(url: string): string {
-  const trimmed = (url || '').trim();
-  if (!trimmed) return trimmed;
-  if (trimmed.includes('/embed/')) return trimmed;
-
-  const liveMatch = trimmed.match(/youtube\.com\/(?:watch\?v=|live\/)([a-zA-Z0-9_-]{11})/);
-  if (liveMatch) return `https://www.youtube.com/embed/${liveMatch[1]}?autoplay=1`;
-
-  const shortMatch = trimmed.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
-  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=1`;
-
-  const channelPatterns = [
-    /youtube\.com\/(?:c|channel|user)\/([^/?#]+)/,
-    /youtube\.com\/@([^/?#]+)/,
-  ];
-  for (const pattern of channelPatterns) {
-    const m = trimmed.match(pattern);
-    if (m) return `https://www.youtube.com/embed/live_stream?channel=${m[1]}&autoplay=1`;
-  }
-
-  return trimmed;
-}
 
 type Dia = {
   id: number;
@@ -255,26 +234,7 @@ export default async function SemanaSantaPuebloPage({
         {participante.streamUrl && (
           <section className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
             <h2 className="mb-3 font-serif text-2xl font-medium">{t('liveStream')}</h2>
-            <div className="relative w-full overflow-hidden rounded-md border bg-black" style={{ paddingBottom: '56.25%' }}>
-              <iframe
-                src={toYouTubeEmbedUrl(participante.streamUrl)}
-                title={t('liveTitle', { village: participante.pueblo.nombre })}
-                className="absolute inset-0 h-full w-full"
-                allow="autoplay; encrypted-media; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-            <a
-              href={participante.streamUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-                <path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z" clipRule="evenodd" />
-              </svg>
-              Abrir en YouTube
-            </a>
+            <StreamPlayer streamUrl={participante.streamUrl} villageName={participante.pueblo.nombre} />
           </section>
         )}
       </div>
