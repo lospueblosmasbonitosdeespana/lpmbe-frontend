@@ -62,7 +62,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
     // setCoverUrl(null);  // tampoco limpiamos la portada
     setGalleryUrls([]);
     setGalleryFiles([null, null, null]);
-    setEstado('BORRADOR');
+    setEstado('PUBLICADA');
   }, [tipo, categoria]);
 
   // Función para subir imágenes en TipTap (con compresión automática)
@@ -297,9 +297,9 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
             value={estado}
             onChange={(e) => setEstado(e.target.value)}
           >
+            <option value="PUBLICADA">Publicada</option>
             <option value="BORRADOR">Borrador</option>
             {tipo !== 'PAGINA' && <option value="PROGRAMADA">Programada</option>}
-            <option value="PUBLICADA">Publicada</option>
           </select>
         </div>
 

@@ -305,9 +305,9 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
             value={estado}
             onChange={(e) => setEstado(e.target.value)}
           >
+            <option value="PUBLICADA">Publicada</option>
             <option value="BORRADOR">Borrador</option>
             {!isPaginaTematica && <option value="PROGRAMADA">Programada</option>}
-            <option value="PUBLICADA">Publicada</option>
           </select>
         </div>
 

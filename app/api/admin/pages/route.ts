@@ -14,11 +14,11 @@ export async function POST(req: Request) {
   const API_BASE = getApiUrl();
   const body = await req.json();
 
-  // LIMPIAR payload: SOLO los campos que espera /admin/pages
-  // Incluir scope (default PUEBLO si no viene) y permitir puebloId null
+  const puebloId = body.puebloId;
+
   const cleanPayload = {
     scope: body.scope ?? 'PUEBLO',
-    puebloId: body.puebloId ?? null,
+    puebloId: puebloId ?? null,
     category: body.category,
     titulo: body.titulo,
     resumen: body.resumen || null,
@@ -27,9 +27,11 @@ export async function POST(req: Request) {
     published: !!body.published,
   };
 
-  console.log('[PROXY POST /admin/pages] Clean Payload:', JSON.stringify(cleanPayload, null, 2));
+  const endpoint = puebloId
+    ? `${API_BASE}/admin/pueblos/${puebloId}/pages`
+    : `${API_BASE}/admin/pages`;
 
-  const res = await fetch(`${API_BASE}/admin/pages`, {
+  const res = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
