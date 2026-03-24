@@ -380,10 +380,6 @@ export default async function HomePage() {
     })
     .filter(Boolean) as Record<string, unknown>[];
 
-  // Deduplicar: excluir de la galería los títulos que ya aparecen en notificaciones
-  const notifTitles = new Set(notifications.map((n) => n.title));
-  const dedupedGaleriaNews = galeriaNews.filter((n) => !notifTitles.has(n.title));
-
   return (
     <main>
       {homeVideoLds.map((ld, i) => (
@@ -398,7 +394,7 @@ export default async function HomePage() {
         notifications={notifications}
         categories={categories}
         routes={routes}
-        galeriaNews={dedupedGaleriaNews}
+        galeriaNews={galeriaNews}
         villages={villages}
         news={news}
         videos={videos}
