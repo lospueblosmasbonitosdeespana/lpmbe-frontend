@@ -5,7 +5,9 @@ import AgendaInteractiva from './AgendaInteractiva';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { translateHolyWeekDayLabel } from './day-labels';
 import ImagenConLightbox from './ImagenConLightbox';
-import StreamPlayer from './StreamPlayer';
+import dynamic from 'next/dynamic';
+
+const StreamPlayer = dynamic(() => import('./StreamPlayer'), { ssr: false });
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
