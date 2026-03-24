@@ -28,6 +28,7 @@ type Agenda = {
   finLat?: number | null;
   finLng?: number | null;
   paradas?: Array<{ lat: number; lng: number; label?: string }> | null;
+  googleMapsUrl?: string | null;
   fechaInicio: string;
   fechaFin: string | null;
   fotoUrl: string | null;

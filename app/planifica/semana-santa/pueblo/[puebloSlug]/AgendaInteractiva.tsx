@@ -9,6 +9,23 @@ const EventoRecorridoMap = dynamic(() => import('./EventoRecorridoMap'), { ssr: 
 const ImagenConLightbox = dynamic(() => import('./ImagenConLightbox'), { ssr: false });
 const YoutubeEmbed = dynamic(() => import('./YoutubeEmbed'), { ssr: false });
 
+function getGoogleMapsEmbedUrl(url: string): string | null {
+  if (!url) return null;
+  const trimmed = url.trim();
+  if (trimmed.includes('/maps/d/') || trimmed.includes('/maps/d/embed')) {
+    const embedMatch = trimmed.match(/\/maps\/d\/(?:embed|viewer)\?mid=([^&]+)/);
+    if (embedMatch) return `https://www.google.com/maps/d/embed?mid=${embedMatch[1]}`;
+    const editMatch = trimmed.match(/\/maps\/d\/(?:edit|view)\?mid=([^&]+)/);
+    if (editMatch) return `https://www.google.com/maps/d/embed?mid=${editMatch[1]}`;
+    return trimmed.replace(/\/edit\?/, '/embed?').replace(/\/view\?/, '/embed?');
+  }
+  if (trimmed.includes('google.com/maps') || trimmed.includes('goo.gl/maps')) {
+    return `https://www.google.com/maps/embed?pb=!1m0!3m2!1ses!2ses!4v0!5m2!1ses!2ses&q=${encodeURIComponent(trimmed)}`;
+  }
+  if (trimmed.startsWith('http')) return trimmed;
+  return null;
+}
+
 type AgendaItem = {
   id: number;
   titulo: string;
@@ -20,6 +37,7 @@ type AgendaItem = {
   finLat?: number | null;
   finLng?: number | null;
   paradas?: Array<{ lat: number; lng: number; label?: string }> | null;
+  googleMapsUrl?: string | null;
   fechaInicio: string;
   fechaFin: string | null;
   fotoUrl: string | null;
@@ -99,6 +117,7 @@ export default function AgendaInteractiva({
   const t = useTranslations('planifica.semanaSanta');
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<AgendaItem | null>(null);
+  const [fullscreenMap, setFullscreenMap] = useState<AgendaItem | null>(null);
 
   const grouped = useMemo(() => {
     return agenda.reduce<Record<string, AgendaItem[]>>((acc, item) => {
@@ -203,21 +222,58 @@ export default function AgendaInteractiva({
                 <p className="mt-1 whitespace-pre-line">{selected.avisosImportantes}</p>
               </div>
             )}
-            {(selected.inicioLat != null &&
-              selected.inicioLng != null &&
-              Array.isArray(selected.paradas) &&
-              selected.paradas.length > 0) && (
+            {selected.googleMapsUrl ? (
               <div className="mt-4">
                 <p className="mb-2 text-sm font-medium">{t('route')}</p>
-                <EventoRecorridoMap
-                  inicioLat={selected.inicioLat}
-                  inicioLng={selected.inicioLng}
-                  finLat={selected.finLat}
-                  finLng={selected.finLng}
-                  paradas={selected.paradas}
-                />
+                <div className="relative overflow-hidden rounded-lg border">
+                  <iframe
+                    src={getGoogleMapsEmbedUrl(selected.googleMapsUrl) || selected.googleMapsUrl}
+                    className="h-72 w-full md:h-80"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                  <a
+                    href={selected.googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-medium shadow-md backdrop-blur-sm hover:bg-white transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                      <path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z" clipRule="evenodd" />
+                    </svg>
+                    Ver en grande
+                  </a>
+                </div>
               </div>
-            )}
+            ) : (selected.inicioLat != null &&
+              selected.inicioLng != null &&
+              Array.isArray(selected.paradas) &&
+              selected.paradas.length > 0) ? (
+              <div className="mt-4">
+                <p className="mb-2 text-sm font-medium">{t('route')}</p>
+                <div className="relative">
+                  <EventoRecorridoMap
+                    inicioLat={selected.inicioLat}
+                    inicioLng={selected.inicioLng}
+                    finLat={selected.finLat}
+                    finLng={selected.finLng}
+                    paradas={selected.paradas}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFullscreenMap(selected)}
+                    className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-medium shadow-md backdrop-blur-sm hover:bg-white transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                      <path d="M13.28 7.78l3.22-3.22v2.69a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.69l-3.22 3.22a.75.75 0 001.06 1.06zM2 17.25v-4.5a.75.75 0 011.5 0v2.69l3.22-3.22a.75.75 0 011.06 1.06L4.56 16.5h2.69a.75.75 0 010 1.5h-4.5a.75.75 0 01-.75-.75z" />
+                    </svg>
+                    Ver en grande
+                  </button>
+                </div>
+              </div>
+            ) : null}
             <div className="mt-4 flex flex-wrap gap-2">
               <a
                 href={googleCalendarUrl(selected)}
@@ -262,6 +318,42 @@ export default function AgendaInteractiva({
                 <YoutubeEmbed url={selected.youtubeUrl} title={t('previousYearsVideoTitle', { title: selected.titulo })} />
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {fullscreenMap && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setFullscreenMap(null)}>
+          <div className="relative w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setFullscreenMap(null)}
+              className="absolute -top-10 right-0 rounded-full bg-white px-3 py-1 text-sm font-medium shadow-lg hover:bg-gray-100"
+            >
+              ✕ Cerrar
+            </button>
+            <div className="overflow-hidden rounded-xl shadow-2xl">
+              {fullscreenMap.googleMapsUrl ? (
+                <iframe
+                  src={getGoogleMapsEmbedUrl(fullscreenMap.googleMapsUrl) || fullscreenMap.googleMapsUrl}
+                  className="h-[70vh] w-full"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              ) : (
+                <EventoRecorridoMap
+                  inicioLat={fullscreenMap.inicioLat}
+                  inicioLng={fullscreenMap.inicioLng}
+                  finLat={fullscreenMap.finLat}
+                  finLng={fullscreenMap.finLng}
+                  paradas={fullscreenMap.paradas}
+                  className="h-[70vh] w-full"
+                />
+              )}
+            </div>
+            <p className="mt-2 text-center text-sm text-white/80">{fullscreenMap.titulo}</p>
           </div>
         </div>
       )}

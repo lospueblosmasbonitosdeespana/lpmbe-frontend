@@ -10,12 +10,14 @@ export default function EventoRecorridoMap({
   finLat,
   finLng,
   paradas,
+  className,
 }: {
   inicioLat?: number | null;
   inicioLng?: number | null;
   finLat?: number | null;
   finLng?: number | null;
   paradas?: Stop[] | null;
+  className?: string;
 }) {
   const points: Array<[number, number]> = [];
   if (inicioLat != null && inicioLng != null) points.push([inicioLat, inicioLng]);
@@ -25,8 +27,8 @@ export default function EventoRecorridoMap({
 
   const center = points[0];
   return (
-    <div className="overflow-hidden rounded-lg border">
-      <MapContainer center={center} zoom={15} className="h-64 w-full">
+    <div className="overflow-hidden rounded-lg border h-full">
+      <MapContainer center={center} zoom={15} className={className || "h-64 w-full"}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

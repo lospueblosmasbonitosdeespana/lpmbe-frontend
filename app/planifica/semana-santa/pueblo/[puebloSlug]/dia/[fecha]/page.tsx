@@ -19,6 +19,7 @@ type Agenda = {
   finLat?: number | null;
   finLng?: number | null;
   paradas?: Array<{ lat: number; lng: number; label?: string }> | null;
+  googleMapsUrl?: string | null;
   fechaInicio: string;
   fechaFin: string | null;
   fotoUrl: string | null;
@@ -128,10 +129,34 @@ export default async function SemanaSantaDiaPage({
                     <p className="mt-1 whitespace-pre-line">{e.avisosImportantes}</p>
                   </div>
                 )}
-                {(e.inicioLat != null &&
+                {e.googleMapsUrl ? (
+                  <div className="mt-3 overflow-hidden rounded-lg border">
+                    <iframe
+                      src={e.googleMapsUrl.replace(/\/edit\?/, '/embed?').replace(/\/view\?/, '/embed?')}
+                      className="h-72 w-full md:h-80"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                    <div className="flex justify-end p-2">
+                      <a
+                        href={e.googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                          <path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z" clipRule="evenodd" />
+                        </svg>
+                        Ver en grande
+                      </a>
+                    </div>
+                  </div>
+                ) : (e.inicioLat != null &&
                   e.inicioLng != null &&
                   Array.isArray(e.paradas) &&
-                  e.paradas.length > 0) && (
+                  e.paradas.length > 0) ? (
                   <div className="mt-3">
                     <EventoRecorridoMap
                       inicioLat={e.inicioLat}
@@ -141,7 +166,7 @@ export default async function SemanaSantaDiaPage({
                       paradas={e.paradas}
                     />
                   </div>
-                )}
+                ) : null}
                 {e.youtubeUrl && (
                   <div className="mt-4 border-t pt-4">
                     <p className="mb-2 text-sm font-medium">{t('previousYearsVideo')}</p>

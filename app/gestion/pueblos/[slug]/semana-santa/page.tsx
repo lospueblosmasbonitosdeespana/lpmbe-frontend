@@ -32,6 +32,7 @@ type AgendaItem = {
   finLat?: number | null;
   finLng?: number | null;
   paradas?: Array<{ lat: number; lng: number; label?: string }> | null;
+  googleMapsUrl?: string | null;
   fechaInicio: string;
   fechaFin: string | null;
   fotoUrl: string | null;
@@ -104,7 +105,10 @@ function SortableAgendaCard({
           Fiesta de Interés Turístico
         </span>
       )}
-      {(a.inicioLat != null && a.inicioLng != null) && (
+      {a.googleMapsUrl && (
+        <p className="text-xs text-blue-700 font-medium">📍 Recorrido en Google Maps configurado</p>
+      )}
+      {!a.googleMapsUrl && (a.inicioLat != null && a.inicioLng != null) && (
         <p className="text-xs text-muted-foreground">
           Recorrido: inicio definido{a.finLat != null && a.finLng != null ? ', fin definido' : ''} · {a.paradas?.length ?? 0} paradas
         </p>
@@ -150,6 +154,7 @@ export default function GestionPuebloSemanaSantaPage() {
     finLat: undefined as number | undefined,
     finLng: undefined as number | undefined,
     paradas: [] as Array<{ lat: number; lng: number; label?: string }>,
+    googleMapsUrl: '',
     fecha: '',
     horaInicio: '',
     horaFin: '',
@@ -171,6 +176,7 @@ export default function GestionPuebloSemanaSantaPage() {
     finLat: undefined as number | undefined,
     finLng: undefined as number | undefined,
     paradas: [] as Array<{ lat: number; lng: number; label?: string }>,
+    googleMapsUrl: '',
     fecha: '',
     horaInicio: '',
     horaFin: '',
@@ -333,6 +339,7 @@ export default function GestionPuebloSemanaSantaPage() {
         finLat: newAgenda.finLat,
         finLng: newAgenda.finLng,
         paradas: newAgenda.paradas,
+        googleMapsUrl: newAgenda.googleMapsUrl || undefined,
         fecha: newAgenda.fecha,
         horaInicio: newAgenda.horaInicio,
         horaFin: newAgenda.horaFin || undefined,
@@ -360,6 +367,7 @@ export default function GestionPuebloSemanaSantaPage() {
       finLat: undefined,
       finLng: undefined,
       paradas: [],
+      googleMapsUrl: '',
       fecha: '',
       horaInicio: '',
       horaFin: '',
@@ -407,6 +415,7 @@ export default function GestionPuebloSemanaSantaPage() {
       finLat: a.finLat ?? undefined,
       finLng: a.finLng ?? undefined,
       paradas: a.paradas ?? [],
+      googleMapsUrl: a.googleMapsUrl || '',
       fecha: toMadridDate(a.fechaInicio),
       horaInicio: toMadridTime(a.fechaInicio),
       horaFin: a.fechaFin ? toMadridTime(a.fechaFin) : '',
@@ -433,6 +442,7 @@ export default function GestionPuebloSemanaSantaPage() {
         finLat: editAgenda.finLat,
         finLng: editAgenda.finLng,
         paradas: editAgenda.paradas,
+        googleMapsUrl: editAgenda.googleMapsUrl || undefined,
         fecha: editAgenda.fecha,
         horaInicio: editAgenda.horaInicio,
         horaFin: editAgenda.horaFin || undefined,
@@ -469,6 +479,7 @@ export default function GestionPuebloSemanaSantaPage() {
         finLat: a.finLat ?? undefined,
         finLng: a.finLng ?? undefined,
         paradas: a.paradas ?? [],
+        googleMapsUrl: a.googleMapsUrl || undefined,
         fechaInicio: a.fechaInicio,
         fechaFin: a.fechaFin || undefined,
         fotoUrl: a.fotoUrl || undefined,
@@ -874,6 +885,22 @@ export default function GestionPuebloSemanaSantaPage() {
                 Puedes buscar una calle/pueblo y marcar el punto, o hacerlo con clic en mapa. Clic en una parada azul para eliminarla.
               </p>
             </div>
+            <div className="rounded-lg border border-dashed border-blue-300 bg-blue-50/50 p-3">
+              <p className="mb-2 text-sm font-medium text-blue-900">📍 ¿Ya tenéis el recorrido en Google Maps?</p>
+              <p className="mb-2 text-xs text-blue-800">
+                Si ya tenéis la procesión configurada en Google Maps, pegad aquí el enlace y se mostrará directamente el mapa de Google en la web, sin necesidad de marcar puntos arriba.
+              </p>
+              <input
+                type="url"
+                placeholder="https://www.google.com/maps/d/..."
+                className="w-full rounded-md border px-3 py-2 text-sm"
+                value={newAgenda.googleMapsUrl}
+                onChange={(e) => setNewAgenda({ ...newAgenda, googleMapsUrl: e.target.value })}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Abre tu ruta en Google Maps → &quot;Compartir&quot; → copia el enlace y pégalo aquí. Si se rellena, se verá este mapa en vez del de arriba.
+              </p>
+            </div>
             <div className="flex gap-2">
               <button
                 onClick={createAgenda}
@@ -1063,6 +1090,24 @@ export default function GestionPuebloSemanaSantaPage() {
               <p className="mt-2 text-xs text-muted-foreground">
                 Clic en una parada azul para eliminarla. &quot;Limpiar paradas&quot; borra todas.
               </p>
+            </div>
+            <div className="rounded-lg border border-dashed border-blue-300 bg-blue-50/50 p-3">
+              <p className="mb-2 text-sm font-medium text-blue-900">📍 ¿Ya tenéis el recorrido en Google Maps?</p>
+              <p className="mb-2 text-xs text-blue-800">
+                Pegad aquí el enlace de Google Maps y se mostrará directamente en la web, sin necesidad de marcar puntos arriba.
+              </p>
+              <input
+                type="url"
+                placeholder="https://www.google.com/maps/d/..."
+                className="w-full rounded-md border px-3 py-2 text-sm"
+                value={editAgenda.googleMapsUrl}
+                onChange={(e) => setEditAgenda({ ...editAgenda, googleMapsUrl: e.target.value })}
+              />
+              {editAgenda.googleMapsUrl && (
+                <p className="mt-1 text-xs text-green-700 font-medium">
+                  ✓ Se mostrará el mapa de Google Maps en la web pública en lugar de nuestro mapa.
+                </p>
+              )}
             </div>
             <div className="flex gap-2">
               <button
