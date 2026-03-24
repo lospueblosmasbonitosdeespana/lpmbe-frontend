@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
+import { stripHtml } from "@/app/_lib/html";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
@@ -328,7 +329,7 @@ export default async function CategoriaPage({
                           </h2>
                           {page.resumen && (
                             <p className="mt-2 text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                              {page.resumen}
+                              {stripHtml(page.resumen)}
                             </p>
                           )}
                           <div className="mt-4 flex items-center gap-1 text-sm font-medium text-primary">

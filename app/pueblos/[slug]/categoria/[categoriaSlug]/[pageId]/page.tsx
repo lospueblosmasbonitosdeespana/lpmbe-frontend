@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
+import { stripHtml } from "@/app/_lib/html";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
@@ -200,7 +201,7 @@ export default async function ExperienciaPuebloPage({
               </h1>
               {page.resumen && (
                 <p className="mt-3 text-base md:text-lg text-white/80 max-w-2xl leading-relaxed">
-                  {page.resumen}
+                  {stripHtml(page.resumen)}
                 </p>
               )}
             </Container>
@@ -240,7 +241,7 @@ export default async function ExperienciaPuebloPage({
                 </h1>
                 {page.resumen && (
                   <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                    {page.resumen}
+                    {stripHtml(page.resumen)}
                   </p>
                 )}
               </>

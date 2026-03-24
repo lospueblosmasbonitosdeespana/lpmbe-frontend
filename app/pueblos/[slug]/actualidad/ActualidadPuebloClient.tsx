@@ -5,6 +5,7 @@ import { useEffect, useState, useMemo } from 'react';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 import { uniqueH1ForLocale } from '@/lib/seo';
+import { stripHtml } from '@/app/_lib/html';
 
 type Contenido = {
   id: number;
@@ -159,7 +160,7 @@ function TarjetaContenido({
           {item.titulo}
         </h3>
         {item.resumen && (
-          <p className="mt-2 text-gray-600 text-sm line-clamp-2">{item.resumen}</p>
+          <p className="mt-2 text-gray-600 text-sm line-clamp-2">{stripHtml(item.resumen)}</p>
         )}
         <span className="mt-3 inline-block text-sm font-medium text-blue-600 group-hover:underline">
           Leer más →
