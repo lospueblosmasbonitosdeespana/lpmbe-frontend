@@ -10,7 +10,7 @@ type Props = {
 
 export default function ContenidoImageCarousel({ images, alt }: Props) {
   const validImages = useMemo(
-    () => images.map((u) => u?.trim()).filter((u): u is string => !!u).slice(0, 3),
+    () => images.map((u) => u?.trim()).filter((u): u is string => !!u).slice(0, 4),
     [images]
   );
   const [index, setIndex] = useState(0);

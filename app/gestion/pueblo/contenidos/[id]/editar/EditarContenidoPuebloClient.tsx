@@ -254,7 +254,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
       [coverUrl, ...(Array.isArray(galleryUrls) ? galleryUrls : [])]
         .map((u) => (u || '').trim())
         .filter(Boolean)
-        .slice(0, 3),
+        .slice(0, 4),
     ),
   );
 
@@ -400,7 +400,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
               </button>
             </div>
           )}
-          {!isPaginaTematica && (tipo === 'NOTICIA' || tipo === 'EVENTO') && (
+          {(tipo === 'NOTICIA' || tipo === 'EVENTO' || tipo === 'ARTICULO' || isPaginaTematica) && (
             <div className="rounded-md border border-gray-200 bg-gray-50 p-3">
               <p className="mb-2 text-xs text-gray-700">
                 Galería: añade hasta 3 fotos. Se verán en carrusel en web y app.

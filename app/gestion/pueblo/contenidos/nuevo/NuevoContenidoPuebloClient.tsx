@@ -163,8 +163,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
           published: estado === 'PUBLICADA',
         };
         if (effectiveCoverUrl) payload.coverUrl = effectiveCoverUrl;
-
-        console.log('[POST /admin/pages] Payload:', JSON.stringify(payload, null, 2));
+        if (normalizedGalleryUrls.length > 0) payload.galleryUrls = normalizedGalleryUrls;
 
         const res = await fetch('/api/admin/pages', {
           method: 'POST',
@@ -370,7 +369,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
               }
             }} 
           />
-          {(tipo === 'NOTICIA' || tipo === 'EVENTO') && (
+          {(tipo === 'NOTICIA' || tipo === 'EVENTO' || tipo === 'ARTICULO' || tipo === 'PAGINA') && (
             <div className="rounded-md border border-gray-200 bg-gray-50 p-3">
               <p className="mb-2 text-xs text-gray-700">
                 Galería: añade hasta 3 fotos. Se verán en carrusel en web y app.

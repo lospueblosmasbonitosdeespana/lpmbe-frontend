@@ -30,7 +30,7 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
       [contenido.coverUrl, ...galleryUrls]
         .map((u: string | null | undefined) => (u || '').trim())
         .filter(Boolean)
-        .slice(0, 3),
+        .slice(0, 4),
     ),
   );
   const portadaNorm = typeof contenido.coverUrl === 'string' ? contenido.coverUrl.trim() : '';

@@ -323,7 +323,7 @@ export default async function ContenidoPage({
       [contenido.coverUrl, ...galleryUrls]
         .map((u) => (u || '').trim())
         .filter(Boolean)
-        .slice(0, 3),
+        .slice(0, 4),
     ),
   );
   const fechaPublicacion = contenido.publishedAt ?? contenido.createdAt;

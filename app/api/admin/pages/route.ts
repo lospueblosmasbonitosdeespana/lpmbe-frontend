@@ -16,7 +16,7 @@ export async function POST(req: Request) {
 
   const puebloId = body.puebloId;
 
-  const cleanPayload = {
+  const cleanPayload: any = {
     scope: body.scope ?? 'PUEBLO',
     puebloId: puebloId ?? null,
     category: body.category,
@@ -26,6 +26,9 @@ export async function POST(req: Request) {
     coverUrl: body.coverUrl || null,
     published: !!body.published,
   };
+  if (Array.isArray(body.galleryUrls)) {
+    cleanPayload.galleryUrls = body.galleryUrls;
+  }
 
   const endpoint = puebloId
     ? `${API_BASE}/admin/pueblos/${puebloId}/pages`
