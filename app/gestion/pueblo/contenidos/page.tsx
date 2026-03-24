@@ -48,12 +48,14 @@ function getFirstImage(items: any[]): string | null {
   return null;
 }
 
+const PREVIEW_COUNT = 3;
+
 function SectionCard({
   title,
   icon,
   count,
   image,
-  children,
+  items,
   accentColor,
   newHref,
   newLabel,
@@ -62,11 +64,14 @@ function SectionCard({
   icon: string;
   count: number;
   image: string | null;
-  children: React.ReactNode;
+  items: any[];
   accentColor: string;
   newHref: string;
   newLabel: string;
 }) {
+  const preview = items.slice(0, PREVIEW_COUNT);
+  const rest = items.slice(PREVIEW_COUNT);
+
   return (
     <section className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
       <div className="flex items-stretch">
@@ -104,7 +109,27 @@ function SectionCard({
 
       {count > 0 && (
         <div className="border-t border-border px-5 py-4">
-          <ul className="space-y-3">{children}</ul>
+          <ul className="space-y-3">
+            {preview.map((c: any) => (
+              <ContenidoItemPueblo key={c.id} contenido={c} />
+            ))}
+          </ul>
+
+          {rest.length > 0 && (
+            <details className="mt-3 group">
+              <summary className="cursor-pointer select-none list-none flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
+                <svg className="h-4 w-4 transition-transform group-open:rotate-90" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                </svg>
+                Ver {rest.length === 1 ? `1 más` : `${rest.length} más`} ({count} en total)
+              </summary>
+              <ul className="mt-3 space-y-3">
+                {rest.map((c: any) => (
+                  <ContenidoItemPueblo key={c.id} contenido={c} />
+                ))}
+              </ul>
+            </details>
+          )}
         </div>
       )}
     </section>
@@ -246,14 +271,11 @@ export default async function ContenidosPuebloPage({
           icon="📰"
           count={noticias.length}
           image={getFirstImage(noticias)}
+          items={noticias}
           accentColor="from-blue-500 to-indigo-600"
           newHref={`${newBase}&tipo=NOTICIA`}
           newLabel="+ Noticia"
-        >
-          {noticias.map((c: any) => (
-            <ContenidoItemPueblo key={c.id} contenido={c} />
-          ))}
-        </SectionCard>
+        />
 
         {/* EVENTOS */}
         <SectionCard
@@ -261,14 +283,11 @@ export default async function ContenidosPuebloPage({
           icon="📅"
           count={eventos.length}
           image={getFirstImage(eventos)}
+          items={eventos}
           accentColor="from-rose-500 to-red-600"
           newHref={`${newBase}&tipo=EVENTO`}
           newLabel="+ Evento"
-        >
-          {eventos.map((c: any) => (
-            <ContenidoItemPueblo key={c.id} contenido={c} />
-          ))}
-        </SectionCard>
+        />
 
         {/* ARTICULOS */}
         <SectionCard
@@ -276,14 +295,11 @@ export default async function ContenidosPuebloPage({
           icon="📝"
           count={articulos.length}
           image={getFirstImage(articulos)}
+          items={articulos}
           accentColor="from-teal-500 to-cyan-600"
           newHref={`${newBase}&tipo=ARTICULO`}
           newLabel="+ Artículo"
-        >
-          {articulos.map((c: any) => (
-            <ContenidoItemPueblo key={c.id} contenido={c} />
-          ))}
-        </SectionCard>
+        />
 
         {/* PAGINAS TEMATICAS */}
         <section className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
@@ -328,10 +344,26 @@ export default async function ContenidosPuebloPage({
             <div className="border-t border-border px-5 py-4">
               <h3 className="text-sm font-medium text-muted-foreground mb-3">Todas las páginas temáticas</h3>
               <ul className="space-y-3">
-                {paginas.map((c: any) => (
+                {paginas.slice(0, PREVIEW_COUNT).map((c: any) => (
                   <ContenidoItemPueblo key={c.id} contenido={c} />
                 ))}
               </ul>
+
+              {paginas.length > PREVIEW_COUNT && (
+                <details className="mt-3 group">
+                  <summary className="cursor-pointer select-none list-none flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
+                    <svg className="h-4 w-4 transition-transform group-open:rotate-90" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                    </svg>
+                    Ver {paginas.length - PREVIEW_COUNT} más ({paginas.length} en total)
+                  </summary>
+                  <ul className="mt-3 space-y-3">
+                    {paginas.slice(PREVIEW_COUNT).map((c: any) => (
+                      <ContenidoItemPueblo key={c.id} contenido={c} />
+                    ))}
+                  </ul>
+                </details>
+              )}
             </div>
           )}
         </section>
