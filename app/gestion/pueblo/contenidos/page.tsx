@@ -117,7 +117,7 @@ function SectionCard({
 
           {rest.length > 0 && (
             <details className="mt-3 group">
-              <summary className="cursor-pointer select-none list-none flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
+              <summary className="cursor-pointer select-none list-none flex items-center gap-2 rounded-lg border border-[#b5472a]/30 bg-[#b5472a]/5 px-4 py-2.5 text-sm font-semibold text-[#b5472a] hover:bg-[#b5472a]/10 transition-colors">
                 <svg className="h-4 w-4 transition-transform group-open:rotate-90" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
                 </svg>
@@ -351,7 +351,7 @@ export default async function ContenidosPuebloPage({
 
               {paginas.length > PREVIEW_COUNT && (
                 <details className="mt-3 group">
-                  <summary className="cursor-pointer select-none list-none flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
+                  <summary className="cursor-pointer select-none list-none flex items-center gap-2 rounded-lg border border-[#b5472a]/30 bg-[#b5472a]/5 px-4 py-2.5 text-sm font-semibold text-[#b5472a] hover:bg-[#b5472a]/10 transition-colors">
                     <svg className="h-4 w-4 transition-transform group-open:rotate-90" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
                     </svg>
