@@ -314,7 +314,7 @@ function NotificationCenter({
                 {t("notifCenterTitle")}
               </span>
               {unreadCount > 0 && (
-                <span className="px-2 py-0.5 text-xs font-bold bg-primary text-primary-foreground rounded-full">
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-bold leading-none text-white">
                   {unreadCount}
                 </span>
               )}
