@@ -9,6 +9,7 @@ type Item = {
   id: number;
   cartelVerticalUrl: string | null;
   cartelHorizontalUrl: string | null;
+  streamUrl: string | null;
   interesTuristico: 'NINGUNO' | 'REGIONAL' | 'NACIONAL' | 'INTERNACIONAL';
   pueblo: {
     nombre: string;

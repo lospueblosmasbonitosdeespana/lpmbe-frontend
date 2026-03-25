@@ -9,6 +9,7 @@ type Item = {
   id: number;
   cartelVerticalUrl: string | null;
   cartelHorizontalUrl: string | null;
+  streamUrl: string | null;
   interesTuristico: 'NINGUNO' | 'REGIONAL' | 'NACIONAL' | 'INTERNACIONAL';
   pueblo: {
     nombre: string;
@@ -109,37 +110,50 @@ export default function SemanaSantaLandingClient({
   );
 
   const sortedPueblos = useMemo(() => {
-    if (!userCoords) return filteredPueblos;
-    return [...filteredPueblos].sort((a, b) => {
-      const aLat = a.pueblo.lat;
-      const aLng = a.pueblo.lng;
-      const bLat = b.pueblo.lat;
-      const bLng = b.pueblo.lng;
-      if (aLat == null || aLng == null) return 1;
-      if (bLat == null || bLng == null) return -1;
-      const da = haversineKm(userCoords.lat, userCoords.lng, aLat, aLng);
-      const db = haversineKm(userCoords.lat, userCoords.lng, bLat, bLng);
-      return da - db;
-    });
+    const list = [...filteredPueblos];
+    if (userCoords) {
+      list.sort((a, b) => {
+        const aLat = a.pueblo.lat;
+        const aLng = a.pueblo.lng;
+        const bLat = b.pueblo.lat;
+        const bLng = b.pueblo.lng;
+        if (aLat == null || aLng == null) return 1;
+        if (bLat == null || bLng == null) return -1;
+        const da = haversineKm(userCoords.lat, userCoords.lng, aLat, aLng);
+        const db = haversineKm(userCoords.lat, userCoords.lng, bLat, bLng);
+        return da - db;
+      });
+    } else {
+      list.sort((a, b) => a.pueblo.nombre.localeCompare(b.pueblo.nombre, 'es'));
+    }
+    return list;
   }, [filteredPueblos, userCoords]);
 
+  const [geoError, setGeoError] = useState(false);
   const activateNearest = () => {
-    if (userCoords) return;
-    if (!navigator.geolocation) return;
+    if (userCoords) {
+      setUserCoords(null);
+      return;
+    }
+    if (!navigator.geolocation) {
+      setGeoError(true);
+      return;
+    }
     setNearestLoading(true);
+    setGeoError(false);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setNearestLoading(false);
       },
-      () => setNearestLoading(false),
+      () => {
+        setNearestLoading(false);
+        setGeoError(true);
+      },
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 },
     );
   };
 
-  const clearNearest = () => {
-    setUserCoords(null);
-  };
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-stone-50 via-background to-background">
@@ -165,8 +179,12 @@ export default function SemanaSantaLandingClient({
                 <button
                   type="button"
                   onClick={activateNearest}
-                  disabled={nearestLoading || Boolean(userCoords)}
-                  className="inline-flex items-center gap-2 rounded-lg border bg-background px-3 py-2 text-sm font-medium hover:bg-muted disabled:opacity-60"
+                  disabled={nearestLoading}
+                  className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition disabled:opacity-60 ${
+                    userCoords
+                      ? 'border-primary bg-primary/10 text-primary hover:bg-primary/20'
+                      : 'bg-background hover:bg-muted'
+                  }`}
                 >
                   {nearestLoading ? (
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -175,14 +193,8 @@ export default function SemanaSantaLandingClient({
                   )}
                   {userCoords ? t('showingNearest') : t('showNearest')}
                 </button>
-                {userCoords && (
-                  <button
-                    type="button"
-                    onClick={clearNearest}
-                    className="rounded-lg border bg-background px-3 py-2 text-sm font-medium hover:bg-muted"
-                  >
-                    {t('clearNearest')}
-                  </button>
+                {geoError && (
+                  <span className="text-xs text-red-500">No se pudo obtener tu ubicación</span>
                 )}
                 <select
                   className="rounded-md border bg-background px-3 py-2 text-sm"
@@ -274,6 +286,15 @@ export default function SemanaSantaLandingClient({
                     <p className="mt-3 text-xs text-muted-foreground">
                       {t('agendaAndProcessions', { agenda: p.agenda.length, days: p.dias.length })}
                     </p>
+                    {p.streamUrl && p.streamUrl.trim() && (
+                      <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1">
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
+                        </span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-white">Emisión en directo</span>
+                      </div>
+                    )}
                     <p className="mt-3 text-sm font-medium text-primary">{t('viewVillagePage')}</p>
                   </div>
                   </Link>
