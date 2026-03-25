@@ -234,7 +234,8 @@ figure img,
 .safe-html-content strong { @apply font-semibold text-gray-900; }
 .safe-html-content hr { @apply my-8 border-gray-200; }
 .safe-html-content img {
-  height: auto;
+  height: auto !important;
+  object-fit: contain !important;
   border-radius: 0.5rem;
   margin: 1rem 0;
   display: block;
