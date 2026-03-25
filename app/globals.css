@@ -165,7 +165,12 @@ img {
 /* Restaurar pointer-events donde se necesita interacción (botones, links, SafeHtml lightbox) */
 a img,
 button img,
-[data-interactive-img] img,
+[data-interactive-img] img {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* En el cuerpo de artículos/noticias las imágenes son ampliables */
 .safe-html-content img {
   pointer-events: auto;
   cursor: zoom-in;
