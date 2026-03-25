@@ -77,6 +77,7 @@ export default function SemanaSantaLandingClient({
   const title = config?.titulo ?? t('defaultTitle');
   const totalEventos = pueblos.reduce((acc, p) => acc + p.agenda.length, 0);
   const totalDias = pueblos.reduce((acc, p) => acc + p.dias.length, 0);
+  const pueblosConStream = useMemo(() => pueblos.filter((p) => p.streamUrl && p.streamUrl.trim()), [pueblos]);
 
   const uniqueCCAA = useMemo(
     () =>
@@ -173,6 +174,20 @@ export default function SemanaSantaLandingClient({
               <span className="rounded-full border bg-background px-3 py-1">{t('agendaEvents', { count: totalEventos })}</span>
               <span className="rounded-full border bg-background px-3 py-1">{t('processionDays', { count: totalDias })}</span>
             </div>
+
+            {pueblosConStream.length > 0 && (
+              <div className="mt-4 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50/60 px-5 py-4">
+                <span className="relative mt-0.5 flex h-3 w-3 shrink-0">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-red-600" />
+                </span>
+                <p className="text-sm leading-relaxed text-zinc-700">
+                  {t('liveStreamInfo')}
+                  {' '}
+                  <span className="font-semibold text-red-700">{t('liveStreamBadgeHint')}</span>
+                </p>
+              </div>
+            )}
 
             {pueblos.length > 0 && (
               <div className="mt-5 flex flex-wrap items-center gap-3">

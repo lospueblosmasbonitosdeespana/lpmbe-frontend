@@ -25,6 +25,29 @@ function toEmbedUrl(url: string): string {
   return trimmed;
 }
 
+function toWatchUrl(url: string): string {
+  const trimmed = (url || '').trim();
+  if (!trimmed) return trimmed;
+
+  const embedMatch = trimmed.match(/youtube\.com\/embed\/(?:live_stream\?channel=([^&]+)|([a-zA-Z0-9_-]{11}))/);
+  if (embedMatch) {
+    if (embedMatch[1]) return `https://www.youtube.com/channel/${embedMatch[1]}/live`;
+    if (embedMatch[2]) return `https://www.youtube.com/watch?v=${embedMatch[2]}`;
+  }
+
+  if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) return trimmed;
+  return trimmed;
+}
+
+function CastIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6" />
+      <line x1="2" y1="20" x2="2.01" y2="20" />
+    </svg>
+  );
+}
+
 export default function StreamPlayer({
   streamUrl,
   villageName,
@@ -33,6 +56,8 @@ export default function StreamPlayer({
   villageName: string;
 }) {
   const [playing, setPlaying] = useState(false);
+  const [showCastMenu, setShowCastMenu] = useState(false);
+  const [copied, setCopied] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const toggleFullscreen = useCallback(() => {
@@ -45,6 +70,30 @@ export default function StreamPlayer({
     }
   }, []);
 
+  const watchUrl = toWatchUrl(streamUrl);
+
+  const handleShare = useCallback(async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Semana Santa en directo — ${villageName}`,
+          text: `Mira la retransmisión en directo de Semana Santa en ${villageName}`,
+          url: watchUrl,
+        });
+        return;
+      } catch {
+        // user cancelled or error
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(watchUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      window.open(watchUrl, '_blank');
+    }
+  }, [villageName, watchUrl]);
+
   return (
     <div ref={containerRef} className="relative w-full overflow-hidden rounded-md border bg-black" style={{ paddingBottom: '56.25%' }}>
       {playing ? (
@@ -56,16 +105,76 @@ export default function StreamPlayer({
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
             allowFullScreen
           />
-          <button
-            type="button"
-            onClick={toggleFullscreen}
-            className="absolute top-3 right-3 z-10 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-sm hover:bg-black/80 transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
-              <path d="M13.28 7.78l3.22-3.22v2.69a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.69l-3.22 3.22a.75.75 0 001.06 1.06zM2 17.25v-4.5a.75.75 0 011.5 0v2.69l3.22-3.22a.75.75 0 011.06 1.06L4.56 16.5h2.69a.75.75 0 010 1.5h-4.5a.75.75 0 01-.75-.75z" />
-            </svg>
-            Pantalla completa
-          </button>
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowCastMenu((v) => !v)}
+              className="flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-sm hover:bg-black/80 transition-colors"
+              title="Enviar a TV"
+            >
+              <CastIcon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Enviar a TV</span>
+            </button>
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              className="flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-sm hover:bg-black/80 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                <path d="M13.28 7.78l3.22-3.22v2.69a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.69l-3.22 3.22a.75.75 0 001.06 1.06zM2 17.25v-4.5a.75.75 0 011.5 0v2.69l3.22-3.22a.75.75 0 011.06 1.06L4.56 16.5h2.69a.75.75 0 010 1.5h-4.5a.75.75 0 01-.75-.75z" />
+              </svg>
+              <span className="hidden sm:inline">Pantalla completa</span>
+            </button>
+          </div>
+
+          {showCastMenu && (
+            <div className="absolute top-12 right-3 z-20 w-72 rounded-xl border border-white/10 bg-zinc-900/95 p-4 shadow-2xl backdrop-blur-md">
+              <p className="mb-3 text-sm font-semibold text-white">Enviar a TV</p>
+
+              <button
+                type="button"
+                onClick={handleShare}
+                className="mb-2 flex w-full items-center gap-3 rounded-lg bg-white/10 px-3 py-2.5 text-left text-sm text-white hover:bg-white/20 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 shrink-0 text-blue-400">
+                  <path d="M13 4.5a2.5 2.5 0 11.702 1.737L6.97 9.604a2.518 2.518 0 010 .792l6.733 3.367a2.5 2.5 0 11-.671 1.341l-6.733-3.367a2.5 2.5 0 110-3.474l6.733-3.367A2.52 2.52 0 0113 4.5z" />
+                </svg>
+                <div>
+                  <p className="font-medium">{copied ? '¡Enlace copiado!' : 'Compartir enlace'}</p>
+                  <p className="text-xs text-white/50">Envía el enlace a tu Smart TV o dispositivo</p>
+                </div>
+              </button>
+
+              <a
+                href={watchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mb-3 flex w-full items-center gap-3 rounded-lg bg-white/10 px-3 py-2.5 text-left text-sm text-white hover:bg-white/20 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 shrink-0 text-red-500">
+                  <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0C.488 3.45.029 5.804 0 12c.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0C23.512 20.55 23.971 18.196 24 12c-.029-6.185-.484-8.549-4.385-8.816zM9 16V8l8 4-8 4z" />
+                </svg>
+                <div>
+                  <p className="font-medium">Abrir en YouTube</p>
+                  <p className="text-xs text-white/50">Usa Chromecast / AirPlay desde YouTube</p>
+                </div>
+              </a>
+
+              <div className="rounded-lg border border-white/5 bg-white/5 px-3 py-2.5">
+                <p className="text-xs leading-relaxed text-white/40">
+                  <strong className="text-white/60">Consejo:</strong> En Chrome, pulsa el menú ⋮ → Enviar. En Safari, pulsa el icono de AirPlay en la barra. En Smart TV, abre YouTube y busca el enlace.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowCastMenu(false)}
+                className="mt-3 w-full rounded-lg py-1.5 text-xs text-white/40 hover:text-white/70 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          )}
         </>
       ) : (
         <button
