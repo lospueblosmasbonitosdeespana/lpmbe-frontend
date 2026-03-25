@@ -11,6 +11,7 @@ import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle } from '
 import { autoLinkUrls } from '@/app/_lib/html';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 import ContenidoImageCarousel from '@/app/components/ContenidoImageCarousel';
+import SafeHtml from '@/app/_components/ui/SafeHtml';
 
 const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'] as const;
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
@@ -375,21 +376,27 @@ export default async function ContenidoPage({
           </header>
 
           {contenido.contenidoMd ? (
-            <div className="prose-contenido text-base leading-relaxed text-foreground">
-              {isHtmlContent(contenido.contenidoMd) ? (
-                <div dangerouslySetInnerHTML={{ __html: contenido.contenidoMd }} />
-              ) : (
+            isHtmlContent(contenido.contenidoMd) ? (
+              <SafeHtml
+                html={contenido.contenidoMd}
+                className="prose-contenido text-base leading-relaxed text-foreground"
+              />
+            ) : (
+              <div className="prose-contenido text-base leading-relaxed text-foreground">
                 <ReactMarkdown>{autoLinkUrls(contenido.contenidoMd)}</ReactMarkdown>
-              )}
-            </div>
+              </div>
+            )
           ) : contenido.resumen ? (
-            <div className="prose-contenido text-base leading-relaxed text-foreground">
-              {isHtmlContent(contenido.resumen) ? (
-                <div dangerouslySetInnerHTML={{ __html: contenido.resumen }} />
-              ) : (
+            isHtmlContent(contenido.resumen) ? (
+              <SafeHtml
+                html={contenido.resumen}
+                className="prose-contenido text-base leading-relaxed text-foreground"
+              />
+            ) : (
+              <div className="prose-contenido text-base leading-relaxed text-foreground">
                 <ReactMarkdown>{autoLinkUrls(contenido.resumen)}</ReactMarkdown>
-              )}
-            </div>
+              </div>
+            )
           ) : null}
 
           {slug === 'privacidad' && (() => {
