@@ -162,11 +162,13 @@ img {
   user-select: none;
   pointer-events: none; /* las imágenes no son el target del click/drag; los wrappers sí */
 }
-/* Restaurar pointer-events donde se necesita interacción (botones, links con imagen) */
+/* Restaurar pointer-events donde se necesita interacción (botones, links, SafeHtml lightbox) */
 a img,
 button img,
-[data-interactive-img] img {
+[data-interactive-img] img,
+.safe-html-content img {
   pointer-events: auto;
+  cursor: zoom-in;
 }
 
 /* CLS: reservar espacio mínimo para imágenes en contenido (prose) hasta que carguen */

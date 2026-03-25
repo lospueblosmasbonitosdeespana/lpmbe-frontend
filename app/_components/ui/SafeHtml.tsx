@@ -25,35 +25,46 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
       .replace(/&amp;/g, '&');
   }
 
-  // Adjunta handlers a las imágenes del contenido renderizado:
-  // cursor zoom-in, bloqueo clic derecho, draggable=false y apertura lightbox.
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const imgs = container.querySelectorAll<HTMLImageElement>('img');
-    imgs.forEach((img) => {
+    const openLightbox = (img: HTMLImageElement) => {
+      setLightboxRef.current({ url: img.src, alt: img.alt || '' });
+    };
+
+    const setupImg = (img: HTMLImageElement) => {
+      if (img.dataset.lightboxImg) return;
       img.style.cursor = 'zoom-in';
       img.draggable = false;
+      img.dataset.lbReady = '1';
+      img.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openLightbox(img);
+      };
+      img.oncontextmenu = (e) => e.preventDefault();
+    };
+
+    container.querySelectorAll<HTMLImageElement>('img').forEach(setupImg);
+
+    const observer = new MutationObserver(() => {
+      container.querySelectorAll<HTMLImageElement>('img:not([data-lb-ready])').forEach(setupImg);
     });
+    observer.observe(container, { childList: true, subtree: true });
 
     const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'IMG') {
+      const el = e.target as HTMLElement;
+      if (el.tagName === 'IMG' && !(el as HTMLImageElement).dataset.lightboxImg) {
         e.preventDefault();
-        const img = target as HTMLImageElement;
-        setLightboxRef.current({ url: img.src, alt: img.alt || '' });
+        openLightbox(el as HTMLImageElement);
       }
     };
-    const handleContextMenu = (e: MouseEvent) => {
-      if ((e.target as HTMLElement).tagName === 'IMG') e.preventDefault();
-    };
-
     container.addEventListener('click', handleClick);
-    container.addEventListener('contextmenu', handleContextMenu);
+
     return () => {
+      observer.disconnect();
       container.removeEventListener('click', handleClick);
-      container.removeEventListener('contextmenu', handleContextMenu);
     };
   }, [processedHtml]);
 
