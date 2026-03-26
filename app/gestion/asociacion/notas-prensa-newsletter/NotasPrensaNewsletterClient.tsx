@@ -1562,12 +1562,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.message || 'Error enviando campaña');
       setMessage(
-        `Campaña enviada. Destinatarios: ${data.totalRecipients}. Enviados: ${data.sentCount}. Fallidos: ${data.failedCount}.`,
+        `Campaña enviada. Destinatarios: ${data.totalRecipients}. Enviados: ${data.sentCount}. Fallidos: ${data.failedCount}. Puedes ajustar el contenido y publicar en la web.`,
       );
       setPressPhotoFiles([]);
-      setPressPhotoUrls([]);
-      setPressPdfFile(null);
-      setPressPdfUrl('');
       await loadData();
       return;
     } else {
@@ -1626,12 +1623,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data?.message || 'Error enviando campaña');
     setMessage(
-      `Campaña enviada. Destinatarios: ${data.totalRecipients}. Enviados: ${data.sentCount}. Fallidos: ${data.failedCount}.`,
+      `Campaña enviada. Destinatarios: ${data.totalRecipients}. Enviados: ${data.sentCount}. Fallidos: ${data.failedCount}. Puedes ajustar el contenido y publicar en la web.`,
     );
     setPressPhotoFiles([]);
-    setPressPhotoUrls([]);
-    setPressPdfFile(null);
-    setPressPdfUrl('');
     await loadData();
   }
 
@@ -1921,6 +1915,24 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     `.trim();
   }
 
+  function stripEmailWrapperForWeb(html: string): string {
+    let cleaned = html;
+    cleaned = cleaned.replace(/<div[^>]*style="[^"]*display:\s*none[^"]*"[^>]*>[\s\S]*?<\/div>/gi, '');
+    cleaned = cleaned.replace(/<hr[^>]*style="[^"]*"[^>]*\/?>/gi, '');
+    cleaned = cleaned.replace(/<h3[^>]*>\s*Im[áa]genes de la nota de prensa\s*<\/h3>/gi, '');
+    cleaned = cleaned.replace(/<div[^>]*style="[^"]*text-align:\s*center[^"]*"[^>]*>\s*<img[^>]*>\s*<\/div>/gi, '');
+    cleaned = cleaned.replace(/style="[^"]*max-width:\s*\d+%[^"]*"/gi, (match) => {
+      return match.replace(/max-width:\s*\d+%/gi, 'max-width:100%');
+    });
+    cleaned = cleaned.replace(/<img([^>]*)style="([^"]*)"/gi, (full, before, style) => {
+      const newStyle = style
+        .replace(/max-width:\s*[^;]+;?/gi, '')
+        .replace(/border-radius:\s*[^;]+;?/gi, 'border-radius:8px;');
+      return `<img${before}style="max-width:100%;height:auto;border-radius:8px;display:block;margin:16px auto;${newStyle}"`;
+    });
+    return cleaned.trim();
+  }
+
   async function handlePublishWeb() {
     setError(null);
     setMessage(null);
@@ -1940,18 +1952,11 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       if (pressPhotoFiles.length > 0 && pressPhotoUrls.length === 0) {
         uploadedPhotoUrls = await uploadPressPhotos();
       }
-      if (uploadedPhotoUrls.length > 0) {
-        const pendingPhotoUrls = uploadedPhotoUrls.filter((u) => !insertedPhotoUrls.includes(u));
-        if (pendingPhotoUrls.length > 0) {
-          finalHtml = appendPressPhotos(finalHtml, pendingPhotoUrls, webPhotoWidth);
-        }
-      }
 
-      const firstPhoto = uploadedPhotoUrls[0];
-      const selectedForWeb = webGallerySelection.filter((u) => uploadedPhotoUrls.includes(u));
-      const galleryForWeb = selectedForWeb
-        .filter((u) => u !== firstPhoto)
-        .slice(0, 3);
+      finalHtml = stripEmailWrapperForWeb(finalHtml);
+
+      const allGalleryUrls = [...uploadedPhotoUrls];
+      const firstPhoto = allGalleryUrls[0] || undefined;
 
       const res = await fetch('/api/admin/newsletter/publish-web', {
         method: 'POST',
@@ -1961,8 +1966,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           html: finalHtml,
           kind: webContentKind,
           puebloSlug: campaignForm.puebloSlug.trim() || undefined,
-          coverUrl: firstPhoto || undefined,
-          galleryUrls: galleryForWeb.length > 0 ? galleryForWeb : undefined,
+          coverUrl: firstPhoto,
+          galleryUrls: allGalleryUrls.length > 0 ? allGalleryUrls : undefined,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -1970,9 +1975,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
 
       const target = webContentKind === 'NOTICIA' ? 'noticia' : 'artículo';
       if (data?.publishedToPueblo) {
-        setMessage(`Publicado en web como ${target}: asociación + pueblo.`);
+        setMessage(`Publicado en web como ${target}: asociación + pueblo. Las fotos se muestran como galería.`);
       } else {
-        setMessage(`Publicado en web como ${target}: asociación.`);
+        setMessage(`Publicado en web como ${target}: asociación. Las fotos se muestran como galería.`);
       }
       return true;
     } catch (e: unknown) {
@@ -4157,59 +4162,28 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
               </p>
 
               {pressPhotoUrls.length > 0 ? (
-                <div className="space-y-2 rounded-md border border-border p-3">
-                  <p className="text-sm font-medium">Fotos para la web</p>
-                  <p className="text-xs text-muted-foreground">
-                    La foto 1 será la principal (hero). Opcionalmente puedes seleccionar hasta 3 fotos para galería web.
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-blue-50 px-3 py-2">
-                    <span className="text-xs font-semibold text-blue-700">Ancho fotos en web:</span>
-                    {(['60%', '80%', '100%'] as const).map((w) => (
-                      <button
-                        key={w}
-                        type="button"
-                        onClick={() => setWebPhotoWidth(w)}
-                        className={`rounded border px-2 py-1 text-[11px] font-medium transition ${webPhotoWidth === w ? 'border-blue-600 bg-blue-600 text-white' : 'border-blue-200 bg-white hover:bg-blue-100'}`}
-                      >
-                        {w}
-                      </button>
-                    ))}
+                <div className="space-y-2 rounded-md border border-green-200 bg-green-50 p-3">
+                  <div className="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg>
+                    <p className="text-sm font-semibold text-green-800">Galería de fotos para la web</p>
                   </div>
+                  <p className="text-xs text-green-700">
+                    Todas las fotos se subirán como <strong>galería</strong> con carrusel. La primera foto será la imagen principal (hero).
+                  </p>
                   <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
-                    {pressPhotoUrls.map((url, idx) => {
-                      const checked = webGallerySelection.includes(url);
-                      const lockedMain = idx === 0;
-                      return (
-                        <label
-                          key={`web-select-${url}`}
-                          className={`space-y-1 rounded border p-1 text-xs ${
-                            lockedMain ? 'border-amber-300 bg-amber-50' : 'border-border'
-                          }`}
-                        >
-                          <img src={url} alt="Foto para web" className="h-20 w-full rounded object-cover" />
-                          {lockedMain ? (
-                            <span className="block text-[11px] font-semibold text-amber-900">Principal (hero)</span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1">
-                              <input
-                                type="checkbox"
-                                checked={checked}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setWebGallerySelection((prev) =>
-                                      prev.includes(url) ? prev : [...prev, url].slice(0, 3),
-                                    );
-                                  } else {
-                                    setWebGallerySelection((prev) => prev.filter((x) => x !== url));
-                                  }
-                                }}
-                              />
-                              Incluir en galería
-                            </span>
-                          )}
-                        </label>
-                      );
-                    })}
+                    {pressPhotoUrls.map((url, idx) => (
+                      <div
+                        key={`web-gal-${url}`}
+                        className={`space-y-1 rounded border-2 p-1 text-xs ${
+                          idx === 0 ? 'border-amber-400 bg-amber-50' : 'border-green-300 bg-white'
+                        }`}
+                      >
+                        <img src={url} alt={`Foto ${idx + 1}`} className="h-20 w-full rounded object-cover" />
+                        <span className={`block text-center text-[11px] font-semibold ${idx === 0 ? 'text-amber-900' : 'text-green-700'}`}>
+                          {idx === 0 ? 'Principal (hero)' : `Galería ${idx}`}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ) : null}

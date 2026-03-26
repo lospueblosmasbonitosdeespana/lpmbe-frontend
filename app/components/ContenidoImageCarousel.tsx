@@ -10,7 +10,7 @@ type Props = {
 
 export default function ContenidoImageCarousel({ images, alt }: Props) {
   const validImages = useMemo(
-    () => images.map((u) => u?.trim()).filter((u): u is string => !!u).slice(0, 4),
+    () => images.map((u) => u?.trim()).filter((u): u is string => !!u).slice(0, 10),
     [images]
   );
   const [index, setIndex] = useState(0);
@@ -62,15 +62,19 @@ export default function ContenidoImageCarousel({ images, alt }: Props) {
       </div>
 
       {validImages.length > 1 && (
-        <div className="mt-3 flex items-center justify-center gap-2">
-          {validImages.map((_, i) => (
+        <div className="mt-3 flex items-center justify-center gap-2 overflow-x-auto px-2 py-1">
+          {validImages.map((img, i) => (
             <button
-              key={`dot-${i}`}
+              key={`thumb-${i}`}
               type="button"
               onClick={() => setIndex(i)}
               aria-label={`Ir a imagen ${i + 1}`}
-              className={`h-2.5 w-2.5 rounded-full ${index === i ? 'bg-primary' : 'bg-border'}`}
-            />
+              className={`shrink-0 h-14 w-14 rounded-lg overflow-hidden border-2 transition ${
+                index === i ? 'border-primary ring-2 ring-primary/30' : 'border-transparent opacity-70 hover:opacity-100'
+              }`}
+            >
+              <img src={img} alt="" className="h-full w-full object-cover" loading="lazy" />
+            </button>
           ))}
         </div>
       )}
