@@ -107,6 +107,13 @@ interface ContentBlockBuilderProps {
   onClearAll?: () => void;
 }
 
+interface SavedBuilderDraft {
+  id: string;
+  name: string;
+  savedAt: string;
+  blocks: ContentBlock[];
+}
+
 const COLOR_SWATCHES = [
   '#111111', '#ffffff', '#7a4b22', '#c0392b', '#8a5a2b', '#0f766e',
   '#1d4ed8', '#7c3aed', '#be185d', '#ea580c', '#16a34a', '#6b7280',
@@ -564,6 +571,8 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
   // Draft
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const [hasDraft, setHasDraft] = useState(false);
+  const [savedDrafts, setSavedDrafts] = useState<SavedBuilderDraft[]>([]);
+  const [showDraftsModal, setShowDraftsModal] = useState(false);
   // Slot de galería activo para upload (0-3)
   const [galleryUploadSlot, setGalleryUploadSlot] = useState<number>(0);
 
@@ -573,7 +582,38 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
 
   const storageKey = draftKey || 'lpmbe-content-builder-draft';
+  const draftsListKey = `${storageKey}:saved-list`;
   const selectedBlock = blocks.find((b) => b.id === selectedId) || null;
+
+  function readSavedDrafts(): SavedBuilderDraft[] {
+    if (typeof window === 'undefined') return [];
+    try {
+      const raw = localStorage.getItem(draftsListKey);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw) as unknown;
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .map((d) => {
+          const row = (d && typeof d === 'object' ? d : {}) as Record<string, unknown>;
+          return {
+            id: String(row.id || newId()),
+            name: String(row.name || 'Borrador sin nombre'),
+            savedAt: String(row.savedAt || new Date().toISOString()),
+            blocks: normalizeBlocks(row.blocks),
+          } as SavedBuilderDraft;
+        })
+        .filter((d) => d.blocks.length > 0)
+        .sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
+    } catch {
+      return [];
+    }
+  }
+
+  function writeSavedDrafts(list: SavedBuilderDraft[]) {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(draftsListKey, JSON.stringify(list));
+    setSavedDrafts(list);
+  }
 
   // Load templates and logos on mount
   useEffect(() => {
@@ -657,10 +697,14 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
     // obsoleto de sesiones anteriores antes de cargar nada.
     if (clearDraftOnMount) {
       localStorage.removeItem(storageKey);
-      setHasDraft(false);
+      const list = readSavedDrafts();
+      setSavedDrafts(list);
+      setHasDraft(list.length > 0);
       return;
     }
 
+    const list = readSavedDrafts();
+    setSavedDrafts(list);
     const stored = localStorage.getItem(storageKey);
     if (stored) {
       setHasDraft(true);
@@ -679,6 +723,8 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
           }
         } catch { /* ignore */ }
       }
+    } else {
+      setHasDraft(list.length > 0);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -896,12 +942,26 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
   function saveDraft() {
     const payload = { blocks, savedAt: new Date().toISOString() };
     localStorage.setItem(storageKey, JSON.stringify(payload));
+    const savedAtIso = new Date().toISOString();
+    const human = new Date(savedAtIso).toLocaleString('es-ES', { hour12: false });
+    const entry: SavedBuilderDraft = {
+      id: newId(),
+      name: `Borrador ${human}`,
+      savedAt: savedAtIso,
+      blocks: [...blocks],
+    };
+    const next = [entry, ...savedDrafts].slice(0, 50);
+    writeSavedDrafts(next);
     setDraftSavedAt(new Date().toLocaleTimeString('es-ES'));
     setHasDraft(true);
     setMsg('Borrador guardado.');
   }
 
   function loadDraft() {
+    if (savedDrafts.length > 0) {
+      loadDraftById(savedDrafts[0].id);
+      return;
+    }
     const stored = localStorage.getItem(storageKey);
     if (!stored) return;
     try {
@@ -913,6 +973,25 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
     } catch {
       setErr('Error al cargar borrador.');
     }
+  }
+
+  function loadDraftById(id: string) {
+    const target = savedDrafts.find((d) => d.id === id);
+    if (!target) return;
+    const loaded = normalizeBlocks(target.blocks);
+    setBlocks(loaded);
+    setSelectedId(null);
+    localStorage.setItem(storageKey, JSON.stringify({ blocks: loaded, savedAt: new Date().toISOString() }));
+    setHasDraft(true);
+    setMsg(`Borrador "${target.name}" cargado.`);
+    setShowDraftsModal(false);
+  }
+
+  function deleteDraftById(id: string) {
+    const next = savedDrafts.filter((d) => d.id !== id);
+    writeSavedDrafts(next);
+    setHasDraft(next.length > 0 || !!localStorage.getItem(storageKey));
+    setMsg('Borrador eliminado.');
   }
 
   // ─── Sync HTML (emit to parent) ───────────────────────────────────────────────
@@ -1058,6 +1137,16 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
           className="rounded-md border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900">
           Guardar borrador
         </button>
+        <button
+          type="button"
+          onClick={() => {
+            setSavedDrafts(readSavedDrafts());
+            setShowDraftsModal(true);
+          }}
+          className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Mis borradores ({savedDrafts.length})
+        </button>
         {hasDraft && (
           <button type="button" onClick={loadDraft}
             className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground">
@@ -1159,6 +1248,52 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
             <button type="button" onClick={() => setPreviewHtml(null)} className="absolute right-3 top-3 rounded-full border px-2 py-1 text-xs font-bold">Cerrar</button>
             <p className="mb-3 text-sm font-bold uppercase text-muted-foreground">Vista previa</p>
             <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
+          </div>
+        </div>
+      )}
+
+      {showDraftsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowDraftsModal(false)}>
+          <div className="relative max-h-[85vh] w-full max-w-2xl overflow-auto rounded-lg bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <button type="button" onClick={() => setShowDraftsModal(false)} className="absolute right-3 top-3 rounded-full border px-2 py-1 text-xs font-bold">Cerrar</button>
+            <p className="mb-3 text-sm font-bold uppercase text-muted-foreground">Mis borradores</p>
+            {savedDrafts.length === 0 ? (
+              <p className="rounded border border-dashed border-border p-4 text-sm text-muted-foreground">
+                Aún no tienes borradores guardados en este editor.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {savedDrafts.map((d) => (
+                  <div key={d.id} className="flex flex-wrap items-center justify-between gap-2 rounded border border-border bg-background p-3">
+                    <div>
+                      <p className="text-sm font-semibold">{d.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(d.savedAt).toLocaleString('es-ES', { hour12: false })} · {d.blocks.length} bloques
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => loadDraftById(d.id)}
+                        className="rounded-md border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
+                      >
+                        Cargar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!window.confirm(`¿Eliminar "${d.name}"?`)) return;
+                          deleteDraftById(d.id);
+                        }}
+                        className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50"
+                      >
+                        Borrar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
