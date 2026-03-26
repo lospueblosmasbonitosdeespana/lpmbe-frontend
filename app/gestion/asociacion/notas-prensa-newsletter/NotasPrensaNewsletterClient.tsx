@@ -1601,9 +1601,16 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     finalHtml = injectPreheader(finalHtml, campaignForm.preheader);
 
     const filters = mode === 'press' ? buildPressFilters() : { source: campaignForm.source };
-    const extraAttachmentUrls = mode === 'press' && pressAttachments.length > 0
-      ? pressAttachments.map((a) => ({ url: a.url, filename: a.name, contentType: a.contentType }))
-      : undefined;
+    const allAttachments: Array<{ url: string; filename?: string; contentType?: string }> = [];
+    if (mode === 'press' && photoUrlsForSend.length > 0) {
+      photoUrlsForSend.forEach((url, i) => {
+        const fname = url.split('/').pop()?.split('?')[0] || `foto-nota-prensa-${i + 1}.jpg`;
+        allAttachments.push({ url, filename: fname, contentType: 'image/jpeg' });
+      });
+    }
+    if (mode === 'press' && pressAttachments.length > 0) {
+      pressAttachments.forEach((a) => allAttachments.push({ url: a.url, filename: a.name, contentType: a.contentType }));
+    }
 
     const res = await fetch('/api/admin/newsletter/campaigns/send', {
       method: 'POST',
@@ -1613,7 +1620,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         subject: campaignForm.subject,
         html: finalHtml,
         filters,
-        ...(extraAttachmentUrls ? { attachmentUrls: extraAttachmentUrls } : {}),
+        ...(allAttachments.length > 0 ? { attachmentUrls: allAttachments } : {}),
       }),
     });
     const data = await res.json().catch(() => ({}));
@@ -1686,9 +1693,17 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           if (pending.length > 0) finalHtml = appendPressPhotos(finalHtml, pending);
         }
         finalHtml = injectPreheader(finalHtml, campaignForm.preheader);
-        if (mode === 'press' && pressAttachments.length > 0) {
-          attachmentUrls = pressAttachments.map((a) => ({ url: a.url, filename: a.name, contentType: a.contentType }));
+        const testAttachments: Array<{ url: string; filename?: string; contentType?: string }> = [];
+        if (mode === 'press' && photoUrlsForTest.length > 0) {
+          photoUrlsForTest.forEach((url, i) => {
+            const fname = url.split('/').pop()?.split('?')[0] || `foto-nota-prensa-${i + 1}.jpg`;
+            testAttachments.push({ url, filename: fname, contentType: 'image/jpeg' });
+          });
         }
+        if (mode === 'press' && pressAttachments.length > 0) {
+          pressAttachments.forEach((a) => testAttachments.push({ url: a.url, filename: a.name, contentType: a.contentType }));
+        }
+        if (testAttachments.length > 0) attachmentUrls = testAttachments;
       }
 
       const res = await fetch('/api/admin/newsletter/campaigns/test-send', {
@@ -1771,14 +1786,14 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   }
 
   async function uploadPressPhotos() {
-    if (pressPhotoFiles.length === 0) return [];
-    if (pressPhotoFiles.length > 10) {
+    if (pressPhotoFiles.length === 0) return [...pressPhotoUrls];
+    if (pressPhotoFiles.length + pressPhotoUrls.length > 10) {
       throw new Error('Puedes subir un máximo de 10 fotos por nota de prensa');
     }
 
     setUploadingPhotos(true);
     try {
-      const urls: string[] = [];
+      const newUrls: string[] = [];
       for (const file of pressPhotoFiles) {
         const fd = new FormData();
         fd.append('file', file);
@@ -1791,12 +1806,13 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         if (!res.ok || !data?.url) {
           throw new Error(data?.error || data?.message || 'Error subiendo una de las fotos');
         }
-        urls.push(String(data.url));
+        newUrls.push(String(data.url));
       }
-      setPressPhotoUrls(urls);
-      setInsertedPhotoUrls([]);
-      setWebGallerySelection([]);
-      return urls;
+      const allUrls = [...pressPhotoUrls, ...newUrls];
+      setPressPhotoUrls(allUrls);
+      setPressPhotoFiles([]);
+      if (photosInputRef.current) photosInputRef.current.value = '';
+      return allUrls;
     } finally {
       setUploadingPhotos(false);
     }
@@ -1810,7 +1826,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     setError(null);
     try {
       await uploadPressPhotos();
-      setMessage('Fotos subidas y optimizadas correctamente.');
+      setMessage('Fotos subidas correctamente. Puedes seleccionar más fotos.');
     } catch (e: unknown) {
       setError(getErrorMessage(e, 'Error subiendo fotos'));
     }
