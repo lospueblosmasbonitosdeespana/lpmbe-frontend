@@ -105,6 +105,12 @@ const ACCESOS = [
     icon: <span className="text-2xl">🏛</span>,
   },
   {
+    href: '/gestion/asociacion/fotos',
+    title: 'Fotos',
+    description: 'Biblioteca de imágenes por pueblo y asociación (portadas y galerías) con descarga directa.',
+    icon: <span className="text-2xl">🖼️</span>,
+  },
+  {
     href: '/gestion/asociacion/datos',
     title: 'Datos',
     description: 'Métricas, clientes, suscriptores newsletter',
