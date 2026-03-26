@@ -137,6 +137,13 @@ function newBlockId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+function sanitizeTemplateUrl(raw: string): string {
+  const url = String(raw || '').trim();
+  if (!url) return '';
+  if (url === 'https://...' || url === 'http://...' || /https?:\/\/\.\.\./i.test(url)) return '';
+  return url;
+}
+
 function createBlock(type: NewsletterBlockType, patch: Partial<NewsletterBlock> = {}): NewsletterBlock {
   return {
     id: newBlockId(),
@@ -156,11 +163,11 @@ function createBlock(type: NewsletterBlockType, patch: Partial<NewsletterBlock> 
     label: type === 'button' ? 'Leer más' : type === 'iconButton' ? 'Icono' : '',
     url:
       type === 'image' || type === 'figure' || type === 'imgText'
-        ? 'https://...'
+        ? ''
         : type === 'button'
-          ? 'https://...'
+          ? ''
           : '',
-    iconUrl: type === 'iconButton' ? 'https://...' : '',
+    iconUrl: type === 'iconButton' ? '' : '',
     caption: type === 'figure' ? 'Pie de imagen' : '',
     colLeft: type === 'columns2' || type === 'columns3' ? 'Columna izquierda' : '',
     colRight: type === 'columns2' || type === 'columns3' ? 'Columna derecha' : '',
@@ -303,15 +310,15 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
         id: String(b.id || `${Date.now()}-${Math.random().toString(36).slice(2)}`),
         type,
         content: String(b.content || ''),
-        url: String(b.url || ''),
-        iconUrl: String(b.iconUrl || ''),
+        url: sanitizeTemplateUrl(String(b.url || '')),
+        iconUrl: sanitizeTemplateUrl(String(b.iconUrl || '')),
         label: String(b.label || ''),
         colLeft: String(b.colLeft || ''),
         colRight: String(b.colRight || ''),
         colCenter: String(b.colCenter || ''),
         caption: String(b.caption || ''),
         imageUrls: Array.isArray(b.imageUrls)
-          ? (b.imageUrls as unknown[]).map((u) => String(u))
+          ? (b.imageUrls as unknown[]).map((u) => sanitizeTemplateUrl(String(u)))
           : undefined,
         socialFacebook: String(b.socialFacebook || ''),
         socialTwitter: String(b.socialTwitter || ''),
@@ -351,14 +358,14 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         return `<div style="${boxStyle}"><div style="margin:0;font-size:16px;line-height:1.6;text-align:${align};color:${textColor};">${isHtml ? raw : escapeHtml(raw).replace(/\n/g, '<br/>')}</div></div>`;
       }
       if (block.type === 'image') {
-        const url = String(block.url || '').trim();
+        const url = sanitizeTemplateUrl(String(block.url || ''));
         if (!url) return '';
         return `<div style="${boxStyle}"><p style="margin:0;text-align:${align};"><img src="${escapeHtml(
           url,
         )}" alt="${escapeHtml(block.content || 'Imagen newsletter')}" style="max-width:100%;height:auto;border-radius:10px;" /></p></div>`;
       }
       if (block.type === 'button') {
-        const url = String(block.url || '').trim();
+        const url = sanitizeTemplateUrl(String(block.url || ''));
         const label = String(block.label || 'Abrir enlace').trim();
         if (!url) return '';
         return `<div style="${boxStyle}"><p style="margin:0;text-align:${align};"><a href="${escapeHtml(
@@ -368,8 +375,8 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         )}</a></p></div>`;
       }
       if (block.type === 'iconButton') {
-        const url = String(block.url || '').trim();
-        const iconUrl = String(block.iconUrl || '').trim();
+        const url = sanitizeTemplateUrl(String(block.url || ''));
+        const iconUrl = sanitizeTemplateUrl(String(block.iconUrl || ''));
         const label = String(block.label || 'Icono').trim();
         if (!url || !iconUrl) return '';
         return `<div style="${boxStyle}"><p style="margin:0;text-align:${align};"><a href="${escapeHtml(
@@ -392,7 +399,7 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="33%" valign="top" style="padding:0 6px 0 0;font-size:15px;line-height:1.6;color:${textColor};">${left}</td><td width="34%" valign="top" style="padding:0 6px;font-size:15px;line-height:1.6;color:${textColor};">${center}</td><td width="33%" valign="top" style="padding:0 0 0 6px;font-size:15px;line-height:1.6;color:${textColor};">${right}</td></tr></table></div>`;
       }
       if (block.type === 'gallery') {
-        const urls = (block.imageUrls || []).filter((u) => u.trim());
+        const urls = (block.imageUrls || []).map((u) => sanitizeTemplateUrl(String(u || ''))).filter(Boolean);
         if (!urls.length) return `<div style="${boxStyle}"><p style="color:#999;text-align:center;">Galería sin imágenes</p></div>`;
         const imgs = urls
           .map(
@@ -403,13 +410,13 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr>${imgs}</tr></table></div>`;
       }
       if (block.type === 'figure') {
-        const url = String(block.url || '').trim();
+        const url = sanitizeTemplateUrl(String(block.url || ''));
         const cap = String(block.caption || '').trim();
         if (!url) return '';
         return `<div style="${boxStyle}"><figure style="margin:0;text-align:${align};"><img src="${escapeHtml(url)}" alt="${escapeHtml(cap)}" style="max-width:100%;height:auto;border-radius:10px;" />${cap ? `<figcaption style="margin-top:6px;font-size:13px;color:#666;text-align:center;">${escapeHtml(cap)}</figcaption>` : ''}</figure></div>`;
       }
       if (block.type === 'imgText') {
-        const url = String(block.url || '').trim();
+        const url = sanitizeTemplateUrl(String(block.url || ''));
         const raw = block.content || '';
         const isHtml = raw.includes('<');
         const text = isHtml ? raw : escapeHtml(raw).replace(/\n/g, '<br/>');
@@ -1487,7 +1494,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           content: 'Te compartimos las novedades más importantes de la red durante este mes.',
         }),
         createBlock('image', {
-          url: 'https://...',
+          url: '',
           content: 'Imagen destacada del boletín',
           align: 'center',
         }),
@@ -1496,7 +1503,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         }),
         createBlock('button', {
           label: 'Ver todas las novedades',
-          url: 'https://...',
+          url: '',
           align: 'center',
         }),
       ];
@@ -1511,7 +1518,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         createBlock('text', {
           content: 'Puedes añadir contexto adicional, declaraciones o próximos pasos.',
         }),
-        createBlock('button', { label: 'Más información', url: 'https://...', align: 'left' }),
+        createBlock('button', { label: 'Más información', url: '', align: 'left' }),
       ];
     } else {
       suggestedSubject = 'Nueva campaña destacada';
@@ -1522,11 +1529,11 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           align: 'center',
         }),
         createBlock('image', {
-          url: 'https://...',
+          url: '',
           content: 'Imagen principal de campaña',
           align: 'center',
         }),
-        createBlock('button', { label: 'Acceder ahora', url: 'https://...', align: 'center' }),
+        createBlock('button', { label: 'Acceder ahora', url: '', align: 'center' }),
       ];
     }
     setNewsletterBlocks(blocks);
