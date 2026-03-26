@@ -780,6 +780,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [publishingWeb, setPublishingWeb] = useState(false);
   const [syncingCampaignId, setSyncingCampaignId] = useState<number | null>(null);
   const [showWebPreview, setShowWebPreview] = useState(false);
+  const [showSendPreview, setShowSendPreview] = useState(false);
   const [geoPueblos, setGeoPueblos] = useState<GeoPueblo[]>([]);
   const [geoCcaas, setGeoCcaas] = useState<string[]>([]);
   const [geoProvincias, setGeoProvincias] = useState<string[]>([]);
@@ -2106,7 +2107,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     }
   }
 
-  function buildPreviewHtml() {
+  function buildWebPreviewHtml() {
     let html = campaignForm.html.trim();
     if (editorMode === 'visual' && editor) {
       html = editor.getHTML().trim();
@@ -2118,6 +2119,37 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       }
     }
     return html;
+  }
+
+  function buildSendPreviewHtml() {
+    let finalHtml = '';
+
+    if (mode === 'press' && pressSendMode === 'pdf') {
+      const pdfUrl = pressPdfUrl.trim();
+      if (!pdfUrl) {
+        return '';
+      }
+      finalHtml = buildPdfEmailHtml(campaignForm.subject.trim(), pdfUrl);
+      return injectPreheader(finalHtml, campaignForm.preheader).trim();
+    }
+
+    finalHtml = campaignForm.html.trim();
+    if (mode === 'newsletter' && newsletterComposerMode === 'builder') {
+      finalHtml = renderNewsletterBlocksToHtml(newsletterBlocks).trim();
+    } else if (mode === 'press' && pressSendMode === 'editor' && pressComposerMode === 'builder') {
+      finalHtml = pressBuilderHtml.trim();
+    } else if (mode === 'press' && pressSendMode === 'editor' && editorMode === 'visual' && editor) {
+      finalHtml = editor.getHTML().trim();
+    }
+
+    if (mode === 'press' && pressPhotoUrls.length > 0) {
+      const pendingPhotoUrls = pressPhotoUrls.filter((u) => !insertedPhotoUrls.includes(u));
+      if (pendingPhotoUrls.length > 0) {
+        finalHtml = appendPressPhotos(finalHtml, pendingPhotoUrls);
+      }
+    }
+
+    return injectPreheader(finalHtml, campaignForm.preheader).trim();
   }
 
   const selectedNewsletterBlock =
@@ -4257,6 +4289,39 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
             </div>
           ) : null}
 
+          <div className="space-y-3 rounded-lg border border-border p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm font-medium">Vista previa del envío</p>
+              <button
+                type="button"
+                onClick={() => setShowSendPreview((v) => !v)}
+                className="rounded-md border border-border px-3 py-1 text-xs"
+              >
+                {showSendPreview ? 'Ocultar vista previa' : 'Ver vista previa'}
+              </button>
+            </div>
+            {showSendPreview ? (
+              <div className="rounded-md border border-border bg-background p-3">
+                <h3 className="mb-1 text-base font-semibold">{campaignForm.subject || 'Sin asunto'}</h3>
+                {campaignForm.preheader ? (
+                  <p className="mb-3 text-xs text-muted-foreground">
+                    <span className="font-medium">Preheader:</span> {campaignForm.preheader}
+                  </p>
+                ) : null}
+                {mode === 'press' && pressSendMode === 'pdf' && !pressPdfUrl ? (
+                  <p className="text-sm text-amber-700">
+                    Sube un PDF para ver la vista previa final del envío en modo PDF.
+                  </p>
+                ) : (
+                  <div
+                    className="prose max-w-none text-sm"
+                    dangerouslySetInnerHTML={{ __html: buildSendPreviewHtml() || '<p>Sin contenido</p>' }}
+                  />
+                )}
+              </div>
+            ) : null}
+          </div>
+
           {mode === 'press' && pressSendMode === 'editor' ? (
             <div className="space-y-3 rounded-lg border border-border p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -4318,7 +4383,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   <h3 className="mb-2 text-base font-semibold">{campaignForm.subject || 'Vista previa sin título'}</h3>
                   <div
                     className="prose max-w-none text-sm"
-                    dangerouslySetInnerHTML={{ __html: buildPreviewHtml() || '<p>Sin contenido</p>' }}
+                    dangerouslySetInnerHTML={{ __html: buildWebPreviewHtml() || '<p>Sin contenido</p>' }}
                   />
                 </div>
               ) : null}
