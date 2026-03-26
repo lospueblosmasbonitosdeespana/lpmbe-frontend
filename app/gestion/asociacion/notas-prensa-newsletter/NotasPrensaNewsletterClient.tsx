@@ -1171,20 +1171,32 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         return e.returnValue;
       }
     }
-    window.addEventListener('beforeunload', onBeforeUnload);
 
-    const originalPushState = history.pushState.bind(history);
-    history.pushState = function (...args: Parameters<typeof history.pushState>) {
-      if (hasContentRef.current) {
-        const leave = window.confirm('Si abandonas la página perderás el contenido actual. ¿Continuar?');
-        if (!leave) return;
+    function onLinkClick(e: MouseEvent) {
+      if (!hasContentRef.current) return;
+      const anchor = (e.target as HTMLElement)?.closest('a');
+      if (!anchor) return;
+      const href = anchor.getAttribute('href');
+      if (!href || href.startsWith('#') || href.startsWith('javascript')) return;
+      if (anchor.target === '_blank') return;
+      const currentPath = window.location.pathname;
+      if (href === currentPath) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      const leave = window.confirm('Si abandonas la página perderás el contenido actual. ¿Continuar?');
+      if (leave) {
+        hasContentRef.current = false;
+        window.location.href = anchor.href;
       }
-      return originalPushState(...args);
-    };
+    }
+
+    window.addEventListener('beforeunload', onBeforeUnload);
+    document.addEventListener('click', onLinkClick, true);
 
     return () => {
       window.removeEventListener('beforeunload', onBeforeUnload);
-      history.pushState = originalPushState;
+      document.removeEventListener('click', onLinkClick, true);
     };
   }, []);
 
