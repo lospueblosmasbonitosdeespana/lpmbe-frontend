@@ -107,6 +107,11 @@ interface ContentBlockBuilderProps {
   onClearAll?: () => void;
 }
 
+const COLOR_SWATCHES = [
+  '#111111', '#ffffff', '#7a4b22', '#c0392b', '#8a5a2b', '#0f766e',
+  '#1d4ed8', '#7c3aed', '#be185d', '#ea580c', '#16a34a', '#6b7280',
+];
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function newId(): string {
@@ -467,12 +472,26 @@ function BlockRichEditor({ content, onChange, placeholder }: { content: string; 
         <button type="button" onClick={promptLink} className={btn(ed.isActive('link'))} title="Enlace">
           <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><path d="M8.5 11.5a3.5 3.5 0 004.95 0l2.12-2.12a3.5 3.5 0 00-4.95-4.95L9.5 5.55" stroke="currentColor" strokeWidth="1.5" fill="none" /><path d="M11.5 8.5a3.5 3.5 0 00-4.95 0l-2.12 2.12a3.5 3.5 0 004.95 4.95l1.12-1.12" stroke="currentColor" strokeWidth="1.5" fill="none" /></svg>
         </button>
-        <button type="button" onClick={() => { const c = window.prompt('Color (hex)', '#000000'); if (c) ed.chain().focus().setColor(c.trim()).run(); }} className={btn(false)} title="Color">
-          <span className="flex flex-col items-center leading-none"><span className="text-[11px] font-bold">A</span><span className="mt-px h-1 w-3 rounded-sm bg-red-500" /></span>
-        </button>
-        <button type="button" onClick={() => { const c = window.prompt('Resaltado (hex)', '#ffe066'); if (c) ed.chain().focus().toggleHighlight({ color: c.trim() }).run(); }} className={btn(ed.isActive('highlight'))} title="Resaltar">
+        <label className="flex cursor-pointer items-center rounded px-1.5 py-1 hover:bg-muted" title="Color de texto">
+          <span className="mr-1 text-[11px] font-bold">A</span>
+          <input
+            type="color"
+            value={ed.getAttributes('textStyle').color || '#111111'}
+            onChange={(e) => ed.chain().focus().setColor(e.target.value).run()}
+            className="h-4 w-4 cursor-pointer rounded border border-border p-0"
+            aria-label="Elegir color de texto"
+          />
+        </label>
+        <label className="flex cursor-pointer items-center rounded px-1.5 py-1 hover:bg-muted" title="Color de resaltado">
           <span className="rounded bg-yellow-200 px-0.5 text-[11px] font-bold">A</span>
-        </button>
+          <input
+            type="color"
+            value={ed.getAttributes('highlight').color || '#ffe066'}
+            onChange={(e) => ed.chain().focus().toggleHighlight({ color: e.target.value }).run()}
+            className="ml-1 h-4 w-4 cursor-pointer rounded border border-border p-0"
+            aria-label="Elegir color de resaltado"
+          />
+        </label>
         <span className="mx-0.5 h-4 w-px bg-border" />
         <button type="button" onClick={() => ed.chain().focus().undo().run()} className={btn(false)} title="Deshacer">
           <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><path d="M5 8l-3-3 3-3" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" /><path d="M2 5h10a5 5 0 010 10H8" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" /></svg>
@@ -1595,10 +1614,36 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                 <label className="text-xs text-muted-foreground">
                   Fondo
                   <input type="color" value={selectedBlock.backgroundColor || '#ffffff'} onChange={(e) => updateSelected({ backgroundColor: e.target.value })} className="mt-1 h-9 w-full rounded-md border border-border p-1" />
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {COLOR_SWATCHES.map((c) => (
+                      <button
+                        key={`bg-${c}`}
+                        type="button"
+                        onClick={() => updateSelected({ backgroundColor: c })}
+                        className="h-5 w-5 rounded border border-border"
+                        style={{ backgroundColor: c }}
+                        title={`Fondo ${c}`}
+                        aria-label={`Fondo ${c}`}
+                      />
+                    ))}
+                  </div>
                 </label>
                 <label className="text-xs text-muted-foreground">
                   Color texto
                   <input type="color" value={selectedBlock.textColor || '#111111'} onChange={(e) => updateSelected({ textColor: e.target.value })} className="mt-1 h-9 w-full rounded-md border border-border p-1" />
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {COLOR_SWATCHES.map((c) => (
+                      <button
+                        key={`tx-${c}`}
+                        type="button"
+                        onClick={() => updateSelected({ textColor: c })}
+                        className="h-5 w-5 rounded border border-border"
+                        style={{ backgroundColor: c }}
+                        title={`Texto ${c}`}
+                        aria-label={`Texto ${c}`}
+                      />
+                    ))}
+                  </div>
                 </label>
                 <label className="text-xs text-muted-foreground">
                   Padding vertical
