@@ -1143,14 +1143,14 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
             setSavedDrafts(readSavedDrafts());
             setShowDraftsModal(true);
           }}
-          className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="rounded-md border border-blue-300 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-800 hover:bg-blue-100"
         >
-          Mis borradores ({savedDrafts.length})
+          Borradores ({savedDrafts.length})
         </button>
         {hasDraft && (
           <button type="button" onClick={loadDraft}
             className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground">
-            Cargar borrador
+            Cargar último
           </button>
         )}
         {draftSavedAt && <span className="text-xs text-muted-foreground">Guardado: {draftSavedAt}</span>}
