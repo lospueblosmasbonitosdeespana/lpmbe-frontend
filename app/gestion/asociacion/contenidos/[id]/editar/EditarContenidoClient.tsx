@@ -31,6 +31,8 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
   const [fechaFinLocal, setFechaFinLocal] = useState('');
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [galleryFiles, setGalleryFiles] = useState<Array<File | null>>([null, null, null]);
   const [uploading, setUploading] = useState(false);
   const [editorMode, setEditorMode] = useState<EditorMode>('edit');
 
@@ -53,6 +55,7 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
         setContenidoMd(data.contenidoMd ?? '');
         setEstado(data.estado ?? 'BORRADOR');
         setCoverUrl(data.coverUrl ?? null);
+        setGalleryUrls(Array.isArray(data.galleryUrls) ? data.galleryUrls.slice(0, 3) : []);
 
         if (data.publishedAt) {
           setPublishedAt(toDatetimeLocal(data.publishedAt));
@@ -117,8 +120,8 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
 
     setSaving(true);
     try {
-      // 1. Subir nueva cover si existe
       let newCoverUrl = coverUrl;
+      const nextGalleryUrls = [...galleryUrls];
 
       if (coverFile) {
         try {
@@ -132,7 +135,27 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
         }
       }
 
-      // 2. Actualizar contenido
+      for (let i = 0; i < galleryFiles.length; i++) {
+        const file = galleryFiles[i];
+        if (!file) continue;
+        try {
+          const { uploadImageToR2 } = await import("@/src/lib/uploadHelper");
+          const { url } = await uploadImageToR2(file, 'contenidos', '/api/media/upload');
+          nextGalleryUrls[i] = url;
+        } catch (e: any) {
+          setError(`Error subiendo imagen ${i + 1}: ${e?.message || 'Error desconocido'}`);
+          setSaving(false);
+          return;
+        }
+      }
+
+      const normalizedGalleryUrls = nextGalleryUrls
+        .map((u) => (u || '').trim())
+        .filter(Boolean)
+        .slice(0, 3);
+      if (!newCoverUrl && normalizedGalleryUrls.length > 0) {
+        newCoverUrl = normalizedGalleryUrls[0];
+      }
       const payload: any = {
         tipo,
         titulo: titulo.trim(),
@@ -141,6 +164,7 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
         estado,
       };
       if (newCoverUrl) payload.coverUrl = newCoverUrl;
+      payload.galleryUrls = normalizedGalleryUrls;
       if (estado === 'PROGRAMADA' && publishedAt) {
         payload.publishedAt = datetimeLocalToIsoUtc(publishedAt);
       }
@@ -292,21 +316,48 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
           </div>
         )}
 
-        {coverUrl && coverUrl.trim() && !coverFile && (
-          <div>
-            <label className="block text-sm font-medium mb-2">Foto actual</label>
-            <img
-              src={coverUrl.trim()}
-              alt="Portada actual"
-              className="h-32 w-auto rounded object-cover"
-            />
+        <div className="space-y-3">
+          <label className="block text-sm font-medium">Foto de portada y galería (máx. 3)</label>
+          <CoverPicker
+            currentCoverUrl={coverUrl}
+            buttonLabel="📷 Añadir portada"
+            buttonLabelWithFile="🖼️ Cambiar portada"
+            onFileSelected={(file) => {
+              setCoverFile(file);
+              if (file === null) setCoverUrl(null);
+            }}
+          />
+          {coverUrl && coverUrl.trim() && (
+            <div className="mt-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={coverUrl.trim()} alt="Portada" className="max-w-[200px] rounded border" />
+              <button type="button" onClick={() => setCoverUrl(null)} className="mt-1 text-xs text-red-600 hover:underline">Quitar portada</button>
+            </div>
+          )}
+          <div className="rounded-md border border-gray-200 bg-gray-50 p-3">
+            <p className="mb-2 text-xs text-gray-700">
+              Galería: añade hasta 3 fotos. Se verán en carrusel en web y app.
+            </p>
+            <div className="grid gap-3 md:grid-cols-3">
+              {[0, 1, 2].map((idx) => (
+                <div key={`gallery-slot-${idx}`} className="rounded-md border bg-white p-3">
+                  <p className="mb-2 text-xs font-medium text-gray-700">Foto {idx + 1}</p>
+                  <CoverPicker
+                    currentCoverUrl={galleryUrls[idx] ?? null}
+                    buttonLabel={`📷 Añadir foto ${idx + 1}`}
+                    buttonLabelWithFile={`🖼️ Cambiar foto ${idx + 1}`}
+                    clearLabel={`Quitar foto ${idx + 1}`}
+                    currentLabel={`Foto ${idx + 1} actual:`}
+                    onFileSelected={(file) => {
+                      setGalleryFiles((prev) => { const n = [...prev]; n[idx] = file; return n; });
+                      if (file === null) setGalleryUrls((prev) => { const n = [...prev]; n[idx] = ''; return n; });
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        )}
-
-        <CoverPicker
-          currentCoverUrl={coverUrl}
-          onFileSelected={(file) => setCoverFile(file)}
-        />
+        </div>
 
         {/* SISTEMA DE 4 MODOS: Constructor visual, Editor TipTap, HTML directo, Vista previa */}
         <div className="space-y-2">

@@ -1921,12 +1921,22 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     `.trim();
   }
 
-  function stripEmailWrapperForWeb(html: string): string {
+  function stripEmailWrapperForWeb(html: string, galleryUrlsToStrip: string[] = []): string {
     let cleaned = html;
     cleaned = cleaned.replace(/<div[^>]*style="[^"]*display:\s*none[^"]*"[^>]*>[\s\S]*?<\/div>/gi, '');
     cleaned = cleaned.replace(/<hr[^>]*style="[^"]*"[^>]*\/?>/gi, '');
     cleaned = cleaned.replace(/<h3[^>]*>\s*Im[áa]genes de la nota de prensa\s*<\/h3>/gi, '');
     cleaned = cleaned.replace(/<div[^>]*style="[^"]*text-align:\s*center[^"]*"[^>]*>\s*<img[^>]*>\s*<\/div>/gi, '');
+
+    if (galleryUrlsToStrip.length > 0) {
+      for (const url of galleryUrlsToStrip) {
+        const escaped = url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        cleaned = cleaned.replace(new RegExp(`<div[^>]*>\\s*<img[^>]*src=["']${escaped}["'][^>]*>\\s*</div>`, 'gi'), '');
+        cleaned = cleaned.replace(new RegExp(`<p[^>]*>\\s*<img[^>]*src=["']${escaped}["'][^>]*>\\s*</p>`, 'gi'), '');
+        cleaned = cleaned.replace(new RegExp(`<img[^>]*src=["']${escaped}["'][^>]*>`, 'gi'), '');
+      }
+    }
+
     cleaned = cleaned.replace(/style="[^"]*max-width:\s*\d+%[^"]*"/gi, (match) => {
       return match.replace(/max-width:\s*\d+%/gi, 'max-width:100%');
     });
@@ -1936,6 +1946,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         .replace(/border-radius:\s*[^;]+;?/gi, 'border-radius:8px;');
       return `<img${before}style="max-width:100%;height:auto;border-radius:8px;display:block;margin:16px auto;${newStyle}"`;
     });
+    cleaned = cleaned.replace(/(<(div|p)>\s*<\/(div|p)>\s*){2,}/gi, '');
     return cleaned.trim();
   }
 
@@ -1959,9 +1970,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         uploadedPhotoUrls = await uploadPressPhotos();
       }
 
-      finalHtml = stripEmailWrapperForWeb(finalHtml);
-
       const allGalleryUrls = [...uploadedPhotoUrls];
+
+      finalHtml = stripEmailWrapperForWeb(finalHtml, allGalleryUrls);
       const firstPhoto = allGalleryUrls[0] || undefined;
 
       const res = await fetch('/api/admin/newsletter/publish-web', {
