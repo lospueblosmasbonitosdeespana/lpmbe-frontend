@@ -810,7 +810,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
   const [showPressLogos, setShowPressLogos] = useState(false);
-  const [logoInsertWidth, setLogoInsertWidth] = useState<'100%' | '80%' | '60%' | '40%' | '200px'>('40%');
+  const [logoInsertWidth, setLogoInsertWidth] = useState<'100%' | '80%' | '60%' | '40%' | '200px' | '160px' | '120px' | '80px'>('160px');
   const [emailPhotoWidth, setEmailPhotoWidth] = useState<'100%' | '80%' | '60%' | '40%'>('80%');
   const [webPhotoWidth, setWebPhotoWidth] = useState<'100%' | '80%' | '60%'>('100%');
   const logoUploadInputRef = useRef<HTMLInputElement | null>(null);
@@ -1761,7 +1761,11 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     const cleanUrl = String(url || '').trim();
     if (!cleanUrl) return;
     const alignStyle = align === 'center' ? 'text-align:center;' : align === 'right' ? 'text-align:right;' : '';
-    const snippet = `<div style="margin:16px 0;${alignStyle}"><img src="${cleanUrl}" alt="${alt}" style="max-width:${width};height:auto;" /></div>`;
+    const isPixel = width.endsWith('px');
+    const imgStyle = isPixel
+      ? `width:${width};max-width:100%;height:auto;`
+      : `width:${width};max-width:${width};height:auto;`;
+    const snippet = `<div style="margin:16px 0;${alignStyle}"><img src="${cleanUrl}" alt="${alt}" style="${imgStyle}" /></div>`;
 
     if (editorMode === 'visual' && editor) {
       editor.chain().focus().insertContent(snippet).run();
@@ -3763,7 +3767,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   <div className="mt-1 rounded-md border border-border bg-white p-3">
                     <div className="mb-3 flex flex-wrap items-center gap-2">
                       <span className="text-xs font-semibold text-muted-foreground">Ancho del logo:</span>
-                      {(['200px', '40%', '60%', '80%', '100%'] as const).map((w) => (
+                      {(['80px', '120px', '160px', '200px', '40%', '60%'] as const).map((w) => (
                         <button
                           key={w}
                           type="button"
@@ -4331,15 +4335,33 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                       ) : '–'}
                     </td>
                     <td className="px-2 py-2 text-right">
-                      <a
-                        href={`/gestion/asociacion/notas-prensa-newsletter/${c.kind === 'NEWSLETTER' ? 'newsletter' : 'notas-prensa'}/campanas/${c.id}`}
-                        className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
-                      >
-                        Ver métricas
-                        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                      </a>
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          title="Sincronizar métricas desde Resend"
+                          onClick={async () => {
+                            try {
+                              setMessage('Sincronizando métricas…');
+                              const res = await fetch(`/api/admin/newsletter/campaigns/${c.id}/sync-metrics`, { method: 'POST' });
+                              const data = await res.json().catch(() => ({}));
+                              if (!res.ok) throw new Error(data?.message || 'Error');
+                              setMessage(`Métricas sincronizadas: ${data.opened || 0} aperturas de ${data.synced || 0} emails consultados`);
+                              await loadData();
+                            } catch (e: any) {
+                              setError(e?.message || 'Error sincronizando');
+                            }
+                          }}
+                          className="inline-flex items-center rounded border border-green-200 bg-green-50 px-1.5 py-1 text-xs text-green-700 hover:bg-green-100"
+                        >
+                          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 12a9 9 0 11-3-6.7" /><path d="M21 3v6h-6" /></svg>
+                        </button>
+                        <a
+                          href={`/gestion/asociacion/notas-prensa-newsletter/${c.kind === 'NEWSLETTER' ? 'newsletter' : 'notas-prensa'}/campanas/${c.id}`}
+                          className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                        >
+                          Ver métricas &rarr;
+                        </a>
+                      </div>
                     </td>
                   </tr>
                 ))
