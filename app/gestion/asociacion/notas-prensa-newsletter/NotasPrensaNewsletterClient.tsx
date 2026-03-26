@@ -793,6 +793,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [newsletterComposerMode, setNewsletterComposerMode] = useState<'editor' | 'builder'>('builder');
   const [pressComposerMode, setPressComposerMode] = useState<'editor' | 'builder'>('builder');
   const [pressBuilderHtml, setPressBuilderHtml] = useState('');
+  const [pressBuilderResetKey, setPressBuilderResetKey] = useState(0);
   const [newsletterTemplates, setNewsletterTemplates] = useState<NewsletterTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [templateName, setTemplateName] = useState('');
@@ -1008,6 +1009,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     const builderDraftKey = 'lpmbe-press-builder-draft';
     localStorage.removeItem(builderDraftKey);
     localStorage.removeItem(getDraftStorageKey());
+    setPressBuilderResetKey((k) => k + 1);
     setHasStoredDraft(false);
     setMessage('Formulario limpio. Puedes empezar de cero.');
   }
@@ -3874,6 +3876,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
               {mode === 'press' && pressSendMode === 'editor' && pressComposerMode === 'builder' ? (
                 <div className="mt-2">
                   <ContentBlockBuilder
+                    key={`press-builder-${pressBuilderResetKey}`}
                     draftKey="lpmbe-press-builder-draft"
                     showBrandLogos={true}
                     onChange={(html) => setPressBuilderHtml(html)}
