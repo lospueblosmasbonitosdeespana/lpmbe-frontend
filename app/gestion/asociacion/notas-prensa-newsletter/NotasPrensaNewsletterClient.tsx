@@ -2155,10 +2155,23 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           ) : null}
 
           {mode === 'press' ? (
-            <div className="grid gap-3 md:grid-cols-3">
-              <label className="text-sm">
-                <span className="mb-1 block">Ámbitos</span>
-                <label className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
+            <div className="rounded-xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 shadow-sm">
+              <div className="mb-3 flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 2 11 13"/>
+                    <path d="m22 2-7 20-4-9-9-4 20-7z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-blue-900">Envío a Medios</h3>
+                  <p className="text-xs text-blue-600">Selecciona los destinatarios de la nota de prensa</p>
+                </div>
+              </div>
+              <div className="grid gap-3 md:grid-cols-3">
+              <label className="text-sm font-medium text-blue-900">
+                <span className="mb-1 block">Alcance</span>
+                <label className="inline-flex items-center gap-2 rounded-lg border-2 border-blue-200 bg-white px-3 py-2.5 text-sm shadow-sm transition hover:border-blue-400">
                   <input
                     type="checkbox"
                     checked={campaignForm.includeNational}
@@ -2168,12 +2181,13 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                         includeNational: e.target.checked,
                       }))
                     }
+                    className="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
                   />
-                  Incluir medios nacionales
+                  <span>Medios nacionales</span>
                 </label>
               </label>
-              <label className="text-sm">
-                CCAA (añade con +)
+              <label className="text-sm font-medium text-blue-900">
+                Comunidad Autónoma
                 <div className="mt-1 flex items-center gap-2">
                   <input
                     value={ccaaInput}
@@ -2185,13 +2199,13 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                         addCcaa(ccaaInput);
                       }
                     }}
-                    className="w-full rounded-md border border-border px-3 py-2 text-sm"
+                    className="w-full rounded-lg border-2 border-blue-200 bg-white px-3 py-2 text-sm shadow-sm transition focus:border-blue-400 focus:outline-none"
                     placeholder="Empieza a escribir CCAA..."
                   />
                   <button
                     type="button"
                     onClick={() => addCcaa(ccaaInput)}
-                    className="rounded-md border border-border px-3 py-2 text-sm font-semibold"
+                    className="rounded-lg border-2 border-blue-300 bg-white px-3 py-2 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-100"
                   >
                     +
                   </button>
@@ -2204,12 +2218,12 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                 {selectedCcaas.length > 0 ? (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {selectedCcaas.map((ccaa) => (
-                      <span key={ccaa} className="inline-flex items-center gap-2 rounded-full border border-border px-2 py-1 text-xs">
+                      <span key={ccaa} className="inline-flex items-center gap-2 rounded-full border border-blue-300 bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800">
                         {ccaa}
                         <button
                           type="button"
                           onClick={() => setSelectedCcaas((prev) => prev.filter((x) => x !== ccaa))}
-                          className="text-muted-foreground hover:text-foreground"
+                          className="text-blue-500 hover:text-blue-800"
                           aria-label={`Quitar ${ccaa}`}
                         >
                           ×
@@ -2219,8 +2233,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   </div>
                 ) : null}
               </label>
-              <label className="text-sm">
-                Provincia (añade con +)
+              <label className="text-sm font-medium text-blue-900">
+                Provincia
                 <div className="mt-1 flex items-center gap-2">
                   <input
                     value={provinciaInput}
@@ -2232,13 +2246,13 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                         addProvincia(provinciaInput);
                       }
                     }}
-                    className="w-full rounded-md border border-border px-3 py-2 text-sm"
+                    className="w-full rounded-lg border-2 border-blue-200 bg-white px-3 py-2 text-sm shadow-sm transition focus:border-blue-400 focus:outline-none"
                     placeholder="Empieza a escribir provincia..."
                   />
                   <button
                     type="button"
                     onClick={() => addProvincia(provinciaInput)}
-                    className="rounded-md border border-border px-3 py-2 text-sm font-semibold"
+                    className="rounded-lg border-2 border-blue-300 bg-white px-3 py-2 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-100"
                   >
                     +
                   </button>
@@ -2251,14 +2265,14 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                 {selectedProvincias.length > 0 ? (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {selectedProvincias.map((provincia) => (
-                      <span key={provincia} className="inline-flex items-center gap-2 rounded-full border border-border px-2 py-1 text-xs">
+                      <span key={provincia} className="inline-flex items-center gap-2 rounded-full border border-blue-300 bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800">
                         {provincia}
                         <button
                           type="button"
                           onClick={() =>
                             setSelectedProvincias((prev) => prev.filter((x) => x !== provincia))
                           }
-                          className="text-muted-foreground hover:text-foreground"
+                          className="text-blue-500 hover:text-blue-800"
                           aria-label={`Quitar ${provincia}`}
                         >
                           ×
@@ -2268,7 +2282,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   </div>
                 ) : null}
               </label>
-              <label className="text-sm md:col-span-3">
+              <label className="text-sm font-medium text-blue-900 md:col-span-3">
                 Pueblo (slug)
                 <input
                   value={campaignForm.puebloSlug}
@@ -2280,7 +2294,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                     }))
                   }
                   list="pueblo-slug-suggestions"
-                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-lg border-2 border-blue-200 bg-white px-3 py-2 text-sm shadow-sm transition focus:border-blue-400 focus:outline-none"
                   placeholder="Empieza a escribir slug del pueblo..."
                 />
                 <datalist id="pueblo-slug-suggestions">
@@ -2291,6 +2305,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   ))}
                 </datalist>
               </label>
+            </div>
             </div>
           ) : (
             <div className="space-y-3">
