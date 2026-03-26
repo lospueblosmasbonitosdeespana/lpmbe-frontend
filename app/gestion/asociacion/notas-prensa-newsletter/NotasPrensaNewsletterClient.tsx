@@ -3923,8 +3923,24 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   {pressPhotoUrls.length > 0 ? (
                     <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
                       {pressPhotoUrls.map((url) => (
-                        <div key={url} className="space-y-1">
+                        <div key={url} className="space-y-1 relative group">
                           <img src={url} alt="Foto nota de prensa" className="h-24 w-full rounded border object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPressPhotoUrls((prev) => prev.filter((u) => u !== url));
+                              setPressPhotoFiles((prev) => {
+                                const idx = pressPhotoUrls.indexOf(url);
+                                return idx >= 0 ? prev.filter((_, i) => i !== idx) : prev;
+                              });
+                              setInsertedPhotoUrls((prev) => prev.filter((u) => u !== url));
+                              setWebGallerySelection((prev) => prev.filter((u) => u !== url));
+                            }}
+                            className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white opacity-0 shadow transition group-hover:opacity-100 hover:bg-red-700"
+                            title="Quitar foto"
+                          >
+                            &times;
+                          </button>
                           <button
                             type="button"
                             onClick={() => insertPhotoIntoContent(url)}
