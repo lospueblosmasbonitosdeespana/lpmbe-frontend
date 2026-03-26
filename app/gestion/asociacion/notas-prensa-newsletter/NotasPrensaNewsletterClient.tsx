@@ -813,7 +813,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [sendingTest, setSendingTest] = useState(false);
   const [showPressLogos, setShowPressLogos] = useState(false);
   const [logoInsertWidth, setLogoInsertWidth] = useState<'100%' | '80%' | '60%' | '40%' | '200px' | '160px' | '120px' | '80px'>('160px');
-  const [emailPhotoWidth, setEmailPhotoWidth] = useState<'100%' | '80%' | '60%' | '40%'>('80%');
+  const [emailPhotoWidth, setEmailPhotoWidth] = useState<'100%' | '80%' | '60%' | '40%' | '30%' | '20%'>('40%');
   const [webPhotoWidth, setWebPhotoWidth] = useState<'100%' | '80%' | '60%'>('100%');
   const logoUploadInputRef = useRef<HTMLInputElement | null>(null);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
@@ -3982,14 +3982,21 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-slate-50 px-3 py-2">
                         <span className="text-xs font-semibold text-muted-foreground">Ancho foto en email:</span>
-                        {(['40%', '60%', '80%', '100%'] as const).map((w) => (
+                        {([
+                          { value: '20%' as const, label: 'XS' },
+                          { value: '30%' as const, label: 'S' },
+                          { value: '40%' as const, label: 'M' },
+                          { value: '60%' as const, label: 'L' },
+                          { value: '80%' as const, label: 'XL' },
+                          { value: '100%' as const, label: 'Full' },
+                        ]).map(({ value, label }) => (
                           <button
-                            key={w}
+                            key={value}
                             type="button"
-                            onClick={() => setEmailPhotoWidth(w)}
-                            className={`rounded border px-2 py-1 text-[11px] font-medium transition ${emailPhotoWidth === w ? 'border-primary bg-primary text-white' : 'border-border bg-white hover:bg-muted'}`}
+                            onClick={() => setEmailPhotoWidth(value)}
+                            className={`rounded border px-2 py-1 text-[11px] font-medium transition ${emailPhotoWidth === value ? 'border-primary bg-primary text-white' : 'border-border bg-white hover:bg-muted'}`}
                           >
-                            {w}
+                            {label}
                           </button>
                         ))}
                       </div>
