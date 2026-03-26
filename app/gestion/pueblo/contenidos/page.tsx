@@ -142,54 +142,63 @@ function TematicaCategoryCard({
   image,
   puebloId,
   puebloNombre,
+  filterHref,
+  isActive,
 }: {
   cat: typeof CATEGORIAS_TEMATICAS[number];
   count: number;
   image: string | null;
   puebloId: number;
   puebloNombre: string;
+  filterHref: string;
+  isActive: boolean;
 }) {
   const maxPages = 4;
   const progress = Math.min(count / maxPages, 1) * 100;
 
   return (
-    <div className="group relative rounded-lg border border-border bg-card overflow-hidden transition hover:shadow-md hover:border-primary/30">
-      {image ? (
-        <div className="relative h-24">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={image} alt={cat.label} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          <div className="absolute bottom-2 left-3 flex items-center gap-1.5">
-            <span className="text-lg">{cat.icon}</span>
+    <div className={`group relative rounded-lg border bg-card overflow-hidden transition hover:shadow-md ${isActive ? 'border-primary shadow-sm ring-1 ring-primary/40' : 'border-border hover:border-primary/30'}`}>
+      <Link href={filterHref} className="block">
+        {image ? (
+          <div className="relative h-24">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={image} alt={cat.label} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute bottom-2 left-3 flex items-center gap-1.5">
+              <span className="text-lg">{cat.icon}</span>
+              <span className="text-sm font-semibold text-white">{cat.label}</span>
+            </div>
+          </div>
+        ) : (
+          <div className={`h-24 bg-gradient-to-br ${cat.color} flex items-center justify-center gap-2`}>
+            <span className="text-3xl">{cat.icon}</span>
             <span className="text-sm font-semibold text-white">{cat.label}</span>
           </div>
+        )}
+        <div className="p-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-muted-foreground">
+              {count}/{maxPages} páginas
+            </span>
+            <span className={`text-xs font-semibold ${isActive ? 'text-primary' : 'text-[#b5472a]'}`}>
+              {isActive ? '✓ Viendo' : 'Ver'}
+            </span>
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
+            <div
+              className={`h-full rounded-full bg-gradient-to-r ${cat.color} transition-all`}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
         </div>
-      ) : (
-        <div className={`h-24 bg-gradient-to-br ${cat.color} flex items-center justify-center gap-2`}>
-          <span className="text-3xl">{cat.icon}</span>
-          <span className="text-sm font-semibold text-white">{cat.label}</span>
-        </div>
-      )}
-      <div className="p-3">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-medium text-muted-foreground">
-            {count}/{maxPages} páginas
-          </span>
-          {count < maxPages && (
-            <Link
-              href={`/gestion/pueblo/contenidos/nuevo?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}&tipo=PAGINA`}
-              className="text-xs font-medium text-[#b5472a] hover:underline"
-            >
-              + Crear
-            </Link>
-          )}
-        </div>
-        <div className="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
-          <div
-            className={`h-full rounded-full bg-gradient-to-r ${cat.color} transition-all`}
-            style={{ width: `${progress}%` }}
-          />
-        </div>
+      </Link>
+      <div className="px-3 pb-3">
+        <Link
+          href={`/gestion/pueblo/contenidos/nuevo?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}&tipo=PAGINA&categoria=${cat.value}`}
+          className="text-xs font-medium text-[#b5472a] hover:underline"
+        >
+          + Crear
+        </Link>
       </div>
     </div>
   );
@@ -198,7 +207,7 @@ function TematicaCategoryCard({
 export default async function ContenidosPuebloPage({
   searchParams,
 }: {
-  searchParams: Promise<{ puebloId?: string; puebloNombre?: string; tipo?: string }>;
+  searchParams: Promise<{ puebloId?: string; puebloNombre?: string; tipo?: string; tematica?: string }>;
 }) {
   const me = await getMeServer();
   if (!me) redirect('/entrar');
@@ -245,7 +254,16 @@ export default async function ContenidosPuebloPage({
     };
   }
 
+  const selectedTematica = CATEGORIAS_TEMATICAS.some((c) => c.value === params.tematica)
+    ? (params.tematica as string)
+    : null;
+  const selectedTematicaMeta = selectedTematica
+    ? CATEGORIAS_TEMATICAS.find((c) => c.value === selectedTematica) ?? null
+    : null;
+  const paginasFiltradas = selectedTematica ? tematicaCounts[selectedTematica].items : paginas;
+
   const newBase = `/gestion/pueblo/contenidos/nuevo?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}`;
+  const listBase = `/gestion/pueblo/contenidos?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}`;
 
   return (
     <main className="mx-auto max-w-5xl p-6">
@@ -335,6 +353,8 @@ export default async function ContenidosPuebloPage({
                   image={tematicaCounts[cat.value].image}
                   puebloId={puebloId}
                   puebloNombre={puebloNombre}
+                  filterHref={`${listBase}&tematica=${cat.value}`}
+                  isActive={selectedTematica === cat.value}
                 />
               ))}
             </div>
@@ -342,23 +362,43 @@ export default async function ContenidosPuebloPage({
 
           {paginas.length > 0 && (
             <div className="border-t border-border px-5 py-4">
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">Todas las páginas temáticas</h3>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  {selectedTematicaMeta
+                    ? `Páginas de ${selectedTematicaMeta.label}`
+                    : 'Todas las páginas temáticas'}
+                </h3>
+                {selectedTematica && (
+                  <Link
+                    href={listBase}
+                    className="text-xs font-medium text-[#b5472a] hover:underline"
+                  >
+                    Ver todas
+                  </Link>
+                )}
+              </div>
               <ul className="space-y-3">
-                {paginas.slice(0, PREVIEW_COUNT).map((c: any) => (
+                {paginasFiltradas.slice(0, PREVIEW_COUNT).map((c: any) => (
                   <ContenidoItemPueblo key={c.id} contenido={c} />
                 ))}
               </ul>
 
-              {paginas.length > PREVIEW_COUNT && (
+              {paginasFiltradas.length === 0 && selectedTematica && (
+                <p className="rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
+                  Aún no hay páginas en esta categoría.
+                </p>
+              )}
+
+              {paginasFiltradas.length > PREVIEW_COUNT && (
                 <details className="mt-3 group">
                   <summary className="cursor-pointer select-none list-none flex items-center gap-2 rounded-lg border border-[#b5472a]/30 bg-[#b5472a]/5 px-4 py-2.5 text-sm font-semibold text-[#b5472a] hover:bg-[#b5472a]/10 transition-colors">
                     <svg className="h-4 w-4 transition-transform group-open:rotate-90" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
                     </svg>
-                    Ver {paginas.length - PREVIEW_COUNT} más ({paginas.length} en total)
+                    Ver {paginasFiltradas.length - PREVIEW_COUNT} más ({paginasFiltradas.length} en total)
                   </summary>
                   <ul className="mt-3 space-y-3">
-                    {paginas.slice(PREVIEW_COUNT).map((c: any) => (
+                    {paginasFiltradas.slice(PREVIEW_COUNT).map((c: any) => (
                       <ContenidoItemPueblo key={c.id} contenido={c} />
                     ))}
                   </ul>
