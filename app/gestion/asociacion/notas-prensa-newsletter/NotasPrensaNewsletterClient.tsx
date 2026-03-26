@@ -810,7 +810,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
   const [showPressLogos, setShowPressLogos] = useState(false);
-  const [pressImageWidth, setPressImageWidth] = useState<'100%' | '80%' | '60%' | '40%' | '200px'>('60%');
+  const [logoInsertWidth, setLogoInsertWidth] = useState<'100%' | '80%' | '60%' | '40%' | '200px'>('40%');
+  const [emailPhotoWidth, setEmailPhotoWidth] = useState<'100%' | '80%' | '60%' | '40%'>('80%');
+  const [webPhotoWidth, setWebPhotoWidth] = useState<'100%' | '80%' | '60%'>('100%');
   const logoUploadInputRef = useRef<HTMLInputElement | null>(null);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const photosInputRef = useRef<HTMLInputElement | null>(null);
@@ -1704,11 +1706,12 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     }
   }
 
-  function appendPressPhotos(html: string, urls: string[]) {
+  function appendPressPhotos(html: string, urls: string[], width?: string) {
+    const w = width || emailPhotoWidth || '80%';
     const gallery = urls
       .map(
         (url, i) =>
-          `<div style="margin:0 0 14px 0;text-align:center;"><img src="${url}" alt="Imagen nota de prensa ${i + 1}" style="max-width:680px;width:100%;height:auto;border-radius:8px;" /></div>`,
+          `<div style="margin:0 0 14px 0;text-align:center;"><img src="${url}" alt="Imagen nota de prensa ${i + 1}" style="max-width:${w};height:auto;border-radius:8px;" /></div>`,
       )
       .join('');
     return `${html}
@@ -1729,7 +1732,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     }
 
     const textarea = htmlTextareaRef.current;
-    const snippet = `<div style="margin:12px 0;text-align:center;"><img src="${cleanUrl}" alt="Imagen nota de prensa" style="max-width:${pressImageWidth};height:auto;border-radius:8px;" /></div>`;
+    const snippet = `<div style="margin:12px 0;text-align:center;"><img src="${cleanUrl}" alt="Imagen nota de prensa" style="max-width:${emailPhotoWidth};height:auto;border-radius:8px;" /></div>`;
     if (!textarea) {
       setCampaignForm((s) => ({ ...s, html: `${s.html}\n${snippet}`.trim() }));
       setInsertedPhotoUrls((prev) => (prev.includes(cleanUrl) ? prev : [...prev, cleanUrl]));
@@ -1924,7 +1927,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       if (uploadedPhotoUrls.length > 0) {
         const pendingPhotoUrls = uploadedPhotoUrls.filter((u) => !insertedPhotoUrls.includes(u));
         if (pendingPhotoUrls.length > 0) {
-          finalHtml = appendPressPhotos(finalHtml, pendingPhotoUrls);
+          finalHtml = appendPressPhotos(finalHtml, pendingPhotoUrls, webPhotoWidth);
         }
       }
 
@@ -3709,31 +3712,33 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                     HTML
                   </button>
                 </div>
-                {/* Barra de herramientas: Logos + Ancho de imagen */}
-                <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-border bg-slate-50 p-2">
+                {/* Botón Logos */}
+                <div className="mt-2">
                   <button
                     type="button"
                     onClick={() => setShowPressLogos((v) => !v)}
                     className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold transition ${showPressLogos ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-white hover:bg-muted'}`}
                   >
                     <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-                    Logos ({brandLogos.length})
+                    Insertar logo ({brandLogos.length})
                   </button>
-                  <span className="text-[11px] text-muted-foreground">Ancho imagen:</span>
-                  {(['40%', '60%', '80%', '100%', '200px'] as const).map((w) => (
-                    <button
-                      key={w}
-                      type="button"
-                      onClick={() => setPressImageWidth(w)}
-                      className={`rounded border px-2 py-1 text-[11px] font-medium transition ${pressImageWidth === w ? 'border-primary bg-primary text-white' : 'border-border bg-white hover:bg-muted'}`}
-                    >
-                      {w}
-                    </button>
-                  ))}
                 </div>
                 {showPressLogos && (
                   <div className="mt-1 rounded-md border border-border bg-white p-3">
-                    <p className="mb-2 text-xs font-semibold text-muted-foreground">Haz clic en un logo para insertarlo en la posición del cursor</p>
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-semibold text-muted-foreground">Ancho del logo:</span>
+                      {(['200px', '40%', '60%', '80%', '100%'] as const).map((w) => (
+                        <button
+                          key={w}
+                          type="button"
+                          onClick={() => setLogoInsertWidth(w)}
+                          className={`rounded border px-2 py-1 text-[11px] font-medium transition ${logoInsertWidth === w ? 'border-primary bg-primary text-white' : 'border-border bg-white hover:bg-muted'}`}
+                        >
+                          {w}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="mb-2 text-xs text-muted-foreground">Haz clic en un logo para insertarlo en la posición del cursor</p>
                     {brandLogos.length === 0 ? (
                       <p className="py-3 text-center text-xs text-muted-foreground">No hay logos en la biblioteca. Súbelos desde Gestión &gt; Logos.</p>
                     ) : (
@@ -3743,7 +3748,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                             key={logo.id}
                             type="button"
                             onClick={() => {
-                              insertImageAtCursor(logo.url, logo.nombre || 'Logo', pressImageWidth);
+                              insertImageAtCursor(logo.url, logo.nombre || 'Logo', logoInsertWidth);
                               setShowPressLogos(false);
                             }}
                             className="group flex flex-col items-center gap-1 rounded-lg border border-border p-2 hover:border-primary hover:bg-primary/5"
@@ -3921,35 +3926,50 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                     </span>
                   </div>
                   {pressPhotoUrls.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
-                      {pressPhotoUrls.map((url) => (
-                        <div key={url} className="space-y-1 relative group">
-                          <img src={url} alt="Foto nota de prensa" className="h-24 w-full rounded border object-cover" />
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-slate-50 px-3 py-2">
+                        <span className="text-xs font-semibold text-muted-foreground">Ancho foto en email:</span>
+                        {(['40%', '60%', '80%', '100%'] as const).map((w) => (
                           <button
+                            key={w}
                             type="button"
-                            onClick={() => {
-                              setPressPhotoUrls((prev) => prev.filter((u) => u !== url));
-                              setPressPhotoFiles((prev) => {
-                                const idx = pressPhotoUrls.indexOf(url);
-                                return idx >= 0 ? prev.filter((_, i) => i !== idx) : prev;
-                              });
-                              setInsertedPhotoUrls((prev) => prev.filter((u) => u !== url));
-                              setWebGallerySelection((prev) => prev.filter((u) => u !== url));
-                            }}
-                            className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white opacity-0 shadow transition group-hover:opacity-100 hover:bg-red-700"
-                            title="Quitar foto"
+                            onClick={() => setEmailPhotoWidth(w)}
+                            className={`rounded border px-2 py-1 text-[11px] font-medium transition ${emailPhotoWidth === w ? 'border-primary bg-primary text-white' : 'border-border bg-white hover:bg-muted'}`}
                           >
-                            &times;
+                            {w}
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => insertPhotoIntoContent(url)}
-                            className="w-full rounded border border-border px-2 py-1 text-xs font-medium hover:bg-muted"
-                          >
-                            Insertar en contenido
-                          </button>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
+                        {pressPhotoUrls.map((url) => (
+                          <div key={url} className="space-y-1 relative group">
+                            <img src={url} alt="Foto nota de prensa" className="h-24 w-full rounded border object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPressPhotoUrls((prev) => prev.filter((u) => u !== url));
+                                setPressPhotoFiles((prev) => {
+                                  const idx = pressPhotoUrls.indexOf(url);
+                                  return idx >= 0 ? prev.filter((_, i) => i !== idx) : prev;
+                                });
+                                setInsertedPhotoUrls((prev) => prev.filter((u) => u !== url));
+                                setWebGallerySelection((prev) => prev.filter((u) => u !== url));
+                              }}
+                              className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white opacity-0 shadow transition group-hover:opacity-100 hover:bg-red-700"
+                              title="Quitar foto"
+                            >
+                              &times;
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => insertPhotoIntoContent(url)}
+                              className="w-full rounded border border-border px-2 py-1 text-xs font-medium hover:bg-muted"
+                            >
+                              Insertar en contenido
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ) : null}
                 </div>
@@ -4111,6 +4131,19 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   <p className="text-xs text-muted-foreground">
                     La foto 1 será la principal (hero). Opcionalmente puedes seleccionar hasta 3 fotos para galería web.
                   </p>
+                  <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-blue-50 px-3 py-2">
+                    <span className="text-xs font-semibold text-blue-700">Ancho fotos en web:</span>
+                    {(['60%', '80%', '100%'] as const).map((w) => (
+                      <button
+                        key={w}
+                        type="button"
+                        onClick={() => setWebPhotoWidth(w)}
+                        className={`rounded border px-2 py-1 text-[11px] font-medium transition ${webPhotoWidth === w ? 'border-blue-600 bg-blue-600 text-white' : 'border-blue-200 bg-white hover:bg-blue-100'}`}
+                      >
+                        {w}
+                      </button>
+                    ))}
+                  </div>
                   <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
                     {pressPhotoUrls.map((url, idx) => {
                       const checked = webGallerySelection.includes(url);
