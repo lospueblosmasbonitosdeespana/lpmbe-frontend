@@ -1152,21 +1152,41 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
+  const hasContentRef = useRef(false);
+  useEffect(() => {
+    hasContentRef.current = !!(
+      campaignForm.subject.trim() ||
+      campaignForm.html.trim() ||
+      campaignForm.preheader.trim() ||
+      pressPhotoUrls.length > 0 ||
+      pressBuilderHtml.trim()
+    );
+  }, [campaignForm.subject, campaignForm.html, campaignForm.preheader, pressPhotoUrls.length, pressBuilderHtml]);
+
   useEffect(() => {
     function onBeforeUnload(e: BeforeUnloadEvent) {
-      const hasContent =
-        campaignForm.subject.trim() ||
-        campaignForm.html.trim() ||
-        campaignForm.preheader.trim() ||
-        pressPhotoUrls.length > 0 ||
-        pressBuilderHtml.trim();
-      if (hasContent) {
+      if (hasContentRef.current) {
         e.preventDefault();
+        e.returnValue = 'Tienes cambios sin guardar. ¿Seguro que quieres salir?';
+        return e.returnValue;
       }
     }
     window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [campaignForm.subject, campaignForm.html, campaignForm.preheader, pressPhotoUrls.length, pressBuilderHtml]);
+
+    const originalPushState = history.pushState.bind(history);
+    history.pushState = function (...args: Parameters<typeof history.pushState>) {
+      if (hasContentRef.current) {
+        const leave = window.confirm('Si abandonas la página perderás el contenido actual. ¿Continuar?');
+        if (!leave) return;
+      }
+      return originalPushState(...args);
+    };
+
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload);
+      history.pushState = originalPushState;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
