@@ -107,7 +107,7 @@ const ACCESOS = [
   {
     href: '/gestion/asociacion/fotos',
     title: 'Fotos',
-    description: 'Biblioteca de imágenes por pueblo y asociación (portadas y galerías) con descarga directa.',
+    description: 'Todas las fotos: galería del pueblo, POIs, multiexperiencias, eventos, noticias y contenidos. Descarga directa.',
     icon: <span className="text-2xl">🖼️</span>,
   },
   {
