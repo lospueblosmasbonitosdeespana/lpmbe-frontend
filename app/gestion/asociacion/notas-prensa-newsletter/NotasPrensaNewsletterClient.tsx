@@ -777,6 +777,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const attachInputRef = useRef<HTMLInputElement | null>(null);
   const [webContentKind, setWebContentKind] = useState<'NOTICIA' | 'ARTICULO'>('NOTICIA');
   const [publishingWeb, setPublishingWeb] = useState(false);
+  const [syncingCampaignId, setSyncingCampaignId] = useState<number | null>(null);
   const [showWebPreview, setShowWebPreview] = useState(false);
   const [geoPueblos, setGeoPueblos] = useState<GeoPueblo[]>([]);
   const [geoCcaas, setGeoCcaas] = useState<string[]>([]);
@@ -4335,25 +4336,38 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                       ) : '–'}
                     </td>
                     <td className="px-2 py-2 text-right">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-1.5">
                         <button
                           type="button"
-                          title="Sincronizar métricas desde Resend"
+                          disabled={syncingCampaignId === c.id}
                           onClick={async () => {
+                            setSyncingCampaignId(c.id);
+                            setError(null);
+                            setMessage(null);
                             try {
-                              setMessage('Sincronizando métricas…');
                               const res = await fetch(`/api/admin/newsletter/campaigns/${c.id}/sync-metrics`, { method: 'POST' });
                               const data = await res.json().catch(() => ({}));
-                              if (!res.ok) throw new Error(data?.message || 'Error');
-                              setMessage(`Métricas sincronizadas: ${data.opened || 0} aperturas de ${data.synced || 0} emails consultados`);
+                              if (!res.ok) throw new Error(data?.message || 'Error sincronizando');
+                              setMessage(`Métricas actualizadas: ${data.opened || 0} aperturas, ${data.delivered || 0} entregados, ${data.bounced || 0} rebotados (de ${data.total || 0} consultados)`);
                               await loadData();
                             } catch (e: any) {
-                              setError(e?.message || 'Error sincronizando');
+                              setError(e?.message || 'Error sincronizando métricas');
+                            } finally {
+                              setSyncingCampaignId(null);
                             }
                           }}
-                          className="inline-flex items-center rounded border border-green-200 bg-green-50 px-1.5 py-1 text-xs text-green-700 hover:bg-green-100"
+                          className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition ${
+                            syncingCampaignId === c.id
+                              ? 'border-green-300 bg-green-100 text-green-800 cursor-wait'
+                              : 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                          }`}
                         >
-                          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 12a9 9 0 11-3-6.7" /><path d="M21 3v6h-6" /></svg>
+                          {syncingCampaignId === c.id ? (
+                            <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" strokeDasharray="31.4 31.4" strokeLinecap="round" /></svg>
+                          ) : (
+                            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 12a9 9 0 11-3-6.7" /><path d="M21 3v6h-6" /></svg>
+                          )}
+                          {syncingCampaignId === c.id ? 'Sincronizando…' : 'Actualizar'}
                         </button>
                         <a
                           href={`/gestion/asociacion/notas-prensa-newsletter/${c.kind === 'NEWSLETTER' ? 'newsletter' : 'notas-prensa'}/campanas/${c.id}`}
