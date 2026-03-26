@@ -353,7 +353,7 @@ export default async function ContenidosPuebloPage({
                   image={tematicaCounts[cat.value].image}
                   puebloId={puebloId}
                   puebloNombre={puebloNombre}
-                  filterHref={`${listBase}&tematica=${cat.value}`}
+                  filterHref={`${listBase}&tematica=${cat.value}#paginas-tematicas`}
                   isActive={selectedTematica === cat.value}
                 />
               ))}
@@ -361,7 +361,7 @@ export default async function ContenidosPuebloPage({
           </div>
 
           {paginas.length > 0 && (
-            <div className="border-t border-border px-5 py-4">
+            <div id="paginas-tematicas" className="border-t border-border px-5 py-4">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h3 className="text-sm font-medium text-muted-foreground">
                   {selectedTematicaMeta
@@ -370,7 +370,7 @@ export default async function ContenidosPuebloPage({
                 </h3>
                 {selectedTematica && (
                   <Link
-                    href={listBase}
+                    href={`${listBase}#paginas-tematicas`}
                     className="text-xs font-medium text-[#b5472a] hover:underline"
                   >
                     Ver todas
