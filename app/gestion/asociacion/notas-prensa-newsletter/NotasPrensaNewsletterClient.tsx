@@ -958,6 +958,59 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     setMessage(`Borrador guardado (${new Date(payload.savedAt).toLocaleTimeString('es-ES')}).`);
   }
 
+  function hasUnsavedContent(): boolean {
+    return !!(
+      campaignForm.subject.trim() ||
+      campaignForm.html.trim() ||
+      campaignForm.preheader.trim() ||
+      pressPhotoUrls.length > 0 ||
+      pressPhotoFiles.length > 0 ||
+      pressPdfUrl ||
+      pressPdfFile ||
+      pressAttachments.length > 0 ||
+      pressBuilderHtml.trim() ||
+      (editor && editor.getHTML().trim() !== '<p></p>' && editor.getHTML().trim() !== '')
+    );
+  }
+
+  function resetAllFields() {
+    if (!confirm('¿Empezar de cero? Se perderá todo lo que hay en el formulario actual.')) return;
+    setCampaignForm({
+      kind: (mode === 'newsletter' ? 'NEWSLETTER' : 'PRESS') as 'PRESS' | 'NEWSLETTER',
+      subject: '',
+      preheader: '',
+      html: '',
+      includeNational: true,
+      ccaa: '',
+      provincia: '',
+      puebloSlug: '',
+      source: '',
+    });
+    setPressSendMode('editor');
+    setPressComposerMode('builder');
+    setPressPhotoFiles([]);
+    setPressPhotoUrls([]);
+    setPressPdfFile(null);
+    setPressPdfUrl('');
+    setPressAttachments([]);
+    setInsertedPhotoUrls([]);
+    setWebGallerySelection([]);
+    setPressBuilderHtml('');
+    setSelectedCcaas([]);
+    setSelectedProvincias([]);
+    setWebContentKind('NOTICIA');
+    setTemplateName('');
+    setDraftSavedAt(null);
+    setError(null);
+    setMessage(null);
+    if (editor) editor.commands.clearContent();
+    const builderDraftKey = 'lpmbe-press-builder-draft';
+    localStorage.removeItem(builderDraftKey);
+    localStorage.removeItem(getDraftStorageKey());
+    setHasStoredDraft(false);
+    setMessage('Formulario limpio. Puedes empezar de cero.');
+  }
+
   function printCurrentContent() {
     const html =
       mode === 'newsletter' && newsletterComposerMode === 'builder'
@@ -1098,6 +1151,22 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
+
+  useEffect(() => {
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      const hasContent =
+        campaignForm.subject.trim() ||
+        campaignForm.html.trim() ||
+        campaignForm.preheader.trim() ||
+        pressPhotoUrls.length > 0 ||
+        pressBuilderHtml.trim();
+      if (hasContent) {
+        e.preventDefault();
+      }
+    }
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [campaignForm.subject, campaignForm.html, campaignForm.preheader, pressPhotoUrls.length, pressBuilderHtml]);
 
   useEffect(() => {
     let cancelled = false;
@@ -4236,6 +4305,20 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           ) : null}
 
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={resetAllFields}
+              disabled={loading}
+              className="flex items-center gap-1.5 rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100 disabled:opacity-60"
+              title="Limpiar todo y empezar de cero"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                <line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+              </svg>
+              Nueva nota
+            </button>
             <button
               type="button"
               onClick={() => {
