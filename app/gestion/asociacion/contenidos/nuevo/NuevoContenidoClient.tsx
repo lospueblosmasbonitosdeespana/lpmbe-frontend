@@ -68,6 +68,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
   const [error, setError] = useState<string | null>(null);
   
   const [editorMode, setEditorMode] = useState<EditorMode>('edit');
+  const [builderResetKey, setBuilderResetKey] = useState(0);
 
   // Ref que siempre tiene el último HTML generado por el constructor visual.
   // Se usa para sincronizar `contenido` al cambiar de pestaña o al guardar.
@@ -164,6 +165,32 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
     } finally {
       setDeleting(false);
     }
+  }
+
+  function getBuilderDraftKey() {
+    return `lpmbe-contenido-asoc-PAGINA-${categoria || 'nuevo'}-draft`;
+  }
+
+  function handleClearAll() {
+    if (!confirm('¿Limpiar todo el formulario? Se perderá el contenido actual.')) return;
+    setTitulo('');
+    setResumen('');
+    setContenido('');
+    builderHtmlRef.current = '';
+    setCoverUrl(null);
+    setCoverFile(null);
+    setGalleryUrls([]);
+    setGalleryFiles([null, null, null]);
+    setPublishedAt('');
+    setFechaInicioLocal('');
+    setFechaFinLocal('');
+    setEstado(tipo === 'PAGINA' ? 'PUBLICADA' : 'BORRADOR');
+    setEditorMode('builder');
+    setError(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(getBuilderDraftKey());
+    }
+    setBuilderResetKey((k) => k + 1);
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -588,9 +615,11 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
               Esto preserva los bloques al cambiar de pestaña (evita destruir/recrear el componente). */}
           <div style={{ display: editorMode === 'builder' ? undefined : 'none' }}>
             <ContentBlockBuilder
+              key={`asoc-nuevo-builder-${builderResetKey}-${categoria || 'nuevo'}`}
               draftKey={`lpmbe-contenido-asoc-PAGINA-${categoria || 'nuevo'}-draft`}
               initialHtml=""
               onChange={handleBuilderChange}
+              onClearAll={handleClearAll}
               webMode={true}
             />
           </div>
@@ -638,6 +667,13 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
         <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={handleClearAll}
+            className="rounded-md border border-red-300 bg-red-50 px-4 py-2 text-red-700 hover:bg-red-100"
+          >
+            Limpiar todo
+          </button>
           <button
             type="submit"
             disabled={saving || (tipo === 'PAGINA' && !categoria)}

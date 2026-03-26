@@ -35,6 +35,7 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
   const [galleryFiles, setGalleryFiles] = useState<Array<File | null>>([null, null, null]);
   const [uploading, setUploading] = useState(false);
   const [editorMode, setEditorMode] = useState<EditorMode>('edit');
+  const [builderResetKey, setBuilderResetKey] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -84,6 +85,27 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
     } finally {
       setUploading(false);
     }
+  }
+
+  function handleClearAll() {
+    if (!confirm('¿Limpiar todo el formulario? Se perderán los cambios no guardados.')) return;
+    setTitulo('');
+    setResumen('');
+    setContenidoMd('');
+    setCoverUrl(null);
+    setCoverFile(null);
+    setGalleryUrls([]);
+    setGalleryFiles([null, null, null]);
+    setPublishedAt('');
+    setFechaInicioLocal('');
+    setFechaFinLocal('');
+    setEstado('BORRADOR');
+    setEditorMode('builder');
+    setError(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(`lpmbe-editar-asoc-contenido-${id}-draft`);
+    }
+    setBuilderResetKey((k) => k + 1);
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -418,9 +440,11 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
 
           <div style={{ display: editorMode === 'builder' ? undefined : 'none' }}>
             <ContentBlockBuilder
+              key={`asoc-editar-builder-${id}-${builderResetKey}`}
               draftKey={`lpmbe-editar-asoc-contenido-${id}-draft`}
               initialHtml={contenidoMd}
               onChange={(html) => setContenidoMd(html)}
+              onClearAll={handleClearAll}
               webMode={true}
               clearDraftOnMount={true}
             />
@@ -465,6 +489,13 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
         <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={handleClearAll}
+            className="rounded-md border border-red-300 bg-red-50 px-4 py-2 text-red-700 hover:bg-red-100"
+          >
+            Limpiar todo
+          </button>
           <button
             type="submit"
             disabled={saving}

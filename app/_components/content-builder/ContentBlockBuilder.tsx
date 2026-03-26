@@ -103,6 +103,8 @@ interface ContentBlockBuilderProps {
    * de sesiones anteriores (potencialmente obsoletos) machaquen el contenido actual.
    */
   clearDraftOnMount?: boolean;
+  /** Permite limpiar todo el formulario padre (no solo bloques). */
+  onClearAll?: () => void;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -501,7 +503,7 @@ const PALETTE_BLOCKS: { type: BlockType; label: string }[] = [
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChange, draftKey, showBrandLogos = true, puebloId, puebloNombre, webMode = false, clearDraftOnMount = false }: ContentBlockBuilderProps) {
+export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChange, draftKey, showBrandLogos = true, puebloId, puebloNombre, webMode = false, clearDraftOnMount = false, onClearAll }: ContentBlockBuilderProps) {
   const [blocks, setBlocks] = useState<ContentBlock[]>(() => initialBlocks?.length ? initialBlocks : []);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reorderPickSourceId, setReorderPickSourceId] = useState<string | null>(null);
@@ -1016,6 +1018,15 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
         </button>
         <button type="button" onClick={() => { setSelectedTplId(null); setTplName(''); setBlocks([]); setShowGallery(false); onChange?.(''); }}
           className="rounded-md border border-border px-4 py-2 text-sm">Nueva en blanco</button>
+        {onClearAll && (
+          <button
+            type="button"
+            onClick={onClearAll}
+            className="rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
+          >
+            Borrar todo
+          </button>
+        )}
         <div className="ml-auto flex items-center gap-2">
           <input value={tplName} onChange={(e) => setTplName(e.target.value)}
             className="w-44 rounded-md border border-border px-3 py-2 text-sm" placeholder="Nombre plantilla" />

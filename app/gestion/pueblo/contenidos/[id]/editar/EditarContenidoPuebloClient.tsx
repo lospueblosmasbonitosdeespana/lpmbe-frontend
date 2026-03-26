@@ -43,6 +43,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
   const [ocultoEnPlanifica, setOcultoEnPlanifica] = useState(false);
   const [soloFechaEvento, setSoloFechaEvento] = useState(false);
   const [rol, setRol] = useState<string | null>(null);
+  const [builderResetKey, setBuilderResetKey] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -236,6 +237,29 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
     } finally {
       setSaving(false);
     }
+  }
+
+  function handleClearAll() {
+    if (!confirm('¿Limpiar todo el formulario? Se perderán los cambios no guardados.')) return;
+    setTitulo('');
+    setResumen('');
+    setContenidoMd('');
+    setCoverUrl(null);
+    setCoverFile(null);
+    setGalleryUrls([]);
+    setGalleryFiles([null, null, null]);
+    setPublishedAt('');
+    setFechaInicioLocal('');
+    setFechaFinLocal('');
+    setSoloFechaEvento(false);
+    setOcultoEnPlanifica(false);
+    setEstado('BORRADOR');
+    setEditorMode('builder');
+    setError(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(`lpmbe-editar-pueblo-contenido-${id}-draft`);
+    }
+    setBuilderResetKey((k) => k + 1);
   }
 
   if (loading) {
@@ -524,9 +548,11 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
 
           <div style={{ display: editorMode === 'builder' ? undefined : 'none' }}>
             <ContentBlockBuilder
+              key={`pueblo-editar-builder-${id}-${builderResetKey}`}
               draftKey={`lpmbe-editar-pueblo-contenido-${id}-draft`}
               initialHtml={contenidoMd}
               onChange={(html) => setContenidoMd(html)}
+              onClearAll={handleClearAll}
               showBrandLogos={false}
               puebloId={puebloId ? Number(puebloId) : undefined}
               webMode={true}
@@ -574,6 +600,13 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
         <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={handleClearAll}
+            className="rounded-md border border-red-300 bg-red-50 px-4 py-2 text-red-700 hover:bg-red-100"
+          >
+            Limpiar todo
+          </button>
           <button
             type="submit"
             disabled={saving}

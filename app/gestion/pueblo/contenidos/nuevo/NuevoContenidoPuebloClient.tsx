@@ -50,6 +50,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
   
   // Sistema de 4 modos: Constructor visual, Editor TipTap, HTML directo, Vista previa
   const [editorMode, setEditorMode] = useState<EditorMode>('edit');
+  const [builderResetKey, setBuilderResetKey] = useState(0);
 
   // Limpiar formulario cuando cambia la categoría (ya no se carga página existente)
   // Ahora se permiten hasta 4 páginas por categoría
@@ -223,6 +224,32 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
     } finally {
       setSaving(false);
     }
+  }
+
+  function getBuilderDraftKey() {
+    return `lpmbe-contenido-pueblo-${puebloId}-${tipo}-draft`;
+  }
+
+  function handleClearAll() {
+    if (!confirm('¿Limpiar todo el formulario? Se perderá el contenido actual.')) return;
+    setTitulo('');
+    setResumen('');
+    setContenido('');
+    setCoverFile(null);
+    setCoverUrl(null);
+    setGalleryFiles([null, null, null]);
+    setGalleryUrls([]);
+    setPublishedAt('');
+    setFechaInicioLocal('');
+    setFechaFinLocal('');
+    setSoloFechaEvento(false);
+    setEstado('PUBLICADA');
+    setEditorMode('builder');
+    setError(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(getBuilderDraftKey());
+    }
+    setBuilderResetKey((k) => k + 1);
   }
 
   return (
@@ -464,9 +491,11 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
 
           <div style={{ display: editorMode === 'builder' ? undefined : 'none' }}>
             <ContentBlockBuilder
+              key={`pueblo-nuevo-builder-${puebloId}-${tipo}-${builderResetKey}`}
               draftKey={`lpmbe-contenido-pueblo-${puebloId}-${tipo}-draft`}
               initialHtml={contenido}
               onChange={(html) => setContenido(html)}
+              onClearAll={handleClearAll}
               showBrandLogos={false}
               puebloId={puebloId}
               puebloNombre={puebloNombre}
@@ -516,6 +545,13 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
         <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={handleClearAll}
+            className="rounded-md border border-red-300 bg-red-50 px-4 py-2 text-red-700 hover:bg-red-100"
+          >
+            Limpiar todo
+          </button>
           <button
             type="submit"
             disabled={saving || (tipo === 'PAGINA' && !categoria)}
