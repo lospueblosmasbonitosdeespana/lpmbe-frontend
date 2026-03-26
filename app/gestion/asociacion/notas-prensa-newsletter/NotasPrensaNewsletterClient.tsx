@@ -808,6 +808,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [brandLogos, setBrandLogos] = useState<{ id: number; nombre: string; url: string; etiqueta?: string }[]>([]);
   const [showLogosPanel, setShowLogosPanel] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [sendingTest, setSendingTest] = useState(false);
   const logoUploadInputRef = useRef<HTMLInputElement | null>(null);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const photosInputRef = useRef<HTMLInputElement | null>(null);
@@ -1634,6 +1635,66 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       setError(getErrorMessage(e, 'Error enviando campaña'));
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleTestSend() {
+    setSendingTest(true);
+    setError(null);
+    setMessage(null);
+    try {
+      if (!campaignForm.subject.trim()) throw new Error('El asunto es obligatorio');
+
+      let finalHtml = '';
+      const testTo = ['asociacion@lospueblosmasbonitosdeespana.org'];
+      const kind = mode === 'press' ? 'PRESS' : 'NEWSLETTER';
+      let attachmentUrls: Array<{ url: string; filename?: string; contentType?: string }> | undefined;
+
+      if (mode === 'press' && pressSendMode === 'pdf') {
+        let pdfUrl = pressPdfUrl.trim();
+        if (!pdfUrl && pressPdfFile) pdfUrl = await uploadPressPdf();
+        if (!pdfUrl) throw new Error('Debes subir un PDF para el envío');
+        let pdfFilename = pressPdfFile?.name || pdfUrl.split('/').pop()?.split('?')[0] || '';
+        finalHtml = buildPdfEmailHtml(campaignForm.subject.trim(), pdfUrl);
+        finalHtml = injectPreheader(finalHtml, campaignForm.preheader);
+        const safeFilename = pdfFilename || `nota-prensa-${Date.now()}.pdf`;
+        attachmentUrls = [
+          { url: pdfUrl, filename: safeFilename.toLowerCase().endsWith('.pdf') ? safeFilename : `${safeFilename}.pdf`, contentType: 'application/pdf' },
+          ...pressAttachments.map((a) => ({ url: a.url, filename: a.name, contentType: a.contentType })),
+        ];
+      } else {
+        finalHtml = campaignForm.html.trim();
+        if (mode === 'newsletter' && newsletterComposerMode === 'builder') {
+          finalHtml = renderNewsletterBlocksToHtml(newsletterBlocks).trim();
+        }
+        if (mode === 'press' && pressSendMode === 'editor' && pressComposerMode === 'builder') {
+          finalHtml = pressBuilderHtml.trim();
+        } else if (mode === 'press' && editorMode === 'visual' && editor) {
+          finalHtml = editor.getHTML().trim();
+        }
+        if (!finalHtml) throw new Error('El contenido es obligatorio');
+        if (mode === 'press' && pressPhotoUrls.length > 0) {
+          const pending = pressPhotoUrls.filter((u) => !insertedPhotoUrls.includes(u));
+          if (pending.length > 0) finalHtml = appendPressPhotos(finalHtml, pending);
+        }
+        finalHtml = injectPreheader(finalHtml, campaignForm.preheader);
+        if (mode === 'press' && pressAttachments.length > 0) {
+          attachmentUrls = pressAttachments.map((a) => ({ url: a.url, filename: a.name, contentType: a.contentType }));
+        }
+      }
+
+      const res = await fetch('/api/admin/newsletter/campaigns/test-send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: testTo, kind, subject: campaignForm.subject, html: finalHtml, ...(attachmentUrls ? { attachmentUrls } : {}) }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.message || 'Error enviando prueba');
+      setMessage(`Envío de prueba realizado a ${testTo.join(', ')}. Revisa la bandeja de entrada.`);
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, 'Error en envío de prueba'));
+    } finally {
+      setSendingTest(false);
     }
   }
 
@@ -4056,6 +4117,15 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                 <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
               </svg>
               Imprimir / PDF
+            </button>
+            <button
+              type="button"
+              disabled={sendingTest || loading}
+              onClick={handleTestSend}
+              className="rounded-lg border-2 border-blue-500 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-60"
+              title="Envía una prueba a asociacion@lospueblosmasbonitosdeespana.org"
+            >
+              {sendingTest ? 'Enviando prueba…' : 'Envío prueba'}
             </button>
             <button
               type="submit"
