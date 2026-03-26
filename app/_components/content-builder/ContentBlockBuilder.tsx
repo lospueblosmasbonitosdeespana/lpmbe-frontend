@@ -111,6 +111,13 @@ function newId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+function sanitizeTemplateUrl(raw: string): string {
+  const url = String(raw || '').trim();
+  if (!url) return '';
+  if (url === 'https://...' || url === 'http://...' || /https?:\/\/\.\.\./i.test(url)) return '';
+  return url;
+}
+
 function escHtml(v: string): string {
   return v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -126,8 +133,8 @@ function createBlock(type: BlockType, patch: Partial<ContentBlock> = {}): Conten
       : type === 'figure' || type === 'imgText' ? 'Texto al lado de la imagen'
       : '',
     label: type === 'button' ? 'Leer más' : type === 'iconButton' ? 'Icono' : '',
-    url: ['image', 'figure', 'imgText', 'button'].includes(type) ? 'https://...' : '',
-    iconUrl: type === 'iconButton' ? 'https://...' : '',
+    url: ['image', 'figure', 'imgText', 'button'].includes(type) ? '' : '',
+    iconUrl: type === 'iconButton' ? '' : '',
     caption: type === 'figure' ? 'Pie de imagen' : '',
     colLeft: ['columns2', 'columns3'].includes(type) ? 'Columna izquierda' : '',
     colRight: ['columns2', 'columns3'].includes(type) ? 'Columna derecha' : '',
@@ -162,14 +169,16 @@ function normalizeBlocks(value: unknown): ContentBlock[] {
         id: String(src.id || newId()),
         type: String(src.type || 'text') as BlockType,
         content: String(src.content || ''),
-        url: String(src.url || ''),
-        iconUrl: String(src.iconUrl || ''),
+        url: sanitizeTemplateUrl(String(src.url || '')),
+        iconUrl: sanitizeTemplateUrl(String(src.iconUrl || '')),
         label: String(src.label || ''),
         colLeft: String(src.colLeft || ''),
         colRight: String(src.colRight || ''),
         colCenter: String(src.colCenter || ''),
         caption: String(src.caption || ''),
-        imageUrls: Array.isArray(src.imageUrls) ? (src.imageUrls as string[]) : [],
+        imageUrls: Array.isArray(src.imageUrls)
+          ? (src.imageUrls as unknown[]).map((u) => sanitizeTemplateUrl(String(u || ''))).filter(Boolean)
+          : [],
         socialFacebook: String(src.socialFacebook || ''),
         socialTwitter: String(src.socialTwitter || ''),
         socialInstagram: String(src.socialInstagram || ''),
@@ -210,7 +219,8 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
     } else if (b.type === 'text') {
       parts.push(`<div style="${wrapStyle}text-align:${align};">${b.content || ''}</div>`);
     } else if (b.type === 'image') {
-      if (b.url && b.url !== 'https://...') {
+      const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
+      if (safeUrl) {
         const imgStyle = [
           b.imgWidth ? `width:${b.imgWidth}px` : 'max-width:100%',
           b.imgHeight ? `height:${b.imgHeight}px` : 'height:auto',
@@ -218,17 +228,24 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
           b.imgBorderRadius ? `border-radius:${b.imgBorderRadius}px` : '',
           b.imgPaddingV || b.imgPaddingH ? `padding:${b.imgPaddingV || 0}px ${b.imgPaddingH || 0}px` : '',
         ].filter(Boolean).join(';');
-        const imgTag = `<img src="${escHtml(b.url)}" alt="${escHtml(b.content || '')}" style="${imgStyle}" />`;
+        const imgTag = `<img src="${escHtml(safeUrl)}" alt="${escHtml(b.content || '')}" style="${imgStyle}" />`;
         const wrapped = b.imgLinkUrl ? `<a href="${escHtml(b.imgLinkUrl)}" target="_blank" style="display:inline-block;">${imgTag}</a>` : imgTag;
         parts.push(`<div style="${wrapStyle}text-align:${align};">${wrapped}</div>`);
       }
     } else if (b.type === 'button') {
-      parts.push(`<div style="${wrapStyle}text-align:${align};"><a href="${escHtml(b.url || '#')}" style="display:inline-block;padding:12px 28px;background:#c0392b;color:#fff;border-radius:${br}px;text-decoration:none;font-weight:600;">${escHtml(b.label || b.content || 'Leer más')}</a></div>`);
+      const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
+      if (safeUrl) {
+        parts.push(`<div style="${wrapStyle}text-align:${align};"><a href="${escHtml(safeUrl)}" style="display:inline-block;padding:12px 28px;background:#c0392b;color:#fff;border-radius:${br}px;text-decoration:none;font-weight:600;">${escHtml(b.label || b.content || 'Leer más')}</a></div>`);
+      }
     } else if (b.type === 'iconButton') {
-      const iconHtml = b.iconUrl && b.iconUrl !== 'https://...'
-        ? `<img src="${escHtml(b.iconUrl)}" alt="${escHtml(b.label || '')}" style="width:48px;height:48px;object-fit:contain;display:block;margin:0 auto;" />`
+      const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
+      const safeIconUrl = sanitizeTemplateUrl(String(b.iconUrl || ''));
+      const iconHtml = safeIconUrl
+        ? `<img src="${escHtml(safeIconUrl)}" alt="${escHtml(b.label || '')}" style="width:48px;height:48px;object-fit:contain;display:block;margin:0 auto;" />`
         : `<div style="width:48px;height:48px;background:#c0392b;border-radius:8px;margin:0 auto;"></div>`;
-      parts.push(`<div style="${wrapStyle}text-align:center;"><a href="${escHtml(b.url || '#')}" style="display:inline-block;padding:12px;background:${bg};border:2px solid #c0392b;border-radius:${br}px;text-decoration:none;">${iconHtml}<span style="display:block;margin-top:6px;font-size:12px;color:${tc};">${escHtml(b.label || 'Icono')}</span></a></div>`);
+      if (safeUrl) {
+        parts.push(`<div style="${wrapStyle}text-align:center;"><a href="${escHtml(safeUrl)}" style="display:inline-block;padding:12px;background:${bg};border:2px solid #c0392b;border-radius:${br}px;text-decoration:none;">${iconHtml}<span style="display:block;margin-top:6px;font-size:12px;color:${tc};">${escHtml(b.label || 'Icono')}</span></a></div>`);
+      }
     } else if (b.type === 'divider') {
       parts.push(`<div style="padding:8px 0;"><hr style="border:none;border-top:1px solid #e5e7eb;" /></div>`);
     } else if (b.type === 'columns2') {
@@ -236,7 +253,7 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
     } else if (b.type === 'columns3') {
       parts.push(`<div style="${wrapStyle}"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="33%" style="padding:8px;vertical-align:top;">${b.colLeft || ''}</td><td width="33%" style="padding:8px;vertical-align:top;">${b.colCenter || ''}</td><td width="34%" style="padding:8px;vertical-align:top;">${b.colRight || ''}</td></tr></table></div>`);
     } else if (b.type === 'gallery') {
-      const imgs = (b.imageUrls || []).filter((u) => u && u !== 'https://...');
+      const imgs = (b.imageUrls || []).map((u) => sanitizeTemplateUrl(String(u || ''))).filter(Boolean);
       if (imgs.length) {
         // Renderizar en cuadrícula de 2 columnas (máx 4 imágenes, 2 filas × 2 cols)
         const rows: string[] = [];
@@ -253,12 +270,14 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
         parts.push(`<div style="${wrapStyle}border:2px dashed #e5e7eb;text-align:center;color:#9ca3af;font-size:13px;">📷 Galería (sin imágenes subidas aún)</div>`);
       }
     } else if (b.type === 'figure') {
-      if (b.url && b.url !== 'https://...') {
-        parts.push(`<figure style="${wrapStyle}text-align:${align};margin:0;"><img src="${escHtml(b.url)}" alt="${escHtml(b.caption || '')}" style="max-width:100%;height:auto;" /><figcaption style="margin-top:6px;font-size:13px;color:#666;">${escHtml(b.caption || '')}</figcaption></figure>`);
+      const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
+      if (safeUrl) {
+        parts.push(`<figure style="${wrapStyle}text-align:${align};margin:0;"><img src="${escHtml(safeUrl)}" alt="${escHtml(b.caption || '')}" style="max-width:100%;height:auto;" /><figcaption style="margin-top:6px;font-size:13px;color:#666;">${escHtml(b.caption || '')}</figcaption></figure>`);
       }
     } else if (b.type === 'imgText') {
-      if (b.url && b.url !== 'https://...') {
-        parts.push(`<div style="${wrapStyle}"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="40%" style="padding:8px;vertical-align:top;"><img src="${escHtml(b.url)}" style="width:100%;height:auto;display:block;" /></td><td width="60%" style="padding:8px;vertical-align:top;">${b.content || ''}</td></tr></table></div>`);
+      const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
+      if (safeUrl) {
+        parts.push(`<div style="${wrapStyle}"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="40%" style="padding:8px;vertical-align:top;"><img src="${escHtml(safeUrl)}" style="width:100%;height:auto;display:block;" /></td><td width="60%" style="padding:8px;vertical-align:top;">${b.content || ''}</td></tr></table></div>`);
       } else {
         parts.push(`<div style="${wrapStyle}">${b.content || ''}</div>`);
       }
@@ -957,8 +976,8 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
       b = [
         createBlock('heading', { content: 'Boletín mensual', align: 'center' }),
         createBlock('text', { content: 'Te compartimos las novedades más importantes de este mes.' }),
-        createBlock('image', { url: 'https://...', content: 'Imagen destacada', align: 'center' }),
-        createBlock('button', { label: 'Ver novedades', url: 'https://...', align: 'center' }),
+        createBlock('image', { url: '', content: 'Imagen destacada', align: 'center' }),
+        createBlock('button', { label: 'Ver novedades', url: '', align: 'center' }),
       ];
     } else if (preset === 'nota') {
       b = [
@@ -966,14 +985,14 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
         createBlock('text', { content: 'Introduce aquí la información principal del comunicado.' }),
         createBlock('divider'),
         createBlock('text', { content: 'Contexto adicional o próximos pasos.' }),
-        createBlock('button', { label: 'Más información', url: 'https://...', align: 'left' }),
+        createBlock('button', { label: 'Más información', url: '', align: 'left' }),
       ];
     } else {
       b = [
         createBlock('heading', { content: 'Descubre la nueva campaña', align: 'center' }),
         createBlock('text', { content: 'Presenta la propuesta de valor.', align: 'center' }),
-        createBlock('image', { url: 'https://...', align: 'center' }),
-        createBlock('button', { label: 'Acceder ahora', url: 'https://...', align: 'center' }),
+        createBlock('image', { url: '', align: 'center' }),
+        createBlock('button', { label: 'Acceder ahora', url: '', align: 'center' }),
       ];
     }
     setBlocks(b);
