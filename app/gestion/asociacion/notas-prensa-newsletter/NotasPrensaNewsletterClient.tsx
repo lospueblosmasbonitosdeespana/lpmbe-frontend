@@ -809,6 +809,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [showLogosPanel, setShowLogosPanel] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
+  const [showPressLogos, setShowPressLogos] = useState(false);
+  const [pressImageWidth, setPressImageWidth] = useState<'100%' | '80%' | '60%' | '40%' | '200px'>('60%');
   const logoUploadInputRef = useRef<HTMLInputElement | null>(null);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const photosInputRef = useRef<HTMLInputElement | null>(null);
@@ -1673,8 +1675,12 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           finalHtml = editor.getHTML().trim();
         }
         if (!finalHtml) throw new Error('El contenido es obligatorio');
-        if (mode === 'press' && pressPhotoUrls.length > 0) {
-          const pending = pressPhotoUrls.filter((u) => !insertedPhotoUrls.includes(u));
+        let photoUrlsForTest = [...pressPhotoUrls];
+        if (mode === 'press' && pressPhotoFiles.length > 0 && pressPhotoUrls.length === 0) {
+          photoUrlsForTest = await uploadPressPhotos();
+        }
+        if (mode === 'press' && photoUrlsForTest.length > 0) {
+          const pending = photoUrlsForTest.filter((u) => !insertedPhotoUrls.includes(u));
           if (pending.length > 0) finalHtml = appendPressPhotos(finalHtml, pending);
         }
         finalHtml = injectPreheader(finalHtml, campaignForm.preheader);
@@ -1702,7 +1708,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     const gallery = urls
       .map(
         (url, i) =>
-          `<p style="margin:0 0 10px 0;"><img src="${url}" alt="Imagen nota de prensa ${i + 1}" style="max-width:100%;height:auto;border-radius:8px;" /></p>`,
+          `<div style="margin:0 0 14px 0;text-align:center;"><img src="${url}" alt="Imagen nota de prensa ${i + 1}" style="max-width:680px;width:100%;height:auto;border-radius:8px;" /></div>`,
       )
       .join('');
     return `${html}
@@ -1723,7 +1729,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     }
 
     const textarea = htmlTextareaRef.current;
-    const snippet = `<p><img src="${cleanUrl}" alt="Imagen nota de prensa" style="max-width:100%;height:auto;border-radius:8px;" /></p>`;
+    const snippet = `<div style="margin:12px 0;text-align:center;"><img src="${cleanUrl}" alt="Imagen nota de prensa" style="max-width:${pressImageWidth};height:auto;border-radius:8px;" /></div>`;
     if (!textarea) {
       setCampaignForm((s) => ({ ...s, html: `${s.html}\n${snippet}`.trim() }));
       setInsertedPhotoUrls((prev) => (prev.includes(cleanUrl) ? prev : [...prev, cleanUrl]));
@@ -1737,6 +1743,28 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     const next = `${before}${snippet}${after}`;
     setCampaignForm((s) => ({ ...s, html: next }));
     setInsertedPhotoUrls((prev) => (prev.includes(cleanUrl) ? prev : [...prev, cleanUrl]));
+  }
+
+  function insertImageAtCursor(url: string, alt: string, width: string, align: 'left' | 'center' | 'right' = 'center') {
+    const cleanUrl = String(url || '').trim();
+    if (!cleanUrl) return;
+    const alignStyle = align === 'center' ? 'text-align:center;' : align === 'right' ? 'text-align:right;' : '';
+    const snippet = `<div style="margin:16px 0;${alignStyle}"><img src="${cleanUrl}" alt="${alt}" style="max-width:${width};height:auto;" /></div>`;
+
+    if (editorMode === 'visual' && editor) {
+      editor.chain().focus().insertContent(snippet).run();
+      return;
+    }
+
+    const textarea = htmlTextareaRef.current;
+    if (!textarea) {
+      setCampaignForm((s) => ({ ...s, html: `${snippet}\n${s.html}`.trim() }));
+      return;
+    }
+    const start = textarea.selectionStart ?? 0;
+    const before = campaignForm.html.slice(0, start);
+    const after = campaignForm.html.slice(start);
+    setCampaignForm((s) => ({ ...s, html: `${before}${snippet}${after}` }));
   }
 
   async function uploadPressPhotos() {
@@ -3681,6 +3709,55 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                     HTML
                   </button>
                 </div>
+                {/* Barra de herramientas: Logos + Ancho de imagen */}
+                <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-border bg-slate-50 p-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowPressLogos((v) => !v)}
+                    className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold transition ${showPressLogos ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-white hover:bg-muted'}`}
+                  >
+                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                    Logos ({brandLogos.length})
+                  </button>
+                  <span className="text-[11px] text-muted-foreground">Ancho imagen:</span>
+                  {(['40%', '60%', '80%', '100%', '200px'] as const).map((w) => (
+                    <button
+                      key={w}
+                      type="button"
+                      onClick={() => setPressImageWidth(w)}
+                      className={`rounded border px-2 py-1 text-[11px] font-medium transition ${pressImageWidth === w ? 'border-primary bg-primary text-white' : 'border-border bg-white hover:bg-muted'}`}
+                    >
+                      {w}
+                    </button>
+                  ))}
+                </div>
+                {showPressLogos && (
+                  <div className="mt-1 rounded-md border border-border bg-white p-3">
+                    <p className="mb-2 text-xs font-semibold text-muted-foreground">Haz clic en un logo para insertarlo en la posición del cursor</p>
+                    {brandLogos.length === 0 ? (
+                      <p className="py-3 text-center text-xs text-muted-foreground">No hay logos en la biblioteca. Súbelos desde Gestión &gt; Logos.</p>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+                        {brandLogos.map((logo) => (
+                          <button
+                            key={logo.id}
+                            type="button"
+                            onClick={() => {
+                              insertImageAtCursor(logo.url, logo.nombre || 'Logo', pressImageWidth);
+                              setShowPressLogos(false);
+                            }}
+                            className="group flex flex-col items-center gap-1 rounded-lg border border-border p-2 hover:border-primary hover:bg-primary/5"
+                            title={logo.nombre}
+                          >
+                            <img src={logo.url} alt={logo.nombre} className="h-10 w-auto object-contain" />
+                            <span className="max-w-full truncate text-[10px] text-muted-foreground group-hover:text-primary">{logo.nombre}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {editorMode === 'visual' ? (
                   <div className="mt-2 space-y-2">
                     <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/40 p-2">
