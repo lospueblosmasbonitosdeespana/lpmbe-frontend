@@ -809,6 +809,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [uploadingNewsletterImage, setUploadingNewsletterImage] = useState(false);
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const [hasStoredDraft, setHasStoredDraft] = useState(false);
+  const [newsletterRecipientCount, setNewsletterRecipientCount] = useState<number | null>(null);
+  const [loadingNewsletterRecipientCount, setLoadingNewsletterRecipientCount] = useState(false);
   const [brandLogos, setBrandLogos] = useState<{ id: number; nombre: string; url: string; etiqueta?: string }[]>([]);
   const [showLogosPanel, setShowLogosPanel] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -1244,6 +1246,32 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (mode !== 'newsletter') return;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        setLoadingNewsletterRecipientCount(true);
+        const source = campaignForm.source.trim();
+        const qs = source ? `?limit=1&offset=0&source=${encodeURIComponent(source)}` : '?limit=1&offset=0';
+        const res = await fetch(`/api/admin/newsletter${qs}`, { cache: 'no-store' });
+        const data = await res.json().catch(() => ({}));
+        if (!cancelled && res.ok) {
+          setNewsletterRecipientCount(Number(data?.total || 0));
+        }
+      } catch {
+        if (!cancelled) setNewsletterRecipientCount(null);
+      } finally {
+        if (!cancelled) setLoadingNewsletterRecipientCount(false);
+      }
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [mode, campaignForm.source]);
 
   useEffect(() => {
     if (!editor) return;
@@ -4401,6 +4429,21 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                   {publishingWeb ? 'Subiendo a la web…' : 'Subir a la web'}
                 </button>
               </div>
+            </div>
+          ) : null}
+
+          {mode === 'newsletter' ? (
+            <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+              {loadingNewsletterRecipientCount ? (
+                'Calculando destinatarios de newsletter...'
+              ) : (
+                <>
+                  Se enviará a <strong>{newsletterRecipientCount ?? 0}</strong>{' '}
+                  {campaignForm.source.trim()
+                    ? `suscriptores del origen "${campaignForm.source.trim()}".`
+                    : 'suscriptores activos.'}
+                </>
+              )}
             </div>
           ) : null}
 
