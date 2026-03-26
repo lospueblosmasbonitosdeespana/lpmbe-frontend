@@ -351,16 +351,16 @@ export default async function ContenidoPage({
 
         <div className="max-w-[720px] mx-auto px-5">
           <header className="mb-10">
-            <div className="text-[13px] font-medium text-muted-foreground uppercase tracking-wide mb-4">
-              {tipoBadgeLabel}
-            </div>
-
-            <div className="flex items-start justify-between gap-4 mb-3">
-              <h1 className="text-3xl md:text-4xl font-bold leading-tight m-0 text-foreground flex-1 min-w-0">
-                {contenido.titulo}
-              </h1>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[13px] font-medium text-muted-foreground uppercase tracking-wide">
+                {tipoBadgeLabel}
+              </span>
               <ShareButton url={`/c/${slug}`} title={contenido.titulo} variant="button" />
             </div>
+
+            <h1 className="text-3xl md:text-4xl font-bold leading-tight m-0 text-foreground mb-3">
+              {contenido.titulo}
+            </h1>
 
             {fechaPublicacionFormateada && (
               <p className="text-sm text-muted-foreground mt-2">
