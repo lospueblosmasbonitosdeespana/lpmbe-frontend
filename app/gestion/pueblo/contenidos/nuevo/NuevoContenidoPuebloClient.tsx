@@ -38,6 +38,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
   const [publishedAt, setPublishedAt] = useState('');
   const [fechaInicioLocal, setFechaInicioLocal] = useState('');
   const [fechaFinLocal, setFechaFinLocal] = useState('');
+  const [soloFechaEvento, setSoloFechaEvento] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [galleryFiles, setGalleryFiles] = useState<Array<File | null>>([null, null, null]);
@@ -329,12 +330,32 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
               Estas fechas son del evento (no de la publicación).
             </p>
 
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="soloFechaEvento"
+                checked={soloFechaEvento}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setSoloFechaEvento(checked);
+                  if (checked) {
+                    if (fechaInicioLocal.includes('T')) setFechaInicioLocal(fechaInicioLocal.split('T')[0]);
+                    if (fechaFinLocal.includes('T')) setFechaFinLocal(fechaFinLocal.split('T')[0]);
+                  }
+                }}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <label htmlFor="soloFechaEvento" className="text-sm text-blue-800">
+                Evento de todo el día (sin hora específica)
+              </label>
+            </div>
+
             <div className="space-y-2">
               <label className="block text-sm font-medium">
-                Inicio del evento
+                {soloFechaEvento ? 'Fecha del evento' : 'Inicio del evento'}
               </label>
               <input
-                type="datetime-local"
+                type={soloFechaEvento ? 'date' : 'datetime-local'}
                 className="w-full rounded-md border px-3 py-2"
                 value={fechaInicioLocal}
                 onChange={(e) => setFechaInicioLocal(e.target.value)}
@@ -344,10 +365,10 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
 
             <div className="space-y-2">
               <label className="block text-sm font-medium">
-                Fin del evento (opcional)
+                {soloFechaEvento ? 'Fecha fin (opcional)' : 'Fin del evento (opcional)'}
               </label>
               <input
-                type="datetime-local"
+                type={soloFechaEvento ? 'date' : 'datetime-local'}
                 className="w-full rounded-md border px-3 py-2"
                 value={fechaFinLocal}
                 onChange={(e) => setFechaFinLocal(e.target.value)}

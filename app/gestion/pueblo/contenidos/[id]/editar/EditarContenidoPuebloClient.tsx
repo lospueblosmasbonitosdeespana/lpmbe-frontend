@@ -41,6 +41,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
   const [galleryFiles, setGalleryFiles] = useState<Array<File | null>>([null, null, null]);
   const [editorMode, setEditorMode] = useState<EditorMode>('edit');
   const [ocultoEnPlanifica, setOcultoEnPlanifica] = useState(false);
+  const [soloFechaEvento, setSoloFechaEvento] = useState(false);
   const [rol, setRol] = useState<string | null>(null);
 
   useEffect(() => {
@@ -73,10 +74,21 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
         }
         
         if (data.fechaInicio) {
-          setFechaInicioLocal(toDatetimeLocal(data.fechaInicio));
+          const dtl = toDatetimeLocal(data.fechaInicio);
+          setFechaInicioLocal(dtl);
+          // Detectar si es "solo fecha" (hora 12:00 = convención all-day)
+          if (dtl.endsWith('T12:00')) {
+            setSoloFechaEvento(true);
+            setFechaInicioLocal(dtl.split('T')[0]);
+          }
         }
         if (data.fechaFin) {
-          setFechaFinLocal(toDatetimeLocal(data.fechaFin));
+          const dtl = toDatetimeLocal(data.fechaFin);
+          if (dtl.endsWith('T12:00')) {
+            setFechaFinLocal(dtl.split('T')[0]);
+          } else {
+            setFechaFinLocal(dtl);
+          }
         }
         if (data.ocultoEnPlanificaFinDeSemana !== undefined) {
           setOcultoEnPlanifica(!!data.ocultoEnPlanificaFinDeSemana);
@@ -332,12 +344,32 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
               Fechas del evento
             </p>
 
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="soloFechaEvento"
+                checked={soloFechaEvento}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setSoloFechaEvento(checked);
+                  if (checked) {
+                    if (fechaInicioLocal.includes('T')) setFechaInicioLocal(fechaInicioLocal.split('T')[0]);
+                    if (fechaFinLocal.includes('T')) setFechaFinLocal(fechaFinLocal.split('T')[0]);
+                  }
+                }}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <label htmlFor="soloFechaEvento" className="text-sm text-blue-800">
+                Evento de todo el día (sin hora específica)
+              </label>
+            </div>
+
             <div className="space-y-2">
               <label className="block text-sm font-medium">
-                Inicio del evento
+                {soloFechaEvento ? 'Fecha del evento' : 'Inicio del evento'}
               </label>
               <input
-                type="datetime-local"
+                type={soloFechaEvento ? 'date' : 'datetime-local'}
                 className="w-full rounded-md border px-3 py-2"
                 value={fechaInicioLocal}
                 onChange={(e) => setFechaInicioLocal(e.target.value)}
@@ -347,10 +379,10 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
 
             <div className="space-y-2">
               <label className="block text-sm font-medium">
-                Fin del evento (opcional)
+                {soloFechaEvento ? 'Fecha fin (opcional)' : 'Fin del evento (opcional)'}
               </label>
               <input
-                type="datetime-local"
+                type={soloFechaEvento ? 'date' : 'datetime-local'}
                 className="w-full rounded-md border px-3 py-2"
                 value={fechaFinLocal}
                 onChange={(e) => setFechaFinLocal(e.target.value)}
