@@ -31,6 +31,7 @@ type Campaign = {
   openedCount: number;
   clickedCount: number;
   bouncedCount: number;
+  deliveredCount: number;
   sentAt?: string | null;
   createdAt: string;
 };
@@ -4290,9 +4291,9 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                 <th className="px-2 py-2 text-left">Asunto</th>
                 <th className="px-2 py-2 text-left">Estado</th>
                 <th className="px-2 py-2 text-right">Dest.</th>
-                <th className="px-2 py-2 text-right">OK</th>
-                <th className="px-2 py-2 text-right">Fallos</th>
-                <th className="px-2 py-2 text-right">% Apertura</th>
+                <th className="px-2 py-2 text-right">Entregados</th>
+                <th className="px-2 py-2 text-right">Rebotados</th>
+                <th className="px-2 py-2 text-right">Aperturas</th>
                 <th className="px-2 py-2 text-right"></th>
               </tr>
             </thead>
@@ -4326,14 +4327,32 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                       }`}>{c.status}</span>
                     </td>
                     <td className="px-2 py-2 text-right">{c.totalRecipients}</td>
-                    <td className="px-2 py-2 text-right">{c.sentCount}</td>
-                    <td className="px-2 py-2 text-right">{c.failedCount}</td>
                     <td className="px-2 py-2 text-right">
-                      {c.totalRecipients > 0 ? (
-                        <span className={`font-medium ${(c.openedCount / c.totalRecipients * 100) > 20 ? 'text-green-600' : 'text-slate-700'}`}>
-                          {((c.openedCount / c.totalRecipients) * 100).toFixed(1)}%
+                      <span className="font-medium text-green-600">{c.deliveredCount || 0}</span>
+                      {c.totalRecipients > 0 && (
+                        <span className="text-xs text-slate-400 ml-1">
+                          ({((c.deliveredCount || 0) / c.totalRecipients * 100).toFixed(0)}%)
                         </span>
-                      ) : '–'}
+                      )}
+                    </td>
+                    <td className="px-2 py-2 text-right">
+                      {(c.bouncedCount || 0) > 0 ? (
+                        <span className="font-medium text-red-600">{c.bouncedCount}</span>
+                      ) : (
+                        <span className="text-slate-400">0</span>
+                      )}
+                    </td>
+                    <td className="px-2 py-2 text-right">
+                      {c.openedCount > 0 ? (
+                        <span className="font-medium text-green-600">
+                          {c.openedCount}
+                          <span className="text-xs text-slate-400 ml-1">
+                            ({((c.openedCount / c.totalRecipients) * 100).toFixed(1)}%)
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-400" title="Activa Open Tracking en Resend para ver aperturas">–</span>
+                      )}
                     </td>
                     <td className="px-2 py-2 text-right">
                       <div className="flex items-center justify-end gap-1.5">
