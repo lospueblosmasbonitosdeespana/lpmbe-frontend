@@ -370,9 +370,14 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         const url = sanitizeTemplateUrl(String(block.url || ''));
         if (!url) return '';
         const imgW = block.imageWidth || '100%';
+        const marginStyle = align === 'center'
+          ? 'display:block;margin:0 auto;'
+          : align === 'right'
+            ? 'display:block;margin-left:auto;margin-right:0;'
+            : 'display:block;';
         const imgStyle = imgW === '100%'
-          ? 'max-width:100%;height:auto;border-radius:10px;'
-          : `width:${imgW};max-width:100%;height:auto;border-radius:10px;`;
+          ? `max-width:100%;height:auto;border-radius:10px;${marginStyle}`
+          : `width:${imgW};max-width:100%;height:auto;border-radius:10px;${marginStyle}`;
         return `<div style="${boxStyle}"><p style="margin:0;text-align:${align};"><img src="${escapeHtml(
           url,
         )}" alt="${escapeHtml(block.content || 'Imagen newsletter')}" style="${imgStyle}" /></p></div>`;
