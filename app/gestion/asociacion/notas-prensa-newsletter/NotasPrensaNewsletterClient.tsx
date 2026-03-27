@@ -85,6 +85,7 @@ type NewsletterBlock = {
   textColor?: string;
   paddingY?: number;
   borderRadius?: number;
+  imageWidth?: string;
 };
 type NewsletterTemplate = {
   id: number;
@@ -361,9 +362,13 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
       if (block.type === 'image') {
         const url = sanitizeTemplateUrl(String(block.url || ''));
         if (!url) return '';
+        const imgW = block.imageWidth || '100%';
+        const imgStyle = imgW === '100%'
+          ? 'max-width:100%;height:auto;border-radius:10px;'
+          : `width:${imgW};max-width:100%;height:auto;border-radius:10px;`;
         return `<div style="${boxStyle}"><p style="margin:0;text-align:${align};"><img src="${escapeHtml(
           url,
-        )}" alt="${escapeHtml(block.content || 'Imagen newsletter')}" style="max-width:100%;height:auto;border-radius:10px;" /></p></div>`;
+        )}" alt="${escapeHtml(block.content || 'Imagen newsletter')}" style="${imgStyle}" /></p></div>`;
       }
       if (block.type === 'button') {
         const url = sanitizeTemplateUrl(String(block.url || ''));
@@ -3118,7 +3123,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                         type="button"
                                         title="Añadir al lienzo"
                                         onClick={() => {
-                                          const b = createBlock('image', { url: logo.url, content: logo.nombre, align: 'center' });
+                                          const b = createBlock('image', { url: logo.url, content: logo.nombre, align: 'center', imageWidth: '160px' });
                                           setNewsletterBlocks((prev) => [...prev, b]);
                                           setSelectedNewsletterBlockId(b.id);
                                         }}
@@ -3201,7 +3206,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                             const logoUrl = e.dataTransfer.getData('text/newsletter-logo-url');
                             const logoName = e.dataTransfer.getData('text/newsletter-logo-name');
                             if (logoUrl) {
-                              const b = createBlock('image', { url: logoUrl, content: logoName || 'Logo', align: 'center' });
+                              const b = createBlock('image', { url: logoUrl, content: logoName || 'Logo', align: 'center', imageWidth: '160px' });
                               setNewsletterBlocks((prev) => [...prev, b]);
                               setSelectedNewsletterBlockId(b.id);
                               return;
@@ -3359,19 +3364,36 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                               </label>
 
                               {selectedNewsletterBlock.type === 'image' && (
-                                <label className="text-xs text-muted-foreground md:col-span-2">
-                                  Texto alt
-                                  <input
-                                    value={selectedNewsletterBlock.content || ''}
-                                    onChange={(e) =>
-                                      updateSelectedNewsletterBlock({
-                                        content: e.target.value,
-                                      })
-                                    }
-                                    className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                    placeholder="Texto alternativo de la imagen"
-                                  />
-                                </label>
+                                <>
+                                  <label className="text-xs text-muted-foreground md:col-span-2">
+                                    Texto alt
+                                    <input
+                                      value={selectedNewsletterBlock.content || ''}
+                                      onChange={(e) =>
+                                        updateSelectedNewsletterBlock({
+                                          content: e.target.value,
+                                        })
+                                      }
+                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                      placeholder="Texto alternativo de la imagen"
+                                    />
+                                  </label>
+                                  <div className="md:col-span-2">
+                                    <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Ancho de imagen</p>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {['80px', '120px', '160px', '200px', '250px', '300px', '50%', '75%', '100%'].map((w) => (
+                                        <button
+                                          key={w}
+                                          type="button"
+                                          onClick={() => updateSelectedNewsletterBlock({ imageWidth: w })}
+                                          className={`rounded border px-2 py-1 text-[11px] font-medium transition ${(selectedNewsletterBlock.imageWidth || '100%') === w ? 'border-primary bg-primary text-white' : 'border-border bg-white hover:bg-muted'}`}
+                                        >
+                                          {w}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </>
                               )}
 
                               {(selectedNewsletterBlock.type === 'heading' ||
