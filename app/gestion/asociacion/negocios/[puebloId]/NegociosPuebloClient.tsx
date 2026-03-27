@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import NegocioGallery from './NegocioGallery';
+import MapLocationPicker from '@/app/components/MapLocationPicker';
 
 const TIPOS_NEGOCIO = [
   'HOTEL',
@@ -42,6 +43,10 @@ type Negocio = {
   email?: string | null;
   web?: string | null;
   fotoUrl?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  provincia?: string | null;
+  comunidad?: string | null;
   pueblo?: { id: number; nombre: string; slug: string } | null;
   colaboradores?: Array<{
     id: number;
@@ -65,6 +70,10 @@ type FormData = {
   web: string;
   contacto: string;
   descuentoPorcentaje: string;
+  lat: string;
+  lng: string;
+  provincia: string;
+  comunidad: string;
 };
 
 const emptyForm: FormData = {
@@ -76,6 +85,10 @@ const emptyForm: FormData = {
   web: '',
   contacto: '',
   descuentoPorcentaje: '',
+  lat: '',
+  lng: '',
+  provincia: '',
+  comunidad: '',
 };
 
 export default function NegociosPuebloClient({ puebloId }: { puebloId: string }) {
@@ -92,6 +105,10 @@ export default function NegociosPuebloClient({ puebloId }: { puebloId: string })
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const [puebloNombre, setPuebloNombre] = useState<string>(isAsociacion ? 'Asociación' : '');
+  const [puebloLat, setPuebloLat] = useState<number | null>(null);
+  const [puebloLng, setPuebloLng] = useState<number | null>(null);
+  const [puebloProvincia, setPuebloProvincia] = useState<string>('');
+  const [puebloComunidad, setPuebloComunidad] = useState<string>('');
 
   const apiBase = isAsociacion
     ? '/api/club/negocios/asociacion'
@@ -117,22 +134,63 @@ export default function NegociosPuebloClient({ puebloId }: { puebloId: string })
 
   useEffect(() => { load(); }, [load]);
 
-  // If we don't have the pueblo name yet and it's not asociación, try to get it from the pueblos list
   useEffect(() => {
     if (!isAsociacion && !puebloNombre) {
       fetch('/api/club/negocios/pueblos')
         .then((r) => r.json())
-        .then((pueblos: Array<{ id: number; nombre: string }>) => {
+        .then((pueblos: Array<{ id: number; nombre: string; lat?: number; lng?: number; provincia?: string; comunidad?: string }>) => {
           const found = pueblos.find((p) => p.id === Number(puebloId));
-          if (found) setPuebloNombre(found.nombre);
+          if (found) {
+            setPuebloNombre(found.nombre);
+            if (found.lat != null) setPuebloLat(found.lat);
+            if (found.lng != null) setPuebloLng(found.lng);
+            if (found.provincia) setPuebloProvincia(found.provincia);
+            if (found.comunidad) setPuebloComunidad(found.comunidad);
+          }
         })
         .catch(() => {});
     }
   }, [isAsociacion, puebloId, puebloNombre]);
 
+  const mapCenter: [number, number] =
+    puebloLat != null && puebloLng != null
+      ? [puebloLat, puebloLng]
+      : [40.4168, -3.7038];
+
+  const mapZoom = puebloLat != null ? 14 : 6;
+
+  const selectedMapPosition = (() => {
+    if (!form.lat || !form.lng) return null;
+    const lat = Number(form.lat);
+    const lng = Number(form.lng);
+    if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return null;
+    return { lat, lng };
+  })();
+
+  const existingMarkers = negocios
+    .filter((n) => n.lat && n.lng)
+    .map((n) => ({
+      lat: n.lat!,
+      lng: n.lng!,
+      label: n.nombre,
+      color: n.activo ? 'blue' : 'grey',
+    }));
+
+  function handleMapLocationSelect(lat: number, lng: number) {
+    const rounded = {
+      lat: Math.round(lat * 1e6) / 1e6,
+      lng: Math.round(lng * 1e6) / 1e6,
+    };
+    setForm((prev) => ({
+      ...prev,
+      lat: rounded.lat.toString(),
+      lng: rounded.lng.toString(),
+    }));
+  }
+
   const openCreate = () => {
     setEditId(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, provincia: puebloProvincia, comunidad: puebloComunidad });
     setShowForm(true);
     setMsg(null);
   };
@@ -148,6 +206,10 @@ export default function NegociosPuebloClient({ puebloId }: { puebloId: string })
       web: n.web ?? '',
       contacto: n.contacto ?? '',
       descuentoPorcentaje: n.descuentoPorcentaje != null ? String(n.descuentoPorcentaje) : '',
+      lat: n.lat != null ? String(n.lat) : '',
+      lng: n.lng != null ? String(n.lng) : '',
+      provincia: n.provincia ?? puebloProvincia,
+      comunidad: n.comunidad ?? puebloComunidad,
     });
     setShowForm(true);
     setMsg(null);
@@ -179,6 +241,10 @@ export default function NegociosPuebloClient({ puebloId }: { puebloId: string })
       if (form.descuentoPorcentaje.trim()) {
         body.descuentoPorcentaje = Number(form.descuentoPorcentaje);
       }
+      if (form.lat.trim()) body.lat = Number(form.lat);
+      if (form.lng.trim()) body.lng = Number(form.lng);
+      if (form.provincia.trim()) body.provincia = form.provincia.trim();
+      if (form.comunidad.trim()) body.comunidad = form.comunidad.trim();
 
       let res: Response;
       if (editId) {
@@ -368,6 +434,77 @@ export default function NegociosPuebloClient({ puebloId }: { puebloId: string })
             </div>
           </div>
 
+          {/* Ubicación */}
+          <div className="rounded-lg border border-blue-200 bg-blue-50/40 p-4 space-y-3">
+            <h4 className="text-sm font-semibold text-blue-800">Ubicación</h4>
+            <p className="text-xs text-gray-500">
+              Haz clic en el mapa o busca por nombre para ubicar el negocio. Los visitantes podrán obtener indicaciones en la app.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Latitud</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={form.lat}
+                  onChange={(e) => setForm((f) => ({ ...f, lat: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  placeholder="42.1234"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Longitud</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={form.lng}
+                  onChange={(e) => setForm((f) => ({ ...f, lng: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  placeholder="-3.5678"
+                />
+              </div>
+            </div>
+            {showForm && (
+              <MapLocationPicker
+                center={selectedMapPosition ? [selectedMapPosition.lat, selectedMapPosition.lng] : mapCenter}
+                zoom={selectedMapPosition ? 16 : mapZoom}
+                existingMarkers={existingMarkers}
+                selectedPosition={selectedMapPosition}
+                onLocationSelect={handleMapLocationSelect}
+                height="350px"
+                searchPlaceholder="Buscar negocio o dirección…"
+                activeHint={editId ? 'Haz clic en el mapa para cambiar la ubicación' : 'Haz clic en el mapa para ubicar el negocio'}
+              />
+            )}
+            {isAsociacion && (
+              <div className="grid gap-3 sm:grid-cols-2 mt-3">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Provincia</label>
+                  <input
+                    value={form.provincia}
+                    onChange={(e) => setForm((f) => ({ ...f, provincia: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    placeholder="Ej: Huesca"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Comunidad Aut&oacute;noma</label>
+                  <input
+                    value={form.comunidad}
+                    onChange={(e) => setForm((f) => ({ ...f, comunidad: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    placeholder="Ej: Aragón"
+                  />
+                </div>
+              </div>
+            )}
+            {!isAsociacion && puebloProvincia && (
+              <p className="text-xs text-gray-400">
+                Provincia: {puebloProvincia} · Comunidad: {puebloComunidad} (del pueblo, se aplica automáticamente)
+              </p>
+            )}
+          </div>
+
           <div className="flex gap-3 pt-2">
             <button
               onClick={handleSave}
@@ -441,6 +578,11 @@ export default function NegociosPuebloClient({ puebloId }: { puebloId: string })
                       <span className="font-medium text-primary">{n.descuentoPorcentaje}% dto.</span>
                     )}
                     <span className="font-mono">QR: {n.codigoQr}</span>
+                    {n.lat != null && n.lng != null ? (
+                      <span className="text-green-600">📍 Ubicado</span>
+                    ) : (
+                      <span className="text-amber-600">⚠ Sin ubicación</span>
+                    )}
                   </div>
 
                   {n.colaboradores && n.colaboradores.length > 0 && (
