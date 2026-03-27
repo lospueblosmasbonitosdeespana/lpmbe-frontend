@@ -87,7 +87,6 @@ export default function NegociosPuebloClient({ puebloId }: { puebloId: string })
 
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
-  const [galleryOpen, setGalleryOpen] = useState<number | null>(null);
   const [form, setForm] = useState<FormData>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -457,33 +456,10 @@ export default function NegociosPuebloClient({ puebloId }: { puebloId: string })
                     </div>
                   )}
 
-                  {/* Mini preview of images */}
-                  {n.imagenes && n.imagenes.length > 0 && galleryOpen !== n.id && (
-                    <div className="mt-2 flex gap-1">
-                      {n.imagenes.slice(0, 4).map((img) => (
-                        <img
-                          key={img.id}
-                          src={img.url}
-                          alt={img.alt ?? ''}
-                          className="h-10 w-10 rounded border border-gray-200 object-cover"
-                        />
-                      ))}
-                      {n.imagenes.length > 4 && (
-                        <span className="flex h-10 w-10 items-center justify-center rounded border border-gray-200 bg-gray-50 text-xs text-gray-500">
-                          +{n.imagenes.length - 4}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                  
                 </div>
 
                 <div className="flex shrink-0 flex-col gap-2">
-                  <button
-                    onClick={() => setGalleryOpen(galleryOpen === n.id ? null : n.id)}
-                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
-                  >
-                    {galleryOpen === n.id ? 'Cerrar galería' : `Galería (${n.imagenes?.length ?? 0})`}
-                  </button>
                   <button
                     onClick={() => handleToggleActivo(n)}
                     className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
@@ -510,10 +486,13 @@ export default function NegociosPuebloClient({ puebloId }: { puebloId: string })
                 </div>
               </div>
 
-              {/* Gallery expanded */}
-              {galleryOpen === n.id && (
+              {/* Gallery */}
+              <div className="mt-3 border-t border-gray-100 pt-3">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  Fotos del negocio
+                </h4>
                 <NegocioGallery negocioId={n.id} negocioNombre={n.nombre} />
-              )}
+              </div>
             </div>
           ))}
         </div>
