@@ -135,6 +135,13 @@ type NewsletterDraftPayload = {
   templateName?: string;
 };
 
+type SavedNewsletterDraft = {
+  id: string;
+  name: string;
+  savedAt: string;
+  payload: NewsletterDraftPayload;
+};
+
 function newBlockId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
@@ -823,6 +830,8 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [editingImageBlockId, setEditingImageBlockId] = useState<string | null>(null);
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const [hasStoredDraft, setHasStoredDraft] = useState(false);
+  const [nlDrafts, setNlDrafts] = useState<SavedNewsletterDraft[]>([]);
+  const [showNlDraftsModal, setShowNlDraftsModal] = useState(false);
   const [newsletterRecipientCount, setNewsletterRecipientCount] = useState<number | null>(null);
   const [loadingNewsletterRecipientCount, setLoadingNewsletterRecipientCount] = useState(false);
   const [brandLogos, setBrandLogos] = useState<{ id: number; nombre: string; url: string; etiqueta?: string }[]>([]);
@@ -974,6 +983,62 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     setDraftSavedAt(payload.savedAt);
     setHasStoredDraft(true);
     setMessage(`Borrador guardado (${new Date(payload.savedAt).toLocaleTimeString('es-ES')}).`);
+  }
+
+  const nlDraftsKey = 'lpmbe-nl-saved-drafts';
+
+  function readNlDrafts(): SavedNewsletterDraft[] {
+    if (typeof window === 'undefined') return [];
+    try {
+      const raw = localStorage.getItem(nlDraftsKey);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .filter((d: any) => d?.id && d?.payload)
+        .sort((a: any, b: any) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
+    } catch { return []; }
+  }
+
+  function writeNlDrafts(list: SavedNewsletterDraft[]) {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(nlDraftsKey, JSON.stringify(list));
+    setNlDrafts(list);
+  }
+
+  function saveNlDraft() {
+    const payload = buildDraftPayload();
+    const now = new Date();
+    const label = campaignForm.subject.trim()
+      || `Borrador ${now.toLocaleString('es-ES', { hour12: false })}`;
+    const entry: SavedNewsletterDraft = {
+      id: newBlockId(),
+      name: label,
+      savedAt: now.toISOString(),
+      payload,
+    };
+    const list = readNlDrafts();
+    const next = [entry, ...list].slice(0, 50);
+    writeNlDrafts(next);
+    setDraftSavedAt(now.toISOString());
+    setHasStoredDraft(true);
+    setMessage(`Borrador "${label}" guardado.`);
+  }
+
+  function loadNlDraft(id: string) {
+    const target = nlDrafts.find((d) => d.id === id);
+    if (!target) return;
+    applyDraftPayload(target.payload);
+    localStorage.setItem(getDraftStorageKey(), JSON.stringify(target.payload));
+    setHasStoredDraft(true);
+    setMessage(`Borrador "${target.name}" cargado.`);
+    setShowNlDraftsModal(false);
+  }
+
+  function deleteNlDraft(id: string) {
+    const next = nlDrafts.filter((d) => d.id !== id);
+    writeNlDrafts(next);
+    setMessage('Borrador eliminado.');
   }
 
   function hasUnsavedContent(): boolean {
@@ -1158,6 +1223,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    setNlDrafts(readNlDrafts());
     const hasDraft = Boolean(localStorage.getItem(getDraftStorageKey()));
     setHasStoredDraft(hasDraft);
     if (!hasDraft) return;
@@ -4506,12 +4572,27 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
               type="button"
               onClick={() => {
                 setError(null);
-                saveDraftToLocal();
+                if (mode === 'newsletter') {
+                  saveNlDraft();
+                } else {
+                  saveDraftToLocal();
+                }
               }}
               disabled={loading}
               className="rounded-lg border border-amber-400 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-900 disabled:opacity-60"
             >
               Guardar borrador
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setNlDrafts(readNlDrafts());
+                setShowNlDraftsModal(true);
+              }}
+              disabled={loading}
+              className="rounded-lg border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-800 hover:bg-blue-100 disabled:opacity-60"
+            >
+              Borradores ({mode === 'newsletter' ? nlDrafts.length : 0})
             </button>
             {hasStoredDraft ? (
               <button
@@ -4687,6 +4768,53 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
           </table>
         </div>
       </section>
+
+      {showNlDraftsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowNlDraftsModal(false)}>
+          <div className="relative max-h-[85vh] w-full max-w-2xl overflow-auto rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <button type="button" onClick={() => setShowNlDraftsModal(false)} className="absolute right-3 top-3 rounded-full border px-2.5 py-1 text-xs font-bold hover:bg-muted">Cerrar</button>
+            <p className="mb-4 text-base font-bold">Mis borradores</p>
+            {nlDrafts.length === 0 ? (
+              <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                Aún no tienes borradores guardados. Pulsa &quot;Guardar borrador&quot; para crear el primero.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {nlDrafts.map((d) => (
+                  <div key={d.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background p-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold">{d.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(d.savedAt).toLocaleString('es-ES', { hour12: false })}
+                        {d.payload?.newsletterBlocks && Array.isArray(d.payload.newsletterBlocks) ? ` · ${(d.payload.newsletterBlocks as unknown[]).length} bloques` : ''}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => loadNlDraft(d.id)}
+                        className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                      >
+                        Cargar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!window.confirm(`¿Eliminar "${d.name}"?`)) return;
+                          deleteNlDraft(d.id);
+                        }}
+                        className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50"
+                      >
+                        Borrar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {editingImageBlockId && (() => {
         const blk = newsletterBlocks.find((b) => b.id === editingImageBlockId);
