@@ -16,13 +16,13 @@ function str(v: unknown): string {
   return typeof v === 'string' ? v.trim() : '';
 }
 
-function ok(u: string): boolean {
+function valid(u: string): boolean {
   return u.startsWith('http://') || u.startsWith('https://');
 }
 
-function push(arr: PhotoEntry[], url: unknown, source: string, label: string, parentTitle: string, parentId: string | number) {
+function add(arr: PhotoEntry[], url: unknown, source: string, label: string, parentTitle: string, parentId: string | number) {
   const u = str(url);
-  if (u && ok(u)) arr.push({ url: u, source, label, parentTitle: str(parentTitle) || '(sin título)', parentId });
+  if (u && valid(u)) arr.push({ url: u, source, label, parentTitle: str(parentTitle) || '(sin título)', parentId });
 }
 
 async function safeFetch(url: string, headers: Record<string, string>): Promise<any> {
@@ -35,6 +35,19 @@ async function safeFetch(url: string, headers: Record<string, string>): Promise<
   }
 }
 
+async function fetchAllContenidosAdmin(apiBase: string, headers: Record<string, string>): Promise<any[]> {
+  const all: any[] = [];
+  const PAGE_SIZE = 100;
+  for (let page = 1; page <= 20; page++) {
+    const data = await safeFetch(`${apiBase}/admin/contenidos?limit=${PAGE_SIZE}&page=${page}`, headers);
+    const items = Array.isArray(data?.items) ? data.items : (Array.isArray(data) ? data : []);
+    all.push(...items);
+    const totalPages = data?.pages || 1;
+    if (page >= totalPages || items.length < PAGE_SIZE) break;
+  }
+  return all;
+}
+
 export async function GET() {
   const token = await getToken();
   if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -43,26 +56,20 @@ export async function GET() {
   const authH = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
   const photos: PhotoEntry[] = [];
 
-  // GET /admin/contenidos sin puebloId → admin ve TODOS (globales + pueblos).
-  // Filtramos los que no tienen puebloId (= asociación).
-  // GET /admin/asociacion/pages → páginas temáticas de la asociación.
-  const [contenidosData, pagesData] = await Promise.all([
-    safeFetch(`${API}/admin/contenidos?limit=500`, authH),
+  const [allContenidos, pagesData] = await Promise.all([
+    fetchAllContenidosAdmin(API, authH),
     safeFetch(`${API}/admin/asociacion/pages`, authH),
   ]);
 
-  const contenidos = Array.isArray(contenidosData) ? contenidosData
-    : (Array.isArray(contenidosData?.items) ? contenidosData.items : []);
-
-  // Solo contenidos de la asociación (sin pueblo)
-  const asocContenidos = contenidos.filter((c: any) => !c.puebloId && c.pueblo == null);
+  // Contenidos de la asociación = los que NO tienen puebloId
+  const asocContenidos = allContenidos.filter((c: any) => !c.puebloId && !c.pueblo);
   asocContenidos.forEach((c: any) => {
     const tipo = str(c.tipo).toUpperCase();
     const tipoLabel = tipo === 'EVENTO' ? 'Evento' : tipo === 'NOTICIA' ? 'Noticia' : tipo === 'ARTICULO' ? 'Artículo' : 'Contenido';
-    push(photos, c.coverUrl, 'CONTENIDO', `${tipoLabel}: ${c.titulo || '(sin título)'}`, c.titulo, c.id);
+    add(photos, c.coverUrl, 'CONTENIDO', `${tipoLabel}: ${c.titulo || '(sin título)'}`, c.titulo, c.id);
     const gallery = Array.isArray(c.galleryUrls) ? c.galleryUrls : [];
     gallery.forEach((g: string, idx: number) => {
-      push(photos, g, 'CONTENIDO', `${tipoLabel} galería ${idx + 1}: ${c.titulo || '(sin título)'}`, c.titulo, c.id);
+      add(photos, g, 'CONTENIDO', `${tipoLabel} gal. ${idx + 1}: ${c.titulo || ''}`, c.titulo, c.id);
     });
   });
 
@@ -73,10 +80,10 @@ export async function GET() {
       const pages = Array.isArray(catGroup) ? catGroup
         : (Array.isArray(catGroup?.pages) ? catGroup.pages : (catGroup?.items ? catGroup.items : []));
       for (const p of (Array.isArray(pages) ? pages : [])) {
-        push(photos, p.coverUrl, 'PAGINA_TEMATICA', `Pág. temática: ${p.titulo || p.title || '(sin título)'}`, p.titulo || p.title, p.id);
+        add(photos, p.coverUrl, 'PAGINA_TEMATICA', `Pág. temática: ${p.titulo || p.title || '(sin título)'}`, p.titulo || p.title, p.id);
         const gallery = Array.isArray(p.galleryUrls) ? p.galleryUrls : [];
         gallery.forEach((g: string, idx: number) => {
-          push(photos, g, 'PAGINA_TEMATICA', `Pág. temática galería ${idx + 1}: ${p.titulo || p.title || ''}`, p.titulo || p.title, p.id);
+          add(photos, g, 'PAGINA_TEMATICA', `Pág. temática gal. ${idx + 1}: ${p.titulo || p.title || ''}`, p.titulo || p.title, p.id);
         });
       }
     }

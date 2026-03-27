@@ -27,13 +27,13 @@ function extractUrl(item: unknown): string {
   return '';
 }
 
-function ok(u: string): boolean {
+function valid(u: string): boolean {
   return u.startsWith('http://') || u.startsWith('https://');
 }
 
-function push(arr: PhotoEntry[], url: unknown, source: string, label: string, parentTitle: string, parentId: string | number) {
+function add(arr: PhotoEntry[], url: unknown, source: string, label: string, parentTitle: string, parentId: string | number) {
   const u = extractUrl(url);
-  if (u && ok(u)) arr.push({ url: u, source, label, parentTitle: str(parentTitle) || '(sin título)', parentId });
+  if (u && valid(u)) arr.push({ url: u, source, label, parentTitle: str(parentTitle) || '(sin título)', parentId });
 }
 
 async function safeFetch(url: string, headers: Record<string, string>): Promise<any> {
@@ -44,6 +44,19 @@ async function safeFetch(url: string, headers: Record<string, string>): Promise<
   } catch {
     return null;
   }
+}
+
+async function fetchAllContenidos(apiBase: string, headers: Record<string, string>, puebloId: number): Promise<any[]> {
+  const all: any[] = [];
+  const PAGE_SIZE = 100;
+  for (let page = 1; page <= 20; page++) {
+    const data = await safeFetch(`${apiBase}/admin/contenidos?puebloId=${puebloId}&limit=${PAGE_SIZE}&page=${page}`, headers);
+    const items = Array.isArray(data?.items) ? data.items : (Array.isArray(data) ? data : []);
+    all.push(...items);
+    const totalPages = data?.pages || 1;
+    if (page >= totalPages || items.length < PAGE_SIZE) break;
+  }
+  return all;
 }
 
 export async function GET(req: Request, { params }: { params: Promise<{ puebloId: string }> }) {
@@ -64,83 +77,98 @@ export async function GET(req: Request, { params }: { params: Promise<{ puebloId
   const pubH = { 'Content-Type': 'application/json' };
   const photos: PhotoEntry[] = [];
 
-  // El endpoint público /pueblos/{slug} devuelve fotosPueblo, pois con foto,
-  // multiexperiencias con foto, eventos, noticias. Con ID numérico no devuelve
-  // fotosPueblo, por eso necesitamos el slug.
   const puebloUrl = slug
     ? `${API}/pueblos/${encodeURIComponent(slug)}`
     : `${API}/pueblos/${puebloId}`;
 
-  const [puebloData, contenidosData, pagesData] = await Promise.all([
+  const [puebloData, pagesData] = await Promise.all([
     safeFetch(puebloUrl, pubH),
-    safeFetch(`${API}/admin/contenidos?puebloId=${puebloId}&limit=500`, authH),
     safeFetch(`${API}/admin/pueblos/${puebloId}/pages`, authH),
   ]);
 
   const pNombre = str(puebloData?.nombre) || `Pueblo ${puebloId}`;
 
+  // IDs de multiexperiencias para luego pedir paradas
+  const mxIds: { id: number; titulo: string }[] = [];
+
   if (puebloData) {
-    // 1) Galería del pueblo — viene de fotosPueblo (endpoint por slug)
+    // 1) Galería del pueblo
     const fotosPueblo = Array.isArray(puebloData.fotosPueblo) ? puebloData.fotosPueblo : [];
     fotosPueblo.forEach((f: any, idx: number) => {
       const u = extractUrl(f);
-      if (u && ok(u)) photos.push({
-        url: u, source: 'GALERIA_PUEBLO', label: `Galería del pueblo #${idx + 1}`, parentTitle: pNombre, parentId: puebloId,
+      if (u && valid(u)) photos.push({
+        url: u, source: 'GALERIA_PUEBLO', label: `Galería #${idx + 1}`, parentTitle: pNombre, parentId: puebloId,
       });
     });
 
-    // foto_destacada y escudo (campos escalares del modelo)
-    push(photos, puebloData.foto_destacada, 'GALERIA_PUEBLO', 'Foto destacada', pNombre, puebloId);
-    push(photos, puebloData.escudo_bandera, 'GALERIA_PUEBLO', 'Escudo / bandera', pNombre, puebloId);
+    add(photos, puebloData.foto_destacada, 'GALERIA_PUEBLO', 'Foto destacada', pNombre, puebloId);
+    add(photos, puebloData.escudo_bandera, 'GALERIA_PUEBLO', 'Escudo / bandera', pNombre, puebloId);
 
-    // Si no hay fotosPueblo, intentar fotos[] (endpoint por ID numérico)
     if (fotosPueblo.length === 0) {
       const fotos = Array.isArray(puebloData.fotos) ? puebloData.fotos : [];
       fotos.forEach((f: any, idx: number) => {
         const u = extractUrl(f);
-        if (u && ok(u)) photos.push({
-          url: u, source: 'GALERIA_PUEBLO', label: `Galería del pueblo #${idx + 1}`, parentTitle: pNombre, parentId: puebloId,
+        if (u && valid(u)) photos.push({
+          url: u, source: 'GALERIA_PUEBLO', label: `Galería #${idx + 1}`, parentTitle: pNombre, parentId: puebloId,
         });
       });
     }
 
-    // 2) POIs — cada uno lleva foto (string URL)
+    // 2) POIs
     const pois = Array.isArray(puebloData.pois) ? puebloData.pois : [];
     pois.forEach((poi: any) => {
-      push(photos, poi.foto, 'POI', poi.nombre || 'Punto de interés', poi.nombre, poi.id);
+      add(photos, poi.foto, 'POI', poi.nombre || 'Punto de interés', poi.nombre, poi.id);
     });
 
-    // 3) Multiexperiencias — cada PuebloMultiexperiencia tiene .multiexperiencia.foto
+    // 3) Multiexperiencias — foto padre + recoger IDs para paradas
     const mxs = Array.isArray(puebloData.multiexperiencias) ? puebloData.multiexperiencias : [];
     mxs.forEach((pm: any) => {
       const mx = pm.multiexperiencia || pm;
-      push(photos, mx.foto, 'MULTIEXPERIENCIA', mx.titulo || mx.nombre || 'Multiexperiencia', mx.titulo || mx.nombre, mx.id);
+      const titulo = mx.titulo || mx.nombre || 'Multiexperiencia';
+      add(photos, mx.foto, 'MULTIEXPERIENCIA', titulo, titulo, mx.id);
+      if (mx.id) mxIds.push({ id: mx.id, titulo });
     });
   }
 
-  // 4) Contenidos creados vía admin (noticias, eventos, artículos)
-  const contenidos = Array.isArray(contenidosData) ? contenidosData : (Array.isArray(contenidosData?.items) ? contenidosData.items : []);
+  // 3b) Paradas de cada multiexperiencia (en paralelo)
+  if (mxIds.length > 0) {
+    const paradasResults = await Promise.all(
+      mxIds.map((mx) => safeFetch(`${API}/multiexperiencias/${mx.id}/paradas`, pubH)),
+    );
+    paradasResults.forEach((paradas, i) => {
+      const list = Array.isArray(paradas) ? paradas : [];
+      const mxTitulo = mxIds[i].titulo;
+      list.forEach((p: any) => {
+        if (p.foto) {
+          add(photos, p.foto, 'MULTIEXPERIENCIA', `${mxTitulo} → ${p.titulo || 'Parada'}`, mxTitulo, p.overrideId || p.customId || p.legacyLugarId || 0);
+        }
+      });
+    });
+  }
+
+  // 4) Contenidos admin paginados (noticias, eventos, artículos)
+  const contenidos = await fetchAllContenidos(API, authH, puebloId);
   contenidos.forEach((c: any) => {
     const tipo = str(c.tipo).toUpperCase();
     const tipoLabel = tipo === 'EVENTO' ? 'Evento' : tipo === 'NOTICIA' ? 'Noticia' : tipo === 'ARTICULO' ? 'Artículo' : 'Contenido';
-    push(photos, c.coverUrl, 'CONTENIDO', `${tipoLabel}: ${c.titulo || '(sin título)'}`, c.titulo, c.id);
+    add(photos, c.coverUrl, 'CONTENIDO', `${tipoLabel}: ${c.titulo || '(sin título)'}`, c.titulo, c.id);
     const gallery = Array.isArray(c.galleryUrls) ? c.galleryUrls : [];
     gallery.forEach((g: string, idx: number) => {
-      push(photos, g, 'CONTENIDO', `${tipoLabel} galería ${idx + 1}: ${c.titulo || '(sin título)'}`, c.titulo, c.id);
+      add(photos, g, 'CONTENIDO', `${tipoLabel} gal. ${idx + 1}: ${c.titulo || ''}`, c.titulo, c.id);
     });
   });
 
-  // 5) Páginas temáticas vía admin
+  // 5) Páginas temáticas
   if (pagesData && typeof pagesData === 'object') {
     const categories = Array.isArray(pagesData) ? pagesData : Object.values(pagesData);
     for (const catGroup of categories) {
       const pages = Array.isArray(catGroup) ? catGroup
         : (Array.isArray(catGroup?.pages) ? catGroup.pages : (catGroup?.items ? catGroup.items : []));
       for (const p of (Array.isArray(pages) ? pages : [])) {
-        push(photos, p.coverUrl, 'PAGINA_TEMATICA', `Pág. temática: ${p.titulo || p.title || '(sin título)'}`, p.titulo || p.title, p.id);
+        add(photos, p.coverUrl, 'PAGINA_TEMATICA', `Pág. temática: ${p.titulo || p.title || '(sin título)'}`, p.titulo || p.title, p.id);
         const gallery = Array.isArray(p.galleryUrls) ? p.galleryUrls : [];
         gallery.forEach((g: string, idx: number) => {
-          push(photos, g, 'PAGINA_TEMATICA', `Pág. temática galería ${idx + 1}: ${p.titulo || p.title || ''}`, p.titulo || p.title, p.id);
+          add(photos, g, 'PAGINA_TEMATICA', `Pág. temática gal. ${idx + 1}: ${p.titulo || p.title || ''}`, p.titulo || p.title, p.id);
         });
       }
     }
