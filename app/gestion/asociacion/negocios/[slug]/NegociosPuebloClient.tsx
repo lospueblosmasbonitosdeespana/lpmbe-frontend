@@ -91,12 +91,13 @@ const emptyForm: FormData = {
   comunidad: '',
 };
 
-export default function NegociosPuebloClient({ puebloId }: { puebloId: string }) {
-  const isAsociacion = puebloId === '0';
+export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: string }) {
+  const isAsociacion = puebloSlug === 'asociacion-general';
 
   const [negocios, setNegocios] = useState<Negocio[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [puebloId, setPuebloId] = useState<number | null>(isAsociacion ? 0 : null);
 
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -110,11 +111,30 @@ export default function NegociosPuebloClient({ puebloId }: { puebloId: string })
   const [puebloProvincia, setPuebloProvincia] = useState<string>('');
   const [puebloComunidad, setPuebloComunidad] = useState<string>('');
 
+  useEffect(() => {
+    if (isAsociacion) return;
+    fetch('/api/club/negocios/pueblos')
+      .then((r) => r.json())
+      .then((pueblos: Array<{ id: number; nombre: string; slug: string; lat?: number; lng?: number; provincia?: string; comunidad?: string }>) => {
+        const found = pueblos.find((p) => p.slug === puebloSlug);
+        if (found) {
+          setPuebloId(found.id);
+          setPuebloNombre(found.nombre);
+          if (found.lat != null) setPuebloLat(found.lat);
+          if (found.lng != null) setPuebloLng(found.lng);
+          if (found.provincia) setPuebloProvincia(found.provincia);
+          if (found.comunidad) setPuebloComunidad(found.comunidad);
+        }
+      })
+      .catch(() => {});
+  }, [isAsociacion, puebloSlug]);
+
   const apiBase = isAsociacion
     ? '/api/club/negocios/asociacion'
-    : `/api/club/negocios/pueblo/${puebloId}`;
+    : puebloId != null ? `/api/club/negocios/pueblo/${puebloId}` : null;
 
   const load = useCallback(async () => {
+    if (!apiBase) return;
     setLoading(true);
     setError(null);
     try {
@@ -133,24 +153,6 @@ export default function NegociosPuebloClient({ puebloId }: { puebloId: string })
   }, [apiBase, puebloNombre]);
 
   useEffect(() => { load(); }, [load]);
-
-  useEffect(() => {
-    if (!isAsociacion && !puebloNombre) {
-      fetch('/api/club/negocios/pueblos')
-        .then((r) => r.json())
-        .then((pueblos: Array<{ id: number; nombre: string; lat?: number; lng?: number; provincia?: string; comunidad?: string }>) => {
-          const found = pueblos.find((p) => p.id === Number(puebloId));
-          if (found) {
-            setPuebloNombre(found.nombre);
-            if (found.lat != null) setPuebloLat(found.lat);
-            if (found.lng != null) setPuebloLng(found.lng);
-            if (found.provincia) setPuebloProvincia(found.provincia);
-            if (found.comunidad) setPuebloComunidad(found.comunidad);
-          }
-        })
-        .catch(() => {});
-    }
-  }, [isAsociacion, puebloId, puebloNombre]);
 
   const mapCenter: [number, number] =
     puebloLat != null && puebloLng != null
@@ -222,6 +224,7 @@ export default function NegociosPuebloClient({ puebloId }: { puebloId: string })
   };
 
   const handleSave = async () => {
+    if (!apiBase) return;
     if (!form.nombre.trim()) {
       setMsg({ ok: false, text: 'El nombre es obligatorio' });
       return;
@@ -305,7 +308,15 @@ export default function NegociosPuebloClient({ puebloId }: { puebloId: string })
 
   const title = isAsociacion
     ? 'Negocios · Asociación'
-    : `Negocios · ${puebloNombre || `Pueblo #${puebloId}`}`;
+    : `Negocios · ${puebloNombre || puebloSlug}`;
+
+  if (!isAsociacion && puebloId === null) {
+    return (
+      <div className="rounded-xl border bg-white p-8 text-center text-sm text-gray-500">
+        Cargando pueblo&hellip;
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -534,7 +545,7 @@ export default function NegociosPuebloClient({ puebloId }: { puebloId: string })
         </div>
       ) : negocios.length === 0 ? (
         <div className="rounded-xl border bg-white p-8 text-center text-sm text-gray-400">
-          No hay negocios {isAsociacion ? 'de asociaci\u00f3n' : 'en este pueblo'} todav&iacute;a.
+          No hay negocios {isAsociacion ? 'de asociación' : 'en este pueblo'} todavía.
         </div>
       ) : (
         <div className="space-y-3">
@@ -597,8 +608,6 @@ export default function NegociosPuebloClient({ puebloId }: { puebloId: string })
                       ))}
                     </div>
                   )}
-
-                  
                 </div>
 
                 <div className="flex shrink-0 flex-col gap-2">

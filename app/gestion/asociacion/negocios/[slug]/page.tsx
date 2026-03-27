@@ -9,17 +9,17 @@ export const maxDuration = 30;
 export default async function NegociosPuebloPage({
   params,
 }: {
-  params: Promise<{ puebloId: string }>;
+  params: Promise<{ slug: string }>;
 }) {
   const me = await getMeServer();
   if (!me) redirect('/entrar');
   if (me.rol !== 'ADMIN') redirect('/mi-cuenta');
 
-  const { puebloId } = await params;
+  const { slug } = await params;
 
   return (
     <main className="mx-auto max-w-5xl p-6">
-      <NegociosPuebloClient puebloId={puebloId} />
+      <NegociosPuebloClient puebloSlug={slug} />
 
       <div className="mt-8 text-sm">
         <Link className="text-gray-500 hover:underline" href="/gestion/asociacion/negocios">

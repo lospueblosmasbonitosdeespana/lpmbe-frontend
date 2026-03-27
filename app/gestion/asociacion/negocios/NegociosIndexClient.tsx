@@ -71,7 +71,7 @@ export default function NegociosIndexClient() {
 
       {/* Asociacion button */}
       <Link
-        href="/gestion/asociacion/negocios/0"
+        href="/gestion/asociacion/negocios/asociacion-general"
         className="flex items-center justify-between rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 p-4 transition-colors hover:border-primary hover:bg-primary/10"
       >
         <div>
@@ -97,7 +97,7 @@ export default function NegociosIndexClient() {
         {filtered.map((p) => (
           <Link
             key={p.id}
-            href={`/gestion/asociacion/negocios/${p.id}`}
+            href={`/gestion/asociacion/negocios/${p.slug}`}
             className="group flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
           >
             <div className="min-w-0">
