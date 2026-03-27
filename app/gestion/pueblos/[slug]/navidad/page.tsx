@@ -1,0 +1,579 @@
+'use client';
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import R2ImageUploader from '@/app/components/R2ImageUploader';
+
+const TIPO_LABELS: Record<string, string> = {
+  ENCENDIDO_LUCES: 'Encendido de luces',
+  MERCADILLO: 'Mercadillo navideño',
+  BELEN: 'Belén',
+  BELEN_VIVIENTE: 'Belén viviente',
+  CONCIERTO: 'Concierto / Villancicos',
+  TALLER_INFANTIL: 'Taller infantil',
+  ESPECTACULO: 'Espectáculo',
+  ZAMBOMBA: 'Zambomba',
+  NOCHEVIEJA: 'Nochevieja / Fin de año',
+  CABALGATA_REYES: 'Cabalgata de Reyes',
+  CABALGATA_PAPA_NOEL: 'Cabalgata de Papá Noel',
+  GASTRONOMIA: 'Gastronomía',
+  RUTA_TURISTICA: 'Ruta turística',
+  OTRO: 'Otro',
+};
+
+const PUBLICO_LABELS: Record<string, string> = {
+  TODOS: 'Todos los públicos',
+  NINOS: 'Niños',
+  ADULTOS: 'Adultos',
+  FAMILIAS: 'Familias',
+};
+
+const TIPO_ICONS: Record<string, string> = {
+  ENCENDIDO_LUCES: '💡',
+  MERCADILLO: '🎄',
+  BELEN: '⭐',
+  BELEN_VIVIENTE: '🌟',
+  CONCIERTO: '🎵',
+  TALLER_INFANTIL: '🧒',
+  ESPECTACULO: '🎪',
+  ZAMBOMBA: '🥁',
+  NOCHEVIEJA: '🎆',
+  CABALGATA_REYES: '👑',
+  CABALGATA_PAPA_NOEL: '🎅',
+  GASTRONOMIA: '🍽️',
+  RUTA_TURISTICA: '🗺️',
+  OTRO: '📌',
+};
+
+type Evento = {
+  id: number;
+  tipo: string;
+  publicoObjetivo: string;
+  titulo: string;
+  descripcion: string | null;
+  avisosImportantes?: string | null;
+  ubicacion: string | null;
+  fechaInicio: string;
+  fechaFin: string | null;
+  horarioApertura?: string | null;
+  horarioCierre?: string | null;
+  diasSemanaAbierto?: number[] | null;
+  fotoUrl: string | null;
+  youtubeUrl?: string | null;
+  streamUrl?: string | null;
+  inicioLat?: number | null;
+  inicioLng?: number | null;
+  finLat?: number | null;
+  finLng?: number | null;
+  paradas?: Array<{ lat: number; lng: number; label?: string }> | null;
+  googleMapsUrl?: string | null;
+  esFiestaInteresTuristico?: boolean;
+  orden: number;
+};
+
+type Participante = {
+  id: number;
+  puebloId: number;
+  titulo: string | null;
+  descripcion: string | null;
+  cartelUrl: string | null;
+  streamUrl: string | null;
+  interesTuristico: 'NINGUNO' | 'REGIONAL' | 'NACIONAL' | 'INTERNACIONAL';
+  activo: boolean;
+  pueblo: { id: number; nombre: string; slug: string };
+  eventos: Evento[];
+};
+
+const EMPTY_EVENTO = {
+  tipo: 'OTRO',
+  publicoObjetivo: 'TODOS',
+  titulo: '',
+  descripcion: '',
+  avisosImportantes: '',
+  ubicacion: '',
+  fecha: '',
+  horaInicio: '',
+  horaFin: '',
+  fechaFinStr: '',
+  horarioApertura: '',
+  horarioCierre: '',
+  fotoUrl: '',
+  youtubeUrl: '',
+  streamUrl: '',
+  googleMapsUrl: '',
+  esFiestaInteresTuristico: false,
+};
+
+export default function GestionPuebloNavidadPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const [puebloId, setPuebloId] = useState<number | null>(null);
+  const [data, setData] = useState<Participante | null>(null);
+  const [notInscribed, setNotInscribed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [inscribing, setInscribing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [showNewEvento, setShowNewEvento] = useState(false);
+  const [editingEventoId, setEditingEventoId] = useState<number | null>(null);
+  const [newEvento, setNewEvento] = useState({ ...EMPTY_EVENTO });
+  const [editEvento, setEditEvento] = useState({ ...EMPTY_EVENTO });
+  const newEventoFormRef = useRef<HTMLDivElement>(null);
+  const editEventoFormRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    (async () => {
+      const res = await fetch(`/api/pueblos/${slug}`);
+      if (!res.ok) return;
+      const p = await res.json();
+      setPuebloId(p.id);
+    })();
+  }, [slug]);
+
+  const loadData = useCallback(async () => {
+    if (!puebloId) return;
+    setLoading(true);
+    setError(null);
+    setNotInscribed(false);
+    try {
+      const res = await fetch(`/api/admin/navidad/pueblos/by-pueblo/${puebloId}`);
+      if (res.status === 404) { setNotInscribed(true); return; }
+      if (!res.ok) throw new Error('Error cargando datos');
+      const json = await res.json();
+      setData(json.participante);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error');
+    } finally {
+      setLoading(false);
+    }
+  }, [puebloId]);
+
+  useEffect(() => { if (puebloId) loadData(); }, [puebloId, loadData]);
+
+  const flash = (msg: string) => {
+    setSuccess(msg);
+    setTimeout(() => setSuccess(null), 2500);
+  };
+
+  const toIsoUtc = (fecha: string, hora: string): string => {
+    if (!fecha || !hora) return '';
+    const try1 = new Date(`${fecha}T${hora}:00+01:00`);
+    const try2 = new Date(`${fecha}T${hora}:00+02:00`);
+    const check = (d: Date) =>
+      d.toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false }).slice(0, 5);
+    if (check(try2) === hora) return try2.toISOString();
+    if (check(try1) === hora) return try1.toISOString();
+    return try2.toISOString();
+  };
+
+  const inscribirse = async () => {
+    if (!puebloId) return;
+    setInscribing(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/admin/navidad/pueblos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ puebloId }),
+      });
+      if (!res.ok) throw new Error(await res.text().catch(() => 'No se pudo completar la inscripción'));
+      setNotInscribed(false);
+      await loadData();
+      flash('Pueblo inscrito en Navidad');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error');
+    } finally {
+      setInscribing(false);
+    }
+  };
+
+  const saveInfo = async () => {
+    if (!puebloId || !data) return;
+    setSaving(true);
+    setError(null);
+    const res = await fetch(`/api/admin/navidad/pueblos/by-pueblo/${puebloId}/info`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        titulo: data.titulo || null,
+        descripcion: data.descripcion || null,
+        cartelUrl: data.cartelUrl || null,
+        streamUrl: data.streamUrl || null,
+        interesTuristico: data.interesTuristico,
+        activo: data.activo,
+      }),
+    });
+    setSaving(false);
+    if (!res.ok) { setError('No se pudo guardar la información'); return; }
+    await loadData();
+    flash('Información guardada');
+  };
+
+  const createEvento = async () => {
+    if (!puebloId || !newEvento.titulo || !newEvento.fecha || !newEvento.horaInicio) return;
+    setSaving(true);
+    const body: Record<string, unknown> = {
+      tipo: newEvento.tipo,
+      publicoObjetivo: newEvento.publicoObjetivo,
+      titulo: newEvento.titulo,
+      descripcion: newEvento.descripcion || undefined,
+      avisosImportantes: newEvento.avisosImportantes || undefined,
+      ubicacion: newEvento.ubicacion || undefined,
+      fecha: newEvento.fecha,
+      horaInicio: newEvento.horaInicio,
+      horaFin: newEvento.horaFin || undefined,
+      fechaInicio: toIsoUtc(newEvento.fecha, newEvento.horaInicio),
+      fechaFin: newEvento.fechaFinStr ? toIsoUtc(newEvento.fechaFinStr, newEvento.horaFin || '23:59') : newEvento.horaFin ? toIsoUtc(newEvento.fecha, newEvento.horaFin) : undefined,
+      fotoUrl: newEvento.fotoUrl || undefined,
+      youtubeUrl: newEvento.youtubeUrl || undefined,
+      streamUrl: newEvento.streamUrl || undefined,
+      googleMapsUrl: newEvento.googleMapsUrl || undefined,
+      esFiestaInteresTuristico: newEvento.esFiestaInteresTuristico,
+    };
+    if (newEvento.tipo === 'MERCADILLO' || newEvento.tipo === 'BELEN' || newEvento.tipo === 'BELEN_VIVIENTE') {
+      body.horarioApertura = newEvento.horarioApertura || undefined;
+      body.horarioCierre = newEvento.horarioCierre || undefined;
+    }
+
+    const res = await fetch(`/api/admin/navidad/pueblos/by-pueblo/${puebloId}/eventos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    setSaving(false);
+    if (!res.ok) { setError('No se pudo crear el evento'); return; }
+    setShowNewEvento(false);
+    setNewEvento({ ...EMPTY_EVENTO });
+    await loadData();
+    flash('Evento navideño añadido');
+  };
+
+  const deleteEvento = async (id: number) => {
+    if (!confirm('¿Eliminar este evento navideño?')) return;
+    const res = await fetch(`/api/admin/navidad/eventos/${id}`, { method: 'DELETE' });
+    if (!res.ok) { setError('No se pudo eliminar'); return; }
+    await loadData();
+    flash('Evento eliminado');
+  };
+
+  const toMadridTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false }).slice(0, 5);
+  const toMadridDate = (iso: string) =>
+    new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(iso));
+
+  const startEditEvento = (e: Evento) => {
+    setShowNewEvento(false);
+    setEditingEventoId(e.id);
+    setEditEvento({
+      tipo: e.tipo,
+      publicoObjetivo: e.publicoObjetivo,
+      titulo: e.titulo || '',
+      descripcion: e.descripcion || '',
+      avisosImportantes: e.avisosImportantes || '',
+      ubicacion: e.ubicacion || '',
+      fecha: toMadridDate(e.fechaInicio),
+      horaInicio: toMadridTime(e.fechaInicio),
+      horaFin: e.fechaFin ? toMadridTime(e.fechaFin) : '',
+      fechaFinStr: e.fechaFin ? toMadridDate(e.fechaFin) : '',
+      horarioApertura: e.horarioApertura || '',
+      horarioCierre: e.horarioCierre || '',
+      fotoUrl: e.fotoUrl || '',
+      youtubeUrl: e.youtubeUrl || '',
+      streamUrl: e.streamUrl || '',
+      googleMapsUrl: e.googleMapsUrl || '',
+      esFiestaInteresTuristico: e.esFiestaInteresTuristico ?? false,
+    });
+    setTimeout(() => editEventoFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  };
+
+  const saveEditEvento = async () => {
+    if (!editingEventoId || !editEvento.titulo || !editEvento.fecha || !editEvento.horaInicio) return;
+    setSaving(true);
+    const body: Record<string, unknown> = {
+      tipo: editEvento.tipo,
+      publicoObjetivo: editEvento.publicoObjetivo,
+      titulo: editEvento.titulo,
+      descripcion: editEvento.descripcion || undefined,
+      avisosImportantes: editEvento.avisosImportantes || undefined,
+      ubicacion: editEvento.ubicacion || undefined,
+      fecha: editEvento.fecha,
+      horaInicio: editEvento.horaInicio,
+      horaFin: editEvento.horaFin || undefined,
+      fechaInicio: toIsoUtc(editEvento.fecha, editEvento.horaInicio),
+      fechaFin: editEvento.fechaFinStr ? toIsoUtc(editEvento.fechaFinStr, editEvento.horaFin || '23:59') : editEvento.horaFin ? toIsoUtc(editEvento.fecha, editEvento.horaFin) : undefined,
+      fotoUrl: editEvento.fotoUrl || undefined,
+      youtubeUrl: editEvento.youtubeUrl || undefined,
+      streamUrl: editEvento.streamUrl || undefined,
+      googleMapsUrl: editEvento.googleMapsUrl || undefined,
+      esFiestaInteresTuristico: editEvento.esFiestaInteresTuristico,
+    };
+    if (editEvento.tipo === 'MERCADILLO' || editEvento.tipo === 'BELEN' || editEvento.tipo === 'BELEN_VIVIENTE') {
+      body.horarioApertura = editEvento.horarioApertura || undefined;
+      body.horarioCierre = editEvento.horarioCierre || undefined;
+    }
+
+    const res = await fetch(`/api/admin/navidad/eventos/${editingEventoId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    setSaving(false);
+    if (!res.ok) { setError('No se pudo actualizar el evento'); return; }
+    setEditingEventoId(null);
+    await loadData();
+    flash('Evento actualizado');
+  };
+
+  const eventosByTipo = useMemo(() => {
+    if (!data) return [];
+    const grouped = new Map<string, Evento[]>();
+    for (const e of data.eventos) {
+      if (!grouped.has(e.tipo)) grouped.set(e.tipo, []);
+      grouped.get(e.tipo)!.push(e);
+    }
+    return Array.from(grouped.entries())
+      .map(([tipo, items]) => ({ tipo, items: items.sort((a, b) => new Date(a.fechaInicio).getTime() - new Date(b.fechaInicio).getTime()) }))
+      .sort((a, b) => {
+        const order = Object.keys(TIPO_LABELS);
+        return order.indexOf(a.tipo) - order.indexOf(b.tipo);
+      });
+  }, [data]);
+
+  const isMercadilloType = (tipo: string) => ['MERCADILLO', 'BELEN', 'BELEN_VIVIENTE'].includes(tipo);
+  const isCabalgataType = (tipo: string) => ['CABALGATA_REYES', 'CABALGATA_PAPA_NOEL', 'RUTA_TURISTICA'].includes(tipo);
+
+  function EventoForm({ state, setState, onSave, onCancel, saveLabel }: {
+    state: typeof EMPTY_EVENTO;
+    setState: (s: typeof EMPTY_EVENTO) => void;
+    onSave: () => void;
+    onCancel: () => void;
+    saveLabel: string;
+  }) {
+    return (
+      <div className="space-y-3">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium">Tipo de evento</label>
+            <select className="w-full rounded-md border px-3 py-2 text-sm" value={state.tipo} onChange={(e) => setState({ ...state, tipo: e.target.value })}>
+              {Object.entries(TIPO_LABELS).map(([k, v]) => (<option key={k} value={k}>{TIPO_ICONS[k]} {v}</option>))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Público objetivo</label>
+            <select className="w-full rounded-md border px-3 py-2 text-sm" value={state.publicoObjetivo} onChange={(e) => setState({ ...state, publicoObjetivo: e.target.value })}>
+              {Object.entries(PUBLICO_LABELS).map(([k, v]) => (<option key={k} value={k}>{v}</option>))}
+            </select>
+          </div>
+        </div>
+        <input type="text" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="Título del evento" value={state.titulo} onChange={(e) => setState({ ...state, titulo: e.target.value })} />
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div>
+            <label className="mb-1 block text-xs text-muted-foreground">Fecha inicio</label>
+            <input type="date" className="w-full rounded-md border px-3 py-2 text-sm" value={state.fecha} onChange={(e) => setState({ ...state, fecha: e.target.value })} />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-muted-foreground">Hora inicio</label>
+            <input type="text" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="18:00" value={state.horaInicio} onChange={(e) => setState({ ...state, horaInicio: e.target.value })} />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-muted-foreground">Hora fin</label>
+            <input type="text" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="22:00" value={state.horaFin} onChange={(e) => setState({ ...state, horaFin: e.target.value })} />
+          </div>
+        </div>
+        {isMercadilloType(state.tipo) && (
+          <div className="rounded-lg border border-dashed border-emerald-300 bg-emerald-50/50 p-3">
+            <p className="mb-2 text-sm font-medium text-emerald-900">Horarios recurrentes (mercadillos / belenes)</p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div>
+                <label className="mb-1 block text-xs text-muted-foreground">Fecha fin (último día)</label>
+                <input type="date" className="w-full rounded-md border px-3 py-2 text-sm" value={state.fechaFinStr} onChange={(e) => setState({ ...state, fechaFinStr: e.target.value })} />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-muted-foreground">Hora apertura diaria</label>
+                <input type="text" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="10:00" value={state.horarioApertura} onChange={(e) => setState({ ...state, horarioApertura: e.target.value })} />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-muted-foreground">Hora cierre diario</label>
+                <input type="text" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="21:00" value={state.horarioCierre} onChange={(e) => setState({ ...state, horarioCierre: e.target.value })} />
+              </div>
+            </div>
+          </div>
+        )}
+        <input type="text" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="Ubicación / calle / plaza" value={state.ubicacion} onChange={(e) => setState({ ...state, ubicacion: e.target.value })} />
+        <textarea rows={2} className="w-full rounded-md border px-3 py-2 text-sm" placeholder="Descripción del evento" value={state.descripcion} onChange={(e) => setState({ ...state, descripcion: e.target.value })} />
+        <textarea rows={2} className="w-full rounded-md border px-3 py-2 text-sm" placeholder="Avisos importantes (aparcamiento, recomendaciones...)" value={state.avisosImportantes} onChange={(e) => setState({ ...state, avisosImportantes: e.target.value })} />
+        <R2ImageUploader label="Foto del evento (opcional)" value={state.fotoUrl || null} onChange={(url) => setState({ ...state, fotoUrl: url ?? '' })} folder="navidad/eventos" previewHeight="h-32" />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <input type="url" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="Enlace YouTube (opcional)" value={state.youtubeUrl} onChange={(e) => setState({ ...state, youtubeUrl: e.target.value })} />
+          <input type="url" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="URL streaming en directo (opcional)" value={state.streamUrl} onChange={(e) => setState({ ...state, streamUrl: e.target.value })} />
+        </div>
+        {isCabalgataType(state.tipo) && (
+          <div className="rounded-lg border border-dashed border-blue-300 bg-blue-50/50 p-3">
+            <p className="mb-2 text-sm font-medium text-blue-900">Recorrido (Google Maps)</p>
+            <input type="url" placeholder="https://www.google.com/maps/d/..." className="w-full rounded-md border px-3 py-2 text-sm" value={state.googleMapsUrl} onChange={(e) => setState({ ...state, googleMapsUrl: e.target.value })} />
+            <p className="mt-1 text-xs text-muted-foreground">Pegad el enlace de Google Maps con el recorrido de la cabalgata/ruta.</p>
+          </div>
+        )}
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={Boolean(state.esFiestaInteresTuristico)} onChange={(e) => setState({ ...state, esFiestaInteresTuristico: e.target.checked })} />
+          Fiesta de Interés Turístico (este evento)
+        </label>
+        <div className="flex gap-2">
+          <button onClick={onSave} disabled={saving || !state.titulo || !state.fecha || !state.horaInicio} className="rounded-md bg-red-700 px-4 py-1.5 text-sm font-medium text-white disabled:opacity-50">
+            {saving ? 'Guardando...' : saveLabel}
+          </button>
+          <button onClick={onCancel} className="rounded-md border px-4 py-1.5 text-sm text-muted-foreground">Cancelar</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading && !data) {
+    return <main className="mx-auto max-w-5xl p-6 text-muted-foreground">Cargando...</main>;
+  }
+
+  if (notInscribed) {
+    return (
+      <main className="mx-auto max-w-5xl p-6">
+        <div className="mb-6 flex items-center gap-3">
+          <span className="text-3xl">🎄</span>
+          <h1 className="text-2xl font-semibold">Navidad</h1>
+        </div>
+        {error && <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50/50 p-5 text-red-900">
+          Este pueblo no está inscrito en Navidad este año.
+        </div>
+        <div className="mt-4">
+          <button onClick={inscribirse} disabled={inscribing || !puebloId} className="rounded-lg bg-red-700 px-5 py-2 text-sm font-medium text-white disabled:opacity-50">
+            {inscribing ? 'Inscribiendo...' : '🎄 Inscribirse en Navidad'}
+          </button>
+        </div>
+        <div className="mt-6 text-sm">
+          <Link href={`/gestion/pueblos/${slug}`} className="text-muted-foreground hover:underline">← Volver al pueblo</Link>
+        </div>
+      </main>
+    );
+  }
+
+  if (!data) return null;
+
+  return (
+    <main className="mx-auto max-w-5xl p-6">
+      <div className="mb-6 flex items-center gap-3">
+        <span className="text-3xl">🎄</span>
+        <div>
+          <h1 className="text-2xl font-semibold">Navidad · {data.pueblo.nombre}</h1>
+          <p className="text-sm text-muted-foreground">Gestiona los eventos navideños de tu pueblo: mercadillos, belenes, cabalgatas, conciertos y más.</p>
+        </div>
+      </div>
+
+      {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+      {success && <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>}
+
+      <section className="mb-8 rounded-lg border border-red-100 bg-gradient-to-br from-red-50/30 to-green-50/20 p-5">
+        <h2 className="mb-4 text-lg font-semibold">Información general</h2>
+        <div className="grid gap-4">
+          <div>
+            <label className="mb-1 block text-sm">Título</label>
+            <input type="text" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="Navidad en tu pueblo" value={data.titulo ?? ''} onChange={(e) => setData({ ...data, titulo: e.target.value })} />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm">Descripción</label>
+            <textarea rows={3} className="w-full rounded-md border px-3 py-2 text-sm" value={data.descripcion ?? ''} onChange={(e) => setData({ ...data, descripcion: e.target.value })} />
+          </div>
+          <R2ImageUploader label="Cartel navideño" value={data.cartelUrl} onChange={(url) => setData({ ...data, cartelUrl: url })} folder="navidad/pueblos" previewHeight="h-56" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-sm">Stream / webcam (URL embebible)</label>
+              <input type="url" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="https://www.youtube.com/embed/..." value={data.streamUrl ?? ''} onChange={(e) => setData({ ...data, streamUrl: e.target.value })} />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm">Distintivo turístico</label>
+              <select className="w-full rounded-md border px-3 py-2 text-sm" value={data.interesTuristico} onChange={(e) => setData({ ...data, interesTuristico: e.target.value as Participante['interesTuristico'] })}>
+                <option value="NINGUNO">Sin distintivo</option>
+                <option value="REGIONAL">Interés Turístico Regional</option>
+                <option value="NACIONAL">Interés Turístico Nacional</option>
+                <option value="INTERNACIONAL">Interés Turístico Internacional</option>
+              </select>
+            </div>
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={data.activo} onChange={(e) => setData({ ...data, activo: e.target.checked })} />
+            Pueblo activo en la lista pública de Navidad
+          </label>
+          <button onClick={saveInfo} disabled={saving} className="w-fit rounded-lg bg-red-700 px-6 py-2 text-sm font-medium text-white disabled:opacity-50">
+            {saving ? 'Guardando...' : 'Guardar información'}
+          </button>
+        </div>
+      </section>
+
+      <section className="mb-8 rounded-lg border border-red-100 bg-gradient-to-br from-green-50/20 to-red-50/30 p-5">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Eventos navideños</h2>
+          <button onClick={() => { setShowNewEvento(true); setEditingEventoId(null); setTimeout(() => newEventoFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }} className="rounded-lg bg-red-700 px-4 py-1.5 text-sm font-medium text-white">
+            + Añadir evento
+          </button>
+        </div>
+
+        {showNewEvento && (
+          <div ref={newEventoFormRef} className="mb-4 rounded-lg border border-red-200 bg-red-50/30 p-4">
+            <p className="mb-3 text-sm font-medium">Nuevo evento navideño</p>
+            <EventoForm state={newEvento} setState={setNewEvento} onSave={createEvento} onCancel={() => setShowNewEvento(false)} saveLabel="Crear evento" />
+          </div>
+        )}
+
+        {data.eventos.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No hay eventos todavía. ¡Añade mercadillos, belenes, cabalgatas y todo lo que tu pueblo ofrezca esta Navidad!</p>
+        ) : (
+          <div className="space-y-5">
+            {eventosByTipo.map(({ tipo, items }) => (
+              <div key={tipo} className="rounded-lg border p-3">
+                <p className="mb-3 text-sm font-semibold">
+                  {TIPO_ICONS[tipo]} {TIPO_LABELS[tipo] || tipo} <span className="font-normal text-muted-foreground">({items.length})</span>
+                </p>
+                <div className="space-y-2">
+                  {items.map((e) => (
+                    <div key={e.id} className="rounded-md border bg-card p-3">
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <p className="font-medium">{e.titulo}</p>
+                        <span className="rounded-full border px-2 py-0.5 text-[11px] text-muted-foreground">{PUBLICO_LABELS[e.publicoObjetivo]}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(e.fechaInicio).toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                        {' · '}
+                        {toMadridTime(e.fechaInicio)}
+                        {e.fechaFin ? ` – ${toMadridTime(e.fechaFin)}` : ''}
+                      </p>
+                      {e.horarioApertura && <p className="text-xs text-emerald-700">Horario diario: {e.horarioApertura} – {e.horarioCierre}</p>}
+                      {e.ubicacion && <p className="text-sm text-muted-foreground">{e.ubicacion}</p>}
+                      {e.esFiestaInteresTuristico && (
+                        <span className="inline-flex rounded-full border border-red-700/30 bg-red-700/10 px-2 py-0.5 text-[11px] font-medium text-red-800">Fiesta de Interés Turístico</span>
+                      )}
+                      {e.streamUrl && <p className="text-xs text-blue-600">En directo configurado</p>}
+                      <div className="mt-3 flex gap-2">
+                        <button onClick={() => startEditEvento(e)} className="rounded-md border px-3 py-1 text-xs hover:bg-muted">Editar</button>
+                        <button onClick={() => deleteEvento(e.id)} className="rounded-md border border-red-200 px-3 py-1 text-xs text-red-600 hover:bg-red-50">Eliminar</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {editingEventoId && (
+          <div ref={editEventoFormRef} className="mt-4 rounded-lg border border-red-200 bg-red-50/30 p-4">
+            <p className="mb-3 text-sm font-medium">Editar evento</p>
+            <EventoForm state={editEvento} setState={setEditEvento} onSave={saveEditEvento} onCancel={() => setEditingEventoId(null)} saveLabel="Guardar cambios" />
+          </div>
+        )}
+      </section>
+
+      <div className="mt-6 text-sm">
+        <Link href={`/gestion/pueblos/${slug}`} className="text-muted-foreground hover:text-foreground hover:underline">← Volver al pueblo</Link>
+      </div>
+    </main>
+  );
+}

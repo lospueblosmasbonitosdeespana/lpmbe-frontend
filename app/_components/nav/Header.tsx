@@ -43,10 +43,10 @@ async function fetchSiteSettings(): Promise<SiteSettings> {
 
 type HeaderProps = { locale: string };
 
-async function fetchCampaignVisibility(): Promise<{ showNocheRomantica: boolean; showSemanaSanta: boolean }> {
+async function fetchCampaignVisibility(): Promise<{ showNocheRomantica: boolean; showSemanaSanta: boolean; showNavidad: boolean }> {
   const apiBase = getApiUrl();
   try {
-    const [nrRes, ssRes] = await Promise.all([
+    const [nrRes, ssRes, navRes] = await Promise.all([
       fetchWithTimeout(`${apiBase}/noche-romantica/config`, {
         next: { revalidate: 300 },
         timeoutMs: 3000,
@@ -57,21 +57,29 @@ async function fetchCampaignVisibility(): Promise<{ showNocheRomantica: boolean;
         timeoutMs: 3000,
         retries: 0,
       }),
+      fetchWithTimeout(`${apiBase}/navidad/config`, {
+        next: { revalidate: 300 },
+        timeoutMs: 3000,
+        retries: 0,
+      }),
     ]);
 
-    const [nrConfig, ssConfig] = await Promise.all([
+    const [nrConfig, ssConfig, navConfig] = await Promise.all([
       nrRes.ok ? nrRes.json() : null,
       ssRes.ok ? ssRes.json() : null,
+      navRes.ok ? navRes.json() : null,
     ]);
 
     return {
       showNocheRomantica: !!nrConfig?.activo,
       showSemanaSanta: !!ssConfig?.activo,
+      showNavidad: !!navConfig?.activo,
     };
   } catch {
     return {
       showNocheRomantica: true,
       showSemanaSanta: false,
+      showNavidad: false,
     };
   }
 }

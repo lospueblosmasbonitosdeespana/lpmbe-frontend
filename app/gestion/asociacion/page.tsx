@@ -152,6 +152,12 @@ const ACCESOS = [
     description: 'Configura año, días y pueblos participantes',
     icon: <span className="text-2xl">✝️</span>,
   },
+  {
+    href: '/gestion/asociacion/navidad',
+    title: 'Navidad',
+    description: 'Campaña navideña: mercadillos, belenes, cabalgatas y eventos',
+    icon: <span className="text-2xl">🎄</span>,
+  },
 ];
 
 function GridCard({

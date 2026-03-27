@@ -225,6 +225,13 @@ export default async function GestionPuebloPage({
       disabled: false,
     },
     {
+      href: `${baseUrl}/navidad`,
+      title: 'Navidad',
+      description: 'Mercadillos, belenes, cabalgatas y eventos navideños',
+      icon: <span className="text-2xl">🎄</span>,
+      disabled: false,
+    },
+    {
       href: `${baseUrl}/autorizados`,
       title: 'Autorizados',
       description: 'Usuarios que pueden gestionar el pueblo',

@@ -25,18 +25,21 @@ export type NavItem =
 type CampaignNavOptions = {
   showNocheRomantica: boolean;
   showSemanaSanta: boolean;
+  showNavidad: boolean;
 };
 
 export function getNavConfig(options?: Partial<CampaignNavOptions>): NavItem[] {
   const settings: CampaignNavOptions = {
     showNocheRomantica: options?.showNocheRomantica ?? true,
     showSemanaSanta: options?.showSemanaSanta ?? true,
+    showNavidad: options?.showNavidad ?? false,
   };
 
   const planificaLinks: NavLink[] = [
     { labelKey: "createRoute", href: "/planifica/crea-mi-ruta" },
     { labelKey: "weekend", href: "/planifica/fin-de-semana" },
     ...(settings.showSemanaSanta ? [{ labelKey: "semanaSanta", href: "/planifica/semana-santa" }] : []),
+    ...(settings.showNavidad ? [{ labelKey: "navidad", href: "/planifica/navidad" }] : []),
     { labelKey: "pirineos", href: "/rutas/mas-bonitos-de-los-pirineos" },
     ...(settings.showNocheRomantica ? [{ labelKey: "nocheRomantica", href: "/noche-romantica" }] : []),
   ];
