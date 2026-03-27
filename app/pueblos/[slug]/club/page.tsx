@@ -58,6 +58,7 @@ const SCOPE_LABELS: Record<string, string> = {
 type Recurso = {
   id: number;
   nombre: string;
+  slug: string;
   tipo: string;
   scope: string;
   descripcion?: string | null;
@@ -80,12 +81,13 @@ type Recurso = {
 
 const DIA_NOMBRES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
-function RecursoCard({ r }: { r: Recurso }) {
+function RecursoCard({ r, puebloSlug }: { r: Recurso; puebloSlug: string }) {
   const fotos = r.imagenes && r.imagenes.length > 0 ? r.imagenes : null;
   const mainImage = fotos?.[0]?.url ?? r.fotoUrl;
+  const detailHref = `/pueblos/${puebloSlug}/club/${r.slug}`;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+    <Link href={detailHref} className="block overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md group">
       {/* Image gallery or main photo */}
       {mainImage && (
         <div className="relative">
@@ -169,30 +171,17 @@ function RecursoCard({ r }: { r: Recurso }) {
         {/* Contact info */}
         {(r.telefono || r.email || r.web) && (
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground border-t border-border pt-3">
-            {r.telefono && (
-              <a href={`tel:${r.telefono}`} className="hover:text-foreground">
-                Tel: {r.telefono}
-              </a>
-            )}
-            {r.email && (
-              <a href={`mailto:${r.email}`} className="hover:text-foreground">
-                {r.email}
-              </a>
-            )}
-            {r.web && (
-              <a
-                href={r.web.startsWith("http") ? r.web : `https://${r.web}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-foreground"
-              >
-                Web
-              </a>
-            )}
+            {r.telefono && <span>Tel: {r.telefono}</span>}
+            {r.email && <span>{r.email}</span>}
+            {r.web && <span>Web</span>}
           </div>
         )}
+
+        <span className="mt-3 inline-block text-xs font-medium text-primary group-hover:underline">
+          Ver detalle &rarr;
+        </span>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -297,7 +286,7 @@ export default async function ClubPuebloPage({
                 </p>
                 <div className="grid gap-6 sm:grid-cols-2">
                   {recursosPueblo.map((r) => (
-                    <RecursoCard key={r.id} r={r} />
+                    <RecursoCard key={r.id} r={r} puebloSlug={pueblo.slug} />
                   ))}
                 </div>
               </section>
@@ -315,7 +304,7 @@ export default async function ClubPuebloPage({
                 </p>
                 <div className="grid gap-6 sm:grid-cols-2">
                   {negocios.map((r) => (
-                    <RecursoCard key={r.id} r={r} />
+                    <RecursoCard key={r.id} r={r} puebloSlug={pueblo.slug} />
                   ))}
                 </div>
               </section>
