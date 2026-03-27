@@ -16,25 +16,19 @@ type Scope = 'PUEBLO' | 'ASOCIACION';
 
 const SOURCE_LABELS: Record<string, string> = {
   ALL: 'Todas las fuentes',
-  PUEBLO: 'Pueblo (destacada / escudo)',
   GALERIA_PUEBLO: 'Galería del pueblo',
-  POI: 'Puntos de interés (POI)',
+  POI: 'Puntos de interés',
   MULTIEXPERIENCIA: 'Multiexperiencias',
-  EVENTO: 'Eventos (legacy)',
-  NOTICIA: 'Noticias (legacy)',
-  CONTENIDO_PORTADA: 'Portadas (contenidos)',
-  CONTENIDO_GALERIA: 'Galerías (contenidos)',
+  CONTENIDO: 'Contenidos (noticias/eventos/artículos)',
+  PAGINA_TEMATICA: 'Páginas temáticas',
 };
 
 const SOURCE_ICONS: Record<string, string> = {
-  PUEBLO: '🏘️',
   GALERIA_PUEBLO: '🖼️',
   POI: '📍',
   MULTIEXPERIENCIA: '🎯',
-  EVENTO: '📅',
-  NOTICIA: '📰',
-  CONTENIDO_PORTADA: '📸',
-  CONTENIDO_GALERIA: '🎞️',
+  CONTENIDO: '📰',
+  PAGINA_TEMATICA: '📄',
 };
 
 export default function FotosClient() {
@@ -142,7 +136,7 @@ export default function FotosClient() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Biblioteca de fotos</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Todas las imágenes del sistema: galería del pueblo, POIs, multiexperiencias, eventos, noticias y contenidos creados.
+          Todas las imágenes: galería del pueblo, puntos de interés, multiexperiencias, noticias, eventos, artículos y páginas temáticas.
         </p>
       </div>
 
@@ -209,13 +203,13 @@ export default function FotosClient() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Título, fuente…"
+            placeholder="Título, nombre…"
             className="mt-1 w-full rounded-md border px-2 py-2 text-sm"
           />
         </label>
       </div>
 
-      {/* Resumen por categoría */}
+      {/* Pills de categoría */}
       {photos.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2">
           <button
@@ -249,7 +243,7 @@ export default function FotosClient() {
         {loading && (
           <span className="inline-flex items-center gap-2">
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#b5472a] border-t-transparent" />
-            Cargando fotos…
+            Cargando fotos de {scope === 'PUEBLO' ? selectedPuebloNombre || 'pueblo' : 'la asociación'}…
           </span>
         )}
         {!loading && scope === 'PUEBLO' && !puebloId && 'Selecciona un pueblo para ver todas sus fotos.'}
@@ -257,7 +251,8 @@ export default function FotosClient() {
           <span>
             {filtered.length === photos.length
               ? `${photos.length} foto${photos.length === 1 ? '' : 's'} en total`
-              : `Mostrando ${filtered.length} de ${photos.length} foto${photos.length === 1 ? '' : 's'}`}
+              : `Mostrando ${filtered.length} de ${photos.length}`}
+            {scope === 'PUEBLO' && selectedPuebloNombre ? ` · ${selectedPuebloNombre}` : ''}
           </span>
         )}
         {!loading && (scope === 'ASOCIACION' || puebloId > 0) && photos.length === 0 && !error && 'No se encontraron fotos.'}
@@ -309,7 +304,7 @@ export default function FotosClient() {
                       copiedUrl === photo.url ? 'border-green-500 bg-green-50 text-green-700' : 'hover:bg-gray-50'
                     }`}
                   >
-                    {copiedUrl === photo.url ? '✓ Copiada' : 'URL'}
+                    {copiedUrl === photo.url ? '✓' : 'URL'}
                   </button>
                   <a
                     href={`/api/admin/media/download?url=${encodeURIComponent(photo.url)}&filename=${encodeURIComponent(buildFilename(photo))}`}
