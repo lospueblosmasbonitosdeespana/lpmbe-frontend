@@ -5,8 +5,8 @@ import { MobileMenu } from "./MobileMenu";
 import AuthNavLink from "./AuthNavLink";
 import CartIndicatorWrapper from "../tienda/CartIndicatorWrapper";
 import { LocaleSwitcher } from "./LocaleSwitcher";
-import { headers } from "next/headers";
 import { getApiUrl } from "@/lib/api";
+import { fetchWithTimeout } from "@/lib/fetch-safe";
 import { getNavConfig } from "./nav.config";
 
 type SiteSettings = {
@@ -19,13 +19,12 @@ type SiteSettings = {
 
 async function fetchSiteSettings(): Promise<SiteSettings> {
   try {
-    const h = await headers();
-    const host = h.get('host');
-    const proto = h.get('x-forwarded-proto') ?? 'http';
-    const baseUrl = `${proto}://${host}`;
-
-    const res = await fetch(`${baseUrl}/api/public/site-settings`, {
-      cache: 'no-store',
+    const apiBase = getApiUrl();
+    const res = await fetchWithTimeout(`${apiBase}/public/site-settings`, {
+      // Cache corto para evitar bloquear navegación por latencias puntuales.
+      next: { revalidate: 300 },
+      timeoutMs: 3000,
+      retries: 0,
     });
 
     if (!res.ok) throw new Error('Settings not available');
@@ -48,8 +47,16 @@ async function fetchCampaignVisibility(): Promise<{ showNocheRomantica: boolean;
   const apiBase = getApiUrl();
   try {
     const [nrRes, ssRes] = await Promise.all([
-      fetch(`${apiBase}/noche-romantica/config`, { cache: "no-store" }),
-      fetch(`${apiBase}/semana-santa/config`, { cache: "no-store" }),
+      fetchWithTimeout(`${apiBase}/noche-romantica/config`, {
+        next: { revalidate: 300 },
+        timeoutMs: 3000,
+        retries: 0,
+      }),
+      fetchWithTimeout(`${apiBase}/semana-santa/config`, {
+        next: { revalidate: 300 },
+        timeoutMs: 3000,
+        retries: 0,
+      }),
     ]);
 
     const [nrConfig, ssConfig] = await Promise.all([

@@ -3,7 +3,8 @@ import { getLocale } from "next-intl/server";
 import { HomePageNew, type NotificationItem, type CategoryCard, type RouteCard, type VillageCard, type NewsItem } from "./_components/home/HomePageNew";
 import AppDownloadBanner from "./_components/home/AppDownloadBanner";
 import { getHomeConfig, getHomeVideos } from "@/lib/homeApi";
-import { getRutas, getApiUrl, getPueblosLite, getPuebloMainPhoto, type Pueblo } from "@/lib/api";
+import { getRutasFast, getApiUrl, getPueblosLite, getPuebloMainPhoto, type Pueblo } from "@/lib/api";
+import { fetchWithTimeout } from "@/lib/fetch-safe";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
@@ -76,9 +77,9 @@ async function getFeaturedPueblos(locale?: string): Promise<VillageCard[]> {
     let photosById: Record<string, { url?: string }> = {};
     if (selected.length > 0) {
       const ids = selected.map((p) => p.id).join(",");
-      const photosRes = await fetch(
+      const photosRes = await fetchWithTimeout(
         `${API_BASE}/public/pueblos/photos?ids=${ids}`,
-        { cache: "no-store" }
+        { cache: "no-store", timeoutMs: 4000, retries: 0 }
       );
       if (photosRes.ok) {
         const parsed = (await photosRes.json()) as Record<string, { url?: string }>;
@@ -112,9 +113,9 @@ async function getNotifications(locale?: string): Promise<NotificationItem[]> {
     // Noticias y eventos: solo de la asociación (puebloId=null) desde sus endpoints dedicados
     // Alertas y semáforos: del feed general (incluyen los de pueblos)
     const [resNoticias, resEventos, resFeed] = await Promise.all([
-      fetch(`${API_BASE}/public/noticias?limit=5${qs}`, { cache: "no-store", headers }),
-      fetch(`${API_BASE}/public/eventos?limit=5${qs}`, { cache: "no-store", headers }),
-      fetch(`${API_BASE}/public/notificaciones/feed?limit=8&tipos=ALERTA,ALERTA_PUEBLO,SEMAFORO${qs}`, { cache: "no-store", headers }),
+      fetchWithTimeout(`${API_BASE}/public/noticias?limit=5${qs}`, { cache: "no-store", headers, timeoutMs: 4000, retries: 0 }),
+      fetchWithTimeout(`${API_BASE}/public/eventos?limit=5${qs}`, { cache: "no-store", headers, timeoutMs: 4000, retries: 0 }),
+      fetchWithTimeout(`${API_BASE}/public/notificaciones/feed?limit=8&tipos=ALERTA,ALERTA_PUEBLO,SEMAFORO${qs}`, { cache: "no-store", headers, timeoutMs: 4000, retries: 0 }),
     ]);
 
     const noticias: any[] = resNoticias.ok ? await resNoticias.json().catch(() => []) : [];
@@ -174,13 +175,17 @@ async function getNews(locale?: string): Promise<NewsItem[]> {
 
     // Cargamos noticias y eventos de la asociación en paralelo desde sus endpoints dedicados
     const [resNoticias, resEventos] = await Promise.all([
-      fetch(`${API_BASE}/public/noticias?limit=4${qs}`, {
+      fetchWithTimeout(`${API_BASE}/public/noticias?limit=4${qs}`, {
         cache: "no-store",
         headers: locale ? { "Accept-Language": locale } : undefined,
+        timeoutMs: 4000,
+        retries: 0,
       }),
-      fetch(`${API_BASE}/public/eventos?limit=4${qs}`, {
+      fetchWithTimeout(`${API_BASE}/public/eventos?limit=4${qs}`, {
         cache: "no-store",
         headers: locale ? { "Accept-Language": locale } : undefined,
+        timeoutMs: 4000,
+        retries: 0,
       }),
     ]);
 
@@ -233,15 +238,15 @@ async function getGaleriaAsociacion(locale?: string): Promise<NewsItem[]> {
     const API_BASE = getApiUrl();
     const qs = locale ? `&lang=${encodeURIComponent(locale)}` : "";
     const headers = locale ? { "Accept-Language": locale } : undefined;
-    const opts = { cache: "no-store" as const, headers };
+    const opts = { cache: "no-store" as const, headers, timeoutMs: 4000, retries: 0 };
 
     // Buscar en ambas tablas para cada tipo
     const [resContNot, resContEv, resContArt, resNotif, resEvt] = await Promise.all([
-      fetch(`${API_BASE}/public/contenidos?scope=ASOCIACION&tipo=NOTICIA&limit=6${qs}`, opts),
-      fetch(`${API_BASE}/public/contenidos?scope=ASOCIACION&tipo=EVENTO&limit=6${qs}`, opts),
-      fetch(`${API_BASE}/public/contenidos?scope=ASOCIACION&tipo=ARTICULO&limit=6${qs}`, opts),
-      fetch(`${API_BASE}/public/noticias?limit=6${qs}`, opts),
-      fetch(`${API_BASE}/public/eventos?limit=6${qs}`, opts),
+      fetchWithTimeout(`${API_BASE}/public/contenidos?scope=ASOCIACION&tipo=NOTICIA&limit=6${qs}`, opts),
+      fetchWithTimeout(`${API_BASE}/public/contenidos?scope=ASOCIACION&tipo=EVENTO&limit=6${qs}`, opts),
+      fetchWithTimeout(`${API_BASE}/public/contenidos?scope=ASOCIACION&tipo=ARTICULO&limit=6${qs}`, opts),
+      fetchWithTimeout(`${API_BASE}/public/noticias?limit=6${qs}`, opts),
+      fetchWithTimeout(`${API_BASE}/public/eventos?limit=6${qs}`, opts),
     ]);
 
     const parse = async (r: Response) => {
@@ -301,7 +306,7 @@ async function getGaleriaAsociacion(locale?: string): Promise<NewsItem[]> {
 // Fetch routes
 async function getRoutesForHome(locale?: string): Promise<RouteCard[]> {
   try {
-    const rutas = await getRutas(locale);
+    const rutas = await getRutasFast(locale);
     const activas = rutas.filter((r) => r.activo);
     const shuffled = [...activas].sort(() => Math.random() - 0.5);
     const selected = shuffled.slice(0, 4);

@@ -1,4 +1,5 @@
 import { getApiUrl } from "./api";
+import { fetchWithTimeout } from "./fetch-safe";
 
 export type HomeSlide = {
   image: string;
@@ -53,9 +54,11 @@ export async function getHomeConfig(locale?: string): Promise<HomeConfig> {
   const API_BASE = getApiUrl();
   const qs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
   try {
-    const res = await fetch(`${API_BASE}/home${qs}`, {
+    const res = await fetchWithTimeout(`${API_BASE}/home${qs}`, {
       cache: "no-store",
       headers: locale ? { "Accept-Language": locale } : undefined,
+      timeoutMs: 4000,
+      retries: 0,
     });
 
     if (!res.ok) {
@@ -129,9 +132,11 @@ export async function getHomeVideos(locale?: string): Promise<HomeVideo[]> {
   const API_BASE = getApiUrl();
   const qs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
   try {
-    const res = await fetch(`${API_BASE}/home/videos${qs}`, {
+    const res = await fetchWithTimeout(`${API_BASE}/home/videos${qs}`, {
       cache: "no-store",
       headers: locale ? { "Accept-Language": locale } : undefined,
+      timeoutMs: 4000,
+      retries: 0,
     });
     if (!res.ok) return [];
     const data = await res.json();
