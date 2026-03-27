@@ -422,14 +422,12 @@ export default function PuebloActions({
                 onClick={() => setShowSuscribirseModal(true)}
               />
             )}
-            {userRol === 'ADMIN' && (
-              <ActionButton
-                icon={<ClubHeartIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
-                label="Club de Amigos"
-                href={puebloId ? `/gestion/asociacion/negocios/${puebloId}` : `/gestion/asociacion/negocios`}
-                highlighted
-              />
-            )}
+            <ActionButton
+              icon={<ClubHeartIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
+              label="Club de Amigos"
+              href={`/pueblos/${puebloSlug}/club`}
+              highlighted
+            />
             <div className="flex items-center gap-5">
               <ActionButton
                 icon={<NewsIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
