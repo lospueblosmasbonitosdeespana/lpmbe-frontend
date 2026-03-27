@@ -69,6 +69,12 @@ const ACCESOS = [
     icon: <IconPois />,
   },
   {
+    href: '/gestion/asociacion/negocios',
+    title: 'Negocios',
+    description: 'Hoteles, restaurantes, casas rurales, comercios y tiendas de los pueblos',
+    icon: <IconTienda />,
+  },
+  {
     href: '/gestion/asociacion/tienda',
     title: 'Tienda',
     description: 'Productos, pedidos y promociones',

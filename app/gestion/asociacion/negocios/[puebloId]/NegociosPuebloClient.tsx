@@ -1,0 +1,485 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+
+const TIPOS_NEGOCIO = [
+  'HOTEL',
+  'CASA_RURAL',
+  'RESTAURANTE',
+  'BAR',
+  'COMERCIO',
+  'TIENDA_ARTESANIA',
+  'BODEGA',
+  'EXPERIENCIA',
+  'OTRO',
+] as const;
+
+const TIPO_LABELS: Record<string, string> = {
+  HOTEL: 'Hotel',
+  CASA_RURAL: 'Casa rural',
+  RESTAURANTE: 'Restaurante',
+  BAR: 'Bar / Cafetería',
+  COMERCIO: 'Comercio',
+  TIENDA_ARTESANIA: 'Tienda de artesanía',
+  BODEGA: 'Bodega',
+  EXPERIENCIA: 'Experiencia',
+  OTRO: 'Otro',
+};
+
+type Negocio = {
+  id: number;
+  nombre: string;
+  tipo: string;
+  activo: boolean;
+  cerradoTemporal: boolean;
+  codigoQr: string;
+  scope: string;
+  descuentoPorcentaje?: number | null;
+  descripcion?: string | null;
+  contacto?: string | null;
+  telefono?: string | null;
+  email?: string | null;
+  web?: string | null;
+  fotoUrl?: string | null;
+  pueblo?: { id: number; nombre: string; slug: string } | null;
+  colaboradores?: Array<{
+    id: number;
+    activo: boolean;
+    user: { id: number; email: string; nombre?: string | null };
+  }>;
+};
+
+type FormData = {
+  nombre: string;
+  tipo: string;
+  descripcion: string;
+  telefono: string;
+  email: string;
+  web: string;
+  contacto: string;
+  descuentoPorcentaje: string;
+};
+
+const emptyForm: FormData = {
+  nombre: '',
+  tipo: 'HOTEL',
+  descripcion: '',
+  telefono: '',
+  email: '',
+  web: '',
+  contacto: '',
+  descuentoPorcentaje: '',
+};
+
+export default function NegociosPuebloClient({ puebloId }: { puebloId: string }) {
+  const isAsociacion = puebloId === '0';
+
+  const [negocios, setNegocios] = useState<Negocio[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [showForm, setShowForm] = useState(false);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [form, setForm] = useState<FormData>(emptyForm);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const [puebloNombre, setPuebloNombre] = useState<string>(isAsociacion ? 'Asociación' : '');
+
+  const apiBase = isAsociacion
+    ? '/api/club/negocios/asociacion'
+    : `/api/club/negocios/pueblo/${puebloId}`;
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(apiBase);
+      if (!res.ok) throw new Error('Error al cargar negocios');
+      const data: Negocio[] = await res.json();
+      setNegocios(Array.isArray(data) ? data : []);
+      if (data.length > 0 && data[0].pueblo?.nombre && !puebloNombre) {
+        setPuebloNombre(data[0].pueblo.nombre);
+      }
+    } catch (e: any) {
+      setError(e?.message ?? 'Error desconocido');
+    } finally {
+      setLoading(false);
+    }
+  }, [apiBase, puebloNombre]);
+
+  useEffect(() => { load(); }, [load]);
+
+  // If we don't have the pueblo name yet and it's not asociación, try to get it from the pueblos list
+  useEffect(() => {
+    if (!isAsociacion && !puebloNombre) {
+      fetch('/api/club/negocios/pueblos')
+        .then((r) => r.json())
+        .then((pueblos: Array<{ id: number; nombre: string }>) => {
+          const found = pueblos.find((p) => p.id === Number(puebloId));
+          if (found) setPuebloNombre(found.nombre);
+        })
+        .catch(() => {});
+    }
+  }, [isAsociacion, puebloId, puebloNombre]);
+
+  const openCreate = () => {
+    setEditId(null);
+    setForm(emptyForm);
+    setShowForm(true);
+    setMsg(null);
+  };
+
+  const openEdit = (n: Negocio) => {
+    setEditId(n.id);
+    setForm({
+      nombre: n.nombre,
+      tipo: n.tipo,
+      descripcion: n.descripcion ?? '',
+      telefono: n.telefono ?? '',
+      email: n.email ?? '',
+      web: n.web ?? '',
+      contacto: n.contacto ?? '',
+      descuentoPorcentaje: n.descuentoPorcentaje != null ? String(n.descuentoPorcentaje) : '',
+    });
+    setShowForm(true);
+    setMsg(null);
+  };
+
+  const cancel = () => {
+    setShowForm(false);
+    setEditId(null);
+    setMsg(null);
+  };
+
+  const handleSave = async () => {
+    if (!form.nombre.trim()) {
+      setMsg({ ok: false, text: 'El nombre es obligatorio' });
+      return;
+    }
+    setSaving(true);
+    setMsg(null);
+    try {
+      const body: any = {
+        nombre: form.nombre.trim(),
+        tipo: form.tipo,
+      };
+      if (form.descripcion.trim()) body.descripcion = form.descripcion.trim();
+      if (form.telefono.trim()) body.telefono = form.telefono.trim();
+      if (form.email.trim()) body.email = form.email.trim();
+      if (form.web.trim()) body.web = form.web.trim();
+      if (form.contacto.trim()) body.contacto = form.contacto.trim();
+      if (form.descuentoPorcentaje.trim()) {
+        body.descuentoPorcentaje = Number(form.descuentoPorcentaje);
+      }
+
+      let res: Response;
+      if (editId) {
+        res = await fetch(`/api/club/negocios/${editId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+      } else {
+        res = await fetch(apiBase, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+      }
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.message || err?.error || 'Error al guardar');
+      }
+
+      setMsg({ ok: true, text: editId ? 'Negocio actualizado' : 'Negocio creado' });
+      setShowForm(false);
+      setEditId(null);
+      await load();
+    } catch (e: any) {
+      setMsg({ ok: false, text: e?.message ?? 'Error al guardar' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: number, nombre: string) => {
+    if (!confirm(`¿Eliminar "${nombre}"? Se borrarán también sus visitas, validaciones y colaboradores.`)) return;
+    try {
+      const res = await fetch(`/api/club/negocios/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Error al eliminar');
+      setMsg({ ok: true, text: `"${nombre}" eliminado` });
+      await load();
+    } catch (e: any) {
+      setMsg({ ok: false, text: e?.message ?? 'Error al eliminar' });
+    }
+  };
+
+  const handleToggleActivo = async (n: Negocio) => {
+    try {
+      const res = await fetch(`/api/club/negocios/${n.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activo: !n.activo }),
+      });
+      if (!res.ok) throw new Error('Error al cambiar estado');
+      await load();
+    } catch (e: any) {
+      setMsg({ ok: false, text: e?.message ?? 'Error' });
+    }
+  };
+
+  const title = isAsociacion
+    ? 'Negocios · Asociación'
+    : `Negocios · ${puebloNombre || `Pueblo #${puebloId}`}`;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">{title}</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Gestiona hoteles, restaurantes, comercios y otros negocios privados.
+          </p>
+        </div>
+        {!showForm && (
+          <button
+            onClick={openCreate}
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/90"
+          >
+            + Nuevo negocio
+          </button>
+        )}
+      </div>
+
+      {msg && (
+        <div
+          className={`rounded-lg border px-4 py-2 text-sm ${
+            msg.ok
+              ? 'border-green-200 bg-green-50 text-green-800'
+              : 'border-red-200 bg-red-50 text-red-700'
+          }`}
+        >
+          {msg.text}
+        </div>
+      )}
+
+      {/* CREATE / EDIT FORM */}
+      {showForm && (
+        <div className="rounded-xl border bg-white p-5 shadow-sm space-y-4">
+          <h2 className="font-semibold text-lg">
+            {editId ? 'Editar negocio' : 'Nuevo negocio'}
+          </h2>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Nombre *</label>
+              <input
+                value={form.nombre}
+                onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="Ej: Hotel Rural La Posada"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Tipo *</label>
+              <select
+                value={form.tipo}
+                onChange={(e) => setForm((f) => ({ ...f, tipo: e.target.value }))}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                {TIPOS_NEGOCIO.map((t) => (
+                  <option key={t} value={t}>{TIPO_LABELS[t]}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Descripci&oacute;n / Qu&eacute; ofrece a los socios del Club
+            </label>
+            <textarea
+              value={form.descripcion}
+              onChange={(e) => setForm((f) => ({ ...f, descripcion: e.target.value }))}
+              rows={3}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              placeholder="Ej: 10% en alojamiento, café de bienvenida gratuito..."
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Tel&eacute;fono</label>
+              <input
+                value={form.telefono}
+                onChange={(e) => setForm((f) => ({ ...f, telefono: e.target.value }))}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Web</label>
+              <input
+                value={form.web}
+                onChange={(e) => setForm((f) => ({ ...f, web: e.target.value }))}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="https://..."
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Contacto (persona)</label>
+              <input
+                value={form.contacto}
+                onChange={(e) => setForm((f) => ({ ...f, contacto: e.target.value }))}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Descuento (%)</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={form.descuentoPorcentaje}
+                onChange={(e) => setForm((f) => ({ ...f, descuentoPorcentaje: e.target.value }))}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="Ej: 10"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/90 disabled:opacity-50"
+            >
+              {saving ? 'Guardando...' : editId ? 'Guardar cambios' : 'Crear negocio'}
+            </button>
+            <button
+              onClick={cancel}
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* LIST */}
+      {loading ? (
+        <div className="rounded-xl border bg-white p-8 text-center text-sm text-gray-500">
+          Cargando negocios&hellip;
+        </div>
+      ) : error ? (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {error}
+        </div>
+      ) : negocios.length === 0 ? (
+        <div className="rounded-xl border bg-white p-8 text-center text-sm text-gray-400">
+          No hay negocios {isAsociacion ? 'de asociaci\u00f3n' : 'en este pueblo'} todav&iacute;a.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {negocios.map((n) => (
+            <div
+              key={n.id}
+              className="rounded-xl border bg-white p-4 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-semibold text-gray-800">{n.nombre}</h3>
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                      {TIPO_LABELS[n.tipo] ?? n.tipo}
+                    </span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        n.activo
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-500'
+                      }`}
+                    >
+                      {n.activo ? 'Activo' : 'Inactivo'}
+                    </span>
+                    {n.cerradoTemporal && (
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                        Cerrado temporal
+                      </span>
+                    )}
+                  </div>
+
+                  {n.descripcion && (
+                    <p className="mt-1 text-sm text-gray-600 line-clamp-2">{n.descripcion}</p>
+                  )}
+
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                    {n.telefono && <span>Tel: {n.telefono}</span>}
+                    {n.email && <span>{n.email}</span>}
+                    {n.web && <span>{n.web}</span>}
+                    {n.descuentoPorcentaje != null && (
+                      <span className="font-medium text-primary">{n.descuentoPorcentaje}% dto.</span>
+                    )}
+                    <span className="font-mono">QR: {n.codigoQr}</span>
+                  </div>
+
+                  {n.colaboradores && n.colaboradores.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {n.colaboradores.map((c) => (
+                        <span
+                          key={c.id}
+                          className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700"
+                        >
+                          {c.user.nombre ?? c.user.email}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex shrink-0 gap-2">
+                  <button
+                    onClick={() => handleToggleActivo(n)}
+                    className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+                      n.activo
+                        ? 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                        : 'border-green-300 text-green-700 hover:bg-green-50'
+                    }`}
+                    title={n.activo ? 'Desactivar' : 'Activar'}
+                  >
+                    {n.activo ? 'Desactivar' : 'Activar'}
+                  </button>
+                  <button
+                    onClick={() => openEdit(n)}
+                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(n.id, n.nombre)}
+                    className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
