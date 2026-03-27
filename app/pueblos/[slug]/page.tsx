@@ -708,6 +708,7 @@ export default async function PuebloPage({
       <PuebloActions
         nombre={puebloSafe.nombre}
         puebloSlug={puebloSafe.slug}
+        puebloId={puebloSafe.id}
         lat={puebloSafe.lat}
         lng={puebloSafe.lng}
         semaforoEstado={semaforoPueblo.estado ?? "VERDE"}

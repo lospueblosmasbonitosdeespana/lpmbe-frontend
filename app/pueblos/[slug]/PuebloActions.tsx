@@ -19,6 +19,7 @@ type SemaforoProgramado = {
 type PuebloActionsProps = {
   nombre: string;
   puebloSlug: string;
+  puebloId?: number;
   lat: number | null;
   lng: number | null;
   mapAnchorId?: string;
@@ -154,6 +155,14 @@ function NewsIcon({ className }: { className?: string }) {
   );
 }
 
+function ClubHeartIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  );
+}
+
 function AlertTriangleIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -238,6 +247,7 @@ function ActionButton({ icon, label, state = "idle", onClick, href, external, hi
 export default function PuebloActions({
   nombre,
   puebloSlug,
+  puebloId,
   lat,
   lng,
   mapAnchorId = "mapa",
@@ -254,6 +264,7 @@ export default function PuebloActions({
   const [shareDropdownOpen, setShareDropdownOpen] = useState(false);
   const shareDropdownRef = useRef<HTMLDivElement>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [userRol, setUserRol] = useState<string | null>(null);
   const [showSuscribirseModal, setShowSuscribirseModal] = useState(false);
 
   useEffect(() => {
@@ -273,7 +284,13 @@ export default function PuebloActions({
     (async () => {
       try {
         const res = await fetch("/api/auth/me", { cache: "no-store" });
-        if (mounted) setIsLoggedIn(res.ok);
+        if (mounted) {
+          setIsLoggedIn(res.ok);
+          if (res.ok) {
+            const data = await res.json().catch(() => null);
+            setUserRol(data?.rol ?? null);
+          }
+        }
       } catch {
         if (mounted) setIsLoggedIn(false);
       }
@@ -403,6 +420,14 @@ export default function PuebloActions({
                 icon={<BellIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
                 label={t("actionSubscribe")}
                 onClick={() => setShowSuscribirseModal(true)}
+              />
+            )}
+            {userRol === 'ADMIN' && (
+              <ActionButton
+                icon={<ClubHeartIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
+                label="Club de Amigos"
+                href={puebloId ? `/gestion/asociacion/negocios/${puebloId}` : `/gestion/asociacion/negocios`}
+                highlighted
               />
             )}
             <div className="flex items-center gap-5">
