@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
+import ImageEditorModal from '@/app/_components/content-builder/ImageEditorModal';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -814,6 +815,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
   const [reorderPickSourceId, setReorderPickSourceId] = useState<string | null>(null);
   const [draggingPaletteType, setDraggingPaletteType] = useState<NewsletterBlockType | null>(null);
   const [uploadingNewsletterImage, setUploadingNewsletterImage] = useState(false);
+  const [editingImageBlockId, setEditingImageBlockId] = useState<string | null>(null);
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const [hasStoredDraft, setHasStoredDraft] = useState(false);
   const [newsletterRecipientCount, setNewsletterRecipientCount] = useState<number | null>(null);
@@ -3698,6 +3700,15 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
                                     }}
                                     className="sr-only"
                                   />
+                                  {selectedNewsletterBlock.url && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingImageBlockId(selectedNewsletterBlock.id)}
+                                      className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                                    >
+                                      ✏️ Editar imagen (recortar, redimensionar, alt)
+                                    </button>
+                                  )}
                                   <p className="mt-2 text-[11px] text-muted-foreground">
                                     También puedes pegar una URL manual en el campo URL de arriba.
                                   </p>
@@ -4655,6 +4666,33 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
         </div>
       </section>
 
+      {editingImageBlockId && (() => {
+        const blk = newsletterBlocks.find((b) => b.id === editingImageBlockId);
+        if (!blk || !blk.url) return null;
+        return (
+          <ImageEditorModal
+            imageUrl={blk.url}
+            alt={blk.content || ''}
+            onClose={() => setEditingImageBlockId(null)}
+            onApply={(result) => {
+              updateNewsletterBlock(blk.id, {
+                url: result.url,
+                content: result.alt || blk.content || '',
+              });
+              setEditingImageBlockId(null);
+            }}
+            onUploadCropped={async (file) => {
+              const fd = new FormData();
+              fd.append('file', file);
+              fd.append('folder', 'newsletter/templates');
+              const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok || !data?.url) throw new Error('Error subiendo imagen recortada');
+              return data.url;
+            }}
+          />
+        );
+      })()}
     </div>
   );
 }
