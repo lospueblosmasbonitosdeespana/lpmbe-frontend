@@ -11,7 +11,7 @@ type PhotoEntry = {
   parentId: string | number;
 };
 
-type PuebloOption = { id: number; nombre: string };
+type PuebloOption = { id: number; nombre: string; slug: string };
 type Scope = 'PUEBLO' | 'ASOCIACION';
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -48,7 +48,7 @@ export default function FotosClient() {
       .then((data) => {
         const list = (Array.isArray(data) ? data : data?.items ?? [])
           .filter((p: any) => p.id !== 200)
-          .map((p: any) => ({ id: Number(p.id), nombre: String(p.nombre || '') }))
+          .map((p: any) => ({ id: Number(p.id), nombre: String(p.nombre || ''), slug: String(p.slug || '') }))
           .sort((a: PuebloOption, b: PuebloOption) => a.nombre.localeCompare(b.nombre));
         setPueblos(list);
       })
@@ -63,7 +63,8 @@ export default function FotosClient() {
     try {
       let url = '';
       if (scope === 'PUEBLO' && puebloId > 0) {
-        url = `/api/admin/fotos/pueblo/${puebloId}`;
+        const selectedSlug = pueblos.find((p) => p.id === puebloId)?.slug || '';
+        url = `/api/admin/fotos/pueblo/${puebloId}?slug=${encodeURIComponent(selectedSlug)}`;
       } else if (scope === 'ASOCIACION') {
         url = '/api/admin/fotos/asociacion';
       } else {
@@ -80,7 +81,7 @@ export default function FotosClient() {
     } finally {
       setLoading(false);
     }
-  }, [scope, puebloId]);
+  }, [scope, puebloId, pueblos]);
 
   useEffect(() => {
     if (scope === 'ASOCIACION' || (scope === 'PUEBLO' && puebloId > 0)) {

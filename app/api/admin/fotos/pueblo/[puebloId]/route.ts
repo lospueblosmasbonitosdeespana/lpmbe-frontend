@@ -27,13 +27,13 @@ function extractUrl(item: unknown): string {
   return '';
 }
 
-function isValidUrl(u: string): boolean {
+function ok(u: string): boolean {
   return u.startsWith('http://') || u.startsWith('https://');
 }
 
 function push(arr: PhotoEntry[], url: unknown, source: string, label: string, parentTitle: string, parentId: string | number) {
   const u = extractUrl(url);
-  if (u && isValidUrl(u)) arr.push({ url: u, source, label, parentTitle: str(parentTitle) || '(sin título)', parentId });
+  if (u && ok(u)) arr.push({ url: u, source, label, parentTitle: str(parentTitle) || '(sin título)', parentId });
 }
 
 async function safeFetch(url: string, headers: Record<string, string>): Promise<any> {
@@ -46,7 +46,7 @@ async function safeFetch(url: string, headers: Record<string, string>): Promise<
   }
 }
 
-export async function GET(_req: Request, { params }: { params: Promise<{ puebloId: string }> }) {
+export async function GET(req: Request, { params }: { params: Promise<{ puebloId: string }> }) {
   const token = await getToken();
   if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
@@ -56,13 +56,23 @@ export async function GET(_req: Request, { params }: { params: Promise<{ puebloI
     return NextResponse.json({ message: 'puebloId inválido' }, { status: 400 });
   }
 
+  const { searchParams } = new URL(req.url);
+  const slug = searchParams.get('slug')?.trim() || '';
+
   const API = getApiUrl();
   const authH = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
   const pubH = { 'Content-Type': 'application/json' };
   const photos: PhotoEntry[] = [];
 
+  // El endpoint público /pueblos/{slug} devuelve fotosPueblo, pois con foto,
+  // multiexperiencias con foto, eventos, noticias. Con ID numérico no devuelve
+  // fotosPueblo, por eso necesitamos el slug.
+  const puebloUrl = slug
+    ? `${API}/pueblos/${encodeURIComponent(slug)}`
+    : `${API}/pueblos/${puebloId}`;
+
   const [puebloData, contenidosData, pagesData] = await Promise.all([
-    safeFetch(`${API}/pueblos/${puebloId}`, pubH),
+    safeFetch(puebloUrl, pubH),
     safeFetch(`${API}/admin/contenidos?puebloId=${puebloId}&limit=500`, authH),
     safeFetch(`${API}/admin/pueblos/${puebloId}/pages`, authH),
   ]);
@@ -70,25 +80,37 @@ export async function GET(_req: Request, { params }: { params: Promise<{ puebloI
   const pNombre = str(puebloData?.nombre) || `Pueblo ${puebloId}`;
 
   if (puebloData) {
-    // 1) Galería del pueblo (fotosPueblo)
+    // 1) Galería del pueblo — viene de fotosPueblo (endpoint por slug)
     const fotosPueblo = Array.isArray(puebloData.fotosPueblo) ? puebloData.fotosPueblo : [];
     fotosPueblo.forEach((f: any, idx: number) => {
       const u = extractUrl(f);
-      if (u && isValidUrl(u)) photos.push({
+      if (u && ok(u)) photos.push({
         url: u, source: 'GALERIA_PUEBLO', label: `Galería del pueblo #${idx + 1}`, parentTitle: pNombre, parentId: puebloId,
       });
     });
 
+    // foto_destacada y escudo (campos escalares del modelo)
     push(photos, puebloData.foto_destacada, 'GALERIA_PUEBLO', 'Foto destacada', pNombre, puebloId);
     push(photos, puebloData.escudo_bandera, 'GALERIA_PUEBLO', 'Escudo / bandera', pNombre, puebloId);
 
-    // 2) POIs
+    // Si no hay fotosPueblo, intentar fotos[] (endpoint por ID numérico)
+    if (fotosPueblo.length === 0) {
+      const fotos = Array.isArray(puebloData.fotos) ? puebloData.fotos : [];
+      fotos.forEach((f: any, idx: number) => {
+        const u = extractUrl(f);
+        if (u && ok(u)) photos.push({
+          url: u, source: 'GALERIA_PUEBLO', label: `Galería del pueblo #${idx + 1}`, parentTitle: pNombre, parentId: puebloId,
+        });
+      });
+    }
+
+    // 2) POIs — cada uno lleva foto (string URL)
     const pois = Array.isArray(puebloData.pois) ? puebloData.pois : [];
     pois.forEach((poi: any) => {
       push(photos, poi.foto, 'POI', poi.nombre || 'Punto de interés', poi.nombre, poi.id);
     });
 
-    // 3) Multiexperiencias
+    // 3) Multiexperiencias — cada PuebloMultiexperiencia tiene .multiexperiencia.foto
     const mxs = Array.isArray(puebloData.multiexperiencias) ? puebloData.multiexperiencias : [];
     mxs.forEach((pm: any) => {
       const mx = pm.multiexperiencia || pm;
@@ -96,7 +118,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ puebloI
     });
   }
 
-  // 4) Contenidos creados (noticias, eventos, artículos, páginas temáticas) vía admin
+  // 4) Contenidos creados vía admin (noticias, eventos, artículos)
   const contenidos = Array.isArray(contenidosData) ? contenidosData : (Array.isArray(contenidosData?.items) ? contenidosData.items : []);
   contenidos.forEach((c: any) => {
     const tipo = str(c.tipo).toUpperCase();
@@ -108,11 +130,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ puebloI
     });
   });
 
-  // 5) Páginas temáticas (Pages) vía admin
+  // 5) Páginas temáticas vía admin
   if (pagesData && typeof pagesData === 'object') {
     const categories = Array.isArray(pagesData) ? pagesData : Object.values(pagesData);
     for (const catGroup of categories) {
-      const pages = Array.isArray(catGroup) ? catGroup : (Array.isArray(catGroup?.pages) ? catGroup.pages : (catGroup?.items ? catGroup.items : []));
+      const pages = Array.isArray(catGroup) ? catGroup
+        : (Array.isArray(catGroup?.pages) ? catGroup.pages : (catGroup?.items ? catGroup.items : []));
       for (const p of (Array.isArray(pages) ? pages : [])) {
         push(photos, p.coverUrl, 'PAGINA_TEMATICA', `Pág. temática: ${p.titulo || p.title || '(sin título)'}`, p.titulo || p.title, p.id);
         const gallery = Array.isArray(p.galleryUrls) ? p.galleryUrls : [];
@@ -123,7 +146,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ puebloI
     }
   }
 
-  // Dedup por URL
   const unique = new Map<string, PhotoEntry>();
   for (const p of photos) {
     if (!unique.has(p.url)) unique.set(p.url, p);
