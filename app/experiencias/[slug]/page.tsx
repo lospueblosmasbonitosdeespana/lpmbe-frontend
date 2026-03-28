@@ -213,7 +213,7 @@ export default async function TematicaPage({
                       >
                         {/* Imagen */}
                         {item.coverUrl && item.coverUrl.trim() ? (
-                          <div className="h-28 w-full overflow-hidden rounded-t-lg bg-background dark:bg-neutral-700">
+                          <div className="aspect-[4/3] w-full overflow-hidden rounded-t-lg bg-background dark:bg-neutral-700">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={item.coverUrl.trim()}
@@ -222,7 +222,7 @@ export default async function TematicaPage({
                             />
                           </div>
                         ) : (
-                          <div className="h-28 w-full rounded-t-lg bg-muted/60 dark:bg-neutral-700" />
+                          <div className="aspect-[4/3] w-full rounded-t-lg bg-muted/60 dark:bg-neutral-700" />
                         )}
 
                         {/* Contenido */}
