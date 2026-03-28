@@ -36,6 +36,18 @@ function add(arr: PhotoEntry[], url: unknown, source: string, label: string, par
   if (u && valid(u)) arr.push({ url: u, source, label, parentTitle: str(parentTitle) || '(sin título)', parentId });
 }
 
+function extractImgsFromHtml(html: string): string[] {
+  if (!html) return [];
+  const urls: string[] = [];
+  const regex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const url = match[1].trim();
+    if (valid(url)) urls.push(url);
+  }
+  return urls;
+}
+
 async function safeFetch(url: string, headers: Record<string, string>): Promise<any> {
   try {
     const res = await fetch(url, { headers, cache: 'no-store' });
@@ -155,6 +167,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ puebloId
     const gallery = Array.isArray(c.galleryUrls) ? c.galleryUrls : [];
     gallery.forEach((g: string, idx: number) => {
       add(photos, g, 'CONTENIDO', `${tipoLabel} gal. ${idx + 1}: ${c.titulo || ''}`, c.titulo, c.id);
+    });
+    const bodyImgs = extractImgsFromHtml(str(c.contenidoMd));
+    bodyImgs.forEach((imgUrl, idx) => {
+      add(photos, imgUrl, 'CONTENIDO', `${tipoLabel} img. cuerpo ${idx + 1}: ${c.titulo || ''}`, c.titulo, c.id);
     });
   });
 
