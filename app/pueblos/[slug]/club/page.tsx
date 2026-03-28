@@ -374,25 +374,29 @@ export default async function ClubPuebloPage({
                   ofrecen ventajas exclusivas a los socios del Club de Amigos.
                 </p>
 
-                {/* Category summary cards */}
+                {/* Category summary cards → link to SEO pages */}
                 <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 mb-8">
-                  {negociosByTipo.map((g) => (
-                    <a
-                      key={g.tipo}
-                      href={`#${g.tipo.toLowerCase()}`}
-                      className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-sm transition-all hover:shadow-md hover:border-primary/30"
-                    >
-                      <span className="text-2xl">{g.icon}</span>
-                      <div className="min-w-0">
-                        <span className="block text-sm font-semibold text-foreground truncate">
-                          {g.label}
-                        </span>
-                        <span className="block text-xs text-muted-foreground">
-                          {g.items.length}
-                        </span>
-                      </div>
-                    </a>
-                  ))}
+                  {negociosByTipo.map((g) => {
+                    const route = TIPO_TO_ROUTE[g.tipo];
+                    const href = route ? `/${route}/${pueblo.slug}` : `#${g.tipo.toLowerCase()}`;
+                    return (
+                      <Link
+                        key={g.tipo}
+                        href={href}
+                        className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-sm transition-all hover:shadow-md hover:border-primary/30"
+                      >
+                        <span className="text-2xl">{g.icon}</span>
+                        <div className="min-w-0">
+                          <span className="block text-sm font-semibold text-foreground truncate">
+                            {g.label}
+                          </span>
+                          <span className="block text-xs text-muted-foreground">
+                            {g.items.length}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
 
                 {/* Sections by type */}
