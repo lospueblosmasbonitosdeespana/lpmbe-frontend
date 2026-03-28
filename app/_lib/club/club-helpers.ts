@@ -118,6 +118,31 @@ export async function getNegociosByPuebloSlug(
   }
 }
 
+export const TIPO_TO_ROUTE_SLUG: Record<string, string> = {
+  RESTAURANTE: "donde-comer",
+  HOTEL: "donde-dormir",
+  COMERCIO: "donde-comprar",
+};
+
+export async function getNegocioBySlug(
+  negocioSlug: string,
+  locale: string
+): Promise<NegocioPublic | null> {
+  try {
+    const params = new URLSearchParams();
+    if (locale && locale !== "es") params.set("lang", locale);
+    const qs = params.toString() ? `?${params.toString()}` : "";
+    const res = await fetch(
+      `${getApiUrl()}/public/recursos/${negocioSlug}${qs}`,
+      { cache: "no-store" }
+    );
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
 export function slugToTitle(slug: string): string {
   return slug
     .split("-")

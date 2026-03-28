@@ -25,10 +25,12 @@ interface ClubPageProps {
   locale: string;
 }
 
-function NegocioCard({ negocio, locale }: { negocio: NegocioPublic; locale: string }) {
+function NegocioCard({ negocio, locale, routeSlug, puebloSlug }: { negocio: NegocioPublic; locale: string; routeSlug: string; puebloSlug: string }) {
   const mainImage = negocio.imagenes?.[0]?.url ?? negocio.fotoUrl;
-  return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+  const href = negocio.slug ? `/${routeSlug}/${puebloSlug}/${negocio.slug}` : undefined;
+
+  const inner = (
+    <>
       {mainImage && (
         <div className="aspect-[4/3] overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -49,30 +51,40 @@ function NegocioCard({ negocio, locale }: { negocio: NegocioPublic; locale: stri
         )}
         <div className="mt-3 flex flex-wrap gap-3 text-sm text-muted-foreground">
           {negocio.telefono && (
-            <a href={`tel:${negocio.telefono}`} className="flex items-center gap-1 hover:text-foreground">
+            <span className="flex items-center gap-1">
               📞 {negocio.telefono}
-            </a>
+            </span>
           )}
           {negocio.web && (
-            <a href={negocio.web} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground">
+            <span className="flex items-center gap-1">
               🌐 Web
-            </a>
-          )}
-          {negocio.email && (
-            <a href={`mailto:${negocio.email}`} className="flex items-center gap-1 hover:text-foreground">
-              ✉️ {negocio.email}
-            </a>
+            </span>
           )}
         </div>
-        {negocio.horarios && (
-          <p className="mt-2 text-xs text-muted-foreground">{negocio.horarios}</p>
-        )}
         {negocio.descuentoPorcentaje && negocio.descuentoPorcentaje > 0 && (
           <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-800">
             {locale === "es" ? `${negocio.descuentoPorcentaje}% descuento socios` : `${negocio.descuentoPorcentaje}% member discount`}
           </div>
         )}
+        {href && (
+          <span className="mt-3 block text-xs font-medium text-primary">
+            {locale === "es" ? "Ver detalle →" : "View details →"}
+          </span>
+        )}
       </div>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className="block overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md">
+        {inner}
+      </Link>
+    );
+  }
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+      {inner}
     </div>
   );
 }
@@ -114,7 +126,7 @@ export async function ClubPuebloPage({ slug, puebloSlug, locale }: ClubPageProps
           {negocios.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {negocios.map((negocio) => (
-                <NegocioCard key={negocio.id} negocio={negocio} locale={locale} />
+                <NegocioCard key={negocio.id} negocio={negocio} locale={locale} routeSlug={slug} puebloSlug={puebloSlug} />
               ))}
             </div>
           ) : (

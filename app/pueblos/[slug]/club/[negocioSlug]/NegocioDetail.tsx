@@ -142,9 +142,13 @@ function MiniMap({ lat, lng, nombre }: { lat: number; lng: number; nombre: strin
 export default function NegocioDetail({
   recurso,
   puebloSlug,
+  backHref,
+  backLabel,
 }: {
   recurso: Recurso;
   puebloSlug: string;
+  backHref?: string;
+  backLabel?: string;
 }) {
   const fotos: Imagen[] = recurso.imagenes && recurso.imagenes.length > 0
     ? recurso.imagenes
@@ -332,10 +336,10 @@ export default function NegocioDetail({
       {/* Back link */}
       <div className="pt-2 text-sm">
         <Link
-          href={`/pueblos/${puebloSlug}/club`}
+          href={backHref ?? `/pueblos/${puebloSlug}/club`}
           className="text-muted-foreground hover:text-foreground hover:underline"
         >
-          &larr; Volver al Club de Amigos
+          &larr; {backLabel ? `Volver a ${backLabel}` : "Volver al Club de Amigos"}
         </Link>
       </div>
     </div>

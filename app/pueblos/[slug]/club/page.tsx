@@ -129,10 +129,23 @@ type Recurso = {
 
 const DIA_NOMBRES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
+const TIPO_TO_ROUTE: Record<string, string> = {
+  HOTEL: "donde-dormir",
+  CASA_RURAL: "donde-dormir",
+  RESTAURANTE: "donde-comer",
+  BAR: "donde-comer",
+  BODEGA: "donde-comer",
+  COMERCIO: "donde-comprar",
+  TIENDA_ARTESANIA: "donde-comprar",
+};
+
 function RecursoCard({ r, puebloSlug }: { r: Recurso; puebloSlug: string }) {
   const fotos = r.imagenes && r.imagenes.length > 0 ? r.imagenes : null;
   const mainImage = fotos?.[0]?.url ?? r.fotoUrl;
-  const detailHref = `/pueblos/${puebloSlug}/club/${r.slug}`;
+  const routeSlug = r.scope === "NEGOCIO" ? TIPO_TO_ROUTE[r.tipo] : undefined;
+  const detailHref = routeSlug
+    ? `/${routeSlug}/${puebloSlug}/${r.slug}`
+    : `/pueblos/${puebloSlug}/club/${r.slug}`;
 
   return (
     <Link href={detailHref} className="block overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md group">
