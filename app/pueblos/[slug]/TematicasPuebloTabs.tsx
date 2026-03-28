@@ -4,21 +4,23 @@ import { useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import ReactMarkdown from 'react-markdown';
 import Link from 'next/link';
+import ContenidoImageCarousel from '@/app/components/ContenidoImageCarousel';
 
 type TematicaPage = {
   id: number;
   titulo: string;
   contenido: string;
   coverUrl?: string | null;
+  galleryUrls?: string[];
 };
 
 type TematicasPueblo = {
-  GASTRONOMIA?: TematicaPage;
-  NATURALEZA?: TematicaPage;
-  CULTURA?: TematicaPage;
-  EN_FAMILIA?: TematicaPage;
-  PETFRIENDLY?: TematicaPage;
-  PATRIMONIO?: TematicaPage;
+  GASTRONOMIA?: TematicaPage | TematicaPage[];
+  NATURALEZA?: TematicaPage | TematicaPage[];
+  CULTURA?: TematicaPage | TematicaPage[];
+  EN_FAMILIA?: TematicaPage | TematicaPage[];
+  PETFRIENDLY?: TematicaPage | TematicaPage[];
+  PATRIMONIO?: TematicaPage | TematicaPage[];
 };
 
 type PoiTematica = {
@@ -94,7 +96,8 @@ export default function TematicasPuebloTabs({ puebloSlug, pois = [] }: Props) {
 
   // Determinar tabs disponibles: páginas temáticas O POIs con esa categoría
   const availableTabs = TABS.filter((tab) => {
-    const hasPage = tematicas?.[tab.key];
+    const val = tematicas?.[tab.key];
+    const hasPage = Array.isArray(val) ? val.length > 0 : !!val;
     const hasPois = poisByCategoria[tab.key]?.length > 0;
     return hasPage || hasPois;
   });
@@ -132,7 +135,11 @@ export default function TematicasPuebloTabs({ puebloSlug, pois = [] }: Props) {
 
   if (availableTabs.length === 0) return null;
 
-  const currentPage = activeTab ? tematicas?.[activeTab as keyof TematicasPueblo] : null;
+  const currentPage = activeTab ? (() => {
+    const val = tematicas?.[activeTab as keyof TematicasPueblo];
+    if (!val) return null;
+    return Array.isArray(val) ? val[0] ?? null : val;
+  })() : null;
   const currentPois = activeTab ? (poisByCategoria[activeTab] || []) : [];
 
   return (
@@ -167,16 +174,14 @@ export default function TematicasPuebloTabs({ puebloSlug, pois = [] }: Props) {
           <div className="prose prose-gray max-w-none mb-8">
             <h3 className="text-2xl font-semibold mb-4">{currentPage.titulo}</h3>
 
-            {currentPage.coverUrl && currentPage.coverUrl.trim() && (
-              <div className="mb-6">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={currentPage.coverUrl.trim()}
-                  alt={currentPage.titulo}
-                  className="w-full max-h-96 rounded-lg object-cover"
-                />
-              </div>
-            )}
+            {(() => {
+              const imgs = [currentPage.coverUrl, ...(currentPage.galleryUrls ?? [])].filter((u): u is string => !!u?.trim());
+              return imgs.length > 0 ? (
+                <div className="mb-6 not-prose">
+                  <ContenidoImageCarousel images={imgs} alt={currentPage.titulo} />
+                </div>
+              ) : null;
+            })()}
 
             <ReactMarkdown>{currentPage.contenido}</ReactMarkdown>
           </div>

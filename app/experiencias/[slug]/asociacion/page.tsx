@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
-import ZoomableImage from '@/app/components/ZoomableImage';
+import ContenidoImageCarousel from '@/app/components/ContenidoImageCarousel';
 import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -12,6 +12,7 @@ type TematicaPage = {
   titulo: string;
   contenido: string;
   coverUrl?: string | null;
+  galleryUrls?: string[];
 };
 
 type CategoryConfig = {
@@ -118,17 +119,14 @@ export default async function AsociacionTematicaPage({
         
         <h1 className="mt-2 text-4xl font-semibold">{page.titulo}</h1>
 
-        {page.coverUrl && page.coverUrl.trim() && (
-          <div className="my-8">
-            <ZoomableImage
-              src={page.coverUrl.trim()}
-              alt={page.titulo}
-              fit="cover"
-              wrapperClassName="aspect-[4/3] max-h-[500px] rounded-lg"
-              className="rounded-lg"
-            />
-          </div>
-        )}
+        {(() => {
+          const imgs = [page.coverUrl, ...(page.galleryUrls ?? [])].filter((u): u is string => !!u?.trim());
+          return imgs.length > 0 ? (
+            <div className="my-8">
+              <ContenidoImageCarousel images={imgs} alt={page.titulo} />
+            </div>
+          ) : null;
+        })()}
 
         <div className="prose prose-gray prose-lg max-w-none safe-html-content [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-6">
           <SafeHtml html={page.contenido || ''} />
