@@ -12,7 +12,7 @@ import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Eyebrow } from "@/app/components/ui/typography";
 import SafeHtml from "@/app/_components/ui/SafeHtml";
-import ContenidoImageCarousel from "@/app/_components/ui/ContenidoImageCarousel";
+import ContenidoImageCarousel from "@/app/components/ContenidoImageCarousel";
 import {
   CATEGORY_LABELS,
   CATEGORY_API_KEYS,

@@ -6,6 +6,7 @@ import { getApiUrl } from "@/lib/api";
 
 export const CATEGORY_API_KEYS: Record<string, string> = {
   gastronomia: "GASTRONOMIA",
+  "que-comer": "GASTRONOMIA",
   naturaleza: "NATURALEZA",
   cultura: "CULTURA",
   "en-familia": "EN_FAMILIA",
@@ -16,6 +17,15 @@ export const CATEGORY_API_KEYS: Record<string, string> = {
 /** Etiqueta localizada por categoría */
 export const CATEGORY_LABELS: Record<string, Record<string, string>> = {
   gastronomia: {
+    es: "Gastronomía",
+    en: "Gastronomy",
+    fr: "Gastronomie",
+    de: "Gastronomie",
+    pt: "Gastronomia",
+    it: "Gastronomia",
+    ca: "Gastronomia",
+  },
+  "que-comer": {
     es: "Gastronomía",
     en: "Gastronomy",
     fr: "Gastronomie",

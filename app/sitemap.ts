@@ -145,7 +145,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const semanaSanta = semanaSantaPueblos.map((s) => entry(`/planifica/semana-santa/pueblo/${s}`, 0.6, 'weekly'));
 
   // Páginas SEO temáticas por pueblo
-  const CATEGORIAS_SEO = ['gastronomia', 'naturaleza', 'cultura', 'en-familia', 'petfriendly', 'patrimonio'];
+  const CATEGORIAS_SEO = ['que-comer', 'naturaleza', 'cultura', 'en-familia', 'petfriendly', 'patrimonio'];
   const paginasTematicas = pueblosWithImages.flatMap((p) =>
     CATEGORIAS_SEO.map((cat) => entry(`/${cat}/${p.slug}`, 0.75, 'monthly'))
   );

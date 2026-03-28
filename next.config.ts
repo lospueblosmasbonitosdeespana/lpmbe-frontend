@@ -68,12 +68,23 @@ const nextConfig: NextConfig = {
       // Redirecciones 301: URLs antiguas de experiencias temáticas → nuevas rutas SEO
       {
         source: '/experiencias/gastronomia/pueblos/:puebloSlug',
-        destination: '/gastronomia/:puebloSlug',
+        destination: '/que-comer/:puebloSlug',
         permanent: true,
       },
       {
         source: '/experiencias/gastronomia/pueblos/:puebloSlug/:pageId',
-        destination: '/gastronomia/:puebloSlug',
+        destination: '/que-comer/:puebloSlug',
+        permanent: true,
+      },
+      // Alias /gastronomia → /que-comer (por si alguien ya enlazó la URL anterior)
+      {
+        source: '/gastronomia/:puebloSlug',
+        destination: '/que-comer/:puebloSlug',
+        permanent: true,
+      },
+      {
+        source: '/gastronomia/:puebloSlug/:pageSlug',
+        destination: '/que-comer/:puebloSlug/:pageSlug',
         permanent: true,
       },
       {
