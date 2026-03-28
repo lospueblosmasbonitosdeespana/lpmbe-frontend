@@ -305,28 +305,25 @@ function NotificationCenter({
                 : "rounded-2xl hover:shadow-2xl"
             )}
           >
-            <div className="flex-1" aria-hidden />
-            <div className="flex items-center justify-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary">
                 <Bell className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="font-semibold text-sm">
+              <span className="font-semibold text-sm truncate">
                 {t("notifCenterTitle")}
               </span>
               {unreadCount > 0 && (
-                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-bold leading-none text-white">
+                <span className="shrink-0 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-bold leading-none text-white">
                   {unreadCount}
                 </span>
               )}
             </div>
-            <div className="flex-1 flex justify-end">
-              <ChevronDown
-                className={cn(
-                  "h-4 w-4 text-muted-foreground transition-transform duration-300",
-                  isOpen && "rotate-180"
-                )}
-              />
-            </div>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 text-muted-foreground transition-transform duration-300 shrink-0",
+                isOpen && "rotate-180"
+              )}
+            />
           </button>
 
           <div
