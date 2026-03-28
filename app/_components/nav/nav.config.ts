@@ -95,6 +95,7 @@ export function getNavConfig(options?: Partial<CampaignNavOptions>): NavItem[] {
           { labelKey: "culture", href: "/experiencias/cultura" },
           { labelKey: "family", href: "/experiencias/en-familia" },
           { labelKey: "petfriendly", href: "/experiencias/petfriendly" },
+          { labelKey: "patrimonio", href: "/experiencias/patrimonio" },
         ],
       },
       {
