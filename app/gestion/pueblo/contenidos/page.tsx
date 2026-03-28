@@ -153,7 +153,7 @@ function TematicaCategoryCard({
   filterHref: string;
   isActive: boolean;
 }) {
-  const maxPages = 4;
+  const maxPages = 8;
   const progress = Math.min(count / maxPages, 1) * 100;
 
   return (
@@ -330,7 +330,7 @@ export default async function ContenidosPuebloPage({
                   <p className="text-sm text-muted-foreground">
                     {paginas.length === 0
                       ? 'Crea páginas sobre gastronomía, naturaleza, cultura y más'
-                      : `${paginas.length} ${paginas.length === 1 ? 'página creada' : 'páginas creadas'} · hasta 4 por categoría`}
+                      : `${paginas.length} ${paginas.length === 1 ? 'página creada' : 'páginas creadas'} · hasta 8 por categoría`}
                   </p>
                 </div>
               </div>

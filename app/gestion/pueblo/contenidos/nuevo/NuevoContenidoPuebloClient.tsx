@@ -53,7 +53,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
   const [builderResetKey, setBuilderResetKey] = useState(0);
 
   // Limpiar formulario cuando cambia la categoría (ya no se carga página existente)
-  // Ahora se permiten hasta 4 páginas por categoría
+  // Ahora se permiten hasta 8 páginas por categoría
   useEffect(() => {
     if (tipo !== 'PAGINA') return;
     // Solo limpiar al cambiar categoría, pero no si ya hay contenido creado
@@ -302,7 +302,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
               ))}
             </select>
             <p className="text-xs text-purple-700">
-              Se permiten 4 páginas temáticas por categoría.
+              Se permiten 8 páginas temáticas por categoría.
             </p>
           </div>
         )}
