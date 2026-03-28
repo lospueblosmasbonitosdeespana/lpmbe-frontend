@@ -17,6 +17,8 @@ const TIPO_LABELS: Record<string, string> = {
 
 const DIA_NOMBRES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
+type PlanNegocio = "FREE" | "RECOMENDADO" | "PREMIUM";
+
 type Imagen = { id: number; url: string; alt: string | null; orden: number };
 
 type Recurso = {
@@ -36,6 +38,7 @@ type Recurso = {
   cerradoTemporal?: boolean;
   lat?: number | null;
   lng?: number | null;
+  planNegocio?: PlanNegocio;
   pueblo?: { id: number; nombre: string; slug: string } | null;
   imagenes?: Imagen[];
   horariosSemana?: Array<{
@@ -54,7 +57,6 @@ function GalleryViewer({ images, nombre }: { images: Imagen[]; nombre: string })
 
   return (
     <div className="space-y-3">
-      {/* Main image */}
       <div className="relative overflow-hidden rounded-xl bg-muted">
         <img
           src={selected.url}
@@ -83,8 +85,6 @@ function GalleryViewer({ images, nombre }: { images: Imagen[]; nombre: string })
           </>
         )}
       </div>
-
-      {/* Thumbnails */}
       {images.length > 1 && (
         <div className="flex gap-2 overflow-x-auto pb-1">
           {images.map((img, i) => (
@@ -97,11 +97,7 @@ function GalleryViewer({ images, nombre }: { images: Imagen[]; nombre: string })
                   : "border-transparent opacity-70 hover:opacity-100"
               }`}
             >
-              <img
-                src={img.url}
-                alt={img.alt ?? ""}
-                className="h-16 w-16 object-cover sm:h-20 sm:w-20"
-              />
+              <img src={img.url} alt={img.alt ?? ""} className="h-16 w-16 object-cover sm:h-20 sm:w-20" />
             </button>
           ))}
         </div>
@@ -117,12 +113,7 @@ function MiniMap({ lat, lng, nombre }: { lat: number; lng: number; nombre: strin
   return (
     <div className="space-y-2">
       <div className="overflow-hidden rounded-lg border border-border">
-        <iframe
-          src={mapUrl}
-          className="h-48 w-full"
-          title={`Mapa de ${nombre}`}
-          loading="lazy"
-        />
+        <iframe src={mapUrl} className="h-48 w-full" title={`Mapa de ${nombre}`} loading="lazy" />
       </div>
       <a
         href={directionsUrl}
@@ -139,6 +130,50 @@ function MiniMap({ lat, lng, nombre }: { lat: number; lng: number; nombre: strin
   );
 }
 
+function PlanBadge({ plan }: { plan: PlanNegocio }) {
+  if (plan === "FREE") return null;
+  const isPremium = plan === "PREMIUM";
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
+        isPremium
+          ? "bg-amber-100 text-amber-800 border border-amber-300"
+          : "bg-blue-100 text-blue-800 border border-blue-300"
+      }`}
+    >
+      {isPremium && (
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      )}
+      {isPremium ? "Premium" : "Recomendado por LPMBE"}
+    </span>
+  );
+}
+
+function LockedSection({ title, message, ctaHref }: { title: string; message: string; ctaHref: string }) {
+  return (
+    <div className="relative rounded-xl border border-dashed border-border bg-muted/30 p-6">
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
+          <svg className="h-5 w-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">{message}</p>
+          <Link
+            href={ctaHref}
+            className="mt-3 inline-block rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            Ver planes
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function NegocioDetail({
   recurso,
   puebloSlug,
@@ -150,22 +185,48 @@ export default function NegocioDetail({
   backHref?: string;
   backLabel?: string;
 }) {
+  const plan: PlanNegocio = (recurso.planNegocio as PlanNegocio) || "FREE";
+  const isNegocio = recurso.scope === "NEGOCIO";
+  const isFree = isNegocio && plan === "FREE";
+  const isRecomendado = plan === "RECOMENDADO";
+  const isPremium = plan === "PREMIUM";
+  const showContact = !isNegocio || isRecomendado || isPremium;
+  const showFullGallery = !isNegocio || isRecomendado || isPremium;
+  const showSchedule = !isNegocio || isRecomendado || isPremium;
+
   const fotos: Imagen[] = recurso.imagenes && recurso.imagenes.length > 0
     ? recurso.imagenes
     : recurso.fotoUrl
       ? [{ id: 0, url: recurso.fotoUrl, alt: recurso.nombre, orden: 0 }]
       : [];
 
+  const displayPhotos = showFullGallery ? fotos : fotos.slice(0, 1);
+
   const hasCoords = recurso.lat != null && recurso.lng != null;
 
   return (
     <div className="space-y-8">
-      {/* Gallery */}
-      {fotos.length > 0 && (
-        <GalleryViewer images={fotos} nombre={recurso.nombre} />
+      {/* Gallery / Single photo */}
+      {displayPhotos.length > 0 && (
+        showFullGallery ? (
+          <GalleryViewer images={displayPhotos} nombre={recurso.nombre} />
+        ) : (
+          <div className="overflow-hidden rounded-xl bg-muted">
+            <img
+              src={displayPhotos[0].url}
+              alt={displayPhotos[0].alt ?? recurso.nombre}
+              className="w-full max-h-[480px] object-cover"
+            />
+            {fotos.length > 1 && (
+              <div className="bg-muted/80 px-4 py-2 text-center text-xs text-muted-foreground">
+                +{fotos.length - 1} fotos disponibles con el perfil completo
+              </div>
+            )}
+          </div>
+        )
       )}
 
-      {/* Title + badge */}
+      {/* Title + badge + plan badge */}
       <div>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
@@ -184,6 +245,7 @@ export default function NegocioDetail({
                   {recurso.pueblo.nombre}
                 </Link>
               )}
+              {isNegocio && <PlanBadge plan={plan} />}
             </div>
           </div>
           {recurso.descuentoPorcentaje != null && recurso.descuentoPorcentaje > 0 && (
@@ -217,8 +279,8 @@ export default function NegocioDetail({
         </div>
       )}
 
-      {/* Schedule */}
-      {recurso.horariosSemana && recurso.horariosSemana.length > 0 && (
+      {/* Schedule - only for paid plans or non-negocios */}
+      {showSchedule && recurso.horariosSemana && recurso.horariosSemana.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-foreground mb-3">Horarios</h2>
           <div className="grid gap-1.5 sm:grid-cols-2">
@@ -243,15 +305,15 @@ export default function NegocioDetail({
         </div>
       )}
 
-      {recurso.horarios && !recurso.horariosSemana?.length && (
+      {showSchedule && recurso.horarios && !recurso.horariosSemana?.length && (
         <div>
           <h2 className="text-lg font-semibold text-foreground mb-2">Horarios</h2>
           <p className="text-sm text-muted-foreground">{recurso.horarios}</p>
         </div>
       )}
 
-      {/* Contact info */}
-      {(recurso.telefono || recurso.email || recurso.web || recurso.contacto) && (
+      {/* Contact info - only for paid plans */}
+      {showContact && (recurso.telefono || recurso.email || recurso.web || recurso.contacto) && (
         <div>
           <h2 className="text-lg font-semibold text-foreground mb-3">Contacto</h2>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -306,7 +368,25 @@ export default function NegocioDetail({
         </div>
       )}
 
-      {/* Mini map */}
+      {/* Locked contact for FREE negocios */}
+      {isFree && (recurso.telefono || recurso.email || recurso.web) && (
+        <LockedSection
+          title="Datos de contacto"
+          message="El teléfono, email y web de este negocio están disponibles en perfiles con plan Recomendado o superior."
+          ctaHref="/para-negocios"
+        />
+      )}
+
+      {/* Locked schedule for FREE negocios */}
+      {isFree && recurso.horariosSemana && recurso.horariosSemana.length > 0 && (
+        <LockedSection
+          title="Horarios detallados"
+          message="Los horarios de apertura están disponibles en perfiles con plan Recomendado o superior."
+          ctaHref="/para-negocios"
+        />
+      )}
+
+      {/* Map - visible for all plans (socios need to know where to go) */}
       {hasCoords && (
         <div>
           <h2 className="text-lg font-semibold text-foreground mb-3">Ubicación</h2>
@@ -314,21 +394,36 @@ export default function NegocioDetail({
         </div>
       )}
 
-      {/* CTA - Premium landing teaser */}
-      {recurso.scope === "NEGOCIO" && (
+      {/* CTA for upgrade */}
+      {isNegocio && isFree && (
         <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-6 text-center">
           <h3 className="text-lg font-semibold text-foreground">
             ¿Eres el responsable de este negocio?
           </h3>
           <p className="mt-2 text-sm text-muted-foreground max-w-lg mx-auto">
-            Crea tu espacio premium en Los Pueblos Más Bonitos de España:
-            landing personalizada, galería completa, ofertas destacadas y mucho más.
+            Activa tu perfil completo: galería de fotos, datos de contacto visibles,
+            horarios, badge de recomendación y mucho más.
           </p>
           <Link
-            href="/contacto"
+            href="/para-negocios"
             className="mt-4 inline-block rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
           >
-            Quiero saber más
+            Ver planes para negocios
+          </Link>
+        </div>
+      )}
+
+      {isNegocio && isRecomendado && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-5 text-center">
+          <p className="text-sm text-blue-800">
+            Pasa al plan <strong>Premium</strong> para tu landing completa, badge dorado,
+            posición destacada y publicación en nuestras redes sociales.
+          </p>
+          <Link
+            href="/para-negocios"
+            className="mt-3 inline-block rounded-lg border border-blue-300 bg-white px-5 py-2 text-xs font-semibold text-blue-800 hover:bg-blue-50 transition-colors"
+          >
+            Descubrir Premium
           </Link>
         </div>
       )}

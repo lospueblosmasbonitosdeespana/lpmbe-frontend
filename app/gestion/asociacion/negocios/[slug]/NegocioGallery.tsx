@@ -11,6 +11,12 @@ type NegocioImage = {
   orden: number;
 };
 
+const PLAN_LIMITS: Record<string, number> = {
+  FREE: 1,
+  RECOMENDADO: 15,
+  PREMIUM: 30,
+};
+
 const extractUploadedUrl = (payload: any): string | null => {
   const candidates = [
     payload?.url,
@@ -27,14 +33,19 @@ const extractUploadedUrl = (payload: any): string | null => {
 export default function NegocioGallery({
   negocioId,
   negocioNombre,
+  plan = 'FREE',
 }: {
   negocioId: number;
   negocioNombre: string;
+  plan?: string;
 }) {
   const [images, setImages] = useState<NegocioImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const maxPhotos = PLAN_LIMITS[plan] ?? 1;
+  const canUpload = images.length < maxPhotos;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -54,6 +65,8 @@ export default function NegocioGallery({
   useEffect(() => { load(); }, [load]);
 
   const handleUpload = async () => {
+    if (!canUpload) return;
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -154,6 +167,9 @@ export default function NegocioGallery({
     return <p className="text-xs text-gray-400 py-2">Cargando galería...</p>;
   }
 
+  const nextPlanName = plan === 'FREE' ? 'Recomendado' : plan === 'RECOMENDADO' ? 'Premium' : null;
+  const nextPlanLimit = plan === 'FREE' ? 15 : plan === 'RECOMENDADO' ? 30 : null;
+
   return (
     <div className="mt-3 space-y-3">
       {error && (
@@ -205,18 +221,42 @@ export default function NegocioGallery({
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={handleUpload}
-        disabled={uploading}
-        className="w-full rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-600 hover:border-primary/50 hover:bg-primary/5 disabled:opacity-50 transition-colors"
-      >
-        {uploading ? 'Subiendo...' : `+ Añadir imagen${images.length >= 4 ? '' : ` (${images.length}/4 mínimo)`}`}
-      </button>
+      {canUpload ? (
+        <button
+          type="button"
+          onClick={handleUpload}
+          disabled={uploading}
+          className="w-full rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-600 hover:border-primary/50 hover:bg-primary/5 disabled:opacity-50 transition-colors"
+        >
+          {uploading ? 'Subiendo...' : `+ Añadir imagen (${images.length}/${maxPhotos})`}
+        </button>
+      ) : (
+        <div className="rounded-lg border-2 border-dashed border-amber-300 bg-amber-50 px-4 py-4 text-center">
+          <div className="flex items-center justify-center gap-2 text-sm font-medium text-amber-800">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            Has alcanzado el límite de {maxPhotos} foto{maxPhotos !== 1 ? 's' : ''} de tu plan
+          </div>
+          {nextPlanName && nextPlanLimit && (
+            <p className="mt-1 text-xs text-amber-700">
+              Con el plan <strong>{nextPlanName}</strong> puedes subir hasta {nextPlanLimit} fotos.
+            </p>
+          )}
+          <a
+            href="/para-negocios"
+            target="_blank"
+            className="mt-3 inline-block rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
+          >
+            Ver planes
+          </a>
+        </div>
+      )}
 
       {images.length === 0 && (
         <p className="text-xs text-gray-400">
-          Sube al menos 4 fotos del negocio para mostrar una galería completa.
+          Sube la foto principal de tu negocio.{plan === 'FREE' ? ' Con un plan superior podrás añadir una galería completa.' : ''}
         </p>
       )}
     </div>

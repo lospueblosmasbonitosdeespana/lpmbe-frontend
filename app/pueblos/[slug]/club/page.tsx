@@ -118,6 +118,7 @@ type Recurso = {
   fotoUrl?: string | null;
   horarios?: string | null;
   cerradoTemporal?: boolean;
+  planNegocio?: string;
   imagenes?: Array<{ id: number; url: string; alt: string | null; orden: number }>;
   horariosSemana?: Array<{
     diaSemana: number;
@@ -147,25 +148,32 @@ function RecursoCard({ r, puebloSlug }: { r: Recurso; puebloSlug: string }) {
     ? `/${routeSlug}/${puebloSlug}/${r.slug}`
     : `/pueblos/${puebloSlug}/club/${r.slug}`;
 
+  const plan = r.planNegocio ?? "FREE";
+  const isPremium = plan === "PREMIUM";
+  const isRecomendado = plan === "RECOMENDADO";
+
   return (
-    <Link href={detailHref} className="block overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md group">
-      {/* Image gallery or main photo */}
+    <Link href={detailHref} className={`block overflow-hidden rounded-xl border bg-card shadow-sm transition-shadow hover:shadow-md group ${
+      isPremium ? "border-amber-300 ring-1 ring-amber-200" : isRecomendado ? "border-blue-200" : "border-border"
+    }`}>
       {mainImage && (
         <div className="relative">
-          <img
-            src={mainImage}
-            alt={r.nombre}
-            className="h-48 w-full object-cover"
-          />
-          {fotos && fotos.length > 1 && (
+          <img src={mainImage} alt={r.nombre} className="h-48 w-full object-cover" />
+          {isPremium && (
+            <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-1 text-[11px] font-bold text-white shadow">
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              Premium
+            </span>
+          )}
+          {isRecomendado && (
+            <span className="absolute top-2 left-2 rounded-full bg-blue-600 px-2.5 py-1 text-[11px] font-bold text-white shadow">
+              Recomendado
+            </span>
+          )}
+          {fotos && fotos.length > 1 && (isRecomendado || isPremium) && (
             <div className="absolute bottom-2 right-2 flex gap-1">
               {fotos.slice(1, 4).map((img) => (
-                <img
-                  key={img.id}
-                  src={img.url}
-                  alt={img.alt ?? ""}
-                  className="h-10 w-10 rounded border-2 border-white object-cover shadow-sm"
-                />
+                <img key={img.id} src={img.url} alt={img.alt ?? ""} className="h-10 w-10 rounded border-2 border-white object-cover shadow-sm" />
               ))}
               {fotos.length > 4 && (
                 <span className="flex h-10 w-10 items-center justify-center rounded border-2 border-white bg-black/60 text-xs font-semibold text-white shadow-sm">
@@ -199,43 +207,9 @@ function RecursoCard({ r, puebloSlug }: { r: Recurso; puebloSlug: string }) {
         )}
 
         {r.descripcion && (
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-2">
             {r.descripcion}
           </p>
-        )}
-
-        {/* Horarios */}
-        {r.horariosSemana && r.horariosSemana.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {r.horariosSemana.map((h) => (
-              <span
-                key={h.diaSemana}
-                className={`rounded px-2 py-0.5 text-[11px] font-medium ${
-                  h.abierto
-                    ? "bg-green-50 text-green-700"
-                    : "bg-gray-100 text-gray-400 line-through"
-                }`}
-              >
-                {DIA_NOMBRES[h.diaSemana]}
-                {h.abierto && h.horaAbre && h.horaCierra
-                  ? ` ${h.horaAbre}–${h.horaCierra}`
-                  : ""}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {r.horarios && !r.horariosSemana?.length && (
-          <p className="mt-2 text-xs text-muted-foreground">{r.horarios}</p>
-        )}
-
-        {/* Contact info */}
-        {(r.telefono || r.email || r.web) && (
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground border-t border-border pt-3">
-            {r.telefono && <span>Tel: {r.telefono}</span>}
-            {r.email && <span>{r.email}</span>}
-            {r.web && <span>Web</span>}
-          </div>
         )}
 
         <span className="mt-3 inline-block text-xs font-medium text-primary group-hover:underline">
@@ -286,13 +260,16 @@ export default async function ClubPuebloPage({
   const recursosPueblo = recursos.filter((r) => r.scope === "PUEBLO");
   const negocios = recursos.filter((r) => r.scope === "NEGOCIO");
 
+  const PLAN_SORT: Record<string, number> = { PREMIUM: 0, RECOMENDADO: 1, FREE: 2 };
   const negociosByTipo = TIPO_ORDER
     .map((tipo) => ({
       tipo,
       label: TIPO_LABELS_PLURAL[tipo] ?? tipo,
       icon: TIPO_ICONS[tipo] ?? "📌",
       description: TIPO_DESCRIPTIONS[tipo] ?? "",
-      items: negocios.filter((n) => n.tipo === tipo),
+      items: negocios
+        .filter((n) => n.tipo === tipo)
+        .sort((a, b) => (PLAN_SORT[a.planNegocio ?? "FREE"] ?? 2) - (PLAN_SORT[b.planNegocio ?? "FREE"] ?? 2)),
     }))
     .filter((g) => g.items.length > 0);
 
