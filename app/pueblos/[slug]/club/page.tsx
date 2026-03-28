@@ -50,6 +50,54 @@ const TIPO_LABELS: Record<string, string> = {
   OTRO: "Otro",
 };
 
+const TIPO_LABELS_PLURAL: Record<string, string> = {
+  HOTEL: "Hoteles",
+  CASA_RURAL: "Casas rurales",
+  RESTAURANTE: "Restaurantes",
+  BAR: "Bares y cafeterías",
+  COMERCIO: "Comercios",
+  TIENDA_ARTESANIA: "Tiendas de artesanía",
+  BODEGA: "Bodegas",
+  EXPERIENCIA: "Experiencias",
+  OTRO: "Otros",
+};
+
+const TIPO_DESCRIPTIONS: Record<string, string> = {
+  HOTEL: "Alojamientos con ventajas exclusivas para socios del Club.",
+  CASA_RURAL: "Casas rurales con encanto y descuentos para socios.",
+  RESTAURANTE: "Donde comer bien con ventajas del Club de Amigos.",
+  BAR: "Bares y cafeterías con ofertas para socios.",
+  COMERCIO: "Comercios locales con descuentos para el Club.",
+  TIENDA_ARTESANIA: "Artesanía local con precios especiales.",
+  BODEGA: "Bodegas y enoturismo con ventajas para socios.",
+  EXPERIENCIA: "Experiencias únicas con descuentos del Club.",
+  OTRO: "Otros negocios colaboradores del Club de Amigos.",
+};
+
+const TIPO_ICONS: Record<string, string> = {
+  HOTEL: "🏨",
+  CASA_RURAL: "🏡",
+  RESTAURANTE: "🍽️",
+  BAR: "☕",
+  COMERCIO: "🛍️",
+  TIENDA_ARTESANIA: "🎨",
+  BODEGA: "🍷",
+  EXPERIENCIA: "✨",
+  OTRO: "📌",
+};
+
+const TIPO_ORDER = [
+  "HOTEL",
+  "CASA_RURAL",
+  "RESTAURANTE",
+  "BAR",
+  "BODEGA",
+  "COMERCIO",
+  "TIENDA_ARTESANIA",
+  "EXPERIENCIA",
+  "OTRO",
+];
+
 const SCOPE_LABELS: Record<string, string> = {
   PUEBLO: "Recursos turísticos",
   NEGOCIO: "Negocios colaboradores",
@@ -225,6 +273,16 @@ export default async function ClubPuebloPage({
   const recursosPueblo = recursos.filter((r) => r.scope === "PUEBLO");
   const negocios = recursos.filter((r) => r.scope === "NEGOCIO");
 
+  const negociosByTipo = TIPO_ORDER
+    .map((tipo) => ({
+      tipo,
+      label: TIPO_LABELS_PLURAL[tipo] ?? tipo,
+      icon: TIPO_ICONS[tipo] ?? "📌",
+      description: TIPO_DESCRIPTIONS[tipo] ?? "",
+      items: negocios.filter((n) => n.tipo === tipo),
+    }))
+    .filter((g) => g.items.length > 0);
+
   const breadcrumbs = [
     { label: "Inicio", href: "/" },
     { label: "Pueblos", href: "/pueblos" },
@@ -292,19 +350,60 @@ export default async function ClubPuebloPage({
               </section>
             )}
 
-            {/* Negocios colaboradores */}
+            {/* Resumen de negocios por categoría */}
             {negocios.length > 0 && (
               <section>
-                <h2 className="text-xl font-semibold text-foreground mb-4">
+                <h2 className="text-xl font-semibold text-foreground mb-2">
                   {SCOPE_LABELS.NEGOCIO}
                 </h2>
                 <p className="text-sm text-muted-foreground mb-6">
-                  Hoteles, restaurantes, comercios y otros negocios de {pueblo.nombre} que ofrecen
-                  ventajas exclusivas a los socios del Club de Amigos.
+                  {negocios.length} negocio{negocios.length !== 1 ? "s" : ""} de {pueblo.nombre}{" "}
+                  ofrecen ventajas exclusivas a los socios del Club de Amigos.
                 </p>
-                <div className="grid gap-6 sm:grid-cols-2">
-                  {negocios.map((r) => (
-                    <RecursoCard key={r.id} r={r} puebloSlug={pueblo.slug} />
+
+                {/* Category summary cards */}
+                <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 mb-8">
+                  {negociosByTipo.map((g) => (
+                    <a
+                      key={g.tipo}
+                      href={`#${g.tipo.toLowerCase()}`}
+                      className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-sm transition-all hover:shadow-md hover:border-primary/30"
+                    >
+                      <span className="text-2xl">{g.icon}</span>
+                      <div className="min-w-0">
+                        <span className="block text-sm font-semibold text-foreground truncate">
+                          {g.label}
+                        </span>
+                        <span className="block text-xs text-muted-foreground">
+                          {g.items.length}
+                        </span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+
+                {/* Sections by type */}
+                <div className="space-y-10">
+                  {negociosByTipo.map((g) => (
+                    <div key={g.tipo} id={g.tipo.toLowerCase()}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xl">{g.icon}</span>
+                        <h3 className="text-lg font-semibold text-foreground">
+                          {g.label}
+                        </h3>
+                        <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
+                          {g.items.length}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {g.description}
+                      </p>
+                      <div className="grid gap-6 sm:grid-cols-2">
+                        {g.items.map((r) => (
+                          <RecursoCard key={r.id} r={r} puebloSlug={pueblo.slug} />
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </section>
