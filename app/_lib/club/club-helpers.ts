@@ -108,7 +108,7 @@ export async function getNegociosByPuebloSlug(
     if (locale && locale !== "es") params.set("lang", locale);
     const qs = params.toString() ? `?${params.toString()}` : "";
     const res = await fetch(
-      `${getApiUrl()}/public/negocios/pueblo/${puebloSlug}${qs}`,
+      `${getApiUrl()}/public/recursos/negocios/pueblo/${puebloSlug}${qs}`,
       { cache: "no-store" }
     );
     if (!res.ok) return { pueblo: null, negocios: [] };
