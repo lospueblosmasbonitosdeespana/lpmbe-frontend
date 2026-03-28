@@ -117,6 +117,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry('/experiencias/cultura', 0.65, 'monthly'),
     entry('/experiencias/en-familia', 0.65, 'monthly'),
     entry('/experiencias/petfriendly', 0.65, 'monthly'),
+    entry('/experiencias/patrimonio', 0.65, 'monthly'),
     entry('/multiexperiencias', 0.6, 'weekly'),
     entry('/planifica/crea-mi-ruta', 0.7, 'monthly'),
     entry('/planifica/fin-de-semana', 0.7, 'monthly'),
@@ -143,5 +144,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const contenidos = contenidoSlugs.map((s) => entry(`/c/${s}`, 0.7, 'weekly'));
   const semanaSanta = semanaSantaPueblos.map((s) => entry(`/planifica/semana-santa/pueblo/${s}`, 0.6, 'weekly'));
 
-  return [...staticPages, ...pueblos, ...rutas, ...noticias, ...eventos, ...contenidos, ...semanaSanta];
+  // Páginas SEO temáticas por pueblo
+  const CATEGORIAS_SEO = ['gastronomia', 'naturaleza', 'cultura', 'en-familia', 'petfriendly', 'patrimonio'];
+  const paginasTematicas = pueblosWithImages.flatMap((p) =>
+    CATEGORIAS_SEO.map((cat) => entry(`/${cat}/${p.slug}`, 0.75, 'monthly'))
+  );
+
+  // Páginas Club por pueblo
+  const paginasClub = pueblosWithImages.flatMap((p) => [
+    entry(`/donde-comer/${p.slug}`, 0.75, 'monthly'),
+    entry(`/donde-dormir/${p.slug}`, 0.75, 'monthly'),
+    entry(`/donde-comprar/${p.slug}`, 0.75, 'monthly'),
+  ]);
+
+  return [...staticPages, ...pueblos, ...rutas, ...noticias, ...eventos, ...contenidos, ...semanaSanta, ...paginasTematicas, ...paginasClub];
 }

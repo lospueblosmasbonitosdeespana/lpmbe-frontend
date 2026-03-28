@@ -65,6 +65,69 @@ const nextConfig: NextConfig = {
         destination: '/tienda',
         statusCode: 301,
       },
+      // Redirecciones 301: URLs antiguas de experiencias temáticas → nuevas rutas SEO
+      {
+        source: '/experiencias/gastronomia/pueblos/:puebloSlug',
+        destination: '/gastronomia/:puebloSlug',
+        permanent: true,
+      },
+      {
+        source: '/experiencias/gastronomia/pueblos/:puebloSlug/:pageId',
+        destination: '/gastronomia/:puebloSlug',
+        permanent: true,
+      },
+      {
+        source: '/experiencias/naturaleza/pueblos/:puebloSlug',
+        destination: '/naturaleza/:puebloSlug',
+        permanent: true,
+      },
+      {
+        source: '/experiencias/naturaleza/pueblos/:puebloSlug/:pageId',
+        destination: '/naturaleza/:puebloSlug',
+        permanent: true,
+      },
+      {
+        source: '/experiencias/cultura/pueblos/:puebloSlug',
+        destination: '/cultura/:puebloSlug',
+        permanent: true,
+      },
+      {
+        source: '/experiencias/cultura/pueblos/:puebloSlug/:pageId',
+        destination: '/cultura/:puebloSlug',
+        permanent: true,
+      },
+      {
+        source: '/experiencias/en-familia/pueblos/:puebloSlug',
+        destination: '/en-familia/:puebloSlug',
+        permanent: true,
+      },
+      {
+        source: '/experiencias/en-familia/pueblos/:puebloSlug/:pageId',
+        destination: '/en-familia/:puebloSlug',
+        permanent: true,
+      },
+      {
+        source: '/experiencias/petfriendly/pueblos/:puebloSlug',
+        destination: '/petfriendly/:puebloSlug',
+        permanent: true,
+      },
+      {
+        source: '/experiencias/petfriendly/pueblos/:puebloSlug/:pageId',
+        destination: '/petfriendly/:puebloSlug',
+        permanent: true,
+      },
+      {
+        source: '/experiencias/patrimonio/pueblos/:puebloSlug',
+        destination: '/patrimonio/:puebloSlug',
+        permanent: true,
+      },
+      {
+        source: '/experiencias/patrimonio/pueblos/:puebloSlug/:pageId',
+        destination: '/patrimonio/:puebloSlug',
+        permanent: true,
+      },
+      // Redirecciones para la ruta antigua /pueblos/[slug]/categoria/[categoria]/[pageId]
+      // No se redirige para no romper navegación interna, pero se añaden canonicals en las páginas
     ];
   },
   images: {
