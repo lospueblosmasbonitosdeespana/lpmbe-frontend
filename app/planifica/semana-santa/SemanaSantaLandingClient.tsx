@@ -1,9 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ShareButton from '@/app/components/ShareButton';
 import { useTranslations } from 'next-intl';
+
+type StreamInfo = {
+  status: 'live' | 'upcoming' | 'completed' | 'none';
+  title: string | null;
+  scheduledStart: string | null;
+};
 
 type Item = {
   id: number;
@@ -80,6 +86,29 @@ export default function SemanaSantaLandingClient({
   const totalDias = pueblos.reduce((acc, p) => acc + p.dias.length, 0);
   const pueblosConStream = useMemo(() => pueblos.filter((p) => p.streamUrl && p.streamUrl.trim()), [pueblos]);
 
+  const [streamInfoMap, setStreamInfoMap] = useState<Record<number, StreamInfo>>({});
+
+  useEffect(() => {
+    if (pueblosConStream.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const results: Record<number, StreamInfo> = {};
+      await Promise.all(
+        pueblosConStream.map(async (p) => {
+          try {
+            const res = await fetch(`/api/youtube/resolve?url=${encodeURIComponent(p.streamUrl!)}`);
+            if (res.ok && !cancelled) {
+              const data = await res.json();
+              results[p.id] = { status: data.status, title: data.title, scheduledStart: data.scheduledStart };
+            }
+          } catch { /* ignore */ }
+        }),
+      );
+      if (!cancelled) setStreamInfoMap(results);
+    })();
+    return () => { cancelled = true; };
+  }, [pueblosConStream]);
+
   const uniqueCCAA = useMemo(
     () =>
       Array.from(new Set(pueblos.map((p) => p.pueblo.comunidad).filter(Boolean))).sort((a, b) =>
@@ -126,7 +155,13 @@ export default function SemanaSantaLandingClient({
         return da - db;
       });
     } else {
-      list.sort((a, b) => a.pueblo.nombre.localeCompare(b.pueblo.nombre, 'es'));
+      list.sort((a, b) => {
+        const aHasStream = !!(a.streamUrl && a.streamUrl.trim());
+        const bHasStream = !!(b.streamUrl && b.streamUrl.trim());
+        if (aHasStream && !bHasStream) return -1;
+        if (!aHasStream && bHasStream) return 1;
+        return a.pueblo.nombre.localeCompare(b.pueblo.nombre, 'es');
+      });
     }
     return list;
   }, [filteredPueblos, userCoords]);
@@ -302,22 +337,63 @@ export default function SemanaSantaLandingClient({
                     <p className="mt-3 text-xs text-muted-foreground">
                       {t('agendaAndProcessions', { agenda: p.agenda.length, days: p.dias.length })}
                     </p>
-                    {p.streamUrl && p.streamUrl.trim() ? (
-                      <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1">
-                        <span className="relative flex h-2.5 w-2.5">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
-                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
-                        </span>
-                        <span className="text-[11px] font-semibold uppercase tracking-wide text-white">Emisión en directo</span>
-                      </div>
-                    ) : p.videoUrl && p.videoUrl.trim() ? (
-                      <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-slate-700 px-3 py-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-3 w-3 text-white">
-                          <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
-                        </svg>
-                        <span className="text-[11px] font-semibold uppercase tracking-wide text-white">Vídeo disponible</span>
-                      </div>
-                    ) : null}
+                    {(() => {
+                      const hasStream = p.streamUrl && p.streamUrl.trim();
+                      const info = hasStream ? streamInfoMap[p.id] : undefined;
+                      const isLive = info?.status === 'live';
+                      const isUpcoming = info?.status === 'upcoming';
+
+                      if (hasStream && isLive) {
+                        return (
+                          <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1">
+                            <span className="relative flex h-2.5 w-2.5">
+                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+                              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
+                            </span>
+                            <span className="text-[11px] font-semibold uppercase tracking-wide text-white">En directo ahora</span>
+                          </div>
+                        );
+                      }
+                      if (hasStream && isUpcoming && info?.scheduledStart) {
+                        const d = new Date(info.scheduledStart);
+                        const dayStr = d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+                        const timeStr = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                        return (
+                          <div className="mt-3 space-y-1">
+                            <div className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1">
+                              <span className="relative flex h-2.5 w-2.5">
+                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+                                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
+                              </span>
+                              <span className="text-[11px] font-semibold uppercase tracking-wide text-white">Emisión en directo</span>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground">Próxima: {dayStr} · {timeStr}</p>
+                          </div>
+                        );
+                      }
+                      if (hasStream) {
+                        return (
+                          <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1">
+                            <span className="relative flex h-2.5 w-2.5">
+                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+                              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
+                            </span>
+                            <span className="text-[11px] font-semibold uppercase tracking-wide text-white">Emisión en directo</span>
+                          </div>
+                        );
+                      }
+                      if (p.videoUrl && p.videoUrl.trim()) {
+                        return (
+                          <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-slate-700 px-3 py-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-3 w-3 text-white">
+                              <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
+                            </svg>
+                            <span className="text-[11px] font-semibold uppercase tracking-wide text-white">Vídeo disponible</span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                     <p className="mt-3 text-sm font-medium text-primary">{t('viewVillagePage')}</p>
                   </div>
                   </Link>
