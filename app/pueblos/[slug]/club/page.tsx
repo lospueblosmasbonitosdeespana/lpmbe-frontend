@@ -337,6 +337,20 @@ export default async function ClubPuebloPage({
             Todo lo que {pueblo.nombre} ofrece a los socios del Club de Amigos:
             descuentos, experiencias exclusivas, restaurantes, alojamientos y más.
           </p>
+          <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50/70 px-4 py-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-amber-900">
+                <strong>Las ventajas de esta página son para miembros del Club de Amigos.</strong>{" "}
+                Hazte socio para activarlas en tus visitas.
+              </p>
+              <Link
+                href="/club"
+                className="inline-flex shrink-0 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Hazte socio del Club
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 

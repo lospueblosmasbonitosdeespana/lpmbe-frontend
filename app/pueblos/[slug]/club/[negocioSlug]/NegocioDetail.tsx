@@ -429,6 +429,22 @@ export default function NegocioDetail({
         )}
       </div>
 
+      {/* CTA membresía Club */}
+      <div className="rounded-xl border border-amber-300 bg-amber-50/70 px-4 py-3 sm:px-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-amber-900">
+            <strong>Estas ventajas son exclusivas para miembros del Club de Amigos.</strong>{" "}
+            Hazte socio para disfrutarlas en este y en más establecimientos.
+          </p>
+          <Link
+            href="/club"
+            className="inline-flex shrink-0 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            Quiero hacerme socio
+          </Link>
+        </div>
+      </div>
+
       {/* Description */}
       {recurso.descripcion && (
         <div>
