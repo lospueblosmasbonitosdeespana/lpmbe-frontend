@@ -637,11 +637,11 @@ export default function GestionPuebloSemanaSantaPage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm">Stream / webcam (URL embebible)</label>
+              <label className="mb-1 block text-sm">Stream / webcam (URL de canal o vídeo)</label>
               <input
                 type="url"
                 className="w-full rounded-md border px-3 py-2 text-sm"
-                placeholder="https://www.youtube.com/embed/..."
+                placeholder="https://www.youtube.com/@canal o URL de vídeo"
                 value={data.streamUrl ?? ''}
                 onChange={(e) => setData({ ...data, streamUrl: e.target.value })}
               />

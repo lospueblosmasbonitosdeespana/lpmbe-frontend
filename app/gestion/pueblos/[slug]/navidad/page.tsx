@@ -485,8 +485,8 @@ export default function GestionPuebloNavidadPage() {
           <R2ImageUploader label="Cartel navideño" value={data.cartelUrl} onChange={(url) => setData({ ...data, cartelUrl: url })} folder="navidad/pueblos" previewHeight="h-56" />
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm">Stream / webcam (URL embebible)</label>
-              <input type="url" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="https://www.youtube.com/embed/..." value={data.streamUrl ?? ''} onChange={(e) => setData({ ...data, streamUrl: e.target.value })} />
+              <label className="mb-1 block text-sm">Stream / webcam (URL de canal o vídeo)</label>
+              <input type="url" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="https://www.youtube.com/@canal o URL de vídeo" value={data.streamUrl ?? ''} onChange={(e) => setData({ ...data, streamUrl: e.target.value })} />
             </div>
             <div>
               <label className="mb-1 block text-sm">Distintivo turístico</label>
