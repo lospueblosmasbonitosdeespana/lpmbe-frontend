@@ -8,12 +8,14 @@ type ContenidoItemPuebloProps = {
   contenido: any;
 };
 
-const CATEGORIA_TO_SLUG: Record<string, string> = {
-  GASTRONOMIA: 'gastronomia',
+/** Segmento de URL pública del listado temático por pueblo (rutas SEO, no /experiencias/...). */
+const CATEGORIA_TO_PUBLIC_PATH: Record<string, string> = {
+  GASTRONOMIA: 'que-comer',
   NATURALEZA: 'naturaleza',
   CULTURA: 'cultura',
   EN_FAMILIA: 'en-familia',
   PETFRIENDLY: 'petfriendly',
+  PATRIMONIO: 'patrimonio',
 };
 
 export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloProps) {
@@ -102,10 +104,9 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
   let verPagenaUrl: string | null = null;
   if (contenido.estado === 'PUBLICADA') {
     if (isPaginaTematica && contenido.categoria && contenido.pueblo?.slug) {
-      // Página temática: ir a /experiencias/{slug}/pueblos/{puebloSlug}
-      const slugTematica = CATEGORIA_TO_SLUG[contenido.categoria];
-      if (slugTematica) {
-        verPagenaUrl = `/experiencias/${slugTematica}/pueblos/${contenido.pueblo.slug}`;
+      const pathSeg = CATEGORIA_TO_PUBLIC_PATH[contenido.categoria];
+      if (pathSeg) {
+        verPagenaUrl = `/${pathSeg}/${contenido.pueblo.slug}`;
       }
     } else if (contenido.slug) {
       // Contenido legacy: ir a /c/{slug}
