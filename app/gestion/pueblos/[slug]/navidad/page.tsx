@@ -492,9 +492,9 @@ export default function GestionPuebloNavidadPage() {
               <p className="mt-1 text-xs text-muted-foreground">Se mostrará con indicador de &quot;En directo&quot; (punto rojo).</p>
             </div>
             <div>
-              <label className="mb-1 block text-sm">Vídeo de Navidad (YouTube)</label>
-              <input type="url" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="https://www.youtube.com/watch?v=... o https://youtu.be/..." value={data.videoUrl ?? ''} onChange={(e) => setData({ ...data, videoUrl: e.target.value })} />
-              <p className="mt-1 text-xs text-muted-foreground">Vídeo genérico embebido. No se marcará como directo.</p>
+              <label className="mb-1 block text-sm">Vídeo de Navidad</label>
+              <input type="url" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="URL de YouTube o vídeo directo (.mp4)" value={data.videoUrl ?? ''} onChange={(e) => setData({ ...data, videoUrl: e.target.value })} />
+              <p className="mt-1 text-xs text-muted-foreground">YouTube, .mp4 u otra URL de vídeo. No se marcará como directo.</p>
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">

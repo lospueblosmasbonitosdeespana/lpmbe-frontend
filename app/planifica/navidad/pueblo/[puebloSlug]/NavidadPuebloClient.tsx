@@ -3,6 +3,29 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+function VideoEmbed({ url, title }: { url: string; title?: string }) {
+  const ytMatch = url.match(/(?:youtube\.com\/(?:embed\/|watch\?v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (ytMatch) {
+    return (
+      <div className="relative overflow-hidden rounded-xl border bg-black" style={{ paddingBottom: '56.25%' }}>
+        <iframe src={`https://www.youtube.com/embed/${ytMatch[1]}`} title={title ?? 'Vídeo'} className="absolute inset-0 h-full w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+      </div>
+    );
+  }
+  if (/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url)) {
+    return (
+      <div className="overflow-hidden rounded-xl border bg-black">
+        <video src={url} controls playsInline preload="metadata" className="w-full" title={title ?? 'Vídeo'}>Tu navegador no soporta la reproducción de vídeo.</video>
+      </div>
+    );
+  }
+  return (
+    <div className="relative overflow-hidden rounded-xl border bg-black" style={{ paddingBottom: '56.25%' }}>
+      <iframe src={url} title={title ?? 'Vídeo'} className="absolute inset-0 h-full w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+    </div>
+  );
+}
+
 const TIPO_LABELS: Record<string, string> = {
   ENCENDIDO_LUCES: 'Encendido de luces',
   MERCADILLO: 'Mercadillo navideño',
@@ -151,15 +174,7 @@ export default function NavidadPuebloClient({ data }: Props) {
             </svg>
             Vídeo de Navidad
           </h2>
-          <div className="aspect-video overflow-hidden rounded-xl border">
-            <iframe
-              src={`https://www.youtube.com/embed/${(() => { const m = p.videoUrl!.match(/(?:youtube\.com\/(?:embed\/|watch\?v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/); return m ? m[1] : ''; })()}`}
-              className="h-full w-full"
-              allowFullScreen
-              allow="autoplay; encrypted-media"
-              title="Vídeo de Navidad"
-            />
-          </div>
+          <VideoEmbed url={p.videoUrl} title={`Vídeo de Navidad — ${p.pueblo.nombre}`} />
         </section>
       )}
 
