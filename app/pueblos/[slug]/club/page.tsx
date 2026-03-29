@@ -126,6 +126,14 @@ type Recurso = {
     horaAbre: string | null;
     horaCierra: string | null;
   }>;
+  ofertas?: Array<{
+    id: number;
+    tipoOferta: string;
+    titulo: string;
+    descuentoPorcentaje?: number | null;
+    valorFijoCents?: number | null;
+    destacada: boolean;
+  }>;
 };
 
 const DIA_NOMBRES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
@@ -193,12 +201,39 @@ function RecursoCard({ r, puebloSlug }: { r: Recurso; puebloSlug: string }) {
               {TIPO_LABELS[r.tipo] ?? r.tipo}
             </span>
           </div>
-          {r.descuentoPorcentaje != null && r.descuentoPorcentaje > 0 && (
-            <span className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground">
-              {r.descuentoPorcentaje}% dto.
-            </span>
-          )}
+          {(() => {
+            const destacada = r.ofertas?.find((o) => o.destacada);
+            if (destacada) {
+              return (
+                <span className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground text-right max-w-[160px]">
+                  {destacada.descuentoPorcentaje != null
+                    ? `-${destacada.descuentoPorcentaje}%`
+                    : destacada.valorFijoCents != null
+                      ? `${(destacada.valorFijoCents / 100).toFixed(0)}€ dto.`
+                      : "🎁"}
+                  <span className="block text-[10px] font-medium opacity-80 truncate">{destacada.titulo}</span>
+                </span>
+              );
+            }
+            if (r.descuentoPorcentaje != null && r.descuentoPorcentaje > 0) {
+              return (
+                <span className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground">
+                  {r.descuentoPorcentaje}% dto.
+                </span>
+              );
+            }
+            return null;
+          })()}
         </div>
+
+        {/* Offer count badge */}
+        {r.ofertas && r.ofertas.length > 1 && (
+          <div className="mt-2 flex items-center gap-1">
+            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
+              🎁 +{r.ofertas.length} ofertas
+            </span>
+          </div>
+        )}
 
         {r.cerradoTemporal && (
           <div className="mt-2 rounded-md bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700 border border-amber-200">

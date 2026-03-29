@@ -47,6 +47,24 @@ type Recurso = {
     horaAbre: string | null;
     horaCierra: string | null;
   }>;
+  ofertas?: OfertaPublic[];
+};
+
+type OfertaPublic = {
+  id: number;
+  tipoOferta: string;
+  titulo: string;
+  descripcion?: string | null;
+  descuentoPorcentaje?: number | null;
+  valorFijoCents?: number | null;
+  aplicaA?: string | null;
+  condicionTexto?: string | null;
+  importeMinimoCents?: number | null;
+  minNoches?: number | null;
+  minComensales?: number | null;
+  destacada: boolean;
+  vigenciaDesde?: string | null;
+  vigenciaHasta?: string | null;
 };
 
 function GalleryViewer({ images, nombre }: { images: Imagen[]; nombre: string }) {
@@ -146,6 +164,84 @@ function PlanBadge({ plan }: { plan: PlanNegocio }) {
       )}
       {isPremium ? "Premium" : "Recomendado por LPMBE"}
     </span>
+  );
+}
+
+const OFERTA_ICONS: Record<string, string> = {
+  DESCUENTO_PORCENTAJE: "✂️",
+  REGALO: "🎁",
+  MENU_ESPECIAL: "🍽️",
+  NOCHE_GRATIS: "🌙",
+  UPGRADE: "⬆️",
+  DOS_POR_UNO: "🔄",
+  ENVIO_GRATIS: "📦",
+  OTRO: "📌",
+};
+
+const APLICA_LABELS: Record<string, string> = {
+  PERSONA: "por persona",
+  HABITACION: "por habitación",
+  MESA: "por mesa",
+  RESERVA: "por reserva",
+  COMPRA: "por compra",
+  GRUPO: "por grupo",
+};
+
+function OfertaCard({ oferta }: { oferta: OfertaPublic }) {
+  const o = oferta;
+  const hasDate = o.vigenciaHasta;
+  const dateLabel = hasDate
+    ? `Hasta ${new Date(o.vigenciaHasta!).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}`
+    : null;
+
+  return (
+    <div
+      className={`rounded-xl border p-4 transition-colors ${
+        o.destacada
+          ? "border-primary/40 bg-primary/5 shadow-sm"
+          : "border-border bg-card"
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        <span className="text-2xl leading-none mt-0.5">{OFERTA_ICONS[o.tipoOferta] ?? "📌"}</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-bold text-foreground">{o.titulo}</span>
+            {o.descuentoPorcentaje != null && (
+              <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-800">
+                -{o.descuentoPorcentaje}%
+              </span>
+            )}
+            {o.valorFijoCents != null && (
+              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-800">
+                {(o.valorFijoCents / 100).toFixed(2)}€ dto.
+              </span>
+            )}
+            {o.tipoOferta === "REGALO" && !o.descuentoPorcentaje && !o.valorFijoCents && (
+              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">
+                Gratis
+              </span>
+            )}
+          </div>
+          {o.aplicaA && (
+            <span className="mt-0.5 block text-xs text-muted-foreground">
+              {APLICA_LABELS[o.aplicaA] ?? o.aplicaA}
+            </span>
+          )}
+          {o.condicionTexto && (
+            <p className="mt-1 text-xs text-muted-foreground/80">{o.condicionTexto}</p>
+          )}
+          {o.descripcion && (
+            <p className="mt-1 text-xs text-muted-foreground italic">{o.descripcion}</p>
+          )}
+          {dateLabel && (
+            <span className="mt-1.5 inline-block rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              {dateLabel}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -271,11 +367,25 @@ export default function NegocioDetail({
       {recurso.descripcion && (
         <div>
           <h2 className="text-lg font-semibold text-foreground mb-2">
-            Qué ofrece a los socios del Club
+            Sobre este negocio
           </h2>
           <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-line">
             {recurso.descripcion}
           </p>
+        </div>
+      )}
+
+      {/* Ofertas para socios del Club */}
+      {recurso.ofertas && recurso.ofertas.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-foreground mb-3">
+            Ofertas para socios del Club
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {recurso.ofertas.map((o) => (
+              <OfertaCard key={o.id} oferta={o} />
+            ))}
+          </div>
         </div>
       )}
 

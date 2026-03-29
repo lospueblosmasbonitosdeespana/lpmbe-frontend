@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import NegocioGallery from './NegocioGallery';
+import NegocioOfertas from './NegocioOfertas';
 import MapLocationPicker from '@/app/components/MapLocationPicker';
 
 const TIPOS_NEGOCIO = [
@@ -187,6 +188,8 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
     if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return null;
     return { lat, lng };
   })();
+
+  const negocioEditando = editId ? negocios.find((n) => n.id === editId) ?? null : null;
 
   const existingMarkers = negocios
     .filter((n) => n.lat && n.lng)
@@ -401,15 +404,31 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
 
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              Descripci&oacute;n / Qu&eacute; ofrece a los socios del Club
+              Descripci&oacute;n del negocio
             </label>
             <textarea
               value={form.descripcion}
               onChange={(e) => setForm((f) => ({ ...f, descripcion: e.target.value }))}
               rows={3}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Ej: 10% en alojamiento, café de bienvenida gratuito..."
+              placeholder="Presenta tu negocio: qué ofrecéis, qué os hace especiales..."
             />
+          </div>
+
+          {/* Ofertas para socios del Club */}
+          <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-2">
+            <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+              <span className="text-amber-600">🎁</span> Ofertas para socios del Club
+            </h4>
+            <p className="text-xs text-gray-500 mb-2">
+              Crea ofertas estructuradas para los miembros del Club de Amigos. Usa las plantillas para empezar r&aacute;pidamente.
+            </p>
+            {negocioEditando && (
+              <NegocioOfertas
+                negocioId={negocioEditando.id}
+                tipoNegocio={negocioEditando.tipo}
+              />
+            )}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
@@ -451,7 +470,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Descuento (%)</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Descuento cabecera (%)</label>
               <input
                 type="number"
                 min="0"
@@ -459,7 +478,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
                 value={form.descuentoPorcentaje}
                 onChange={(e) => setForm((f) => ({ ...f, descuentoPorcentaje: e.target.value }))}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                placeholder="Ej: 10"
+                placeholder="Descuento principal que aparece en la tarjeta resumen"
               />
             </div>
           </div>
