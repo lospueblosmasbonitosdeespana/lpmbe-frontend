@@ -140,8 +140,19 @@ export async function getPaginaTematicaBySlug(
   locale: string
 ): Promise<TematicaPageData | null> {
   const pages = await getPaginasTematicasByPueblo(puebloSlug, categoryKey, locale);
-  return (
-    pages.find((p) => p.slug === pageSlug || slugify(p.titulo) === pageSlug) ??
-    null
-  );
+  const match =
+    pages.find((p) => p.slug === pageSlug) ??
+    pages.find((p) => slugify(p.titulo) === pageSlug);
+  if (match) return match;
+
+  if (locale !== "es") {
+    const esPages = await getPaginasTematicasByPueblo(puebloSlug, categoryKey, "es");
+    const esMatch = esPages.find((p) => p.slug === pageSlug || slugify(p.titulo) === pageSlug);
+    if (esMatch) {
+      const translated = pages.find((p) => p.id === esMatch.id);
+      return translated ?? esMatch;
+    }
+  }
+
+  return null;
 }
