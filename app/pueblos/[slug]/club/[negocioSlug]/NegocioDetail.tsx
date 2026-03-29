@@ -341,7 +341,8 @@ export default function NegocioDetail({
   const plan: PlanNegocio = (recurso.planNegocio as PlanNegocio) || "FREE";
   const isNegocio = recurso.scope === "NEGOCIO";
   const isPaid = plan === "RECOMENDADO" || plan === "PREMIUM";
-  const showContact = !isNegocio || isPaid;
+  // Decisión de producto: en básico también se muestran teléfono/email/web.
+  const showContact = true;
   const showFullGallery = !isNegocio || isPaid;
   const showSchedule = !isNegocio || isPaid;
 

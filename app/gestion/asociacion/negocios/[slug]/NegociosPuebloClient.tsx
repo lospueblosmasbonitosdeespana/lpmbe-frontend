@@ -69,18 +69,6 @@ const PLAN_LABELS: Record<string, { label: string; color: string }> = {
   PREMIUM: { label: 'Premium', color: 'bg-amber-100 text-amber-800' },
 };
 
-function PlanIndicator({ requiredPlan }: { requiredPlan: string }) {
-  return (
-    <span className="ml-1 inline-flex items-center gap-1 text-[10px] font-medium text-gray-400">
-      <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-      </svg>
-      Visible con plan {requiredPlan}
-    </span>
-  );
-}
-
 type FormData = {
   nombre: string;
   tipo: string;
@@ -433,7 +421,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Tel&eacute;fono <PlanIndicator requiredPlan="Recomendado" /></label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Tel&eacute;fono</label>
               <input
                 value={form.telefono}
                 onChange={(e) => setForm((f) => ({ ...f, telefono: e.target.value }))}
@@ -441,7 +429,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Email <PlanIndicator requiredPlan="Recomendado" /></label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
               <input
                 type="email"
                 value={form.email}
@@ -450,7 +438,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Web <PlanIndicator requiredPlan="Recomendado" /></label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Web</label>
               <input
                 value={form.web}
                 onChange={(e) => setForm((f) => ({ ...f, web: e.target.value }))}
