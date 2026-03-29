@@ -217,17 +217,19 @@ function RecursoCard({ r, puebloSlug }: { r: Recurso; puebloSlug: string }) {
             </span>
           </div>
           {(showPct || showOfertaPreview) && (
-            <div className="shrink-0 text-right">
+            <div className="shrink-0">
+              <div className="flex items-center justify-end gap-2">
               {showPct && (
-                <span className="inline-block rounded-lg bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground">
+                <span className="rounded-lg bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground">
                   {r.descuentoPorcentaje}% dto.
                 </span>
               )}
               {showOfertaPreview && ofertaPreview && (
-                <span className="mt-1 block max-w-[180px] truncate rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900">
+                <span className="max-w-[150px] truncate rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900">
                   🎁 {ofertaPreview.titulo}
                 </span>
               )}
+              </div>
             </div>
           )}
         </div>
