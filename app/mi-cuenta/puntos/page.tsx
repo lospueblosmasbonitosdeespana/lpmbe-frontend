@@ -7,13 +7,9 @@ import { Container } from '@/app/components/ui/container';
 import DashboardResumen from '../components/DashboardResumen';
 import DashboardPuntos from '../components/DashboardPuntos';
 import DashboardFavoritos from '../components/DashboardFavoritos';
+import DashboardLogros from '../components/DashboardLogros';
 
 export const dynamic = 'force-dynamic';
-
-// IMPORTANTE: Puntos y pueblos visitados deben leer del mismo backend que la app.
-// getApiUrl() = NEXT_PUBLIC_API_URL → debe ser la URL del backend NestJS (Railway),
-// no WordPress. Así /usuarios/me/puntos y /usuarios/me/pueblos-visitados coinciden
-// con lo que guarda la app (POST jet-cct/visita, PUT /visitas/batch).
 
 async function getDashboardData() {
   const token = await getToken();
@@ -49,16 +45,48 @@ async function getDashboardData() {
         provincia: String(p.provincia ?? ''),
         comunidad: String(p.comunidad ?? ''),
         puntos: Number(p.puntos ?? 0),
+        canjeable: Boolean(p.canjeable),
+        origenVisita: p.origenVisita ?? null,
       }))
     : [];
 
+  const desglose = raw?.desglose ?? {};
+
   const data = {
     puntosTotales: Number(raw?.total ?? 0),
-    puntosPorTipo: {
-      VISITA: Number(raw?.detalle?.VISITA ?? 0),
-      RUTA: Number(raw?.detalle?.RUTA ?? 0),
-      EVENTO: Number(raw?.detalle?.EVENTO ?? 0),
-      MULTIEXPERIENCIA: Number(raw?.detalle?.MULTIEXPERIENCIA ?? 0),
+    puntosCanjeables: Number(raw?.puntosCanjeables ?? 0),
+    puntosNoCanjeables: Number(raw?.puntosNoCanjeables ?? 0),
+    desglose: {
+      visitasGPS: {
+        puntos: Number(desglose?.visitasGPS?.puntos ?? 0),
+        count: Number(desglose?.visitasGPS?.count ?? 0),
+        canjeable: true,
+      },
+      visitasManuales: {
+        puntos: Number(desglose?.visitasManuales?.puntos ?? 0),
+        count: Number(desglose?.visitasManuales?.count ?? 0),
+        canjeable: false,
+      },
+      clubRecurso: {
+        puntos: Number(desglose?.clubRecurso?.puntos ?? 0),
+        count: Number(desglose?.clubRecurso?.count ?? 0),
+        canjeable: true,
+      },
+      clubNegocio: {
+        puntos: Number(desglose?.clubNegocio?.puntos ?? 0),
+        count: Number(desglose?.clubNegocio?.count ?? 0),
+        canjeable: true,
+      },
+      compraTienda: {
+        puntos: Number(desglose?.compraTienda?.puntos ?? 0),
+        count: Number(desglose?.compraTienda?.count ?? 0),
+        canjeable: true,
+      },
+      logros: {
+        puntos: Number(desglose?.logros?.puntos ?? 0),
+        count: Number(desglose?.logros?.count ?? 0),
+        canjeable: false,
+      },
     },
     nivelActual: raw?.nivel
       ? { nombre: String(raw.nivel), nivel: 0 }
@@ -105,10 +133,17 @@ export default async function PuntosPage() {
                 nivelActual={data.nivelActual}
                 siguienteNivel={data.siguienteNivel}
                 puntosTotales={data.puntosTotales}
+                puntosCanjeables={data.puntosCanjeables}
+                puntosNoCanjeables={data.puntosNoCanjeables}
                 progreso={data.progreso}
               />
 
-              <DashboardPuntos puntosPorTipo={data.puntosPorTipo} pueblosPuntos={data.pueblosPuntos} />
+              <DashboardPuntos
+                desglose={data.desglose}
+                pueblosPuntos={data.pueblosPuntos}
+              />
+
+              <DashboardLogros />
 
               <DashboardFavoritos items={visitadosItems} />
             </div>
@@ -118,25 +153,3 @@ export default async function PuntosPage() {
     </main>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
