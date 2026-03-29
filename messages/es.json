@@ -1151,7 +1151,22 @@
     "favoritesDesc": "Tus pueblos con valoración de 5 estrellas.",
     "pointsBreakdown": "Desglose de puntos",
     "visits": "Visitas",
-    "dashboardError": "Error al cargar el panel de puntos."
+    "dashboardError": "Error al cargar el panel de puntos.",
+    "gpsPoints": "pts GPS",
+    "manualPoints": "pts Manuales",
+    "totalPoints": "total",
+    "redeemableNote": "Los puntos GPS son canjeables por recompensas reales",
+    "redeemable": "Canjeable",
+    "visitsGPS": "Visitas GPS",
+    "visitsManual": "Visitas Manuales",
+    "villages": "pueblos",
+    "clubResources": "Club: Recursos turísticos",
+    "clubBusiness": "Club: Hoteles, restaurantes y comercios",
+    "shopPurchases": "Compras en tienda",
+    "achievements": "Logros",
+    "achievementsTitle": "Mis logros e insignias",
+    "achievementsDesc": "Desbloquea logros visitando pueblos, usando el Club de Amigos y comprando en la tienda.",
+    "comingSoon": "Próximamente"
   },
   "clubLanding": {
     "title": "En pocos días el Club de Amigos será una realidad",

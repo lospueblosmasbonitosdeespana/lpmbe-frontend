@@ -1111,7 +1111,22 @@
     "favoritesDesc": "Your villages with a 5-star rating.",
     "pointsBreakdown": "Breakdown of points",
     "visits": "Visit",
-    "dashboardError": "Error loading the points dashboard."
+    "dashboardError": "Error loading the points dashboard.",
+    "gpsPoints": "GPS pts",
+    "manualPoints": "Manual pts",
+    "totalPoints": "total",
+    "redeemableNote": "GPS points are redeemable for real rewards",
+    "redeemable": "Redeemable",
+    "visitsGPS": "GPS Visits",
+    "visitsManual": "Manual Visits",
+    "villages": "villages",
+    "clubResources": "Club: Tourist resources",
+    "clubBusiness": "Club: Hotels, restaurants and shops",
+    "shopPurchases": "Shop purchases",
+    "achievements": "Achievements",
+    "achievementsTitle": "My achievements & badges",
+    "achievementsDesc": "Unlock achievements by visiting villages, using the Friends Club and shopping.",
+    "comingSoon": "Coming soon"
   },
   "clubLanding": {
     "title": "In a few days the Club de Amigos will be a reality",

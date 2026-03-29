@@ -1111,7 +1111,22 @@
     "favoritesDesc": "Els vostres pobles amb una qualificació de 5 estrelles.",
     "pointsBreakdown": "Desglossament de punts",
     "visits": "Visites",
-    "dashboardError": "Error en carregar el tauler de punts."
+    "dashboardError": "Error en carregar el tauler de punts.",
+    "gpsPoints": "pts GPS",
+    "manualPoints": "pts Manuals",
+    "totalPoints": "total",
+    "redeemableNote": "Els punts GPS es poden bescanviar per recompenses reals",
+    "redeemable": "Bescanviable",
+    "visitsGPS": "Visites GPS",
+    "visitsManual": "Visites Manuals",
+    "villages": "pobles",
+    "clubResources": "Club: Recursos turístics",
+    "clubBusiness": "Club: Hotels, restaurants i comerços",
+    "shopPurchases": "Compres a la botiga",
+    "achievements": "Fites",
+    "achievementsTitle": "Les meves fites i insignies",
+    "achievementsDesc": "Desbloqueja fites visitant pobles, fent servir el Club d'Amics i comprant.",
+    "comingSoon": "Properament"
   },
   "clubLanding": {
     "title": "D'aquí a uns dies, el Club d'Amics serà una realitat.",

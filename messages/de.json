@@ -1111,7 +1111,22 @@
     "favoritesDesc": "Ihre Dörfer mit einer 5-Sterne-Bewertung.",
     "pointsBreakdown": "Aufschlüsselung der Punkte",
     "visits": "Besuchen Sie",
-    "dashboardError": "Fehler beim Laden des Punkte-Dashboards."
+    "dashboardError": "Fehler beim Laden des Punkte-Dashboards.",
+    "gpsPoints": "GPS-Pkt.",
+    "manualPoints": "Manuelle Pkt.",
+    "totalPoints": "gesamt",
+    "redeemableNote": "GPS-Punkte sind gegen echte Belohnungen einlösbar",
+    "redeemable": "Einlösbar",
+    "visitsGPS": "GPS-Besuche",
+    "visitsManual": "Manuelle Besuche",
+    "villages": "Dörfer",
+    "clubResources": "Club: Touristische Ressourcen",
+    "clubBusiness": "Club: Hotels, Restaurants und Geschäfte",
+    "shopPurchases": "Shop-Einkäufe",
+    "achievements": "Erfolge",
+    "achievementsTitle": "Meine Erfolge & Abzeichen",
+    "achievementsDesc": "Schalte Erfolge frei, indem du Dörfer besuchst, den Freundesclub nutzt und einkaufst.",
+    "comingSoon": "Demnächst"
   },
   "clubLanding": {
     "title": "In wenigen Tagen wird der Club de Amigos Realität sein",

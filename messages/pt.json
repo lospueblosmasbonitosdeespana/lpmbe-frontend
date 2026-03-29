@@ -1111,7 +1111,22 @@
     "favoritesDesc": "As vossas aldeias com uma classificação de 5 estrelas.",
     "pointsBreakdown": "Repartição dos pontos",
     "visits": "Visitar",
-    "dashboardError": "Erro ao carregar o painel de pontos."
+    "dashboardError": "Erro ao carregar o painel de pontos.",
+    "gpsPoints": "pts GPS",
+    "manualPoints": "pts Manuais",
+    "totalPoints": "total",
+    "redeemableNote": "Os pontos GPS são resgatáveis por recompensas reais",
+    "redeemable": "Resgatável",
+    "visitsGPS": "Visitas GPS",
+    "visitsManual": "Visitas Manuais",
+    "villages": "aldeias",
+    "clubResources": "Clube: Recursos turísticos",
+    "clubBusiness": "Clube: Hotéis, restaurantes e comércios",
+    "shopPurchases": "Compras na loja",
+    "achievements": "Conquistas",
+    "achievementsTitle": "As minhas conquistas e medalhas",
+    "achievementsDesc": "Desbloqueie conquistas visitando aldeias, usando o Clube de Amigos e comprando.",
+    "comingSoon": "Em breve"
   },
   "clubLanding": {
     "title": "Dentro de alguns dias, o Clube de Amigos será uma realidade",

@@ -1111,7 +1111,22 @@
     "favoritesDesc": "Vos villages avec une note de 5 étoiles.",
     "pointsBreakdown": "Répartition des points",
     "visits": "Visiter",
-    "dashboardError": "Erreur lors du chargement du tableau de bord des points."
+    "dashboardError": "Erreur lors du chargement du tableau de bord des points.",
+    "gpsPoints": "pts GPS",
+    "manualPoints": "pts Manuels",
+    "totalPoints": "total",
+    "redeemableNote": "Les points GPS sont échangeables contre des récompenses réelles",
+    "redeemable": "Échangeable",
+    "visitsGPS": "Visites GPS",
+    "visitsManual": "Visites Manuelles",
+    "villages": "villages",
+    "clubResources": "Club : Ressources touristiques",
+    "clubBusiness": "Club : Hôtels, restaurants et commerces",
+    "shopPurchases": "Achats en boutique",
+    "achievements": "Succès",
+    "achievementsTitle": "Mes succès et badges",
+    "achievementsDesc": "Débloquez des succès en visitant des villages, en utilisant le Club d'Amis et en achetant.",
+    "comingSoon": "Prochainement"
   },
   "clubLanding": {
     "title": "Dans quelques jours, le Club de Amigos sera une réalité.",
