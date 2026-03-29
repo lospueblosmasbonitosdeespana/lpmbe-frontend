@@ -187,10 +187,26 @@ const APLICA_LABELS: Record<string, string> = {
   GRUPO: "por grupo",
 };
 
-/** Ventaja para mostrar al lado del %: preferir regalo/extra; si solo hay descuento destacado, no duplicar en segunda columna. */
+/** Ventaja para mostrar al lado del %.
+ * Prioridad:
+ * 1) Oferta con título "detalle de bienvenida" (aunque no sea destacada)
+ * 2) Oferta tipo regalo (aunque no sea destacada)
+ * 3) Cualquier destacada útil
+ */
 function ofertaVentajaHeroLateral(ofertas: OfertaPublic[], pct: number | null | undefined): OfertaPublic | null {
+  const bienvenida = ofertas.find(
+    (o) =>
+      (o.titulo ?? "").toLowerCase().includes("detalle de bienvenida") ||
+      (o.titulo ?? "").toLowerCase().includes("bienvenida"),
+  );
+  if (bienvenida) return bienvenida;
+
+  const regalo = ofertas.find((o) => o.tipoOferta === "REGALO");
+  if (regalo) return regalo;
+
   const destacadas = ofertas.filter((o) => o.destacada);
   if (destacadas.length === 0) return null;
+
   const noSoloDescuentoIgual = destacadas.find(
     (o) =>
       o.tipoOferta !== "DESCUENTO_PORCENTAJE" ||
@@ -208,7 +224,7 @@ function ofertaVentajaHeroLateral(ofertas: OfertaPublic[], pct: number | null | 
 function HeroVentajaClubCard({ oferta }: { oferta: OfertaPublic }) {
   const o = oferta;
   return (
-    <div className="rounded-xl border-2 border-amber-200 bg-card p-4 shadow-sm">
+    <div className="rounded-xl border-2 border-amber-400 bg-card p-4 shadow-sm ring-1 ring-amber-300/70">
       <div>
         <div className="flex items-start gap-2">
           <span className="text-2xl leading-none">{OFERTA_ICONS[o.tipoOferta] ?? "🎁"}</span>
