@@ -246,11 +246,22 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
         nombre: form.nombre.trim(),
         tipo: form.tipo,
       };
-      if (form.descripcion.trim()) body.descripcion = form.descripcion.trim();
-      if (form.telefono.trim()) body.telefono = form.telefono.trim();
-      if (form.email.trim()) body.email = form.email.trim();
-      if (form.web.trim()) body.web = form.web.trim();
-      if (form.contacto.trim()) body.contacto = form.contacto.trim();
+
+      const setNullableField = (key: string, value: string) => {
+        const trimmed = value.trim();
+        if (trimmed) {
+          body[key] = trimmed;
+        } else if (editId) {
+          // En edición, vacío significa "borrar valor previo" (guardar null)
+          body[key] = null;
+        }
+      };
+
+      setNullableField('descripcion', form.descripcion);
+      setNullableField('telefono', form.telefono);
+      setNullableField('email', form.email);
+      setNullableField('web', form.web);
+      setNullableField('contacto', form.contacto);
       if (form.descuentoPorcentaje.trim()) {
         body.descuentoPorcentaje = Number(form.descuentoPorcentaje);
       }
