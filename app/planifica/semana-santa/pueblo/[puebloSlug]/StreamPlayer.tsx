@@ -8,6 +8,7 @@ type ResolveResult = {
   title: string | null;
   thumbnail: string | null;
   channelTitle: string | null;
+  scheduledStart: string | null;
 };
 
 function isChannelUrl(url: string): boolean {
@@ -294,9 +295,18 @@ export default function StreamPlayer({
             </div>
           )}
           {isUpcoming && (
-            <div className="absolute top-3 left-3 flex items-center gap-1.5">
-              <span className="inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-400">Próximamente</span>
+            <div className="absolute top-3 left-3 flex flex-col gap-0.5">
+              <div className="flex items-center gap-1.5">
+                <span className="inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-400">Próximamente</span>
+              </div>
+              {resolved?.scheduledStart && (
+                <span className="ml-4 text-[10px] text-amber-300/70">
+                  {new Date(resolved.scheduledStart).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                  {' · '}
+                  {new Date(resolved.scheduledStart).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
             </div>
           )}
 
@@ -315,9 +325,16 @@ export default function StreamPlayer({
           </div>
           <div className="relative text-center px-4">
             <p className="text-lg font-semibold">
-              {isLive ? 'Retransmisión en directo' : isCompleted ? (resolved?.title ?? 'Última retransmisión') : isUpcoming ? 'Próximo directo' : 'Retransmisión en directo'}
+              {isLive ? 'Retransmisión en directo' : isCompleted ? (resolved?.title ?? 'Última retransmisión') : isUpcoming ? (resolved?.title ?? 'Próximo directo') : 'Retransmisión en directo'}
             </p>
             <p className="mt-1 text-sm text-white/60">{villageName}</p>
+            {isUpcoming && resolved?.scheduledStart && (
+              <p className="mt-2 text-sm text-amber-300/80">
+                {new Date(resolved.scheduledStart).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                {' a las '}
+                {new Date(resolved.scheduledStart).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            )}
             <p className="mt-3 text-xs text-white/40">Pulsa para iniciar</p>
           </div>
         </button>
