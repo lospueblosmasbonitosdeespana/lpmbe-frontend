@@ -1126,7 +1126,27 @@
     "achievements": "Fites",
     "achievementsTitle": "Les meves fites i insignies",
     "achievementsDesc": "Desbloqueja fites visitant pobles, fent servir el Club d'Amics i comprant.",
-    "comingSoon": "Properament"
+    "comingSoon": "Properament",
+    "viewAllLevels": "Veure tots els nivells viatger"
+  },
+  "levels": {
+    "backToPoints": "← Tornar als Meus Punts",
+    "title": "Nivells viatger",
+    "description": "Cada visita a un poble et dona punts. Acumula punts per pujar de nivell i desbloquejar recompenses. Aquí pots veure tots els nivells i com es classifiquen.",
+    "howItWorks": "Com funciona?",
+    "gpsVisitsTitle": "Visites GPS",
+    "gpsVisitsDesc": "Visita pobles amb la geolocalització activada. Aquests punts es poden bescanviar per recompenses reals.",
+    "manualVisitsTitle": "Visites manuals",
+    "manualVisitsDesc": "Marca pobles visitats des del teu compte. Sumen al total però no es poden bescanviar.",
+    "allPointsCount": "Tots dos tipus de visita sumen per pujar de nivell. La diferència és que només els punts GPS es poden bescanviar per premis reals.",
+    "allLevels": "Tots els nivells",
+    "currentLevel": "El teu nivell actual",
+    "threshold": "A partir de {points} punts",
+    "dynamicThreshold": "A partir de {points} punts (s'actualitza amb nous pobles a la xarxa)",
+    "pointsAbbr": "pts",
+    "yourStatus": "El teu estat actual",
+    "pointsTotal": "punts en total",
+    "pointsToNext": "falten {points} punts per a {next}"
   },
   "clubLanding": {
     "title": "D'aquí a uns dies, el Club d'Amics serà una realitat.",

@@ -1126,7 +1126,27 @@
     "achievements": "Obiettivi",
     "achievementsTitle": "I miei obiettivi e badge",
     "achievementsDesc": "Sblocca obiettivi visitando villaggi, usando il Club degli Amici e acquistando.",
-    "comingSoon": "Prossimamente"
+    "comingSoon": "Prossimamente",
+    "viewAllLevels": "Vedi tutti i livelli viaggiatore"
+  },
+  "levels": {
+    "backToPoints": "← Torna ai Miei Punti",
+    "title": "Livelli viaggiatore",
+    "description": "Ogni visita a un villaggio ti fa guadagnare punti. Accumula punti per salire di livello e sbloccare ricompense. Qui puoi vedere tutti i livelli e come sono classificati.",
+    "howItWorks": "Come funziona?",
+    "gpsVisitsTitle": "Visite GPS",
+    "gpsVisitsDesc": "Visita i villaggi con la geolocalizzazione attivata. Questi punti sono riscattabili per premi reali.",
+    "manualVisitsTitle": "Visite manuali",
+    "manualVisitsDesc": "Segna i villaggi visitati dal tuo account. Contano per il totale ma non sono riscattabili.",
+    "allPointsCount": "Entrambi i tipi di visita contano per salire di livello. La differenza è che solo i punti GPS sono riscattabili per premi reali.",
+    "allLevels": "Tutti i livelli",
+    "currentLevel": "Il tuo livello attuale",
+    "threshold": "A partire da {points} punti",
+    "dynamicThreshold": "A partire da {points} punti (si aggiorna con nuovi villaggi nella rete)",
+    "pointsAbbr": "pti",
+    "yourStatus": "Il tuo stato attuale",
+    "pointsTotal": "punti in totale",
+    "pointsToNext": "{points} punti per raggiungere {next}"
   },
   "clubLanding": {
     "title": "Tra pochi giorni il Club de Amigos sarà una realtà",

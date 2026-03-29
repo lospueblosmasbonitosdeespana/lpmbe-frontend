@@ -1126,7 +1126,27 @@
     "achievements": "Conquistas",
     "achievementsTitle": "As minhas conquistas e medalhas",
     "achievementsDesc": "Desbloqueie conquistas visitando aldeias, usando o Clube de Amigos e comprando.",
-    "comingSoon": "Em breve"
+    "comingSoon": "Em breve",
+    "viewAllLevels": "Ver todos os níveis viajante"
+  },
+  "levels": {
+    "backToPoints": "← Voltar aos Meus Pontos",
+    "title": "Níveis viajante",
+    "description": "Cada visita a uma aldeia dá-te pontos. Acumula pontos para subir de nível e desbloquear recompensas. Aqui podes ver todos os níveis e como são classificados.",
+    "howItWorks": "Como funciona?",
+    "gpsVisitsTitle": "Visitas GPS",
+    "gpsVisitsDesc": "Visita aldeias com a geolocalização ativada. Estes pontos são resgatáveis por recompensas reais.",
+    "manualVisitsTitle": "Visitas manuais",
+    "manualVisitsDesc": "Marca aldeias visitadas na tua conta. Contam para o total mas não são resgatáveis.",
+    "allPointsCount": "Ambos os tipos de visita contam para subir de nível. A diferença é que só os pontos GPS são resgatáveis por prémios reais.",
+    "allLevels": "Todos os níveis",
+    "currentLevel": "O teu nível atual",
+    "threshold": "A partir de {points} pontos",
+    "dynamicThreshold": "A partir de {points} pontos (atualiza-se com novas aldeias na rede)",
+    "pointsAbbr": "pts",
+    "yourStatus": "O teu estado atual",
+    "pointsTotal": "pontos no total",
+    "pointsToNext": "faltam {points} pontos para {next}"
   },
   "clubLanding": {
     "title": "Dentro de alguns dias, o Clube de Amigos será uma realidade",

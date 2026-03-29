@@ -1126,7 +1126,27 @@
     "achievements": "Achievements",
     "achievementsTitle": "My achievements & badges",
     "achievementsDesc": "Unlock achievements by visiting villages, using the Friends Club and shopping.",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "viewAllLevels": "View all traveller levels"
+  },
+  "levels": {
+    "backToPoints": "← Back to My Points",
+    "title": "Traveller levels",
+    "description": "Every village visit earns you points. Accumulate points to level up and unlock rewards. Here you can see all levels and how they are classified.",
+    "howItWorks": "How does it work?",
+    "gpsVisitsTitle": "GPS Visits",
+    "gpsVisitsDesc": "Visit villages with geolocation enabled. These points are redeemable for real rewards.",
+    "manualVisitsTitle": "Manual Visits",
+    "manualVisitsDesc": "Mark visited villages from your account. They count towards your total but are not redeemable.",
+    "allPointsCount": "Both types of visit count towards levelling up. The difference is that only GPS points are redeemable for real prizes.",
+    "allLevels": "All levels",
+    "currentLevel": "Your current level",
+    "threshold": "From {points} points",
+    "dynamicThreshold": "From {points} points (updated as new villages join the network)",
+    "pointsAbbr": "pts",
+    "yourStatus": "Your current status",
+    "pointsTotal": "total points",
+    "pointsToNext": "{points} points to reach {next}"
   },
   "clubLanding": {
     "title": "In a few days the Club de Amigos will be a reality",

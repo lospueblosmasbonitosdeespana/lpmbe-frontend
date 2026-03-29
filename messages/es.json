@@ -1166,7 +1166,27 @@
     "achievements": "Logros",
     "achievementsTitle": "Mis logros e insignias",
     "achievementsDesc": "Desbloquea logros visitando pueblos, usando el Club de Amigos y comprando en la tienda.",
-    "comingSoon": "Próximamente"
+    "comingSoon": "Próximamente",
+    "viewAllLevels": "Ver todos los niveles viajeros"
+  },
+  "levels": {
+    "backToPoints": "← Volver a Mis Puntos",
+    "title": "Niveles viajeros",
+    "description": "Cada visita a un pueblo te da puntos. Acumula puntos para subir de nivel y desbloquear recompensas. Aquí puedes ver todos los niveles y cómo se catalogan.",
+    "howItWorks": "¿Cómo funciona?",
+    "gpsVisitsTitle": "Visitas GPS",
+    "gpsVisitsDesc": "Visita pueblos con geolocalización activada. Estos puntos son canjeables por recompensas reales.",
+    "manualVisitsTitle": "Visitas Manuales",
+    "manualVisitsDesc": "Marca pueblos visitados desde tu cuenta. Suman al total pero no son canjeables.",
+    "allPointsCount": "Ambos tipos de visita suman para subir de nivel. La diferencia es que solo los puntos GPS son canjeables por premios reales.",
+    "allLevels": "Todos los niveles",
+    "currentLevel": "Tu nivel actual",
+    "threshold": "A partir de {points} puntos",
+    "dynamicThreshold": "A partir de {points} puntos (se actualiza con nuevos pueblos en la red)",
+    "pointsAbbr": "pts",
+    "yourStatus": "Tu estado actual",
+    "pointsTotal": "puntos en total",
+    "pointsToNext": "faltan {points} puntos para {next}"
   },
   "clubLanding": {
     "title": "En pocos días el Club de Amigos será una realidad",

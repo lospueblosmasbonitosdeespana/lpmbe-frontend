@@ -1126,7 +1126,27 @@
     "achievements": "Erfolge",
     "achievementsTitle": "Meine Erfolge & Abzeichen",
     "achievementsDesc": "Schalte Erfolge frei, indem du Dörfer besuchst, den Freundesclub nutzt und einkaufst.",
-    "comingSoon": "Demnächst"
+    "comingSoon": "Demnächst",
+    "viewAllLevels": "Alle Reisestufen anzeigen"
+  },
+  "levels": {
+    "backToPoints": "← Zurück zu Meinen Punkten",
+    "title": "Reisestufen",
+    "description": "Jeder Dorfbesuch bringt Ihnen Punkte. Sammeln Sie Punkte, um aufzusteigen und Belohnungen freizuschalten. Hier sehen Sie alle Stufen und wie sie eingeteilt sind.",
+    "howItWorks": "Wie funktioniert es?",
+    "gpsVisitsTitle": "GPS-Besuche",
+    "gpsVisitsDesc": "Besuchen Sie Dörfer mit aktivierter Geolokalisierung. Diese Punkte sind gegen echte Belohnungen einlösbar.",
+    "manualVisitsTitle": "Manuelle Besuche",
+    "manualVisitsDesc": "Markieren Sie besuchte Dörfer in Ihrem Konto. Sie zählen zum Gesamtwert, sind aber nicht einlösbar.",
+    "allPointsCount": "Beide Besuchsarten zählen zum Aufstieg. Der Unterschied ist, dass nur GPS-Punkte gegen echte Preise einlösbar sind.",
+    "allLevels": "Alle Stufen",
+    "currentLevel": "Ihre aktuelle Stufe",
+    "threshold": "Ab {points} Punkten",
+    "dynamicThreshold": "Ab {points} Punkten (aktualisiert sich mit neuen Dörfern im Netzwerk)",
+    "pointsAbbr": "Pkt.",
+    "yourStatus": "Ihr aktueller Status",
+    "pointsTotal": "Punkte insgesamt",
+    "pointsToNext": "{points} Punkte bis {next}"
   },
   "clubLanding": {
     "title": "In wenigen Tagen wird der Club de Amigos Realität sein",

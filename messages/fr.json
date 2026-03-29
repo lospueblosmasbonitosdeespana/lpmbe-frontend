@@ -1126,7 +1126,27 @@
     "achievements": "Succès",
     "achievementsTitle": "Mes succès et badges",
     "achievementsDesc": "Débloquez des succès en visitant des villages, en utilisant le Club d'Amis et en achetant.",
-    "comingSoon": "Prochainement"
+    "comingSoon": "Prochainement",
+    "viewAllLevels": "Voir tous les niveaux voyageur"
+  },
+  "levels": {
+    "backToPoints": "← Retour à Mes Points",
+    "title": "Niveaux voyageur",
+    "description": "Chaque visite de village vous rapporte des points. Accumulez des points pour monter de niveau et débloquer des récompenses. Ici vous pouvez voir tous les niveaux et comment ils sont classés.",
+    "howItWorks": "Comment ça marche ?",
+    "gpsVisitsTitle": "Visites GPS",
+    "gpsVisitsDesc": "Visitez les villages avec la géolocalisation activée. Ces points sont échangeables contre des récompenses réelles.",
+    "manualVisitsTitle": "Visites manuelles",
+    "manualVisitsDesc": "Marquez les villages visités depuis votre compte. Ils comptent pour le total mais ne sont pas échangeables.",
+    "allPointsCount": "Les deux types de visites comptent pour monter de niveau. La différence est que seuls les points GPS sont échangeables contre des prix réels.",
+    "allLevels": "Tous les niveaux",
+    "currentLevel": "Votre niveau actuel",
+    "threshold": "À partir de {points} points",
+    "dynamicThreshold": "À partir de {points} points (mis à jour avec les nouveaux villages du réseau)",
+    "pointsAbbr": "pts",
+    "yourStatus": "Votre état actuel",
+    "pointsTotal": "points au total",
+    "pointsToNext": "{points} points pour atteindre {next}"
   },
   "clubLanding": {
     "title": "Dans quelques jours, le Club de Amigos sera une réalité.",
