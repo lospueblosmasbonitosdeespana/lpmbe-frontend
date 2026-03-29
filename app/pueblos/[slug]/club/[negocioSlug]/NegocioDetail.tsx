@@ -223,13 +223,17 @@ function ofertaVentajaHeroLateral(ofertas: OfertaPublic[], pct: number | null | 
 
 function HeroVentajaClubCard({ oferta }: { oferta: OfertaPublic }) {
   const o = oferta;
+  const tituloVisible =
+    (o.titulo ?? "").toLowerCase().includes("detalle de bienvenida")
+      ? `${o.titulo} Club de Amigos`
+      : o.titulo;
   return (
     <div className="rounded-xl border-2 border-[#c45c48] bg-card p-3 shadow-sm ring-1 ring-[#c45c48]/35">
       <div>
         <div className="flex items-start gap-2">
           <span className="text-xl leading-none">{OFERTA_ICONS[o.tipoOferta] ?? "🎁"}</span>
           <div className="min-w-0">
-            <p className="text-sm font-bold leading-snug text-foreground">{o.titulo}</p>
+            <p className="text-sm font-bold leading-snug text-foreground">{tituloVisible}</p>
             <div className="mt-1 flex flex-wrap gap-1.5">
               {o.descuentoPorcentaje != null && (
                 <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-800">
