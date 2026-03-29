@@ -8,6 +8,7 @@ import DashboardResumen from '../components/DashboardResumen';
 import DashboardPuntos from '../components/DashboardPuntos';
 import DashboardFavoritos from '../components/DashboardFavoritos';
 import DashboardLogros from '../components/DashboardLogros';
+import { getMeServer } from '@/lib/me';
 
 export const dynamic = 'force-dynamic';
 
@@ -114,6 +115,8 @@ export default async function PuntosPage() {
   }
 
   const API_BASE = getApiUrl();
+  const me = await getMeServer();
+  const isAdmin = me?.rol === 'ADMIN';
 
   const resVisitados = await fetch(`${API_BASE}/usuarios/me/pueblos-visitados`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -143,7 +146,7 @@ export default async function PuntosPage() {
                 pueblosPuntos={data.pueblosPuntos}
               />
 
-              <DashboardLogros />
+              {isAdmin && <DashboardLogros />}
 
               <DashboardFavoritos items={visitadosItems} />
             </div>
