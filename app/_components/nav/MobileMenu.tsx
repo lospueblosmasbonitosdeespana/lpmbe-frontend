@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import type { NavItem } from "./nav.config";
@@ -54,10 +55,16 @@ export function MobileMenu({ items = navConfig }: { items?: NavItem[] }) {
   const getItemLabel = (item: NavItem) =>
     item.labelNs === "tabs" ? tTabs(item.labelKey) : tNav(item.labelKey);
 
+  const pathname = usePathname();
+
   const close = () => {
     setOpen(false);
     setExpandedLabel(null);
   };
+
+  useEffect(() => {
+    close();
+  }, [pathname]);
 
   useEffect(() => {
     if (open) {
