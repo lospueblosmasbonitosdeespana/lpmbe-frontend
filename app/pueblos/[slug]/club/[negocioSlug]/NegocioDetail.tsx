@@ -259,7 +259,7 @@ function HeroVentajaClubCard({ oferta }: { oferta: OfertaPublic }) {
         <p className="mt-1 text-[11px] text-muted-foreground/80">{o.condicionTexto}</p>
       )}
       {o.descripcion && (
-        <p className="mt-1 text-[11px] text-muted-foreground italic">{o.descripcion}</p>
+        <p className="mt-1 text-[11px] font-semibold italic text-[#c45c48]">{o.descripcion}</p>
       )}
     </div>
   );
