@@ -187,6 +187,100 @@ const APLICA_LABELS: Record<string, string> = {
   GRUPO: "por grupo",
 };
 
+/** Texto que explica a qué aplica el % resumen del recurso (evita sorpresas al socio). */
+function textoAlcanceDescuentoResumen(
+  pct: number,
+  ofertas: OfertaPublic[],
+): string {
+  const conMismoPct = ofertas.filter(
+    (o) => o.descuentoPorcentaje === pct && o.descuentoPorcentaje != null,
+  );
+  const preferDestacada = conMismoPct.find((o) => o.destacada) ?? conMismoPct[0];
+  const cualquierDescuento = ofertas.find(
+    (o) => o.tipoOferta === "DESCUENTO_PORCENTAJE" && o.descuentoPorcentaje != null,
+  );
+  const o = preferDestacada ?? cualquierDescuento;
+  if (o) {
+    const trozos: string[] = [];
+    trozos.push(`Este ${pct}% aplica a: ${o.titulo}.`);
+    if (o.aplicaA) {
+      trozos.push(`Ámbito: ${APLICA_LABELS[o.aplicaA] ?? o.aplicaA}.`);
+    }
+    if (o.condicionTexto) {
+      trozos.push(`Condiciones: ${o.condicionTexto}`);
+    }
+    if (o.descripcion?.trim()) {
+      trozos.push(o.descripcion.trim());
+    }
+    return trozos.join(" ");
+  }
+  return `Este porcentaje es el resumen de ventaja del Club para este establecimiento. El detalle (qué servicios o productos entran, exclusiones y vigencia) figura en las ofertas más abajo. Si tienes dudas, confirma al reservar o al pagar.`;
+}
+
+/** Ventaja para mostrar al lado del %: preferir regalo/extra; si solo hay descuento destacado, no duplicar en segunda columna. */
+function ofertaVentajaHeroLateral(ofertas: OfertaPublic[], pct: number | null | undefined): OfertaPublic | null {
+  const destacadas = ofertas.filter((o) => o.destacada);
+  if (destacadas.length === 0) return null;
+  const noSoloDescuentoIgual = destacadas.find(
+    (o) =>
+      o.tipoOferta !== "DESCUENTO_PORCENTAJE" ||
+      (pct != null &&
+        o.descuentoPorcentaje != null &&
+        o.descuentoPorcentaje !== pct),
+  );
+  if (noSoloDescuentoIgual) return noSoloDescuentoIgual;
+  if (destacadas.length >= 2) {
+    return destacadas.find((o) => o.tipoOferta !== "DESCUENTO_PORCENTAJE") ?? destacadas[1];
+  }
+  return null;
+}
+
+function HeroVentajaClubCard({ oferta }: { oferta: OfertaPublic }) {
+  const o = oferta;
+  return (
+    <div className="flex h-full min-h-[140px] flex-col justify-between rounded-xl border-2 border-emerald-600/35 bg-gradient-to-br from-emerald-50 to-emerald-100/80 p-4 shadow-sm ring-1 ring-emerald-700/10">
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-900/80">
+          Ventaja Club de Amigos
+        </p>
+        <div className="mt-2 flex items-start gap-2">
+          <span className="text-2xl leading-none">{OFERTA_ICONS[o.tipoOferta] ?? "🎁"}</span>
+          <div className="min-w-0">
+            <p className="text-base font-bold leading-snug text-emerald-950">{o.titulo}</p>
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              {o.descuentoPorcentaje != null && (
+                <span className="rounded-full bg-emerald-200/90 px-2 py-0.5 text-xs font-bold text-emerald-950">
+                  -{o.descuentoPorcentaje}%
+                </span>
+              )}
+              {o.valorFijoCents != null && (
+                <span className="rounded-full bg-emerald-200/90 px-2 py-0.5 text-xs font-bold text-emerald-950">
+                  {(o.valorFijoCents / 100).toFixed(2)} €
+                </span>
+              )}
+              {o.tipoOferta === "REGALO" && !o.descuentoPorcentaje && !o.valorFijoCents && (
+                <span className="rounded-full bg-amber-200 px-2 py-0.5 text-xs font-bold text-amber-950">
+                  Gratis
+                </span>
+              )}
+            </div>
+            {o.aplicaA && (
+              <p className="mt-1.5 text-xs font-medium text-emerald-900/90">
+                {APLICA_LABELS[o.aplicaA] ?? o.aplicaA}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+      {(o.condicionTexto || o.descripcion) && (
+        <p className="mt-3 border-t border-emerald-700/15 pt-2 text-xs leading-relaxed text-emerald-950/90">
+          {[o.condicionTexto, o.descripcion].filter(Boolean).join(" · ")}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function OfertaCard({ oferta }: { oferta: OfertaPublic }) {
   const o = oferta;
   const hasDate = o.vigenciaHasta;
@@ -273,6 +367,17 @@ export default function NegocioDetail({
 
   const hasCoords = recurso.lat != null && recurso.lng != null;
 
+  const ofertas = recurso.ofertas ?? [];
+  const pctNum =
+    recurso.descuentoPorcentaje != null && recurso.descuentoPorcentaje > 0
+      ? recurso.descuentoPorcentaje
+      : null;
+  const ventajaLateralHero = ofertaVentajaHeroLateral(ofertas, pctNum);
+  const idsEnHero = new Set<number>();
+  if (ventajaLateralHero) idsEnHero.add(ventajaLateralHero.id);
+  const ofertasResto = ofertas.filter((o) => !idsEnHero.has(o.id));
+  const showHeroClub = pctNum != null || ventajaLateralHero != null;
+
   return (
     <div className="space-y-8">
       {/* Gallery / Single photo */}
@@ -290,39 +395,50 @@ export default function NegocioDetail({
         )
       )}
 
-      {/* Title + badge + plan badge */}
+      {/* Title + badge + franja Club (% terracota + ventaja esmeralda) */}
       <div>
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl font-bold sm:text-3xl text-foreground">
-              {recurso.nombre}
-            </h1>
-            <div className="mt-2 flex items-center gap-3 flex-wrap">
-              <span className="rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
-                {TIPO_LABELS[recurso.tipo] ?? recurso.tipo}
-              </span>
-              {recurso.pueblo && (
-                <Link
-                  href={`/pueblos/${recurso.pueblo.slug}`}
-                  className="text-sm text-muted-foreground hover:text-foreground hover:underline"
-                >
-                  {recurso.pueblo.nombre}
-                </Link>
-              )}
-              {isNegocio && <PlanBadge plan={plan} />}
-            </div>
+        <div>
+          <h1 className="text-2xl font-bold sm:text-3xl text-foreground">
+            {recurso.nombre}
+          </h1>
+          <div className="mt-2 flex items-center gap-3 flex-wrap">
+            <span className="rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+              {TIPO_LABELS[recurso.tipo] ?? recurso.tipo}
+            </span>
+            {recurso.pueblo && (
+              <Link
+                href={`/pueblos/${recurso.pueblo.slug}`}
+                className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+              >
+                {recurso.pueblo.nombre}
+              </Link>
+            )}
+            {isNegocio && <PlanBadge plan={plan} />}
           </div>
-          {recurso.descuentoPorcentaje != null && recurso.descuentoPorcentaje > 0 && (
-            <div className="shrink-0 rounded-xl bg-primary px-5 py-3 text-center">
-              <span className="block text-2xl font-bold text-primary-foreground">
-                {recurso.descuentoPorcentaje}%
-              </span>
-              <span className="block text-xs font-medium text-primary-foreground/80">
-                descuento Club
-              </span>
-            </div>
-          )}
         </div>
+
+        {showHeroClub && (
+          <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-stretch">
+            {pctNum != null && (
+              <div className="flex min-h-[140px] flex-1 flex-col justify-center rounded-xl border-2 border-[#a84838] bg-[#c45c48] px-5 py-4 text-white shadow-md ring-1 ring-black/10">
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/85">
+                  Ventaja para socios del Club de Amigos
+                </p>
+                <div className="mt-3 flex items-start gap-4">
+                  <span className="shrink-0 text-4xl font-black leading-none tabular-nums">{pctNum}%</span>
+                  <p className="min-w-0 flex-1 text-sm leading-relaxed text-white/95">
+                    {textoAlcanceDescuentoResumen(pctNum, ofertas)}
+                  </p>
+                </div>
+              </div>
+            )}
+            {ventajaLateralHero && (
+              <div className="flex w-full flex-1 lg:max-w-md">
+                <HeroVentajaClubCard oferta={ventajaLateralHero} />
+              </div>
+            )}
+          </div>
+        )}
 
         {recurso.cerradoTemporal && (
           <div className="mt-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-2.5 text-sm font-medium text-amber-700">
@@ -343,14 +459,19 @@ export default function NegocioDetail({
         </div>
       )}
 
-      {/* Ofertas para socios del Club */}
-      {recurso.ofertas && recurso.ofertas.length > 0 && (
+      {/* Ofertas para socios del Club (las mostradas arriba no se repiten) */}
+      {ofertasResto.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-foreground mb-3">
-            Ofertas para socios del Club
+          <h2 className="text-lg font-semibold text-foreground mb-1">
+            {ventajaLateralHero ? "Más ofertas para socios del Club" : "Ofertas para socios del Club"}
           </h2>
+          {ventajaLateralHero && (
+            <p className="mb-3 text-xs text-muted-foreground">
+              La ventaja destacada aparece junto al descuento resumen. Aquí tienes el resto de condiciones y promociones.
+            </p>
+          )}
           <div className="grid gap-3 sm:grid-cols-2">
-            {recurso.ofertas.map((o) => (
+            {ofertasResto.map((o) => (
               <OfertaCard key={o.id} oferta={o} />
             ))}
           </div>
