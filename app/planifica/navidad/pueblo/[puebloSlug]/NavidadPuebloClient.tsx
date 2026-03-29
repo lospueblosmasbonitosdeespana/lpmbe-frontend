@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 function VideoEmbed({ url, title }: { url: string; title?: string }) {
   const ytMatch = url.match(/(?:youtube\.com\/(?:embed\/|watch\?v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
@@ -96,6 +97,7 @@ function formatTime(iso: string) {
 }
 
 export default function NavidadPuebloClient({ data }: Props) {
+  const t = useTranslations('planifica.semanaSanta');
   const { config, participante: p } = data;
   const { pueblo, eventos } = p;
   const img = p.cartelUrl || pueblo.foto_destacada;
@@ -172,9 +174,9 @@ export default function NavidadPuebloClient({ data }: Props) {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-primary">
               <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
             </svg>
-            Vídeo de Navidad
+            {t('christmasVideo')}
           </h2>
-          <VideoEmbed url={p.videoUrl} title={`Vídeo de Navidad — ${p.pueblo.nombre}`} />
+          <VideoEmbed url={p.videoUrl} title={`${t('christmasVideo')} — ${p.pueblo.nombre}`} />
         </section>
       )}
 

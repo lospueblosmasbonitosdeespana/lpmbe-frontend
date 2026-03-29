@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 type ResolveResult = {
   status: 'live' | 'upcoming' | 'completed' | 'none';
@@ -54,6 +55,7 @@ export default function StreamPlayer({
   streamUrl: string;
   villageName: string;
 }) {
+  const t = useTranslations('planifica.semanaSanta');
   const [playing, setPlaying] = useState(false);
   const [showCastMenu, setShowCastMenu] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -135,7 +137,7 @@ export default function StreamPlayer({
         <div className="absolute inset-0 flex items-center justify-center text-white/60">
           <div className="text-center">
             <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white/80" />
-            <p className="text-sm">Conectando con el canal...</p>
+            <p className="text-sm">{t('connectingChannel')}</p>
           </div>
         </div>
       </div>
@@ -149,8 +151,8 @@ export default function StreamPlayer({
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-12 w-12 mb-3 text-white/30">
             <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
           </svg>
-          <p className="text-base font-medium">No hay retransmisión disponible</p>
-          <p className="mt-1 text-sm text-white/40">Vuelve cuando haya un evento programado</p>
+          <p className="text-base font-medium">{t('noBroadcastAvailable')}</p>
+          <p className="mt-1 text-sm text-white/40">{t('comeBackLater')}</p>
           <a
             href={streamUrl}
             target="_blank"
@@ -160,7 +162,7 @@ export default function StreamPlayer({
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
               <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0C.488 3.45.029 5.804 0 12c.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0C23.512 20.55 23.971 18.196 24 12c-.029-6.185-.484-8.549-4.385-8.816zM9 16V8l8 4-8 4z" />
             </svg>
-            Ver canal en YouTube
+            {t('viewChannelYouTube')}
           </a>
         </div>
       </div>
@@ -183,7 +185,7 @@ export default function StreamPlayer({
         <>
           <iframe
             src={embedUrl}
-            title={`Retransmisión en directo — ${villageName}`}
+            title={`${t('liveStream')} — ${villageName}`}
             className="absolute inset-0 h-full w-full"
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
             allowFullScreen
@@ -196,12 +198,12 @@ export default function StreamPlayer({
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
               </span>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-white">En directo</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-white">{t('liveNow')}</span>
             </div>
           )}
           {isCompleted && resolved?.title && (
             <div className="absolute bottom-12 left-3 z-10 rounded-lg bg-black/70 px-3 py-1.5 text-xs text-white/80 backdrop-blur-sm">
-              Última retransmisión: {resolved.title}
+              {t('lastBroadcast')}: {resolved.title}
             </div>
           )}
 
@@ -285,20 +287,20 @@ export default function StreamPlayer({
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
               </span>
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-red-400">En directo</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-red-400">{t('liveNow')}</span>
             </div>
           )}
           {isCompleted && (
             <div className="absolute top-3 left-3 flex items-center gap-1.5">
               <span className="inline-flex h-2.5 w-2.5 rounded-full bg-blue-500" />
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-400">Última retransmisión</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-400">{t('lastBroadcast')}</span>
             </div>
           )}
           {isUpcoming && (
             <div className="absolute top-3 left-3 flex flex-col gap-0.5">
               <div className="flex items-center gap-1.5">
                 <span className="inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-400">Próximamente</span>
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-400">{t('upcoming')}</span>
               </div>
               {resolved?.scheduledStart && (
                 <span className="ml-4 text-[10px] text-amber-300/70">
@@ -325,17 +327,18 @@ export default function StreamPlayer({
           </div>
           <div className="relative text-center px-4">
             <p className="text-lg font-semibold">
-              {isLive ? 'Retransmisión en directo' : isCompleted ? (resolved?.title ?? 'Última retransmisión') : isUpcoming ? (resolved?.title ?? 'Próximo directo') : 'Retransmisión en directo'}
+              {isLive ? t('liveStream') : isCompleted ? (resolved?.title ?? t('lastBroadcast')) : isUpcoming ? (resolved?.title ?? t('nextLive')) : t('liveStream')}
             </p>
             <p className="mt-1 text-sm text-white/60">{villageName}</p>
             {isUpcoming && resolved?.scheduledStart && (
               <p className="mt-2 text-sm text-amber-300/80">
-                {new Date(resolved.scheduledStart).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-                {' a las '}
-                {new Date(resolved.scheduledStart).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                {t('scheduledFor', {
+                  day: new Date(resolved.scheduledStart).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }),
+                  time: new Date(resolved.scheduledStart).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+                })}
               </p>
             )}
-            <p className="mt-3 text-xs text-white/40">Pulsa para iniciar</p>
+            <p className="mt-3 text-xs text-white/40">{t('pressToStart')}</p>
           </div>
         </button>
       )}
