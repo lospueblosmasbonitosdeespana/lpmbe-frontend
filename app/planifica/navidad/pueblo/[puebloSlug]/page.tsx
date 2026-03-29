@@ -31,6 +31,7 @@ type Participante = {
   descripcion: string | null;
   cartelUrl: string | null;
   streamUrl: string | null;
+  videoUrl: string | null;
   interesTuristico: string;
   pueblo: {
     id: number; nombre: string; slug: string;

@@ -6,6 +6,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { translateHolyWeekDayLabel } from './day-labels';
 import ImagenConLightbox from './ImagenConLightbox';
 import StreamPlayer from './StreamPlayer';
+import YoutubeEmbed from './YoutubeEmbed';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -45,6 +46,7 @@ type Payload = {
     cartelVerticalUrl: string | null;
     cartelHorizontalUrl: string | null;
     streamUrl: string | null;
+    videoUrl: string | null;
     interesTuristico: 'NINGUNO' | 'REGIONAL' | 'NACIONAL' | 'INTERNACIONAL';
     pueblo: {
       nombre: string;
@@ -233,8 +235,26 @@ export default async function SemanaSantaPuebloPage({
 
         {participante.streamUrl && (
           <section className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <h2 className="mb-3 font-serif text-2xl font-medium">{t('liveStream')}</h2>
+            <h2 className="mb-3 flex items-center gap-2 font-serif text-2xl font-medium">
+              <span className="relative flex h-3 w-3">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500" />
+              </span>
+              {t('liveStream')}
+            </h2>
             <StreamPlayer streamUrl={participante.streamUrl} villageName={participante.pueblo.nombre} />
+          </section>
+        )}
+
+        {participante.videoUrl && (
+          <section className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <h2 className="mb-3 flex items-center gap-2 font-serif text-2xl font-medium">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-primary">
+                <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
+              </svg>
+              Vídeo de Semana Santa
+            </h2>
+            <YoutubeEmbed url={participante.videoUrl} title={`Vídeo de Semana Santa — ${participante.pueblo.nombre}`} />
           </section>
         )}
       </div>

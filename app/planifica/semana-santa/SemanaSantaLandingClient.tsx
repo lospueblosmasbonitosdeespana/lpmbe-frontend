@@ -10,6 +10,7 @@ type Item = {
   cartelVerticalUrl: string | null;
   cartelHorizontalUrl: string | null;
   streamUrl: string | null;
+  videoUrl: string | null;
   interesTuristico: 'NINGUNO' | 'REGIONAL' | 'NACIONAL' | 'INTERNACIONAL';
   pueblo: {
     nombre: string;
@@ -301,7 +302,7 @@ export default function SemanaSantaLandingClient({
                     <p className="mt-3 text-xs text-muted-foreground">
                       {t('agendaAndProcessions', { agenda: p.agenda.length, days: p.dias.length })}
                     </p>
-                    {p.streamUrl && p.streamUrl.trim() && (
+                    {p.streamUrl && p.streamUrl.trim() ? (
                       <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1">
                         <span className="relative flex h-2.5 w-2.5">
                           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
@@ -309,7 +310,14 @@ export default function SemanaSantaLandingClient({
                         </span>
                         <span className="text-[11px] font-semibold uppercase tracking-wide text-white">Emisión en directo</span>
                       </div>
-                    )}
+                    ) : p.videoUrl && p.videoUrl.trim() ? (
+                      <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-slate-700 px-3 py-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-3 w-3 text-white">
+                          <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-white">Vídeo disponible</span>
+                      </div>
+                    ) : null}
                     <p className="mt-3 text-sm font-medium text-primary">{t('viewVillagePage')}</p>
                   </div>
                   </Link>

@@ -44,7 +44,7 @@ type Evento = {
 
 type Participante = {
   id: number; titulo: string | null; descripcion: string | null;
-  cartelUrl: string | null; streamUrl: string | null; interesTuristico: string;
+  cartelUrl: string | null; streamUrl: string | null; videoUrl: string | null; interesTuristico: string;
   pueblo: {
     id: number; nombre: string; slug: string;
     provincia: string; comunidad: string;
@@ -130,9 +130,35 @@ export default function NavidadPuebloClient({ data }: Props) {
 
       {p.streamUrl && (
         <section className="mb-10">
-          <h2 className="mb-3 text-xl font-semibold">En directo</h2>
+          <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold">
+            <span className="relative flex h-3 w-3">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500" />
+            </span>
+            En directo
+          </h2>
           <div className="aspect-video overflow-hidden rounded-xl border">
             <iframe src={p.streamUrl} className="h-full w-full" allowFullScreen allow="autoplay; encrypted-media" />
+          </div>
+        </section>
+      )}
+
+      {p.videoUrl && (
+        <section className="mb-10">
+          <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-primary">
+              <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
+            </svg>
+            Vídeo de Navidad
+          </h2>
+          <div className="aspect-video overflow-hidden rounded-xl border">
+            <iframe
+              src={`https://www.youtube.com/embed/${(() => { const m = p.videoUrl!.match(/(?:youtube\.com\/(?:embed\/|watch\?v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/); return m ? m[1] : ''; })()}`}
+              className="h-full w-full"
+              allowFullScreen
+              allow="autoplay; encrypted-media"
+              title="Vídeo de Navidad"
+            />
           </div>
         </section>
       )}

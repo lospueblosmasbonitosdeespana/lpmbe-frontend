@@ -15,6 +15,7 @@ type Item = {
   id: number;
   cartelUrl: string | null;
   streamUrl: string | null;
+  videoUrl: string | null;
   interesTuristico: string;
   pueblo: {
     nombre: string; slug: string; provincia: string; comunidad: string;

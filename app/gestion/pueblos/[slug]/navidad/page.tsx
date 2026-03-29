@@ -79,6 +79,7 @@ type Participante = {
   descripcion: string | null;
   cartelUrl: string | null;
   streamUrl: string | null;
+  videoUrl: string | null;
   interesTuristico: 'NINGUNO' | 'REGIONAL' | 'NACIONAL' | 'INTERNACIONAL';
   activo: boolean;
   pueblo: { id: number; nombre: string; slug: string };
@@ -200,6 +201,7 @@ export default function GestionPuebloNavidadPage() {
         descripcion: data.descripcion || null,
         cartelUrl: data.cartelUrl || null,
         streamUrl: data.streamUrl || null,
+        videoUrl: data.videoUrl || null,
         interesTuristico: data.interesTuristico,
         activo: data.activo,
       }),
@@ -485,9 +487,17 @@ export default function GestionPuebloNavidadPage() {
           <R2ImageUploader label="Cartel navideño" value={data.cartelUrl} onChange={(url) => setData({ ...data, cartelUrl: url })} folder="navidad/pueblos" previewHeight="h-56" />
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm">Stream / webcam (URL de canal o vídeo)</label>
-              <input type="url" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="https://www.youtube.com/@canal o URL de vídeo" value={data.streamUrl ?? ''} onChange={(e) => setData({ ...data, streamUrl: e.target.value })} />
+              <label className="mb-1 block text-sm">Emisión en directo (URL de canal o vídeo en vivo)</label>
+              <input type="url" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="https://www.youtube.com/@canal o URL de vídeo en directo" value={data.streamUrl ?? ''} onChange={(e) => setData({ ...data, streamUrl: e.target.value })} />
+              <p className="mt-1 text-xs text-muted-foreground">Se mostrará con indicador de &quot;En directo&quot; (punto rojo).</p>
             </div>
+            <div>
+              <label className="mb-1 block text-sm">Vídeo de Navidad (YouTube)</label>
+              <input type="url" className="w-full rounded-md border px-3 py-2 text-sm" placeholder="https://www.youtube.com/watch?v=... o https://youtu.be/..." value={data.videoUrl ?? ''} onChange={(e) => setData({ ...data, videoUrl: e.target.value })} />
+              <p className="mt-1 text-xs text-muted-foreground">Vídeo genérico embebido. No se marcará como directo.</p>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm">Distintivo turístico</label>
               <select className="w-full rounded-md border px-3 py-2 text-sm" value={data.interesTuristico} onChange={(e) => setData({ ...data, interesTuristico: e.target.value as Participante['interesTuristico'] })}>
