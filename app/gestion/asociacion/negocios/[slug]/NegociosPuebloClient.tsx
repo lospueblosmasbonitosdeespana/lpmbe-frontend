@@ -460,27 +460,90 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Contacto (persona)</label>
-              <input
-                value={form.contacto}
-                onChange={(e) => setForm((f) => ({ ...f, contacto: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              />
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Contacto (persona)</label>
+            <input
+              value={form.contacto}
+              onChange={(e) => setForm((f) => ({ ...f, contacto: e.target.value }))}
+              className="w-full max-w-xl rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+
+          {/* Descuento resumen: un solo % para listados y cabecera de ficha (distinto de ofertas estructuradas) */}
+          <div className="rounded-xl border-2 border-[#c45c48] bg-[#fdf6f3] p-4 sm:p-5 shadow-sm ring-1 ring-[#c45c48]/10">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex items-start gap-3 min-w-0">
+                <div
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#c45c48]/20 text-lg font-bold text-[#8b3d2f]"
+                  aria-hidden
+                >
+                  %
+                </div>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="text-sm font-semibold text-[#5c2e26]">
+                      Descuento resumen para socios del Club
+                    </h4>
+                    <span
+                      className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#c45c48]/50 bg-white text-[#8b3d2f]"
+                      title="Más abajo puedes desplegar la explicación completa"
+                      aria-hidden
+                    >
+                      <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 16v-4M12 8h.01" />
+                      </svg>
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs leading-relaxed text-[#7a4a40]">
+                    Un solo porcentaje que se muestra de forma destacada en la web pública: en las{' '}
+                    <strong className="font-semibold text-[#5c2e26]">tarjetas del listado</strong> del Club y en la{' '}
+                    <strong className="font-semibold text-[#5c2e26]">cabecera de la ficha</strong> del negocio.
+                    No sustituye las ofertas detalladas de abajo (desayuno, noches, menú, etc.): es el &ldquo;número
+                    principal&rdquo; que ve el socio de un vistazo.
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Descuento cabecera (%)</label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                value={form.descuentoPorcentaje}
-                onChange={(e) => setForm((f) => ({ ...f, descuentoPorcentaje: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                placeholder="Descuento principal que aparece en la tarjeta resumen"
-              />
+            <div className="mt-3 sm:mt-4 sm:flex sm:items-end sm:gap-4">
+              <div className="sm:w-40">
+                <label htmlFor="negocio-descuento-resumen" className="sr-only">
+                  Porcentaje de descuento resumen (0 a 100)
+                </label>
+                <input
+                  id="negocio-descuento-resumen"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={form.descuentoPorcentaje}
+                  onChange={(e) => setForm((f) => ({ ...f, descuentoPorcentaje: e.target.value }))}
+                  className="w-full rounded-lg border-2 border-[#c45c48]/35 bg-white px-3 py-2.5 text-sm font-medium text-[#5c2e26] shadow-inner focus:border-[#c45c48] focus:outline-none focus:ring-2 focus:ring-[#c45c48]/30"
+                  placeholder="Ej. 10"
+                />
+                <span className="mt-1 block text-[11px] text-[#8b3d2f]/90">Dejar vacío si no aplica</span>
+              </div>
             </div>
+            <details className="mt-4 rounded-lg border border-[#c45c48]/25 bg-white/70 px-3 py-2 text-[#5c2e26]">
+              <summary className="cursor-pointer select-none text-xs font-semibold text-[#8b3d2f] hover:text-[#5c2e26]">
+                Cómo se combina con las ofertas estructuradas
+              </summary>
+              <ul className="mt-2 list-disc space-y-1.5 pl-4 text-xs leading-relaxed text-[#6b4540]">
+                <li>
+                  <strong className="text-[#5c2e26]">Listado del Club:</strong> si creas una oferta y la marcas como{' '}
+                  <em>destacada</em>, la tarjeta puede mostrar primero esa oferta. Si no hay destacada, se usa este
+                  porcentaje resumen (si lo rellenas).
+                </li>
+                <li>
+                  <strong className="text-[#5c2e26]">Ficha del negocio:</strong> este campo controla el bloque grande
+                  &ldquo;X% descuento Club&rdquo; junto al nombre. Las ofertas estructuradas aparecen en su propia
+                  sección con el detalle (qué incluye, si es por persona o por habitación, etc.).
+                </li>
+                <li>
+                  Puedes usar solo ofertas detalladas y dejar este campo vacío, o usar ambos: resumen para el impacto
+                  visual y ofertas para explicar bien las condiciones.
+                </li>
+              </ul>
+            </details>
           </div>
 
           {/* Ubicación */}
