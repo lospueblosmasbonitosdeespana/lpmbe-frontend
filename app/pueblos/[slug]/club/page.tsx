@@ -159,6 +159,21 @@ function RecursoCard({ r, puebloSlug }: { r: Recurso; puebloSlug: string }) {
   const plan = r.planNegocio ?? "FREE";
   const isPremium = plan === "PREMIUM";
   const isRecomendado = plan === "RECOMENDADO";
+  const showPct = r.descuentoPorcentaje != null && r.descuentoPorcentaje > 0;
+  const ofertaBienvenida = r.ofertas?.find((o) =>
+    (o.titulo ?? "").toLowerCase().includes("bienvenida"),
+  );
+  const ofertaRegalo = r.ofertas?.find((o) => o.tipoOferta === "REGALO");
+  const ofertaNoDescuentoDestacada = r.ofertas?.find(
+    (o) => o.destacada && o.tipoOferta !== "DESCUENTO_PORCENTAJE",
+  );
+  const ofertaDestacada = r.ofertas?.find((o) => o.destacada);
+  const ofertaPreview =
+    ofertaBienvenida ?? ofertaRegalo ?? ofertaNoDescuentoDestacada ?? ofertaDestacada ?? null;
+  const showOfertaPreview =
+    !!ofertaPreview &&
+    (ofertaPreview.tipoOferta !== "DESCUENTO_PORCENTAJE" ||
+      ofertaPreview.descuentoPorcentaje !== r.descuentoPorcentaje);
 
   return (
     <Link href={detailHref} className={`block overflow-hidden rounded-xl border bg-card shadow-sm transition-shadow hover:shadow-md group ${
@@ -201,29 +216,20 @@ function RecursoCard({ r, puebloSlug }: { r: Recurso; puebloSlug: string }) {
               {TIPO_LABELS[r.tipo] ?? r.tipo}
             </span>
           </div>
-          {(() => {
-            const destacada = r.ofertas?.find((o) => o.destacada);
-            if (destacada) {
-              return (
-                <span className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground text-right max-w-[160px]">
-                  {destacada.descuentoPorcentaje != null
-                    ? `-${destacada.descuentoPorcentaje}%`
-                    : destacada.valorFijoCents != null
-                      ? `${(destacada.valorFijoCents / 100).toFixed(0)}€ dto.`
-                      : "🎁"}
-                  <span className="block text-[10px] font-medium opacity-80 truncate">{destacada.titulo}</span>
-                </span>
-              );
-            }
-            if (r.descuentoPorcentaje != null && r.descuentoPorcentaje > 0) {
-              return (
-                <span className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground">
+          {(showPct || showOfertaPreview) && (
+            <div className="shrink-0 text-right">
+              {showPct && (
+                <span className="inline-block rounded-lg bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground">
                   {r.descuentoPorcentaje}% dto.
                 </span>
-              );
-            }
-            return null;
-          })()}
+              )}
+              {showOfertaPreview && ofertaPreview && (
+                <span className="mt-1 block max-w-[180px] truncate rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900">
+                  🎁 {ofertaPreview.titulo}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Offer count badge */}
