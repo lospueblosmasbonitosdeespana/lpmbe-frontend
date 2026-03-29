@@ -106,6 +106,13 @@ export default function CoverPicker({
               alt="Portada actual"
               className="h-32 w-auto rounded border object-cover"
             />
+            <button
+              type="button"
+              onClick={handleClear}
+              className="mt-2 block text-sm text-red-600 hover:underline"
+            >
+              {clearLabel ?? 'Quitar imagen'}
+            </button>
           </div>
         </div>
       )}

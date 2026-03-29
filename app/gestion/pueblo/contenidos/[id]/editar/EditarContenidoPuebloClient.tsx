@@ -203,8 +203,8 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
       if (!esPaginaTematica) {
         payload.tipo = tipo;
       }
-      if (newCoverUrl) payload.coverUrl = newCoverUrl;
       payload.galleryUrls = normalizedGalleryUrls;
+      payload.coverUrl = newCoverUrl ?? null;
       if (estado === 'PROGRAMADA' && publishedAt) {
         payload.publishedAt = datetimeLocalToIsoUtc(publishedAt);
       }

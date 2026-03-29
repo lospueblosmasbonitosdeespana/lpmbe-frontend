@@ -185,8 +185,8 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
         contenidoMd,
         estado,
       };
-      if (newCoverUrl) payload.coverUrl = newCoverUrl;
       payload.galleryUrls = normalizedGalleryUrls;
+      payload.coverUrl = newCoverUrl ?? null;
       if (estado === 'PROGRAMADA' && publishedAt) {
         payload.publishedAt = datetimeLocalToIsoUtc(publishedAt);
       }
