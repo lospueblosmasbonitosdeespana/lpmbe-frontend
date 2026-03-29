@@ -245,31 +245,6 @@ function OfertaCard({ oferta }: { oferta: OfertaPublic }) {
   );
 }
 
-function LockedSection({ title, message, ctaHref }: { title: string; message: string; ctaHref: string }) {
-  return (
-    <div className="relative rounded-xl border border-dashed border-border bg-muted/30 p-6">
-      <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
-          <svg className="h-5 w-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">{message}</p>
-          <Link
-            href={ctaHref}
-            className="mt-3 inline-block rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            Ver planes
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function NegocioDetail({
   recurso,
   puebloSlug,
@@ -283,12 +258,10 @@ export default function NegocioDetail({
 }) {
   const plan: PlanNegocio = (recurso.planNegocio as PlanNegocio) || "FREE";
   const isNegocio = recurso.scope === "NEGOCIO";
-  const isFree = isNegocio && plan === "FREE";
-  const isRecomendado = plan === "RECOMENDADO";
-  const isPremium = plan === "PREMIUM";
-  const showContact = !isNegocio || isRecomendado || isPremium;
-  const showFullGallery = !isNegocio || isRecomendado || isPremium;
-  const showSchedule = !isNegocio || isRecomendado || isPremium;
+  const isPaid = plan === "RECOMENDADO" || plan === "PREMIUM";
+  const showContact = !isNegocio || isPaid;
+  const showFullGallery = !isNegocio || isPaid;
+  const showSchedule = !isNegocio || isPaid;
 
   const fotos: Imagen[] = recurso.imagenes && recurso.imagenes.length > 0
     ? recurso.imagenes
@@ -313,11 +286,6 @@ export default function NegocioDetail({
               alt={displayPhotos[0].alt ?? recurso.nombre}
               className="w-full max-h-[480px] object-cover"
             />
-            {fotos.length > 1 && (
-              <div className="bg-muted/80 px-4 py-2 text-center text-xs text-muted-foreground">
-                +{fotos.length - 1} fotos disponibles con el perfil completo
-              </div>
-            )}
           </div>
         )
       )}
@@ -478,63 +446,11 @@ export default function NegocioDetail({
         </div>
       )}
 
-      {/* Locked contact for FREE negocios */}
-      {isFree && (recurso.telefono || recurso.email || recurso.web) && (
-        <LockedSection
-          title="Datos de contacto"
-          message="El teléfono, email y web de este negocio están disponibles en perfiles con plan Recomendado o superior."
-          ctaHref="/para-negocios"
-        />
-      )}
-
-      {/* Locked schedule for FREE negocios */}
-      {isFree && recurso.horariosSemana && recurso.horariosSemana.length > 0 && (
-        <LockedSection
-          title="Horarios detallados"
-          message="Los horarios de apertura están disponibles en perfiles con plan Recomendado o superior."
-          ctaHref="/para-negocios"
-        />
-      )}
-
       {/* Map - visible for all plans (socios need to know where to go) */}
       {hasCoords && (
         <div>
           <h2 className="text-lg font-semibold text-foreground mb-3">Ubicación</h2>
           <MiniMap lat={recurso.lat!} lng={recurso.lng!} nombre={recurso.nombre} />
-        </div>
-      )}
-
-      {/* CTA for upgrade */}
-      {isNegocio && isFree && (
-        <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-6 text-center">
-          <h3 className="text-lg font-semibold text-foreground">
-            ¿Eres el responsable de este negocio?
-          </h3>
-          <p className="mt-2 text-sm text-muted-foreground max-w-lg mx-auto">
-            Activa tu perfil completo: galería de fotos, datos de contacto visibles,
-            horarios, badge de recomendación y mucho más.
-          </p>
-          <Link
-            href="/para-negocios"
-            className="mt-4 inline-block rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            Ver planes para negocios
-          </Link>
-        </div>
-      )}
-
-      {isNegocio && isRecomendado && (
-        <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-5 text-center">
-          <p className="text-sm text-blue-800">
-            Pasa al plan <strong>Premium</strong> para tu landing completa, badge dorado,
-            posición destacada y publicación en nuestras redes sociales.
-          </p>
-          <Link
-            href="/para-negocios"
-            className="mt-3 inline-block rounded-lg border border-blue-300 bg-white px-5 py-2 text-xs font-semibold text-blue-800 hover:bg-blue-50 transition-colors"
-          >
-            Descubrir Premium
-          </Link>
         </div>
       )}
 
