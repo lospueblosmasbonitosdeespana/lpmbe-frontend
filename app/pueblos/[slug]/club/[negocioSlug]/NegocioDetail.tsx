@@ -224,12 +224,12 @@ function ofertaVentajaHeroLateral(ofertas: OfertaPublic[], pct: number | null | 
 function HeroVentajaClubCard({ oferta }: { oferta: OfertaPublic }) {
   const o = oferta;
   return (
-    <div className="rounded-xl border-2 border-amber-400 bg-card p-4 shadow-sm ring-1 ring-amber-300/70">
+    <div className="rounded-xl border-2 border-[#c45c48] bg-card p-3 shadow-sm ring-1 ring-[#c45c48]/35">
       <div>
         <div className="flex items-start gap-2">
-          <span className="text-2xl leading-none">{OFERTA_ICONS[o.tipoOferta] ?? "🎁"}</span>
+          <span className="text-xl leading-none">{OFERTA_ICONS[o.tipoOferta] ?? "🎁"}</span>
           <div className="min-w-0">
-            <p className="text-base font-bold leading-snug text-foreground">{o.titulo}</p>
+            <p className="text-sm font-bold leading-snug text-foreground">{o.titulo}</p>
             <div className="mt-1 flex flex-wrap gap-1.5">
               {o.descuentoPorcentaje != null && (
                 <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-800">
@@ -248,7 +248,7 @@ function HeroVentajaClubCard({ oferta }: { oferta: OfertaPublic }) {
               )}
             </div>
             {o.aplicaA && (
-              <p className="mt-1.5 text-xs font-medium text-muted-foreground">
+              <p className="mt-1 text-[11px] font-medium text-muted-foreground">
                 {APLICA_LABELS[o.aplicaA] ?? o.aplicaA}
               </p>
             )}
@@ -256,10 +256,10 @@ function HeroVentajaClubCard({ oferta }: { oferta: OfertaPublic }) {
         </div>
       </div>
       {o.condicionTexto && (
-        <p className="mt-1 text-xs text-muted-foreground/80">{o.condicionTexto}</p>
+        <p className="mt-1 text-[11px] text-muted-foreground/80">{o.condicionTexto}</p>
       )}
       {o.descripcion && (
-        <p className="mt-1 text-xs text-muted-foreground italic">{o.descripcion}</p>
+        <p className="mt-1 text-[11px] text-muted-foreground italic">{o.descripcion}</p>
       )}
     </div>
   );
@@ -411,7 +411,7 @@ export default function NegocioDetail({
               </div>
             )}
             {ventajaLateralHero && (
-              <div className="w-full sm:w-[420px]">
+              <div className="w-full sm:w-[300px]">
                 <HeroVentajaClubCard oferta={ventajaLateralHero} />
               </div>
             )}
