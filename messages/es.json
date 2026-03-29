@@ -1167,7 +1167,9 @@
     "achievementsTitle": "Mis logros e insignias",
     "achievementsDesc": "Desbloquea logros visitando pueblos, usando el Club de Amigos y comprando en la tienda.",
     "comingSoon": "Próximamente",
-    "viewAllLevels": "Ver todos los niveles viajeros"
+    "viewAllLevels": "Ver todos los niveles viajeros",
+    "gpsRankLabel": "Posición GPS",
+    "totalRankLabel": "Posición total"
   },
   "levels": {
     "backToPoints": "← Volver a Mis Puntos",

@@ -1127,7 +1127,9 @@
     "achievementsTitle": "Mes succès et badges",
     "achievementsDesc": "Débloquez des succès en visitant des villages, en utilisant le Club d'Amis et en achetant.",
     "comingSoon": "Prochainement",
-    "viewAllLevels": "Voir tous les niveaux voyageur"
+    "viewAllLevels": "Voir tous les niveaux voyageur",
+    "gpsRankLabel": "Position GPS",
+    "totalRankLabel": "Position totale"
   },
   "levels": {
     "backToPoints": "← Retour à Mes Points",

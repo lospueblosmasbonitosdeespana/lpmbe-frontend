@@ -1127,7 +1127,9 @@
     "achievementsTitle": "Meine Erfolge & Abzeichen",
     "achievementsDesc": "Schalte Erfolge frei, indem du Dörfer besuchst, den Freundesclub nutzt und einkaufst.",
     "comingSoon": "Demnächst",
-    "viewAllLevels": "Alle Reisestufen anzeigen"
+    "viewAllLevels": "Alle Reisestufen anzeigen",
+    "gpsRankLabel": "GPS-Position",
+    "totalRankLabel": "Gesamtposition"
   },
   "levels": {
     "backToPoints": "← Zurück zu Meinen Punkten",

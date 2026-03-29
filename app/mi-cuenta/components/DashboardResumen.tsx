@@ -23,6 +23,8 @@ type Props = {
   puntosCanjeables: number;
   puntosNoCanjeables: number;
   progreso: number;
+  posicionGps?: number;
+  posicionTotal?: number;
 };
 
 export default function DashboardResumen({
@@ -32,6 +34,8 @@ export default function DashboardResumen({
   puntosCanjeables,
   puntosNoCanjeables,
   progreso,
+  posicionGps,
+  posicionTotal,
 }: Props) {
   const t = useTranslations('points');
   const nombreNivel = nivelActual?.nombre ?? t('initialLevel');
@@ -79,6 +83,21 @@ export default function DashboardResumen({
           </p>
         )}
       </div>
+
+      {(posicionGps || posicionTotal) && (
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          {posicionGps ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1 font-medium text-sky-700 dark:bg-sky-950 dark:text-sky-300">
+              {t('gpsRankLabel')}: #{posicionGps}
+            </span>
+          ) : null}
+          {posicionTotal ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-3 py-1 font-medium text-violet-700 dark:bg-violet-950 dark:text-violet-300">
+              {t('totalRankLabel')}: #{posicionTotal}
+            </span>
+          ) : null}
+        </div>
+      )}
 
       {/* Barra de progreso */}
       <div className="space-y-2">

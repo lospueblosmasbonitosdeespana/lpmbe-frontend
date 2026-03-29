@@ -1127,7 +1127,9 @@
     "achievementsTitle": "My achievements & badges",
     "achievementsDesc": "Unlock achievements by visiting villages, using the Friends Club and shopping.",
     "comingSoon": "Coming soon",
-    "viewAllLevels": "View all traveller levels"
+    "viewAllLevels": "View all traveller levels",
+    "gpsRankLabel": "GPS position",
+    "totalRankLabel": "Total position"
   },
   "levels": {
     "backToPoints": "← Back to My Points",

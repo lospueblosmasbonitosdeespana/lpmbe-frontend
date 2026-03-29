@@ -100,6 +100,8 @@ async function getDashboardData() {
         }
       : null,
     progreso: Number(raw.progreso ?? 0),
+    posicionGps: Number(raw?.posicionGps ?? 0),
+    posicionTotal: Number(raw?.posicionTotal ?? 0),
     pueblosPuntos,
   };
 
@@ -139,6 +141,8 @@ export default async function PuntosPage() {
                 puntosCanjeables={data.puntosCanjeables}
                 puntosNoCanjeables={data.puntosNoCanjeables}
                 progreso={data.progreso}
+                posicionGps={data.posicionGps}
+                posicionTotal={data.posicionTotal}
               />
 
               <DashboardPuntos

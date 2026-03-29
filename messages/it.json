@@ -1127,7 +1127,9 @@
     "achievementsTitle": "I miei obiettivi e badge",
     "achievementsDesc": "Sblocca obiettivi visitando villaggi, usando il Club degli Amici e acquistando.",
     "comingSoon": "Prossimamente",
-    "viewAllLevels": "Vedi tutti i livelli viaggiatore"
+    "viewAllLevels": "Vedi tutti i livelli viaggiatore",
+    "gpsRankLabel": "Posizione GPS",
+    "totalRankLabel": "Posizione totale"
   },
   "levels": {
     "backToPoints": "← Torna ai Miei Punti",

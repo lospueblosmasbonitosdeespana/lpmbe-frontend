@@ -1127,7 +1127,9 @@
     "achievementsTitle": "Les meves fites i insignies",
     "achievementsDesc": "Desbloqueja fites visitant pobles, fent servir el Club d'Amics i comprant.",
     "comingSoon": "Properament",
-    "viewAllLevels": "Veure tots els nivells viatger"
+    "viewAllLevels": "Veure tots els nivells viatger",
+    "gpsRankLabel": "Posició GPS",
+    "totalRankLabel": "Posició total"
   },
   "levels": {
     "backToPoints": "← Tornar als Meus Punts",

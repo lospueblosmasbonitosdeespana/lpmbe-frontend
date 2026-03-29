@@ -1127,7 +1127,9 @@
     "achievementsTitle": "As minhas conquistas e medalhas",
     "achievementsDesc": "Desbloqueie conquistas visitando aldeias, usando o Clube de Amigos e comprando.",
     "comingSoon": "Em breve",
-    "viewAllLevels": "Ver todos os níveis viajante"
+    "viewAllLevels": "Ver todos os níveis viajante",
+    "gpsRankLabel": "Posição GPS",
+    "totalRankLabel": "Posição total"
   },
   "levels": {
     "backToPoints": "← Voltar aos Meus Pontos",
