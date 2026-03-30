@@ -140,13 +140,23 @@ export default async function RootLayout({
     <html lang={locale} className={`${playfairDisplay.variable} ${sourceSans3.variable}`} suppressHydrationWarning>
       <body className="antialiased">
         <GoogleTagManager />
-        <Script
-          id="metricool-loader"
-          src="https://tracker.metricool.com/resources/be.js"
-          strategy="afterInteractive"
-        />
         <Script id="metricool-init" strategy="afterInteractive">
-          {`window.beTracker?.t({ hash: "${METRICOOL_HASH}" });`}
+          {`(function () {
+  function loadScript(cb) {
+    var head = document.getElementsByTagName("head")[0];
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = "https://tracker.metricool.com/resources/be.js";
+    script.onreadystatechange = cb;
+    script.onload = cb;
+    head.appendChild(script);
+  }
+  loadScript(function () {
+    if (window.beTracker && typeof window.beTracker.t === "function") {
+      window.beTracker.t({ hash: "${METRICOOL_HASH}" });
+    }
+  });
+})();`}
         </Script>
         <JsonLd data={organizationLd} />
         <ThemeProvider>
