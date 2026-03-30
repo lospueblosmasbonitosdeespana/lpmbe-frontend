@@ -1,9 +1,16 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
 const ROLES = ['ADMIN', 'EDITOR', 'ALCALDE', 'COLABORADOR', 'CLIENTE', 'USUARIO'] as const;
+
+type PuebloOption = {
+  id: number;
+  nombre: string;
+  provincia: string | null;
+  comunidad: string | null;
+};
 
 type PuebloVisitado = {
   puebloId: number;
@@ -72,6 +79,14 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [updatingOrigen, setUpdatingOrigen] = useState<string | null>(null);
 
+  // Add pueblo visitado
+  const [allPueblos, setAllPueblos] = useState<PuebloOption[]>([]);
+  const [searchPueblo, setSearchPueblo] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [addingPueblo, setAddingPueblo] = useState(false);
+  const [addMsg, setAddMsg] = useState<{ text: string; type: 'ok' | 'warn' | 'error' } | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   // Editable fields
   const [editNombre, setEditNombre] = useState('');
   const [editApellidos, setEditApellidos] = useState('');
@@ -104,6 +119,88 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
+
+  useEffect(() => {
+    fetch('/api/pueblos?limit=500', { cache: 'no-store' })
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data?.pueblos ?? data?.data ?? [];
+        setAllPueblos(
+          list.map((p: any) => ({
+            id: p.id,
+            nombre: p.nombre ?? p.name,
+            provincia: p.provincia ?? null,
+            comunidad: p.comunidad ?? null,
+          }))
+        );
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const visitedPuebloIds = useMemo(
+    () => new Set(user?.pueblosVisitados?.pueblos?.map((p) => p.puebloId) ?? []),
+    [user],
+  );
+
+  const filteredPueblos = useMemo(() => {
+    if (!searchPueblo.trim()) return [];
+    const q = searchPueblo.trim().toLowerCase();
+    return allPueblos
+      .filter(
+        (p) =>
+          p.nombre.toLowerCase().includes(q) ||
+          p.provincia?.toLowerCase().includes(q) ||
+          p.comunidad?.toLowerCase().includes(q),
+      )
+      .slice(0, 15);
+  }, [searchPueblo, allPueblos]);
+
+  const handleAddPueblo = async (pueblo: PuebloOption) => {
+    setShowDropdown(false);
+    setSearchPueblo('');
+
+    if (visitedPuebloIds.has(pueblo.id)) {
+      setAddMsg({ text: `${pueblo.nombre} ya está en la lista de pueblos visitados`, type: 'warn' });
+      setTimeout(() => setAddMsg(null), 4000);
+      return;
+    }
+
+    setAddingPueblo(true);
+    setAddMsg(null);
+    try {
+      const res = await fetch(`/api/admin/datos/usuarios/${userId}/visitas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ puebloId: pueblo.id, origen: 'GPS' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setAddMsg({ text: data.error || data.message || 'Error al añadir', type: 'error' });
+        return;
+      }
+      if (data.alreadyExisted) {
+        setAddMsg({ text: `${pueblo.nombre} ya estaba registrado como visitado`, type: 'warn' });
+      } else {
+        setAddMsg({ text: `${pueblo.nombre} añadido correctamente`, type: 'ok' });
+      }
+      await fetchUser();
+    } catch {
+      setAddMsg({ text: 'Error de red al añadir pueblo', type: 'error' });
+    } finally {
+      setAddingPueblo(false);
+      setTimeout(() => setAddMsg(null), 4000);
+    }
+  };
 
   const handleDelete = async () => {
     if (!confirm(`¿Seguro que quieres desactivar al usuario ${user?.email}? Se marcará como inactivo.`)) return;
@@ -339,6 +436,82 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
         <h2 className="mb-4 text-lg font-semibold text-foreground">
           Pueblos visitados ({user.pueblosVisitados?.total ?? 0})
         </h2>
+
+        {/* Añadir pueblo visitado */}
+        <div className="mb-4 rounded-xl border border-border bg-card p-4 shadow-sm">
+          <h3 className="mb-2 text-sm font-semibold text-foreground">Añadir pueblo visitado</h3>
+          <div className="relative" ref={dropdownRef}>
+            <input
+              type="text"
+              placeholder="Buscar pueblo por nombre, provincia o comunidad…"
+              value={searchPueblo}
+              onChange={(e) => {
+                setSearchPueblo(e.target.value);
+                setShowDropdown(true);
+              }}
+              onFocus={() => searchPueblo.trim() && setShowDropdown(true)}
+              disabled={addingPueblo}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
+            />
+            {showDropdown && filteredPueblos.length > 0 && (
+              <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-border bg-card shadow-lg">
+                {filteredPueblos.map((p) => {
+                  const alreadyVisited = visitedPuebloIds.has(p.id);
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => handleAddPueblo(p)}
+                      disabled={alreadyVisited}
+                      className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors ${
+                        alreadyVisited
+                          ? 'cursor-not-allowed bg-muted/50 text-muted-foreground'
+                          : 'hover:bg-muted/60 text-foreground'
+                      }`}
+                    >
+                      <div>
+                        <span className="font-medium">{p.nombre}</span>
+                        {p.provincia && (
+                          <span className="ml-1 text-muted-foreground">
+                            ({p.provincia}{p.comunidad ? `, ${p.comunidad}` : ''})
+                          </span>
+                        )}
+                      </div>
+                      {alreadyVisited && (
+                        <span className="ml-2 shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                          Ya visitado
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {showDropdown && searchPueblo.trim().length > 0 && filteredPueblos.length === 0 && (
+              <div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-card px-3 py-3 text-sm text-muted-foreground shadow-lg">
+                No se encontraron pueblos con &quot;{searchPueblo}&quot;
+              </div>
+            )}
+          </div>
+          {addMsg && (
+            <p className={`mt-2 text-sm font-medium ${
+              addMsg.type === 'ok' ? 'text-green-600 dark:text-green-400' :
+              addMsg.type === 'warn' ? 'text-amber-600 dark:text-amber-400' :
+              'text-red-600 dark:text-red-400'
+            }`}>
+              {addMsg.text}
+            </p>
+          )}
+          {addingPueblo && (
+            <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
+                <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="4" strokeLinecap="round" className="opacity-75" />
+              </svg>
+              Añadiendo…
+            </p>
+          )}
+        </div>
+
         <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
           <table className="w-full text-sm">
             <thead>
