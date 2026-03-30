@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -18,6 +18,8 @@ type DeviceRow = { deviceType: string; total: number };
 type BrowserRow = { browser: string; total: number };
 type ReferrerRow = { referrerHost: string; total: number };
 type EventRow = { eventName: string; total: number };
+type RealtimeMinuteRow = { minuto: string; total: number };
+type RealtimePathRow = { path: string; total: number };
 
 type WebData = {
   periodo: { dias: number; desde: string };
@@ -34,6 +36,16 @@ type WebData = {
   porNavegador: BrowserRow[];
   referrers: ReferrerRow[];
   eventos: EventRow[];
+  tiempoReal?: {
+    minutos: number;
+    desde: string;
+    hasta: string;
+    pageViews: number;
+    uniqueSessions: number;
+    unknownSessionPageViews: number;
+    porMinuto: RealtimeMinuteRow[];
+    topPaths: RealtimePathRow[];
+  };
 };
 
 function KpiCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
@@ -77,24 +89,36 @@ function MiniTable({ title, rows }: { title: string; rows: { label: string; valu
 export default function WebDashboard() {
   const [data, setData] = useState<WebData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [days, setDays] = useState(30);
 
-  useEffect(() => {
-    setLoading(true);
+  const loadStats = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    if (silent) setRefreshing(true);
     setError(null);
-    (async () => {
-      try {
-        const res = await fetch(`/api/admin/datos/visitas-web?days=${days}`, { cache: 'no-store' });
-        if (!res.ok) throw new Error('Error cargando analítica web');
-        setData(await res.json());
-      } catch (e: any) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    })();
+    try {
+      const res = await fetch(`/api/admin/datos/visitas-web?days=${days}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error('Error cargando analítica web');
+      setData(await res.json());
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, [days]);
+
+  useEffect(() => {
+    void loadStats(false);
+  }, [loadStats]);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      void loadStats(true);
+    }, 30000);
+    return () => clearInterval(id);
+  }, [loadStats]);
 
   if (loading) {
     return (
@@ -120,7 +144,7 @@ export default function WebDashboard() {
     );
   }
 
-  const { resumen, porDia, porRuta, porDispositivo, porNavegador, referrers, eventos } = data;
+  const { resumen, porDia, porRuta, porDispositivo, porNavegador, referrers, eventos, tiempoReal } = data;
   const pagesPerSession = resumen.uniqueSessions > 0
     ? Math.round((resumen.totalPageViews / resumen.uniqueSessions) * 10) / 10
     : 0;
@@ -129,6 +153,59 @@ export default function WebDashboard() {
 
   return (
     <div className="space-y-8">
+      {/* Tiempo real */}
+      <section>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-foreground">Tiempo real (últimos 30 min)</h2>
+          <div className="flex items-center gap-2">
+            {refreshing && <span className="text-xs text-muted-foreground">Actualizando…</span>}
+            <button
+              onClick={() => void loadStats(true)}
+              className="rounded-md bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+            >
+              Actualizar
+            </button>
+          </div>
+        </div>
+        {tiempoReal ? (
+          <div className="grid gap-4 md:grid-cols-3">
+            <KpiCard label="Páginas vistas (30 min)" value={tiempoReal.pageViews} />
+            <KpiCard label="Sesiones únicas (30 min)" value={tiempoReal.uniqueSessions} />
+            <KpiCard label="Pageviews sin sesión" value={tiempoReal.unknownSessionPageViews} />
+            <div className="md:col-span-2">
+              <MiniTable
+                title="Top páginas ahora"
+                rows={tiempoReal.topPaths.map((r) => ({ label: r.path, value: r.total }))}
+              />
+            </div>
+            <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+              <h3 className="mb-3 text-sm font-semibold text-foreground">Actividad por minuto</h3>
+              <div className="space-y-1">
+                {tiempoReal.porMinuto.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Sin actividad en los últimos 30 min.</p>
+                ) : (
+                  tiempoReal.porMinuto.slice(-8).map((p) => (
+                    <div key={p.minuto} className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {new Date(p.minuto).toLocaleTimeString('es-ES', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                      <span className="font-medium text-foreground">{p.total}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
+            Aún no hay datos de tiempo real.
+          </div>
+        )}
+      </section>
+
       {/* Period selector */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm text-muted-foreground">Periodo:</span>
