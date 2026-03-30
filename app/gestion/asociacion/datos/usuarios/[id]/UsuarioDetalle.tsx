@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
 const ROLES = ['ADMIN', 'EDITOR', 'ALCALDE', 'COLABORADOR', 'CLIENTE', 'USUARIO'] as const;
@@ -79,13 +79,13 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [updatingOrigen, setUpdatingOrigen] = useState<string | null>(null);
 
-  // Add pueblo visitado
+  // Add pueblos visitados (batch)
   const [allPueblos, setAllPueblos] = useState<PuebloOption[]>([]);
   const [searchPueblo, setSearchPueblo] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [addingPueblo, setAddingPueblo] = useState(false);
+  const [selectedToAdd, setSelectedToAdd] = useState<Set<number>>(new Set());
+  const [addingBatch, setAddingBatch] = useState(false);
   const [addMsg, setAddMsg] = useState<{ text: string; type: 'ok' | 'warn' | 'error' } | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [showAddPanel, setShowAddPanel] = useState(false);
 
   // Editable fields
   const [editNombre, setEditNombre] = useState('');
@@ -137,74 +137,85 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
       .catch(() => {});
   }, []);
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowDropdown(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   const visitedPuebloIds = useMemo(
     () => new Set(user?.pueblosVisitados?.pueblos?.map((p) => p.puebloId) ?? []),
     [user],
   );
 
-  const filteredPueblos = useMemo(() => {
-    if (!searchPueblo.trim()) return [];
+  const availablePueblos = useMemo(() => {
+    return allPueblos.filter((p) => !visitedPuebloIds.has(p.id));
+  }, [allPueblos, visitedPuebloIds]);
+
+  const filteredAvailable = useMemo(() => {
+    if (!searchPueblo.trim()) return availablePueblos;
     const q = searchPueblo.trim().toLowerCase();
+    return availablePueblos.filter(
+      (p) =>
+        p.nombre.toLowerCase().includes(q) ||
+        p.provincia?.toLowerCase().includes(q) ||
+        p.comunidad?.toLowerCase().includes(q),
+    );
+  }, [searchPueblo, availablePueblos]);
+
+  const toggleSelect = (id: number) => {
+    setSelectedToAdd((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectedPuebloNames = useMemo(() => {
     return allPueblos
-      .filter(
-        (p) =>
-          p.nombre.toLowerCase().includes(q) ||
-          p.provincia?.toLowerCase().includes(q) ||
-          p.comunidad?.toLowerCase().includes(q),
-      )
-      .slice(0, 15);
-  }, [searchPueblo, allPueblos]);
+      .filter((p) => selectedToAdd.has(p.id))
+      .map((p) => p.nombre);
+  }, [selectedToAdd, allPueblos]);
 
-  const handleAddPueblo = async (pueblo: PuebloOption) => {
-    setShowDropdown(false);
-    setSearchPueblo('');
+  const handleAddBatch = async () => {
+    if (selectedToAdd.size === 0) return;
 
-    if (visitedPuebloIds.has(pueblo.id)) {
-      setAddMsg({ text: `${pueblo.nombre} ya está en la lista de pueblos visitados`, type: 'warn' });
-      setTimeout(() => setAddMsg(null), 4000);
-      return;
-    }
-
+    const nombres = selectedPuebloNames.join(', ');
     const confirmed = confirm(
-      `¿Estás seguro de que quieres añadir "${pueblo.nombre}" (${pueblo.provincia ?? ''}) como pueblo visitado para este usuario?`
+      `¿Añadir ${selectedToAdd.size} pueblo(s) como visitados?\n\n${nombres}`
     );
     if (!confirmed) return;
 
-    setAddingPueblo(true);
+    setAddingBatch(true);
     setAddMsg(null);
-    try {
-      const res = await fetch(`/api/admin/datos/usuarios/${userId}/visitas`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ puebloId: pueblo.id, origen: 'GPS' }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setAddMsg({ text: data.error || data.message || 'Error al añadir', type: 'error' });
-        return;
+    let ok = 0;
+    let skip = 0;
+    let fail = 0;
+
+    for (const puebloId of selectedToAdd) {
+      try {
+        const res = await fetch(`/api/admin/datos/usuarios/${userId}/visitas`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ puebloId, origen: 'GPS' }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) { fail++; continue; }
+        if (data.alreadyExisted) skip++;
+        else ok++;
+      } catch {
+        fail++;
       }
-      if (data.alreadyExisted) {
-        setAddMsg({ text: `${pueblo.nombre} ya estaba registrado como visitado`, type: 'warn' });
-      } else {
-        setAddMsg({ text: `${pueblo.nombre} añadido correctamente`, type: 'ok' });
-      }
-      await fetchUser();
-    } catch {
-      setAddMsg({ text: 'Error de red al añadir pueblo', type: 'error' });
-    } finally {
-      setAddingPueblo(false);
-      setTimeout(() => setAddMsg(null), 4000);
     }
+
+    const parts: string[] = [];
+    if (ok > 0) parts.push(`${ok} añadido(s)`);
+    if (skip > 0) parts.push(`${skip} ya existían`);
+    if (fail > 0) parts.push(`${fail} error(es)`);
+
+    setAddMsg({
+      text: parts.join(' · '),
+      type: fail > 0 ? 'error' : skip > 0 ? 'warn' : 'ok',
+    });
+    setSelectedToAdd(new Set());
+    await fetchUser();
+    setAddingBatch(false);
+    setTimeout(() => setAddMsg(null), 5000);
   };
 
   const handleDeleteVisita = async (puebloId: number, nombre: string) => {
@@ -463,78 +474,101 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
           Pueblos visitados ({user.pueblosVisitados?.total ?? 0})
         </h2>
 
-        {/* Añadir pueblo visitado */}
-        <div className="mb-4 rounded-xl border border-border bg-card p-4 shadow-sm">
-          <h3 className="mb-2 text-sm font-semibold text-foreground">Añadir pueblo visitado</h3>
-          <div className="relative" ref={dropdownRef}>
-            <input
-              type="text"
-              placeholder="Buscar pueblo por nombre, provincia o comunidad…"
-              value={searchPueblo}
-              onChange={(e) => {
-                setSearchPueblo(e.target.value);
-                setShowDropdown(true);
-              }}
-              onFocus={() => searchPueblo.trim() && setShowDropdown(true)}
-              disabled={addingPueblo}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
-            />
-            {showDropdown && filteredPueblos.length > 0 && (
-              <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-border bg-card shadow-lg">
-                {filteredPueblos.map((p) => {
-                  const alreadyVisited = visitedPuebloIds.has(p.id);
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => handleAddPueblo(p)}
-                      disabled={alreadyVisited}
-                      className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors ${
-                        alreadyVisited
-                          ? 'cursor-not-allowed bg-muted/50 text-muted-foreground'
-                          : 'hover:bg-muted/60 text-foreground'
-                      }`}
-                    >
-                      <div>
-                        <span className="font-medium">{p.nombre}</span>
+        {/* Añadir pueblos visitados */}
+        <div className="mb-4 rounded-xl border border-border bg-card shadow-sm">
+          <button
+            onClick={() => { setShowAddPanel(!showAddPanel); setSearchPueblo(''); setSelectedToAdd(new Set()); }}
+            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-foreground hover:bg-muted/30 transition-colors rounded-xl"
+          >
+            <span>+ Añadir pueblos visitados</span>
+            <svg className={`h-4 w-4 transition-transform ${showAddPanel ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+            </svg>
+          </button>
+
+          {showAddPanel && (
+            <div className="border-t border-border px-4 pb-4 pt-3">
+              <input
+                type="text"
+                placeholder="Filtrar pueblos por nombre, provincia o comunidad…"
+                value={searchPueblo}
+                onChange={(e) => setSearchPueblo(e.target.value)}
+                className="mb-3 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+
+              {selectedToAdd.size > 0 && (
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">Seleccionados ({selectedToAdd.size}):</span>
+                  {selectedPuebloNames.map((name) => (
+                    <span key={name} className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="max-h-72 overflow-y-auto rounded-lg border border-border">
+                {filteredAvailable.length === 0 ? (
+                  <p className="px-3 py-4 text-center text-sm text-muted-foreground">
+                    {searchPueblo.trim() ? `No se encontraron pueblos con "${searchPueblo}"` : 'Todos los pueblos ya están visitados'}
+                  </p>
+                ) : (
+                  filteredAvailable.map((p) => {
+                    const checked = selectedToAdd.has(p.id);
+                    return (
+                      <label
+                        key={p.id}
+                        className={`flex cursor-pointer items-center gap-3 px-3 py-2 text-sm transition-colors hover:bg-muted/40 ${
+                          checked ? 'bg-primary/5' : ''
+                        } border-b border-border last:border-0`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleSelect(p.id)}
+                          className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50"
+                        />
+                        <span className="font-medium text-foreground">{p.nombre}</span>
                         {p.provincia && (
-                          <span className="ml-1 text-muted-foreground">
+                          <span className="text-muted-foreground">
                             ({p.provincia}{p.comunidad ? `, ${p.comunidad}` : ''})
                           </span>
                         )}
-                      </div>
-                      {alreadyVisited && (
-                        <span className="ml-2 shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                          Ya visitado
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+                      </label>
+                    );
+                  })
+                )}
               </div>
-            )}
-            {showDropdown && searchPueblo.trim().length > 0 && filteredPueblos.length === 0 && (
-              <div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-card px-3 py-3 text-sm text-muted-foreground shadow-lg">
-                No se encontraron pueblos con &quot;{searchPueblo}&quot;
+
+              <div className="mt-3 flex items-center gap-3">
+                <button
+                  onClick={handleAddBatch}
+                  disabled={selectedToAdd.size === 0 || addingBatch}
+                  className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                >
+                  {addingBatch
+                    ? `Añadiendo ${selectedToAdd.size}…`
+                    : `Añadir ${selectedToAdd.size || ''} pueblo${selectedToAdd.size !== 1 ? 's' : ''}`}
+                </button>
+                {selectedToAdd.size > 0 && !addingBatch && (
+                  <button
+                    onClick={() => setSelectedToAdd(new Set())}
+                    className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted/50 transition-colors"
+                  >
+                    Limpiar selección
+                  </button>
+                )}
+                {addMsg && (
+                  <span className={`text-sm font-medium ${
+                    addMsg.type === 'ok' ? 'text-green-600 dark:text-green-400' :
+                    addMsg.type === 'warn' ? 'text-amber-600 dark:text-amber-400' :
+                    'text-red-600 dark:text-red-400'
+                  }`}>
+                    {addMsg.text}
+                  </span>
+                )}
               </div>
-            )}
-          </div>
-          {addMsg && (
-            <p className={`mt-2 text-sm font-medium ${
-              addMsg.type === 'ok' ? 'text-green-600 dark:text-green-400' :
-              addMsg.type === 'warn' ? 'text-amber-600 dark:text-amber-400' :
-              'text-red-600 dark:text-red-400'
-            }`}>
-              {addMsg.text}
-            </p>
-          )}
-          {addingPueblo && (
-            <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
-                <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="4" strokeLinecap="round" className="opacity-75" />
-              </svg>
-              Añadiendo…
-            </p>
+            </div>
           )}
         </div>
 
