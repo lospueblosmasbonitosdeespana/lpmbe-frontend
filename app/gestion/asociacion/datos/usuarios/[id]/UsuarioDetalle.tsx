@@ -175,6 +175,11 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
       return;
     }
 
+    const confirmed = confirm(
+      `¿Estás seguro de que quieres añadir "${pueblo.nombre}" (${pueblo.provincia ?? ''}) como pueblo visitado para este usuario?`
+    );
+    if (!confirmed) return;
+
     setAddingPueblo(true);
     setAddMsg(null);
     try {
@@ -199,6 +204,27 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
     } finally {
       setAddingPueblo(false);
       setTimeout(() => setAddMsg(null), 4000);
+    }
+  };
+
+  const handleDeleteVisita = async (puebloId: number, nombre: string) => {
+    const confirmed = confirm(
+      `¿Estás seguro de que quieres eliminar "${nombre}" de los pueblos visitados de este usuario?`
+    );
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/admin/datos/usuarios/${userId}/visitas/${puebloId}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        alert(d.error || d.message || 'Error al eliminar visita');
+        return;
+      }
+      await fetchUser();
+    } catch {
+      alert('Error de red al eliminar visita');
     }
   };
 
@@ -522,12 +548,13 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Origen</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Fecha</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Valoración</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground"></th>
               </tr>
             </thead>
             <tbody>
               {!user.pueblosVisitados?.pueblos?.length ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                     Este usuario no ha visitado ningún pueblo
                   </td>
                 </tr>
@@ -554,6 +581,15 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {p.valoracion != null ? `${p.valoracion} ★` : '—'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => handleDeleteVisita(p.puebloId, p.nombre)}
+                        className="rounded px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors"
+                        title="Eliminar pueblo visitado"
+                      >
+                        Eliminar
+                      </button>
                     </td>
                   </tr>
                 ))
