@@ -24,6 +24,13 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
 
   const [config, setConfig] = useState<HomeConfig>({
     ...configWithDefaults,
+    socialLinks: {
+      instagram: configWithDefaults.socialLinks?.instagram ?? '',
+      facebook: configWithDefaults.socialLinks?.facebook ?? '',
+      tiktok: configWithDefaults.socialLinks?.tiktok ?? '',
+      youtube: configWithDefaults.socialLinks?.youtube ?? '',
+      x: configWithDefaults.socialLinks?.x ?? '',
+    },
     mapPreviewImage: configWithDefaults.mapPreviewImage ?? '',
     shopBannerImage: configWithDefaults.shopBannerImage ?? '',
   });
@@ -104,6 +111,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
         themes: config.themes,
         homeRutas: config.homeRutas,
         actualidad: config.actualidad,
+        socialLinks: config.socialLinks,
         mapPreviewImage: config.mapPreviewImage?.trim() || undefined,
         shopBannerImage: config.shopBannerImage?.trim() || undefined,
       };
@@ -537,6 +545,96 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
             }
             className="w-full rounded border border-gray-300 px-3 py-2"
           />
+        </div>
+      </section>
+
+      {/* Redes sociales home */}
+      <section className="rounded-lg border border-gray-200 bg-white p-6">
+        <h2 className="text-xl font-semibold mb-4">Redes sociales (Home)</h2>
+        <p className="text-sm text-gray-600 mb-6">
+          Estos enlaces se muestran en la sección &quot;Síguenos en redes&quot; de la home pública.
+        </p>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Instagram</label>
+            <input
+              type="url"
+              value={config.socialLinks?.instagram ?? ''}
+              onChange={(e) =>
+                setConfig((prev) => ({
+                  ...prev,
+                  socialLinks: { ...(prev.socialLinks ?? {}), instagram: e.target.value },
+                }))
+              }
+              className="w-full rounded border border-gray-300 px-3 py-2"
+              placeholder="https://www.instagram.com/..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Facebook</label>
+            <input
+              type="url"
+              value={config.socialLinks?.facebook ?? ''}
+              onChange={(e) =>
+                setConfig((prev) => ({
+                  ...prev,
+                  socialLinks: { ...(prev.socialLinks ?? {}), facebook: e.target.value },
+                }))
+              }
+              className="w-full rounded border border-gray-300 px-3 py-2"
+              placeholder="https://www.facebook.com/..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">TikTok</label>
+            <input
+              type="url"
+              value={config.socialLinks?.tiktok ?? ''}
+              onChange={(e) =>
+                setConfig((prev) => ({
+                  ...prev,
+                  socialLinks: { ...(prev.socialLinks ?? {}), tiktok: e.target.value },
+                }))
+              }
+              className="w-full rounded border border-gray-300 px-3 py-2"
+              placeholder="https://www.tiktok.com/@..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">YouTube</label>
+            <input
+              type="url"
+              value={config.socialLinks?.youtube ?? ''}
+              onChange={(e) =>
+                setConfig((prev) => ({
+                  ...prev,
+                  socialLinks: { ...(prev.socialLinks ?? {}), youtube: e.target.value },
+                }))
+              }
+              className="w-full rounded border border-gray-300 px-3 py-2"
+              placeholder="https://www.youtube.com/@..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">X</label>
+            <input
+              type="url"
+              value={config.socialLinks?.x ?? ''}
+              onChange={(e) =>
+                setConfig((prev) => ({
+                  ...prev,
+                  socialLinks: { ...(prev.socialLinks ?? {}), x: e.target.value },
+                }))
+              }
+              className="w-full rounded border border-gray-300 px-3 py-2"
+              placeholder="https://x.com/..."
+            />
+          </div>
         </div>
       </section>
 

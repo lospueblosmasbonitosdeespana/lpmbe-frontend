@@ -403,6 +403,7 @@ export default async function HomePage() {
         villages={villages}
         news={news}
         videos={videos}
+        socialLinks={config.socialLinks}
         mapPreviewImage={config.mapPreviewImage}
         shopBannerImage={config.shopBannerImage}
       />

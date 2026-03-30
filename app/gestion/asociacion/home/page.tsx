@@ -74,6 +74,13 @@ async function getAdminHomeConfig(token: string): Promise<HomeConfig> {
       actualidad: {
         limit: data.actualidad?.limit ?? 6,
       },
+      socialLinks: {
+        instagram: typeof data.socialLinks?.instagram === 'string' ? data.socialLinks.instagram : '',
+        facebook: typeof data.socialLinks?.facebook === 'string' ? data.socialLinks.facebook : '',
+        tiktok: typeof data.socialLinks?.tiktok === 'string' ? data.socialLinks.tiktok : '',
+        youtube: typeof data.socialLinks?.youtube === 'string' ? data.socialLinks.youtube : '',
+        x: typeof data.socialLinks?.x === 'string' ? data.socialLinks.x : '',
+      },
       mapPreviewImage: typeof data.mapPreviewImage === 'string' ? data.mapPreviewImage : '',
       shopBannerImage: typeof data.shopBannerImage === 'string' ? data.shopBannerImage : '',
     };
@@ -129,6 +136,13 @@ function getFallbackConfig(): HomeConfig {
     },
     actualidad: {
       limit: 6,
+    },
+    socialLinks: {
+      instagram: 'https://www.instagram.com/lospueblosmbe/',
+      facebook: 'https://www.facebook.com/lospueblosmasbonitos/',
+      tiktok: 'https://www.tiktok.com/@lospueblosmbe',
+      youtube: 'https://www.youtube.com/@lospueblosmasbonitos',
+      x: 'https://x.com/lospueblosmbe',
     },
     mapPreviewImage: '',
     shopBannerImage: '',
