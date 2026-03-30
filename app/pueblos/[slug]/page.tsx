@@ -33,6 +33,7 @@ import ParadasMap from "@/app/_components/ParadasMap";
 import { DetailGallerySection } from "@/app/components/ui/detail-gallery-section";
 import { PointsOfInterest } from "@/app/components/pueblos/PointsOfInterest";
 import RotatedImage from "@/app/components/RotatedImage";
+import { stripHtml } from "@/app/_lib/html";
 
 /** Distancia Haversine en km */
 function haversineKm(
@@ -123,9 +124,9 @@ function getPoiHref(puebloSlug: string, poi: Poi): string {
 }
 
 function getPoiCardDescription(poi: Poi): string {
-  const longText = poi.descripcion_larga?.replace(/<[^>]*>/g, "").trim() ?? "";
+  const longText = stripHtml(poi.descripcion_larga ?? "");
   if (longText) return longText.slice(0, 120);
-  return poi.descripcion_corta?.trim() ?? "";
+  return stripHtml(poi.descripcion_corta ?? "");
 }
 
 /** Normaliza etiqueta para lookup: mayúsculas, sin acentos, espacios simples */
@@ -1067,7 +1068,24 @@ export default async function PuebloPage({
               <div className="mb-6">
                 <Title>{t("location")}</Title>
                 <Lead className="mt-2">
-                  {t("locationIn", { nombre: puebloSafe.nombre, provincia: puebloSafe.provincia, comunidad: puebloSafe.comunidad })}
+                  {t("locationIn", {
+                    nombre: puebloSafe.nombre,
+                    provincia: puebloSafe.provincia,
+                    comunidad: puebloSafe.comunidad,
+                    name: puebloSafe.nombre,
+                    province: puebloSafe.provincia,
+                    community: puebloSafe.comunidad,
+                    nom: puebloSafe.nombre,
+                    "région": puebloSafe.comunidad,
+                    region: puebloSafe.comunidad,
+                    Name: puebloSafe.nombre,
+                    Provinz: puebloSafe.provincia,
+                    Gemeinde: puebloSafe.comunidad,
+                    nome: puebloSafe.nombre,
+                    "comunità": puebloSafe.comunidad,
+                    comunidade: puebloSafe.comunidad,
+                    comunitat: puebloSafe.comunidad,
+                  })}
                 </Lead>
               </div>
               <ParadasMap
