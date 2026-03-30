@@ -12,14 +12,17 @@ export async function PATCH(
   }
 
   const { id, puebloId } = await params;
-  let body: { origen?: string };
+  let body: { origen?: string; fecha?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Cuerpo JSON inválido' }, { status: 400 });
   }
 
-  const origen = body.origen === 'MANUAL' ? 'MANUAL' : 'GPS';
+  const payload: Record<string, string> = {};
+  if (body.origen) payload.origen = body.origen === 'MANUAL' ? 'MANUAL' : 'GPS';
+  if (body.fecha) payload.fecha = body.fecha;
+
   const API_BASE = getApiUrl();
   const url = `${API_BASE}/admin/datos/usuarios/${encodeURIComponent(id)}/visitas/${encodeURIComponent(puebloId)}`;
 
@@ -30,7 +33,7 @@ export async function PATCH(
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ origen }),
+      body: JSON.stringify(payload),
       cache: 'no-store',
     });
 

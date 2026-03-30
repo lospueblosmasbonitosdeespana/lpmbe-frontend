@@ -276,6 +276,30 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
     }
   };
 
+  const handleChangeFecha = async (puebloId: number, newDateStr: string) => {
+    if (!newDateStr) return;
+    const key = `fecha-${puebloId}`;
+    setUpdatingOrigen(key);
+    try {
+      const fecha = new Date(newDateStr).toISOString();
+      const res = await fetch(`/api/admin/datos/usuarios/${userId}/visitas/${puebloId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fecha }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        alert(d.error || d.message || 'Error al actualizar fecha');
+        return;
+      }
+      await fetchUser();
+    } catch {
+      alert('Error de red al actualizar fecha');
+    } finally {
+      setUpdatingOrigen(null);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setSaveMsg(null);
@@ -610,8 +634,19 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
                         <option value="MANUAL">Manual</option>
                       </select>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {formatDate(p.fecha)}
+                    <td className="px-4 py-3">
+                      <input
+                        type="datetime-local"
+                        defaultValue={p.fecha ? new Date(p.fecha).toISOString().slice(0, 16) : ''}
+                        onBlur={(e) => {
+                          const orig = p.fecha ? new Date(p.fecha).toISOString().slice(0, 16) : '';
+                          if (e.target.value && e.target.value !== orig) {
+                            handleChangeFecha(p.puebloId, e.target.value);
+                          }
+                        }}
+                        disabled={updatingOrigen === `fecha-${p.puebloId}`}
+                        className="rounded border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
+                      />
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {p.valoracion != null ? `${p.valoracion} ★` : '—'}
