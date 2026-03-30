@@ -2,6 +2,7 @@ import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import Script from "next/script";
 import { Playfair_Display, Source_Sans_3 } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
@@ -38,6 +39,7 @@ const sourceSans3 = Source_Sans_3({
 });
 
 const baseUrl = getBaseUrl();
+const METRICOOL_HASH = "18832f16626b6e6fe6fd0d0d28e26671";
 
 // Evitar cache para que generateMetadata use siempre la ruta real (x-current-path) y los hreflang sean correctos.
 export const dynamic = 'force-dynamic';
@@ -138,6 +140,14 @@ export default async function RootLayout({
     <html lang={locale} className={`${playfairDisplay.variable} ${sourceSans3.variable}`} suppressHydrationWarning>
       <body className="antialiased">
         <GoogleTagManager />
+        <Script
+          id="metricool-loader"
+          src="https://tracker.metricool.com/resources/be.js"
+          strategy="afterInteractive"
+        />
+        <Script id="metricool-init" strategy="afterInteractive">
+          {`window.beTracker?.t({ hash: "${METRICOOL_HASH}" });`}
+        </Script>
         <JsonLd data={organizationLd} />
         <ThemeProvider>
           <NextIntlClientProvider locale={locale} messages={messages}>
