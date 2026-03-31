@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
+import { AlertTriangle } from "lucide-react";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
 import {
   getCanonicalUrl,
@@ -97,34 +98,60 @@ export default async function AlertasPuebloPage({
     <main className="mx-auto max-w-4xl px-6 py-10">
       <Link
         href={`/pueblos/${slug}`}
-        className="mb-4 inline-block text-sm text-muted-foreground hover:underline"
+        className="mb-6 inline-block text-sm text-muted-foreground hover:underline"
       >
         ← Volver al pueblo
       </Link>
 
-      <h1 className="text-4xl font-semibold">Alertas del pueblo</h1>
-      <p className="mt-2 text-muted-foreground">
-        {nombrePueblo} · {alertas.length} alerta{alertas.length === 1 ? "" : "s"} activa{alertas.length === 1 ? "" : "s"}
-      </p>
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+            <AlertTriangle className="h-5 w-5" />
+          </div>
+          <h1 className="text-4xl font-semibold">Alertas del pueblo</h1>
+        </div>
+        <p className="text-muted-foreground">
+          {nombrePueblo} · {alertas.length === 0
+            ? "No hay alertas activas en este momento."
+            : `${alertas.length} alerta${alertas.length === 1 ? "" : "s"} activa${alertas.length === 1 ? "" : "s"}`}
+        </p>
+      </div>
 
-      <div className="mt-8 space-y-4">
+      <div className="space-y-4">
         {alertas.length === 0 ? (
-          <div className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
-            No hay alertas activas en este momento.
+          <div className="rounded-xl border border-border bg-muted/30 p-8 text-center text-muted-foreground">
+            <AlertTriangle className="h-8 w-8 mx-auto mb-3 opacity-30" />
+            <p className="text-sm">No hay alertas activas en este momento.</p>
           </div>
         ) : (
           alertas.map((item) => (
-            <article key={String(item.id)} className="rounded-lg border border-border bg-card p-4">
-              <h2 className="font-semibold text-foreground">{item.titulo || "Alerta"}</h2>
-              {item.contenido?.trim() ? (
-                <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">{item.contenido}</p>
-              ) : null}
-              {item.createdAt ? (
-                <p className="mt-3 text-xs text-muted-foreground">{formatFecha(item.createdAt)}</p>
-              ) : null}
+            <article
+              key={String(item.id)}
+              className="rounded-xl border border-orange-200 bg-orange-50 p-5"
+            >
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-foreground">{item.titulo || "Alerta"}</p>
+                  {item.contenido?.trim() ? (
+                    <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">
+                      {item.contenido}
+                    </p>
+                  ) : null}
+                  {item.createdAt ? (
+                    <p className="mt-3 text-xs text-muted-foreground">{formatFecha(item.createdAt)}</p>
+                  ) : null}
+                </div>
+              </div>
             </article>
           ))
         )}
+      </div>
+
+      <div className="mt-10">
+        <Link href="/alertas" className="text-sm hover:underline text-muted-foreground">
+          ← Ver todas las alertas activas
+        </Link>
       </div>
     </main>
   );
