@@ -302,6 +302,17 @@ export default function TematicasPuebloTabs({ puebloSlug, pois = [] }: Props) {
         {!currentPages.length && currentPois.length === 0 && (
           <p className="text-gray-500">No hay contenido disponible para esta categoría.</p>
         )}
+
+        {activeTabConfig && (currentPages.length > 0 || currentPois.length > 0) && (
+          <div className="mt-8 text-center">
+            <Link
+              href={`/${activeTabConfig.urlSlug}/${puebloSlug}`}
+              className="inline-block rounded-lg border border-gray-200 bg-gray-50 px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-black"
+            >
+              Ver más sobre {activeTabConfig.label.toLowerCase()} en este pueblo →
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );

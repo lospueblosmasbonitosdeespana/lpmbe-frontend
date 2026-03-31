@@ -37,6 +37,15 @@ const CATEGORIA_LABELS: Record<string, string> = {
   gastronomia: "Gastronomía",
 };
 
+const CATEGORIA_SEO_URL: Record<string, string> = {
+  naturaleza: "naturaleza",
+  cultura: "cultura",
+  "en-familia": "en-familia",
+  patrimonio: "patrimonio",
+  petfriendly: "petfriendly",
+  gastronomia: "que-comer",
+};
+
 const CATEGORIA_DESCRIPTIONS: Record<string, string> = {
   naturaleza: "Senderismo, paisajes y espacios naturales",
   cultura: "Monumentos, museos y patrimonio histórico",
@@ -452,8 +461,22 @@ export default async function CategoriaPage({
             </div>
           )}
 
+          {tieneContenido && CATEGORIA_SEO_URL[categoriaSlug] && (
+            <div className="mt-12 rounded-xl border border-border bg-card/50 px-6 py-5 text-center">
+              <p className="text-sm text-muted-foreground">
+                Descubre más sobre {label.toLowerCase()} en {pueblo.nombre}:
+              </p>
+              <Link
+                href={`/${CATEGORIA_SEO_URL[categoriaSlug]}/${slug}`}
+                className="mt-2 inline-block text-sm font-medium text-primary hover:underline"
+              >
+                {label} en {pueblo.nombre} →
+              </Link>
+            </div>
+          )}
+
           {tieneContenido && (
-            <div className="mt-12 text-center">
+            <div className="mt-6 text-center">
               <Link
                 href={`/pueblos/${slug}`}
                 className="text-sm font-medium text-primary hover:underline"

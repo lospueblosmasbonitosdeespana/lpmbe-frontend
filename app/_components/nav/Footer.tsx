@@ -214,7 +214,7 @@ export async function Footer({ locale }: FooterProps) {
               </li>
               <li>
                 <Link
-                  href="/prensa?seccion=kit"
+                  href="/prensa"
                   className="text-sm text-white/70 transition-colors hover:text-white"
                 >
                   {t("contactPress")}
