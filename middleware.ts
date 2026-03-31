@@ -193,8 +193,7 @@ export function middleware(req: NextRequest): NextResponse {
   // /account/*, /user/* → private pages, redirect to home.
   if (pathname.startsWith('/account/') || pathname === '/account') return permanentRedirect(req, '/');
   if (pathname.startsWith('/user/')) return permanentRedirect(req, '/');
-  // /notificaciones → private, not indexable.
-  if (pathname === '/notificaciones' || pathname.startsWith('/notificaciones/')) return permanentRedirect(req, '/');
+  // /notificaciones y /alertas son páginas públicas (no indexables pero accesibles).
 
   // Orphan sub-paths under /pueblos/SLUG/ that don't have real pages.
   // multiexperiencias, videos y categoria/[cat] SÍ tienen páginas reales — NO redirigir.
