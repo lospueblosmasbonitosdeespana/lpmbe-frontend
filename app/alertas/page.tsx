@@ -1,17 +1,32 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import { AlertTriangle } from "lucide-react";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  type SupportedLocale,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export const metadata: Metadata = {
-  title: "Alertas — Los Pueblos Más Bonitos de España",
-  description:
-    "Alertas activas emitidas por los Pueblos Más Bonitos de España y por la Asociación.",
-  robots: { index: false, follow: true },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const t = await getTranslations({ locale, namespace: "notifications" });
+  const path = "/alertas";
+
+  return {
+    title: `${t("alertasPageTitle")} — Los Pueblos Más Bonitos de España`,
+    description: t("alertasPageDesc"),
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    robots: { index: false, follow: true },
+  };
+}
 
 type AlertaRaw = {
   id: number | string;
@@ -26,11 +41,11 @@ type AlertaRaw = {
   puebloNombre?: string | null;
 };
 
-function formatFecha(raw?: string | null) {
+function formatFecha(raw: string | null | undefined, locale: string) {
   if (!raw) return "";
   const d = new Date(raw);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString("es-ES", {
+  return d.toLocaleString(locale === "ca" ? "ca-ES" : `${locale}-ES`, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -40,31 +55,38 @@ function formatFecha(raw?: string | null) {
 }
 
 export default async function AlertasPage() {
+  const locale = (await getLocale()) as SupportedLocale;
+  const t = await getTranslations({ locale, namespace: "notifications" });
   const API_BASE = getApiUrl();
 
   let alertas: AlertaRaw[] = [];
   try {
     const res = await fetch(
-      `${API_BASE}/public/notificaciones/feed?limit=100&tipos=ALERTA,ALERTA_PUEBLO`,
+      `${API_BASE}/public/notificaciones/feed?limit=100&tipos=ALERTA,ALERTA_PUEBLO&lang=${locale}`,
       { cache: "no-store" },
     );
     if (res.ok) {
       const raw = await res.json().catch(() => []);
-      const arr = Array.isArray(raw) ? raw : (Array.isArray(raw?.items) ? raw.items : []);
+      const arr = Array.isArray(raw)
+        ? raw
+        : Array.isArray(raw?.items)
+          ? raw.items
+          : [];
       alertas = arr.filter((it: AlertaRaw) => {
         const tipo = String(it?.tipo ?? "").toUpperCase();
         return tipo === "ALERTA" || tipo === "ALERTA_PUEBLO";
       });
     }
   } catch {
-    // silencioso, muestra vacío
+    // silencioso
   }
 
   const globalAlerts = alertas.filter(
     (it) => !it.puebloId && String(it.tipo ?? "").toUpperCase() === "ALERTA",
   );
   const puebloAlerts = alertas.filter(
-    (it) => it.puebloId || String(it.tipo ?? "").toUpperCase() === "ALERTA_PUEBLO",
+    (it) =>
+      it.puebloId || String(it.tipo ?? "").toUpperCase() === "ALERTA_PUEBLO",
   );
 
   const total = alertas.length;
@@ -76,12 +98,12 @@ export default async function AlertasPage() {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-600">
             <AlertTriangle className="h-5 w-5" />
           </div>
-          <h1 className="text-4xl font-semibold">Alertas</h1>
+          <h1 className="text-4xl font-semibold">{t("alertasPageTitle")}</h1>
         </div>
         <p className="text-muted-foreground">
           {total === 0
-            ? "No hay alertas activas en este momento."
-            : `${total} alerta${total === 1 ? "" : "s"} activa${total === 1 ? "" : "s"}`}
+            ? t("alertasNone")
+            : t("alertasCount", { count: total })}
         </p>
       </div>
 
@@ -90,7 +112,7 @@ export default async function AlertasPage() {
         <section className="mb-10">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <span className="inline-block rounded-full bg-red-600 px-3 py-0.5 text-xs font-bold text-white uppercase tracking-wide">
-              Asociación
+              {t("alertasAssocSection")}
             </span>
           </h2>
           <div className="space-y-4">
@@ -103,7 +125,7 @@ export default async function AlertasPage() {
                   <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-foreground">
-                      {item.titulo || "Alerta"}
+                      {item.titulo || t("alertaDefault")}
                     </p>
                     {(item.contenido || item.mensaje)?.trim() ? (
                       <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">
@@ -112,7 +134,7 @@ export default async function AlertasPage() {
                     ) : null}
                     {(item.createdAt || item.fecha) ? (
                       <p className="mt-3 text-xs text-muted-foreground">
-                        {formatFecha(item.createdAt || item.fecha)}
+                        {formatFecha(item.createdAt || item.fecha, locale)}
                       </p>
                     ) : null}
                   </div>
@@ -126,7 +148,9 @@ export default async function AlertasPage() {
       {/* Alertas de pueblos */}
       {puebloAlerts.length > 0 && (
         <section>
-          <h2 className="text-lg font-semibold mb-4">Alertas de pueblos</h2>
+          <h2 className="text-lg font-semibold mb-4">
+            {t("alertasPueblosSection")}
+          </h2>
           <div className="space-y-4">
             {puebloAlerts.map((item) => {
               const puebloSlug = item.pueblo?.slug ?? null;
@@ -144,7 +168,6 @@ export default async function AlertasPage() {
                   <div className="flex items-start gap-3">
                     <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      {/* Pueblo muy destacado */}
                       {puebloNombre && (
                         <div className="mb-2">
                           {detailHref ? (
@@ -163,7 +186,7 @@ export default async function AlertasPage() {
                       )}
 
                       <p className="font-semibold text-foreground">
-                        {item.titulo || "Alerta"}
+                        {item.titulo || t("alertaDefault")}
                       </p>
                       {(item.contenido || item.mensaje)?.trim() ? (
                         <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">
@@ -172,16 +195,16 @@ export default async function AlertasPage() {
                       ) : null}
                       {(item.createdAt || item.fecha) ? (
                         <p className="mt-3 text-xs text-muted-foreground">
-                          {formatFecha(item.createdAt || item.fecha)}
+                          {formatFecha(item.createdAt || item.fecha, locale)}
                         </p>
                       ) : null}
 
-                      {detailHref && (
+                      {detailHref && puebloNombre && (
                         <Link
                           href={detailHref}
                           className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-orange-700 hover:underline"
                         >
-                          Ver todas las alertas de {puebloNombre} →
+                          {t("alertasVerTodas", { nombre: puebloNombre })}
                         </Link>
                       )}
                     </div>
@@ -196,13 +219,16 @@ export default async function AlertasPage() {
       {total === 0 && (
         <div className="rounded-xl border border-border bg-muted/30 p-8 text-center text-muted-foreground">
           <AlertTriangle className="h-8 w-8 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">No hay alertas activas en este momento.</p>
+          <p className="text-sm">{t("alertasNone")}</p>
         </div>
       )}
 
       <div className="mt-10">
-        <Link href="/notificaciones" className="text-sm hover:underline text-muted-foreground">
-          ← Volver al centro de notificaciones
+        <Link
+          href="/notificaciones"
+          className="text-sm hover:underline text-muted-foreground"
+        >
+          {t("alertasBackLink")}
         </Link>
       </div>
     </main>

@@ -1062,7 +1062,16 @@
     "meteoAlerts": "Alertes meteorològiques",
     "retry": "Tornar a provar",
     "loadCenterError": "El centre de notificacions no s'ha pogut carregar.",
-    "seeDetail": "Veure detall"
+    "seeDetail": "Veure detall",
+    "alertasPageTitle": "Alertes",
+    "alertasPageDesc": "Alertes actives emeses pels Pobles Més Bonics d'Espanya i per l'Associació.",
+    "alertasNone": "No hi ha alertes actives en aquest moment.",
+    "alertasCount": "{count, plural, one {# alerta activa} other {# alertes actives}}",
+    "alertasAssocSection": "Associació",
+    "alertasPueblosSection": "Alertes de pobles",
+    "alertaDefault": "Alerta",
+    "alertasVerTodas": "Veure totes les alertes de {nombre} →",
+    "alertasBackLink": "← Tornar al centre de notificacions"
   },
   "visitedVillages": {
     "title": "Els pobles que he visitat",

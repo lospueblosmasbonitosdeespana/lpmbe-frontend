@@ -1062,7 +1062,16 @@
     "meteoAlerts": "Alertas meteorológicos",
     "retry": "Repetir",
     "loadCenterError": "Não foi possível carregar o centro de notificações.",
-    "seeDetail": "Ver detalhe"
+    "seeDetail": "Ver detalhe",
+    "alertasPageTitle": "Alertas",
+    "alertasPageDesc": "Alertas ativas emitidas pelas Aldeias Mais Bonitas de Espanha e pela Associação.",
+    "alertasNone": "Não há alertas ativas neste momento.",
+    "alertasCount": "{count, plural, one {# alerta ativa} other {# alertas ativas}}",
+    "alertasAssocSection": "Associação",
+    "alertasPueblosSection": "Alertas das aldeias",
+    "alertaDefault": "Alerta",
+    "alertasVerTodas": "Ver todas as alertas de {nombre} →",
+    "alertasBackLink": "← Voltar ao centro de notificações"
   },
   "visitedVillages": {
     "title": "As minhas aldeias visitadas",

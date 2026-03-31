@@ -1062,7 +1062,16 @@
     "meteoAlerts": "Weather Alerts",
     "retry": "Retry",
     "loadCenterError": "The notification center could not be loaded.",
-    "seeDetail": "See detail"
+    "seeDetail": "See detail",
+    "alertasPageTitle": "Alerts",
+    "alertasPageDesc": "Active alerts issued by the Most Beautiful Villages of Spain and the Association.",
+    "alertasNone": "There are no active alerts at this time.",
+    "alertasCount": "{count, plural, one {# active alert} other {# active alerts}}",
+    "alertasAssocSection": "Association",
+    "alertasPueblosSection": "Village alerts",
+    "alertaDefault": "Alert",
+    "alertasVerTodas": "See all alerts for {nombre} →",
+    "alertasBackLink": "← Back to notification centre"
   },
   "visitedVillages": {
     "title": "My visited villages",

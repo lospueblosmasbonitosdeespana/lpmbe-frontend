@@ -1102,7 +1102,16 @@
     "meteoAlerts": "Alertas Meteo",
     "retry": "Reintentar",
     "loadCenterError": "No se pudo cargar el centro de notificaciones.",
-    "seeDetail": "Ver detalle"
+    "seeDetail": "Ver detalle",
+    "alertasPageTitle": "Alertas",
+    "alertasPageDesc": "Alertas activas emitidas por los Pueblos Más Bonitos de España y por la Asociación.",
+    "alertasNone": "No hay alertas activas en este momento.",
+    "alertasCount": "{count, plural, one {# alerta activa} other {# alertas activas}}",
+    "alertasAssocSection": "Asociación",
+    "alertasPueblosSection": "Alertas de pueblos",
+    "alertaDefault": "Alerta",
+    "alertasVerTodas": "Ver todas las alertas de {nombre} →",
+    "alertasBackLink": "← Volver al centro de notificaciones"
   },
   "visitedVillages": {
     "title": "Mis pueblos visitados",

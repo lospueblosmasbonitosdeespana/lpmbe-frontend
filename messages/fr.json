@@ -1062,7 +1062,16 @@
     "meteoAlerts": "Alertes météo",
     "retry": "Réessayer",
     "loadCenterError": "Le centre de notification n'a pas pu être chargé.",
-    "seeDetail": "Voir le détail"
+    "seeDetail": "Voir le détail",
+    "alertasPageTitle": "Alertes",
+    "alertasPageDesc": "Alertes actives émises par les Plus Beaux Villages d'Espagne et par l'Association.",
+    "alertasNone": "Il n'y a pas d'alertes actives pour le moment.",
+    "alertasCount": "{count, plural, one {# alerte active} other {# alertes actives}}",
+    "alertasAssocSection": "Association",
+    "alertasPueblosSection": "Alertes des villages",
+    "alertaDefault": "Alerte",
+    "alertasVerTodas": "Voir toutes les alertes de {nombre} →",
+    "alertasBackLink": "← Retour au centre de notifications"
   },
   "visitedVillages": {
     "title": "Mes villages visités",

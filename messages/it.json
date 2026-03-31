@@ -1062,7 +1062,16 @@
     "meteoAlerts": "Allerte meteo",
     "retry": "Riprova",
     "loadCenterError": "Non è stato possibile caricare il centro notifiche.",
-    "seeDetail": "Vedi dettaglio"
+    "seeDetail": "Vedi dettaglio",
+    "alertasPageTitle": "Avvisi",
+    "alertasPageDesc": "Avvisi attivi emessi dai Borghi Più Belli di Spagna e dall'Associazione.",
+    "alertasNone": "Non ci sono avvisi attivi al momento.",
+    "alertasCount": "{count, plural, one {# avviso attivo} other {# avvisi attivi}}",
+    "alertasAssocSection": "Associazione",
+    "alertasPueblosSection": "Avvisi dei borghi",
+    "alertaDefault": "Avviso",
+    "alertasVerTodas": "Vedi tutti gli avvisi di {nombre} →",
+    "alertasBackLink": "← Torna al centro notifiche"
   },
   "visitedVillages": {
     "title": "I miei villaggi visitati",

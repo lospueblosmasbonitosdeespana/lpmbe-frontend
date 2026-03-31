@@ -1062,7 +1062,16 @@
     "meteoAlerts": "Wetterwarnungen",
     "retry": "Wiederholung",
     "loadCenterError": "Das Benachrichtigungszentrum konnte nicht geladen werden.",
-    "seeDetail": "Details anzeigen"
+    "seeDetail": "Details anzeigen",
+    "alertasPageTitle": "Warnungen",
+    "alertasPageDesc": "Aktive Warnungen der schönsten Dörfer Spaniens und des Verbands.",
+    "alertasNone": "Derzeit sind keine aktiven Warnungen vorhanden.",
+    "alertasCount": "{count, plural, one {# aktive Warnung} other {# aktive Warnungen}}",
+    "alertasAssocSection": "Verband",
+    "alertasPueblosSection": "Dorfwarnungen",
+    "alertaDefault": "Warnung",
+    "alertasVerTodas": "Alle Warnungen für {nombre} anzeigen →",
+    "alertasBackLink": "← Zurück zum Benachrichtigungszentrum"
   },
   "visitedVillages": {
     "title": "Meine besuchten Dörfer",
