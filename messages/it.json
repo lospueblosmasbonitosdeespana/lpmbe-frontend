@@ -91,6 +91,7 @@
   "explore": {
     "title": "Esplora i villaggi",
     "searchPlaceholder": "Cerca villaggio...",
+    "pageHeading": "I borghi più belli della Spagna",
     "searchPlaceholderExtended": "Ricerca per nome, provincia o regione...",
     "loading": "Caricamento villaggi...",
     "noResults": "Nessun villaggio trovato",

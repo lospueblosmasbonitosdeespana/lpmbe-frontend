@@ -91,6 +91,7 @@
   "explore": {
     "title": "Explora pobles",
     "searchPlaceholder": "Cerca de poble...",
+    "pageHeading": "Els pobles més bonics d'Espanya",
     "searchPlaceholderExtended": "Cerca per nom, província o comunitat...",
     "loading": "Carregant pobles...",
     "noResults": "No s'han trobat cap poble.",

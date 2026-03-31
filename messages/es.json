@@ -91,6 +91,7 @@
   "explore": {
     "title": "Explorar Pueblos",
     "searchPlaceholder": "Buscar pueblo...",
+    "pageHeading": "Los pueblos más bonitos de España",
     "searchPlaceholderExtended": "Buscar por nombre, provincia o comunidad...",
     "loading": "Cargando pueblos...",
     "noResults": "No se encontraron pueblos",

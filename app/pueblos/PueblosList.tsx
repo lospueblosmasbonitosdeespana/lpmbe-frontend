@@ -234,7 +234,7 @@ export default function PueblosList({
             {t("discover")}
           </p>
           <h1 className="mt-2 font-serif text-3xl font-medium tracking-tight text-foreground md:text-4xl">
-            {tTabs("pueblos")}
+            {t("pageHeading")}
           </h1>
           <p className="mt-2 text-base text-muted-foreground">
             {pueblosFiltrados.length}{" "}

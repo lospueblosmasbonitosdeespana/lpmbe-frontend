@@ -91,6 +91,7 @@
   "explore": {
     "title": "Explorar aldeias",
     "searchPlaceholder": "Procurar aldeia...",
+    "pageHeading": "As aldeias mais bonitas de Espanha",
     "searchPlaceholderExtended": "Pesquisa por nome, província ou região...",
     "loading": "Carregando aldeias...",
     "noResults": "Não foram encontradas aldeias",

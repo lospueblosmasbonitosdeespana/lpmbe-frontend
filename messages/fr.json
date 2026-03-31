@@ -91,6 +91,7 @@
   "explore": {
     "title": "Explorer les villages",
     "searchPlaceholder": "Village de recherche...",
+    "pageHeading": "Les plus beaux villages d'Espagne",
     "searchPlaceholderExtended": "Recherche par nom, province ou région...",
     "loading": "Chargement des villages...",
     "noResults": "Aucun village trouvé",

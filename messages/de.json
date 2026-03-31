@@ -91,6 +91,7 @@
   "explore": {
     "title": "Dörfer erkunden",
     "searchPlaceholder": "Dorf suchen...",
+    "pageHeading": "Die schönsten Dörfer Spaniens",
     "searchPlaceholderExtended": "Suche nach Name, Provinz oder Region...",
     "loading": "Dörfer laden...",
     "noResults": "Keine Dörfer gefunden",
