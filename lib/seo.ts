@@ -152,13 +152,13 @@ export function seoTitlePoiWithStamp(
   locSuf: string,
   puebloSlug?: string,
 ): string {
-  // Usamos el slug del pueblo como desambiguador cuando el POI es un slug (evita colisiones
-  // entre pueblos con mismo nombre de POI). Con ID numérico el ID es suficiente.
-  const stamp = isNumericParam
+  const poiStamp = isNumericParam
     ? poiParam
-    : puebloSlug
-      ? puebloSlug.replace(/[^a-zA-Z0-9]/g, "").slice(-8) || poiParam.slice(-8)
-      : poiParam.replace(/[^a-zA-Z0-9]/g, "").slice(-8) || poiParam.slice(-8);
+    : poiParam.replace(/[^a-zA-Z0-9]/g, "").slice(-10) || poiParam.slice(-10);
+  const puebloStamp = puebloSlug
+    ? puebloSlug.replace(/[^a-zA-Z0-9]/g, "").slice(-6)
+    : "";
+  const stamp = puebloStamp ? `${puebloStamp}-${poiStamp}` : poiStamp;
   return seoTitle(`${poiReadable} · ${puebloName}${locSuf} · ${stamp}`);
 }
 

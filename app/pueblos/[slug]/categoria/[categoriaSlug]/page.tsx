@@ -133,9 +133,9 @@ export async function generateMetadata({
   const label = CATEGORIA_LABELS[categoriaSlug] ?? "Categoría";
   const path = `/pueblos/${slug}/categoria/${categoriaSlug}`;
   return {
-    title: seoTitle(`${label} en ${name}${localeSuffix}`),
+    title: seoTitle(`${label} en ${name} — Experiencias${localeSuffix}`),
     description: seoDescription(
-      `${CATEGORIA_DESCRIPTIONS[categoriaSlug] ?? "Categoría temática"} en ${name}.${localeSuffix}`
+      `Experiencias de ${label.toLowerCase()} en ${name}: ${CATEGORIA_DESCRIPTIONS[categoriaSlug] ?? "categoría temática"}.${localeSuffix}`
     ),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
