@@ -49,3 +49,22 @@ export function autoLinkUrls(text: string): string {
     return `[${display}](${url})`;
   });
 }
+
+/**
+ * Adds alt attribute to <img> tags that are missing it or have an empty alt.
+ * Uses `fallback` as the default alt text.
+ */
+export function injectImgAlt(html: string, fallback: string): string {
+  if (!html || !fallback) return html;
+  return html.replace(/<img\b([^>]*?)>/gi, (match, attrs: string) => {
+    if (/\balt\s*=/i.test(attrs)) {
+      if (/alt\s*=\s*""\s*/i.test(attrs) || /alt\s*=\s*''\s*/i.test(attrs)) {
+        return match
+          .replace(/alt\s*=\s*""/i, `alt="${fallback}"`)
+          .replace(/alt\s*=\s*''/i, `alt='${fallback}'`);
+      }
+      return match;
+    }
+    return `<img alt="${fallback}" ${attrs.trim()}>`;
+  });
+}

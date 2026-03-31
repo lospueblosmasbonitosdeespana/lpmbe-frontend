@@ -8,6 +8,7 @@ import { formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription } from '@/lib/seo';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
+import { injectImgAlt } from '@/app/_lib/html';
 
 const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'] as const;
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
@@ -135,7 +136,7 @@ export default async function NoticiaPage({
             return (
               <div style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }} className="prose-contenido">
                 {isHtmlContent(texto) ? (
-                  <div dangerouslySetInnerHTML={{ __html: texto }} />
+                  <div dangerouslySetInnerHTML={{ __html: injectImgAlt(texto, noticia.titulo) }} />
                 ) : (
                   <ReactMarkdown>{texto}</ReactMarkdown>
                 )}

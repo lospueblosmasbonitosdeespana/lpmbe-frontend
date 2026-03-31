@@ -108,7 +108,7 @@ export async function TematicaDetailPage({
 
             {page.contenido ? (
               <div className="prose prose-gray prose-lg dark:prose-invert max-w-none [&_img]:max-w-full [&_img]:rounded-xl [&_img]:my-6 [&_h2]:font-serif [&_h3]:font-serif">
-                <SafeHtml html={page.contenido} />
+                <SafeHtml html={page.contenido} altFallback={page.titulo} />
               </div>
             ) : (
               <p className="text-muted-foreground italic">Contenido próximamente.</p>

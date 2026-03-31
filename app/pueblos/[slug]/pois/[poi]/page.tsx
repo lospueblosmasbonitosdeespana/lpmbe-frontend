@@ -13,6 +13,7 @@ import {
   type SupportedLocale,
 } from "@/lib/seo";
 import { fetchWithTimeout } from "@/lib/fetch-safe";
+import { injectImgAlt } from "@/app/_lib/html";
 import ZoomableImage from "@/app/components/ZoomableImage";
 
 export const dynamic = "force-dynamic";
@@ -258,7 +259,7 @@ export default async function PoiPage({
         <section className="mt-8 w-full max-w-3xl">
           <div
             className="prose prose-gray dark:prose-invert prose-lg max-w-none text-foreground [&_p]:leading-relaxed [&_p]:text-foreground [&_h2]:text-foreground [&_h3]:text-foreground [&_li]:text-foreground [&_strong]:text-foreground [&_p]:max-w-none"
-            dangerouslySetInnerHTML={{ __html: descripcionHtml }}
+            dangerouslySetInnerHTML={{ __html: injectImgAlt(descripcionHtml, data.nombre ?? "Punto de interés") }}
           />
         </section>
       ) : (

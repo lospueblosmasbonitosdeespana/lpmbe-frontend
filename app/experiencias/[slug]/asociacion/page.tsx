@@ -129,7 +129,7 @@ export default async function AsociacionTematicaPage({
         })()}
 
         <div className="prose prose-gray prose-lg max-w-none safe-html-content [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-6">
-          <SafeHtml html={page.contenido || ''} />
+          <SafeHtml html={page.contenido || ''} altFallback={page.titulo} />
         </div>
       </article>
     </main>

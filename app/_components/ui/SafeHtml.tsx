@@ -6,9 +6,24 @@ import { createPortal } from 'react-dom';
 interface SafeHtmlProps {
   html: string;
   className?: string;
+  altFallback?: string;
 }
 
-export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
+function injectAltFallback(raw: string, fallback: string): string {
+  return raw.replace(/<img\b([^>]*?)>/gi, (match, attrs: string) => {
+    if (/\balt\s*=/i.test(attrs)) {
+      if (/alt\s*=\s*""\s*/i.test(attrs) || /alt\s*=\s*''\s*/i.test(attrs)) {
+        return match
+          .replace(/alt\s*=\s*""/i, `alt="${fallback}"`)
+          .replace(/alt\s*=\s*''/i, `alt='${fallback}'`);
+      }
+      return match;
+    }
+    return `<img alt="${fallback}" ${attrs.trim()}>`;
+  });
+}
+
+export default function SafeHtml({ html, className = '', altFallback }: SafeHtmlProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [lightboxImage, setLightboxImage] = useState<{ url: string; alt: string } | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -23,6 +38,9 @@ export default function SafeHtml({ html, className = '' }: SafeHtmlProps) {
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
       .replace(/&amp;/g, '&');
+  }
+  if (altFallback) {
+    processedHtml = injectAltFallback(processedHtml, altFallback);
   }
 
   useEffect(() => {

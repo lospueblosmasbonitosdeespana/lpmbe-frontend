@@ -8,7 +8,7 @@ import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
 import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle } from '@/lib/seo';
-import { autoLinkUrls } from '@/app/_lib/html';
+import { autoLinkUrls, injectImgAlt } from '@/app/_lib/html';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 import ContenidoImageCarousel from '@/app/components/ContenidoImageCarousel';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
@@ -279,7 +279,7 @@ export default async function ContenidoPage({
             {body && (
               <div className="prose-contenido text-base leading-relaxed text-foreground">
                 {isHtmlContent(body) ? (
-                  <div dangerouslySetInnerHTML={{ __html: body }} />
+                  <div dangerouslySetInnerHTML={{ __html: injectImgAlt(body, titulo) }} />
                 ) : (
                   <ReactMarkdown>{autoLinkUrls(body)}</ReactMarkdown>
                 )}
@@ -380,6 +380,7 @@ export default async function ContenidoPage({
               <SafeHtml
                 html={contenido.contenidoMd}
                 className="prose-contenido text-base leading-relaxed text-foreground"
+                altFallback={contenido.titulo}
               />
             ) : (
               <div className="prose-contenido text-base leading-relaxed text-foreground">
@@ -391,6 +392,7 @@ export default async function ContenidoPage({
               <SafeHtml
                 html={contenido.resumen}
                 className="prose-contenido text-base leading-relaxed text-foreground"
+                altFallback={contenido.titulo}
               />
             ) : (
               <div className="prose-contenido text-base leading-relaxed text-foreground">
