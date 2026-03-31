@@ -392,7 +392,7 @@ function NotificationCenter({
               <Link
                 href={
                   activeTab === "alertas"
-                    ? "/notificaciones?tipo=ALERTA"
+                    ? "/alertas"
                     : activeTab === "semaforos"
                       ? "/notificaciones?tipo=SEMAFORO"
                       : "/notificaciones"

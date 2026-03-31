@@ -114,7 +114,7 @@ export function getNavConfig(options?: Partial<CampaignNavOptions>): NavItem[] {
         links: [
           { labelKey: "viewNotifs", href: "/notificaciones" },
           { labelKey: "semaforoChanges", href: "/notificaciones?tipo=SEMAFORO" },
-          { labelKey: "alertas", href: "/notificaciones?tipo=ALERTA" },
+          { labelKey: "alertas", href: "/alertas" },
           { labelKey: "meteo", href: "/meteo" },
         ],
       },

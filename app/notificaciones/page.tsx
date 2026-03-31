@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
@@ -28,14 +28,12 @@ function normalizeFeed(data: any): NotifItem[] {
     Array.isArray(data?.items) ? data.items :
     Array.isArray(data?.data) ? data.data :
     [];
-
-  // Garantiza array plano
   return raw.filter(Boolean);
 }
 
 const NOTIFICACIONES_VISTAS_KEY = "lpmbe_notificaciones_vistas_at";
 
-export default function NotificacionesPage() {
+function NotificacionesContent() {
   const locale = useLocale();
   const t = useTranslations("notifications");
   const tHome = useTranslations("home");
@@ -43,6 +41,7 @@ export default function NotificacionesPage() {
   const [items, setItems] = useState<NotifItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+
   const tipoQuery = (searchParams.get("tipo") ?? "").toUpperCase();
   const tiposParam =
     tipoQuery === "ALERTA"
@@ -51,7 +50,7 @@ export default function NotificacionesPage() {
         ? "SEMAFORO"
         : tipoQuery || "NOTICIA,EVENTO,ALERTA,ALERTA_PUEBLO,SEMAFORO";
 
-  // Al entrar en esta página, marcar notificaciones como vistas (para que el badge en home desaparezca)
+  // Al entrar en esta página, marcar notificaciones como vistas
   useEffect(() => {
     try {
       localStorage.setItem(NOTIFICACIONES_VISTAS_KEY, new Date().toISOString());
@@ -79,18 +78,17 @@ export default function NotificacionesPage() {
         });
         if (alive) {
           setItems(normalized);
-          
           // Scroll a anchor si hay hash en la URL
-          if (typeof window !== 'undefined' && window.location.hash) {
+          if (typeof window !== "undefined" && window.location.hash) {
             setTimeout(() => {
               const element = document.querySelector(window.location.hash);
               if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.scrollIntoView({ behavior: "smooth", block: "center" });
               }
             }, 100);
           }
         }
-      } catch (e: any) {
+      } catch {
         if (alive) setErr(t("loadCenterError"));
       } finally {
         if (alive) setLoading(false);
@@ -99,20 +97,38 @@ export default function NotificacionesPage() {
     return () => { alive = false; };
   }, [locale, tipoQuery, tiposParam]);
 
+  const titleByTipo: Record<string, string> = {
+    SEMAFORO: "Semáforos",
+    ALERTA: "Alertas",
+    NOTICIA: "Noticias",
+    EVENTO: "Eventos",
+  };
+  const pageTitle = tipoQuery && titleByTipo[tipoQuery]
+    ? titleByTipo[tipoQuery]
+    : tHome("notifCenterTitle");
+
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-4xl font-semibold">{tHome("notifCenterTitle")}</h1>
+          <h1 className="text-4xl font-semibold">{pageTitle}</h1>
           <p className="mt-2 text-muted-foreground">{t("pageSubtitle")}</p>
         </div>
-        <Link
-          href="/meteo"
-          className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted/50 transition font-medium text-foreground"
-        >
-          <Cloud className="h-4 w-4" />
-          {t("meteoAlerts")}
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/alertas"
+            className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted/50 transition font-medium text-foreground text-sm"
+          >
+            ⚠️ Alertas activas
+          </Link>
+          <Link
+            href="/meteo"
+            className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted/50 transition font-medium text-foreground text-sm"
+          >
+            <Cloud className="h-4 w-4" />
+            {t("meteoAlerts")}
+          </Link>
+        </div>
       </div>
 
       {loading ? (
@@ -133,5 +149,13 @@ export default function NotificacionesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function NotificacionesPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-5xl px-6 py-10 text-muted-foreground">Cargando...</div>}>
+      <NotificacionesContent />
+    </Suspense>
   );
 }
