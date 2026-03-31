@@ -1138,8 +1138,8 @@
     "achievementsDesc": "Sblocca obiettivi visitando villaggi, usando il Club degli Amici e acquistando.",
     "comingSoon": "Prossimamente",
     "viewAllLevels": "Vedi tutti i livelli viaggiatore",
-    "gpsRankLabel": "Posizione GPS",
-    "totalRankLabel": "Posizione totale"
+    "gpsRankLabel": "Ranking Visite GPS",
+    "totalRankLabel": "Ranking Visite Totali"
   },
   "levels": {
     "backToPoints": "← Torna ai Miei Punti",
@@ -1158,7 +1158,16 @@
     "pointsAbbr": "pti",
     "yourStatus": "Il tuo stato attuale",
     "pointsTotal": "punti in totale",
-    "pointsToNext": "{points} punti per raggiungere {next}"
+    "pointsToNext": "{points} punti per raggiungere {next}",
+    "turistaCurioso": "Turista Curioso",
+    "exploradorLocal": "Esploratore Locale",
+    "viajeroApasionado": "Viaggiatore Appassionato",
+    "amantePueblos": "Amante dei Borghi",
+    "granViajero": "Grande Viaggiatore",
+    "leyendaLpbe": "Leggenda LPBE",
+    "embajadorPueblos": "Ambasciatore dei Borghi",
+    "maestroViajero": "Maestro Viaggiatore",
+    "granMaestre": "Gran Maestro dei Borghi"
   },
   "clubLanding": {
     "title": "Tra pochi giorni il Club de Amigos sarà una realtà",

@@ -1138,8 +1138,8 @@
     "achievementsDesc": "Schalte Erfolge frei, indem du Dörfer besuchst, den Freundesclub nutzt und einkaufst.",
     "comingSoon": "Demnächst",
     "viewAllLevels": "Alle Reisestufen anzeigen",
-    "gpsRankLabel": "GPS-Position",
-    "totalRankLabel": "Gesamtposition"
+    "gpsRankLabel": "GPS-Besuche Ranking",
+    "totalRankLabel": "Gesamtbesuche Ranking"
   },
   "levels": {
     "backToPoints": "← Zurück zu Meinen Punkten",
@@ -1158,7 +1158,16 @@
     "pointsAbbr": "Pkt.",
     "yourStatus": "Ihr aktueller Status",
     "pointsTotal": "Punkte insgesamt",
-    "pointsToNext": "{points} Punkte bis {next}"
+    "pointsToNext": "{points} Punkte bis {next}",
+    "turistaCurioso": "Neugieriger Tourist",
+    "exploradorLocal": "Lokaler Entdecker",
+    "viajeroApasionado": "Leidenschaftlicher Reisender",
+    "amantePueblos": "Dörferliebhaber",
+    "granViajero": "Großer Reisender",
+    "leyendaLpbe": "LPBE-Legende",
+    "embajadorPueblos": "Botschafter der Dörfer",
+    "maestroViajero": "Meisterreisender",
+    "granMaestre": "Großmeister der Dörfer"
   },
   "clubLanding": {
     "title": "In wenigen Tagen wird der Club de Amigos Realität sein",

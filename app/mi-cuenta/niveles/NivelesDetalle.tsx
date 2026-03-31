@@ -5,6 +5,18 @@ import Link from 'next/link';
 import NivelIcono from '../components/NivelIcono';
 import { Headline, Caption } from '@/app/components/ui/typography';
 
+const NIVEL_SLUG: Record<string, string> = {
+  'Turista Curioso': 'turistaCurioso',
+  'Explorador Local': 'exploradorLocal',
+  'Viajero Apasionado': 'viajeroApasionado',
+  'Amante de los Pueblos': 'amantePueblos',
+  'Gran Viajero': 'granViajero',
+  'Leyenda LPBE': 'leyendaLpbe',
+  'Embajador de los Pueblos': 'embajadorPueblos',
+  'Maestro Viajero': 'maestroViajero',
+  'Gran Maestre de los Pueblos': 'granMaestre',
+};
+
 type Nivel = {
   nombre: string;
   umbral: number;
@@ -18,6 +30,10 @@ type Props = {
 
 export default function NivelesDetalle({ niveles, puntosTotales }: Props) {
   const t = useTranslations('levels');
+  const translateNivel = (nombre: string) => {
+    const slug = NIVEL_SLUG[nombre];
+    return slug ? t(slug) : nombre;
+  };
 
   const nivelActualIdx = (() => {
     let idx = 0;
@@ -91,7 +107,7 @@ export default function NivelesDetalle({ niveles, puntosTotales }: Props) {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-medium">{nivel.nombre}</p>
+                    <p className="font-medium">{translateNivel(nivel.nombre)}</p>
                     {isActual && (
                       <span className="inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-primary-foreground">
                         {t('currentLevel')}
@@ -129,11 +145,11 @@ export default function NivelesDetalle({ niveles, puntosTotales }: Props) {
         <div className="flex items-center gap-4">
           <NivelIcono nombreNivel={niveles[nivelActualIdx]?.nombre ?? ''} />
           <div>
-            <p className="font-medium text-lg">{niveles[nivelActualIdx]?.nombre}</p>
+            <p className="font-medium text-lg">{translateNivel(niveles[nivelActualIdx]?.nombre ?? '')}</p>
             <Caption>
               {puntosTotales} {t('pointsTotal')}
               {nivelActualIdx < niveles.length - 1 && (
-                <> — {t('pointsToNext', { points: niveles[nivelActualIdx + 1].umbral - puntosTotales, next: niveles[nivelActualIdx + 1].nombre })}</>
+                <> — {t('pointsToNext', { points: niveles[nivelActualIdx + 1].umbral - puntosTotales, next: translateNivel(niveles[nivelActualIdx + 1].nombre) })}</>
               )}
             </Caption>
           </div>

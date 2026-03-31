@@ -1138,8 +1138,8 @@
     "achievementsDesc": "Unlock achievements by visiting villages, using the Friends Club and shopping.",
     "comingSoon": "Coming soon",
     "viewAllLevels": "View all traveller levels",
-    "gpsRankLabel": "GPS position",
-    "totalRankLabel": "Total position"
+    "gpsRankLabel": "GPS Visits Ranking",
+    "totalRankLabel": "Total Visits Ranking"
   },
   "levels": {
     "backToPoints": "← Back to My Points",
@@ -1158,7 +1158,16 @@
     "pointsAbbr": "pts",
     "yourStatus": "Your current status",
     "pointsTotal": "total points",
-    "pointsToNext": "{points} points to reach {next}"
+    "pointsToNext": "{points} points to reach {next}",
+    "turistaCurioso": "Curious Tourist",
+    "exploradorLocal": "Local Explorer",
+    "viajeroApasionado": "Passionate Traveller",
+    "amantePueblos": "Village Lover",
+    "granViajero": "Great Traveller",
+    "leyendaLpbe": "LPBE Legend",
+    "embajadorPueblos": "Ambassador of the Villages",
+    "maestroViajero": "Master Traveller",
+    "granMaestre": "Grand Master of the Villages"
   },
   "clubLanding": {
     "title": "In a few days the Club de Amigos will be a reality",

@@ -5,6 +5,18 @@ import Link from 'next/link';
 import NivelIcono from './NivelIcono';
 import { Headline, Caption } from '@/app/components/ui/typography';
 
+const NIVEL_SLUG: Record<string, string> = {
+  'Turista Curioso': 'turistaCurioso',
+  'Explorador Local': 'exploradorLocal',
+  'Viajero Apasionado': 'viajeroApasionado',
+  'Amante de los Pueblos': 'amantePueblos',
+  'Gran Viajero': 'granViajero',
+  'Leyenda LPBE': 'leyendaLpbe',
+  'Embajador de los Pueblos': 'embajadorPueblos',
+  'Maestro Viajero': 'maestroViajero',
+  'Gran Maestre de los Pueblos': 'granMaestre',
+};
+
 type Nivel = {
   nombre: string;
   nivel: number;
@@ -38,7 +50,12 @@ export default function DashboardResumen({
   posicionTotal,
 }: Props) {
   const t = useTranslations('points');
-  const nombreNivel = nivelActual?.nombre ?? t('initialLevel');
+  const tl = useTranslations('levels');
+  const translateNivel = (nombre: string) => {
+    const slug = NIVEL_SLUG[nombre];
+    return slug ? tl(slug) : nombre;
+  };
+  const nombreNivel = nivelActual?.nombre ? translateNivel(nivelActual.nombre) : t('initialLevel');
 
   return (
     <section className="space-y-6 rounded-xl border border-border bg-card p-6 shadow-sm">
@@ -88,12 +105,12 @@ export default function DashboardResumen({
         <div className="flex flex-wrap items-center gap-2 text-sm">
           {posicionGps ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1 font-medium text-sky-700 dark:bg-sky-950 dark:text-sky-300">
-              {t('gpsRankLabel')}: #{posicionGps}
+              {t('gpsRankLabel')}: {posicionGps}
             </span>
           ) : null}
           {posicionTotal ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-3 py-1 font-medium text-violet-700 dark:bg-violet-950 dark:text-violet-300">
-              {t('totalRankLabel')}: #{posicionTotal}
+              {t('totalRankLabel')}: {posicionTotal}
             </span>
           ) : null}
         </div>
@@ -110,7 +127,7 @@ export default function DashboardResumen({
 
         {siguienteNivel ? (
           <Caption>
-            {t('nextLevel')} {siguienteNivel.nombre} (
+            {t('nextLevel')} {translateNivel(siguienteNivel.nombre)} (
             {siguienteNivel.puntos_necesarios} {t('pointsNeeded')})
           </Caption>
         ) : (

@@ -1138,8 +1138,8 @@
     "achievementsDesc": "Desbloqueja fites visitant pobles, fent servir el Club d'Amics i comprant.",
     "comingSoon": "Properament",
     "viewAllLevels": "Veure tots els nivells viatger",
-    "gpsRankLabel": "Posició GPS",
-    "totalRankLabel": "Posició total"
+    "gpsRankLabel": "Ranking Visites GPS",
+    "totalRankLabel": "Ranking Visites Totals"
   },
   "levels": {
     "backToPoints": "← Tornar als Meus Punts",
@@ -1158,7 +1158,16 @@
     "pointsAbbr": "pts",
     "yourStatus": "El teu estat actual",
     "pointsTotal": "punts en total",
-    "pointsToNext": "falten {points} punts per a {next}"
+    "pointsToNext": "falten {points} punts per a {next}",
+    "turistaCurioso": "Turista Curiós",
+    "exploradorLocal": "Explorador Local",
+    "viajeroApasionado": "Viatger Apassionat",
+    "amantePueblos": "Amant dels Pobles",
+    "granViajero": "Gran Viatger",
+    "leyendaLpbe": "Llegenda LPBE",
+    "embajadorPueblos": "Ambaixador dels Pobles",
+    "maestroViajero": "Mestre Viatger",
+    "granMaestre": "Gran Mestre dels Pobles"
   },
   "clubLanding": {
     "title": "D'aquí a uns dies, el Club d'Amics serà una realitat.",

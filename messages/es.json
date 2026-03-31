@@ -1178,8 +1178,8 @@
     "achievementsDesc": "Desbloquea logros visitando pueblos, usando el Club de Amigos y comprando en la tienda.",
     "comingSoon": "Próximamente",
     "viewAllLevels": "Ver todos los niveles viajeros",
-    "gpsRankLabel": "Posición GPS",
-    "totalRankLabel": "Posición total"
+    "gpsRankLabel": "Ranking Visitas GPS",
+    "totalRankLabel": "Ranking Visitas Totales"
   },
   "levels": {
     "backToPoints": "← Volver a Mis Puntos",
@@ -1198,7 +1198,16 @@
     "pointsAbbr": "pts",
     "yourStatus": "Tu estado actual",
     "pointsTotal": "puntos en total",
-    "pointsToNext": "faltan {points} puntos para {next}"
+    "pointsToNext": "faltan {points} puntos para {next}",
+    "turistaCurioso": "Turista Curioso",
+    "exploradorLocal": "Explorador Local",
+    "viajeroApasionado": "Viajero Apasionado",
+    "amantePueblos": "Amante de los Pueblos",
+    "granViajero": "Gran Viajero",
+    "leyendaLpbe": "Leyenda LPBE",
+    "embajadorPueblos": "Embajador de los Pueblos",
+    "maestroViajero": "Maestro Viajero",
+    "granMaestre": "Gran Maestre de los Pueblos"
   },
   "clubLanding": {
     "title": "En pocos días el Club de Amigos será una realidad",

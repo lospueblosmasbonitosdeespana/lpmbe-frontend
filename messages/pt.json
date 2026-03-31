@@ -1138,8 +1138,8 @@
     "achievementsDesc": "Desbloqueie conquistas visitando aldeias, usando o Clube de Amigos e comprando.",
     "comingSoon": "Em breve",
     "viewAllLevels": "Ver todos os níveis viajante",
-    "gpsRankLabel": "Posição GPS",
-    "totalRankLabel": "Posição total"
+    "gpsRankLabel": "Ranking Visitas GPS",
+    "totalRankLabel": "Ranking Visitas Totais"
   },
   "levels": {
     "backToPoints": "← Voltar aos Meus Pontos",
@@ -1158,7 +1158,16 @@
     "pointsAbbr": "pts",
     "yourStatus": "O teu estado atual",
     "pointsTotal": "pontos no total",
-    "pointsToNext": "faltam {points} pontos para {next}"
+    "pointsToNext": "faltam {points} pontos para {next}",
+    "turistaCurioso": "Turista Curioso",
+    "exploradorLocal": "Explorador Local",
+    "viajeroApasionado": "Viajante Apaixonado",
+    "amantePueblos": "Amante das Aldeias",
+    "granViajero": "Grande Viajante",
+    "leyendaLpbe": "Lenda LPBE",
+    "embajadorPueblos": "Embaixador das Aldeias",
+    "maestroViajero": "Mestre Viajante",
+    "granMaestre": "Grão-Mestre das Aldeias"
   },
   "clubLanding": {
     "title": "Dentro de alguns dias, o Clube de Amigos será uma realidade",

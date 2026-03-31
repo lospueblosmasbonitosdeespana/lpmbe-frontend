@@ -1138,8 +1138,8 @@
     "achievementsDesc": "Débloquez des succès en visitant des villages, en utilisant le Club d'Amis et en achetant.",
     "comingSoon": "Prochainement",
     "viewAllLevels": "Voir tous les niveaux voyageur",
-    "gpsRankLabel": "Position GPS",
-    "totalRankLabel": "Position totale"
+    "gpsRankLabel": "Ranking Visites GPS",
+    "totalRankLabel": "Ranking Visites Totales"
   },
   "levels": {
     "backToPoints": "← Retour à Mes Points",
@@ -1158,7 +1158,16 @@
     "pointsAbbr": "pts",
     "yourStatus": "Votre état actuel",
     "pointsTotal": "points au total",
-    "pointsToNext": "{points} points pour atteindre {next}"
+    "pointsToNext": "{points} points pour atteindre {next}",
+    "turistaCurioso": "Touriste Curieux",
+    "exploradorLocal": "Explorateur Local",
+    "viajeroApasionado": "Voyageur Passionné",
+    "amantePueblos": "Amoureux des Villages",
+    "granViajero": "Grand Voyageur",
+    "leyendaLpbe": "Légende LPBE",
+    "embajadorPueblos": "Ambassadeur des Villages",
+    "maestroViajero": "Maître Voyageur",
+    "granMaestre": "Grand Maître des Villages"
   },
   "clubLanding": {
     "title": "Dans quelques jours, le Club de Amigos sera une réalité.",
