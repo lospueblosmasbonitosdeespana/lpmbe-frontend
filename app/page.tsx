@@ -130,6 +130,18 @@ async function getNotifications(locale?: string): Promise<NotificationItem[]> {
       title: item.titulo ?? "(sin título)",
       type: mapNotificationType(tipo),
       href: (() => {
+        const upperTipo = (tipo || item?.tipo || "").toUpperCase();
+        const puebloSlug = item?.pueblo?.slug ?? item?.puebloSlug ?? null;
+
+        if (upperTipo === "ALERTA_PUEBLO" && puebloSlug) {
+          return `/pueblos/${puebloSlug}/alertas`;
+        }
+
+        if (upperTipo === "ALERTA") {
+          const alertId = item?.id ?? item?.refId;
+          return alertId ? `/notificaciones#notif-${alertId}` : "/notificaciones?tipo=ALERTA";
+        }
+
         if (item.contenidoSlug) return `/c/${item.contenidoSlug}`;
         if (item.slug) {
           const t = (tipo || '').toUpperCase();

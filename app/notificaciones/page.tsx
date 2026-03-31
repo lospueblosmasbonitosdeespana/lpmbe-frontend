@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { Cloud } from "lucide-react";
 import NotificacionesList from "../_components/notificaciones/NotificacionesList";
 
@@ -38,9 +39,17 @@ export default function NotificacionesPage() {
   const locale = useLocale();
   const t = useTranslations("notifications");
   const tHome = useTranslations("home");
+  const searchParams = useSearchParams();
   const [items, setItems] = useState<NotifItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const tipoQuery = (searchParams.get("tipo") ?? "").toUpperCase();
+  const tiposParam =
+    tipoQuery === "ALERTA"
+      ? "ALERTA,ALERTA_PUEBLO"
+      : tipoQuery === "SEMAFORO"
+        ? "SEMAFORO"
+        : tipoQuery || "NOTICIA,EVENTO,ALERTA,ALERTA_PUEBLO,SEMAFORO";
 
   // Al entrar en esta página, marcar notificaciones como vistas (para que el badge en home desaparezca)
   useEffect(() => {
@@ -57,9 +66,17 @@ export default function NotificacionesPage() {
       try {
         setLoading(true);
         setErr(null);
-        const res = await fetch(`/api/public/notificaciones/feed?lang=${encodeURIComponent(locale)}`, { cache: "no-store" });
+        const res = await fetch(
+          `/api/public/notificaciones/feed?lang=${encodeURIComponent(locale)}&tipos=${encodeURIComponent(tiposParam)}`,
+          { cache: "no-store" }
+        );
         const data = await res.json().catch(() => null);
-        const normalized = normalizeFeed(data);
+        const normalized = normalizeFeed(data).filter((it) => {
+          const tipo = String(it.tipo ?? "").toUpperCase();
+          if (tipoQuery === "ALERTA") return tipo === "ALERTA" || tipo === "ALERTA_PUEBLO";
+          if (tipoQuery === "SEMAFORO") return tipo === "SEMAFORO";
+          return true;
+        });
         if (alive) {
           setItems(normalized);
           
@@ -80,7 +97,7 @@ export default function NotificacionesPage() {
       }
     })();
     return () => { alive = false; };
-  }, [locale]);
+  }, [locale, tipoQuery, tiposParam]);
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">

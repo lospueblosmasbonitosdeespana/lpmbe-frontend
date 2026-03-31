@@ -390,7 +390,13 @@ function NotificationCenter({
 
             <div className="px-5 py-3 bg-muted/20 border-t border-border/50">
               <Link
-                href="/notificaciones"
+                href={
+                  activeTab === "alertas"
+                    ? "/notificaciones?tipo=ALERTA"
+                    : activeTab === "semaforos"
+                      ? "/notificaciones?tipo=SEMAFORO"
+                      : "/notificaciones"
+                }
                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
               >
                 {t("viewAllNotifs")} <ArrowRight className="h-4 w-4" />
