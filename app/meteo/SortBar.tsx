@@ -1,5 +1,5 @@
 "use client";
-import { useRouter, useSearchParams } from "next/navigation";
+
 import {
   ThermometerSnowflake,
   ThermometerSun,
@@ -34,19 +34,12 @@ const FALLBACK_LABELS: Record<SortMode, string> = {
 export function SortBar({
   currentSort,
   labels,
+  onSortChange,
 }: {
   currentSort: string;
   labels?: Record<SortMode, string>;
+  onSortChange?: (key: SortMode) => void;
 }) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const setSort = (key: SortMode) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("sort", key);
-    router.push(`?${params.toString()}`);
-  };
-
   return (
     <div className="flex flex-wrap gap-2 mt-4">
       {SORT_KEYS.map((key) => {
@@ -56,7 +49,7 @@ export function SortBar({
         return (
           <button
             key={key}
-            onClick={() => setSort(key)}
+            onClick={() => onSortChange?.(key)}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
               active
                 ? "bg-[#994920] text-white border-[#994920]"
