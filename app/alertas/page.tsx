@@ -14,7 +14,7 @@ export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
-  const t = await getTranslations({ locale, namespace: "notifications" });
+  const t = await getTranslations("notifications");
   const path = "/alertas";
 
   return {
@@ -45,7 +45,16 @@ function formatFecha(raw: string | null | undefined, locale: string) {
   if (!raw) return "";
   const d = new Date(raw);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString(locale === "ca" ? "ca-ES" : `${locale}-ES`, {
+  // Mapeo: 'ca' → 'ca-ES', resto → '{locale}-ES' con fallback a 'es-ES'
+  const localeTag =
+    locale === "ca" ? "ca-ES" :
+    locale === "en" ? "en-GB" :
+    locale === "fr" ? "fr-FR" :
+    locale === "de" ? "de-DE" :
+    locale === "pt" ? "pt-PT" :
+    locale === "it" ? "it-IT" :
+    "es-ES";
+  return d.toLocaleString(localeTag, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -56,7 +65,7 @@ function formatFecha(raw: string | null | undefined, locale: string) {
 
 export default async function AlertasPage() {
   const locale = (await getLocale()) as SupportedLocale;
-  const t = await getTranslations({ locale, namespace: "notifications" });
+  const t = await getTranslations("notifications");
   const API_BASE = getApiUrl();
 
   let alertas: AlertaRaw[] = [];
