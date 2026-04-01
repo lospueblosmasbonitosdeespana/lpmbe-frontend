@@ -42,7 +42,7 @@ function FileIcon({ url }: { url: string }) {
 }
 
 function DocCard({ doc }: { doc: DocumentoItem }) {
-  const srcLabel = doc.fuente === 'ASOCIACION' ? 'Asociación LPBME' : (doc.pueblo?.nombre ?? '');
+  const [open, setOpen] = useState(false);
   const todosLosArchivos = [
     { url: doc.url, nombre: doc.nombre },
     ...(doc.archivosAdicionales ?? []),
@@ -50,9 +50,14 @@ function DocCard({ doc }: { doc: DocumentoItem }) {
   const tieneMultiples = todosLosArchivos.length > 1;
 
   return (
-    <div className="flex flex-col gap-0 rounded-xl border border-border bg-background transition hover:shadow-sm overflow-hidden">
-      <div className="flex items-start gap-3 p-4">
-        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/60 overflow-hidden">
+    <div className={`overflow-hidden rounded-xl border transition-all ${open ? 'border-primary/40 shadow-sm' : 'border-border'} bg-background`}>
+      {/* Cabecera clicable */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-start gap-3 p-4 text-left hover:bg-muted/40 transition-colors"
+      >
+        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/60 overflow-hidden">
           {isImageUrl(doc.url) ? (
             <img src={doc.url} alt={doc.nombre} className="h-full w-full object-contain" />
           ) : (
@@ -61,7 +66,7 @@ function DocCard({ doc }: { doc: DocumentoItem }) {
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-medium text-sm leading-tight">{doc.nombre}</p>
-          {doc.descripcion && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{doc.descripcion}</p>}
+          {doc.descripcion && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{doc.descripcion}</p>}
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             {doc.fuente === 'ASOCIACION' ? (
               <span className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">Asociación LPBME</span>
@@ -70,26 +75,50 @@ function DocCard({ doc }: { doc: DocumentoItem }) {
             )}
             <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${TIPO_COLORS[doc.tipo]}`}>{TIPO_LABELS[doc.tipo]}</span>
             <span className="text-[10px] text-muted-foreground">{new Date(doc.createdAt).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            {tieneMultiples && (
+              <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+                {todosLosArchivos.length} archivos
+              </span>
+            )}
           </div>
         </div>
-      </div>
-      {/* Archivos — uno o varios */}
-      <div className={`border-t border-border ${tieneMultiples ? 'divide-y divide-border' : ''}`}>
-        {todosLosArchivos.map((archivo, i) => (
-          <div key={i} className="flex items-center gap-2 px-4 py-2">
-            <FileIcon url={archivo.url} />
-            <span className="flex-1 truncate text-xs text-muted-foreground">{archivo.nombre}</span>
-            <a href={archivo.url} download target="_blank" rel="noopener noreferrer"
-              title={`Descargar ${archivo.nombre}`}
-              className="shrink-0 inline-flex items-center gap-1 rounded border border-border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted">
-              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              {tieneMultiples ? (i === 0 ? 'Principal' : `Archivo ${i + 1}`) : 'Descargar'}
-            </a>
-          </div>
-        ))}
-      </div>
+        {/* Indicador acordeón */}
+        <svg
+          className={`mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {/* Archivos desplegables */}
+      {open && (
+        <div className="border-t border-border bg-muted/20 divide-y divide-border">
+          {todosLosArchivos.map((archivo, i) => (
+            <div key={i} className="flex items-center gap-2.5 px-4 py-2.5">
+              <FileIcon url={archivo.url} />
+              <span className="flex-1 truncate text-xs text-foreground">{archivo.nombre}</span>
+              {tieneMultiples && (
+                <span className="shrink-0 text-[10px] text-muted-foreground">
+                  {i === 0 ? 'Principal' : `Archivo ${i + 1}`}
+                </span>
+              )}
+              <a
+                href={archivo.url}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 inline-flex items-center gap-1 rounded border border-border bg-white px-2.5 py-1 text-xs font-medium hover:bg-muted transition-colors"
+              >
+                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Descargar
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
