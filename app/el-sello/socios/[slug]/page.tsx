@@ -12,7 +12,6 @@ import {
   seoTitle,
   seoDescription,
   slugToTitle,
-  titleLocaleSuffix,
   type SupportedLocale,
 } from '@/lib/seo';
 
@@ -25,12 +24,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
-  const locSuf = titleLocaleSuffix(locale);
   const name = slugToTitle(slug) || 'Socio';
   const path = `/el-sello/socios/${slug}`;
   return {
-    title: seoTitle(`${name} · Socios · ${slug}${locSuf}`),
-    description: seoDescription(`${name}, socio y colaborador de Los Pueblos Más Bonitos de España.${locSuf}`),
+    title: seoTitle(`${name} · Socios · ${slug}`),
+    description: seoDescription(`${name}, socio y colaborador de Los Pueblos Más Bonitos de España.`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

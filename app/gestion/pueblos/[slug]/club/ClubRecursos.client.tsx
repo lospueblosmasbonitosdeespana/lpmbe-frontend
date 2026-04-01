@@ -154,7 +154,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
         body.descuentoPorcentaje = Number(nuevoDescuento);
       }
 
-      if (nuevoPrecio) {
+      if (nuevoPrecio !== '') {
         body.precioCents = Math.round(Number(nuevoPrecio) * 100);
       }
 
@@ -258,7 +258,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
         body.descuentoPorcentaje = null;
       }
 
-      if (editPrecio) {
+      if (editPrecio !== '') {
         body.precioCents = Math.round(Number(editPrecio) * 100);
       } else {
         body.precioCents = null;
@@ -405,30 +405,46 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
               </button>
             </div>
           </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Descuento (%)</label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              value={nuevoDescuento}
-              onChange={(e) => setNuevoDescuento(e.target.value)}
-              disabled={creando}
-              className="w-full px-3 py-2 border rounded disabled:opacity-50"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Precio (€)</label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={nuevoPrecio}
-              onChange={(e) => setNuevoPrecio(e.target.value)}
-              disabled={creando}
-              className="w-full px-3 py-2 border rounded disabled:opacity-50"
-              placeholder="0.00"
-            />
+          <div className="flex items-end gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Descuento (%)</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={nuevoDescuento}
+                onChange={(e) => setNuevoDescuento(e.target.value)}
+                disabled={creando}
+                className="w-24 px-3 py-2 border rounded disabled:opacity-50"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm text-gray-600 mb-1">Precio (€)</label>
+              <div className="flex gap-2 items-center">
+                <button
+                  type="button"
+                  onClick={() => setNuevoPrecio('0')}
+                  disabled={creando}
+                  className={`px-3 py-2 text-sm rounded border transition-colors whitespace-nowrap ${
+                    nuevoPrecio === '0'
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-medium'
+                      : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                  } disabled:opacity-50`}
+                >
+                  Gratuito
+                </button>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={nuevoPrecio}
+                  onChange={(e) => setNuevoPrecio(e.target.value)}
+                  disabled={creando}
+                  className="flex-1 px-3 py-2 border rounded disabled:opacity-50"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
           </div>
           <div className="p-3 bg-blue-50 border border-blue-200 rounded space-y-2">
             <label className="block text-sm font-medium text-blue-800">Condiciones del descuento</label>
@@ -571,30 +587,46 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                       </button>
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">Descuento (%)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={editDescuento}
-                      onChange={(e) => setEditDescuento(e.target.value)}
-                      disabled={guardando}
-                      className="w-full px-3 py-2 border rounded disabled:opacity-50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">Precio (€)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={editPrecio}
-                      onChange={(e) => setEditPrecio(e.target.value)}
-                      disabled={guardando}
-                      className="w-full px-3 py-2 border rounded disabled:opacity-50"
-                      placeholder="0.00"
-                    />
+                  <div className="flex items-end gap-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Descuento (%)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={editDescuento}
+                        onChange={(e) => setEditDescuento(e.target.value)}
+                        disabled={guardando}
+                        className="w-24 px-3 py-2 border rounded disabled:opacity-50"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm text-gray-600 mb-1">Precio (€)</label>
+                      <div className="flex gap-2 items-center">
+                        <button
+                          type="button"
+                          onClick={() => setEditPrecio('0')}
+                          disabled={guardando}
+                          className={`px-3 py-2 text-sm rounded border transition-colors whitespace-nowrap ${
+                            editPrecio === '0'
+                              ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-medium'
+                              : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                          } disabled:opacity-50`}
+                        >
+                          Gratuito
+                        </button>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={editPrecio}
+                          onChange={(e) => setEditPrecio(e.target.value)}
+                          disabled={guardando}
+                          className="flex-1 px-3 py-2 border rounded disabled:opacity-50"
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </div>
                   </div>
                   <div className="p-3 bg-blue-50 border border-blue-200 rounded space-y-2">
                     <label className="block text-sm font-medium text-blue-800">Condiciones del descuento</label>
@@ -692,7 +724,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                       </div>
                       <div className="text-sm text-gray-600">Tipo: {r.tipo || '—'}</div>
                       <div className="text-sm text-gray-600">
-                        Precio: {r.precioCents ? `${(r.precioCents / 100).toFixed(2)} €` : '—'}
+                        Precio: {r.precioCents !== null && r.precioCents !== undefined ? (r.precioCents === 0 ? <span className="text-emerald-600 font-medium">Gratuito</span> : `${(r.precioCents / 100).toFixed(2)} €`) : '—'}
                       </div>
                       {r.descuentoPorcentaje && r.precioCents && (
                         <div className="text-sm text-green-600 font-medium">

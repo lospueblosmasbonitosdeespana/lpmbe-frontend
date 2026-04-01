@@ -12,7 +12,6 @@ import {
   seoTitle,
   seoDescription,
   slugDisambiguatorForTitle,
-  titleLocaleSuffix,
   uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
@@ -60,12 +59,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, mxSlug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
-  const locSuf = titleLocaleSuffix(locale);
   const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const expName = mxSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/experiencias/${mxSlug}`;
   const mxDis = slugDisambiguatorForTitle(mxSlug);
-  const title = seoTitle(`${expName} · ${puebloName}${mxDis}${locSuf}`);
+  const title = seoTitle(`${expName} · ${puebloName}${mxDis}`);
 
   let descriptionLong = `${metaLocaleLead(locale)}Experiencia «${expName}» en ${puebloName}. Itinerario: ${mxSlug}.`;
   try {

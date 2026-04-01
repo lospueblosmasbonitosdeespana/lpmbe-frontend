@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
-import { getCanonicalUrl, getLocaleAlternates, metaLocaleLead, seoTitle, seoDescription, titleLocaleSuffix, type SupportedLocale } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, type SupportedLocale } from '@/lib/seo';
 
 const PRENSA_TITLE: Record<string, string> = {
   es: 'Prensa — Los Pueblos Más Bonitos de España',
