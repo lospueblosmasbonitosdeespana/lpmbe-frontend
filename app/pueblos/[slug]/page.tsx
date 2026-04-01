@@ -301,10 +301,21 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
-  const name = slugToTitle(slug) || "Pueblo";
   const path = `/pueblos/${slug}`;
-  const title = seoTitle(`${name}${localeSuffix}`);
-  const description = seoDescription(`Descubre ${name}, uno de los pueblos más bonitos de España. Información, mapas, experiencias y rutas.${localeSuffix}`);
+
+  let name = slugToTitle(slug) || "Pueblo";
+  let provincia = "";
+  try {
+    const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+    if (pueblo?.nombre) name = pueblo.nombre;
+    if (pueblo?.provincia) provincia = pueblo.provincia;
+  } catch {}
+
+  const titleBase = provincia
+    ? `${name}, ${provincia} | Los Pueblos Más Bonitos de España`
+    : `${name} | Los Pueblos Más Bonitos de España`;
+  const title = seoTitle(`${titleBase}${localeSuffix}`);
+  const description = seoDescription(`Descubre ${name}${provincia ? `, ${provincia}` : ""}, uno de los pueblos más bonitos de España. Información, mapas, experiencias y rutas.${localeSuffix}`);
 
   return {
     title,

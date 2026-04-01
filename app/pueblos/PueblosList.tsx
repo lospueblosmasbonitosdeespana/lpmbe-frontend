@@ -236,6 +236,9 @@ export default function PueblosList({
           <h1 className="mt-2 font-serif text-3xl font-medium tracking-tight text-foreground md:text-4xl">
             {t("pageHeading")}
           </h1>
+          <p className="mt-4 text-base text-muted-foreground max-w-2xl mx-auto">
+            {t("introText")}
+          </p>
           <p className="mt-2 text-base text-muted-foreground">
             {pueblosFiltrados.length}{" "}
             {pueblosFiltrados.length === 1 ? t("village") : t("villages")}

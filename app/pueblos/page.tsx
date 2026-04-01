@@ -8,13 +8,13 @@ import PueblosList from "./PueblosList";
 export const dynamic = "force-dynamic";
 
 const PUEBLOS_TITLE: Record<string, string> = {
-  es: 'Lista de los pueblos más bonitos de España',
-  en: 'List of the most beautiful villages in Spain',
-  fr: 'Liste des plus beaux villages d\'Espagne',
-  de: 'Liste der schönsten Dörfer Spaniens',
-  pt: 'Lista das aldeias mais bonitas de Espanha',
-  it: 'Lista dei borghi più belli della Spagna',
-  ca: 'Llista dels pobles més bonics d\'Espanya',
+  es: 'Los Pueblos Más Bonitos de España | Listado completo',
+  en: 'The Most Beautiful Villages in Spain | Complete list',
+  fr: 'Les Plus Beaux Villages d\'Espagne | Liste complète',
+  de: 'Die Schönsten Dörfer Spaniens | Vollständige Liste',
+  pt: 'As Aldeias Mais Bonitas de Espanha | Lista completa',
+  it: 'I Borghi Più Belli della Spagna | Elenco completo',
+  ca: 'Els Pobles Més Bonics d\'Espanya | Llista completa',
 };
 
 export async function generateMetadata(): Promise<Metadata> {
