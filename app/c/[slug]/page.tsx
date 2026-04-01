@@ -190,26 +190,39 @@ function plainDescription(htmlOrMd: string): string {
 const PUBLISHER_ORGANIZATION = {
   '@type': 'Organization',
   name: 'Los Pueblos Más Bonitos de España',
+  url: 'https://lospueblosmasbonitosdeespana.org',
+  logo: {
+    '@type': 'ImageObject',
+    url: 'https://lospueblosmasbonitosdeespana.org/images/logo-lpbme.png',
+  },
 } as const;
 
-function articleJsonLdFromContenido(contenido: Contenido): Record<string, unknown> {
+function articleJsonLdFromContenido(contenido: Contenido, canonicalUrl: string): Record<string, unknown> {
   const datePublished = contenido.publishedAt ?? contenido.createdAt;
+  const isEvent = contenido.tipo === 'EVENTO';
   const data: Record<string, unknown> = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: contenido.titulo,
+    '@type': isEvent ? 'Event' : 'Article',
+    ...(isEvent ? { name: contenido.titulo } : { headline: contenido.titulo }),
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
     publisher: PUBLISHER_ORGANIZATION,
+    author: PUBLISHER_ORGANIZATION,
   };
   if (datePublished) data.datePublished = datePublished;
+  if (isEvent && contenido.fechaInicio) data.startDate = contenido.fechaInicio;
+  if (isEvent && contenido.fechaFin) data.endDate = contenido.fechaFin;
+  if (contenido.coverUrl) data.image = contenido.coverUrl;
   return data;
 }
 
-function articleJsonLdStatic(titulo: string): Record<string, unknown> {
+function articleJsonLdStatic(titulo: string, canonicalUrl: string): Record<string, unknown> {
   return {
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: titulo,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
     publisher: PUBLISHER_ORGANIZATION,
+    author: PUBLISHER_ORGANIZATION,
   };
 }
 
@@ -293,7 +306,7 @@ export default async function ContenidoPage({
 
     return (
       <main className="px-5 py-10 md:py-[40px]">
-        <JsonLd data={articleJsonLdStatic(titulo)} />
+        <JsonLd data={articleJsonLdStatic(titulo, `https://lospueblosmasbonitosdeespana.org/c/${slug}`)} />
         <article>
           <div className="max-w-[720px] mx-auto px-5">
             <header className="mb-10">
@@ -371,7 +384,7 @@ export default async function ContenidoPage({
 
   return (
     <main className="px-5 py-10 md:py-[40px]">
-      <JsonLd data={articleJsonLdFromContenido(contenido)} />
+      <JsonLd data={articleJsonLdFromContenido(contenido, `https://lospueblosmasbonitosdeespana.org/c/${slug}`)} />
       <article>
         {headerImages.length > 1 ? (
           <ContenidoImageCarousel images={headerImages} alt={contenido.titulo} />
