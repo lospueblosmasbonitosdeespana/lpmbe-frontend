@@ -10,6 +10,7 @@ import { getApiUrl } from '@/lib/api';
 import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle } from '@/lib/seo';
 import { autoLinkUrls, injectImgAlt } from '@/app/_lib/html';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
+import JsonLd from '@/app/components/seo/JsonLd';
 import ContenidoImageCarousel from '@/app/components/ContenidoImageCarousel';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 
@@ -186,6 +187,32 @@ function plainDescription(htmlOrMd: string): string {
   return plainText.length > 160 ? `${desc}...` : desc;
 }
 
+const PUBLISHER_ORGANIZATION = {
+  '@type': 'Organization',
+  name: 'Los Pueblos Más Bonitos de España',
+} as const;
+
+function articleJsonLdFromContenido(contenido: Contenido): Record<string, unknown> {
+  const datePublished = contenido.publishedAt ?? contenido.createdAt;
+  const data: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: contenido.titulo,
+    publisher: PUBLISHER_ORGANIZATION,
+  };
+  if (datePublished) data.datePublished = datePublished;
+  return data;
+}
+
+function articleJsonLdStatic(titulo: string): Record<string, unknown> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: titulo,
+    publisher: PUBLISHER_ORGANIZATION,
+  };
+}
+
 export async function generateMetadata({
   params,
   searchParams,
@@ -265,6 +292,7 @@ export default async function ContenidoPage({
 
     return (
       <main className="px-5 py-10 md:py-[40px]">
+        <JsonLd data={articleJsonLdStatic(titulo)} />
         <article>
           <div className="max-w-[720px] mx-auto px-5">
             <header className="mb-10">
@@ -342,6 +370,7 @@ export default async function ContenidoPage({
 
   return (
     <main className="px-5 py-10 md:py-[40px]">
+      <JsonLd data={articleJsonLdFromContenido(contenido)} />
       <article>
         {headerImages.length > 1 ? (
           <ContenidoImageCarousel images={headerImages} alt={contenido.titulo} />

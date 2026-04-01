@@ -6,7 +6,8 @@ import BackButton from '@/app/c/[slug]/BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
-import { getCanonicalUrl, getLocaleAlternates } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, seoDescription } from '@/lib/seo';
+import JsonLd from '@/app/components/seo/JsonLd';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 
 const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'] as const;
@@ -32,6 +33,39 @@ type Evento = {
   fechaFin?: string;
   createdAt?: string;
 };
+
+const PUBLISHER_ORGANIZATION = {
+  '@type': 'Organization',
+  name: 'Los Pueblos Más Bonitos de España',
+} as const;
+
+function descriptionForEvent(evento: Evento): string | undefined {
+  const resumen = evento.resumen?.trim();
+  if (resumen) return seoDescription(resumen, 155);
+  const body = evento.contenido?.trim();
+  if (!body) return undefined;
+  const plain = body
+    .replace(/<[^>]+>/g, '')
+    .replace(/[#*`\[\]()]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!plain) return undefined;
+  return plain.length <= 155 ? plain : `${plain.slice(0, 152).trimEnd()}…`;
+}
+
+function eventJsonLd(evento: Evento): Record<string, unknown> {
+  const description = descriptionForEvent(evento);
+  const data: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: evento.titulo,
+    organizer: PUBLISHER_ORGANIZATION,
+  };
+  if (evento.fechaInicio) data.startDate = evento.fechaInicio;
+  if (evento.fechaFin) data.endDate = evento.fechaFin;
+  if (description) data.description = description;
+  return data;
+}
 
 async function fetchEvento(slug: string): Promise<Evento | null> {
   const locale = await getLocale();
@@ -101,6 +135,7 @@ export default async function EventoPage({
 
   return (
     <main style={{ padding: '40px 20px' }}>
+      <JsonLd data={eventJsonLd(evento)} />
       <article>
         {evento.coverUrl && evento.coverUrl.trim() && (
           <SmartCoverImage src={evento.coverUrl.trim()} alt={evento.titulo} />

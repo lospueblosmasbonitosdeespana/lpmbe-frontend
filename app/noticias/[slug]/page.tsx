@@ -7,6 +7,7 @@ import ShareButton from '@/app/components/ShareButton';
 import { formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription } from '@/lib/seo';
+import JsonLd from '@/app/components/seo/JsonLd';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 import { injectImgAlt } from '@/app/_lib/html';
 
@@ -30,7 +31,41 @@ type Noticia = {
   coverUrl?: string;
   tipo: string;
   createdAt?: string;
+  publishedAt?: string;
 };
+
+const PUBLISHER_ORGANIZATION = {
+  '@type': 'Organization',
+  name: 'Los Pueblos Más Bonitos de España',
+} as const;
+
+function descriptionForNewsArticle(noticia: Noticia): string | undefined {
+  const resumen = noticia.resumen?.trim();
+  if (resumen) return seoDescription(resumen, 155);
+  const body = noticia.contenido?.trim();
+  if (!body) return undefined;
+  const plain = body
+    .replace(/<[^>]+>/g, '')
+    .replace(/[#*`\[\]()]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!plain) return undefined;
+  return plain.length <= 155 ? plain : `${plain.slice(0, 152).trimEnd()}…`;
+}
+
+function newsArticleJsonLd(noticia: Noticia): Record<string, unknown> {
+  const datePublished = noticia.publishedAt ?? noticia.createdAt;
+  const description = descriptionForNewsArticle(noticia);
+  const data: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headline: noticia.titulo,
+    publisher: PUBLISHER_ORGANIZATION,
+  };
+  if (datePublished) data.datePublished = datePublished;
+  if (description) data.description = description;
+  return data;
+}
 
 async function fetchNoticia(slug: string): Promise<Noticia | null> {
   const locale = await getLocale();
@@ -103,6 +138,7 @@ export default async function NoticiaPage({
 
   return (
     <main style={{ padding: '40px 20px' }}>
+      <JsonLd data={newsArticleJsonLd(noticia)} />
       <article>
         {noticia.coverUrl && noticia.coverUrl.trim() && (
           <SmartCoverImage src={noticia.coverUrl.trim()} alt={noticia.titulo} />
