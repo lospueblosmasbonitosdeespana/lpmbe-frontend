@@ -235,6 +235,8 @@ export default function SemaforoGestion({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   // Formulario manual
   const [estadoM, setEstadoM] = useState(estadoManual);
@@ -276,9 +278,11 @@ export default function SemaforoGestion({
     callApi({ estado: estadoM, mensajePublico: mensajePublicoM.trim() || null, mensaje: mensajeInternoM.trim() || null });
   }
 
-  function handleResetManual() {
-    if (!confirm('¿Poner el semáforo en tiempo real a VERDE? Los eventos programados se mantendrán.')) return;
-    callApi({ estado: 'VERDE', mensajePublico: null, mensaje: null });
+  async function handleConfirmReset() {
+    setResetting(true);
+    const ok = await callApi({ estado: 'VERDE', mensajePublico: null, mensaje: null });
+    setResetting(false);
+    if (ok) setShowResetModal(false);
   }
 
   function handleGuardarEvento(data: any) {
@@ -359,14 +363,54 @@ export default function SemaforoGestion({
               {loading ? 'Guardando...' : 'Guardar estado manual'}
             </button>
             {hayManual && (
-              <button type="button" onClick={handleResetManual} disabled={loading}
-                className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">
+              <button type="button" onClick={() => setShowResetModal(true)} disabled={loading}
+                className="rounded-md border border-green-300 bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 hover:bg-green-100 disabled:opacity-50">
                 Reset a VERDE
               </button>
             )}
           </div>
         </form>
       </section>
+
+      {/* Modal de confirmación para Reset a VERDE */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => !resetting && setShowResetModal(false)}>
+          <div className="mx-4 w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100">
+                <svg className="h-5 w-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Restablecer semáforo</h3>
+            </div>
+            <p className="mb-2 text-sm text-gray-600">
+              Esto cambiará el semáforo a <strong className="text-green-700">VERDE</strong> y borrará el estado actual (mensaje público, mensaje interno y motivo).
+            </p>
+            <p className="mb-5 text-xs text-gray-500">
+              Los eventos programados futuros se mantendrán sin cambios.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowResetModal(false)}
+                disabled={resetting}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmReset}
+                disabled={resetting}
+                className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+              >
+                {resetting ? 'Restableciendo...' : 'Sí, poner en VERDE'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── EVENTOS PROGRAMADOS ── */}
       <section className="rounded-lg border border-gray-200 bg-white overflow-hidden">

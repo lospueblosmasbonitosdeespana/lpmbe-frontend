@@ -47,9 +47,9 @@ export async function POST(
   // Construir payload con allowlist estricta (nombres que acepta el backend DTO)
   const payload: any = { estado };
 
-  if (motivo) payload.motivo = motivo;
-  if (mensajePublico) payload.mensajePublico = mensajePublico;
-  if (mensaje) payload.mensaje = mensaje;
+  if (motivo !== undefined) payload.motivo = motivo || null;
+  if (mensajePublico !== undefined) payload.mensajePublico = mensajePublico || null;
+  if (mensaje !== undefined) payload.mensaje = mensaje || null;
 
   // Flag para borrar solo el evento programado
   if (body?.clearProgramado === true) {
