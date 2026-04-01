@@ -1701,6 +1701,7 @@
     "petfriendlyDesc": "Llocs pet friendly a {nombre}. Viatja amb el teu animal de companyia.",
     "queComerTitle": "Què menjar a {nombre}",
     "queComerDesc": "Gastronomia i plats típics de {nombre}.",
+    "tematicaDetalleTitle": "{titulo} a {pueblo}",
     "tematicaDetalleDesc": "{titulo} a {pueblo}.",
     "comunidadTitle": "{nombre} – Pobles bonics",
     "comunidadDesc": "Pobles més bonics de {nombre}. Descobreix els pobles certificats.",

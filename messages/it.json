@@ -1701,6 +1701,7 @@
     "petfriendlyDesc": "Luoghi pet friendly a {nombre}. Viaggia con il tuo animale.",
     "queComerTitle": "Cosa mangiare a {nombre}",
     "queComerDesc": "Gastronomia e piatti tipici di {nombre}.",
+    "tematicaDetalleTitle": "{titulo} a {pueblo}",
     "tematicaDetalleDesc": "{titulo} a {pueblo}.",
     "comunidadTitle": "{nombre} – Borghi belli",
     "comunidadDesc": "Borghi più belli di {nombre}. Scopri i borghi certificati.",

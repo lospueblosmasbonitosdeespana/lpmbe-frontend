@@ -1701,6 +1701,7 @@
     "petfriendlyDesc": "Pet friendly places in {nombre}. Travel with your pet.",
     "queComerTitle": "What to eat in {nombre}",
     "queComerDesc": "Gastronomy and typical dishes of {nombre}.",
+    "tematicaDetalleTitle": "{titulo} in {pueblo}",
     "tematicaDetalleDesc": "{titulo} in {pueblo}.",
     "comunidadTitle": "{nombre} – Beautiful villages",
     "comunidadDesc": "Most beautiful villages in {nombre}. Discover the certified villages.",

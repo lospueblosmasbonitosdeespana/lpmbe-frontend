@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
   const page = await getPaginaTematicaBySlug(puebloSlug, CATEGORY_API_KEYS[SLUG], pageSlug, locale);
   const titulo = page?.titulo ?? slugToTitle(pageSlug);
   const path = `/${URL_SLUG}/${puebloSlug}/${pageSlug}`;
-  const titleText = seoTitle(`${titulo} en ${puebloNombre}`);
+  const titleText = seoTitle(tSeo("tematicaDetalleTitle", { titulo, pueblo: puebloNombre }));
   const descText = seoDescription(page?.resumen ? stripHtml(page.resumen) : tSeo("tematicaDetalleDesc", { titulo, pueblo: puebloNombre }));
   return {
     title: titleText,

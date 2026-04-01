@@ -1701,6 +1701,7 @@
     "petfriendlyDesc": "Haustierfreundliche Orte in {nombre}. Reisen Sie mit Ihrem Haustier.",
     "queComerTitle": "Was essen in {nombre}",
     "queComerDesc": "Gastronomie und typische Gerichte von {nombre}.",
+    "tematicaDetalleTitle": "{titulo} in {pueblo}",
     "tematicaDetalleDesc": "{titulo} in {pueblo}.",
     "comunidadTitle": "{nombre} – Schöne Dörfer",
     "comunidadDesc": "Schönste Dörfer in {nombre}. Entdecken Sie die zertifizierten Dörfer.",
