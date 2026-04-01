@@ -1600,6 +1600,9 @@
   },
   "seo": {
     "siteNameSuffix": " - As aldeias mais bonitas de Espanha",
+    "siteName": "As Aldeias Mais Bonitas de Espanha",
+    "puebloTitleSuffix": "Bela aldeia de Espanha",
+    "puebloDescription": "Descubra {nombre}{provincia}, uma das aldeias mais bonitas de Espanha. Informações, mapas, experiências e rotas.",
     "contactTitle": "Contacto",
     "contactDescription": "Contactar a associação Los Pueblos Más Bonitos de España. E-mail, telefone e formulário de contacto.",
     "mapTitle": "Mapa interativo",

@@ -1600,6 +1600,9 @@
   },
   "seo": {
     "siteNameSuffix": " - I villaggi più belli della Spagna",
+    "siteName": "I Borghi Più Belli della Spagna",
+    "puebloTitleSuffix": "Bel borgo della Spagna",
+    "puebloDescription": "Scopri {nombre}{provincia}, uno dei borghi più belli della Spagna. Informazioni, mappe, esperienze e itinerari.",
     "contactTitle": "Contatto",
     "contactDescription": "Contattare l'associazione Los Pueblos Más Bonitos de España. Email, telefono e modulo di contatto.",
     "mapTitle": "Mappa interattiva",

@@ -1640,6 +1640,9 @@
   },
   "seo": {
     "siteNameSuffix": " – Los Pueblos Más Bonitos de España",
+    "siteName": "Los Pueblos Más Bonitos de España",
+    "puebloTitleSuffix": "Pueblo Bonito de España",
+    "puebloDescription": "Descubre {nombre}{provincia}, uno de los pueblos más bonitos de España. Información, mapas, experiencias y rutas.",
     "contactTitle": "Contacto",
     "contactDescription": "Contacta con la asociación Los Pueblos Más Bonitos de España. Email, teléfono y formulario de contacto.",
     "mapTitle": "Mapa interactivo",

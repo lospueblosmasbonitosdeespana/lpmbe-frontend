@@ -1600,6 +1600,9 @@
   },
   "seo": {
     "siteNameSuffix": " – Els pobles més bonics d'Espanya",
+    "siteName": "Els Pobles Més Bonics d'Espanya",
+    "puebloTitleSuffix": "Poble bonic d'Espanya",
+    "puebloDescription": "Descobreix {nombre}{provincia}, un dels pobles més bonics d'Espanya. Informació, mapes, experiències i rutes.",
     "contactTitle": "Contacte",
     "contactDescription": "Contacta amb l'associació Los Pueblos Más Bonitos de España (Els pobles més bonics d'Espanya). Correu electrònic, telèfon i formulari de contacte.",
     "mapTitle": "Mapa interactiu",

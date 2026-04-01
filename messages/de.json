@@ -1600,6 +1600,9 @@
   },
   "seo": {
     "siteNameSuffix": " - Die schönsten Dörfer Spaniens",
+    "siteName": "Die Schönsten Dörfer Spaniens",
+    "puebloTitleSuffix": "Schönes Dorf Spaniens",
+    "puebloDescription": "Entdecken Sie {nombre}{provincia}, eines der schönsten Dörfer Spaniens. Informationen, Karten, Erlebnisse und Routen.",
     "contactTitle": "Kontakt",
     "contactDescription": "Kontaktieren Sie den Verein Los Pueblos Más Bonitos de España. E-Mail, Telefon und Kontaktformular.",
     "mapTitle": "Interaktive Karte",

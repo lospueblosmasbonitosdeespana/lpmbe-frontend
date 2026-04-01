@@ -19,11 +19,10 @@ const PUEBLOS_TITLE: Record<string, string> = {
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
-  const localeSuffix = locale === 'es' ? '' : ` (${locale.toUpperCase()})`;
   const t = await getTranslations("seo");
   const path = "/pueblos";
-  const title = `${PUEBLOS_TITLE[locale] ?? PUEBLOS_TITLE.es}${localeSuffix}`;
-  const description = `${t("pueblosListDescription")}${localeSuffix}`;
+  const title = PUEBLOS_TITLE[locale] ?? PUEBLOS_TITLE.es;
+  const description = t("pueblosListDescription");
   const canonicalUrl = getCanonicalUrl(path, locale);
   return {
     title,

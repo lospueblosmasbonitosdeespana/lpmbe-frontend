@@ -1600,6 +1600,9 @@
   },
   "seo": {
     "siteNameSuffix": " - The Most Beautiful Villages in Spain",
+    "siteName": "The Most Beautiful Villages of Spain",
+    "puebloTitleSuffix": "Beautiful Village of Spain",
+    "puebloDescription": "Discover {nombre}{provincia}, one of the most beautiful villages in Spain. Information, maps, experiences and routes.",
     "contactTitle": "Contact",
     "contactDescription": "Contact with the association The Most Beautiful Villages of Spain. Email, telephone and contact form.",
     "mapTitle": "Interactive map",

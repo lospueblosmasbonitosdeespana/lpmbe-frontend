@@ -300,8 +300,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
-  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
   const path = `/pueblos/${slug}`;
+  const tSeo = await getTranslations("seo");
 
   let name = slugToTitle(slug) || "Pueblo";
   let provincia = "";
@@ -311,11 +311,16 @@ export async function generateMetadata({
     if (pueblo?.provincia) provincia = pueblo.provincia;
   } catch {}
 
-  const titleBase = provincia
-    ? `${name}, ${provincia} | Los Pueblos Más Bonitos de España`
-    : `${name} | Los Pueblos Más Bonitos de España`;
-  const title = seoTitle(`${titleBase}${localeSuffix}`);
-  const description = seoDescription(`Descubre ${name}${provincia ? `, ${provincia}` : ""}, uno de los pueblos más bonitos de España. Información, mapas, experiencias y rutas.${localeSuffix}`);
+  const provinciaStr = provincia ? `, ${provincia}` : "";
+  const siteName = tSeo("siteName");
+  const titleBase = `${name}${provinciaStr} | ${siteName}`;
+  const title = seoTitle(titleBase);
+  const description = seoDescription(
+    tSeo("puebloDescription", {
+      nombre: name,
+      provincia: provinciaStr,
+    })
+  );
 
   return {
     title,

@@ -1600,6 +1600,9 @@
   },
   "seo": {
     "siteNameSuffix": " - Les plus beaux villages d'Espagne",
+    "siteName": "Les Plus Beaux Villages d'Espagne",
+    "puebloTitleSuffix": "Beau village d'Espagne",
+    "puebloDescription": "Découvrez {nombre}{provincia}, l'un des plus beaux villages d'Espagne. Informations, cartes, expériences et itinéraires.",
     "contactTitle": "Contact",
     "contactDescription": "Contacter l'association Los Pueblos Más Bonitos de España. Courriel, téléphone et formulaire de contact.",
     "mapTitle": "Carte interactive",
