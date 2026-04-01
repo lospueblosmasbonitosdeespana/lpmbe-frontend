@@ -25,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const description = t("pueblosListDescription");
   const canonicalUrl = getCanonicalUrl(path, locale);
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: {
       canonical: canonicalUrl,

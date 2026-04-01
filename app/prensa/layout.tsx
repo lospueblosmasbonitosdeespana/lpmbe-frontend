@@ -28,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = seoTitle(PRENSA_TITLE[locale] ?? PRENSA_TITLE.es);
   const description = seoDescription(PRENSA_DESC[locale] ?? PRENSA_DESC.es);
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: {
       canonical: getCanonicalUrl(path, locale),

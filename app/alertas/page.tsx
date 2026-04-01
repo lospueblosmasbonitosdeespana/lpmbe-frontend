@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = "/alertas";
 
   return {
-    title: `${t("alertasPageTitle")} — Los Pueblos Más Bonitos de España`,
+    title: { absolute: `${t("alertasPageTitle")} — Los Pueblos Más Bonitos de España` },
     description: t("alertasPageDesc"),
     alternates: {
       canonical: getCanonicalUrl(path, locale),
