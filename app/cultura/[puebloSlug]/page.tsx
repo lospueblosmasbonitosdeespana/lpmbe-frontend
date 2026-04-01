@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, getLocaleFromRequestHeaders, type SupportedLocale } from "@/lib/seo";
-import { CATEGORY_LABELS, CATEGORY_API_KEYS, getPaginasTematicasByPueblo, slugify, slugToTitle } from "@/app/_lib/tematica/tematica-helpers";
+import { CATEGORY_API_KEYS, getPaginasTematicasByPueblo, slugify, slugToTitle } from "@/app/_lib/tematica/tematica-helpers";
 import { TematicaListPageUI } from "@/app/_lib/tematica/TematicaPageComponents";
 
 export const dynamic = "force-dynamic";
@@ -12,16 +13,18 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
   const { puebloSlug } = await params;
   const h = await headers();
   const locale = getLocaleFromRequestHeaders(h);
-  const label = CATEGORY_LABELS[SLUG]?.[locale] ?? CATEGORY_LABELS[SLUG].es;
+  const tSeo = await getTranslations("seo");
   const puebloNombre = slugToTitle(puebloSlug);
   const path = `/${SLUG}/${puebloSlug}`;
+  const title = seoTitle(tSeo("culturaTitle", { nombre: puebloNombre }));
+  const description = seoDescription(tSeo("culturaDesc", { nombre: puebloNombre }));
   return {
-    title: seoTitle(`${label} en ${puebloNombre}`),
-    description: seoDescription(`Descubre la ${label.toLowerCase()} de ${puebloNombre}. Los Pueblos Más Bonitos de España.`),
+    title,
+    description,
     alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) },
     openGraph: {
-      title: seoTitle(`${label} en ${puebloNombre}`),
-      description: seoDescription(`Descubre la ${label.toLowerCase()} de ${puebloNombre}. Los Pueblos Más Bonitos de España.`),
+      title,
+      description,
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
     },

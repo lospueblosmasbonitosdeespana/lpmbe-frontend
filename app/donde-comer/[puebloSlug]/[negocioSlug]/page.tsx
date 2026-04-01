@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import {
   getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription,
   getLocaleFromRequestHeaders, type SupportedLocale,
@@ -18,16 +19,18 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
   const { puebloSlug, negocioSlug } = await params;
   const h = await headers();
   const locale = getLocaleFromRequestHeaders(h);
-  const label = CLUB_PAGE_LABELS[ROUTE_SLUG]?.[locale] ?? CLUB_PAGE_LABELS[ROUTE_SLUG].es;
+  const tSeo = await getTranslations("seo");
   const negocioNombre = slugToTitle(negocioSlug);
   const puebloNombre = slugToTitle(puebloSlug);
   const path = `/${ROUTE_SLUG}/${puebloSlug}/${negocioSlug}`;
+  const title = seoTitle(tSeo("dondeNegocioTitle", { negocio: negocioNombre, pueblo: puebloNombre }));
+  const description = seoDescription(tSeo("dondeNegocioDesc", { negocio: negocioNombre, pueblo: puebloNombre }));
   return {
-    title: seoTitle(`${negocioNombre} - ${label} en ${puebloNombre}`),
-    description: seoDescription(`${negocioNombre} en ${puebloNombre}. ${label}. Los Pueblos Más Bonitos de España.`),
+    title,
+    description,
     alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) },
     robots: { index: true, follow: true },
-    openGraph: { title: seoTitle(`${negocioNombre} - ${label} en ${puebloNombre}`), type: "website" },
+    openGraph: { title, type: "website" },
   };
 }
 

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, getLocaleFromRequestHeaders, type SupportedLocale } from "@/lib/seo";
-import { CATEGORY_LABELS, CATEGORY_API_KEYS, getPaginasTematicasByPueblo, slugify, slugToTitle } from "@/app/_lib/tematica/tematica-helpers";
+import { CATEGORY_API_KEYS, getPaginasTematicasByPueblo, slugify, slugToTitle } from "@/app/_lib/tematica/tematica-helpers";
 import { TematicaListPageUI } from "@/app/_lib/tematica/TematicaPageComponents";
 
 export const dynamic = "force-dynamic";
@@ -13,15 +14,17 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
   const { puebloSlug } = await params;
   const h = await headers();
   const locale = getLocaleFromRequestHeaders(h);
-  const label = CATEGORY_LABELS[SLUG]?.[locale] ?? CATEGORY_LABELS[SLUG].es;
+  const tSeo = await getTranslations("seo");
   const puebloNombre = slugToTitle(puebloSlug);
   const path = `/${URL_SLUG}/${puebloSlug}`;
+  const title = seoTitle(tSeo("queComerTitle", { nombre: puebloNombre }));
+  const description = seoDescription(tSeo("queComerDesc", { nombre: puebloNombre }));
   return {
-    title: seoTitle(`${label} en ${puebloNombre}`),
-    description: seoDescription(`Dónde comer en ${puebloNombre}. Descubre la ${label.toLowerCase()}, platos típicos y restaurantes. Los Pueblos Más Bonitos de España.`),
+    title,
+    description,
     alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) },
     robots: { index: true, follow: true },
-    openGraph: { title: seoTitle(`${label} en ${puebloNombre}`), type: "website" },
+    openGraph: { title, type: "website" },
   };
 }
 
