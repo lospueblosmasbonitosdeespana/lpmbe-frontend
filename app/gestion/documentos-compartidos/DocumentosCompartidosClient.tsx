@@ -84,11 +84,11 @@ function LogoCard({ logo }: { logo: LogoAsociacion }) {
           <img src={logo.url} alt={logo.nombre} className="h-8 w-8 object-contain" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-semibold text-sm text-foreground">{logo.nombre}</p>
-          {logo.etiqueta && <p className="mt-0.5 text-xs text-muted-foreground">{logo.etiqueta}</p>}
+          <p className="font-semibold text-base text-foreground">{logo.nombre}</p>
+          {logo.etiqueta && <p className="mt-0.5 text-sm text-muted-foreground">{logo.etiqueta}</p>}
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-            <span className="rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">LPBME</span>
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">Logo</span>
+            <span className="rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">LPBME</span>
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">Logo</span>
           </div>
         </div>
         <ChevronIcon open={open} />
@@ -136,18 +136,18 @@ function DocCard({ doc }: { doc: DocumentoItem }) {
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-semibold text-sm text-foreground leading-tight">{doc.nombre}</p>
-          {doc.descripcion && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{doc.descripcion}</p>}
+          <p className="font-semibold text-base text-foreground leading-tight">{doc.nombre}</p>
+          {doc.descripcion && <p className="mt-0.5 text-sm text-muted-foreground line-clamp-1">{doc.descripcion}</p>}
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             {doc.fuente === 'ASOCIACION' ? (
-              <span className="rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">LPBME</span>
+              <span className="rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">LPBME</span>
             ) : doc.pueblo && (
-              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-medium text-slate-600">{doc.pueblo.nombre}</span>
+              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">{doc.pueblo.nombre}</span>
             )}
-            <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${TIPO_COLORS[doc.tipo]}`}>{TIPO_LABELS[doc.tipo]}</span>
-            <span className="text-[10px] text-muted-foreground/70">{new Date(doc.createdAt).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${TIPO_COLORS[doc.tipo]}`}>{TIPO_LABELS[doc.tipo]}</span>
+            <span className="text-[11px] text-muted-foreground/70">{new Date(doc.createdAt).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
             {tieneMultiples && (
-              <span className="rounded-full bg-gradient-to-r from-violet-100 to-violet-50 px-2 py-0.5 text-[10px] font-bold text-violet-600 ring-1 ring-violet-200/60">
+              <span className="rounded-full bg-gradient-to-r from-violet-100 to-violet-50 px-2 py-0.5 text-[11px] font-bold text-violet-600 ring-1 ring-violet-200/60">
                 {todosLosArchivos.length} archivos
               </span>
             )}
@@ -256,27 +256,27 @@ export default function DocumentosCompartidosClient() {
   const hasActiveFilters = query || tipoFilter !== 'TODOS' || fuenteFilter !== 'TODOS' || temaFilter !== 'TODOS';
 
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8 space-y-8">
       {/* ── Hero header ── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-600 via-amber-500 to-orange-500 p-8 text-white shadow-xl shadow-amber-200/40">
-        <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-amber-300/20 blur-3xl" />
-        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative overflow-hidden rounded-3xl p-8 sm:p-10 text-white shadow-xl" style={{ background: 'linear-gradient(135deg, #a0705a 0%, #b8856d 40%, #c49a82 100%)' }}>
+        <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/8 blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-white/6 blur-3xl" />
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm shadow-inner">
+            <div className="flex items-center gap-4">
+              <div className="flex h-13 w-13 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm shadow-inner">
                 <svg className="h-7 w-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M4 19.5A2.5 2.5 0 016.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Biblioteca compartida</h1>
+              <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">Biblioteca compartida</h1>
             </div>
-            <p className="mt-2 max-w-xl text-sm text-white/80 leading-relaxed">
+            <p className="mt-3 max-w-xl text-base text-white/75 leading-relaxed">
               Papelería, ordenanzas, logotipos y documentación compartida entre los ayuntamientos y la asociación. Filtra, busca y descarga lo que necesites.
             </p>
           </div>
           <button type="button" onClick={fetchDocs}
-            className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-white/20 backdrop-blur-sm px-4 py-2.5 text-sm font-semibold text-white ring-1 ring-white/30 transition-all hover:bg-white/30 hover:ring-white/50 active:scale-95 shadow-sm">
+            className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-white/15 backdrop-blur-sm px-5 py-2.5 text-sm font-semibold text-white ring-1 ring-white/25 transition-all hover:bg-white/25 hover:ring-white/40 active:scale-95 shadow-sm">
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             Actualizar
           </button>
@@ -297,7 +297,7 @@ export default function DocumentosCompartidosClient() {
                 <span className="text-2xl">{s.icon}</span>
                 <p className="text-3xl font-bold text-foreground">{s.value}</p>
               </div>
-              <p className="mt-2 text-xs font-medium text-muted-foreground">{s.label}</p>
+              <p className="mt-2 text-sm font-medium text-muted-foreground">{s.label}</p>
             </div>
           ))}
         </div>
@@ -306,7 +306,7 @@ export default function DocumentosCompartidosClient() {
       {/* ── Buscador + filtros ── */}
       <div className="rounded-2xl bg-white p-5 ring-1 ring-border/60 shadow-sm space-y-4">
         <div className="relative">
-          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-500">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-lg bg-stone-100 text-stone-500">
             <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
             </svg>
@@ -316,7 +316,7 @@ export default function DocumentosCompartidosClient() {
             placeholder="Buscar por nombre, pueblo, tipo, temática…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full rounded-xl border-0 bg-slate-50 py-3 pl-14 pr-4 text-sm font-medium placeholder:text-muted-foreground/50 ring-1 ring-slate-200 transition-all focus:bg-white focus:ring-2 focus:ring-amber-400 focus:outline-none"
+            className="w-full rounded-xl border-0 bg-slate-50 py-3.5 pl-14 pr-4 text-base font-medium placeholder:text-muted-foreground/50 ring-1 ring-slate-200 transition-all focus:bg-white focus:ring-2 focus:ring-stone-400 focus:outline-none"
           />
         </div>
 
@@ -327,7 +327,8 @@ export default function DocumentosCompartidosClient() {
             const active = tipoFilter === t;
             return (
               <button key={t} type="button" onClick={() => setTipoFilter(t as typeof tipoFilter)}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 active:scale-95 ${active ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm shadow-amber-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'}`}>
+                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 active:scale-95 ${active ? 'text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'}`}
+                style={active ? { background: 'linear-gradient(to right, #a0705a, #b8856d)' } : undefined}>
                 {t === 'TODOS' ? `Todos (${allDocs.length})` : `${TIPO_LABELS[t as TipoDoc]} (${stats.porTipo[t] ?? 0})`}
               </button>
             );
@@ -341,7 +342,7 @@ export default function DocumentosCompartidosClient() {
             const active = fuenteFilter === v;
             return (
               <button key={v} type="button" onClick={() => setFuenteFilter(v)}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 active:scale-95 ${active ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-sm shadow-blue-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'}`}>
+                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 active:scale-95 ${active ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-sm shadow-blue-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'}`}>
                 {l}
               </button>
             );
@@ -353,12 +354,12 @@ export default function DocumentosCompartidosClient() {
           <div className="flex flex-wrap gap-2 items-center">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Temática</span>
             <button type="button" onClick={() => setTemaFilter('TODOS')}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 active:scale-95 ${temaFilter === 'TODOS' ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-sm shadow-violet-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 active:scale-95 ${temaFilter === 'TODOS' ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-sm shadow-violet-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
               Todas
             </button>
             {ALL_TEMAS.filter((t) => (ordenanzasPorTema[t]?.length ?? 0) > 0 || temaFilter === t).map((t) => (
               <button key={t} type="button" onClick={() => setTemaFilter(t === temaFilter ? 'TODOS' : t)}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 active:scale-95 ${temaFilter === t ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-sm shadow-violet-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 active:scale-95 ${temaFilter === t ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-sm shadow-violet-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
                 {TEMA_ORDENANZA_ICONS[t]} {TEMA_ORDENANZA_LABELS[t]}
               </button>
             ))}
@@ -380,8 +381,8 @@ export default function DocumentosCompartidosClient() {
       {loading && (
         <div className="flex flex-col items-center gap-3 py-16">
           <div className="relative h-12 w-12">
-            <div className="absolute inset-0 rounded-full border-4 border-amber-200" />
-            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-amber-500 animate-spin" />
+            <div className="absolute inset-0 rounded-full border-4 border-stone-200" />
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-stone-500 animate-spin" />
           </div>
           <p className="text-sm font-medium text-muted-foreground">Cargando biblioteca...</p>
         </div>
@@ -417,8 +418,8 @@ export default function DocumentosCompartidosClient() {
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm shadow-blue-200">
               <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
             </div>
-            <h2 className="text-lg font-bold text-foreground">Logos de la Asociación</h2>
-            <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-bold text-blue-700">{logosFiltered.length}</span>
+            <h2 className="text-xl font-bold text-foreground">Logos de la Asociación</h2>
+            <span className="rounded-full bg-blue-100 px-3 py-0.5 text-xs font-bold text-blue-700">{logosFiltered.length}</span>
           </div>
           <div className="flex flex-col gap-2">
             {logosFiltered.map((logo) => <LogoCard key={logo.id} logo={logo} />)}
@@ -438,8 +439,8 @@ export default function DocumentosCompartidosClient() {
                   <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-sm shadow-emerald-200">
                     <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                   </div>
-                  <h2 className="text-lg font-bold text-foreground">{TIPO_LABELS[tipo]}</h2>
-                  <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${TIPO_COLORS[tipo]}`}>{grupo.length}</span>
+                  <h2 className="text-xl font-bold text-foreground">{TIPO_LABELS[tipo]}</h2>
+                  <span className={`rounded-full border px-3 py-0.5 text-xs font-bold ${TIPO_COLORS[tipo]}`}>{grupo.length}</span>
                 </div>
                 <div className="flex flex-col gap-2">
                   {grupo.map((doc) => <DocCard key={doc.id} doc={doc} />)}
@@ -458,8 +459,8 @@ export default function DocumentosCompartidosClient() {
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 shadow-sm shadow-amber-200">
                 <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
               </div>
-              <h2 className="text-lg font-bold text-foreground">Ordenanzas</h2>
-              <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-700">{docsOrdenanza.length}</span>
+              <h2 className="text-xl font-bold text-foreground">Ordenanzas</h2>
+              <span className="rounded-full bg-amber-100 px-3 py-0.5 text-xs font-bold text-amber-700">{docsOrdenanza.length}</span>
             </div>
             {temaFilter === 'TODOS' && (
               <div className="flex rounded-xl bg-slate-100 p-1 text-xs ring-1 ring-slate-200/60">
@@ -484,8 +485,8 @@ export default function DocumentosCompartidosClient() {
                     <div className="flex items-center gap-3 bg-gradient-to-r from-amber-50 via-amber-50/80 to-orange-50/50 px-6 py-4 border-b border-amber-100">
                       <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-xl shadow-sm ring-1 ring-amber-200/60">{TEMA_ORDENANZA_ICONS[tema]}</span>
                       <div>
-                        <h3 className="font-bold text-sm text-foreground">{TEMA_ORDENANZA_LABELS[tema]}</h3>
-                        <p className="text-xs text-amber-600/70 font-medium">{grupo.length} ordenanza{grupo.length !== 1 ? 's' : ''}</p>
+                        <h3 className="font-bold text-base text-foreground">{TEMA_ORDENANZA_LABELS[tema]}</h3>
+                        <p className="text-sm text-amber-600/70 font-medium">{grupo.length} ordenanza{grupo.length !== 1 ? 's' : ''}</p>
                       </div>
                     </div>
                     <div className="flex flex-col gap-2 bg-white p-4">
