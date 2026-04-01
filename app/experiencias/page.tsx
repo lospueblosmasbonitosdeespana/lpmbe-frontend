@@ -1,13 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getHomeConfig } from "@/lib/homeApi";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
-  metaLocaleLead,
   seoDescription,
   seoTitle,
   uniqueH1ForLocale,
@@ -62,32 +61,24 @@ async function getPueblosByTematica(
   }
 }
 
-const EXP_DESC: Record<string, string> = {
-  es: 'Descubre los pueblos más bonitos de España por temática: gastronomía, naturaleza, cultura, en familia y petfriendly.',
-  en: 'Discover Spain\'s most beautiful villages by theme: gastronomy, nature, culture, family and pet-friendly.',
-  fr: 'Découvrez les plus beaux villages d\'Espagne par thème : gastronomie, nature, culture, en famille et petfriendly.',
-  de: 'Entdecken Sie Spaniens schönste Dörfer nach Thema: Gastronomie, Natur, Kultur, Familie und tierfreundlich.',
-  pt: 'Descubra as aldeias mais bonitas de Espanha por tema: gastronomia, natureza, cultura, família e petfriendly.',
-  it: 'Scopri i borghi più belli della Spagna per tema: gastronomia, natura, cultura, famiglia e petfriendly.',
-  ca: 'Descobreix els pobles més bonics d\'Espanya per temàtica: gastronomia, natura, cultura, família i petfriendly.',
-};
-
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
+  const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations("seo");
   const path = "/experiencias";
-  const desc = EXP_DESC[locale] ?? `${metaLocaleLead(locale)}${EXP_DESC.es}`;
+  const title = seoTitle(tSeo("experienciasListTitle"));
+  const description = seoDescription(tSeo("experienciasListDesc"));
   return {
-    title: seoTitle(`Experiencias temáticas`),
-    description: seoDescription(desc),
+    title,
+    description,
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: seoTitle(`Experiencias temáticas`),
-      description: seoDescription(desc),
-      url: getCanonicalUrl(path, locale as SupportedLocale),
-      locale: getOGLocale(locale as SupportedLocale),
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
     },
     robots: { index: true, follow: true },
   };

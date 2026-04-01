@@ -3,8 +3,15 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getApiUrl } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
-import { getLocale } from "next-intl/server";
+import {
+  seoTitle,
+  seoDescription,
+  getCanonicalUrl,
+  getLocaleAlternates,
+  getOGLocale,
+  type SupportedLocale,
+} from "@/lib/seo";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Title, Lead, Headline } from "@/app/components/ui/typography";
@@ -185,14 +192,16 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations("seo");
   const recurso = await getRecursoBySlug(slug, locale);
   if (!recurso) return { title: "Recurso no encontrado" };
 
-  const title = `${recurso.nombre} – Recursos turísticos`;
+  const puebloName = recurso.pueblo?.nombre ?? recurso.provincia ?? recurso.comunidad ?? "España";
+  const title = seoTitle(tSeo("recursoDetalleTitle", { nombre: recurso.nombre }));
   const descText = recurso.descripcion ? stripHtml(recurso.descripcion) : "";
   const description = descText
-    ? cut(descText, 160)
-    : `Recurso turístico recomendado por la Asociación en ${recurso.provincia ?? recurso.comunidad ?? "España"}.`;
+    ? seoDescription(cut(descText, 160))
+    : seoDescription(tSeo("recursoDetalleDesc", { nombre: recurso.nombre, pueblo: puebloName }));
   const path = `/recursos/${recurso.slug ?? slug}`;
   const heroImage = recurso.fotoUrl?.trim() || null;
 
@@ -209,6 +218,7 @@ export async function generateMetadata({
       description,
       url: getCanonicalUrl(path, locale),
       type: "article",
+      locale: getOGLocale(locale),
       images: heroImage ? [{ url: heroImage, alt: recurso.nombre }] : undefined,
     },
     twitter: {

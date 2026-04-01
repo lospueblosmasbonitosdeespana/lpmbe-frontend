@@ -8,29 +8,28 @@ import {
   seoDescription,
   type SupportedLocale,
 } from "@/lib/seo";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
+  const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations("seo");
   const path = "/para-negocios";
+  const title = seoTitle(tSeo("paraNegociosTitle"));
+  const description = seoDescription(tSeo("paraNegociosDesc"));
   return {
-    title: seoTitle("Planes para Negocios — Club de Amigos"),
-    description: seoDescription(
-      "Haz crecer tu negocio con Los Pueblos Más Bonitos de España. Planes desde gratuito hasta Premium con galería, contacto visible, badge y landing personalizada."
-    ),
+    title,
+    description,
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: seoTitle("Planes para Negocios — Club de Amigos"),
-      description: seoDescription(
-        "Haz crecer tu negocio con Los Pueblos Más Bonitos de España. Planes desde gratuito hasta Premium con galería, contacto visible, badge y landing personalizada."
-      ),
-      url: getCanonicalUrl(path, locale as SupportedLocale),
-      locale: getOGLocale(locale as SupportedLocale),
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
     },
     robots: { index: true, follow: true },
   };

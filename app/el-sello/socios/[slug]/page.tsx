@@ -24,23 +24,24 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const locale = await getLocale();
+  const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations('seo');
   const name = slugToTitle(slug) || 'Socio';
   const path = `/el-sello/socios/${slug}`;
-  const title = seoTitle(`${name} · Socios · ${slug}`);
-  const description = seoDescription(`${name}, socio y colaborador de Los Pueblos Más Bonitos de España.`);
+  const title = seoTitle(tSeo('socioTitle', { nombre: name }));
+  const description = seoDescription(tSeo('socioDesc', { nombre: name }));
   return {
     title,
     description,
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
       title,
       description,
-      url: getCanonicalUrl(path, locale as SupportedLocale),
-      locale: getOGLocale(locale as SupportedLocale),
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
     },
   };
 }

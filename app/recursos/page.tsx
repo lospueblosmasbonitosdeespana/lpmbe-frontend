@@ -3,8 +3,11 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import {
+  seoTitle,
+  seoDescription,
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   type SupportedLocale,
 } from "@/lib/seo";
 import { Container } from "@/app/components/ui/container";
@@ -16,21 +19,23 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
+  const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations("seo");
   const path = "/recursos";
-  const title = "Recursos turísticos";
-  const description =
-    "Experiencias y lugares únicos en nuestros pueblos. Descuentos exclusivos para socios del Club de Amigos.";
+  const title = seoTitle(tSeo("recursosTitle"));
+  const description = seoDescription(tSeo("recursosDesc"));
   return {
     title,
     description,
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
       title,
       description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
     },
   };
 }

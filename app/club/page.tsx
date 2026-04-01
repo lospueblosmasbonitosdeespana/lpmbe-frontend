@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import {
+  seoTitle,
+  seoDescription,
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   type SupportedLocale,
 } from "@/lib/seo";
 import { Container } from "@/app/components/ui/container";
@@ -14,21 +17,23 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
+  const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations("seo");
   const path = "/club";
-  const title = "Club de Amigos";
-  const description =
-    "En pocos días el Club de Amigos será una realidad. Suscríbete a la newsletter y noticias de la asociación.";
+  const title = seoTitle(tSeo("clubListTitle"));
+  const description = seoDescription(tSeo("clubListDesc"));
   return {
     title,
     description,
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
       title,
       description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
     },
   };
 }

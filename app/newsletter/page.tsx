@@ -1,44 +1,35 @@
 import { getApiUrl } from '@/lib/api';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import {
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
-  metaLocaleLead,
   seoDescription,
   seoTitle,
   type SupportedLocale,
 } from '@/lib/seo';
 import { NewsletterPageClient } from './NewsletterPageClient';
 
-const NL_DESC: Record<string, string> = {
-  es: 'Lee nuestras últimas newsletters y suscríbete para recibir novedades de Los Pueblos Más Bonitos de España.',
-  en: 'Read our latest newsletters and subscribe to receive updates from Los Pueblos Más Bonitos de España.',
-  fr: 'Lisez nos dernières newsletters et abonnez-vous pour recevoir les actualités des plus beaux villages d\'Espagne.',
-  de: 'Lesen Sie unsere neuesten Newsletter und abonnieren Sie, um Neuigkeiten zu erhalten.',
-  pt: 'Leia as nossas últimas newsletters e subscreva para receber novidades.',
-  it: 'Leggi le nostre ultime newsletter e iscriviti per ricevere aggiornamenti.',
-  ca: 'Llegeix els nostres últims butlletins i subscriu-te per rebre novetats.',
-};
-
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
+  const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations('seo');
   const path = '/newsletter';
-  const desc = NL_DESC[locale] ?? `${metaLocaleLead(locale)}${NL_DESC.es}`;
+  const title = seoTitle(tSeo('newsletterTitle'));
+  const description = seoDescription(tSeo('newsletterDesc'));
   return {
-    title: seoTitle(`Newsletter`),
-    description: seoDescription(desc),
+    title,
+    description,
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: seoTitle(`Newsletter`),
-      description: seoDescription(desc),
-      url: getCanonicalUrl(path, locale as SupportedLocale),
-      locale: getOGLocale(locale as SupportedLocale),
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
     },
     robots: { index: true, follow: true },
   };

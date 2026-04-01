@@ -4,8 +4,11 @@ import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import {
+  seoTitle,
+  seoDescription,
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   type SupportedLocale,
 } from "@/lib/seo";
 import { fetchWithTimeout } from "@/lib/fetch-safe";
@@ -15,17 +18,23 @@ import { Container } from "@/app/components/ui/container";
 import { Display, Lead } from "@/app/components/ui/typography";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
+  const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations("seo");
   const path = "/pueblos/ultimas-incorporaciones";
-  const title = "Certificaciones por año";
-  const description =
-    "Descubre todos los pueblos certificados por la red de Los Pueblos Más Bonitos de España, año por año, desde 2013.";
+  const title = seoTitle(tSeo("certificacionesTitle"));
+  const description = seoDescription(tSeo("certificacionesDesc"));
   return {
     title,
     description,
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
     },
   };
 }

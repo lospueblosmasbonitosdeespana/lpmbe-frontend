@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
@@ -17,7 +17,6 @@ import {
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
-  metaLocaleLead,
   seoDescription,
   seoTitle,
   type SupportedLocale,
@@ -26,24 +25,23 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
+  const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations("seo");
   const path = "/redes-sociales";
+  const title = seoTitle(tSeo("redesSocialesTitle"));
+  const description = seoDescription(tSeo("redesSocialesDesc"));
   return {
-    title: seoTitle(`Redes sociales`),
-    description: seoDescription(
-      `${metaLocaleLead(locale as SupportedLocale)}Síguenos en Instagram, Facebook, X, TikTok y YouTube. Colaboraciones con creadores e influencers. Comunidad Los Pueblos Más Bonitos de España.`,
-    ),
+    title,
+    description,
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: seoTitle(`Redes sociales`),
-      description: seoDescription(
-        `${metaLocaleLead(locale as SupportedLocale)}Síguenos en Instagram, Facebook, X, TikTok y YouTube. Colaboraciones con creadores e influencers. Comunidad Los Pueblos Más Bonitos de España.`,
-      ),
-      url: getCanonicalUrl(path, locale as SupportedLocale),
-      locale: getOGLocale(locale as SupportedLocale),
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
     },
   };
 }

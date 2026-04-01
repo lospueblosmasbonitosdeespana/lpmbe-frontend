@@ -1,12 +1,11 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { getApiUrl } from '@/lib/api';
 import {
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
-  metaLocaleLead,
   seoDescription,
   seoTitle,
   type SupportedLocale,
@@ -15,32 +14,24 @@ import {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const MX_DESC: Record<string, string> = {
-  es: 'Descubre experiencias únicas organizadas por los pueblos más bonitos de España.',
-  en: 'Discover unique experiences organised by the most beautiful villages of Spain.',
-  fr: 'Découvrez des expériences uniques organisées par les plus beaux villages d\'Espagne.',
-  de: 'Entdecken Sie einzigartige Erlebnisse in den schönsten Dörfern Spaniens.',
-  pt: 'Descubra experiências únicas organizadas pelos mais belos vilarejos de Espanha.',
-  it: 'Scopri esperienze uniche organizzate dai borghi più belli della Spagna.',
-  ca: 'Descobreix experiències úniques organitzades pels pobles més bonics d\'Espanya.',
-};
-
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
+  const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations('seo');
   const path = '/multiexperiencias';
-  const desc = MX_DESC[locale] ?? `${metaLocaleLead(locale)}${MX_DESC.es}`;
+  const title = seoTitle(tSeo('multiexperienciasListTitle'));
+  const description = seoDescription(tSeo('multiexperienciasListDesc'));
   return {
-    title: seoTitle(`Multiexperiencias`),
-    description: seoDescription(desc),
+    title,
+    description,
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: seoTitle(`Multiexperiencias`),
-      description: seoDescription(desc),
-      url: getCanonicalUrl(path, locale as SupportedLocale),
-      locale: getOGLocale(locale as SupportedLocale),
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
     },
   };
 }
