@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
 import {
   getCanonicalUrl,
@@ -8,7 +8,6 @@ import {
   getOGLocale,
   seoDescription,
   seoTitle,
-  slugDisambiguatorForTitle,
   type SupportedLocale,
 } from "@/lib/seo";
 
@@ -21,13 +20,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
+  const tSeo = await getTranslations("seo");
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/club`;
-  const slugDis = slugDisambiguatorForTitle(slug);
-  const title = seoTitle(`Club de Amigos · ${name}${slugDis}`);
-  const description = seoDescription(
-    `Descubre todo lo que ${name} ofrece a los socios del Club de Amigos: descuentos, experiencias, restaurantes, hoteles y más.`
-  );
+  const title = seoTitle(tSeo("clubTitle", { nombre: name }));
+  const description = seoDescription(tSeo("clubDesc", { nombre: name }));
   return {
     title,
     description,

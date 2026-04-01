@@ -9,7 +9,6 @@ import {
   getOGLocale,
   seoDescription,
   seoTitle,
-  slugDisambiguatorForTitle,
   uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
@@ -24,11 +23,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
+  const tSeo = await getTranslations("seo");
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/videos`;
-  const slugDis = slugDisambiguatorForTitle(slug);
-  const title = seoTitle(`Videos · ${name}${slugDis}`);
-  const description = seoDescription(`Videos y contenidos audiovisuales para descubrir ${name}.`);
+  const title = seoTitle(tSeo("videosTitle", { nombre: name }));
+  const description = seoDescription(tSeo("videosDesc", { nombre: name }));
   return {
     title,
     description,

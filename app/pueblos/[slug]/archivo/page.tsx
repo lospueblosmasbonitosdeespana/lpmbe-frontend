@@ -1,13 +1,14 @@
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import ArchivoPuebloClient from './ArchivoPuebloClient';
 import {
   seoTitle,
   seoDescription,
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   type SupportedLocale,
 } from '@/lib/seo';
 
@@ -47,9 +48,10 @@ export async function generateMetadata({
   }
 
   const locale = await getLocale();
+  const tSeo = await getTranslations('seo');
   const path = `/pueblos/${slug}/archivo`;
-  const title = seoTitle(`Noticias y eventos anteriores de ${pueblo.nombre}`);
-  const description = seoDescription(`Archivo de noticias y eventos pasados de ${pueblo.nombre}. Consulta el historial de actividades y acontecimientos del pueblo.`);
+  const title = seoTitle(tSeo('archivoTitle', { nombre: pueblo.nombre }));
+  const description = seoDescription(tSeo('archivoDesc', { nombre: pueblo.nombre }));
   return {
     title,
     description,
@@ -59,7 +61,9 @@ export async function generateMetadata({
     },
     openGraph: {
       title,
-      description: seoDescription(`Archivo de noticias y eventos pasados de ${pueblo.nombre}.`, 155),
+      description,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
     },
   };
 }

@@ -9,7 +9,6 @@ import {
   seoDescription,
   seoTitle,
   slugToTitle,
-  slugDisambiguatorForTitle,
   uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
@@ -37,11 +36,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
+  const tSeo = await getTranslations("seo");
   const name = slugToTitle(slug) || "Pueblo";
   const path = `/pueblos/${slug}/lugares-de-interes`;
-  const slugDis = slugDisambiguatorForTitle(slug);
-  const title = seoTitle(`Lugares · ${name}${slugDis}`);
-  const description = seoDescription(`Descubre los puntos de interés y lugares que no te puedes perder en ${name}.`);
+  const title = seoTitle(tSeo("lugaresDeInteresTitle", { nombre: name }));
+  const description = seoDescription(tSeo("lugaresDeInteresDesc", { nombre: name }));
   return {
     title,
     description,

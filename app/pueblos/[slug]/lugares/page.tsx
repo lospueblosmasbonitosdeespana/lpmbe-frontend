@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug, getApiUrl } from "@/lib/api";
 import {
   getCanonicalUrl,
@@ -53,11 +53,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
+  const tSeo = await getTranslations("seo");
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
   const safeName = pueblo?.nombre ?? slugToTitle(slug) ?? "Pueblo";
   const path = `/pueblos/${slug}/lugares`;
-  const title = seoTitle(`Lugares a visitar en ${safeName}`);
-  const description = seoDescription(`Puntos de interés, rutas y experiencias para descubrir ${safeName}.`);
+  const title = seoTitle(tSeo("lugaresTitle", { nombre: safeName }));
+  const description = seoDescription(tSeo("lugaresDesc", { nombre: safeName }));
   return {
     title,
     description,

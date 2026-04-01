@@ -1,13 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { AlertTriangle } from "lucide-react";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
-  metaLocaleLead,
   seoDescription,
   seoTitle,
   type SupportedLocale,
@@ -23,6 +22,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations("seo");
   const path = `/pueblos/${slug}/alertas`;
 
   let puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -33,10 +33,8 @@ export async function generateMetadata({
     // fallback
   }
 
-  const title = seoTitle(`Alertas · ${puebloName}`);
-  const description = seoDescription(
-    `${metaLocaleLead(locale)}Alertas activas en ${puebloName}, uno de los pueblos más bonitos de España.`,
-  );
+  const title = seoTitle(tSeo("alertasPuebloTitle", { nombre: puebloName }));
+  const description = seoDescription(tSeo("alertasPuebloDesc", { nombre: puebloName }));
 
   return {
     title,
