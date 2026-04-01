@@ -12,7 +12,6 @@ import SmartCoverImage from '@/app/components/SmartCoverImage';
 import { injectImgAlt } from '@/app/_lib/html';
 
 const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'] as const;
-type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 function isHtmlContent(content: string): boolean {
   const trimmed = content.trimStart();
