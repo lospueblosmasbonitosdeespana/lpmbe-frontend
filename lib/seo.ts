@@ -109,10 +109,22 @@ export function seoTitle(title: string): string {
   if (!normalized) return "Contenido";
   if (normalized.length <= MAX_PAGE_TITLE) return normalized;
   if (MAX_PAGE_TITLE <= 8) return normalized.slice(0, MAX_PAGE_TITLE - 1).trimEnd() + "…";
-  // Preserve a meaningful tail to reduce duplicates on long, similar prefixes.
   const headLen = Math.ceil((MAX_PAGE_TITLE - 1) * 0.6);
   const tailLen = (MAX_PAGE_TITLE - 1) - headLen;
   return `${normalized.slice(0, headLen).trimEnd()}…${normalized.slice(-tailLen).trimStart()}`;
+}
+
+const MAX_ABSOLUTE_TITLE = 70;
+
+/**
+ * For pages using title: { absolute }, the full title IS the final <title>.
+ * Truncate at 70 chars (no template suffix will be appended).
+ */
+export function seoAbsoluteTitle(title: string): string {
+  const normalized = decodeBasicHtmlEntities(title).replace(/\s+/g, " ").trim();
+  if (!normalized) return SITE_NAME;
+  if (normalized.length <= MAX_ABSOLUTE_TITLE) return normalized;
+  return normalized.slice(0, MAX_ABSOLUTE_TITLE - 1).trimEnd() + "…";
 }
 
 /**

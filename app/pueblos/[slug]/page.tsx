@@ -8,6 +8,7 @@ import {
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
+  seoAbsoluteTitle,
   seoTitle,
   seoDescription,
   slugToTitle,
@@ -314,7 +315,7 @@ export async function generateMetadata({
   const provinciaStr = provincia ? `, ${provincia}` : "";
   const siteName = tSeo("siteName");
   const titleBase = `${name}${provinciaStr} | ${siteName}`;
-  const title = seoTitle(titleBase);
+  const title = seoAbsoluteTitle(titleBase);
   const description = seoDescription(
     tSeo("puebloDescription", {
       nombre: name,

@@ -206,13 +206,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry('/planifica/la-noche-romantica', 0.5, 'monthly'),
   ];
 
-  const productoSlugs = await fetchSlugs('/public/tienda/productos?limit=500').catch(() => [] as string[]);
+  const productoSlugs = await fetchSlugs('/products').catch(() => [] as string[]);
   const productos = productoSlugs.map((s) => entry(`/tienda/${s}`, 0.55, 'monthly'));
 
   const recursoSlugs = await fetchSlugs('/public/recursos?limit=500').catch(() => [] as string[]);
   const recursos = recursoSlugs.map((s) => entry(`/recursos/${s}`, 0.45, 'monthly'));
 
-  const socioSlugs = await fetchSlugs('/public/socios?limit=100').catch(() => [] as string[]);
+  const socioSlugs = await fetchSlugs('/public/sello/socios').catch(() => [] as string[]);
   const socios = socioSlugs.map((s) => entry(`/el-sello/socios/${s}`, 0.35, 'monthly'));
 
   const navidadPueblos = pueblosWithImages.map((p) =>

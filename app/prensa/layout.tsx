@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
-import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoAbsoluteTitle, seoDescription, type SupportedLocale } from '@/lib/seo';
 
 const PRENSA_TITLE: Record<string, string> = {
   es: 'Prensa — Los Pueblos Más Bonitos de España',
@@ -25,7 +25,7 @@ const PRENSA_DESC: Record<string, string> = {
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
   const path = '/prensa';
-  const title = seoTitle(PRENSA_TITLE[locale] ?? PRENSA_TITLE.es);
+  const title = seoAbsoluteTitle(PRENSA_TITLE[locale] ?? PRENSA_TITLE.es);
   const description = seoDescription(PRENSA_DESC[locale] ?? PRENSA_DESC.es);
   return {
     title: { absolute: title },

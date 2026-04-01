@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { getApiUrl } from '@/lib/api';
 import AppDownloadActions from './AppDownloadActions.client';
 import { getLocale, getTranslations } from 'next-intl/server';
-import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, SUPPORTED_LOCALES, type SupportedLocale } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoAbsoluteTitle, seoDescription, SUPPORTED_LOCALES, type SupportedLocale } from '@/lib/seo';
 
 const APP_STORE_URL =
   'https://apps.apple.com/es/app/los-pueblos-m%C3%A1s-bonitos-de-esp/id6755147967';
@@ -35,7 +35,7 @@ const PAGE_DESC: Record<string, string> = {
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
   const path = "/app";
-  const title = seoTitle(PAGE_TITLE[locale] ?? PAGE_TITLE.es);
+  const title = seoAbsoluteTitle(PAGE_TITLE[locale] ?? PAGE_TITLE.es);
   const description = seoDescription(PAGE_DESC[locale] ?? PAGE_DESC.es);
   return {
     title: { absolute: title },
