@@ -43,36 +43,53 @@ function FileIcon({ url }: { url: string }) {
 
 function DocCard({ doc }: { doc: DocumentoItem }) {
   const srcLabel = doc.fuente === 'ASOCIACION' ? 'Asociación LPBME' : (doc.pueblo?.nombre ?? '');
+  const todosLosArchivos = [
+    { url: doc.url, nombre: doc.nombre },
+    ...(doc.archivosAdicionales ?? []),
+  ];
+  const tieneMultiples = todosLosArchivos.length > 1;
+
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-border bg-background p-4 transition hover:shadow-sm">
-      <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/60 overflow-hidden">
-        {isImageUrl(doc.url) ? (
-          <img src={doc.url} alt={doc.nombre} className="h-full w-full object-contain" />
-        ) : (
-          <FileIcon url={doc.url} />
-        )}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="font-medium text-sm leading-tight">{doc.nombre}</p>
-        {doc.descripcion && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{doc.descripcion}</p>}
-        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-          {doc.fuente === 'ASOCIACION' ? (
-            <span className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">Asociación LPBME</span>
-          ) : doc.pueblo && (
-            <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">{doc.pueblo.nombre}</span>
+    <div className="flex flex-col gap-0 rounded-xl border border-border bg-background transition hover:shadow-sm overflow-hidden">
+      <div className="flex items-start gap-3 p-4">
+        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/60 overflow-hidden">
+          {isImageUrl(doc.url) ? (
+            <img src={doc.url} alt={doc.nombre} className="h-full w-full object-contain" />
+          ) : (
+            <FileIcon url={doc.url} />
           )}
-          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${TIPO_COLORS[doc.tipo]}`}>{TIPO_LABELS[doc.tipo]}</span>
-          <span className="text-[10px] text-muted-foreground">{new Date(doc.createdAt).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-medium text-sm leading-tight">{doc.nombre}</p>
+          {doc.descripcion && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{doc.descripcion}</p>}
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            {doc.fuente === 'ASOCIACION' ? (
+              <span className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">Asociación LPBME</span>
+            ) : doc.pueblo && (
+              <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">{doc.pueblo.nombre}</span>
+            )}
+            <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${TIPO_COLORS[doc.tipo]}`}>{TIPO_LABELS[doc.tipo]}</span>
+            <span className="text-[10px] text-muted-foreground">{new Date(doc.createdAt).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+          </div>
         </div>
       </div>
-      <a href={doc.url} download target="_blank" rel="noopener noreferrer"
-        title={`Descargar de ${srcLabel}`}
-        className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted">
-        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
-        Descargar
-      </a>
+      {/* Archivos — uno o varios */}
+      <div className={`border-t border-border ${tieneMultiples ? 'divide-y divide-border' : ''}`}>
+        {todosLosArchivos.map((archivo, i) => (
+          <div key={i} className="flex items-center gap-2 px-4 py-2">
+            <FileIcon url={archivo.url} />
+            <span className="flex-1 truncate text-xs text-muted-foreground">{archivo.nombre}</span>
+            <a href={archivo.url} download target="_blank" rel="noopener noreferrer"
+              title={`Descargar ${archivo.nombre}`}
+              className="shrink-0 inline-flex items-center gap-1 rounded border border-border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted">
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              {tieneMultiples ? (i === 0 ? 'Principal' : `Archivo ${i + 1}`) : 'Descargar'}
+            </a>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

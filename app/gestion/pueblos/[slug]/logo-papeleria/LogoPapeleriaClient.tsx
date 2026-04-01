@@ -7,6 +7,7 @@ import {
   TIPO_LABELS,
   TIPO_COLORS,
   TEMA_ORDENANZA_LABELS,
+  ArchivoAdicional,
   DocumentoItem,
   isImageUrl,
   isPdfUrl,
@@ -17,6 +18,24 @@ interface PuebloLogo {
   nombre: string;
   url: string;
   createdAt: string;
+}
+
+function FileIcon({ url }: { url: string }) {
+  if (isImageUrl(url)) return (
+    <svg className="h-5 w-5 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
+    </svg>
+  );
+  if (isPdfUrl(url)) return (
+    <svg className="h-5 w-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="9" y1="15" x2="15" y2="15" />
+    </svg>
+  );
+  return (
+    <svg className="h-5 w-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" />
+    </svg>
+  );
 }
 
 export default function LogoPapeleriaClient({
@@ -49,6 +68,12 @@ export default function LogoPapeleriaClient({
   const [newDocCompartido, setNewDocCompartido] = useState(false);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  // — Archivos adicionales —
+  const [addingFileTo, setAddingFileTo] = useState<number | null>(null);
+  const [uploadingExtraFile, setUploadingExtraFile] = useState(false);
+  const extraFileRef = useRef<HTMLInputElement>(null);
+  const [removingFileIdx, setRemovingFileIdx] = useState<{ docId: number; idx: number } | null>(null);
 
   async function fetchLogos() {
     setLoadingLogos(true);
@@ -155,7 +180,7 @@ export default function LogoPapeleriaClient({
   }
 
   async function handleDeleteDoc(id: number) {
-    if (!confirm('¿Eliminar este documento?')) return;
+    if (!confirm('¿Eliminar este documento y todos sus archivos?')) return;
     setDeletingId(id);
     try {
       const res = await fetch(`/api/admin/documentos-pueblo/${id}`, { method: 'DELETE' });
@@ -163,6 +188,49 @@ export default function LogoPapeleriaClient({
       setDocs((prev) => prev.filter((d) => d.id !== id));
     } catch (e) { alert(e instanceof Error ? e.message : 'Error'); }
     finally { setDeletingId(null); }
+  }
+
+  async function handleAddExtraFile(doc: DocumentoItem, file: File) {
+    setUploadingExtraFile(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'documentos-pueblo');
+      const uploadRes = await fetch('/api/media/upload', { method: 'POST', body: formData });
+      if (!uploadRes.ok) throw new Error('Error subiendo el archivo');
+      const { url } = await uploadRes.json();
+      const nombreArchivo = file.name.replace(/\.[^.]+$/, '');
+      const nuevosArchivos: ArchivoAdicional[] = [
+        ...(doc.archivosAdicionales ?? []),
+        { url, nombre: nombreArchivo },
+      ];
+      const patchRes = await fetch(`/api/admin/documentos-pueblo/${doc.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ archivosAdicionales: nuevosArchivos }),
+      });
+      if (!patchRes.ok) throw new Error('Error guardando el archivo adicional');
+      const updated = await patchRes.json();
+      setDocs((prev) => prev.map((d) => d.id === doc.id ? { ...d, archivosAdicionales: updated.archivosAdicionales ?? nuevosArchivos } : d));
+      setAddingFileTo(null);
+    } catch (e) { alert(e instanceof Error ? e.message : 'Error al añadir archivo'); }
+    finally { setUploadingExtraFile(false); if (extraFileRef.current) extraFileRef.current.value = ''; }
+  }
+
+  async function handleRemoveExtraFile(doc: DocumentoItem, idx: number) {
+    if (!confirm('¿Eliminar este archivo adicional?')) return;
+    setRemovingFileIdx({ docId: doc.id, idx });
+    try {
+      const nuevosArchivos = (doc.archivosAdicionales ?? []).filter((_, i) => i !== idx);
+      const patchRes = await fetch(`/api/admin/documentos-pueblo/${doc.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ archivosAdicionales: nuevosArchivos }),
+      });
+      if (!patchRes.ok) throw new Error('Error eliminando el archivo');
+      setDocs((prev) => prev.map((d) => d.id === doc.id ? { ...d, archivosAdicionales: nuevosArchivos } : d));
+    } catch (e) { alert(e instanceof Error ? e.message : 'Error'); }
+    finally { setRemovingFileIdx(null); }
   }
 
   return (
@@ -218,11 +286,11 @@ export default function LogoPapeleriaClient({
         <div className="mb-5">
           <h2 className="text-lg font-semibold">Papelería y documentos</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Sube plantillas, ordenanzas, presentaciones y cualquier documento del municipio. Los <strong>compartidos</strong> aparecen en la biblioteca de todos los alcaldes.
+            Sube plantillas, ordenanzas, presentaciones y cualquier documento del municipio. Puedes adjuntar <strong>varios archivos</strong> a una misma ordenanza (PDF, Word, imágenes…). Los <strong>compartidos</strong> aparecen en la biblioteca de todos los alcaldes.
           </p>
         </div>
 
-        {/* Form subida */}
+        {/* Form subida nuevo documento */}
         <div className="mb-6 rounded-xl border border-dashed border-border bg-muted/30 p-5">
           <h3 className="mb-4 text-sm font-semibold">Nuevo documento</h3>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -241,7 +309,6 @@ export default function LogoPapeleriaClient({
               </select>
             </div>
 
-            {/* Tema para ordenanzas */}
             {newDocTipo === 'ORDENANZA' && (
               <div className="sm:col-span-2">
                 <label className="mb-1 block text-xs text-muted-foreground">Temática de la ordenanza</label>
@@ -281,6 +348,21 @@ export default function LogoPapeleriaClient({
             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleDocUpload(f); }} />
         </div>
 
+        {/* Input oculto para archivos adicionales */}
+        <input
+          ref={extraFileRef}
+          type="file"
+          accept="image/*,.svg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f && addingFileTo !== null) {
+              const doc = docs.find((d) => d.id === addingFileTo);
+              if (doc) handleAddExtraFile(doc, f);
+            }
+          }}
+        />
+
         {/* Lista documentos */}
         {loadingDocs ? (
           <p className="text-sm text-muted-foreground animate-pulse">Cargando documentos...</p>
@@ -289,43 +371,107 @@ export default function LogoPapeleriaClient({
             Todavía no has subido ningún documento para {puebloNombre}.
           </div>
         ) : (
-          <div className="space-y-2">
-            {docs.map((doc) => (
-              <div key={doc.id} className="flex items-center gap-3 rounded-xl border border-border bg-background p-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 overflow-hidden">
-                  {isImageUrl(doc.url) ? (
-                    <img src={doc.url} alt={doc.nombre} className="h-full w-full object-contain" />
-                  ) : isPdfUrl(doc.url) ? (
-                    <svg className="h-6 w-6 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="9" y1="15" x2="15" y2="15" /></svg>
-                  ) : (
-                    <svg className="h-6 w-6 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{doc.nombre}</p>
-                  <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${TIPO_COLORS[doc.tipo]}`}>{TIPO_LABELS[doc.tipo]}</span>
-                    {doc.temaOrdenanza && (
-                      <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700">{TEMA_ORDENANZA_LABELS[doc.temaOrdenanza]}</span>
-                    )}
-                    {doc.descripcion && <span className="text-[10px] text-muted-foreground truncate max-w-xs">{doc.descripcion}</span>}
+          <div className="space-y-3">
+            {docs.map((doc) => {
+              const archivosExtra = doc.archivosAdicionales ?? [];
+              const totalArchivos = 1 + archivosExtra.length;
+              const isAddingHere = addingFileTo === doc.id;
+              return (
+                <div key={doc.id} className="overflow-hidden rounded-xl border border-border bg-background">
+                  {/* Cabecera del documento */}
+                  <div className="flex items-center gap-3 p-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 overflow-hidden">
+                      {isImageUrl(doc.url) ? (
+                        <img src={doc.url} alt={doc.nombre} className="h-full w-full object-contain" />
+                      ) : isPdfUrl(doc.url) ? (
+                        <svg className="h-5 w-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="9" y1="15" x2="15" y2="15" /></svg>
+                      ) : (
+                        <svg className="h-5 w-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{doc.nombre}</p>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${TIPO_COLORS[doc.tipo]}`}>{TIPO_LABELS[doc.tipo]}</span>
+                        {doc.temaOrdenanza && (
+                          <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700">{TEMA_ORDENANZA_LABELS[doc.temaOrdenanza]}</span>
+                        )}
+                        {totalArchivos > 1 && (
+                          <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+                            {totalArchivos} archivos
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <button type="button" disabled={togglingId === doc.id} onClick={() => handleToggleCompartido(doc)}
+                      className={`shrink-0 rounded-full border px-3 py-1 text-[11px] font-medium transition disabled:opacity-50 ${doc.compartido ? 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100' : 'border-border bg-muted text-muted-foreground hover:bg-primary/5 hover:text-primary'}`}>
+                      {togglingId === doc.id ? '...' : doc.compartido ? '✓ Compartido' : 'Privado'}
+                    </button>
+                    <button type="button" disabled={deletingId === doc.id} onClick={() => handleDeleteDoc(doc.id)}
+                      className="shrink-0 rounded-md border border-red-200 p-2 text-red-500 hover:bg-red-50 disabled:opacity-50" title="Eliminar documento">
+                      {deletingId === doc.id
+                        ? <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg>
+                        : <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6M9 6V4h6v2" /></svg>}
+                    </button>
+                  </div>
+
+                  {/* Archivos del documento */}
+                  <div className="border-t border-border bg-muted/20 divide-y divide-border">
+                    {/* Archivo principal */}
+                    <div className="flex items-center gap-2 px-4 py-2">
+                      <FileIcon url={doc.url} />
+                      <span className="flex-1 truncate text-xs text-muted-foreground">{doc.nombre} <span className="text-[10px] opacity-60">(principal)</span></span>
+                      <a href={doc.url} download target="_blank" rel="noopener noreferrer"
+                        className="shrink-0 inline-flex items-center gap-1 rounded border border-border bg-white px-2.5 py-1 text-xs font-medium hover:bg-muted">
+                        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                        Descargar
+                      </a>
+                    </div>
+
+                    {/* Archivos adicionales */}
+                    {archivosExtra.map((arch, i) => (
+                      <div key={i} className="flex items-center gap-2 px-4 py-2">
+                        <FileIcon url={arch.url} />
+                        <span className="flex-1 truncate text-xs text-muted-foreground">{arch.nombre}</span>
+                        <a href={arch.url} download target="_blank" rel="noopener noreferrer"
+                          className="shrink-0 inline-flex items-center gap-1 rounded border border-border bg-white px-2.5 py-1 text-xs font-medium hover:bg-muted">
+                          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                          Descargar
+                        </a>
+                        <button
+                          type="button"
+                          disabled={removingFileIdx?.docId === doc.id && removingFileIdx?.idx === i}
+                          onClick={() => handleRemoveExtraFile(doc, i)}
+                          className="shrink-0 rounded border border-red-200 p-1 text-red-400 hover:bg-red-50 disabled:opacity-40"
+                          title="Quitar este archivo"
+                        >
+                          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                        </button>
+                      </div>
+                    ))}
+
+                    {/* Botón añadir archivo */}
+                    <div className="px-4 py-2">
+                      <button
+                        type="button"
+                        disabled={isAddingHere && uploadingExtraFile}
+                        onClick={() => {
+                          setAddingFileTo(doc.id);
+                          setTimeout(() => extraFileRef.current?.click(), 50);
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary hover:text-primary disabled:opacity-50"
+                      >
+                        {isAddingHere && uploadingExtraFile ? (
+                          <><svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg>Subiendo...</>
+                        ) : (
+                          <><svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>Añadir otro archivo (PDF, DOC, imagen…)</>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <button type="button" disabled={togglingId === doc.id} onClick={() => handleToggleCompartido(doc)}
-                  className={`shrink-0 rounded-full border px-3 py-1 text-[11px] font-medium transition disabled:opacity-50 ${doc.compartido ? 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100' : 'border-border bg-muted text-muted-foreground hover:bg-primary/5 hover:text-primary'}`}>
-                  {togglingId === doc.id ? '...' : doc.compartido ? '✓ Compartido' : 'Privado'}
-                </button>
-                <a href={doc.url} download target="_blank" rel="noopener noreferrer"
-                  className="shrink-0 rounded-md border border-border p-2 text-muted-foreground hover:bg-muted" title="Descargar">
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-                </a>
-                <button type="button" disabled={deletingId === doc.id} onClick={() => handleDeleteDoc(doc.id)}
-                  className="shrink-0 rounded-md border border-red-200 p-2 text-red-500 hover:bg-red-50 disabled:opacity-50" title="Eliminar">
-                  {deletingId === doc.id ? <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg>
-                    : <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6M9 6V4h6v2" /></svg>}
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

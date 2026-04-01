@@ -89,11 +89,17 @@ export const TEMA_ORDENANZA_ICONS: Record<TemaOrdenanza, string> = {
   GENERAL_OTROS: '📄',
 };
 
+export interface ArchivoAdicional {
+  url: string;
+  nombre: string;
+}
+
 export interface DocumentoItem {
   id: number;
   puebloId: number | null;
   nombre: string;
   url: string;
+  archivosAdicionales: ArchivoAdicional[];
   tipo: TipoDoc;
   temaOrdenanza: TemaOrdenanza | null;
   fuente: FuenteDocumento;
