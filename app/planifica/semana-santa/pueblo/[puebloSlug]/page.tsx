@@ -178,11 +178,17 @@ export default async function SemanaSantaPuebloPage({
         </nav>
 
         {(participante.titulo || participante.descripcion) && (
-          <section className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
-            {participante.titulo && <h2 className="font-serif text-2xl font-medium">{participante.titulo}</h2>}
-            {participante.descripcion && (
-              <p className="mt-3 whitespace-pre-line text-muted-foreground">{participante.descripcion}</p>
-            )}
+          <section className="mb-8 rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <div className="mx-auto max-w-3xl text-center">
+              {participante.titulo && (
+                <h2 className="font-serif text-2xl font-medium">{participante.titulo}</h2>
+              )}
+              {participante.descripcion && (
+                <p className="mt-3 whitespace-pre-line text-muted-foreground leading-relaxed">
+                  {participante.descripcion}
+                </p>
+              )}
+            </div>
           </section>
         )}
 
