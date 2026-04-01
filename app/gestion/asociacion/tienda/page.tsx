@@ -1,6 +1,10 @@
 import Link from 'next/link';
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
+import CierreTiendaClient from './cierre/CierreTiendaClient';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function TiendaAdminPage() {
   const me = await getMeServer();
@@ -20,6 +24,11 @@ export default async function TiendaAdminPage() {
         <p className="mt-2 text-gray-600">
           Gestión de productos, pedidos y descuentos.
         </p>
+      </div>
+
+      {/* Cierre parcial/total */}
+      <div className="mb-8">
+        <CierreTiendaClient />
       </div>
 
       <div className="space-y-4">

@@ -6,6 +6,7 @@ import { useCartStore } from '@/src/store/cart';
 import { formatEUR } from '@/src/lib/money';
 import type { Product } from '@/src/types/tienda';
 import { useTranslations, useLocale } from 'next-intl';
+import { ShopStatusBanner, useShopStatus } from '@/app/_components/tienda/ShopStatusBanner';
 
 function localized(field: string | null | undefined, i18n: Record<string, string> | null | undefined, locale: string): string {
   if (locale !== 'es' && i18n && i18n[locale]) return i18n[locale];
@@ -26,6 +27,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const t = useTranslations('tienda');
   const locale = useLocale();
   const addItem = useCartStore((state) => state.addItem);
+  const shopStatus = useShopStatus();
+  const isClosed = shopStatus?.tiendaEstado === 'CERRADA';
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
@@ -100,6 +103,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
   return (
     <main className="mx-auto max-w-7xl px-6 py-12">
+      <ShopStatusBanner />
       <button
         onClick={() => router.back()}
         className="mb-6 text-sm text-gray-600 hover:text-gray-900"
@@ -262,7 +266,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
               <button
                 onClick={handleAddToCart}
-                disabled={!canAdd}
+                disabled={!canAdd || isClosed}
                 className={`w-full rounded-lg py-3 px-6 font-semibold transition-colors ${
                   canAdd
                     ? 'bg-blue-600 text-white hover:bg-blue-700'

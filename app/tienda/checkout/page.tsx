@@ -19,10 +19,13 @@ import { normalizeCheckoutResponse } from '@/src/types/tienda';
 import StripePaymentClient from './StripePaymentClient';
 import CheckoutSummary from './CheckoutSummary';
 import { useTranslations } from 'next-intl';
+import { ShopStatusBanner, ShopClosedOverlay, useShopStatus } from '@/app/_components/tienda/ShopStatusBanner';
 
 export default function CheckoutPage() {
   const t = useTranslations('tienda');
   const router = useRouter();
+  const shopStatus = useShopStatus();
+  const isClosed = shopStatus?.tiendaEstado === 'CERRADA';
   const { items, clear, getTotal } = useCartStore();
   
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -319,6 +322,18 @@ export default function CheckoutPage() {
     return null;
   }
 
+  if (isClosed) {
+    return (
+      <main className="mx-auto max-w-7xl px-6 py-12">
+        <h1 className="text-3xl font-bold mb-8">{t('checkoutTitle')}</h1>
+        <ShopClosedOverlay />
+        <Link href="/tienda" className="mt-6 inline-block text-sm text-blue-600 hover:underline">
+          ← Volver a la tienda
+        </Link>
+      </main>
+    );
+  }
+
   if (loading) {
     return (
       <main className="mx-auto max-w-7xl px-6 py-12">
@@ -351,6 +366,7 @@ export default function CheckoutPage() {
 
   return (
     <main className="mx-auto max-w-7xl px-6 py-12">
+      <ShopStatusBanner />
       <h1 className="text-3xl font-bold mb-8">{t('checkoutTitle')}</h1>
 
       {error && (

@@ -7,11 +7,14 @@ import { useCartStore } from '@/src/store/cart';
 import { formatEUR, toNumber } from '@/src/lib/money';
 import { getShippingConfig, type ShippingConfig } from '@/src/lib/tiendaApi';
 import { useTranslations } from 'next-intl';
+import { ShopStatusBanner, ShopClosedOverlay, useShopStatus } from '@/app/_components/tienda/ShopStatusBanner';
 
 export default function CarritoPage() {
   const t = useTranslations('tienda');
   const router = useRouter();
   const { items, removeItem, setQuantity, clear, getItemCount } = useCartStore();
+  const shopStatus = useShopStatus();
+  const isClosed = shopStatus?.tiendaEstado === 'CERRADA';
   const [shippingConfig, setShippingConfig] = useState<ShippingConfig | null>(null);
   const [shippingEstimate, setShippingEstimate] = useState<{
     cost: number;
@@ -95,6 +98,8 @@ export default function CarritoPage() {
 
   return (
     <main className="mx-auto max-w-7xl px-6 py-12">
+      <ShopStatusBanner />
+
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-3xl font-bold">{t('cartTitle')} ({itemCount} {t('items')})</h1>
         <button
@@ -263,12 +268,16 @@ export default function CarritoPage() {
               <span>{formatEUR(total)} €</span>
             </div>
 
-            <button
-              onClick={() => router.push('/tienda/checkout')}
-              className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700"
-            >
-              {t('proceedToPayment')}
-            </button>
+            {isClosed ? (
+              <ShopClosedOverlay />
+            ) : (
+              <button
+                onClick={() => router.push('/tienda/checkout')}
+                className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700"
+              >
+                {t('proceedToPayment')}
+              </button>
+            )}
 
             <Link
               href="/tienda"

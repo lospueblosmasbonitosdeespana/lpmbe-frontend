@@ -9,6 +9,7 @@ import { NewsletterCta } from '@/app/_components/tienda/NewsletterCta';
 import type { Product } from '@/src/types/tienda';
 import { cn } from '@/lib/utils';
 import { getLocale, getTranslations } from 'next-intl/server';
+import { ShopStatusBanner } from '@/app/_components/tienda/ShopStatusBanner';
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoDescription, seoTitle, type SupportedLocale } from '@/lib/seo';
 
 export const revalidate = 60;
@@ -83,6 +84,9 @@ export default async function TiendaPage() {
           </div>
         </Container>
       </Section>
+
+      {/* Shop status banner */}
+      <ShopStatusBanner />
 
       {/* Benefits Bar */}
       <Section spacing="sm" background="muted">
