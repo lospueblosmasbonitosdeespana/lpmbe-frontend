@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 import ContenidoImageCarousel from '@/app/components/ContenidoImageCarousel';
 import { getApiUrl } from '@/lib/api';
-import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,13 +43,21 @@ export async function generateMetadata({
   const categoryTitle = config ? t(config.titleKey) : slugToTitle(slug);
   const villageTitle = slugToTitle(puebloSlug) || "Pueblo";
   const path = `/experiencias/${slug}/pueblos/${puebloSlug}`;
+  const metaTitle = seoTitle(tSeo("experienciaPuebloTitle", { categoria: categoryTitle, pueblo: villageTitle }));
+  const metaDescription = seoDescription(tSeo("experienciaPuebloDesc", { categoria: categoryTitle.toLowerCase(), pueblo: villageTitle }));
 
   return {
-    title: seoTitle(tSeo("experienciaPuebloTitle", { categoria: categoryTitle, pueblo: villageTitle })),
-    description: seoDescription(tSeo("experienciaPuebloDesc", { categoria: categoryTitle.toLowerCase(), pueblo: villageTitle })),
+    title: metaTitle,
+    description: metaDescription,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title: metaTitle,
+      description: metaDescription,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
     },
   };
 }

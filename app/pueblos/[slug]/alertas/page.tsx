@@ -6,6 +6,7 @@ import { getApiUrl, getPuebloBySlug } from "@/lib/api";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   metaLocaleLead,
   seoDescription,
   seoTitle,
@@ -45,6 +46,12 @@ export async function generateMetadata({
       languages: getLocaleAlternates(path),
     },
     robots: { index: false, follow: true },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+    },
   };
 }
 

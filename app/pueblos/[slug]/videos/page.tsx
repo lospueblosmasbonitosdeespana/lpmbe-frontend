@@ -6,6 +6,7 @@ import {
   getBaseUrl,
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   seoDescription,
   seoTitle,
   slugDisambiguatorForTitle,
@@ -26,14 +27,22 @@ export async function generateMetadata({
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/videos`;
   const slugDis = slugDisambiguatorForTitle(slug);
+  const title = seoTitle(`Videos · ${name}${slugDis}`);
+  const description = seoDescription(`Videos y contenidos audiovisuales para descubrir ${name}.`);
   return {
-    title: seoTitle(`Videos · ${name}${slugDis}`),
-    description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${name}.`),
+    title,
+    description,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
     robots: { index: true, follow: true },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
+    },
   };
 }
 

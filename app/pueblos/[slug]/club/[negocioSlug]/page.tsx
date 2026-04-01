@@ -5,6 +5,7 @@ import { getApiUrl, getPuebloBySlug } from "@/lib/api";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   seoDescription,
   seoTitle,
   slugDisambiguatorForTitle,
@@ -25,16 +26,24 @@ export async function generateMetadata({
   const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/club/${negocioSlug}`;
   const slugDis = slugDisambiguatorForTitle(slug);
+  const title = seoTitle(`${name} · Club de Amigos · ${puebloName}${slugDis}`);
+  const description = seoDescription(
+    `${name} en ${puebloName}: descubre lo que ofrece a los socios del Club de Amigos.`
+  );
   return {
-    title: seoTitle(`${name} · Club de Amigos · ${puebloName}${slugDis}`),
-    description: seoDescription(
-      `${name} en ${puebloName}: descubre lo que ofrece a los socios del Club de Amigos.`
-    ),
+    title,
+    description,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
     robots: { index: true, follow: true },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
+    },
   };
 }
 

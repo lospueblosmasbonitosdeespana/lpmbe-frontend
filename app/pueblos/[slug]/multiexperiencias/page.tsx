@@ -6,6 +6,7 @@ import { getPuebloBySlug } from "@/lib/api";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   seoTitle,
   seoDescription,
   slugToTitle,
@@ -39,14 +40,22 @@ export async function generateMetadata({
   const name = slugToTitle(slug) || "Pueblo";
   const path = `/pueblos/${slug}/multiexperiencias`;
   const slugDis = slugDisambiguatorForTitle(slug);
+  const title = seoTitle(`Mx · ${name}${slugDis}`);
+  const description = seoDescription(`Experiencias y actividades para descubrir ${name}.`);
   return {
-    title: seoTitle(`Mx · ${name}${slugDis}`),
-    description: seoDescription(`Experiencias y actividades para descubrir ${name}.`),
+    title,
+    description,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
     robots: { index: true, follow: true },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
+    },
   };
 }
 

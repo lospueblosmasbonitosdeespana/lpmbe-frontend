@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 import ContenidoImageCarousel from '@/app/components/ContenidoImageCarousel';
-import { getCanonicalUrl, getLocaleAlternates, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,13 +41,21 @@ export async function generateMetadata({
   const config = CATEGORY_MAP[slug];
   const title = config ? t(config.titleKey) : slugToTitle(slug);
   const path = `/experiencias/${slug}/asociacion`;
+  const metaTitle = seoTitle(tSeo("experienciaAsociacionTitle", { tematica: title }));
+  const metaDescription = seoDescription(tSeo("experienciaAsociacionDesc", { tematica: title }));
 
   return {
-    title: seoTitle(tSeo("experienciaAsociacionTitle", { tematica: title })),
-    description: seoDescription(tSeo("experienciaAsociacionDesc", { tematica: title })),
+    title: metaTitle,
+    description: metaDescription,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title: metaTitle,
+      description: metaDescription,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
     },
   };
 }

@@ -6,6 +6,7 @@ import { stripHtml } from "@/app/_lib/html";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   seoTitle,
   seoDescription,
   slugToTitle,
@@ -141,16 +142,24 @@ export async function generateMetadata({
   const name = slugToTitle(slug) || "Pueblo";
   const label = CATEGORIA_LABELS[categoriaSlug] ?? "Categoría";
   const path = `/pueblos/${slug}/categoria/${categoriaSlug}`;
+  const title = seoTitle(tSeo("categoriaPuebloTitle", { categoria: label, pueblo: name }));
+  const description = seoDescription(
+    tSeo("categoriaPuebloDesc", { categoria: label.toLowerCase(), pueblo: name, detalle: CATEGORIA_DESCRIPTIONS[categoriaSlug] ?? "categoría temática" })
+  );
   return {
-    title: seoTitle(tSeo("categoriaPuebloTitle", { categoria: label, pueblo: name })),
-    description: seoDescription(
-      tSeo("categoriaPuebloDesc", { categoria: label.toLowerCase(), pueblo: name, detalle: CATEGORIA_DESCRIPTIONS[categoriaSlug] ?? "categoría temática" })
-    ),
+    title,
+    description,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
     robots: { index: true, follow: true },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
+    },
   };
 }
 

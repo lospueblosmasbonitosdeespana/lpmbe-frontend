@@ -9,6 +9,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   seoTitle,
   seoDescription,
   slugToTitle,
@@ -26,12 +27,20 @@ export async function generateMetadata({
   const locale = await getLocale();
   const name = slugToTitle(slug) || 'Socio';
   const path = `/el-sello/socios/${slug}`;
+  const title = seoTitle(`${name} · Socios · ${slug}`);
+  const description = seoDescription(`${name}, socio y colaborador de Los Pueblos Más Bonitos de España.`);
   return {
-    title: seoTitle(`${name} · Socios · ${slug}`),
-    description: seoDescription(`${name}, socio y colaborador de Los Pueblos Más Bonitos de España.`),
+    title,
+    description,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
     },
   };
 }

@@ -5,6 +5,7 @@ import { getPuebloBySlug } from '@/lib/api';
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   seoTitle,
   seoDescription,
   uniqueH1ForLocale,
@@ -24,14 +25,22 @@ export async function generateMetadata({
   const tSeo = await getTranslations("seo");
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/actualidad`;
+  const title = seoTitle(tSeo("puebloActualidadTitle", { nombre: name }));
+  const description = seoDescription(tSeo("puebloActualidadDesc", { nombre: name }));
   return {
-    title: seoTitle(tSeo("puebloActualidadTitle", { nombre: name })),
-    description: seoDescription(tSeo("puebloActualidadDesc", { nombre: name })),
+    title,
+    description,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
     robots: { index: true, follow: true },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
+    },
   };
 }
 
