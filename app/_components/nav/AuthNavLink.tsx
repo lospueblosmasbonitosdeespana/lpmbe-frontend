@@ -24,9 +24,10 @@ export default function AuthNavLink({ variant = 'default' }: AuthNavLinkProps) {
 
   const fetchMe = useCallback(async (signal?: AbortSignal) => {
     try {
-      const res = await fetch('/api/auth/me', {
+      const res = await fetch(`/api/auth/me?_t=${Date.now()}`, {
         cache: 'no-store',
         credentials: 'include',
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' },
         signal,
       });
       if (!res.ok) return null;
