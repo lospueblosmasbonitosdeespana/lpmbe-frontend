@@ -16,6 +16,13 @@ import {
 const ALL_TEMAS = Object.keys(TEMA_ORDENANZA_LABELS) as TemaOrdenanza[];
 const TIPOS_SIN_LOGO: TipoDoc[] = ['PAPELERIA', 'ORDENANZA', 'OTRO'];
 
+type LogoAsociacion = {
+  id: number;
+  nombre: string;
+  url: string;
+  etiqueta: string | null;
+};
+
 function FileIcon({ url }: { url: string }) {
   if (isImageUrl(url)) return (
     <svg className="h-5 w-5 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -72,6 +79,7 @@ function DocCard({ doc }: { doc: DocumentoItem }) {
 
 export default function DocumentosCompartidosClient() {
   const [allDocs, setAllDocs] = useState<DocumentoItem[]>([]);
+  const [logosAsociacion, setLogosAsociacion] = useState<LogoAsociacion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,11 +93,18 @@ export default function DocumentosCompartidosClient() {
   async function fetchDocs() {
     setLoading(true); setError(null);
     try {
-      const res = await fetch('/api/admin/documentos-pueblo?compartidos=true', { cache: 'no-store' });
-      if (res.status === 401) { window.location.href = '/entrar'; return; }
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data = await res.json();
-      setAllDocs(Array.isArray(data) ? data : []);
+      const [docsRes, logosRes] = await Promise.all([
+        fetch('/api/admin/documentos-pueblo?compartidos=true', { cache: 'no-store' }),
+        fetch('/api/admin/logos?compartidos=true', { cache: 'no-store' }),
+      ]);
+      if (docsRes.status === 401) { window.location.href = '/entrar'; return; }
+      if (!docsRes.ok) throw new Error(`Error ${docsRes.status}`);
+      const docsData = await docsRes.json();
+      setAllDocs(Array.isArray(docsData) ? docsData : []);
+      if (logosRes.ok) {
+        const logosData = await logosRes.json();
+        setLogosAsociacion(Array.isArray(logosData) ? logosData : []);
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error desconocido');
     } finally { setLoading(false); }
@@ -130,7 +145,18 @@ export default function DocumentosCompartidosClient() {
     return { total, porTipo, deAsociacion, pueblosUnicos };
   }, [allDocs]);
 
-  // Agrupar ordenanzas por tema para la vista temática
+  // Logos de la asociación filtrados por búsqueda
+  const logosFiltered = useMemo(() => {
+    const q = query.toLowerCase().trim();
+    if (!q) return logosAsociacion;
+    return logosAsociacion.filter((l) =>
+      [l.nombre, l.etiqueta ?? '', 'logo', 'asociacion', 'lpbme'].join(' ').toLowerCase().includes(q)
+    );
+  }, [logosAsociacion, query]);
+
+  // Mostrar sección de logos si no hay filtros que la excluyan
+  const showLogos = fuenteFilter === 'TODOS' || fuenteFilter === 'ASOCIACION';
+
   const ordenanzasPorTema = useMemo(() => {
     const ordenanzas = filtered.filter((d) => d.tipo === 'ORDENANZA');
     return ALL_TEMAS.reduce<Record<TemaOrdenanza, DocumentoItem[]>>((acc, tema) => {
@@ -162,11 +188,11 @@ export default function DocumentosCompartidosClient() {
       </div>
 
       {/* Estadísticas */}
-      {!loading && allDocs.length > 0 && (
+      {!loading && (allDocs.length > 0 || logosAsociacion.length > 0) && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
             { label: 'Total documentos', value: stats.total, color: 'text-foreground' },
-            { label: 'De la asociación', value: stats.deAsociacion, color: 'text-primary' },
+            { label: 'Logos asociación', value: logosAsociacion.length, color: 'text-blue-600' },
             { label: 'Pueblos participantes', value: stats.pueblosUnicos, color: 'text-foreground' },
             { label: 'Ordenanzas', value: stats.porTipo['ORDENANZA'] ?? 0, color: 'text-amber-600' },
           ].map((s) => (
@@ -242,7 +268,7 @@ export default function DocumentosCompartidosClient() {
         </div>
       )}
 
-      {!loading && filtered.length === 0 && (
+      {!loading && filtered.length === 0 && logosFiltered.length === 0 && (
         <div className="rounded-xl border border-dashed border-border p-14 text-center">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
             <svg className="h-7 w-7 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -252,6 +278,52 @@ export default function DocumentosCompartidosClient() {
           <p className="font-medium text-sm">No hay documentos que coincidan</p>
           <p className="mt-1 text-xs text-muted-foreground">Prueba a cambiar los filtros o la búsqueda.</p>
         </div>
+      )}
+
+      {/* ── SECCIÓN LOGOS DE LA ASOCIACIÓN ── */}
+      {!loading && showLogos && logosFiltered.length > 0 && (
+        <section>
+          <div className="mb-3 flex items-center gap-2">
+            <h2 className="text-base font-semibold">Logos de la Asociación LPBME</h2>
+            <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[10px] font-semibold text-blue-700">
+              Asociación LPBME
+            </span>
+            <span className="text-xs text-muted-foreground">{logosFiltered.length} logo{logosFiltered.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {logosFiltered.map((logo) => (
+              <div key={logo.id} className="flex flex-col overflow-hidden rounded-xl border border-blue-100 bg-blue-50/30 shadow-sm">
+                <div className="flex h-28 items-center justify-center bg-white border-b border-blue-100 p-4">
+                  <img src={logo.url} alt={logo.nombre} className="max-h-full max-w-full object-contain" />
+                </div>
+                <div className="flex flex-1 flex-col p-3">
+                  <p className="text-sm font-medium leading-tight">{logo.nombre}</p>
+                  {logo.etiqueta && <p className="mt-0.5 text-xs text-muted-foreground">{logo.etiqueta}</p>}
+                  <div className="mt-2 flex items-center gap-1.5">
+                    <span className="rounded-full border border-blue-200 bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                      Asociación LPBME
+                    </span>
+                    <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                      Logo
+                    </span>
+                  </div>
+                  <a
+                    href={logo.url}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-50 transition"
+                  >
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Descargar
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
       {/* ── SECCIÓN LOGOS / PAPELERÍA / OTROS (no ordenanzas) ── */}

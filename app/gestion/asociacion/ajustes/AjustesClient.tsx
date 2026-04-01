@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Pencil, Trash2, X, Check, Upload } from 'lucide-react';
+import { Pencil, Trash2, X, Check, Upload, Share2, Lock } from 'lucide-react';
 
 type Settings = {
   brandName: string;
@@ -18,6 +18,7 @@ type Logo = {
   url: string;
   etiqueta: string | null;
   orden?: number;
+  compartido?: boolean;
   _count?: { rutas: number };
 };
 
@@ -42,12 +43,13 @@ export default function AjustesClient() {
 
   // Form: new/edit logo
   const [editingId, setEditingId] = useState<number | null>(null); // -1 = new
-  const [form, setForm] = useState({ nombre: '', url: '', etiqueta: '' });
+  const [form, setForm] = useState({ nombre: '', url: '', etiqueta: '', compartido: false });
   const [libSaving, setLibSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  // Quick-assign feedback
+  // Quick-assign + share feedback
   const [assigningId, setAssigningId] = useState<number | null>(null);
+  const [sharingId, setSharingId] = useState<number | null>(null);
 
   const loadLogos = useCallback(async () => {
     try {
@@ -158,22 +160,40 @@ export default function AjustesClient() {
     }
   }
 
+  // ---- Toggle compartido (one-click) ----
+  async function toggleCompartido(logo: Logo) {
+    setSharingId(logo.id);
+    try {
+      const res = await fetch(`/api/admin/logos/${logo.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ compartido: !logo.compartido }),
+      });
+      if (!res.ok) throw new Error('Error actualizando');
+      setLogos((prev) => prev.map((l) => l.id === logo.id ? { ...l, compartido: !l.compartido } : l));
+    } catch (e: any) {
+      setLibError(e?.message ?? 'Error al cambiar visibilidad');
+    } finally {
+      setSharingId(null);
+    }
+  }
+
   // ---- Logo library CRUD ----
   function startNew() {
     setEditingId(-1);
-    setForm({ nombre: '', url: '', etiqueta: '' });
+    setForm({ nombre: '', url: '', etiqueta: '', compartido: false });
     setLibError(null);
   }
 
   function startEdit(logo: Logo) {
     setEditingId(logo.id);
-    setForm({ nombre: logo.nombre, url: logo.url, etiqueta: logo.etiqueta ?? '' });
+    setForm({ nombre: logo.nombre, url: logo.url, etiqueta: logo.etiqueta ?? '', compartido: logo.compartido ?? false });
     setLibError(null);
   }
 
   function cancelEdit() {
     setEditingId(null);
-    setForm({ nombre: '', url: '', etiqueta: '' });
+    setForm({ nombre: '', url: '', etiqueta: '', compartido: false });
     setLibError(null);
   }
 
@@ -201,7 +221,7 @@ export default function AjustesClient() {
     setLibSaving(true);
     setLibError(null);
     try {
-      const body = { nombre: form.nombre.trim(), url: form.url.trim(), etiqueta: form.etiqueta.trim() || null };
+      const body = { nombre: form.nombre.trim(), url: form.url.trim(), etiqueta: form.etiqueta.trim() || null, compartido: form.compartido };
       if (editingId === -1) {
         const res = await fetch('/api/admin/logos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         if (!res.ok) throw new Error('Error creando logo');
@@ -236,6 +256,7 @@ export default function AjustesClient() {
 
   const headerLogo = logos.find((l) => l.url === logoUrl);
   const footerLogo = logos.find((l) => l.url === logoVariantUrl);
+  const sharedCount = logos.filter((l) => l.compartido).length;
 
   return (
     <div className="mt-6 space-y-10">
@@ -345,7 +366,7 @@ export default function AjustesClient() {
           <div>
             <h2 className="text-lg font-semibold">Biblioteca de logos</h2>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              Gestiona todos los logos. Asígnalos al Header/Footer o úsalos en rutas.
+              Gestiona todos los logos. Asígnalos al Header/Footer, úsalos en rutas, o compártelos con los alcaldes.
             </p>
           </div>
           {editingId === null ? (
@@ -367,6 +388,17 @@ export default function AjustesClient() {
             </button>
           )}
         </div>
+
+        {/* Aviso de logos compartidos */}
+        {sharedCount > 0 && (
+          <div className="mt-3 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-blue-800">
+            <Share2 className="h-4 w-4 shrink-0" />
+            <span>
+              <strong>{sharedCount} logo{sharedCount > 1 ? 's' : ''}</strong> compartido{sharedCount > 1 ? 's' : ''} con todos los alcaldes en la{' '}
+              <a href="/gestion/documentos-compartidos" className="underline hover:text-blue-600">Biblioteca de documentos compartidos</a>.
+            </span>
+          </div>
+        )}
 
         {libError && (
           <div className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-800">{libError}</div>
@@ -424,6 +456,25 @@ export default function AjustesClient() {
                 />
               </div>
 
+              {/* Compartido con alcaldes */}
+              <div className="flex items-start gap-3 rounded-lg border bg-muted/40 p-3">
+                <input
+                  type="checkbox"
+                  id="form-compartido"
+                  checked={form.compartido}
+                  onChange={(e) => setForm((p) => ({ ...p, compartido: e.target.checked }))}
+                  className="mt-0.5 h-4 w-4 cursor-pointer accent-primary"
+                />
+                <div>
+                  <label htmlFor="form-compartido" className="cursor-pointer text-sm font-medium">
+                    Compartir con alcaldes
+                  </label>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Los alcaldes podrán ver y descargar este logo en la Biblioteca de documentos compartidos como logo oficial de la asociación.
+                  </p>
+                </div>
+              </div>
+
               <div className="flex gap-2 pt-1">
                 <button
                   type="button"
@@ -459,11 +510,13 @@ export default function AjustesClient() {
               const isHeader = logo.url === logoUrl;
               const isFooter = logo.url === logoVariantUrl;
               const isAssigning = assigningId === logo.id;
+              const isSharing = sharingId === logo.id;
+              const isShared = !!logo.compartido;
               return (
                 <div
                   key={logo.id}
                   className={`relative flex flex-col overflow-hidden rounded-xl border-2 bg-card transition ${
-                    isHeader || isFooter ? 'border-primary/60' : 'border-border'
+                    isHeader || isFooter ? 'border-primary/60' : isShared ? 'border-blue-300' : 'border-border'
                   }`}
                 >
                   {/* Preview */}
@@ -479,7 +532,7 @@ export default function AjustesClient() {
                       <p className="mt-0.5 text-xs text-muted-foreground">Usado en {logo._count.rutas} ruta(s)</p>
                     )}
 
-                    {/* Badges de asignación */}
+                    {/* Badges de estado */}
                     <div className="mt-2 flex flex-wrap gap-1">
                       {isHeader && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
@@ -491,10 +544,35 @@ export default function AjustesClient() {
                           <Check className="h-3 w-3" /> Footer
                         </span>
                       )}
+                      {isShared ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                          <Share2 className="h-3 w-3" /> Compartido con alcaldes
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                          <Lock className="h-3 w-3" /> Solo asociación
+                        </span>
+                      )}
                     </div>
 
-                    {/* Acciones de asignación */}
-                    <div className="mt-2 flex flex-wrap gap-1.5">
+                    {/* Toggle compartido */}
+                    <div className="mt-2">
+                      <button
+                        type="button"
+                        disabled={isSharing}
+                        onClick={() => toggleCompartido(logo)}
+                        className={`w-full rounded border px-2 py-1.5 text-[11px] font-medium transition disabled:opacity-40 ${
+                          isShared
+                            ? 'border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100'
+                            : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700'
+                        }`}
+                      >
+                        {isSharing ? 'Guardando…' : isShared ? '✓ Compartido con alcaldes — clic para dejar de compartir' : 'Compartir con alcaldes'}
+                      </button>
+                    </div>
+
+                    {/* Acciones de asignación header/footer */}
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
                       {!isHeader && (
                         <button
                           type="button"
