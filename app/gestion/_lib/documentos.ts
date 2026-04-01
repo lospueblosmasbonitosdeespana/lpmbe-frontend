@@ -21,6 +21,7 @@ export type TemaOrdenanza =
   | 'TURISMO_HOSTELERIA'
   | 'SERVICIOS_SOCIALES'
   | 'ENERGIA_RENOVABLES'
+  | 'CEMENTERIOS_FUNERARIOS'
   | 'GENERAL_OTROS';
 
 export type FuenteDocumento = 'PUEBLO' | 'ASOCIACION';
@@ -61,6 +62,7 @@ export const TEMA_ORDENANZA_LABELS: Record<TemaOrdenanza, string> = {
   TURISMO_HOSTELERIA: 'Turismo y hostelería',
   SERVICIOS_SOCIALES: 'Servicios sociales',
   ENERGIA_RENOVABLES: 'Energía y renovables',
+  CEMENTERIOS_FUNERARIOS: 'Cementerios y servicios funerarios',
   GENERAL_OTROS: 'General / Otros',
 };
 
@@ -86,6 +88,7 @@ export const TEMA_ORDENANZA_ICONS: Record<TemaOrdenanza, string> = {
   TURISMO_HOSTELERIA: '🏨',
   SERVICIOS_SOCIALES: '👥',
   ENERGIA_RENOVABLES: '⚡',
+  CEMENTERIOS_FUNERARIOS: '⚱️',
   GENERAL_OTROS: '📄',
 };
 
