@@ -263,11 +263,13 @@ export function middleware(req: NextRequest): NextResponse {
     requestHeaders.set('cookie', injectLocaleCookie(currentCookie, queryLang));
   }
 
-  return NextResponse.next({
+  const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
+  response.headers.set('Content-Language', activeLocale);
+  return response;
 }
 
 export const config = {
