@@ -62,7 +62,7 @@ export async function getHomeConfig(locale?: string): Promise<HomeConfig> {
   const qs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
   try {
     const res = await fetchWithTimeout(`${API_BASE}/home${qs}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
       headers: locale ? { "Accept-Language": locale } : undefined,
       timeoutMs: 4000,
       retries: 0,
@@ -147,7 +147,7 @@ export async function getHomeVideos(locale?: string): Promise<HomeVideo[]> {
   const qs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
   try {
     const res = await fetchWithTimeout(`${API_BASE}/home/videos${qs}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
       headers: locale ? { "Accept-Language": locale } : undefined,
       timeoutMs: 4000,
       retries: 0,

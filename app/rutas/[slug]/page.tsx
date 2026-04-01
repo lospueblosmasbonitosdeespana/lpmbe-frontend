@@ -1,7 +1,6 @@
 import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getRutas, getRutaById, getRutaMapa } from "@/lib/api";
 import {
@@ -9,7 +8,6 @@ import {
   getBaseUrl,
   getCanonicalUrl,
   getLocaleAlternates,
-  getLocaleFromRequestHeaders,
   getOGLocale,
   seoTitle,
   seoDescription,
@@ -87,8 +85,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const hdrs = await headers();
-  const locale = getLocaleFromRequestHeaders(hdrs);
+  const locale = await getLocale();
   const path = `/rutas/${slug}`;
 
   let name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
