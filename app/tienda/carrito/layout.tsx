@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
-import ColaboradorClientLayout from './ColaboradorClientLayout';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <ColaboradorClientLayout>{children}</ColaboradorClientLayout>;
+  return <>{children}</>;
 }
