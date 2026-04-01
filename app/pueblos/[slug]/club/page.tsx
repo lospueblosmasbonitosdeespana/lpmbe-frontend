@@ -369,7 +369,7 @@ export default async function ClubPuebloPage({
       </div>
 
       <div className="mx-auto max-w-5xl px-4 py-8 space-y-10">
-        {recursos.length === 0 ? (
+        {recursosPueblo.length === 0 && negocios.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center">
             <p className="text-lg text-muted-foreground">
               Todavía no hay ofertas del Club de Amigos disponibles en {pueblo.nombre}.
