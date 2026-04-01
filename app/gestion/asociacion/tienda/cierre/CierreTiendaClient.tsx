@@ -77,6 +77,27 @@ export default function CierreTiendaClient() {
     } finally { setSaving(false); }
   }
 
+  async function handleReset() {
+    if (!confirm('¿Restablecer la tienda a estado ABIERTA? Se borrarán el mensaje y la fecha.')) return;
+    setSaving(true); setError(null); setSaved(false);
+    try {
+      const res = await fetch('/api/admin/site-settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tiendaEstado: 'ABIERTA', tiendaMensaje: null, tiendaReapertura: null }),
+      });
+      if (!res.ok) throw new Error('Error guardando');
+      setEstado('ABIERTA');
+      setEstadoGuardado('ABIERTA');
+      setMensaje('');
+      setReapertura('');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error');
+    } finally { setSaving(false); }
+  }
+
   const estadoGuardadoInfo = ESTADOS.find((e) => e.value === estadoGuardado)!;
   const hayPendiente = estado !== estadoGuardado;
 
@@ -228,7 +249,7 @@ export default function CierreTiendaClient() {
         )}
 
         {/* Acciones */}
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex flex-wrap items-center gap-3 pt-2">
           <button
             type="button"
             onClick={handleSave}
@@ -242,6 +263,21 @@ export default function CierreTiendaClient() {
               </>
             ) : 'Guardar cambios'}
           </button>
+
+          {estadoGuardado !== 'ABIERTA' && (
+            <button
+              type="button"
+              onClick={handleReset}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-xl border-2 border-emerald-300 bg-emerald-50 px-5 py-2.5 text-sm font-semibold text-emerald-700 transition-all hover:bg-emerald-100 active:scale-95 disabled:opacity-60"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Restablecer a Tienda abierta
+            </button>
+          )}
+
           {saved && <span className="text-sm font-medium text-emerald-600">Guardado correctamente</span>}
           {error && <span className="text-sm font-medium text-red-600">{error}</span>}
         </div>
