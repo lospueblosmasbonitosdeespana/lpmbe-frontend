@@ -20,6 +20,7 @@ export async function GET() {
     return NextResponse.json({
       tiendaEstado: data.tiendaEstado ?? 'ABIERTA',
       tiendaMensaje: data.tiendaMensaje ?? null,
+      tiendaMensajeI18n: data.tiendaMensajeI18n ?? null,
       tiendaReapertura: data.tiendaReapertura ?? null,
     }, {
       headers: {

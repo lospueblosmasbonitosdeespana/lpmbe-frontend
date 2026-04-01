@@ -1,12 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useLocale } from 'next-intl';
 
 type ShopStatus = {
   tiendaEstado: 'ABIERTA' | 'ENVIO_DIFERIDO' | 'CERRADA';
   tiendaMensaje: string | null;
+  tiendaMensajeI18n: Record<string, string> | null;
   tiendaReapertura: string | null;
 };
+
+function resolveMsg(status: ShopStatus, locale: string): string | null {
+  if (!status.tiendaMensaje) return null;
+  if (locale !== 'es' && status.tiendaMensajeI18n?.[locale]) {
+    return status.tiendaMensajeI18n[locale];
+  }
+  return status.tiendaMensaje;
+}
 
 export function useShopStatus() {
   const [status, setStatus] = useState<ShopStatus | null>(null);
@@ -23,13 +33,15 @@ export function useShopStatus() {
 
 export function ShopStatusBanner() {
   const status = useShopStatus();
+  const locale = useLocale();
   const [dismissed, setDismissed] = useState(false);
 
   if (!status || status.tiendaEstado === 'ABIERTA' || dismissed) return null;
 
   const isClosed = status.tiendaEstado === 'CERRADA';
+  const msg = resolveMsg(status, locale);
   const fechaStr = status.tiendaReapertura
-    ? new Date(status.tiendaReapertura).toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })
+    ? new Date(status.tiendaReapertura).toLocaleDateString(locale === 'ca' ? 'ca' : locale, { weekday: 'long', day: 'numeric', month: 'long' })
     : null;
 
   return (
@@ -43,7 +55,7 @@ export function ShopStatusBanner() {
                 {isClosed ? 'Tienda temporalmente cerrada' : 'Aviso: envío diferido'}
               </p>
               <p className="text-xs text-white/90 truncate">
-                {status.tiendaMensaje || (isClosed ? 'Las compras están deshabilitadas temporalmente.' : 'Los envíos se realizarán con retraso.')}
+                {msg || (isClosed ? 'Las compras están deshabilitadas temporalmente.' : 'Los envíos se realizarán con retraso.')}
                 {fechaStr && (
                   <span className="font-semibold">
                     {' — '}{isClosed ? `Reapertura: ${fechaStr}` : `Envíos a partir del ${fechaStr}`}
@@ -72,10 +84,12 @@ export function ShopStatusBanner() {
 
 export function ShopClosedOverlay() {
   const status = useShopStatus();
+  const locale = useLocale();
   if (!status || status.tiendaEstado !== 'CERRADA') return null;
 
+  const msg = resolveMsg(status, locale);
   const fechaStr = status.tiendaReapertura
-    ? new Date(status.tiendaReapertura).toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })
+    ? new Date(status.tiendaReapertura).toLocaleDateString(locale === 'ca' ? 'ca' : locale, { weekday: 'long', day: 'numeric', month: 'long' })
     : null;
 
   return (
@@ -86,7 +100,7 @@ export function ShopClosedOverlay() {
         </svg>
       </div>
       <h3 className="text-xl font-bold text-red-800">Tienda temporalmente cerrada</h3>
-      {status.tiendaMensaje && <p className="mt-2 text-red-700">{status.tiendaMensaje}</p>}
+      {msg && <p className="mt-2 text-red-700">{msg}</p>}
       {fechaStr && <p className="mt-2 font-semibold text-red-800">Reapertura estimada: {fechaStr}</p>}
       <p className="mt-4 text-sm text-red-600">Puedes seguir viendo nuestros productos, pero las compras están deshabilitadas temporalmente.</p>
     </div>
