@@ -13,16 +13,6 @@ import YoutubeEmbed from './YoutubeEmbed';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const DESC_TEMPLATE: Record<string, string> = {
-  es: "Semana Santa en {name}: procesiones, horarios, agenda y retransmisiones en directo.",
-  en: "Holy Week in {name}: processions, schedules, programme and live streams.",
-  fr: "Semaine sainte à {name} : processions, horaires, programme et retransmissions en direct.",
-  de: "Karwoche in {name}: Prozessionen, Zeiten, Programm und Livestreams.",
-  pt: "Semana Santa em {name}: procissões, horários, agenda e transmissões em direto.",
-  it: "Settimana Santa a {name}: processioni, orari, programma e dirette streaming.",
-  ca: "Setmana Santa a {name}: processons, horaris, agenda i retransmissions en directe.",
-};
-
 export async function generateMetadata({
   params,
 }: {
@@ -30,11 +20,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { puebloSlug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations('seo');
   const name = slugToTitle(puebloSlug);
   const path = `/planifica/semana-santa/pueblo/${puebloSlug}`;
-  const title = seoTitle(`Semana Santa en ${name}`);
-  const descTemplate = DESC_TEMPLATE[locale] ?? DESC_TEMPLATE.es;
-  const description = seoDescription(descTemplate.replace("{name}", name));
+  const title = seoTitle(tSeo('semanaSantaTitle', { nombre: name }));
+  const description = seoDescription(tSeo('semanaSantaDesc', { nombre: name }));
   return {
     title,
     description,

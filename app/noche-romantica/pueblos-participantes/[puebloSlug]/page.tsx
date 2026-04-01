@@ -10,16 +10,6 @@ import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescrip
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const DESC_TEMPLATE: Record<string, string> = {
-  es: "Programa de La Noche Romántica en {name}: actividades, restaurantes y alojamientos.",
-  en: "La Noche Romántica programme in {name}: activities, restaurants and accommodation.",
-  fr: "Programme de La Noche Romántica à {name} : activités, restaurants et hébergements.",
-  de: "Programm der Noche Romántica in {name}: Aktivitäten, Restaurants und Unterkünfte.",
-  pt: "Programa da Noche Romántica em {name}: atividades, restaurantes e alojamentos.",
-  it: "Programma della Noche Romántica a {name}: attività, ristoranti e alloggi.",
-  ca: "Programa de La Noche Romántica a {name}: activitats, restaurants i allotjaments.",
-};
-
 export async function generateMetadata({
   params,
 }: {
@@ -27,11 +17,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { puebloSlug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations('seo');
   const name = slugToTitle(puebloSlug);
   const path = `/noche-romantica/pueblos-participantes/${puebloSlug}`;
-  const title = seoTitle(`${name} - La Noche Romántica`);
-  const descTemplate = DESC_TEMPLATE[locale] ?? DESC_TEMPLATE.es;
-  const description = seoDescription(descTemplate.replace("{name}", name));
+  const title = seoTitle(tSeo('nocheRomanticaPuebloTitle', { nombre: name }));
+  const description = seoDescription(tSeo('nocheRomanticaPuebloDesc', { nombre: name }));
   return {
     title,
     description,

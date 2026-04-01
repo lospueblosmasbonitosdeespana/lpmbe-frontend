@@ -1,28 +1,37 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Container } from "@/app/components/ui/container";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
+  seoTitle,
+  seoDescription,
   type SupportedLocale,
 } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
+  const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations('seo');
   const path = "/planifica/la-noche-romantica";
-  const title = "La Noche Romántica";
-  const description =
-    "Evento destacado de la asociación. Pueblos, hoteles y restaurantes participan en La Noche Romántica.";
+  const title = seoTitle(tSeo('nocheRomanticaTitle'));
+  const description = seoDescription(tSeo('nocheRomanticaDesc'));
   return {
     title,
     description,
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
     },
   };
 }
