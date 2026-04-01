@@ -367,14 +367,30 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">Tipo *</label>
-            <input
-              type="text"
+            <select
               value={nuevoTipo}
               onChange={(e) => setNuevoTipo(e.target.value)}
               disabled={creando}
-              placeholder="Ej: Museo, Restaurante, Hotel…"
-              className="w-full px-3 py-2 border rounded disabled:opacity-50"
-            />
+              className="w-full px-3 py-2 border rounded disabled:opacity-50 bg-white"
+            >
+              <option value="">— Selecciona un tipo —</option>
+              <option value="Museo">Museo</option>
+              <option value="Castillo">Castillo</option>
+              <option value="Iglesia / Ermita">Iglesia / Ermita</option>
+              <option value="Monumento">Monumento</option>
+              <option value="Yacimiento arqueológico">Yacimiento arqueológico</option>
+              <option value="Centro de interpretación">Centro de interpretación</option>
+              <option value="Palacio / Casa señorial">Palacio / Casa señorial</option>
+              <option value="Torre / Muralla">Torre / Muralla</option>
+              <option value="Puente histórico">Puente histórico</option>
+              <option value="Molino / Molino de agua">Molino / Molino de agua</option>
+              <option value="Convento / Monasterio">Convento / Monasterio</option>
+              <option value="Parque natural / Espacio natural">Parque natural / Espacio natural</option>
+              <option value="Mirador">Mirador</option>
+              <option value="Ruta de senderismo">Ruta de senderismo</option>
+              <option value="Oficina de turismo">Oficina de turismo</option>
+              <option value="Otro">Otro</option>
+            </select>
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-2">Gestión del recurso</label>
@@ -549,14 +565,30 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Tipo *</label>
-                    <input
-                      type="text"
+                    <select
                       value={editTipo}
                       onChange={(e) => setEditTipo(e.target.value)}
                       disabled={guardando}
-                      placeholder="Ej: Museo, Restaurante, Hotel…"
-                      className="w-full px-3 py-2 border rounded disabled:opacity-50"
-                    />
+                      className="w-full px-3 py-2 border rounded disabled:opacity-50 bg-white"
+                    >
+                      <option value="">— Selecciona un tipo —</option>
+                      <option value="Museo">Museo</option>
+                      <option value="Castillo">Castillo</option>
+                      <option value="Iglesia / Ermita">Iglesia / Ermita</option>
+                      <option value="Monumento">Monumento</option>
+                      <option value="Yacimiento arqueológico">Yacimiento arqueológico</option>
+                      <option value="Centro de interpretación">Centro de interpretación</option>
+                      <option value="Palacio / Casa señorial">Palacio / Casa señorial</option>
+                      <option value="Torre / Muralla">Torre / Muralla</option>
+                      <option value="Puente histórico">Puente histórico</option>
+                      <option value="Molino / Molino de agua">Molino / Molino de agua</option>
+                      <option value="Convento / Monasterio">Convento / Monasterio</option>
+                      <option value="Parque natural / Espacio natural">Parque natural / Espacio natural</option>
+                      <option value="Mirador">Mirador</option>
+                      <option value="Ruta de senderismo">Ruta de senderismo</option>
+                      <option value="Oficina de turismo">Oficina de turismo</option>
+                      <option value="Otro">Otro</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-2">Gestión del recurso</label>
