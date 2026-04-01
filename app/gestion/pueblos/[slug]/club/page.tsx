@@ -53,7 +53,7 @@ export default async function ClubGestionPage({
         </div>
       </div>
 
-      <ClubRecursos puebloId={pueblo.id} slug={slug} />
+      <ClubRecursos puebloId={pueblo.id} slug={slug} puebloLat={pueblo.lat ?? null} puebloLng={pueblo.lng ?? null} />
 
       <div className="mt-8 text-sm">
         <Link className="hover:underline" href={`/gestion/pueblos/${slug}`}>

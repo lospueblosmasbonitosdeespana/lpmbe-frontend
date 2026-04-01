@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import HorariosEditor, { HorarioDia, CierreEspecial } from '@/app/_components/editor/HorariosEditor';
+import MapLocationPicker from '@/app/components/MapLocationPicker';
 
 type Recurso = {
   id: number;
@@ -17,6 +18,8 @@ type Recurso = {
   maxAdultos: number;
   maxMenores: number;
   edadMaxMenor: number;
+  lat?: number | null;
+  lng?: number | null;
   horariosSemana?: HorarioDia[];
   cierresEspeciales?: CierreEspecial[];
 };
@@ -39,7 +42,14 @@ function parseApiError(data: any, fallback: string): string {
   return fallback;
 }
 
-export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slug: string }) {
+interface Props {
+  puebloId: number;
+  slug: string;
+  puebloLat: number | null;
+  puebloLng: number | null;
+}
+
+export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: Props) {
   const router = useRouter();
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +66,8 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
   const [nuevoMaxAdultos, setNuevoMaxAdultos] = useState('1');
   const [nuevoMaxMenores, setNuevoMaxMenores] = useState('0');
   const [nuevoEdadMaxMenor, setNuevoEdadMaxMenor] = useState('12');
+  const [nuevoLat, setNuevoLat] = useState('');
+  const [nuevoLng, setNuevoLng] = useState('');
   const [creando, setCreando] = useState(false);
 
   // Edición
@@ -69,9 +81,62 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
   const [editMaxAdultos, setEditMaxAdultos] = useState('1');
   const [editMaxMenores, setEditMaxMenores] = useState('0');
   const [editEdadMaxMenor, setEditEdadMaxMenor] = useState('12');
+  const [editLat, setEditLat] = useState('');
+  const [editLng, setEditLng] = useState('');
   const [editHorariosSemana, setEditHorariosSemana] = useState<HorarioDia[]>([]);
   const [editCierresEspeciales, setEditCierresEspeciales] = useState<CierreEspecial[]>([]);
   const [guardando, setGuardando] = useState(false);
+
+  const mapCenter: [number, number] =
+    puebloLat != null && puebloLng != null ? [puebloLat, puebloLng] : [40.4168, -3.7038];
+  const mapZoom = puebloLat != null ? 14 : 6;
+
+  const existingMarkers = recursos
+    .filter((r) => r.lat != null && r.lng != null)
+    .map((r) => ({
+      lat: r.lat!,
+      lng: r.lng!,
+      label: r.nombre,
+      color: r.activo ? 'blue' : 'grey',
+    }));
+
+  // Selected position for create form
+  const nuevoSelectedPosition = (() => {
+    if (!nuevoLat || !nuevoLng) return null;
+    const lat = Number(nuevoLat);
+    const lng = Number(nuevoLng);
+    if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return null;
+    return { lat, lng };
+  })();
+
+  // Selected position for edit form
+  const editSelectedPosition = (() => {
+    if (!editLat || !editLng) return null;
+    const lat = Number(editLat);
+    const lng = Number(editLng);
+    if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return null;
+    return { lat, lng };
+  })();
+
+  const handleNuevoMapSelect = useCallback((lat: number, lng: number) => {
+    if (lat === 0 && lng === 0) {
+      setNuevoLat('');
+      setNuevoLng('');
+    } else {
+      setNuevoLat((Math.round(lat * 1e6) / 1e6).toString());
+      setNuevoLng((Math.round(lng * 1e6) / 1e6).toString());
+    }
+  }, []);
+
+  const handleEditMapSelect = useCallback((lat: number, lng: number) => {
+    if (lat === 0 && lng === 0) {
+      setEditLat('');
+      setEditLng('');
+    } else {
+      setEditLat((Math.round(lat * 1e6) / 1e6).toString());
+      setEditLng((Math.round(lng * 1e6) / 1e6).toString());
+    }
+  }, []);
 
   async function loadRecursos() {
     setLoading(true);
@@ -115,6 +180,20 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [puebloId]);
 
+  function resetNuevoForm() {
+    setNuevoNombre('');
+    setNuevoTipo('');
+    setNuevoDescuento('');
+    setNuevoPrecio('');
+    setNuevoActivo(true);
+    setNuevoEsExterno(false);
+    setNuevoMaxAdultos('1');
+    setNuevoMaxMenores('0');
+    setNuevoEdadMaxMenor('12');
+    setNuevoLat('');
+    setNuevoLng('');
+  }
+
   async function handleCrear() {
     if (!nuevoNombre.trim()) {
       setError('El nombre es obligatorio');
@@ -136,6 +215,11 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
       return;
     }
 
+    if (!nuevoLat || !nuevoLng) {
+      setError('Es obligatorio geolocalizar el recurso. Usa el mapa o el buscador para fijar la ubicación.');
+      return;
+    }
+
     setCreando(true);
     setError(null);
 
@@ -148,6 +232,8 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
         maxAdultos: Math.max(1, Number(nuevoMaxAdultos) || 1),
         maxMenores: Math.max(0, Number(nuevoMaxMenores) || 0),
         edadMaxMenor: Math.max(0, Number(nuevoEdadMaxMenor) || 12),
+        lat: Number(nuevoLat),
+        lng: Number(nuevoLng),
       };
 
       if (nuevoDescuento) {
@@ -160,9 +246,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
 
       const res = await fetch(`/api/club/recursos/pueblo/${puebloId}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
 
@@ -172,15 +256,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
         return;
       }
 
-      setNuevoNombre('');
-      setNuevoTipo('');
-      setNuevoDescuento('');
-      setNuevoPrecio('');
-      setNuevoActivo(true);
-      setNuevoEsExterno(false);
-      setNuevoMaxAdultos('1');
-      setNuevoMaxMenores('0');
-      setNuevoEdadMaxMenor('12');
+      resetNuevoForm();
       setShowForm(false);
       await loadRecursos();
     } catch (e: any) {
@@ -201,6 +277,8 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
     setEditMaxAdultos(String(r.maxAdultos ?? 1));
     setEditMaxMenores(String(r.maxMenores ?? 0));
     setEditEdadMaxMenor(String(r.edadMaxMenor ?? 12));
+    setEditLat(r.lat != null ? String(r.lat) : '');
+    setEditLng(r.lng != null ? String(r.lng) : '');
     setEditHorariosSemana(r.horariosSemana ?? []);
     setEditCierresEspeciales(r.cierresEspeciales ?? []);
   }
@@ -213,6 +291,8 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
     setEditPrecio('');
     setEditActivo(false);
     setEditEsExterno(false);
+    setEditLat('');
+    setEditLng('');
   }
 
   async function handleGuardar(id: number) {
@@ -236,6 +316,11 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
       return;
     }
 
+    if (!editLat || !editLng) {
+      setError('Es obligatorio geolocalizar el recurso. Usa el mapa o el buscador para fijar la ubicación.');
+      return;
+    }
+
     setGuardando(true);
     setError(null);
 
@@ -248,6 +333,8 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
         maxAdultos: Math.max(1, Number(editMaxAdultos) || 1),
         maxMenores: Math.max(0, Number(editMaxMenores) || 0),
         edadMaxMenor: Math.max(0, Number(editEdadMaxMenor) || 12),
+        lat: Number(editLat),
+        lng: Number(editLng),
         horariosSemana: editHorariosSemana,
         cierresEspeciales: editCierresEspeciales,
       };
@@ -266,9 +353,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
 
       const res = await fetch(`/api/club/recursos/${id}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
 
@@ -315,9 +400,7 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
     try {
       const res = await fetch(`/api/club/recursos/${id}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ activo: !activo }),
       });
 
@@ -333,11 +416,117 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
     }
   }
 
+  const sinGeolocalizar = recursos.filter((r) => r.lat == null || r.lng == null);
+
+  const TIPO_OPTIONS = (
+    <>
+      <option value="">— Selecciona un tipo —</option>
+      <option value="Museo">Museo</option>
+      <option value="Castillo">Castillo</option>
+      <option value="Iglesia / Ermita">Iglesia / Ermita</option>
+      <option value="Monumento">Monumento</option>
+      <option value="Yacimiento arqueológico">Yacimiento arqueológico</option>
+      <option value="Centro de interpretación">Centro de interpretación</option>
+      <option value="Palacio / Casa señorial">Palacio / Casa señorial</option>
+      <option value="Torre / Muralla">Torre / Muralla</option>
+      <option value="Puente histórico">Puente histórico</option>
+      <option value="Molino / Molino de agua">Molino / Molino de agua</option>
+      <option value="Convento / Monasterio">Convento / Monasterio</option>
+      <option value="Parque natural / Espacio natural">Parque natural / Espacio natural</option>
+      <option value="Mirador">Mirador</option>
+      <option value="Ruta de senderismo">Ruta de senderismo</option>
+      <option value="Oficina de turismo">Oficina de turismo</option>
+      <option value="Otro">Otro</option>
+    </>
+  );
+
+  function GestionSelector({ value, onChange, disabled }: { value: boolean; onChange: (v: boolean) => void; disabled: boolean }) {
+    return (
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => onChange(false)}
+          disabled={disabled}
+          className={`px-3 py-1.5 text-sm rounded border transition-colors ${
+            !value
+              ? 'bg-green-50 border-green-300 text-green-700 font-medium'
+              : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+          }`}
+        >
+          Municipal (pueblo)
+        </button>
+        <button
+          type="button"
+          onClick={() => onChange(true)}
+          disabled={disabled}
+          className={`px-3 py-1.5 text-sm rounded border transition-colors ${
+            value
+              ? 'bg-orange-50 border-orange-300 text-orange-700 font-medium'
+              : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+          }`}
+        >
+          Externo (colaborador)
+        </button>
+      </div>
+    );
+  }
+
+  function CondicionesEditor({
+    adultos, menores, edad,
+    setAdultos, setMenores, setEdad,
+    disabled,
+  }: {
+    adultos: string; menores: string; edad: string;
+    setAdultos: (v: string) => void; setMenores: (v: string) => void; setEdad: (v: string) => void;
+    disabled: boolean;
+  }) {
+    return (
+      <div className="p-3 bg-blue-50 border border-blue-200 rounded space-y-2">
+        <label className="block text-sm font-medium text-blue-800">Condiciones del descuento</label>
+        <div className="grid grid-cols-3 gap-2">
+          <div>
+            <label className="block text-xs text-blue-600 mb-1">Máx. adultos</label>
+            <input type="number" min="1" value={adultos} onChange={(e) => setAdultos(e.target.value)} disabled={disabled} className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50" />
+          </div>
+          <div>
+            <label className="block text-xs text-blue-600 mb-1">Máx. menores</label>
+            <input type="number" min="0" value={menores} onChange={(e) => setMenores(e.target.value)} disabled={disabled} className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50" />
+          </div>
+          <div>
+            <label className="block text-xs text-blue-600 mb-1">Edad máx. menor</label>
+            <input type="number" min="0" value={edad} onChange={(e) => setEdad(e.target.value)} disabled={disabled} className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {error && (
         <div className="mt-4 p-3 border rounded text-sm text-red-600 bg-red-50">
           {error}
+        </div>
+      )}
+
+      {/* Warning: recursos sin geolocalizar */}
+      {sinGeolocalizar.length > 0 && !loading && (
+        <div className="mt-4 p-3 rounded-lg border border-amber-300 bg-amber-50 text-sm text-amber-900">
+          <strong>Atención:</strong> {sinGeolocalizar.length === 1 ? 'Hay 1 recurso' : `Hay ${sinGeolocalizar.length} recursos`} sin geolocalizar.
+          Todos los recursos turísticos deben tener ubicación para que aparezcan correctamente en el mapa público.
+          <ul className="mt-1 ml-4 list-disc">
+            {sinGeolocalizar.map((r) => (
+              <li key={r.id}>
+                <button
+                  type="button"
+                  onClick={() => handleIniciarEdicion(r)}
+                  className="text-amber-800 underline hover:text-amber-950 font-medium"
+                >
+                  {r.nombre}
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -355,86 +544,30 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
           <p className="mt-2 text-center text-xs text-gray-400">Añade museos, castillos, monumentos y otros atractivos de tu municipio</p>
         </div>
       ) : (
-        <div className="mt-6 p-4 border rounded space-y-3">
-          <h2 className="font-medium">Nuevo recurso</h2>
+        <div className="mt-6 p-4 border rounded-lg space-y-4">
+          <h2 className="font-medium text-lg">Nuevo recurso</h2>
+
           <div>
             <label className="block text-sm text-gray-600 mb-1">Nombre *</label>
-            <input
-              type="text"
-              value={nuevoNombre}
-              onChange={(e) => setNuevoNombre(e.target.value)}
-              disabled={creando}
-              className="w-full px-3 py-2 border rounded disabled:opacity-50"
-            />
+            <input type="text" value={nuevoNombre} onChange={(e) => setNuevoNombre(e.target.value)} disabled={creando} className="w-full px-3 py-2 border rounded disabled:opacity-50" />
           </div>
+
           <div>
             <label className="block text-sm text-gray-600 mb-1">Tipo *</label>
-            <select
-              value={nuevoTipo}
-              onChange={(e) => setNuevoTipo(e.target.value)}
-              disabled={creando}
-              className="w-full px-3 py-2 border rounded disabled:opacity-50 bg-white"
-            >
-              <option value="">— Selecciona un tipo —</option>
-              <option value="Museo">Museo</option>
-              <option value="Castillo">Castillo</option>
-              <option value="Iglesia / Ermita">Iglesia / Ermita</option>
-              <option value="Monumento">Monumento</option>
-              <option value="Yacimiento arqueológico">Yacimiento arqueológico</option>
-              <option value="Centro de interpretación">Centro de interpretación</option>
-              <option value="Palacio / Casa señorial">Palacio / Casa señorial</option>
-              <option value="Torre / Muralla">Torre / Muralla</option>
-              <option value="Puente histórico">Puente histórico</option>
-              <option value="Molino / Molino de agua">Molino / Molino de agua</option>
-              <option value="Convento / Monasterio">Convento / Monasterio</option>
-              <option value="Parque natural / Espacio natural">Parque natural / Espacio natural</option>
-              <option value="Mirador">Mirador</option>
-              <option value="Ruta de senderismo">Ruta de senderismo</option>
-              <option value="Oficina de turismo">Oficina de turismo</option>
-              <option value="Otro">Otro</option>
+            <select value={nuevoTipo} onChange={(e) => setNuevoTipo(e.target.value)} disabled={creando} className="w-full px-3 py-2 border rounded disabled:opacity-50 bg-white">
+              {TIPO_OPTIONS}
             </select>
           </div>
+
           <div>
             <label className="block text-sm text-gray-600 mb-2">Gestión del recurso</label>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setNuevoEsExterno(false)}
-                disabled={creando}
-                className={`px-3 py-1.5 text-sm rounded border transition-colors ${
-                  !nuevoEsExterno
-                    ? 'bg-green-50 border-green-300 text-green-700 font-medium'
-                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
-                }`}
-              >
-                Municipal (pueblo)
-              </button>
-              <button
-                type="button"
-                onClick={() => setNuevoEsExterno(true)}
-                disabled={creando}
-                className={`px-3 py-1.5 text-sm rounded border transition-colors ${
-                  nuevoEsExterno
-                    ? 'bg-orange-50 border-orange-300 text-orange-700 font-medium'
-                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
-                }`}
-              >
-                Externo (colaborador)
-              </button>
-            </div>
+            <GestionSelector value={nuevoEsExterno} onChange={setNuevoEsExterno} disabled={creando} />
           </div>
+
           <div className="flex items-end gap-4">
             <div>
               <label className="block text-sm text-gray-600 mb-1">Descuento (%)</label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                value={nuevoDescuento}
-                onChange={(e) => setNuevoDescuento(e.target.value)}
-                disabled={creando}
-                className="w-24 px-3 py-2 border rounded disabled:opacity-50"
-              />
+              <input type="number" min="0" max="100" value={nuevoDescuento} onChange={(e) => setNuevoDescuento(e.target.value)} disabled={creando} className="w-24 px-3 py-2 border rounded disabled:opacity-50" />
             </div>
             <div className="flex-1">
               <label className="block text-sm text-gray-600 mb-1">Precio (€)</label>
@@ -451,93 +584,59 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                 >
                   Gratuito
                 </button>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={nuevoPrecio}
-                  onChange={(e) => setNuevoPrecio(e.target.value)}
-                  disabled={creando}
-                  className="flex-1 px-3 py-2 border rounded disabled:opacity-50"
-                  placeholder="0.00"
-                />
+                <input type="number" min="0" step="0.01" value={nuevoPrecio} onChange={(e) => setNuevoPrecio(e.target.value)} disabled={creando} className="flex-1 px-3 py-2 border rounded disabled:opacity-50" placeholder="0.00" />
               </div>
             </div>
           </div>
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded space-y-2">
-            <label className="block text-sm font-medium text-blue-800">Condiciones del descuento</label>
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <label className="block text-xs text-blue-600 mb-1">Máx. adultos</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={nuevoMaxAdultos}
-                  onChange={(e) => setNuevoMaxAdultos(e.target.value)}
-                  disabled={creando}
-                  className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-blue-600 mb-1">Máx. menores</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={nuevoMaxMenores}
-                  onChange={(e) => setNuevoMaxMenores(e.target.value)}
-                  disabled={creando}
-                  className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-blue-600 mb-1">Edad máx. menor</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={nuevoEdadMaxMenor}
-                  onChange={(e) => setNuevoEdadMaxMenor(e.target.value)}
-                  disabled={creando}
-                  className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50"
-                />
-              </div>
-            </div>
-          </div>
+
+          <CondicionesEditor
+            adultos={nuevoMaxAdultos} menores={nuevoMaxMenores} edad={nuevoEdadMaxMenor}
+            setAdultos={setNuevoMaxAdultos} setMenores={setNuevoMaxMenores} setEdad={setNuevoEdadMaxMenor}
+            disabled={creando}
+          />
+
           <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={nuevoActivo}
-              onChange={(e) => setNuevoActivo(e.target.checked)}
-              disabled={creando}
-              className="disabled:opacity-50"
-            />
+            <input type="checkbox" checked={nuevoActivo} onChange={(e) => setNuevoActivo(e.target.checked)} disabled={creando} className="disabled:opacity-50" />
             <label className="text-sm text-gray-600">Activo</label>
           </div>
+
+          {/* Geolocalización */}
+          <div className="rounded-lg border-2 border-emerald-300 bg-emerald-50/50 p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-emerald-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <h3 className="text-sm font-semibold text-emerald-800">Ubicación en el mapa *</h3>
+            </div>
+            <p className="text-xs text-emerald-700">Busca el lugar en el buscador, haz clic en el mapa o arrastra el marcador rojo para fijar la ubicación exacta.</p>
+            <MapLocationPicker
+              center={nuevoSelectedPosition ? [nuevoSelectedPosition.lat, nuevoSelectedPosition.lng] : mapCenter}
+              zoom={nuevoSelectedPosition ? 16 : mapZoom}
+              existingMarkers={existingMarkers}
+              selectedPosition={nuevoSelectedPosition}
+              onLocationSelect={handleNuevoMapSelect}
+              height="300px"
+              searchPlaceholder="Buscar lugar (ej: Castillo de Ainsa)…"
+              activeHint="Haz clic en el mapa para ubicar el recurso"
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Latitud</label>
+                <input type="number" step="any" value={nuevoLat} onChange={(e) => setNuevoLat(e.target.value)} disabled={creando} className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50 font-mono" placeholder="42.4177" />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Longitud</label>
+                <input type="number" step="any" value={nuevoLng} onChange={(e) => setNuevoLng(e.target.value)} disabled={creando} className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50 font-mono" placeholder="0.1393" />
+              </div>
+            </div>
+          </div>
+
           <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={handleCrear}
-              disabled={creando || !nuevoNombre.trim() || !nuevoTipo.trim()}
-              className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
-            >
-              {creando ? 'Creando…' : 'Crear'}
+            <button type="button" onClick={handleCrear} disabled={creando || !nuevoNombre.trim() || !nuevoTipo.trim()} className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50">
+              {creando ? 'Creando…' : 'Crear recurso'}
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowForm(false);
-                setNuevoNombre('');
-                setNuevoTipo('');
-                setNuevoDescuento('');
-                setNuevoPrecio('');
-                setNuevoActivo(true);
-                setNuevoEsExterno(false);
-                setNuevoMaxAdultos('1');
-                setNuevoMaxMenores('0');
-                setNuevoEdadMaxMenor('12');
-              }}
-              disabled={creando}
-              className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
-            >
+            <button type="button" onClick={() => { setShowForm(false); resetNuevoForm(); }} disabled={creando} className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50">
               Cancelar
             </button>
           </div>
@@ -557,82 +656,22 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                 <>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Nombre *</label>
-                    <input
-                      type="text"
-                      value={editNombre}
-                      onChange={(e) => setEditNombre(e.target.value)}
-                      disabled={guardando}
-                      className="w-full px-3 py-2 border rounded disabled:opacity-50"
-                    />
+                    <input type="text" value={editNombre} onChange={(e) => setEditNombre(e.target.value)} disabled={guardando} className="w-full px-3 py-2 border rounded disabled:opacity-50" />
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Tipo *</label>
-                    <select
-                      value={editTipo}
-                      onChange={(e) => setEditTipo(e.target.value)}
-                      disabled={guardando}
-                      className="w-full px-3 py-2 border rounded disabled:opacity-50 bg-white"
-                    >
-                      <option value="">— Selecciona un tipo —</option>
-                      <option value="Museo">Museo</option>
-                      <option value="Castillo">Castillo</option>
-                      <option value="Iglesia / Ermita">Iglesia / Ermita</option>
-                      <option value="Monumento">Monumento</option>
-                      <option value="Yacimiento arqueológico">Yacimiento arqueológico</option>
-                      <option value="Centro de interpretación">Centro de interpretación</option>
-                      <option value="Palacio / Casa señorial">Palacio / Casa señorial</option>
-                      <option value="Torre / Muralla">Torre / Muralla</option>
-                      <option value="Puente histórico">Puente histórico</option>
-                      <option value="Molino / Molino de agua">Molino / Molino de agua</option>
-                      <option value="Convento / Monasterio">Convento / Monasterio</option>
-                      <option value="Parque natural / Espacio natural">Parque natural / Espacio natural</option>
-                      <option value="Mirador">Mirador</option>
-                      <option value="Ruta de senderismo">Ruta de senderismo</option>
-                      <option value="Oficina de turismo">Oficina de turismo</option>
-                      <option value="Otro">Otro</option>
+                    <select value={editTipo} onChange={(e) => setEditTipo(e.target.value)} disabled={guardando} className="w-full px-3 py-2 border rounded disabled:opacity-50 bg-white">
+                      {TIPO_OPTIONS}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-2">Gestión del recurso</label>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setEditEsExterno(false)}
-                        disabled={guardando}
-                        className={`px-3 py-1.5 text-sm rounded border transition-colors ${
-                          !editEsExterno
-                            ? 'bg-green-50 border-green-300 text-green-700 font-medium'
-                            : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
-                        }`}
-                      >
-                        Municipal (pueblo)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditEsExterno(true)}
-                        disabled={guardando}
-                        className={`px-3 py-1.5 text-sm rounded border transition-colors ${
-                          editEsExterno
-                            ? 'bg-orange-50 border-orange-300 text-orange-700 font-medium'
-                            : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
-                        }`}
-                      >
-                        Externo (colaborador)
-                      </button>
-                    </div>
+                    <GestionSelector value={editEsExterno} onChange={setEditEsExterno} disabled={guardando} />
                   </div>
                   <div className="flex items-end gap-4">
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Descuento (%)</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={editDescuento}
-                        onChange={(e) => setEditDescuento(e.target.value)}
-                        disabled={guardando}
-                        className="w-24 px-3 py-2 border rounded disabled:opacity-50"
-                      />
+                      <input type="number" min="0" max="100" value={editDescuento} onChange={(e) => setEditDescuento(e.target.value)} disabled={guardando} className="w-24 px-3 py-2 border rounded disabled:opacity-50" />
                     </div>
                     <div className="flex-1">
                       <label className="block text-sm text-gray-600 mb-1">Precio (€)</label>
@@ -649,66 +688,55 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                         >
                           Gratuito
                         </button>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={editPrecio}
-                          onChange={(e) => setEditPrecio(e.target.value)}
-                          disabled={guardando}
-                          className="flex-1 px-3 py-2 border rounded disabled:opacity-50"
-                          placeholder="0.00"
-                        />
+                        <input type="number" min="0" step="0.01" value={editPrecio} onChange={(e) => setEditPrecio(e.target.value)} disabled={guardando} className="flex-1 px-3 py-2 border rounded disabled:opacity-50" placeholder="0.00" />
                       </div>
                     </div>
                   </div>
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded space-y-2">
-                    <label className="block text-sm font-medium text-blue-800">Condiciones del descuento</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div>
-                        <label className="block text-xs text-blue-600 mb-1">Máx. adultos</label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={editMaxAdultos}
-                          onChange={(e) => setEditMaxAdultos(e.target.value)}
-                          disabled={guardando}
-                          className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-blue-600 mb-1">Máx. menores</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={editMaxMenores}
-                          onChange={(e) => setEditMaxMenores(e.target.value)}
-                          disabled={guardando}
-                          className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-blue-600 mb-1">Edad máx. menor</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={editEdadMaxMenor}
-                          onChange={(e) => setEditEdadMaxMenor(e.target.value)}
-                          disabled={guardando}
-                          className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50"
-                        />
-                      </div>
-                    </div>
-                  </div>
+
+                  <CondicionesEditor
+                    adultos={editMaxAdultos} menores={editMaxMenores} edad={editEdadMaxMenor}
+                    setAdultos={setEditMaxAdultos} setMenores={setEditMaxMenores} setEdad={setEditEdadMaxMenor}
+                    disabled={guardando}
+                  />
+
                   <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={editActivo}
-                      onChange={(e) => setEditActivo(e.target.checked)}
-                      disabled={guardando}
-                      className="disabled:opacity-50"
-                    />
+                    <input type="checkbox" checked={editActivo} onChange={(e) => setEditActivo(e.target.checked)} disabled={guardando} className="disabled:opacity-50" />
                     <label className="text-sm text-gray-600">Activo</label>
+                  </div>
+
+                  {/* Geolocalización (edición) */}
+                  <div className={`rounded-lg border-2 p-4 space-y-3 ${editLat && editLng ? 'border-emerald-300 bg-emerald-50/50' : 'border-red-300 bg-red-50/50'}`}>
+                    <div className="flex items-center gap-2">
+                      <svg className={`h-5 w-5 ${editLat && editLng ? 'text-emerald-700' : 'text-red-700'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <h3 className={`text-sm font-semibold ${editLat && editLng ? 'text-emerald-800' : 'text-red-800'}`}>
+                        Ubicación en el mapa *
+                        {!editLat || !editLng ? ' — Sin geolocalizar' : ''}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-gray-600">Busca el lugar, haz clic en el mapa o arrastra el marcador rojo.</p>
+                    <MapLocationPicker
+                      center={editSelectedPosition ? [editSelectedPosition.lat, editSelectedPosition.lng] : mapCenter}
+                      zoom={editSelectedPosition ? 16 : mapZoom}
+                      existingMarkers={existingMarkers}
+                      selectedPosition={editSelectedPosition}
+                      onLocationSelect={handleEditMapSelect}
+                      height="300px"
+                      searchPlaceholder="Buscar lugar (ej: Castillo de Ainsa)…"
+                      activeHint={`Haz clic en el mapa para ${editSelectedPosition ? 'cambiar' : 'fijar'} la ubicación`}
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Latitud</label>
+                        <input type="number" step="any" value={editLat} onChange={(e) => setEditLat(e.target.value)} disabled={guardando} className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50 font-mono" placeholder="42.4177" />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Longitud</label>
+                        <input type="number" step="any" value={editLng} onChange={(e) => setEditLng(e.target.value)} disabled={guardando} className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50 font-mono" placeholder="0.1393" />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Horarios y cierres especiales */}
@@ -722,20 +750,10 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                   </div>
 
                   <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleGuardar(r.id)}
-                      disabled={guardando || !editNombre.trim()}
-                      className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
-                    >
+                    <button type="button" onClick={() => handleGuardar(r.id)} disabled={guardando || !editNombre.trim()} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50">
                       {guardando ? 'Guardando…' : 'Guardar'}
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleCancelarEdicion}
-                      disabled={guardando}
-                      className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
-                    >
+                    <button type="button" onClick={handleCancelarEdicion} disabled={guardando} className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50">
                       Cancelar
                     </button>
                   </div>
@@ -755,6 +773,22 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                         >
                           {r.esExterno ? 'Externo' : 'Municipal'}
                         </span>
+                        {r.lat != null && r.lng != null ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Geolocalizado
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-red-50 text-red-700 border border-red-200">
+                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Sin ubicación
+                          </span>
+                        )}
                       </div>
                       <div className="text-sm text-gray-600">Tipo: {r.tipo || '—'}</div>
                       <div className="text-sm text-gray-600">
@@ -780,41 +814,21 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
                     </div>
                   </div>
                   <div className="flex gap-2 mt-3 flex-wrap">
-                    <button
-                      type="button"
-                      onClick={() => handleIniciarEdicion(r)}
-                      className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
-                    >
+                    <button type="button" onClick={() => handleIniciarEdicion(r)} className="px-3 py-1 text-sm border rounded hover:bg-gray-50">
                       Editar
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => handleToggleActivo(r.id, r.activo)}
-                      className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
-                    >
+                    <button type="button" onClick={() => handleToggleActivo(r.id, r.activo)} className="px-3 py-1 text-sm border rounded hover:bg-gray-50">
                       {r.activo ? 'Desactivar' : 'Activar'}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => handleEliminar(r.id)}
-                      className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
-                    >
+                    <button type="button" onClick={() => handleEliminar(r.id)} className="px-3 py-1 text-sm border rounded hover:bg-gray-50">
                       Eliminar
                     </button>
                     {r.activo && (
-                      <a
-                        href={`/validador/${r.id}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-3 py-1 text-sm border rounded hover:bg-gray-50 inline-block text-center"
-                      >
+                      <a href={`/validador/${r.id}`} target="_blank" rel="noreferrer" className="px-3 py-1 text-sm border rounded hover:bg-gray-50 inline-block text-center">
                         Validador
                       </a>
                     )}
-                    <a
-                      href={`/gestion/asociacion/club/metricas/${puebloId}`}
-                      className="px-3 py-1 text-sm border rounded hover:bg-blue-50 text-blue-600 border-blue-200 inline-block text-center"
-                    >
+                    <a href={`/gestion/asociacion/club/metricas/${puebloId}`} className="px-3 py-1 text-sm border rounded hover:bg-blue-50 text-blue-600 border-blue-200 inline-block text-center">
                       Métricas
                     </a>
                   </div>
