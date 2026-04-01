@@ -1,16 +1,24 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from '@/lib/seo';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = '/eventos';
+  const title = 'Eventos';
+  const description = 'Agenda de eventos en Los Pueblos Más Bonitos de España.';
   return {
-    title: 'Eventos',
-    description: 'Agenda de eventos en Los Pueblos Más Bonitos de España.',
+    title,
+    description,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
     },
   };
 }
