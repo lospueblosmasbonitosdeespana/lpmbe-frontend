@@ -8,7 +8,6 @@ import {
   metaLocaleLead,
   seoDescription,
   seoTitle,
-  titleLocaleSuffix,
   type SupportedLocale,
 } from '@/lib/seo';
 
@@ -28,10 +27,9 @@ const MX_DESC: Record<string, string> = {
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = '/multiexperiencias';
-  const locSuf = titleLocaleSuffix(locale);
   const desc = MX_DESC[locale] ?? `${metaLocaleLead(locale)}${MX_DESC.es}`;
   return {
-    title: seoTitle(`Multiexperiencias${locSuf}`),
+    title: seoTitle(`Multiexperiencias`),
     description: seoDescription(desc),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),

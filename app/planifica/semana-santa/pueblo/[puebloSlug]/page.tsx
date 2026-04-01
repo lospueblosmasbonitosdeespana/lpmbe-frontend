@@ -1,8 +1,10 @@
+import type { Metadata } from "next";
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getApiUrl } from '@/lib/api';
 import AgendaInteractiva from './AgendaInteractiva';
 import { getLocale, getTranslations } from 'next-intl/server';
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { translateHolyWeekDayLabel } from './day-labels';
 import ImagenConLightbox from './ImagenConLightbox';
 import StreamPlayer from './StreamPlayer';
@@ -10,6 +12,45 @@ import YoutubeEmbed from './YoutubeEmbed';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+const DESC_TEMPLATE: Record<string, string> = {
+  es: "Semana Santa en {name}: procesiones, horarios, agenda y retransmisiones en directo.",
+  en: "Holy Week in {name}: processions, schedules, programme and live streams.",
+  fr: "Semaine sainte à {name} : processions, horaires, programme et retransmissions en direct.",
+  de: "Karwoche in {name}: Prozessionen, Zeiten, Programm und Livestreams.",
+  pt: "Semana Santa em {name}: procissões, horários, agenda e transmissões em direto.",
+  it: "Settimana Santa a {name}: processioni, orari, programma e dirette streaming.",
+  ca: "Setmana Santa a {name}: processons, horaris, agenda i retransmissions en directe.",
+};
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ puebloSlug: string }>;
+}): Promise<Metadata> {
+  const { puebloSlug } = await params;
+  const locale = (await getLocale()) as SupportedLocale;
+  const name = slugToTitle(puebloSlug);
+  const path = `/planifica/semana-santa/pueblo/${puebloSlug}`;
+  const title = seoTitle(`Semana Santa en ${name}`);
+  const descTemplate = DESC_TEMPLATE[locale] ?? DESC_TEMPLATE.es;
+  const description = seoDescription(descTemplate.replace("{name}", name));
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 
 type Dia = {

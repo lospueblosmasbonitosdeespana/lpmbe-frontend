@@ -10,7 +10,6 @@ import {
   metaLocaleLead,
   seoDescription,
   seoTitle,
-  titleLocaleSuffix,
   uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
@@ -76,17 +75,16 @@ const EXP_DESC: Record<string, string> = {
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = "/experiencias";
-  const locSuf = titleLocaleSuffix(locale);
   const desc = EXP_DESC[locale] ?? `${metaLocaleLead(locale)}${EXP_DESC.es}`;
   return {
-    title: seoTitle(`Experiencias temáticas${locSuf}`),
+    title: seoTitle(`Experiencias temáticas`),
     description: seoDescription(desc),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: seoTitle(`Experiencias temáticas${locSuf}`),
+      title: seoTitle(`Experiencias temáticas`),
       description: seoDescription(desc),
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),

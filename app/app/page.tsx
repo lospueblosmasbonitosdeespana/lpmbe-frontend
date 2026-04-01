@@ -1,8 +1,9 @@
+import type { Metadata } from "next";
 import Image from 'next/image';
 import { getApiUrl } from '@/lib/api';
 import AppDownloadActions from './AppDownloadActions.client';
 import { getLocale, getTranslations } from 'next-intl/server';
-import { SUPPORTED_LOCALES, type SupportedLocale } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, SUPPORTED_LOCALES, type SupportedLocale } from '@/lib/seo';
 
 const APP_STORE_URL =
   'https://apps.apple.com/es/app/los-pueblos-m%C3%A1s-bonitos-de-esp/id6755147967';
@@ -10,6 +11,48 @@ const PLAY_STORE_URL =
   'https://play.google.com/store/apps/details?id=app.rork.pueblos_bonitos_app';
 
 export const dynamic = "force-dynamic";
+
+const PAGE_TITLE: Record<string, string> = {
+  es: "App oficial - Los Pueblos Más Bonitos de España",
+  en: "Official App - The Most Beautiful Villages of Spain",
+  fr: "Application officielle - Les Plus Beaux Villages d'Espagne",
+  de: "Offizielle App - Die Schönsten Dörfer Spaniens",
+  pt: "App oficial - As Aldeias Mais Bonitas de Espanha",
+  it: "App ufficiale - I Borghi Più Belli della Spagna",
+  ca: "App oficial - Els Pobles Més Bonics d'Espanya",
+};
+
+const PAGE_DESC: Record<string, string> = {
+  es: "Descarga la app oficial de Los Pueblos Más Bonitos de España. Rutas, mapas, alertas y planifica tu escapada.",
+  en: "Download the official app of The Most Beautiful Villages of Spain. Routes, maps, alerts and plan your getaway.",
+  fr: "Téléchargez l'application officielle des Plus Beaux Villages d'Espagne. Itinéraires, cartes et alertes.",
+  de: "Laden Sie die offizielle App der Schönsten Dörfer Spaniens herunter. Routen, Karten und Benachrichtigungen.",
+  pt: "Descarregue a app oficial das Aldeias Mais Bonitas de Espanha. Rotas, mapas e alertas.",
+  it: "Scarica l'app ufficiale dei Borghi Più Belli della Spagna. Percorsi, mappe e avvisi.",
+  ca: "Descarrega l'app oficial dels Pobles Més Bonics d'Espanya. Rutes, mapes i alertes.",
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const path = "/app";
+  const title = seoTitle(PAGE_TITLE[locale] ?? PAGE_TITLE.es);
+  const description = seoDescription(PAGE_DESC[locale] ?? PAGE_DESC.es);
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 type AppWebPageConfig = {
   title?: string;

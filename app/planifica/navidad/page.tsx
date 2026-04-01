@@ -1,9 +1,53 @@
+import type { Metadata } from "next";
 import { getApiUrl } from '@/lib/api';
 import { getLocale } from 'next-intl/server';
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 import NavidadLandingClient from './NavidadLandingClient';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+const PAGE_TITLE: Record<string, string> = {
+  es: "Planifica tu Navidad en los pueblos más bonitos",
+  en: "Plan your Christmas in the most beautiful villages",
+  fr: "Planifiez votre Noël dans les plus beaux villages",
+  de: "Planen Sie Ihre Weihnachten in den schönsten Dörfern",
+  pt: "Planeie o seu Natal nas aldeias mais bonitas",
+  it: "Pianifica il tuo Natale nei borghi più belli",
+  ca: "Planifica el teu Nadal als pobles més bonics",
+};
+
+const PAGE_DESC: Record<string, string> = {
+  es: "Descubre los eventos y actividades navideñas en los pueblos más bonitos de España. Belenes, mercadillos y tradiciones.",
+  en: "Discover Christmas events and activities in Spain's most beautiful villages. Nativity scenes, markets and traditions.",
+  fr: "Découvrez les événements de Noël dans les plus beaux villages d'Espagne. Crèches, marchés et traditions.",
+  de: "Entdecken Sie Weihnachtsveranstaltungen in Spaniens schönsten Dörfern. Krippen, Märkte und Traditionen.",
+  pt: "Descubra os eventos de Natal nas aldeias mais bonitas de Espanha. Presépios, mercados e tradições.",
+  it: "Scopri gli eventi natalizi nei borghi più belli della Spagna. Presepi, mercatini e tradizioni.",
+  ca: "Descobreix els esdeveniments nadalencs als pobles més bonics d'Espanya. Pessebres, mercats i tradicions.",
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const path = "/planifica/navidad";
+  const title = seoTitle(PAGE_TITLE[locale] ?? PAGE_TITLE.es);
+  const description = seoDescription(PAGE_DESC[locale] ?? PAGE_DESC.es);
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 type Evento = {
   id: number;

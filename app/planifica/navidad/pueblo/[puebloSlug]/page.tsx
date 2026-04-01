@@ -1,10 +1,51 @@
+import type { Metadata } from "next";
 import { getApiUrl } from '@/lib/api';
 import { getLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import NavidadPuebloClient from './NavidadPuebloClient';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+const DESC_TEMPLATE: Record<string, string> = {
+  es: "Navidad en {name}: eventos, belenes, mercadillos y actividades navideñas.",
+  en: "Christmas in {name}: events, nativity scenes, markets and festive activities.",
+  fr: "Noël à {name} : événements, crèches, marchés et activités festives.",
+  de: "Weihnachten in {name}: Veranstaltungen, Krippen, Märkte und festliche Aktivitäten.",
+  pt: "Natal em {name}: eventos, presépios, mercados e atividades festivas.",
+  it: "Natale a {name}: eventi, presepi, mercatini e attività festive.",
+  ca: "Nadal a {name}: esdeveniments, pessebres, mercats i activitats festives.",
+};
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ puebloSlug: string }>;
+}): Promise<Metadata> {
+  const { puebloSlug } = await params;
+  const locale = (await getLocale()) as SupportedLocale;
+  const name = slugToTitle(puebloSlug);
+  const path = `/planifica/navidad/pueblo/${puebloSlug}`;
+  const title = seoTitle(`Navidad en ${name}`);
+  const descTemplate = DESC_TEMPLATE[locale] ?? DESC_TEMPLATE.es;
+  const description = seoDescription(descTemplate.replace("{name}", name));
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 type Evento = {
   id: number;

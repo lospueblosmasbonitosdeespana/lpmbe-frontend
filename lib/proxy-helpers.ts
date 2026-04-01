@@ -5,15 +5,18 @@ import { fetchWithTimeout } from '@/lib/fetch-safe';
 
 /**
  * Helper genérico para proxy de API: reenvía la petición al backend y devuelve la respuesta.
- * Incluye timeout de 15 s y 1 retry automático en 502/503/504 o error de red.
+ * Las operaciones de escritura (POST/PUT/PATCH) usan 45s de timeout para cubrir traducciones DeepL.
+ * Las de lectura usan 8s (default).
  */
 export async function proxyToBackend(
   req: Request,
   method: string,
   backendPath: string,
-  options: { auth?: boolean; parseBody?: boolean } = {},
+  options: { auth?: boolean; parseBody?: boolean; timeoutMs?: number } = {},
 ) {
   const { auth = true, parseBody = true } = options;
+  // Operaciones con traducciones DeepL pueden tardar varios segundos → 45s para escrituras
+  const timeoutMs = options.timeoutMs ?? (['POST', 'PUT', 'PATCH'].includes(method) ? 45_000 : 8_000);
 
   let token: string | null = null;
   if (auth) {
@@ -43,6 +46,7 @@ export async function proxyToBackend(
       headers,
       body,
       cache: 'no-store',
+      timeoutMs,
     });
 
     const text = await upstream.text();

@@ -1,13 +1,57 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { getLocale } from "next-intl/server";
 import { getPueblosLite } from "@/lib/api";
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 import { CCAA, norm } from "../../_components/pueblos/ccaa.config";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Display, Lead } from "@/app/components/ui/typography";
+
+const PAGE_TITLE: Record<string, string> = {
+  es: "Pueblos por comunidades autónomas",
+  en: "Villages by autonomous communities",
+  fr: "Villages par communautés autonomes",
+  de: "Dörfer nach autonomen Gemeinschaften",
+  pt: "Aldeias por comunidades autónomas",
+  it: "Borghi per comunità autonome",
+  ca: "Pobles per comunitats autònomes",
+};
+
+const PAGE_DESC: Record<string, string> = {
+  es: "Explora los pueblos más bonitos de España organizados por comunidad autónoma. Elige tu región favorita.",
+  en: "Explore the most beautiful villages in Spain organised by autonomous community. Choose your favourite region.",
+  fr: "Explorez les plus beaux villages d'Espagne classés par communauté autonome. Choisissez votre région.",
+  de: "Entdecken Sie die schönsten Dörfer Spaniens nach autonomer Gemeinschaft. Wählen Sie Ihre Region.",
+  pt: "Explore as aldeias mais bonitas de Espanha por comunidade autónoma. Escolha a sua região.",
+  it: "Esplora i borghi più belli della Spagna per comunità autonoma. Scegli la tua regione.",
+  ca: "Explora els pobles més bonics d'Espanya per comunitat autònoma. Tria la teva regió.",
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const path = "/pueblos/comunidades";
+  const title = seoTitle(PAGE_TITLE[locale] ?? PAGE_TITLE.es);
+  const description = seoDescription(PAGE_DESC[locale] ?? PAGE_DESC.es);
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 export default async function ComunidadesPage() {
   const locale = await getLocale();

@@ -6,7 +6,6 @@ import {
   getLocaleAlternates,
   seoDescription,
   seoTitle,
-  titleLocaleSuffix,
   uniqueH1ForLocale,
   type SupportedLocale,
 } from '@/lib/seo';
@@ -82,8 +81,7 @@ export async function generateMetadata({
   if (!config) {
     return { title: 'Experiencia' };
   }
-  const locSuf = titleLocaleSuffix(locale);
-  const title = seoTitle(`${t(config.titleKey)}${locSuf}`);
+  const title = seoTitle(t(config.titleKey));
   const description = seoDescription(t(config.descKey));
   const path = `/experiencias/${slug}`;
   return {

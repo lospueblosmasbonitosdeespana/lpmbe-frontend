@@ -1,11 +1,55 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getLocale } from "next-intl/server";
 import { getPueblosLite } from "@/lib/api";
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Display, Lead } from "@/app/components/ui/typography";
+
+const PAGE_TITLE: Record<string, string> = {
+  es: "Pueblos por provincias",
+  en: "Villages by province",
+  fr: "Villages par province",
+  de: "Dörfer nach Provinz",
+  pt: "Aldeias por província",
+  it: "Borghi per provincia",
+  ca: "Pobles per província",
+};
+
+const PAGE_DESC: Record<string, string> = {
+  es: "Encuentra los pueblos más bonitos de España organizados por provincia. Elige tu provincia y descubre qué visitar.",
+  en: "Find the most beautiful villages in Spain by province. Choose a province and discover what to visit.",
+  fr: "Trouvez les plus beaux villages d'Espagne par province. Choisissez une province et découvrez quoi visiter.",
+  de: "Finden Sie die schönsten Dörfer Spaniens nach Provinz. Wählen Sie eine Provinz und entdecken Sie Sehenswertes.",
+  pt: "Encontre as aldeias mais bonitas de Espanha por província. Escolha uma província e descubra o que visitar.",
+  it: "Trova i borghi più belli della Spagna per provincia. Scegli una provincia e scopri cosa visitare.",
+  ca: "Troba els pobles més bonics d'Espanya per província. Tria una província i descobreix què visitar.",
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const path = "/pueblos/provincias";
+  const title = seoTitle(PAGE_TITLE[locale] ?? PAGE_TITLE.es);
+  const description = seoDescription(PAGE_DESC[locale] ?? PAGE_DESC.es);
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 function normalize(s: string) {
   return s.trim();

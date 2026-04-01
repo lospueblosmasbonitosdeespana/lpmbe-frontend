@@ -19,7 +19,6 @@ import {
   metaLocaleLead,
   seoDescription,
   seoTitle,
-  titleLocaleSuffix,
   type SupportedLocale,
 } from "@/lib/seo";
 
@@ -28,9 +27,8 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = "/redes-sociales";
-  const locSuf = titleLocaleSuffix(locale);
   return {
-    title: seoTitle(`Redes sociales${locSuf}`),
+    title: seoTitle(`Redes sociales`),
     description: seoDescription(
       `${metaLocaleLead(locale as SupportedLocale)}Síguenos en Instagram, Facebook, X, TikTok y YouTube. Colaboraciones con creadores e influencers. Comunidad Los Pueblos Más Bonitos de España.`,
     ),

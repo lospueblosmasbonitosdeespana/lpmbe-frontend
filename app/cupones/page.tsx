@@ -1,4 +1,21 @@
+import type { Metadata } from "next";
 import Link from 'next/link';
+import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription } from "@/lib/seo";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const path = "/cupones";
+  const title = seoTitle("Cupones y descuentos");
+  const description = seoDescription("Aprovecha cupones de descuento en tus compras en la tienda de Los Pueblos Más Bonitos de España.");
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path),
+      languages: getLocaleAlternates(path),
+    },
+    robots: { index: false, follow: false },
+  };
+}
 
 export default function CuponesPage() {
   return (

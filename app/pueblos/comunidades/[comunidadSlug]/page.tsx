@@ -1,14 +1,56 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { getPueblosLite, type PuebloLite } from "@/lib/api";
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { findCcaaBySlug, norm } from "../../../_components/pueblos/ccaa.config";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Display, Lead, Title } from "@/app/components/ui/typography";
+
+const DESC_TEMPLATE: Record<string, string> = {
+  es: "Pueblos más bonitos de España en {name}. Descubre los pueblos organizados por provincia.",
+  en: "Most beautiful villages of Spain in {name}. Discover villages organised by province.",
+  fr: "Plus beaux villages d'Espagne en {name}. Découvrez les villages par province.",
+  de: "Schönste Dörfer Spaniens in {name}. Entdecken Sie Dörfer nach Provinz.",
+  pt: "Aldeias mais bonitas de Espanha em {name}. Descubra as aldeias por província.",
+  it: "Borghi più belli della Spagna in {name}. Scopri i borghi per provincia.",
+  ca: "Pobles més bonics d'Espanya a {name}. Descobreix els pobles per província.",
+};
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ comunidadSlug: string }>;
+}): Promise<Metadata> {
+  const { comunidadSlug } = await params;
+  const locale = (await getLocale()) as SupportedLocale;
+  const ccaa = findCcaaBySlug(comunidadSlug);
+  const name = ccaa?.name ?? slugToTitle(comunidadSlug);
+  const path = `/pueblos/comunidades/${comunidadSlug}`;
+  const title = seoTitle(`${name} - Pueblos`);
+  const descTemplate = DESC_TEMPLATE[locale] ?? DESC_TEMPLATE.es;
+  const description = seoDescription(descTemplate.replace("{name}", name));
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 export default async function ComunidadDetallePage({
   params,

@@ -6,7 +6,6 @@ import {
   getLocaleAlternates,
   seoDescription,
   seoTitle,
-  titleLocaleSuffix,
   type SupportedLocale,
 } from "@/lib/seo";
 import { MeteoList } from "./MeteoList";
@@ -17,9 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = "/meteo";
   const t = await getTranslations("meteoPage");
-  const locSuf = titleLocaleSuffix(locale);
   return {
-    title: seoTitle(`${t("title")}${locSuf}`),
+    title: seoTitle(t("title")),
     description: seoDescription(t("metaDescription")),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),

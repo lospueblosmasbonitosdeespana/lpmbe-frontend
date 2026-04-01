@@ -8,7 +8,6 @@ import {
   metaLocaleLead,
   seoDescription,
   seoTitle,
-  titleLocaleSuffix,
   type SupportedLocale,
 } from '@/lib/seo';
 import { NewsletterPageClient } from './NewsletterPageClient';
@@ -26,10 +25,9 @@ const NL_DESC: Record<string, string> = {
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = '/newsletter';
-  const locSuf = titleLocaleSuffix(locale);
   const desc = NL_DESC[locale] ?? `${metaLocaleLead(locale)}${NL_DESC.es}`;
   return {
-    title: seoTitle(`Newsletter${locSuf}`),
+    title: seoTitle(`Newsletter`),
     description: seoDescription(desc),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),

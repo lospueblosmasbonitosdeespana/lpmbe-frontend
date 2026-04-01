@@ -1,9 +1,53 @@
+import type { Metadata } from "next";
 import Link from 'next/link';
 import { getTranslations, getLocale } from 'next-intl/server';
 import { getApiUrl } from '@/lib/api';
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+const PAGE_TITLE: Record<string, string> = {
+  es: "Pueblos participantes en La Noche Romántica",
+  en: "Participating villages in La Noche Romántica",
+  fr: "Villages participants à La Noche Romántica",
+  de: "Teilnehmende Dörfer an La Noche Romántica",
+  pt: "Aldeias participantes em La Noche Romántica",
+  it: "Borghi partecipanti a La Noche Romántica",
+  ca: "Pobles participants a La Noche Romántica",
+};
+
+const PAGE_DESC: Record<string, string> = {
+  es: "Consulta todos los pueblos que participan en La Noche Romántica, con actividades, restaurantes y alojamientos.",
+  en: "See all villages participating in La Noche Romántica, with activities, restaurants and accommodation.",
+  fr: "Consultez tous les villages participant à La Noche Romántica, avec activités, restaurants et hébergements.",
+  de: "Alle teilnehmenden Dörfer an La Noche Romántica, mit Aktivitäten, Restaurants und Unterkünften.",
+  pt: "Consulte todas as aldeias participantes em La Noche Romántica, com atividades, restaurantes e alojamentos.",
+  it: "Scopri tutti i borghi partecipanti a La Noche Romántica, con attività, ristoranti e alloggi.",
+  ca: "Consulta tots els pobles participants a La Noche Romántica, amb activitats, restaurants i allotjaments.",
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const path = "/noche-romantica/pueblos-participantes";
+  const title = seoTitle(PAGE_TITLE[locale] ?? PAGE_TITLE.es);
+  const description = seoDescription(PAGE_DESC[locale] ?? PAGE_DESC.es);
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 interface NRPuebloPublic {
   id: number;
