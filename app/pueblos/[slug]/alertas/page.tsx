@@ -9,7 +9,6 @@ import {
   metaLocaleLead,
   seoDescription,
   seoTitle,
-  titleLocaleSuffix,
   type SupportedLocale,
 } from "@/lib/seo";
 
@@ -23,7 +22,6 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
-  const locSuf = titleLocaleSuffix(locale);
   const path = `/pueblos/${slug}/alertas`;
 
   let puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -34,7 +32,7 @@ export async function generateMetadata({
     // fallback
   }
 
-  const title = seoTitle(`Alertas · ${puebloName}${locSuf}`);
+  const title = seoTitle(`Alertas · ${puebloName}`);
   const description = seoDescription(
     `${metaLocaleLead(locale)}Alertas activas en ${puebloName}, uno de los pueblos más bonitos de España.`,
   );

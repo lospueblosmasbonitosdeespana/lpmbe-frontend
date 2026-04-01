@@ -9,7 +9,6 @@ import {
   seoDescription,
   seoTitle,
   slugDisambiguatorForTitle,
-  titleLocaleSuffix,
   uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
@@ -24,13 +23,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
-  const locSuf = titleLocaleSuffix(locale);
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/videos`;
   const slugDis = slugDisambiguatorForTitle(slug);
   return {
-    title: seoTitle(`Videos · ${name}${slugDis}${locSuf}`),
-    description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${name}.${locSuf}`),
+    title: seoTitle(`Videos · ${name}${slugDis}`),
+    description: seoDescription(`Videos y contenidos audiovisuales para descubrir ${name}.`),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

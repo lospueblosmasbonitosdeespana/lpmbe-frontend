@@ -11,7 +11,6 @@ import {
   seoDescription,
   seoTitle,
   seoTitleVideoWithId,
-  titleLocaleSuffix,
   uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
@@ -86,7 +85,6 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, videoId } = await params;
   const locale = await getLocale();
-  const locSuf = titleLocaleSuffix(locale);
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const { pueblo, videos } = await fetchPuebloVideos(slug, locale);
   const video = pueblo ? resolveVideo(videos, videoId) : undefined;
@@ -94,13 +92,13 @@ export async function generateMetadata({
   const path = `/pueblos/${slug}/videos/${canonicalSeg}`;
   const ytId = video ? extractYoutubeId(video.url) : null;
   const title = video
-    ? seoTitle(`${video.titulo} · ${name}${locSuf}`)
-    : seoTitleVideoWithId(videoId, name, locSuf);
+    ? seoTitle(`${video.titulo} · ${name}`)
+    : seoTitleVideoWithId(videoId, name, "");
   const description = video
     ? seoDescription(
         `${metaLocaleLead(locale)}«${video.titulo}» — Vídeo en ${name}. ID ${video.id}.`,
       )
-    : seoDescription(`${metaLocaleLead(locale)}Vídeo en ${name}.${locSuf}`);
+    : seoDescription(`${metaLocaleLead(locale)}Vídeo en ${name}.`);
 
   return {
     title,

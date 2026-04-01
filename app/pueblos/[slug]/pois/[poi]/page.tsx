@@ -8,7 +8,6 @@ import {
   metaLocaleLead,
   seoDescription,
   seoTitlePoiWithStamp,
-  titleLocaleSuffix,
   uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
@@ -112,14 +111,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, poi } = await params;
   const locale = await getLocale();
-  const locSuf = titleLocaleSuffix(locale);
   const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const data = await fetchPoiFast(slug, poi, locale);
   const poiReadable =
     data?.nombre?.trim() ||
     (isNumeric(poi) ? `Punto de interés (${poi})` : poi.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
   const path = `/pueblos/${slug}/pois/${poi}`;
-  const title = seoTitlePoiWithStamp(poi, isNumeric(poi), poiReadable, puebloName, locSuf, slug);
+  const title = seoTitlePoiWithStamp(poi, isNumeric(poi), poiReadable, puebloName, "", slug);
   const refStamp = isNumeric(poi) ? `id ${poi}` : `slug ${poi}`;
   return {
     title,

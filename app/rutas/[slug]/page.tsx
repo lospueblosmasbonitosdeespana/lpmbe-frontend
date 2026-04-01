@@ -13,7 +13,6 @@ import {
   getOGLocale,
   seoTitle,
   seoDescription,
-  titleLocaleSuffix,
   type SupportedLocale,
 } from "@/lib/seo";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
@@ -90,10 +89,8 @@ export async function generateMetadata({
   const { slug } = await params;
   const hdrs = await headers();
   const locale = getLocaleFromRequestHeaders(hdrs);
-  const locSuf = titleLocaleSuffix(locale);
   const path = `/rutas/${slug}`;
 
-  // Obtener el título real de la ruta desde la API para no depender del slug formateado
   let name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   try {
     const rutas = await getRutas(locale);
@@ -103,7 +100,7 @@ export async function generateMetadata({
     // fallback al nombre derivado del slug
   }
 
-  const title = seoTitle(`${name}${locSuf}`);
+  const title = seoTitle(name);
   const description =
     seoDescription(`Ruta por los pueblos más bonitos de España: ${name}.`) ||
     DEFAULT_DESCRIPTION;

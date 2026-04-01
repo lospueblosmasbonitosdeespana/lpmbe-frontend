@@ -8,7 +8,6 @@ import {
   getLocaleAlternates,
   getOGLocale,
   seoTitle,
-  titleLocaleSuffix,
   type SupportedLocale,
 } from '@/lib/seo';
 
@@ -21,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
   const t = await getTranslations('seo');
   const path = '/contacto';
-  const title = seoTitle(`${t('contactTitle')}${titleLocaleSuffix(locale)}`);
+  const title = seoTitle(t('contactTitle'));
   const description = t('contactDescription');
   return {
     title,

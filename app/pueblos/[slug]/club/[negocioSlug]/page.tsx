@@ -8,7 +8,6 @@ import {
   seoDescription,
   seoTitle,
   slugDisambiguatorForTitle,
-  titleLocaleSuffix,
   type SupportedLocale,
 } from "@/lib/seo";
 import NegocioDetail from "./NegocioDetail";
@@ -22,15 +21,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, negocioSlug } = await params;
   const locale = await getLocale();
-  const locSuf = titleLocaleSuffix(locale);
   const name = negocioSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/club/${negocioSlug}`;
   const slugDis = slugDisambiguatorForTitle(slug);
   return {
-    title: seoTitle(`${name} · Club de Amigos · ${puebloName}${slugDis}${locSuf}`),
+    title: seoTitle(`${name} · Club de Amigos · ${puebloName}${slugDis}`),
     description: seoDescription(
-      `${name} en ${puebloName}: descubre lo que ofrece a los socios del Club de Amigos.${locSuf}`
+      `${name} en ${puebloName}: descubre lo que ofrece a los socios del Club de Amigos.`
     ),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
