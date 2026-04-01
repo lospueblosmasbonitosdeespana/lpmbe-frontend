@@ -88,9 +88,15 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
   const hasThumbs = allThumbs.length > 0;
 
+  const isDeferido = shopStatus?.tiendaEstado === 'ENVIO_DIFERIDO';
+  const [showDeferidoAlert, setShowDeferidoAlert] = useState(false);
+
   const handleAddToCart = () => {
     addItem(product, quantity);
     setAdded(true);
+    if (isDeferido) {
+      setShowDeferidoAlert(true);
+    }
     setTimeout(() => setAdded(false), 2000);
   };
 
@@ -275,6 +281,32 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               >
                 {added ? t('addedToCart') : t('addToCart')}
               </button>
+
+              {showDeferidoAlert && isDeferido && (
+                <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl mt-0.5">📦</span>
+                    <div className="flex-1">
+                      <p className="font-bold text-amber-900 text-sm">Aviso: envío diferido</p>
+                      {shopStatus.tiendaMensaje && (
+                        <p className="mt-1 text-sm text-amber-800">{shopStatus.tiendaMensaje}</p>
+                      )}
+                      {shopStatus.tiendaReapertura && (
+                        <p className="mt-1 text-sm font-semibold text-amber-900">
+                          Envíos a partir del {new Date(shopStatus.tiendaReapertura).toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })}
+                        </p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setShowDeferidoAlert(false)}
+                        className="mt-2 text-xs font-medium text-amber-700 hover:text-amber-900 underline"
+                      >
+                        Entendido
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <button
                 onClick={() => router.push('/tienda/carrito')}

@@ -23,8 +23,9 @@ export function useShopStatus() {
 
 export function ShopStatusBanner() {
   const status = useShopStatus();
+  const [dismissed, setDismissed] = useState(false);
 
-  if (!status || status.tiendaEstado === 'ABIERTA') return null;
+  if (!status || status.tiendaEstado === 'ABIERTA' || dismissed) return null;
 
   const isClosed = status.tiendaEstado === 'CERRADA';
   const fechaStr = status.tiendaReapertura
@@ -32,23 +33,37 @@ export function ShopStatusBanner() {
     : null;
 
   return (
-    <div className={`mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3 ${isClosed ? '' : ''}`}>
-      <div className={`rounded-2xl px-5 py-4 ${isClosed ? 'bg-red-50 border border-red-200' : 'bg-amber-50 border border-amber-200'}`}>
-        <div className="flex items-start gap-3">
-          <span className="text-xl mt-0.5">{isClosed ? '🔒' : '📦'}</span>
-          <div className="flex-1">
-            <p className={`font-semibold text-sm ${isClosed ? 'text-red-800' : 'text-amber-800'}`}>
-              {isClosed ? 'Tienda temporalmente cerrada' : 'Aviso sobre envíos'}
-            </p>
-            {status.tiendaMensaje && (
-              <p className={`mt-1 text-sm ${isClosed ? 'text-red-700' : 'text-amber-700'}`}>{status.tiendaMensaje}</p>
-            )}
-            {fechaStr && (
-              <p className={`mt-1 text-sm font-medium ${isClosed ? 'text-red-800' : 'text-amber-800'}`}>
-                {isClosed ? `Reapertura estimada: ${fechaStr}` : `Envíos a partir del ${fechaStr}`}
+    <div className={`sticky top-0 z-40 mb-4 ${isClosed ? 'bg-red-600' : 'bg-amber-500'} shadow-lg`}>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="text-xl shrink-0">{isClosed ? '🔒' : '📦'}</span>
+            <div className="min-w-0">
+              <p className="font-bold text-sm text-white">
+                {isClosed ? 'Tienda temporalmente cerrada' : 'Aviso: envío diferido'}
               </p>
-            )}
+              <p className="text-xs text-white/90 truncate">
+                {status.tiendaMensaje || (isClosed ? 'Las compras están deshabilitadas temporalmente.' : 'Los envíos se realizarán con retraso.')}
+                {fechaStr && (
+                  <span className="font-semibold">
+                    {' — '}{isClosed ? `Reapertura: ${fechaStr}` : `Envíos a partir del ${fechaStr}`}
+                  </span>
+                )}
+              </p>
+            </div>
           </div>
+          {!isClosed && (
+            <button
+              type="button"
+              onClick={() => setDismissed(true)}
+              className="shrink-0 rounded-full p-1 text-white/80 hover:text-white hover:bg-white/20 transition-colors"
+              aria-label="Cerrar aviso"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
     </div>
