@@ -292,17 +292,22 @@ export default async function ClubPuebloPage({
     );
   }
 
-  let recursos: Recurso[] = [];
+  let recursosPueblo: Recurso[] = [];
+  let negocios: Recurso[] = [];
   try {
-    const res = await fetch(
-      `${API_BASE}/public/recursos/pueblo/${pueblo.id}?lang=${locale}`);
-    if (res.ok) {
-      recursos = await res.json();
+    const [resRecursos, resNegocios] = await Promise.all([
+      fetch(`${API_BASE}/public/recursos/pueblo/${pueblo.id}?lang=${locale}`),
+      fetch(`${API_BASE}/public/recursos/negocios/pueblo/${slug}?lang=${locale}`),
+    ]);
+    if (resRecursos.ok) {
+      recursosPueblo = await resRecursos.json();
+    }
+    if (resNegocios.ok) {
+      const negData = await resNegocios.json();
+      const raw: Recurso[] = Array.isArray(negData) ? negData : negData.negocios ?? [];
+      negocios = raw.map((n) => ({ ...n, scope: "NEGOCIO" }));
     }
   } catch {}
-
-  const recursosPueblo = recursos.filter((r) => r.scope === "PUEBLO");
-  const negocios = recursos.filter((r) => r.scope === "NEGOCIO");
 
   const PLAN_SORT: Record<string, number> = { PREMIUM: 0, RECOMENDADO: 1, FREE: 2 };
   const negociosByTipo = TIPO_ORDER
