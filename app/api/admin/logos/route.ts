@@ -5,14 +5,17 @@ import { getApiUrl } from '@/lib/api';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
-export async function GET() {
+export async function GET(req: Request) {
   const token = await getToken();
   if (!token) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
+  const { searchParams } = new URL(req.url);
+  const qs = searchParams.toString();
+
   const API_BASE = getApiUrl();
-  const res = await fetch(`${API_BASE}/admin/logos`, {
+  const res = await fetch(`${API_BASE}/admin/logos${qs ? `?${qs}` : ''}`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: 'no-store',
   });
