@@ -91,19 +91,23 @@ export async function generateMetadata({
   const title = page?.titulo ?? label;
   const path = `/pueblos/${slug}/categoria/${categoriaSlug}/${pageId}`;
 
+  const titleFull = seoTitle(`${title} · ${puebloNombre}`);
+  const descFull = seoDescription(
+    page?.resumen ??
+      `${label} en ${puebloNombre} — Los Pueblos Más Bonitos de España`
+  );
   return {
-    title: seoTitle(`${title} · ${puebloNombre}`),
-    description: seoDescription(
-      page?.resumen ??
-        `${label} en ${puebloNombre} — Los Pueblos Más Bonitos de España`
-    ),
+    title: titleFull,
+    description: descFull,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
     robots: { index: true, follow: true },
     openGraph: {
-      title: seoTitle(`${title} · ${puebloNombre}`),
+      title: titleFull,
+      description: descFull,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
       ...(page?.coverUrl ? { images: [{ url: page.coverUrl }] } : {}),
       type: "article",
       locale: getOGLocale(locale as SupportedLocale),

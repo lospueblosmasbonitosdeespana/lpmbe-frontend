@@ -21,12 +21,13 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
   const titulo = page?.titulo ?? slugToTitle(pageSlug);
   const path = `/${URL_SLUG}/${puebloSlug}/${pageSlug}`;
   const titleText = seoTitle(`${titulo} en ${puebloNombre}`);
+  const descText = seoDescription(page?.resumen ? stripHtml(page.resumen) : tSeo("tematicaDetalleDesc", { titulo, pueblo: puebloNombre }));
   return {
     title: titleText,
-    description: seoDescription(page?.resumen ? stripHtml(page.resumen) : tSeo("tematicaDetalleDesc", { titulo, pueblo: puebloNombre })),
+    description: descText,
     alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) },
     robots: { index: true, follow: true },
-    openGraph: { title: titleText, ...(page?.coverUrl ? { images: [{ url: page.coverUrl }] } : {}), type: "article", locale: getOGLocale(locale as SupportedLocale) },
+    openGraph: { title: titleText, description: descText, url: getCanonicalUrl(path, locale as SupportedLocale), ...(page?.coverUrl ? { images: [{ url: page.coverUrl }] } : {}), type: "article", locale: getOGLocale(locale as SupportedLocale) },
     other: { "article:section": label },
   };
 }

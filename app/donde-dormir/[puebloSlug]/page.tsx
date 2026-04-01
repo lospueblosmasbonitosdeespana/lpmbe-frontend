@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
     description,
     alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) },
     robots: { index: true, follow: true },
-    openGraph: { title, type: "website", locale: getOGLocale(locale as SupportedLocale) },
+    openGraph: { title, description, url: getCanonicalUrl(path, locale as SupportedLocale), type: "website", locale: getOGLocale(locale as SupportedLocale) },
   };
 }
 
