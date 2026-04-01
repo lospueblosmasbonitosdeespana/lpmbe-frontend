@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ImageIcon, Users, FileText } from 'lucide-react';
+import { ImageIcon, Users, FileText, BookOpen } from 'lucide-react';
 import type { CmsDocumento, CmsDocType } from '@/lib/cms/sello';
 import { DOC_TYPE_LABELS } from '@/lib/cms/sello';
+import BibliotecaAsociacionClient from './BibliotecaAsociacionClient';
 
 const TIPOS: CmsDocType[] = ['ESTATUTOS', 'CARTA_CALIDAD', 'REGLAMENTO', 'MEMORIA', 'OTROS'];
+type TabType = 'cms' | 'biblioteca';
 
 export default function DocumentosCmsPage() {
   const router = useRouter();
@@ -16,6 +18,7 @@ export default function DocumentosCmsPage() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('cms');
 
   const [formData, setFormData] = useState({
     id: null as number | null,
@@ -159,7 +162,7 @@ export default function DocumentosCmsPage() {
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-3xl font-semibold">Documentos (PDFs)</h1>
+        <h1 className="text-3xl font-semibold">Documentos</h1>
         <div className="flex flex-wrap gap-2">
           <Link href="/gestion/asociacion/el-sello/imagenes" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
             <ImageIcon className="h-4 w-4" />
@@ -169,13 +172,25 @@ export default function DocumentosCmsPage() {
             <Users className="h-4 w-4" />
             Socios y colaboradores
           </Link>
-          <span className="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white">
-            <FileText className="h-4 w-4" />
-            Gestionar Documentos (PDFs)
-          </span>
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="mb-8 flex border-b border-border">
+        <button type="button" onClick={() => setActiveTab('cms')}
+          className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-medium transition-colors ${activeTab === 'cms' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+          <FileText className="h-4 w-4" />
+          PDFs del sello (estatutos, reglamentos…)
+        </button>
+        <button type="button" onClick={() => setActiveTab('biblioteca')}
+          className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-medium transition-colors ${activeTab === 'biblioteca' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+          <BookOpen className="h-4 w-4" />
+          Biblioteca compartida con alcaldes
+        </button>
+      </div>
+
+      {/* Tab: CMS PDFs */}
+      {activeTab === 'cms' && (<>
       <div className="mb-6 flex items-center justify-between">
         <div>
           <label className="text-sm font-medium mr-3">Filtrar por tipo:</label>
@@ -367,6 +382,10 @@ export default function DocumentosCmsPage() {
           ))}
         </div>
       )}
+      </>)}
+
+      {/* Tab: Biblioteca compartida */}
+      {activeTab === 'biblioteca' && <BibliotecaAsociacionClient />}
     </main>
   );
 }
