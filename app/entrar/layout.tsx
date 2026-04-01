@@ -6,11 +6,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const path = '/entrar';
   return {
-    title: 'Entrar',
+    title: 'Iniciar sesión',
     description: 'Accede a tu cuenta de Los Pueblos Más Bonitos de España.',
     robots: {
       index: false,
-      follow: false,
+      follow: true,
     },
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),

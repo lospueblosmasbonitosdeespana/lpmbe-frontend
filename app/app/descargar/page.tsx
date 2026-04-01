@@ -1,7 +1,14 @@
+import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getLocale, getTranslations } from 'next-intl/server';
-import { SUPPORTED_LOCALES, type SupportedLocale } from '@/lib/seo';
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  getOGLocale,
+  SUPPORTED_LOCALES,
+  type SupportedLocale,
+} from '@/lib/seo';
 
 const APP_STORE_URL =
   'https://apps.apple.com/es/app/los-pueblos-m%C3%A1s-bonitos-de-esp/id6755147967';
@@ -9,6 +16,28 @@ const PLAY_STORE_URL =
   'https://play.google.com/store/apps/details?id=app.rork.pueblos_bonitos_app';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const t = await getTranslations({ locale, namespace: 'appPage' });
+  const path = '/app/descargar';
+  const title = t('downloadTitle');
+  const description = t('downloadDescription');
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+    },
+  };
+}
 
 function detectPlatform(userAgent: string): 'ios' | 'android' | 'other' {
   if (/iPhone|iPad|iPod/i.test(userAgent)) return 'ios';
