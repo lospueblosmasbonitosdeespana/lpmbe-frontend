@@ -12,8 +12,7 @@ import {
   type SupportedLocale,
 } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
-
+export const revalidate = 60;
 export async function generateMetadata({
   params,
 }: {
@@ -77,9 +76,7 @@ export default async function WebcamPuebloPage({
     );
   }
 
-  const webcamsRes = await fetch(`${API_BASE}/pueblos/${pueblo.id}/webcams`, {
-    cache: "no-store",
-  });
+  const webcamsRes = await fetch(`${API_BASE}/pueblos/${pueblo.id}/webcams`);
 
   let webcams: Webcam[] = [];
   if (webcamsRes.ok) {

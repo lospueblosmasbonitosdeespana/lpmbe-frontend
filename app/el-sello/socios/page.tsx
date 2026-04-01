@@ -14,8 +14,7 @@ import { CONTENIDO_SOCIOS } from '@/lib/cms/sello-content';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
-
+export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const t = await getTranslations('sello');
@@ -43,7 +42,7 @@ async function getPage(locale?: string): Promise<SelloPage | null> {
     const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
     const res = await fetch(
       `${API_BASE}/public/cms/sello/SELLO_SOCIOS${langQs}`,
-      { cache: 'no-store', headers: locale ? { 'Accept-Language': locale } : undefined }
+      { headers: locale ? { 'Accept-Language': locale } : undefined }
     );
     if (!res.ok) return null;
     return await res.json();
@@ -80,9 +79,7 @@ function getCategoryLabel(
 
 async function getSocios(): Promise<SelloSocio[]> {
   try {
-    const res = await fetch(`${API_BASE}/public/sello/socios`, {
-      cache: 'no-store',
-    });
+    const res = await fetch(`${API_BASE}/public/sello/socios`);
     if (!res.ok) return [];
     return await res.json();
   } catch {

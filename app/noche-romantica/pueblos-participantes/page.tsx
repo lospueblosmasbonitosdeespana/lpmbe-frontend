@@ -4,9 +4,7 @@ import { getTranslations, getLocale } from 'next-intl/server';
 import { getApiUrl } from '@/lib/api';
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
+export const revalidate = 60;
 const PAGE_TITLE: Record<string, string> = {
   es: "Pueblos participantes en La Noche Romántica",
   en: "Participating villages in La Noche Romántica",
@@ -78,8 +76,8 @@ async function fetchData(locale: string) {
   const API_BASE = getApiUrl();
   const langParam = locale && locale !== 'es' ? `?lang=${locale}` : '';
   const [pueblosRes, configRes] = await Promise.all([
-    fetch(`${API_BASE}/noche-romantica/pueblos${langParam}`, { cache: 'no-store' }),
-    fetch(`${API_BASE}/noche-romantica/config${langParam}`, { cache: 'no-store' }),
+    fetch(`${API_BASE}/noche-romantica/pueblos${langParam}`),
+    fetch(`${API_BASE}/noche-romantica/config${langParam}`),
   ]);
 
   const pueblos: NRPuebloPublic[] = pueblosRes.ok ? await pueblosRes.json() : [];

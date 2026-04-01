@@ -12,9 +12,7 @@ import {
   type SupportedLocale,
 } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
+export const revalidate = 60;
 export async function generateMetadata({
   params,
 }: {
@@ -77,10 +75,9 @@ export default async function AlertasPuebloPage({
   const API_BASE = getApiUrl();
 
   const [puebloRes, alertasRes] = await Promise.all([
-    fetch(`${API_BASE}/pueblos/${slug}`, { cache: "no-store" }).catch(() => null),
+    fetch(`${API_BASE}/pueblos/${slug}`).catch(() => null),
     fetch(
       `${API_BASE}/public/notificaciones/feed?limit=200&tipos=ALERTA_PUEBLO`,
-      { cache: "no-store" },
     ).catch(() => null),
   ]);
 

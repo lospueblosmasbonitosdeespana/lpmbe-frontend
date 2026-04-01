@@ -10,8 +10,7 @@ import {
 } from "@/lib/seo";
 import { getLocale, getTranslations } from "next-intl/server";
 
-export const dynamic = "force-dynamic";
-
+export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
   const tSeo = await getTranslations("seo");

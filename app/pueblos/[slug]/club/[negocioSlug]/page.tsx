@@ -12,8 +12,7 @@ import {
 } from "@/lib/seo";
 import NegocioDetail from "./NegocioDetail";
 
-export const dynamic = "force-dynamic";
-
+export const revalidate = 60;
 export async function generateMetadata({
   params,
 }: {
@@ -85,9 +84,7 @@ export default async function NegocioDetailPage({
   let recurso: Recurso | null = null;
   try {
     const res = await fetch(
-      `${API_BASE}/public/recursos/${negocioSlug}?lang=${locale}`,
-      { cache: "no-store" }
-    );
+      `${API_BASE}/public/recursos/${negocioSlug}?lang=${locale}`);
     if (res.ok) {
       recurso = await res.json();
     }

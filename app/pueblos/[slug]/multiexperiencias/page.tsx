@@ -17,8 +17,7 @@ import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Body, Eyebrow } from "@/app/components/ui/typography";
 
-export const dynamic = "force-dynamic";
-
+export const revalidate = 60;
 type MultiexItem = {
   multiexperiencia?: {
     id: number;

@@ -18,9 +18,7 @@ function isHtmlContent(content: string): boolean {
   return trimmed.startsWith('<') && /<[a-z][\s\S]*>/i.test(trimmed);
 }
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
+export const revalidate = 60;
 type Noticia = {
   id: number;
   titulo: string;
@@ -36,6 +34,11 @@ type Noticia = {
 const PUBLISHER_ORGANIZATION = {
   '@type': 'Organization',
   name: 'Los Pueblos Más Bonitos de España',
+  url: 'https://lospueblosmasbonitosdeespana.org',
+  logo: {
+    '@type': 'ImageObject',
+    url: 'https://lospueblosmasbonitosdeespana.org/images/logo-lpbme.png',
+  },
 } as const;
 
 function descriptionForNewsArticle(noticia: Noticia): string | undefined {
@@ -52,17 +55,20 @@ function descriptionForNewsArticle(noticia: Noticia): string | undefined {
   return plain.length <= 155 ? plain : `${plain.slice(0, 152).trimEnd()}…`;
 }
 
-function newsArticleJsonLd(noticia: Noticia): Record<string, unknown> {
+function newsArticleJsonLd(noticia: Noticia, canonicalUrl: string): Record<string, unknown> {
   const datePublished = noticia.publishedAt ?? noticia.createdAt;
   const description = descriptionForNewsArticle(noticia);
   const data: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'NewsArticle',
     headline: noticia.titulo,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
     publisher: PUBLISHER_ORGANIZATION,
+    author: PUBLISHER_ORGANIZATION,
   };
   if (datePublished) data.datePublished = datePublished;
   if (description) data.description = description;
+  if (noticia.coverUrl) data.image = noticia.coverUrl;
   return data;
 }
 
@@ -72,7 +78,6 @@ async function fetchNoticia(slug: string): Promise<Noticia | null> {
 
   const API_BASE = getApiUrl();
   const res = await fetch(`${API_BASE}/public/noticias/${encodeURIComponent(slug)}?lang=${lang}`, {
-    cache: 'no-store',
     headers: { 'Accept-Language': lang },
   });
 
@@ -138,7 +143,7 @@ export default async function NoticiaPage({
 
   return (
     <main style={{ padding: '40px 20px' }}>
-      <JsonLd data={newsArticleJsonLd(noticia)} />
+      <JsonLd data={newsArticleJsonLd(noticia, `https://lospueblosmasbonitosdeespana.org/noticias/${slug}`)} />
       <article>
         {noticia.coverUrl && noticia.coverUrl.trim() && (
           <SmartCoverImage src={noticia.coverUrl.trim()} alt={noticia.titulo} />

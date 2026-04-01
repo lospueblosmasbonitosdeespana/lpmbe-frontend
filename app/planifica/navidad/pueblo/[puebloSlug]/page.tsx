@@ -5,9 +5,7 @@ import { notFound } from 'next/navigation';
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import NavidadPuebloClient from './NavidadPuebloClient';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
+export const revalidate = 60;
 export async function generateMetadata({
   params,
 }: {
@@ -81,7 +79,7 @@ type Payload = {
 async function fetchData(slug: string, locale: string): Promise<Payload | null> {
   const API = getApiUrl();
   const lang = encodeURIComponent(locale);
-  const res = await fetch(`${API}/navidad/pueblos/${slug}?lang=${lang}`, { cache: 'no-store' });
+  const res = await fetch(`${API}/navidad/pueblos/${slug}?lang=${lang}`);
   if (!res.ok) return null;
   return res.json();
 }

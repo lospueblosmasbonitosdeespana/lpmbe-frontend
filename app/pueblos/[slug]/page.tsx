@@ -292,8 +292,7 @@ type PuebloSafe = {
 };
 
 // 🔒 Forzamos render dinámico (no SSG)
-export const dynamic = "force-dynamic";
-
+export const revalidate = 60;
 export async function generateMetadata({
   params,
 }: {
@@ -360,9 +359,9 @@ export default async function PuebloPage({
   const [pueblo, pueblosLite, pagesRes, puntosServicioRes, alertasFeedRes] = await Promise.all([
     getPuebloBySlug(slug, locale),
     getPueblosLite(locale),
-    fetch(`${API_BASE}/public/pueblos/${slug}/pages${langQs}`, { cache: "no-store" }).catch(() => null),
-    fetch(`${API_BASE}/pueblos/${slug}/puntos-servicio`, { cache: "no-store" }).catch(() => null),
-    fetch(`${API_BASE}/public/notificaciones/feed?limit=200&tipos=ALERTA_PUEBLO${langParam}`, { cache: "no-store" }).catch(() => null),
+    fetch(`${API_BASE}/public/pueblos/${slug}/pages${langQs}`).catch(() => null),
+    fetch(`${API_BASE}/pueblos/${slug}/puntos-servicio`).catch(() => null),
+    fetch(`${API_BASE}/public/notificaciones/feed?limit=200&tipos=ALERTA_PUEBLO${langParam}`).catch(() => null),
   ]);
 
   // Páginas temáticas del pueblo (contenidos temáticos) - ahora son arrays por categoría
@@ -597,9 +596,7 @@ export default async function PuebloPage({
     if (ids.length > 0) {
       try {
         const API_BASE = getApiUrl();
-        const res = await fetch(`${API_BASE}/public/pueblos/photos?ids=${ids.join(",")}`, {
-          cache: "no-store",
-        });
+        const res = await fetch(`${API_BASE}/public/pueblos/photos?ids=${ids.join(",")}`);
         if (res.ok) {
           const data = (await res.json()) as Record<string, { url?: string } | null>;
           pueblosCercanosPhotos = {};

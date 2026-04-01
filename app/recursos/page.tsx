@@ -15,9 +15,7 @@ import { Section } from "@/app/components/ui/section";
 import { Title, Lead, Eyebrow } from "@/app/components/ui/typography";
 import { getResourceLabel } from "@/lib/resource-types";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
+export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
   const tSeo = await getTranslations("seo");
@@ -69,9 +67,7 @@ type RecursoListItem = {
 async function getRecursos(): Promise<RecursoListItem[]> {
   const apiUrl = getApiUrl();
   const res = await fetch(
-    `${apiUrl}/public/recursos?scope=ASOCIACION`,
-    { cache: "no-store" }
-  );
+    `${apiUrl}/public/recursos?scope=ASOCIACION`);
   if (!res.ok) return [];
   const data = await res.json();
   return Array.isArray(data) ? data : [];

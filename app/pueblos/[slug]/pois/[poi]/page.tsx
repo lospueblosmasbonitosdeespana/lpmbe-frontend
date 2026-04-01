@@ -16,8 +16,7 @@ import { fetchWithTimeout } from "@/lib/fetch-safe";
 import { injectImgAlt } from "@/app/_lib/html";
 import ZoomableImage from "@/app/components/ZoomableImage";
 
-export const dynamic = "force-dynamic";
-
+export const revalidate = 60;
 function isNumeric(s: string) {
   return /^\d+$/.test(s);
 }
@@ -52,7 +51,6 @@ async function fetchPoi(puebloSlug: string, poiParam: string, locale?: string) {
 
   const fetchOne = async (lang?: string) =>
     fetchWithTimeout(buildUrl(lang), {
-      cache: "no-store",
       headers: lang ? { "Accept-Language": lang } : undefined,
     });
 
@@ -87,7 +85,6 @@ async function fetchPoiFast(puebloSlug: string, poiParam: string, locale?: strin
   };
   const fetchOne = async (lang?: string) =>
     fetchWithTimeout(buildUrl(lang), {
-      cache: "no-store",
       headers: lang ? { "Accept-Language": lang } : undefined,
       timeoutMs: 4000,
       retries: 0,

@@ -49,9 +49,7 @@ type Multiexperiencia = {
 };
 
 // 🔒 Forzamos render dinámico (no SSG)
-export const dynamic = "force-dynamic";
-
-
+export const revalidate = 60;
 export async function generateMetadata({
   params,
 }: {
@@ -161,7 +159,6 @@ export default async function MultiexperienciaPage({
       const apiBase = getApiUrl();
       const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
       const res = await fetch(`${apiBase}/multiexperiencias/${mx.id}/paradas${langQs}`, {
-        cache: "no-store",
         headers: locale ? { "Accept-Language": locale } : undefined,
       });
       

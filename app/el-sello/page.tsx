@@ -20,8 +20,7 @@ import { CONTENIDO_SELLO_HOME, CONTENIDO_SELLO_HOME_CA } from "@/lib/cms/sello-c
 import { getLocale, getTranslations } from "next-intl/server";
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
-
+export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
   const t = await getTranslations("seo");
@@ -148,7 +147,6 @@ async function getSelloPage(locale?: string): Promise<SelloPage | null> {
     const base = process.env.NEXT_PUBLIC_API_URL ?? "";
     const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
     const res = await fetch(`${base}/public/cms/sello/SELLO_HOME${langQs}`, {
-      cache: "no-store",
       headers: locale ? { "Accept-Language": locale } : undefined,
     });
     if (!res.ok) return null;
@@ -166,7 +164,7 @@ async function getSiteSettings(): Promise<{
 }> {
   try {
     const base = process.env.NEXT_PUBLIC_API_URL ?? "";
-    const res = await fetch(`${base}/public/site-settings`, { cache: "no-store" });
+    const res = await fetch(`${base}/public/site-settings`);
     if (!res.ok) return { logoUrl: null, selloSealBadgeUrl: null, selloEvaluationImageUrl: null, selloTeamImageUrl: null };
     const d = await res.json();
     return {
@@ -183,8 +181,8 @@ async function getSiteSettings(): Promise<{
 async function getDocumentos(): Promise<{ estatutos: CmsDocumento[]; cartaCalidad: CmsDocumento[] }> {
   try {
     const [resEstatutos, resCarta] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/cms/documentos?type=ESTATUTOS`, { cache: "no-store" }),
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/cms/documentos?type=CARTA_CALIDAD`, { cache: "no-store" }),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/cms/documentos?type=ESTATUTOS`),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/cms/documentos?type=CARTA_CALIDAD`),
     ]);
     const estatutos = resEstatutos.ok ? await resEstatutos.json() : [];
     const cartaCalidad = resCarta.ok ? await resCarta.json() : [];

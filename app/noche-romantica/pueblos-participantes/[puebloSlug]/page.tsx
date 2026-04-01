@@ -7,9 +7,7 @@ import { getTranslations, getLocale } from 'next-intl/server';
 import { Clock } from 'lucide-react';
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
+export const revalidate = 60;
 export async function generateMetadata({
   params,
 }: {
@@ -85,9 +83,7 @@ async function fetchPueblo(slug: string, lang?: string): Promise<NRPuebloDetail 
   try {
     const API_BASE = getApiUrl();
     const langParam = lang && lang !== 'es' ? `?lang=${lang}` : '';
-    const res = await fetch(`${API_BASE}/noche-romantica/pueblos/${slug}${langParam}`, {
-      cache: 'no-store',
-    });
+    const res = await fetch(`${API_BASE}/noche-romantica/pueblos/${slug}${langParam}`);
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -98,9 +94,7 @@ async function fetchPueblo(slug: string, lang?: string): Promise<NRPuebloDetail 
 async function fetchNRConfig(): Promise<NRConfig> {
   try {
     const API_BASE = getApiUrl();
-    const res = await fetch(`${API_BASE}/noche-romantica/app-status`, {
-      cache: 'no-store',
-    });
+    const res = await fetch(`${API_BASE}/noche-romantica/app-status`);
     if (!res.ok) return {};
     return await res.json();
   } catch {

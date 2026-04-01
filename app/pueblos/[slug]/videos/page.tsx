@@ -14,8 +14,7 @@ import {
 } from "@/lib/seo";
 import JsonLd from "@/app/components/seo/JsonLd";
 
-export const dynamic = "force-dynamic";
-
+export const revalidate = 60;
 export async function generateMetadata({
   params,
 }: {
@@ -100,9 +99,7 @@ export default async function VideosPuebloPage({
     );
   }
 
-  const videosRes = await fetch(`${API_BASE}/pueblos/${pueblo.id}/videos`, {
-    cache: "no-store",
-  });
+  const videosRes = await fetch(`${API_BASE}/pueblos/${pueblo.id}/videos`);
 
   let videos: Video[] = [];
   if (videosRes?.ok) {

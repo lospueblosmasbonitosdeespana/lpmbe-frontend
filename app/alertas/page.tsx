@@ -10,9 +10,7 @@ import {
   type SupportedLocale,
 } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
+export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
   const t = await getTranslations("notifications");
@@ -79,7 +77,6 @@ export default async function AlertasPage() {
   try {
     const res = await fetch(
       `${API_BASE}/public/notificaciones/feed?limit=100&tipos=ALERTA,ALERTA_PUEBLO&lang=${locale}`,
-      { cache: "no-store" },
     );
     if (res.ok) {
       const raw = await res.json().catch(() => []);

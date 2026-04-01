@@ -3,9 +3,7 @@ import { getTranslations, getLocale } from 'next-intl/server';
 import { getApiUrl } from '@/lib/api';
 import CountdownBeso from './CountdownBeso';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
+export const revalidate = 60;
 interface NRConfig {
   edicion: number;
   anio: number;
@@ -60,7 +58,7 @@ async function fetchConfig(locale: string): Promise<NRConfig | null> {
   try {
     const API_BASE = getApiUrl();
     const url = locale && locale !== 'es' ? `${API_BASE}/noche-romantica/config?lang=${locale}` : `${API_BASE}/noche-romantica/config`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetch(url);
     if (!res.ok) return null;
     return await res.json();
   } catch {

@@ -11,9 +11,7 @@ import {
   type SupportedLocale,
 } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
+export const revalidate = 60;
 const CONTACTO_EMAIL = 'asociacion@lospueblosmasbonitosdeespana.org';
 
 export async function generateMetadata(): Promise<Metadata> {

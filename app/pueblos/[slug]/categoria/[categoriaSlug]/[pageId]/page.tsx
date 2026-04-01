@@ -18,8 +18,7 @@ import { Eyebrow } from "@/app/components/ui/typography";
 import SafeHtml from "@/app/_components/ui/SafeHtml";
 import ZoomableImage from "@/app/components/ZoomableImage";
 
-export const dynamic = "force-dynamic";
-
+export const revalidate = 60;
 const CATEGORIA_LABELS: Record<string, string> = {
   naturaleza: "Naturaleza",
   cultura: "Cultura",
@@ -57,9 +56,7 @@ async function getPageById(
   try {
     const qs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
     const res = await fetch(
-      `${getApiUrl()}/public/pueblos/${puebloSlug}/pages${qs}`,
-      { cache: "no-store" }
-    );
+      `${getApiUrl()}/public/pueblos/${puebloSlug}/pages${qs}`);
     if (!res.ok) return null;
     const data = await res.json();
     const pages: PageData[] = Array.isArray(data[categoriaKey])

@@ -11,9 +11,7 @@ import {
   type SupportedLocale,
 } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
+export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
   const tSeo = await getTranslations('seo');
@@ -57,7 +55,6 @@ async function getMultiexperiencias(locale?: string): Promise<Multiexperiencia[]
     const base = getApiUrl();
     const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
     const res = await fetch(`${base}/public/multiexperiencias${qs}`, {
-      cache: 'no-store',
       headers: locale ? { 'Accept-Language': locale } : undefined,
     });
 

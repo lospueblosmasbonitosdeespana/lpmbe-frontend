@@ -17,9 +17,7 @@ function isHtmlContent(content: string): boolean {
   return trimmed.startsWith('<') && /<[a-z][\s\S]*>/i.test(trimmed);
 }
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
+export const revalidate = 60;
 type Evento = {
   id: number;
   titulo: string;
@@ -36,6 +34,7 @@ type Evento = {
 const PUBLISHER_ORGANIZATION = {
   '@type': 'Organization',
   name: 'Los Pueblos Más Bonitos de España',
+  url: 'https://lospueblosmasbonitosdeespana.org',
 } as const;
 
 function descriptionForEvent(evento: Evento): string | undefined {
@@ -52,17 +51,21 @@ function descriptionForEvent(evento: Evento): string | undefined {
   return plain.length <= 155 ? plain : `${plain.slice(0, 152).trimEnd()}…`;
 }
 
-function eventJsonLd(evento: Evento): Record<string, unknown> {
+function eventJsonLd(evento: Evento, canonicalUrl: string): Record<string, unknown> {
   const description = descriptionForEvent(evento);
   const data: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Event',
     name: evento.titulo,
+    url: canonicalUrl,
     organizer: PUBLISHER_ORGANIZATION,
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventStatus: 'https://schema.org/EventScheduled',
   };
   if (evento.fechaInicio) data.startDate = evento.fechaInicio;
   if (evento.fechaFin) data.endDate = evento.fechaFin;
   if (description) data.description = description;
+  if (evento.coverUrl) data.image = evento.coverUrl;
   return data;
 }
 
@@ -72,7 +75,6 @@ async function fetchEvento(slug: string): Promise<Evento | null> {
 
   const API_BASE = getApiUrl();
   const res = await fetch(`${API_BASE}/public/eventos/${encodeURIComponent(slug)}?lang=${lang}`, {
-    cache: 'no-store',
     headers: { 'Accept-Language': lang },
   });
 
@@ -135,7 +137,7 @@ export default async function EventoPage({
 
   return (
     <main style={{ padding: '40px 20px' }}>
-      <JsonLd data={eventJsonLd(evento)} />
+      <JsonLd data={eventJsonLd(evento, `https://lospueblosmasbonitosdeespana.org/eventos/${slug}`)} />
       <article>
         {evento.coverUrl && evento.coverUrl.trim() && (
           <SmartCoverImage src={evento.coverUrl.trim()} alt={evento.titulo} />

@@ -12,8 +12,7 @@ import {
   type SupportedLocale,
 } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
-
+export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
   const tSeo = await getTranslations('seo');

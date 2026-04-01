@@ -6,8 +6,7 @@ import ContenidoImageCarousel from '@/app/components/ContenidoImageCarousel';
 import { getApiUrl } from '@/lib/api';
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
-
+export const revalidate = 60;
 type TematicaPage = {
   id: number;
   titulo: string;
@@ -76,7 +75,7 @@ async function getPuebloPage(puebloSlug: string, category: string, locale?: stri
     const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
     const res = await fetch(
       `${getApiUrl()}/public/pueblos/${puebloSlug}/pages${qs}`,
-      { cache: 'no-store', headers: locale ? { 'Accept-Language': locale } : undefined }
+      { headers: locale ? { 'Accept-Language': locale } : undefined }
     );
 
     if (!res.ok) {

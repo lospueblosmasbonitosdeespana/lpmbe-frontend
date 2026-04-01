@@ -15,8 +15,7 @@ import { CONTENIDO_UNETE } from '@/lib/cms/sello-content';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
-
+export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const t = await getTranslations('sello');
@@ -44,7 +43,7 @@ async function getPage(locale?: string): Promise<SelloPage | null> {
     const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
     const res = await fetch(
       `${API_BASE}/public/cms/sello/SELLO_UNETE${langQs}`,
-      { cache: 'no-store', headers: locale ? { 'Accept-Language': locale } : undefined }
+      { headers: locale ? { 'Accept-Language': locale } : undefined }
     );
     if (!res.ok) return null;
     return await res.json();

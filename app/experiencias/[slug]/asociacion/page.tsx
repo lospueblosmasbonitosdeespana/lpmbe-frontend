@@ -5,8 +5,7 @@ import SafeHtml from '@/app/_components/ui/SafeHtml';
 import ContenidoImageCarousel from '@/app/components/ContenidoImageCarousel';
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
-
+export const revalidate = 60;
 type TematicaPage = {
   id: number;
   titulo: string;
@@ -66,7 +65,7 @@ async function getAsociacionPage(category: string, locale?: string): Promise<Tem
     if (locale) qs.set('lang', locale);
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/public/pages?${qs.toString()}`,
-      { cache: 'no-store', headers: locale ? { 'Accept-Language': locale } : undefined }
+      { headers: locale ? { 'Accept-Language': locale } : undefined }
     );
 
     if (!res.ok) {

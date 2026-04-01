@@ -16,8 +16,7 @@ import {
   type SupportedLocale,
 } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
-
+export const revalidate = 60;
 export async function generateMetadata({
   params,
 }: {
@@ -70,9 +69,7 @@ type SelloSocioDetalle = {
 
 async function getSocioBySlug(slug: string): Promise<SelloSocioDetalle | null> {
   try {
-    const res = await fetch(`${API_BASE}/public/sello/socios/slug/${slug}`, {
-      cache: 'no-store',
-    });
+    const res = await fetch(`${API_BASE}/public/sello/socios/slug/${slug}`);
     if (!res.ok) return null;
     return await res.json();
   } catch {

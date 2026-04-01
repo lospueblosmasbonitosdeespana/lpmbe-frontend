@@ -18,8 +18,7 @@ import { Body, Eyebrow } from "@/app/components/ui/typography";
 import { PointsOfInterest } from "@/app/components/pueblos/PointsOfInterest";
 import ParadasMap from "@/app/_components/ParadasMap";
 
-export const dynamic = "force-dynamic";
-
+export const revalidate = 60;
 const CATEGORIA_TEMATICA_LABELS: Record<string, string> = {
   GASTRONOMIA: "Gastronomía",
   NATURALEZA: "Naturaleza",

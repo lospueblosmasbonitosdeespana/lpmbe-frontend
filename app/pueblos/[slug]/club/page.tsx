@@ -11,8 +11,7 @@ import {
   type SupportedLocale,
 } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
-
+export const revalidate = 60;
 export async function generateMetadata({
   params,
 }: {
@@ -296,9 +295,7 @@ export default async function ClubPuebloPage({
   let recursos: Recurso[] = [];
   try {
     const res = await fetch(
-      `${API_BASE}/public/recursos/pueblo/${pueblo.id}?lang=${locale}`,
-      { cache: "no-store" }
-    );
+      `${API_BASE}/public/recursos/pueblo/${pueblo.id}?lang=${locale}`);
     if (res.ok) {
       recursos = await res.json();
     }

@@ -18,8 +18,7 @@ import { Container } from "@/app/components/ui/container";
 import { Eyebrow, Body } from "@/app/components/ui/typography";
 import { PointsOfInterest } from "@/app/components/pueblos/PointsOfInterest";
 
-export const dynamic = "force-dynamic";
-
+export const revalidate = 60;
 const CATEGORIA_SLUG_TO_KEY: Record<string, string> = {
   naturaleza: "NATURALEZA",
   cultura: "CULTURA",
@@ -116,7 +115,7 @@ async function getPaginasTematicas(
     const qs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
     const res = await fetch(
       `${getApiUrl()}/public/pueblos/${puebloSlug}/pages${qs}`,
-      { cache: "no-store", headers: locale ? { "Accept-Language": locale } : undefined }
+      { headers: locale ? { "Accept-Language": locale } : undefined }
     );
     if (!res.ok) return [];
     const data: PuebloTematicasData = await res.json();

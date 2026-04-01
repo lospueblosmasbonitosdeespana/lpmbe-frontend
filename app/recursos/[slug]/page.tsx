@@ -33,9 +33,7 @@ import {
 } from "lucide-react";
 import { getResourceLabel } from "@/lib/resource-types";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
+export const revalidate = 60;
 type HorarioDia = {
   diaSemana: number; // 0=Lun … 6=Dom
   abierto: boolean;
@@ -176,9 +174,7 @@ async function getRecursoBySlug(slug: string, locale?: string): Promise<RecursoD
   const apiUrl = getApiUrl();
   const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
   const res = await fetch(
-    `${apiUrl}/public/recursos/${encodeURIComponent(slug)}${langQs}`,
-    { cache: "no-store" }
-  );
+    `${apiUrl}/public/recursos/${encodeURIComponent(slug)}${langQs}`);
   if (res.status === 404 || !res.ok) return null;
   return res.json();
 }

@@ -17,8 +17,7 @@ import { Container } from "@/app/components/ui/container";
 import { Title, Body, Eyebrow } from "@/app/components/ui/typography";
 import { PointsOfInterest } from "@/app/components/pueblos/PointsOfInterest";
 
-export const dynamic = "force-dynamic";
-
+export const revalidate = 60;
 const CATEGORY_TO_SLUG: Record<string, string> = {
   GASTRONOMIA: "gastronomia",
   NATURALEZA: "naturaleza",
@@ -86,7 +85,7 @@ export default async function LugaresPage({
   const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
   const [pueblo, pagesRes] = await Promise.all([
     getPuebloBySlug(slug, locale),
-    fetch(`${API_BASE}/public/pueblos/${slug}/pages${langQs}`, { cache: "no-store" }).catch(() => null),
+    fetch(`${API_BASE}/public/pueblos/${slug}/pages${langQs}`).catch(() => null),
   ]);
 
   const pois = (pueblo.pois ?? []).filter((p: any) => p.categoria === "POI");

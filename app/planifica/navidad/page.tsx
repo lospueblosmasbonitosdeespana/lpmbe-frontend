@@ -4,9 +4,7 @@ import { getLocale } from 'next-intl/server';
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 import NavidadLandingClient from './NavidadLandingClient';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
+export const revalidate = 60;
 const PAGE_TITLE: Record<string, string> = {
   es: "Planifica tu Navidad en los pueblos más bonitos",
   en: "Plan your Christmas in the most beautiful villages",
@@ -86,8 +84,8 @@ async function fetchData(locale: string): Promise<{ config: Config | null; puebl
   const API = getApiUrl();
   const lang = encodeURIComponent(locale);
   const [cfgRes, pueblosRes] = await Promise.all([
-    fetch(`${API}/navidad/config?lang=${lang}`, { cache: 'no-store' }),
-    fetch(`${API}/navidad/pueblos?lang=${lang}`, { cache: 'no-store' }),
+    fetch(`${API}/navidad/config?lang=${lang}`),
+    fetch(`${API}/navidad/pueblos?lang=${lang}`),
   ]);
   return {
     config: cfgRes.ok ? await cfgRes.json() : null,

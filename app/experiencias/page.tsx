@@ -18,8 +18,7 @@ import { Section } from "@/app/components/ui/section";
 import { Title, Muted, Display } from "@/app/components/ui/typography";
 import { ArrowRight } from "lucide-react";
 
-export const dynamic = "force-dynamic";
-
+export const revalidate = 60;
 type TematicaPage = {
   id: number;
   titulo: string;
@@ -51,7 +50,7 @@ async function getPueblosByTematica(
     const qs = locale ? `&lang=${encodeURIComponent(locale)}` : "";
     const res = await fetch(
       `${base}/public/pages?category=${category}${qs}`,
-      { cache: "no-store", headers: locale ? { "Accept-Language": locale } : undefined }
+      { headers: locale ? { "Accept-Language": locale } : undefined }
     );
     if (!res.ok) return [];
     const data = await res.json();

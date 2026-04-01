@@ -11,8 +11,7 @@ import { cn } from '@/lib/utils';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoDescription, seoTitle, type SupportedLocale } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
-
+export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('tienda');
   const locale = await getLocale();

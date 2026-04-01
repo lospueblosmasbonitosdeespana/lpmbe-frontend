@@ -55,14 +55,12 @@ type Payload = {
 async function fetchData(slug: string, locale: string): Promise<Payload | null> {
   const API = getApiUrl();
   const lang = encodeURIComponent(locale);
-  const res = await fetch(`${API}/semana-santa/pueblos/${slug}?lang=${lang}`, { cache: 'no-store' });
+  const res = await fetch(`${API}/semana-santa/pueblos/${slug}?lang=${lang}`);
   if (!res.ok) return null;
   return res.json();
 }
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
+export const revalidate = 60;
 export async function generateMetadata({
   params,
 }: {
