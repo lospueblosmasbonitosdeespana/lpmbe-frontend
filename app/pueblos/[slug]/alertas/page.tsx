@@ -108,13 +108,18 @@ export default async function AlertasPuebloPage({
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
             <AlertTriangle className="h-5 w-5" />
           </div>
-          <h1 className="text-4xl font-semibold">Alertas del pueblo</h1>
+          <h1 className="text-4xl font-semibold">Alertas en {nombrePueblo}</h1>
         </div>
-        <p className="text-muted-foreground">
-          {nombrePueblo} · {alertas.length === 0
-            ? "No hay alertas activas en este momento."
-            : `${alertas.length} alerta${alertas.length === 1 ? "" : "s"} activa${alertas.length === 1 ? "" : "s"}`}
-        </p>
+        {alertas.length > 0 ? (
+          <p className="inline-flex items-center gap-2 rounded-lg bg-amber-100 border border-amber-300 px-3 py-1.5 text-sm font-semibold text-amber-800">
+            <AlertTriangle className="h-4 w-4" />
+            Atención a los visitantes
+          </p>
+        ) : (
+          <p className="text-muted-foreground">
+            No hay alertas activas en este momento.
+          </p>
+        )}
       </div>
 
       <div className="space-y-4">
