@@ -60,6 +60,62 @@ async function fetchData(slug: string, locale: string): Promise<Payload | null> 
   return res.json();
 }
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+const DIA_DESC_TEMPLATE: Record<string, string> = {
+  es: 'Programa de Semana Santa en {name} el {date}: procesiones, horarios y puntos de interés del día.',
+  en: 'Holy Week programme in {name} on {date}: processions, schedules and highlights of the day.',
+  fr: 'Programme de la Semaine sainte à {name} le {date} : processions, horaires et temps forts.',
+  de: 'Karwoche in {name} am {date}: Prozessionen, Zeiten und Höhepunkte des Tages.',
+  pt: 'Programa da Semana Santa em {name} a {date}: procissões, horários e destaques do dia.',
+  it: 'Programma della Settimana Santa a {name} il {date}: processioni, orari e momenti salienti.',
+  ca: 'Programa de Setmana Santa a {name} el {date}: processons, horaris i moments del dia.',
+};
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ puebloSlug: string; fecha: string }>;
+}): Promise<Metadata> {
+  const { puebloSlug, fecha } = await params;
+  const locale = (await getLocale()) as SupportedLocale;
+  const path = `/planifica/semana-santa/pueblo/${puebloSlug}/dia/${fecha}`;
+  const data = await fetchData(puebloSlug, locale);
+  const nameFallback = slugToTitle(puebloSlug);
+  const day = data?.participante.dias.find((d) => d.fecha === fecha);
+  const puebloName = data?.participante.pueblo.nombre ?? nameFallback;
+  const dateLabel =
+    day != null
+      ? new Date(day.fecha).toLocaleDateString(locale, {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+      : fecha;
+  const title = seoTitle(`Semana Santa en ${puebloName} · ${dateLabel}`);
+  const descTemplate = DIA_DESC_TEMPLATE[locale] ?? DIA_DESC_TEMPLATE.es;
+  const description = seoDescription(
+    descTemplate.replace('{name}', puebloName).replace('{date}', dateLabel),
+  );
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+    },
+    robots: { index: true, follow: true },
+  };
+}
+
 export default async function SemanaSantaDiaPage({
   params,
 }: {
