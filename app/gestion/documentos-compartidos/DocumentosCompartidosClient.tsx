@@ -208,7 +208,7 @@ export default function DocumentosCompartidosClient() {
       {!loading && (allDocs.length > 0 || logosAsociacion.length > 0) && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: 'Total documentos', value: stats.total, color: 'text-foreground' },
+            { label: 'Total en biblioteca', value: allDocs.length + logosAsociacion.length, color: 'text-foreground' },
             { label: 'Logos asociación', value: logosAsociacion.length, color: 'text-blue-600' },
             { label: 'Pueblos participantes', value: stats.pueblosUnicos, color: 'text-foreground' },
             { label: 'Ordenanzas', value: stats.porTipo['ORDENANZA'] ?? 0, color: 'text-amber-600' },
