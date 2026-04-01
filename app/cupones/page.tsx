@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from 'next/link';
-import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription } from "@/lib/seo";
+import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, getOGLocale, type SupportedLocale } from "@/lib/seo";
+import { getLocale } from "next-intl/server";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
   const path = "/cupones";
   const title = seoTitle("Cupones y descuentos");
   const description = seoDescription("Aprovecha cupones de descuento en tus compras en la tienda de Los Pueblos Más Bonitos de España.");
@@ -10,8 +12,14 @@ export async function generateMetadata(): Promise<Metadata> {
     title,
     description,
     alternates: {
-      canonical: getCanonicalUrl(path),
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
     },
     robots: { index: false, follow: false },
   };

@@ -251,6 +251,15 @@ export function middleware(req: NextRequest): NextResponse {
   // URLs antiguas sin reemplazo: redirigir a home para evitar 404/410 en el rastreo.
   if (EXACT_GONE_PATHS.has(pathname)) return permanentRedirect(req, '/');
 
+  // Canonicalizar mayúsculas → minúsculas en el path (evita duplicados).
+  const rawPath = req.nextUrl.pathname;
+  const lowerPath = rawPath.toLowerCase();
+  if (rawPath !== lowerPath && rawPath !== '/') {
+    const url = req.nextUrl.clone();
+    url.pathname = lowerPath;
+    return NextResponse.redirect(url, 301);
+  }
+
   // Eliminar query params de tracking/legacy para consolidar canónicas.
   const strippedParamsRedirect = stripNonCanonicalParams(req);
   if (strippedParamsRedirect) return strippedParamsRedirect;

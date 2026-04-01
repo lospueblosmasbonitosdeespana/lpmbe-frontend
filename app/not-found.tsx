@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'Página no encontrada',
+  description: 'La página que buscas no existe o ha sido movida. Vuelve al inicio para seguir descubriendo los pueblos más bonitos de España.',
+  robots: { index: false, follow: true },
+};
 
 export default function NotFound() {
   return (

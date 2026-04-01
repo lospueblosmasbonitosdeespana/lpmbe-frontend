@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, getLocaleFromRequestHeaders, type SupportedLocale } from "@/lib/seo";
+import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, getLocaleFromRequestHeaders, getOGLocale, type SupportedLocale } from "@/lib/seo";
 import { CATEGORY_API_KEYS, getPaginasTematicasByPueblo, slugify, slugToTitle } from "@/app/_lib/tematica/tematica-helpers";
 import { TematicaListPageUI } from "@/app/_lib/tematica/TematicaPageComponents";
 
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
     description,
     alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) },
     robots: { index: true, follow: true },
-    openGraph: { title, type: "website" },
+    openGraph: { title, description, type: "website", url: getCanonicalUrl(path, locale as SupportedLocale), locale: getOGLocale(locale as SupportedLocale) },
   };
 }
 
