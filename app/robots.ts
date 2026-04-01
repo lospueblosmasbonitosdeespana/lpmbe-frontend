@@ -37,6 +37,7 @@ export default function robots(): MetadataRoute.Robots {
           '/login-callback-app',
           '/password-reset',
           '/alertas',
+          '/pueblos/*/alertas',
           '/cupones',
           '/planifica/mis-rutas',
           '/newsletter/baja',

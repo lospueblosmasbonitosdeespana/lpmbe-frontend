@@ -40,13 +40,13 @@ async function authFetch(url: string, options: RequestInit = {}) {
 // ===== PRODUCTOS =====
 
 export async function getProducts(): Promise<Product[]> {
-  const res = await fetch(`${API_BASE}/products`, { cache: 'no-store' });
+  const res = await fetch(`${API_BASE}/products`, { next: { revalidate: 60 } });
   if (!res.ok) throw new Error('Error cargando productos');
   return res.json();
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const res = await fetch(`${API_BASE}/products/slug/${slug}`, { cache: 'no-store' });
+  const res = await fetch(`${API_BASE}/products/slug/${slug}`, { next: { revalidate: 60 } });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error('Error cargando producto');
   return res.json();
@@ -58,7 +58,7 @@ export async function getProductBySlugFast(slug: string): Promise<Product | null
   const timer = setTimeout(() => controller.abort(), 4000);
   try {
     const res = await fetch(`${API_BASE}/products/slug/${slug}`, {
-      cache: 'no-store',
+      next: { revalidate: 60 },
       signal: controller.signal,
     });
     clearTimeout(timer);
