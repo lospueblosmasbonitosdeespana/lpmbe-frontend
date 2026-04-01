@@ -1703,7 +1703,11 @@
     "queComerDesc": "Gastronomie et plats typiques de {nombre}.",
     "tematicaDetalleDesc": "{titulo} à {pueblo}.",
     "comunidadTitle": "{nombre} – Beaux villages",
-    "comunidadDesc": "Plus beaux villages de {nombre}. Découvrez les villages certifiés."
+    "comunidadDesc": "Plus beaux villages de {nombre}. Découvrez les villages certifiés.",
+    "rutaDetalleDesc": "Itinéraire dans les plus beaux villages d'Espagne : {nombre}.",
+    "eventoNotFound": "Événement introuvable",
+    "noticiaNotFound": "Article introuvable",
+    "contenidoNotFound": "Contenu introuvable"
   },
   "gestion": {
     "tabUsuarios": "Utilisateurs",

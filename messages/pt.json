@@ -1703,7 +1703,11 @@
     "queComerDesc": "Gastronomia e pratos típicos de {nombre}.",
     "tematicaDetalleDesc": "{titulo} em {pueblo}.",
     "comunidadTitle": "{nombre} – Aldeias bonitas",
-    "comunidadDesc": "Aldeias mais bonitas de {nombre}. Descubra as aldeias certificadas."
+    "comunidadDesc": "Aldeias mais bonitas de {nombre}. Descubra as aldeias certificadas.",
+    "rutaDetalleDesc": "Rota pelas aldeias mais bonitas de Espanha: {nombre}.",
+    "eventoNotFound": "Evento não encontrado",
+    "noticiaNotFound": "Notícia não encontrada",
+    "contenidoNotFound": "Conteúdo não encontrado"
   },
   "gestion": {
     "tabUsuarios": "Utilizadores",

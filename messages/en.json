@@ -1703,7 +1703,11 @@
     "queComerDesc": "Gastronomy and typical dishes of {nombre}.",
     "tematicaDetalleDesc": "{titulo} in {pueblo}.",
     "comunidadTitle": "{nombre} – Beautiful villages",
-    "comunidadDesc": "Most beautiful villages in {nombre}. Discover the certified villages."
+    "comunidadDesc": "Most beautiful villages in {nombre}. Discover the certified villages.",
+    "rutaDetalleDesc": "Route through the most beautiful villages of Spain: {nombre}.",
+    "eventoNotFound": "Event not found",
+    "noticiaNotFound": "News article not found",
+    "contenidoNotFound": "Content not found"
   },
   "gestion": {
     "tabUsuarios": "Users",

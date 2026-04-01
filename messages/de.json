@@ -1703,7 +1703,11 @@
     "queComerDesc": "Gastronomie und typische Gerichte von {nombre}.",
     "tematicaDetalleDesc": "{titulo} in {pueblo}.",
     "comunidadTitle": "{nombre} – Schöne Dörfer",
-    "comunidadDesc": "Schönste Dörfer in {nombre}. Entdecken Sie die zertifizierten Dörfer."
+    "comunidadDesc": "Schönste Dörfer in {nombre}. Entdecken Sie die zertifizierten Dörfer.",
+    "rutaDetalleDesc": "Route durch die schönsten Dörfer Spaniens: {nombre}.",
+    "eventoNotFound": "Veranstaltung nicht gefunden",
+    "noticiaNotFound": "Nachricht nicht gefunden",
+    "contenidoNotFound": "Inhalt nicht gefunden"
   },
   "gestion": {
     "tabUsuarios": "Benutzer",

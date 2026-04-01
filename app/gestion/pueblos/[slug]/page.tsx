@@ -113,6 +113,13 @@ export default async function GestionPuebloPage({
 
   const acciones = [
     {
+      href: `${baseUrl}/logo-papeleria`,
+      title: 'Logo y papelería',
+      description: 'Logotipos del ayuntamiento y documentos descargables',
+      icon: <span className="text-2xl">🏷️</span>,
+      disabled: false,
+    },
+    {
       href: contenidosUrl,
       title: 'Contenidos',
       description: 'Páginas, noticias y eventos del pueblo',

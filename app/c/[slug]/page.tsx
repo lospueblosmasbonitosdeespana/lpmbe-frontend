@@ -7,7 +7,7 @@ import BackButton from './BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
-import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoDescription, seoTitle } from '@/lib/seo';
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoDescription, seoTitle } from '@/lib/seo';
 import { autoLinkUrls, injectImgAlt } from '@/app/_lib/html';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 import JsonLd from '@/app/components/seo/JsonLd';
@@ -306,7 +306,7 @@ export default async function ContenidoPage({
 
     return (
       <main className="px-5 py-10 md:py-[40px]">
-        <JsonLd data={articleJsonLdStatic(titulo, `https://lospueblosmasbonitosdeespana.org/c/${slug}`)} />
+        <JsonLd data={articleJsonLdStatic(titulo, `${getBaseUrl()}/c/${slug}`)} />
         <article>
           <div className="max-w-[720px] mx-auto px-5">
             <header className="mb-10">
@@ -384,7 +384,7 @@ export default async function ContenidoPage({
 
   return (
     <main className="px-5 py-10 md:py-[40px]">
-      <JsonLd data={articleJsonLdFromContenido(contenido, `https://lospueblosmasbonitosdeespana.org/c/${slug}`)} />
+      <JsonLd data={articleJsonLdFromContenido(contenido, `${getBaseUrl()}/c/${slug}`)} />
       <article>
         {headerImages.length > 1 ? (
           <ContenidoImageCarousel images={headerImages} alt={contenido.titulo} />

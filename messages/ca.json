@@ -1703,7 +1703,11 @@
     "queComerDesc": "Gastronomia i plats típics de {nombre}.",
     "tematicaDetalleDesc": "{titulo} a {pueblo}.",
     "comunidadTitle": "{nombre} – Pobles bonics",
-    "comunidadDesc": "Pobles més bonics de {nombre}. Descobreix els pobles certificats."
+    "comunidadDesc": "Pobles més bonics de {nombre}. Descobreix els pobles certificats.",
+    "rutaDetalleDesc": "Ruta pels pobles més bonics d'Espanya: {nombre}.",
+    "eventoNotFound": "Esdeveniment no trobat",
+    "noticiaNotFound": "Notícia no trobada",
+    "contenidoNotFound": "Contingut no trobat"
   },
   "gestion": {
     "tabUsuarios": "Usuaris",

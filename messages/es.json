@@ -1743,7 +1743,11 @@
     "queComerDesc": "Gastronomía y platos típicos de {nombre}.",
     "tematicaDetalleDesc": "{titulo} en {pueblo}.",
     "comunidadTitle": "{nombre} – Pueblos bonitos",
-    "comunidadDesc": "Pueblos más bonitos en {nombre}. Descubre los pueblos certificados."
+    "comunidadDesc": "Pueblos más bonitos en {nombre}. Descubre los pueblos certificados.",
+    "rutaDetalleDesc": "Ruta por los pueblos más bonitos de España: {nombre}.",
+    "eventoNotFound": "Evento no encontrado",
+    "noticiaNotFound": "Noticia no encontrada",
+    "contenidoNotFound": "Contenido no encontrado"
   },
   "pressPage": {
     "title": "Prensa y medios",

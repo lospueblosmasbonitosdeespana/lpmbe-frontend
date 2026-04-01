@@ -1,12 +1,12 @@
 import { permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import BackButton from '@/app/c/[slug]/BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
-import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoDescription, type SupportedLocale } from '@/lib/seo';
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoDescription, type SupportedLocale } from '@/lib/seo';
 import JsonLd from '@/app/components/seo/JsonLd';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 
@@ -93,7 +93,8 @@ export async function generateMetadata({
   const evento = await fetchEvento(slug);
 
   if (!evento) {
-    return { title: 'Evento no encontrado' };
+    const tSeo = await getTranslations('seo');
+    return { title: tSeo('eventoNotFound') };
   }
 
   const description = evento.resumen ?? '';
@@ -137,7 +138,7 @@ export default async function EventoPage({
 
   return (
     <main style={{ padding: '40px 20px' }}>
-      <JsonLd data={eventJsonLd(evento, `https://lospueblosmasbonitosdeespana.org/eventos/${slug}`)} />
+      <JsonLd data={eventJsonLd(evento, `${getBaseUrl()}/eventos/${slug}`)} />
       <article>
         {evento.coverUrl && evento.coverUrl.trim() && (
           <SmartCoverImage src={evento.coverUrl.trim()} alt={evento.titulo} />

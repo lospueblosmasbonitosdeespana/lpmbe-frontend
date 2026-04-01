@@ -1,12 +1,12 @@
 import { permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import BackButton from '@/app/c/[slug]/BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
-import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from '@/lib/seo';
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from '@/lib/seo';
 import JsonLd from '@/app/components/seo/JsonLd';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 import { injectImgAlt } from '@/app/_lib/html';
@@ -96,7 +96,8 @@ export async function generateMetadata({
   const noticia = await fetchNoticia(slug);
 
   if (!noticia) {
-    return { title: 'Noticia no encontrada' };
+    const tSeo = await getTranslations('seo');
+    return { title: tSeo('noticiaNotFound') };
   }
 
   const description = noticia.resumen ? seoDescription(noticia.resumen, 160) : undefined;
@@ -143,7 +144,7 @@ export default async function NoticiaPage({
 
   return (
     <main style={{ padding: '40px 20px' }}>
-      <JsonLd data={newsArticleJsonLd(noticia, `https://lospueblosmasbonitosdeespana.org/noticias/${slug}`)} />
+      <JsonLd data={newsArticleJsonLd(noticia, `${getBaseUrl()}/noticias/${slug}`)} />
       <article>
         {noticia.coverUrl && noticia.coverUrl.trim() && (
           <SmartCoverImage src={noticia.coverUrl.trim()} alt={noticia.titulo} />

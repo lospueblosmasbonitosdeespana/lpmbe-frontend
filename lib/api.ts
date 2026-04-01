@@ -103,7 +103,7 @@ export async function getPuebloBySlug(slug: string, locale?: string): Promise<Pu
   const fetchPueblo = async (lang?: string): Promise<Response> => {
     const qs = lang ? `?lang=${encodeURIComponent(lang)}` : '';
     return fetchWithTimeout(`${API_BASE}/pueblos/${slug}${qs}`, {
-      cache: 'no-store',
+      next: { revalidate: 60 },
       headers: lang ? { 'Accept-Language': lang } : undefined,
     });
   };
@@ -112,7 +112,6 @@ export async function getPuebloBySlug(slug: string, locale?: string): Promise<Pu
     const res = await fetchPueblo(locale);
     if (res.ok) return await res.json();
 
-    // Fallback to Spanish when locale-specific content fails during crawls.
     if (locale && locale !== 'es') {
       const fallbackRes = await fetchPueblo('es');
       if (fallbackRes.ok) return await fallbackRes.json();
@@ -142,7 +141,7 @@ export async function getPuebloBySlugFast(slug: string, locale?: string): Promis
   const fetchOne = (lang?: string) => {
     const qs = lang ? `?lang=${encodeURIComponent(lang)}` : '';
     return fetchWithTimeout(`${API_BASE}/pueblos/${slug}${qs}`, {
-      cache: 'no-store',
+      next: { revalidate: 60 },
       headers: lang ? { 'Accept-Language': lang } : undefined,
       timeoutMs: 4000,
       retries: 0,
@@ -181,7 +180,7 @@ export async function getPueblosLite(locale?: string): Promise<PuebloLite[]> {
   const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
   try {
     const res = await fetchWithTimeout(`${API_BASE}/pueblos${qs}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
       headers: locale ? { 'Accept-Language': locale } : undefined,
     });
     if (!res.ok) return [];
@@ -196,7 +195,7 @@ export async function getPoiById(poiId: string | number, locale?: string) {
   const API_BASE = getApiUrl();
   const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
   const res = await fetchWithTimeout(`${API_BASE}/pois/${poiId}${qs}`, {
-    cache: "no-store",
+    next: { revalidate: 60 },
     headers: locale ? { 'Accept-Language': locale } : undefined,
   });
 
@@ -275,7 +274,7 @@ export async function getRutas(locale?: string): Promise<Ruta[]> {
   const fetchRutas = async (lang?: string): Promise<Response> => {
     const qs = lang ? `?lang=${encodeURIComponent(lang)}` : '';
     return fetchWithTimeout(`${API_BASE}/rutas${qs}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
       headers: lang ? { 'Accept-Language': lang } : undefined,
     });
   };
@@ -311,7 +310,7 @@ export async function getRutasFast(locale?: string): Promise<Ruta[]> {
   const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
   try {
     const res = await fetchWithTimeout(`${API_BASE}/rutas${qs}`, {
-      cache: 'no-store',
+      next: { revalidate: 60 },
       headers: locale ? { 'Accept-Language': locale } : undefined,
       timeoutMs: 4000,
       retries: 0,
@@ -328,7 +327,7 @@ export async function getRutaById(id: number, locale?: string): Promise<Ruta> {
   const API_BASE = getApiUrl();
   const qs = locale ? `?lang=${encodeURIComponent(locale)}` : '';
   const res = await fetchWithTimeout(`${API_BASE}/rutas/${id}${qs}`, {
-    cache: 'no-store',
+    next: { revalidate: 60 },
     headers: locale ? { 'Accept-Language': locale } : undefined,
   });
 

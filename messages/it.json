@@ -1703,7 +1703,11 @@
     "queComerDesc": "Gastronomia e piatti tipici di {nombre}.",
     "tematicaDetalleDesc": "{titulo} a {pueblo}.",
     "comunidadTitle": "{nombre} – Borghi belli",
-    "comunidadDesc": "Borghi più belli di {nombre}. Scopri i borghi certificati."
+    "comunidadDesc": "Borghi più belli di {nombre}. Scopri i borghi certificati.",
+    "rutaDetalleDesc": "Percorso nei borghi più belli della Spagna: {nombre}.",
+    "eventoNotFound": "Evento non trovato",
+    "noticiaNotFound": "Notizia non trovata",
+    "contenidoNotFound": "Contenuto non trovato"
   },
   "gestion": {
     "tabUsuarios": "Utenti",

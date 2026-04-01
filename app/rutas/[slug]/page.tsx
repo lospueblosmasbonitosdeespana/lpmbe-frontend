@@ -101,8 +101,9 @@ export async function generateMetadata({
   }
 
   const title = seoTitle(name);
+  const tSeo = await getTranslations("seo");
   const description =
-    seoDescription(`Ruta por los pueblos más bonitos de España: ${name}.`) ||
+    seoDescription(tSeo("rutaDetalleDesc", { nombre: name })) ||
     DEFAULT_DESCRIPTION;
   return {
     title,
