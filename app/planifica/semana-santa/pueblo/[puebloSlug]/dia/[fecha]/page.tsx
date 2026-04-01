@@ -1,7 +1,17 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getApiUrl } from '@/lib/api';
 import { getLocale, getTranslations } from 'next-intl/server';
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  getOGLocale,
+  seoDescription,
+  seoTitle,
+  slugToTitle,
+  type SupportedLocale,
+} from '@/lib/seo';
 import ShareButton from '@/app/components/ShareButton';
 import EventoRecorridoMap from '../../EventoRecorridoMap';
 import ImagenConLightbox from '../../ImagenConLightbox';

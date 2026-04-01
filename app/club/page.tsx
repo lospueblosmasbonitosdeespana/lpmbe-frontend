@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  type SupportedLocale,
+} from "@/lib/seo";
 import { Container } from "@/app/components/ui/container";
 import { Section } from "@/app/components/ui/section";
 import { Title, Lead } from "@/app/components/ui/typography";
@@ -8,16 +13,25 @@ import ClubNewsletterForm from "./ClubNewsletterForm";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export const metadata: Metadata = {
-  title: "Club de Amigos",
-  description:
-    "En pocos días el Club de Amigos será una realidad. Suscríbete a la newsletter y noticias de la asociación.",
-  openGraph: {
-    title: "Club de Amigos",
-    description:
-      "En pocos días el Club de Amigos será una realidad. Suscríbete a la newsletter y noticias de la asociación.",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const path = "/club";
+  const title = "Club de Amigos";
+  const description =
+    "En pocos días el Club de Amigos será una realidad. Suscríbete a la newsletter y noticias de la asociación.";
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+    },
+  };
+}
 
 export default async function ClubLandingPage() {
   const t = await getTranslations("clubLanding");

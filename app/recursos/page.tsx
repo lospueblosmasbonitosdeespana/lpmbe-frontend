@@ -1,7 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  type SupportedLocale,
+} from "@/lib/seo";
 import { Container } from "@/app/components/ui/container";
 import { Section } from "@/app/components/ui/section";
 import { Title, Lead, Eyebrow } from "@/app/components/ui/typography";
@@ -10,16 +15,25 @@ import { getResourceLabel } from "@/lib/resource-types";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export const metadata: Metadata = {
-  title: "Recursos turísticos",
-  description:
-    "Experiencias y lugares únicos en nuestros pueblos. Descuentos exclusivos para socios del Club de Amigos.",
-  openGraph: {
-    title: "Recursos turísticos",
-    description:
-      "Experiencias y lugares únicos en nuestros pueblos. Descuentos exclusivos para socios del Club de Amigos.",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const path = "/recursos";
+  const title = "Recursos turísticos";
+  const description =
+    "Experiencias y lugares únicos en nuestros pueblos. Descuentos exclusivos para socios del Club de Amigos.";
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+    },
+  };
+}
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();

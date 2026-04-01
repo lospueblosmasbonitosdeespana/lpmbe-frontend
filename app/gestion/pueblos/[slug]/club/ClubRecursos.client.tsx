@@ -347,10 +347,12 @@ export default function ClubRecursos({ puebloId, slug }: { puebloId: number; slu
           <button
             type="button"
             onClick={() => setShowForm(true)}
-            className="px-4 py-2 text-sm border rounded hover:bg-gray-50"
+            className="w-full flex items-center justify-center gap-2 px-6 py-4 text-base font-semibold text-white bg-green-600 rounded-xl shadow-md hover:bg-green-700 hover:shadow-lg active:scale-95 transition-all duration-150"
           >
-            + Nuevo recurso
+            <span className="text-xl leading-none">+</span>
+            <span>Añadir nuevo recurso turístico</span>
           </button>
+          <p className="mt-2 text-center text-xs text-gray-400">Añade museos, castillos, monumentos y otros atractivos de tu municipio</p>
         </div>
       ) : (
         <div className="mt-6 p-4 border rounded space-y-3">

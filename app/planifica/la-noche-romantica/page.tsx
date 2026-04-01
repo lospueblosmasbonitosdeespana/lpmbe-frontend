@@ -1,14 +1,31 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Container } from "@/app/components/ui/container";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  type SupportedLocale,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "La Noche Romántica",
-  description:
-    "Evento destacado de la asociación. Pueblos, hoteles y restaurantes participan en La Noche Romántica.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const path = "/planifica/la-noche-romantica";
+  const title = "La Noche Romántica";
+  const description =
+    "Evento destacado de la asociación. Pueblos, hoteles y restaurantes participan en La Noche Romántica.";
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+  };
+}
 
 const breadcrumbItems = [
   { label: "Planifica", href: "/planifica/fin-de-semana" },

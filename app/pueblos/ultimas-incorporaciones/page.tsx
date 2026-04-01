@@ -1,19 +1,34 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  type SupportedLocale,
+} from "@/lib/seo";
 import { fetchWithTimeout } from "@/lib/fetch-safe";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Display, Lead } from "@/app/components/ui/typography";
 
-export const metadata: Metadata = {
-  title: "Certificaciones por año",
-  description:
-    "Descubre todos los pueblos certificados por la red de Los Pueblos Más Bonitos de España, año por año, desde 2013.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const path = "/pueblos/ultimas-incorporaciones";
+  const title = "Certificaciones por año";
+  const description =
+    "Descubre todos los pueblos certificados por la red de Los Pueblos Más Bonitos de España, año por año, desde 2013.";
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
+  };
+}
 
 type PuebloDTO = {
   id: number;

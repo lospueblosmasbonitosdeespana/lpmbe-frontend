@@ -5,6 +5,7 @@ import { getLocale } from "next-intl/server";
 import { getPuebloBySlug, getApiUrl } from "@/lib/api";
 import {
   getCanonicalUrl,
+  getLocaleAlternates,
   getOGLocale,
   seoTitle,
   seoDescription,
@@ -60,6 +61,10 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      languages: getLocaleAlternates(path),
+    },
     openGraph: {
       title,
       description,

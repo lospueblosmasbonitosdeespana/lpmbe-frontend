@@ -199,13 +199,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const extraStatic: MetadataRoute.Sitemap = [
     entry('/prensa', 0.5, 'monthly'),
     entry('/app/descargar', 0.4, 'yearly'),
-    entry('/alertas', 0.4, 'daily'),
+    entry('/app', 0.4, 'monthly'),
+    entry('/para-negocios', 0.4, 'monthly'),
+    entry('/noche-romantica/pueblos-participantes', 0.5, 'monthly'),
+    entry('/planifica/navidad', 0.6, 'monthly'),
+    entry('/planifica/la-noche-romantica', 0.5, 'monthly'),
   ];
+
+  const productoSlugs = await fetchSlugs('/public/tienda/productos?limit=500').catch(() => [] as string[]);
+  const productos = productoSlugs.map((s) => entry(`/tienda/${s}`, 0.55, 'monthly'));
+
+  const recursoSlugs = await fetchSlugs('/public/recursos?limit=500').catch(() => [] as string[]);
+  const recursos = recursoSlugs.map((s) => entry(`/recursos/${s}`, 0.45, 'monthly'));
+
+  const socioSlugs = await fetchSlugs('/public/socios?limit=100').catch(() => [] as string[]);
+  const socios = socioSlugs.map((s) => entry(`/el-sello/socios/${s}`, 0.35, 'monthly'));
+
+  const navidadPueblos = pueblosWithImages.map((p) =>
+    entry(`/planifica/navidad/pueblo/${p.slug}`, 0.45, 'monthly')
+  );
+  const finDeSemanaPueblos = pueblosWithImages.map((p) =>
+    entry(`/planifica/fin-de-semana/pueblo/${p.slug}`, 0.45, 'monthly')
+  );
+  const nocheRomanticaPueblos = pueblosWithImages.map((p) =>
+    entry(`/noche-romantica/pueblos-participantes/${p.slug}`, 0.45, 'monthly')
+  );
 
   return [
     ...staticPages, ...extraStatic,
     ...pueblos, ...rutas, ...noticias, ...eventos, ...contenidos,
     ...semanaSanta, ...paginasTematicas, ...paginasClub,
     ...paginasCategoriaPueblo, ...experienciasAsociacion, ...experienciasPueblo,
+    ...productos, ...recursos, ...socios,
+    ...navidadPueblos, ...finDeSemanaPueblos, ...nocheRomanticaPueblos,
   ];
 }
