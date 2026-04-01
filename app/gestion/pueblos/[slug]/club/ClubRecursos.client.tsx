@@ -335,8 +335,8 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
         edadMaxMenor: Math.max(0, Number(editEdadMaxMenor) || 12),
         lat: Number(editLat),
         lng: Number(editLng),
-        horariosSemana: editHorariosSemana,
-        cierresEspeciales: editCierresEspeciales,
+        horariosSemana: editHorariosSemana.map(({ diaSemana, abierto, horaAbre, horaCierra }) => ({ diaSemana, abierto, horaAbre, horaCierra })),
+        cierresEspeciales: editCierresEspeciales.map(({ fecha, motivo }) => ({ fecha, motivo })),
       };
 
       if (editDescuento) {
