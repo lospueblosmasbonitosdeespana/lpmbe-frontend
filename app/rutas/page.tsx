@@ -9,11 +9,10 @@ import RutaCardStats from "@/app/_components/RutaCardStats";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
-  const localeSuffix = locale === 'es' ? '' : ` (${locale.toUpperCase()})`;
   const t = await getTranslations("seo");
   const path = "/rutas";
-  const title = `${t("rutasListTitle")}${localeSuffix}`;
-  const description = `${t("rutasListDescription")}${localeSuffix}`;
+  const title = t("rutasListTitle");
+  const description = t("rutasListDescription");
   return {
     title,
     description,

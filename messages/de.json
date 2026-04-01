@@ -872,7 +872,10 @@
   "legal": {
     "privacy": "Datenschutz",
     "legal": "Rechtlicher Hinweis",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "legalDescription": "Rechtliche Bedingungen, Inhaberschaft der Website und Nutzungsbedingungen der Schönsten Dörfer Spaniens.",
+    "cookiesDescription": "Details zur Cookie-Nutzung, Arten, Zweck und Konfiguration auf Die Schönsten Dörfer Spaniens.",
+    "privacyDescription": "Informationen zur Verarbeitung personenbezogener Daten, Rechte und Datenschutzrichtlinie der Website."
   },
   "theme": {
     "label": "Erscheinungsbild",
@@ -1618,7 +1621,18 @@
     "routeNotFoundTitle": "Route nicht gefunden",
     "puebloDescriptionFallback": "Informationen, Karte, Fotos, Sehenswürdigkeiten und Erfahrungen mit dem Dorf.",
     "rutaDescriptionFallback": "Touristische Route durch die schönsten Dörfer Spaniens.",
-    "mxDescriptionFallback": "Einzelheiten über das Erlebnis und seine Stationen."
+    "mxDescriptionFallback": "Einzelheiten über das Erlebnis und seine Stationen.",
+    "puebloActualidadTitle": "Aktuelles aus {nombre}",
+    "puebloActualidadDesc": "Nachrichten, Veranstaltungen und Neuigkeiten aus {nombre}.",
+    "puebloWebcamTitle": "Webcam von {nombre}",
+    "puebloWebcamDesc": "Live-Webcams und Ansichten von {nombre}.",
+    "categoriaPuebloTitle": "{categoria} in {pueblo} — Erlebnisse",
+    "categoriaPuebloDesc": "Erlebnisse von {categoria} in {pueblo}: {detalle}.",
+    "experienciaAsociacionTitle": "{tematica} · Verband",
+    "experienciaAsociacionDesc": "Verbandsinhalte zum Thema {tematica}.",
+    "experienciaPuebloTitle": "{categoria} in {pueblo}",
+    "experienciaPuebloDesc": "Erlebnisse von {categoria} zum Entdecken von {pueblo}.",
+    "productoDescription": "Kaufen Sie {nombre} im offiziellen Shop der Schönsten Dörfer Spaniens."
   },
   "gestion": {
     "tabUsuarios": "Benutzer",

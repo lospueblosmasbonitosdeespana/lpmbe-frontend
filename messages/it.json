@@ -872,7 +872,10 @@
   "legal": {
     "privacy": "La privacy",
     "legal": "Avviso legale",
-    "cookies": "Biscotti"
+    "cookies": "Biscotti",
+    "legalDescription": "Condizioni legali, titolarità del sito e termini d'uso de I Borghi Più Belli della Spagna.",
+    "cookiesDescription": "Dettaglio sull'uso dei cookie, tipologie, finalità e configurazione su I Borghi Più Belli della Spagna.",
+    "privacyDescription": "Informazioni sul trattamento dei dati personali, diritti e politica sulla privacy del sito web."
   },
   "theme": {
     "label": "Aspetto",
@@ -1618,7 +1621,18 @@
     "routeNotFoundTitle": "Percorso non trovato",
     "puebloDescriptionFallback": "Informazioni, mappa, foto, punti di interesse ed esperienze del villaggio.",
     "rutaDescriptionFallback": "Itinerario turistico attraverso i più bei villaggi della Spagna.",
-    "mxDescriptionFallback": "Dettagli dell'esperienza e delle sue tappe."
+    "mxDescriptionFallback": "Dettagli dell'esperienza e delle sue tappe.",
+    "puebloActualidadTitle": "Attualità di {nombre}",
+    "puebloActualidadDesc": "Notizie, eventi e novità di {nombre}.",
+    "puebloWebcamTitle": "Webcam di {nombre}",
+    "puebloWebcamDesc": "Webcam e viste in diretta di {nombre}.",
+    "categoriaPuebloTitle": "{categoria} a {pueblo} — Esperienze",
+    "categoriaPuebloDesc": "Esperienze di {categoria} a {pueblo}: {detalle}.",
+    "experienciaAsociacionTitle": "{tematica} · Associazione",
+    "experienciaAsociacionDesc": "Contenuto dell'associazione per la tematica {tematica}.",
+    "experienciaPuebloTitle": "{categoria} a {pueblo}",
+    "experienciaPuebloDesc": "Esperienze di {categoria} per scoprire {pueblo}.",
+    "productoDescription": "Acquista {nombre} nel negozio ufficiale de I Borghi Più Belli della Spagna."
   },
   "gestion": {
     "tabUsuarios": "Utenti",

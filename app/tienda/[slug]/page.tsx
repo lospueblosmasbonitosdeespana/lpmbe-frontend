@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation';
 import { getProductBySlug, getProductBySlugFast } from '@/src/lib/tiendaApi';
 import type { Metadata } from 'next';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import {
   getCanonicalUrl,
   getLocaleAlternates,
-  metaLocaleLead,
+  getOGLocale,
   seoDescription,
   seoTitle,
   slugToTitle,
@@ -21,46 +21,36 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const locale = await getLocale();
-  const localeSuffix = locale === 'es' ? '' : ` (${locale.toUpperCase()})`;
+  const locale = (await getLocale()) as SupportedLocale;
   const path = `/tienda/${slug}`;
   const fallbackName = slugToTitle(slug) || "Producto";
+  const tSeo = await getTranslations('seo');
 
   try {
     const product = await getProductBySlugFast(slug);
-    if (!product) {
-      return {
-        title: seoTitle(`Producto: ${fallbackName}${localeSuffix}`),
-        description: seoDescription(
-          `${metaLocaleLead(locale as SupportedLocale)}Información del producto ${fallbackName}.${localeSuffix} · ${slug}`,
-        ),
-        alternates: {
-          canonical: getCanonicalUrl(path, locale as SupportedLocale),
-          languages: getLocaleAlternates(path),
-        },
-      };
-    }
-
-    const productName = product.nombre?.trim() || fallbackName;
-    const rawDesc = product.descripcion?.replace(/<[^>]*>/g, " ").trim();
-    const lead = metaLocaleLead(locale as SupportedLocale);
-    const body = rawDesc || `Compra ${productName} en la tienda oficial.`;
+    const productName = product?.nombre?.trim() || fallbackName;
+    const rawDesc = product?.descripcion?.replace(/<[^>]*>/g, " ").trim();
+    const title = seoTitle(productName);
+    const description = seoDescription(
+      rawDesc || tSeo("productoDescription", { nombre: productName })
+    );
     return {
-      title: seoTitle(`${productName}${localeSuffix}`),
-      description: seoDescription(`${lead}${body}${localeSuffix} · ${slug}`),
+      title,
+      description,
       alternates: {
-        canonical: getCanonicalUrl(path, locale as SupportedLocale),
+        canonical: getCanonicalUrl(path, locale),
         languages: getLocaleAlternates(path),
       },
+      openGraph: { title, description, url: getCanonicalUrl(path, locale), locale: getOGLocale(locale) },
     };
   } catch {
+    const title = seoTitle(`Producto: ${fallbackName}`);
+    const description = seoDescription(tSeo("productoDescription", { nombre: fallbackName }));
     return {
-      title: seoTitle(`Producto: ${fallbackName}`),
-      description: seoDescription(
-        `${metaLocaleLead(locale as SupportedLocale)}Información del producto ${fallbackName}. · ${slug}`,
-      ),
+      title,
+      description,
       alternates: {
-        canonical: getCanonicalUrl(path, locale as SupportedLocale),
+        canonical: getCanonicalUrl(path, locale),
         languages: getLocaleAlternates(path),
       },
     };

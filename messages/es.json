@@ -912,7 +912,10 @@
   "legal": {
     "privacy": "Privacidad",
     "legal": "Aviso Legal",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "legalDescription": "Condiciones legales, titularidad del sitio y términos de uso de Los Pueblos Más Bonitos de España.",
+    "cookiesDescription": "Detalle del uso de cookies, tipos, finalidad y configuración en Los Pueblos Más Bonitos de España.",
+    "privacyDescription": "Información sobre tratamiento de datos personales, derechos y política de privacidad del sitio web."
   },
   "theme": {
     "label": "Apariencia",
@@ -1658,7 +1661,18 @@
     "routeNotFoundTitle": "Ruta no encontrada",
     "puebloDescriptionFallback": "Información, mapa, fotos, puntos de interés y experiencias del pueblo.",
     "rutaDescriptionFallback": "Ruta turística por los pueblos más bonitos de España.",
-    "mxDescriptionFallback": "Detalle de la experiencia y sus paradas."
+    "mxDescriptionFallback": "Detalle de la experiencia y sus paradas.",
+    "puebloActualidadTitle": "Actualidad de {nombre}",
+    "puebloActualidadDesc": "Noticias, eventos y novedades de {nombre}.",
+    "puebloWebcamTitle": "Webcam de {nombre}",
+    "puebloWebcamDesc": "Webcams y vistas en directo de {nombre}.",
+    "categoriaPuebloTitle": "{categoria} en {pueblo} — Experiencias",
+    "categoriaPuebloDesc": "Experiencias de {categoria} en {pueblo}: {detalle}.",
+    "experienciaAsociacionTitle": "{tematica} · Asociación",
+    "experienciaAsociacionDesc": "Contenido de la asociación para la temática {tematica}.",
+    "experienciaPuebloTitle": "{categoria} en {pueblo}",
+    "experienciaPuebloDesc": "Experiencias de {categoria} para descubrir {pueblo}.",
+    "productoDescription": "Compra {nombre} en la tienda oficial de Los Pueblos Más Bonitos de España."
   },
   "pressPage": {
     "title": "Prensa y medios",

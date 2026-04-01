@@ -872,7 +872,10 @@
   "legal": {
     "privacy": "Vie privée",
     "legal": "Avis juridique",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "legalDescription": "Conditions légales, titularité du site et conditions d'utilisation des Plus Beaux Villages d'Espagne.",
+    "cookiesDescription": "Détail de l'utilisation des cookies, types, finalité et configuration sur Les Plus Beaux Villages d'Espagne.",
+    "privacyDescription": "Informations sur le traitement des données personnelles, droits et politique de confidentialité du site web."
   },
   "theme": {
     "label": "Apparence",
@@ -1618,7 +1621,18 @@
     "routeNotFoundTitle": "Itinéraire non trouvé",
     "puebloDescriptionFallback": "Informations, carte, photos, points d'intérêt et expériences du village.",
     "rutaDescriptionFallback": "Route touristique traversant les plus beaux villages d'Espagne.",
-    "mxDescriptionFallback": "Détails de l'expérience et des arrêts."
+    "mxDescriptionFallback": "Détails de l'expérience et des arrêts.",
+    "puebloActualidadTitle": "Actualités de {nombre}",
+    "puebloActualidadDesc": "Nouvelles, événements et nouveautés de {nombre}.",
+    "puebloWebcamTitle": "Webcam de {nombre}",
+    "puebloWebcamDesc": "Webcams et vues en direct de {nombre}.",
+    "categoriaPuebloTitle": "{categoria} à {pueblo} — Expériences",
+    "categoriaPuebloDesc": "Expériences de {categoria} à {pueblo} : {detalle}.",
+    "experienciaAsociacionTitle": "{tematica} · Association",
+    "experienciaAsociacionDesc": "Contenu de l'association pour la thématique {tematica}.",
+    "experienciaPuebloTitle": "{categoria} à {pueblo}",
+    "experienciaPuebloDesc": "Expériences de {categoria} pour découvrir {pueblo}.",
+    "productoDescription": "Achetez {nombre} dans la boutique officielle des Plus Beaux Villages d'Espagne."
   },
   "gestion": {
     "tabUsuarios": "Utilisateurs",

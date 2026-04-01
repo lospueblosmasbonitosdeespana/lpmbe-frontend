@@ -872,7 +872,10 @@
   "legal": {
     "privacy": "Privacy",
     "legal": "Legal Notice",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "legalDescription": "Legal terms, site ownership and terms of use of The Most Beautiful Villages of Spain.",
+    "cookiesDescription": "Details on cookie usage, types, purpose and settings on The Most Beautiful Villages of Spain.",
+    "privacyDescription": "Information about personal data processing, rights and privacy policy of the website."
   },
   "theme": {
     "label": "Appearance",
@@ -1618,7 +1621,18 @@
     "routeNotFoundTitle": "Route not found",
     "puebloDescriptionFallback": "Information, map, photos, points of interest and experiences of the village.",
     "rutaDescriptionFallback": "Tourist route through the most beautiful villages in Spain.",
-    "mxDescriptionFallback": "Details of the experience and its stops."
+    "mxDescriptionFallback": "Details of the experience and its stops.",
+    "puebloActualidadTitle": "News from {nombre}",
+    "puebloActualidadDesc": "News, events and updates from {nombre}.",
+    "puebloWebcamTitle": "Webcam of {nombre}",
+    "puebloWebcamDesc": "Live webcams and views of {nombre}.",
+    "categoriaPuebloTitle": "{categoria} in {pueblo} — Experiences",
+    "categoriaPuebloDesc": "Experiences of {categoria} in {pueblo}: {detalle}.",
+    "experienciaAsociacionTitle": "{tematica} · Association",
+    "experienciaAsociacionDesc": "Association content for the {tematica} theme.",
+    "experienciaPuebloTitle": "{categoria} in {pueblo}",
+    "experienciaPuebloDesc": "Experiences of {categoria} to discover {pueblo}.",
+    "productoDescription": "Buy {nombre} at the official shop of The Most Beautiful Villages of Spain."
   },
   "gestion": {
     "tabUsuarios": "Users",

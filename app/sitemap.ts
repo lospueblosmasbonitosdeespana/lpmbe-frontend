@@ -5,6 +5,7 @@ import { getApiUrl, getPuebloMainPhoto } from '@/lib/api';
 type SitemapEntry = MetadataRoute.Sitemap[number];
 
 const BASE = getBaseUrl();
+const TODAY = new Date();
 
 /** Solo URLs absolutas http(s) en image:image; evita basura y relativa inválida para Google. */
 function normalizeSitemapImageUrls(images?: string[]): string[] | undefined {
@@ -40,6 +41,25 @@ async function fetchSlugs(endpoint: string, slugField = 'slug'): Promise<string[
   }
 }
 
+type SlugWithDate = { slug: string; updatedAt?: string | null };
+
+async function fetchSlugsWithDates(endpoint: string, slugField = 'slug', dateField = 'updatedAt'): Promise<SlugWithDate[]> {
+  try {
+    const res = await fetch(`${API}${endpoint}`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : data?.items ?? [];
+    const readPath = (obj: any, path: string) =>
+      path.split('.').reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), obj);
+    return items.map((i: any) => ({
+      slug: readPath(i, slugField),
+      updatedAt: readPath(i, dateField) ?? readPath(i, 'publishedAt') ?? readPath(i, 'createdAt'),
+    })).filter((i: SlugWithDate) => i.slug);
+  } catch {
+    return [];
+  }
+}
+
 /** Para sitemap de imágenes: pueblos con slug + URL de foto principal (para indexación en Google). */
 async function fetchPueblosWithImages(): Promise<{ slug: string; imageUrl: string | null }[]> {
   try {
@@ -60,7 +80,8 @@ function entry(
   path: string,
   priority: number,
   changeFrequency: SitemapEntry['changeFrequency'] = 'weekly',
-  images?: string[]
+  images?: string[],
+  lastMod?: string | Date | null,
 ): SitemapEntry {
   const languages: Record<string, string> = {};
   for (const locale of SUPPORTED_LOCALES) {
@@ -68,9 +89,15 @@ function entry(
   }
   languages['x-default'] = `${BASE}${pathForLocale(path, DEFAULT_LOCALE)}`;
 
+  let resolved: Date = TODAY;
+  if (lastMod) {
+    const d = lastMod instanceof Date ? lastMod : new Date(lastMod);
+    if (!Number.isNaN(d.getTime())) resolved = d;
+  }
+
   const out: SitemapEntry = {
     url: `${BASE}${path}`,
-    lastModified: new Date(),
+    lastModified: resolved,
     changeFrequency,
     priority,
     alternates: { languages },
@@ -83,13 +110,13 @@ function entry(
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [pueblosWithImages, rutaSlugs, noticiaSlugs, eventoSlugs, contenidoSlugs, semanaSantaPueblos] =
+  const [pueblosWithImages, rutaSlugs, noticiaItems, eventoItems, contenidoItems, semanaSantaPueblos] =
     await Promise.all([
       fetchPueblosWithImages(),
       fetchSlugs('/rutas'),
-      fetchSlugs('/public/noticias?limit=1000'),
-      fetchSlugs('/public/eventos?limit=1000'),
-      fetchSlugs('/public/contenidos?limit=2000'),
+      fetchSlugsWithDates('/public/noticias?limit=1000'),
+      fetchSlugsWithDates('/public/eventos?limit=1000'),
+      fetchSlugsWithDates('/public/contenidos?limit=2000'),
       fetchSlugs('/semana-santa/pueblos', 'pueblo.slug'),
     ]);
 
@@ -138,10 +165,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry(`/pueblos/${p.slug}`, 0.9, 'weekly', p.imageUrl ? [p.imageUrl] : undefined)
   );
   const rutas = rutaSlugs.map((s) => entry(`/rutas/${s}`, 0.8, 'weekly'));
-  // Noticias, eventos y contenidos /c/ (lo que publican alcaldes): prioridad alta para que Google indexe
-  const noticias = noticiaSlugs.map((s) => entry(`/noticias/${s}`, 0.75, 'weekly'));
-  const eventos = eventoSlugs.map((s) => entry(`/eventos/${s}`, 0.75, 'weekly'));
-  const contenidos = contenidoSlugs.map((s) => entry(`/c/${s}`, 0.7, 'weekly'));
+  const noticias = noticiaItems.map((i) => entry(`/noticias/${i.slug}`, 0.75, 'weekly', undefined, i.updatedAt));
+  const eventos = eventoItems.map((i) => entry(`/eventos/${i.slug}`, 0.75, 'weekly', undefined, i.updatedAt));
+  const contenidos = contenidoItems.map((i) => entry(`/c/${i.slug}`, 0.7, 'weekly', undefined, i.updatedAt));
   const semanaSanta = semanaSantaPueblos.map((s) => entry(`/planifica/semana-santa/pueblo/${s}`, 0.6, 'weekly'));
 
   // Páginas SEO temáticas por pueblo
@@ -157,5 +183,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry(`/donde-comprar/${p.slug}`, 0.75, 'monthly'),
   ]);
 
-  return [...staticPages, ...pueblos, ...rutas, ...noticias, ...eventos, ...contenidos, ...semanaSanta, ...paginasTematicas, ...paginasClub];
+  const categoriasPueblo = ['naturaleza', 'cultura', 'en-familia', 'patrimonio', 'petfriendly', 'gastronomia'];
+  const paginasCategoriaPueblo = pueblosWithImages.flatMap((p) =>
+    categoriasPueblo.map((cat) => entry(`/pueblos/${p.slug}/categoria/${cat}`, 0.5, 'monthly'))
+  );
+
+  const experienciasCategorias = ['gastronomia', 'naturaleza', 'cultura', 'en-familia', 'petfriendly', 'patrimonio'];
+  const experienciasAsociacion = experienciasCategorias.map((cat) =>
+    entry(`/experiencias/${cat}/asociacion`, 0.5, 'monthly')
+  );
+  const experienciasPueblo = pueblosWithImages.flatMap((p) =>
+    experienciasCategorias.map((cat) => entry(`/experiencias/${cat}/pueblos/${p.slug}`, 0.5, 'monthly'))
+  );
+
+  const extraStatic: MetadataRoute.Sitemap = [
+    entry('/prensa', 0.5, 'monthly'),
+    entry('/app/descargar', 0.4, 'yearly'),
+    entry('/alertas', 0.4, 'daily'),
+  ];
+
+  return [
+    ...staticPages, ...extraStatic,
+    ...pueblos, ...rutas, ...noticias, ...eventos, ...contenidos,
+    ...semanaSanta, ...paginasTematicas, ...paginasClub,
+    ...paginasCategoriaPueblo, ...experienciasAsociacion, ...experienciasPueblo,
+  ];
 }

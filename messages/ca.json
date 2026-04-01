@@ -872,7 +872,10 @@
   "legal": {
     "privacy": "Privacitat",
     "legal": "Avís legal",
-    "cookies": "Galetes"
+    "cookies": "Galetes",
+    "legalDescription": "Condicions legals, titularitat del lloc i termes d'ús d'Els Pobles Més Bonics d'Espanya.",
+    "cookiesDescription": "Detall de l'ús de galetes, tipus, finalitat i configuració a Els Pobles Més Bonics d'Espanya.",
+    "privacyDescription": "Informació sobre tractament de dades personals, drets i política de privadesa del lloc web."
   },
   "theme": {
     "label": "Aparença",
@@ -1618,7 +1621,18 @@
     "routeNotFoundTitle": "Ruta no trobada",
     "puebloDescriptionFallback": "Informació, mapa, fotografies, punts d'interès i experiències al poble.",
     "rutaDescriptionFallback": "Ruta turística pels pobles més bonics d'Espanya.",
-    "mxDescriptionFallback": "Detalls de l'experiència i de les seves parades."
+    "mxDescriptionFallback": "Detalls de l'experiència i de les seves parades.",
+    "puebloActualidadTitle": "Actualitat de {nombre}",
+    "puebloActualidadDesc": "Notícies, esdeveniments i novetats de {nombre}.",
+    "puebloWebcamTitle": "Webcam de {nombre}",
+    "puebloWebcamDesc": "Webcams i vistes en directe de {nombre}.",
+    "categoriaPuebloTitle": "{categoria} a {pueblo} — Experiències",
+    "categoriaPuebloDesc": "Experiències de {categoria} a {pueblo}: {detalle}.",
+    "experienciaAsociacionTitle": "{tematica} · Associació",
+    "experienciaAsociacionDesc": "Contingut de l'associació per a la temàtica {tematica}.",
+    "experienciaPuebloTitle": "{categoria} a {pueblo}",
+    "experienciaPuebloDesc": "Experiències de {categoria} per descobrir {pueblo}.",
+    "productoDescription": "Compra {nombre} a la botiga oficial d'Els Pobles Més Bonics d'Espanya."
   },
   "gestion": {
     "tabUsuarios": "Usuaris",

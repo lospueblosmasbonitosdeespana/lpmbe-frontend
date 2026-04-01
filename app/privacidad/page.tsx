@@ -1,22 +1,25 @@
 import type { Metadata } from 'next';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import LegalPage from '@/app/_components/LegalPage';
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
-  const localeSuffix = locale === 'es' ? '' : ` (${locale.toUpperCase()})`;
+  const locale = (await getLocale()) as SupportedLocale;
+  const t = await getTranslations('legal');
   const path = '/privacidad';
+  const title = t('privacy');
+  const description = t('privacyDescription');
   return {
-    title: `Política de privacidad${localeSuffix}`,
-    description: `Informacion sobre tratamiento de datos personales, derechos y politica de privacidad del sitio web.${localeSuffix}`,
+    title,
+    description,
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
+      canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
+    openGraph: { title, description, url: getCanonicalUrl(path, locale), locale: getOGLocale(locale) },
   };
 }
 

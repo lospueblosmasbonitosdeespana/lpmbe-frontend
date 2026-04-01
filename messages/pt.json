@@ -872,7 +872,10 @@
   "legal": {
     "privacy": "Privacidade",
     "legal": "Aviso legal",
-    "cookies": "Biscoitos"
+    "cookies": "Biscoitos",
+    "legalDescription": "Condições legais, titularidade do site e termos de utilização de As Aldeias Mais Bonitas de Espanha.",
+    "cookiesDescription": "Detalhe da utilização de cookies, tipos, finalidade e configuração em As Aldeias Mais Bonitas de Espanha.",
+    "privacyDescription": "Informação sobre tratamento de dados pessoais, direitos e política de privacidade do site."
   },
   "theme": {
     "label": "Aparência",
@@ -1618,7 +1621,18 @@
     "routeNotFoundTitle": "Rota não encontrada",
     "puebloDescriptionFallback": "Informações, mapa, fotos, pontos de interesse e experiências da aldeia.",
     "rutaDescriptionFallback": "Percurso turístico pelas mais belas aldeias de Espanha.",
-    "mxDescriptionFallback": "Detalhes da experiência e das suas paragens."
+    "mxDescriptionFallback": "Detalhes da experiência e das suas paragens.",
+    "puebloActualidadTitle": "Atualidade de {nombre}",
+    "puebloActualidadDesc": "Notícias, eventos e novidades de {nombre}.",
+    "puebloWebcamTitle": "Webcam de {nombre}",
+    "puebloWebcamDesc": "Webcams e vistas em direto de {nombre}.",
+    "categoriaPuebloTitle": "{categoria} em {pueblo} — Experiências",
+    "categoriaPuebloDesc": "Experiências de {categoria} em {pueblo}: {detalle}.",
+    "experienciaAsociacionTitle": "{tematica} · Associação",
+    "experienciaAsociacionDesc": "Conteúdo da associação para a temática {tematica}.",
+    "experienciaPuebloTitle": "{categoria} em {pueblo}",
+    "experienciaPuebloDesc": "Experiências de {categoria} para descobrir {pueblo}.",
+    "productoDescription": "Compre {nombre} na loja oficial das Aldeias Mais Bonitas de Espanha."
   },
   "gestion": {
     "tabUsuarios": "Utilizadores",

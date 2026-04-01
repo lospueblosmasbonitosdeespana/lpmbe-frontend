@@ -36,15 +36,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
-  const localeSuffix = locale === 'es' ? '' : ` (${locale.toUpperCase()})`;
   const t = await getTranslations('experienciasPage');
+  const tSeo = await getTranslations('seo');
   const config = CATEGORY_MAP[slug];
   const title = config ? t(config.titleKey) : slugToTitle(slug);
   const path = `/experiencias/${slug}/asociacion`;
 
   return {
-    title: seoTitle(`${title} · Asociacion${localeSuffix}`),
-    description: seoDescription(`Contenido de la asociacion para la tematica ${title}.${localeSuffix}`),
+    title: seoTitle(tSeo("experienciaAsociacionTitle", { tematica: title })),
+    description: seoDescription(tSeo("experienciaAsociacionDesc", { tematica: title })),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

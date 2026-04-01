@@ -20,12 +20,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
-  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+  const tSeo = await getTranslations("seo");
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/webcam`;
   return {
-    title: seoTitle(`Webcam de ${name}${localeSuffix}`),
-    description: seoDescription(`Webcams y vistas en directo de ${name}.${localeSuffix}`),
+    title: seoTitle(tSeo("puebloWebcamTitle", { nombre: name })),
+    description: seoDescription(tSeo("puebloWebcamDesc", { nombre: name })),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),

@@ -6,7 +6,7 @@ import { Display, Lead, Title, Body } from "@/app/components/ui/typography";
 import SafeHtml from "@/app/_components/ui/SafeHtml";
 import type { SelloPage } from "@/lib/cms/sello";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getCanonicalUrl, getLocaleAlternates, type SupportedLocale } from "@/lib/seo";
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +20,12 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title: t("howToGetTitle"),
+      description: t("howToGetSubtitle"),
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
     },
   };
 }

@@ -21,12 +21,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
-  const localeSuffix = locale === "es" ? "" : ` (${locale.toUpperCase()})`;
+  const tSeo = await getTranslations("seo");
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/actualidad`;
   return {
-    title: seoTitle(`Actualidad de ${name}${localeSuffix}`),
-    description: seoDescription(`Noticias, eventos y novedades de ${name}.${localeSuffix}`),
+    title: seoTitle(tSeo("puebloActualidadTitle", { nombre: name })),
+    description: seoDescription(tSeo("puebloActualidadDesc", { nombre: name })),
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
