@@ -6,7 +6,7 @@ import BackButton from '@/app/c/[slug]/BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
-import { getCanonicalUrl, getLocaleAlternates, seoDescription } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoDescription, type SupportedLocale } from '@/lib/seo';
 import JsonLd from '@/app/components/seo/JsonLd';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 
@@ -109,6 +109,7 @@ export async function generateMetadata({
       title: evento.titulo,
       description: description || undefined,
       url: getCanonicalUrl(path, lang),
+      locale: getOGLocale(lang as SupportedLocale),
       images: evento.coverUrl ? [{ url: evento.coverUrl }] : [],
     },
     twitter: {

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import {
-  getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription,
+  getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription,
   getLocaleFromRequestHeaders, type SupportedLocale,
 } from "@/lib/seo";
 import { slugToTitle } from "@/app/_lib/club/club-helpers";
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
     description,
     alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) },
     robots: { index: true, follow: true },
-    openGraph: { title, type: "website" },
+    openGraph: { title, type: "website", locale: getOGLocale(locale as SupportedLocale) },
   };
 }
 

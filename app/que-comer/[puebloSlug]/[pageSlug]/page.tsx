@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { stripHtml } from "@/app/_lib/html";
-import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, getLocaleFromRequestHeaders, type SupportedLocale } from "@/lib/seo";
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, getLocaleFromRequestHeaders, type SupportedLocale } from "@/lib/seo";
 import { CATEGORY_LABELS, CATEGORY_API_KEYS, getPaginaTematicaBySlug, slugToTitle } from "@/app/_lib/tematica/tematica-helpers";
 import { TematicaDetailPage } from "@/app/_lib/tematica/TematicaPageComponents";
 
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
     description: seoDescription(page?.resumen ? stripHtml(page.resumen) : tSeo("tematicaDetalleDesc", { titulo, pueblo: puebloNombre })),
     alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) },
     robots: { index: true, follow: true },
-    openGraph: { title: titleText, ...(page?.coverUrl ? { images: [{ url: page.coverUrl }] } : {}), type: "article" },
+    openGraph: { title: titleText, ...(page?.coverUrl ? { images: [{ url: page.coverUrl }] } : {}), type: "article", locale: getOGLocale(locale as SupportedLocale) },
     other: { "article:section": label },
   };
 }

@@ -9,6 +9,7 @@ import {
   getCanonicalUrl,
   getLocaleAlternates,
   getBaseUrl,
+  getOGLocale,
   DEFAULT_DESCRIPTION,
   SITE_NAME,
   type SupportedLocale,
@@ -52,6 +53,8 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: homeTitle,
       description: homeDescription,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
     },
   };
 }

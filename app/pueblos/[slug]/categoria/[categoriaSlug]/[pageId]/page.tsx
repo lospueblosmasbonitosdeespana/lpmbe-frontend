@@ -6,6 +6,7 @@ import { stripHtml } from "@/app/_lib/html";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   seoTitle,
   seoDescription,
   uniqueH1ForLocale,
@@ -108,6 +109,7 @@ export async function generateMetadata({
       title: seoTitle(`${title} · ${puebloNombre}`),
       ...(page?.coverUrl ? { images: [{ url: page.coverUrl }] } : {}),
       type: "article",
+      locale: getOGLocale(locale as SupportedLocale),
     },
   };
 }

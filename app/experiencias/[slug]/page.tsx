@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   seoDescription,
   seoTitle,
   uniqueH1ForLocale,
@@ -96,6 +97,7 @@ export async function generateMetadata({
       title,
       description,
       url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
       type: 'website',
     },
   };

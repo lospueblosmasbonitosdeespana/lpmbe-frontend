@@ -5,6 +5,7 @@ import { getApiUrl } from "@/lib/api";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   metaLocaleLead,
   seoDescription,
   seoTitlePoiWithStamp,
@@ -132,7 +133,12 @@ export async function generateMetadata({
     robots: { index: true, follow: true },
     openGraph: {
       title,
+      description: seoDescription(
+        `${metaLocaleLead(locale)}Información sobre ${poiReadable} en ${puebloName}. ${refStamp}.`,
+        160,
+      ),
       url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
       type: "article",
     },
     twitter: {

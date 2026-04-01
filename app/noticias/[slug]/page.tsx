@@ -6,7 +6,7 @@ import BackButton from '@/app/c/[slug]/BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
-import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription } from '@/lib/seo';
+import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from '@/lib/seo';
 import JsonLd from '@/app/components/seo/JsonLd';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 import { injectImgAlt } from '@/app/_lib/html';
@@ -112,6 +112,7 @@ export async function generateMetadata({
       title,
       description,
       url: canonicalUrl,
+      locale: getOGLocale(lang as SupportedLocale),
       images: noticia.coverUrl ? [{ url: noticia.coverUrl }] : [],
     },
     twitter: {
