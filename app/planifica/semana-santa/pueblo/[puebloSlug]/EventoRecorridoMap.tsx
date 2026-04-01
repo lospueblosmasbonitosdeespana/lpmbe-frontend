@@ -1,5 +1,6 @@
 'use client';
 
+import 'leaflet/dist/leaflet.css';
 import { CircleMarker, MapContainer, Polyline, TileLayer } from 'react-leaflet';
 
 type Stop = { lat: number; lng: number; label?: string };
