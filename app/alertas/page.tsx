@@ -6,6 +6,7 @@ import { AlertTriangle } from "lucide-react";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   type SupportedLocale,
 } from "@/lib/seo";
 
@@ -23,6 +24,12 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: {
       canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title: `${t("alertasPageTitle")} — Los Pueblos Más Bonitos de España`,
+      description: t("alertasPageDesc"),
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
     },
     robots: { index: false, follow: true },
   };

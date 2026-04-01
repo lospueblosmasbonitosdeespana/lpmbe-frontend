@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import {
-  getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription,
+  getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription,
   getLocaleFromRequestHeaders, type SupportedLocale,
 } from "@/lib/seo";
 import {
@@ -24,6 +24,12 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
     title: seoTitle(`${label} en ${puebloNombre}`),
     description: seoDescription(`Descubre la ${label.toLowerCase()} de ${puebloNombre}. Los Pueblos Más Bonitos de España.`),
     alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) },
+    openGraph: {
+      title: seoTitle(`${label} en ${puebloNombre}`),
+      description: seoDescription(`Descubre la ${label.toLowerCase()} de ${puebloNombre}. Los Pueblos Más Bonitos de España.`),
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
+    },
     robots: { index: true, follow: true },
   };
 }

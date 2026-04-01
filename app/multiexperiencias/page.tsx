@@ -5,6 +5,7 @@ import { getApiUrl } from '@/lib/api';
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   metaLocaleLead,
   seoDescription,
   seoTitle,
@@ -34,6 +35,12 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title: seoTitle(`Multiexperiencias`),
+      description: seoDescription(desc),
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
     },
   };
 }

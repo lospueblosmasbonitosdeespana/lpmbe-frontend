@@ -4,6 +4,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   seoDescription,
   seoTitle,
   type SupportedLocale,
@@ -22,6 +23,12 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title: seoTitle(t("title")),
+      description: seoDescription(t("metaDescription")),
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
     },
     robots: { index: true, follow: true },
   };

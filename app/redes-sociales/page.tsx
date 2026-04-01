@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   metaLocaleLead,
   seoDescription,
   seoTitle,
@@ -35,6 +36,14 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title: seoTitle(`Redes sociales`),
+      description: seoDescription(
+        `${metaLocaleLead(locale as SupportedLocale)}Síguenos en Instagram, Facebook, X, TikTok y YouTube. Colaboraciones con creadores e influencers. Comunidad Los Pueblos Más Bonitos de España.`,
+      ),
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
     },
   };
 }

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import {
   getCanonicalUrl,
   getLocaleAlternates,
+  getOGLocale,
   seoTitle,
   seoDescription,
   type SupportedLocale,
@@ -22,6 +23,14 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title: seoTitle("Planes para Negocios — Club de Amigos"),
+      description: seoDescription(
+        "Haz crecer tu negocio con Los Pueblos Más Bonitos de España. Planes desde gratuito hasta Premium con galería, contacto visible, badge y landing personalizada."
+      ),
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
     },
     robots: { index: true, follow: true },
   };
