@@ -30,6 +30,7 @@ const ESTADOS: { value: TiendaEstado; label: string; desc: string; color: string
 
 export default function CierreTiendaClient() {
   const [estado, setEstado] = useState<TiendaEstado>('ABIERTA');
+  const [estadoGuardado, setEstadoGuardado] = useState<TiendaEstado>('ABIERTA');
   const [mensaje, setMensaje] = useState('');
   const [reapertura, setReapertura] = useState('');
   const [loading, setLoading] = useState(true);
@@ -42,7 +43,9 @@ export default function CierreTiendaClient() {
       .then(async (res) => {
         if (!res.ok) throw new Error('Error cargando');
         const data = await res.json();
-        setEstado(data.tiendaEstado ?? 'ABIERTA');
+        const est = data.tiendaEstado ?? 'ABIERTA';
+        setEstado(est);
+        setEstadoGuardado(est);
         setMensaje(data.tiendaMensaje ?? '');
         if (data.tiendaReapertura) {
           setReapertura(data.tiendaReapertura.slice(0, 10));
@@ -66,6 +69,7 @@ export default function CierreTiendaClient() {
         body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error('Error guardando');
+      setEstadoGuardado(estado);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e: unknown) {
@@ -73,7 +77,14 @@ export default function CierreTiendaClient() {
     } finally { setSaving(false); }
   }
 
-  const estadoActual = ESTADOS.find((e) => e.value === estado)!;
+  const estadoGuardadoInfo = ESTADOS.find((e) => e.value === estadoGuardado)!;
+  const hayPendiente = estado !== estadoGuardado;
+
+  const BADGE_STYLES: Record<TiendaEstado, string> = {
+    ABIERTA: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+    ENVIO_DIFERIDO: 'bg-amber-100 text-amber-800 border-amber-300',
+    CERRADA: 'bg-red-100 text-red-800 border-red-300',
+  };
 
   if (loading) {
     return (
@@ -87,30 +98,50 @@ export default function CierreTiendaClient() {
 
   return (
     <div className="rounded-2xl border border-border bg-white shadow-sm overflow-hidden">
-      {/* Cabecera */}
+      {/* Cabecera con badge de estado actual */}
       <div className="border-b border-border bg-gradient-to-r from-slate-50 to-white px-6 py-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-400 to-amber-500 shadow-sm">
-            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-400 to-amber-500 shadow-sm">
+              <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-foreground">Cierre parcial o total de Tienda</h2>
+              <p className="text-sm text-muted-foreground">Controla la disponibilidad de la tienda para vacaciones, puentes o periodos sin personal.</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-lg font-bold text-foreground">Cierre parcial o total de Tienda</h2>
-            <p className="text-sm text-muted-foreground">Controla la disponibilidad de la tienda para vacaciones, puentes o periodos sin personal.</p>
+          <div className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold whitespace-nowrap ${BADGE_STYLES[estadoGuardado]}`}>
+            <span>{estadoGuardadoInfo.icon}</span>
+            <span>ACTIVO: {estadoGuardadoInfo.label}</span>
           </div>
         </div>
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Estado actual */}
-        <div className={`flex items-center gap-3 rounded-xl border-2 px-4 py-3 ${estadoActual.color}`}>
-          <span className="text-xl">{estadoActual.icon}</span>
-          <div>
-            <p className="font-semibold text-sm">{estadoActual.label}</p>
-            <p className="text-xs text-muted-foreground">{estadoActual.desc}</p>
+        {/* Banner de estado activo */}
+        <div className={`flex items-center gap-3 rounded-xl border-2 px-4 py-3 ${estadoGuardadoInfo.color}`}>
+          <span className="text-xl">{estadoGuardadoInfo.icon}</span>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-sm">{estadoGuardadoInfo.label}</p>
+              <span className="inline-flex items-center rounded-full bg-white/80 border border-current/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider opacity-70">
+                Estado actual
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">{estadoGuardadoInfo.desc}</p>
           </div>
         </div>
+
+        {hayPendiente && (
+          <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-blue-700">
+            <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Tienes cambios sin guardar. Pulsa &quot;Guardar cambios&quot; para aplicar el nuevo estado.
+          </div>
+        )}
 
         {/* Selector de estado */}
         <div className="space-y-3">
