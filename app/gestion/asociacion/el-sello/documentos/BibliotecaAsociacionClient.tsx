@@ -71,27 +71,33 @@ export default function BibliotecaAsociacionClient() {
   }
 
   async function uploadFileDirectToR2(file: File, folder: string): Promise<string> {
-    const contentType = file.type?.trim() || 'application/octet-stream';
-    const presignRes = await fetch('/api/media/presign', {
+    const ticketRes = await fetch('/api/media/upload-ticket', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        fileName: file.name,
-        contentType,
         folder,
       }),
     });
-    if (!presignRes.ok) throw new Error(await parseUploadError(presignRes));
-    const presign = await presignRes.json();
-    const uploadRes = await fetch(String(presign.uploadUrl), {
-      method: 'PUT',
-      headers: { 'Content-Type': String(presign.contentType || contentType) },
-      body: file,
+    if (!ticketRes.ok) throw new Error(await parseUploadError(ticketRes));
+    const ticketData = await ticketRes.json();
+    const uploadUrl = String(ticketData.uploadUrl || '');
+    const ticket = String(ticketData.ticket || '');
+    if (!uploadUrl || !ticket) throw new Error('No se pudo preparar la subida');
+
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('ticket', ticket);
+
+    const uploadRes = await fetch(uploadUrl, {
+      method: 'POST',
+      body: fd,
     });
     if (!uploadRes.ok) {
-      throw new Error(`Error subiendo a R2 (status ${uploadRes.status})`);
+      const txt = await uploadRes.text().catch(() => '');
+      throw new Error(`Error subiendo archivo (status ${uploadRes.status})${txt ? `: ${txt}` : ''}`);
     }
-    const publicUrl = String(presign.publicUrl || '');
+    const data = await uploadRes.json().catch(() => ({}));
+    const publicUrl = String(data.publicUrl || data.url || '');
     if (!publicUrl) throw new Error('R2 no devolvió URL pública');
     return publicUrl;
   }

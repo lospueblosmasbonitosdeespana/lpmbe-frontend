@@ -56,30 +56,35 @@ export default function DocumentosCmsPage() {
 
     setUploading(true);
     try {
-      const contentType = file.type?.trim() || 'application/octet-stream';
-      const presignRes = await fetch('/api/media/presign', {
+      const ticketRes = await fetch('/api/media/upload-ticket', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fileName: file.name,
-          contentType,
           folder: 'documentos-sello',
         }),
       });
-      const presignData = await presignRes.json().catch(() => ({}));
-      if (!presignRes.ok) {
-        const msg = presignData?.error ?? presignData?.message ?? 'Error preparando subida';
+      const ticketData = await ticketRes.json().catch(() => ({}));
+      if (!ticketRes.ok) {
+        const msg = ticketData?.error ?? ticketData?.message ?? 'Error preparando subida';
         throw new Error(typeof msg === 'string' ? msg : 'Error preparando subida');
       }
 
-      const uploadRes = await fetch(String(presignData.uploadUrl), {
-        method: 'PUT',
-        headers: { 'Content-Type': String(presignData.contentType || contentType) },
-        body: file,
-      });
-      if (!uploadRes.ok) throw new Error(`Error subiendo PDF a R2 (status ${uploadRes.status})`);
+      const uploadUrl = String(ticketData.uploadUrl || '');
+      const ticket = String(ticketData.ticket || '');
+      if (!uploadUrl || !ticket) throw new Error('No se pudo crear ticket de subida');
 
-      const url = String(presignData.publicUrl || '');
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('ticket', ticket);
+
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'POST',
+        body: fd,
+      });
+      if (!uploadRes.ok) throw new Error(`Error subiendo PDF (status ${uploadRes.status})`);
+
+      const uploadData = await uploadRes.json().catch(() => ({}));
+      const url = String(uploadData.publicUrl || uploadData.url || '');
       if (!url) throw new Error('R2 no devolvió URL pública');
 
       setFormData({ ...formData, url });
