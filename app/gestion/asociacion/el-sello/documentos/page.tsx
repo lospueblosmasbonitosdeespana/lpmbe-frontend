@@ -56,19 +56,31 @@ export default function DocumentosCmsPage() {
 
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('folder', 'documentos-sello');
-
-      const res = await fetch('/api/admin/uploads', {
+      const contentType = file.type?.trim() || 'application/octet-stream';
+      const presignRes = await fetch('/api/media/presign', {
         method: 'POST',
-        body: fd,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: file.name,
+          contentType,
+          folder: 'documentos-sello',
+        }),
       });
+      const presignData = await presignRes.json().catch(() => ({}));
+      if (!presignRes.ok) {
+        const msg = presignData?.error ?? presignData?.message ?? 'Error preparando subida';
+        throw new Error(typeof msg === 'string' ? msg : 'Error preparando subida');
+      }
 
-      if (!res.ok) throw new Error('Error subiendo PDF');
+      const uploadRes = await fetch(String(presignData.uploadUrl), {
+        method: 'PUT',
+        headers: { 'Content-Type': String(presignData.contentType || contentType) },
+        body: file,
+      });
+      if (!uploadRes.ok) throw new Error(`Error subiendo PDF a R2 (status ${uploadRes.status})`);
 
-      const data = await res.json();
-      const url = data.url || data.publicUrl;
+      const url = String(presignData.publicUrl || '');
+      if (!url) throw new Error('R2 no devolvió URL pública');
 
       setFormData({ ...formData, url });
     } catch (e: any) {
