@@ -1,0 +1,15 @@
+---
+description: Tras cambios en código, commit y push a GitHub sin esperar instrucción explícita
+alwaysApply: true
+---
+
+# Git: commit y push proactivos
+
+Cuando completes tareas que modifiquen código en este repositorio:
+
+1. **No esperes** a que el usuario pida subir cambios.
+2. Haz **`git status`**, **`git add`** de los archivos pertinentes, **`git commit`** con mensaje claro.
+3. Ejecuta **`git push origin`** a la rama de trabajo habitual (`main` o la rama activa).
+4. Si el push falla, informa y deja el commit local listo.
+
+No incluyas secretos en commits. No hagas push de `.env` si estuviera trackeado por error.
