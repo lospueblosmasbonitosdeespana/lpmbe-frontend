@@ -47,6 +47,7 @@ export default function BibliotecaAsociacionClient() {
   const [tipo, setTipo] = useState<TipoDoc>('OTRO');
   const [tema, setTema] = useState<TemaOrdenanza>('GENERAL_OTROS');
   const [showForm, setShowForm] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   // archivos adicionales
   const [addingFileTo, setAddingFileTo] = useState<number | null>(null);
@@ -74,7 +75,12 @@ export default function BibliotecaAsociacionClient() {
 
   useEffect(() => { fetchDocs(); }, []);
 
-  async function handleUpload(file: File) {
+  async function submitNewAssociationDoc() {
+    if (!pendingFile) {
+      setError('Selecciona un archivo y pulsa «Guardar documento» cuando hayas rellenado los datos.');
+      return;
+    }
+    const file = pendingFile;
     const docNombre = nombre.trim() || file.name.replace(/\.[^.]+$/, '');
     setUploading(true); setError(null);
     try {
@@ -102,10 +108,13 @@ export default function BibliotecaAsociacionClient() {
         const err = await createRes.json().catch(() => ({}));
         throw new Error(err.message || 'Error guardando');
       }
-      setNombre(''); setDescripcion(''); setShowForm(false);
+      setNombre(''); setDescripcion(''); setPendingFile(null); setShowForm(false);
       await fetchDocs();
     } catch (e) { setError(e instanceof Error ? e.message : 'Error'); }
-    finally { setUploading(false); if (fileRef.current) fileRef.current.value = ''; }
+    finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
   }
 
   async function handleDelete(id: number) {
@@ -210,8 +219,11 @@ export default function BibliotecaAsociacionClient() {
             Documentos que la asociación comparte con todos los alcaldes. Cada entrada puede tener <strong>varios archivos adjuntos</strong> (PDF, Word, imagen…). Aparecen en la biblioteca con la insignia "Asociación LPBME".
           </p>
         </div>
-        <button type="button" onClick={() => setShowForm(!showForm)}
-          className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+        <button
+          type="button"
+          onClick={() => { setShowForm(!showForm); if (showForm) { setPendingFile(null); setError(null); } }}
+          className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        >
           {showForm ? 'Cancelar' : '+ Subir documento'}
         </button>
       </div>
@@ -262,21 +274,67 @@ export default function BibliotecaAsociacionClient() {
             )}
             <div className="sm:col-span-2">
               <label className="mb-1 block text-xs font-medium text-muted-foreground">Descripción (recomendado)</label>
-              <input type="text" value={descripcion} onChange={(e) => setDescripcion(e.target.value)}
+              <textarea
+                value={descripcion}
+                onChange={(e) => setDescripcion(e.target.value)}
                 placeholder="Breve descripción del contenido para facilitar búsqueda"
-                className="w-full rounded-md border border-border px-3 py-2 text-sm" />
+                rows={4}
+                className="w-full resize-y rounded-md border border-border px-3 py-2 text-sm"
+              />
             </div>
           </div>
+          <p className="text-xs text-muted-foreground">
+            El archivo <strong>no se sube</strong> hasta que pulses <strong>Guardar documento</strong>. Así el nombre y la descripción coinciden con lo guardado en la biblioteca.
+          </p>
           {error && <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
-          <div className="flex items-center gap-3">
-            <button type="button" disabled={uploading} onClick={() => fileRef.current?.click()}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
-              {uploading ? 'Subiendo...' : 'Seleccionar y subir archivo'}
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => fileRef.current?.click()}
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+            >
+              Seleccionar archivo
             </button>
-            <p className="text-xs text-muted-foreground">PDF, imagen, Word, Excel, PowerPoint, ZIP</p>
+            <button
+              type="button"
+              disabled={uploading || !pendingFile}
+              onClick={() => void submitNewAssociationDoc()}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+            >
+              {uploading ? 'Guardando…' : 'Guardar documento'}
+            </button>
+            {pendingFile && (
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <span className="truncate text-sm text-muted-foreground" title={pendingFile.name}>
+                  <span className="font-medium text-foreground">Listo:</span> {pendingFile.name}
+                </span>
+                <button
+                  type="button"
+                  disabled={uploading}
+                  onClick={() => { setPendingFile(null); setError(null); if (fileRef.current) fileRef.current.value = ''; }}
+                  className="shrink-0 text-xs font-medium text-red-600 underline hover:text-red-700"
+                >
+                  Quitar
+                </button>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground sm:ml-auto">PDF, imagen, Word, Excel, PowerPoint, ZIP</p>
           </div>
-          <input ref={fileRef} type="file" accept="image/*,.svg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip" className="hidden"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} />
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*,.svg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) {
+                setPendingFile(f);
+                setError(null);
+              }
+              e.target.value = '';
+            }}
+          />
         </div>
       )}
 

@@ -66,6 +66,8 @@ export default function LogoPapeleriaClient({
   const [newDocTipo, setNewDocTipo] = useState<TipoDoc>('PAPELERIA');
   const [newDocTema, setNewDocTema] = useState<TemaOrdenanza>('GENERAL_OTROS');
   const [newDocCompartido, setNewDocCompartido] = useState(false);
+  /** Archivo elegido en el disco; la subida al servidor ocurre solo al pulsar «Guardar documento». */
+  const [pendingDocFile, setPendingDocFile] = useState<File | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
@@ -138,7 +140,12 @@ export default function LogoPapeleriaClient({
     finally { setDeletingLogoId(null); }
   }
 
-  async function handleDocUpload(file: File) {
+  async function submitNewDocument() {
+    if (!pendingDocFile) {
+      setDocError('Selecciona un archivo con «Seleccionar archivo» y, cuando hayas rellenado título y datos, pulsa «Guardar documento».');
+      return;
+    }
+    const file = pendingDocFile;
     const nombre = newDocNombre.trim() || file.name.replace(/\.[^.]+$/, '');
     setUploadingDoc(true); setDocError(null);
     try {
@@ -167,9 +174,13 @@ export default function LogoPapeleriaClient({
         throw new Error(err.message || 'Error guardando el documento');
       }
       setNewDocNombre(''); setNewDocDescripcion(''); setNewDocCompartido(false);
+      setPendingDocFile(null);
       await fetchDocs();
     } catch (e) { setDocError(e instanceof Error ? e.message : 'Error'); }
-    finally { setUploadingDoc(false); if (docFileRef.current) docFileRef.current.value = ''; }
+    finally {
+      setUploadingDoc(false);
+      if (docFileRef.current) docFileRef.current.value = '';
+    }
   }
 
   async function handleToggleCompartido(doc: DocumentoItem) {
@@ -333,7 +344,7 @@ export default function LogoPapeleriaClient({
         <div className="mb-5">
           <h2 className="text-lg font-semibold">Papelería y documentos</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Sube plantillas, ordenanzas, presentaciones y cualquier documento del municipio. Puedes adjuntar <strong>varios archivos</strong> a una misma ordenanza (PDF, Word, imágenes…). Los <strong>compartidos</strong> aparecen en la biblioteca de todos los alcaldes.
+            Sube plantillas, ordenanzas, presentaciones y cualquier documento del municipio. El archivo <strong>no se sube</strong> hasta que pulses <strong>Guardar documento</strong> (así el título, la temática y la descripción coinciden con lo que ves en pantalla). Puedes adjuntar <strong>más archivos</strong> después a la misma ficha. Los <strong>compartidos</strong> aparecen en la biblioteca de todos los alcaldes.
           </p>
         </div>
 
@@ -370,8 +381,13 @@ export default function LogoPapeleriaClient({
 
             <div className="sm:col-span-2">
               <label className="mb-1 block text-xs text-muted-foreground">Descripción (opcional)</label>
-              <input type="text" placeholder="Breve descripción del contenido" value={newDocDescripcion}
-                onChange={(e) => setNewDocDescripcion(e.target.value)} className="w-full rounded-md border border-border px-3 py-2 text-sm" />
+              <textarea
+                placeholder="Breve descripción del contenido"
+                value={newDocDescripcion}
+                onChange={(e) => setNewDocDescripcion(e.target.value)}
+                rows={4}
+                className="w-full resize-y rounded-md border border-border px-3 py-2 text-sm"
+              />
             </div>
 
             <div className="sm:col-span-2">
@@ -385,14 +401,61 @@ export default function LogoPapeleriaClient({
 
           {docError && <div className="mt-3 rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{docError}</div>}
 
-          <button type="button" disabled={uploadingDoc} onClick={() => docFileRef.current?.click()}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
-            {uploadingDoc ? (<><svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg>Subiendo...</>) : (
-              <><svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>Seleccionar archivo</>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <button
+              type="button"
+              disabled={uploadingDoc}
+              onClick={() => docFileRef.current?.click()}
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+              Seleccionar archivo
+            </button>
+            <button
+              type="button"
+              disabled={uploadingDoc || !pendingDocFile}
+              onClick={() => void submitNewDocument()}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+            >
+              {uploadingDoc ? (
+                <><svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg>Guardando…</>
+              ) : (
+                <><svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>Guardar documento</>
+              )}
+            </button>
+            {pendingDocFile && (
+              <div className="flex w-full min-w-0 flex-1 items-center gap-2 sm:w-auto">
+                <span className="truncate text-sm text-muted-foreground" title={pendingDocFile.name}>
+                  <span className="font-medium text-foreground">Listo:</span> {pendingDocFile.name}
+                </span>
+                <button
+                  type="button"
+                  disabled={uploadingDoc}
+                  onClick={() => { setPendingDocFile(null); setDocError(null); if (docFileRef.current) docFileRef.current.value = ''; }}
+                  className="shrink-0 text-xs font-medium text-red-600 underline hover:text-red-700 disabled:opacity-50"
+                >
+                  Quitar
+                </button>
+              </div>
             )}
-          </button>
-          <input ref={docFileRef} type="file" accept="image/*,.svg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip" className="hidden"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleDocUpload(f); }} />
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Orden recomendado: rellena nombre, tipo y descripción → elige el archivo → <strong>Guardar documento</strong>. Si marcas compartir, se aplicará al guardar.
+          </p>
+          <input
+            ref={docFileRef}
+            type="file"
+            accept="image/*,.svg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) {
+                setPendingDocFile(f);
+                setDocError(null);
+              }
+              e.target.value = '';
+            }}
+          />
         </div>
 
         {/* Input oculto para archivos adicionales */}
