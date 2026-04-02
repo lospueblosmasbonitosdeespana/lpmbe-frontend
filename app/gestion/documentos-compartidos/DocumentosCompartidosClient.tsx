@@ -14,7 +14,7 @@ import {
 } from '../_lib/documentos';
 
 const ALL_TEMAS = Object.keys(TEMA_ORDENANZA_LABELS) as TemaOrdenanza[];
-const TIPOS_SIN_LOGO: TipoDoc[] = ['PAPELERIA', 'ORDENANZA', 'OTRO'];
+const TIPOS_SIN_LOGO: TipoDoc[] = ['PAPELERIA', 'ORDENANZA', 'CARTEL', 'OTRO'];
 
 type LogoAsociacion = {
   id: number;
@@ -291,7 +291,7 @@ export default function DocumentosCompartidosClient() {
               <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">Biblioteca compartida</h1>
             </div>
             <p className="mt-3 max-w-xl text-base text-white/75 leading-relaxed">
-              Papelería, ordenanzas, logotipos y documentación compartida entre los ayuntamientos y la asociación. Filtra, busca y descarga lo que necesites.
+              Papelería, ordenanzas, carteles, logotipos y documentación compartida entre los ayuntamientos y la asociación. Filtra, busca y descarga lo que necesites.
             </p>
           </div>
           <button type="button" onClick={fetchDocs}

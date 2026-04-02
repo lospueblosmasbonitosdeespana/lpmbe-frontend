@@ -1,4 +1,4 @@
-export type TipoDoc = 'LOGO' | 'PAPELERIA' | 'ORDENANZA' | 'OTRO';
+export type TipoDoc = 'LOGO' | 'PAPELERIA' | 'ORDENANZA' | 'CARTEL' | 'OTRO';
 export type TemaOrdenanza =
   | 'EMBELLECIMIENTO_ESTETICA'
   | 'RESIDUOS_BASURAS'
@@ -30,6 +30,7 @@ export const TIPO_LABELS: Record<TipoDoc, string> = {
   LOGO: 'Logotipo',
   PAPELERIA: 'Papelería',
   ORDENANZA: 'Ordenanza',
+  CARTEL: 'Cartel',
   OTRO: 'Otro documento',
 };
 
@@ -37,6 +38,7 @@ export const TIPO_COLORS: Record<TipoDoc, string> = {
   LOGO: 'bg-blue-100 text-blue-700 border-blue-200',
   PAPELERIA: 'bg-purple-100 text-purple-700 border-purple-200',
   ORDENANZA: 'bg-amber-100 text-amber-700 border-amber-200',
+  CARTEL: 'bg-green-100 text-green-700 border-green-200',
   OTRO: 'bg-gray-100 text-gray-600 border-gray-200',
 };
 
@@ -114,6 +116,10 @@ export interface DocumentoItem {
 
 export function isImageUrl(url: string) {
   return /\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(url);
+}
+
+export function isDesignUrl(url: string) {
+  return /\.(ai|eps|psd|indd|tiff?)(\?|$)/i.test(url);
 }
 
 export function isPdfUrl(url: string) {

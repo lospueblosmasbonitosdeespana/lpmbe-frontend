@@ -13,7 +13,11 @@ import {
   isPdfUrl,
 } from '../../../_lib/documentos';
 
-const TIPOS_DISPONIBLES: TipoDoc[] = ['PAPELERIA', 'ORDENANZA', 'OTRO'];
+const TIPOS_DISPONIBLES: TipoDoc[] = ['PAPELERIA', 'ORDENANZA', 'CARTEL', 'OTRO'];
+
+const DESIGN_ACCEPT = '.ai,.eps,.psd,.indd,.tif,.tiff';
+const BASE_ACCEPT = 'image/*,.svg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip';
+const ALL_ACCEPT = `${BASE_ACCEPT},${DESIGN_ACCEPT}`;
 
 function FileIcon({ url }: { url: string }) {
   if (isImageUrl(url)) return (
@@ -293,7 +297,7 @@ export default function BibliotecaAsociacionClient() {
       <input
         ref={extraFileRef}
         type="file"
-        accept="image/*,.svg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip"
+        accept={ALL_ACCEPT}
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
@@ -333,12 +337,19 @@ export default function BibliotecaAsociacionClient() {
                 </select>
               </div>
             )}
+            {tipo === 'CARTEL' && (
+              <div className="sm:col-span-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+                <p className="text-sm text-green-800">
+                  <strong>Carteles de carretera y señalización.</strong> Sube aquí los diseños de carteles oficiales con sus medidas y especificaciones. Se aceptan formatos de diseño (AI, EPS, PSD, InDesign) además de PDF e imagen.
+                </p>
+              </div>
+            )}
             <div className="sm:col-span-2">
               <label className="mb-1 block text-xs font-medium text-muted-foreground">Descripción (recomendado)</label>
               <textarea
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
-                placeholder="Breve descripción del contenido para facilitar búsqueda"
+                placeholder={tipo === 'CARTEL' ? 'Ej: Cartel entrada al pueblo — medidas 120×80 cm, fondo marrón, para impresión en vinilo' : 'Breve descripción del contenido para facilitar búsqueda'}
                 rows={4}
                 className="w-full resize-y rounded-md border border-border px-3 py-2 text-sm"
               />
@@ -380,12 +391,12 @@ export default function BibliotecaAsociacionClient() {
                 </button>
               </div>
             )}
-            <p className="text-xs text-muted-foreground sm:ml-auto">PDF, imagen, Word, Excel, PowerPoint, ZIP</p>
+            <p className="text-xs text-muted-foreground sm:ml-auto">PDF, imagen, Word, Excel, PowerPoint, ZIP, AI, EPS, PSD, InDesign, TIFF</p>
           </div>
           <input
             ref={fileRef}
             type="file"
-            accept="image/*,.svg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip"
+            accept={ALL_ACCEPT}
             className="hidden"
             onChange={(e) => {
               const f = e.target.files?.[0];
