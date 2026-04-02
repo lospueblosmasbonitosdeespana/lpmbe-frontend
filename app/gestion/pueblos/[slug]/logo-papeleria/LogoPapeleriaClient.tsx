@@ -75,6 +75,13 @@ export default function LogoPapeleriaClient({
   const extraFileRef = useRef<HTMLInputElement>(null);
   const [removingFileIdx, setRemovingFileIdx] = useState<{ docId: number; idx: number } | null>(null);
 
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editNombre, setEditNombre] = useState('');
+  const [editTipo, setEditTipo] = useState<TipoDoc>('PAPELERIA');
+  const [editTema, setEditTema] = useState<TemaOrdenanza>('GENERAL_OTROS');
+  const [editDescripcion, setEditDescripcion] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
+
   async function fetchLogos() {
     setLoadingLogos(true);
     try {
@@ -233,6 +240,46 @@ export default function LogoPapeleriaClient({
     finally { setRemovingFileIdx(null); }
   }
 
+  function handleOpenEdit(doc: DocumentoItem) {
+    setEditingId(doc.id);
+    setEditNombre(doc.nombre);
+    setEditTipo(doc.tipo);
+    setEditTema(doc.temaOrdenanza ?? 'GENERAL_OTROS');
+    setEditDescripcion(doc.descripcion ?? '');
+  }
+
+  async function handleSaveMetadata(docId: number) {
+    const nombre = editNombre.trim();
+    if (!nombre) {
+      alert('El nombre del documento es obligatorio.');
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      const body = {
+        nombre,
+        tipo: editTipo,
+        descripcion: editDescripcion.trim() ? editDescripcion.trim() : null,
+        temaOrdenanza: editTipo === 'ORDENANZA' ? editTema : null,
+      };
+      const res = await fetch(`/api/admin/documentos-pueblo/${docId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'No se pudo guardar los cambios');
+      }
+      await fetchDocs();
+      setEditingId(null);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Error');
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
   return (
     <div className="mt-8 space-y-10">
       {/* ── LOGOTIPOS ── */}
@@ -379,8 +426,8 @@ export default function LogoPapeleriaClient({
               return (
                 <div key={doc.id} className="overflow-hidden rounded-xl border border-border bg-background">
                   {/* Cabecera del documento */}
-                  <div className="flex items-center gap-3 p-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 overflow-hidden">
+                  <div className="flex items-start gap-3 p-3">
+                    <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 overflow-hidden">
                       {isImageUrl(doc.url) ? (
                         <img src={doc.url} alt={doc.nombre} className="h-full w-full object-contain" />
                       ) : isPdfUrl(doc.url) ? (
@@ -390,29 +437,118 @@ export default function LogoPapeleriaClient({
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{doc.nombre}</p>
-                      <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${TIPO_COLORS[doc.tipo]}`}>{TIPO_LABELS[doc.tipo]}</span>
-                        {doc.temaOrdenanza && (
-                          <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700">{TEMA_ORDENANZA_LABELS[doc.temaOrdenanza]}</span>
-                        )}
-                        {totalArchivos > 1 && (
-                          <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
-                            {totalArchivos} archivos
-                          </span>
-                        )}
-                      </div>
+                      {editingId === doc.id ? (
+                        <div className="space-y-3 rounded-lg border border-amber-200/90 bg-amber-50/50 p-3">
+                          <div>
+                            <label className="mb-1 block text-[11px] font-medium text-muted-foreground">Nombre del documento</label>
+                            <input
+                              type="text"
+                              value={editNombre}
+                              onChange={(e) => setEditNombre(e.target.value)}
+                              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm"
+                            />
+                          </div>
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <div>
+                              <label className="mb-1 block text-[11px] font-medium text-muted-foreground">Tipo</label>
+                              <select
+                                value={editTipo}
+                                onChange={(e) => setEditTipo(e.target.value as TipoDoc)}
+                                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm"
+                              >
+                                {(Object.keys(TIPO_LABELS) as TipoDoc[]).filter((t) => t !== 'LOGO').map((t) => (
+                                  <option key={t} value={t}>{TIPO_LABELS[t]}</option>
+                                ))}
+                              </select>
+                            </div>
+                            {editTipo === 'ORDENANZA' && (
+                              <div className="sm:col-span-2">
+                                <label className="mb-1 block text-[11px] font-medium text-muted-foreground">Temática</label>
+                                <select
+                                  value={editTema}
+                                  onChange={(e) => setEditTema(e.target.value as TemaOrdenanza)}
+                                  className="w-full rounded-md border border-amber-300 bg-white px-3 py-2 text-sm"
+                                >
+                                  {(Object.keys(TEMA_ORDENANZA_LABELS) as TemaOrdenanza[]).map((t) => (
+                                    <option key={t} value={t}>{TEMA_ORDENANZA_LABELS[t]}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-[11px] font-medium text-muted-foreground">Descripción</label>
+                            <textarea
+                              value={editDescripcion}
+                              onChange={(e) => setEditDescripcion(e.target.value)}
+                              rows={4}
+                              placeholder="Breve descripción del contenido"
+                              className="w-full resize-y rounded-md border border-border bg-white px-3 py-2 text-sm"
+                            />
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              disabled={savingEdit}
+                              onClick={() => handleSaveMetadata(doc.id)}
+                              className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                            >
+                              {savingEdit ? 'Guardando…' : 'Guardar cambios'}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={savingEdit}
+                              onClick={() => setEditingId(null)}
+                              className="rounded-md border border-border bg-white px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-50"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="break-words text-sm font-medium leading-snug">{doc.nombre}</p>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                            <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${TIPO_COLORS[doc.tipo]}`}>{TIPO_LABELS[doc.tipo]}</span>
+                            {doc.temaOrdenanza && (
+                              <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700">{TEMA_ORDENANZA_LABELS[doc.temaOrdenanza]}</span>
+                            )}
+                            {totalArchivos > 1 && (
+                              <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+                                {totalArchivos} archivos
+                              </span>
+                            )}
+                          </div>
+                          {doc.descripcion && (
+                            <p className="mt-2 text-xs leading-relaxed text-muted-foreground break-words">{doc.descripcion}</p>
+                          )}
+                        </>
+                      )}
                     </div>
-                    <button type="button" disabled={togglingId === doc.id} onClick={() => handleToggleCompartido(doc)}
-                      className={`shrink-0 rounded-full border px-3 py-1 text-[11px] font-medium transition disabled:opacity-50 ${doc.compartido ? 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100' : 'border-border bg-muted text-muted-foreground hover:bg-primary/5 hover:text-primary'}`}>
-                      {togglingId === doc.id ? '...' : doc.compartido ? '✓ Compartido' : 'Privado'}
-                    </button>
-                    <button type="button" disabled={deletingId === doc.id} onClick={() => handleDeleteDoc(doc.id)}
-                      className="shrink-0 rounded-md border border-red-200 p-2 text-red-500 hover:bg-red-50 disabled:opacity-50" title="Eliminar documento">
-                      {deletingId === doc.id
-                        ? <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg>
-                        : <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6M9 6V4h6v2" /></svg>}
-                    </button>
+                    {editingId !== doc.id && (
+                      <div className="flex shrink-0 flex-col gap-1 sm:flex-row sm:items-start">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(doc)}
+                          className="rounded-md border border-border p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          title="Editar título, tipo y descripción"
+                        >
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
+                          </svg>
+                        </button>
+                        <button type="button" disabled={togglingId === doc.id} onClick={() => handleToggleCompartido(doc)}
+                          className={`shrink-0 rounded-full border px-3 py-1 text-[11px] font-medium transition disabled:opacity-50 ${doc.compartido ? 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100' : 'border-border bg-muted text-muted-foreground hover:bg-primary/5 hover:text-primary'}`}>
+                          {togglingId === doc.id ? '...' : doc.compartido ? '✓ Compartido' : 'Privado'}
+                        </button>
+                        <button type="button" disabled={deletingId === doc.id} onClick={() => handleDeleteDoc(doc.id)}
+                          className="shrink-0 rounded-md border border-red-200 p-2 text-red-500 hover:bg-red-50 disabled:opacity-50" title="Eliminar documento">
+                          {deletingId === doc.id
+                            ? <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg>
+                            : <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6M9 6V4h6v2" /></svg>}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Archivos del documento */}
