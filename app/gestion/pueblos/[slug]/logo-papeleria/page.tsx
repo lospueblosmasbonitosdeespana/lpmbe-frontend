@@ -31,29 +31,31 @@ export default async function LogoPapeleriaPage({
 
   if (!pueblo) {
     return (
-      <div className="mx-auto max-w-3xl p-6">
-        <p className="text-red-600">No se pudo cargar el pueblo.</p>
-      </div>
+      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+        <div className="rounded-2xl border border-red-200 bg-red-50/80 p-8 text-center">
+          <p className="font-semibold text-red-800">No se pudo cargar el pueblo.</p>
+          <Link
+            href="/gestion/mis-pueblos"
+            className="mt-4 inline-flex text-sm font-medium text-red-700 underline hover:text-red-900"
+          >
+            Ir a mis pueblos
+          </Link>
+        </div>
+      </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-4xl p-6">
-      <div className="mb-6">
-        <Link
-          href={`/gestion/pueblos/${slug}`}
-          className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Volver a gestión del pueblo
-        </Link>
-      </div>
-      <h1 className="text-2xl font-semibold">Logo y papelería</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        <strong>{pueblo.nombre}</strong> — Sube tu logotipo y documentos de papelería. Puedes marcar los documentos como compartidos para que otros alcaldes puedan verlos y descargarlos.
-      </p>
+    <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+      <Link
+        href={`/gestion/pueblos/${slug}`}
+        className="mb-6 inline-flex items-center gap-2 rounded-xl border border-border/80 bg-background/80 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all hover:border-primary/25 hover:bg-muted/50 hover:text-foreground"
+      >
+        <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+        Volver a gestión del pueblo
+      </Link>
       <LogoPapeleriaClient puebloId={pueblo.id} puebloNombre={pueblo.nombre} puebloSlug={slug} />
     </main>
   );
