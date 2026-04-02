@@ -62,6 +62,14 @@ export default function BibliotecaAsociacionClient() {
   const [editDescripcion, setEditDescripcion] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
 
+  async function parseUploadError(res: Response): Promise<string> {
+    const data = await res.json().catch(() => ({} as any));
+    const msg = data?.error ?? data?.message ?? data?.data?.message;
+    return typeof msg === 'string' && msg.trim().length > 0
+      ? msg
+      : 'Error subiendo el archivo';
+  }
+
   async function fetchDocs() {
     setLoading(true); setError(null);
     try {
@@ -88,7 +96,7 @@ export default function BibliotecaAsociacionClient() {
       fd.append('file', file);
       fd.append('folder', 'documentos-asociacion');
       const uploadRes = await fetch('/api/media/upload', { method: 'POST', body: fd });
-      if (!uploadRes.ok) throw new Error('Error subiendo el archivo');
+      if (!uploadRes.ok) throw new Error(await parseUploadError(uploadRes));
       const { url } = await uploadRes.json();
 
       const createRes = await fetch('/api/admin/documentos-pueblo', {
@@ -135,7 +143,7 @@ export default function BibliotecaAsociacionClient() {
       fd.append('file', file);
       fd.append('folder', 'documentos-asociacion');
       const uploadRes = await fetch('/api/media/upload', { method: 'POST', body: fd });
-      if (!uploadRes.ok) throw new Error('Error subiendo el archivo');
+      if (!uploadRes.ok) throw new Error(await parseUploadError(uploadRes));
       const { url } = await uploadRes.json();
       const nuevosArchivos: ArchivoAdicional[] = [
         ...(doc.archivosAdicionales ?? []),
