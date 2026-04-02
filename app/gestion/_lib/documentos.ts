@@ -110,8 +110,16 @@ export interface DocumentoItem {
   fuente: FuenteDocumento;
   compartido: boolean;
   descripcion: string | null;
+  destacado: boolean;
+  destacadoHasta: string | null;
   createdAt: string;
   pueblo: { id: number; nombre: string; slug: string } | null;
+}
+
+export function isDestacadoActivo(doc: DocumentoItem): boolean {
+  if (!doc.destacado) return false;
+  if (!doc.destacadoHasta) return true;
+  return new Date(doc.destacadoHasta) > new Date();
 }
 
 export function isImageUrl(url: string) {

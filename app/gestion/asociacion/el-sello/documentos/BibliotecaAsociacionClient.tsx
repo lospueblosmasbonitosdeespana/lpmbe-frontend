@@ -11,6 +11,7 @@ import {
   DocumentoItem,
   isImageUrl,
   isPdfUrl,
+  isDestacadoActivo,
 } from '../../../_lib/documentos';
 
 const TIPOS_DISPONIBLES: TipoDoc[] = ['PAPELERIA', 'ORDENANZA', 'CARTEL', 'OTRO'];
@@ -50,6 +51,8 @@ export default function BibliotecaAsociacionClient() {
   const [descripcion, setDescripcion] = useState('');
   const [tipo, setTipo] = useState<TipoDoc>('OTRO');
   const [tema, setTema] = useState<TemaOrdenanza>('GENERAL_OTROS');
+  const [destacado, setDestacado] = useState(false);
+  const [duracionDestacado, setDuracionDestacado] = useState<string>('2w');
   const [showForm, setShowForm] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
 
@@ -65,6 +68,16 @@ export default function BibliotecaAsociacionClient() {
   const [editTema, setEditTema] = useState<TemaOrdenanza>('GENERAL_OTROS');
   const [editDescripcion, setEditDescripcion] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
+  const [togglingDestacado, setTogglingDestacado] = useState<number | null>(null);
+
+  function calcDestacadoHasta(duracion: string): string | null {
+    if (duracion === 'indefinido') return null;
+    const now = new Date();
+    const map: Record<string, number> = { '1w': 7, '2w': 14, '1m': 30, '3m': 90 };
+    const days = map[duracion] ?? 14;
+    now.setDate(now.getDate() + days);
+    return now.toISOString();
+  }
 
   async function parseUploadError(res: Response): Promise<string> {
     const data = await res.json().catch(() => ({} as any));
@@ -172,13 +185,15 @@ export default function BibliotecaAsociacionClient() {
           fuente: 'ASOCIACION',
           compartido: true,
           descripcion: descripcion.trim() || null,
+          destacado,
+          destacadoHasta: destacado ? calcDestacadoHasta(duracionDestacado) : null,
         }),
       });
       if (!createRes.ok) {
         const err = await createRes.json().catch(() => ({}));
         throw new Error(err.message || 'Error guardando');
       }
-      setNombre(''); setDescripcion(''); setPendingFile(null); setShowForm(false);
+      setNombre(''); setDescripcion(''); setPendingFile(null); setShowForm(false); setDestacado(false);
       await fetchDocs();
     } catch (e) { setError(e instanceof Error ? e.message : 'Error'); }
     finally {
@@ -233,6 +248,27 @@ export default function BibliotecaAsociacionClient() {
       setDocs((prev) => prev.map((d) => d.id === doc.id ? { ...d, archivosAdicionales: nuevosArchivos } : d));
     } catch (e) { alert(e instanceof Error ? e.message : 'Error'); }
     finally { setRemovingFileIdx(null); }
+  }
+
+  async function handleToggleDestacado(doc: DocumentoItem) {
+    const nuevoDestacado = !isDestacadoActivo(doc);
+    setTogglingDestacado(doc.id);
+    try {
+      let destacadoHasta: string | null = null;
+      if (nuevoDestacado) {
+        const duracion = prompt('Duración del aviso importante:\n1w = 1 semana\n2w = 2 semanas\n1m = 1 mes\n3m = 3 meses\nindefinido = sin fecha límite', '2w');
+        if (!duracion) { setTogglingDestacado(null); return; }
+        destacadoHasta = calcDestacadoHasta(duracion.trim());
+      }
+      const res = await fetch(`/api/admin/documentos-pueblo/${doc.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ destacado: nuevoDestacado, destacadoHasta }),
+      });
+      if (!res.ok) throw new Error('Error actualizando');
+      await fetchDocs();
+    } catch (e) { alert(e instanceof Error ? e.message : 'Error'); }
+    finally { setTogglingDestacado(null); }
   }
 
   function handleOpenEdit(doc: DocumentoItem) {
@@ -354,6 +390,32 @@ export default function BibliotecaAsociacionClient() {
                 className="w-full resize-y rounded-md border border-border px-3 py-2 text-sm"
               />
             </div>
+            {/* Toggle Importante */}
+            <div className="sm:col-span-2">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <div className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 ${destacado ? 'bg-red-500' : 'bg-gray-200'}`}
+                  onClick={() => setDestacado(!destacado)}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${destacado ? 'translate-x-6' : 'translate-x-1'}`} />
+                </div>
+                <span className="text-sm font-medium text-foreground">Marcar como Importante</span>
+              </label>
+              <p className="mt-1 ml-14 text-xs text-muted-foreground">
+                Los documentos importantes aparecen destacados en rojo para todos los alcaldes con un aviso obligatorio.
+              </p>
+              {destacado && (
+                <div className="mt-2 ml-14">
+                  <label className="mb-1 block text-xs font-medium text-red-600">Duración del aviso</label>
+                  <select value={duracionDestacado} onChange={(e) => setDuracionDestacado(e.target.value)}
+                    className="w-48 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    <option value="1w">1 semana</option>
+                    <option value="2w">2 semanas</option>
+                    <option value="1m">1 mes</option>
+                    <option value="3m">3 meses</option>
+                    <option value="indefinido">Sin fecha límite</option>
+                  </select>
+                </div>
+              )}
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">
             El archivo <strong>no se sube</strong> hasta que pulses <strong>Guardar documento</strong>. Así el nombre y la descripción coinciden con lo guardado en la biblioteca.
@@ -470,12 +532,18 @@ export default function BibliotecaAsociacionClient() {
                       <>
                         <p className="break-words text-sm font-medium leading-snug">{doc.nombre}</p>
                         <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                          {isDestacadoActivo(doc) && (
+                            <span className="rounded-full bg-red-500 px-2.5 py-0.5 text-[10px] font-bold text-white animate-pulse">IMPORTANTE</span>
+                          )}
                           <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${TIPO_COLORS[doc.tipo]}`}>{TIPO_LABELS[doc.tipo]}</span>
                           {doc.temaOrdenanza && <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700">{TEMA_ORDENANZA_LABELS[doc.temaOrdenanza]}</span>}
                           {totalArchivos > 1 && (
                             <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">{totalArchivos} archivos</span>
                           )}
                           <span className="text-[10px] text-muted-foreground">{new Date(doc.createdAt).toLocaleDateString('es')}</span>
+                          {isDestacadoActivo(doc) && doc.destacadoHasta && (
+                            <span className="text-[10px] text-red-500">hasta {new Date(doc.destacadoHasta).toLocaleDateString('es')}</span>
+                          )}
                         </div>
                         {doc.descripcion && <p className="mt-2 text-xs leading-relaxed text-muted-foreground break-words">{doc.descripcion}</p>}
                       </>
@@ -483,6 +551,17 @@ export default function BibliotecaAsociacionClient() {
                   </div>
                   {editingId !== doc.id && (
                     <div className="flex shrink-0 flex-col gap-1">
+                      <button
+                        type="button"
+                        disabled={togglingDestacado === doc.id}
+                        onClick={() => handleToggleDestacado(doc)}
+                        className={`rounded-md border p-2 transition-colors disabled:opacity-50 ${isDestacadoActivo(doc) ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100' : 'border-border text-muted-foreground hover:bg-amber-50 hover:text-amber-600'}`}
+                        title={isDestacadoActivo(doc) ? 'Quitar importancia' : 'Marcar como Importante'}
+                      >
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill={isDestacadoActivo(doc) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" />
+                        </svg>
+                      </button>
                       <button type="button" onClick={() => handleOpenEdit(doc)} className="rounded-md border border-border p-2 text-muted-foreground hover:bg-muted hover:text-foreground" title="Editar">
                         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
                           <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />

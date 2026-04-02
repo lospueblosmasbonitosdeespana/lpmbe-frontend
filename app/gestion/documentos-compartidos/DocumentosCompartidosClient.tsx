@@ -11,6 +11,7 @@ import {
   DocumentoItem,
   isImageUrl,
   isPdfUrl,
+  isDestacadoActivo,
 } from '../_lib/documentos';
 
 const ALL_TEMAS = Object.keys(TEMA_ORDENANZA_LABELS) as TemaOrdenanza[];
@@ -336,6 +337,8 @@ export default function DocumentosCompartidosClient() {
   const docsNoOrdenanza = filtered.filter((d) => d.tipo !== 'ORDENANZA');
   const docsOrdenanza = filtered.filter((d) => d.tipo === 'ORDENANZA');
 
+  const docsDestacados = useMemo(() => allDocs.filter(isDestacadoActivo), [allDocs]);
+
   const hasActiveFilters = query || tipoFilter !== 'TODOS' || fuenteFilter !== 'TODOS' || temaFilter !== 'TODOS';
 
   return (
@@ -498,6 +501,31 @@ export default function DocumentosCompartidosClient() {
           <p className="font-semibold text-foreground">No hay documentos que coincidan</p>
           <p className="mt-1.5 text-sm text-muted-foreground">Prueba a cambiar los filtros o la búsqueda.</p>
         </div>
+      )}
+
+      {/* ── SECCIÓN DOCUMENTOS IMPORTANTES ── */}
+      {!loading && docsDestacados.length > 0 && (
+        <section className="overflow-hidden rounded-2xl border-2 border-red-400 bg-gradient-to-b from-red-50 to-white shadow-lg shadow-red-100/50">
+          <div className="flex items-center gap-3 bg-red-500 px-5 py-3 text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg font-bold">Lectura importante</h2>
+              <p className="text-sm text-white/80">La asociación ha marcado estos documentos como lectura obligatoria</p>
+            </div>
+            <span className="rounded-full bg-white/20 px-3 py-0.5 text-sm font-bold">{docsDestacados.length}</span>
+          </div>
+          <div className="divide-y divide-red-100 p-3">
+            {docsDestacados.map((doc) => (
+              <div key={doc.id} className="py-2">
+                <DocCard doc={doc} />
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
       {/* ── SECCIÓN LOGOS DE LA ASOCIACIÓN ── */}
