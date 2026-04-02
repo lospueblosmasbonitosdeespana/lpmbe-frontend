@@ -287,6 +287,10 @@ export default function DocumentosCompartidosClient() {
 
   useEffect(() => { fetchDocs(); }, [fetchDocs]);
 
+  useEffect(() => {
+    try { localStorage.setItem('lpmbe_importantesLastSeen', new Date().toISOString()); } catch {}
+  }, []);
+
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
     return allDocs.filter((d) => {
