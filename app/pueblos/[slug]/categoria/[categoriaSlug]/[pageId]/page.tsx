@@ -103,7 +103,7 @@ export async function generateMetadata({
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
-    robots: { index: true, follow: true },
+    robots: { index: false, follow: true },
     openGraph: {
       title: titleFull,
       description: descFull,

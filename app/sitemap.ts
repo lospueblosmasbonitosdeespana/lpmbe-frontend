@@ -221,10 +221,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry(`/donde-comprar/${p.slug}`, 0.75, 'monthly'),
   ]);
 
-  const categoriasPueblo = ['naturaleza', 'cultura', 'en-familia', 'patrimonio', 'petfriendly', 'gastronomia'];
-  const paginasCategoriaPueblo = pueblosWithImages.flatMap((p) =>
-    categoriasPueblo.map((cat) => entry(`/pueblos/${p.slug}/categoria/${cat}`, 0.5, 'monthly'))
-  );
+  // /pueblos/*/categoria/* son noindex (duplican las temáticas SEO /que-comer/*, /patrimonio/*, etc.)
+  // No se incluyen en el sitemap.
 
   const experienciasCategorias = ['gastronomia', 'naturaleza', 'cultura', 'en-familia', 'petfriendly', 'patrimonio'];
   const experienciasAsociacion = experienciasCategorias.map((cat) =>
@@ -267,7 +265,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticPages, ...extraStatic,
     ...pueblos, ...rutas, ...noticias, ...eventos, ...contenidos,
     ...semanaSanta, ...paginasTematicas, ...paginasClub,
-    ...paginasCategoriaPueblo, ...experienciasAsociacion, ...experienciasPueblo,
+    ...experienciasAsociacion, ...experienciasPueblo,
     ...productos, ...recursos, ...socios,
     ...navidadPueblos, ...finDeSemanaPueblos, ...nocheRomanticaPueblos,
   ];

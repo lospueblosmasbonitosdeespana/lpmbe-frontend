@@ -43,6 +43,8 @@ export default function robots(): MetadataRoute.Robots {
           '/password-reset',
           '/alertas',
           '/pueblos/*/alertas',
+          '/pueblos/*/categoria',
+          '/pueblos/*/categoria/',
           '/cupones',
           '/planifica/mis-rutas',
           '/newsletter/baja',
