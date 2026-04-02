@@ -137,7 +137,13 @@ function DocCard({ doc }: { doc: DocumentoItem }) {
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-semibold text-base text-foreground leading-tight">{doc.nombre}</p>
-          {doc.descripcion && <p className="mt-0.5 text-sm text-muted-foreground line-clamp-1">{doc.descripcion}</p>}
+          {doc.descripcion && (
+            <p
+              className={`mt-0.5 text-sm text-muted-foreground break-words leading-relaxed ${open ? '' : 'line-clamp-3'}`}
+            >
+              {doc.descripcion}
+            </p>
+          )}
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             {doc.fuente === 'ASOCIACION' ? (
               <span className="rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">LPBME</span>
