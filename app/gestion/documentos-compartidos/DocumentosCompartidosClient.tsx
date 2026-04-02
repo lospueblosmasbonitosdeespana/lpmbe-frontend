@@ -249,6 +249,19 @@ export default function DocumentosCompartidosClient() {
   }, [logosAsociacion, query]);
 
   const showLogos = fuenteFilter === 'TODOS' || fuenteFilter === 'ASOCIACION';
+  /** Logos vienen de otra API; solo cuentan en chips cuando la fuente permite verlos. */
+  const logoCountVisible = showLogos ? logosAsociacion.length : 0;
+  const totalBibliotecaTipoTodos = allDocs.length + logoCountVisible;
+  const showDocSections = tipoFilter !== 'LOGO';
+  const showLogosSection =
+    showLogos && logosFiltered.length > 0 && (tipoFilter === 'TODOS' || tipoFilter === 'LOGO');
+  const hasVisibleContent = showLogosSection || (showDocSections && filtered.length > 0);
+  const totalVisibleResults =
+    tipoFilter === 'LOGO'
+      ? logosFiltered.length
+      : tipoFilter === 'TODOS'
+        ? filtered.length + (showLogos ? logosFiltered.length : 0)
+        : filtered.length;
 
   const ordenanzasPorTema = useMemo(() => {
     const ordenanzas = filtered.filter((d) => d.tipo === 'ORDENANZA');
@@ -335,7 +348,11 @@ export default function DocumentosCompartidosClient() {
               <button key={t} type="button" onClick={() => setTipoFilter(t as typeof tipoFilter)}
                 className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 active:scale-95 ${active ? 'text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'}`}
                 style={active ? { background: 'linear-gradient(to right, #a0705a, #b8856d)' } : undefined}>
-                {t === 'TODOS' ? `Todos (${allDocs.length})` : `${TIPO_LABELS[t as TipoDoc]} (${stats.porTipo[t] ?? 0})`}
+                {t === 'TODOS'
+                  ? `Todos (${totalBibliotecaTipoTodos})`
+                  : t === 'LOGO'
+                    ? `${TIPO_LABELS.LOGO} (${logoCountVisible})`
+                    : `${TIPO_LABELS[t as TipoDoc]} (${stats.porTipo[t] ?? 0})`}
               </button>
             );
           })}
@@ -374,7 +391,9 @@ export default function DocumentosCompartidosClient() {
 
         {hasActiveFilters && (
           <div className="flex items-center gap-3 pt-1">
-            <span className="text-xs font-medium text-muted-foreground">{filtered.length} resultado{filtered.length !== 1 ? 's' : ''}</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              {totalVisibleResults} resultado{totalVisibleResults !== 1 ? 's' : ''}
+            </span>
             <button type="button" onClick={() => { setQuery(''); setTipoFilter('TODOS'); setFuenteFilter('TODOS'); setTemaFilter('TODOS'); }}
               className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition-all hover:bg-rose-100 active:scale-95">
               Limpiar filtros
@@ -405,7 +424,7 @@ export default function DocumentosCompartidosClient() {
         </div>
       )}
 
-      {!loading && filtered.length === 0 && logosFiltered.length === 0 && (
+      {!loading && !hasVisibleContent && (
         <div className="rounded-3xl bg-gradient-to-br from-slate-50 to-white p-16 text-center ring-1 ring-slate-100">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 shadow-inner">
             <svg className="h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -418,7 +437,7 @@ export default function DocumentosCompartidosClient() {
       )}
 
       {/* ── SECCIÓN LOGOS DE LA ASOCIACIÓN ── */}
-      {!loading && showLogos && logosFiltered.length > 0 && (
+      {!loading && showLogosSection && (
         <section>
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm shadow-blue-200">
@@ -434,7 +453,7 @@ export default function DocumentosCompartidosClient() {
       )}
 
       {/* ── SECCIÓN OTROS DOCUMENTOS ── */}
-      {!loading && docsNoOrdenanza.length > 0 && (
+      {!loading && showDocSections && docsNoOrdenanza.length > 0 && (
         <div className="space-y-6">
           {TIPOS_SIN_LOGO.filter((t) => docsNoOrdenanza.filter(d => d.tipo === t).length > 0).map((tipo) => {
             const grupo = docsNoOrdenanza.filter((d) => d.tipo === tipo);
@@ -458,7 +477,7 @@ export default function DocumentosCompartidosClient() {
       )}
 
       {/* ── SECCIÓN ORDENANZAS ── */}
-      {!loading && docsOrdenanza.length > 0 && (
+      {!loading && showDocSections && docsOrdenanza.length > 0 && (
         <section>
           <div className="mb-5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
