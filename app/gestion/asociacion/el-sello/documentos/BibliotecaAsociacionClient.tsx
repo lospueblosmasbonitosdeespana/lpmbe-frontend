@@ -14,6 +14,7 @@ import {
 } from '../../../_lib/documentos';
 
 const TIPOS_DISPONIBLES: TipoDoc[] = ['PAPELERIA', 'ORDENANZA', 'OTRO'];
+const MAX_PROXY_UPLOAD_BYTES = 4.5 * 1024 * 1024; // límite práctico en proxy web (Vercel)
 
 function FileIcon({ url }: { url: string }) {
   if (isImageUrl(url)) return (
@@ -65,9 +66,17 @@ export default function BibliotecaAsociacionClient() {
   async function parseUploadError(res: Response): Promise<string> {
     const data = await res.json().catch(() => ({} as any));
     const msg = data?.error ?? data?.message ?? data?.data?.message;
+    if (res.status === 413) {
+      return 'Archivo demasiado grande para subida web (máx. aprox. 4.5 MB). Reduce el PDF o súbelo en varios archivos.';
+    }
     return typeof msg === 'string' && msg.trim().length > 0
       ? msg
       : 'Error subiendo el archivo';
+  }
+
+  function validateUploadSize(file: File): string | null {
+    if (file.size <= MAX_PROXY_UPLOAD_BYTES) return null;
+    return `El archivo pesa ${(file.size / (1024 * 1024)).toFixed(1)} MB. En esta pantalla el máximo práctico es ~4.5 MB.`;
   }
 
   async function fetchDocs() {
@@ -89,6 +98,11 @@ export default function BibliotecaAsociacionClient() {
       return;
     }
     const file = pendingFile;
+    const sizeErr = validateUploadSize(file);
+    if (sizeErr) {
+      setError(sizeErr);
+      return;
+    }
     const docNombre = nombre.trim() || file.name.replace(/\.[^.]+$/, '');
     setUploading(true); setError(null);
     try {
@@ -137,6 +151,11 @@ export default function BibliotecaAsociacionClient() {
   }
 
   async function handleAddExtraFile(doc: DocumentoItem, file: File) {
+    const sizeErr = validateUploadSize(file);
+    if (sizeErr) {
+      alert(sizeErr);
+      return;
+    }
     setUploadingExtra(true);
     try {
       const fd = new FormData();
@@ -337,6 +356,13 @@ export default function BibliotecaAsociacionClient() {
             onChange={(e) => {
               const f = e.target.files?.[0];
               if (f) {
+                const sizeErr = validateUploadSize(f);
+                if (sizeErr) {
+                  setError(sizeErr);
+                  setPendingFile(null);
+                  e.target.value = '';
+                  return;
+                }
                 setPendingFile(f);
                 setError(null);
               }
