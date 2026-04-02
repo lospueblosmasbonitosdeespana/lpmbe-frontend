@@ -70,6 +70,30 @@ export default function BibliotecaAsociacionClient() {
       : 'Error subiendo el archivo';
   }
 
+  async function uploadFileViaPresign(file: File, folder: string): Promise<string> {
+    const contentType = file.type?.trim() || 'application/octet-stream';
+    const presignRes = await fetch('/api/media/presign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fileName: file.name,
+        contentType,
+        folder,
+      }),
+    });
+    if (!presignRes.ok) throw new Error(await parseUploadError(presignRes));
+    const presign = await presignRes.json();
+    const uploadRes = await fetch(String(presign.uploadUrl), {
+      method: 'PUT',
+      headers: { 'Content-Type': String(presign.contentType || contentType) },
+      body: file,
+    });
+    if (!uploadRes.ok) throw new Error(`Error subiendo a R2 (status ${uploadRes.status})`);
+    const publicUrl = String(presign.publicUrl || '');
+    if (!publicUrl) throw new Error('R2 no devolvió URL pública');
+    return publicUrl;
+  }
+
   async function uploadFileDirectToR2(file: File, folder: string): Promise<string> {
     const ticketRes = await fetch('/api/media/upload-ticket', {
       method: 'POST',
@@ -78,7 +102,14 @@ export default function BibliotecaAsociacionClient() {
         folder,
       }),
     });
-    if (!ticketRes.ok) throw new Error(await parseUploadError(ticketRes));
+    if (!ticketRes.ok) {
+      // Compatibilidad: algunos despliegues de backend aún no exponen /media/upload-ticket
+      const raw = await ticketRes.text().catch(() => '');
+      if (ticketRes.status === 404 || /Cannot POST \/media\/upload-ticket/i.test(raw)) {
+        return uploadFileViaPresign(file, folder);
+      }
+      throw new Error(raw || 'No se pudo preparar la subida');
+    }
     const ticketData = await ticketRes.json();
     const uploadUrl = String(ticketData.uploadUrl || '');
     const ticket = String(ticketData.ticket || '');

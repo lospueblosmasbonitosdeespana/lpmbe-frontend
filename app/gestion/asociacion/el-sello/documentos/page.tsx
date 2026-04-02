@@ -56,6 +56,33 @@ export default function DocumentosCmsPage() {
 
     setUploading(true);
     try {
+      const uploadViaPresign = async () => {
+        const contentType = file.type?.trim() || 'application/octet-stream';
+        const presignRes = await fetch('/api/media/presign', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileName: file.name,
+            contentType,
+            folder: 'documentos-sello',
+          }),
+        });
+        const presignData = await presignRes.json().catch(() => ({}));
+        if (!presignRes.ok) {
+          const msg = presignData?.error ?? presignData?.message ?? 'Error preparando subida';
+          throw new Error(typeof msg === 'string' ? msg : 'Error preparando subida');
+        }
+        const uploadRes = await fetch(String(presignData.uploadUrl), {
+          method: 'PUT',
+          headers: { 'Content-Type': String(presignData.contentType || contentType) },
+          body: file,
+        });
+        if (!uploadRes.ok) throw new Error(`Error subiendo PDF a R2 (status ${uploadRes.status})`);
+        const url = String(presignData.publicUrl || '');
+        if (!url) throw new Error('R2 no devolvió URL pública');
+        return url;
+      };
+
       const ticketRes = await fetch('/api/media/upload-ticket', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -63,12 +90,18 @@ export default function DocumentosCmsPage() {
           folder: 'documentos-sello',
         }),
       });
-      const ticketData = await ticketRes.json().catch(() => ({}));
       if (!ticketRes.ok) {
-        const msg = ticketData?.error ?? ticketData?.message ?? 'Error preparando subida';
-        throw new Error(typeof msg === 'string' ? msg : 'Error preparando subida');
+        // Compatibilidad: backend antiguo sin /media/upload-ticket
+        const raw = await ticketRes.text().catch(() => '');
+        if (ticketRes.status === 404 || /Cannot POST \/media\/upload-ticket/i.test(raw)) {
+          const url = await uploadViaPresign();
+          setFormData({ ...formData, url });
+          return;
+        }
+        throw new Error(raw || 'Error preparando subida');
       }
 
+      const ticketData = await ticketRes.json().catch(() => ({}));
       const uploadUrl = String(ticketData.uploadUrl || '');
       const ticket = String(ticketData.ticket || '');
       if (!uploadUrl || !ticket) throw new Error('No se pudo crear ticket de subida');
