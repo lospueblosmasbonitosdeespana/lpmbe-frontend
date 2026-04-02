@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   TipoDoc,
   TemaOrdenanza,
@@ -44,6 +44,21 @@ function FileIcon({ url, size = 'sm' }: { url: string; size?: 'sm' | 'md' }) {
   );
 }
 
+function ViewButton({ href, variant = 'default' }: { href: string; variant?: 'default' | 'blue' }) {
+  const base = 'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200 active:scale-95';
+  const styles = variant === 'blue'
+    ? `${base} bg-white/80 text-blue-600 ring-1 ring-blue-200 hover:bg-blue-50 hover:ring-blue-300`
+    : `${base} bg-white/80 text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:ring-slate-300`;
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={styles}>
+      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+      </svg>
+      Ver
+    </a>
+  );
+}
+
 function DownloadButton({ href, label = 'Descargar', variant = 'default' }: { href: string; label?: string; variant?: 'default' | 'blue' }) {
   const base = 'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200 active:scale-95';
   const styles = variant === 'blue'
@@ -66,6 +81,49 @@ function ChevronIcon({ open }: { open: boolean }) {
         <polyline points="6 9 12 15 18 9" />
       </svg>
     </div>
+  );
+}
+
+/* ─── Sección colapsable ─── */
+
+type CollapsibleSectionProps = {
+  icon: React.ReactNode;
+  iconBg: string;
+  title: string;
+  count: number;
+  countColor: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+};
+
+function CollapsibleSection({ icon, iconBg, title, count, countColor, defaultOpen = false, children }: CollapsibleSectionProps) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section className="overflow-hidden rounded-2xl ring-1 ring-border/50 shadow-sm bg-white">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-muted/30"
+      >
+        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl shadow-sm ${iconBg}`}>
+          {icon}
+        </div>
+        <h2 className="flex-1 text-xl font-bold text-foreground">{title}</h2>
+        <span className={`rounded-full border px-3 py-0.5 text-xs font-bold ${countColor}`}>{count}</span>
+        <div className={`ml-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-all duration-300 ${open ? 'bg-primary/10 text-primary rotate-180' : 'bg-muted/60 text-muted-foreground'}`}>
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </div>
+      </button>
+      <div className={`grid transition-all duration-300 ease-in-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+        <div className="overflow-hidden">
+          <div className="border-t border-border/40 px-4 pb-4 pt-3">
+            {children}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -102,7 +160,10 @@ function LogoCard({ logo }: { logo: LogoAsociacion }) {
             <div className="flex flex-col gap-2.5 text-center sm:text-left">
               <p className="text-sm font-semibold text-foreground">{logo.nombre}</p>
               {logo.etiqueta && <p className="text-xs text-muted-foreground">{logo.etiqueta}</p>}
-              <DownloadButton href={logo.url} label="Descargar logo" variant="blue" />
+              <div className="flex flex-wrap gap-2">
+                <ViewButton href={logo.url} variant="blue" />
+                <DownloadButton href={logo.url} label="Descargar logo" variant="blue" />
+              </div>
             </div>
           </div>
         </div>
@@ -176,7 +237,10 @@ function DocCard({ doc }: { doc: DocumentoItem }) {
                     {i === 0 ? 'Principal' : `Archivo ${i + 1}`}
                   </span>
                 )}
-                <DownloadButton href={archivo.url} />
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <ViewButton href={archivo.url} />
+                  <DownloadButton href={archivo.url} />
+                </div>
               </div>
             ))}
           </div>
@@ -438,39 +502,42 @@ export default function DocumentosCompartidosClient() {
 
       {/* ── SECCIÓN LOGOS DE LA ASOCIACIÓN ── */}
       {!loading && showLogosSection && (
-        <section>
-          <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm shadow-blue-200">
-              <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
-            </div>
-            <h2 className="text-xl font-bold text-foreground">Logos de la Asociación</h2>
-            <span className="rounded-full bg-blue-100 px-3 py-0.5 text-xs font-bold text-blue-700">{logosFiltered.length}</span>
-          </div>
+        <CollapsibleSection
+          iconBg="bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-200"
+          icon={<svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>}
+          title="Logos de la Asociación"
+          count={logosFiltered.length}
+          countColor="bg-blue-100 text-blue-700 border-blue-200"
+        >
           <div className="flex flex-col gap-2">
             {logosFiltered.map((logo) => <LogoCard key={logo.id} logo={logo} />)}
           </div>
-        </section>
+        </CollapsibleSection>
       )}
 
       {/* ── SECCIÓN OTROS DOCUMENTOS ── */}
       {!loading && showDocSections && docsNoOrdenanza.length > 0 && (
-        <div className="space-y-6">
+        <div className="space-y-3">
           {TIPOS_SIN_LOGO.filter((t) => docsNoOrdenanza.filter(d => d.tipo === t).length > 0).map((tipo) => {
             const grupo = docsNoOrdenanza.filter((d) => d.tipo === tipo);
             if (grupo.length === 0) return null;
+            const esAsociacion = grupo.every((d) => d.fuente === 'ASOCIACION');
+            const iconoTipo = tipo === 'CARTEL'
+              ? <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3h18v4H3z" /><path d="M6 7v14" /><path d="M18 7v14" /></svg>
+              : <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>;
             return (
-              <section key={tipo}>
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-sm shadow-emerald-200">
-                    <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-                  </div>
-                  <h2 className="text-xl font-bold text-foreground">{TIPO_LABELS[tipo]}</h2>
-                  <span className={`rounded-full border px-3 py-0.5 text-xs font-bold ${TIPO_COLORS[tipo]}`}>{grupo.length}</span>
-                </div>
+              <CollapsibleSection
+                key={tipo}
+                iconBg={esAsociacion ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-200' : 'bg-gradient-to-br from-slate-500 to-slate-600 shadow-slate-200'}
+                icon={iconoTipo}
+                title={TIPO_LABELS[tipo]}
+                count={grupo.length}
+                countColor={TIPO_COLORS[tipo]}
+              >
                 <div className="flex flex-col gap-2">
                   {grupo.map((doc) => <DocCard key={doc.id} doc={doc} />)}
                 </div>
-              </section>
+              </CollapsibleSection>
             );
           })}
         </div>
@@ -478,15 +545,15 @@ export default function DocumentosCompartidosClient() {
 
       {/* ── SECCIÓN ORDENANZAS ── */}
       {!loading && showDocSections && docsOrdenanza.length > 0 && (
-        <section>
-          <div className="mb-5 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 shadow-sm shadow-amber-200">
-                <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
-              </div>
-              <h2 className="text-xl font-bold text-foreground">Ordenanzas</h2>
-              <span className="rounded-full bg-amber-100 px-3 py-0.5 text-xs font-bold text-amber-700">{docsOrdenanza.length}</span>
-            </div>
+        <CollapsibleSection
+          iconBg="bg-gradient-to-br from-amber-500 to-orange-500 shadow-amber-200"
+          icon={<svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>}
+          title="Ordenanzas"
+          count={docsOrdenanza.length}
+          countColor="bg-amber-100 text-amber-700 border-amber-200"
+          defaultOpen={true}
+        >
+          <div className="mb-4 flex justify-end">
             {temaFilter === 'TODOS' && (
               <div className="flex rounded-xl bg-slate-100 p-1 text-xs ring-1 ring-slate-200/60">
                 <button type="button" onClick={() => setVistaOrdenanza('tema')}
@@ -526,7 +593,7 @@ export default function DocumentosCompartidosClient() {
               {docsOrdenanza.map((doc) => <DocCard key={doc.id} doc={doc} />)}
             </div>
           )}
-        </section>
+        </CollapsibleSection>
       )}
     </div>
   );
