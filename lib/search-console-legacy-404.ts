@@ -213,7 +213,6 @@ export const SEARCH_CONSOLE_404_PATHS = new Set<string>([
   "/pino-escobon-area-recreativa",
   "/plaza-de-santo-domingo",
   "/plaza-divino-salvador",
-  "/politica-privacidad",
   "/ponte-vella",
   "/ponte-vella-2",
   "/primeros-pueblos-de-espana",

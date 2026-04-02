@@ -386,7 +386,6 @@ export const LEGACY_EXACT_GONE_PATHS: string[] = [
   '/ruta-pueblos-senorio-corona/pastrana',
   '/ruta-los-nazaries/nijar',
   '/michelin-mapa-lpmbe',
-  '/politica-privacidad',
   '/2024-da-la-bienvenida-a-los-116-pueblos-mas-bonitos-de-espana-tras-la-incorporacion-de-ampudia-palencia-comillas-cantabria-parauta-malaga-trevejo-y-trujillo-caceres/ampudia',
   // Informe GSC "Rastreada: sin indexar" mar-2026
   '/alianza-msc-cruceros',

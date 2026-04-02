@@ -68,6 +68,16 @@ function permanentRedirect(req: NextRequest, destination: string): NextResponse 
   return NextResponse.redirect(url, 301);
 }
 
+/** 301 al destino; si la petición trae ?lang= (no-ES), lo copia al destino para no perder idioma. */
+function permanentRedirectPreservingLang(req: NextRequest, destination: string): NextResponse {
+  const url = new URL(destination, req.url);
+  const lang = req.nextUrl.searchParams.get('lang')?.toLowerCase();
+  if (lang && SUPPORTED_LOCALES.has(lang) && lang !== 'es' && !url.searchParams.has('lang')) {
+    url.searchParams.set('lang', lang);
+  }
+  return NextResponse.redirect(url, 301);
+}
+
 function normalizeSearchParams(searchParams: URLSearchParams): string {
   const entries = [...searchParams.entries()].sort((a, b) => {
     if (a[0] === b[0]) return a[1].localeCompare(b[1]);
@@ -147,15 +157,20 @@ export function middleware(req: NextRequest): NextResponse {
   }
 
   // Secciones consolidadas en /actualidad (301 en middleware para evitar 308 de permanentRedirect).
-  if (pathname === '/noticias') return permanentRedirect(req, '/actualidad?tipo=noticia');
-  if (pathname === '/eventos') return permanentRedirect(req, '/actualidad?tipo=evento');
-  if (pathname === '/agenda') return permanentRedirect(req, '/actualidad?tipo=evento');
-  if (pathname === '/articulos') return permanentRedirect(req, '/actualidad?tipo=articulo');
+  if (pathname === '/noticias') return permanentRedirectPreservingLang(req, '/actualidad?tipo=noticia');
+  if (pathname === '/eventos') return permanentRedirectPreservingLang(req, '/actualidad?tipo=evento');
+  if (pathname === '/agenda') return permanentRedirectPreservingLang(req, '/actualidad?tipo=evento');
+  if (pathname === '/articulos') return permanentRedirectPreservingLang(req, '/actualidad?tipo=articulo');
+
+  // Slug legal WordPress → página actual (no enviar al home por listas GSC legacy).
+  if (pathname === '/politica-privacidad') {
+    return permanentRedirectPreservingLang(req, '/privacidad');
+  }
 
   // URLs basura (WP feeds, assets, noticias-y-eventos sin id): redirigir a home o actualidad.
   if (pathname.endsWith('/feed') || pathname.endsWith('/feed/')) return permanentRedirect(req, '/');
   if (pathname.startsWith('/wp-content/') || pathname.startsWith('/wp-includes/')) return permanentRedirect(req, '/');
-  if (pathname === '/noticias-y-eventos') return permanentRedirect(req, '/actualidad');
+  if (pathname === '/noticias-y-eventos') return permanentRedirectPreservingLang(req, '/actualidad');
   if (/^\/noticias-y-eventos\/\d+$/.test(pathname)) return permanentRedirect(req, '/actualidad');
   // WP date archives (informe noindex GSC): /2024/05/06, /2025/07, /2026/01/19, etc.
   if (/^\/20(24|25|26)\/\d{2}(\/\d{2})?$/.test(pathname)) return permanentRedirect(req, '/actualidad');
