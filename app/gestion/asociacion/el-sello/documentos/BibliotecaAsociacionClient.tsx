@@ -243,7 +243,7 @@ export default function BibliotecaAsociacionClient() {
         <div>
           <h2 className="text-xl font-semibold">Biblioteca compartida — Asociación</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Documentos que la asociación comparte con todos los alcaldes. Cada entrada puede tener <strong>varios archivos adjuntos</strong> (PDF, Word, imagen…). Aparecen en la biblioteca con la insignia "Asociación LPBME".
+            Documentos que la asociación comparte con todos los alcaldes. Cada entrada puede tener <strong>varios archivos adjuntos</strong> (PDF, Word, imagen…). Aparecen en la biblioteca con la insignia "Asociación LPMBE".
           </p>
         </div>
         <button
