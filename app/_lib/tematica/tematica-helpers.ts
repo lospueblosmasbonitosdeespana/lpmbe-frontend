@@ -132,6 +132,23 @@ export async function getPaginasTematicasByPueblo(
   }
 }
 
+/**
+ * Igual que getPaginasTematicasByPueblo pero, si el idioma pedido no tiene páginas,
+ * usa español. Evita 404 en URLs ?lang=xx del sitemap/hreflang cuando solo existe ES.
+ */
+export async function getPaginasTematicasByPuebloWithEsFallback(
+  puebloSlug: string,
+  categoryKey: string,
+  locale: string,
+): Promise<TematicaPageData[]> {
+  const pages = await getPaginasTematicasByPueblo(puebloSlug, categoryKey, locale);
+  if (pages.length > 0) return pages;
+  if (locale !== "es") {
+    return getPaginasTematicasByPueblo(puebloSlug, categoryKey, "es");
+  }
+  return [];
+}
+
 /** Obtiene una página por slug (o fallback slugify del título) */
 export async function getPaginaTematicaBySlug(
   puebloSlug: string,

@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, getLocaleFromRequestHeaders, getOGLocale, type SupportedLocale } from "@/lib/seo";
-import { CATEGORY_API_KEYS, getPaginasTematicasByPueblo, slugify, slugToTitle } from "@/app/_lib/tematica/tematica-helpers";
+import { CATEGORY_API_KEYS, getPaginasTematicasByPuebloWithEsFallback, slugify, slugToTitle } from "@/app/_lib/tematica/tematica-helpers";
 import { TematicaListPageUI } from "@/app/_lib/tematica/TematicaPageComponents";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +32,7 @@ export default async function QueComerListPage({ params }: { params: Promise<{ p
   const { puebloSlug } = await params;
   const h = await headers();
   const locale = getLocaleFromRequestHeaders(h);
-  const pages = await getPaginasTematicasByPueblo(puebloSlug, CATEGORY_API_KEYS[SLUG], locale);
+  const pages = await getPaginasTematicasByPuebloWithEsFallback(puebloSlug, CATEGORY_API_KEYS[SLUG], locale);
   if (!pages.length) return notFound();
   return <TematicaListPageUI slug={URL_SLUG} puebloSlug={puebloSlug} locale={locale} pages={pages} slugify={slugify} />;
 }

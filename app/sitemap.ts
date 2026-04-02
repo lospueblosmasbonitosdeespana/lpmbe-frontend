@@ -76,6 +76,40 @@ async function fetchPueblosWithImages(): Promise<{ slug: string; imageUrl: strin
   }
 }
 
+/** Segmento URL temática → clave API (GASTRONOMIA, …). Debe coincidir con CATEGORY_API_KEYS del frontend. */
+const TEMATICA_SITEMAP_SEGMENTS: Record<string, string> = {
+  'que-comer': 'GASTRONOMIA',
+  naturaleza: 'NATURALEZA',
+  cultura: 'CULTURA',
+  'en-familia': 'EN_FAMILIA',
+  petfriendly: 'PETFRIENDLY',
+  patrimonio: 'PATRIMONIO',
+};
+
+/**
+ * Rutas temáticas que realmente tienen al menos una página publicada (ES).
+ * Evita 404 en GSC por URLs listadas en el sitemap sin contenido en esa categoría.
+ */
+async function fetchTematicaPathsForPueblo(slug: string): Promise<string[]> {
+  try {
+    const res = await fetch(`${API}/public/pueblos/${encodeURIComponent(slug)}/pages`, {
+      cache: 'no-store',
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const out: string[] = [];
+    for (const [segment, categoryKey] of Object.entries(TEMATICA_SITEMAP_SEGMENTS)) {
+      const arr = data[categoryKey];
+      if (Array.isArray(arr) && arr.length > 0) {
+        out.push(`/${segment}/${slug}`);
+      }
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 function entry(
   path: string,
   priority: number,
@@ -170,10 +204,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const contenidos = contenidoItems.map((i) => entry(`/c/${i.slug}`, 0.7, 'weekly', undefined, i.updatedAt));
   const semanaSanta = semanaSantaPueblos.map((s) => entry(`/planifica/semana-santa/pueblo/${s}`, 0.6, 'weekly'));
 
-  // Páginas SEO temáticas por pueblo
-  const CATEGORIAS_SEO = ['que-comer', 'naturaleza', 'cultura', 'en-familia', 'petfriendly', 'patrimonio'];
-  const paginasTematicas = pueblosWithImages.flatMap((p) =>
-    CATEGORIAS_SEO.map((cat) => entry(`/${cat}/${p.slug}`, 0.75, 'monthly'))
+  const tematicaPathsByPueblo = await Promise.all(
+    pueblosWithImages.map(async (p) => {
+      const paths = await fetchTematicaPathsForPueblo(p.slug);
+      return paths.map((path) => ({ path, imageUrl: p.imageUrl }));
+    }),
+  );
+  const paginasTematicas = tematicaPathsByPueblo.flat().map(({ path, imageUrl }) =>
+    entry(path, 0.75, 'monthly', imageUrl ? [imageUrl] : undefined),
   );
 
   // Páginas Club por pueblo
