@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
 import CierreTiendaClient from './cierre/CierreTiendaClient';
+import { GestionAsociacionSubpageShell } from '../_components/GestionAsociacionSubpageShell';
+import { AsociacionHeroIconCart } from '../_components/asociacion-hero-icons';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -12,21 +14,12 @@ export default async function TiendaAdminPage() {
   if (me.rol !== 'ADMIN') redirect('/cuenta');
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-12">
-      <div className="mb-8">
-        <Link
-          href="/gestion/asociacion"
-          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
-        >
-          ← Volver
-        </Link>
-        <h1 className="text-3xl font-bold">Gestión · Tienda</h1>
-        <p className="mt-2 text-muted-foreground">
-          Gestión de productos, pedidos y descuentos.
-        </p>
-      </div>
-
-      {/* Cierre parcial/total */}
+    <GestionAsociacionSubpageShell
+      title="Tienda"
+      subtitle="Productos, pedidos, cupones, envíos e informes · Asociación LPMBE"
+      heroIcon={<AsociacionHeroIconCart />}
+      maxWidthClass="max-w-5xl"
+    >
       <div className="mb-8">
         <CierreTiendaClient />
       </div>
@@ -34,7 +27,7 @@ export default async function TiendaAdminPage() {
       <div className="space-y-4">
         <Link
           href="/gestion/asociacion/tienda/productos"
-          className="block rounded-lg border border-border bg-white p-6 transition-shadow hover:shadow-lg"
+          className="block rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
         >
           <h2 className="text-xl font-semibold">Productos</h2>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -44,54 +37,50 @@ export default async function TiendaAdminPage() {
 
         <Link
           href="/gestion/asociacion/tienda/promocion-global"
-          className="block rounded-lg border border-blue-200 bg-blue-50 p-6 transition-shadow hover:shadow-lg"
+          className="block rounded-2xl border border-blue-200/80 bg-blue-50/80 p-6 shadow-sm transition-shadow hover:shadow-md dark:border-blue-900/50 dark:bg-blue-950/30"
         >
-          <h2 className="text-xl font-semibold">🔥 Promoción Global</h2>
+          <h2 className="text-xl font-semibold">Promoción global</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Gestionar promoción global que se aplica a todos los productos sin descuento propio
+            Promoción que se aplica a productos sin descuento propio
           </p>
         </Link>
 
         <Link
           href="/gestion/asociacion/tienda/pedidos"
-          className="block rounded-lg border border-border bg-white p-6 transition-shadow hover:shadow-lg"
+          className="block rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
         >
           <h2 className="text-xl font-semibold">Pedidos</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Ver y gestionar pedidos realizados
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">Ver y gestionar pedidos realizados</p>
         </Link>
 
         <Link
           href="/gestion/asociacion/tienda/cupones"
-          className="block rounded-lg border border-border bg-white p-6 transition-shadow hover:shadow-lg"
+          className="block rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
         >
           <h2 className="text-xl font-semibold">Cupones</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Gestionar cupones y descuentos
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">Cupones y descuentos</p>
         </Link>
 
         <Link
           href="/gestion/asociacion/tienda/envio"
-          className="block rounded-lg border border-green-200 bg-green-50 p-6 transition-shadow hover:shadow-lg"
+          className="block rounded-2xl border border-green-200/80 bg-green-50/80 p-6 shadow-sm transition-shadow hover:shadow-md dark:border-green-900/50 dark:bg-green-950/25"
         >
-          <h2 className="text-xl font-semibold">Envio</h2>
+          <h2 className="text-xl font-semibold">Envío</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Configurar zonas, tarifas de envio por peso y umbral de envio gratuito (SendCloud)
+            Zonas, tarifas por peso y envío gratuito (SendCloud)
           </p>
         </Link>
 
         <Link
           href="/gestion/asociacion/tienda/ventas"
-          className="block rounded-lg border border-purple-200 bg-purple-50 p-6 transition-shadow hover:shadow-lg"
+          className="block rounded-2xl border border-purple-200/80 bg-purple-50/80 p-6 shadow-sm transition-shadow hover:shadow-md dark:border-purple-900/50 dark:bg-purple-950/25"
         >
-          <h2 className="text-xl font-semibold">Informe de Ventas</h2>
+          <h2 className="text-xl font-semibold">Informe de ventas</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Listado de ventas con desglose fiscal (base imponible, IVA producto, IVA porte) y exportacion CSV
+            Listado fiscal y exportación CSV
           </p>
         </Link>
       </div>
-    </main>
+    </GestionAsociacionSubpageShell>
   );
 }

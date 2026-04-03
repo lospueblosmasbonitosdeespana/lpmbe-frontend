@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
+import { GestionAsociacionSubpageShell } from '../_components/GestionAsociacionSubpageShell';
+import { AsociacionHeroIconSmartphone } from '../_components/asociacion-hero-icons';
 
 export default async function AppGestionPage() {
   const me = await getMeServer();
@@ -8,51 +10,43 @@ export default async function AppGestionPage() {
   if (me.rol !== 'ADMIN') redirect('/cuenta');
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-12">
-      <div className="mb-8">
-        <Link
-          href="/gestion/asociacion"
-          className="mb-4 inline-block text-sm text-muted-foreground hover:text-foreground"
-        >
-          ← Volver
-        </Link>
-        <h1 className="text-3xl font-bold">Gestión · App</h1>
-        <p className="mt-2 text-muted-foreground">
-          Pop-ups y ofertas que verán los usuarios en la app móvil. Configura cuándo salen, cada cuánto y si en home o al abrir la app.
-        </p>
-      </div>
-
+    <GestionAsociacionSubpageShell
+      title="App"
+      subtitle="Pop-ups, ofertas y página /app en la web · Asociación LPMBE"
+      heroIcon={<AsociacionHeroIconSmartphone />}
+      maxWidthClass="max-w-5xl"
+    >
       <div className="space-y-4">
         <Link
           href="/gestion/asociacion/app/pagina-web"
-          className="block rounded-lg border border-border bg-card p-6 transition-shadow hover:shadow-md"
+          className="block rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
         >
           <h2 className="text-xl font-semibold">Página app en la web</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Edita el contenido público de la página /app: textos, capturas y enlaces de descarga para App Store y Google Play.
+            Contenido público de /app: textos, capturas y enlaces App Store y Google Play.
           </p>
         </Link>
 
         <Link
           href="/gestion/asociacion/app/promos"
-          className="block rounded-lg border border-border bg-card p-6 transition-shadow hover:shadow-md"
+          className="block rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
         >
           <h2 className="text-xl font-semibold">Pop-ups y ofertas</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Crear y editar pop-ups (título, texto, imagen opcional, botón). Definir fechas, si se muestra en home o al abrir la app, frecuencia (una vez, cada día, cada sesión, siempre) y retraso en segundos.
+            Crear pop-ups, fechas, home o al abrir, frecuencia y retraso.
           </p>
         </Link>
 
         <Link
           href="/gestion/asociacion/app/evento-activo"
-          className="block rounded-lg border border-border bg-card p-6 transition-shadow hover:shadow-md"
+          className="block rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
         >
           <h2 className="text-xl font-semibold">Evento activo del botón estacional</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Elige desde gestión qué botón estacional verá el usuario en la Home de la app: Semana Santa, Noche Romántica o Navidad.
+            Semana Santa, Noche Romántica o Navidad en la home de la app.
           </p>
         </Link>
       </div>
-    </main>
+    </GestionAsociacionSubpageShell>
   );
 }

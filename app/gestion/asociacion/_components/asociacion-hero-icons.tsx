@@ -34,3 +34,49 @@ export function AsociacionHeroIconAlertTriangle(props: SVGProps<SVGSVGElement>) 
     </svg>
   );
 }
+
+export function AsociacionHeroIconUsers(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden {...props}>
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function AsociacionHeroIconCastle(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden {...props}>
+      <path d="M3 21h18M6 21V10l6-4 6 4v11M9 21v-4h6v4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 10h.01M12 10h.01M15 10h.01" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function AsociacionHeroIconStore(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden {...props}>
+      <path d="M3 9l1.5 9h15L21 9M3 9V7a2 2 0 012-2h14a2 2 0 012 2v2M3 9h18M16 16a2 2 0 11-4 0M8 16a2 2 0 11-4 0" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function AsociacionHeroIconCart(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden {...props}>
+      <circle cx="9" cy="20" r="1" />
+      <circle cx="18" cy="20" r="1" />
+      <path d="M3 3h2l1 12h12l2-9H6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function AsociacionHeroIconSmartphone(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden {...props}>
+      <rect x="6" y="3" width="12" height="18" rx="2" ry="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 18h4" strokeLinecap="round" />
+    </svg>
+  );
+}
