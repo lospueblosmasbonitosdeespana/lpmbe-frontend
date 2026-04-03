@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 import {
   DndContext,
   closestCenter,
@@ -98,92 +99,48 @@ function SortablePhotoRow({
   return (
     <div
       ref={setNodeRef}
-      style={{
-        ...style,
-        display: "grid",
-        gridTemplateColumns: "44px 120px 1fr auto",
-        gap: "12px",
-        alignItems: "center",
-        padding: "12px",
-        backgroundColor: isDragging ? "#e5e7eb" : "#f9fafb",
-        borderRadius: "8px",
-        border: "1px solid #e5e7eb",
-      }}
+      style={style}
+      className={cn(
+        "grid grid-cols-[44px_120px_1fr_auto] items-center gap-3 rounded-lg border p-3",
+        "border-border",
+        isDragging ? "bg-accent/60" : "bg-muted/50 dark:bg-muted/30",
+      )}
     >
-      {/* Handle de arrastre */}
       <div
         {...attributes}
         {...listeners}
-        style={{
-          cursor: "grab",
-          padding: "8px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          border: "1px solid #d1d5db",
-          borderRadius: "6px",
-          backgroundColor: "white",
-        }}
+        className="flex cursor-grab items-center justify-center rounded-md border border-border bg-background p-2 text-foreground active:cursor-grabbing"
         title="Arrastra para reordenar"
       >
-        <span style={{ fontSize: "16px" }}>⋮⋮</span>
+        <span className="text-base leading-none">⋮⋮</span>
       </div>
 
-      {/* Thumbnail */}
       <img
         src={photo.publicUrl}
         alt={photo.altText ?? ""}
-        style={{
-          width: "120px",
-          height: "80px",
-          objectFit: "cover",
-          borderRadius: "6px",
-          border: "1px solid #e5e7eb",
-          transform: `rotate(${photo.rotation ?? 0}deg)`,
-        }}
+        className="h-20 w-[120px] rounded-md border border-border object-cover"
+        style={{ transform: `rotate(${photo.rotation ?? 0}deg)` }}
       />
 
-      {/* Info */}
-      <div style={{ fontSize: "14px", minWidth: 0 }}>
-        <div style={{ fontWeight: "500", marginBottom: "4px" }}>
+      <div className="min-w-0 text-sm">
+        <div className="mb-1 font-medium text-foreground">
           Foto #{index + 1}
           {index === 0 && (
-            <span
-              style={{
-                marginLeft: "8px",
-                padding: "2px 8px",
-                backgroundColor: "#dbeafe",
-                color: "#1e40af",
-                borderRadius: "12px",
-                fontSize: "12px",
-                fontWeight: "600",
-              }}
-            >
+            <span className="ml-2 inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-900 dark:bg-blue-950 dark:text-blue-200">
               Principal
             </span>
           )}
           {String(photo.id).startsWith("legacy-") && (
             <span
-              style={{
-                marginLeft: "8px",
-                padding: "2px 8px",
-                backgroundColor: "#fef3c7",
-                color: "#92400e",
-                borderRadius: "12px",
-                fontSize: "12px",
-                fontWeight: "600",
-              }}
+              className="ml-2 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900 dark:bg-amber-950 dark:text-amber-200"
               title="Foto heredada del sistema antiguo. Al editarla se convertirá en nueva."
             >
               Legacy
             </span>
           )}
         </div>
-        <div style={{ color: "#6b7280", fontSize: "12px", wordBreak: "break-all" }}>
-          {photo.publicUrl}
-        </div>
-        {/* Alt (SEO): mostrar y editar */}
-        <div style={{ marginTop: "6px" }}>
+        <div className="break-all text-xs text-muted-foreground">{photo.publicUrl}</div>
+        <div className="mt-1.5">
           {editingAlt && !isLegacy ? (
             <input
               type="text"
@@ -205,17 +162,11 @@ function SortablePhotoRow({
                 }
               }}
               placeholder="Descripción (alt) para SEO"
-              style={{
-                width: "100%",
-                padding: "4px 8px",
-                fontSize: "12px",
-                border: "1px solid #94a3b8",
-                borderRadius: "4px",
-              }}
+              className="w-full rounded border border-input bg-background px-2 py-1 text-xs text-foreground"
               autoFocus
             />
           ) : (
-            <div style={{ fontSize: "12px", color: "#64748b" }}>
+            <div className="text-xs text-muted-foreground">
               {photo.altText ? (
                 <>
                   <span title="Alt (SEO)">📝 {photo.altText}</span>
@@ -223,15 +174,7 @@ function SortablePhotoRow({
                     <button
                       type="button"
                       onClick={() => setEditingAlt(true)}
-                      style={{
-                        marginLeft: "6px",
-                        background: "none",
-                        border: "none",
-                        color: "#2563eb",
-                        cursor: "pointer",
-                        fontSize: "11px",
-                        textDecoration: "underline",
-                      }}
+                      className="ml-1.5 text-blue-600 underline hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       Editar
                     </button>
@@ -243,14 +186,7 @@ function SortablePhotoRow({
                   <button
                     type="button"
                     onClick={() => setEditingAlt(true)}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "#64748b",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                      textDecoration: "underline",
-                    }}
+                    className="text-muted-foreground underline hover:text-foreground"
                   >
                     + Añadir descripción (alt) para SEO
                   </button>
@@ -261,36 +197,19 @@ function SortablePhotoRow({
         </div>
       </div>
 
-      {/* Botones de acción */}
-      <div style={{ display: "flex", gap: "8px" }}>
+      <div className="flex gap-2">
         <button
+          type="button"
           onClick={() => onRotate(photo.id)}
-          style={{
-            padding: "8px 12px",
-            backgroundColor: "#e0f2fe",
-            color: "#0369a1",
-            border: "1px solid #bae6fd",
-            borderRadius: "6px",
-            cursor: "pointer",
-            fontSize: "14px",
-            fontWeight: "500",
-          }}
+          className="rounded-md border border-sky-200 bg-sky-100 px-3 py-2 text-sm font-medium text-sky-900 hover:bg-sky-200 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-100 dark:hover:bg-sky-900"
           title="Girar 90°"
         >
           🔄
         </button>
         <button
+          type="button"
           onClick={() => onDelete(photo.id)}
-          style={{
-            padding: "8px 12px",
-            backgroundColor: "#fee2e2",
-            color: "#dc2626",
-            border: "1px solid #fecaca",
-            borderRadius: "6px",
-            cursor: "pointer",
-            fontSize: "14px",
-            fontWeight: "500",
-          }}
+          className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100 dark:border-red-900 dark:bg-red-950/50 dark:text-red-200 dark:hover:bg-red-950"
           title="Eliminar"
         >
           🗑️
@@ -681,50 +600,34 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
 
   if (loading) {
     return (
-      <div style={{ padding: "20px" }}>
-        <p>Cargando fotos...</p>
+      <div className="p-5">
+        <p className="text-muted-foreground">Cargando fotos...</p>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: "20px" }}>
-      {/* Header */}
-      <div style={{ marginBottom: "20px" }}>
-        <h3 style={{ margin: "0 0 10px 0", fontSize: "18px", fontWeight: "600" }}>
-          Fotos
-        </h3>
-        <p style={{ margin: "0 0 10px 0", fontSize: "13px", color: "#6b7280" }}>
+    <div className="p-5 text-foreground">
+      <div className="mb-5">
+        <h3 className="mb-2 text-lg font-semibold">Fotos</h3>
+        <p className="mb-2 text-sm text-muted-foreground">
           Descripción (alt) para SEO: opcional. Mejora accesibilidad y posicionamiento en Google.
         </p>
-        <div style={{ marginBottom: "10px", maxWidth: "400px" }}>
+        <div className="mb-2 max-w-md">
           <input
             type="text"
             placeholder="Ej: Plaza mayor, iglesia de Santa María..."
             value={uploadAlt}
             onChange={(e) => setUploadAlt(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "8px 12px",
-              border: "1px solid #d1d5db",
-              borderRadius: "6px",
-              fontSize: "14px",
-            }}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
             aria-label="Descripción de la siguiente foto (alt, para SEO)"
           />
         </div>
         <label
-          style={{
-            display: "inline-block",
-            padding: "10px 16px",
-            backgroundColor: "#2563eb",
-            color: "white",
-            borderRadius: "6px",
-            cursor: uploading ? "not-allowed" : "pointer",
-            opacity: uploading ? 0.6 : 1,
-            fontSize: "14px",
-            fontWeight: "500",
-          }}
+          className={cn(
+            "inline-block rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700",
+            uploading ? "cursor-not-allowed opacity-60" : "cursor-pointer",
+          )}
         >
           {uploading ? "Subiendo..." : "📷 Subir foto"}
           <input
@@ -732,58 +635,32 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
             accept="image/*"
             onChange={handleUpload}
             disabled={uploading}
-            style={{ display: "none" }}
+            className="hidden"
           />
         </label>
       </div>
 
-      {/* Saving indicator */}
       {saving && (
-        <div
-          style={{
-            padding: "12px",
-            backgroundColor: "#f0fdf4",
-            border: "1px solid #bbf7d0",
-            borderRadius: "6px",
-            color: "#166534",
-            marginBottom: "20px",
-            fontSize: "14px",
-            fontWeight: "500",
-          }}
-        >
+        <div className="mb-5 rounded-md border border-green-200 bg-green-50 px-3 py-3 text-sm font-medium text-green-900 dark:border-green-900 dark:bg-green-950/40 dark:text-green-100">
           💾 Guardando nuevo orden...
         </div>
       )}
 
-      {/* Error */}
       {error && (
-        <div
-          style={{
-            padding: "12px",
-            backgroundColor: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: "6px",
-            color: "#dc2626",
-            marginBottom: "20px",
-            fontSize: "14px",
-          }}
-        >
+        <div className="mb-5 rounded-md border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
           {error}
         </div>
       )}
 
-      {/* Photos grid - arrastrar y soltar para reordenar */}
       {photos.length === 0 ? (
-        <p style={{ color: "#6b7280", fontSize: "14px" }}>
-          No hay fotos todavía. Sube la primera.
-        </p>
+        <p className="text-sm text-muted-foreground">No hay fotos todavía. Sube la primera.</p>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext
             items={photos.map((p) => String(p.id))}
             strategy={verticalListSortingStrategy}
           >
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <div className="flex flex-col gap-3">
               {photos.map((photo, index) => (
                 <SortablePhotoRow
                   key={photo.id}
@@ -799,34 +676,12 @@ export default function PhotoManager({ entity, entityId, useAdminEndpoint = true
         </DndContext>
       )}
 
-      {/* Info */}
-      <div
-        style={{
-          marginTop: "20px",
-          padding: "12px",
-          backgroundColor: "#f0f9ff",
-          border: "1px solid #bae6fd",
-          borderRadius: "6px",
-          fontSize: "13px",
-          color: "#0c4a6e",
-        }}
-      >
+      <div className="mt-5 rounded-md border border-sky-200 bg-sky-50 px-3 py-3 text-sm text-sky-950 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-100">
         💡 Arrastra las fotos para cambiar el orden. La primera se usa como <strong>foto principal</strong> en listados y la página pública.
       </div>
-      
-      {/* Info Legacy */}
-      {photos.some(p => String(p.id).startsWith('legacy-')) && (
-        <div
-          style={{
-            marginTop: "12px",
-            padding: "12px",
-            backgroundColor: "#fffbeb",
-            border: "1px solid #fde68a",
-            borderRadius: "6px",
-            fontSize: "13px",
-            color: "#78350f",
-          }}
-        >
+
+      {photos.some((p) => String(p.id).startsWith("legacy-")) && (
+        <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
           📌 <strong>Fotos Legacy:</strong> Heredadas del sistema antiguo. Al rotar, reordenar o editar una foto legacy, se canoniza automáticamente (obtiene un ID nuevo). Esto es normal y permite editarla sin afectar otros pueblos.
         </div>
       )}

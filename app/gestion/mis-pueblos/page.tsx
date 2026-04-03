@@ -30,8 +30,6 @@ export default async function MisPueblosGestionPage() {
         ? 'Como editor puedes actualizar contenidos de cualquier pueblo de la red.'
         : 'Como alcalde solo verás los pueblos que tienes asignados.';
 
-  const showSlug = me.rol === 'ADMIN' || me.rol === 'EDITOR';
-
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <GestionPortalHero title={title} subtitle={subtitle} roleTone={rolToHeroTone(me.rol)} />
@@ -44,7 +42,7 @@ export default async function MisPueblosGestionPage() {
           </p>
         </div>
       ) : (
-        <MisPueblosListClient pueblos={pueblos} showSlug={showSlug} />
+        <MisPueblosListClient pueblos={pueblos} />
       )}
 
       <div className="mt-12 border-t border-border/60 pt-8 text-sm">

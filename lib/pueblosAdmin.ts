@@ -5,6 +5,7 @@ export type PuebloBasico = {
   id: number;
   nombre: string;
   slug: string;
+  provincia?: string | null;
 };
 
 export async function getAllPueblosServer(): Promise<PuebloBasico[]> {

@@ -73,14 +73,18 @@ export default function TipTapEditor({
       Subscript,
       Superscript,
       Image.configure({ inline: false, HTMLAttributes: { class: 'editor-image' } }),
-      Link.configure({ openOnClick: false, HTMLAttributes: { class: 'text-blue-600 hover:text-blue-700 underline' } }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: { class: 'text-blue-600 hover:text-blue-800 underline dark:text-blue-400 dark:hover:text-blue-300' },
+      }),
       Placeholder.configure({ placeholder }),
     ],
     content,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg focus:outline-none max-w-none px-6 py-4',
+        class:
+          'prose prose-sm sm:prose lg:prose-lg dark:prose-invert focus:outline-none max-w-none px-6 py-4 text-foreground prose-headings:text-foreground prose-p:text-foreground prose-li:text-foreground prose-strong:text-foreground',
         style: `min-height: ${minHeight}`,
       },
       handleDrop: (_view, event) => {
@@ -163,38 +167,38 @@ export default function TipTapEditor({
 
   if (!editor) {
     return (
-      <div className="animate-pulse rounded-xl border border-gray-200 bg-gray-50 p-8 text-center">
-        <div className="h-4 bg-gray-200 rounded w-1/3 mx-auto" />
+      <div className="animate-pulse rounded-xl border border-border bg-muted p-8 text-center">
+        <div className="mx-auto h-4 w-1/3 rounded bg-muted-foreground/20" />
       </div>
     );
   }
 
   const btn = (active: boolean, extra = '') =>
-    `p-1.5 rounded-lg text-sm font-semibold transition-all duration-200 ${active ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'} ${extra}`;
+    `p-1.5 rounded-lg text-sm font-semibold transition-all duration-200 ${active ? 'bg-blue-600 text-white shadow-sm dark:bg-blue-500' : 'text-foreground/80 hover:bg-muted hover:text-foreground'} ${extra}`;
 
   return (
     <div className="space-y-2">
       {showImageSizeModal && pendingImageUrl && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
-            <h3 className="text-lg font-semibold mb-4">Elige el tamaño de la imagen</h3>
+          <div className="mx-4 w-full max-w-md rounded-xl border border-border bg-card p-6 text-card-foreground shadow-2xl">
+            <h3 className="mb-4 text-lg font-semibold">Elige el tamaño de la imagen</h3>
             <div className="mb-4"><img src={pendingImageUrl} alt="Vista previa" className="w-full h-32 object-cover rounded-lg" /></div>
             <div className="grid grid-cols-2 gap-2">
               {(Object.keys(IMAGE_SIZES) as ImageSize[]).map((size) => (
                 <button key={size} type="button" onClick={() => insertImageWithSize(pendingImageUrl, size)}
-                  className="px-4 py-3 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors text-sm font-medium">
+                  className="rounded-lg border border-border px-4 py-3 text-sm font-medium transition-colors hover:border-blue-400 hover:bg-muted">
                   {IMAGE_SIZES[size].label}
                 </button>
               ))}
             </div>
             <button type="button" onClick={() => { setShowImageSizeModal(false); setPendingImageUrl(null); }}
-              className="mt-4 w-full px-4 py-2 text-gray-600 hover:text-gray-800 text-sm">Cancelar</button>
+              className="mt-4 w-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground">Cancelar</button>
           </div>
         </div>
       )}
 
       {/* ── TOOLBAR ─────────────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-0.5 rounded-xl border border-gray-200 bg-gradient-to-r from-white to-gray-50/50 backdrop-blur-sm px-2 py-1.5 shadow-sm">
+      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-0.5 rounded-xl border border-border bg-muted/90 px-2 py-1.5 shadow-sm backdrop-blur-sm dark:bg-zinc-900/95">
 
         {/* Formato básico */}
         <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={btn(editor.isActive('bold'))} title="Negrita"><strong>B</strong></button>
@@ -204,14 +208,14 @@ export default function TipTapEditor({
         <button type="button" onClick={() => editor.chain().focus().toggleSubscript().run()} className={btn(editor.isActive('subscript'))} title="Subíndice">x<sub>2</sub></button>
         <button type="button" onClick={() => editor.chain().focus().toggleSuperscript().run()} className={btn(editor.isActive('superscript'))} title="Superíndice">x<sup>2</sup></button>
 
-        <span className="mx-1 h-5 w-px bg-gray-300" />
+        <span className="mx-1 h-5 w-px bg-border" />
 
         {/* Títulos */}
         <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={btn(editor.isActive('heading', { level: 1 }))} title="Título 1">H1</button>
         <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={btn(editor.isActive('heading', { level: 2 }))} title="Título 2">H2</button>
         <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={btn(editor.isActive('heading', { level: 3 }))} title="Título 3">H3</button>
 
-        <span className="mx-1 h-5 w-px bg-gray-300" />
+        <span className="mx-1 h-5 w-px bg-border" />
 
         {/* Listas */}
         <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={btn(editor.isActive('bulletList'))} title="Lista">
@@ -221,7 +225,7 @@ export default function TipTapEditor({
           <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><text x="1" y="7" fontSize="6" fontWeight="bold">1</text><rect x="7" y="4" width="11" height="2" rx="1"/><text x="1" y="12" fontSize="6" fontWeight="bold">2</text><rect x="7" y="9" width="11" height="2" rx="1"/></svg>
         </button>
 
-        <span className="mx-1 h-5 w-px bg-gray-300" />
+        <span className="mx-1 h-5 w-px bg-border" />
 
         {/* Alineación */}
         <button type="button" onClick={() => editor.chain().focus().setTextAlign('left').run()} className={btn(editor.isActive({ textAlign: 'left' }))} title="Alinear izquierda">
@@ -237,7 +241,7 @@ export default function TipTapEditor({
           <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><rect x="2" y="4" width="16" height="2" rx="1"/><rect x="2" y="9" width="16" height="2" rx="1"/><rect x="2" y="14" width="16" height="2" rx="1"/></svg>
         </button>
 
-        <span className="mx-1 h-5 w-px bg-gray-300" />
+        <span className="mx-1 h-5 w-px bg-border" />
 
         {/* Enlace */}
         <button type="button" onClick={setLink} className={btn(editor.isActive('link'))} title="Enlace">
@@ -276,7 +280,7 @@ export default function TipTapEditor({
           <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><rect x="2" y="9" width="16" height="2" rx="1"/></svg>
         </button>
 
-        <span className="mx-1 h-5 w-px bg-gray-300" />
+        <span className="mx-1 h-5 w-px bg-border" />
 
         {/* Deshacer / Rehacer */}
         <button type="button" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().chain().focus().undo().run()} className={btn(false, !editor.can().chain().focus().undo().run() ? 'opacity-40 cursor-not-allowed' : '')} title="Deshacer">
@@ -293,18 +297,18 @@ export default function TipTapEditor({
       </div>
 
       {/* ── EDITOR AREA ─────────────────────────────────────────────────── */}
-      <div className="group rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
+      <div className="group overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all duration-200 hover:shadow-md focus-within:border-transparent focus-within:ring-2 focus-within:ring-blue-500 dark:bg-zinc-950">
         <EditorContent editor={editor} />
       </div>
 
-      <div className="flex items-center justify-between text-xs text-gray-500">
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
         {onUploadImage && (
           <div className="flex items-center gap-2">
             <Sparkles className="w-3 h-3 text-blue-500" />
             <span>Arrastra imágenes o pégalas con Ctrl+V</span>
           </div>
         )}
-        <span className="text-gray-400">Para enlaces: selecciona texto → clic en 🔗</span>
+        <span className="text-muted-foreground/80">Para enlaces: selecciona texto → clic en 🔗</span>
       </div>
 
       {isUploading && (

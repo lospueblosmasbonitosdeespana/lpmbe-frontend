@@ -84,7 +84,7 @@ function FixInvalidCoordsButton({ onFixed }: { onFixed?: () => void }) {
   }
 
   return (
-    <div className="mt-4 rounded border border-amber-200/80 bg-amber-50/40 px-3 py-2 text-xs text-amber-800">
+    <div className="mt-4 rounded border border-amber-200/80 bg-amber-50/40 px-3 py-2 text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/50 dark:text-amber-100">
       <span className="mr-2">Herramienta admin (futuro):</span>
       <button
         type="button"
@@ -126,12 +126,14 @@ function SortablePoiCard({
       style={style}
       id={`poi-card-${row.id}`}
       className={`relative rounded-lg border p-4 pl-10 ${
-        isEditing ? "border-yellow-300 bg-yellow-50" : "border-border bg-white"
-      } ${isDragging ? "opacity-60 shadow-lg z-10" : ""}`}
+        isEditing
+          ? "border-yellow-500/60 bg-yellow-50 dark:border-yellow-600/50 dark:bg-yellow-950/40"
+          : "border-border bg-card"
+      } ${isDragging ? "z-10 opacity-60 shadow-lg" : ""}`}
     >
       {!isEditing && (
         <div
-          className="absolute left-2 top-4 cursor-grab active:cursor-grabbing touch-none rounded p-1 text-muted-foreground hover:bg-muted hover:text-muted-foreground"
+          className="absolute left-2 top-4 cursor-grab touch-none rounded border border-border bg-background p-1 text-foreground hover:bg-muted active:cursor-grabbing"
           {...listeners}
           {...attributes}
           title="Arrastra para reordenar"
@@ -494,14 +496,14 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
 
   return (
     <main className="mx-auto max-w-5xl p-6">
-      <h1 className="text-2xl font-semibold">Gestión de POIs</h1>
+      <h1 className="text-2xl font-semibold text-foreground">Gestión de POIs</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         Pueblo: <strong>{slug}</strong>
       </p>
 
       {/* MAPA */}
       <div className="mt-6" ref={mapSectionRef}>
-        <h2 className="mb-2 text-lg font-semibold">Mapa de POIs</h2>
+        <h2 className="mb-2 text-lg font-semibold text-foreground">Mapa de POIs</h2>
         <MapLocationPicker
           center={mapCenter}
           zoom={15}
@@ -547,8 +549,8 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
           }}
           className={`rounded-lg px-4 py-2.5 text-sm font-medium ${
             showCreateForm
-              ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
-              : "bg-blue-600 text-white hover:bg-blue-700"
+              ? "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              : "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600"
           }`}
         >
           {showCreateForm ? "Cancelar" : "+ Añadir POI"}
@@ -557,39 +559,39 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
 
       {/* Formulario de creación */}
       {showCreateForm && (
-        <div className="mt-4 rounded-lg border border-border bg-muted/30 p-5 space-y-4">
-          <h3 className="text-base font-semibold">Nuevo POI</h3>
+        <div className="mt-4 space-y-4 rounded-lg border border-border bg-muted/30 p-5">
+          <h3 className="text-base font-semibold text-foreground">Nuevo POI</h3>
           <div>
-            <label className="mb-1 block text-sm font-medium">Nombre *</label>
+            <label className="mb-1 block text-sm font-medium text-foreground">Nombre *</label>
             <input
               type="text"
               value={createNombre}
               onChange={(e) => setCreateNombre(e.target.value)}
-              className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               placeholder="Ej: Castillo de Ainsa"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium">Latitud</label>
+              <label className="mb-1 block text-sm font-medium text-foreground">Latitud</label>
               <input
                 type="number"
                 step="any"
                 value={createLat}
                 onChange={(e) => setCreateLat(e.target.value ? parseFloat(e.target.value) : "")}
                 placeholder="Haz clic en el mapa ↑"
-                className="w-full rounded-lg border border-blue-400 bg-blue-50 px-3 py-2 text-sm font-mono"
+                className="w-full rounded-lg border border-blue-400 bg-blue-50 px-3 py-2 font-mono text-sm text-foreground dark:border-blue-600 dark:bg-blue-950/50"
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">Longitud</label>
+              <label className="mb-1 block text-sm font-medium text-foreground">Longitud</label>
               <input
                 type="number"
                 step="any"
                 value={createLng}
                 onChange={(e) => setCreateLng(e.target.value ? parseFloat(e.target.value) : "")}
                 placeholder="Haz clic en el mapa ↑"
-                className="w-full rounded-lg border border-blue-400 bg-blue-50 px-3 py-2 text-sm font-mono"
+                className="w-full rounded-lg border border-blue-400 bg-blue-50 px-3 py-2 font-mono text-sm text-foreground dark:border-blue-600 dark:bg-blue-950/50"
               />
             </div>
           </div>
@@ -599,7 +601,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
               onClick={() => {
                 mapSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
-              className="rounded bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
+              className="rounded bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 hover:bg-blue-200 dark:bg-blue-950 dark:text-blue-200 dark:hover:bg-blue-900"
             >
               ↑ Ir al mapa para ubicar
             </button>
@@ -609,22 +611,22 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
           </div>
           
           {(String(createLat ?? "").trim() === "" && String(createLng ?? "").trim() === "") && (
-            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-100">
               Haz clic en el mapa arriba o usa el buscador para situar el POI. Si dejas las coordenadas vacías, se usarán las del pueblo.
             </div>
           )}
           
           <div>
-            <label className="mb-1 block text-sm font-medium">Descripción</label>
+            <label className="mb-1 block text-sm font-medium text-foreground">Descripción</label>
             <textarea
               value={createDescripcion}
               onChange={(e) => setCreateDescripcion(e.target.value)}
               rows={3}
-              className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
             />
           </div>
           
-          <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-xs text-blue-800">
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-900 dark:border-blue-800/60 dark:bg-blue-950/50 dark:text-blue-100">
             Después de crear el POI podrás subir fotos desde el editor.
           </div>
           
@@ -645,7 +647,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                 setCreateLat("");
                 setCreateLng("");
               }}
-              className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-300"
+              className="rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:bg-secondary/80"
             >
               Cancelar
             </button>
@@ -689,17 +691,17 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                 {isEditing ? (
                   <div className="space-y-4">
                     <div>
-                      <label className="mb-1 block text-sm font-medium">Nombre</label>
+                      <label className="mb-1 block text-sm font-medium text-foreground">Nombre</label>
                       <input
                         type="text"
                         value={editNombre}
                         onChange={(e) => setEditNombre(e.target.value)}
-                        className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="mb-1 block text-sm font-medium">Latitud</label>
+                        <label className="mb-1 block text-sm font-medium text-foreground">Latitud</label>
                         <input
                           type="number"
                           step="any"
@@ -707,12 +709,12 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                           onChange={(e) =>
                             setEditLat(e.target.value ? parseFloat(e.target.value) : "")
                           }
-                          className="w-full rounded-lg border border-blue-400 bg-blue-50 px-3 py-2 text-sm font-mono"
+                          className="w-full rounded-lg border border-blue-400 bg-blue-50 px-3 py-2 font-mono text-sm text-foreground dark:border-blue-600 dark:bg-blue-950/50"
                           placeholder="Haz clic en el mapa ↑"
                         />
                       </div>
                       <div>
-                        <label className="mb-1 block text-sm font-medium">Longitud</label>
+                        <label className="mb-1 block text-sm font-medium text-foreground">Longitud</label>
                         <input
                           type="number"
                           step="any"
@@ -720,7 +722,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                           onChange={(e) =>
                             setEditLng(e.target.value ? parseFloat(e.target.value) : "")
                           }
-                          className="w-full rounded-lg border border-blue-400 bg-blue-50 px-3 py-2 text-sm font-mono"
+                          className="w-full rounded-lg border border-blue-400 bg-blue-50 px-3 py-2 font-mono text-sm text-foreground dark:border-blue-600 dark:bg-blue-950/50"
                           placeholder="Haz clic en el mapa ↑"
                         />
                       </div>
@@ -731,7 +733,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                         onClick={() => {
                           mapSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
                         }}
-                        className="rounded bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
+                        className="rounded bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 hover:bg-blue-200 dark:bg-blue-950 dark:text-blue-200 dark:hover:bg-blue-900"
                       >
                         ↑ Ir al mapa para ubicar
                       </button>
@@ -741,7 +743,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                     {(() => {
                       const editingRow = editId ? sorted.find((r) => r.id === editId) : null;
                       return editingRow && !isValidCoord(editingRow.lat, editingRow.lng) ? (
-                      <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+                      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-100">
                         Este POI tenía coordenadas inválidas. Haz clic en el mapa o busca un lugar y guarda para corregirlo.
                       </div>
                       ) : null;
@@ -751,19 +753,19 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                       const editLatNum = typeof editLat === "number" ? editLat : null;
                       const editLngNum = typeof editLng === "number" ? editLng : null;
                       return puebloLat != null && puebloLng != null && isValidCoord(editLatNum, editLngNum) && isSameCoordsAsPueblo(editLatNum, editLngNum, puebloLat, puebloLng) && (
-                        <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800 font-medium">
+                        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs font-medium text-amber-950 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-100">
                           Este POI está usando las coordenadas del pueblo. Usa el mapa arriba para ubicarlo correctamente si quieres coordenadas propias.
                         </div>
                       );
                     })()}
                     
                     <div>
-                      <label className="mb-1 block text-sm font-medium">Descripción</label>
+                      <label className="mb-1 block text-sm font-medium text-foreground">Descripción</label>
                       <textarea
                         value={editDescripcion}
                         onChange={(e) => setEditDescripcion(e.target.value)}
                         rows={3}
-                        className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                       />
                     </div>
                     
@@ -788,7 +790,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                       <button
                         type="button"
                         onClick={cancelEdit}
-                        className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-300"
+                        className="rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:bg-secondary/80"
                       >
                         Cancelar
                       </button>
@@ -796,13 +798,13 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                   </div>
                 ) : (
                   <div>
-                    <div className="flex justify-between items-start">
+                    <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="mb-1 flex items-center gap-2">
                           <span className="inline-block min-w-[28px] rounded bg-muted px-2 py-0.5 text-center text-xs font-semibold text-muted-foreground">
                             #{idx + 1}
                           </span>
-                          <h3 className="text-base font-semibold">{row.nombre}</h3>
+                          <h3 className="text-base font-semibold text-foreground">{row.nombre}</h3>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
                           <span className="text-xs text-muted-foreground">
@@ -811,12 +813,12 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                               : "Coordenadas inválidas (usa el mapa al editar para ubicar)"}
                           </span>
                           {!isValidCoord(row.lat, row.lng) && (
-                            <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-xs font-medium text-amber-800">
+                            <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-950 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100">
                               Corregir ubicación
                             </span>
                           )}
                           {puebloLat != null && puebloLng != null && isValidCoord(row.lat, row.lng) && isSameCoordsAsPueblo(row.lat, row.lng, puebloLat, puebloLng) && (
-                            <span className="rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-xs font-medium text-red-700">
+                            <span className="rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-800 dark:border-red-800/60 dark:bg-red-950/40 dark:text-red-200">
                               ⚠ Sin ubicar — Coordenadas del pueblo
                             </span>
                           )}
@@ -866,7 +868,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
       </div>
 
       <div className="mt-8">
-        <a href={`/gestion/pueblos/${slug}`} className="text-sm text-blue-600 hover:underline">
+        <a href={`/gestion/pueblos/${slug}`} className="text-sm text-blue-600 hover:underline dark:text-blue-400">
           ← Volver a gestión del pueblo
         </a>
       </div>

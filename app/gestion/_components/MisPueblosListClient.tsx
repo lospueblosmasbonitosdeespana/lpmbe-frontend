@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 
-export type MisPuebloItem = { id: number; nombre: string; slug: string };
+export type MisPuebloItem = { id: number; nombre: string; slug: string; provincia?: string | null };
 
 const CARD_ACCENTS = [
   'border-emerald-200/70 from-emerald-50/80 to-white dark:border-emerald-900/40 dark:from-emerald-950/30 dark:to-card',
@@ -20,22 +20,20 @@ function initialLetter(nombre: string): string {
   return c ? c.toUpperCase() : '?';
 }
 
-export default function MisPueblosListClient({
-  pueblos,
-  showSlug,
-}: {
-  pueblos: MisPuebloItem[];
-  showSlug: boolean;
-}) {
+export default function MisPueblosListClient({ pueblos }: { pueblos: MisPuebloItem[] }) {
   const [q, setQ] = useState('');
 
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
     if (!t) return pueblos;
-    return pueblos.filter(
-      (p) =>
-        (p.nombre || '').toLowerCase().includes(t) || (p.slug || '').toLowerCase().includes(t),
-    );
+    return pueblos.filter((p) => {
+      const prov = (p.provincia || '').toLowerCase();
+      return (
+        (p.nombre || '').toLowerCase().includes(t) ||
+        (p.slug || '').toLowerCase().includes(t) ||
+        prov.includes(t)
+      );
+    });
   }, [pueblos, q]);
 
   return (
@@ -50,7 +48,7 @@ export default function MisPueblosListClient({
             type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar por nombre o slug…"
+            placeholder="Buscar por nombre, provincia o slug…"
             className="w-full max-w-md rounded-xl border border-input bg-background px-4 py-2.5 text-sm shadow-sm outline-none ring-offset-background transition placeholder:text-muted-foreground focus-visible:border-emerald-400/60 focus-visible:ring-2 focus-visible:ring-emerald-500/25 sm:w-80"
             autoComplete="off"
           />
@@ -82,6 +80,7 @@ export default function MisPueblosListClient({
         <ul className="grid gap-4 sm:grid-cols-2">
           {filtered.map((p) => {
             const accent = CARD_ACCENTS[Math.abs(p.id) % CARD_ACCENTS.length];
+            const sub = (p.provincia || '').trim() || '—';
             return (
               <li
                 key={p.id}
@@ -99,9 +98,7 @@ export default function MisPueblosListClient({
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-semibold text-foreground">{p.nombre || `Pueblo ${p.id}`}</div>
-                    {showSlug ? (
-                      <div className="mt-0.5 truncate font-mono text-xs text-muted-foreground">{p.slug}</div>
-                    ) : null}
+                    <div className="mt-0.5 truncate text-sm text-muted-foreground">{sub}</div>
                   </div>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2 border-t border-border/50 pt-4">

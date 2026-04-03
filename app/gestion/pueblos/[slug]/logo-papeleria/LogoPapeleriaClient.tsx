@@ -47,7 +47,7 @@ function ViewFileButton({ href }: { href: string }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold bg-white/80 text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 transition-all active:scale-95"
+      className="inline-flex items-center gap-1 rounded-lg bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 transition-all hover:bg-slate-50 active:scale-95 dark:bg-zinc-800 dark:text-zinc-100 dark:ring-zinc-600 dark:hover:bg-zinc-700"
     >
       <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -375,7 +375,7 @@ export default function LogoPapeleriaClient({
       </div>
 
       {/* Logotipos */}
-      <section className="overflow-hidden rounded-2xl border border-violet-200/80 bg-gradient-to-b from-violet-50/50 to-white p-6 shadow-md shadow-violet-100/40">
+      <section className="overflow-hidden rounded-2xl border border-violet-200/80 bg-gradient-to-b from-violet-50/50 to-white p-6 shadow-md shadow-violet-100/40 dark:border-violet-800/50 dark:from-violet-950/40 dark:to-card dark:shadow-none">
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 shadow-md shadow-violet-200">
@@ -391,7 +391,7 @@ export default function LogoPapeleriaClient({
               </p>
             </div>
           </div>
-          <span className="shrink-0 self-start rounded-full bg-violet-100 px-3 py-1.5 text-xs font-bold text-violet-800 ring-1 ring-violet-200">
+          <span className="shrink-0 self-start rounded-full bg-violet-100 px-3 py-1.5 text-xs font-bold text-violet-800 ring-1 ring-violet-200 dark:bg-violet-950 dark:text-violet-200 dark:ring-violet-800">
             {loadingLogos ? '…' : `${logos.length} / 6`}
           </span>
         </div>
@@ -411,9 +411,9 @@ export default function LogoPapeleriaClient({
             {logos.map((logo) => (
               <div
                 key={logo.id}
-                className="group flex flex-col rounded-2xl border border-violet-100 bg-white p-3 text-center shadow-sm transition-all hover:border-violet-200 hover:shadow-md"
+                className="group flex flex-col rounded-2xl border border-violet-100 bg-card p-3 text-center shadow-sm transition-all hover:border-violet-200 hover:shadow-md dark:border-violet-800/50"
               >
-                <div className="flex h-24 w-full items-center justify-center rounded-xl bg-gradient-to-b from-slate-50 to-white ring-1 ring-slate-100">
+                <div className="flex h-24 w-full items-center justify-center rounded-xl bg-gradient-to-b from-slate-50 to-white ring-1 ring-slate-100 dark:from-zinc-800 dark:to-zinc-900 dark:ring-zinc-700">
                   <img src={logo.url} alt={logo.nombre} className="max-h-20 w-full object-contain p-1" />
                 </div>
                 <p className="mt-2 line-clamp-2 text-xs font-semibold text-foreground">{logo.nombre}</p>
@@ -425,7 +425,7 @@ export default function LogoPapeleriaClient({
                     type="button"
                     disabled={deletingLogoId === logo.id}
                     onClick={() => handleDeleteLogo(logo.id)}
-                    className="inline-flex items-center justify-center rounded-lg border border-red-200 bg-white p-1.5 text-red-500 transition hover:bg-red-50 disabled:opacity-50"
+                    className="inline-flex items-center justify-center rounded-lg border border-red-200 bg-card p-1.5 text-red-600 transition hover:bg-red-50 disabled:opacity-50 dark:border-red-900 dark:hover:bg-red-950/50"
                     title="Eliminar"
                   >
                     {deletingLogoId === logo.id ? (
@@ -445,7 +445,7 @@ export default function LogoPapeleriaClient({
                 type="button"
                 disabled={uploadingLogo}
                 onClick={() => logoFileRef.current?.click()}
-                className="flex min-h-[140px] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50/30 text-sm text-violet-700/80 transition hover:border-violet-400 hover:bg-violet-50 hover:text-violet-900 disabled:opacity-50"
+                className="flex min-h-[140px] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50/30 text-sm text-violet-800 transition hover:border-violet-400 hover:bg-violet-50 hover:text-violet-950 disabled:opacity-50 dark:border-violet-700 dark:bg-violet-950/30 dark:text-violet-200 dark:hover:bg-violet-950/50"
               >
                 {uploadingLogo ? (
                   <span className="h-6 w-6 animate-spin rounded-full border-2 border-violet-200 border-t-violet-600" />
@@ -474,7 +474,7 @@ export default function LogoPapeleriaClient({
       </section>
 
       {/* Papelería y documentos */}
-      <section className="overflow-hidden rounded-2xl border border-amber-200/90 bg-gradient-to-b from-amber-50/40 to-white p-6 shadow-md shadow-amber-100/30">
+      <section className="overflow-hidden rounded-2xl border border-amber-200/90 bg-gradient-to-b from-amber-50/40 to-white p-6 shadow-md shadow-amber-100/30 dark:border-amber-900/50 dark:from-amber-950/35 dark:to-card dark:shadow-none">
         <div className="mb-6 flex gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 shadow-md shadow-amber-200">
             <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
@@ -492,7 +492,7 @@ export default function LogoPapeleriaClient({
           </div>
         </div>
 
-        <div className="mb-8 rounded-2xl border-2 border-primary/15 bg-gradient-to-b from-amber-50/30 to-white p-6 shadow-inner">
+        <div className="mb-8 rounded-2xl border-2 border-primary/15 bg-gradient-to-b from-amber-50/30 to-white p-6 shadow-inner dark:from-amber-950/25 dark:to-card">
           <div className="mb-4 flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
               <svg className="h-4 w-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -503,21 +503,21 @@ export default function LogoPapeleriaClient({
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nombre</label>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-foreground">Nombre</label>
               <input
                 type="text"
                 placeholder="Ej: Ordenanza de embellecimiento 2024"
                 value={newDocNombre}
                 onChange={(e) => setNewDocNombre(e.target.value)}
-                className="w-full rounded-xl border border-border px-4 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tipo</label>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-foreground">Tipo</label>
               <select
                 value={newDocTipo}
                 onChange={(e) => setNewDocTipo(e.target.value as TipoDoc)}
-                className="w-full rounded-xl border border-border px-4 py-2.5 text-sm shadow-sm"
+                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground shadow-sm"
               >
                 {(Object.keys(TIPO_LABELS) as TipoDoc[])
                   .filter((t) => t !== 'LOGO')
@@ -531,11 +531,11 @@ export default function LogoPapeleriaClient({
 
             {newDocTipo === 'ORDENANZA' && (
               <div className="sm:col-span-2">
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Temática</label>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-foreground">Temática</label>
                 <select
                   value={newDocTema}
                   onChange={(e) => setNewDocTema(e.target.value as TemaOrdenanza)}
-                  className="w-full rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm shadow-sm"
+                  className="w-full rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm text-foreground shadow-sm dark:border-amber-700 dark:bg-amber-950/50"
                 >
                   {(Object.keys(TEMA_ORDENANZA_LABELS) as TemaOrdenanza[]).map((t) => (
                     <option key={t} value={t}>
@@ -547,26 +547,26 @@ export default function LogoPapeleriaClient({
             )}
 
             <div className="sm:col-span-2">
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Descripción</label>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-foreground">Descripción</label>
               <textarea
                 placeholder="Breve descripción del contenido"
                 value={newDocDescripcion}
                 onChange={(e) => setNewDocDescripcion(e.target.value)}
                 rows={3}
-                className="w-full resize-y rounded-xl border border-border px-4 py-2.5 text-sm shadow-sm"
+                className="w-full resize-y rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground shadow-sm"
               />
             </div>
 
-            <div className="sm:col-span-2 rounded-xl border border-emerald-200/80 bg-emerald-50/40 p-4">
+            <div className="sm:col-span-2 rounded-xl border border-emerald-200/80 bg-emerald-50/40 p-4 dark:border-emerald-800/60 dark:bg-emerald-950/40">
               <label className="flex cursor-pointer items-start gap-3">
                 <input
                   type="checkbox"
                   checked={newDocCompartido}
                   onChange={(e) => setNewDocCompartido(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-emerald-300"
+                  className="mt-0.5 h-4 w-4 rounded border-emerald-300 dark:border-emerald-600"
                 />
                 <span>
-                  <span className="text-sm font-semibold text-foreground">Compartir con todos los alcaldes de la red</span>
+                  <span className="text-sm font-semibold text-foreground dark:text-emerald-50">Compartir con todos los alcaldes de la red</span>
                   {newDocCompartido && (
                     <span className="mt-1 block w-fit rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800 ring-1 ring-emerald-200">
                       Visible en biblioteca compartida
@@ -586,7 +586,7 @@ export default function LogoPapeleriaClient({
               type="button"
               disabled={uploadingDoc}
               onClick={() => docFileRef.current?.click()}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-white px-5 py-2.5 text-sm font-semibold transition-all hover:border-primary/30 hover:bg-muted disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-all hover:border-primary/30 hover:bg-muted disabled:opacity-50"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -614,11 +614,11 @@ export default function LogoPapeleriaClient({
               )}
             </button>
             {pendingDocFile && (
-              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 ring-1 ring-emerald-200 sm:w-auto">
+              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 ring-1 ring-emerald-200 dark:bg-emerald-950/50 dark:ring-emerald-800 sm:w-auto">
                 <svg className="h-4 w-4 shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="truncate text-sm font-medium text-emerald-800" title={pendingDocFile.name}>
+                <span className="truncate text-sm font-medium text-emerald-900 dark:text-emerald-100" title={pendingDocFile.name}>
                   {pendingDocFile.name}
                 </span>
                 <button
@@ -697,7 +697,7 @@ export default function LogoPapeleriaClient({
               return (
                 <div
                   key={doc.id}
-                  className="group overflow-hidden rounded-2xl border border-amber-100 bg-white shadow-sm transition-all hover:border-amber-200 hover:shadow-md"
+                  className="group overflow-hidden rounded-2xl border border-amber-100 bg-card shadow-sm transition-all hover:border-amber-200 hover:shadow-md dark:border-amber-900/50"
                 >
                   <div className="flex items-start gap-4 p-5">
                     <div className="mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 ring-1 ring-amber-200/60 shadow-sm">
@@ -718,23 +718,23 @@ export default function LogoPapeleriaClient({
                     </div>
                     <div className="min-w-0 flex-1">
                       {editingId === doc.id ? (
-                        <div className="space-y-3 rounded-xl border border-amber-200/90 bg-amber-50/50 p-4">
+                        <div className="space-y-3 rounded-xl border border-amber-200/90 bg-amber-50/50 p-4 dark:border-amber-800/60 dark:bg-amber-950/40">
                           <div>
-                            <label className="mb-1 block text-xs font-semibold text-muted-foreground">Nombre</label>
+                            <label className="mb-1 block text-xs font-semibold text-foreground">Nombre</label>
                             <input
                               type="text"
                               value={editNombre}
                               onChange={(e) => setEditNombre(e.target.value)}
-                              className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm shadow-sm"
+                              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground shadow-sm"
                             />
                           </div>
                           <div className="grid gap-3 sm:grid-cols-2">
                             <div>
-                              <label className="mb-1 block text-xs font-semibold text-muted-foreground">Tipo</label>
+                              <label className="mb-1 block text-xs font-semibold text-foreground">Tipo</label>
                               <select
                                 value={editTipo}
                                 onChange={(e) => setEditTipo(e.target.value as TipoDoc)}
-                                className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm shadow-sm"
+                                className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground shadow-sm"
                               >
                                 {(Object.keys(TIPO_LABELS) as TipoDoc[])
                                   .filter((t) => t !== 'LOGO')
@@ -747,11 +747,11 @@ export default function LogoPapeleriaClient({
                             </div>
                             {editTipo === 'ORDENANZA' && (
                               <div className="sm:col-span-2">
-                                <label className="mb-1 block text-xs font-semibold text-muted-foreground">Temática</label>
+                                <label className="mb-1 block text-xs font-semibold text-foreground">Temática</label>
                                 <select
                                   value={editTema}
                                   onChange={(e) => setEditTema(e.target.value as TemaOrdenanza)}
-                                  className="w-full rounded-lg border border-amber-300 bg-white px-3 py-2.5 text-sm shadow-sm"
+                                  className="w-full rounded-lg border border-amber-300 bg-background px-3 py-2.5 text-sm text-foreground shadow-sm dark:border-amber-700 dark:bg-amber-950/40"
                                 >
                                   {(Object.keys(TEMA_ORDENANZA_LABELS) as TemaOrdenanza[]).map((t) => (
                                     <option key={t} value={t}>
@@ -763,13 +763,13 @@ export default function LogoPapeleriaClient({
                             )}
                           </div>
                           <div>
-                            <label className="mb-1 block text-xs font-semibold text-muted-foreground">Descripción</label>
+                            <label className="mb-1 block text-xs font-semibold text-foreground">Descripción</label>
                             <textarea
                               value={editDescripcion}
                               onChange={(e) => setEditDescripcion(e.target.value)}
                               rows={3}
                               placeholder="Breve descripción del contenido"
-                              className="w-full resize-y rounded-lg border border-border bg-white px-3 py-2.5 text-sm shadow-sm"
+                              className="w-full resize-y rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground shadow-sm"
                             />
                           </div>
                           <div className="flex flex-wrap gap-2">
@@ -785,7 +785,7 @@ export default function LogoPapeleriaClient({
                               type="button"
                               disabled={savingEdit}
                               onClick={() => setEditingId(null)}
-                              className="rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+                              className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-50"
                             >
                               Cancelar
                             </button>
@@ -870,9 +870,9 @@ export default function LogoPapeleriaClient({
                     )}
                   </div>
 
-                  <div className="divide-y divide-amber-100 border-t border-amber-100/80 bg-gradient-to-b from-amber-50/30 to-transparent">
-                    <div className="flex flex-wrap items-center gap-3 px-5 py-3 transition-colors hover:bg-white/60">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white ring-1 ring-border shadow-sm">
+                  <div className="divide-y divide-amber-100 border-t border-amber-100/80 bg-gradient-to-b from-amber-50/30 to-transparent dark:divide-amber-900/40 dark:border-amber-900/40 dark:from-amber-950/20 dark:to-transparent">
+                    <div className="flex flex-wrap items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/40">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-card ring-1 ring-border shadow-sm">
                         <FileIcon url={doc.url} />
                       </div>
                       <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{doc.nombre}</span>
@@ -884,8 +884,8 @@ export default function LogoPapeleriaClient({
                     </div>
 
                     {archivosExtra.map((arch, i) => (
-                      <div key={i} className="flex flex-wrap items-center gap-3 px-5 py-3 transition-colors hover:bg-white/60">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white ring-1 ring-border shadow-sm">
+                      <div key={i} className="flex flex-wrap items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/40">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-card ring-1 ring-border shadow-sm">
                           <FileIcon url={arch.url} />
                         </div>
                         <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{arch.nombre}</span>
