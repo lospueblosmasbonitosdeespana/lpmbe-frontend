@@ -7,7 +7,7 @@ import HorariosEditor, { HorarioDia, CierreEspecial } from '@/app/_components/ed
 
 const MapLocationPicker = dynamic(
   () => import('@/app/components/MapLocationPicker'),
-  { ssr: false, loading: () => <div className="h-[300px] w-full animate-pulse rounded-lg bg-gray-100" /> },
+  { ssr: false, loading: () => <div className="h-[300px] w-full animate-pulse rounded-lg bg-muted" /> },
 );
 
 type Recurso = {
@@ -79,10 +79,10 @@ export default function ColaboradorClient() {
 
   const selected = recursos.find((r) => r.id === selectedId) ?? null;
 
-  if (loading) return <div className="py-16 text-center text-sm text-gray-500">Cargando…</div>;
+  if (loading) return <div className="py-16 text-center text-sm text-muted-foreground">Cargando…</div>;
   if (error) return <div className="py-16 text-center text-sm text-red-500">{error}</div>;
   if (recursos.length === 0) return (
-    <div className="py-16 text-center text-gray-500">
+    <div className="py-16 text-center text-muted-foreground">
       <p className="text-lg font-medium">Sin recursos asignados</p>
       <p className="mt-2 text-sm">Contacta con la asociación para que te asignen un recurso turístico.</p>
     </div>
@@ -92,7 +92,7 @@ export default function ColaboradorClient() {
     <div className="flex gap-6">
       {/* Sidebar — lista de recursos */}
       <aside className="w-56 shrink-0">
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Mis recursos</h2>
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Mis recursos</h2>
         <ul className="space-y-1">
           {recursos.map((r) => (
             <li key={r.id}>
@@ -101,11 +101,11 @@ export default function ColaboradorClient() {
                 className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                   selectedId === r.id
                     ? 'bg-primary text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    : 'text-gray-700 hover:bg-muted'
                 }`}
               >
                 <div className="font-medium leading-tight">{r.nombre}</div>
-                <div className={`mt-0.5 text-xs ${selectedId === r.id ? 'text-white/70' : 'text-gray-400'}`}>
+                <div className={`mt-0.5 text-xs ${selectedId === r.id ? 'text-white/70' : 'text-muted-foreground'}`}>
                   {RESOURCE_TYPE_LABELS[r.tipo] || r.tipo}
                 </div>
               </button>
@@ -148,12 +148,12 @@ function RecursoPanel({
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">{recurso.nombre}</h1>
-          <div className="mt-1 flex flex-wrap gap-2 text-sm text-gray-500">
+          <div className="mt-1 flex flex-wrap gap-2 text-sm text-muted-foreground">
             <span>{RESOURCE_TYPE_LABELS[recurso.tipo] || recurso.tipo}</span>
             {recurso.provincia && <span>· {recurso.provincia}</span>}
             {recurso.activo
               ? <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Activo</span>
-              : <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">Inactivo</span>}
+              : <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Inactivo</span>}
             {recurso.cerradoTemporal && (
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">Cerrado temporalmente</span>
             )}
@@ -171,7 +171,7 @@ function RecursoPanel({
               className={`border-b-2 pb-2 font-medium transition-colors ${
                 tab === t
                   ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  : 'border-transparent text-muted-foreground hover:text-gray-700'
               }`}
             >
               {t === 'info' ? 'Información' : 'Métricas'}
@@ -292,13 +292,13 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
           <div className="flex items-center gap-4">
             <img src={form.fotoUrl} alt="Preview" className="h-24 w-32 rounded-lg border object-cover" />
             <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
-              className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50">
+              className="rounded-md border px-3 py-1.5 text-sm hover:bg-muted/30 disabled:opacity-50">
               {uploading ? 'Subiendo…' : 'Cambiar foto'}
             </button>
           </div>
         ) : (
           <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
-            className="flex h-24 w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-300 text-sm text-gray-500 hover:border-gray-400 hover:bg-gray-50 disabled:opacity-50">
+            className="flex h-24 w-full items-center justify-center rounded-lg border-2 border-dashed border-border text-sm text-muted-foreground hover:border-gray-400 hover:bg-muted/30 disabled:opacity-50">
             {uploading ? 'Subiendo…' : '+ Subir foto'}
           </button>
         )}
@@ -308,12 +308,12 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
           <input value={form.nombre} onChange={(e) => set('nombre', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" required />
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm" required />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
           <select value={form.tipo} onChange={(e) => set('tipo', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm">
             {RESOURCE_TYPES.map((t) => (
               <option key={t} value={t}>{RESOURCE_TYPE_LABELS[t]}</option>
             ))}
@@ -324,20 +324,20 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
         <textarea value={form.descripcion} onChange={(e) => set('descripcion', e.target.value)}
-          rows={4} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
-        <p className="mt-1 text-xs text-gray-400">Se traducirá automáticamente a los 6 idiomas del sitio web.</p>
+          rows={4} className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
+        <p className="mt-1 text-xs text-muted-foreground">Se traducirá automáticamente a los 6 idiomas del sitio web.</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Provincia</label>
           <input value={form.provincia} onChange={(e) => set('provincia', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Comunidad autónoma</label>
           <input value={form.comunidad} onChange={(e) => set('comunidad', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
         </div>
       </div>
 
@@ -345,19 +345,19 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Horarios</label>
           <input value={form.horarios} onChange={(e) => set('horarios', e.target.value)}
-            placeholder="L-V 10:00-18:00" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            placeholder="L-V 10:00-18:00" className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Contacto</label>
           <input value={form.contacto} onChange={(e) => set('contacto', e.target.value)}
-            placeholder="info@ejemplo.com" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            placeholder="info@ejemplo.com" className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
         </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Web</label>
         <input value={form.web} onChange={(e) => set('web', e.target.value)}
-          placeholder="https://..." className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+          placeholder="https://..." className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
       </div>
 
       {/* Mapa */}
@@ -365,14 +365,14 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
         <label className="block text-sm font-medium text-gray-700 mb-2">Ubicación</label>
         <div className="grid gap-3 sm:grid-cols-2 mb-3">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Latitud</label>
+            <label className="block text-xs text-muted-foreground mb-1">Latitud</label>
             <input type="number" step="any" value={form.lat} onChange={(e) => set('lat', e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="42.1234" />
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm" placeholder="42.1234" />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Longitud</label>
+            <label className="block text-xs text-muted-foreground mb-1">Longitud</label>
             <input type="number" step="any" value={form.lng} onChange={(e) => set('lng', e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="-3.5678" />
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm" placeholder="-3.5678" />
           </div>
         </div>
         <MapLocationPicker
@@ -391,19 +391,19 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
           <label className="block text-sm font-medium text-gray-700 mb-1">Descuento Club (%)</label>
           <input type="number" min="0" max="100" value={form.descuentoPorcentaje}
             onChange={(e) => set('descuentoPorcentaje', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Precio (€)</label>
           <input type="number" min="0" step="0.01" value={form.precioCents}
             onChange={(e) => set('precioCents', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="0.00" />
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm" placeholder="0.00" />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Máx. adultos</label>
           <input type="number" min="1" max="20" value={form.maxAdultos}
             onChange={(e) => set('maxAdultos', Number(e.target.value))}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
         </div>
       </div>
 
@@ -412,13 +412,13 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
           <label className="block text-sm font-medium text-gray-700 mb-1">Máx. menores</label>
           <input type="number" min="0" max="10" value={form.maxMenores}
             onChange={(e) => set('maxMenores', Number(e.target.value))}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Edad máx. menor</label>
           <input type="number" min="0" max="18" value={form.edadMaxMenor}
             onChange={(e) => set('edadMaxMenor', Number(e.target.value))}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
         </div>
       </div>
 
@@ -436,7 +436,7 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
       </div>
 
       {/* Horarios y cierres */}
-      <div className="rounded-xl border border-gray-200 bg-gray-50/50 p-5">
+      <div className="rounded-xl border border-border bg-muted/30/50 p-5">
         <h3 className="text-sm font-semibold text-gray-700 mb-4">Horarios y cierres especiales</h3>
         <HorariosEditor
           horariosSemana={horariosSemana}
@@ -483,7 +483,7 @@ function MetricasPanel({ recursoId }: { recursoId: number }) {
 
   useEffect(() => { load(); }, [load]);
 
-  if (loading) return <div className="py-12 text-center text-sm text-gray-500">Cargando métricas…</div>;
+  if (loading) return <div className="py-12 text-center text-sm text-muted-foreground">Cargando métricas…</div>;
   if (error) return <div className="py-8 text-sm text-red-500">{error}</div>;
   if (!data) return null;
 
@@ -496,7 +496,7 @@ function MetricasPanel({ recursoId }: { recursoId: number }) {
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-gray-700">Últimos {days} días</h3>
         <select value={days} onChange={(e) => setDays(Number(e.target.value))}
-          className="rounded-lg border border-gray-300 px-2 py-1 text-sm">
+          className="rounded-lg border border-border px-2 py-1 text-sm">
           <option value={7}>7 días</option>
           <option value={30}>30 días</option>
           <option value={90}>90 días</option>
@@ -518,7 +518,7 @@ function MetricasPanel({ recursoId }: { recursoId: number }) {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
+              <thead className="bg-muted/30 text-xs text-muted-foreground uppercase">
                 <tr>
                   <th className="px-4 py-3 text-left">Fecha</th>
                   <th className="px-4 py-3 text-center">Adultos</th>
@@ -529,8 +529,8 @@ function MetricasPanel({ recursoId }: { recursoId: number }) {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {data.ultimasValidaciones.slice(0, 20).map((v: any, i: number) => (
-                  <tr key={i} className="hover:bg-gray-50">
-                    <td className="px-4 py-2 text-gray-600">
+                  <tr key={i} className="hover:bg-muted/30">
+                    <td className="px-4 py-2 text-muted-foreground">
                       {new Date(v.scannedAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </td>
                     <td className="px-4 py-2 text-center">{v.adultosUsados ?? 0}</td>

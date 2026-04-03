@@ -346,7 +346,7 @@ export default function FotosClient() {
             type="button"
             onClick={() => setSourceFilter('ALL')}
             className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
-              sourceFilter === 'ALL' ? 'border-[#b5472a] bg-[#b5472a] text-white' : 'hover:bg-gray-50'
+              sourceFilter === 'ALL' ? 'border-[#b5472a] bg-[#b5472a] text-white' : 'hover:bg-muted/30'
             }`}
           >
             Todas ({photos.length})
@@ -359,7 +359,7 @@ export default function FotosClient() {
                 type="button"
                 onClick={() => setSourceFilter(src)}
                 className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
-                  sourceFilter === src ? 'border-[#b5472a] bg-[#b5472a] text-white' : 'hover:bg-gray-50'
+                  sourceFilter === src ? 'border-[#b5472a] bg-[#b5472a] text-white' : 'hover:bg-muted/30'
                 }`}
               >
                 {SOURCE_ICONS[src] || '📷'} {SOURCE_LABELS[src] || src} ({count})
@@ -420,7 +420,7 @@ export default function FotosClient() {
               <img
                 src={photo.url}
                 alt={photo.label}
-                className="h-44 w-full bg-gray-100 object-cover"
+                className="h-44 w-full bg-muted object-cover"
                 loading="lazy"
               />
               <div className="space-y-2 p-3">
@@ -453,7 +453,7 @@ export default function FotosClient() {
                     href={photo.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded border px-2 py-1.5 text-center text-xs font-medium hover:bg-gray-50"
+                    className="rounded border px-2 py-1.5 text-center text-xs font-medium hover:bg-muted/30"
                   >
                     Ver
                   </a>
@@ -461,7 +461,7 @@ export default function FotosClient() {
                     type="button"
                     onClick={() => copyUrl(photo.url)}
                     className={`rounded border px-2 py-1.5 text-center text-xs font-medium transition ${
-                      copiedUrl === photo.url ? 'border-green-500 bg-green-50 text-green-700' : 'hover:bg-gray-50'
+                      copiedUrl === photo.url ? 'border-green-500 bg-green-50 text-green-700' : 'hover:bg-muted/30'
                     }`}
                   >
                     {copiedUrl === photo.url ? '✓' : 'URL'}

@@ -33,7 +33,7 @@ export default function RecursosPueblosClient() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border bg-white p-8 text-center text-sm text-gray-500">
+      <div className="rounded-xl border bg-white p-8 text-center text-sm text-muted-foreground">
         Cargando pueblos…
       </div>
     );
@@ -53,7 +53,7 @@ export default function RecursosPueblosClient() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-4 text-sm">
-        <span className="rounded-full bg-gray-100 px-3 py-1 font-medium text-gray-700">
+        <span className="rounded-full bg-muted px-3 py-1 font-medium text-gray-700">
           {items.length} pueblos
         </span>
         <span className="rounded-full bg-primary/10 px-3 py-1 font-medium text-primary">
@@ -67,7 +67,7 @@ export default function RecursosPueblosClient() {
       <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+            <thead className="bg-muted/30 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <tr>
                 <th className="px-4 py-3">Pueblo</th>
                 <th className="px-4 py-3 text-center w-28">Recursos</th>
@@ -77,20 +77,20 @@ export default function RecursosPueblosClient() {
             <tbody className="divide-y divide-gray-100">
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-4 py-8 text-center text-gray-400">
+                  <td colSpan={3} className="px-4 py-8 text-center text-muted-foreground">
                     No hay datos
                   </td>
                 </tr>
               ) : (
                 items.map((p) => (
-                  <tr key={p.id} className="hover:bg-gray-50">
+                  <tr key={p.id} className="hover:bg-muted/30">
                     <td className="px-4 py-3">
                       <span className="font-medium text-gray-800">{p.nombre}</span>
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span
                         className={`inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full px-2 font-semibold ${
-                          p.count > 0 ? 'bg-primary/15 text-primary' : 'bg-gray-100 text-gray-500'
+                          p.count > 0 ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'
                         }`}
                       >
                         {p.count}

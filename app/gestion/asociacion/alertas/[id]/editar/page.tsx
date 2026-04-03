@@ -154,21 +154,21 @@ export default function EditarAlertaPage() {
             <button
               type="button"
               onClick={() => setEditorMode("edit")}
-              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === "edit" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === "edit" ? "bg-blue-600 text-white" : "bg-muted text-gray-700 hover:bg-gray-200"}`}
             >
               Editor
             </button>
             <button
               type="button"
               onClick={() => setEditorMode("html")}
-              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === "html" ? "bg-amber-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === "html" ? "bg-amber-600 text-white" : "bg-muted text-gray-700 hover:bg-gray-200"}`}
             >
               HTML
             </button>
             <button
               type="button"
               onClick={() => setEditorMode("preview")}
-              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === "preview" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === "preview" ? "bg-green-600 text-white" : "bg-muted text-gray-700 hover:bg-gray-200"}`}
             >
               Vista previa
             </button>
@@ -184,7 +184,7 @@ export default function EditarAlertaPage() {
           )}
           {editorMode === "html" && (
             <textarea
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-sm"
+              className="w-full rounded-lg border border-border px-4 py-2 font-mono text-sm"
               rows={12}
               value={contenido}
               onChange={(e) => setContenido(e.target.value)}
@@ -192,11 +192,11 @@ export default function EditarAlertaPage() {
             />
           )}
           {editorMode === "preview" && (
-            <div className="rounded-lg border border-gray-200 bg-white p-6 min-h-[150px]">
+            <div className="rounded-lg border border-border bg-white p-6 min-h-[150px]">
               {contenido ? (
                 <SafeHtml html={contenido} />
               ) : (
-                <p className="text-gray-400 text-center py-6">Sin contenido</p>
+                <p className="text-muted-foreground text-center py-6">Sin contenido</p>
               )}
             </div>
           )}
@@ -216,7 +216,7 @@ export default function EditarAlertaPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="rounded-md border px-4 py-2 text-sm hover:bg-gray-50"
+            className="rounded-md border px-4 py-2 text-sm hover:bg-muted/30"
           >
             Cancelar
           </button>

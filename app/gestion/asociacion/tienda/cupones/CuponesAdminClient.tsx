@@ -162,7 +162,7 @@ export default function CuponesAdminClient() {
   if (loading) {
     return (
       <main className="mx-auto max-w-7xl px-6 py-12">
-        <p className="text-gray-600">Cargando cupones...</p>
+        <p className="text-muted-foreground">Cargando cupones...</p>
       </main>
     );
   }
@@ -172,14 +172,14 @@ export default function CuponesAdminClient() {
       <div className="mb-8">
         <Link
           href="/gestion/asociacion/tienda"
-          className="mb-4 inline-block text-sm text-gray-600 hover:text-gray-900"
+          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
         >
           ← Volver a Tienda
         </Link>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Cupones</h1>
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-muted-foreground">
               Gestión de cupones y descuentos ({cupones.length})
             </p>
           </div>
@@ -208,7 +208,7 @@ export default function CuponesAdminClient() {
 
       {/* FORMULARIO */}
       {mode && (
-        <div className="mb-8 rounded-lg border border-gray-300 bg-gray-50 p-6">
+        <div className="mb-8 rounded-lg border border-border bg-muted/30 p-6">
           <h2 className="mb-4 text-xl font-bold">
             {mode === "create" ? "Crear Cupón" : "Editar Cupón"}
           </h2>
@@ -223,7 +223,7 @@ export default function CuponesAdminClient() {
                   type="text"
                   value={form.code}
                   onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm uppercase"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm uppercase"
                   placeholder="VERANO2026"
                   required
                 />
@@ -236,7 +236,7 @@ export default function CuponesAdminClient() {
                 <select
                   value={form.type}
                   onChange={(e) => setForm({ ...form, type: e.target.value as 'PERCENT' | 'FIXED' })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
                   required
                 >
                   <option value="PERCENT">Porcentaje (%)</option>
@@ -255,7 +255,7 @@ export default function CuponesAdminClient() {
                   max={form.type === 'PERCENT' ? '100' : undefined}
                   value={form.value}
                   onChange={(e) => setForm({ ...form, value: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
                   required
                 />
               </div>
@@ -270,7 +270,7 @@ export default function CuponesAdminClient() {
                   min="0"
                   value={form.minAmount}
                   onChange={(e) => setForm({ ...form, minAmount: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
                   placeholder="Sin mínimo"
                 />
               </div>
@@ -284,7 +284,7 @@ export default function CuponesAdminClient() {
                   min="0"
                   value={form.usageLimit}
                   onChange={(e) => setForm({ ...form, usageLimit: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
                   placeholder="Ilimitado"
                 />
               </div>
@@ -297,7 +297,7 @@ export default function CuponesAdminClient() {
                   type="datetime-local"
                   value={form.startsAt}
                   onChange={(e) => setForm({ ...form, startsAt: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
                 />
               </div>
 
@@ -309,7 +309,7 @@ export default function CuponesAdminClient() {
                   type="datetime-local"
                   value={form.endsAt}
                   onChange={(e) => setForm({ ...form, endsAt: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
                 />
               </div>
             </div>
@@ -326,7 +326,7 @@ export default function CuponesAdminClient() {
               </label>
             </div>
 
-            <div className="flex gap-3 border-t border-gray-200 pt-4">
+            <div className="flex gap-3 border-t border-border pt-4">
               <button
                 type="submit"
                 className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
@@ -336,7 +336,7 @@ export default function CuponesAdminClient() {
               <button
                 type="button"
                 onClick={closeForm}
-                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="rounded-md border border-border px-4 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30"
               >
                 Cancelar
               </button>
@@ -347,8 +347,8 @@ export default function CuponesAdminClient() {
 
       {/* LISTADO */}
       {cupones.length === 0 && !mode && (
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
-          <p className="text-gray-600">No hay cupones todavía.</p>
+        <div className="rounded-lg border border-border bg-white p-8 text-center">
+          <p className="text-muted-foreground">No hay cupones todavía.</p>
           <button
             onClick={openCreate}
             className="mt-4 text-sm text-black underline hover:no-underline"
@@ -359,37 +359,37 @@ export default function CuponesAdminClient() {
       )}
 
       {cupones.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-border bg-white">
           <table className="w-full">
-            <thead className="border-b border-gray-200 bg-gray-50">
+            <thead className="border-b border-border bg-muted/30">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Código
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Descuento
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Validez
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Usos
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Estado
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-600">
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Acciones
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {cupones.map((c) => (
-                <tr key={c.id} className="hover:bg-gray-50">
+                <tr key={c.id} className="hover:bg-muted/30">
                   <td className="px-4 py-3">
                     <div className="font-mono font-bold text-gray-900">{c.code}</div>
                     {c.minAmount && (
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-muted-foreground">
                         Mín: {typeof c.minAmount === 'string' ? c.minAmount : c.minAmount.toFixed(2)} €
                       </div>
                     )}
@@ -401,7 +401,7 @@ export default function CuponesAdminClient() {
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-700">
                     <div>{formatDate(c.startsAt)}</div>
-                    <div className="text-xs text-gray-500">hasta</div>
+                    <div className="text-xs text-muted-foreground">hasta</div>
                     <div>{formatDate(c.endsAt)}</div>
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-900">
@@ -412,7 +412,7 @@ export default function CuponesAdminClient() {
                       className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
                         c.activo
                           ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
+                          : "bg-muted text-gray-800"
                       }`}
                     >
                       {c.activo ? "Activo" : "Inactivo"}

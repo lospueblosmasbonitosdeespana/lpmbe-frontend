@@ -152,15 +152,15 @@ export default function ElSelloCmsPage() {
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <h1 className="text-3xl font-semibold">El Sello (CMS)</h1>
         <div className="flex gap-2">
-          <Link href="/gestion/asociacion/el-sello/imagenes" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          <Link href="/gestion/asociacion/el-sello/imagenes" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30">
             <ImageIcon className="h-4 w-4" />
             Imágenes del Sello
           </Link>
-          <Link href="/gestion/asociacion/el-sello/socios" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          <Link href="/gestion/asociacion/el-sello/socios" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30">
             <Users className="h-4 w-4" />
             Socios y colaboradores
           </Link>
-          <Link href="/gestion/asociacion/el-sello/documentos" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          <Link href="/gestion/asociacion/el-sello/documentos" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30">
             <FileText className="h-4 w-4" />
             Gestionar Documentos (PDFs)
           </Link>
@@ -169,13 +169,13 @@ export default function ElSelloCmsPage() {
 
       <div className="grid gap-8 lg:grid-cols-[300px,1fr]">
         <div className="space-y-2">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4">Páginas</h2>
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase mb-4">Páginas</h2>
           {PAGES.map((key) => (
             <button
               key={key}
               onClick={() => loadPage(key)}
               className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                selectedKey === key ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200'
+                selectedKey === key ? 'bg-blue-600 text-white' : 'bg-muted hover:bg-gray-200'
               }`}
             >
               {SELLO_PAGE_LABELS[key]}
@@ -185,11 +185,11 @@ export default function ElSelloCmsPage() {
 
         <div>
           {!selectedKey && (
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-12 text-center text-gray-600">
+            <div className="rounded-lg border border-border bg-muted/30 p-12 text-center text-muted-foreground">
               Selecciona una página para editar
             </div>
           )}
-          {selectedKey && loading && <div className="text-gray-600">Cargando...</div>}
+          {selectedKey && loading && <div className="text-muted-foreground">Cargando...</div>}
           {selectedKey && !loading && (
             <SelloEditorForm
               selectedKey={selectedKey}

@@ -604,7 +604,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
   return (
     <main className="mx-auto max-w-5xl p-6">
       <h1 className="text-2xl font-semibold">Gestión de Multiexperiencias</h1>
-      <p className="mt-2 text-sm text-gray-600">
+      <p className="mt-2 text-sm text-muted-foreground">
         Pueblo: <strong>{pueblo.nombre}</strong>
       </p>
 
@@ -624,7 +624,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
             + Crear Multiexperiencia
           </button>
         ) : (
-          <div className="rounded border border-gray-300 bg-gray-50 p-4">
+          <div className="rounded border border-border bg-muted/30 p-4">
             <h3 className="text-lg font-semibold">Nueva Multiexperiencia</h3>
             <div className="mt-4 space-y-3">
               <div>
@@ -635,7 +635,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                   type="text"
                   value={createMxTitulo}
                   onChange={(e) => setCreateMxTitulo(e.target.value)}
-                  className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
+                  className="mt-1 w-full rounded border border-border px-3 py-2"
                 />
               </div>
               <div>
@@ -643,7 +643,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                 <textarea
                   value={createMxDescripcion}
                   onChange={(e) => setCreateMxDescripcion(e.target.value)}
-                  className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
+                  className="mt-1 w-full rounded border border-border px-3 py-2"
                   rows={3}
                 />
               </div>
@@ -673,10 +673,10 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
       {/* Lista de multiexperiencias */}
       <div className="mt-6 space-y-4">
         {multiexperiencias.length === 0 ? (
-          <p className="text-sm text-gray-600">No hay multiexperiencias asociadas</p>
+          <p className="text-sm text-muted-foreground">No hay multiexperiencias asociadas</p>
         ) : (
           multiexperiencias.map((mx) => (
-            <div key={mx.id} className="rounded border border-gray-300 bg-white p-4">
+            <div key={mx.id} className="rounded border border-border bg-white p-4">
               <div className="flex items-start gap-4">
                 {mx.foto && (
                   <img
@@ -700,13 +700,13 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                           type="text"
                           value={editMxTitulo}
                           onChange={(e) => setEditMxTitulo(e.target.value)}
-                          className="w-full rounded border border-gray-300 px-3 py-1.5 text-lg font-semibold"
+                          className="w-full rounded border border-border px-3 py-1.5 text-lg font-semibold"
                           placeholder="Título"
                         />
                         <textarea
                           value={editMxDescripcion}
                           onChange={(e) => setEditMxDescripcion(e.target.value)}
-                          className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm"
+                          className="w-full rounded border border-border px-3 py-1.5 text-sm"
                           rows={2}
                           placeholder="Descripción"
                         />
@@ -715,11 +715,11 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                       <>
                         <h3 className="text-lg font-semibold">{mx.titulo}</h3>
                         {mx.descripcion && (
-                          <p className="mt-1 text-sm text-gray-600">{mx.descripcion}</p>
+                          <p className="mt-1 text-sm text-muted-foreground">{mx.descripcion}</p>
                         )}
                       </>
                     )}
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Slug: {mx.slug} | Activa: {mx.activo ? "Sí" : "No"}
                     </p>
                     {editingMxFoto === mx.id ? (
@@ -843,7 +843,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
 
               {/* ── Paradas expandidas ── */}
               {expandedMxId === mx.id && (
-                <div className="mt-4 rounded bg-gray-50 p-4">
+                <div className="mt-4 rounded bg-muted/30 p-4">
                   <div className="flex items-center justify-between">
                     <h4 className="text-md font-semibold">Paradas</h4>
                     {!showCreateParada && editParadaIdx == null && (
@@ -873,7 +873,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                       activeHint={activeHint}
                       flyTo={flyToPos}
                     />
-                    <div className="mt-1 flex flex-wrap gap-3 text-xs text-gray-500">
+                    <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-600" />{" "}
                         Legacy
@@ -915,7 +915,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                           type="text"
                           value={createParadaTitulo}
                           onChange={(e) => setCreateParadaTitulo(e.target.value)}
-                          className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
+                          className="mt-1 w-full rounded border border-border px-3 py-2"
                         />
                       </div>
                       <div>
@@ -923,7 +923,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                         <textarea
                           value={createParadaDescripcion}
                           onChange={(e) => setCreateParadaDescripcion(e.target.value)}
-                          className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
+                          className="mt-1 w-full rounded border border-border px-3 py-2"
                           rows={2}
                         />
                       </div>
@@ -981,7 +981,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                   {/* ── Lista de paradas ── */}
                   <div className="mt-4 space-y-3">
                     {paradas.length === 0 ? (
-                      <p className="text-sm text-gray-600">No hay paradas</p>
+                      <p className="text-sm text-muted-foreground">No hay paradas</p>
                     ) : (
                       paradas.map((parada, idx) => {
                         const paradaKey =
@@ -997,7 +997,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                             className={`rounded-lg border p-4 ${
                               isEditing
                                 ? "border-yellow-300 bg-yellow-50"
-                                : "border-gray-200 bg-white"
+                                : "border-border bg-white"
                             }`}
                           >
                             {isEditing ? (
@@ -1029,7 +1029,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                                     type="text"
                                     value={editParadaTitulo}
                                     onChange={(e) => setEditParadaTitulo(e.target.value)}
-                                    className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
+                                    className="mt-1 w-full rounded border border-border px-3 py-2"
                                   />
                                 </div>
 
@@ -1038,7 +1038,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                                   <textarea
                                     value={editParadaDescripcion}
                                     onChange={(e) => setEditParadaDescripcion(e.target.value)}
-                                    className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
+                                    className="mt-1 w-full rounded border border-border px-3 py-2"
                                     rows={3}
                                   />
                                 </div>
@@ -1086,7 +1086,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                                   >
                                     ↑ Ir al mapa para ubicar
                                   </button>
-                                  <span className="text-xs text-gray-400">
+                                  <span className="text-xs text-muted-foreground">
                                     {editParadaLat && editParadaLng
                                       ? `Coordenadas: ${editParadaLat}, ${editParadaLng}`
                                       : "Haz clic en el mapa o busca un lugar"}
@@ -1135,7 +1135,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                                 )}
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2">
-                                    <span className="inline-block min-w-[28px] rounded bg-gray-100 px-2 py-0.5 text-center text-xs font-semibold text-gray-600">
+                                    <span className="inline-block min-w-[28px] rounded bg-muted px-2 py-0.5 text-center text-xs font-semibold text-muted-foreground">
                                       #{idx + 1}
                                     </span>
                                     <h5 className="text-sm font-semibold">{parada.titulo}</h5>
@@ -1149,19 +1149,19 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                                       {parada.kind}
                                     </span>
                                   </div>
-                                  <p className="mt-1 text-xs text-gray-500">
+                                  <p className="mt-1 text-xs text-muted-foreground">
                                     {parada.kind === "LEGACY" &&
                                       `legacyLugarId: ${parada.legacyLugarId}`}
                                     {parada.kind === "CUSTOM" && `customId: ${parada.customId}`}
                                   </p>
                                   {parada.descripcion && (
-                                    <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+                                    <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
                                       {parada.descripcion}
                                     </p>
                                   )}
                                   {parada.lat != null && parada.lng != null && (
                                     <div className="mt-1 flex items-center gap-2">
-                                      <p className="text-xs text-gray-500">
+                                      <p className="text-xs text-muted-foreground">
                                         Coords: {parada.lat.toFixed(5)}, {parada.lng.toFixed(5)}
                                       </p>
                                       {areCoordsPueblo(parada.lat, parada.lng) && (
@@ -1176,14 +1176,14 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                                   <button
                                     onClick={() => handleSwapParada("up", idx)}
                                     disabled={idx === 0}
-                                    className="rounded border border-gray-200 bg-white px-2 py-1.5 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                                    className="rounded border border-border bg-white px-2 py-1.5 text-sm hover:bg-muted/30 disabled:cursor-not-allowed disabled:opacity-40"
                                   >
                                     ↑
                                   </button>
                                   <button
                                     onClick={() => handleSwapParada("down", idx)}
                                     disabled={idx === paradas.length - 1}
-                                    className="rounded border border-gray-200 bg-white px-2 py-1.5 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                                    className="rounded border border-border bg-white px-2 py-1.5 text-sm hover:bg-muted/30 disabled:cursor-not-allowed disabled:opacity-40"
                                   >
                                     ↓
                                   </button>

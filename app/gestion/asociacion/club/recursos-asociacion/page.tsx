@@ -15,7 +15,7 @@ export default async function RecursosAsociacionPage() {
     <main className="mx-auto max-w-5xl p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">Recursos turísticos de la asociación</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-muted-foreground">
           Recursos del Club con ámbito asociación (no vinculados a un pueblo concreto). Aquí puedes ver el listado completo.
         </p>
       </div>
@@ -23,7 +23,7 @@ export default async function RecursosAsociacionPage() {
       <RecursosAsociacionClient />
 
       <div className="mt-8 text-sm">
-        <Link className="text-gray-500 hover:underline" href="/gestion/asociacion/club">
+        <Link className="text-muted-foreground hover:underline" href="/gestion/asociacion/club">
           ← Volver al Club de Amigos
         </Link>
       </div>

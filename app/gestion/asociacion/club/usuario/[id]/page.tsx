@@ -119,7 +119,7 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
   if (loading) {
     return (
       <div className="mx-auto max-w-5xl p-6">
-        <div className="py-16 text-center text-gray-400">Cargando perfil del usuario...</div>
+        <div className="py-16 text-center text-muted-foreground">Cargando perfil del usuario...</div>
       </div>
     );
   }
@@ -131,7 +131,7 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
           {error ?? 'Usuario no encontrado'}
         </div>
         <div className="mt-4 text-sm">
-          <Link href="/gestion/asociacion/club" className="text-gray-500 hover:underline">← Volver al Club</Link>
+          <Link href="/gestion/asociacion/club" className="text-muted-foreground hover:underline">← Volver al Club</Link>
         </div>
       </div>
     );
@@ -156,17 +156,17 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
           <h1 className="text-xl font-semibold text-gray-800 truncate">
             {u.nombre ? `${u.nombre} ${u.apellidos ?? ''}`.trim() : u.email}
           </h1>
-          <p className="text-sm text-gray-500">{u.email}</p>
+          <p className="text-sm text-muted-foreground">{u.email}</p>
           <div className="mt-1 flex flex-wrap gap-2 text-xs">
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-600">
+            <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-muted-foreground">
               {u.rol ?? 'USUARIO'}
             </span>
             {u.telefono && (
-              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-500">
+              <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
                 {u.telefono}
               </span>
             )}
-            <span className="text-gray-400">
+            <span className="text-muted-foreground">
               Registrado {fmtDate(u.createdAt)}
             </span>
           </div>
@@ -174,7 +174,7 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
 
         <Link
           href="/gestion/asociacion/club"
-          className="shrink-0 text-sm text-gray-400 hover:text-gray-700 hover:underline"
+          className="shrink-0 text-sm text-muted-foreground hover:text-gray-700 hover:underline"
         >
           ← Volver
         </Link>
@@ -215,24 +215,24 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
           {(() => {
             const activa = data.suscripciones.find((s) => s.estado === 'ACTIVA');
             if (!activa) {
-              return <p className="text-sm text-gray-400">Sin suscripción activa. Última suscripción: {data.suscripciones[0].estado} ({fmtDate(data.suscripciones[0].expiresAt)})</p>;
+              return <p className="text-sm text-muted-foreground">Sin suscripción activa. Última suscripción: {data.suscripciones[0].estado} ({fmtDate(data.suscripciones[0].expiresAt)})</p>;
             }
             return (
               <div className="flex flex-wrap gap-6 text-sm">
                 <div>
-                  <span className="text-gray-500">Plan</span>
+                  <span className="text-muted-foreground">Plan</span>
                   <div className="font-semibold">{activa.tipo === 'ANUAL' ? 'Anual' : 'Mensual'}</div>
                 </div>
                 <div>
-                  <span className="text-gray-500">Desde</span>
+                  <span className="text-muted-foreground">Desde</span>
                   <div className="font-semibold">{fmtDate(activa.startsAt)}</div>
                 </div>
                 <div>
-                  <span className="text-gray-500">Expira</span>
+                  <span className="text-muted-foreground">Expira</span>
                   <div className="font-semibold">{fmtDate(activa.expiresAt)}</div>
                 </div>
                 <div>
-                  <span className="text-gray-500">Renovación</span>
+                  <span className="text-muted-foreground">Renovación</span>
                   <div className="font-semibold">
                     {activa.cancelAtPeriodEnd
                       ? <span className="text-amber-600">No renovará</span>
@@ -241,7 +241,7 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
                 </div>
                 {activa.importeCents != null && (
                   <div>
-                    <span className="text-gray-500">Pagado</span>
+                    <span className="text-muted-foreground">Pagado</span>
                     <div className="font-semibold">{euros(activa.importeCents)}</div>
                   </div>
                 )}
@@ -267,7 +267,7 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
               className={`whitespace-nowrap border-b-2 pb-2 font-medium transition-colors ${
                 tab === key
                   ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  : 'border-transparent text-muted-foreground hover:text-gray-700'
               }`}
             >
               {label}
@@ -282,14 +282,14 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
           <div className="px-5 py-3 border-b">
             <h2 className="text-sm font-semibold text-gray-700">
               Todas las validaciones
-              <span className="ml-2 text-xs font-normal text-gray-400">
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
                 {r.ultimoUso ? `Última: ${fmtDateTime(r.ultimoUso)}` : ''}
               </span>
             </h2>
           </div>
           <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide sticky top-0">
+              <thead className="bg-muted/30 text-xs text-muted-foreground uppercase tracking-wide sticky top-0">
                 <tr>
                   <th className="px-4 py-3 text-left">Fecha</th>
                   <th className="px-4 py-3 text-left">Recurso</th>
@@ -302,18 +302,18 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {data.validaciones.length === 0 ? (
-                  <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Sin validaciones</td></tr>
+                  <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Sin validaciones</td></tr>
                 ) : data.validaciones.map((v) => (
-                  <tr key={v.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-2.5 text-gray-600 whitespace-nowrap">{fmtDateTime(v.fecha)}</td>
+                  <tr key={v.id} className="hover:bg-muted/30">
+                    <td className="px-4 py-2.5 text-muted-foreground whitespace-nowrap">{fmtDateTime(v.fecha)}</td>
                     <td className="px-4 py-2.5">
                       <span className="font-medium text-gray-800">{v.recurso?.nombre ?? '—'}</span>
                       {v.recurso?.scope === 'ASOCIACION' && (
                         <span className="ml-1.5 rounded bg-purple-50 px-1.5 py-0.5 text-[10px] font-medium text-purple-600">ASOC.</span>
                       )}
                     </td>
-                    <td className="px-4 py-2.5 text-gray-500 text-xs capitalize">{v.recurso?.tipo?.toLowerCase().replace(/_/g, ' ') ?? '—'}</td>
-                    <td className="px-4 py-2.5 text-gray-600">{v.pueblo ?? '—'}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground text-xs capitalize">{v.recurso?.tipo?.toLowerCase().replace(/_/g, ' ') ?? '—'}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground">{v.pueblo ?? '—'}</td>
                     <td className="px-4 py-2.5 text-center">{v.adultos}</td>
                     <td className="px-4 py-2.5 text-center">
                       {v.descuento != null ? `${v.descuento}%` : '—'}
@@ -337,7 +337,7 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <thead className="bg-muted/30 text-xs text-muted-foreground uppercase tracking-wide">
                 <tr>
                   <th className="px-4 py-3 text-left">#</th>
                   <th className="px-4 py-3 text-left">Recurso</th>
@@ -350,14 +350,14 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {data.recursosUsados.length === 0 ? (
-                  <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">No ha usado recursos</td></tr>
+                  <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">No ha usado recursos</td></tr>
                 ) : data.recursosUsados.map((rec, i) => (
-                  <tr key={rec.id} className="hover:bg-gray-50">
+                  <tr key={rec.id} className="hover:bg-muted/30">
                     <td className="px-4 py-2.5">
                       <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">{i + 1}</span>
                     </td>
                     <td className="px-4 py-2.5 font-medium text-gray-800">{rec.nombre}</td>
-                    <td className="px-4 py-2.5 text-gray-500 text-xs capitalize">{rec.tipo?.toLowerCase().replace(/_/g, ' ')}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground text-xs capitalize">{rec.tipo?.toLowerCase().replace(/_/g, ' ')}</td>
                     <td className="px-4 py-2.5">
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
                         rec.scope === 'ASOCIACION'
@@ -367,9 +367,9 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
                         {rec.scope === 'ASOCIACION' ? 'Asociación' : 'Pueblo'}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5 text-gray-600">{rec.pueblo}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground">{rec.pueblo}</td>
                     <td className="px-4 py-2.5 text-center font-semibold text-primary">{rec.usos}</td>
-                    <td className="px-4 py-2.5 text-gray-500">{fmtDate(rec.ultimoUso)}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground">{fmtDate(rec.ultimoUso)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -385,11 +385,11 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
             <h2 className="text-sm font-semibold text-gray-700">Pueblos visitados ({data.pueblosVisitados.length})</h2>
           </div>
           {data.pueblosVisitados.length === 0 ? (
-            <div className="px-5 py-8 text-center text-gray-400 text-sm">No ha visitado ningún pueblo</div>
+            <div className="px-5 py-8 text-center text-muted-foreground text-sm">No ha visitado ningún pueblo</div>
           ) : (
             <div className="grid gap-2 p-4 sm:grid-cols-2 lg:grid-cols-3">
               {data.pueblosVisitados.map((p) => (
-                <div key={p.id} className="flex items-center gap-2 rounded-lg border p-3 hover:bg-gray-50">
+                <div key={p.id} className="flex items-center gap-2 rounded-lg border p-3 hover:bg-muted/30">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-600 text-sm font-bold">✓</span>
                   <span className="text-sm font-medium text-gray-700">{p.nombre}</span>
                 </div>
@@ -406,7 +406,7 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
             <h2 className="text-sm font-semibold text-gray-700">Actividad diaria</h2>
           </div>
           {data.actividadDiaria.length === 0 ? (
-            <div className="px-5 py-8 text-center text-gray-400 text-sm">Sin actividad registrada</div>
+            <div className="px-5 py-8 text-center text-muted-foreground text-sm">Sin actividad registrada</div>
           ) : (
             <>
               {/* Mini gráfico de barras */}
@@ -426,7 +426,7 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
                     );
                   })}
                 </div>
-                <div className="mt-1 flex justify-between text-[10px] text-gray-400">
+                <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
                   {data.actividadDiaria.length > 1 && (
                     <>
                       <span>{fmtDateShort(data.actividadDiaria[data.actividadDiaria.length - 1].fecha)}</span>
@@ -438,7 +438,7 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
 
               <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide sticky top-0">
+                  <thead className="bg-muted/30 text-xs text-muted-foreground uppercase tracking-wide sticky top-0">
                     <tr>
                       <th className="px-4 py-3 text-left">Día</th>
                       <th className="px-4 py-3 text-center">Total intentos</th>
@@ -448,8 +448,8 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {data.actividadDiaria.map((d) => (
-                      <tr key={d.fecha} className="hover:bg-gray-50">
-                        <td className="px-4 py-2.5 text-gray-600">{fmtDate(d.fecha)}</td>
+                      <tr key={d.fecha} className="hover:bg-muted/30">
+                        <td className="px-4 py-2.5 text-muted-foreground">{fmtDate(d.fecha)}</td>
                         <td className="px-4 py-2.5 text-center">{d.total}</td>
                         <td className="px-4 py-2.5 text-center font-semibold text-green-600">{d.ok}</td>
                         <td className="px-4 py-2.5 text-center text-gray-700">{d.adultos}</td>
@@ -471,7 +471,7 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <thead className="bg-muted/30 text-xs text-muted-foreground uppercase tracking-wide">
                 <tr>
                   <th className="px-4 py-3 text-left">Plan</th>
                   <th className="px-4 py-3 text-left">Alta</th>
@@ -483,12 +483,12 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {data.suscripciones.map((s) => (
-                  <tr key={s.id} className="hover:bg-gray-50">
+                  <tr key={s.id} className="hover:bg-muted/30">
                     <td className="px-4 py-2.5">
                       <PlanBadge plan={s.tipo} />
                     </td>
-                    <td className="px-4 py-2.5 text-gray-600">{fmtDate(s.startsAt)}</td>
-                    <td className="px-4 py-2.5 text-gray-600">{fmtDate(s.expiresAt)}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground">{fmtDate(s.startsAt)}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground">{fmtDate(s.expiresAt)}</td>
                     <td className="px-4 py-2.5 text-right font-medium">
                       {s.importeCents != null ? euros(s.importeCents) : '—'}
                     </td>
@@ -529,7 +529,7 @@ function StatCard({ label, value, sub, color }: {
     <div className={`rounded-xl border p-4 ${cls[color]}`}>
       <div className="text-2xl font-bold">{value}</div>
       <div className="mt-1 text-sm font-medium text-gray-700">{label}</div>
-      {sub && <div className="mt-0.5 text-xs text-gray-500">{sub}</div>}
+      {sub && <div className="mt-0.5 text-xs text-muted-foreground">{sub}</div>}
     </div>
   );
 }
@@ -550,7 +550,7 @@ function EstadoBadge({ estado, cancelAtPeriodEnd }: { estado: string; cancelAtPe
   if (estado === 'ACTIVA')
     return <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Activa</span>;
   if (estado === 'CADUCADA')
-    return <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">Expirada</span>;
+    return <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Expirada</span>;
   return <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">Cancelada</span>;
 }
 
@@ -558,7 +558,7 @@ function ResultadoBadge({ resultado }: { resultado: string }) {
   if (resultado === 'OK')
     return <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">OK</span>;
   if (resultado === 'CADUCADO')
-    return <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">Caducado</span>;
+    return <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Caducado</span>;
   if (resultado === 'YA_USADO')
     return <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">Ya usado</span>;
   return <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">{resultado}</span>;

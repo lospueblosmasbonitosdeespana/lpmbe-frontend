@@ -373,7 +373,7 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
                 user.rol === 'ADMIN' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
                 user.rol === 'EDITOR' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
                 user.rol === 'ALCALDE' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                'bg-muted text-muted-foreground dark:bg-gray-800 dark:text-muted-foreground'
               }`}>
                 {user.rol}
               </span>

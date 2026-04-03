@@ -106,18 +106,18 @@ export default function RutaAdminStatsCells({ rutaId }: Props) {
 
   return (
     <>
-      <td ref={cellRef} className="px-4 py-3 text-center text-gray-600">
+      <td ref={cellRef} className="px-4 py-3 text-center text-muted-foreground">
         {loading ? (
-          <span className="text-xs text-gray-400">…</span>
+          <span className="text-xs text-muted-foreground">…</span>
         ) : stats ? (
           stats.km
         ) : (
           '—'
         )}
       </td>
-      <td className="px-4 py-3 text-center text-gray-600">
+      <td className="px-4 py-3 text-center text-muted-foreground">
         {loading ? (
-          <span className="text-xs text-gray-400">…</span>
+          <span className="text-xs text-muted-foreground">…</span>
         ) : stats ? (
           stats.tiempo
         ) : (

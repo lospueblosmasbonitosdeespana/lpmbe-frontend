@@ -49,14 +49,14 @@ export function SelloEditorForm({
   };
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-8 space-y-6">
+    <div className="rounded-lg border border-border bg-white p-8 space-y-6">
       <div>
         <label className="block text-sm font-medium mb-2">Título *</label>
         <input
           type="text"
           value={formData.titulo}
           onChange={(e) => setFormData((p) => ({ ...p, titulo: e.target.value }))}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2"
+          className="w-full rounded-lg border border-border px-4 py-2"
           required
         />
       </div>
@@ -67,7 +67,7 @@ export function SelloEditorForm({
           type="text"
           value={formData.subtitle}
           onChange={(e) => setFormData((p) => ({ ...p, subtitle: e.target.value }))}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2"
+          className="w-full rounded-lg border border-border px-4 py-2"
         />
       </div>
 
@@ -102,21 +102,21 @@ export function SelloEditorForm({
           <button
             type="button"
             onClick={() => setEditorMode('edit')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-muted text-gray-700 hover:bg-gray-200'}`}
           >
             Editor
           </button>
           <button
             type="button"
             onClick={() => setEditorMode('html')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'html' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'html' ? 'bg-amber-600 text-white' : 'bg-muted text-gray-700 hover:bg-gray-200'}`}
           >
             HTML
           </button>
           <button
             type="button"
             onClick={() => setEditorMode('preview')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'preview' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'preview' ? 'bg-green-600 text-white' : 'bg-muted text-gray-700 hover:bg-gray-200'}`}
           >
             Vista previa
           </button>
@@ -141,18 +141,18 @@ export function SelloEditorForm({
               value={formData.contenido}
               onChange={(e) => setFormData((p) => ({ ...p, contenido: e.target.value }))}
               rows={20}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-sm"
+              className="w-full rounded-lg border border-border px-4 py-2 font-mono text-sm"
               placeholder="<h2>Título</h2>\n<p>Párrafo...</p>"
             />
           </div>
         )}
 
         {editorMode === 'preview' && (
-          <div className="rounded-lg border border-gray-200 bg-white p-6 min-h-[500px]">
+          <div className="rounded-lg border border-border bg-white p-6 min-h-[500px]">
             {formData.contenido ? (
               <SafeHtml html={formData.contenido} />
             ) : (
-              <p className="text-gray-400 text-center py-12">Escribe contenido para ver la vista previa</p>
+              <p className="text-muted-foreground text-center py-12">Escribe contenido para ver la vista previa</p>
             )}
           </div>
         )}

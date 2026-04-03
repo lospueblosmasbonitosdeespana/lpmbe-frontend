@@ -230,13 +230,13 @@ export default function InternoDashboard() {
                       <td className="px-3 py-2.5">
                         <Badge
                           text={log.userRol}
-                          colorClass={ROL_COLORS[log.userRol] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}
+                          colorClass={ROL_COLORS[log.userRol] ?? 'bg-muted text-muted-foreground dark:bg-gray-800 dark:text-muted-foreground'}
                         />
                       </td>
                       <td className="px-3 py-2.5">
                         <Badge
                           text={log.action}
-                          colorClass={ACTION_COLORS[log.action] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}
+                          colorClass={ACTION_COLORS[log.action] ?? 'bg-muted text-muted-foreground dark:bg-gray-800 dark:text-muted-foreground'}
                         />
                       </td>
                       <td className="px-3 py-2.5 text-foreground text-xs max-w-xs truncate" title={summarizeAction(log)}>

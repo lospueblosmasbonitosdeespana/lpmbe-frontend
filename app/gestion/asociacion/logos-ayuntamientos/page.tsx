@@ -15,7 +15,7 @@ const TIPO_COLORS: Record<TipoDoc, string> = {
   LOGO: 'bg-blue-100 text-blue-700',
   PAPELERIA: 'bg-purple-100 text-purple-700',
   ORDENANZA: 'bg-amber-100 text-amber-700',
-  OTRO: 'bg-gray-100 text-gray-600',
+  OTRO: 'bg-muted text-muted-foreground',
 };
 
 interface LogoItem {

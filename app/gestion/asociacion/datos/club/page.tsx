@@ -98,12 +98,12 @@ export default function DatosClubPage() {
       <div className="mb-8">
         <Link
           href="/gestion/asociacion/datos"
-          className="mb-4 inline-block text-sm text-gray-600 hover:text-gray-900"
+          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
         >
           ← Volver a Datos
         </Link>
         <h1 className="text-3xl font-bold">Club de Amigos</h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted-foreground">
           Suscriptores del club: quién ha pagado, duración, pueblos visitados y validaciones
         </p>
       </div>
@@ -114,12 +114,12 @@ export default function DatosClubPage() {
           placeholder="Buscar por email, nombre..."
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="rounded-lg border border-border px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
         <select
           value={estado}
           onChange={(e) => setEstado(e.target.value)}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="rounded-lg border border-border px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option value="">Todos los estados</option>
           {Object.entries(ESTADO_LABELS).map(([v, l]) => (
@@ -128,12 +128,12 @@ export default function DatosClubPage() {
             </option>
           ))}
         </select>
-        <label className="flex items-center gap-2 text-sm text-gray-600">
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
           Mostrar
           <select
             value={limit}
             onChange={(e) => setLimit(Number(e.target.value))}
-            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="rounded-lg border border-border px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             {LIMIT_OPTIONS.map((n) => (
               <option key={n} value={n}>
@@ -150,38 +150,38 @@ export default function DatosClubPage() {
       )}
 
       {loading ? (
-        <div className="animate-pulse rounded-lg bg-gray-100 p-8">Cargando...</div>
+        <div className="animate-pulse rounded-lg bg-muted p-8">Cargando...</div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-border bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-muted/30">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Socio
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Tipo
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Importe
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Estado
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Válida hasta
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Días rest.
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Pueblos
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Validaciones
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Acciones
                   </th>
                 </tr>
@@ -189,19 +189,19 @@ export default function DatosClubPage() {
               <tbody className="divide-y divide-gray-200 bg-white">
                 {items.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan={9} className="px-4 py-12 text-center text-muted-foreground">
                       No hay suscriptores del club
                     </td>
                   </tr>
                 ) : (
                   items.map((c) => (
-                    <tr key={c.id} className="hover:bg-gray-50">
+                    <tr key={c.id} className="hover:bg-muted/30">
                       <td className="px-4 py-3">
                         <div>
                           <span className="font-medium text-gray-900">
                             {[c.nombre, c.apellidos].filter(Boolean).join(' ') || '—'}
                           </span>
-                          <div className="text-sm text-gray-500">{c.email}</div>
+                          <div className="text-sm text-muted-foreground">{c.email}</div>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-sm">
@@ -219,13 +219,13 @@ export default function DatosClubPage() {
                               ? 'bg-green-100 text-green-800'
                               : c.estado === 'CADUCADA'
                                 ? 'bg-amber-100 text-amber-800'
-                                : 'bg-gray-100 text-gray-700'
+                                : 'bg-muted text-gray-700'
                           }`}
                         >
                           {ESTADO_LABELS[c.estado] ?? c.estado}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
                         {new Date(c.expiresAt).toLocaleDateString('es-ES')}
                       </td>
                       <td className="px-4 py-3 text-center text-sm">
@@ -234,7 +234,7 @@ export default function DatosClubPage() {
                             className={
                               c.diasRestantes <= 30
                                 ? 'font-medium text-amber-600'
-                                : 'text-gray-600'
+                                : 'text-muted-foreground'
                             }
                           >
                             {c.diasRestantes} días
@@ -263,7 +263,7 @@ export default function DatosClubPage() {
               </tbody>
             </table>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
             <span>
               Mostrando {from}–{to} de {total} socios
             </span>
@@ -271,7 +271,7 @@ export default function DatosClubPage() {
               <button
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
-                className="rounded border border-gray-300 px-3 py-1.5 font-medium hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded border border-border px-3 py-1.5 font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Anterior
               </button>
@@ -281,7 +281,7 @@ export default function DatosClubPage() {
               <button
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 disabled={page >= totalPages - 1 || totalPages === 0}
-                className="rounded border border-gray-300 px-3 py-1.5 font-medium hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded border border-border px-3 py-1.5 font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Siguiente
               </button>

@@ -51,7 +51,7 @@ function getTipoBadgeClass(tipo: string): string {
     SEMAFORO: 'bg-yellow-100 text-yellow-700',
     METEO: 'bg-sky-100 text-sky-700',
   };
-  return classes[tipo] ?? 'bg-gray-100 text-gray-700';
+  return classes[tipo] ?? 'bg-muted text-gray-700';
 }
 
 export default function NotificacionesList() {

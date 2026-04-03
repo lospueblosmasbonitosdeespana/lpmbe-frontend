@@ -84,9 +84,9 @@ export default function NuevaNoticiaGlobalPage() {
             accept="image/*"
             onChange={onCoverChange}
             disabled={uploadingCover}
-            className="block text-sm text-gray-600 file:mr-3 file:rounded file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-gray-200"
+            className="block text-sm text-muted-foreground file:mr-3 file:rounded file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-gray-200"
           />
-          {uploadingCover && <p className="text-xs text-gray-500">Subiendo imagen…</p>}
+          {uploadingCover && <p className="text-xs text-muted-foreground">Subiendo imagen…</p>}
           {coverUrl && (
             <div className="mt-2 flex items-center gap-3">
               <img src={coverUrl} alt="Portada" className="h-20 w-32 rounded-md object-cover border" />
@@ -112,18 +112,18 @@ export default function NuevaNoticiaGlobalPage() {
               </span>
             </button>
             <button type="button" onClick={() => setEditorMode('edit')}
-              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-muted text-gray-700 hover:bg-gray-200'}`}>
               Editor TipTap
             </button>
             <button type="button" onClick={() => setEditorMode('html')}
-              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'html' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'html' ? 'bg-amber-600 text-white' : 'bg-muted text-gray-700 hover:bg-gray-200'}`}>
               HTML
             </button>
             <button type="button" onClick={() => setEditorMode('preview')}
-              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'preview' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'preview' ? 'bg-green-600 text-white' : 'bg-muted text-gray-700 hover:bg-gray-200'}`}>
               Vista previa
             </button>
-            {uploading && <span className="text-sm text-gray-500 self-center">Subiendo…</span>}
+            {uploading && <span className="text-sm text-muted-foreground self-center">Subiendo…</span>}
           </div>
           <p className="text-xs text-blue-700 bg-blue-50 rounded-md px-3 py-1.5">
             Al guardar, el contenido se traduce automáticamente a 7 idiomas con DeepL para SEO multilingüe.
@@ -142,13 +142,13 @@ export default function NuevaNoticiaGlobalPage() {
               placeholder="Escribe el contenido..." minHeight="300px" />
           )}
           {editorMode === 'html' && (
-            <textarea className="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-sm"
+            <textarea className="w-full rounded-lg border border-border px-4 py-2 font-mono text-sm"
               rows={15} value={contenido} onChange={(e) => setContenido(e.target.value)}
               placeholder="<p>Contenido HTML...</p>" />
           )}
           {editorMode === 'preview' && (
-            <div className="rounded-lg border border-gray-200 bg-white p-6 min-h-[200px]">
-              {contenido ? <SafeHtml html={contenido} /> : <p className="text-gray-400 text-center py-8">Sin contenido</p>}
+            <div className="rounded-lg border border-border bg-white p-6 min-h-[200px]">
+              {contenido ? <SafeHtml html={contenido} /> : <p className="text-muted-foreground text-center py-8">Sin contenido</p>}
             </div>
           )}
         </div>

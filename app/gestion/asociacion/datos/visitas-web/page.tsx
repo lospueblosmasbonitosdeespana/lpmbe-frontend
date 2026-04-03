@@ -51,7 +51,7 @@ export default function VisitasWebPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="animate-pulse rounded-lg bg-gray-100 p-8">
+        <div className="animate-pulse rounded-lg bg-muted p-8">
           Cargando visitas y datos de la web...
         </div>
       </div>
@@ -64,21 +64,21 @@ export default function VisitasWebPage() {
         <div>
           <Link
             href="/gestion/asociacion/datos"
-            className="mb-4 inline-block text-sm text-gray-600 hover:text-gray-900"
+            className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
           >
             ← Volver a Datos
           </Link>
           <h1 className="text-3xl font-bold">Visitas y datos de la web</h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-muted-foreground">
             Analytics propio: páginas vistas, sesiones, dispositivos y referrers
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-600">Período:</label>
+          <label className="text-sm text-muted-foreground">Período:</label>
           <select
             value={days}
             onChange={(e) => setDays(Number(e.target.value))}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="rounded-md border border-border px-3 py-2 text-sm"
           >
             <option value={7}>7 días</option>
             <option value={14}>14 días</option>
@@ -126,10 +126,10 @@ export default function VisitasWebPage() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead>
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
+                      <th className="px-4 py-2 text-left text-xs font-medium uppercase text-muted-foreground">
                         Fecha
                       </th>
-                      <th className="px-4 py-2 text-right text-xs font-medium uppercase text-gray-500">
+                      <th className="px-4 py-2 text-right text-xs font-medium uppercase text-muted-foreground">
                         Páginas vistas
                       </th>
                     </tr>
@@ -154,10 +154,10 @@ export default function VisitasWebPage() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead>
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
+                      <th className="px-4 py-2 text-left text-xs font-medium uppercase text-muted-foreground">
                         Ruta
                       </th>
-                      <th className="px-4 py-2 text-right text-xs font-medium uppercase text-gray-500">
+                      <th className="px-4 py-2 text-right text-xs font-medium uppercase text-muted-foreground">
                         Visitas
                       </th>
                     </tr>
@@ -247,7 +247,7 @@ export default function VisitasWebPage() {
             )}
           </div>
 
-          <p className="mt-10 text-xs text-gray-500">
+          <p className="mt-10 text-xs text-muted-foreground">
             Datos desde {stats.periodo.desde.slice(0, 10)}. La app móvil podrá enviar
             datos en el futuro (source: app).
           </p>
@@ -267,10 +267,10 @@ function StatCard({
   subtitle: string;
 }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <p className="text-sm font-medium text-gray-500">{title}</p>
+    <div className="rounded-lg border border-border bg-white p-6 shadow-sm">
+      <p className="text-sm font-medium text-muted-foreground">{title}</p>
       <p className="mt-2 text-3xl font-bold">{value}</p>
-      <p className="mt-1 text-xs text-gray-500">{subtitle}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
     </div>
   );
 }
@@ -283,7 +283,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-lg border border-border bg-white p-6 shadow-sm">
       <h2 className="mb-4 text-lg font-semibold">{title}</h2>
       {children}
     </div>

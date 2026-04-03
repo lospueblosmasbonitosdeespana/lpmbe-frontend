@@ -69,7 +69,7 @@ export default function RutasList() {
   if (loading) {
     return (
       <main className="mx-auto max-w-[1600px] w-full px-6 py-6">
-        <p className="text-sm text-gray-600">Cargando rutas...</p>
+        <p className="text-sm text-muted-foreground">Cargando rutas...</p>
       </main>
     );
   }
@@ -79,7 +79,7 @@ export default function RutasList() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Gestión de Rutas</h1>
-          <p className="mt-1 text-sm text-gray-600">Asociación · Nacional</p>
+          <p className="mt-1 text-sm text-muted-foreground">Asociación · Nacional</p>
         </div>
 
         <Link
@@ -97,14 +97,14 @@ export default function RutasList() {
       )}
 
       {rutas.length === 0 ? (
-        <div className="mt-6 rounded-md border p-4 text-sm text-gray-600">
+        <div className="mt-6 rounded-md border p-4 text-sm text-muted-foreground">
           No hay rutas todavía.
         </div>
       ) : (
         <div className="mt-6 overflow-x-auto min-w-0">
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="border-b bg-gray-50">
+              <tr className="border-b bg-muted/30">
                 <th className="px-4 py-2 text-left font-medium">Título</th>
                 <th className="px-4 py-2 text-left font-medium">Pueblos</th>
                 <th className="px-4 py-2 text-left font-medium">Slug</th>
@@ -113,14 +113,14 @@ export default function RutasList() {
                 <th className="px-4 py-2 text-center font-medium">Km</th>
                 <th className="px-4 py-2 text-center font-medium">Tiempo</th>
                 <th className="px-4 py-2 text-center font-medium">Activo</th>
-                <th className="sticky right-0 bg-gray-50 px-4 py-2 text-center font-medium shadow-[-4px_0_8px_rgba(0,0,0,0.06)]">Acciones</th>
+                <th className="sticky right-0 bg-muted/30 px-4 py-2 text-center font-medium shadow-[-4px_0_8px_rgba(0,0,0,0.06)]">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {rutas.map((r) => {
                 const pueblosList = (r as RutaRow).pueblos ?? [];
                 return (
-                  <tr key={r.id} className="group border-b hover:bg-gray-50">
+                  <tr key={r.id} className="group border-b hover:bg-muted/30">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <RutaMiniMap rutaId={r.id} width={180} height={110} />
@@ -129,7 +129,7 @@ export default function RutasList() {
                     </td>
                     <td className="max-w-xs px-4 py-3">
                       {pueblosList.length === 0 ? (
-                        <span className="text-gray-400">—</span>
+                        <span className="text-muted-foreground">—</span>
                       ) : (
                         <ul className="flex flex-wrap gap-x-2 gap-y-0.5">
                           {pueblosList
@@ -152,9 +152,9 @@ export default function RutasList() {
                         </ul>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{r.slug}</td>
-                    <td className="px-4 py-3 text-gray-600">{r.programa || '—'}</td>
-                    <td className="px-4 py-3 text-center text-gray-600">
+                    <td className="px-4 py-3 text-muted-foreground">{r.slug}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{r.programa || '—'}</td>
+                    <td className="px-4 py-3 text-center text-muted-foreground">
                       {(r as any).paradasCount ??
                        (r as any)._count?.pueblos ??
                        pueblosList.length}
@@ -166,12 +166,12 @@ export default function RutasList() {
                           Sí
                         </span>
                       ) : (
-                        <span className="inline-block rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600">
+                        <span className="inline-block rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
                           No
                         </span>
                       )}
                     </td>
-                    <td className="sticky right-0 bg-white px-4 py-3 text-center shadow-[-4px_0_8px_rgba(0,0,0,0.06)] group-hover:bg-gray-50">
+                    <td className="sticky right-0 bg-white px-4 py-3 text-center shadow-[-4px_0_8px_rgba(0,0,0,0.06)] group-hover:bg-muted/30">
                       <div className="flex items-center justify-center gap-2">
                         <Link
                           href={`/gestion/asociacion/rutas/${r.id}/editar`}

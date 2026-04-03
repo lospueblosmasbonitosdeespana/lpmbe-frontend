@@ -13,7 +13,7 @@ const ESTADO_COLORS: Record<Order['status'], string> = {
   PAID: 'bg-green-100 text-green-800',
   PROCESSING: 'bg-blue-100 text-blue-800',
   SHIPPED: 'bg-indigo-100 text-indigo-800',
-  DELIVERED: 'bg-gray-100 text-gray-800',
+  DELIVERED: 'bg-muted text-gray-800',
   CANCELLED: 'bg-red-100 text-red-800',
   REFUNDED: 'bg-orange-100 text-orange-800',
 };
@@ -164,7 +164,7 @@ export default function PedidosAdminClient() {
   if (loading) {
     return (
       <main className="mx-auto max-w-7xl px-6 py-12">
-        <p className="text-gray-600">Cargando pedidos...</p>
+        <p className="text-muted-foreground">Cargando pedidos...</p>
       </main>
     );
   }
@@ -174,13 +174,13 @@ export default function PedidosAdminClient() {
       <div className="mb-8">
         <Link
           href="/gestion/asociacion/tienda"
-          className="mb-4 inline-block text-sm text-gray-600 hover:text-gray-900"
+          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
         >
           ← Volver a Tienda
         </Link>
         <div>
           <h1 className="text-3xl font-bold">Pedidos</h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-muted-foreground">
             Gestión de pedidos de la tienda ({pedidos.length})
           </p>
         </div>
@@ -209,42 +209,42 @@ export default function PedidosAdminClient() {
       )}
 
       {pedidos.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
-          <p className="text-gray-600">No hay pedidos todavía.</p>
+        <div className="rounded-lg border border-border bg-white p-8 text-center">
+          <p className="text-muted-foreground">No hay pedidos todavía.</p>
         </div>
       ) : (
         <div className="space-y-4">
           {pedidos.map((pedido) => (
             <div
               key={pedido.id}
-              className="overflow-hidden rounded-lg border border-gray-200 bg-white"
+              className="overflow-hidden rounded-lg border border-border bg-white"
             >
               {/* HEADER DEL PEDIDO */}
-              <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
+              <div className="flex items-center justify-between border-b border-border bg-muted/30 px-6 py-4">
                 <div className="flex items-center gap-6">
                   <div>
                     <div className="text-sm font-medium text-gray-900">
                       Pedido #{pedido.orderNumber || pedido.id}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-muted-foreground">
                       {formatDate(pedido.createdAt)}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-xs text-gray-500">Cliente</div>
+                    <div className="text-xs text-muted-foreground">Cliente</div>
                     <div className="text-sm font-medium text-gray-900">
                       {pedido.user?.email || `Usuario ${pedido.userId}`}
                     </div>
                     {(pedido.user?.nombre || pedido.user?.apellidos) && (
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-muted-foreground">
                         {pedido.user.nombre} {pedido.user.apellidos}
                       </div>
                     )}
                   </div>
 
                   <div>
-                    <div className="text-xs text-gray-500">Total</div>
+                    <div className="text-xs text-muted-foreground">Total</div>
                     <div className="text-sm font-bold text-gray-900">
                       {formatEUR(toNumber(pedido.total))} €
                     </div>
@@ -267,7 +267,7 @@ export default function PedidosAdminClient() {
                       <select
                         value={newStatus}
                         onChange={(e) => setNewStatus(e.target.value as Order['status'])}
-                        className="rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+                        className="rounded-md border border-border px-3 py-1.5 text-sm"
                       >
                         <option value="">Seleccionar...</option>
                         {ESTADOS.map((estado) => (
@@ -282,7 +282,7 @@ export default function PedidosAdminClient() {
                           value={trackingNumber}
                           onChange={(e) => setTrackingNumber(e.target.value)}
                           placeholder="Nº seguimiento"
-                          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+                          className="rounded-md border border-border px-3 py-1.5 text-sm"
                         />
                       )}
                       <button
@@ -293,7 +293,7 @@ export default function PedidosAdminClient() {
                       </button>
                       <button
                         onClick={cancelEditStatus}
-                        className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                        className="rounded-md border border-border px-3 py-1.5 text-sm text-gray-700 hover:bg-muted/30"
                       >
                         Cancelar
                       </button>
@@ -326,7 +326,7 @@ export default function PedidosAdminClient() {
                       </button>
                       <button
                         onClick={() => toggleExpand(pedido.id)}
-                        className="text-sm text-gray-600 hover:text-gray-900"
+                        className="text-sm text-muted-foreground hover:text-gray-900"
                       >
                         {expandedId === pedido.id ? "▼ Ocultar" : "▶ Ver detalles"}
                       </button>
@@ -343,18 +343,18 @@ export default function PedidosAdminClient() {
                       Productos ({pedido.items.length})
                     </h3>
                     <table className="w-full text-sm">
-                      <thead className="border-b border-gray-200">
+                      <thead className="border-b border-border">
                         <tr>
-                          <th className="pb-2 text-left font-medium text-gray-600">
+                          <th className="pb-2 text-left font-medium text-muted-foreground">
                             Producto
                           </th>
-                          <th className="pb-2 text-right font-medium text-gray-600">
+                          <th className="pb-2 text-right font-medium text-muted-foreground">
                             Precio Unit.
                           </th>
-                          <th className="pb-2 text-right font-medium text-gray-600">
+                          <th className="pb-2 text-right font-medium text-muted-foreground">
                             Cantidad
                           </th>
-                          <th className="pb-2 text-right font-medium text-gray-600">
+                          <th className="pb-2 text-right font-medium text-muted-foreground">
                             Subtotal
                           </th>
                         </tr>
@@ -386,7 +386,7 @@ export default function PedidosAdminClient() {
                         {toNumber(pedido.discountTotal) > 0 && (
                           <>
                             <tr>
-                              <td colSpan={3} className="pt-3 text-right text-gray-600">
+                              <td colSpan={3} className="pt-3 text-right text-muted-foreground">
                                 Subtotal:
                               </td>
                               <td className="pt-3 text-right">
@@ -394,7 +394,7 @@ export default function PedidosAdminClient() {
                               </td>
                             </tr>
                             <tr>
-                              <td colSpan={3} className="text-right text-gray-600">
+                              <td colSpan={3} className="text-right text-muted-foreground">
                                 Descuento {pedido.couponCode && `(${pedido.couponCode})`}:
                               </td>
                               <td className="text-right text-green-600">
@@ -420,7 +420,7 @@ export default function PedidosAdminClient() {
                       <h3 className="mb-2 text-sm font-medium text-gray-900">
                         Dirección de envío
                       </h3>
-                      <div className="rounded-lg bg-gray-50 p-3 text-sm text-gray-700">
+                      <div className="rounded-lg bg-muted/30 p-3 text-sm text-gray-700">
                         <div className="font-medium">{pedido.shippingAddressRef.nombre}</div>
                         <div>{pedido.shippingAddressRef.direccion}</div>
                         <div>
@@ -458,7 +458,7 @@ export default function PedidosAdminClient() {
                     </div>
                   )}
 
-                  <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-gray-500">
+                  <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-muted-foreground">
                     {pedido.paidAt && (
                       <div>
                         <span className="font-medium">Pagado:</span>{" "}
@@ -487,7 +487,7 @@ export default function PedidosAdminClient() {
 
                   {pedido.stripePaymentIntentId && (
                     <div className="mt-3">
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         Stripe Payment Intent: {pedido.stripePaymentIntentId}
                       </p>
                     </div>

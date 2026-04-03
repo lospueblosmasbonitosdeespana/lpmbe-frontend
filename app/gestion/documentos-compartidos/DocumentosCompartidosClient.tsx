@@ -100,7 +100,7 @@ type CollapsibleSectionProps = {
 function CollapsibleSection({ icon, iconBg, title, count, countColor, defaultOpen = false, children }: CollapsibleSectionProps) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <section className="overflow-hidden rounded-2xl ring-1 ring-border/50 shadow-sm bg-white">
+    <section className="overflow-hidden rounded-2xl bg-card ring-1 ring-border/50 shadow-sm">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -133,7 +133,7 @@ function CollapsibleSection({ icon, iconBg, title, count, countColor, defaultOpe
 function LogoCard({ logo }: { logo: LogoAsociacion }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`group overflow-hidden rounded-2xl border-2 transition-all duration-300 ${open ? 'border-blue-300 bg-gradient-to-b from-blue-50/60 to-white shadow-lg shadow-blue-100/50' : 'border-transparent bg-white shadow-sm hover:shadow-md hover:border-blue-100'}`}>
+    <div className={`group overflow-hidden rounded-2xl border-2 transition-all duration-300 ${open ? 'border-blue-300 bg-gradient-to-b from-blue-50/60 to-card shadow-lg shadow-blue-100/50 dark:from-blue-950/30' : 'border-transparent bg-card shadow-sm hover:border-blue-100 hover:shadow-md dark:hover:border-blue-900/60'}`}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -147,15 +147,15 @@ function LogoCard({ logo }: { logo: LogoAsociacion }) {
           {logo.etiqueta && <p className="mt-0.5 text-sm text-muted-foreground">{logo.etiqueta}</p>}
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             <span className="rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">LPMBE</span>
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">Logo</span>
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-300">Logo</span>
           </div>
         </div>
         <ChevronIcon open={open} />
       </button>
       <div className={`grid transition-all duration-300 ease-in-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
         <div className="overflow-hidden">
-          <div className="border-t border-blue-100 bg-gradient-to-b from-blue-50/40 to-transparent p-5 flex flex-col items-center gap-5 sm:flex-row sm:items-start">
-            <div className="flex h-36 w-52 shrink-0 items-center justify-center rounded-2xl bg-white p-4 ring-1 ring-blue-100 shadow-inner">
+          <div className="flex flex-col items-center gap-5 border-t border-blue-100 bg-gradient-to-b from-blue-50/40 to-transparent p-5 dark:border-blue-900/60 dark:from-blue-950/20 sm:flex-row sm:items-start">
+            <div className="flex h-36 w-52 shrink-0 items-center justify-center rounded-2xl bg-card p-4 ring-1 ring-blue-100 shadow-inner dark:ring-blue-900/60">
               <img src={logo.url} alt={logo.nombre} className="max-h-full max-w-full object-contain" />
             </div>
             <div className="flex flex-col gap-2.5 text-center sm:text-left">
@@ -184,7 +184,7 @@ function DocCard({ doc }: { doc: DocumentoItem }) {
   const tieneMultiples = todosLosArchivos.length > 1;
 
   return (
-    <div className={`group overflow-hidden rounded-2xl border-2 transition-all duration-300 ${open ? 'border-primary/30 bg-gradient-to-b from-amber-50/40 to-white shadow-lg shadow-amber-100/40' : 'border-transparent bg-white shadow-sm hover:shadow-md hover:border-amber-100'}`}>
+    <div className={`group overflow-hidden rounded-2xl border-2 transition-all duration-300 ${open ? 'border-primary/30 bg-gradient-to-b from-amber-50/40 to-card shadow-lg shadow-amber-100/40 dark:from-amber-950/20' : 'border-transparent bg-card shadow-sm hover:border-amber-100 hover:shadow-md dark:hover:border-amber-900/60'}`}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -210,7 +210,7 @@ function DocCard({ doc }: { doc: DocumentoItem }) {
             {doc.fuente === 'ASOCIACION' ? (
               <span className="rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">LPMBE</span>
             ) : doc.pueblo && (
-              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">{doc.pueblo.nombre}</span>
+              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-200">{doc.pueblo.nombre}</span>
             )}
             <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${TIPO_COLORS[doc.tipo]}`}>{TIPO_LABELS[doc.tipo]}</span>
             <span className="text-[11px] text-muted-foreground/70">{new Date(doc.createdAt).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
@@ -226,15 +226,15 @@ function DocCard({ doc }: { doc: DocumentoItem }) {
 
       <div className={`grid transition-all duration-300 ease-in-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
         <div className="overflow-hidden">
-          <div className="border-t border-amber-100/80 bg-gradient-to-b from-amber-50/30 to-transparent divide-y divide-amber-100/60">
+          <div className="divide-y divide-amber-100/60 border-t border-amber-100/80 bg-gradient-to-b from-amber-50/30 to-transparent dark:divide-amber-900/50 dark:border-amber-900/50 dark:from-amber-950/20">
             {todosLosArchivos.map((archivo, i) => (
-              <div key={i} className="flex items-center gap-3 px-5 py-3 hover:bg-amber-50/40 transition-colors">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white ring-1 ring-border shadow-sm">
+              <div key={i} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-amber-50/40 dark:hover:bg-amber-950/20">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-card ring-1 ring-border shadow-sm">
                   <FileIcon url={archivo.url} />
                 </div>
                 <span className="flex-1 truncate text-sm text-foreground font-medium">{archivo.nombre}</span>
                 {tieneMultiples && (
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${i === 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${i === 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'}`}>
                     {i === 0 ? 'Principal' : `Archivo ${i + 1}`}
                   </span>
                 )}
@@ -394,9 +394,9 @@ export default function DocumentosCompartidosClient() {
       )}
 
       {/* ── Buscador + filtros ── */}
-      <div className="rounded-2xl bg-white p-5 ring-1 ring-border/60 shadow-sm space-y-4">
+      <div className="space-y-4 rounded-2xl bg-card p-5 ring-1 ring-border/60 shadow-sm">
         <div className="relative">
-          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-lg bg-stone-100 text-stone-500">
+          <div className="absolute left-3.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-300">
             <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
             </svg>
@@ -406,7 +406,7 @@ export default function DocumentosCompartidosClient() {
             placeholder="Buscar por nombre, pueblo, tipo, temática…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full rounded-xl border-0 bg-slate-50 py-3.5 pl-14 pr-4 text-base font-medium placeholder:text-muted-foreground/50 ring-1 ring-slate-200 transition-all focus:bg-white focus:ring-2 focus:ring-stone-400 focus:outline-none"
+            className="w-full rounded-xl border-0 bg-slate-50 py-3.5 pl-14 pr-4 text-base font-medium placeholder:text-muted-foreground/50 ring-1 ring-slate-200 transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400 dark:bg-slate-900 dark:ring-slate-700 dark:focus:bg-slate-800"
           />
         </div>
 
@@ -417,7 +417,7 @@ export default function DocumentosCompartidosClient() {
             const active = tipoFilter === t;
             return (
               <button key={t} type="button" onClick={() => setTipoFilter(t as typeof tipoFilter)}
-                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 active:scale-95 ${active ? 'text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'}`}
+                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 active:scale-95 ${active ? 'text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-slate-100'}`}
                 style={active ? { background: 'linear-gradient(to right, #a0705a, #b8856d)' } : undefined}>
                 {t === 'TODOS'
                   ? `Todos (${totalBibliotecaTipoTodos})`
@@ -436,7 +436,7 @@ export default function DocumentosCompartidosClient() {
             const active = fuenteFilter === v;
             return (
               <button key={v} type="button" onClick={() => setFuenteFilter(v)}
-                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 active:scale-95 ${active ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-sm shadow-blue-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'}`}>
+                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 active:scale-95 ${active ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-sm shadow-blue-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-slate-100'}`}>
                 {l}
               </button>
             );
@@ -448,12 +448,12 @@ export default function DocumentosCompartidosClient() {
           <div className="flex flex-wrap gap-2 items-center">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Temática</span>
             <button type="button" onClick={() => setTemaFilter('TODOS')}
-              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 active:scale-95 ${temaFilter === 'TODOS' ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-sm shadow-violet-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 active:scale-95 ${temaFilter === 'TODOS' ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-sm shadow-violet-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}>
               Todas
             </button>
             {ALL_TEMAS.filter((t) => (ordenanzasPorTema[t]?.length ?? 0) > 0 || temaFilter === t).map((t) => (
               <button key={t} type="button" onClick={() => setTemaFilter(t === temaFilter ? 'TODOS' : t)}
-                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 active:scale-95 ${temaFilter === t ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-sm shadow-violet-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 active:scale-95 ${temaFilter === t ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-sm shadow-violet-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}>
                 {TEMA_ORDENANZA_ICONS[t]} {TEMA_ORDENANZA_LABELS[t]}
               </button>
             ))}
@@ -466,7 +466,7 @@ export default function DocumentosCompartidosClient() {
               {totalVisibleResults} resultado{totalVisibleResults !== 1 ? 's' : ''}
             </span>
             <button type="button" onClick={() => { setQuery(''); setTipoFilter('TODOS'); setFuenteFilter('TODOS'); setTemaFilter('TODOS'); }}
-              className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition-all hover:bg-rose-100 active:scale-95">
+              className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition-all hover:bg-rose-100 active:scale-95 dark:bg-rose-900/30 dark:text-rose-200 dark:ring-rose-800">
               Limpiar filtros
             </button>
           </div>
@@ -484,20 +484,20 @@ export default function DocumentosCompartidosClient() {
         </div>
       )}
       {error && (
-        <div className="rounded-2xl bg-gradient-to-r from-rose-50 to-red-50 px-5 py-4 ring-1 ring-rose-200 flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-rose-50 to-red-50 px-5 py-4 ring-1 ring-rose-200 dark:from-rose-950/20 dark:to-red-950/20 dark:ring-rose-900/50">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100">
               <svg className="h-5 w-5 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
             </div>
             <span className="text-sm font-medium text-rose-700">{error}</span>
           </div>
-          <button type="button" onClick={fetchDocs} className="shrink-0 rounded-xl bg-white px-4 py-2 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition-all hover:bg-rose-50 active:scale-95">Reintentar</button>
+          <button type="button" onClick={fetchDocs} className="shrink-0 rounded-xl bg-card px-4 py-2 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition-all hover:bg-rose-50 active:scale-95 dark:text-rose-300 dark:ring-rose-800 dark:hover:bg-rose-950/30">Reintentar</button>
         </div>
       )}
 
       {!loading && !hasVisibleContent && (
-        <div className="rounded-3xl bg-gradient-to-br from-slate-50 to-white p-16 text-center ring-1 ring-slate-100">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 shadow-inner">
+        <div className="rounded-3xl bg-gradient-to-br from-slate-50 to-card p-16 text-center ring-1 ring-slate-100 dark:from-slate-900/40 dark:ring-slate-800">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 shadow-inner dark:from-slate-800 dark:to-slate-900">
             <svg className="h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -509,7 +509,7 @@ export default function DocumentosCompartidosClient() {
 
       {/* ── SECCIÓN DOCUMENTOS IMPORTANTES ── */}
       {!loading && docsDestacados.length > 0 && (
-        <section className="overflow-hidden rounded-2xl border-2 border-red-400 bg-gradient-to-b from-red-50 to-white shadow-lg shadow-red-100/50">
+        <section className="overflow-hidden rounded-2xl border-2 border-red-400 bg-gradient-to-b from-red-50 to-card shadow-lg shadow-red-100/50 dark:from-red-950/20 dark:shadow-none">
           <div className="flex items-center gap-3 bg-red-500 px-5 py-3 text-white">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5">
@@ -587,13 +587,13 @@ export default function DocumentosCompartidosClient() {
         >
           <div className="mb-4 flex justify-end">
             {temaFilter === 'TODOS' && (
-              <div className="flex rounded-xl bg-slate-100 p-1 text-xs ring-1 ring-slate-200/60">
+              <div className="flex rounded-xl bg-slate-100 p-1 text-xs ring-1 ring-slate-200/60 dark:bg-slate-800 dark:ring-slate-700">
                 <button type="button" onClick={() => setVistaOrdenanza('tema')}
-                  className={`rounded-lg px-3.5 py-1.5 font-semibold transition-all duration-200 ${vistaOrdenanza === 'tema' ? 'bg-white text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+                  className={`rounded-lg px-3.5 py-1.5 font-semibold transition-all duration-200 ${vistaOrdenanza === 'tema' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
                   Por temática
                 </button>
                 <button type="button" onClick={() => setVistaOrdenanza('lista')}
-                  className={`rounded-lg px-3.5 py-1.5 font-semibold transition-all duration-200 ${vistaOrdenanza === 'lista' ? 'bg-white text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+                  className={`rounded-lg px-3.5 py-1.5 font-semibold transition-all duration-200 ${vistaOrdenanza === 'lista' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
                   Lista
                 </button>
               </div>
@@ -605,15 +605,15 @@ export default function DocumentosCompartidosClient() {
               {temasConDocs.map((tema) => {
                 const grupo = ordenanzasPorTema[tema];
                 return (
-                  <div key={tema} className="overflow-hidden rounded-2xl ring-1 ring-amber-200/60 shadow-sm">
-                    <div className="flex items-center gap-3 bg-gradient-to-r from-amber-50 via-amber-50/80 to-orange-50/50 px-6 py-4 border-b border-amber-100">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-xl shadow-sm ring-1 ring-amber-200/60">{TEMA_ORDENANZA_ICONS[tema]}</span>
+                  <div key={tema} className="overflow-hidden rounded-2xl ring-1 ring-amber-200/60 shadow-sm dark:ring-amber-900/50">
+                    <div className="flex items-center gap-3 border-b border-amber-100 bg-gradient-to-r from-amber-50 via-amber-50/80 to-orange-50/50 px-6 py-4 dark:border-amber-900/50 dark:from-amber-950/20 dark:via-amber-950/10 dark:to-orange-950/10">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-card text-xl shadow-sm ring-1 ring-amber-200/60 dark:ring-amber-900/50">{TEMA_ORDENANZA_ICONS[tema]}</span>
                       <div>
                         <h3 className="font-bold text-base text-foreground">{TEMA_ORDENANZA_LABELS[tema]}</h3>
-                        <p className="text-sm text-amber-600/70 font-medium">{grupo.length} ordenanza{grupo.length !== 1 ? 's' : ''}</p>
+                        <p className="text-sm font-medium text-amber-600/70 dark:text-amber-300/80">{grupo.length} ordenanza{grupo.length !== 1 ? 's' : ''}</p>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2 bg-white p-4">
+                    <div className="flex flex-col gap-2 bg-card p-4">
                       {grupo.map((doc) => <DocCard key={doc.id} doc={doc} />)}
                     </div>
                   </div>

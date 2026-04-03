@@ -18,11 +18,11 @@ export default async function ColaboradorPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-semibold text-gray-900">Panel de colaborador</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               Gestiona la información y consulta las métricas de tus recursos turísticos
             </p>
           </div>
-          <Link href="/mi-cuenta" className="rounded-lg border px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50">
+          <Link href="/mi-cuenta" className="rounded-lg border px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted/30">
             ← Mi cuenta
           </Link>
         </div>

@@ -171,7 +171,7 @@ export default function EditarRecursoClient({
   }
 
   if (loading) {
-    return <div className="text-gray-500">Cargando recurso...</div>;
+    return <div className="text-muted-foreground">Cargando recurso...</div>;
   }
 
   if (error && !recurso) {
@@ -207,25 +207,25 @@ export default function EditarRecursoClient({
       )}
 
       {/* Read-only fields */}
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <div className="rounded-lg border border-border bg-muted/30 p-4">
         <h2 className="text-sm font-medium text-gray-700 mb-3">
           Información de solo lectura
         </h2>
         <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-gray-500">Tipo</dt>
+            <dt className="text-muted-foreground">Tipo</dt>
             <dd className="font-medium">{recurso.tipo || '—'}</dd>
           </div>
           <div>
-            <dt className="text-gray-500">Provincia</dt>
+            <dt className="text-muted-foreground">Provincia</dt>
             <dd className="font-medium">{recurso.provincia || '—'}</dd>
           </div>
           <div>
-            <dt className="text-gray-500">Comunidad</dt>
+            <dt className="text-muted-foreground">Comunidad</dt>
             <dd className="font-medium">{recurso.comunidad || '—'}</dd>
           </div>
           <div>
-            <dt className="text-gray-500">Descuento</dt>
+            <dt className="text-muted-foreground">Descuento</dt>
             <dd className="font-medium">
               {recurso.descuentoPorcentaje != null
                 ? `${recurso.descuentoPorcentaje}%`
@@ -236,10 +236,10 @@ export default function EditarRecursoClient({
       </div>
 
       {/* Cerrado temporal toggle */}
-      <div className="flex items-center justify-between rounded-lg border border-gray-200 p-4">
+      <div className="flex items-center justify-between rounded-lg border border-border p-4">
         <div>
           <p className="font-medium text-gray-900">Cerrado temporalmente</p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Marca si el recurso está temporalmente cerrado
           </p>
         </div>
@@ -259,7 +259,7 @@ export default function EditarRecursoClient({
       </div>
 
       {/* Editable form */}
-      <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-4">
+      <div className="space-y-4 rounded-lg border border-border bg-white p-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Nombre *
@@ -269,7 +269,7 @@ export default function EditarRecursoClient({
             value={form.nombre}
             onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
             disabled={saving}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
+            className="w-full rounded-md border border-border px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
           />
         </div>
 
@@ -284,7 +284,7 @@ export default function EditarRecursoClient({
             }
             disabled={saving}
             rows={4}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
+            className="w-full rounded-md border border-border px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
           />
         </div>
 
@@ -300,7 +300,7 @@ export default function EditarRecursoClient({
             }
             disabled={saving}
             placeholder="Ej: L-V 10:00-14:00, 16:00-20:00"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
+            className="w-full rounded-md border border-border px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
           />
         </div>
 
@@ -316,7 +316,7 @@ export default function EditarRecursoClient({
             }
             disabled={saving}
             placeholder="Teléfono o email"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
+            className="w-full rounded-md border border-border px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
           />
         </div>
 
@@ -330,7 +330,7 @@ export default function EditarRecursoClient({
             onChange={(e) => setForm((f) => ({ ...f, web: e.target.value }))}
             disabled={saving}
             placeholder="https://..."
-            className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
+            className="w-full rounded-md border border-border px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
           />
         </div>
 
@@ -346,7 +346,7 @@ export default function EditarRecursoClient({
             }
             disabled={saving}
             placeholder="https://..."
-            className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
+            className="w-full rounded-md border border-border px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
           />
         </div>
 
@@ -361,7 +361,7 @@ export default function EditarRecursoClient({
           </button>
           <Link
             href="/gestion/mis-recursos"
-            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-md border border-border bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30"
           >
             Cancelar
           </Link>
@@ -386,7 +386,7 @@ export default function EditarRecursoClient({
             href={`/validador/${recurso.id}`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="inline-flex items-center rounded-md border border-border bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30"
           >
             Abrir validador (nueva pestaña)
           </Link>

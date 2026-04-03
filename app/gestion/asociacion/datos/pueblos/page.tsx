@@ -86,7 +86,7 @@ export default function DatosPueblosPage() {
   if (loading && logs.length === 0) {
     return (
       <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="animate-pulse rounded-lg bg-gray-100 p-8">
+        <div className="animate-pulse rounded-lg bg-muted p-8">
           Cargando registro de actividad...
         </div>
       </div>
@@ -98,12 +98,12 @@ export default function DatosPueblosPage() {
       <div className="mb-8">
         <Link
           href="/gestion/asociacion/datos"
-          className="mb-4 inline-block text-sm text-gray-600 hover:text-gray-900"
+          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
         >
           ← Volver a Datos
         </Link>
         <h1 className="text-3xl font-bold">Pueblos</h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted-foreground">
           Registro de todos los movimientos: quién ha tocado qué y cuándo
         </p>
       </div>
@@ -114,11 +114,11 @@ export default function DatosPueblosPage() {
 
       <div className="mb-4 flex flex-wrap gap-4">
         <div>
-          <label className="mr-2 text-sm text-gray-600">Tipo:</label>
+          <label className="mr-2 text-sm text-muted-foreground">Tipo:</label>
           <select
             value={filtroEntity}
             onChange={(e) => setFiltroEntity(e.target.value)}
-            className="rounded border border-gray-300 px-2 py-1 text-sm"
+            className="rounded border border-border px-2 py-1 text-sm"
           >
             <option value="">Todos</option>
             {Object.entries(ENTITY_LABELS).map(([k, v]) => (
@@ -130,30 +130,30 @@ export default function DatosPueblosPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+      <div className="rounded-lg border border-border bg-white overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-muted/30">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Fecha
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Usuario
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Acción
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Entidad
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Pueblo
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Ruta
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Tamaño
                 </th>
               </tr>
@@ -161,14 +161,14 @@ export default function DatosPueblosPage() {
             <tbody className="divide-y divide-gray-200 bg-white">
               {logs.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
                     {loading ? 'Cargando...' : 'No hay registros aún. Los movimientos de alcaldes y admins se registrarán automáticamente.'}
                   </td>
                 </tr>
               ) : (
                 logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50">
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
+                  <tr key={log.id} className="hover:bg-muted/30">
+                    <td className="whitespace-nowrap px-4 py-3 text-sm text-muted-foreground">
                       {new Date(log.createdAt).toLocaleString('es-ES', {
                         day: '2-digit',
                         month: '2-digit',
@@ -179,7 +179,7 @@ export default function DatosPueblosPage() {
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <span className="font-medium text-gray-900">{log.userEmail}</span>
-                      <span className="ml-1 rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600">
+                      <span className="ml-1 rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
                         {log.userRol}
                       </span>
                     </td>
@@ -196,12 +196,12 @@ export default function DatosPueblosPage() {
                         {ACTION_LABELS[log.action] ?? log.action}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
                       {log.entityType ? (
                         <>
                           {ENTITY_LABELS[log.entityType] ?? log.entityType}
                           {log.entityId && (
-                            <span className="text-gray-400"> #{log.entityId}</span>
+                            <span className="text-muted-foreground"> #{log.entityId}</span>
                           )}
                         </>
                       ) : (
@@ -211,10 +211,10 @@ export default function DatosPueblosPage() {
                     <td className="px-4 py-3 text-sm text-gray-700 font-medium">
                       {log.puebloNombre ?? '—'}
                     </td>
-                    <td className="max-w-xs truncate px-4 py-3 text-xs text-gray-500" title={log.path}>
+                    <td className="max-w-xs truncate px-4 py-3 text-xs text-muted-foreground" title={log.path}>
                       {log.path}
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-600">
+                    <td className="px-4 py-3 text-xs text-muted-foreground">
                       {log.entityType === 'media' && log.detalles && typeof log.detalles === 'object' ? (
                         <span title="Original → Guardado en R2 (optimizado)">
                           {(log.detalles as { originalSizeMB?: string }).originalSizeMB ?? '—'}
@@ -235,7 +235,7 @@ export default function DatosPueblosPage() {
         </div>
       </div>
 
-      <div className="mt-4 text-sm text-gray-500">
+      <div className="mt-4 text-sm text-muted-foreground">
         Mostrando {logs.length} de {total} registros
       </div>
     </main>

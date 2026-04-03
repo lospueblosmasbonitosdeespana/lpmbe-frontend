@@ -50,7 +50,7 @@ export default function DatosMetricasPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-5xl px-6 py-12">
-        <div className="animate-pulse rounded-lg bg-gray-100 p-8">Cargando métricas...</div>
+        <div className="animate-pulse rounded-lg bg-muted p-8">Cargando métricas...</div>
       </div>
     );
   }
@@ -60,12 +60,12 @@ export default function DatosMetricasPage() {
       <div className="mb-8">
         <Link
           href="/gestion/asociacion/datos"
-          className="mb-4 inline-block text-sm text-gray-600 hover:text-gray-900"
+          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
         >
           ← Volver a Datos
         </Link>
         <h1 className="text-3xl font-bold">Métricas</h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted-foreground">
           Visión global de usuarios, clientes, pedidos y Club
         </p>
       </div>
@@ -103,10 +103,10 @@ export default function DatosMetricasPage() {
       </div>
 
       {clubMetricas && (
-        <div className="mt-10 rounded-lg border border-gray-200 bg-white p-6">
+        <div className="mt-10 rounded-lg border border-border bg-white p-6">
           <h2 className="mb-4 text-xl font-semibold">Club LPBME (validaciones hoy)</h2>
           <div className="flex flex-wrap gap-4">
-            <span className="rounded-md bg-gray-100 px-3 py-1 text-sm">
+            <span className="rounded-md bg-muted px-3 py-1 text-sm">
               Total hoy: {clubMetricas?.hoy?.total ?? 0}
             </span>
             <span className="rounded-md bg-green-100 px-3 py-1 text-sm text-green-800">
@@ -141,10 +141,10 @@ function MetricCard({
   subtitle: string;
 }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <p className="text-sm font-medium text-gray-500">{title}</p>
+    <div className="rounded-lg border border-border bg-white p-6 shadow-sm">
+      <p className="text-sm font-medium text-muted-foreground">{title}</p>
       <p className="mt-2 text-3xl font-bold">{value}</p>
-      <p className="mt-1 text-xs text-gray-500">{subtitle}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
     </div>
   );
 }

@@ -11,7 +11,7 @@ const MapLocationPicker = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-[420px] w-full animate-pulse rounded-lg bg-gray-100" />
+      <div className="h-[420px] w-full animate-pulse rounded-lg bg-muted" />
     ),
   },
 );
@@ -215,20 +215,20 @@ function RecursoForm({
     <div className="space-y-4">
       {/* Foto */}
       <div>
-        <label className="mb-1 block text-sm text-gray-600">Foto</label>
+        <label className="mb-1 block text-sm text-muted-foreground">Foto</label>
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
           onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePhotoUpload(f); }} />
         {data.fotoUrl ? (
           <div className="flex items-center gap-3">
             <img src={data.fotoUrl} alt="Preview" className="h-20 w-28 rounded-lg border object-cover" />
             <button type="button" onClick={() => fileInputRef.current?.click()} disabled={saving || uploading}
-              className="rounded border px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50">
+              className="rounded border px-3 py-1.5 text-sm hover:bg-muted/30 disabled:opacity-50">
               {uploading ? 'Subiendo…' : 'Cambiar foto'}
             </button>
           </div>
         ) : (
           <button type="button" onClick={() => fileInputRef.current?.click()} disabled={saving || uploading}
-            className="flex h-20 w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-300 text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+            className="flex h-20 w-full items-center justify-center rounded-lg border-2 border-dashed border-border text-sm text-muted-foreground hover:bg-muted/30 disabled:opacity-50">
             {uploading ? 'Subiendo…' : '+ Subir foto'}
           </button>
         )}
@@ -236,13 +236,13 @@ function RecursoForm({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm text-gray-600">Nombre *</label>
+          <label className="mb-1 block text-sm text-muted-foreground">Nombre *</label>
           <input type="text" value={data.nombre} onChange={(e) => set('nombre', e.target.value)}
             disabled={saving} className="w-full rounded border px-3 py-2 disabled:opacity-50" />
-          <p className="mt-0.5 text-xs text-gray-400">Se traducirá a 6 idiomas automáticamente.</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Se traducirá a 6 idiomas automáticamente.</p>
         </div>
         <div>
-          <label className="mb-1 block text-sm text-gray-600">Tipo *</label>
+          <label className="mb-1 block text-sm text-muted-foreground">Tipo *</label>
           <select value={data.tipo} onChange={(e) => set('tipo', e.target.value)}
             disabled={saving} className="w-full rounded border px-3 py-2 disabled:opacity-50">
             {TIPOS.map((t) => <option key={t} value={t}>{TIPO_LABELS[t]}</option>)}
@@ -251,20 +251,20 @@ function RecursoForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-sm text-gray-600">Descripción</label>
+        <label className="mb-1 block text-sm text-muted-foreground">Descripción</label>
         <textarea value={data.descripcion} onChange={(e) => set('descripcion', e.target.value)}
           disabled={saving} rows={3} className="w-full rounded border px-3 py-2 disabled:opacity-50" />
-        <p className="mt-0.5 text-xs text-gray-400">Se traducirá a 6 idiomas automáticamente.</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">Se traducirá a 6 idiomas automáticamente.</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm text-gray-600">Provincia *</label>
+          <label className="mb-1 block text-sm text-muted-foreground">Provincia *</label>
           <input type="text" value={data.provincia} onChange={(e) => set('provincia', e.target.value)}
             disabled={saving} className="w-full rounded border px-3 py-2 disabled:opacity-50" />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-gray-600">Comunidad autónoma *</label>
+          <label className="mb-1 block text-sm text-muted-foreground">Comunidad autónoma *</label>
           <input type="text" value={data.comunidad} onChange={(e) => set('comunidad', e.target.value)}
             disabled={saving} className="w-full rounded border px-3 py-2 disabled:opacity-50" />
         </div>
@@ -272,36 +272,36 @@ function RecursoForm({
 
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
-          <label className="mb-1 block text-sm text-gray-600">Teléfono</label>
+          <label className="mb-1 block text-sm text-muted-foreground">Teléfono</label>
           <input type="text" value={data.telefono} onChange={(e) => set('telefono', e.target.value)}
             disabled={saving} placeholder="+34 900 000 000" className="w-full rounded border px-3 py-2 disabled:opacity-50" />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-gray-600">Email</label>
+          <label className="mb-1 block text-sm text-muted-foreground">Email</label>
           <input type="email" value={data.email} onChange={(e) => set('email', e.target.value)}
             disabled={saving} placeholder="info@ejemplo.com" className="w-full rounded border px-3 py-2 disabled:opacity-50" />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-gray-600">Web</label>
+          <label className="mb-1 block text-sm text-muted-foreground">Web</label>
           <input type="text" value={data.web} onChange={(e) => set('web', e.target.value)}
             disabled={saving} placeholder="https://..." className="w-full rounded border px-3 py-2 disabled:opacity-50" />
         </div>
       </div>
       <div>
-        <label className="mb-1 block text-sm text-gray-600">Contacto (texto libre, opcional)</label>
+        <label className="mb-1 block text-sm text-muted-foreground">Contacto (texto libre, opcional)</label>
         <input type="text" value={data.contacto} onChange={(e) => set('contacto', e.target.value)}
           disabled={saving} placeholder="Texto libre de contacto adicional" className="w-full rounded border px-3 py-2 disabled:opacity-50" />
-        <p className="mt-0.5 text-xs text-gray-400">Usa los campos separados arriba. Este campo es adicional.</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">Usa los campos separados arriba. Este campo es adicional.</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm text-gray-600">Latitud</label>
+          <label className="mb-1 block text-sm text-muted-foreground">Latitud</label>
           <input type="number" step="any" value={data.lat} onChange={(e) => set('lat', e.target.value)}
             disabled={saving} placeholder="42.1234" className="w-full rounded border px-3 py-2 disabled:opacity-50" />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-gray-600">Longitud</label>
+          <label className="mb-1 block text-sm text-muted-foreground">Longitud</label>
           <input type="number" step="any" value={data.lng} onChange={(e) => set('lng', e.target.value)}
             disabled={saving} placeholder="-3.5678" className="w-full rounded border px-3 py-2 disabled:opacity-50" />
         </div>
@@ -312,13 +312,13 @@ function RecursoForm({
         <h4 className="mb-3 text-sm font-semibold text-blue-800">Precios y condiciones del Club</h4>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm text-gray-600">Precio (€)</label>
+            <label className="mb-1 block text-sm text-muted-foreground">Precio (€)</label>
             <input type="number" min="0" step="0.01" value={data.precioCents}
               onChange={(e) => set('precioCents', e.target.value)} disabled={saving}
               placeholder="0.00" className="w-full rounded border px-3 py-2 disabled:opacity-50" />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-gray-600">Descuento Club (%)</label>
+            <label className="mb-1 block text-sm text-muted-foreground">Descuento Club (%)</label>
             <input type="number" min="0" max="100" value={data.descuentoPorcentaje}
               onChange={(e) => set('descuentoPorcentaje', e.target.value)} disabled={saving}
               className="w-full rounded border px-3 py-2 disabled:opacity-50" />
@@ -326,19 +326,19 @@ function RecursoForm({
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
           <div>
-            <label className="mb-1 block text-sm text-gray-600">Máx. adultos</label>
+            <label className="mb-1 block text-sm text-muted-foreground">Máx. adultos</label>
             <input type="number" min="1" max="20" value={data.maxAdultos}
               onChange={(e) => set('maxAdultos', e.target.value)} disabled={saving}
               className="w-full rounded border px-3 py-2 disabled:opacity-50" />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-gray-600">Máx. menores</label>
+            <label className="mb-1 block text-sm text-muted-foreground">Máx. menores</label>
             <input type="number" min="0" max="10" value={data.maxMenores}
               onChange={(e) => set('maxMenores', e.target.value)} disabled={saving}
               className="w-full rounded border px-3 py-2 disabled:opacity-50" />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-gray-600">Edad máx. menor</label>
+            <label className="mb-1 block text-sm text-muted-foreground">Edad máx. menor</label>
             <input type="number" min="0" max="18" value={data.edadMaxMenor}
               onChange={(e) => set('edadMaxMenor', e.target.value)} disabled={saving}
               className="w-full rounded border px-3 py-2 disabled:opacity-50" />
@@ -347,7 +347,7 @@ function RecursoForm({
       </div>
 
       {/* Horarios y cierres especiales */}
-      <div className="rounded-lg border border-gray-200 bg-gray-50/40 p-4">
+      <div className="rounded-lg border border-border bg-muted/30/40 p-4">
         <h4 className="mb-3 text-sm font-semibold text-gray-700">Horarios y cierres especiales</h4>
         <HorariosEditor
           horariosSemana={horariosSemana}
@@ -357,12 +357,12 @@ function RecursoForm({
       </div>
 
       <div className="flex flex-wrap items-center gap-4">
-        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
           <input type="checkbox" checked={data.activo} onChange={(e) => set('activo', e.target.checked)}
             disabled={saving} className="rounded disabled:opacity-50" />
           Activo
         </label>
-        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
           <input type="checkbox" checked={data.cerradoTemporal} onChange={(e) => set('cerradoTemporal', e.target.checked)}
             disabled={saving} className="rounded disabled:opacity-50" />
           Cerrado temporalmente
@@ -371,11 +371,11 @@ function RecursoForm({
 
       <div className="flex gap-2 pt-1">
         <button type="button" onClick={onSubmit} disabled={saving || !data.nombre.trim()}
-          className="rounded border px-4 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50">
+          className="rounded border px-4 py-2 text-sm font-medium hover:bg-muted/30 disabled:opacity-50">
           {saving ? 'Guardando…' : submitLabel}
         </button>
         <button type="button" onClick={onCancel} disabled={saving}
-          className="rounded border px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50">
+          className="rounded border px-4 py-2 text-sm hover:bg-muted/30 disabled:opacity-50">
           Cancelar
         </button>
       </div>
@@ -474,9 +474,9 @@ function ColaboradoresSection({ recursoId }: { recursoId: number }) {
       )}
 
       {loading ? (
-        <p className="mt-1 text-xs text-gray-500">Cargando…</p>
+        <p className="mt-1 text-xs text-muted-foreground">Cargando…</p>
       ) : cols.length === 0 ? (
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-muted-foreground">
           Sin colaboradores asignados.
         </p>
       ) : (
@@ -484,7 +484,7 @@ function ColaboradoresSection({ recursoId }: { recursoId: number }) {
           {cols.map((c) => (
             <li
               key={c.id}
-              className="flex items-center justify-between rounded bg-gray-50 px-2 py-1 text-sm"
+              className="flex items-center justify-between rounded bg-muted/30 px-2 py-1 text-sm"
             >
               <span>
                 {c.user.nombre
@@ -516,7 +516,7 @@ function ColaboradoresSection({ recursoId }: { recursoId: number }) {
           type="button"
           onClick={handleAssign}
           disabled={adding || !email.trim()}
-          className="rounded border px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-50"
+          className="rounded border px-3 py-1 text-sm hover:bg-muted/30 disabled:opacity-50"
         >
           {adding ? 'Asignando…' : 'Asignar'}
         </button>
@@ -815,7 +815,7 @@ export default function RecursosAsociacionClient() {
           <button
             type="button"
             onClick={() => setShowCreate(true)}
-            className="rounded border px-4 py-2 text-sm hover:bg-gray-50"
+            className="rounded border px-4 py-2 text-sm hover:bg-muted/30"
           >
             + Nuevo recurso
           </button>
@@ -846,7 +846,7 @@ export default function RecursosAsociacionClient() {
       {recursos.length > 0 && (
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
               value={search}
@@ -856,7 +856,7 @@ export default function RecursosAsociacionClient() {
             />
             {search && (
               <button type="button" onClick={() => setSearch('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground">
                 <X className="h-4 w-4" />
               </button>
             )}
@@ -865,12 +865,12 @@ export default function RecursosAsociacionClient() {
             {(['todos', 'activo', 'inactivo'] as const).map((v) => (
               <button key={v} type="button"
                 onClick={() => setFilterActivo(v)}
-                className={`px-3 py-1.5 transition ${filterActivo === v ? 'bg-gray-800 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+                className={`px-3 py-1.5 transition ${filterActivo === v ? 'bg-gray-800 text-white' : 'bg-white text-muted-foreground hover:bg-muted/30'}`}>
                 {v === 'todos' ? 'Todos' : v === 'activo' ? 'Activos' : 'Inactivos'}
               </button>
             ))}
           </div>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-muted-foreground">
             {recursosFiltrados.length} de {recursos.length}
           </span>
         </div>
@@ -881,13 +881,13 @@ export default function RecursosAsociacionClient() {
         {loading ? (
           <div className="space-y-2">
             {[1,2,3].map(i => (
-              <div key={i} className="h-14 animate-pulse rounded border bg-gray-50" />
+              <div key={i} className="h-14 animate-pulse rounded border bg-muted/30" />
             ))}
           </div>
         ) : recursos.length === 0 ? (
-          <p className="text-sm text-gray-600">No hay recursos de asociación todavía.</p>
+          <p className="text-sm text-muted-foreground">No hay recursos de asociación todavía.</p>
         ) : recursosFiltrados.length === 0 ? (
-          <p className="text-sm text-gray-500">No hay recursos que coincidan con la búsqueda.</p>
+          <p className="text-sm text-muted-foreground">No hay recursos que coincidan con la búsqueda.</p>
         ) : (
           recursosFiltrados.map((r) => {
             const isExpanded = expandedDetail.has(r.id);
@@ -923,24 +923,24 @@ export default function RecursosAsociacionClient() {
                     <button
                       type="button"
                       onClick={() => toggleDetail(r.id)}
-                      className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-gray-50/60 transition"
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-muted/30/60 transition"
                     >
                       {/* Foto miniatura */}
                       {r.fotoUrl ? (
                         <img src={r.fotoUrl} alt="" className="h-10 w-14 shrink-0 rounded object-cover" />
                       ) : (
-                        <div className="h-10 w-14 shrink-0 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-xs">Sin foto</div>
+                        <div className="h-10 w-14 shrink-0 rounded bg-muted flex items-center justify-center text-gray-300 text-xs">Sin foto</div>
                       )}
 
                       {/* Info principal */}
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-1.5">
                           <span className="font-medium text-sm text-gray-900 truncate">{r.nombre}</span>
-                          <span className="shrink-0 rounded border bg-gray-50 px-1.5 py-0.5 text-xs text-gray-500">
+                          <span className="shrink-0 rounded border bg-muted/30 px-1.5 py-0.5 text-xs text-muted-foreground">
                             {TIPO_LABELS[r.tipo] || r.tipo}
                           </span>
                           <span className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold ${
-                            r.activo ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'
+                            r.activo ? 'bg-green-50 text-green-700' : 'bg-muted text-muted-foreground'
                           }`}>
                             {r.activo ? 'Activo' : 'Inactivo'}
                           </span>
@@ -948,7 +948,7 @@ export default function RecursosAsociacionClient() {
                             <span className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">⛔ Cerrado</span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500 mt-0.5 truncate">
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
                           {[r.provincia, r.comunidad].filter(Boolean).join(', ')}
                           {r.precioCents && r.precioCents > 0 ? ` · ${(r.precioCents / 100).toFixed(2)} €` : ''}
                           {r.descuentoPorcentaje && r.descuentoPorcentaje > 0 ? ` · Club −${r.descuentoPorcentaje}%` : ''}
@@ -956,7 +956,7 @@ export default function RecursosAsociacionClient() {
                       </div>
 
                       {/* Chevron */}
-                      <span className="shrink-0 text-gray-400">
+                      <span className="shrink-0 text-muted-foreground">
                         {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </span>
                     </button>
@@ -969,9 +969,9 @@ export default function RecursosAsociacionClient() {
                           {/* Columna izquierda: descripción + contacto + QR */}
                           <div className="space-y-3">
                             {r.descripcion && (
-                              <p className="text-sm text-gray-600 line-clamp-4">{r.descripcion}</p>
+                              <p className="text-sm text-muted-foreground line-clamp-4">{r.descripcion}</p>
                             )}
-                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                               {r.contacto && <span>✉ {r.contacto}</span>}
                               {r.web && (
                                 <a href={r.web} target="_blank" rel="noopener noreferrer"
@@ -979,7 +979,7 @@ export default function RecursosAsociacionClient() {
                               )}
                             </div>
                             {r.codigoQr && (
-                              <div className="break-all font-mono text-xs text-gray-400">QR: {r.codigoQr}</div>
+                              <div className="break-all font-mono text-xs text-muted-foreground">QR: {r.codigoQr}</div>
                             )}
                           </div>
 
@@ -989,16 +989,16 @@ export default function RecursosAsociacionClient() {
                               <div className="overflow-hidden rounded border border-gray-100">
                                 <table className="w-full text-xs">
                                   <thead>
-                                    <tr className="bg-gray-50">
-                                      <th className="px-2 py-1 text-left font-medium text-gray-500 w-12">Día</th>
-                                      <th className="px-2 py-1 text-left font-medium text-gray-500">Horario</th>
+                                    <tr className="bg-muted/30">
+                                      <th className="px-2 py-1 text-left font-medium text-muted-foreground w-12">Día</th>
+                                      <th className="px-2 py-1 text-left font-medium text-muted-foreground">Horario</th>
                                     </tr>
                                   </thead>
                                   <tbody className="divide-y divide-gray-50">
                                     {[...r.horariosSemana].sort((a, b) => a.diaSemana - b.diaSemana).map((h) => (
-                                      <tr key={h.diaSemana} className="hover:bg-gray-50/60">
+                                      <tr key={h.diaSemana} className="hover:bg-muted/30/60">
                                         <td className="px-2 py-1 font-medium text-gray-700">{dias[h.diaSemana]}</td>
-                                        <td className="px-2 py-1 text-gray-600">
+                                        <td className="px-2 py-1 text-muted-foreground">
                                           {h.abierto
                                             ? h.horaAbre && h.horaCierra
                                               ? `${h.horaAbre} – ${h.horaCierra}`
@@ -1014,7 +1014,7 @@ export default function RecursosAsociacionClient() {
 
                             {r.cierresEspeciales && r.cierresEspeciales.length > 0 && (
                               <div>
-                                <p className="text-xs font-medium text-gray-500 mb-1">Cierres especiales:</p>
+                                <p className="text-xs font-medium text-muted-foreground mb-1">Cierres especiales:</p>
                                 <ul className="space-y-0.5">
                                   {r.cierresEspeciales.map((c) => {
                                     const fecha = new Date(c.fecha);
@@ -1023,7 +1023,7 @@ export default function RecursosAsociacionClient() {
                                     const esPasado = fecha < hoy && !esHoy;
                                     return (
                                       <li key={c.fecha.toString()}
-                                        className={`text-xs ${esHoy ? 'font-semibold text-red-600' : esPasado ? 'text-gray-400' : 'text-amber-700'}`}>
+                                        className={`text-xs ${esHoy ? 'font-semibold text-red-600' : esPasado ? 'text-muted-foreground' : 'text-amber-700'}`}>
                                         {fecha.toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' })}
                                         {c.motivo ? ` — ${c.motivo}` : ''}
                                         {esHoy && ' (HOY)'}
@@ -1039,16 +1039,16 @@ export default function RecursosAsociacionClient() {
                         {/* Acciones */}
                         <div className="mt-4 flex flex-wrap gap-2 border-t pt-3">
                           <button type="button" onClick={() => startEdit(r)}
-                            className="rounded border px-3 py-1 text-sm hover:bg-gray-50">
+                            className="rounded border px-3 py-1 text-sm hover:bg-muted/30">
                             Editar
                           </button>
                           <button type="button" onClick={() => handleToggle(r.id, r.activo)}
-                            className="rounded border px-3 py-1 text-sm hover:bg-gray-50">
+                            className="rounded border px-3 py-1 text-sm hover:bg-muted/30">
                             {r.activo ? 'Desactivar' : 'Activar'}
                           </button>
                           <button type="button"
                             onClick={() => setExpandedColab(expandedColab === r.id ? null : r.id)}
-                            className="rounded border px-3 py-1 text-sm hover:bg-gray-50">
+                            className="rounded border px-3 py-1 text-sm hover:bg-muted/30">
                             Colaboradores
                           </button>
                           <a href={`/recursos/${r.slug || r.id}`} target="_blank" rel="noopener noreferrer"

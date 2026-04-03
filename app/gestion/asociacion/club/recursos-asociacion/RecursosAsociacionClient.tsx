@@ -41,7 +41,7 @@ export default function RecursosAsociacionClient() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border bg-white p-8 text-center text-sm text-gray-500">
+      <div className="rounded-xl border bg-white p-8 text-center text-sm text-muted-foreground">
         Cargando recursos…
       </div>
     );
@@ -59,7 +59,7 @@ export default function RecursosAsociacionClient() {
     <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+          <thead className="bg-muted/30 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
             <tr>
               <th className="px-4 py-3">Recurso</th>
               <th className="px-4 py-3">Tipo</th>
@@ -71,37 +71,37 @@ export default function RecursosAsociacionClient() {
           <tbody className="divide-y divide-gray-100">
             {items.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                   No hay recursos de asociación creados.
                 </td>
               </tr>
             ) : (
               items.map((r) => (
-                <tr key={r.id} className="hover:bg-gray-50">
+                <tr key={r.id} className="hover:bg-muted/30">
                   <td className="px-4 py-3 font-medium text-gray-800">{r.nombre}</td>
-                  <td className="px-4 py-3 text-gray-600 capitalize">
+                  <td className="px-4 py-3 text-muted-foreground capitalize">
                     {r.tipo?.toLowerCase().replace(/_/g, ' ') ?? '—'}
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span
                       className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                        r.activo ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                        r.activo ? 'bg-green-100 text-green-800' : 'bg-muted text-muted-foreground'
                       }`}
                     >
                       {r.activo ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className="px-4 py-3 text-muted-foreground">
                     {r.descuentoPorcentaje != null ? `${r.descuentoPorcentaje}%` : '—'}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-500">{r.codigoQr}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{r.codigoQr}</td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
-      <div className="border-t bg-gray-50 px-4 py-2 text-xs text-gray-500">
+      <div className="border-t bg-muted/30 px-4 py-2 text-xs text-muted-foreground">
         Total: {items.length} recurso{items.length !== 1 ? 's' : ''} de asociación
       </div>
     </div>

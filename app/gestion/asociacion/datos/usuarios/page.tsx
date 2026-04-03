@@ -124,12 +124,12 @@ export default function DatosUsuariosPage() {
       <div className="mb-8">
         <Link
           href="/gestion/asociacion/datos"
-          className="mb-4 inline-block text-sm text-gray-600 hover:text-gray-900"
+          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
         >
           ← Volver a Datos
         </Link>
         <h1 className="text-3xl font-bold">Usuarios</h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted-foreground">
           Gestión completa: ver, editar, cambiar roles y pueblos visitados
         </p>
       </div>
@@ -140,12 +140,12 @@ export default function DatosUsuariosPage() {
           placeholder="Buscar por email, nombre..."
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="rounded-lg border border-border px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
         <select
           value={rol}
           onChange={(e) => setRol(e.target.value)}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="rounded-lg border border-border px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option value="">Todos los roles</option>
           {Object.entries(ROL_LABELS).map(([v, l]) => (
@@ -157,7 +157,7 @@ export default function DatosUsuariosPage() {
         <select
           value={activo}
           onChange={(e) => setActivo(e.target.value)}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="rounded-lg border border-border px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option value="">Todos</option>
           <option value="true">Activos</option>
@@ -166,17 +166,17 @@ export default function DatosUsuariosPage() {
         <select
           value={order}
           onChange={(e) => setOrder(e.target.value as 'asc' | 'desc')}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="rounded-lg border border-border px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option value="desc">Últimos primero</option>
           <option value="asc">Primeros primero</option>
         </select>
-        <label className="flex items-center gap-2 text-sm text-gray-600">
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
           Mostrar
           <select
             value={limit}
             onChange={(e) => setLimit(Number(e.target.value))}
-            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="rounded-lg border border-border px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             {LIMIT_OPTIONS.map((n) => (
               <option key={n} value={n}>
@@ -193,32 +193,32 @@ export default function DatosUsuariosPage() {
       )}
 
       {loading ? (
-        <div className="animate-pulse rounded-lg bg-gray-100 p-8">Cargando usuarios...</div>
+        <div className="animate-pulse rounded-lg bg-muted p-8">Cargando usuarios...</div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-border bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-muted/30">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Usuario
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Email
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Rol
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Visitas
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Pedidos
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Estado
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Acciones
                   </th>
                 </tr>
@@ -226,19 +226,19 @@ export default function DatosUsuariosPage() {
               <tbody className="divide-y divide-gray-200 bg-white">
                 {items.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
                       No hay usuarios
                     </td>
                   </tr>
                 ) : (
                   items.map((u) => (
-                    <tr key={u.id} className="hover:bg-gray-50">
+                    <tr key={u.id} className="hover:bg-muted/30">
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">
                         {[u.nombre, u.apellidos].filter(Boolean).join(' ') || '—'}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{u.email}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{u.email}</td>
                       <td className="px-4 py-3">
-                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-gray-700">
                           {ROL_LABELS[u.rol] ?? u.rol}
                         </span>
                       </td>
@@ -279,7 +279,7 @@ export default function DatosUsuariosPage() {
               </tbody>
             </table>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
             <span>
               Mostrando {from}–{to} de {total} usuarios
             </span>
@@ -287,7 +287,7 @@ export default function DatosUsuariosPage() {
               <button
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
-                className="rounded border border-gray-300 px-3 py-1.5 font-medium hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded border border-border px-3 py-1.5 font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Anterior
               </button>
@@ -297,7 +297,7 @@ export default function DatosUsuariosPage() {
               <button
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 disabled={page >= totalPages - 1 || totalPages === 0}
-                className="rounded border border-gray-300 px-3 py-1.5 font-medium hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded border border-border px-3 py-1.5 font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Siguiente
               </button>

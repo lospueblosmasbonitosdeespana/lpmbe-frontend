@@ -249,7 +249,7 @@ export default function ClubAdminClient() {
     setSavingOferta(false);
   }
 
-  if (loading) return <div className="py-12 text-center text-sm text-gray-500">Cargando...</div>;
+  if (loading) return <div className="py-12 text-center text-sm text-muted-foreground">Cargando...</div>;
   if (error) return <div className="py-12 text-center text-sm text-red-500">{error}</div>;
 
   return (
@@ -263,7 +263,7 @@ export default function ClubAdminClient() {
         <div className="mb-5 flex items-center justify-between rounded-lg border p-4">
           <div>
             <div className="font-medium text-gray-800">Inscripciones</div>
-            <div className="mt-0.5 text-sm text-gray-500">
+            <div className="mt-0.5 text-sm text-muted-foreground">
               {config?.inscripcionesAbiertas
                 ? 'Abiertas — los usuarios pueden suscribirse.'
                 : 'Cerradas — los usuarios ven una pantalla "próximamente".'}
@@ -297,10 +297,10 @@ export default function ClubAdminClient() {
               step="0.01"
               value={precioAnual}
               onChange={(e) => setPrecioAnual(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="29.00"
             />
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               {config ? `Actual: ${euros(config.precioAnualCents)}` : ''}
             </p>
           </div>
@@ -314,10 +314,10 @@ export default function ClubAdminClient() {
               step="0.01"
               value={precioMensual}
               onChange={(e) => setPrecioMensual(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="3.99"
             />
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               {config ? `Actual: ${euros(config.precioMensualCents)}` : ''}
             </p>
           </div>
@@ -347,14 +347,14 @@ export default function ClubAdminClient() {
         <div className="mb-5 flex items-center justify-between rounded-lg border p-4">
           <div>
             <div className="font-medium text-gray-800">Oferta</div>
-            <div className="mt-0.5 text-sm text-gray-500">
+            <div className="mt-0.5 text-sm text-muted-foreground">
               {config?.oferta?.activa ? (
                 config?.oferta?.vigente ? (
                   <span className="text-green-600 font-medium">
                     Activa — {config.oferta.descuento}% descuento
                     {config.oferta.tipo !== 'AMBOS' ? ` (solo ${config.oferta.tipo === 'ANUAL' ? 'anual' : 'mensual'})` : ''}
                     {config.oferta.expiraEn && (
-                      <span className="text-gray-500 font-normal">
+                      <span className="text-muted-foreground font-normal">
                         {' '}· Expira {new Date(config.oferta.expiraEn).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </span>
                     )}
@@ -394,7 +394,7 @@ export default function ClubAdminClient() {
               step="1"
               value={ofertaDescuento}
               onChange={(e) => setOfertaDescuento(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="20"
             />
           </div>
@@ -403,7 +403,7 @@ export default function ClubAdminClient() {
             <select
               value={ofertaTipo}
               onChange={(e) => setOfertaTipo(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             >
               <option value="AMBOS">Anual y Mensual</option>
               <option value="ANUAL">Solo Anual</option>
@@ -416,9 +416,9 @@ export default function ClubAdminClient() {
               type="datetime-local"
               value={ofertaExpiraEn}
               onChange={(e) => setOfertaExpiraEn(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
-            <p className="mt-1 text-[11px] text-gray-400">Vacío = sin fecha límite</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">Vacío = sin fecha límite</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Texto promocional</label>
@@ -426,7 +426,7 @@ export default function ClubAdminClient() {
               type="text"
               value={ofertaTexto}
               onChange={(e) => setOfertaTexto(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="Ej: ¡Oferta de lanzamiento!"
             />
           </div>
@@ -439,8 +439,8 @@ export default function ClubAdminClient() {
             <div className="flex flex-wrap gap-4 text-sm">
               {(ofertaTipo === 'AMBOS' || ofertaTipo === 'ANUAL') && (
                 <div>
-                  <span className="text-gray-500">Anual: </span>
-                  <span className="line-through text-gray-400 mr-1">{euros(config.precioAnualCents)}</span>
+                  <span className="text-muted-foreground">Anual: </span>
+                  <span className="line-through text-muted-foreground mr-1">{euros(config.precioAnualCents)}</span>
                   <span className="font-bold text-green-700">
                     {euros(Math.round(config.precioAnualCents * (1 - parseInt(ofertaDescuento) / 100)))}
                   </span>
@@ -448,8 +448,8 @@ export default function ClubAdminClient() {
               )}
               {(ofertaTipo === 'AMBOS' || ofertaTipo === 'MENSUAL') && (
                 <div>
-                  <span className="text-gray-500">Mensual: </span>
-                  <span className="line-through text-gray-400 mr-1">{euros(config.precioMensualCents)}</span>
+                  <span className="text-muted-foreground">Mensual: </span>
+                  <span className="line-through text-muted-foreground mr-1">{euros(config.precioMensualCents)}</span>
                   <span className="font-bold text-green-700">
                     {euros(Math.round(config.precioMensualCents * (1 - parseInt(ofertaDescuento) / 100)))}
                   </span>
@@ -515,7 +515,7 @@ export default function ClubAdminClient() {
               className={`border-b-2 pb-2 font-medium capitalize transition-colors ${
                 tab === t
                   ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  : 'border-transparent text-muted-foreground hover:text-gray-700'
               }`}
             >
               {t === 'resumen' ? 'Últimas altas' : t === 'suscriptores' ? 'Todos los suscriptores' : 'Uso de recursos'}
@@ -532,7 +532,7 @@ export default function ClubAdminClient() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <thead className="bg-muted/30 text-xs text-muted-foreground uppercase tracking-wide">
                 <tr>
                   <th className="px-4 py-3 text-left">Usuario</th>
                   <th className="px-4 py-3 text-left">Plan</th>
@@ -545,21 +545,21 @@ export default function ClubAdminClient() {
               <tbody className="divide-y divide-gray-100">
                 {stats.ultimas10.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-gray-400">Sin suscriptores</td>
+                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Sin suscriptores</td>
                   </tr>
                 ) : stats.ultimas10.map((s) => (
-                  <tr key={s.id} className="hover:bg-gray-50">
+                  <tr key={s.id} className="hover:bg-muted/30">
                     <td className="px-4 py-3">
                       <Link href={`/gestion/asociacion/club/usuario/${s.user.id}`} className="group">
                         <div className="font-medium text-gray-800 group-hover:text-primary group-hover:underline">{s.user.nombre || '—'}</div>
-                        <div className="text-xs text-gray-400">{s.user.email}</div>
+                        <div className="text-xs text-muted-foreground">{s.user.email}</div>
                       </Link>
                     </td>
                     <td className="px-4 py-3">
                       <PlanBadge plan={s.tipo} />
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{fmtDate(s.startsAt)}</td>
-                    <td className="px-4 py-3 text-gray-600">{fmtDate(s.expiresAt)}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{fmtDate(s.startsAt)}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{fmtDate(s.expiresAt)}</td>
                     <td className="px-4 py-3 text-right font-medium">
                       {s.importeCents != null ? euros(s.importeCents) : '—'}
                     </td>
@@ -586,7 +586,7 @@ export default function ClubAdminClient() {
             <select
               value={estadoFiltro}
               onChange={(e) => { setEstadoFiltro(e.target.value); setSusPage(1); }}
-              className="rounded border border-gray-300 px-2 py-1 text-sm"
+              className="rounded border border-border px-2 py-1 text-sm"
             >
               <option value="">Todos los estados</option>
               <option value="ACTIVA">Activas</option>
@@ -596,7 +596,7 @@ export default function ClubAdminClient() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <thead className="bg-muted/30 text-xs text-muted-foreground uppercase tracking-wide">
                 <tr>
                   <th className="px-4 py-3 text-left">Usuario</th>
                   <th className="px-4 py-3 text-left">Plan</th>
@@ -610,19 +610,19 @@ export default function ClubAdminClient() {
               <tbody className="divide-y divide-gray-100">
                 {!suscriptores || suscriptores.items.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-gray-400">Sin resultados</td>
+                    <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Sin resultados</td>
                   </tr>
                 ) : suscriptores.items.map((s) => (
-                  <tr key={s.id} className="hover:bg-gray-50">
+                  <tr key={s.id} className="hover:bg-muted/30">
                     <td className="px-4 py-3">
                       <Link href={`/gestion/asociacion/club/usuario/${s.user.id}`} className="group">
                         <div className="font-medium text-gray-800 group-hover:text-primary group-hover:underline">{s.user.nombre || '—'}</div>
-                        <div className="text-xs text-gray-400">{s.user.email}</div>
+                        <div className="text-xs text-muted-foreground">{s.user.email}</div>
                       </Link>
                     </td>
                     <td className="px-4 py-3"><PlanBadge plan={s.tipo} /></td>
-                    <td className="px-4 py-3 text-gray-600">{fmtDate(s.startsAt)}</td>
-                    <td className="px-4 py-3 text-gray-600">{fmtDate(s.expiresAt)}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{fmtDate(s.startsAt)}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{fmtDate(s.expiresAt)}</td>
                     <td className="px-4 py-3 text-center">
                       <span className={`font-semibold ${(s.totalValidaciones ?? 0) > 0 ? 'text-primary' : 'text-gray-300'}`}>
                         {s.totalValidaciones ?? 0}
@@ -641,18 +641,18 @@ export default function ClubAdminClient() {
           </div>
           {/* Paginación */}
           {suscriptores && suscriptores.total > suscriptores.limit && (
-            <div className="flex items-center justify-between px-5 py-3 border-t text-sm text-gray-600">
+            <div className="flex items-center justify-between px-5 py-3 border-t text-sm text-muted-foreground">
               <span>Página {suscriptores.page} · {suscriptores.total} registros</span>
               <div className="flex gap-2">
                 <button
                   onClick={() => setSusPage((p) => Math.max(1, p - 1))}
                   disabled={suscriptores.page === 1}
-                  className="rounded border px-3 py-1 disabled:opacity-40 hover:bg-gray-50"
+                  className="rounded border px-3 py-1 disabled:opacity-40 hover:bg-muted/30"
                 >← Anterior</button>
                 <button
                   onClick={() => setSusPage((p) => p + 1)}
                   disabled={suscriptores.page * suscriptores.limit >= suscriptores.total}
-                  className="rounded border px-3 py-1 disabled:opacity-40 hover:bg-gray-50"
+                  className="rounded border px-3 py-1 disabled:opacity-40 hover:bg-muted/30"
                 >Siguiente →</button>
               </div>
             </div>
@@ -670,7 +670,7 @@ export default function ClubAdminClient() {
             <select
               value={usosDays}
               onChange={(e) => setUsosDays(Number(e.target.value))}
-              className="rounded border border-gray-300 px-2 py-1 text-sm"
+              className="rounded border border-border px-2 py-1 text-sm"
             >
               <option value={7}>7 días</option>
               <option value={30}>30 días</option>
@@ -680,7 +680,7 @@ export default function ClubAdminClient() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+              <thead className="bg-muted/30 text-xs text-muted-foreground uppercase tracking-wide">
                 <tr>
                   <th className="px-4 py-3 text-left">Recurso</th>
                   <th className="px-4 py-3 text-left">Tipo</th>
@@ -692,12 +692,12 @@ export default function ClubAdminClient() {
               <tbody className="divide-y divide-gray-100">
                 {usoRecursos.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
+                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                       Sin datos para este período
                     </td>
                   </tr>
                 ) : usoRecursos.map((r, i) => (
-                  <tr key={r.recursoId} className="hover:bg-gray-50">
+                  <tr key={r.recursoId} className="hover:bg-muted/30">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
@@ -706,10 +706,10 @@ export default function ClubAdminClient() {
                         <span className="font-medium text-gray-800">{r.nombre}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-500 capitalize text-xs">{r.tipo?.toLowerCase().replace(/_/g, ' ')}</td>
-                    <td className="px-4 py-3 text-gray-600">{r.pueblo}</td>
+                    <td className="px-4 py-3 text-muted-foreground capitalize text-xs">{r.tipo?.toLowerCase().replace(/_/g, ' ')}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{r.pueblo}</td>
                     <td className="px-4 py-3 text-center font-semibold text-primary">{r.usos}</td>
-                    <td className="px-4 py-3 text-center text-gray-600">{r.adultosAtendidos}</td>
+                    <td className="px-4 py-3 text-center text-muted-foreground">{r.adultosAtendidos}</td>
                   </tr>
                 ))}
               </tbody>
@@ -737,7 +737,7 @@ function StatCard({
   const colors = {
     green: 'bg-green-50 border-green-200',
     amber: 'bg-amber-50 border-amber-200',
-    gray: 'bg-gray-50 border-gray-200',
+    gray: 'bg-muted/30 border-border',
     blue: 'bg-blue-50 border-blue-200',
   };
   const textColors = {
@@ -750,7 +750,7 @@ function StatCard({
     <div className={`rounded-xl border p-4 ${colors[color]}`}>
       <div className={`text-2xl font-bold ${textColors[color]}`}>{value}</div>
       <div className="mt-1 text-sm font-medium text-gray-700">{label}</div>
-      {sub && <div className="mt-0.5 text-xs text-gray-500">{sub}</div>}
+      {sub && <div className="mt-0.5 text-xs text-muted-foreground">{sub}</div>}
     </div>
   );
 }
@@ -775,7 +775,7 @@ function EstadoBadge({ estado, cancelAtPeriodEnd }: { estado: string; cancelAtPe
     return <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Activa</span>;
   }
   if (estado === 'CADUCADA') {
-    return <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">Expirada</span>;
+    return <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Expirada</span>;
   }
   return <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">Cancelada</span>;
 }

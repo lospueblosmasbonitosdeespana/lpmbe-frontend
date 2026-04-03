@@ -230,13 +230,13 @@ export default function SemaforoForm({
     `flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
       active
         ? 'border-primary text-primary'
-        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+        : 'border-transparent text-muted-foreground hover:text-gray-700 hover:border-border'
     }`;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+    <div className="rounded-lg border border-border bg-white overflow-hidden">
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 bg-gray-50">
+      <div className="flex border-b border-border bg-muted/30">
         <button type="button" className={tabClass(tab === 'manual')} onClick={() => { setTab('manual'); setError(null); }}>
           <IconTiempoReal className="h-4 w-4" />
           Tiempo real (manual)
@@ -257,7 +257,7 @@ export default function SemaforoForm({
         {/* ── TAB MANUAL ── */}
         {tab === 'manual' && (
           <form onSubmit={handleSubmitManual} className="space-y-4">
-            <p className="text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded-md p-3 leading-relaxed">
+            <p className="text-xs text-muted-foreground bg-blue-50 border border-blue-100 rounded-md p-3 leading-relaxed">
               Cambia el semáforo <strong>ahora mismo</strong>. Si hay un evento programado futuro,
               se mantiene independientemente. ROJO/AMARILLO caducan automáticamente a los 7 días si no se quitan antes.
             </p>
@@ -269,7 +269,7 @@ export default function SemaforoForm({
               <select
                 value={estadoManual}
                 onChange={(e) => setEstadoManual(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="block w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 required
               >
                 <option value="VERDE">Verde – Sin incidencias</option>
@@ -281,13 +281,13 @@ export default function SemaforoForm({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Mensaje público{estadoManual !== 'VERDE' && <span className="text-red-500"> *</span>}
-                <span className="text-xs text-gray-400 ml-1">(visible para todos)</span>
+                <span className="text-xs text-muted-foreground ml-1">(visible para todos)</span>
               </label>
               <textarea
                 value={mensajePublicoManual}
                 onChange={(e) => setMensajePublicoManual(e.target.value)}
                 rows={3}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="block w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="Ej: Alta afluencia prevista este fin de semana. Recomendamos llegar antes de las 10h."
               />
             </div>
@@ -295,13 +295,13 @@ export default function SemaforoForm({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Mensaje interno
-                <span className="text-xs text-gray-400 ml-1">(solo para gestión)</span>
+                <span className="text-xs text-muted-foreground ml-1">(solo para gestión)</span>
               </label>
               <textarea
                 value={mensajeInterno}
                 onChange={(e) => setMensajeInterno(e.target.value)}
                 rows={2}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="block w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="Notas internas para el equipo"
               />
             </div>
@@ -318,7 +318,7 @@ export default function SemaforoForm({
                 type="button"
                 onClick={handleResetManualVerde}
                 disabled={loading}
-                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                className="rounded-md border border-border bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30 disabled:opacity-50"
               >
                 Reset a VERDE
               </button>
@@ -329,7 +329,7 @@ export default function SemaforoForm({
         {/* ── TAB PROGRAMADO ── */}
         {tab === 'programado' && (
           <form onSubmit={handleSubmitProgramado} className="space-y-4">
-            <p className="text-xs text-gray-500 bg-amber-50 border border-amber-100 rounded-md p-3 leading-relaxed">
+            <p className="text-xs text-muted-foreground bg-amber-50 border border-amber-100 rounded-md p-3 leading-relaxed">
               Programa un evento <strong>futuro</strong>. El semáforo en tiempo real no cambia hasta la fecha de inicio.
               Si hay un estado manual activo (ROJO/AMARILLO), el evento programado se mostrará como aviso separado.
             </p>
@@ -341,7 +341,7 @@ export default function SemaforoForm({
               <select
                 value={estadoProgramado}
                 onChange={(e) => setEstadoProgramado(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="block w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 required
               >
                 <option value="AMARILLO">Amarillo – Atención prevista</option>
@@ -357,7 +357,7 @@ export default function SemaforoForm({
                 type="text"
                 value={motivoProgramado}
                 onChange={(e) => setMotivoProgramado(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="block w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="Ej: Vilafest (Festival de Música)"
                 required
               />
@@ -366,55 +366,55 @@ export default function SemaforoForm({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Mensaje público <span className="text-red-500">*</span>
-                <span className="text-xs text-gray-400 ml-1">(visible durante el evento)</span>
+                <span className="text-xs text-muted-foreground ml-1">(visible durante el evento)</span>
               </label>
               <textarea
                 value={mensajePublicoProgramado}
                 onChange={(e) => setMensajePublicoProgramado(e.target.value)}
                 rows={3}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="block w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="Ej: Vilafest (Festival de Música). Se verá afectada la movilidad."
                 required
               />
             </div>
 
-            <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
+            <div className="rounded-md border border-border bg-muted/30 p-4">
               <div className="text-sm font-medium text-gray-700 mb-3">Fechas del evento</div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Inicio</label>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">Inicio</label>
                   <div className="flex gap-2">
                     <input
                       type="date"
                       value={inicioFecha}
                       onChange={(e) => setInicioFecha(e.target.value)}
-                      className="flex-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="flex-1 rounded-md border border-border px-2 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       required
                     />
                     <input
                       type="time"
                       value={inicioHora}
                       onChange={(e) => setInicioHora(e.target.value)}
-                      className="w-24 rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-24 rounded-md border border-border px-2 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       required
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Fin</label>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">Fin</label>
                   <div className="flex gap-2">
                     <input
                       type="date"
                       value={finFecha}
                       onChange={(e) => setFinFecha(e.target.value)}
-                      className="flex-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="flex-1 rounded-md border border-border px-2 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       required
                     />
                     <input
                       type="time"
                       value={finHora}
                       onChange={(e) => setFinHora(e.target.value)}
-                      className="w-24 rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-24 rounded-md border border-border px-2 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       required
                     />
                   </div>

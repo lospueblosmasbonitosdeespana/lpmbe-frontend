@@ -469,7 +469,7 @@ export default function GestionNocheRomanticaPage() {
                   type="checkbox"
                   checked={config.activo}
                   onChange={(e) => setConfig({ ...config, activo: e.target.checked })}
-                  className="h-4 w-4 rounded border-gray-300"
+                  className="h-4 w-4 rounded border-border"
                 />
                 <span className="text-sm font-medium">Evento activo (web)</span>
               </label>
@@ -478,7 +478,7 @@ export default function GestionNocheRomanticaPage() {
                   type="checkbox"
                   checked={config.activaEnApp}
                   onChange={(e) => setConfig({ ...config, activaEnApp: e.target.checked })}
-                  className="h-4 w-4 rounded border-gray-300 accent-rose-600"
+                  className="h-4 w-4 rounded border-border accent-rose-600"
                 />
                 <div>
                   <span className="text-sm font-medium">Activar La Noche Romántica en la App</span>

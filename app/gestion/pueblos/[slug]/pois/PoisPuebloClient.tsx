@@ -126,12 +126,12 @@ function SortablePoiCard({
       style={style}
       id={`poi-card-${row.id}`}
       className={`relative rounded-lg border p-4 pl-10 ${
-        isEditing ? "border-yellow-300 bg-yellow-50" : "border-gray-200 bg-white"
+        isEditing ? "border-yellow-300 bg-yellow-50" : "border-border bg-white"
       } ${isDragging ? "opacity-60 shadow-lg z-10" : ""}`}
     >
       {!isEditing && (
         <div
-          className="absolute left-2 top-4 cursor-grab active:cursor-grabbing touch-none rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+          className="absolute left-2 top-4 cursor-grab active:cursor-grabbing touch-none rounded p-1 text-muted-foreground hover:bg-muted hover:text-muted-foreground"
           {...listeners}
           {...attributes}
           title="Arrastra para reordenar"
@@ -495,7 +495,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
   return (
     <main className="mx-auto max-w-5xl p-6">
       <h1 className="text-2xl font-semibold">Gestión de POIs</h1>
-      <p className="mt-2 text-sm text-gray-600">
+      <p className="mt-2 text-sm text-muted-foreground">
         Pueblo: <strong>{slug}</strong>
       </p>
 
@@ -522,7 +522,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
         />
 
         {/* Leyenda */}
-        <div className="mt-2 flex flex-wrap gap-4 text-xs text-gray-600">
+        <div className="mt-2 flex flex-wrap gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <span className="inline-block h-3 w-3 rounded-full bg-blue-600" /> POI con coordenadas propias
           </div>
@@ -557,7 +557,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
 
       {/* Formulario de creación */}
       {showCreateForm && (
-        <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-5 space-y-4">
+        <div className="mt-4 rounded-lg border border-border bg-muted/30 p-5 space-y-4">
           <h3 className="text-base font-semibold">Nuevo POI</h3>
           <div>
             <label className="mb-1 block text-sm font-medium">Nombre *</label>
@@ -565,7 +565,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
               type="text"
               value={createNombre}
               onChange={(e) => setCreateNombre(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm"
               placeholder="Ej: Castillo de Ainsa"
             />
           </div>
@@ -603,7 +603,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
             >
               ↑ Ir al mapa para ubicar
             </button>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-muted-foreground">
               {typeof createLat === "number" ? `Coordenadas: ${createLat}, ${createLng}` : "Haz clic en el mapa o busca un lugar"}
             </span>
           </div>
@@ -620,7 +620,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
               value={createDescripcion}
               onChange={(e) => setCreateDescripcion(e.target.value)}
               rows={3}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm"
             />
           </div>
           
@@ -659,13 +659,13 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
       {/* Lista de POIs — arrastra para reordenar; el mapa refleja siempre el orden actual */}
       <div className="mt-6">
         {sorted.length > 0 && (
-          <p className="mb-2 text-sm text-gray-500">
+          <p className="mb-2 text-sm text-muted-foreground">
             Arrastra las filas (⋮⋮) para reordenar. Los números del mapa se actualizan con el orden guardado.
           </p>
         )}
         <div className="space-y-4">
         {sorted.length === 0 ? (
-          <p className="text-sm text-gray-500">No hay POIs aún.</p>
+          <p className="text-sm text-muted-foreground">No hay POIs aún.</p>
         ) : (
           <DndContext
             sensors={sensors}
@@ -694,7 +694,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                         type="text"
                         value={editNombre}
                         onChange={(e) => setEditNombre(e.target.value)}
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -735,7 +735,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                       >
                         ↑ Ir al mapa para ubicar
                       </button>
-                      <span className="text-xs text-gray-400">Haz clic en el mapa o busca un lugar</span>
+                      <span className="text-xs text-muted-foreground">Haz clic en el mapa o busca un lugar</span>
                     </div>
                     
                     {(() => {
@@ -763,14 +763,14 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                         value={editDescripcion}
                         onChange={(e) => setEditDescripcion(e.target.value)}
                         rows={3}
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                       />
                     </div>
                     
                     {editId && (
                       <div className="mt-4">
                         <h4 className="text-base font-semibold mb-2">Fotos</h4>
-                        <p className="text-xs text-gray-500 mb-3">
+                        <p className="text-xs text-muted-foreground mb-3">
                           La primera foto (orden #1) es la principal.
                         </p>
                         <PhotoManager entity="poi" entityId={editId} />
@@ -799,13 +799,13 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="inline-block min-w-[28px] rounded bg-gray-100 px-2 py-0.5 text-center text-xs font-semibold text-gray-600">
+                          <span className="inline-block min-w-[28px] rounded bg-muted px-2 py-0.5 text-center text-xs font-semibold text-muted-foreground">
                             #{idx + 1}
                           </span>
                           <h3 className="text-base font-semibold">{row.nombre}</h3>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             {isValidCoord(row.lat, row.lng)
                               ? `Coordenadas: ${row.lat!.toFixed(5)}, ${row.lng!.toFixed(5)}`
                               : "Coordenadas inválidas (usa el mapa al editar para ubicar)"}
@@ -822,9 +822,9 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                           )}
                         </div>
                         {row.descripcion ? (
-                          <p className="text-sm text-gray-600 line-clamp-2">{row.descripcion}</p>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{row.descripcion}</p>
                         ) : (
-                          <p className="text-xs text-gray-400 italic">Sin descripción</p>
+                          <p className="text-xs text-muted-foreground italic">Sin descripción</p>
                         )}
                         {row.foto && (
                           <RotatedImage

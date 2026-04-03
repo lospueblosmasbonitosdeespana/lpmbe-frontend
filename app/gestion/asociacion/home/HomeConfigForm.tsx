@@ -155,9 +155,9 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
       )}
 
       {/* Hero - Carrusel de fotos de fondo */}
-      <section className="rounded-lg border border-gray-200 bg-white p-6">
+      <section className="rounded-lg border border-border bg-white p-6">
         <h2 className="text-xl font-semibold mb-4">Hero (fotos de fondo)</h2>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Las fotos del hero rotan automáticamente cada pocos segundos. Máximo 4 imágenes.
         </p>
         
@@ -173,7 +173,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                   hero: { ...config.hero, title: e.target.value },
                 })
               }
-              className="w-full rounded border border-gray-300 px-3 py-2"
+              className="w-full rounded border border-border px-3 py-2"
             />
           </div>
 
@@ -187,7 +187,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                   hero: { ...config.hero, subtitle: e.target.value },
                 })
               }
-              className="w-full rounded border border-gray-300 px-3 py-2"
+              className="w-full rounded border border-border px-3 py-2"
               rows={2}
             />
           </div>
@@ -208,9 +208,9 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                   hero: { ...config.hero, intervalMs: sec * 1000 },
                 });
               }}
-              className="w-full rounded border border-gray-300 px-3 py-2"
+              className="w-full rounded border border-border px-3 py-2"
             />
-            <p className="text-xs text-gray-500 mt-1">Cada cuántos segundos cambia la foto (por defecto 4)</p>
+            <p className="text-xs text-muted-foreground mt-1">Cada cuántos segundos cambia la foto (por defecto 4)</p>
           </div>
 
           {/* Selector de número de imágenes (máx 4) */}
@@ -219,7 +219,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
             <select
               value={Math.min(config.hero.slides?.length || 0, 4) || 1}
               onChange={(e) => setSlidesCount(Number(e.target.value))}
-              className="w-full rounded border border-gray-300 px-3 py-2"
+              className="w-full rounded border border-border px-3 py-2"
             >
               {[1, 2, 3, 4].map((n) => (
                 <option key={n} value={n}>
@@ -254,15 +254,15 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
       </section>
 
       {/* Themes */}
-      <section className="rounded-lg border border-gray-200 bg-white p-6">
+      <section className="rounded-lg border border-border bg-white p-6">
         <h2 className="text-xl font-semibold mb-4">Temas (Ideas para tu viaje)</h2>
-        <p className="text-sm text-gray-600 mb-6">
+        <p className="text-sm text-muted-foreground mb-6">
           Gestiona las 5 imágenes temáticas que aparecen en la home pública.
         </p>
 
         <div className="space-y-4">
           {config.themes.map((theme, idx) => (
-            <div key={theme.key} className="rounded border border-gray-200 p-4">
+            <div key={theme.key} className="rounded border border-border p-4">
               <div className="flex items-start gap-4">
                 {/* Preview de imagen */}
                 <div className="flex-shrink-0">
@@ -276,8 +276,8 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                       />
                     </div>
                   ) : (
-                    <div className="h-32 w-48 rounded border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center">
-                      <span className="text-xs text-gray-400">Sin imagen</span>
+                    <div className="h-32 w-48 rounded border border-dashed border-border bg-muted/30 flex items-center justify-center">
+                      <span className="text-xs text-muted-foreground">Sin imagen</span>
                     </div>
                   )}
                 </div>
@@ -286,7 +286,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                 <div className="flex-1 space-y-3">
                   <div>
                     <span className="text-sm font-medium">{theme.title}</span>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Enlace: <code className="text-blue-600">{theme.href}</code>
                     </p>
                   </div>
@@ -347,9 +347,9 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
       </section>
 
       {/* Banner de la Tienda */}
-      <section className="rounded-lg border border-gray-200 bg-white p-6">
+      <section className="rounded-lg border border-border bg-white p-6">
         <h2 className="text-xl font-semibold mb-4">Banner de la Tienda</h2>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Imagen de fondo del banner &quot;La Tienda&quot; que aparece en la home, con el botón &quot;Visita nuestra tienda&quot;.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
@@ -361,8 +361,8 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                 className="h-40 w-64 rounded border object-cover"
               />
             ) : (
-              <div className="h-40 w-64 rounded border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center">
-                <span className="text-xs text-gray-400">Sin imagen (se usa imagen por defecto)</span>
+              <div className="h-40 w-64 rounded border border-dashed border-border bg-muted/30 flex items-center justify-center">
+                <span className="text-xs text-muted-foreground">Sin imagen (se usa imagen por defecto)</span>
               </div>
             )}
           </div>
@@ -414,9 +414,9 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
       </section>
 
       {/* Mapa interactivo */}
-      <section className="rounded-lg border border-gray-200 bg-white p-6">
+      <section className="rounded-lg border border-border bg-white p-6">
         <h2 className="text-xl font-semibold mb-4">Mapa interactivo</h2>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Imagen de preview del mapa que aparece en la home. Se muestra en la sección &quot;Mapa Interactivo&quot; con el botón &quot;Descubrir nuestros pueblos&quot;.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
@@ -428,8 +428,8 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                 className="h-40 w-64 rounded border object-cover"
               />
             ) : (
-              <div className="h-40 w-64 rounded border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center">
-                <span className="text-xs text-gray-400">Sin imagen (se usa mapa por defecto)</span>
+              <div className="h-40 w-64 rounded border border-dashed border-border bg-muted/30 flex items-center justify-center">
+                <span className="text-xs text-muted-foreground">Sin imagen (se usa mapa por defecto)</span>
               </div>
             )}
           </div>
@@ -481,7 +481,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
       </section>
 
       {/* Configuración de rutas */}
-      <section className="rounded-lg border border-gray-200 bg-white p-6">
+      <section className="rounded-lg border border-border bg-white p-6">
         <h2 className="text-xl font-semibold mb-4">Rutas en Home</h2>
 
         <div className="space-y-4">
@@ -518,14 +518,14 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                   homeRutas: { ...config.homeRutas, count: parseInt(e.target.value) || 4 },
                 })
               }
-              className="w-full rounded border border-gray-300 px-3 py-2"
+              className="w-full rounded border border-border px-3 py-2"
             />
           </div>
         </div>
       </section>
 
       {/* Configuración de actualidad */}
-      <section className="rounded-lg border border-gray-200 bg-white p-6">
+      <section className="rounded-lg border border-border bg-white p-6">
         <h2 className="text-xl font-semibold mb-4">Actualidad</h2>
 
         <div>
@@ -543,15 +543,15 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                 actualidad: { limit: parseInt(e.target.value) || 6 },
               })
             }
-            className="w-full rounded border border-gray-300 px-3 py-2"
+            className="w-full rounded border border-border px-3 py-2"
           />
         </div>
       </section>
 
       {/* Redes sociales home */}
-      <section className="rounded-lg border border-gray-200 bg-white p-6">
+      <section className="rounded-lg border border-border bg-white p-6">
         <h2 className="text-xl font-semibold mb-4">Redes sociales (Home)</h2>
-        <p className="text-sm text-gray-600 mb-6">
+        <p className="text-sm text-muted-foreground mb-6">
           Estos enlaces se muestran en la sección &quot;Síguenos en redes&quot; de la home pública.
         </p>
 
@@ -567,7 +567,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                   socialLinks: { ...(prev.socialLinks ?? {}), instagram: e.target.value },
                 }))
               }
-              className="w-full rounded border border-gray-300 px-3 py-2"
+              className="w-full rounded border border-border px-3 py-2"
               placeholder="https://www.instagram.com/..."
             />
           </div>
@@ -583,7 +583,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                   socialLinks: { ...(prev.socialLinks ?? {}), facebook: e.target.value },
                 }))
               }
-              className="w-full rounded border border-gray-300 px-3 py-2"
+              className="w-full rounded border border-border px-3 py-2"
               placeholder="https://www.facebook.com/..."
             />
           </div>
@@ -599,7 +599,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                   socialLinks: { ...(prev.socialLinks ?? {}), tiktok: e.target.value },
                 }))
               }
-              className="w-full rounded border border-gray-300 px-3 py-2"
+              className="w-full rounded border border-border px-3 py-2"
               placeholder="https://www.tiktok.com/@..."
             />
           </div>
@@ -615,7 +615,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                   socialLinks: { ...(prev.socialLinks ?? {}), youtube: e.target.value },
                 }))
               }
-              className="w-full rounded border border-gray-300 px-3 py-2"
+              className="w-full rounded border border-border px-3 py-2"
               placeholder="https://www.youtube.com/@..."
             />
           </div>
@@ -631,7 +631,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
                   socialLinks: { ...(prev.socialLinks ?? {}), x: e.target.value },
                 }))
               }
-              className="w-full rounded border border-gray-300 px-3 py-2"
+              className="w-full rounded border border-border px-3 py-2"
               placeholder="https://x.com/..."
             />
           </div>
@@ -649,7 +649,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
         </button>
 
         {uploading && (
-          <span className="text-sm text-gray-600">Subiendo imagen...</span>
+          <span className="text-sm text-muted-foreground">Subiendo imagen...</span>
         )}
       </div>
     </div>
@@ -677,7 +677,7 @@ function SlideEditor({
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   return (
-    <div className="rounded border border-gray-200 p-4">
+    <div className="rounded border border-border p-4">
       <div className="mb-3 flex items-center justify-between">
         <span className="text-sm font-medium">Imagen {idx + 1}</span>
         
@@ -749,7 +749,7 @@ function SlideEditor({
               placeholder="Ej: /noche-romantica o https://..."
               value={slide.link ?? ''}
               onChange={(e) => updateSlide({ ...slide, link: e.target.value || undefined })}
-              className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
+              className="flex-1 rounded border border-border px-3 py-2 text-sm"
             />
             <button
               type="button"
@@ -760,7 +760,7 @@ function SlideEditor({
               {saving ? "Guardando..." : "Guardar enlace"}
             </button>
           </div>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Si lo rellenas, al pulsar esta foto en la home el usuario irá a esta URL (ruta interna o externa).
           </p>
         </div>

@@ -39,7 +39,7 @@ export default function NoticiaItem({ noticia }: NoticiaItemProps) {
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <div className="font-medium">{noticia.titulo ?? '(sin título)'}</div>
-          <div className="mt-1 text-xs text-gray-500">
+          <div className="mt-1 text-xs text-muted-foreground">
             {noticia.fecha ?? noticia.createdAt ?? ''}
           </div>
           {noticia.contenido ? (
@@ -62,7 +62,7 @@ export default function NoticiaItem({ noticia }: NoticiaItemProps) {
         <div className="flex flex-col gap-2">
           <a
             href={`/gestion/asociacion/noticias/${noticia.id}/editar`}
-            className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
+            className="rounded border px-3 py-1 text-sm hover:bg-muted/30"
           >
             Editar
           </a>

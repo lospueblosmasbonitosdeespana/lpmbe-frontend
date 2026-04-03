@@ -164,7 +164,7 @@ export default function NegocioGallery({
   };
 
   if (loading) {
-    return <p className="text-xs text-gray-400 py-2">Cargando galería...</p>;
+    return <p className="text-xs text-muted-foreground py-2">Cargando galería...</p>;
   }
 
   const nextPlanName = plan === 'FREE' ? 'Recomendado' : plan === 'RECOMENDADO' ? 'Premium' : null;
@@ -181,7 +181,7 @@ export default function NegocioGallery({
       {images.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {images.map((img, index) => (
-            <div key={img.id} className="group relative rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
+            <div key={img.id} className="group relative rounded-lg border border-border overflow-hidden bg-muted/30">
               <img
                 src={img.url}
                 alt={img.alt ?? ''}
@@ -226,7 +226,7 @@ export default function NegocioGallery({
           type="button"
           onClick={handleUpload}
           disabled={uploading}
-          className="w-full rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-600 hover:border-primary/50 hover:bg-primary/5 disabled:opacity-50 transition-colors"
+          className="w-full rounded-lg border-2 border-dashed border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground hover:border-primary/50 hover:bg-primary/5 disabled:opacity-50 transition-colors"
         >
           {uploading ? 'Subiendo...' : `+ Añadir imagen (${images.length}/${maxPhotos})`}
         </button>
@@ -255,7 +255,7 @@ export default function NegocioGallery({
       )}
 
       {images.length === 0 && (
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-muted-foreground">
           Sube la foto principal de tu negocio.{plan === 'FREE' ? ' Con un plan superior podrás añadir una galería completa.' : ''}
         </p>
       )}

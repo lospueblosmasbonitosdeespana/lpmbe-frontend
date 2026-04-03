@@ -234,7 +234,7 @@ export default function SociosAdminPage() {
   if (loading) {
     return (
       <main className="mx-auto max-w-4xl px-6 py-12">
-        <p className="text-gray-600">Cargando...</p>
+        <p className="text-muted-foreground">Cargando...</p>
       </main>
     );
   }
@@ -245,17 +245,17 @@ export default function SociosAdminPage() {
         <div>
           <Link
             href="/gestion/asociacion/el-sello"
-            className="mb-2 block text-sm text-gray-600 hover:underline"
+            className="mb-2 block text-sm text-muted-foreground hover:underline"
           >
             ← Volver a El Sello (CMS)
           </Link>
           <h1 className="text-2xl font-semibold">Socios y colaboradores</h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 text-sm text-muted-foreground">
             Gestiona las instituciones y colaboradores. Añade logos, descripciones y páginas dedicadas con contenido, fotos y editor HTML/TipTap.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/gestion/asociacion/el-sello/imagenes" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          <Link href="/gestion/asociacion/el-sello/imagenes" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30">
             <ImageIcon className="h-4 w-4" />
             Imágenes del Sello
           </Link>
@@ -263,7 +263,7 @@ export default function SociosAdminPage() {
             <Users className="h-4 w-4" />
             Socios y colaboradores
           </span>
-          <Link href="/gestion/asociacion/el-sello/documentos" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          <Link href="/gestion/asociacion/el-sello/documentos" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30">
             <FileText className="h-4 w-4" />
             Gestionar Documentos (PDFs)
           </Link>
@@ -284,7 +284,7 @@ export default function SociosAdminPage() {
       </div>
 
       {showForm && (
-        <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6">
+        <div className="mb-8 rounded-lg border border-border bg-white p-6">
           <h2 className="mb-4 text-lg font-semibold">
             {editingId ? 'Editar' : 'Nuevo'} socio/colaborador
           </h2>
@@ -297,7 +297,7 @@ export default function SociosAdminPage() {
                   type="text"
                   value={formData.nombre}
                   onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2"
+                  className="w-full rounded-lg border border-border px-4 py-2"
                   placeholder="Telefónica"
                 />
               </div>
@@ -308,10 +308,10 @@ export default function SociosAdminPage() {
                   type="text"
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-sm"
+                  className="w-full rounded-lg border border-border px-4 py-2 font-mono text-sm"
                   placeholder="telefonica (se genera del nombre si vacío)"
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Si tiene slug, el logo enlazará a /el-sello/socios/[slug]
                 </p>
               </div>
@@ -321,7 +321,7 @@ export default function SociosAdminPage() {
                 <select
                   value={formData.tipo}
                   onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2"
+                  className="w-full rounded-lg border border-border px-4 py-2"
                 >
                   {TIPOS.map((t) => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -335,7 +335,7 @@ export default function SociosAdminPage() {
                   type="number"
                   value={formData.orden}
                   onChange={(e) => setFormData({ ...formData, orden: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2"
+                  className="w-full rounded-lg border border-border px-4 py-2"
                 />
               </div>
 
@@ -345,7 +345,7 @@ export default function SociosAdminPage() {
                   value={formData.descripcion}
                   onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
                   rows={2}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2"
+                  className="w-full rounded-lg border border-border px-4 py-2"
                   placeholder="Apoyo institucional..."
                 />
               </div>
@@ -356,7 +356,7 @@ export default function SociosAdminPage() {
                   type="url"
                   value={formData.websiteUrl}
                   onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2"
+                  className="w-full rounded-lg border border-border px-4 py-2"
                   placeholder="https://..."
                 />
               </div>
@@ -392,7 +392,7 @@ export default function SociosAdminPage() {
             {/* Contenido página dedicada */}
             <div className="border-t pt-6">
               <h3 className="mb-3 text-sm font-semibold">Contenido de la página dedicada</h3>
-              <p className="mb-3 text-xs text-gray-500">
+              <p className="mb-3 text-xs text-muted-foreground">
                 Si el colaborador tiene slug, este contenido se muestra en su página. Usa HTML para pegar contenido de IA o el editor tradicional.
               </p>
               <div className="flex gap-2 mb-3">
@@ -401,7 +401,7 @@ export default function SociosAdminPage() {
                     key={m}
                     type="button"
                     onClick={() => setContenidoMode(m)}
-                    className={`rounded px-3 py-1.5 text-sm ${contenidoMode === m ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    className={`rounded px-3 py-1.5 text-sm ${contenidoMode === m ? 'bg-amber-600 text-white' : 'bg-muted text-gray-700 hover:bg-gray-200'}`}
                   >
                     {m === 'edit' ? 'Editor' : m === 'html' ? 'HTML' : 'Vista previa'}
                   </button>
@@ -425,16 +425,16 @@ export default function SociosAdminPage() {
                   value={formData.contenido}
                   onChange={(e) => setFormData((p) => ({ ...p, contenido: e.target.value }))}
                   rows={12}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-sm"
+                  className="w-full rounded-lg border border-border px-4 py-2 font-mono text-sm"
                   placeholder="<p>Pega aquí HTML generado por IA o escribe el contenido...</p>"
                 />
               )}
               {contenidoMode === 'preview' && (
-                <div className="min-h-[200px] rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <div className="min-h-[200px] rounded-lg border border-border bg-muted/30 p-4">
                   {formData.contenido ? (
                     <SafeHtml html={formData.contenido} />
                   ) : (
-                    <p className="text-gray-400 text-center py-8">Sin contenido para previsualizar</p>
+                    <p className="text-muted-foreground text-center py-8">Sin contenido para previsualizar</p>
                   )}
                 </div>
               )}
@@ -470,7 +470,7 @@ export default function SociosAdminPage() {
             <button onClick={handleSave} disabled={saving || !formData.nombre.trim()} className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50">
               {saving ? 'Guardando...' : 'Guardar'}
             </button>
-            <button onClick={() => { setShowForm(false); resetForm(); }} className="rounded-lg border border-gray-300 px-6 py-2 font-medium hover:bg-gray-50">
+            <button onClick={() => { setShowForm(false); resetForm(); }} className="rounded-lg border border-border px-6 py-2 font-medium hover:bg-muted/30">
               Cancelar
             </button>
           </div>
@@ -478,22 +478,22 @@ export default function SociosAdminPage() {
       )}
 
       {socios.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center text-gray-600">
+        <div className="rounded-lg border border-border bg-muted/30 p-8 text-center text-muted-foreground">
           No hay socios ni colaboradores. Añade el primero con el botón de arriba.
         </div>
       ) : (
         <div className="space-y-3">
           {socios.map((s) => (
-            <div key={s.id} className={`flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 ${!s.activo ? 'opacity-60' : ''}`}>
+            <div key={s.id} className={`flex items-center justify-between rounded-lg border border-border bg-white p-4 ${!s.activo ? 'opacity-60' : ''}`}>
               <div className="flex flex-1 items-center gap-4">
                 {s.logoUrl ? (
                   <img src={s.logoUrl} alt={s.nombre} className="h-12 w-12 object-contain rounded" />
                 ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-100 text-gray-400">?</div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded bg-muted text-muted-foreground">?</div>
                 )}
                 <div>
                   <h3 className="font-semibold">{s.nombre}</h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     {TIPOS.find((t) => t.value === s.tipo)?.label ?? s.tipo}
                     {s.slug && ` • /el-sello/socios/${s.slug}`}
                     {!s.activo && ' • Oculto'}
@@ -501,7 +501,7 @@ export default function SociosAdminPage() {
                 </div>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => editSocio(s)} className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50">Editar</button>
+                <button onClick={() => editSocio(s)} className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted/30">Editar</button>
                 <button onClick={() => handleDelete(s.id)} className="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">Borrar</button>
               </div>
             </div>

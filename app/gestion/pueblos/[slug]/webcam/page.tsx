@@ -2,9 +2,11 @@ import { getMeServer } from "@/lib/me";
 import { getMisPueblosServer } from "@/lib/misPueblos";
 import { getPuebloBySlug } from "@/lib/api";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import WebcamPuebloClient from "./WebcamPuebloClient";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function WebcamPuebloPage({
   params,
@@ -12,9 +14,12 @@ export default async function WebcamPuebloPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+
   const me = await getMeServer();
   if (!me) redirect("/entrar");
-  if (me.rol !== "ALCALDE" && me.rol !== "ADMIN") redirect("/cuenta");
+  if (me.rol !== "ALCALDE" && me.rol !== "ADMIN" && me.rol !== "EDITOR") {
+    redirect("/cuenta");
+  }
 
   if (me.rol === "ALCALDE") {
     const mis = await getMisPueblosServer();
@@ -22,12 +27,65 @@ export default async function WebcamPuebloPage({
     if (!allowed) redirect("/gestion/mis-pueblos");
   }
 
-  const pueblo = await getPuebloBySlug(slug);
+  let pueblo: { id: number; nombre: string } | null = null;
+  try {
+    const raw = await getPuebloBySlug(slug);
+    if (raw?.id) {
+      pueblo = { id: raw.id, nombre: raw.nombre ?? slug };
+    }
+  } catch {
+    // error UI
+  }
+
   return (
-    <WebcamPuebloClient
-      slug={slug}
-      puebloId={pueblo.id}
-      puebloNombre={pueblo.nombre}
-    />
+    <main className="mx-auto max-w-4xl p-6">
+      <div className="mb-4">
+        <Link
+          href={`/gestion/pueblos/${slug}`}
+          className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Volver a gestión del pueblo
+        </Link>
+      </div>
+
+      <div className="mb-6 flex flex-col gap-2 border-b border-border/60 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-sky-700/90 dark:text-sky-400">
+            Imagen y vídeo
+          </p>
+          <h1 className="mt-1 font-serif text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
+            Webcams del pueblo
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Pueblo:{" "}
+            <strong className="font-medium text-foreground">{pueblo?.nombre ?? slug}</strong>
+          </p>
+        </div>
+        <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-800 dark:bg-sky-500/15 dark:text-sky-200">
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <circle cx="12" cy="12" r="3" />
+            <path d="M8 19h8" strokeLinecap="round" />
+          </svg>
+        </span>
+      </div>
+
+      <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+        URLs de <span className="font-medium text-foreground">embed</span> o código{" "}
+        <code className="rounded bg-muted px-1 py-0.5 text-xs">&lt;iframe&gt;</code> (p. ej. SkylineWebcams). Los visitantes
+        verán el reproductor en la ficha pública.
+      </p>
+
+      {!pueblo?.id ? (
+        <div className="rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          No se pudo cargar el pueblo. Inténtalo de nuevo más tarde.
+        </div>
+      ) : (
+        <WebcamPuebloClient slug={slug} puebloId={pueblo.id} puebloNombre={pueblo.nombre} />
+      )}
+    </main>
   );
 }

@@ -148,18 +148,18 @@ export default function EditarEventoClient({ id }: EditarEventoClientProps) {
           <label className="block text-sm font-medium">Contenido</label>
           <div className="flex gap-2 mb-3">
             <button type="button" onClick={() => setEditorMode('edit')}
-              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-muted text-gray-700 hover:bg-gray-200'}`}>
               Editor
             </button>
             <button type="button" onClick={() => setEditorMode('html')}
-              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'html' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'html' ? 'bg-amber-600 text-white' : 'bg-muted text-gray-700 hover:bg-gray-200'}`}>
               HTML
             </button>
             <button type="button" onClick={() => setEditorMode('preview')}
-              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'preview' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              className={`px-3 py-1.5 rounded text-sm font-medium ${editorMode === 'preview' ? 'bg-green-600 text-white' : 'bg-muted text-gray-700 hover:bg-gray-200'}`}>
               Vista previa
             </button>
-            {uploading && <span className="text-sm text-gray-500 self-center">Subiendo…</span>}
+            {uploading && <span className="text-sm text-muted-foreground self-center">Subiendo…</span>}
           </div>
           {editorMode === 'edit' && (
             <TipTapEditor content={contenido} onChange={setContenido}
@@ -167,13 +167,13 @@ export default function EditarEventoClient({ id }: EditarEventoClientProps) {
               placeholder="Escribe el contenido..." minHeight="300px" />
           )}
           {editorMode === 'html' && (
-            <textarea className="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-sm"
+            <textarea className="w-full rounded-lg border border-border px-4 py-2 font-mono text-sm"
               rows={15} value={contenido} onChange={(e) => setContenido(e.target.value)}
               placeholder="<p>Contenido HTML...</p>" />
           )}
           {editorMode === 'preview' && (
-            <div className="rounded-lg border border-gray-200 bg-white p-6 min-h-[200px]">
-              {contenido ? <SafeHtml html={contenido} /> : <p className="text-gray-400 text-center py-8">Sin contenido</p>}
+            <div className="rounded-lg border border-border bg-white p-6 min-h-[200px]">
+              {contenido ? <SafeHtml html={contenido} /> : <p className="text-muted-foreground text-center py-8">Sin contenido</p>}
             </div>
           )}
         </div>
@@ -221,7 +221,7 @@ export default function EditarEventoClient({ id }: EditarEventoClientProps) {
             className="mt-2 block w-full text-sm"
           />
           {file && (
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-muted-foreground">
               Archivo seleccionado: <span className="font-medium">{file.name}</span>
             </p>
           )}

@@ -326,7 +326,7 @@ export default function NegocioOfertas({
     } catch {}
   };
 
-  if (loading) return <p className="text-xs text-gray-400 py-2">Cargando ofertas...</p>;
+  if (loading) return <p className="py-2 text-xs text-muted-foreground">Cargando ofertas...</p>;
 
   return (
     <div className="space-y-3">
@@ -341,7 +341,7 @@ export default function NegocioOfertas({
             <div
               key={o.id}
               className={`rounded-lg border p-3 transition-colors ${
-                o.destacada ? 'border-primary/40 bg-primary/5' : 'border-gray-200 bg-white'
+                o.destacada ? 'border-primary/40 bg-primary/5' : 'border-border bg-card'
               } ${!o.activo ? 'opacity-50' : ''}`}
             >
               <div className="flex items-start justify-between gap-2">
@@ -349,7 +349,7 @@ export default function NegocioOfertas({
                   <span className="text-lg leading-none mt-0.5">{TIPO_OFERTA_ICONS[o.tipoOferta] ?? '📌'}</span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-semibold text-gray-800">{o.titulo}</span>
+                      <span className="text-sm font-semibold text-foreground">{o.titulo}</span>
                       {o.descuentoPorcentaje != null && (
                         <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-800">
                           -{o.descuentoPorcentaje}%
@@ -366,17 +366,17 @@ export default function NegocioOfertas({
                         </span>
                       )}
                       {o.aplicaA && (
-                        <span className="text-[10px] text-gray-400">{APLICA_A_LABELS[o.aplicaA] ?? o.aplicaA}</span>
+                        <span className="text-[10px] text-muted-foreground">{APLICA_A_LABELS[o.aplicaA] ?? o.aplicaA}</span>
                       )}
                       {o.destacada && (
                         <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">★ Destacada</span>
                       )}
                     </div>
                     {o.condicionTexto && (
-                      <p className="mt-0.5 text-[11px] text-gray-500">{o.condicionTexto}</p>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">{o.condicionTexto}</p>
                     )}
                     {o.descripcion && (
-                      <p className="mt-0.5 text-[11px] text-gray-500 italic">{o.descripcion}</p>
+                      <p className="mt-0.5 text-[11px] italic text-muted-foreground">{o.descripcion}</p>
                     )}
                   </div>
                 </div>
@@ -384,7 +384,7 @@ export default function NegocioOfertas({
                   <button
                     onClick={() => toggleActivo(o)}
                     className={`rounded px-2 py-1 text-[10px] font-medium transition-colors ${
-                      o.activo ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                      o.activo ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300' : 'bg-muted text-muted-foreground hover:bg-muted/80'
                     }`}
                     title={o.activo ? 'Desactivar' : 'Activar'}
                   >
@@ -392,7 +392,7 @@ export default function NegocioOfertas({
                   </button>
                   <button
                     onClick={() => handleEdit(o)}
-                    className="rounded bg-gray-100 px-2 py-1 text-[10px] font-medium text-gray-600 hover:bg-gray-200"
+                    className="rounded bg-muted px-2 py-1 text-[10px] font-medium text-foreground/80 hover:bg-muted/80"
                   >
                     Editar
                   </button>
@@ -413,7 +413,7 @@ export default function NegocioOfertas({
       {!showForm && !showTemplates && (
         <button
           onClick={() => setShowTemplates(true)}
-          className="w-full rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-600 hover:border-primary/50 hover:bg-primary/5 transition-colors"
+          className="w-full rounded-lg border-2 border-dashed border-border bg-muted/30 px-4 py-3 text-sm font-medium text-foreground/80 transition-colors hover:border-primary/50 hover:bg-primary/5"
         >
           + Añadir oferta para socios del Club
         </button>
@@ -421,12 +421,12 @@ export default function NegocioOfertas({
 
       {/* Templates panel */}
       {showTemplates && (
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-semibold text-gray-800">Elige una plantilla</h4>
+            <h4 className="text-sm font-semibold text-foreground">Elige una plantilla</h4>
             <button
               onClick={() => setShowTemplates(false)}
-              className="text-xs text-gray-400 hover:text-gray-600"
+              className="text-xs text-muted-foreground hover:text-foreground"
             >
               Cancelar
             </button>
@@ -436,11 +436,11 @@ export default function NegocioOfertas({
               <button
                 key={i}
                 onClick={() => handleSelectTemplate(t)}
-                className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-left text-sm transition-colors hover:border-primary/40 hover:bg-primary/5"
+                className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2.5 text-left text-sm transition-colors hover:border-primary/40 hover:bg-primary/5"
               >
                 <span className="text-xl">{TIPO_OFERTA_ICONS[t.tipoOferta] ?? '📌'}</span>
                 <div>
-                  <span className="font-medium text-gray-800">{t.titulo}</span>
+                  <span className="font-medium text-foreground">{t.titulo}</span>
                   {t.descuentoPorcentaje && (
                     <span className="ml-2 text-xs text-green-600 font-semibold">-{t.descuentoPorcentaje}%</span>
                   )}
@@ -449,7 +449,7 @@ export default function NegocioOfertas({
             ))}
             <button
               onClick={() => { setForm(EMPTY_FORM); setShowTemplates(false); setShowForm(true); setEditingId(null); }}
-              className="flex items-center gap-3 rounded-lg border border-dashed border-gray-300 bg-white px-3 py-2.5 text-left text-sm text-gray-500 hover:border-primary/40 hover:bg-primary/5"
+              className="flex items-center gap-3 rounded-lg border border-dashed border-border bg-card px-3 py-2.5 text-left text-sm text-muted-foreground hover:border-primary/40 hover:bg-primary/5"
             >
               <span className="text-xl">✏️</span>
               <span className="font-medium">Crear oferta personalizada</span>
@@ -462,12 +462,12 @@ export default function NegocioOfertas({
       {showForm && (
         <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-gray-800">
+            <h4 className="text-sm font-semibold text-foreground">
               {editingId ? 'Editar oferta' : 'Nueva oferta'}
             </h4>
             <button
               onClick={() => { setShowForm(false); setEditingId(null); setForm(EMPTY_FORM); }}
-              className="text-xs text-gray-400 hover:text-gray-600"
+              className="text-xs text-muted-foreground hover:text-foreground"
             >
               Cancelar
             </button>
@@ -475,11 +475,11 @@ export default function NegocioOfertas({
 
           {/* Title */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Título de la oferta *</label>
+            <label className="mb-1 block text-xs font-medium text-foreground/80">Título de la oferta *</label>
             <input
               value={form.titulo}
               onChange={(e) => setForm((f) => ({ ...f, titulo: e.target.value }))}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               placeholder="Ej: 10% de descuento en alojamiento"
             />
           </div>
@@ -487,11 +487,11 @@ export default function NegocioOfertas({
           {/* Type + Value row */}
           <div className="grid gap-3 sm:grid-cols-3">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Tipo</label>
+              <label className="mb-1 block text-xs font-medium text-foreground/80">Tipo</label>
               <select
                 value={form.tipoOferta}
                 onChange={(e) => setForm((f) => ({ ...f, tipoOferta: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               >
                 {Object.entries(TIPO_OFERTA_LABELS).map(([val, label]) => (
                   <option key={val} value={val}>{label}</option>
@@ -499,26 +499,26 @@ export default function NegocioOfertas({
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Descuento (%)</label>
+              <label className="mb-1 block text-xs font-medium text-foreground/80">Descuento (%)</label>
               <input
                 type="number"
                 min="0"
                 max="100"
                 value={form.descuentoPorcentaje}
                 onChange={(e) => setForm((f) => ({ ...f, descuentoPorcentaje: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                 placeholder="Ej: 10"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">O importe fijo (€)</label>
+              <label className="mb-1 block text-xs font-medium text-foreground/80">O importe fijo (€)</label>
               <input
                 type="number"
                 min="0"
                 step="0.01"
                 value={form.valorFijoCents}
                 onChange={(e) => setForm((f) => ({ ...f, valorFijoCents: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                 placeholder="Ej: 5.00"
               />
             </div>
@@ -527,11 +527,11 @@ export default function NegocioOfertas({
           {/* Aplica a + Conditions */}
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Aplica a</label>
+              <label className="mb-1 block text-xs font-medium text-foreground/80">Aplica a</label>
               <select
                 value={form.aplicaA}
                 onChange={(e) => setForm((f) => ({ ...f, aplicaA: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               >
                 <option value="">Sin especificar</option>
                 {aplicaAOptions.map((o) => (
@@ -540,11 +540,11 @@ export default function NegocioOfertas({
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Condiciones</label>
+              <label className="mb-1 block text-xs font-medium text-foreground/80">Condiciones</label>
               <input
                 value={form.condicionTexto}
                 onChange={(e) => setForm((f) => ({ ...f, condicionTexto: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                 placeholder="Ej: Estancia mínima 2 noches"
               />
             </div>
@@ -554,38 +554,38 @@ export default function NegocioOfertas({
           <div className="grid gap-3 sm:grid-cols-3">
             {(tipoNegocio === 'HOTEL' || tipoNegocio === 'CASA_RURAL') && (
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Mín. noches</label>
+                <label className="mb-1 block text-xs font-medium text-foreground/80">Mín. noches</label>
                 <input
                   type="number"
                   min="1"
                   value={form.minNoches}
                   onChange={(e) => setForm((f) => ({ ...f, minNoches: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                 />
               </div>
             )}
             {(tipoNegocio === 'RESTAURANTE' || tipoNegocio === 'BAR') && (
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Mín. comensales</label>
+                <label className="mb-1 block text-xs font-medium text-foreground/80">Mín. comensales</label>
                 <input
                   type="number"
                   min="1"
                   value={form.minComensales}
                   onChange={(e) => setForm((f) => ({ ...f, minComensales: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                 />
               </div>
             )}
             {(tipoNegocio === 'COMERCIO' || tipoNegocio === 'TIENDA_ARTESANIA') && (
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Importe mínimo (€)</label>
+                <label className="mb-1 block text-xs font-medium text-foreground/80">Importe mínimo (€)</label>
                 <input
                   type="number"
                   min="0"
                   step="0.01"
                   value={form.importeMinimoCents}
                   onChange={(e) => setForm((f) => ({ ...f, importeMinimoCents: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                   placeholder="Ej: 50"
                 />
               </div>
@@ -594,12 +594,12 @@ export default function NegocioOfertas({
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Detalles adicionales</label>
+            <label className="mb-1 block text-xs font-medium text-foreground/80">Detalles adicionales</label>
             <textarea
               value={form.descripcion}
               onChange={(e) => setForm((f) => ({ ...f, descripcion: e.target.value }))}
               rows={2}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               placeholder="Descripción opcional de la oferta"
             />
           </div>
@@ -607,21 +607,21 @@ export default function NegocioOfertas({
           {/* Vigencia + Destacada */}
           <div className="grid gap-3 sm:grid-cols-3 items-end">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Vigencia desde</label>
+              <label className="mb-1 block text-xs font-medium text-foreground/80">Vigencia desde</label>
               <input
                 type="date"
                 value={form.vigenciaDesde}
                 onChange={(e) => setForm((f) => ({ ...f, vigenciaDesde: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Vigencia hasta</label>
+              <label className="mb-1 block text-xs font-medium text-foreground/80">Vigencia hasta</label>
               <input
                 type="date"
                 value={form.vigenciaHasta}
                 onChange={(e) => setForm((f) => ({ ...f, vigenciaHasta: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               />
             </div>
             <label className="flex items-center gap-2 cursor-pointer pb-2">
@@ -629,16 +629,16 @@ export default function NegocioOfertas({
                 type="checkbox"
                 checked={form.destacada}
                 onChange={(e) => setForm((f) => ({ ...f, destacada: e.target.checked }))}
-                className="rounded border-gray-300"
+                className="rounded border-border"
               />
-              <span className="text-xs font-medium text-gray-600">Oferta destacada</span>
+              <span className="text-xs font-medium text-foreground/80">Oferta destacada</span>
             </label>
           </div>
 
           <div className="flex justify-end gap-2 pt-1">
             <button
               onClick={() => { setShowForm(false); setEditingId(null); setForm(EMPTY_FORM); }}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50"
+              className="rounded-lg border border-border bg-card px-4 py-2 text-xs font-medium text-foreground/80 hover:bg-muted/40"
             >
               Cancelar
             </button>
@@ -654,7 +654,7 @@ export default function NegocioOfertas({
       )}
 
       {ofertas.length === 0 && !showForm && !showTemplates && (
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-muted-foreground">
           Aún no has creado ofertas. Usa las plantillas para empezar rápidamente.
         </p>
       )}

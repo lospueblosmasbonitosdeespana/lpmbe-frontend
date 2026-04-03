@@ -246,7 +246,7 @@ export default function PueblosDashboard() {
                       <td className="px-4 py-3 text-muted-foreground">{p.provincia ?? '—'}</td>
                       <td className="px-4 py-3 text-right font-semibold text-foreground">{p.total}</td>
                       <td className="px-4 py-3 text-right text-blue-600 dark:text-blue-400">{p.gps}</td>
-                      <td className="px-4 py-3 text-right text-gray-500">{p.manual}</td>
+                      <td className="px-4 py-3 text-right text-muted-foreground">{p.manual}</td>
                       <td className="px-4 py-3 text-right text-muted-foreground">
                         {p.total > 0 ? Math.round((p.gps / p.total) * 100) : 0}%
                       </td>

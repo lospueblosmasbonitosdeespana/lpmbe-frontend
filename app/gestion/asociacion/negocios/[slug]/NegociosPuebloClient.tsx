@@ -64,7 +64,7 @@ type Negocio = {
 };
 
 const PLAN_LABELS: Record<string, { label: string; color: string }> = {
-  FREE: { label: 'Gratuito', color: 'bg-gray-100 text-gray-600' },
+  FREE: { label: 'Gratuito', color: 'bg-muted text-muted-foreground' },
   RECOMENDADO: { label: 'Recomendado', color: 'bg-blue-100 text-blue-800' },
   PREMIUM: { label: 'Premium', color: 'bg-amber-100 text-amber-800' },
 };
@@ -333,7 +333,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
 
   if (!isAsociacion && puebloId === null) {
     return (
-      <div className="rounded-xl border bg-white p-8 text-center text-sm text-gray-500">
+      <div className="rounded-xl border bg-white p-8 text-center text-sm text-muted-foreground">
         Cargando pueblo&hellip;
       </div>
     );
@@ -344,7 +344,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{title}</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             Gestiona hoteles, restaurantes, comercios y otros negocios privados.
           </p>
         </div>
@@ -379,20 +379,20 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Nombre *</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Nombre *</label>
               <input
                 value={form.nombre}
                 onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="Ej: Hotel Rural La Posada"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Tipo *</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Tipo *</label>
               <select
                 value={form.tipo}
                 onChange={(e) => setForm((f) => ({ ...f, tipo: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 {TIPOS_NEGOCIO.map((t) => (
                   <option key={t} value={t}>{TIPO_LABELS[t]}</option>
@@ -402,14 +402,14 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-xs font-medium text-muted-foreground mb-1">
               Descripci&oacute;n del negocio
             </label>
             <textarea
               value={form.descripcion}
               onChange={(e) => setForm((f) => ({ ...f, descripcion: e.target.value }))}
               rows={3}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="Presenta tu negocio: qué ofrecéis, qué os hace especiales..."
             />
           </div>
@@ -419,7 +419,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
             <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
               <span className="text-amber-600">🎁</span> Ofertas para socios del Club
             </h4>
-            <p className="text-xs text-gray-500 mb-2">
+            <p className="text-xs text-muted-foreground mb-2">
               Crea ofertas estructuradas para los miembros del Club de Amigos. Usa las plantillas para empezar r&aacute;pidamente.
             </p>
             {negocioEditando && (
@@ -432,39 +432,39 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Tel&eacute;fono</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Tel&eacute;fono</label>
               <input
                 value={form.telefono}
                 onChange={(e) => setForm((f) => ({ ...f, telefono: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Email</label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Web</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Web</label>
               <input
                 value={form.web}
                 onChange={(e) => setForm((f) => ({ ...f, web: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="https://..."
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Contacto (persona)</label>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Contacto (persona)</label>
             <input
               value={form.contacto}
               onChange={(e) => setForm((f) => ({ ...f, contacto: e.target.value }))}
-              className="w-full max-w-xl rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full max-w-xl rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -548,29 +548,29 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
           {/* Ubicación */}
           <div className="rounded-lg border border-blue-200 bg-blue-50/40 p-4 space-y-3">
             <h4 className="text-sm font-semibold text-blue-800">Ubicación</h4>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Haz clic en el mapa o busca por nombre para ubicar el negocio. Los visitantes podrán obtener indicaciones en la app.
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Latitud</label>
+                <label className="block text-xs text-muted-foreground mb-1">Latitud</label>
                 <input
                   type="number"
                   step="any"
                   value={form.lat}
                   onChange={(e) => setForm((f) => ({ ...f, lat: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="42.1234"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Longitud</label>
+                <label className="block text-xs text-muted-foreground mb-1">Longitud</label>
                 <input
                   type="number"
                   step="any"
                   value={form.lng}
                   onChange={(e) => setForm((f) => ({ ...f, lng: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="-3.5678"
                 />
               </div>
@@ -590,27 +590,27 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
             {isAsociacion && (
               <div className="grid gap-3 sm:grid-cols-2 mt-3">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Provincia</label>
+                  <label className="block text-xs text-muted-foreground mb-1">Provincia</label>
                   <input
                     value={form.provincia}
                     onChange={(e) => setForm((f) => ({ ...f, provincia: e.target.value }))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     placeholder="Ej: Huesca"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Comunidad Aut&oacute;noma</label>
+                  <label className="block text-xs text-muted-foreground mb-1">Comunidad Aut&oacute;noma</label>
                   <input
                     value={form.comunidad}
                     onChange={(e) => setForm((f) => ({ ...f, comunidad: e.target.value }))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     placeholder="Ej: Aragón"
                   />
                 </div>
               </div>
             )}
             {!isAsociacion && puebloProvincia && (
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-muted-foreground">
                 Provincia: {puebloProvincia} · Comunidad: {puebloComunidad} (del pueblo, se aplica automáticamente)
               </p>
             )}
@@ -626,7 +626,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
             </button>
             <button
               onClick={cancel}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+              className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted/30"
             >
               Cancelar
             </button>
@@ -636,7 +636,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
 
       {/* LIST */}
       {loading ? (
-        <div className="rounded-xl border bg-white p-8 text-center text-sm text-gray-500">
+        <div className="rounded-xl border bg-white p-8 text-center text-sm text-muted-foreground">
           Cargando negocios&hellip;
         </div>
       ) : error ? (
@@ -644,7 +644,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
           {error}
         </div>
       ) : negocios.length === 0 ? (
-        <div className="rounded-xl border bg-white p-8 text-center text-sm text-gray-400">
+        <div className="rounded-xl border bg-white p-8 text-center text-sm text-muted-foreground">
           No hay negocios {isAsociacion ? 'de asociación' : 'en este pueblo'} todavía.
         </div>
       ) : (
@@ -659,14 +659,14 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
                 const pl = PLAN_LABELS[n.planNegocio ?? 'FREE'] ?? PLAN_LABELS.FREE;
                 const isFree = (n.planNegocio ?? 'FREE') === 'FREE';
                 return isFree ? (
-                  <div className="mb-3 flex items-center justify-between rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-2">
-                    <span className="text-xs text-gray-500">Plan Gratuito — Funcionalidades limitadas en la web pública</span>
+                  <div className="mb-3 flex items-center justify-between rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2">
+                    <span className="text-xs text-muted-foreground">Plan Gratuito — Funcionalidades limitadas en la web pública</span>
                     <a href="/para-negocios" target="_blank" className="rounded bg-primary px-3 py-1 text-[11px] font-semibold text-white hover:bg-primary/90">Mejorar plan</a>
                   </div>
                 ) : (
                   <div className={`mb-3 flex items-center gap-2 rounded-lg px-3 py-2 ${n.planNegocio === 'PREMIUM' ? 'bg-amber-50 border border-amber-200' : 'bg-blue-50 border border-blue-200'}`}>
                     <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${pl.color}`}>{pl.label}</span>
-                    <span className="text-xs text-gray-600">Plan activo</span>
+                    <span className="text-xs text-muted-foreground">Plan activo</span>
                   </div>
                 );
               })()}
@@ -675,14 +675,14 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold text-gray-800">{n.nombre}</h3>
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                       {TIPO_LABELS[n.tipo] ?? n.tipo}
                     </span>
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                         n.activo
                           ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-500'
+                          : 'bg-muted text-muted-foreground'
                       }`}
                     >
                       {n.activo ? 'Activo' : 'Inactivo'}
@@ -695,10 +695,10 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
                   </div>
 
                   {n.descripcion && (
-                    <p className="mt-1 text-sm text-gray-600 line-clamp-2">{n.descripcion}</p>
+                    <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{n.descripcion}</p>
                   )}
 
-                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                     {n.telefono && <span>Tel: {n.telefono}</span>}
                     {n.email && <span>{n.email}</span>}
                     {n.web && <span>{n.web}</span>}
@@ -732,7 +732,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
                     onClick={() => handleToggleActivo(n)}
                     className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
                       n.activo
-                        ? 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                        ? 'border-border text-muted-foreground hover:bg-muted/30'
                         : 'border-green-300 text-green-700 hover:bg-green-50'
                     }`}
                     title={n.activo ? 'Desactivar' : 'Activar'}
@@ -741,7 +741,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
                   </button>
                   <button
                     onClick={() => openEdit(n)}
-                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                    className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted/30"
                   >
                     Editar
                   </button>
@@ -756,7 +756,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
 
               {/* Gallery */}
               <div className="mt-3 border-t border-gray-100 pt-3">
-                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                   Fotos del negocio
                 </h4>
                 <NegocioGallery negocioId={n.id} negocioNombre={n.nombre} plan={n.planNegocio ?? 'FREE'} />
@@ -764,13 +764,13 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
 
               {/* RRSS Services */}
               <div className="mt-3 border-t border-gray-100 pt-3">
-                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                   Servicios adicionales
                 </h4>
                 <div className={`rounded-lg border p-4 ${
                   (n.planNegocio ?? 'FREE') === 'PREMIUM'
                     ? 'border-amber-200 bg-amber-50'
-                    : 'border-gray-200 bg-gray-50'
+                    : 'border-border bg-muted/30'
                 }`}>
                   <div className="flex items-start gap-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
@@ -786,7 +786,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
                       </h5>
                       {(n.planNegocio ?? 'FREE') === 'PREMIUM' ? (
                         <>
-                          <p className="mt-1 text-xs text-gray-600">
+                          <p className="mt-1 text-xs text-muted-foreground">
                             1 publicación/mes incluida en tu plan Premium. ¿Necesitas publicaciones adicionales?
                           </p>
                           <a
@@ -799,7 +799,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
                         </>
                       ) : (
                         <>
-                          <p className="mt-1 text-xs text-gray-500">
+                          <p className="mt-1 text-xs text-muted-foreground">
                             Disponible con el plan Premium (1 publicación/mes incluida).
                             También puedes contratar publicaciones sueltas.
                           </p>
@@ -814,7 +814,7 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
                             <a
                               href="/contacto"
                               target="_blank"
-                              className="rounded border border-gray-300 bg-white px-3 py-1.5 text-[11px] font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                              className="rounded border border-border bg-white px-3 py-1.5 text-[11px] font-medium text-muted-foreground hover:bg-muted/30 transition-colors"
                             >
                               Contratar publicación suelta
                             </a>

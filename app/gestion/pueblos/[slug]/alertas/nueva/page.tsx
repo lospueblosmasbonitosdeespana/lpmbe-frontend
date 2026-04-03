@@ -52,7 +52,7 @@ export default function NuevaAlertaPuebloPage({
   return (
     <main className="mx-auto max-w-2xl p-6">
       <h1 className="text-2xl font-semibold">Nueva alerta</h1>
-      <p className="mt-1 text-sm text-gray-600">
+      <p className="mt-1 text-sm text-muted-foreground">
         Pueblo: <strong>{slug}</strong>
       </p>
 

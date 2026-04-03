@@ -15,7 +15,7 @@ export default async function NegociosPage() {
     <main className="mx-auto max-w-5xl p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">Negocios</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-muted-foreground">
           Hoteles, restaurantes, casas rurales, comercios y tiendas de los pueblos que participan
           en el Club de Amigos. Selecciona un pueblo para ver y gestionar sus negocios.
         </p>
@@ -24,7 +24,7 @@ export default async function NegociosPage() {
       <NegociosIndexClient />
 
       <div className="mt-8 text-sm">
-        <Link className="text-gray-500 hover:underline" href="/gestion/asociacion">
+        <Link className="text-muted-foreground hover:underline" href="/gestion/asociacion">
           &larr; Volver a Asociaci&oacute;n
         </Link>
       </div>

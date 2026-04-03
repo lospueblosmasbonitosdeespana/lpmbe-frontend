@@ -158,7 +158,7 @@ export default function GlobalPromotionClient() {
   if (loading) {
     return (
       <main className="mx-auto max-w-4xl px-6 py-12">
-        <p className="text-gray-600">Cargando promociones...</p>
+        <p className="text-muted-foreground">Cargando promociones...</p>
       </main>
     );
   }
@@ -170,14 +170,14 @@ export default function GlobalPromotionClient() {
       <div className="mb-8">
         <Link
           href="/gestion/asociacion/tienda"
-          className="mb-4 inline-block text-sm text-gray-600 hover:text-gray-900"
+          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
         >
           ← Volver a Tienda
         </Link>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Promoción Global</h1>
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-muted-foreground">
               Gestión de promociones globales que se aplican a todos los productos sin descuento propio
             </p>
           </div>
@@ -233,7 +233,7 @@ export default function GlobalPromotionClient() {
 
       {/* FORMULARIO */}
       {mode && (
-        <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6">
+        <div className="mb-8 rounded-lg border border-border bg-white p-6">
           <h2 className="mb-4 text-xl font-semibold">
             {mode === "create" ? "Nueva promoción global" : "Editar promoción global"}
           </h2>
@@ -246,7 +246,7 @@ export default function GlobalPromotionClient() {
                 type="text"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-md border border-border px-3 py-2 text-sm"
                 placeholder='Ej: "Black Friday", "Rebajas de Verano"'
                 required
               />
@@ -260,7 +260,7 @@ export default function GlobalPromotionClient() {
                 type="number"
                 value={form.percent}
                 onChange={(e) => setForm({ ...form, percent: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-md border border-border px-3 py-2 text-sm"
                 placeholder="0-100"
                 min="0"
                 max="100"
@@ -275,13 +275,13 @@ export default function GlobalPromotionClient() {
               <textarea
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-md border border-border px-3 py-2 text-sm"
                 rows={3}
                 placeholder="Descripción interna para administradores..."
               />
             </div>
 
-            <div className="flex gap-3 border-t border-gray-200 pt-4">
+            <div className="flex gap-3 border-t border-border pt-4">
               <button
                 type="submit"
                 className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
@@ -291,7 +291,7 @@ export default function GlobalPromotionClient() {
               <button
                 type="button"
                 onClick={closeForm}
-                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="rounded-md border border-border px-4 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30"
               >
                 Cancelar
               </button>
@@ -302,8 +302,8 @@ export default function GlobalPromotionClient() {
 
       {/* LISTADO */}
       {promotions.length === 0 && !mode && (
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
-          <p className="text-gray-600">No hay promociones globales todavía.</p>
+        <div className="rounded-lg border border-border bg-white p-8 text-center">
+          <p className="text-muted-foreground">No hay promociones globales todavía.</p>
           <button
             onClick={openCreate}
             className="mt-4 text-sm text-black underline hover:no-underline"
@@ -321,7 +321,7 @@ export default function GlobalPromotionClient() {
               className={`rounded-lg border p-4 ${
                 promo.active
                   ? "border-green-500 bg-green-50"
-                  : "border-gray-200 bg-white"
+                  : "border-border bg-white"
               }`}
             >
               <div className="flex items-start justify-between">
@@ -342,7 +342,7 @@ export default function GlobalPromotionClient() {
                     −{promo.percent}%
                   </div>
                   {promo.description && (
-                    <div className="mt-2 text-sm text-gray-600">
+                    <div className="mt-2 text-sm text-muted-foreground">
                       {promo.description}
                     </div>
                   )}
@@ -359,7 +359,7 @@ export default function GlobalPromotionClient() {
                   )}
                   <button
                     onClick={() => openEdit(promo)}
-                    className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="rounded-md border border-border px-3 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30"
                   >
                     Editar
                   </button>

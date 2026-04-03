@@ -190,7 +190,7 @@ export default function ConvertidorTexto({ onConvertir }: ConvertidorTextoProps)
     const matchesParciales = preview.filter((p) => p.matchStatus === 'partial').length;
     
     return (
-      <div className="rounded-md border bg-gray-50 p-4">
+      <div className="rounded-md border bg-muted/30 p-4">
         <h3 className="mb-2 text-sm font-semibold">Preview de paradas detectadas</h3>
         
         {/* Estadísticas */}
@@ -237,7 +237,7 @@ export default function ConvertidorTexto({ onConvertir }: ConvertidorTextoProps)
                     <div className="mt-1 text-red-700">✗ Pueblo no encontrado</div>
                   )}
                   {p.descripcionDetectada && (
-                    <div className="mt-1 text-gray-600 line-clamp-2">
+                    <div className="mt-1 text-muted-foreground line-clamp-2">
                       {p.descripcionDetectada}
                     </div>
                   )}
@@ -265,7 +265,7 @@ export default function ConvertidorTexto({ onConvertir }: ConvertidorTextoProps)
               setShowPreview(false);
               setPreview([]);
             }}
-            className="rounded-md border px-3 py-2 text-sm hover:bg-gray-100"
+            className="rounded-md border px-3 py-2 text-sm hover:bg-muted"
           >
             Cancelar
           </button>
@@ -282,9 +282,9 @@ export default function ConvertidorTexto({ onConvertir }: ConvertidorTextoProps)
   }
 
   return (
-    <div className="rounded-md border bg-gray-50 p-4">
+    <div className="rounded-md border bg-muted/30 p-4">
       <h3 className="mb-2 text-sm font-semibold">Generar paradas desde descripción</h3>
-      <p className="mb-3 text-xs text-gray-600">
+      <p className="mb-3 text-xs text-muted-foreground">
         Pega aquí el texto con formato &quot;1. Pueblo nombre ...&quot; y se detectarán
         automáticamente las paradas con match de pueblos.
       </p>
@@ -308,7 +308,7 @@ export default function ConvertidorTexto({ onConvertir }: ConvertidorTextoProps)
         {convirtiendo ? 'Analizando...' : 'Generar preview'}
       </button>
 
-      <p className="mt-2 text-xs text-gray-500">
+      <p className="mt-2 text-xs text-muted-foreground">
         Nota: Se hará un match automático con los pueblos. Podrás revisar antes de
         confirmar.
       </p>

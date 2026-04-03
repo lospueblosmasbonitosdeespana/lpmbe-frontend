@@ -92,7 +92,7 @@ export default function ElSelloImagenesPage() {
   if (loading) {
     return (
       <main className="mx-auto max-w-3xl px-6 py-12">
-        <p className="text-gray-600">Cargando...</p>
+        <p className="text-muted-foreground">Cargando...</p>
       </main>
     );
   }
@@ -101,11 +101,11 @@ export default function ElSelloImagenesPage() {
     <main className="mx-auto max-w-3xl px-6 py-12">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <Link href="/gestion/asociacion/el-sello" className="mb-2 block text-sm text-gray-600 hover:underline">
+          <Link href="/gestion/asociacion/el-sello" className="mb-2 block text-sm text-muted-foreground hover:underline">
             ← Volver a El Sello (CMS)
           </Link>
           <h1 className="text-2xl font-semibold">Imágenes del Sello</h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 text-sm text-muted-foreground">
             Sube las fotos de la página El Sello. Si no subes ninguna, se usarán las imágenes por defecto.
           </p>
         </div>
@@ -114,11 +114,11 @@ export default function ElSelloImagenesPage() {
             <ImageIcon className="h-4 w-4" />
             Imágenes del Sello
           </span>
-          <Link href="/gestion/asociacion/el-sello/socios" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          <Link href="/gestion/asociacion/el-sello/socios" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30">
             <Users className="h-4 w-4" />
             Socios y colaboradores
           </Link>
-          <Link href="/gestion/asociacion/el-sello/documentos" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          <Link href="/gestion/asociacion/el-sello/documentos" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30">
             <FileText className="h-4 w-4" />
             Gestionar Documentos (PDFs)
           </Link>
@@ -127,9 +127,9 @@ export default function ElSelloImagenesPage() {
 
       <div className="space-y-8">
         {IMAGES.map(({ key, label, desc }) => (
-          <div key={key} className="rounded-lg border border-gray-200 bg-white p-6">
+          <div key={key} className="rounded-lg border border-border bg-white p-6">
             <h2 className="text-lg font-medium mb-1">{label}</h2>
-            <p className="text-sm text-gray-600 mb-4">{desc}</p>
+            <p className="text-sm text-muted-foreground mb-4">{desc}</p>
             {images[key] && (
               <div className="mb-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}

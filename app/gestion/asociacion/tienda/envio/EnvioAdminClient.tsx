@@ -279,13 +279,13 @@ export default function EnvioAdminClient() {
   // ─── Render ─────────────────────────────────────────────────────────
 
   if (loading) {
-    return <p className="text-gray-500">Cargando configuracion de envio...</p>;
+    return <p className="text-muted-foreground">Cargando configuracion de envio...</p>;
   }
 
   return (
     <div className="space-y-10">
       {/* ── 1. Configuración General ─────────────────────────────────── */}
-      <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-xl font-semibold">Configuracion General</h2>
         {config && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -302,7 +302,7 @@ export default function EnvioAdminClient() {
                 }
                 className="w-full rounded-lg border px-3 py-2"
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Solo aplica en Península, Baleares, Canarias y Portugal. En Europa y Resto del mundo no hay envio gratis.
               </p>
             </div>
@@ -323,7 +323,7 @@ export default function EnvioAdminClient() {
                 className="w-full rounded-lg border px-3 py-2"
                 placeholder="Ej: 8"
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Metodo de transporte a usar cuando el envio es gratis
               </p>
             </div>
@@ -341,7 +341,7 @@ export default function EnvioAdminClient() {
                 }
                 className="w-full rounded-lg border px-3 py-2"
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Peso del sobre/embalaje que se suma al peso total
               </p>
             </div>
@@ -412,9 +412,9 @@ export default function EnvioAdminClient() {
       </section>
 
       {/* ── 2. Zonas de Envío ────────────────────────────────────────── */}
-      <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-xl font-semibold">Zonas de Envio</h2>
-        <p className="mb-4 text-sm text-gray-500">
+        <p className="mb-4 text-sm text-muted-foreground">
           Cada zona agrupa prefijos de codigo postal (los 2 primeros digitos). 
           Ejemplo: Peninsula usa 01-50, Baleares usa 07, etc.
         </p>
@@ -422,7 +422,7 @@ export default function EnvioAdminClient() {
         {/* Tabla de zonas */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-muted/30">
               <tr>
                 <th className="px-3 py-2 font-medium">Nombre</th>
                 <th className="px-3 py-2 font-medium">Prefijos CP</th>
@@ -494,7 +494,7 @@ export default function EnvioAdminClient() {
                         </button>
                         <button
                           onClick={() => setEditingZone(null)}
-                          className="rounded bg-gray-400 px-2 py-1 text-xs text-white hover:bg-gray-500"
+                          className="rounded bg-gray-400 px-2 py-1 text-xs text-white hover:bg-muted/300"
                         >
                           Cancelar
                         </button>
@@ -503,7 +503,7 @@ export default function EnvioAdminClient() {
                   ) : (
                     <>
                       <td className="px-3 py-2 font-medium">{z.nombre}</td>
-                      <td className="max-w-xs truncate px-3 py-2 text-xs text-gray-600">
+                      <td className="max-w-xs truncate px-3 py-2 text-xs text-muted-foreground">
                         {z.cpPrefixes.join(', ')}
                       </td>
                       <td className="px-3 py-2">{z.orden}</td>
@@ -542,9 +542,9 @@ export default function EnvioAdminClient() {
         </div>
 
         {/* Añadir zona */}
-        <div className="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-dashed border-gray-300 bg-gray-50/50 p-4">
+        <div className="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-dashed border-border bg-muted/30/50 p-4">
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Nombre</label>
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">Nombre</label>
             <input
               value={newZone.nombre}
               onChange={(e) => setNewZone({ ...newZone, nombre: e.target.value })}
@@ -553,7 +553,7 @@ export default function EnvioAdminClient() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               Prefijos CP (separados por coma)
             </label>
             <input
@@ -564,7 +564,7 @@ export default function EnvioAdminClient() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Orden</label>
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">Orden</label>
             <input
               type="number"
               value={newZone.orden}
@@ -582,9 +582,9 @@ export default function EnvioAdminClient() {
       </section>
 
       {/* ── 3. Tabla de Tarifas ──────────────────────────────────────── */}
-      <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-xl font-semibold">Tarifas de Envio</h2>
-        <p className="mb-4 text-sm text-gray-500">
+        <p className="mb-4 text-sm text-muted-foreground">
           Define el precio de envio (PVP) para cada zona segun el rango de peso del paquete.
           El sistema buscara la tarifa donde pesoMin &le; peso total &lt; pesoMax.
         </p>
@@ -596,14 +596,14 @@ export default function EnvioAdminClient() {
             <div key={z.id} className="mb-6">
               <h3 className="mb-2 text-lg font-medium text-gray-800">
                 {z.nombre}
-                <span className="ml-2 text-sm font-normal text-gray-500">
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
                   ({zoneTariffs.length} tarifa{zoneTariffs.length !== 1 ? 's' : ''})
                 </span>
               </h3>
               {zoneTariffs.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-muted/30">
                       <tr>
                         <th className="px-3 py-2 font-medium">Peso min (kg)</th>
                         <th className="px-3 py-2 font-medium">Peso max (kg)</th>
@@ -682,7 +682,7 @@ export default function EnvioAdminClient() {
                                 </button>
                                 <button
                                   onClick={cancelEditTariff}
-                                  className="rounded bg-gray-400 px-2 py-1 text-xs text-white hover:bg-gray-500"
+                                  className="rounded bg-gray-400 px-2 py-1 text-xs text-white hover:bg-muted/300"
                                 >
                                   Cancelar
                                 </button>
@@ -695,7 +695,7 @@ export default function EnvioAdminClient() {
                               <td className="px-3 py-2 font-medium">
                                 {Number(t.precioPvp).toFixed(2)} EUR
                               </td>
-                              <td className="px-3 py-2 text-gray-600">
+                              <td className="px-3 py-2 text-muted-foreground">
                                 {t.sendcloudMethodId ?? '-'}
                               </td>
                               <td className="space-x-2 px-3 py-2">
@@ -720,7 +720,7 @@ export default function EnvioAdminClient() {
                   </table>
                 </div>
               ) : (
-                <p className="text-sm italic text-gray-400">
+                <p className="text-sm italic text-muted-foreground">
                   Sin tarifas. Anade una abajo.
                 </p>
               )}
@@ -729,9 +729,9 @@ export default function EnvioAdminClient() {
         })}
 
         {/* Añadir tarifa */}
-        <div className="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-dashed border-gray-300 bg-gray-50/50 p-4">
+        <div className="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-dashed border-border bg-muted/30/50 p-4">
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Zona</label>
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">Zona</label>
             <select
               value={newTariff.zoneId}
               onChange={(e) =>
@@ -748,7 +748,7 @@ export default function EnvioAdminClient() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               Peso min (kg)
             </label>
             <input
@@ -762,7 +762,7 @@ export default function EnvioAdminClient() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               Peso max (kg)
             </label>
             <input
@@ -776,7 +776,7 @@ export default function EnvioAdminClient() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               Precio PVP (EUR)
             </label>
             <input
@@ -790,7 +790,7 @@ export default function EnvioAdminClient() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               ID metodo SC
             </label>
             <input

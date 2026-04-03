@@ -49,14 +49,14 @@ export default async function ColaboradorPuebloPage({
       <div className="mb-6">
         <Link
           href={`/gestion/pueblos/${slug}`}
-          className="text-sm text-gray-600 hover:underline"
+          className="text-sm text-muted-foreground hover:underline"
         >
           ← Volver a {puebloNombre}
         </Link>
       </div>
 
       <h1 className="text-2xl font-semibold mb-1">Mi recurso en {puebloNombre}</h1>
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-muted-foreground mb-6">
         Gestiona la información y consulta las métricas de tu recurso turístico.
       </p>
 

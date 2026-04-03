@@ -270,7 +270,7 @@ export default function ProductosAdminClient() {
   if (loading) {
     return (
       <main className="mx-auto max-w-7xl px-6 py-12">
-        <p className="text-gray-600">Cargando productos...</p>
+        <p className="text-muted-foreground">Cargando productos...</p>
       </main>
     );
   }
@@ -280,14 +280,14 @@ export default function ProductosAdminClient() {
       <div className="mb-8">
         <Link
           href="/gestion/asociacion/tienda"
-          className="mb-4 inline-block text-sm text-gray-600 hover:text-gray-900"
+          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
         >
           ← Volver a Tienda
         </Link>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Productos</h1>
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-muted-foreground">
               Gestión de productos de la tienda ({productos.length})
             </p>
           </div>
@@ -316,7 +316,7 @@ export default function ProductosAdminClient() {
 
       {/* FORMULARIO */}
       {mode && (
-        <div className="mb-8 rounded-lg border border-gray-300 bg-gray-50 p-6">
+        <div className="mb-8 rounded-lg border border-border bg-muted/30 p-6">
           <h2 className="mb-4 text-xl font-bold">
             {mode === "create" ? "Crear Producto" : "Editar Producto"}
           </h2>
@@ -331,7 +331,7 @@ export default function ProductosAdminClient() {
                   type="text"
                   value={form.nombre}
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
                   required
                 />
               </div>
@@ -344,7 +344,7 @@ export default function ProductosAdminClient() {
                   type="text"
                   value={form.slug}
                   onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
                   placeholder="auto"
                 />
               </div>
@@ -359,7 +359,7 @@ export default function ProductosAdminClient() {
                   min="0"
                   value={form.precio}
                   onChange={(e) => setForm({ ...form, precio: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
                   required
                 />
               </div>
@@ -373,7 +373,7 @@ export default function ProductosAdminClient() {
                   min="0"
                   value={form.stock}
                   onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
                   required
                 />
               </div>
@@ -385,12 +385,12 @@ export default function ProductosAdminClient() {
                 <select
                   value={form.ivaPercent}
                   onChange={(e) => setForm({ ...form, ivaPercent: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
                 >
                   <option value="21">21% (General)</option>
                   <option value="4">4% (Reducido: libros, guias, mapas)</option>
                 </select>
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-muted-foreground">
                   El precio introducido incluye IVA. Canarias queda exento.
                 </p>
               </div>
@@ -403,7 +403,7 @@ export default function ProductosAdminClient() {
                   type="text"
                   value={form.categoria}
                   onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
                   placeholder="Ej: Merchandising, Libros..."
                 />
               </div>
@@ -416,7 +416,7 @@ export default function ProductosAdminClient() {
                   type="number"
                   value={form.orden}
                   onChange={(e) => setForm({ ...form, orden: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
                 />
               </div>
             </div>
@@ -428,7 +428,7 @@ export default function ProductosAdminClient() {
               <textarea
                 value={form.descripcion}
                 onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-md border border-border px-3 py-2 text-sm"
                 rows={4}
               />
             </div>
@@ -444,7 +444,7 @@ export default function ProductosAdminClient() {
                     <img
                       src={form.imagenUrl}
                       alt="Preview"
-                      className="h-32 w-32 rounded-lg border border-gray-300 object-cover"
+                      className="h-32 w-32 rounded-lg border border-border object-cover"
                     />
                   </div>
                   <div className="flex gap-2">
@@ -452,7 +452,7 @@ export default function ProductosAdminClient() {
                       type="button"
                       onClick={handleUploadImage}
                       disabled={uploadingImage}
-                      className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                      className="rounded-md border border-border px-3 py-2 text-sm text-gray-700 hover:bg-muted/30 disabled:opacity-50"
                     >
                       {uploadingImage ? "Subiendo..." : "Cambiar imagen"}
                     </button>
@@ -470,19 +470,19 @@ export default function ProductosAdminClient() {
                   type="button"
                   onClick={handleUploadImage}
                   disabled={uploadingImage}
-                  className="flex h-32 w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-sm text-gray-600 hover:border-gray-400 hover:bg-gray-100 disabled:opacity-50"
+                  className="flex h-32 w-full items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/30 text-sm text-muted-foreground hover:border-gray-400 hover:bg-muted disabled:opacity-50"
                 >
                   {uploadingImage ? "Subiendo..." : "+ Subir imagen"}
                 </button>
               )}
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Solo subida de archivo. Formato: JPG, PNG, WebP. Se optimiza automáticamente.
               </p>
             </div>
 
             {/* GALERÍA (solo en modo edición) */}
             {mode === "edit" && editingId && (
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+              <div className="rounded-lg border border-border bg-muted/30 p-4">
                 <ProductGalleryManager productId={editingId} productNombre={form.nombre || "Producto"} />
               </div>
             )}
@@ -507,12 +507,12 @@ export default function ProductosAdminClient() {
                     type="number"
                     value={form.discountPercent}
                     onChange={(e) => setForm({ ...form, discountPercent: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-border px-3 py-2 text-sm"
                     placeholder="0-100"
                     min="0"
                     max="100"
                   />
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Deja vacío para usar la promoción global
                   </p>
                 </div>
@@ -525,10 +525,10 @@ export default function ProductosAdminClient() {
                     type="text"
                     value={form.discountLabel}
                     onChange={(e) => setForm({ ...form, discountLabel: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-border px-3 py-2 text-sm"
                     placeholder='Ej: "Black Friday", "Especial"'
                   />
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Si está vacío, se genera automáticamente
                   </p>
                 </div>
@@ -536,7 +536,7 @@ export default function ProductosAdminClient() {
             </div>
 
             {/* ── Peso y dimensiones (logística) ───────────────── */}
-            <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-4">
+            <div className="rounded-lg border border-border bg-muted/30/50 p-4">
               <h3 className="mb-3 text-sm font-semibold text-gray-700">
                 Peso y dimensiones (logistica)
               </h3>
@@ -551,7 +551,7 @@ export default function ProductosAdminClient() {
                     min="0"
                     value={form.weight}
                     onChange={(e) => setForm({ ...form, weight: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-border px-3 py-2 text-sm"
                     placeholder="0.350"
                   />
                 </div>
@@ -565,7 +565,7 @@ export default function ProductosAdminClient() {
                     min="0"
                     value={form.width}
                     onChange={(e) => setForm({ ...form, width: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-border px-3 py-2 text-sm"
                     placeholder="30"
                   />
                 </div>
@@ -579,7 +579,7 @@ export default function ProductosAdminClient() {
                     min="0"
                     value={form.height}
                     onChange={(e) => setForm({ ...form, height: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-border px-3 py-2 text-sm"
                     placeholder="20"
                   />
                 </div>
@@ -593,12 +593,12 @@ export default function ProductosAdminClient() {
                     min="0"
                     value={form.length}
                     onChange={(e) => setForm({ ...form, length: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-border px-3 py-2 text-sm"
                     placeholder="2"
                   />
                 </div>
               </div>
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-muted-foreground">
                 Si no defines dimensiones, se usaran 30x20x2 cm por defecto para la API de envio.
                 Si no defines peso, se estimaran 0.5 kg por unidad.
               </p>
@@ -626,7 +626,7 @@ export default function ProductosAdminClient() {
               </label>
             </div>
 
-            <div className="flex gap-3 border-t border-gray-200 pt-4">
+            <div className="flex gap-3 border-t border-border pt-4">
               <button
                 type="submit"
                 className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
@@ -636,7 +636,7 @@ export default function ProductosAdminClient() {
               <button
                 type="button"
                 onClick={closeForm}
-                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="rounded-md border border-border px-4 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30"
               >
                 Cancelar
               </button>
@@ -647,8 +647,8 @@ export default function ProductosAdminClient() {
 
       {/* LISTADO */}
       {productos.length === 0 && !mode && (
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
-          <p className="text-gray-600">No hay productos todavía.</p>
+        <div className="rounded-lg border border-border bg-white p-8 text-center">
+          <p className="text-muted-foreground">No hay productos todavía.</p>
           <button
             onClick={openCreate}
             className="mt-4 text-sm text-black underline hover:no-underline"
@@ -659,36 +659,36 @@ export default function ProductosAdminClient() {
       )}
 
       {productos.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-border bg-white">
           <table className="w-full">
-            <thead className="border-b border-gray-200 bg-gray-50">
+            <thead className="border-b border-border bg-muted/30">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Producto
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Precio
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   IVA
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Stock
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Estado
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Orden
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-600">
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Acciones
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {productos.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50">
+                <tr key={p.id} className="hover:bg-muted/30">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       {p.imagenUrl && (
@@ -700,9 +700,9 @@ export default function ProductosAdminClient() {
                       )}
                       <div>
                         <div className="font-medium text-gray-900">{p.nombre}</div>
-                        <div className="text-xs text-gray-500">{p.slug}</div>
+                        <div className="text-xs text-muted-foreground">{p.slug}</div>
                         {p.categoria && (
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-muted-foreground">
                             {p.categoria}
                           </div>
                         )}
@@ -716,7 +716,7 @@ export default function ProductosAdminClient() {
                     <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
                       (p.ivaPercent ?? 21) === 4
                         ? "bg-blue-100 text-blue-800"
-                        : "bg-gray-100 text-gray-800"
+                        : "bg-muted text-gray-800"
                     }`}>
                       {p.ivaPercent ?? 21}%
                     </span>
@@ -730,7 +730,7 @@ export default function ProductosAdminClient() {
                         className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
                           p.activo
                             ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
+                            : "bg-muted text-gray-800"
                         }`}
                       >
                         {p.activo ? "Activo" : "Inactivo"}

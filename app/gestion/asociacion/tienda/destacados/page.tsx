@@ -11,12 +11,12 @@ export default async function DestacadosPage() {
     <main className="mx-auto max-w-4xl px-6 py-12">
       <Link
         href="/gestion/asociacion/tienda"
-        className="mb-4 inline-block text-sm text-gray-600 hover:text-gray-900"
+        className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
       >
         ← Volver a Tienda
       </Link>
       <h1 className="text-3xl font-bold">Banners destacados</h1>
-      <p className="mt-2 text-gray-600">
+      <p className="mt-2 text-muted-foreground">
         Gestión de banners destacados en la tienda.
       </p>
     </main>

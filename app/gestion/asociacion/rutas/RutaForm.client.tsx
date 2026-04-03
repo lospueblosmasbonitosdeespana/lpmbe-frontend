@@ -402,7 +402,7 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
             }}
             required
           />
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             Se genera automáticamente desde el título. Puedes editarlo manualmente.
           </p>
         </div>
@@ -442,7 +442,7 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
               disabled={uploadingPortada}
               className="block text-sm"
             />
-            {uploadingPortada && <p className="text-xs text-gray-500">Subiendo...</p>}
+            {uploadingPortada && <p className="text-xs text-muted-foreground">Subiendo...</p>}
           </div>
         </div>
 
@@ -466,7 +466,7 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
             value={descripcionLarga}
             onChange={(e) => setDescripcionLarga(e.target.value)}
           />
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             El texto se ha limpiado de HTML. Si ves "¡Empezamos!" puedes eliminar el bloque
             numerado con el botón de arriba.
           </p>
@@ -476,7 +476,7 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
         <div className="space-y-2">
           <label className="block text-sm font-medium">Logo de la ruta</label>
           {logos.length === 0 ? (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               No hay logos disponibles.{' '}
               <a href="/gestion/asociacion/ajustes" className="text-primary hover:underline">
                 Añade logos en Ajustes de marca
@@ -494,7 +494,7 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
                     : 'border-border hover:border-gray-400'
                 }`}
               >
-                <div className="flex h-12 w-full items-center justify-center text-gray-400 text-sm">
+                <div className="flex h-12 w-full items-center justify-center text-muted-foreground text-sm">
                   —
                 </div>
                 <span className="mt-1 text-[10px] font-medium">Sin logo</span>
@@ -524,7 +524,7 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
               })}
             </div>
           )}
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             Se muestra a la derecha del título. Gestiona logos en{' '}
             <a href="/gestion/asociacion/ajustes" className="text-primary hover:underline">
               Ajustes de marca y logos
@@ -539,19 +539,19 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
             <button
               type="button"
               onClick={() => setTips((prev: Tip[]) => [...prev, { titulo: '', contenido: '', icono: 'info' }])}
-              className="rounded-md border px-3 py-1 text-xs hover:bg-gray-50"
+              className="rounded-md border px-3 py-1 text-xs hover:bg-muted/30"
             >
               + Añadir tip
             </button>
           </div>
           {tips.length === 0 ? (
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Sin tips. Añade secciones como &quot;Duración recomendada&quot;, &quot;Consejos&quot;, &quot;Gastronomía&quot;, etc.
             </p>
           ) : (
             <div className="space-y-3">
               {tips.map((tip: Tip, idx: number) => (
-                <div key={idx} className="rounded-md border bg-gray-50 p-3">
+                <div key={idx} className="rounded-md border bg-muted/30 p-3">
                   <div className="flex items-start gap-2">
                     <select
                       className="w-24 rounded border px-2 py-1 text-xs"
@@ -607,7 +607,7 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
               ))}
             </div>
           )}
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             Se muestran como tarjetas colapsables debajo de las paradas en la página pública.
           </p>
         </div>
@@ -641,8 +641,8 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
 
             {/* Distancias por tramo */}
             {routeLegs.length > 0 && (
-              <div className="rounded-md bg-gray-50 p-3">
-                <h3 className="text-xs font-semibold uppercase text-gray-500 mb-2">Distancias por tramo</h3>
+              <div className="rounded-md bg-muted/30 p-3">
+                <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-2">Distancias por tramo</h3>
                 <div className="space-y-1">
                   {routeLegs.map((leg, idx) => {
                     const fromName = paradas[leg.fromIndex]?.titulo || paradas[leg.fromIndex]?.puebloNombre || `Parada ${leg.fromIndex + 1}`;
@@ -674,7 +674,7 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
               </div>
             )}
 
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               La ruta se calcula automáticamente por carretera. Los marcadores reflejan las paradas en orden.
             </p>
           </div>
@@ -716,7 +716,7 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
               value={tiempoEstimado}
               onChange={(e) => setTiempoEstimado(String(e.target.value))}
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Tiempo de conducción. Añade tiempo extra para las paradas.
             </p>
           </div>
@@ -783,7 +783,7 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
           </button>
           <Link
             href="/gestion/asociacion/rutas"
-            className="rounded-md border px-4 py-2 hover:bg-gray-50"
+            className="rounded-md border px-4 py-2 hover:bg-muted/30"
           >
             Cancelar
           </Link>
@@ -793,13 +793,13 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
       {/* Barra fija de guardar (visible al hacer scroll) */}
       <div className="fixed bottom-0 left-0 right-0 z-20 border-t bg-white/95 px-4 py-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] backdrop-blur-sm">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Ruta + paradas se guardan juntos
           </p>
           <div className="flex gap-2">
             <Link
               href="/gestion/asociacion/rutas"
-              className="rounded-md border px-4 py-2 text-sm hover:bg-gray-50"
+              className="rounded-md border px-4 py-2 text-sm hover:bg-muted/30"
             >
               Cancelar
             </Link>

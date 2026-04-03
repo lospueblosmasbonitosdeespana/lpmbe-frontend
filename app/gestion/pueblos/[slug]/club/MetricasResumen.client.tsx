@@ -43,7 +43,7 @@ export default function MetricasResumen({ puebloId }: { puebloId: number }) {
   }, [puebloId]);
 
   if (loading) {
-    return <div className="mt-1 text-xs text-gray-500">Cargando métricas...</div>;
+    return <div className="mt-1 text-xs text-muted-foreground">Cargando métricas...</div>;
   }
 
   if (!metricas) {
@@ -51,7 +51,7 @@ export default function MetricasResumen({ puebloId }: { puebloId: number }) {
   }
 
   return (
-    <div className="mt-1 text-xs text-gray-600">
+    <div className="mt-1 text-xs text-muted-foreground">
       HOY: {metricas.total} intentos | OK: {metricas.ok} | NO OK: {metricas.noOk} | Adultos: {metricas.adultos} | Menores: {metricas.menores}
     </div>
   );

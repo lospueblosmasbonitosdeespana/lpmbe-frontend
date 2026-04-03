@@ -450,7 +450,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
           className={`px-3 py-1.5 text-sm rounded border transition-colors ${
             !value
               ? 'bg-green-50 border-green-300 text-green-700 font-medium'
-              : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+              : 'bg-white border-border text-muted-foreground hover:bg-muted/30'
           }`}
         >
           Municipal (pueblo)
@@ -462,7 +462,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
           className={`px-3 py-1.5 text-sm rounded border transition-colors ${
             value
               ? 'bg-orange-50 border-orange-300 text-orange-700 font-medium'
-              : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+              : 'bg-white border-border text-muted-foreground hover:bg-muted/30'
           }`}
         >
           Externo (colaborador)
@@ -541,36 +541,36 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
             <span className="text-xl leading-none">+</span>
             <span>Añadir nuevo recurso turístico</span>
           </button>
-          <p className="mt-2 text-center text-xs text-gray-400">Añade museos, castillos, monumentos y otros atractivos de tu municipio</p>
+          <p className="mt-2 text-center text-xs text-muted-foreground">Añade museos, castillos, monumentos y otros atractivos de tu municipio</p>
         </div>
       ) : (
         <div className="mt-6 p-4 border rounded-lg space-y-4">
           <h2 className="font-medium text-lg">Nuevo recurso</h2>
 
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Nombre *</label>
+            <label className="block text-sm text-muted-foreground mb-1">Nombre *</label>
             <input type="text" value={nuevoNombre} onChange={(e) => setNuevoNombre(e.target.value)} disabled={creando} className="w-full px-3 py-2 border rounded disabled:opacity-50" />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Tipo *</label>
+            <label className="block text-sm text-muted-foreground mb-1">Tipo *</label>
             <select value={nuevoTipo} onChange={(e) => setNuevoTipo(e.target.value)} disabled={creando} className="w-full px-3 py-2 border rounded disabled:opacity-50 bg-white">
               {TIPO_OPTIONS}
             </select>
           </div>
 
           <div>
-            <label className="block text-sm text-gray-600 mb-2">Gestión del recurso</label>
+            <label className="block text-sm text-muted-foreground mb-2">Gestión del recurso</label>
             <GestionSelector value={nuevoEsExterno} onChange={setNuevoEsExterno} disabled={creando} />
           </div>
 
           <div className="flex items-end gap-4">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Descuento (%)</label>
+              <label className="block text-sm text-muted-foreground mb-1">Descuento (%)</label>
               <input type="number" min="0" max="100" value={nuevoDescuento} onChange={(e) => setNuevoDescuento(e.target.value)} disabled={creando} className="w-24 px-3 py-2 border rounded disabled:opacity-50" />
             </div>
             <div className="flex-1">
-              <label className="block text-sm text-gray-600 mb-1">Precio (€)</label>
+              <label className="block text-sm text-muted-foreground mb-1">Precio (€)</label>
               <div className="flex gap-2 items-center">
                 <button
                   type="button"
@@ -579,7 +579,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                   className={`px-3 py-2 text-sm rounded border transition-colors whitespace-nowrap ${
                     nuevoPrecio === '0'
                       ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-medium'
-                      : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                      : 'bg-white border-border text-muted-foreground hover:bg-muted/30'
                   } disabled:opacity-50`}
                 >
                   Gratuito
@@ -597,7 +597,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
 
           <div className="flex items-center gap-2">
             <input type="checkbox" checked={nuevoActivo} onChange={(e) => setNuevoActivo(e.target.checked)} disabled={creando} className="disabled:opacity-50" />
-            <label className="text-sm text-gray-600">Activo</label>
+            <label className="text-sm text-muted-foreground">Activo</label>
           </div>
 
           {/* Geolocalización */}
@@ -622,11 +622,11 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
             />
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Latitud</label>
+                <label className="block text-xs text-muted-foreground mb-1">Latitud</label>
                 <input type="number" step="any" value={nuevoLat} onChange={(e) => setNuevoLat(e.target.value)} disabled={creando} className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50 font-mono" placeholder="42.4177" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Longitud</label>
+                <label className="block text-xs text-muted-foreground mb-1">Longitud</label>
                 <input type="number" step="any" value={nuevoLng} onChange={(e) => setNuevoLng(e.target.value)} disabled={creando} className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50 font-mono" placeholder="0.1393" />
               </div>
             </div>
@@ -636,7 +636,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
             <button type="button" onClick={handleCrear} disabled={creando || !nuevoNombre.trim() || !nuevoTipo.trim()} className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50">
               {creando ? 'Creando…' : 'Crear recurso'}
             </button>
-            <button type="button" onClick={() => { setShowForm(false); resetNuevoForm(); }} disabled={creando} className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50">
+            <button type="button" onClick={() => { setShowForm(false); resetNuevoForm(); }} disabled={creando} className="px-4 py-2 text-sm border rounded hover:bg-muted/30 disabled:opacity-50">
               Cancelar
             </button>
           </div>
@@ -646,35 +646,35 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
       {/* Lista de recursos */}
       <div className="mt-6 space-y-3">
         {loading ? (
-          <div className="text-sm text-gray-600">Cargando recursos...</div>
+          <div className="text-sm text-muted-foreground">Cargando recursos...</div>
         ) : recursos.length === 0 ? (
-          <div className="text-sm text-gray-600">No hay recursos todavía.</div>
+          <div className="text-sm text-muted-foreground">No hay recursos todavía.</div>
         ) : (
           recursos.map((r) => (
             <div key={r.id} className="p-4 border rounded space-y-2">
               {editandoId === r.id ? (
                 <>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Nombre *</label>
+                    <label className="block text-sm text-muted-foreground mb-1">Nombre *</label>
                     <input type="text" value={editNombre} onChange={(e) => setEditNombre(e.target.value)} disabled={guardando} className="w-full px-3 py-2 border rounded disabled:opacity-50" />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Tipo *</label>
+                    <label className="block text-sm text-muted-foreground mb-1">Tipo *</label>
                     <select value={editTipo} onChange={(e) => setEditTipo(e.target.value)} disabled={guardando} className="w-full px-3 py-2 border rounded disabled:opacity-50 bg-white">
                       {TIPO_OPTIONS}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-2">Gestión del recurso</label>
+                    <label className="block text-sm text-muted-foreground mb-2">Gestión del recurso</label>
                     <GestionSelector value={editEsExterno} onChange={setEditEsExterno} disabled={guardando} />
                   </div>
                   <div className="flex items-end gap-4">
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Descuento (%)</label>
+                      <label className="block text-sm text-muted-foreground mb-1">Descuento (%)</label>
                       <input type="number" min="0" max="100" value={editDescuento} onChange={(e) => setEditDescuento(e.target.value)} disabled={guardando} className="w-24 px-3 py-2 border rounded disabled:opacity-50" />
                     </div>
                     <div className="flex-1">
-                      <label className="block text-sm text-gray-600 mb-1">Precio (€)</label>
+                      <label className="block text-sm text-muted-foreground mb-1">Precio (€)</label>
                       <div className="flex gap-2 items-center">
                         <button
                           type="button"
@@ -683,7 +683,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                           className={`px-3 py-2 text-sm rounded border transition-colors whitespace-nowrap ${
                             editPrecio === '0'
                               ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-medium'
-                              : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                              : 'bg-white border-border text-muted-foreground hover:bg-muted/30'
                           } disabled:opacity-50`}
                         >
                           Gratuito
@@ -701,7 +701,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
 
                   <div className="flex items-center gap-2">
                     <input type="checkbox" checked={editActivo} onChange={(e) => setEditActivo(e.target.checked)} disabled={guardando} className="disabled:opacity-50" />
-                    <label className="text-sm text-gray-600">Activo</label>
+                    <label className="text-sm text-muted-foreground">Activo</label>
                   </div>
 
                   {/* Geolocalización (edición) */}
@@ -716,7 +716,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                         {!editLat || !editLng ? ' — Sin geolocalizar' : ''}
                       </h3>
                     </div>
-                    <p className="text-xs text-gray-600">Busca el lugar, haz clic en el mapa o arrastra el marcador rojo.</p>
+                    <p className="text-xs text-muted-foreground">Busca el lugar, haz clic en el mapa o arrastra el marcador rojo.</p>
                     <MapLocationPicker
                       center={editSelectedPosition ? [editSelectedPosition.lat, editSelectedPosition.lng] : mapCenter}
                       zoom={editSelectedPosition ? 16 : mapZoom}
@@ -729,18 +729,18 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                     />
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Latitud</label>
+                        <label className="block text-xs text-muted-foreground mb-1">Latitud</label>
                         <input type="number" step="any" value={editLat} onChange={(e) => setEditLat(e.target.value)} disabled={guardando} className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50 font-mono" placeholder="42.4177" />
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Longitud</label>
+                        <label className="block text-xs text-muted-foreground mb-1">Longitud</label>
                         <input type="number" step="any" value={editLng} onChange={(e) => setEditLng(e.target.value)} disabled={guardando} className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50 font-mono" placeholder="0.1393" />
                       </div>
                     </div>
                   </div>
 
                   {/* Horarios y cierres especiales */}
-                  <div className="rounded-lg border border-gray-200 bg-gray-50/60 p-4 mt-2">
+                  <div className="rounded-lg border border-border bg-muted/30/60 p-4 mt-2">
                     <h4 className="text-sm font-semibold text-gray-700 mb-3">Horarios y cierres especiales</h4>
                     <HorariosEditor
                       horariosSemana={editHorariosSemana}
@@ -753,7 +753,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                     <button type="button" onClick={() => handleGuardar(r.id)} disabled={guardando || !editNombre.trim()} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50">
                       {guardando ? 'Guardando…' : 'Guardar'}
                     </button>
-                    <button type="button" onClick={handleCancelarEdicion} disabled={guardando} className="px-4 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50">
+                    <button type="button" onClick={handleCancelarEdicion} disabled={guardando} className="px-4 py-2 text-sm border rounded hover:bg-muted/30 disabled:opacity-50">
                       Cancelar
                     </button>
                   </div>
@@ -790,8 +790,8 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                           </span>
                         )}
                       </div>
-                      <div className="text-sm text-gray-600">Tipo: {r.tipo || '—'}</div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-muted-foreground">Tipo: {r.tipo || '—'}</div>
+                      <div className="text-sm text-muted-foreground">
                         Precio: {r.precioCents !== null && r.precioCents !== undefined ? (r.precioCents === 0 ? <span className="text-emerald-600 font-medium">Gratuito</span> : `${(r.precioCents / 100).toFixed(2)} €`) : '—'}
                       </div>
                       {r.descuentoPorcentaje && r.precioCents && (
@@ -799,32 +799,32 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                           Con descuento: {((r.precioCents / 100) * (1 - r.descuentoPorcentaje / 100)).toFixed(2)} €
                         </div>
                       )}
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-muted-foreground">
                         Descuento: {r.descuentoPorcentaje !== null && r.descuentoPorcentaje !== undefined ? `${r.descuentoPorcentaje}%` : '—'}
                       </div>
                       <div className="text-sm text-blue-700 font-medium">
                         Condiciones: {formatCondiciones(r)}
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-muted-foreground">
                         Activo: <strong>{r.activo ? 'Sí' : 'No'}</strong>
                       </div>
-                      <div className="text-sm text-gray-600 font-mono mt-1 break-all">
+                      <div className="text-sm text-muted-foreground font-mono mt-1 break-all">
                         QR: {r.codigoQr}
                       </div>
                     </div>
                   </div>
                   <div className="flex gap-2 mt-3 flex-wrap">
-                    <button type="button" onClick={() => handleIniciarEdicion(r)} className="px-3 py-1 text-sm border rounded hover:bg-gray-50">
+                    <button type="button" onClick={() => handleIniciarEdicion(r)} className="px-3 py-1 text-sm border rounded hover:bg-muted/30">
                       Editar
                     </button>
-                    <button type="button" onClick={() => handleToggleActivo(r.id, r.activo)} className="px-3 py-1 text-sm border rounded hover:bg-gray-50">
+                    <button type="button" onClick={() => handleToggleActivo(r.id, r.activo)} className="px-3 py-1 text-sm border rounded hover:bg-muted/30">
                       {r.activo ? 'Desactivar' : 'Activar'}
                     </button>
-                    <button type="button" onClick={() => handleEliminar(r.id)} className="px-3 py-1 text-sm border rounded hover:bg-gray-50">
+                    <button type="button" onClick={() => handleEliminar(r.id)} className="px-3 py-1 text-sm border rounded hover:bg-muted/30">
                       Eliminar
                     </button>
                     {r.activo && (
-                      <a href={`/validador/${r.id}`} target="_blank" rel="noreferrer" className="px-3 py-1 text-sm border rounded hover:bg-gray-50 inline-block text-center">
+                      <a href={`/validador/${r.id}`} target="_blank" rel="noreferrer" className="px-3 py-1 text-sm border rounded hover:bg-muted/30 inline-block text-center">
                         Validador
                       </a>
                     )}

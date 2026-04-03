@@ -235,7 +235,7 @@ export default function ServiciosPuebloClient({
   return (
     <div className="space-y-6">
       {/* MAPA */}
-      <div className="rounded-xl border border-gray-200 overflow-hidden">
+      <div className="overflow-hidden rounded-xl border border-border">
         <MapLocationPicker
           center={mapCenter}
           zoom={14}
@@ -254,7 +254,7 @@ export default function ServiciosPuebloClient({
       </div>
 
       {/* Leyenda */}
-      <div className="flex flex-wrap gap-2 text-xs text-gray-500">
+      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
         {rows
           .filter((r) => r.lat != null && r.lng != null)
           .map((r) => {
@@ -291,14 +291,14 @@ export default function ServiciosPuebloClient({
 
       {/* FORMULARIO */}
       {isFormOpen && (
-        <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-5 space-y-4">
-          <h3 className="font-semibold text-blue-900 text-sm">
+        <div className="space-y-4 rounded-xl border border-blue-200 bg-blue-50/40 p-5 dark:border-blue-900/60 dark:bg-blue-950/20">
+          <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100">
             {isCreating ? "Nuevo punto de servicio" : "Editar punto de servicio"}
           </h3>
 
           {/* Selector de tipo */}
           <div>
-            <label className="mb-2 block text-xs font-medium text-gray-700">
+            <label className="mb-2 block text-xs font-medium text-foreground/80">
               Tipo de servicio <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
@@ -309,8 +309,8 @@ export default function ServiciosPuebloClient({
                   onClick={() => setForm((f) => ({ ...f, tipo: t.tipo }))}
                   className={`flex flex-col items-center gap-1 rounded-lg border p-2 text-xs transition-all ${
                     form.tipo === t.tipo
-                      ? "border-blue-500 bg-blue-100 font-semibold text-blue-800 shadow-sm"
-                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                      ? "border-blue-500 bg-blue-100 font-semibold text-blue-800 shadow-sm dark:bg-blue-900/40 dark:text-blue-100"
+                      : "border-border bg-card text-muted-foreground hover:border-border hover:bg-muted/40"
                   }`}
                 >
                   <span
@@ -326,22 +326,22 @@ export default function ServiciosPuebloClient({
 
           {/* Nombre opcional */}
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-700">
+            <label className="mb-1 block text-xs font-medium text-foreground/80">
               Nombre (opcional, ej: "Parking Norte")
             </label>
             <input
               type="text"
               value={form.nombre}
               onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
-              className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground focus:border-blue-500 focus:outline-none"
               placeholder="Nombre descriptivo"
             />
           </div>
 
           {/* Coordenadas */}
-          <div className="rounded-lg bg-white border border-gray-200 px-3 py-2 text-xs text-gray-500">
+          <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
             {form.lat != null && form.lng != null ? (
-              <span className="text-green-700 font-medium">
+              <span className="font-medium text-green-700 dark:text-green-400">
                 Posición: {form.lat.toFixed(5)}, {form.lng.toFixed(5)}
                 <button
                   type="button"
@@ -352,7 +352,7 @@ export default function ServiciosPuebloClient({
                 </button>
               </span>
             ) : (
-              <span className="text-amber-700">
+              <span className="text-amber-700 dark:text-amber-400">
                 Pulsa en el mapa para situar este punto
               </span>
             )}
@@ -363,7 +363,7 @@ export default function ServiciosPuebloClient({
             <button
               type="button"
               onClick={() => setShowHorario((v) => !v)}
-              className="flex items-center gap-1 text-xs font-medium text-blue-700 hover:underline"
+              className="flex items-center gap-1 text-xs font-medium text-blue-700 hover:underline dark:text-blue-300"
             >
               <span>{showHorario ? "▼" : "▶"}</span>
               Horarios de apertura (opcional)
@@ -373,7 +373,7 @@ export default function ServiciosPuebloClient({
               <div className="mt-3 space-y-2">
                 {DIAS_SEMANA.map(({ key, label }) => (
                   <div key={key} className="flex items-center gap-3">
-                    <span className="w-20 text-xs font-medium text-gray-600">{label}</span>
+                    <span className="w-20 text-xs font-medium text-foreground/75">{label}</span>
                     <input
                       type="text"
                       value={form.horario[key] ?? ""}
@@ -384,11 +384,11 @@ export default function ServiciosPuebloClient({
                         }))
                       }
                       placeholder="ej: 9:00-14:00, 16:00-19:00"
-                      className="flex-1 rounded border border-gray-200 px-2 py-1 text-xs focus:border-blue-400 focus:outline-none"
+                      className="flex-1 rounded border border-border bg-background px-2 py-1 text-xs text-foreground focus:border-blue-400 focus:outline-none"
                     />
                   </div>
                 ))}
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Deja vacío el día si está cerrado. Ej: "9:00-14:00" o "9:00-14:00, 16:00-19:00"
                 </p>
               </div>
@@ -414,7 +414,7 @@ export default function ServiciosPuebloClient({
               type="button"
               onClick={cancelForm}
               disabled={saving}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="rounded-lg border border-border bg-card px-4 py-2 text-sm text-foreground hover:bg-muted/40 disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -424,7 +424,7 @@ export default function ServiciosPuebloClient({
 
       {/* LISTADO */}
       {loading && (
-        <p className="text-sm text-gray-500">Cargando puntos de servicio…</p>
+        <p className="text-sm text-muted-foreground">Cargando puntos de servicio…</p>
       )}
       {error && (
         <p className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
@@ -432,14 +432,14 @@ export default function ServiciosPuebloClient({
         </p>
       )}
       {!loading && rows.length === 0 && !error && (
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-muted-foreground">
           Aún no hay puntos de servicio para {puebloNombre}. Pulsa "Añadir" para crear el primero.
         </p>
       )}
 
       {rows.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             {rows.length} punto{rows.length !== 1 ? "s" : ""} de servicio
           </p>
           {rows.map((row) => {
@@ -451,7 +451,7 @@ export default function ServiciosPuebloClient({
                 className={`rounded-lg border p-4 ${
                   isEditing
                     ? "border-blue-300 bg-blue-50"
-                    : "border-gray-200 bg-white"
+                    : "border-border bg-card"
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -462,21 +462,21 @@ export default function ServiciosPuebloClient({
                       dangerouslySetInnerHTML={{ __html: cfg?.svg ?? "📍" }}
                     />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-foreground">
                         {cfg?.etiqueta ?? row.tipo}
                         {row.nombre && (
-                          <span className="ml-1 font-normal text-gray-500">— {row.nombre}</span>
+                          <span className="ml-1 font-normal text-muted-foreground">— {row.nombre}</span>
                         )}
                       </p>
                       {row.lat != null && row.lng != null ? (
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-muted-foreground">
                           {row.lat.toFixed(5)}, {row.lng.toFixed(5)}
                         </p>
                       ) : (
                         <p className="text-xs text-amber-600">Sin coordenadas</p>
                       )}
                       {row.horario && hasHorario(row.horario) && (
-                        <div className="mt-1 text-xs text-gray-500 space-y-0.5">
+                        <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
                           {DIAS_SEMANA.map(({ key, label }) =>
                             row.horario?.[key] ? (
                               <span key={key} className="block">

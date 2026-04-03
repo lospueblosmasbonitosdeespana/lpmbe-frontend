@@ -93,11 +93,11 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
 
   const estadoBadge = (estado: string) => {
     const colors: Record<string, string> = {
-      BORRADOR: 'bg-gray-100 text-gray-700',
+      BORRADOR: 'bg-muted text-gray-700',
       PROGRAMADA: 'bg-yellow-100 text-yellow-700',
       PUBLICADA: 'bg-green-100 text-green-700',
     };
-    return colors[estado] ?? 'bg-gray-100 text-gray-700';
+    return colors[estado] ?? 'bg-muted text-gray-700';
   };
 
   // Construir link "Ver página"
@@ -127,7 +127,7 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
             >
               {contenido.estado}
             </span>
-            <span className="text-xs text-gray-500 uppercase">
+            <span className="text-xs text-muted-foreground uppercase">
               {isPaginaTematica ? `PÁGINA · ${contenido.categoria}` : contenido.tipo}
             </span>
           </div>
@@ -141,7 +141,7 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
 
           {fotosCombinadas.length > 0 && (
             <div className="mt-2">
-              <div className="mb-1 text-xs text-gray-600">
+              <div className="mb-1 text-xs text-muted-foreground">
                 {fotosCombinadas.length} foto{fotosCombinadas.length === 1 ? '' : 's'} subida{fotosCombinadas.length === 1 ? '' : 's'}
               </div>
               <div className="flex flex-wrap gap-2">
@@ -151,7 +151,7 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
                     <img
                       src={url}
                       alt={`${contenido.titulo} foto ${idx + 1}`}
-                      className="h-16 w-16 rounded border bg-gray-100 object-contain p-1"
+                      className="h-16 w-16 rounded border bg-muted object-contain p-1"
                     />
                     <span className="absolute left-1 top-1 rounded bg-black/65 px-1.5 py-0.5 text-[10px] font-medium text-white">
                       {url === portadaNorm ? 'Portada' : `Galería ${idx + 1}`}
@@ -171,7 +171,7 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
                 checked={ocultoPlanifica}
                 onChange={toggleOcultoPlanifica}
                 disabled={togglingPlanifica}
-                className="h-4 w-4 rounded border-gray-300"
+                className="h-4 w-4 rounded border-border"
               />
               <span>Ocultar en Planifica fin de semana</span>
             </label>
@@ -190,7 +190,7 @@ export default function ContenidoItemPueblo({ contenido }: ContenidoItemPuebloPr
           <a
             href={`/gestion/pueblo/contenidos/${contenido.id}/editar?puebloId=${contenido.pueblo?.id ?? ''}&puebloNombre=${encodeURIComponent(contenido.pueblo?.nombre ?? '')}`}
             onClick={(e) => e.stopPropagation()}
-            className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
+            className="rounded border px-3 py-1 text-sm hover:bg-muted/30"
           >
             Editar
           </a>

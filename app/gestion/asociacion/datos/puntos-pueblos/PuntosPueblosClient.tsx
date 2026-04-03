@@ -237,7 +237,7 @@ export default function PuntosPueblosClient() {
                           <button
                             onClick={cancelEdit}
                             disabled={saving}
-                            className="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                            className="rounded border border-border bg-white px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-muted/30 disabled:opacity-50"
                           >
                             X
                           </button>
@@ -245,7 +245,7 @@ export default function PuntosPueblosClient() {
                       ) : (
                         <button
                           onClick={() => startEdit(p)}
-                          className="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-600 hover:border-blue-400 hover:text-blue-600"
+                          className="rounded border border-border bg-white px-2.5 py-1 text-xs font-medium text-muted-foreground hover:border-blue-400 hover:text-blue-600"
                         >
                           Editar
                         </button>

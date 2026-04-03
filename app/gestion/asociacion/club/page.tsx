@@ -16,20 +16,20 @@ export default async function GestionAsociacionClubPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Club de Amigos — Administración</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             Gestiona las inscripciones, precios y estadísticas del Club de Amigos.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/gestion/asociacion/club/recursos-pueblos"
-            className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+            className="inline-flex items-center rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-muted/30"
           >
             Recursos turísticos pueblos
           </Link>
           <Link
             href="/gestion/asociacion/club/recursos-asociacion"
-            className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+            className="inline-flex items-center rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-muted/30"
           >
             Recursos turísticos asociación
           </Link>
@@ -42,7 +42,7 @@ export default async function GestionAsociacionClubPage() {
       <ClubAdminClient />
 
       <div className="mt-8 text-sm">
-        <Link className="hover:underline text-gray-500" href="/gestion/asociacion">← Volver a Asociación</Link>
+        <Link className="hover:underline text-muted-foreground" href="/gestion/asociacion">← Volver a Asociación</Link>
       </div>
     </main>
   );

@@ -157,12 +157,12 @@ export default function DatosNewsletterPage() {
       <div className="mb-8">
         <Link
           href="/gestion/asociacion/datos"
-          className="mb-4 inline-block text-sm text-gray-600 hover:text-gray-900"
+          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
         >
           ← Volver a Datos
         </Link>
         <h1 className="text-3xl font-bold">Newsletter</h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted-foreground">
           Suscriptores, contadores y exportación para envío de newsletters
         </p>
       </div>
@@ -180,19 +180,19 @@ export default function DatosNewsletterPage() {
       </div>
 
       {stats?.ultimos7Dias && stats.ultimos7Dias.length > 0 && (
-        <div className="mb-8 rounded-lg border border-gray-200 bg-white p-4">
+        <div className="mb-8 rounded-lg border border-border bg-white p-4">
           <h3 className="mb-3 font-semibold">Últimos 7 días</h3>
           <div className="flex flex-wrap gap-4">
             {stats.ultimos7Dias.map((d) => (
               <div key={d.fecha} className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-muted-foreground">
                   {new Date(d.fecha).toLocaleDateString('es-ES', {
                     weekday: 'short',
                     day: '2-digit',
                     month: '2-digit',
                   })}
                 </span>
-                <span className="rounded bg-gray-100 px-2 py-0.5 text-sm font-medium">
+                <span className="rounded bg-muted px-2 py-0.5 text-sm font-medium">
                   {d.count}
                 </span>
               </div>
@@ -204,11 +204,11 @@ export default function DatosNewsletterPage() {
       {/* FILTRO PERIODO + BÚSQUEDA + ACCIONES */}
       <div className="mb-6 flex flex-wrap items-center gap-4">
         <div>
-          <label className="mr-2 text-sm text-gray-600">Período:</label>
+          <label className="mr-2 text-sm text-muted-foreground">Período:</label>
           <select
             value={periodo}
             onChange={(e) => setPeriodo(e.target.value)}
-            className="rounded border border-gray-300 px-3 py-1.5 text-sm"
+            className="rounded border border-border px-3 py-1.5 text-sm"
           >
             {PERIODOS.map((p) => (
               <option key={p.value} value={p.value}>
@@ -223,10 +223,10 @@ export default function DatosNewsletterPage() {
             placeholder="Buscar por email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm"
+            className="w-full rounded border border-border px-3 py-1.5 text-sm"
           />
         </div>
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-muted-foreground">
           {items.length} de {total} emails
         </span>
         <div className="ml-auto flex flex-wrap gap-2">
@@ -239,28 +239,28 @@ export default function DatosNewsletterPage() {
           </button>
           <button
             onClick={() => handleExport('txt')}
-            className="rounded border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50"
+            className="rounded border border-border bg-white px-4 py-2 text-sm hover:bg-muted/30 disabled:opacity-50"
             disabled={items.length === 0}
           >
             Exportar TXT
           </button>
           <button
             onClick={() => handleExport('csv')}
-            className="rounded border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50"
+            className="rounded border border-border bg-white px-4 py-2 text-sm hover:bg-muted/30 disabled:opacity-50"
             disabled={items.length === 0}
           >
             Exportar CSV
           </button>
           <button
             onClick={() => handleExport('json')}
-            className="rounded border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50"
+            className="rounded border border-border bg-white px-4 py-2 text-sm hover:bg-muted/30 disabled:opacity-50"
             disabled={items.length === 0}
           >
             Exportar JSON
           </button>
           <button
             onClick={() => handleExport('xlsx')}
-            className="rounded border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50"
+            className="rounded border border-border bg-white px-4 py-2 text-sm hover:bg-muted/30 disabled:opacity-50"
             disabled={items.length === 0}
           >
             Exportar Excel
@@ -269,38 +269,38 @@ export default function DatosNewsletterPage() {
       </div>
 
       {/* LISTA */}
-      <div className="rounded-lg border border-gray-200 bg-white">
+      <div className="rounded-lg border border-border bg-white">
         <div className="max-h-96 overflow-y-auto">
           {loading ? (
-            <div className="p-8 text-center text-gray-500">Cargando...</div>
+            <div className="p-8 text-center text-muted-foreground">Cargando...</div>
           ) : items.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-muted-foreground">
               No hay suscriptores en este período
             </div>
           ) : (
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="sticky top-0 bg-gray-50">
+              <thead className="sticky top-0 bg-muted/30">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">
                     Email
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">
                     Origen
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">
                     Fecha
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium uppercase text-gray-500">
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase text-muted-foreground">
                     Acciones
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {items.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
+                  <tr key={item.id} className="hover:bg-muted/30">
                     <td className="px-4 py-2 text-sm">{item.email}</td>
-                    <td className="px-4 py-2 text-sm text-gray-600">{item.origen}</td>
-                    <td className="px-4 py-2 text-sm text-gray-500">
+                    <td className="px-4 py-2 text-sm text-muted-foreground">{item.origen}</td>
+                    <td className="px-4 py-2 text-sm text-muted-foreground">
                       {new Date(item.createdAt).toLocaleString('es-ES')}
                     </td>
                     <td className="px-4 py-2 text-right">
@@ -320,7 +320,7 @@ export default function DatosNewsletterPage() {
         </div>
       </div>
 
-      <p className="mt-4 text-sm text-gray-500">
+      <p className="mt-4 text-sm text-muted-foreground">
         Los emails se pueden pegar directamente en Mailchimp, Sendinblue u otras
         herramientas de email marketing. Formato: un email por línea.
       </p>
@@ -330,8 +330,8 @@ export default function DatosNewsletterPage() {
 
 function StatCard({ title, value }: { title: string; value: number }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
-      <p className="text-sm font-medium text-gray-500">{title}</p>
+    <div className="rounded-lg border border-border bg-white p-4">
+      <p className="text-sm font-medium text-muted-foreground">{title}</p>
       <p className="mt-1 text-2xl font-bold">{value}</p>
     </div>
   );

@@ -36,11 +36,11 @@ export default function ContenidoItem({ contenido }: ContenidoItemProps) {
 
   const estadoBadge = (estado: string) => {
     const colors: Record<string, string> = {
-      BORRADOR: 'bg-gray-100 text-gray-700',
+      BORRADOR: 'bg-muted text-gray-700',
       PROGRAMADA: 'bg-yellow-100 text-yellow-700',
       PUBLICADA: 'bg-green-100 text-green-700',
     };
-    return colors[estado] ?? 'bg-gray-100 text-gray-700';
+    return colors[estado] ?? 'bg-muted text-gray-700';
   };
 
   return (

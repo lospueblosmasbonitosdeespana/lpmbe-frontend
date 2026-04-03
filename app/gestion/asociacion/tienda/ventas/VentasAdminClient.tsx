@@ -128,25 +128,25 @@ export default function VentasAdminClient() {
       <div className="mb-8">
         <Link
           href="/gestion/asociacion/tienda"
-          className="mb-4 inline-block text-sm text-gray-600 hover:text-gray-900"
+          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
         >
           &larr; Volver a Tienda
         </Link>
         <h1 className="text-3xl font-bold">Informe de Ventas</h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted-foreground">
           Desglose fiscal para contabilidad: base imponible, IVA, portes y totales.
         </p>
       </div>
 
       {/* Filtros */}
-      <div className="mb-6 flex flex-wrap items-end gap-4 rounded-lg border border-gray-200 bg-white p-4">
+      <div className="mb-6 flex flex-wrap items-end gap-4 rounded-lg border border-border bg-white p-4">
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">Desde</label>
           <input
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="rounded-md border border-border px-3 py-2 text-sm"
           />
         </div>
         <div>
@@ -155,7 +155,7 @@ export default function VentasAdminClient() {
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="rounded-md border border-border px-3 py-2 text-sm"
           />
         </div>
         <button
@@ -185,55 +185,55 @@ export default function VentasAdminClient() {
         <>
           {/* Resumen global */}
           <div className="mb-6 grid gap-4 md:grid-cols-4">
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
-              <p className="text-xs text-gray-500 uppercase">Pedidos</p>
+            <div className="rounded-lg border border-border bg-white p-4">
+              <p className="text-xs text-muted-foreground uppercase">Pedidos</p>
               <p className="text-2xl font-bold">{report.totalOrders}</p>
             </div>
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
-              <p className="text-xs text-gray-500 uppercase">Total Base Imponible</p>
+            <div className="rounded-lg border border-border bg-white p-4">
+              <p className="text-xs text-muted-foreground uppercase">Total Base Imponible</p>
               <p className="text-2xl font-bold">{fmt(globalTotals.base)} €</p>
             </div>
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
-              <p className="text-xs text-gray-500 uppercase">Total IVA</p>
+            <div className="rounded-lg border border-border bg-white p-4">
+              <p className="text-xs text-muted-foreground uppercase">Total IVA</p>
               <p className="text-2xl font-bold">{fmt(globalTotals.iva)} €</p>
             </div>
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
-              <p className="text-xs text-gray-500 uppercase">Total Cobrado</p>
+            <div className="rounded-lg border border-border bg-white p-4">
+              <p className="text-xs text-muted-foreground uppercase">Total Cobrado</p>
               <p className="text-2xl font-bold">{fmt(globalTotals.total)} €</p>
             </div>
           </div>
 
           {/* Tabla: número pedido, nombre y apellidos, dirección entrega, productos, base imponible, IVA producto, precio transporte */}
           {report.rows.length === 0 ? (
-            <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-500">
+            <div className="rounded-lg border border-border bg-white p-8 text-center text-muted-foreground">
               No hay ventas en el periodo seleccionado.
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+            <div className="overflow-x-auto rounded-lg border border-border bg-white">
               <table className="w-full text-sm">
-                <thead className="border-b border-gray-200 bg-gray-50">
+                <thead className="border-b border-border bg-muted/30">
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-600">Nº pedido</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-600">Nombre y apellidos</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-600">Dirección de entrega</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-600">Productos</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-600">Base imponible producto</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-600">IVA producto</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-600">Precio transporte</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-muted-foreground">Nº pedido</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-muted-foreground">Nombre y apellidos</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-muted-foreground">Dirección de entrega</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-muted-foreground">Productos</th>
+                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-muted-foreground">Base imponible producto</th>
+                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-muted-foreground">IVA producto</th>
+                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-muted-foreground">Precio transporte</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {report.rows.map((r, i) => {
                     const isFirstLine = r.totalPedido !== null;
                     return (
-                      <tr key={i} className={isFirstLine ? 'bg-white' : 'bg-gray-50/50'}>
+                      <tr key={i} className={isFirstLine ? 'bg-white' : 'bg-muted/30/50'}>
                         <td className="px-3 py-2 font-mono text-xs whitespace-nowrap">
                           {isFirstLine ? r.orderNumber : ''}
                         </td>
                         <td className="px-3 py-2 text-gray-800 whitespace-nowrap">
                           {isFirstLine ? r.cliente : ''}
                         </td>
-                        <td className="px-3 py-2 max-w-[280px] text-gray-600" title={r.direccionEntrega}>
+                        <td className="px-3 py-2 max-w-[280px] text-muted-foreground" title={r.direccionEntrega}>
                           {isFirstLine ? r.direccionEntrega : ''}
                         </td>
                         <td className="px-3 py-2 max-w-[200px]" title={r.producto}>
@@ -249,7 +249,7 @@ export default function VentasAdminClient() {
                     );
                   })}
                 </tbody>
-                <tfoot className="border-t-2 border-gray-300 bg-gray-100">
+                <tfoot className="border-t-2 border-border bg-muted">
                   <tr className="font-bold text-sm">
                     <td colSpan={4} className="px-3 py-3 text-right">TOTALES:</td>
                     <td className="px-3 py-3 text-right">{fmt(globalTotals.base)} €</td>

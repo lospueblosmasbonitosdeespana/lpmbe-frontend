@@ -40,7 +40,7 @@ export default async function EventosPuebloPage({
     return (
       <main className="mx-auto max-w-3xl p-6">
         <h1 className="text-2xl font-semibold">Eventos del pueblo</h1>
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-1 text-sm text-muted-foreground">
           Gestión de eventos (tabla Evento). Para contenidos tipo evento del CMS, ve a{' '}
           <Link href={contenidosUrl} className="text-blue-600 underline">
             Contenidos
@@ -49,7 +49,7 @@ export default async function EventosPuebloPage({
         <div className="mt-4">
           <Link
             href={`/gestion/pueblos/${slug}/eventos/nuevo`}
-            className="inline-block rounded-md border bg-gray-100 px-3 py-2 text-sm font-medium hover:bg-gray-200"
+            className="inline-block rounded-md border bg-muted px-3 py-2 text-sm font-medium hover:bg-gray-200"
           >
             Nuevo evento
           </Link>

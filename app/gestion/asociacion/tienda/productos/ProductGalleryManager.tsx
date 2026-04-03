@@ -215,7 +215,7 @@ export default function ProductGalleryManager({ productId, productNombre }: Prop
   }
 
   if (loading) {
-    return <div className="text-sm text-gray-500">Cargando galería...</div>;
+    return <div className="text-sm text-muted-foreground">Cargando galería...</div>;
   }
 
   return (
@@ -232,18 +232,18 @@ export default function ProductGalleryManager({ productId, productNombre }: Prop
 
       <div className="space-y-3">
         {images.length === 0 && (
-          <p className="text-sm text-gray-500">Sin imágenes en la galería</p>
+          <p className="text-sm text-muted-foreground">Sin imágenes en la galería</p>
         )}
 
         {images.map((img, index) => (
           <div
             key={img.id}
-            className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
+            className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3"
           >
             <img
               src={img.url}
               alt={img.alt || ''}
-              className="h-20 w-20 flex-shrink-0 rounded border border-gray-300 object-cover"
+              className="h-20 w-20 flex-shrink-0 rounded border border-border object-cover"
             />
 
             <div className="flex-1 space-y-2">
@@ -254,7 +254,7 @@ export default function ProductGalleryManager({ productId, productNombre }: Prop
                     value={editingAltValue}
                     onChange={(e) => setEditingAltValue(e.target.value)}
                     placeholder="Texto alternativo"
-                    className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm"
+                    className="flex-1 rounded border border-border px-2 py-1 text-sm"
                   />
                   <button
                     onClick={() => saveAlt(img.id)}
@@ -264,7 +264,7 @@ export default function ProductGalleryManager({ productId, productNombre }: Prop
                   </button>
                   <button
                     onClick={cancelEditAlt}
-                    className="rounded border border-gray-300 px-3 py-1 text-xs text-gray-700 hover:bg-gray-100"
+                    className="rounded border border-border px-3 py-1 text-xs text-gray-700 hover:bg-muted"
                   >
                     Cancelar
                   </button>
@@ -276,7 +276,7 @@ export default function ProductGalleryManager({ productId, productNombre }: Prop
                   </p>
                   <button
                     onClick={() => startEditAlt(img)}
-                    className="text-xs text-gray-500 underline hover:no-underline"
+                    className="text-xs text-muted-foreground underline hover:no-underline"
                   >
                     Editar alt
                   </button>
@@ -287,7 +287,7 @@ export default function ProductGalleryManager({ productId, productNombre }: Prop
                 <button
                   onClick={() => moveUp(index)}
                   disabled={index === 0}
-                  className="rounded border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded border border-border px-2 py-1 text-xs text-gray-700 hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                   title="Mover arriba"
                 >
                   ↑
@@ -295,7 +295,7 @@ export default function ProductGalleryManager({ productId, productNombre }: Prop
                 <button
                   onClick={() => moveDown(index)}
                   disabled={index === images.length - 1}
-                  className="rounded border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded border border-border px-2 py-1 text-xs text-gray-700 hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                   title="Mover abajo"
                 >
                   ↓
@@ -315,13 +315,13 @@ export default function ProductGalleryManager({ productId, productNombre }: Prop
           type="button"
           onClick={handleUploadImage}
           disabled={uploading}
-          className="w-full rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-600 hover:border-gray-400 hover:bg-gray-100 disabled:opacity-50"
+          className="w-full rounded-lg border-2 border-dashed border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground hover:border-gray-400 hover:bg-muted disabled:opacity-50"
         >
           {uploading ? 'Subiendo...' : '+ Añadir imagen a la galería'}
         </button>
       </div>
 
-      <p className="mt-2 text-xs text-gray-500">
+      <p className="mt-2 text-xs text-muted-foreground">
         La primera imagen de la galería se mostrará como principal en la ficha pública.
       </p>
     </div>

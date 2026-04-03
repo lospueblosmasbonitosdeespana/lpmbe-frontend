@@ -13,12 +13,12 @@ export default async function EnvioAdminPage() {
       <div className="mb-8">
         <Link
           href="/gestion/asociacion/tienda"
-          className="mb-4 inline-block text-sm text-gray-600 hover:text-gray-900"
+          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
         >
           &larr; Volver a Tienda
         </Link>
         <h1 className="text-3xl font-bold">Gestion &middot; Envio</h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted-foreground">
           Configura zonas de envio, tarifas por peso y el umbral de envio gratuito para SendCloud.
         </p>
       </div>

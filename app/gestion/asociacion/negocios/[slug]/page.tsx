@@ -22,7 +22,7 @@ export default async function NegociosPuebloPage({
       <NegociosPuebloClient puebloSlug={slug} />
 
       <div className="mt-8 text-sm">
-        <Link className="text-gray-500 hover:underline" href="/gestion/asociacion/negocios">
+        <Link className="text-muted-foreground hover:underline" href="/gestion/asociacion/negocios">
           &larr; Volver a Negocios
         </Link>
       </div>

@@ -34,7 +34,7 @@ export default async function AutorizadosPage({
     return (
       <main className="mx-auto max-w-3xl p-6">
         <h1 className="text-2xl font-semibold text-red-600">Pueblo no encontrado</h1>
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-muted-foreground">
           No se pudo encontrar el pueblo con slug: {slug}
         </p>
         <Link href="/gestion" className="mt-4 inline-block text-sm hover:underline">
@@ -49,14 +49,14 @@ export default async function AutorizadosPage({
       <div className="mb-6">
         <Link
           href={`/gestion/pueblos/${slug}`}
-          className="text-sm text-gray-600 hover:underline"
+          className="text-sm text-muted-foreground hover:underline"
         >
           ← Volver a {puebloNombre}
         </Link>
       </div>
 
       <h1 className="text-2xl font-semibold">Autorizados</h1>
-      <p className="mt-2 text-sm text-gray-600">
+      <p className="mt-2 text-sm text-muted-foreground">
         Gestiona los usuarios que pueden administrar el pueblo{' '}
         <strong>{puebloNombre}</strong>
       </p>

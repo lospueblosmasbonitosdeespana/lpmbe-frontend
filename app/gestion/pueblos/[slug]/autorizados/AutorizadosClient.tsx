@@ -35,7 +35,7 @@ const PERMISOS_LABELS: Record<ColaboradorPermiso, { label: string; desc: string;
   SOLO_METRICAS: {
     label: 'Solo métricas',
     desc: 'Puede ver estadísticas de validaciones de su recurso, sin editar nada.',
-    color: 'bg-gray-100 text-gray-700 border-gray-300',
+    color: 'bg-muted text-gray-700 border-border',
   },
   EDITAR_INFO: {
     label: 'Editar información',
@@ -197,7 +197,7 @@ export default function AutorizadosClient({
   };
 
   if (loading) {
-    return <p className="text-gray-500">Cargando autorizados...</p>;
+    return <p className="text-muted-foreground">Cargando autorizados...</p>;
   }
 
   const autorizadosActivos = data?.autorizados.filter((a) => a.activo) ?? [];
@@ -212,14 +212,14 @@ export default function AutorizadosClient({
 
       {/* Lista de autorizados */}
       <div className="rounded-md border">
-        <div className="border-b bg-gray-50 px-4 py-3">
+        <div className="border-b bg-muted/30 px-4 py-3">
           <h3 className="font-medium">
             Usuarios autorizados ({autorizadosActivos.length})
           </h3>
         </div>
 
         {autorizadosActivos.length === 0 ? (
-          <div className="p-4 text-sm text-gray-500">
+          <div className="p-4 text-sm text-muted-foreground">
             No hay usuarios autorizados para este pueblo.
           </div>
         ) : (
@@ -233,7 +233,7 @@ export default function AutorizadosClient({
               return (
                 <div
                   key={`${a.userId}-${a.recursoId ?? 'p'}-${idx}`}
-                  className={`px-4 py-3 ${!a.userActivo ? 'opacity-60 bg-gray-50' : ''}`}
+                  className={`px-4 py-3 ${!a.userActivo ? 'opacity-60 bg-muted/30' : ''}`}
                 >
                   <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div className="flex-1 min-w-0">
@@ -251,15 +251,15 @@ export default function AutorizadosClient({
                           {a.rol}
                         </span>
                         {a.tipoAsignacion === 'RECURSO' && a.recursoNombre && (
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             → {a.recursoNombre}
                           </span>
                         )}
                       </div>
                       {a.nombre && (
-                        <p className="text-xs text-gray-500 mt-0.5">{a.nombre}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{a.nombre}</p>
                       )}
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         Asignado {new Date(a.asignadoEn).toLocaleDateString('es-ES')}
                       </p>
 
@@ -287,14 +287,14 @@ export default function AutorizadosClient({
                                 className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${
                                   editandoPermisos.permisos === p
                                     ? PERMISOS_LABELS[p].color
-                                    : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                                    : 'border-border text-muted-foreground hover:bg-muted/30'
                                 }`}
                               >
                                 {PERMISOS_LABELS[p].label}
                               </button>
                             ))}
                           </div>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-muted-foreground">
                             {PERMISOS_LABELS[editandoPermisos.permisos].desc}
                           </p>
                           <div className="flex gap-2">
@@ -310,7 +310,7 @@ export default function AutorizadosClient({
                               type="button"
                               onClick={() => setEditandoPermisos(null)}
                               disabled={guardandoPermisos}
-                              className="rounded border px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                              className="rounded border px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted/30 disabled:opacity-50"
                             >
                               Cancelar
                             </button>
@@ -380,7 +380,7 @@ export default function AutorizadosClient({
                 className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
                   formRol === 'ALCALDE'
                     ? 'border-green-500 bg-green-50 text-green-700'
-                    : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                    : 'border-border text-muted-foreground hover:bg-muted/30'
                 }`}
               >
                 Alcalde
@@ -391,13 +391,13 @@ export default function AutorizadosClient({
                 className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
                   formRol === 'COLABORADOR'
                     ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                    : 'border-border text-muted-foreground hover:bg-muted/30'
                 }`}
               >
                 Colaborador
               </button>
             </div>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               {formRol === 'ALCALDE'
                 ? 'Tendrá acceso completo al pueblo: fotos, semáforos, contenidos, club, etc.'
                 : 'Accederá a su recurso turístico con el nivel de permisos que establezcas.'}
@@ -448,14 +448,14 @@ export default function AutorizadosClient({
                       className={`rounded border px-3 py-2 text-sm font-medium transition-colors ${
                         formPermisos === p
                           ? PERMISOS_LABELS[p].color
-                          : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                          : 'border-border text-muted-foreground hover:bg-muted/30'
                       }`}
                     >
                       {PERMISOS_LABELS[p].label}
                     </button>
                   ))}
                 </div>
-                <p className="mt-1.5 text-xs text-gray-500">
+                <p className="mt-1.5 text-xs text-muted-foreground">
                   {PERMISOS_LABELS[formPermisos].desc}
                 </p>
               </div>
@@ -478,7 +478,7 @@ export default function AutorizadosClient({
               }
               required
             />
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               {formRol === 'COLABORADOR'
                 ? 'Si el usuario no existe, se crea automáticamente y se le envía un email con sus credenciales.'
                 : 'Si el usuario ya existe, se le asignará directamente.'}
@@ -520,7 +520,7 @@ export default function AutorizadosClient({
                 setFormRecursoId('');
                 setFormPermisos('EDITAR_TODO');
               }}
-              className="rounded-md border px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="rounded-md border px-4 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30"
             >
               Cancelar
             </button>

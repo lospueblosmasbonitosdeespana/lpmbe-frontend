@@ -265,7 +265,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
   if (loading) {
     return (
       <main className="mx-auto max-w-3xl p-6">
-        <p className="text-gray-600">Cargando...</p>
+        <p className="text-muted-foreground">Cargando...</p>
       </main>
     );
   }
@@ -306,7 +306,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
             <label className="block text-sm font-medium">Tipo</label>
             <input
               type="text"
-              className="w-full rounded-md border px-3 py-2 bg-gray-50"
+              className="w-full rounded-md border border-border bg-muted/30 px-3 py-2 text-foreground"
               value={tipo}
               disabled
             />
@@ -381,7 +381,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
                     if (fechaFinLocal.includes('T')) setFechaFinLocal(fechaFinLocal.split('T')[0]);
                   }
                 }}
-                className="h-4 w-4 rounded border-gray-300"
+                className="h-4 w-4 rounded border-border"
               />
               <label htmlFor="soloFechaEvento" className="text-sm text-blue-800">
                 Evento de todo el día (sin hora específica)
@@ -420,7 +420,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
                   id="ocultoPlanifica"
                   checked={ocultoEnPlanifica}
                   onChange={(e) => setOcultoEnPlanifica(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300"
+                  className="h-4 w-4 rounded border-border"
                 />
                 <label htmlFor="ocultoPlanifica" className="text-sm">
                   Ocultar en la página &quot;Planifica tu fin de semana&quot; (solo esa página; sigue en actualidad y notificaciones)
@@ -457,14 +457,14 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
             </div>
           )}
           {(tipo === 'NOTICIA' || tipo === 'EVENTO' || tipo === 'ARTICULO' || isPaginaTematica) && (
-            <div className="rounded-md border border-gray-200 bg-gray-50 p-3">
-              <p className="mb-2 text-xs text-gray-700">
+            <div className="rounded-md border border-border bg-muted/30 p-3">
+              <p className="mb-2 text-xs text-foreground/80">
                 Galería: añade hasta 3 fotos. Se verán en carrusel en web y app.
               </p>
               <div className="grid gap-3 md:grid-cols-3">
                 {[0, 1, 2].map((idx) => (
-                  <div key={`gallery-slot-${idx}`} className="rounded-md border bg-white p-3">
-                    <p className="mb-2 text-xs font-medium text-gray-700">Foto {idx + 1}</p>
+                  <div key={`gallery-slot-${idx}`} className="rounded-md border border-border bg-card p-3">
+                    <p className="mb-2 text-xs font-medium text-foreground/80">Foto {idx + 1}</p>
                     <CoverPicker
                       currentCoverUrl={galleryUrls[idx] ?? null}
                       buttonLabel={`📷 Añadir foto ${idx + 1}`}
@@ -490,7 +490,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
                 ))}
               </div>
               <div className="mt-3">
-                <p className="text-xs font-medium text-gray-700">
+                <p className="text-xs font-medium text-foreground/80">
                   Fotos cargadas: {fotosCombinadas.length}/3
                 </p>
                 {fotosCombinadas.length > 0 && (
@@ -501,7 +501,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
                         key={`foto-combinada-${idx}`}
                         src={url}
                         alt={`Foto cargada ${idx + 1}`}
-                        className="h-16 w-16 rounded border bg-gray-100 object-contain p-1"
+                        className="h-16 w-16 rounded border border-border bg-muted/50 object-contain p-1"
                       />
                     ))}
                   </div>
@@ -528,18 +528,18 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
               </span>
             </button>
             <button type="button" onClick={() => setEditorMode('edit')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-muted text-foreground/80 hover:bg-muted/80'}`}>
               Editor TipTap
             </button>
             <button type="button" onClick={() => setEditorMode('html')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'html' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'html' ? 'bg-amber-600 text-white' : 'bg-muted text-foreground/80 hover:bg-muted/80'}`}>
               HTML
             </button>
             <button type="button" onClick={() => setEditorMode('preview')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'preview' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${editorMode === 'preview' ? 'bg-green-600 text-white' : 'bg-muted text-foreground/80 hover:bg-muted/80'}`}>
               Vista previa
             </button>
-            {uploading && <span className="text-sm text-gray-500 self-center">Subiendo imagen…</span>}
+            {uploading && <span className="self-center text-sm text-muted-foreground">Subiendo imagen…</span>}
           </div>
 
           <p className="text-xs text-blue-700 bg-blue-50 rounded-md px-3 py-1.5">
@@ -573,25 +573,25 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
 
           {editorMode === 'html' && (
             <div className="space-y-2">
-              <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
+              <p className="rounded bg-amber-50 p-2 text-xs text-amber-700 dark:bg-amber-950/30 dark:text-amber-200">
                 Modo HTML: edita o pega código HTML directamente.
               </p>
               <textarea
                 value={contenidoMd}
                 onChange={(e) => setContenidoMd(e.target.value)}
                 rows={20}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-sm"
+                className="w-full rounded-lg border border-border bg-background px-4 py-2 font-mono text-sm text-foreground"
                 placeholder="<h2>Título</h2>\n<p>Párrafo...</p>"
               />
             </div>
           )}
 
           {editorMode === 'preview' && (
-            <div className="rounded-lg border border-gray-200 bg-white p-6 min-h-[400px]">
+            <div className="min-h-[400px] rounded-lg border border-border bg-card p-6">
               {contenidoMd ? (
                 <SafeHtml html={contenidoMd} />
               ) : (
-                <p className="text-gray-400 text-center py-12">Escribe contenido para ver la vista previa</p>
+                <p className="py-12 text-center text-muted-foreground">Escribe contenido para ver la vista previa</p>
               )}
             </div>
           )}
@@ -610,7 +610,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
           <button
             type="submit"
             disabled={saving}
-            className="rounded-md bg-black px-4 py-2 text-white disabled:opacity-50"
+            className="rounded-md bg-foreground px-4 py-2 text-background disabled:opacity-50"
           >
             {saving ? 'Guardando…' : 'Guardar cambios'}
           </button>

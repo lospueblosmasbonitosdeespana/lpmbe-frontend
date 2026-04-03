@@ -41,10 +41,10 @@ export default function EventosListAdminClient({ slug }: { slug: string }) {
     }
   }
 
-  if (loading) return <p className="text-sm text-gray-500">Cargando eventos…</p>;
+  if (loading) return <p className="text-sm text-muted-foreground">Cargando eventos…</p>;
   if (eventos.length === 0) {
     return (
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-muted-foreground">
         No hay eventos de pueblo (tabla Evento) para este municipio. Los eventos se crean desde &quot;Nuevo evento&quot; o desde Contenidos.
       </p>
     );
@@ -52,7 +52,7 @@ export default function EventosListAdminClient({ slug }: { slug: string }) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-muted-foreground">
         Como administrador puedes ocultar un evento solo en la página &quot;Planifica tu fin de semana&quot;; seguirá visible en actualidad y notificaciones.
       </p>
       <ul className="divide-y rounded-md border">
@@ -60,7 +60,7 @@ export default function EventosListAdminClient({ slug }: { slug: string }) {
           <li key={ev.id} className="flex flex-wrap items-center justify-between gap-2 p-3">
             <div>
               <span className="font-medium">{ev.titulo}</span>
-              <span className="ml-2 text-sm text-gray-500">
+              <span className="ml-2 text-sm text-muted-foreground">
                 {new Date(ev.fecha_inicio).toLocaleDateString('es-ES')}
                 {ev.fecha_fin ? ` – ${new Date(ev.fecha_fin).toLocaleDateString('es-ES')}` : ''}
               </span>
@@ -71,7 +71,7 @@ export default function EventosListAdminClient({ slug }: { slug: string }) {
                 checked={!!ev.ocultoEnPlanificaFinDeSemana}
                 onChange={() => toggleOcultoPlanifica(ev)}
                 disabled={togglingId === ev.id}
-                className="h-4 w-4 rounded border-gray-300"
+                className="h-4 w-4 rounded border-border"
               />
               Ocultar en Planifica
             </label>

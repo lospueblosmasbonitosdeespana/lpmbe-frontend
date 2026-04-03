@@ -252,7 +252,7 @@ export default function AjustesClient() {
     }
   }
 
-  if (loading) return <div className="mt-6 text-gray-600">Cargando...</div>;
+  if (loading) return <div className="mt-6 text-muted-foreground">Cargando...</div>;
 
   const headerLogo = logos.find((l) => l.url === logoUrl);
   const footerLogo = logos.find((l) => l.url === logoVariantUrl);
@@ -285,7 +285,7 @@ export default function AjustesClient() {
                 placeholder="LPBME"
                 required
               />
-              <p className="mt-1 text-xs text-gray-500">Se muestra cuando el logo está en modo texto</p>
+              <p className="mt-1 text-xs text-muted-foreground">Se muestra cuando el logo está en modo texto</p>
             </div>
             <div>
               <label className="block text-sm font-medium">Texto alternativo (ALT)</label>
@@ -296,7 +296,7 @@ export default function AjustesClient() {
                 onChange={(e) => setLogoAlt(e.target.value)}
                 placeholder="Los Pueblos Más Bonitos de España"
               />
-              <p className="mt-1 text-xs text-gray-500">Para accesibilidad y SEO</p>
+              <p className="mt-1 text-xs text-muted-foreground">Para accesibilidad y SEO</p>
             </div>
           </div>
 
@@ -564,7 +564,7 @@ export default function AjustesClient() {
                         className={`w-full rounded border px-2 py-1.5 text-[11px] font-medium transition disabled:opacity-40 ${
                           isShared
                             ? 'border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100'
-                            : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700'
+                            : 'border-border hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700'
                         }`}
                       >
                         {isSharing ? 'Guardando…' : isShared ? '✓ Compartido con alcaldes — clic para dejar de compartir' : 'Compartir con alcaldes'}

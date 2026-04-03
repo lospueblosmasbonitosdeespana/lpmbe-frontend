@@ -69,13 +69,13 @@ export default function MisRecursosClient() {
 
   if (loading) {
     return (
-      <div className="mt-6 text-gray-500">Cargando recursos...</div>
+      <div className="mt-6 text-muted-foreground">Cargando recursos...</div>
     );
   }
 
   if (recursos.length === 0) {
     return (
-      <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-6 text-center text-gray-600">
+      <div className="mt-6 rounded-lg border border-border bg-muted/30 p-6 text-center text-muted-foreground">
         No tienes recursos asignados.
       </div>
     );
@@ -89,12 +89,12 @@ export default function MisRecursosClient() {
         return (
           <div
             key={r.id}
-            className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow"
+            className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-white p-4 shadow-sm transition-shadow hover:shadow"
           >
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-medium text-gray-900">{r.nombre}</span>
-                <span className="rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+                <span className="rounded bg-muted px-2 py-0.5 text-xs font-medium text-gray-700">
                   {r.tipo}
                 </span>
                 <span
@@ -107,12 +107,12 @@ export default function MisRecursosClient() {
                   {scopeLabel}
                 </span>
               </div>
-              <div className="mt-1 flex flex-wrap gap-2 text-xs text-gray-500">
+              <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
                 <span
                   className={
                     r.activo
                       ? 'text-green-600 font-medium'
-                      : 'text-gray-400'
+                      : 'text-muted-foreground'
                   }
                 >
                   {r.activo ? 'Activo' : 'Inactivo'}
@@ -126,7 +126,7 @@ export default function MisRecursosClient() {
             </div>
             <Link
               href={`/gestion/mis-recursos/${r.id}`}
-              className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="inline-flex items-center rounded-md border border-border bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Editar
             </Link>

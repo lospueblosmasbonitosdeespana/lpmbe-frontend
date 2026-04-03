@@ -66,7 +66,7 @@ export default function AlertasList() {
     <div className="mx-auto max-w-4xl px-6 py-8">
       <header className="mb-6">
         <h1 className="text-3xl font-semibold">Alertas globales</h1>
-        <p className="mt-1 text-gray-600">Asociación · Nacional</p>
+        <p className="mt-1 text-muted-foreground">Asociación · Nacional</p>
         <p className="mt-3">
           <Link
             href="/gestion/asociacion/alertas/nueva"
@@ -90,7 +90,7 @@ export default function AlertasList() {
             >
               <h3 className="text-lg font-bold text-gray-900">{a.titulo}</h3>
               {a.createdAt ? (
-                <div className="mt-1 text-xs text-gray-500">
+                <div className="mt-1 text-xs text-muted-foreground">
                   {new Date(a.createdAt).toLocaleDateString("es-ES")}
                 </div>
               ) : null}

@@ -20,7 +20,7 @@ export default async function MisPueblosGestionPage() {
         {me.rol === 'ADMIN' || me.rol === 'EDITOR' ? 'Todos los pueblos' : 'Mis pueblos'}
       </h1>
 
-      <p className="mt-2 text-sm text-gray-600">
+      <p className="mt-2 text-sm text-muted-foreground">
         {me.rol === 'ADMIN'
           ? 'Como ADMIN puedes gestionar cualquier pueblo.'
           : me.rol === 'EDITOR'
@@ -29,7 +29,7 @@ export default async function MisPueblosGestionPage() {
       </p>
 
       {pueblos.length === 0 ? (
-        <div className="mt-6 rounded-md border p-4 text-sm text-gray-600">
+        <div className="mt-6 rounded-md border p-4 text-sm text-muted-foreground">
           No hay pueblos disponibles.
         </div>
       ) : (
@@ -39,7 +39,7 @@ export default async function MisPueblosGestionPage() {
               <div>
                 <div className="font-medium">{p.nombre || `Pueblo ${p.id}`}</div>
                 {(me.rol === 'ADMIN' || me.rol === 'EDITOR') && (
-                  <div className="text-xs text-gray-500">{p.slug}</div>
+                  <div className="text-xs text-muted-foreground">{p.slug}</div>
                 )}
               </div>
 

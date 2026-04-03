@@ -214,11 +214,11 @@ export default function DocumentosCmsPage() {
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-3xl font-semibold">Documentos</h1>
         <div className="flex flex-wrap gap-2">
-          <Link href="/gestion/asociacion/el-sello/imagenes" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          <Link href="/gestion/asociacion/el-sello/imagenes" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30">
             <ImageIcon className="h-4 w-4" />
             Imágenes del Sello
           </Link>
-          <Link href="/gestion/asociacion/el-sello/socios" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          <Link href="/gestion/asociacion/el-sello/socios" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-muted/30">
             <Users className="h-4 w-4" />
             Socios y colaboradores
           </Link>
@@ -247,7 +247,7 @@ export default function DocumentosCmsPage() {
           <select
             value={tipo}
             onChange={(e) => setTipo(e.target.value as CmsDocType)}
-            className="rounded-lg border border-gray-300 px-4 py-2"
+            className="rounded-lg border border-border px-4 py-2"
           >
             {TIPOS.map((t) => (
               <option key={t} value={t}>
@@ -269,7 +269,7 @@ export default function DocumentosCmsPage() {
       </div>
 
       {showForm && (
-        <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6 space-y-4">
+        <div className="mb-8 rounded-lg border border-border bg-white p-6 space-y-4">
           <h2 className="text-xl font-semibold">
             {formData.id ? 'Editar documento' : 'Nuevo documento'}
           </h2>
@@ -281,7 +281,7 @@ export default function DocumentosCmsPage() {
                 type="text"
                 value={formData.titulo}
                 onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2"
+                className="w-full rounded-lg border border-border px-4 py-2"
               />
             </div>
 
@@ -290,7 +290,7 @@ export default function DocumentosCmsPage() {
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as CmsDocType })}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2"
+                className="w-full rounded-lg border border-border px-4 py-2"
               >
                 {TIPOS.map((t) => (
                   <option key={t} value={t}>
@@ -306,7 +306,7 @@ export default function DocumentosCmsPage() {
                 type="number"
                 value={formData.orden}
                 onChange={(e) => setFormData({ ...formData, orden: parseInt(e.target.value) || 1 })}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2"
+                className="w-full rounded-lg border border-border px-4 py-2"
               />
             </div>
 
@@ -380,9 +380,9 @@ export default function DocumentosCmsPage() {
       )}
 
       {loading ? (
-        <div className="text-gray-600">Cargando...</div>
+        <div className="text-muted-foreground">Cargando...</div>
       ) : documentos.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center text-gray-600">
+        <div className="rounded-lg border border-border bg-muted/30 p-8 text-center text-muted-foreground">
           No hay documentos de tipo "{DOC_TYPE_LABELS[tipo]}"
         </div>
       ) : (
@@ -390,7 +390,7 @@ export default function DocumentosCmsPage() {
           {documentos.map((doc) => (
             <div
               key={doc.id}
-              className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4"
+              className="flex items-center justify-between rounded-lg border border-border bg-white p-4"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-3">
@@ -401,7 +401,7 @@ export default function DocumentosCmsPage() {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   Orden: {doc.orden} • {DOC_TYPE_LABELS[doc.type]}
                 </p>
               </div>
@@ -411,13 +411,13 @@ export default function DocumentosCmsPage() {
                   href={doc.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+                  className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted/30"
                 >
                   Ver PDF
                 </a>
                 <button
                   onClick={() => editDoc(doc)}
-                  className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+                  className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted/30"
                 >
                   Editar
                 </button>

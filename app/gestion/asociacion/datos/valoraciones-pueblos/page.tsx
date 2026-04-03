@@ -72,7 +72,7 @@ export default function ValoracionesPueblosPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="animate-pulse rounded-lg bg-gray-100 p-8">Cargando valoraciones...</div>
+        <div className="animate-pulse rounded-lg bg-muted p-8">Cargando valoraciones...</div>
       </div>
     );
   }
@@ -102,32 +102,32 @@ export default function ValoracionesPueblosPage() {
       <div className="mb-8">
         <Link
           href="/gestion/asociacion/datos"
-          className="mb-4 inline-block text-sm text-gray-600 hover:text-gray-900"
+          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
         >
           ← Volver a Datos
         </Link>
         <h1 className="text-3xl font-bold">Valoraciones de pueblos</h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted-foreground">
           Estrellas con las que los usuarios valoran los pueblos
         </p>
       </div>
 
       {/* Resumen */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Total valoraciones</p>
+        <div className="rounded-xl border border-border bg-white p-4 shadow-sm">
+          <p className="text-sm font-medium text-muted-foreground">Total valoraciones</p>
           <p className="mt-1 text-2xl font-bold">{resumen.totalValoraciones}</p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Pueblos con valoración</p>
+        <div className="rounded-xl border border-border bg-white p-4 shadow-sm">
+          <p className="text-sm font-medium text-muted-foreground">Pueblos con valoración</p>
           <p className="mt-1 text-2xl font-bold">{resumen.pueblosConValoracion}</p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Pueblos sin valoración</p>
+        <div className="rounded-xl border border-border bg-white p-4 shadow-sm">
+          <p className="text-sm font-medium text-muted-foreground">Pueblos sin valoración</p>
           <p className="mt-1 text-2xl font-bold">{resumen.pueblosSinValoracion}</p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Media global</p>
+        <div className="rounded-xl border border-border bg-white p-4 shadow-sm">
+          <p className="text-sm font-medium text-muted-foreground">Media global</p>
           <p className="mt-1 text-2xl font-bold">
             <Estrellas media={resumen.mediaGlobal} /> {resumen.mediaGlobal}
           </p>
@@ -135,13 +135,13 @@ export default function ValoracionesPueblosPage() {
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 flex gap-2 border-b border-gray-200">
+      <div className="mb-6 flex gap-2 border-b border-border">
         <button
           onClick={() => setTab('todos')}
           className={`border-b-2 px-4 py-2 text-sm font-medium ${
             tab === 'todos'
               ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              : 'border-transparent text-muted-foreground hover:text-gray-700'
           }`}
         >
           Todos ({items.length})
@@ -151,7 +151,7 @@ export default function ValoracionesPueblosPage() {
           className={`border-b-2 px-4 py-2 text-sm font-medium ${
             tab === 'top-media'
               ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              : 'border-transparent text-muted-foreground hover:text-gray-700'
           }`}
         >
           Top por media (≥3 valoraciones)
@@ -161,7 +161,7 @@ export default function ValoracionesPueblosPage() {
           className={`border-b-2 px-4 py-2 text-sm font-medium ${
             tab === 'top-cantidad'
               ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              : 'border-transparent text-muted-foreground hover:text-gray-700'
           }`}
         >
           Top por cantidad
@@ -169,21 +169,21 @@ export default function ValoracionesPueblosPage() {
       </div>
 
       {/* Tabla */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-border bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-muted/30">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Pueblo
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Valoraciones
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Media
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Distribución (1★–5★)
                 </th>
               </tr>
@@ -191,24 +191,24 @@ export default function ValoracionesPueblosPage() {
             <tbody className="divide-y divide-gray-200 bg-white">
               {displayItems.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
                     No hay valoraciones
                   </td>
                 </tr>
               ) : (
                 displayItems.map((p, idx) => (
-                  <tr key={p.puebloId} className="hover:bg-gray-50">
+                  <tr key={p.puebloId} className="hover:bg-muted/30">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {tab !== 'todos' && (
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-bold text-gray-600">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-bold text-muted-foreground">
                             {idx + 1}
                           </span>
                         )}
                         <div>
                           <span className="font-medium text-gray-900">{p.nombre}</span>
                           {(p.provincia || p.comunidad) && (
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-muted-foreground">
                               {[p.provincia, p.comunidad].filter(Boolean).join(' · ')}
                             </div>
                           )}
@@ -221,7 +221,7 @@ export default function ValoracionesPueblosPage() {
                     <td className="px-4 py-3">
                       <span className="flex items-center gap-2">
                         <Estrellas media={p.mediaEstrellas} />
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                           {p.mediaEstrellas}
                         </span>
                       </span>
@@ -231,7 +231,7 @@ export default function ValoracionesPueblosPage() {
                         {[1, 2, 3, 4, 5].map((r) => (
                           <span
                             key={r}
-                            className="rounded bg-gray-100 px-2 py-0.5"
+                            className="rounded bg-muted px-2 py-0.5"
                             title={`${r} estrella${r > 1 ? 's' : ''}`}
                           >
                             {r}★ {p.distribucion[r as 1 | 2 | 3 | 4 | 5]}
@@ -248,7 +248,7 @@ export default function ValoracionesPueblosPage() {
       </div>
 
       {resumen.pueblosSinValoracion > 0 && (
-        <p className="mt-4 text-sm text-gray-500">
+        <p className="mt-4 text-sm text-muted-foreground">
           {resumen.pueblosSinValoracion} pueblos aún no tienen valoraciones.
         </p>
       )}
