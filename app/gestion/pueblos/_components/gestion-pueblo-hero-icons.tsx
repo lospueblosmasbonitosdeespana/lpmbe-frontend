@@ -1,5 +1,15 @@
 import type { SVGProps } from 'react';
 
+/** Campana / notificaciones (alertas del pueblo) */
+export function HeroIconBell(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden {...props}>
+      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M13.73 21a2 2 0 01-3.46 0" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function HeroIconUsers(props: SVGProps<SVGSVGElement>) {
   return (
     <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden {...props}>
