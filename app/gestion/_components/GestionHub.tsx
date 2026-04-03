@@ -138,9 +138,12 @@ export function GestionHubBackLink({ href, children }: { href: string; children:
 export function GestionHubHero({
   title,
   subtitle,
+  /** Si se indica (p. ej. nombre del pueblo), se muestra como titular principal grande; `title` queda como contexto encima. */
+  highlightTitle,
 }: {
   title: string;
   subtitle: React.ReactNode;
+  highlightTitle?: string;
 }) {
   return (
     <div className="relative mb-10 overflow-hidden rounded-2xl border border-[#a0705a]/18 px-6 py-7 shadow-sm sm:px-8 sm:py-8 dark:border-[#c49a82]/25 [background:linear-gradient(135deg,rgba(160,112,90,0.1)_0%,rgba(196,154,130,0.07)_38%,rgba(255,251,248,0.95)_64%,rgba(254,243,230,0.5)_100%)] dark:[background:linear-gradient(135deg,rgba(120,80,60,0.2)_0%,var(--background)_55%)]">
@@ -153,8 +156,22 @@ export function GestionHubHero({
         aria-hidden
       />
       <div className="relative">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{title}</h1>
-        <div className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-foreground/90 dark:text-foreground sm:text-[0.95rem]">{subtitle}</div>
+        {highlightTitle ? (
+          <>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground/55 dark:text-foreground/60 sm:text-sm">
+              {title}
+            </p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl sm:leading-[1.1] lg:text-5xl lg:leading-[1.08]">
+              {highlightTitle}
+            </h1>
+            <div className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-[0.95rem]">{subtitle}</div>
+          </>
+        ) : (
+          <>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{title}</h1>
+            <div className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-foreground/90 dark:text-foreground sm:text-[0.95rem]">{subtitle}</div>
+          </>
+        )}
       </div>
     </div>
   );

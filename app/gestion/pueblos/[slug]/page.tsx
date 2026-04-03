@@ -171,13 +171,8 @@ export default async function GestionPuebloPage({
 
       <GestionHubHero
         title="Gestión del pueblo"
-        subtitle={
-          <>
-            <span className="font-medium text-foreground">{puebloNombre}</span>
-            {' · '}
-            Cada bloque tiene un matiz de color suave para localizar antes la sección; dentro, iconos claros para cada tarea.
-          </>
-        }
+        highlightTitle={puebloNombre}
+        subtitle="Cada bloque tiene un matiz de color suave para localizar antes la sección; dentro, iconos claros para cada tarea."
       />
 
       {!puebloId && (
