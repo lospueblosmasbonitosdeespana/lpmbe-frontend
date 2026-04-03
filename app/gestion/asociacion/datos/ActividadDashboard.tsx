@@ -294,7 +294,7 @@ export default function ActividadDashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/admin/datos/actividad?days=30', {
+        const res = await fetch('/api/admin/datos/actividad?days=30&recentLimit=100', {
           cache: 'no-store',
         });
         if (!res.ok) throw new Error('Error cargando datos');

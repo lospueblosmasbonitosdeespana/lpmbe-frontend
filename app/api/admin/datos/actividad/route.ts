@@ -10,8 +10,9 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const days = searchParams.get('days') || '30';
+  const recentLimit = searchParams.get('recentLimit') || '100';
   const API_BASE = getApiUrl();
-  const url = `${API_BASE}/admin/datos/actividad?days=${encodeURIComponent(days)}`;
+  const url = `${API_BASE}/admin/datos/actividad?days=${encodeURIComponent(days)}&recentLimit=${encodeURIComponent(recentLimit)}`;
 
   try {
     const upstream = await fetch(url, {
