@@ -1,9 +1,14 @@
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { GestionAsociacionSubpageShell } from '../_components/GestionAsociacionSubpageShell';
+import { AsociacionHeroIconMegaphone } from '../_components/asociacion-hero-icons';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
+
+const ASOCIACION_BACK = '/gestion/asociacion';
+const ASOCIACION_BACK_LABEL = 'Volver a gestión de la asociación';
 
 export default async function NotasPrensaNewsletterPage() {
   const me = await getMeServer();
@@ -11,13 +16,15 @@ export default async function NotasPrensaNewsletterPage() {
   if (me.rol !== 'ADMIN' && me.rol !== 'EDITOR') redirect('/cuenta');
 
   return (
-    <main className="mx-auto max-w-6xl p-6">
-      <h1 className="text-2xl font-semibold">Notas de prensa y Newsletter</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Selecciona el área que quieres gestionar.
-      </p>
-
-      <section className="mt-8 grid gap-4 md:grid-cols-2">
+    <GestionAsociacionSubpageShell
+      title="Notas de prensa y Newsletter"
+      subtitle="Envíos masivos, segmentación y métricas"
+      heroIcon={<AsociacionHeroIconMegaphone />}
+      maxWidthClass="max-w-6xl"
+      backHref={ASOCIACION_BACK}
+      backLabel={ASOCIACION_BACK_LABEL}
+    >
+      <section className="grid gap-4 md:grid-cols-2">
         <article className="rounded-xl border border-border bg-card p-6">
           <h2 className="text-lg font-semibold">Newsletter</h2>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -44,12 +51,6 @@ export default async function NotasPrensaNewsletterPage() {
           </Link>
         </article>
       </section>
-
-      <div className="mt-10 text-sm">
-        <Link className="text-muted-foreground hover:text-foreground hover:underline" href="/gestion/asociacion">
-          ← Volver a gestión
-        </Link>
-      </div>
-    </main>
+    </GestionAsociacionSubpageShell>
   );
 }

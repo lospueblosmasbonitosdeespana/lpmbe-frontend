@@ -98,3 +98,34 @@ export function AsociacionHeroIconUserCircle(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+/** Notas de prensa / envíos masivos */
+export function AsociacionHeroIconMegaphone(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden {...props}>
+      <path d="M12 6v10M8 8H5a2 2 0 00-2 2v0a2 2 0 002 2h3l5 3V5L8 8z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M17 9a5 5 0 010 6M19 6a8 8 0 010 12" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** Página pública de prensa / medios */
+export function AsociacionHeroIconNewspaper(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden {...props}>
+      <path d="M4 19.5A2.5 2.5 0 016.5 17H20" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 7h6M10 11h6M10 15h4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** Ediciones newsletter (PDF) / suscriptores */
+export function AsociacionHeroIconMail(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden {...props}>
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M22 6l-10 7L2 6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}

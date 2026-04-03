@@ -760,7 +760,13 @@ function renderPaletteIcon(type: NewsletterBlockType) {
   );
 }
 
-export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
+export default function NotasPrensaNewsletterClient({
+  mode,
+  embeddedInShell = false,
+}: {
+  mode: Mode;
+  embeddedInShell?: boolean;
+}) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -2271,7 +2277,7 @@ export default function NotasPrensaNewsletterClient({ mode }: { mode: Mode }) {
     newsletterBlocks.find((b) => b.id === selectedNewsletterBlockId) || null;
 
   return (
-    <div className="mt-8 space-y-8">
+    <div className={embeddedInShell ? 'space-y-8' : 'mt-8 space-y-8'}>
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-xl border border-border bg-card p-4">
           <p className="text-xs uppercase text-muted-foreground">Usuarios web</p>

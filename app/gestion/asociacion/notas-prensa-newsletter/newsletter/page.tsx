@@ -1,10 +1,14 @@
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 import NotasPrensaNewsletterClient from '../NotasPrensaNewsletterClient';
+import { GestionAsociacionSubpageShell } from '../../_components/GestionAsociacionSubpageShell';
+import { AsociacionHeroIconMegaphone } from '../../_components/asociacion-hero-icons';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
+
+const NP_BACK = '/gestion/asociacion/notas-prensa-newsletter';
+const NP_BACK_LABEL = 'Volver a Notas de prensa y Newsletter';
 
 export default async function NotasNewsletterPage() {
   const me = await getMeServer();
@@ -12,26 +16,15 @@ export default async function NotasNewsletterPage() {
   if (me.rol !== 'ADMIN' && me.rol !== 'EDITOR') redirect('/cuenta');
 
   return (
-    <main className="mx-auto max-w-6xl p-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-semibold">Gestión Newsletter</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Suscriptores, campañas y métricas de envío.
-          </p>
-        </div>
-      </div>
-
-      <NotasPrensaNewsletterClient mode="newsletter" />
-
-      <div className="mt-10 text-sm">
-        <Link
-          className="text-muted-foreground hover:text-foreground hover:underline"
-          href="/gestion/asociacion/notas-prensa-newsletter"
-        >
-          ← Volver al selector
-        </Link>
-      </div>
-    </main>
+    <GestionAsociacionSubpageShell
+      title="Newsletter"
+      subtitle="Suscriptores, campañas y métricas de envío"
+      heroIcon={<AsociacionHeroIconMegaphone />}
+      maxWidthClass="max-w-6xl"
+      backHref={NP_BACK}
+      backLabel={NP_BACK_LABEL}
+    >
+      <NotasPrensaNewsletterClient mode="newsletter" embeddedInShell />
+    </GestionAsociacionSubpageShell>
   );
 }
