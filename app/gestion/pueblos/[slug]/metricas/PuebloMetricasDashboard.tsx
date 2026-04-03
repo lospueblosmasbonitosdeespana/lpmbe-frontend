@@ -389,12 +389,22 @@ export default function PuebloMetricasDashboard({
             sub="Valoración media"
             accent="valoraciones"
           />
-          <KpiCard
-            label="Valoraciones 5★"
-            value={valoraciones.distribucion[5] ?? 0}
-            sub={`1★: ${valoraciones.distribucion[1] ?? 0} · 2★: ${valoraciones.distribucion[2] ?? 0} · 3★: ${valoraciones.distribucion[3] ?? 0} · 4★: ${valoraciones.distribucion[4] ?? 0}`}
-            accent="valoraciones"
-          />
+          <div className="rounded-xl border border-border bg-card p-5 shadow-sm border-l-4 border-l-amber-500 bg-amber-50/50 dark:bg-amber-950/20">
+            <p className="text-sm font-medium text-muted-foreground">Valoraciones 5★</p>
+            <p className="mt-1 text-3xl font-bold text-foreground">
+              {(valoraciones.distribucion[5] ?? 0).toLocaleString('es-ES')}
+            </p>
+            <div className="mt-3 grid grid-cols-5 gap-2 text-center">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <div key={star} className="rounded-md border border-border bg-background px-2 py-1">
+                  <p className="text-xs text-muted-foreground">{star}★</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {(valoraciones.distribucion[star] ?? 0).toLocaleString('es-ES')}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
         {/* Podio de valoraciones (igual que admin) */}
         <div className="mt-4 rounded-xl border border-border bg-card p-4 shadow-sm">
