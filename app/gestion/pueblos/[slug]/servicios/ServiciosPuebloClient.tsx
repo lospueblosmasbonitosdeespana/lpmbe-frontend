@@ -216,11 +216,12 @@ export default function ServiciosPuebloClient({
     .filter((r) => r.lat != null && r.lng != null)
     .map((r) => {
       const cfg = getTipoServicioConfig(r.tipo);
+      const base = cfg?.etiqueta ?? r.tipo;
       return {
         lat: r.lat!,
         lng: r.lng!,
-        label: cfg?.etiqueta ?? r.tipo,
-        color: cfg?.color ?? "#6b7280",
+        label: r.nombre?.trim() ? `${base} — ${r.nombre.trim()}` : base,
+        servicioTipo: r.tipo,
       };
     });
 
@@ -258,13 +259,18 @@ export default function ServiciosPuebloClient({
           .filter((r) => r.lat != null && r.lng != null)
           .map((r) => {
             const cfg = getTipoServicioConfig(r.tipo);
+            const col = cfg?.color ?? "#6b7280";
             return (
               <span
                 key={r.id}
-                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5"
-                style={{ background: (cfg?.color ?? "#6b7280") + "22", color: cfg?.color ?? "#6b7280" }}
+                className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-medium"
+                style={{ background: col + "22", color: col }}
               >
-                <span>{cfg?.emoji ?? "📍"}</span>
+                <span
+                  className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-white shadow-sm"
+                  style={{ background: col }}
+                  dangerouslySetInnerHTML={{ __html: cfg?.svg ?? "" }}
+                />
                 <span>{cfg?.etiqueta ?? r.tipo}</span>
                 {r.nombre && <span>— {r.nombre}</span>}
               </span>

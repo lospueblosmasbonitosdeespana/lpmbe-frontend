@@ -3,15 +3,28 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
+import {
+  createNumberedParadaDivIcon,
+  createResourceTipoDivIcon,
+  createServicioVisitanteDivIcon,
+  numberedToneFromLegacyColor,
+} from '@/lib/leaflet-div-icons';
 
 /* ── Tipos ─────────────────────────────────────────── */
+
+const LEAFLET_PNG_COLOR_KEYS = new Set(['blue', 'red', 'green', 'gold', 'grey']);
 
 export interface MapMarker {
   lat: number;
   lng: number;
   label?: string;
+  /** Claves leaflet-color-markers: blue | red | green | gold | grey (solo sin number ni servicioTipo) */
   color?: string;
   number?: number;
+  /** Servicios del visitante: pin gota + SVG como en la web pública */
+  servicioTipo?: string;
+  /** POI / recurso: círculo con icono de `resource-types` */
+  resourceTipo?: string;
 }
 
 interface MapLocationPickerProps {
@@ -116,30 +129,24 @@ function MapLocationPickerInner({
     };
   }, [L]);
 
-  const createNumberedIcon = useCallback(
-    (num: number, color: string = 'blue') => {
+  const resolveExistingMarkerIcon = useCallback(
+    (m: MapMarker) => {
       if (!L) return undefined;
-      return L.divIcon({
-        className: 'custom-numbered-marker',
-        html: `<div style="
-          background-color: ${color === 'red' ? '#dc2626' : color === 'green' ? '#16a34a' : color === 'gold' ? '#ca8a04' : color === 'grey' ? '#6b7280' : '#2563eb'};
-          color: white;
-          border-radius: 50%;
-          width: 28px;
-          height: 28px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 12px;
-          font-weight: bold;
-          border: 2px solid white;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        ">${num}</div>`,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
-      });
+      if (m.servicioTipo) {
+        const icon = createServicioVisitanteDivIcon(L, m.servicioTipo);
+        if (icon) return icon;
+      }
+      if (m.resourceTipo) {
+        return createResourceTipoDivIcon(L, m.resourceTipo);
+      }
+      if (m.number != null) {
+        return createNumberedParadaDivIcon(L, m.number, numberedToneFromLegacyColor(m.color));
+      }
+      const key =
+        m.color && LEAFLET_PNG_COLOR_KEYS.has(m.color) ? m.color : 'blue';
+      return (icons as Record<string, (typeof icons)['blue']>)[key] ?? icons.blue;
     },
-    [L],
+    [L, icons],
   );
 
   // Búsqueda Nominatim (debounce)
@@ -291,10 +298,7 @@ function MapLocationPickerInner({
           {isActive && <MapClickHandler />}
 
           {existingMarkers.map((m, i) => {
-            const icon =
-              m.number != null
-                ? createNumberedIcon(m.number, m.color || 'blue')
-                : (icons as any)[m.color || 'blue'] || icons.blue;
+            const icon = resolveExistingMarkerIcon(m);
             return (
               <Marker
                 key={`existing-${i}`}
