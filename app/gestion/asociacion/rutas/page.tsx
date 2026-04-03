@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
 import RutasList from './RutasList.client';
@@ -12,16 +11,5 @@ export default async function RutasGestionPage() {
   if (!me) redirect('/entrar');
   if (me.rol !== 'ADMIN' && me.rol !== 'EDITOR') redirect('/cuenta');
 
-  return (
-    <>
-      <RutasList />
-      <div className="mx-auto max-w-[1600px] w-full px-6 pb-8">
-        <div className="mt-8 text-sm">
-          <Link className="hover:underline" href="/gestion/asociacion">
-            ← Volver
-          </Link>
-        </div>
-      </div>
-    </>
-  );
+  return <RutasList />;
 }

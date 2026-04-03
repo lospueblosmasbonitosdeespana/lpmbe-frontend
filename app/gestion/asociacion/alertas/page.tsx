@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
 import AlertasList from './AlertasList.client';
@@ -12,18 +11,7 @@ export default async function AlertasGlobalesPage() {
   if (!me) redirect('/entrar');
   if (me.rol !== 'ADMIN') redirect('/cuenta');
 
-  return (
-    <>
-      <AlertasList />
-      <div className="mx-auto max-w-4xl px-6 pb-8">
-        <div className="mt-8 text-sm">
-          <Link className="hover:underline" href="/gestion/asociacion">
-            ← Volver
-          </Link>
-        </div>
-      </div>
-    </>
-  );
+  return <AlertasList />;
 }
 
 

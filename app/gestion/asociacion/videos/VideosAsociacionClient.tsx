@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { GestionAsociacionSubpageShell } from "../_components/GestionAsociacionSubpageShell";
+import { AsociacionHeroIconVideo } from "../_components/asociacion-hero-icons";
 
 type Video = {
   id: number;
@@ -131,34 +132,41 @@ export default function VideosAsociacionClient() {
     setShowForm(true);
   }
 
+  const shellProps = {
+    title: "Videos de la asociación",
+    subtitle: "YouTube o R2 · visibles en la home debajo del mapa",
+    heroIcon: <AsociacionHeroIconVideo />,
+    maxWidthClass: "max-w-5xl" as const,
+  };
+
   if (loading) {
     return (
-      <div className="p-6">
-        <p className="text-muted-foreground">Cargando...</p>
-      </div>
+      <GestionAsociacionSubpageShell {...shellProps}>
+        <p className="text-muted-foreground">Cargando…</p>
+      </GestionAsociacionSubpageShell>
     );
   }
 
   if (err) {
     return (
-      <div className="p-6">
+      <GestionAsociacionSubpageShell {...shellProps}>
         <p className="text-destructive">{err}</p>
-      </div>
+      </GestionAsociacionSubpageShell>
     );
   }
 
   return (
-    <div className="mx-auto max-w-4xl p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Videos de la asociación</h1>
-        <Link
-          href="/gestion/asociacion"
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
-          ← Volver
-        </Link>
-      </div>
-
+    <GestionAsociacionSubpageShell
+      {...shellProps}
+      heroBadges={
+        <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+          <span className="text-lg font-bold">{videos.length}</span>
+          <span className="ml-1.5 text-xs text-white/70">
+            {videos.length === 1 ? "video" : "videos"}
+          </span>
+        </div>
+      }
+    >
       <p className="mb-6 text-sm text-muted-foreground">
         Videos que se muestran en la home debajo del mapa. Puedes usar enlaces de YouTube o subir videos a R2.
       </p>
@@ -346,6 +354,6 @@ export default function VideosAsociacionClient() {
           ))
         )}
       </div>
-    </div>
+    </GestionAsociacionSubpageShell>
   );
 }

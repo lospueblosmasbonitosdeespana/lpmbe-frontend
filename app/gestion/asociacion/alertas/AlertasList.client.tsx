@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import EliminarNotificacionButton from "../../../components/EliminarNotificacionButton";
+import EliminarNotificacionButton from "@/app/components/EliminarNotificacionButton";
+import { GestionAsociacionSubpageShell } from "../_components/GestionAsociacionSubpageShell";
+import { AsociacionHeroIconAlertTriangle } from "../_components/asociacion-hero-icons";
 
 type Alerta = {
   id: number;
@@ -34,8 +36,8 @@ export default function AlertasList() {
       const data = text ? JSON.parse(text) : [];
       const arr = Array.isArray(data) ? data : (data.items ?? data.data ?? []);
       setItems(arr);
-    } catch (e: any) {
-      setErr(e?.message ?? "Error");
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : "Error");
       setItems([]);
     } finally {
       setLoading(false);
@@ -46,37 +48,52 @@ export default function AlertasList() {
     fetchAlertas();
   }, []);
 
+  const shellBase = {
+    title: "Alertas globales",
+    subtitle: "Avisos visibles a nivel nacional · Asociación LPMBE",
+    heroIcon: <AsociacionHeroIconAlertTriangle />,
+    maxWidthClass: "max-w-5xl" as const,
+    heroAction: (
+      <Link
+        href="/gestion/asociacion/alertas/nueva"
+        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white/15 px-5 py-2.5 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm transition-all hover:bg-white/25 hover:ring-white/40 active:scale-[0.98]"
+      >
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+        </svg>
+        Nueva alerta
+      </Link>
+    ),
+  };
+
   if (loading) {
     return (
-      <div className="mx-auto max-w-4xl px-6 py-8">
-        <div>Cargando…</div>
-      </div>
+      <GestionAsociacionSubpageShell {...shellBase}>
+        <p className="text-muted-foreground">Cargando…</p>
+      </GestionAsociacionSubpageShell>
     );
   }
 
   if (err) {
     return (
-      <div className="mx-auto max-w-4xl px-6 py-8">
-        <div className="text-red-600">Error: {err}</div>
-      </div>
+      <GestionAsociacionSubpageShell {...shellBase}>
+        <p className="text-red-600">Error: {err}</p>
+      </GestionAsociacionSubpageShell>
     );
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-8">
-      <header className="mb-6">
-        <h1 className="text-3xl font-semibold">Alertas globales</h1>
-        <p className="mt-1 text-muted-foreground">Asociación · Nacional</p>
-        <p className="mt-3">
-          <Link
-            href="/gestion/asociacion/alertas/nueva"
-            className="underline"
-          >
-            + Nueva alerta
-          </Link>
-        </p>
-      </header>
-
+    <GestionAsociacionSubpageShell
+      {...shellBase}
+      heroBadges={
+        <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+          <span className="text-lg font-bold">{items.length}</span>
+          <span className="ml-1.5 text-xs text-white/70">
+            {items.length === 1 ? "alerta" : "alertas"}
+          </span>
+        </div>
+      }
+    >
       {items.length === 0 ? (
         <div className="rounded-md border border-slate-300 bg-white px-6 py-5 text-gray-700">
           No hay alertas globales todavía.
@@ -117,6 +134,6 @@ export default function AlertasList() {
           ))}
         </div>
       )}
-    </div>
+    </GestionAsociacionSubpageShell>
   );
 }

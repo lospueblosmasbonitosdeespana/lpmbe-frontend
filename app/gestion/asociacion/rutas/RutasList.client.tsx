@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import RutaAdminStatsCells from './RutaAdminStatsCells';
 import RutaMiniMap from '@/app/_components/RutaMiniMap';
+import { GestionAsociacionSubpageShell } from '../_components/GestionAsociacionSubpageShell';
+import { AsociacionHeroIconMap } from '../_components/asociacion-hero-icons';
 
 type PuebloEnRuta = {
   orden: number;
@@ -66,30 +68,46 @@ export default function RutasList() {
     }
   }
 
+  const nuevaRutaBtn = (
+    <Link
+      href="/gestion/asociacion/rutas/nueva"
+      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white/15 px-5 py-2.5 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm transition-all hover:bg-white/25 hover:ring-white/40 active:scale-[0.98]"
+    >
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+      </svg>
+      Nueva ruta
+    </Link>
+  );
+
   if (loading) {
     return (
-      <main className="mx-auto max-w-[1600px] w-full px-6 py-6">
-        <p className="text-sm text-muted-foreground">Cargando rutas...</p>
-      </main>
+      <GestionAsociacionSubpageShell
+        title="Rutas"
+        subtitle="Multiexperiencias y rutas turísticas · Asociación LPMBE"
+        heroIcon={<AsociacionHeroIconMap />}
+        maxWidthClass="max-w-[1600px]"
+        heroAction={nuevaRutaBtn}
+      >
+        <p className="text-sm text-muted-foreground">Cargando rutas…</p>
+      </GestionAsociacionSubpageShell>
     );
   }
 
   return (
-    <main className="mx-auto max-w-[1600px] w-full px-6 py-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Gestión de Rutas</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Asociación · Nacional</p>
+    <GestionAsociacionSubpageShell
+      title="Rutas"
+      subtitle="Multiexperiencias y rutas turísticas · Asociación LPMBE"
+      heroIcon={<AsociacionHeroIconMap />}
+      maxWidthClass="max-w-[1600px]"
+      heroAction={nuevaRutaBtn}
+      heroBadges={
+        <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+          <span className="text-lg font-bold">{rutas.length}</span>
+          <span className="ml-1.5 text-xs text-white/70">{rutas.length === 1 ? 'ruta' : 'rutas'}</span>
         </div>
-
-        <Link
-          className="rounded-md border px-3 py-2 text-sm hover:underline"
-          href="/gestion/asociacion/rutas/nueva"
-        >
-          + Nueva ruta
-        </Link>
-      </div>
-
+      }
+    >
       {error && (
         <div className="mt-4 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700">
           {error}
@@ -194,6 +212,6 @@ export default function RutasList() {
           </table>
         </div>
       )}
-    </main>
+    </GestionAsociacionSubpageShell>
   );
 }

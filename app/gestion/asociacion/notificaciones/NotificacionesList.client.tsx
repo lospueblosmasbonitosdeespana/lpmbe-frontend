@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import EliminarNotificacionButton from '@/app/components/EliminarNotificacionButton';
+import { GestionAsociacionSubpageShell } from '../_components/GestionAsociacionSubpageShell';
+import { AsociacionHeroIconClipboard } from '../_components/asociacion-hero-icons';
 
 type Notificacion = {
   id: number;
@@ -94,66 +96,77 @@ export default function NotificacionesList() {
     fetchNotificaciones();
   }, [filtroTipo]);
 
+  const shellBase = {
+    title: 'Notificaciones',
+    subtitle: 'Noticias, eventos y alertas en un solo listado · Asociación LPMBE',
+    heroIcon: <AsociacionHeroIconClipboard />,
+    maxWidthClass: 'max-w-5xl' as const,
+    heroAction: (
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <Link
+          href="/gestion/asociacion/contenidos"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/15 px-4 py-2.5 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm transition-all hover:bg-white/25 hover:ring-white/40 active:scale-[0.98]"
+        >
+          + Nuevo contenido
+        </Link>
+        <Link
+          href="/gestion/asociacion/alertas/nueva"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/15 px-4 py-2.5 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm transition-all hover:bg-white/25 hover:ring-white/40 active:scale-[0.98]"
+        >
+          + Nueva alerta
+        </Link>
+      </div>
+    ),
+  };
+
   if (loading) {
     return (
-      <div className="mx-auto max-w-4xl px-6 py-8">
-        <div className="text-muted-foreground">Cargando notificaciones…</div>
-      </div>
+      <GestionAsociacionSubpageShell {...shellBase}>
+        <p className="text-muted-foreground">Cargando notificaciones…</p>
+      </GestionAsociacionSubpageShell>
     );
   }
 
   if (err) {
     return (
-      <div className="mx-auto max-w-4xl px-6 py-8">
-        <div className="text-red-600">Error: {err}</div>
-      </div>
+      <GestionAsociacionSubpageShell {...shellBase}>
+        <p className="text-red-600">Error: {err}</p>
+      </GestionAsociacionSubpageShell>
     );
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-8">
-      <header className="mb-6">
-        <h1 className="text-3xl font-semibold">Todas las notificaciones</h1>
-        <p className="mt-1 text-muted-foreground">
-          Noticias, eventos, alertas y avisos globales (visibles a nivel nacional).
-        </p>
-
-        <div className="mt-4 flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2">
-            <label htmlFor="filtro-tipo" className="text-sm font-medium">
-              Filtrar por tipo:
-            </label>
-            <select
-              id="filtro-tipo"
-              value={filtroTipo}
-              onChange={(e) => setFiltroTipo(e.target.value)}
-              className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-            >
-              <option value="">Todos</option>
-              <option value="NOTICIA">Noticias</option>
-              <option value="EVENTO">Eventos</option>
-              <option value="ALERTA">Alertas</option>
-              <option value="SEMAFORO">Semáforos</option>
-              <option value="METEO">Meteo</option>
-            </select>
-          </div>
-          <div className="flex gap-2 text-sm">
-            <Link
-              href="/gestion/asociacion/contenidos"
-              className="text-primary hover:underline"
-            >
-              + Nueva noticia / evento
-            </Link>
-            <span className="text-muted-foreground">·</span>
-            <Link
-              href="/gestion/asociacion/alertas/nueva"
-              className="text-primary hover:underline"
-            >
-              + Nueva alerta
-            </Link>
-          </div>
+    <GestionAsociacionSubpageShell
+      {...shellBase}
+      heroBadges={
+        <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+          <span className="text-lg font-bold">{items.length}</span>
+          <span className="ml-1.5 text-xs text-white/70">
+            {items.length === 1 ? 'entrada' : 'entradas'}
+          </span>
         </div>
-      </header>
+      }
+    >
+      <div className="mb-6 flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <label htmlFor="filtro-tipo" className="text-sm font-medium">
+            Filtrar por tipo:
+          </label>
+          <select
+            id="filtro-tipo"
+            value={filtroTipo}
+            onChange={(e) => setFiltroTipo(e.target.value)}
+            className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
+          >
+            <option value="">Todos</option>
+            <option value="NOTICIA">Noticias</option>
+            <option value="EVENTO">Eventos</option>
+            <option value="ALERTA">Alertas</option>
+            <option value="SEMAFORO">Semáforos</option>
+            <option value="METEO">Meteo</option>
+          </select>
+        </div>
+      </div>
 
       {items.length === 0 ? (
         <div className="rounded-xl border border-border bg-card px-6 py-8 text-center text-muted-foreground">
@@ -236,6 +249,6 @@ export default function NotificacionesList() {
           })}
         </ul>
       )}
-    </div>
+    </GestionAsociacionSubpageShell>
   );
 }
