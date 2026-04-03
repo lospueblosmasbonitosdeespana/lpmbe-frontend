@@ -19,18 +19,18 @@ type MetricasData = {
   periodo: { dias: number; desde: string };
   ranking: {
     totalPueblos: number;
-    visitasTotal: { posicion: number; valor: number };
-    visitasPeriodo: { posicion: number; valor: number };
-    visitasGps: { posicion: number; valor: number };
-    visitasManual: { posicion: number; valor: number };
-    visitasGpsMasManual: { posicion: number; valor: number };
-    visitasPeriodoGps: { posicion: number; valor: number };
-    visitasPeriodoManual: { posicion: number; valor: number };
-    visitantesUnicos: { posicion: number; valor: number };
-    valoracionesTotal: { posicion: number; valor: number };
-    valoracionesPeriodo: { posicion: number; valor: number };
-    valoracionesMedia: { posicion: number; valor: number };
-    webPageviews: { posicion: number; valor: number };
+    visitasTotal: { posicion: number; valor: number; tendencia7d?: 'up' | 'down' | 'same' };
+    visitasPeriodo: { posicion: number; valor: number; tendencia7d?: 'up' | 'down' | 'same' };
+    visitasGps: { posicion: number; valor: number; tendencia7d?: 'up' | 'down' | 'same' };
+    visitasManual: { posicion: number; valor: number; tendencia7d?: 'up' | 'down' | 'same' };
+    visitasGpsMasManual: { posicion: number; valor: number; tendencia7d?: 'up' | 'down' | 'same' };
+    visitasPeriodoGps: { posicion: number; valor: number; tendencia7d?: 'up' | 'down' | 'same' };
+    visitasPeriodoManual: { posicion: number; valor: number; tendencia7d?: 'up' | 'down' | 'same' };
+    visitantesUnicos: { posicion: number; valor: number; tendencia7d?: 'up' | 'down' | 'same' };
+    valoracionesTotal: { posicion: number; valor: number; tendencia7d?: 'up' | 'down' | 'same' };
+    valoracionesPeriodo: { posicion: number; valor: number; tendencia7d?: 'up' | 'down' | 'same' };
+    valoracionesMedia: { posicion: number; valor: number; tendencia7d?: 'up' | 'down' | 'same' };
+    webPageviews: { posicion: number; valor: number; tendencia7d?: 'up' | 'down' | 'same' };
   };
   visitas: {
     total: number;
@@ -95,26 +95,72 @@ function formatDay(d: string) {
   return `${parts[2]}/${parts[1]}`;
 }
 
+function RankingTendenciaIcon({ tendencia }: { tendencia: 'up' | 'down' | 'same' }) {
+  if (tendencia === 'up') {
+    return (
+      <span
+        className="inline-flex shrink-0 items-center justify-center rounded-md bg-emerald-100 p-1.5 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400"
+        title="Mejor posición que hace 7 días (número más bajo)"
+        aria-label="Mejor posición que hace 7 días"
+      >
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" aria-hidden>
+          <path d="M12 19V5M12 5l-7 7M12 5l7 7" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
+    );
+  }
+  if (tendencia === 'down') {
+    return (
+      <span
+        className="inline-flex shrink-0 items-center justify-center rounded-md bg-red-100 p-1.5 text-red-700 dark:bg-red-950/60 dark:text-red-400"
+        title="Peor posición que hace 7 días"
+        aria-label="Peor posición que hace 7 días"
+      >
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" aria-hidden>
+          <path d="M12 5v14M12 19l-7-7M12 19l7-7" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
+    );
+  }
+  return (
+    <span
+      className="inline-flex shrink-0 items-center justify-center rounded-md bg-muted p-1.5 text-muted-foreground"
+      title="Misma posición que hace 7 días"
+      aria-label="Sin cambio respecto a hace 7 días"
+    >
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" aria-hidden>
+        <path d="M5 12h14" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+
 function RankingCard({
   label,
   posicion,
   total,
   valor,
   descripcion,
+  tendencia7d,
 }: {
   label: string;
   posicion: number;
   total: number;
   valor: string | number;
   descripcion: string;
+  tendencia7d?: 'up' | 'down' | 'same';
 }) {
+  const t7 = tendencia7d ?? 'same';
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
       <p className="text-sm font-medium text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-foreground">
-        {posicion}
-        <span className="ml-1 text-base font-medium text-muted-foreground">/ {total}</span>
-      </p>
+      <div className="mt-1 flex items-center justify-between gap-3">
+        <p className="text-2xl font-bold text-foreground">
+          {posicion}
+          <span className="ml-1 text-base font-medium text-muted-foreground">/ {total}</span>
+        </p>
+        <RankingTendenciaIcon tendencia={t7} />
+      </div>
       <p className="mt-1 text-xs text-muted-foreground">Valor actual: {valor}</p>
       <p className="mt-1 text-xs text-muted-foreground">{descripcion}</p>
     </div>
@@ -243,9 +289,12 @@ export default function PuebloMetricasDashboard({
       </div>
 
       <div>
-        <h2 className="mb-4 text-lg font-semibold text-foreground">
+        <h2 className="mb-1 text-lg font-semibold text-foreground">
           Ranking entre pueblos
         </h2>
+        <p className="mb-4 text-xs text-muted-foreground">
+          A la derecha del puesto: tendencia respecto a hace 7 días (subir = mejor puesto, número más bajo).
+        </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <RankingCard
             label="Ranking en valoraciones (histórico)"
@@ -253,6 +302,7 @@ export default function PuebloMetricasDashboard({
             total={ranking.totalPueblos}
             valor={ranking.valoracionesTotal.valor.toLocaleString('es-ES')}
             descripcion="Número total de reseñas recibidas."
+            tendencia7d={ranking.valoracionesTotal.tendencia7d}
           />
           <RankingCard
             label={`Ranking en valoraciones (${days} días)`}
@@ -260,6 +310,7 @@ export default function PuebloMetricasDashboard({
             total={ranking.totalPueblos}
             valor={ranking.valoracionesPeriodo.valor.toLocaleString('es-ES')}
             descripcion={`Reseñas nuevas en los últimos ${days} días.`}
+            tendencia7d={ranking.valoracionesPeriodo.tendencia7d}
           />
           <RankingCard
             label="Ranking en nota media"
@@ -267,6 +318,7 @@ export default function PuebloMetricasDashboard({
             total={ranking.totalPueblos}
             valor={ranking.valoracionesMedia.valor.toFixed(1)}
             descripcion="Promedio de estrellas (de 1 a 5)."
+            tendencia7d={ranking.valoracionesMedia.tendencia7d}
           />
           <RankingCard
             label="Ranking en visitas totales (GPS + Manual)"
@@ -274,6 +326,7 @@ export default function PuebloMetricasDashboard({
             total={ranking.totalPueblos}
             valor={ranking.visitasGpsMasManual.valor.toLocaleString('es-ES')}
             descripcion="Suma de todas las visitas registradas en la app."
+            tendencia7d={ranking.visitasGpsMasManual.tendencia7d}
           />
           <RankingCard
             label={`Ranking en visitas (${days} días)`}
@@ -281,6 +334,7 @@ export default function PuebloMetricasDashboard({
             total={ranking.totalPueblos}
             valor={ranking.visitasPeriodo.valor.toLocaleString('es-ES')}
             descripcion={`Visitas registradas solo en este periodo de ${days} días.`}
+            tendencia7d={ranking.visitasPeriodo.tendencia7d}
           />
           <RankingCard
             label="Ranking en visitas GPS (histórico)"
@@ -288,6 +342,7 @@ export default function PuebloMetricasDashboard({
             total={ranking.totalPueblos}
             valor={ranking.visitasGps.valor.toLocaleString('es-ES')}
             descripcion="Visitas validadas por geolocalización del usuario."
+            tendencia7d={ranking.visitasGps.tendencia7d}
           />
           <RankingCard
             label="Ranking en visitas manuales (histórico)"
@@ -295,6 +350,7 @@ export default function PuebloMetricasDashboard({
             total={ranking.totalPueblos}
             valor={ranking.visitasManual.valor.toLocaleString('es-ES')}
             descripcion="Visitas marcadas manualmente por el usuario."
+            tendencia7d={ranking.visitasManual.tendencia7d}
           />
           <RankingCard
             label="Ranking en visitantes únicos"
@@ -302,6 +358,7 @@ export default function PuebloMetricasDashboard({
             total={ranking.totalPueblos}
             valor={ranking.visitantesUnicos.valor.toLocaleString('es-ES')}
             descripcion="Usuarios distintos que han registrado visita."
+            tendencia7d={ranking.visitantesUnicos.tendencia7d}
           />
           <RankingCard
             label={`Ranking en visitas GPS (${days} días)`}
@@ -309,6 +366,7 @@ export default function PuebloMetricasDashboard({
             total={ranking.totalPueblos}
             valor={ranking.visitasPeriodoGps.valor.toLocaleString('es-ES')}
             descripcion="Visitas con geolocalización en el periodo actual."
+            tendencia7d={ranking.visitasPeriodoGps.tendencia7d}
           />
           <RankingCard
             label={`Ranking en visitas manuales (${days} días)`}
@@ -316,6 +374,7 @@ export default function PuebloMetricasDashboard({
             total={ranking.totalPueblos}
             valor={ranking.visitasPeriodoManual.valor.toLocaleString('es-ES')}
             descripcion="Visitas marcadas manualmente en el periodo actual."
+            tendencia7d={ranking.visitasPeriodoManual.tendencia7d}
           />
           <RankingCard
             label={`Ranking en tráfico de páginas (${days} días)`}
@@ -323,6 +382,7 @@ export default function PuebloMetricasDashboard({
             total={ranking.totalPueblos}
             valor={ranking.webPageviews.valor.toLocaleString('es-ES')}
             descripcion="Visitas a URLs del pueblo en la web."
+            tendencia7d={ranking.webPageviews.tendencia7d}
           />
           <RankingCard
             label="Ranking en visitas globales"
@@ -330,6 +390,7 @@ export default function PuebloMetricasDashboard({
             total={ranking.totalPueblos}
             valor={ranking.visitasTotal.valor.toLocaleString('es-ES')}
             descripcion="Total histórico de visitas en la app."
+            tendencia7d={ranking.visitasTotal.tendencia7d}
           />
         </div>
       </div>
