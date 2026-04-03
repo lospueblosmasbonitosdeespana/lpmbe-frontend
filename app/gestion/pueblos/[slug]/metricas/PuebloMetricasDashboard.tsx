@@ -100,11 +100,13 @@ function RankingCard({
   posicion,
   total,
   valor,
+  descripcion,
 }: {
   label: string;
   posicion: number;
   total: number;
   valor: string | number;
+  descripcion: string;
 }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
@@ -114,6 +116,7 @@ function RankingCard({
         <span className="ml-1 text-base font-medium text-muted-foreground">/ {total}</span>
       </p>
       <p className="mt-1 text-xs text-muted-foreground">Valor actual: {valor}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{descripcion}</p>
     </div>
   );
 }
@@ -206,6 +209,7 @@ export default function PuebloMetricasDashboard({
     dia: formatDay(d.dia),
     Pageviews: d.total,
   }));
+  const hasAppData = web.pageviewsApp > 0 || web.topPaginas.some((p) => p.app > 0);
 
   return (
     <div className="space-y-8">
@@ -244,76 +248,88 @@ export default function PuebloMetricasDashboard({
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <RankingCard
-            label="Valoraciones (total)"
+            label="Ranking en valoraciones (histórico)"
             posicion={ranking.valoracionesTotal.posicion}
             total={ranking.totalPueblos}
             valor={ranking.valoracionesTotal.valor.toLocaleString('es-ES')}
+            descripcion="Número total de reseñas recibidas."
           />
           <RankingCard
-            label={`Valoraciones (${days}d)`}
+            label={`Ranking en valoraciones (${days} días)`}
             posicion={ranking.valoracionesPeriodo.posicion}
             total={ranking.totalPueblos}
             valor={ranking.valoracionesPeriodo.valor.toLocaleString('es-ES')}
+            descripcion={`Reseñas nuevas en los últimos ${days} días.`}
           />
           <RankingCard
-            label="Media valoraciones"
+            label="Ranking en nota media"
             posicion={ranking.valoracionesMedia.posicion}
             total={ranking.totalPueblos}
             valor={ranking.valoracionesMedia.valor.toFixed(1)}
+            descripcion="Promedio de estrellas (de 1 a 5)."
           />
           <RankingCard
-            label="Visitas (GPS+Manual)"
+            label="Ranking en visitas totales (GPS + Manual)"
             posicion={ranking.visitasGpsMasManual.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitasGpsMasManual.valor.toLocaleString('es-ES')}
+            descripcion="Suma de todas las visitas registradas en la app."
           />
           <RankingCard
-            label={`Visitas (${days}d)`}
+            label={`Ranking en visitas (${days} días)`}
             posicion={ranking.visitasPeriodo.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitasPeriodo.valor.toLocaleString('es-ES')}
+            descripcion={`Visitas registradas solo en este periodo de ${days} días.`}
           />
           <RankingCard
-            label="Visitas GPS (total)"
+            label="Ranking en visitas GPS (histórico)"
             posicion={ranking.visitasGps.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitasGps.valor.toLocaleString('es-ES')}
+            descripcion="Visitas validadas por geolocalización del usuario."
           />
           <RankingCard
-            label="Visitas Manual (total)"
+            label="Ranking en visitas manuales (histórico)"
             posicion={ranking.visitasManual.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitasManual.valor.toLocaleString('es-ES')}
+            descripcion="Visitas marcadas manualmente por el usuario."
           />
           <RankingCard
-            label="Visitantes únicos"
+            label="Ranking en visitantes únicos"
             posicion={ranking.visitantesUnicos.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitantesUnicos.valor.toLocaleString('es-ES')}
+            descripcion="Usuarios distintos que han registrado visita."
           />
           <RankingCard
-            label={`GPS (${days}d)`}
+            label={`Ranking en visitas GPS (${days} días)`}
             posicion={ranking.visitasPeriodoGps.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitasPeriodoGps.valor.toLocaleString('es-ES')}
+            descripcion="Visitas con geolocalización en el periodo actual."
           />
           <RankingCard
-            label={`Manual (${days}d)`}
+            label={`Ranking en visitas manuales (${days} días)`}
             posicion={ranking.visitasPeriodoManual.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitasPeriodoManual.valor.toLocaleString('es-ES')}
+            descripcion="Visitas marcadas manualmente en el periodo actual."
           />
           <RankingCard
-            label={`Pageviews web (${days}d)`}
+            label={`Ranking en tráfico de páginas (${days} días)`}
             posicion={ranking.webPageviews.posicion}
             total={ranking.totalPueblos}
             valor={ranking.webPageviews.valor.toLocaleString('es-ES')}
+            descripcion="Visitas a URLs del pueblo en la web."
           />
           <RankingCard
-            label="Visitas totales"
+            label="Ranking en visitas globales"
             posicion={ranking.visitasTotal.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitasTotal.valor.toLocaleString('es-ES')}
+            descripcion="Total histórico de visitas en la app."
           />
         </div>
       </div>
@@ -325,27 +341,27 @@ export default function PuebloMetricasDashboard({
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard
-            label="Total visitas"
+            label="Total visitas registradas"
             value={visitas.total}
-            sub="Histórico"
+            sub="Histórico acumulado en app"
             accent="visitas"
           />
           <KpiCard
-            label="En el periodo"
+            label={`Visitas en ${days} días`}
             value={visitas.periodo}
-            sub={`Últimos ${days} días`}
+            sub="Solo en el periodo seleccionado"
             accent="visitas"
           />
           <KpiCard
             label="Visitantes únicos"
             value={visitas.visitantesUnicos}
-            sub="Usuarios distintos"
+            sub="Usuarios distintos que han visitado el pueblo"
             accent="visitas"
           />
           <KpiCard
-            label="GPS / Manual"
+            label="Visitas GPS / Manual"
             value={`${visitas.gps} / ${visitas.manual}`}
-            sub="Origen de la visita"
+            sub="GPS = geolocalizada, Manual = marcada por el usuario"
             accent="visitas"
           />
         </div>
@@ -378,25 +394,25 @@ export default function PuebloMetricasDashboard({
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard
-            label="Total valoraciones"
+            label="Total de valoraciones"
             value={valoraciones.total}
-            sub="Histórico"
+            sub="Reseñas acumuladas"
             accent="valoraciones"
           />
           <KpiCard
-            label="En el periodo"
+            label={`Valoraciones en ${days} días`}
             value={valoraciones.periodo}
-            sub={`Últimos ${days} días`}
+            sub="Reseñas nuevas en el periodo"
             accent="valoraciones"
           />
           <KpiCard
-            label="Media"
+            label="Nota media"
             value={valoraciones.media.toFixed(1)}
-            sub="Valoración media"
+            sub="Promedio de estrellas (1 a 5)"
             accent="valoraciones"
           />
           <div className="rounded-xl border border-border bg-card p-5 shadow-sm border-l-4 border-l-amber-500 bg-amber-50/50 dark:bg-amber-950/20">
-            <p className="text-sm font-medium text-muted-foreground">Valoraciones 5★</p>
+            <p className="text-sm font-medium text-muted-foreground">Valoraciones de 5★</p>
             <p className="mt-1 text-3xl font-bold text-foreground">
               {(valoraciones.distribucion[5] ?? 0).toLocaleString('es-ES')}
             </p>
@@ -468,37 +484,41 @@ export default function PuebloMetricasDashboard({
       {/* Web */}
       <div>
         <h2 className="mb-4 text-lg font-semibold text-foreground">
-          Visitas web (página del pueblo)
+          Tráfico de páginas del pueblo
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {hasAppData && (
+            <KpiCard
+              label={`Pageviews totales (${days} días)`}
+              value={web.pageviews}
+              sub="Suma de Web + App"
+              accent="web"
+            />
+          )}
           <KpiCard
-            label={`Pageviews (${days}d)`}
-            value={web.pageviews}
-            sub="Web + App"
-            accent="web"
-          />
-          <KpiCard
-            label="Pageviews web"
+            label={`Pageviews web (${days} días)`}
             value={web.pageviewsWeb}
-            sub={`Últimos ${days} días`}
+            sub="Tráfico web de URLs del pueblo"
             accent="web"
           />
-          <KpiCard
-            label="Pageviews app"
-            value={web.pageviewsApp}
-            sub={`Últimos ${days} días`}
-            accent="web"
-          />
+          {hasAppData && (
+            <KpiCard
+              label={`Pageviews app (${days} días)`}
+              value={web.pageviewsApp}
+              sub="Tráfico app detectado en URLs del pueblo"
+              accent="web"
+            />
+          )}
           <KpiCard
             label="Histórico total"
             value={web.pageviewsHistorico}
-            sub="Acumulado"
+            sub="Acumulado desde que hay medición"
             accent="web"
           />
           <KpiCard
             label="Sesiones únicas"
             value={web.sesionesUnicas}
-            sub={`Últimos ${days} días`}
+            sub={`Navegadores/sesiones distintas en ${days} días`}
             accent="web"
           />
           <KpiCard
@@ -535,7 +555,7 @@ export default function PuebloMetricasDashboard({
         {web.topPaginas.length > 0 && (
           <div className="mt-4 rounded-xl border border-border bg-card shadow-sm">
             <h3 className="border-b border-border px-4 py-3 text-sm font-semibold text-foreground">
-              Top páginas (Web + App)
+              {hasAppData ? 'Top páginas (Web + App)' : 'Top páginas (solo Web)'}
             </h3>
             <div className="max-h-72 overflow-y-auto">
               <table className="w-full text-sm">
@@ -550,9 +570,11 @@ export default function PuebloMetricasDashboard({
                     <th className="px-4 py-2 text-right text-xs font-semibold text-muted-foreground">
                       Web
                     </th>
-                    <th className="px-4 py-2 text-right text-xs font-semibold text-muted-foreground">
-                      App
-                    </th>
+                    {hasAppData && (
+                      <th className="px-4 py-2 text-right text-xs font-semibold text-muted-foreground">
+                        App
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -570,9 +592,11 @@ export default function PuebloMetricasDashboard({
                       <td className="px-4 py-2 text-right font-medium text-foreground">
                         {r.web.toLocaleString('es-ES')}
                       </td>
-                      <td className="px-4 py-2 text-right font-medium text-foreground">
-                        {r.app.toLocaleString('es-ES')}
-                      </td>
+                      {hasAppData && (
+                        <td className="px-4 py-2 text-right font-medium text-foreground">
+                          {r.app.toLocaleString('es-ES')}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
