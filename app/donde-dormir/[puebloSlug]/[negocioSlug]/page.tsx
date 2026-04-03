@@ -8,7 +8,7 @@ import {
   getLocaleFromRequestHeaders, type SupportedLocale,
 } from "@/lib/seo";
 import {
-  CLUB_PAGE_LABELS, getNegocioBySlug, slugToTitle,
+  CLUB_PAGE_LABELS, getNegocioBySlug, getNegociosByPuebloSlug, NEGOCIO_TIPO_BY_SLUG, slugToTitle,
 } from "@/app/_lib/club/club-helpers";
 import NegocioDetail from "@/app/pueblos/[slug]/club/[negocioSlug]/NegocioDetail";
 
@@ -20,8 +20,17 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
   const h = await headers();
   const locale = getLocaleFromRequestHeaders(h);
   const tSeo = await getTranslations("seo");
-  const negocioNombre = slugToTitle(negocioSlug);
-  const puebloNombre = slugToTitle(puebloSlug);
+  const tipo = NEGOCIO_TIPO_BY_SLUG[ROUTE_SLUG]?.[0];
+  const [recurso, negociosPueblo] = await Promise.all([
+    getNegocioBySlug(negocioSlug, locale),
+    getNegociosByPuebloSlug(puebloSlug, tipo, locale),
+  ]);
+  const puebloNombre = negociosPueblo.pueblo?.nombre?.trim() || slugToTitle(puebloSlug);
+  const negocioNombre = recurso?.nombre?.trim() || slugToTitle(negocioSlug);
+  const negocioPerteneceAlPueblo = Boolean(
+    recurso && negociosPueblo.negocios.some((n) => (n.slug && n.slug === negocioSlug) || n.id === recurso.id),
+  );
+  const hasValidNegocio = Boolean(recurso && negociosPueblo.pueblo && negocioPerteneceAlPueblo);
   const path = `/${ROUTE_SLUG}/${puebloSlug}/${negocioSlug}`;
   const title = seoTitle(tSeo("dondeNegocioTitle", { negocio: negocioNombre, pueblo: puebloNombre }));
   const description = seoDescription(tSeo("dondeNegocioDesc", { negocio: negocioNombre, pueblo: puebloNombre }));
@@ -29,7 +38,7 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
     title,
     description,
     alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) },
-    robots: { index: true, follow: true },
+    robots: { index: hasValidNegocio, follow: true },
     openGraph: { title, description, url: getCanonicalUrl(path, locale as SupportedLocale), type: "website", locale: getOGLocale(locale as SupportedLocale) },
   };
 }

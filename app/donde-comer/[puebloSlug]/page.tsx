@@ -5,7 +5,7 @@ import {
   getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription,
   getLocaleFromRequestHeaders, type SupportedLocale,
 } from "@/lib/seo";
-import { slugToTitle } from "@/app/_lib/club/club-helpers";
+import { getNegociosByPuebloSlug, NEGOCIO_TIPO_BY_SLUG, slugToTitle } from "@/app/_lib/club/club-helpers";
 import { ClubPuebloPage } from "@/app/_lib/club/ClubPuebloPage";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,10 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
   const h = await headers();
   const locale = getLocaleFromRequestHeaders(h);
   const tSeo = await getTranslations("seo");
-  const puebloNombre = slugToTitle(puebloSlug);
+  const tipo = NEGOCIO_TIPO_BY_SLUG[SLUG]?.[0];
+  const { pueblo } = await getNegociosByPuebloSlug(puebloSlug, tipo, locale);
+  const puebloNombre = pueblo?.nombre?.trim() || slugToTitle(puebloSlug);
+  const hasValidPueblo = Boolean(pueblo);
   const path = `/${SLUG}/${puebloSlug}`;
   const title = seoTitle(tSeo("dondeComerTitle", { nombre: puebloNombre }));
   const description = seoDescription(tSeo("dondeComerDesc", { nombre: puebloNombre }));
@@ -24,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
     title,
     description,
     alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) },
-    robots: { index: true, follow: true },
+    robots: { index: hasValidPueblo, follow: true },
     openGraph: { title, description, url: getCanonicalUrl(path, locale as SupportedLocale), type: "website", locale: getOGLocale(locale as SupportedLocale) },
   };
 }

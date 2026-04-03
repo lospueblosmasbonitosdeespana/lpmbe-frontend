@@ -15,6 +15,8 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
   const locale = getLocaleFromRequestHeaders(h);
   const tSeo = await getTranslations("seo");
   const puebloNombre = slugToTitle(puebloSlug);
+  const pages = await getPaginasTematicasByPuebloWithEsFallback(puebloSlug, CATEGORY_API_KEYS[SLUG], locale);
+  const hasValidContent = pages.length > 0;
   const path = `/${SLUG}/${puebloSlug}`;
   const title = seoTitle(tSeo("patrimonioTitle", { nombre: puebloNombre }));
   const description = seoDescription(tSeo("patrimonioDesc", { nombre: puebloNombre }));
@@ -28,7 +30,7 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
     },
-    robots: { index: true, follow: true },
+    robots: { index: hasValidContent, follow: true },
   };
 }
 

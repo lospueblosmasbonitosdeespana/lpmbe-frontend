@@ -14,6 +14,15 @@ Para cualquier ruta pública nueva o modificada en `app/**`:
 - Si el contenido no existe o falla la carga de datos, usar `robots: { index: false, follow: true }` para no indexar páginas pobres.
 - Si una ruta es `noindex`, no debe aparecer en `app/sitemap.ts` y debe evaluarse su `disallow` en `app/robots.ts`.
 
+## Reglas críticas (Temáticas + Club de Amigos)
+
+- Temáticas (`/que-comer`, `/naturaleza`, `/cultura`, `/en-familia`, `/petfriendly`, `/patrimonio`):
+  - indexar **solo** cuando exista contenido real de la categoría para ese pueblo.
+  - si la página o el detalle no existen en API, `robots.index = false`.
+- Club de Amigos (`/donde-comer`, `/donde-dormir`, `/donde-comprar`):
+  - usar siempre nombre real de pueblo/negocio desde API para metadata.
+  - no indexar listados o detalles cuando el recurso no exista o no pertenezca al pueblo.
+
 ## Checklist mínimo antes de cerrar
 
 1. ¿El título incluye el nombre real del contenido?

@@ -19,6 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
   const puebloNombre = slugToTitle(puebloSlug);
   const page = await getPaginaTematicaBySlug(puebloSlug, CATEGORY_API_KEYS[SLUG], pageSlug, locale);
   const titulo = page?.titulo ?? slugToTitle(pageSlug);
+  const hasValidContent = Boolean(page?.titulo?.trim());
   const path = `/${URL_SLUG}/${puebloSlug}/${pageSlug}`;
   const titleText = seoTitle(tSeo("tematicaDetalleTitle", { titulo, pueblo: puebloNombre }));
   const descText = seoDescription(page?.resumen ? stripHtml(page.resumen) : tSeo("tematicaDetalleDesc", { titulo, pueblo: puebloNombre }));
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
     title: titleText,
     description: descText,
     alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) },
-    robots: { index: true, follow: true },
+    robots: { index: hasValidContent, follow: true },
     openGraph: { title: titleText, description: descText, url: getCanonicalUrl(path, locale as SupportedLocale), ...(page?.coverUrl ? { images: [{ url: page.coverUrl }] } : {}), type: "article", locale: getOGLocale(locale as SupportedLocale) },
     other: { "article:section": label },
   };

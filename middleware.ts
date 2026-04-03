@@ -163,8 +163,11 @@ export function middleware(req: NextRequest): NextResponse {
   if (pathname === '/articulos') return permanentRedirectPreservingLang(req, '/actualidad?tipo=articulo');
 
   // Slug legal WordPress → página actual (no enviar al home por listas GSC legacy).
-  if (pathname === '/politica-privacidad') {
+  if (pathname === '/politica-privacidad' || pathname === '/politica-de-privacidad') {
     return permanentRedirectPreservingLang(req, '/privacidad');
+  }
+  if (pathname === '/asociacion') {
+    return permanentRedirectPreservingLang(req, '/el-sello');
   }
 
   // URLs basura (WP feeds, assets, noticias-y-eventos sin id): redirigir a home o actualidad.
