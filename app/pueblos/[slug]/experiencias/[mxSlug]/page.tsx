@@ -8,10 +8,10 @@ import {
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
-  metaLocaleLead,
   seoTitle,
   seoDescription,
   slugDisambiguatorForTitle,
+  slugToTitle,
   uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
@@ -57,34 +57,36 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, mxSlug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
-  const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const expName = mxSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const tSeo = await getTranslations("seo");
+  const fallbackPuebloName = slugToTitle(slug);
+  const fallbackExpName = slugToTitle(mxSlug);
+  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+  const puebloName = pueblo?.nombre?.trim() || fallbackPuebloName;
+  let expName = fallbackExpName;
+  let descPlain = "";
+  let hasValidExperience = false;
+
+  if (pueblo) {
+    const mxItem = (pueblo.multiexperiencias ?? []).find((x: any) => {
+      const s = x?.slug ?? x?.multiexperiencia?.slug ?? null;
+      return s === mxSlug;
+    });
+    const mx = (mxItem?.multiexperiencia ?? mxItem ?? null) as Multiexperiencia | null;
+    if (mx?.titulo?.trim()) {
+      expName = mx.titulo.trim();
+      descPlain = mx.descripcion
+        ? mx.descripcion.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 130)
+        : "";
+      hasValidExperience = true;
+    }
+  }
+
   const path = `/pueblos/${slug}/experiencias/${mxSlug}`;
   const mxDis = slugDisambiguatorForTitle(mxSlug);
   const title = seoTitle(`${expName} · ${puebloName}${mxDis}`);
-
-  let descriptionLong = `${metaLocaleLead(locale)}Experiencia «${expName}» en ${puebloName}. Itinerario: ${mxSlug}.`;
-  try {
-    const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
-    if (pueblo) {
-      const mxItem = (pueblo.multiexperiencias ?? []).find((x: any) => {
-        const s = x?.slug ?? x?.multiexperiencia?.slug ?? null;
-        return s === mxSlug;
-      });
-      const mx = (mxItem?.multiexperiencia ?? mxItem ?? null) as Multiexperiencia | null;
-      if (mx?.titulo) {
-        const titulo = mx.titulo.trim();
-        const descPlain = mx.descripcion
-          ? mx.descripcion.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 130)
-          : "";
-        descriptionLong = `${metaLocaleLead(locale)}${titulo} — ${pueblo.nombre}.${descPlain ? ` ${descPlain}` : ""} Ref. ${mxSlug}.`;
-      }
-    }
-  } catch {
-    // fallback descriptionLong ya definido
-  }
-
-  const description = seoDescription(descriptionLong) || DEFAULT_DESCRIPTION;
+  const description = hasValidExperience
+    ? seoDescription(`${expName} · ${puebloName}${descPlain ? `. ${descPlain}` : ""}`) || DEFAULT_DESCRIPTION
+    : seoDescription(tSeo("tematicaDetalleDesc", { titulo: expName, pueblo: puebloName })) || DEFAULT_DESCRIPTION;
 
   return {
     title,
@@ -93,7 +95,7 @@ export async function generateMetadata({
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
-    robots: { index: true, follow: true },
+    robots: { index: hasValidExperience, follow: true },
     openGraph: {
       title,
       description,

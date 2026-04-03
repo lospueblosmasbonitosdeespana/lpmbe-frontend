@@ -36,10 +36,12 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const tSeo = await getTranslations("seo");
-  const name = slugToTitle(slug) || "Pueblo";
+  const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+  const name = pueblo?.nombre?.trim() || slugToTitle(slug) || "Pueblo";
   const path = `/pueblos/${slug}/multiexperiencias`;
   const title = seoTitle(tSeo("multiexperienciasTitle", { nombre: name }));
   const description = seoDescription(tSeo("multiexperienciasDesc", { nombre: name }));
+  const hasPuebloData = Boolean(pueblo);
   return {
     title,
     description,
@@ -47,7 +49,7 @@ export async function generateMetadata({
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
-    robots: { index: true, follow: true },
+    robots: { index: hasPuebloData, follow: true },
     openGraph: {
       title,
       description,

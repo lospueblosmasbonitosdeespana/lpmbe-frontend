@@ -73,6 +73,7 @@ export async function generateMetadata({
   const data = await fetchData(puebloSlug, locale);
   const nameFallback = slugToTitle(puebloSlug);
   const day = data?.participante.dias.find((d) => d.fecha === fecha);
+  const hasDayData = Boolean(day);
   const puebloName = data?.participante.pueblo.nombre ?? nameFallback;
   const dateLabel =
     day != null
@@ -83,8 +84,12 @@ export async function generateMetadata({
           year: 'numeric',
         })
       : fecha;
-  const title = seoTitle(tSeo('semanaSantaDiaTitle', { nombre: puebloName, fecha: dateLabel }));
-  const description = seoDescription(tSeo('semanaSantaDiaDesc', { nombre: puebloName, fecha: dateLabel }));
+  const title = hasDayData
+    ? seoTitle(tSeo('semanaSantaDiaTitle', { nombre: puebloName, fecha: dateLabel }))
+    : seoTitle(tSeo('semanaSantaTitle', { nombre: puebloName }));
+  const description = hasDayData
+    ? seoDescription(tSeo('semanaSantaDiaDesc', { nombre: puebloName, fecha: dateLabel }))
+    : seoDescription(tSeo('semanaSantaDesc', { nombre: puebloName }));
   return {
     title,
     description,
@@ -98,7 +103,7 @@ export async function generateMetadata({
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
     },
-    robots: { index: true, follow: true },
+    robots: { index: hasDayData, follow: true },
   };
 }
 

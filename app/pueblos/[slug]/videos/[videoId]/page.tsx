@@ -1,17 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { permanentRedirect } from "next/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
 import {
   getBaseUrl,
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
-  metaLocaleLead,
   seoDescription,
   seoTitle,
-  seoTitleVideoWithId,
   uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
@@ -86,6 +84,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, videoId } = await params;
   const locale = await getLocale();
+  const tSeo = await getTranslations("seo");
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const { pueblo, videos } = await fetchPuebloVideos(slug, locale);
   const video = pueblo ? resolveVideo(videos, videoId) : undefined;
@@ -94,12 +93,11 @@ export async function generateMetadata({
   const ytId = video ? extractYoutubeId(video.url) : null;
   const title = video
     ? seoTitle(`${video.titulo} · ${name}`)
-    : seoTitleVideoWithId(videoId, name, "");
+    : seoTitle(tSeo("videosTitle", { nombre: name }));
   const description = video
-    ? seoDescription(
-        `${metaLocaleLead(locale)}«${video.titulo}» — Vídeo en ${name}. ID ${video.id}.`,
-      )
-    : seoDescription(`${metaLocaleLead(locale)}Vídeo en ${name}.`);
+    ? seoDescription(`${video.titulo} · ${name}`)
+    : seoDescription(tSeo("videosDesc", { nombre: name }));
+  const hasVideoData = Boolean(video);
 
   return {
     title,
@@ -113,10 +111,10 @@ export async function generateMetadata({
       description,
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
-      type: "video.other",
+      type: hasVideoData ? "video.other" : "article",
       videos: ytId ? [{ url: `https://www.youtube.com/watch?v=${ytId}` }] : undefined,
     },
-    robots: { index: true, follow: true },
+    robots: { index: hasVideoData, follow: true },
   };
 }
 

@@ -1,0 +1,23 @@
+---
+description: Regla de oro SEO para nuevas rutas públicas
+alwaysApply: true
+---
+
+# SEO Regla de Oro (Web)
+
+Para cualquier ruta pública nueva o modificada en `app/**`:
+
+- La URL debe ser legible por humanos (slugs), sin IDs numéricos en metadata.
+- `generateMetadata` debe usar datos reales del contenido (nombre de pueblo, evento, noticia, etc.), no textos genéricos.
+- Título y descripción deben salir por i18n (`getTranslations('seo')` + `messages/*.json` en 7 idiomas), nunca hardcoded en español.
+- Incluir siempre `alternates` (`canonical` + `languages`) y `openGraph` (`title`, `description`, `url`, `locale`).
+- Si el contenido no existe o falla la carga de datos, usar `robots: { index: false, follow: true }` para no indexar páginas pobres.
+- Si una ruta es `noindex`, no debe aparecer en `app/sitemap.ts` y debe evaluarse su `disallow` en `app/robots.ts`.
+
+## Checklist mínimo antes de cerrar
+
+1. ¿El título incluye el nombre real del contenido?
+2. ¿Hay i18n completo en ES/EN/FR/DE/PT/IT/CA?
+3. ¿No aparecen IDs/fechas crudas como texto SEO principal?
+4. ¿Fallbacks con `noindex`?
+5. ¿Sitemap y robots consistentes?

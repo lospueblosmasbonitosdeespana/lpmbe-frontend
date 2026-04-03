@@ -6,9 +6,8 @@ import {
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
-  metaLocaleLead,
   seoDescription,
-  seoTitlePoiWithStamp,
+  seoTitle,
   uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
@@ -109,31 +108,30 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, poi } = await params;
   const locale = await getLocale();
+  const tSeo = await getTranslations("seo");
   const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const data = await fetchPoiFast(slug, poi, locale);
-  const poiReadable =
-    data?.nombre?.trim() ||
-    (isNumeric(poi) ? `Punto de interés (${poi})` : poi.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
+  const hasPoiData = Boolean(data?.nombre?.trim());
+  const poiReadable = data?.nombre?.trim() || poi.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/pois/${poi}`;
-  const title = seoTitlePoiWithStamp(poi, isNumeric(poi), poiReadable, puebloName, "", slug);
-  const refStamp = isNumeric(poi) ? `id ${poi}` : `slug ${poi}`;
+  const title = hasPoiData
+    ? seoTitle(`${poiReadable} · ${puebloName}`)
+    : seoTitle(tSeo("lugaresDeInteresTitle", { nombre: puebloName }));
+  const description = hasPoiData
+    ? seoDescription(`${poiReadable} · ${puebloName}`, 160)
+    : seoDescription(tSeo("lugaresDeInteresDesc", { nombre: puebloName }), 160);
+
   return {
     title,
-    description: seoDescription(
-      `${metaLocaleLead(locale)}Información sobre ${poiReadable} en ${puebloName}. ${refStamp}.`,
-      160,
-    ),
+    description,
     alternates: {
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
-    robots: { index: true, follow: true },
+    robots: { index: hasPoiData, follow: true },
     openGraph: {
       title,
-      description: seoDescription(
-        `${metaLocaleLead(locale)}Información sobre ${poiReadable} en ${puebloName}. ${refStamp}.`,
-        160,
-      ),
+      description,
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
       type: "article",
@@ -141,6 +139,7 @@ export async function generateMetadata({
     twitter: {
       card: "summary",
       title,
+      description,
     },
   };
 }
