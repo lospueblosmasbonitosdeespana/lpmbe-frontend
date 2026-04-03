@@ -366,12 +366,8 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
   }
 
   return (
-    <main className="mx-auto max-w-3xl pb-24 p-6">
-      <h1 className="text-2xl font-semibold">
-        {rutaId ? 'Editar Ruta' : 'Nueva Ruta'}
-      </h1>
-
-      <form onSubmit={handleSubmit} className="mt-6 space-y-6" id="ruta-form">
+    <div className="mx-auto max-w-3xl pb-24">
+      <form onSubmit={handleSubmit} className="space-y-6" id="ruta-form">
         {/* Título */}
         <div className="space-y-2">
           <label className="block text-sm font-medium">Título *</label>
@@ -814,6 +810,6 @@ export default function RutaForm({ rutaId, initialData }: RutaFormProps) {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

@@ -1,11 +1,15 @@
-import Link from 'next/link';
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
 import AppPromoForm from '../../AppPromoForm.client';
 import type { AppPromoItem } from '../../AppPromosList.client';
+import { GestionAsociacionSubpageShell } from '../../../../_components/GestionAsociacionSubpageShell';
+import { AsociacionHeroIconSmartphone } from '../../../../_components/asociacion-hero-icons';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
+
+const PROMOS_BACK = '/gestion/asociacion/app/promos';
+const PROMOS_BACK_LABEL = 'Volver a Pop-ups';
 
 async function getPromo(id: number): Promise<AppPromoItem | null> {
   const { getApiUrl } = await import('@/lib/api');
@@ -39,13 +43,15 @@ export default async function EditarAppPromoPage({
   if (!promo) redirect('/gestion/asociacion/app/promos');
 
   return (
-    <main>
-      <div className="mx-auto max-w-2xl px-6 pt-6 pb-2">
-        <Link className="text-sm text-muted-foreground hover:underline" href="/gestion/asociacion/app/promos">
-          ← Volver a Pop-ups
-        </Link>
-      </div>
-      <AppPromoForm id={numId} initialData={promo} />
-    </main>
+    <GestionAsociacionSubpageShell
+      title="Editar promo"
+      subtitle={promo.title}
+      heroIcon={<AsociacionHeroIconSmartphone />}
+      maxWidthClass="max-w-3xl"
+      backHref={PROMOS_BACK}
+      backLabel={PROMOS_BACK_LABEL}
+    >
+      <AppPromoForm id={numId} initialData={promo} embeddedInShell />
+    </GestionAsociacionSubpageShell>
   );
 }

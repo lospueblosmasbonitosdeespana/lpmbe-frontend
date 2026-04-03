@@ -99,7 +99,14 @@ const emptyForm: FormData = {
   comunidad: '',
 };
 
-export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: string }) {
+export default function NegociosPuebloClient({
+  puebloSlug,
+  embeddedInShell,
+}: {
+  puebloSlug: string;
+  /** Si true, el título va en GestionAsociacionSubpageShell (página padre). */
+  embeddedInShell?: boolean;
+}) {
   const isAsociacion = puebloSlug === 'asociacion-general';
 
   const [negocios, setNegocios] = useState<Negocio[]>([]);
@@ -341,22 +348,29 @@ export default function NegociosPuebloClient({ puebloSlug }: { puebloSlug: strin
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">{title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Gestiona hoteles, restaurantes, comercios y otros negocios privados.
-          </p>
+      {!(embeddedInShell && showForm) && (
+        <div
+          className={`flex items-center gap-4 ${embeddedInShell ? 'justify-end' : 'justify-between'}`}
+        >
+          {!embeddedInShell && (
+            <div>
+              <h1 className="text-2xl font-semibold">{title}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Gestiona hoteles, restaurantes, comercios y otros negocios privados.
+              </p>
+            </div>
+          )}
+          {!showForm && (
+            <button
+              type="button"
+              onClick={openCreate}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/90"
+            >
+              + Nuevo negocio
+            </button>
+          )}
         </div>
-        {!showForm && (
-          <button
-            onClick={openCreate}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/90"
-          >
-            + Nuevo negocio
-          </button>
-        )}
-      </div>
+      )}
 
       {msg && (
         <div

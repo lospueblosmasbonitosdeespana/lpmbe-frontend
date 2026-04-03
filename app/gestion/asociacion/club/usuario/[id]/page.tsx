@@ -1,7 +1,11 @@
 'use client';
 
 import { useEffect, useState, use } from 'react';
-import Link from 'next/link';
+import { GestionAsociacionSubpageShell } from '../../../_components/GestionAsociacionSubpageShell';
+import { AsociacionHeroIconUserCircle } from '../../../_components/asociacion-hero-icons';
+
+const CLUB_BACK = '/gestion/asociacion/club';
+const CLUB_BACK_LABEL = 'Volver al Club de amigos';
 
 // ─── Types ──────────────────────────────────────────────────────────────
 
@@ -118,32 +122,63 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-5xl p-6">
-        <div className="py-16 text-center text-muted-foreground">Cargando perfil del usuario...</div>
-      </div>
+      <GestionAsociacionSubpageShell
+        title="Usuario del club"
+        subtitle="Cargando perfil…"
+        heroIcon={<AsociacionHeroIconUserCircle />}
+        maxWidthClass="max-w-5xl"
+        backHref={CLUB_BACK}
+        backLabel={CLUB_BACK_LABEL}
+      >
+        <p className="py-8 text-center text-muted-foreground">Cargando perfil del usuario…</p>
+      </GestionAsociacionSubpageShell>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="mx-auto max-w-5xl p-6">
+      <GestionAsociacionSubpageShell
+        title="Usuario del club"
+        subtitle="Detalle no disponible"
+        heroIcon={<AsociacionHeroIconUserCircle />}
+        maxWidthClass="max-w-5xl"
+        backHref={CLUB_BACK}
+        backLabel={CLUB_BACK_LABEL}
+      >
         <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center text-red-600">
           {error ?? 'Usuario no encontrado'}
         </div>
-        <div className="mt-4 text-sm">
-          <Link href="/gestion/asociacion/club" className="text-muted-foreground hover:underline">← Volver al Club</Link>
-        </div>
-      </div>
+      </GestionAsociacionSubpageShell>
     );
   }
 
   const { usuario: u, resumen: r } = data;
+  const displayName = u.nombre ? `${u.nombre} ${u.apellidos ?? ''}`.trim() : u.email;
 
   return (
-    <div className="mx-auto max-w-5xl p-6 space-y-6">
-      {/* ── Header con perfil ─────────────────────────────────────── */}
+    <GestionAsociacionSubpageShell
+      title={displayName}
+      subtitle={
+        <>
+          {u.email}
+          {u.rol ? (
+            <>
+              {' · '}
+              <span className="font-medium text-white/95">{u.rol}</span>
+            </>
+          ) : null}
+          {' · '}
+          Registrado {fmtDate(u.createdAt)}
+        </>
+      }
+      heroIcon={<AsociacionHeroIconUserCircle />}
+      maxWidthClass="max-w-5xl"
+      backHref={CLUB_BACK}
+      backLabel={CLUB_BACK_LABEL}
+    >
+      <div className="space-y-6">
+      {/* ── Cabecera perfil (avatar) ─────────────────────────────────────── */}
       <div className="flex items-start gap-5">
-        {/* Avatar */}
         <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary">
           {u.avatarUrl ? (
             <img src={u.avatarUrl} alt="" className="h-16 w-16 rounded-full object-cover" />
@@ -153,31 +188,10 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
         </div>
 
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-semibold text-gray-800 truncate">
-            {u.nombre ? `${u.nombre} ${u.apellidos ?? ''}`.trim() : u.email}
-          </h1>
-          <p className="text-sm text-muted-foreground">{u.email}</p>
-          <div className="mt-1 flex flex-wrap gap-2 text-xs">
-            <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-muted-foreground">
-              {u.rol ?? 'USUARIO'}
-            </span>
-            {u.telefono && (
-              <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
-                {u.telefono}
-              </span>
-            )}
-            <span className="text-muted-foreground">
-              Registrado {fmtDate(u.createdAt)}
-            </span>
-          </div>
+          {u.telefono && (
+            <p className="text-sm text-muted-foreground">Tel. {u.telefono}</p>
+          )}
         </div>
-
-        <Link
-          href="/gestion/asociacion/club"
-          className="shrink-0 text-sm text-muted-foreground hover:text-gray-700 hover:underline"
-        >
-          ← Volver
-        </Link>
       </div>
 
       {/* ── Tarjetas de resumen ───────────────────────────────────── */}
@@ -507,7 +521,8 @@ export default function UsuarioDetallePage({ params }: { params: Promise<{ id: s
           </div>
         </section>
       )}
-    </div>
+      </div>
+    </GestionAsociacionSubpageShell>
   );
 }
 

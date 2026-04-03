@@ -3,6 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { GestionAsociacionSubpageShell } from '../../../_components/GestionAsociacionSubpageShell';
+import { AsociacionHeroIconChart } from '../../../_components/asociacion-hero-icons';
+
+const METRICAS_BACK = '/gestion/asociacion/club/metricas';
+const METRICAS_BACK_LABEL = 'Volver a métricas del club';
 
 type DiaMetrica = {
   fecha: string;
@@ -205,40 +210,58 @@ export default function ClubMetricasPuebloPage() {
     loadData();
   }, [puebloId]);
 
+  const shellTitle = `Métricas · ${puebloNombre || `Pueblo ${puebloId}`}`;
+
   if (loading) {
     return (
-      <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-        <div>Cargando...</div>
-      </div>
+      <GestionAsociacionSubpageShell
+        title="Métricas del pueblo"
+        subtitle="Cargando datos…"
+        heroIcon={<AsociacionHeroIconChart />}
+        maxWidthClass="max-w-6xl"
+        backHref={METRICAS_BACK}
+        backLabel={METRICAS_BACK_LABEL}
+      >
+        <p className="text-muted-foreground">Cargando…</p>
+      </GestionAsociacionSubpageShell>
     );
   }
 
   if (error || !metricas) {
     return (
-      <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ color: '#ef4444' }}>{error || 'Error cargando métricas'}</div>
-        <div style={{ marginTop: 16 }}>
-          <Link href="/gestion/asociacion/club/metricas" style={{ color: '#0066cc', textDecoration: 'none' }}>
-            ← Volver a métricas
+      <GestionAsociacionSubpageShell
+        title="Métricas del pueblo"
+        subtitle="Detalle de validaciones"
+        heroIcon={<AsociacionHeroIconChart />}
+        maxWidthClass="max-w-6xl"
+        backHref={METRICAS_BACK}
+        backLabel={METRICAS_BACK_LABEL}
+      >
+        <div className="space-y-4">
+          <p className="text-destructive">{error || 'Error cargando métricas'}</p>
+          <Link href={METRICAS_BACK} className="text-sm text-primary hover:underline">
+            {METRICAS_BACK_LABEL}
           </Link>
         </div>
-      </div>
+      </GestionAsociacionSubpageShell>
     );
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
-          Métricas · {puebloNombre || `Pueblo ${puebloId}`}
-        </h1>
-        <div style={{ fontSize: 14, color: '#666', marginBottom: 8 }}>
-          <Link href="/gestion/asociacion/club/metricas" style={{ color: '#0066cc', textDecoration: 'none' }}>
-            ← Volver a métricas
-          </Link>
+    <GestionAsociacionSubpageShell
+      title={shellTitle}
+      subtitle="Exportación CSV, histórico y escaneos recientes"
+      heroIcon={<AsociacionHeroIconChart />}
+      maxWidthClass="max-w-6xl"
+      backHref={METRICAS_BACK}
+      backLabel={METRICAS_BACK_LABEL}
+      heroBadges={
+        <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+          <span className="text-lg font-bold">{metricas.hoy.total}</span>
+          <span className="ml-1.5 text-xs text-white/70">intentos hoy</span>
         </div>
-      </div>
-
+      }
+    >
       {/* HOY */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>HOY</div>
@@ -383,7 +406,7 @@ export default function ClubMetricasPuebloPage() {
           </table>
         </div>
       )}
-    </div>
+    </GestionAsociacionSubpageShell>
   );
 }
 

@@ -56,9 +56,10 @@ function promoToForm(p: AppPromoItem): FormData {
 type Props = {
   id?: number;
   initialData?: AppPromoItem | null;
+  embeddedInShell?: boolean;
 };
 
-export default function AppPromoForm({ id, initialData }: Props) {
+export default function AppPromoForm({ id, initialData, embeddedInShell = false }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState<FormData>(initialData ? promoToForm(initialData) : defaultForm);
@@ -152,7 +153,7 @@ export default function AppPromoForm({ id, initialData }: Props) {
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8">
+    <div className={embeddedInShell ? 'w-full' : 'mx-auto max-w-2xl px-6 py-8'}>
       <form onSubmit={handleSubmit} className="space-y-6">
         {message && (
           <p className={message.type === "error" ? "text-red-600" : "text-green-600"}>

@@ -2,6 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { GestionAsociacionSubpageShell } from '../../_components/GestionAsociacionSubpageShell';
+import { AsociacionHeroIconChart } from '../../_components/asociacion-hero-icons';
+
+const CLUB_BACK = '/gestion/asociacion/club';
+const CLUB_BACK_LABEL = 'Volver al Club de amigos';
+
+const shellBase = {
+  title: 'Métricas del club',
+  subtitle: 'Resumen global y por pueblo (validaciones QR) · Asociación LPMBE',
+  heroIcon: <AsociacionHeroIconChart />,
+  maxWidthClass: 'max-w-6xl' as const,
+  backHref: CLUB_BACK,
+  backLabel: CLUB_BACK_LABEL,
+};
 
 type MetricasResumen = {
   hoy: {
@@ -100,37 +114,47 @@ export default function ClubMetricasPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-        <div>Cargando...</div>
-      </div>
+      <GestionAsociacionSubpageShell {...shellBase}>
+        <p className="text-muted-foreground">Cargando…</p>
+      </GestionAsociacionSubpageShell>
     );
   }
 
   if (error) {
     return (
-      <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ color: '#ef4444' }}>{error}</div>
-        <button
-          onClick={() => window.location.reload()}
-          style={{ marginTop: 16, padding: '8px 16px', border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer' }}
-        >
-          Reintentar
-        </button>
-      </div>
+      <GestionAsociacionSubpageShell {...shellBase}>
+        <div className="space-y-4">
+          <p className="text-destructive">{error}</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="rounded-lg border border-border px-4 py-2 text-sm hover:bg-muted"
+          >
+            Reintentar
+          </button>
+        </div>
+      </GestionAsociacionSubpageShell>
     );
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Métricas (globales)</h1>
-        <div style={{ fontSize: 14, color: '#666' }}>
-          <Link href="/gestion/asociacion/club" style={{ color: '#0066cc', textDecoration: 'none' }}>
-            ← Volver a Club de amigos
-          </Link>
-        </div>
-      </div>
-
+    <GestionAsociacionSubpageShell
+      {...shellBase}
+      heroBadges={
+        metricasResumen ? (
+          <div className="flex flex-wrap gap-3">
+            <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+              <span className="text-lg font-bold">{metricasResumen.hoy.total}</span>
+              <span className="ml-1.5 text-xs text-white/70">intentos hoy (total)</span>
+            </div>
+            <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+              <span className="text-lg font-bold">{metricasResumen.porPuebloHoy.length}</span>
+              <span className="ml-1.5 text-xs text-white/70">pueblos en tabla</span>
+            </div>
+          </div>
+        ) : null
+      }
+    >
       {/* TOTAL ASOCIACIÓN */}
       {metricasResumen && (
         <div style={{ marginBottom: 32 }}>
@@ -218,7 +242,7 @@ export default function ClubMetricasPage() {
           </tbody>
         </table>
       </div>
-    </div>
+    </GestionAsociacionSubpageShell>
   );
 }
 

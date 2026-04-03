@@ -4,6 +4,11 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import TipTapEditor from '@/app/_components/editor/TipTapEditor';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
+import { GestionAsociacionSubpageShell } from '../../_components/GestionAsociacionSubpageShell';
+import { AsociacionHeroIconAlertTriangle } from '../../_components/asociacion-hero-icons';
+
+const ALERTAS_BACK = '/gestion/asociacion/alertas';
+const ALERTAS_BACK_LABEL = 'Volver a Alertas globales';
 
 type EditorMode = 'edit' | 'html' | 'preview';
 
@@ -49,10 +54,15 @@ export default function NuevaAlertaGlobalPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl p-6">
-      <h1 className="text-2xl font-semibold">Nueva alerta global</h1>
-
-      <form onSubmit={onSubmit} className="mt-6 space-y-4">
+    <GestionAsociacionSubpageShell
+      title="Nueva alerta global"
+      subtitle="Aviso visible a nivel nacional en la web"
+      heroIcon={<AsociacionHeroIconAlertTriangle />}
+      maxWidthClass="max-w-3xl"
+      backHref={ALERTAS_BACK}
+      backLabel={ALERTAS_BACK_LABEL}
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
         <div className="space-y-2">
           <label className="block text-sm font-semibold">Título</label>
           <input
@@ -123,12 +133,6 @@ export default function NuevaAlertaGlobalPage() {
           {loading ? 'Creando…' : 'Crear alerta'}
         </button>
       </form>
-
-      <div className="mt-6 text-sm">
-        <a className="hover:underline" href="/gestion/asociacion/alertas">
-          ← Volver
-        </a>
-      </div>
-    </main>
+    </GestionAsociacionSubpageShell>
   );
 }

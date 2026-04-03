@@ -1,10 +1,14 @@
-import Link from 'next/link';
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
 import RecursosAsociacionClient from './RecursosAsociacionClient';
+import { GestionAsociacionSubpageShell } from '../../_components/GestionAsociacionSubpageShell';
+import { AsociacionHeroIconCastle } from '../../_components/asociacion-hero-icons';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
+
+const BACK = '/gestion/asociacion/club';
+const BACK_LABEL = 'Volver al Club de amigos';
 
 export default async function RecursosAsociacionPage() {
   const me = await getMeServer();
@@ -12,21 +16,15 @@ export default async function RecursosAsociacionPage() {
   if (me.rol !== 'ADMIN') redirect('/cuenta');
 
   return (
-    <main className="mx-auto max-w-5xl p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Recursos turísticos de la asociación</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Recursos del Club con ámbito asociación (no vinculados a un pueblo concreto). Aquí puedes ver el listado completo.
-        </p>
-      </div>
-
+    <GestionAsociacionSubpageShell
+      title="Recursos del club (asociación)"
+      subtitle="Ámbito asociación, sin pueblo concreto · Misma herramienta que recursos turísticos globales"
+      heroIcon={<AsociacionHeroIconCastle />}
+      maxWidthClass="max-w-5xl"
+      backHref={BACK}
+      backLabel={BACK_LABEL}
+    >
       <RecursosAsociacionClient />
-
-      <div className="mt-8 text-sm">
-        <Link className="text-muted-foreground hover:underline" href="/gestion/asociacion/club">
-          ← Volver al Club de Amigos
-        </Link>
-      </div>
-    </main>
+    </GestionAsociacionSubpageShell>
   );
 }

@@ -6,7 +6,8 @@ import type { ReactNode } from 'react';
 const HERO_BG =
   'linear-gradient(135deg, #a0705a 0%, #b8856d 40%, #c49a82 100%)';
 
-const BACK_HREF = '/gestion/asociacion';
+const DEFAULT_BACK_HREF = '/gestion/asociacion';
+const DEFAULT_BACK_LABEL = 'Volver a gestión de la asociación';
 
 /** Mismo patrón que contenidos globales: volver, hero terracota, pie. */
 export function GestionAsociacionSubpageShell({
@@ -18,6 +19,9 @@ export function GestionAsociacionSubpageShell({
   heroBadges,
   heroAction,
   showFooter = true,
+  /** En subpáginas: enlace superior e inferior (ej. volver al Club o a Tienda). */
+  backHref = DEFAULT_BACK_HREF,
+  backLabel = DEFAULT_BACK_LABEL,
 }: {
   title: string;
   subtitle: ReactNode;
@@ -27,6 +31,8 @@ export function GestionAsociacionSubpageShell({
   heroBadges?: ReactNode;
   heroAction?: ReactNode;
   showFooter?: boolean;
+  backHref?: string;
+  backLabel?: string;
 }) {
   const icon =
     heroIcon ?? (
@@ -39,13 +45,13 @@ export function GestionAsociacionSubpageShell({
   return (
     <main className={`mx-auto ${maxWidthClass} px-4 py-8 sm:px-6`}>
       <Link
-        href={BACK_HREF}
+        href={backHref}
         className="mb-6 inline-flex items-center gap-2 rounded-xl border border-border/80 bg-background/80 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all hover:border-primary/25 hover:bg-muted/50 hover:text-foreground"
       >
         <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
-        Volver a gestión de la asociación
+        {backLabel}
       </Link>
 
       <div
@@ -74,13 +80,13 @@ export function GestionAsociacionSubpageShell({
       {showFooter ? (
         <div className="mt-10 border-t border-border/60 pt-6">
           <Link
-            href={BACK_HREF}
+            href={backHref}
             className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Volver a gestión de la asociación
+            {backLabel}
           </Link>
         </div>
       ) : null}

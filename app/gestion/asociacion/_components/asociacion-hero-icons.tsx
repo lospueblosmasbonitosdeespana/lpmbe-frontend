@@ -80,3 +80,21 @@ export function AsociacionHeroIconSmartphone(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+/** Métricas / gráficos */
+export function AsociacionHeroIconChart(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden {...props}>
+      <path d="M4 19h16M4 15l4-6 4 4 4-8 4 10" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function AsociacionHeroIconUserCircle(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden {...props}>
+      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}

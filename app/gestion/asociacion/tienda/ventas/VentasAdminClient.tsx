@@ -42,7 +42,7 @@ function fmt(n: number | null | undefined): string {
   return n.toFixed(2).replace('.', ',');
 }
 
-export default function VentasAdminClient() {
+export default function VentasAdminClient({ embeddedInShell = false }: { embeddedInShell?: boolean }) {
   const now = new Date();
   const firstDayOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
   const today = now.toISOString().slice(0, 10);
@@ -123,20 +123,25 @@ export default function VentasAdminClient() {
     { base: 0, iva: 0, total: 0 }
   );
 
+  const Outer = embeddedInShell ? 'div' : 'main';
+  const outerClass = embeddedInShell ? 'w-full' : 'mx-auto max-w-7xl px-6 py-12';
+
   return (
-    <main className="mx-auto max-w-7xl px-6 py-12">
-      <div className="mb-8">
-        <Link
-          href="/gestion/asociacion/tienda"
-          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
-        >
-          &larr; Volver a Tienda
-        </Link>
-        <h1 className="text-3xl font-bold">Informe de Ventas</h1>
-        <p className="mt-2 text-muted-foreground">
-          Desglose fiscal para contabilidad: base imponible, IVA, portes y totales.
-        </p>
-      </div>
+    <Outer className={outerClass}>
+      {!embeddedInShell ? (
+        <div className="mb-8">
+          <Link
+            href="/gestion/asociacion/tienda"
+            className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
+          >
+            &larr; Volver a Tienda
+          </Link>
+          <h1 className="text-3xl font-bold">Informe de Ventas</h1>
+          <p className="mt-2 text-muted-foreground">
+            Desglose fiscal para contabilidad: base imponible, IVA, portes y totales.
+          </p>
+        </div>
+      ) : null}
 
       {/* Filtros */}
       <div className="mb-6 flex flex-wrap items-end gap-4 rounded-lg border border-border bg-white p-4">
@@ -262,6 +267,6 @@ export default function VentasAdminClient() {
           )}
         </>
       )}
-    </main>
+    </Outer>
   );
 }

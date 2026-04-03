@@ -5,6 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import TipTapEditor from "@/app/_components/editor/TipTapEditor";
 import SafeHtml from "@/app/_components/ui/SafeHtml";
+import { GestionAsociacionSubpageShell } from "../../../_components/GestionAsociacionSubpageShell";
+import { AsociacionHeroIconAlertTriangle } from "../../../_components/asociacion-hero-icons";
+
+const ALERTAS_BACK = "/gestion/asociacion/alertas";
+const ALERTAS_BACK_LABEL = "Volver a Alertas globales";
 
 type EditorMode = "edit" | "html" | "preview";
 
@@ -113,30 +118,49 @@ export default function EditarAlertaPage() {
   }
 
   if (loading) {
-    return <main className="mx-auto max-w-4xl px-6 py-8">Cargando...</main>;
+    return (
+      <GestionAsociacionSubpageShell
+        title="Editar alerta"
+        subtitle="Cargando…"
+        heroIcon={<AsociacionHeroIconAlertTriangle />}
+        maxWidthClass="max-w-3xl"
+        backHref={ALERTAS_BACK}
+        backLabel={ALERTAS_BACK_LABEL}
+      >
+        <p className="text-muted-foreground">Cargando…</p>
+      </GestionAsociacionSubpageShell>
+    );
   }
 
   if (loadError) {
     return (
-      <main className="mx-auto max-w-4xl px-6 py-8">
-        <h1 className="text-2xl font-semibold">Editar alerta</h1>
-        <p className="mt-3 text-red-600">{loadError}</p>
+      <GestionAsociacionSubpageShell
+        title="Editar alerta"
+        subtitle={id != null ? `ID ${id}` : "Alerta"}
+        heroIcon={<AsociacionHeroIconAlertTriangle />}
+        maxWidthClass="max-w-3xl"
+        backHref={ALERTAS_BACK}
+        backLabel={ALERTAS_BACK_LABEL}
+      >
+        <p className="text-red-600">{loadError}</p>
         <p className="mt-4">
-          <Link href="/gestion/asociacion/alertas" className="underline">
-            ← Volver
+          <Link href={ALERTAS_BACK} className="text-sm text-primary underline">
+            {ALERTAS_BACK_LABEL}
           </Link>
         </p>
-      </main>
+      </GestionAsociacionSubpageShell>
     );
   }
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-8">
-      <header className="mb-6">
-        <h1 className="text-3xl font-semibold">Editar alerta</h1>
-        <p className="mt-1 text-sm opacity-70">ID: {id}</p>
-      </header>
-
+    <GestionAsociacionSubpageShell
+      title="Editar alerta"
+      subtitle={id != null ? `ID ${id}` : ""}
+      heroIcon={<AsociacionHeroIconAlertTriangle />}
+      maxWidthClass="max-w-3xl"
+      backHref={ALERTAS_BACK}
+      backLabel={ALERTAS_BACK_LABEL}
+    >
       <form onSubmit={onSave} className="space-y-4">
         <div>
           <label className="block text-sm font-semibold">Título</label>
@@ -222,12 +246,6 @@ export default function EditarAlertaPage() {
           </button>
         </div>
       </form>
-
-      <div className="mt-6 text-sm">
-        <Link href="/gestion/asociacion/alertas" className="hover:underline">
-          ← Volver a alertas
-        </Link>
-      </div>
-    </main>
+    </GestionAsociacionSubpageShell>
   );
 }

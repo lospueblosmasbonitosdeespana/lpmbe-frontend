@@ -28,7 +28,7 @@ const ESTADO_LABELS: Record<Order['status'], string> = {
   REFUNDED: 'Reembolsado',
 };
 
-export default function PedidosAdminClient() {
+export default function PedidosAdminClient({ embeddedInShell = false }: { embeddedInShell?: boolean }) {
   const [pedidos, setPedidos] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -161,30 +161,35 @@ export default function PedidosAdminClient() {
     });
   }
 
+  const Outer = embeddedInShell ? 'div' : 'main';
+  const outerClass = embeddedInShell ? 'w-full' : 'mx-auto max-w-7xl px-6 py-12';
+
   if (loading) {
     return (
-      <main className="mx-auto max-w-7xl px-6 py-12">
+      <Outer className={outerClass}>
         <p className="text-muted-foreground">Cargando pedidos...</p>
-      </main>
+      </Outer>
     );
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-12">
-      <div className="mb-8">
-        <Link
-          href="/gestion/asociacion/tienda"
-          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
-        >
-          ← Volver a Tienda
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold">Pedidos</h1>
-          <p className="mt-2 text-muted-foreground">
-            Gestión de pedidos de la tienda ({pedidos.length})
-          </p>
+    <Outer className={outerClass}>
+      {!embeddedInShell ? (
+        <div className="mb-8">
+          <Link
+            href="/gestion/asociacion/tienda"
+            className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
+          >
+            ← Volver a Tienda
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold">Pedidos</h1>
+            <p className="mt-2 text-muted-foreground">
+              Gestión de pedidos de la tienda ({pedidos.length})
+            </p>
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {error && (
         <div className="mb-6 rounded-md border border-red-200 bg-red-50 p-4">
@@ -498,6 +503,6 @@ export default function PedidosAdminClient() {
           ))}
         </div>
       )}
-    </main>
+    </Outer>
   );
 }

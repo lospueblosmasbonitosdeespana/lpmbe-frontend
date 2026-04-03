@@ -2,10 +2,15 @@ import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
 import RutaForm from '../../RutaForm.client';
 import { headers } from 'next/headers';
+import { GestionAsociacionSubpageShell } from '../../../_components/GestionAsociacionSubpageShell';
+import { AsociacionHeroIconMap } from '../../../_components/asociacion-hero-icons';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 export const revalidate = 0;
+
+const RUTAS_BACK = '/gestion/asociacion/rutas';
+const RUTAS_BACK_LABEL = 'Volver a Rutas';
 
 async function fetchRuta(rutaId: string) {
   const h = await headers();
@@ -36,11 +41,31 @@ export default async function EditarRutaPage({
 
   if (!ruta) {
     return (
-      <main className="mx-auto max-w-3xl p-6">
-        <h1 className="text-2xl font-semibold text-red-600">Ruta no encontrada</h1>
-      </main>
+      <GestionAsociacionSubpageShell
+        title="Ruta no encontrada"
+        subtitle="No existe o no tienes acceso"
+        heroIcon={<AsociacionHeroIconMap />}
+        maxWidthClass="max-w-6xl"
+        backHref={RUTAS_BACK}
+        backLabel={RUTAS_BACK_LABEL}
+      >
+        <p className="text-destructive">No se encontró la ruta solicitada.</p>
+      </GestionAsociacionSubpageShell>
     );
   }
 
-  return <RutaForm rutaId={parseInt(id, 10)} initialData={ruta} />;
+  const titulo = typeof ruta.titulo === 'string' ? ruta.titulo : 'Ruta';
+
+  return (
+    <GestionAsociacionSubpageShell
+      title="Editar ruta"
+      subtitle={titulo}
+      heroIcon={<AsociacionHeroIconMap />}
+      maxWidthClass="max-w-6xl"
+      backHref={RUTAS_BACK}
+      backLabel={RUTAS_BACK_LABEL}
+    >
+      <RutaForm rutaId={parseInt(id, 10)} initialData={ruta} />
+    </GestionAsociacionSubpageShell>
+  );
 }

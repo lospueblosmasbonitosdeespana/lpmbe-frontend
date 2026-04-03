@@ -33,7 +33,7 @@ const FREQUENCY_LABELS: Record<string, string> = {
   every_time: "Cada vez",
 };
 
-export default function AppPromosList() {
+export default function AppPromosList({ embeddedInShell = false }: { embeddedInShell?: boolean }) {
   const [items, setItems] = useState<AppPromoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -68,37 +68,52 @@ export default function AppPromosList() {
     fetchPromos();
   }, []);
 
+  const wrapClass = embeddedInShell ? 'w-full' : 'mx-auto max-w-4xl px-6 py-8';
+
   if (loading) {
     return (
-      <div className="mx-auto max-w-4xl px-6 py-8">
-        <div>Cargando…</div>
+      <div className={wrapClass}>
+        <div className="text-muted-foreground">Cargando…</div>
       </div>
     );
   }
 
   if (err) {
     return (
-      <div className="mx-auto max-w-4xl px-6 py-8">
+      <div className={wrapClass}>
         <div className="text-red-600">Error: {err}</div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-8">
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Pop-ups y ofertas (app)</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Los usuarios verán el pop-up activo según las reglas que definas.
-          </p>
-        </div>
-        <Link
-          href="/gestion/asociacion/app/promos/nueva"
-          className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-        >
-          + Nueva promo
-        </Link>
+    <div className={wrapClass}>
+      <header
+        className={`mb-6 flex flex-wrap items-center gap-4 ${embeddedInShell ? 'justify-end' : 'justify-between'}`}
+      >
+        {embeddedInShell ? (
+          <Link
+            href="/gestion/asociacion/app/promos/nueva"
+            className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+          >
+            + Nueva promo
+          </Link>
+        ) : (
+          <>
+            <div>
+              <h1 className="text-2xl font-semibold">Pop-ups y ofertas (app)</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Los usuarios verán el pop-up activo según las reglas que definas.
+              </p>
+            </div>
+            <Link
+              href="/gestion/asociacion/app/promos/nueva"
+              className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+            >
+              + Nueva promo
+            </Link>
+          </>
+        )}
       </header>
 
       {items.length === 0 ? (

@@ -1,7 +1,11 @@
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 import EnvioAdminClient from './EnvioAdminClient';
+import { GestionAsociacionSubpageShell } from '../../_components/GestionAsociacionSubpageShell';
+import { AsociacionHeroIconCart } from '../../_components/asociacion-hero-icons';
+
+const TIENDA_BACK = '/gestion/asociacion/tienda';
+const TIENDA_BACK_LABEL = 'Volver a Tienda';
 
 export default async function EnvioAdminPage() {
   const me = await getMeServer();
@@ -9,21 +13,15 @@ export default async function EnvioAdminPage() {
   if (me.rol !== 'ADMIN') redirect('/cuenta');
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-12">
-      <div className="mb-8">
-        <Link
-          href="/gestion/asociacion/tienda"
-          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
-        >
-          &larr; Volver a Tienda
-        </Link>
-        <h1 className="text-3xl font-bold">Gestion &middot; Envio</h1>
-        <p className="mt-2 text-muted-foreground">
-          Configura zonas de envio, tarifas por peso y el umbral de envio gratuito para SendCloud.
-        </p>
-      </div>
-
+    <GestionAsociacionSubpageShell
+      title="Envío"
+      subtitle="Zonas, tarifas por peso y umbral de envío gratis (SendCloud)"
+      heroIcon={<AsociacionHeroIconCart />}
+      maxWidthClass="max-w-5xl"
+      backHref={TIENDA_BACK}
+      backLabel={TIENDA_BACK_LABEL}
+    >
       <EnvioAdminClient />
-    </main>
+    </GestionAsociacionSubpageShell>
   );
 }

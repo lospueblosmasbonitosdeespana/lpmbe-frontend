@@ -50,7 +50,7 @@ const emptyForm: ProductForm = {
   length: "",
 };
 
-export default function ProductosAdminClient() {
+export default function ProductosAdminClient({ embeddedInShell = false }: { embeddedInShell?: boolean }) {
   const [productos, setProductos] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -267,40 +267,56 @@ export default function ProductosAdminClient() {
     }
   }
 
+  const Outer = embeddedInShell ? 'div' : 'main';
+  const outerClass = embeddedInShell ? 'w-full' : 'mx-auto max-w-7xl px-6 py-12';
+
   if (loading) {
     return (
-      <main className="mx-auto max-w-7xl px-6 py-12">
+      <Outer className={outerClass}>
         <p className="text-muted-foreground">Cargando productos...</p>
-      </main>
+      </Outer>
     );
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-12">
-      <div className="mb-8">
-        <Link
-          href="/gestion/asociacion/tienda"
-          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
-        >
-          ← Volver a Tienda
-        </Link>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Productos</h1>
-            <p className="mt-2 text-muted-foreground">
-              Gestión de productos de la tienda ({productos.length})
-            </p>
-          </div>
-          {!mode && (
+    <Outer className={outerClass}>
+      {embeddedInShell ? (
+        !mode ? (
+          <div className="mb-6 flex justify-end">
             <button
               onClick={openCreate}
               className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
             >
               + Nuevo Producto
             </button>
-          )}
+          </div>
+        ) : null
+      ) : (
+        <div className="mb-8">
+          <Link
+            href="/gestion/asociacion/tienda"
+            className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
+          >
+            ← Volver a Tienda
+          </Link>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">Productos</h1>
+              <p className="mt-2 text-muted-foreground">
+                Gestión de productos de la tienda ({productos.length})
+              </p>
+            </div>
+            {!mode && (
+              <button
+                onClick={openCreate}
+                className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+              >
+                + Nuevo Producto
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {error && (
         <div className="mb-6 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800">
@@ -765,6 +781,6 @@ export default function ProductosAdminClient() {
           </table>
         </div>
       )}
-    </main>
+    </Outer>
   );
 }

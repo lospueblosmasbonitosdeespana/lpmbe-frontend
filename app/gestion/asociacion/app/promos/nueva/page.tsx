@@ -1,10 +1,14 @@
-import Link from 'next/link';
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
 import AppPromoForm from '../AppPromoForm.client';
+import { GestionAsociacionSubpageShell } from '../../../_components/GestionAsociacionSubpageShell';
+import { AsociacionHeroIconSmartphone } from '../../../_components/asociacion-hero-icons';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
+
+const PROMOS_BACK = '/gestion/asociacion/app/promos';
+const PROMOS_BACK_LABEL = 'Volver a Pop-ups';
 
 export default async function NuevaAppPromoPage() {
   const me = await getMeServer();
@@ -12,13 +16,15 @@ export default async function NuevaAppPromoPage() {
   if (me.rol !== 'ADMIN') redirect('/cuenta');
 
   return (
-    <main>
-      <div className="mx-auto max-w-2xl px-6 pt-6 pb-2">
-        <Link className="text-sm text-muted-foreground hover:underline" href="/gestion/asociacion/app/promos">
-          ← Volver a Pop-ups
-        </Link>
-      </div>
-      <AppPromoForm />
-    </main>
+    <GestionAsociacionSubpageShell
+      title="Nueva promo"
+      subtitle="Pop-up o oferta para la app móvil"
+      heroIcon={<AsociacionHeroIconSmartphone />}
+      maxWidthClass="max-w-3xl"
+      backHref={PROMOS_BACK}
+      backLabel={PROMOS_BACK_LABEL}
+    >
+      <AppPromoForm embeddedInShell />
+    </GestionAsociacionSubpageShell>
   );
 }
