@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { getMeServer } from '@/lib/me';
 import { redirect } from 'next/navigation';
 import {
@@ -9,195 +8,214 @@ import {
   IconClub,
   IconTienda,
   IconDatos,
-  IconNewsletter,
   IconAjustes,
   IconSello,
   IconDocumentos,
   IconContacto,
   IconVideos,
-  IconPois,
   IconApp,
+  IconNotificacionesFeed,
+  IconPeriodico,
+  IconComercios,
+  IconLandmark,
+  IconMegafono,
+  IconBoletin,
+  IconLogos,
+  IconFotos,
+  IconCorazonEvento,
+  IconCruzEvento,
+  IconPinoNavidad,
 } from '../_components/GestionIcons';
+import {
+  GestionHubCard,
+  GestionHubFooterLink,
+  GestionHubHero,
+  GestionHubSection,
+} from '../_components/GestionHub';
 
-const ACCESOS = [
-  {
-    href: '/gestion/asociacion/home',
-    title: 'Configuración del Home',
-    description: 'Banners y bloques de la página principal',
-    icon: <IconHome />,
-  },
-  {
-    href: '/gestion/asociacion/videos',
-    title: 'Videos de la asociación',
-    description: 'Videos para la home (YouTube o subidos a R2)',
-    icon: <IconVideos />,
-  },
-  {
-    href: '/gestion/asociacion/rutas',
-    title: 'Rutas',
-    description: 'Multiexperiencias y rutas turísticas',
-    icon: <IconRutas />,
-  },
-  {
-    href: '/gestion/asociacion/contenidos',
-    title: 'Contenidos',
-    description: 'Páginas, noticias y eventos globales',
-    icon: <IconContenidos />,
-  },
-  {
-    href: '/gestion/asociacion/notificaciones',
-    title: 'Notificaciones',
-    description: 'Todas las noticias, eventos y alertas en un solo lugar',
-    icon: <IconContenidos />,
-  },
-  {
-    href: '/gestion/asociacion/alertas',
-    title: 'Alertas globales',
-    description: 'Avisos visibles a nivel nacional',
-    icon: <IconAlertas />,
-  },
-  {
-    href: '/gestion/asociacion/club',
-    title: 'Club de amigos',
-    description: 'Configuración del club y socios',
-    icon: <IconClub />,
-  },
-  {
-    href: '/gestion/asociacion/recursos-turisticos',
-    title: 'Recursos turísticos',
-    description: 'Castillos, monasterios y otros recursos de la asociación',
-    icon: <IconPois />,
-  },
-  {
-    href: '/gestion/asociacion/negocios',
-    title: 'Negocios',
-    description: 'Hoteles, restaurantes, casas rurales, comercios y tiendas de los pueblos',
-    icon: <IconTienda />,
-  },
-  {
-    href: '/gestion/asociacion/tienda',
-    title: 'Tienda',
-    description: 'Productos, pedidos y promociones',
-    icon: <IconTienda />,
-  },
-  {
-    href: '/gestion/asociacion/app',
-    title: 'App',
-    description: 'Pop-ups y ofertas en la app móvil (cuándo, cada cuánto, con home o no)',
-    icon: <IconApp />,
-  },
-  {
-    href: '/gestion/asociacion/notas-prensa-newsletter',
-    title: 'Notas de prensa y Newsletter',
-    description: 'Envíos masivos, segmentación prensa y métricas de aperturas/clics',
-    icon: <IconNewsletter />,
-  },
-  {
-    href: '/gestion/asociacion/prensa-medios',
-    title: 'Prensa y Medios',
-    description: 'Gestiona comunicados visibles en prensa, medios externos y kit de prensa',
-    icon: <IconContenidos />,
-  },
-  {
-    href: '/gestion/asociacion/newsletters',
-    title: 'Newsletters',
-    description: 'Ediciones (PDF, Canva) y suscriptores',
-    icon: <IconNewsletter />,
-  },
-  {
-    href: '/gestion/asociacion/logos-ayuntamientos',
-    title: 'Logos de Ayuntamientos',
-    description: 'Logos subidos por los alcaldes para usar en el constructor. Descárgalos para eventos y publicaciones.',
-    icon: <span className="text-2xl">🏛</span>,
-  },
-  {
-    href: '/gestion/asociacion/fotos',
-    title: 'Fotos',
-    description: 'Todas las fotos: galería del pueblo, POIs, multiexperiencias, eventos, noticias y contenidos. Descarga directa.',
-    icon: <span className="text-2xl">🖼️</span>,
-  },
-  {
-    href: '/gestion/asociacion/datos',
-    title: 'Datos',
-    description: 'Métricas, clientes, suscriptores newsletter',
-    icon: <IconDatos />,
-  },
-  {
-    href: '/gestion/asociacion/ajustes',
-    title: 'Ajustes de marca y logos',
-    description: 'Logo del header/footer, nombre del sitio y biblioteca de logos',
-    icon: <IconAjustes />,
-  },
-  {
-    href: '/gestion/asociacion/el-sello',
-    title: 'El Sello (CMS)',
-    description: 'Páginas y contenidos de El Sello',
-    icon: <IconSello />,
-  },
-  {
-    href: '/gestion/asociacion/el-sello/documentos',
-    title: 'Documentos',
-    description: 'PDFs (Estatutos, Carta de Calidad)',
-    icon: <IconDocumentos />,
-  },
-  {
-    href: '/gestion/asociacion/contacto-privacidad',
-    title: 'Contacto, privacidad y otros',
-    description: 'Datos de contacto y páginas estáticas (privacidad, aviso legal, cookies)',
-    icon: <IconContacto />,
-  },
-  {
-    href: '/gestion/asociacion/noche-romantica',
-    title: 'La Noche Romántica',
-    description: 'Configuración del evento y pueblos participantes',
-    icon: <span className="text-2xl">❤️</span>,
-  },
-  {
-    href: '/gestion/asociacion/semana-santa',
-    title: 'Semana Santa',
-    description: 'Configura año, días y pueblos participantes',
-    icon: <span className="text-2xl">✝️</span>,
-  },
-  {
-    href: '/gestion/asociacion/navidad',
-    title: 'Navidad',
-    description: 'Campaña navideña: mercadillos, belenes, cabalgatas y eventos',
-    icon: <span className="text-2xl">🎄</span>,
-  },
-];
-
-function GridCard({
-  href,
-  title,
-  description,
-  icon,
-}: {
+type Item = {
   href: string;
   title: string;
   description: string;
   icon: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md"
-    >
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-2xl transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-        {icon}
-      </div>
-      <h3 className="font-semibold text-foreground group-hover:text-primary">
-        {title}
-      </h3>
-      <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-      <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
-        Acceder
-        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M5 12h14M12 5l7 7-7 7" />
-        </svg>
-      </span>
-    </Link>
-  );
-}
+};
+
+const SECCIONES: { title: string; subtitle?: string; items: Item[] }[] = [
+  {
+    title: 'Web pública y contenidos globales',
+    subtitle: 'Portada, vídeos, rutas y todo lo que se publica a escala nacional.',
+    items: [
+      {
+        href: '/gestion/asociacion/home',
+        title: 'Configuración del Home',
+        description: 'Banners y bloques de la página principal',
+        icon: <IconHome />,
+      },
+      {
+        href: '/gestion/asociacion/videos',
+        title: 'Videos de la asociación',
+        description: 'Videos para la home (YouTube o subidos a R2)',
+        icon: <IconVideos />,
+      },
+      {
+        href: '/gestion/asociacion/rutas',
+        title: 'Rutas',
+        description: 'Multiexperiencias y rutas turísticas',
+        icon: <IconRutas />,
+      },
+      {
+        href: '/gestion/asociacion/contenidos',
+        title: 'Contenidos',
+        description: 'Páginas, noticias y eventos globales',
+        icon: <IconContenidos />,
+      },
+      {
+        href: '/gestion/asociacion/notificaciones',
+        title: 'Notificaciones',
+        description: 'Noticias, eventos y alertas en un solo listado',
+        icon: <IconNotificacionesFeed />,
+      },
+      {
+        href: '/gestion/asociacion/alertas',
+        title: 'Alertas globales',
+        description: 'Avisos visibles a nivel nacional',
+        icon: <IconAlertas />,
+      },
+    ],
+  },
+  {
+    title: 'Club, negocio y app',
+    subtitle: 'Socios, recursos, comercios locales, tienda online y la app móvil.',
+    items: [
+      {
+        href: '/gestion/asociacion/club',
+        title: 'Club de amigos',
+        description: 'Configuración del club y socios',
+        icon: <IconClub />,
+      },
+      {
+        href: '/gestion/asociacion/recursos-turisticos',
+        title: 'Recursos turísticos',
+        description: 'Castillos, monasterios y otros recursos de la asociación',
+        icon: <IconLandmark />,
+      },
+      {
+        href: '/gestion/asociacion/negocios',
+        title: 'Negocios',
+        description: 'Hoteles, restaurantes, casas rurales y comercios de los pueblos',
+        icon: <IconComercios />,
+      },
+      {
+        href: '/gestion/asociacion/tienda',
+        title: 'Tienda',
+        description: 'Productos, pedidos y promociones online',
+        icon: <IconTienda />,
+      },
+      {
+        href: '/gestion/asociacion/app',
+        title: 'App',
+        description: 'Pop-ups y ofertas en la app móvil',
+        icon: <IconApp />,
+      },
+    ],
+  },
+  {
+    title: 'Comunicación y prensa',
+    subtitle: 'Envíos, medios y boletines: cada acceso con icono distinto para orientarte.',
+    items: [
+      {
+        href: '/gestion/asociacion/notas-prensa-newsletter',
+        title: 'Notas de prensa y Newsletter',
+        description: 'Envíos masivos, segmentación prensa y métricas',
+        icon: <IconMegafono />,
+      },
+      {
+        href: '/gestion/asociacion/prensa-medios',
+        title: 'Prensa y Medios',
+        description: 'Comunicados, kit de prensa y medios externos',
+        icon: <IconPeriodico />,
+      },
+      {
+        href: '/gestion/asociacion/newsletters',
+        title: 'Newsletters',
+        description: 'Ediciones (PDF, Canva) y suscriptores',
+        icon: <IconBoletin />,
+      },
+    ],
+  },
+  {
+    title: 'Archivos, datos y marca',
+    subtitle: 'Logos, fototeca, métricas y páginas legales.',
+    items: [
+      {
+        href: '/gestion/asociacion/logos-ayuntamientos',
+        title: 'Logos de Ayuntamientos',
+        description: 'Logos de alcaldes para el constructor y eventos',
+        icon: <IconLogos />,
+      },
+      {
+        href: '/gestion/asociacion/fotos',
+        title: 'Fotos',
+        description: 'Galerías, POIs, multiexperiencias, eventos y contenidos',
+        icon: <IconFotos />,
+      },
+      {
+        href: '/gestion/asociacion/datos',
+        title: 'Datos',
+        description: 'Métricas, clientes y suscriptores',
+        icon: <IconDatos />,
+      },
+      {
+        href: '/gestion/asociacion/ajustes',
+        title: 'Ajustes de marca y logos',
+        description: 'Logo del sitio, header/footer y biblioteca',
+        icon: <IconAjustes />,
+      },
+      {
+        href: '/gestion/asociacion/el-sello',
+        title: 'El Sello (CMS)',
+        description: 'Páginas y contenidos de El Sello',
+        icon: <IconSello />,
+      },
+      {
+        href: '/gestion/asociacion/el-sello/documentos',
+        title: 'Documentos',
+        description: 'PDFs (Estatutos, Carta de Calidad)',
+        icon: <IconDocumentos />,
+      },
+      {
+        href: '/gestion/asociacion/contacto-privacidad',
+        title: 'Contacto, privacidad y otros',
+        description: 'Contacto y páginas estáticas (privacidad, legal, cookies)',
+        icon: <IconContacto />,
+      },
+    ],
+  },
+  {
+    title: 'Campañas estacionales',
+    subtitle: 'Eventos de la red con calendario propio.',
+    items: [
+      {
+        href: '/gestion/asociacion/noche-romantica',
+        title: 'La Noche Romántica',
+        description: 'Configuración del evento y pueblos participantes',
+        icon: <IconCorazonEvento />,
+      },
+      {
+        href: '/gestion/asociacion/semana-santa',
+        title: 'Semana Santa',
+        description: 'Año, días y pueblos participantes',
+        icon: <IconCruzEvento />,
+      },
+      {
+        href: '/gestion/asociacion/navidad',
+        title: 'Navidad',
+        description: 'Mercadillos, belenes, cabalgatas y eventos',
+        icon: <IconPinoNavidad />,
+      },
+    ],
+  },
+];
 
 export default async function GestionAsociacionPage() {
   const me = await getMeServer();
@@ -205,30 +223,27 @@ export default async function GestionAsociacionPage() {
   if (me.rol !== 'ADMIN' && me.rol !== 'EDITOR') redirect('/mi-cuenta');
 
   return (
-    <main className="mx-auto max-w-5xl p-6">
-      <h1 className="text-2xl font-semibold">Gestión · Asociación</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Noticias, eventos y alertas globales (visibles a nivel nacional).
-      </p>
+    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+      <GestionHubHero
+        title="Gestión · Asociación"
+        subtitle="Herramientas nacionales de la red: contenidos, tienda, datos y comunicación. Las secciones agrupan tareas parecidas para que localices cada pantalla con menos esfuerzo."
+      />
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {ACCESOS.map((item) => (
-          <GridCard
-            key={item.href}
-            href={item.href}
-            title={item.title}
-            description={item.description}
-            icon={item.icon}
-          />
-        ))}
-      </div>
+      {SECCIONES.map((sec) => (
+        <GestionHubSection key={sec.title} title={sec.title} subtitle={sec.subtitle}>
+          {sec.items.map((item) => (
+            <GestionHubCard
+              key={item.href}
+              href={item.href}
+              title={item.title}
+              description={item.description}
+              icon={item.icon}
+            />
+          ))}
+        </GestionHubSection>
+      ))}
 
-      <div className="mt-10 text-sm">
-        <Link className="text-muted-foreground hover:text-foreground hover:underline" href="/gestion">
-          ← Volver
-        </Link>
-      </div>
+      <GestionHubFooterLink href="/gestion">Volver al índice de gestión</GestionHubFooterLink>
     </main>
   );
 }
-
