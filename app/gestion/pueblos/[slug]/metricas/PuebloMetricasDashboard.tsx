@@ -49,7 +49,13 @@ type MetricasData = {
   };
   web: {
     pageviews: number;
-    topPaginas: Array<{ path: string; total: number }>;
+    pageviewsHistorico: number;
+    pageviewsWeb: number;
+    pageviewsApp: number;
+    pageviewsPeriodoAnterior: number;
+    crecimientoPct: number | null;
+    sesionesUnicas: number;
+    topPaginas: Array<{ path: string; total: number; web: number; app: number }>;
     porDia: Array<{ dia: string; total: number }>;
   };
 };
@@ -466,9 +472,43 @@ export default function PuebloMetricasDashboard({
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard
-            label="Pageviews"
+            label={`Pageviews (${days}d)`}
             value={web.pageviews}
+            sub="Web + App"
+            accent="web"
+          />
+          <KpiCard
+            label="Pageviews web"
+            value={web.pageviewsWeb}
             sub={`Últimos ${days} días`}
+            accent="web"
+          />
+          <KpiCard
+            label="Pageviews app"
+            value={web.pageviewsApp}
+            sub={`Últimos ${days} días`}
+            accent="web"
+          />
+          <KpiCard
+            label="Histórico total"
+            value={web.pageviewsHistorico}
+            sub="Acumulado"
+            accent="web"
+          />
+          <KpiCard
+            label="Sesiones únicas"
+            value={web.sesionesUnicas}
+            sub={`Últimos ${days} días`}
+            accent="web"
+          />
+          <KpiCard
+            label="Crecimiento"
+            value={
+              web.crecimientoPct === null
+                ? 'N/A'
+                : `${web.crecimientoPct > 0 ? '+' : ''}${web.crecimientoPct}%`
+            }
+            sub={`vs ${days} días anteriores`}
             accent="web"
           />
         </div>
@@ -495,10 +535,26 @@ export default function PuebloMetricasDashboard({
         {web.topPaginas.length > 0 && (
           <div className="mt-4 rounded-xl border border-border bg-card shadow-sm">
             <h3 className="border-b border-border px-4 py-3 text-sm font-semibold text-foreground">
-              Top páginas
+              Top páginas (Web + App)
             </h3>
             <div className="max-h-72 overflow-y-auto">
               <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-muted-foreground">
+                      Ruta
+                    </th>
+                    <th className="px-4 py-2 text-right text-xs font-semibold text-muted-foreground">
+                      Total
+                    </th>
+                    <th className="px-4 py-2 text-right text-xs font-semibold text-muted-foreground">
+                      Web
+                    </th>
+                    <th className="px-4 py-2 text-right text-xs font-semibold text-muted-foreground">
+                      App
+                    </th>
+                  </tr>
+                </thead>
                 <tbody>
                   {web.topPaginas.map((r, i) => (
                     <tr
@@ -510,6 +566,12 @@ export default function PuebloMetricasDashboard({
                       </td>
                       <td className="px-4 py-2 text-right font-medium text-foreground">
                         {r.total.toLocaleString('es-ES')}
+                      </td>
+                      <td className="px-4 py-2 text-right font-medium text-foreground">
+                        {r.web.toLocaleString('es-ES')}
+                      </td>
+                      <td className="px-4 py-2 text-right font-medium text-foreground">
+                        {r.app.toLocaleString('es-ES')}
                       </td>
                     </tr>
                   ))}
