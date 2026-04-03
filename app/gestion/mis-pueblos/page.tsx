@@ -3,6 +3,14 @@ import { getMisPueblosServer } from '@/lib/misPueblos';
 import { getAllPueblosServer } from '@/lib/pueblosAdmin';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { GestionPortalHero, type GestionPortalRoleTone } from '../_components/GestionPortalHero';
+import MisPueblosListClient from '../_components/MisPueblosListClient';
+
+function rolToHeroTone(rol: string): GestionPortalRoleTone {
+  if (rol === 'ALCALDE') return 'alcalde';
+  if (rol === 'ADMIN') return 'admin';
+  return 'editor';
+}
 
 export default async function MisPueblosGestionPage() {
   const me = await getMeServer();
@@ -14,50 +22,38 @@ export default async function MisPueblosGestionPage() {
       ? await getAllPueblosServer()
       : await getMisPueblosServer();
 
-  return (
-    <main className="mx-auto max-w-3xl p-6">
-      <h1 className="text-2xl font-semibold">
-        {me.rol === 'ADMIN' || me.rol === 'EDITOR' ? 'Todos los pueblos' : 'Mis pueblos'}
-      </h1>
+  const title = me.rol === 'ADMIN' || me.rol === 'EDITOR' ? 'Todos los pueblos' : 'Mis pueblos';
+  const subtitle =
+    me.rol === 'ADMIN'
+      ? 'Como administrador puedes abrir la ficha pública o entrar al panel de cada pueblo.'
+      : me.rol === 'EDITOR'
+        ? 'Como editor puedes actualizar contenidos de cualquier pueblo de la red.'
+        : 'Como alcalde solo verás los pueblos que tienes asignados.';
 
-      <p className="mt-2 text-sm text-muted-foreground">
-        {me.rol === 'ADMIN'
-          ? 'Como ADMIN puedes gestionar cualquier pueblo.'
-          : me.rol === 'EDITOR'
-            ? 'Como EDITOR puedes editar contenidos de cualquier pueblo.'
-            : 'Como ALCALDE solo puedes gestionar tus pueblos asignados.'}
-      </p>
+  const showSlug = me.rol === 'ADMIN' || me.rol === 'EDITOR';
+
+  return (
+    <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+      <GestionPortalHero title={title} subtitle={subtitle} roleTone={rolToHeroTone(me.rol)} />
 
       {pueblos.length === 0 ? (
-        <div className="mt-6 rounded-md border p-4 text-sm text-muted-foreground">
-          No hay pueblos disponibles.
+        <div className="rounded-2xl border border-dashed border-border bg-gradient-to-br from-muted/40 via-background to-emerald-50/30 px-6 py-14 text-center dark:to-emerald-950/20">
+          <p className="text-lg font-semibold text-foreground">No hay pueblos disponibles</p>
+          <p className="mt-2 max-w-md mx-auto text-sm text-muted-foreground">
+            Si crees que es un error, contacta con la asociación o revisa que tu cuenta tenga pueblos asignados.
+          </p>
         </div>
       ) : (
-        <ul className="mt-6 space-y-2">
-          {pueblos.map((p) => (
-            <li key={p.id} className="flex items-center justify-between rounded-md border p-3">
-              <div>
-                <div className="font-medium">{p.nombre || `Pueblo ${p.id}`}</div>
-                {(me.rol === 'ADMIN' || me.rol === 'EDITOR') && (
-                  <div className="text-xs text-muted-foreground">{p.slug}</div>
-                )}
-              </div>
-
-              <div className="flex gap-3 text-sm">
-                <Link className="hover:underline" href={`/pueblos/${p.slug}`}>
-                  Ver ficha
-                </Link>
-                <Link className="hover:underline" href={`/gestion/pueblos/${p.slug}`}>
-                  Gestionar →
-                </Link>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <MisPueblosListClient pueblos={pueblos} showSlug={showSlug} />
       )}
 
-      <div className="mt-8 text-sm">
-        <Link className="hover:underline" href="/gestion">← Volver</Link>
+      <div className="mt-12 border-t border-border/60 pt-8 text-sm">
+        <Link
+          className="inline-flex items-center gap-1 text-muted-foreground transition hover:text-foreground hover:underline"
+          href="/gestion"
+        >
+          <span aria-hidden>←</span> Volver a gestión
+        </Link>
       </div>
     </main>
   );
