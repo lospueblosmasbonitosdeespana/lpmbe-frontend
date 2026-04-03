@@ -31,11 +31,11 @@ export function GestionHubIconAlertTriangle({ className }: { className?: string 
 export function GestionHubIconWebcamRound({ className }: { className?: string }) {
   return (
     <svg className={className ?? HUB_SVG_ICON} viewBox="0 0 24 24" fill="none" aria-hidden>
-      <circle cx="12" cy="10" r="7.25" fill="#374151" stroke="#1f2937" strokeWidth={1.25} />
-      <circle cx="12" cy="10" r="3.6" fill="#0f172a" opacity={0.88} />
-      <circle cx="9.35" cy="7.85" r="1.05" fill="white" opacity={0.28} />
-      <path d="M12 17.25v2.35" stroke="#4b5563" strokeWidth={2} strokeLinecap="round" />
-      <path d="M8.25 20.5h7.5" stroke="#4b5563" strokeWidth={2} strokeLinecap="round" />
+      <circle cx="12" cy="10" r="7.25" fill="#64748b" stroke="#334155" strokeWidth={1.25} />
+      <circle cx="12" cy="10" r="3.6" fill="#0f172a" opacity={0.92} />
+      <circle cx="9.35" cy="7.85" r="1.05" fill="white" opacity={0.42} />
+      <path d="M12 17.25v2.35" stroke="#475569" strokeWidth={2} strokeLinecap="round" />
+      <path d="M8.25 20.5h7.5" stroke="#475569" strokeWidth={2} strokeLinecap="round" />
     </svg>
   );
 }
@@ -94,7 +94,7 @@ export function GestionHubHero({
       />
       <div className="relative">
         <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{title}</h1>
-        <div className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-foreground/80 sm:text-[0.95rem]">{subtitle}</div>
+        <div className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-foreground/90 dark:text-foreground sm:text-[0.95rem]">{subtitle}</div>
       </div>
     </div>
   );
@@ -151,9 +151,9 @@ export function GestionHubSection({
   return (
     <section className={`mb-8 sm:mb-10 ${t.wrap}`}>
       <header className={`mb-4 border-l-[3px] pl-3.5 ${t.bar}`}>
-        <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-foreground/90 sm:text-sm">{title}</h2>
+        <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-foreground sm:text-sm">{title}</h2>
         {subtitle ? (
-          <p className="mt-1.5 text-sm font-semibold leading-snug text-foreground/75 dark:text-foreground/80">{subtitle}</p>
+          <p className="mt-1.5 text-sm font-semibold leading-snug text-foreground/80 dark:text-foreground/90">{subtitle}</p>
         ) : null}
       </header>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
@@ -202,10 +202,10 @@ export function GestionHubCard({
 
   if (disabled) {
     return (
-      <div className="flex min-h-[168px] flex-col rounded-2xl border border-dashed border-border/80 bg-muted/25 p-5 opacity-55">
+      <div className="flex min-h-[168px] flex-col rounded-2xl border border-dashed border-border/80 bg-muted/35 p-5 opacity-80 dark:bg-muted/20 dark:opacity-90">
         <div className={`mb-3 flex h-[3.35rem] w-[3.35rem] items-center justify-center rounded-2xl ring-1 ${well} opacity-70`}>{icon}</div>
         <h3 className="text-base font-bold leading-snug text-foreground">{title}</h3>
-        <p className="mt-1.5 text-sm font-medium leading-relaxed text-foreground/65 dark:text-foreground/70">{description}</p>
+        <p className="mt-1.5 text-sm font-medium leading-relaxed text-foreground/75 dark:text-foreground/85">{description}</p>
       </div>
     );
   }
@@ -223,7 +223,7 @@ export function GestionHubCard({
       <h3 className="text-base font-bold leading-snug text-foreground transition-colors group-hover:text-[#8B5E45] dark:group-hover:text-amber-200/90">
         {title}
       </h3>
-      <p className="mt-1.5 flex-1 text-sm font-medium leading-relaxed text-foreground/65 dark:text-foreground/70">{description}</p>
+      <p className="mt-1.5 flex-1 text-sm font-medium leading-relaxed text-foreground/75 dark:text-foreground/85">{description}</p>
       <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-[#9a6b52] transition-colors group-hover:text-[#7a4f3a] dark:text-amber-200/80 dark:group-hover:text-amber-100">
         Acceder
         <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
