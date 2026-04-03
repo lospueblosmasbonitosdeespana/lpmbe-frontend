@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 
-type TipoDoc = 'LOGO' | 'PAPELERIA' | 'ORDENANZA' | 'OTRO';
+type TipoDoc = 'LOGO' | 'PAPELERIA' | 'ORDENANZA' | 'CARTEL' | 'OTRO';
 
 const TIPO_LABELS: Record<TipoDoc, string> = {
   LOGO: 'Logotipo',
   PAPELERIA: 'Papelería',
   ORDENANZA: 'Ordenanza',
+  CARTEL: 'Cartel',
   OTRO: 'Otro',
 };
 
@@ -15,8 +16,14 @@ const TIPO_COLORS: Record<TipoDoc, string> = {
   LOGO: 'bg-blue-100 text-blue-700',
   PAPELERIA: 'bg-purple-100 text-purple-700',
   ORDENANZA: 'bg-amber-100 text-amber-700',
+  CARTEL: 'bg-cyan-100 text-cyan-800',
   OTRO: 'bg-muted text-muted-foreground',
 };
+
+function normalizeTipoDoc(t: string | undefined | null): TipoDoc {
+  if (t === 'LOGO' || t === 'PAPELERIA' || t === 'ORDENANZA' || t === 'CARTEL' || t === 'OTRO') return t;
+  return 'OTRO';
+}
 
 interface LogoItem {
   id: number;
@@ -42,9 +49,18 @@ type PuebloLogoGroup = {
 };
 
 type PuebloDocGroup = {
-  pueblo: { id: number; nombre: string; slug: string };
+  pueblo: { id: number; nombre: string; slug: string } | null;
   documentos: DocItem[];
 };
+
+function nombrePuebloGrupo(g: PuebloLogoGroup | PuebloDocGroup): string {
+  return g.pueblo?.nombre?.trim() || 'Sin pueblo asignado';
+}
+
+function keyPuebloGrupo(g: PuebloLogoGroup | PuebloDocGroup, suffix: string): string {
+  if (g.pueblo?.id != null) return `${suffix}-${g.pueblo.id}`;
+  return `${suffix}-sin-pueblo`;
+}
 
 function isImage(url: string) {
   return /\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(url);
@@ -73,8 +89,12 @@ export default function LogosAyuntamientosPage() {
       }
       const logos = resLogos.ok ? await resLogos.json() : [];
       const docs = resDocs.ok ? await resDocs.json() : [];
-      setLogoGroups(Array.isArray(logos) ? logos : []);
-      setDocGroups(Array.isArray(docs) ? docs : []);
+      const logoArr = Array.isArray(logos) ? logos : [];
+      const docArr = Array.isArray(docs) ? docs : [];
+      setLogoGroups(
+        logoArr.filter((g: PuebloLogoGroup) => g?.pueblo != null && Array.isArray(g?.logos)),
+      );
+      setDocGroups(docArr.filter((g: PuebloDocGroup) => Array.isArray(g?.documentos)));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error desconocido');
     } finally {
@@ -112,12 +132,9 @@ export default function LogosAyuntamientosPage() {
     finally { setDeleting(null); }
   }
 
-  const filteredLogos = logoGroups.filter((g) =>
-    g.pueblo.nombre.toLowerCase().includes(search.toLowerCase()),
-  );
-  const filteredDocs = docGroups.filter((g) =>
-    g.pueblo.nombre.toLowerCase().includes(search.toLowerCase()),
-  );
+  const q = search.toLowerCase().trim();
+  const filteredLogos = logoGroups.filter((g) => nombrePuebloGrupo(g).toLowerCase().includes(q));
+  const filteredDocs = docGroups.filter((g) => nombrePuebloGrupo(g).toLowerCase().includes(q));
 
   const totalLogos = logoGroups.reduce((acc, g) => acc + g.logos.length, 0);
   const totalDocs = docGroups.reduce((acc, g) => acc + g.documentos.length, 0);
@@ -186,10 +203,10 @@ export default function LogosAyuntamientosPage() {
           ) : (
             <div className="space-y-6">
               {filteredLogos.map(({ pueblo, logos }) => (
-                <div key={pueblo.id} className="rounded-lg border border-border bg-card overflow-hidden">
+                <div key={keyPuebloGrupo({ pueblo, logos }, 'logo')} className="rounded-lg border border-border bg-card overflow-hidden">
                   <div className="flex items-center gap-3 border-b border-border bg-muted/30 px-4 py-3">
                     <div className="flex-1">
-                      <h2 className="font-semibold text-base">{pueblo.nombre}</h2>
+                      <h2 className="font-semibold text-base">{pueblo?.nombre ?? 'Sin pueblo asignado'}</h2>
                       <p className="text-xs text-muted-foreground">{logos.length} logo{logos.length !== 1 ? 's' : ''}</p>
                     </div>
                   </div>
@@ -233,15 +250,17 @@ export default function LogosAyuntamientosPage() {
           ) : (
             <div className="space-y-6">
               {filteredDocs.map(({ pueblo, documentos }) => (
-                <div key={pueblo.id} className="rounded-lg border border-border bg-card overflow-hidden">
+                <div key={keyPuebloGrupo({ pueblo, documentos }, 'doc')} className="rounded-lg border border-border bg-card overflow-hidden">
                   <div className="flex items-center gap-3 border-b border-border bg-muted/30 px-4 py-3">
                     <div className="flex-1">
-                      <h2 className="font-semibold text-base">{pueblo.nombre}</h2>
+                      <h2 className="font-semibold text-base">{pueblo?.nombre ?? 'Sin pueblo asignado'}</h2>
                       <p className="text-xs text-muted-foreground">{documentos.length} documento{documentos.length !== 1 ? 's' : ''}</p>
                     </div>
                   </div>
                   <div className="divide-y divide-border">
-                    {documentos.map((doc) => (
+                    {documentos.map((doc) => {
+                      const tipo = normalizeTipoDoc(doc.tipo);
+                      return (
                       <div key={doc.id} className="flex items-center gap-3 px-4 py-3">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 overflow-hidden">
                           {isImage(doc.url) ? (
@@ -255,8 +274,8 @@ export default function LogosAyuntamientosPage() {
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium">{doc.nombre}</p>
                           <div className="mt-0.5 flex items-center gap-2">
-                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${TIPO_COLORS[doc.tipo]}`}>
-                              {TIPO_LABELS[doc.tipo]}
+                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${TIPO_COLORS[tipo]}`}>
+                              {TIPO_LABELS[tipo]}
                             </span>
                             {doc.compartido && (
                               <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">
@@ -278,7 +297,8 @@ export default function LogosAyuntamientosPage() {
                           {deleting === `doc-${doc.id}` ? '...' : '✕'}
                         </button>
                       </div>
-                    ))}
+                    );
+                    })}
                   </div>
                 </div>
               ))}
