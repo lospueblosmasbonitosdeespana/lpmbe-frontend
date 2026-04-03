@@ -183,9 +183,10 @@ button img,
 }
 
 /* Global: todos los contenedores de imagen usan el fondo de la página, nunca blanco frío */
-[class*="overflow-hidden"] img,
-figure img,
-.img-wrapper img {
+/* Excluir imágenes de Leaflet (pins, sombras, tiles): tienen transparencia y el fondo oscuro dibuja un “cuadrado” */
+[class*="overflow-hidden"] img:not([class*="leaflet-"]),
+figure img:not([class*="leaflet-"]),
+.img-wrapper img:not([class*="leaflet-"]) {
   background: var(--background);
 }
 
