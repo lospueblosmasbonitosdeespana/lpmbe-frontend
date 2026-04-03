@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
+import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
+import { HeroIconCross } from '../../_components/gestion-pueblo-hero-icons';
 import dynamic from 'next/dynamic';
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -556,19 +557,39 @@ export default function GestionPuebloSemanaSantaPage() {
   };
 
   if (loading && !data) {
-    return <main className="mx-auto max-w-5xl p-6 text-muted-foreground">Cargando...</main>;
+    return (
+      <GestionPuebloSubpageShell
+        slug={slug}
+        title="Semana Santa"
+        subtitle="Cargando datos del pueblo…"
+        heroIcon={<HeroIconCross />}
+        maxWidthClass="max-w-5xl"
+      >
+        <p className="text-muted-foreground">Cargando…</p>
+      </GestionPuebloSubpageShell>
+    );
   }
 
   if (notInscribed) {
     return (
-      <main className="mx-auto max-w-5xl p-6">
-        <h1 className="text-2xl font-semibold">Semana Santa</h1>
-        {error && <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-5 text-amber-800">
+      <GestionPuebloSubpageShell
+        slug={slug}
+        title="Semana Santa"
+        subtitle={
+          <>
+            Cartel, agenda y procesiones · <span className="font-semibold text-white/95">{slug}</span>
+          </>
+        }
+        heroIcon={<HeroIconCross />}
+        maxWidthClass="max-w-5xl"
+      >
+        {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 text-amber-800">
           Este pueblo no está inscrito en Semana Santa este año.
         </div>
         <div className="mt-4">
           <button
+            type="button"
             onClick={inscribirse}
             disabled={inscribing || !puebloId}
             className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
@@ -576,27 +597,25 @@ export default function GestionPuebloSemanaSantaPage() {
             {inscribing ? 'Inscribiendo...' : 'Inscribirse'}
           </button>
         </div>
-        <div className="mt-6 text-sm">
-          <Link href={`/gestion/pueblos/${slug}`} className="text-muted-foreground hover:underline">
-            ← Volver al pueblo
-          </Link>
-        </div>
-      </main>
+      </GestionPuebloSubpageShell>
     );
   }
 
   if (!data) return null;
 
   return (
-    <main className="mx-auto max-w-5xl p-6">
-      <div className="mb-6 flex items-center gap-3">
-        <span className="text-3xl">✝️</span>
-        <div>
-          <h1 className="text-2xl font-semibold">Semana Santa · {data.pueblo.nombre}</h1>
-          <p className="text-sm text-muted-foreground">Edita cartel, agenda y días de procesiones.</p>
-        </div>
-      </div>
-
+    <GestionPuebloSubpageShell
+      slug={slug}
+      title="Semana Santa"
+      subtitle={
+        <>
+          Cartel, agenda y días de procesiones ·{' '}
+          <span className="font-semibold text-white/95">{data.pueblo.nombre}</span>
+        </>
+      }
+      heroIcon={<HeroIconCross />}
+      maxWidthClass="max-w-5xl"
+    >
       {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
       {success && <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>}
 
@@ -1143,12 +1162,6 @@ export default function GestionPuebloSemanaSantaPage() {
           </div>
         )}
       </section>
-
-      <div className="mt-6 text-sm">
-        <Link href={`/gestion/pueblos/${slug}`} className="text-muted-foreground hover:text-foreground hover:underline">
-          ← Volver al pueblo
-        </Link>
-      </div>
-    </main>
+    </GestionPuebloSubpageShell>
   );
 }

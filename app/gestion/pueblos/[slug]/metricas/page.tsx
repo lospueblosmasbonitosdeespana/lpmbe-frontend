@@ -2,8 +2,9 @@ import { getMeServer } from '@/lib/me';
 import { getMisPueblosServer } from '@/lib/misPueblos';
 import { getPuebloBySlug } from '@/lib/api';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 import PuebloMetricasDashboard from './PuebloMetricasDashboard';
+import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
+import { HeroIconChart } from '../../_components/gestion-pueblo-hero-icons';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -16,7 +17,7 @@ export default async function PuebloMetricasPage({
 }) {
   const me = await getMeServer();
   if (!me) redirect('/entrar');
-  if (!['ADMIN', 'EDITOR', 'ALCALDE'].includes(me.rol)) redirect('/mi-cuenta');
+  if (!['ADMIN', 'EDITOR', 'ALCALDE'].includes(me.rol)) redirect('/cuenta');
 
   const { slug } = await params;
 
@@ -27,27 +28,32 @@ export default async function PuebloMetricasPage({
   }
 
   let puebloId: number | null = null;
+  let puebloNombre = slug
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
   try {
     const pueblo = await getPuebloBySlug(slug);
     puebloId = pueblo?.id ?? null;
+    if (pueblo?.nombre) puebloNombre = pueblo.nombre;
   } catch {
     puebloId = null;
   }
 
   return (
-    <main className="mx-auto max-w-7xl p-6">
-      <div className="mb-6">
-        <Link
-          href={`/gestion/pueblos/${slug}`}
-          className="text-sm text-muted-foreground hover:text-foreground hover:underline"
-        >
-          ← Volver a gestión del pueblo
-        </Link>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground">
-          Métricas del pueblo
-        </h1>
-      </div>
+    <GestionPuebloSubpageShell
+      slug={slug}
+      title="Métricas del pueblo"
+      subtitle={
+        <>
+          Visitas, valoraciones y analítica web ·{' '}
+          <span className="font-semibold text-white/95">{puebloNombre}</span>
+        </>
+      }
+      heroIcon={<HeroIconChart />}
+      maxWidthClass="max-w-7xl"
+    >
       <PuebloMetricasDashboard slug={slug} puebloId={puebloId} />
-    </main>
+    </GestionPuebloSubpageShell>
   );
 }

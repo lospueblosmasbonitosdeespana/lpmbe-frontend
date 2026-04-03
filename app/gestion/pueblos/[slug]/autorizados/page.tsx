@@ -3,6 +3,8 @@ import { getPuebloBySlug } from '@/lib/api';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import AutorizadosClient from './AutorizadosClient';
+import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
+import { HeroIconKey } from '../../_components/gestion-pueblo-hero-icons';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -26,7 +28,7 @@ export default async function AutorizadosPage({
     const pueblo = await getPuebloBySlug(slug);
     puebloNombre = pueblo.nombre ?? slug;
     puebloId = pueblo.id;
-  } catch (e) {
+  } catch {
     // Si falla, mostrar error
   }
 
@@ -45,29 +47,18 @@ export default async function AutorizadosPage({
   }
 
   return (
-    <main className="mx-auto max-w-4xl p-6">
-      <div className="mb-6">
-        <Link
-          href={`/gestion/pueblos/${slug}`}
-          className="text-sm text-muted-foreground hover:underline"
-        >
-          ← Volver a {puebloNombre}
-        </Link>
-      </div>
-
-      <h1 className="text-2xl font-semibold">Autorizados</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Gestiona los usuarios que pueden administrar el pueblo{' '}
-        <strong>{puebloNombre}</strong>
-      </p>
-
-      <div className="mt-6">
-        <AutorizadosClient
-          puebloSlug={slug}
-          puebloId={puebloId}
-          puebloNombre={puebloNombre}
-        />
-      </div>
-    </main>
+    <GestionPuebloSubpageShell
+      slug={slug}
+      title="Autorizados"
+      subtitle={
+        <>
+          Usuarios que pueden gestionar el pueblo ·{' '}
+          <span className="font-semibold text-white/95">{puebloNombre}</span>
+        </>
+      }
+      heroIcon={<HeroIconKey />}
+    >
+      <AutorizadosClient puebloSlug={slug} puebloId={puebloId} puebloNombre={puebloNombre} />
+    </GestionPuebloSubpageShell>
   );
 }

@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
+import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
+import { HeroIconTree } from '../../_components/gestion-pueblo-hero-icons';
 
 const TIPO_LABELS: Record<string, string> = {
   ENCENDIDO_LUCES: 'Encendido de luces',
@@ -432,44 +433,65 @@ export default function GestionPuebloNavidadPage() {
   }
 
   if (loading && !data) {
-    return <main className="mx-auto max-w-5xl p-6 text-muted-foreground">Cargando...</main>;
+    return (
+      <GestionPuebloSubpageShell
+        slug={slug}
+        title="Navidad"
+        subtitle="Cargando datos del pueblo…"
+        heroIcon={<HeroIconTree />}
+        maxWidthClass="max-w-5xl"
+      >
+        <p className="text-muted-foreground">Cargando…</p>
+      </GestionPuebloSubpageShell>
+    );
   }
 
   if (notInscribed) {
     return (
-      <main className="mx-auto max-w-5xl p-6">
-        <div className="mb-6 flex items-center gap-3">
-          <span className="text-3xl">🎄</span>
-          <h1 className="text-2xl font-semibold">Navidad</h1>
-        </div>
-        {error && <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50/50 p-5 text-red-900">
+      <GestionPuebloSubpageShell
+        slug={slug}
+        title="Navidad"
+        subtitle={
+          <>
+            Mercadillos, belenes y eventos · <span className="font-semibold text-white/95">{slug}</span>
+          </>
+        }
+        heroIcon={<HeroIconTree />}
+        maxWidthClass="max-w-5xl"
+      >
+        {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        <div className="rounded-lg border border-red-200 bg-red-50/50 p-5 text-red-900">
           Este pueblo no está inscrito en Navidad este año.
         </div>
         <div className="mt-4">
-          <button onClick={inscribirse} disabled={inscribing || !puebloId} className="rounded-lg bg-red-700 px-5 py-2 text-sm font-medium text-white disabled:opacity-50">
-            {inscribing ? 'Inscribiendo...' : '🎄 Inscribirse en Navidad'}
+          <button
+            type="button"
+            onClick={inscribirse}
+            disabled={inscribing || !puebloId}
+            className="rounded-lg bg-red-700 px-5 py-2 text-sm font-medium text-white disabled:opacity-50"
+          >
+            {inscribing ? 'Inscribiendo...' : 'Inscribirse en Navidad'}
           </button>
         </div>
-        <div className="mt-6 text-sm">
-          <Link href={`/gestion/pueblos/${slug}`} className="text-muted-foreground hover:underline">← Volver al pueblo</Link>
-        </div>
-      </main>
+      </GestionPuebloSubpageShell>
     );
   }
 
   if (!data) return null;
 
   return (
-    <main className="mx-auto max-w-5xl p-6">
-      <div className="mb-6 flex items-center gap-3">
-        <span className="text-3xl">🎄</span>
-        <div>
-          <h1 className="text-2xl font-semibold">Navidad · {data.pueblo.nombre}</h1>
-          <p className="text-sm text-muted-foreground">Gestiona los eventos navideños de tu pueblo: mercadillos, belenes, cabalgatas, conciertos y más.</p>
-        </div>
-      </div>
-
+    <GestionPuebloSubpageShell
+      slug={slug}
+      title="Navidad"
+      subtitle={
+        <>
+          Eventos navideños de tu pueblo ·{' '}
+          <span className="font-semibold text-white/95">{data.pueblo.nombre}</span>
+        </>
+      }
+      heroIcon={<HeroIconTree />}
+      maxWidthClass="max-w-5xl"
+    >
       {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
       {success && <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>}
 
@@ -580,10 +602,6 @@ export default function GestionPuebloNavidadPage() {
           </div>
         )}
       </section>
-
-      <div className="mt-6 text-sm">
-        <Link href={`/gestion/pueblos/${slug}`} className="text-muted-foreground hover:text-foreground hover:underline">← Volver al pueblo</Link>
-      </div>
-    </main>
+    </GestionPuebloSubpageShell>
   );
 }

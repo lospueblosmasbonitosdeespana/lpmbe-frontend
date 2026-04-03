@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
+import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
+import { HeroIconHeart } from '../../_components/gestion-pueblo-hero-icons';
 
 // ==================== TYPES ====================
 
@@ -289,33 +290,38 @@ export default function GestionPuebloNocheRomanticaPage() {
 
   if (loading && !data) {
     return (
-      <main className="mx-auto max-w-4xl p-6">
-        <p className="text-muted-foreground">Cargando...</p>
-      </main>
+      <GestionPuebloSubpageShell
+        slug={slug}
+        title="La Noche Romántica"
+        subtitle="Cargando datos del pueblo…"
+        heroIcon={<HeroIconHeart />}
+      >
+        <p className="text-muted-foreground">Cargando…</p>
+      </GestionPuebloSubpageShell>
     );
   }
 
   if (notInscribed) {
     return (
-      <main className="mx-auto max-w-4xl p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <span className="text-3xl">❤️</span>
-          <h1 className="text-2xl font-semibold">La Noche Romántica</h1>
-        </div>
+      <GestionPuebloSubpageShell
+        slug={slug}
+        title="La Noche Romántica"
+        subtitle={
+          <>
+            Participación en la red · <span className="font-semibold text-white/95">{slug}</span>
+          </>
+        }
+        heroIcon={<HeroIconHeart />}
+      >
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-center">
-          <p className="text-amber-800 font-medium">
+          <p className="font-medium text-amber-800">
             Este pueblo no está inscrito en La Noche Romántica de este año.
           </p>
           <p className="mt-2 text-sm text-amber-700">
             Solicita al administrador que lo inscriba desde la sección de gestión de la asociación.
           </p>
         </div>
-        <div className="mt-6 text-sm">
-          <Link className="text-muted-foreground hover:text-foreground hover:underline" href={`/gestion/pueblos/${slug}`}>
-            ← Volver al pueblo
-          </Link>
-        </div>
-      </main>
+      </GestionPuebloSubpageShell>
     );
   }
 
@@ -329,17 +335,17 @@ export default function GestionPuebloNocheRomanticaPage() {
   );
 
   return (
-    <main className="mx-auto max-w-4xl p-6">
-      <div className="mb-6 flex items-center gap-3">
-        <span className="text-3xl">❤️</span>
-        <div>
-          <h1 className="text-2xl font-semibold">La Noche Romántica</h1>
-          <p className="text-sm text-muted-foreground">
-            {data?.pueblo?.nombre ?? slug}
-          </p>
-        </div>
-      </div>
-
+    <GestionPuebloSubpageShell
+      slug={slug}
+      title="La Noche Romántica"
+      subtitle={
+        <>
+          Actividades, negocios y cartel ·{' '}
+          <span className="font-semibold text-white/95">{data?.pueblo?.nombre ?? slug}</span>
+        </>
+      }
+      heroIcon={<HeroIconHeart />}
+    >
       {error && (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
       )}
@@ -734,12 +740,6 @@ export default function GestionPuebloNocheRomanticaPage() {
           </div>
         )}
       </section>
-
-      <div className="mt-6 text-sm">
-        <Link className="text-muted-foreground hover:text-foreground hover:underline" href={`/gestion/pueblos/${slug}`}>
-          ← Volver al pueblo
-        </Link>
-      </div>
-    </main>
+    </GestionPuebloSubpageShell>
   );
 }

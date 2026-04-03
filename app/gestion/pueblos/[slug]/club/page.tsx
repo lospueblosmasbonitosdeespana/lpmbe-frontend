@@ -5,6 +5,8 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import ClubRecursos from './ClubRecursos.client';
 import MetricasResumen from './MetricasResumen.client';
+import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
+import { HeroIconUsers } from '../../_components/gestion-pueblo-hero-icons';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -31,22 +33,30 @@ export default async function ClubGestionPage({
   const pueblo = await getPuebloBySlug(slug);
 
   return (
-    <main className="mx-auto max-w-4xl p-6">
-      <h1 className="text-2xl font-semibold">Club de Amigos - Recursos turísticos</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Pueblo: <strong>{pueblo.nombre}</strong> (ID: {pueblo.id})
+    <GestionPuebloSubpageShell
+      slug={slug}
+      title="Club de Amigos"
+      subtitle={
+        <>
+          Recursos turísticos y métricas del club ·{' '}
+          <span className="font-semibold text-white/95">{pueblo.nombre}</span>
+        </>
+      }
+      heroIcon={<HeroIconUsers />}
+    >
+      <p className="mb-6 text-sm text-muted-foreground">
+        ID pueblo: <strong>{pueblo.id}</strong>
       </p>
 
-      {/* Bloque de acceso a métricas */}
-      <div className="mt-4 mb-4 rounded-md border p-4">
-        <div className="flex items-center justify-between">
+      <div className="mb-6 rounded-2xl border border-border/80 bg-card p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="font-medium">Métricas del municipio (todos los recursos)</div>
             <MetricasResumen puebloId={pueblo.id} />
           </div>
           <Link
             href={`/gestion/asociacion/club/metricas/${pueblo.id}`}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+            className="inline-flex shrink-0 items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Ver métricas del municipio
           </Link>
@@ -54,13 +64,7 @@ export default async function ClubGestionPage({
       </div>
 
       <ClubRecursos puebloId={pueblo.id} slug={slug} puebloLat={pueblo.lat ?? null} puebloLng={pueblo.lng ?? null} />
-
-      <div className="mt-8 text-sm">
-        <Link className="hover:underline" href={`/gestion/pueblos/${slug}`}>
-          ← Volver a gestión del pueblo
-        </Link>
-      </div>
-    </main>
+    </GestionPuebloSubpageShell>
   );
 }
 
