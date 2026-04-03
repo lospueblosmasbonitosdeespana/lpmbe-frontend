@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
+import { CAMPANA_NOCHE_ROMANTICA } from '../../../_components/gestion-campana-themes';
 import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
 import { HeroIconHeart } from '../../_components/gestion-pueblo-hero-icons';
 
@@ -295,6 +296,7 @@ export default function GestionPuebloNocheRomanticaPage() {
         title="La Noche Romántica"
         subtitle="Cargando datos del pueblo…"
         heroIcon={<HeroIconHeart />}
+        theme="nocheRomantica"
       >
         <p className="text-muted-foreground">Cargando…</p>
       </GestionPuebloSubpageShell>
@@ -312,12 +314,13 @@ export default function GestionPuebloNocheRomanticaPage() {
           </>
         }
         heroIcon={<HeroIconHeart />}
+        theme="nocheRomantica"
       >
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-center">
-          <p className="font-medium text-amber-800">
+        <div className="rounded-xl border border-pink-200/80 bg-gradient-to-br from-pink-50 via-fuchsia-50/80 to-violet-50/60 p-6 text-center shadow-sm dark:border-pink-900/50 dark:from-pink-950/40 dark:via-fuchsia-950/30 dark:to-violet-950/30">
+          <p className="font-semibold text-pink-900 dark:text-pink-100">
             Este pueblo no está inscrito en La Noche Romántica de este año.
           </p>
-          <p className="mt-2 text-sm text-amber-700">
+          <p className="mt-2 text-sm text-pink-800/90 dark:text-pink-200/90">
             Solicita al administrador que lo inscriba desde la sección de gestión de la asociación.
           </p>
         </div>
@@ -345,6 +348,7 @@ export default function GestionPuebloNocheRomanticaPage() {
         </>
       }
       heroIcon={<HeroIconHeart />}
+      theme="nocheRomantica"
     >
       {error && (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
@@ -354,8 +358,8 @@ export default function GestionPuebloNocheRomanticaPage() {
       )}
 
       {/* ==================== INFO GENERAL ==================== */}
-      <section className="mb-8 rounded-lg border p-5">
-        <h2 className="mb-4 text-lg font-semibold">Información general</h2>
+      <section className={`mb-8 rounded-xl border p-5 shadow-sm ${CAMPANA_NOCHE_ROMANTICA.sectionAccent}`}>
+        <h2 className="mb-4 text-lg font-semibold text-pink-950 dark:text-pink-50">Información general</h2>
         <div className="space-y-4">
           <div>
             <label className="mb-1 block text-sm font-medium">Título del evento en tu pueblo</label>
@@ -387,7 +391,7 @@ export default function GestionPuebloNocheRomanticaPage() {
           <button
             onClick={saveInfo}
             disabled={saving}
-            className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            className={CAMPANA_NOCHE_ROMANTICA.primaryButton}
           >
             {saving ? 'Guardando...' : 'Guardar información'}
           </button>
@@ -400,7 +404,7 @@ export default function GestionPuebloNocheRomanticaPage() {
           <h2 className="text-lg font-semibold">Actividades / Programa</h2>
           <button
             onClick={() => setShowNewActividad(true)}
-            className="rounded-lg bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            className={CAMPANA_NOCHE_ROMANTICA.primaryButtonSm}
           >
             + Añadir actividad
           </button>
@@ -408,7 +412,7 @@ export default function GestionPuebloNocheRomanticaPage() {
 
         {/* Crear actividad */}
         {showNewActividad && (
-          <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+          <div className={`mb-4 p-4 space-y-3 ${CAMPANA_NOCHE_ROMANTICA.formCallout}`}>
             <input
               type="text"
               className="w-full rounded-md border px-3 py-2 text-sm"
@@ -439,7 +443,7 @@ export default function GestionPuebloNocheRomanticaPage() {
               previewHeight="h-32"
             />
             <div className="flex gap-2">
-              <button onClick={createActividad} disabled={saving || !newActividad.titulo.trim()} className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+              <button onClick={createActividad} disabled={saving || !newActividad.titulo.trim()} className={CAMPANA_NOCHE_ROMANTICA.primaryButtonSm}>
                 Crear
               </button>
               <button onClick={() => setShowNewActividad(false)} className="rounded-md border px-4 py-1.5 text-sm text-muted-foreground hover:text-foreground">
@@ -487,7 +491,7 @@ export default function GestionPuebloNocheRomanticaPage() {
                       previewHeight="h-32"
                     />
                     <div className="flex gap-2">
-                      <button onClick={() => saveActividad(a.id)} disabled={saving} className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50">
+                      <button onClick={() => saveActividad(a.id)} disabled={saving} className={CAMPANA_NOCHE_ROMANTICA.primaryButtonSm}>
                         Guardar
                       </button>
                       <button onClick={() => setEditingActividad(null)} className="rounded-md border px-4 py-1.5 text-sm text-muted-foreground">
@@ -543,7 +547,7 @@ export default function GestionPuebloNocheRomanticaPage() {
           <h2 className="text-lg font-semibold">Negocios participantes</h2>
           <button
             onClick={() => setShowNewNegocio(true)}
-            className="rounded-lg bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            className={CAMPANA_NOCHE_ROMANTICA.primaryButtonSm}
           >
             + Añadir negocio
           </button>
@@ -551,7 +555,7 @@ export default function GestionPuebloNocheRomanticaPage() {
 
         {/* Crear negocio */}
         {showNewNegocio && (
-          <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+          <div className={`mb-4 p-4 space-y-3 ${CAMPANA_NOCHE_ROMANTICA.formCallout}`}>
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-xs font-medium text-muted-foreground">Tipo *</label>
@@ -607,7 +611,7 @@ export default function GestionPuebloNocheRomanticaPage() {
               />
             </div>
             <div className="flex gap-2">
-              <button onClick={createNegocio} disabled={saving || !newNegocio.nombre.trim()} className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50">
+              <button onClick={createNegocio} disabled={saving || !newNegocio.nombre.trim()} className={CAMPANA_NOCHE_ROMANTICA.primaryButtonSm}>
                 Crear
               </button>
               <button onClick={() => setShowNewNegocio(false)} className="rounded-md border px-4 py-1.5 text-sm text-muted-foreground">
@@ -681,7 +685,7 @@ export default function GestionPuebloNocheRomanticaPage() {
                             />
                           </div>
                           <div className="flex gap-2">
-                            <button onClick={() => saveNegocio(n.id)} disabled={saving} className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50">
+                            <button onClick={() => saveNegocio(n.id)} disabled={saving} className={CAMPANA_NOCHE_ROMANTICA.primaryButtonSm}>
                               Guardar
                             </button>
                             <button onClick={() => setEditingNegocio(null)} className="rounded-md border px-4 py-1.5 text-sm text-muted-foreground">

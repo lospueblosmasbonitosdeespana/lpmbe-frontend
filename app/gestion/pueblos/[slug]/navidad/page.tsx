@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
+import { CAMPANA_NAVIDAD } from '../../../_components/gestion-campana-themes';
 import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
 import { HeroIconTree } from '../../_components/gestion-pueblo-hero-icons';
 
@@ -423,7 +424,7 @@ export default function GestionPuebloNavidadPage() {
           Fiesta de Interés Turístico (este evento)
         </label>
         <div className="flex gap-2">
-          <button onClick={onSave} disabled={saving || !state.titulo || !state.fecha || !state.horaInicio} className="rounded-md bg-red-700 px-4 py-1.5 text-sm font-medium text-white disabled:opacity-50">
+          <button onClick={onSave} disabled={saving || !state.titulo || !state.fecha || !state.horaInicio} className={CAMPANA_NAVIDAD.primaryButtonSm}>
             {saving ? 'Guardando...' : saveLabel}
           </button>
           <button onClick={onCancel} className="rounded-md border px-4 py-1.5 text-sm text-muted-foreground">Cancelar</button>
@@ -440,6 +441,7 @@ export default function GestionPuebloNavidadPage() {
         subtitle="Cargando datos del pueblo…"
         heroIcon={<HeroIconTree />}
         maxWidthClass="max-w-5xl"
+        theme="navidad"
       >
         <p className="text-muted-foreground">Cargando…</p>
       </GestionPuebloSubpageShell>
@@ -458,17 +460,19 @@ export default function GestionPuebloNavidadPage() {
         }
         heroIcon={<HeroIconTree />}
         maxWidthClass="max-w-5xl"
+        theme="navidad"
       >
         {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-        <div className="rounded-lg border border-red-200 bg-red-50/50 p-5 text-red-900">
-          Este pueblo no está inscrito en Navidad este año.
+        <div className="rounded-xl border border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-amber-50/70 to-red-50/80 p-6 text-center shadow-sm dark:border-emerald-900/50 dark:from-emerald-950/40 dark:via-amber-950/25 dark:to-red-950/30">
+          <p className="font-semibold text-emerald-900 dark:text-emerald-100">Este pueblo no está inscrito en Navidad este año.</p>
+          <p className="mt-2 text-sm text-emerald-800/90 dark:text-emerald-200/85">Inscribe el pueblo para publicar mercadillos, belenes y cabalgatas.</p>
         </div>
         <div className="mt-4">
           <button
             type="button"
             onClick={inscribirse}
             disabled={inscribing || !puebloId}
-            className="rounded-lg bg-red-700 px-5 py-2 text-sm font-medium text-white disabled:opacity-50"
+            className={CAMPANA_NAVIDAD.primaryButton}
           >
             {inscribing ? 'Inscribiendo...' : 'Inscribirse en Navidad'}
           </button>
@@ -491,11 +495,12 @@ export default function GestionPuebloNavidadPage() {
       }
       heroIcon={<HeroIconTree />}
       maxWidthClass="max-w-5xl"
+      theme="navidad"
     >
       {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
       {success && <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>}
 
-      <section className="mb-8 rounded-lg border border-red-100 bg-gradient-to-br from-red-50/30 to-green-50/20 p-5">
+      <section className={`mb-8 rounded-xl border p-5 shadow-sm ${CAMPANA_NAVIDAD.sectionAccent}`}>
         <h2 className="mb-4 text-lg font-semibold">Información general</h2>
         <div className="grid gap-4">
           <div>
@@ -534,7 +539,7 @@ export default function GestionPuebloNavidadPage() {
             <input type="checkbox" checked={data.activo} onChange={(e) => setData({ ...data, activo: e.target.checked })} />
             Pueblo activo en la lista pública de Navidad
           </label>
-          <button onClick={saveInfo} disabled={saving} className="w-fit rounded-lg bg-red-700 px-6 py-2 text-sm font-medium text-white disabled:opacity-50">
+          <button onClick={saveInfo} disabled={saving} className={`w-fit ${CAMPANA_NAVIDAD.primaryButton}`}>
             {saving ? 'Guardando...' : 'Guardar información'}
           </button>
         </div>
@@ -543,7 +548,7 @@ export default function GestionPuebloNavidadPage() {
       <section className="mb-8 rounded-lg border border-red-100 bg-gradient-to-br from-green-50/20 to-red-50/30 p-5">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Eventos navideños</h2>
-          <button onClick={() => { setShowNewEvento(true); setEditingEventoId(null); setTimeout(() => newEventoFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }} className="rounded-lg bg-red-700 px-4 py-1.5 text-sm font-medium text-white">
+          <button onClick={() => { setShowNewEvento(true); setEditingEventoId(null); setTimeout(() => newEventoFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }} className={CAMPANA_NAVIDAD.primaryButtonSm}>
             + Añadir evento
           </button>
         </div>

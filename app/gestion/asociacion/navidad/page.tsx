@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { CAMPANA_NAVIDAD } from '../../_components/gestion-campana-themes';
 
 type Config = {
   id: number;
@@ -124,34 +125,78 @@ export default function GestionNavidadAsociacionPage() {
       (p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || p.provincia.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
-  if (loading) return <main className="mx-auto max-w-5xl p-6"><p className="text-muted-foreground">Cargando...</p></main>;
+  if (loading) {
+    return (
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+        <Link
+          href="/gestion/asociacion"
+          className="mb-6 inline-flex items-center gap-2 rounded-xl border border-border/80 bg-background/80 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all hover:border-emerald-300/50 hover:bg-emerald-50/40 hover:text-foreground"
+        >
+          <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Volver a Gestión Asociación
+        </Link>
+        <div
+          className="relative mb-6 overflow-hidden rounded-2xl p-6 text-white shadow-lg"
+          style={{ background: CAMPANA_NAVIDAD.heroGradient }}
+        >
+          <div className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-amber-300/30 blur-3xl" aria-hidden />
+          <h1 className="text-2xl font-bold">Navidad</h1>
+          <p className="mt-1 text-sm text-white/90">Cargando campaña…</p>
+        </div>
+        <p className="text-muted-foreground">Un momento…</p>
+      </main>
+    );
+  }
 
   return (
-    <main className="mx-auto max-w-5xl p-6">
-      <div className="mb-6 flex items-center gap-3">
-        <span className="text-3xl">🎄</span>
-        <div>
-          <h1 className="text-2xl font-semibold">Navidad</h1>
-          <p className="text-sm text-muted-foreground">Activa/desactiva la campaña navideña y configura pueblos participantes.</p>
+    <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+      <Link
+        href="/gestion/asociacion"
+        className="mb-6 inline-flex items-center gap-2 rounded-xl border border-border/80 bg-background/80 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all hover:border-emerald-300/50 hover:bg-emerald-50/40 hover:text-foreground"
+      >
+        <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+        Volver a Gestión Asociación
+      </Link>
+
+      <div
+        className="relative mb-8 overflow-hidden rounded-2xl p-6 text-white shadow-lg sm:p-8"
+        style={{ background: CAMPANA_NAVIDAD.heroGradient }}
+      >
+        <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-amber-300/30 blur-3xl" aria-hidden />
+        <div className="pointer-events-none absolute -bottom-14 -left-10 h-40 w-40 rounded-full bg-emerald-300/20 blur-3xl" aria-hidden />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-3xl shadow-inner ring-1 ring-white/30">
+            🎄
+          </span>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight drop-shadow-sm sm:text-3xl">Navidad en la red</h1>
+            <p className="mt-1 max-w-2xl text-sm font-medium text-white/90">
+              Pino, oro y rojo carmesí: campaña pública, fechas y pueblos con mercadillos, belenes y cabalgatas.
+            </p>
+          </div>
         </div>
       </div>
 
       {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-      {success && <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>}
+      {success && <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{success}</div>}
 
-      <div className="mb-6 flex gap-1 rounded-lg bg-muted p-1">
-        <button onClick={() => setTab('config')} className={`flex-1 rounded-md px-3 py-2 text-sm font-medium ${tab === 'config' ? 'bg-white shadow-sm' : 'text-muted-foreground'}`}>
+      <div className={`mb-6 flex gap-1 p-1 ${CAMPANA_NAVIDAD.tabBar}`}>
+        <button type="button" onClick={() => setTab('config')} className={`flex-1 rounded-lg px-3 py-2.5 text-sm font-semibold transition ${tab === 'config' ? CAMPANA_NAVIDAD.tabActive : CAMPANA_NAVIDAD.tabInactive}`}>
           Configuración
         </button>
-        <button onClick={() => setTab('pueblos')} className={`flex-1 rounded-md px-3 py-2 text-sm font-medium ${tab === 'pueblos' ? 'bg-white shadow-sm' : 'text-muted-foreground'}`}>
+        <button type="button" onClick={() => setTab('pueblos')} className={`flex-1 rounded-lg px-3 py-2.5 text-sm font-semibold transition ${tab === 'pueblos' ? CAMPANA_NAVIDAD.tabActive : CAMPANA_NAVIDAD.tabInactive}`}>
           Pueblos participantes ({pueblos.length})
         </button>
       </div>
 
       {tab === 'config' && config && (
         <div className="space-y-6">
-          <section className="rounded-lg border border-red-100 bg-gradient-to-br from-red-50/30 to-green-50/20 p-5">
-            <h2 className="mb-4 text-lg font-semibold">Datos generales de la campaña navideña</h2>
+          <section className={`rounded-xl border p-5 shadow-sm ${CAMPANA_NAVIDAD.sectionAccent}`}>
+            <h2 className="mb-4 text-lg font-semibold text-emerald-950 dark:text-emerald-50">Datos generales de la campaña navideña</h2>
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
                 <label className="mb-1 block text-sm">Año</label>
@@ -183,7 +228,7 @@ export default function GestionNavidadAsociacionPage() {
               </label>
             </div>
           </section>
-          <button onClick={saveConfig} disabled={saving} className="rounded-lg bg-red-700 px-6 py-2.5 text-sm font-medium text-white disabled:opacity-50">
+          <button type="button" onClick={saveConfig} disabled={saving} className={CAMPANA_NAVIDAD.primaryButton}>
             {saving ? 'Guardando...' : 'Guardar configuración'}
           </button>
         </div>
@@ -193,13 +238,13 @@ export default function GestionNavidadAsociacionPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Pueblos participantes</h2>
-            <button onClick={() => { setShowAddPueblo(true); loadAllPueblos(); }} className="rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white">
+            <button type="button" onClick={() => { setShowAddPueblo(true); loadAllPueblos(); }} className={CAMPANA_NAVIDAD.primaryButtonSm}>
               + Añadir pueblo
             </button>
           </div>
 
           {showAddPueblo && (
-            <div className="rounded-lg border border-red-200 bg-red-50/30 p-4">
+            <div className={`p-4 ${CAMPANA_NAVIDAD.formCallout}`}>
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="font-medium">Seleccionar pueblo</h3>
                 <button className="text-sm text-muted-foreground" onClick={() => setShowAddPueblo(false)}>Cerrar</button>
@@ -207,9 +252,9 @@ export default function GestionNavidadAsociacionPage() {
               <input type="text" className="mb-3 w-full rounded-md border px-3 py-2 text-sm" placeholder="Buscar pueblo o provincia..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               <div className="max-h-64 overflow-y-auto">
                 {filteredPueblos.slice(0, 50).map((p) => (
-                  <button key={p.id} onClick={() => addPueblo(p.id)} className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-red-100/50">
+                  <button key={p.id} type="button" onClick={() => addPueblo(p.id)} className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-emerald-100/60 dark:hover:bg-emerald-950/35">
                     <span><strong>{p.nombre}</strong> <span className="text-muted-foreground">({p.provincia})</span></span>
-                    <span className="text-red-700">Añadir</span>
+                    <span className="font-medium text-emerald-700 dark:text-emerald-300">Añadir</span>
                   </button>
                 ))}
               </div>
@@ -221,9 +266,9 @@ export default function GestionNavidadAsociacionPage() {
           ) : (
             <div className="space-y-2">
               {pueblos.map((p) => (
-                <div key={p.id} className="flex items-center justify-between rounded-lg border p-4">
+                <div key={p.id} className="flex items-center justify-between rounded-lg border border-emerald-100/90 p-4 dark:border-emerald-900/40">
                   <div>
-                    <Link href={`/gestion/pueblos/${p.pueblo.slug}/navidad`} className="font-medium text-red-700 hover:underline">
+                    <Link href={`/gestion/pueblos/${p.pueblo.slug}/navidad`} className="font-semibold text-emerald-800 hover:text-red-800 hover:underline dark:text-emerald-200 dark:hover:text-amber-100">
                       {p.pueblo.nombre}
                     </Link>
                     <p className="text-sm text-muted-foreground">
@@ -232,7 +277,7 @@ export default function GestionNavidadAsociacionPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Link href={`/gestion/pueblos/${p.pueblo.slug}/navidad`} className="rounded-md border px-3 py-1.5 text-xs text-muted-foreground hover:border-red-700 hover:text-red-700">
+                    <Link href={`/gestion/pueblos/${p.pueblo.slug}/navidad`} className="rounded-md border border-emerald-200/80 px-3 py-1.5 text-xs font-medium text-emerald-900/80 hover:border-amber-400 hover:text-red-800 dark:border-emerald-800 dark:text-emerald-200">
                       Editar
                     </Link>
                     <button onClick={() => removePueblo(p.id, p.pueblo.nombre)} className="rounded-md border border-red-200 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50">
@@ -246,8 +291,10 @@ export default function GestionNavidadAsociacionPage() {
         </div>
       )}
 
-      <div className="mt-10 text-sm">
-        <Link href="/gestion/asociacion" className="text-muted-foreground hover:text-foreground hover:underline">← Volver a Gestión Asociación</Link>
+      <div className="mt-10 border-t border-emerald-100/90 pt-6 text-sm dark:border-emerald-900/40">
+        <Link href="/gestion/asociacion" className="font-medium text-emerald-700 hover:text-red-800 hover:underline dark:text-emerald-300 dark:hover:text-amber-100">
+          ← Volver a Gestión Asociación
+        </Link>
       </div>
     </main>
   );

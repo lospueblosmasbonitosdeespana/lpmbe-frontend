@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
+import { CAMPANA_NOCHE_ROMANTICA } from '../../_components/gestion-campana-themes';
 
 // ==================== TYPES ====================
 
@@ -200,8 +201,25 @@ export default function GestionNocheRomanticaPage() {
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-4xl p-6">
-        <p className="text-muted-foreground">Cargando...</p>
+      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+        <Link
+          href="/gestion/asociacion"
+          className="mb-6 inline-flex items-center gap-2 rounded-xl border border-border/80 bg-background/80 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all hover:border-pink-300/45 hover:bg-pink-50/40 hover:text-foreground"
+        >
+          <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Volver a Gestión Asociación
+        </Link>
+        <div
+          className="relative mb-6 overflow-hidden rounded-2xl p-6 text-white shadow-lg"
+          style={{ background: CAMPANA_NOCHE_ROMANTICA.heroGradient }}
+        >
+          <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-fuchsia-300/25 blur-3xl" aria-hidden />
+          <h1 className="text-2xl font-bold">La Noche Romántica</h1>
+          <p className="mt-1 text-sm text-white/90">Cargando configuración…</p>
+        </div>
+        <p className="text-muted-foreground">Un momento…</p>
       </main>
     );
   }
@@ -215,14 +233,33 @@ export default function GestionNocheRomanticaPage() {
   );
 
   return (
-    <main className="mx-auto max-w-4xl p-6">
-      <div className="mb-6 flex items-center gap-3">
-        <span className="text-3xl">❤️</span>
-        <div>
-          <h1 className="text-2xl font-semibold">La Noche Romántica</h1>
-          <p className="text-sm text-muted-foreground">
-            Configuración del evento y pueblos participantes
-          </p>
+    <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+      <Link
+        href="/gestion/asociacion"
+        className="mb-6 inline-flex items-center gap-2 rounded-xl border border-border/80 bg-background/80 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all hover:border-pink-300/45 hover:bg-pink-50/40 hover:text-foreground"
+      >
+        <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+        Volver a Gestión Asociación
+      </Link>
+
+      <div
+        className="relative mb-8 overflow-hidden rounded-2xl p-6 text-white shadow-lg sm:p-8"
+        style={{ background: CAMPANA_NOCHE_ROMANTICA.heroGradient }}
+      >
+        <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-fuchsia-300/25 blur-3xl" aria-hidden />
+        <div className="pointer-events-none absolute -bottom-14 -left-10 h-40 w-40 rounded-full bg-rose-200/20 blur-3xl" aria-hidden />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-3xl shadow-inner ring-1 ring-white/30">
+            ❤️
+          </span>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight drop-shadow-sm sm:text-3xl">La Noche Romántica</h1>
+            <p className="mt-1 max-w-xl text-sm font-medium text-white/90">
+              Calendario nacional, copy y participación de pueblos — con el tono del evento, no el genérico de gestión.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -238,23 +275,21 @@ export default function GestionNocheRomanticaPage() {
       )}
 
       {/* TABS */}
-      <div className="mb-6 flex gap-1 rounded-lg bg-muted p-1">
+      <div className={`mb-6 flex gap-1 p-1 ${CAMPANA_NOCHE_ROMANTICA.tabBar}`}>
         <button
+          type="button"
           onClick={() => setTab('config')}
-          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${
-            tab === 'config'
-              ? 'bg-white text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
+          className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold transition ${
+            tab === 'config' ? CAMPANA_NOCHE_ROMANTICA.tabActive : CAMPANA_NOCHE_ROMANTICA.tabInactive
           }`}
         >
           Configuración del evento
         </button>
         <button
+          type="button"
           onClick={() => setTab('pueblos')}
-          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${
-            tab === 'pueblos'
-              ? 'bg-white text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
+          className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold transition ${
+            tab === 'pueblos' ? CAMPANA_NOCHE_ROMANTICA.tabActive : CAMPANA_NOCHE_ROMANTICA.tabInactive
           }`}
         >
           Pueblos participantes ({pueblos.length})
@@ -265,8 +300,8 @@ export default function GestionNocheRomanticaPage() {
       {tab === 'config' && config && (
         <div className="space-y-6">
           {/* Básico */}
-          <section className="rounded-lg border p-5">
-            <h2 className="mb-4 text-lg font-semibold">Datos generales</h2>
+          <section className={`rounded-xl border p-5 shadow-sm ${CAMPANA_NOCHE_ROMANTICA.sectionAccent}`}>
+            <h2 className="mb-4 text-lg font-semibold text-pink-950 dark:text-pink-50">Datos generales</h2>
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
                 <label className="mb-1 block text-sm font-medium">Edición</label>
@@ -496,9 +531,10 @@ export default function GestionNocheRomanticaPage() {
           </section>
 
           <button
+            type="button"
             onClick={saveConfig}
             disabled={saving}
-            className="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            className={CAMPANA_NOCHE_ROMANTICA.primaryButton}
           >
             {saving ? 'Guardando...' : 'Guardar configuración'}
           </button>
@@ -513,11 +549,12 @@ export default function GestionNocheRomanticaPage() {
               Pueblos participantes ({pueblos.length})
             </h2>
             <button
+              type="button"
               onClick={() => {
                 setShowAddPueblo(true);
                 loadAllPueblos();
               }}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              className={CAMPANA_NOCHE_ROMANTICA.primaryButtonSm}
             >
               + Añadir pueblo
             </button>
@@ -525,7 +562,7 @@ export default function GestionNocheRomanticaPage() {
 
           {/* Modal añadir */}
           {showAddPueblo && (
-            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+            <div className={`p-4 ${CAMPANA_NOCHE_ROMANTICA.formCallout}`}>
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="font-medium">Seleccionar pueblo</h3>
                 <button
@@ -559,13 +596,13 @@ export default function GestionNocheRomanticaPage() {
                     key={p.id}
                     onClick={() => handleAddPueblo(p.id)}
                     disabled={addingPueblo}
-                    className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-primary/10 disabled:opacity-50"
+                    className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-pink-100/60 disabled:opacity-50 dark:hover:bg-pink-950/30"
                   >
                     <span>
                       <strong>{p.nombre}</strong>{' '}
                       <span className="text-muted-foreground">({p.provincia})</span>
                     </span>
-                    <span className="text-primary">+ Añadir</span>
+                    <span className="font-medium text-fuchsia-600 dark:text-fuchsia-300">+ Añadir</span>
                   </button>
                 ))}
               </div>
@@ -587,12 +624,12 @@ export default function GestionNocheRomanticaPage() {
               {pueblos.map((np) => (
                 <div
                   key={np.id}
-                  className="flex items-center justify-between rounded-lg border p-4 transition hover:border-primary/20"
+                  className="flex items-center justify-between rounded-lg border border-pink-100/80 p-4 transition hover:border-pink-300/60 dark:border-pink-900/40"
                 >
                   <div className="flex-1">
                     <Link
                       href={`/gestion/pueblos/${np.pueblo.slug}/noche-romantica`}
-                      className="font-medium text-primary hover:underline"
+                      className="font-semibold text-pink-800 hover:text-fuchsia-700 hover:underline dark:text-pink-200 dark:hover:text-fuchsia-200"
                     >
                       {np.pueblo.nombre}
                     </Link>
@@ -610,7 +647,7 @@ export default function GestionNocheRomanticaPage() {
                   <div className="flex items-center gap-2">
                     <Link
                       href={`/gestion/pueblos/${np.pueblo.slug}/noche-romantica`}
-                      className="rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-primary hover:text-primary"
+                      className="rounded-md border border-pink-200/80 px-3 py-1.5 text-xs font-medium text-pink-900/80 hover:border-fuchsia-400 hover:text-fuchsia-800 dark:border-pink-800 dark:text-pink-200"
                     >
                       Editar
                     </Link>
@@ -630,11 +667,8 @@ export default function GestionNocheRomanticaPage() {
         </div>
       )}
 
-      <div className="mt-10 text-sm">
-        <Link
-          className="text-muted-foreground hover:text-foreground hover:underline"
-          href="/gestion/asociacion"
-        >
+      <div className="mt-10 border-t border-pink-100/80 pt-6 text-sm dark:border-pink-900/40">
+        <Link className="font-medium text-fuchsia-700 hover:text-pink-900 hover:underline dark:text-fuchsia-300 dark:hover:text-pink-100" href="/gestion/asociacion">
           ← Volver a Gestión Asociación
         </Link>
       </div>

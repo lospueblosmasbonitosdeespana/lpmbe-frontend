@@ -87,9 +87,9 @@ const SECCIONES: {
     subtitle: 'Eventos de la red con calendario propio.',
     tone: 'festive',
     items: [
-      { href: '/gestion/asociacion/noche-romantica', title: 'La Noche Romántica', description: 'Configuración del evento y pueblos participantes', emoji: '❤️', accent: 'rose' },
+      { href: '/gestion/asociacion/noche-romantica', title: 'La Noche Romántica', description: 'Configuración del evento y pueblos participantes', emoji: '❤️', accent: 'romance' },
       { href: '/gestion/asociacion/semana-santa', title: 'Semana Santa', description: 'Año, días y pueblos participantes', emoji: '✝️', accent: 'stone' },
-      { href: '/gestion/asociacion/navidad', title: 'Navidad', description: 'Mercadillos, belenes, cabalgatas y eventos', emoji: '🎄', accent: 'green' },
+      { href: '/gestion/asociacion/navidad', title: 'Navidad', description: 'Mercadillos, belenes, cabalgatas y eventos', emoji: '🎄', accent: 'holiday' },
     ],
   },
 ];

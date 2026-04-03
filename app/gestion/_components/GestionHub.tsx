@@ -202,8 +202,8 @@ const SECTION_TONE: Record<
     wrap: 'rounded-2xl border border-violet-200/35 bg-violet-50/22 py-4 pl-4 pr-3 dark:border-violet-900/35 dark:bg-violet-950/18 sm:pl-5 sm:pr-4',
   },
   festive: {
-    bar: 'border-l-[#b45309]/50',
-    wrap: 'rounded-2xl border border-amber-200/40 bg-gradient-to-br from-red-50/30 via-amber-50/25 to-emerald-50/25 py-4 pl-4 pr-3 dark:border-amber-800/40 dark:from-red-950/15 dark:via-amber-950/15 dark:to-emerald-950/12 sm:pl-5 sm:pr-4',
+    bar: 'border-l-fuchsia-500/65',
+    wrap: 'rounded-2xl border border-fuchsia-200/45 bg-gradient-to-br from-pink-50/55 via-violet-50/40 to-emerald-50/45 py-4 pl-4 pr-3 dark:border-fuchsia-900/35 dark:from-pink-950/25 dark:via-violet-950/20 dark:to-emerald-950/22 sm:pl-5 sm:pr-4',
   },
   slate: {
     bar: 'border-l-slate-500/45',
@@ -256,6 +256,32 @@ const CARD_ACCENT: Record<string, string> = {
   green: 'bg-green-100/75 text-green-950 ring-green-200/50 group-hover:bg-green-100 dark:bg-green-950/35 dark:text-green-100 dark:ring-green-800/40',
   stone: 'bg-stone-100/80 text-stone-800 ring-stone-200/55 group-hover:bg-stone-100 dark:bg-stone-800/40 dark:text-stone-100 dark:ring-stone-600/40',
   slate: 'bg-slate-200/70 text-slate-900 ring-slate-300/50 group-hover:bg-slate-200 dark:bg-slate-800/45 dark:text-slate-100 dark:ring-slate-600/40',
+  /** La Noche Romántica — rosa, fucsia y violeta */
+  romance:
+    'bg-gradient-to-br from-pink-200/90 to-fuchsia-200/80 text-pink-950 ring-pink-300/60 shadow-sm group-hover:from-pink-200 group-hover:to-fuchsia-200 dark:from-pink-900/50 dark:to-fuchsia-900/45 dark:text-pink-50 dark:ring-pink-700/50',
+  /** Navidad — verde pino, oro y rojo */
+  holiday:
+    'bg-gradient-to-br from-emerald-200/85 via-amber-100/90 to-red-200/75 text-emerald-950 ring-emerald-300/55 shadow-sm group-hover:from-emerald-200 group-hover:via-amber-100 group-hover:to-red-100 dark:from-emerald-900/45 dark:via-amber-900/35 dark:to-red-900/40 dark:text-emerald-50 dark:ring-emerald-700/45',
+};
+
+/** Bordes y textos del enlace «Acceder» por acento (evita todo terracota en campañas). */
+const CARD_LINK_ROW: Record<string, { border: string; title: string; link: string }> = {
+  romance: {
+    border: 'hover:border-pink-400/45 hover:shadow-pink-200/25',
+    title: 'group-hover:text-pink-900 dark:group-hover:text-pink-100',
+    link: 'text-fuchsia-600 group-hover:text-pink-700 dark:text-fuchsia-300 dark:group-hover:text-pink-200',
+  },
+  holiday: {
+    border: 'hover:border-emerald-500/40 hover:shadow-emerald-200/20',
+    title: 'group-hover:text-emerald-900 dark:group-hover:text-emerald-100',
+    link: 'text-emerald-700 group-hover:text-red-800 dark:text-emerald-300 dark:group-hover:text-amber-100',
+  },
+};
+
+const CARD_LINK_DEFAULT = {
+  border: 'hover:border-[#a0705a]/28',
+  title: 'group-hover:text-[#8B5E45] dark:group-hover:text-amber-200/90',
+  link: 'text-[#9a6b52] group-hover:text-[#7a4f3a] dark:text-amber-200/80 dark:group-hover:text-amber-100',
 };
 
 export type GestionHubCardAccent = keyof typeof CARD_ACCENT;
@@ -276,6 +302,7 @@ export function GestionHubCard({
   accent?: GestionHubCardAccent;
 }) {
   const well = CARD_ACCENT[accent] ?? CARD_ACCENT.stone;
+  const linkRow = CARD_LINK_ROW[accent] ?? CARD_LINK_DEFAULT;
 
   if (disabled) {
     return (
@@ -290,18 +317,18 @@ export function GestionHubCard({
   return (
     <Link
       href={href}
-      className="group flex min-h-[168px] flex-col rounded-2xl border border-border/70 bg-card/95 p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#a0705a]/28 hover:shadow-md dark:bg-card"
+      className={`group flex min-h-[168px] flex-col rounded-2xl border border-border/70 bg-card/95 p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:bg-card ${linkRow.border}`}
     >
       <div
         className={`mb-3 flex h-[3.35rem] w-[3.35rem] shrink-0 items-center justify-center rounded-2xl shadow-sm ring-1 transition-transform duration-200 group-hover:scale-[1.03] ${well}`}
       >
         {icon}
       </div>
-      <h3 className="text-base font-bold leading-snug text-foreground transition-colors group-hover:text-[#8B5E45] dark:group-hover:text-amber-200/90">
+      <h3 className={`text-base font-bold leading-snug text-foreground transition-colors ${linkRow.title}`}>
         {title}
       </h3>
       <p className="mt-1.5 flex-1 text-sm font-medium leading-relaxed text-foreground/75 dark:text-foreground/85">{description}</p>
-      <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-[#9a6b52] transition-colors group-hover:text-[#7a4f3a] dark:text-amber-200/80 dark:group-hover:text-amber-100">
+      <span className={`mt-4 inline-flex items-center gap-1 text-sm font-medium transition-colors ${linkRow.link}`}>
         Acceder
         <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
           <path d="M5 12h14M12 5l7 7-7 7" />

@@ -150,9 +150,9 @@ export default async function GestionPuebloPage({
       subtitle: 'Participación en iniciativas de la red.',
       tone: 'festive',
       items: [
-        { href: `${baseUrl}/noche-romantica`, title: 'La Noche Romántica', description: 'Gestiona tu participación en La Noche Romántica', emoji: '❤️', accent: 'rose' },
+        { href: `${baseUrl}/noche-romantica`, title: 'La Noche Romántica', description: 'Gestiona tu participación en La Noche Romántica', emoji: '❤️', accent: 'romance' },
         { href: `${baseUrl}/semana-santa`, title: 'Semana Santa', description: 'Cartel, agenda y días de procesiones del pueblo', emoji: '✝️', accent: 'stone' },
-        { href: `${baseUrl}/navidad`, title: 'Navidad', description: 'Mercadillos, belenes, cabalgatas y eventos navideños', emoji: '🎄', accent: 'green' },
+        { href: `${baseUrl}/navidad`, title: 'Navidad', description: 'Mercadillos, belenes, cabalgatas y eventos navideños', emoji: '🎄', accent: 'holiday' },
       ],
     },
     {
