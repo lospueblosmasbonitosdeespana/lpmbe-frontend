@@ -1,12 +1,20 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { decode as heDecod } from "he";
 import dynamic from "next/dynamic";
 
 const MapLocationPicker = dynamic(
   () => import("@/app/components/MapLocationPicker").then((m) => m.default),
-  { ssr: false, loading: () => <div className="h-48 flex items-center justify-center bg-gray-100 rounded-lg text-sm text-gray-500">Cargando mapa...</div> }
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-52 items-center justify-center rounded-xl border border-border/60 bg-muted/30 text-sm text-muted-foreground">
+        Cargando mapa…
+      </div>
+    ),
+  }
 );
 
 function stripHtml(input: string) {
@@ -20,13 +28,35 @@ function stripHtml(input: string) {
 function normalizeDescripcion(input: string) {
   return (input ?? "")
     .replace(/\r\n/g, "\n")
-    .replace(/^Subtítulos realizados por la comunidad de Amara\.org\s*$/gmi, "")
+    .replace(/^Subtítulos realizados por la comunidad de Amara\.org\s*$/gim, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
+function formatSlugLabel(s: string) {
+  return s
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+const field =
+  "mt-1.5 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm shadow-sm transition-colors focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20";
+
+const btnPrimary =
+  "inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#a0705a] to-[#b8856d] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-95 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45";
+
+const btnAmber =
+  "inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:opacity-95 disabled:opacity-45";
+
+const sectionCard = "overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm";
+
+const sectionHead = "border-b border-border/60 bg-muted/30 px-5 py-3.5 sm:px-6";
+const sectionBody = "p-5 sm:p-6";
+
 export default function DescripcionPuebloClient({ slug }: { slug: string }) {
   const [puebloId, setPuebloId] = useState<number | null>(null);
+  const [puebloNombre, setPuebloNombre] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [noPermisos, setNoPermisos] = useState(false);
@@ -44,6 +74,9 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
   const [guardandoAnio, setGuardandoAnio] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
 
+  const baseGestion = `/gestion/pueblos/${slug}`;
+  const labelPueblo = puebloNombre.trim() || formatSlugLabel(slug);
+
   useEffect(() => {
     async function loadDescripcion() {
       try {
@@ -51,7 +84,6 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
         setErr(null);
         setNoPermisos(false);
 
-        // 1) Obtener pueblo por slug desde el proxy de Next (mismo origen)
         const puebloRes = await fetch(`/api/pueblos/${slug}`, { cache: "no-store" });
         if (!puebloRes.ok) {
           throw new Error(`Error cargando pueblo (${puebloRes.status})`);
@@ -61,6 +93,7 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
         if (!id) throw new Error("Pueblo sin id");
 
         setPuebloId(id);
+        setPuebloNombre(typeof pueblo?.nombre === "string" ? pueblo.nombre : "");
         const pl = pueblo?.lat;
         const pn = pueblo?.lng;
         setLat(typeof pl === "number" && Number.isFinite(pl) ? pl : null);
@@ -69,7 +102,6 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
         if (pueblo?.anioExpulsion) setAnioExpulsion(String(pueblo.anioExpulsion));
         if (pueblo?.anioReincorporacion) setAnioReincorporacion(String(pueblo.anioReincorporacion));
 
-        // 2) Cargar descripción (admin)
         const res = await fetch(`/api/admin/pueblos/${id}/descripcion`, {
           method: "GET",
           credentials: "include",
@@ -98,14 +130,15 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
         setDescripcion(clean);
         setLead(data?.lead ?? "");
 
-        // Obtener rol del usuario
         try {
           const meRes = await fetch("/api/auth/me", { credentials: "include" });
           if (meRes.ok) {
             const me = await meRes.json();
             setUserRol(me?.rol ?? "");
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       } catch (e: any) {
         console.error(e);
         setErr(e?.message ?? "Load failed");
@@ -170,7 +203,10 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
         }),
         credentials: "include",
       });
-      if (r.status === 401) { window.location.href = "/entrar"; return; }
+      if (r.status === 401) {
+        window.location.href = "/entrar";
+        return;
+      }
       if (!r.ok) {
         const d = await r.json().catch(() => ({}));
         throw new Error(d?.message ?? `Error ${r.status}`);
@@ -186,7 +222,7 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
 
   async function handleGuardar() {
     if (!puebloId) return;
-    
+
     setGuardando(true);
     setMensaje(null);
 
@@ -221,28 +257,54 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
     }
   }
 
+  const backLink = (
+    <Link
+      href={baseGestion}
+      className="mb-6 inline-flex items-center gap-2 rounded-xl border border-border/80 bg-background/80 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all hover:border-primary/25 hover:bg-muted/50 hover:text-foreground"
+    >
+      <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+      </svg>
+      Volver a gestión del pueblo
+    </Link>
+  );
+
   if (loading) {
     return (
-      <div className="mx-auto max-w-3xl p-6">
-        <p>Cargando...</p>
-      </div>
+      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+        {backLink}
+        <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 rounded-2xl border border-border/60 bg-muted/20 py-16">
+          <div className="h-9 w-9 animate-spin rounded-full border-2 border-primary/30 border-t-primary" aria-hidden />
+          <p className="text-sm font-medium text-muted-foreground">Cargando ficha del pueblo…</p>
+        </div>
+      </main>
     );
   }
 
   if (err) {
     return (
-      <div className="mx-auto max-w-3xl p-6">
-        <p className="text-red-600">Error: {err}</p>
-      </div>
+      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+        {backLink}
+        <div className="rounded-2xl border border-red-200 bg-red-50/90 p-6 text-sm text-red-900 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-100">
+          <p className="font-semibold">No se pudo cargar la página</p>
+          <p className="mt-2 text-red-800/90 dark:text-red-200/90">{err}</p>
+          <Link href={baseGestion} className="mt-4 inline-block text-sm font-medium text-red-900 underline-offset-4 hover:underline dark:text-red-100">
+            Volver a gestión del pueblo
+          </Link>
+        </div>
+      </main>
     );
   }
 
   if (noPermisos) {
     return (
-      <div className="mx-auto max-w-3xl p-6">
-        <h1 className="text-2xl font-semibold">Información y descripción</h1>
-        <p className="mt-4 text-red-600">No tienes permisos para editar este pueblo</p>
-      </div>
+      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+        {backLink}
+        <div className="rounded-2xl border border-amber-200/80 bg-amber-50/90 p-6 dark:border-amber-900/40 dark:bg-amber-950/25">
+          <h1 className="text-lg font-bold text-foreground">Información y descripción</h1>
+          <p className="mt-2 text-sm font-medium text-amber-950/90 dark:text-amber-100/90">No tienes permisos para editar este pueblo.</p>
+        </div>
+      </main>
     );
   }
 
@@ -251,159 +313,209 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
       ? [lat, lng]
       : [40.4168, -3.7038];
   const selectedPosition =
-    lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng)
-      ? { lat, lng }
-      : null;
+    lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null;
+
+  const mensajeEsError =
+    mensaje != null && (mensaje.includes("Error") || mensaje.includes("permisos") || mensaje.includes("No tienes"));
 
   return (
-    <div className="mx-auto max-w-3xl p-6">
-      <h1 className="text-2xl font-semibold">Información y descripción</h1>
-      <p className="mt-2 text-sm text-gray-600">
-        Coordenadas, enunciado y descripción del pueblo para la web pública
-      </p>
+    <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+      {backLink}
 
-      {/* Coordenadas y mapa */}
-      <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50/50 p-4">
-        <h2 className="text-sm font-medium text-gray-700">Ubicación del pueblo</h2>
-        <p className="mt-1 text-xs text-gray-500">
-          Busca un lugar o haz clic en el mapa para actualizar las coordenadas. Se guardan automáticamente.
-        </p>
-        <div className="mt-3">
+      <div
+        className="relative mb-8 overflow-hidden rounded-2xl p-6 text-white sm:p-8"
+        style={{ background: "linear-gradient(135deg, #a0705a 0%, #b8856d 40%, #c49a82 100%)" }}
+      >
+        <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/8 blur-3xl" />
+        <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-white/6 blur-3xl" />
+        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 shadow-inner backdrop-blur-sm">
+              <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Información y descripción</h1>
+              <p className="mt-0.5 text-sm text-white/85">
+                Coordenadas, enunciado y texto para la ficha pública ·{" "}
+                <span className="font-semibold text-white/95">{labelPueblo}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="relative mt-5 flex flex-wrap gap-3">
+          <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+            <span className="text-lg font-bold">{descripcion.length}</span>
+            <span className="ml-1.5 text-xs text-white/75">caracteres (descripción)</span>
+          </div>
+          {lead.trim() ? (
+            <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+              <span className="text-xs font-medium text-white/80">Enunciado definido</span>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      {mensaje && (
+        <div
+          className={`mb-6 rounded-xl border px-4 py-3 text-sm font-medium ${
+            mensajeEsError
+              ? "border-red-200 bg-red-50/90 text-red-900 dark:border-red-900/50 dark:bg-red-950/35 dark:text-red-100"
+              : "border-emerald-200 bg-emerald-50/90 text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-100"
+          }`}
+        >
+          {mensaje}
+        </div>
+      )}
+
+      <div className={sectionCard}>
+        <div className={`${sectionHead} bg-sky-50/50 dark:bg-sky-950/20`}>
+          <h2 className="text-sm font-bold text-foreground">Ubicación del pueblo</h2>
+          <p className="mt-1 text-xs font-medium text-muted-foreground">
+            Busca un lugar o haz clic en el mapa. Las coordenadas se guardan al fijar el punto.
+          </p>
+        </div>
+        <div className={sectionBody}>
           <MapLocationPicker
             center={coordCenter}
             zoom={selectedPosition ? 14 : 6}
             selectedPosition={selectedPosition}
             onLocationSelect={(la, ln) => handleCoordenadasChange(la, ln)}
             height="240px"
-            searchPlaceholder="Buscar lugar (ej: Plaza Mayor, Berlanga de Duero)..."
+            searchPlaceholder="Buscar lugar (ej: Plaza Mayor, Aínsa)…"
             showSearch={true}
             activeHint="Busca o haz clic en el mapa para situar el pueblo"
           />
+          {guardandoCoords && (
+            <p className="mt-3 text-xs font-medium text-sky-700 dark:text-sky-300">Guardando coordenadas…</p>
+          )}
         </div>
-        {guardandoCoords && (
-          <p className="mt-2 text-xs text-blue-600">Guardando coordenadas...</p>
-        )}
       </div>
 
-      {/* Año de incorporación - solo ADMIN */}
       {userRol === "ADMIN" && (
-        <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50/50 p-4">
-          <h2 className="text-sm font-medium text-gray-700">Incorporación a la red</h2>
-          <p className="mt-1 text-xs text-gray-500">
-            Año en que el pueblo se incorporó a Los Pueblos Más Bonitos de España. Si fue expulsado, indicar el año.
-          </p>
-          <div className="mt-3 flex gap-4">
-            <div className="flex-1">
-              <label className="block text-xs font-medium text-gray-600">Año de incorporación</label>
-              <input
-                type="number"
-                min="2011"
-                max="2099"
-                value={anioIncorporacion}
-                onChange={(e) => setAnioIncorporacion(e.target.value)}
-                className="mt-1 w-full rounded border border-gray-300 p-2 text-sm focus:border-amber-500 focus:outline-none"
-                placeholder="Ej: 2013"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-xs font-medium text-gray-600">Año de expulsión/salida</label>
-              <input
-                type="number"
-                min="2011"
-                max="2099"
-                value={anioExpulsion}
-                onChange={(e) => setAnioExpulsion(e.target.value)}
-                className="mt-1 w-full rounded border border-gray-300 p-2 text-sm focus:border-red-500 focus:outline-none"
-                placeholder="Vacío si sigue activo"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-xs font-medium text-gray-600">Año de reincorporación</label>
-              <input
-                type="number"
-                min="2011"
-                max="2099"
-                value={anioReincorporacion}
-                onChange={(e) => setAnioReincorporacion(e.target.value)}
-                className="mt-1 w-full rounded border border-gray-300 p-2 text-sm focus:border-green-500 focus:outline-none"
-                placeholder="Solo si se reincorporó"
-              />
-            </div>
+        <div className={`${sectionCard} mt-6`}>
+          <div className={`${sectionHead} bg-amber-50/60 dark:bg-amber-950/20`}>
+            <h2 className="text-sm font-bold text-foreground">Incorporación a la red</h2>
+            <p className="mt-1 text-xs font-medium text-muted-foreground">
+              Solo administración: año de entrada a LPMBE, expulsión o reincorporación.
+            </p>
           </div>
-          <div className="mt-3 flex items-center gap-3">
-            <button
-              onClick={handleGuardarAnio}
-              disabled={guardandoAnio}
-              className="rounded bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 disabled:bg-gray-400"
-            >
-              {guardandoAnio ? "Guardando..." : "Guardar año"}
-            </button>
-            {anioExpulsion && (
-              <button
-                onClick={() => { setAnioExpulsion(""); setAnioReincorporacion(""); }}
-                className="text-xs text-red-600 hover:underline"
-              >
-                Quitar expulsión
+          <div className={`${sectionBody} space-y-4`}>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground">Año de incorporación</label>
+                <input
+                  type="number"
+                  min={2011}
+                  max={2099}
+                  value={anioIncorporacion}
+                  onChange={(e) => setAnioIncorporacion(e.target.value)}
+                  className={field}
+                  placeholder="Ej: 2013"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground">Año de expulsión / salida</label>
+                <input
+                  type="number"
+                  min={2011}
+                  max={2099}
+                  value={anioExpulsion}
+                  onChange={(e) => setAnioExpulsion(e.target.value)}
+                  className={field}
+                  placeholder="Vacío si sigue activo"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground">Año de reincorporación</label>
+                <input
+                  type="number"
+                  min={2011}
+                  max={2099}
+                  value={anioReincorporacion}
+                  onChange={(e) => setAnioReincorporacion(e.target.value)}
+                  className={field}
+                  placeholder="Solo si volvió"
+                />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <button type="button" onClick={handleGuardarAnio} disabled={guardandoAnio} className={btnAmber}>
+                {guardandoAnio ? "Guardando…" : "Guardar años"}
               </button>
-            )}
+              {anioExpulsion ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAnioExpulsion("");
+                    setAnioReincorporacion("");
+                  }}
+                  className="text-xs font-semibold text-red-600 underline-offset-4 hover:underline dark:text-red-400"
+                >
+                  Quitar expulsión
+                </button>
+              ) : null}
+            </div>
           </div>
         </div>
       )}
 
-      <div className="mt-6">
-        <label className="block text-sm font-medium text-gray-700">
-          Enunciado (1-2 frases impactantes, opcional)
-        </label>
-        <input
-          type="text"
-          value={lead}
-          onChange={(e) => setLead(e.target.value)}
-          className="mt-1 w-full rounded border border-gray-300 p-3 text-sm focus:border-blue-500 focus:outline-none"
-          placeholder="Ej: El pueblo donde la naturaleza manda"
-          maxLength={250}
-        />
-        <p className="mt-1 text-xs text-gray-500">
-          {lead.length} / 250 caracteres
-        </p>
-      </div>
-
-      <div className="mt-6">
-        <label className="block text-sm font-medium text-gray-700">
-          Descripción completa
-        </label>
-        <textarea
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
-          rows={12}
-          className="w-full rounded border border-gray-300 p-3 text-sm focus:border-blue-500 focus:outline-none"
-          placeholder="Descripción del pueblo..."
-        />
-               <p className="mt-1 text-xs text-gray-500">
-                 {descripcion.length} / 5000 caracteres
-               </p>
-      </div>
-
-      <div className="mt-4 flex items-center gap-4">
-        <button
-          onClick={handleGuardar}
-          disabled={guardando}
-          className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:bg-gray-400"
-        >
-          {guardando ? "Guardando..." : "Guardar cambios"}
-        </button>
-
-        {mensaje && (
-          <p
-            className={`text-sm ${
-              mensaje.includes("Error") || mensaje.includes("permisos")
-                ? "text-red-600"
-                : "text-green-600"
-            }`}
-          >
-            {mensaje}
+      <div className={`${sectionCard} mt-6`}>
+        <div className={`${sectionHead} bg-violet-50/40 dark:bg-violet-950/15`}>
+          <h2 className="text-sm font-bold text-foreground">Enunciado</h2>
+          <p className="mt-1 text-xs font-medium text-muted-foreground">Una o dos frases de impacto (opcional). Aparece destacado en la ficha.</p>
+        </div>
+        <div className={sectionBody}>
+          <input
+            type="text"
+            value={lead}
+            onChange={(e) => setLead(e.target.value)}
+            className={field}
+            placeholder="Ej: El pueblo donde la naturaleza manda"
+            maxLength={250}
+          />
+          <p className="mt-2 text-xs font-medium text-muted-foreground">
+            {lead.length} / 250 caracteres
           </p>
-        )}
+        </div>
       </div>
-    </div>
+
+      <div className={`${sectionCard} mt-6`}>
+        <div className={`${sectionHead} bg-muted/40`}>
+          <h2 className="text-sm font-bold text-foreground">Descripción completa</h2>
+          <p className="mt-1 text-xs font-medium text-muted-foreground">Texto principal de la página del pueblo (hasta 5000 caracteres).</p>
+        </div>
+        <div className={sectionBody}>
+          <textarea
+            value={descripcion}
+            onChange={(e) => setDescripcion(e.target.value)}
+            rows={14}
+            className={`${field} min-h-[280px] resize-y`}
+            placeholder="Descripción del pueblo…"
+          />
+          <p className="mt-2 text-xs font-medium text-muted-foreground">{descripcion.length} / 5000 caracteres</p>
+
+          <div className="mt-6 flex flex-wrap items-center gap-4 border-t border-border/60 pt-6">
+            <button type="button" onClick={handleGuardar} disabled={guardando} className={btnPrimary}>
+              {guardando ? "Guardando…" : "Guardar descripción y enunciado"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10 border-t border-border/60 pt-6">
+        <Link
+          href={baseGestion}
+          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Volver a gestión del pueblo
+        </Link>
+      </div>
+    </main>
   );
 }
