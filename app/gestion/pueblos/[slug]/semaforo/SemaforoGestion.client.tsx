@@ -93,12 +93,26 @@ const ESTADO_CFG: Record<string, { label: string; color: string; dot: string; bo
 function EstadoBadge({ estado }: { estado: string }) {
   const cfg = ESTADO_CFG[estado] ?? ESTADO_CFG['VERDE'];
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold ${cfg.bg} ${cfg.border} ${cfg.color}`}>
-      <span className={`h-2 w-2 rounded-full ${cfg.dot}`}/>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold shadow-sm ${cfg.bg} ${cfg.border} ${cfg.color}`}
+    >
+      <span className={`h-2 w-2 shrink-0 rounded-full ${cfg.dot}`} />
       {cfg.label}
     </span>
   );
 }
+
+const field =
+  'block w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm shadow-sm transition-colors focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20';
+
+const btnPrimary =
+  'inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#a0705a] to-[#b8856d] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-95 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50';
+
+const btnSecondary =
+  'inline-flex items-center justify-center rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted disabled:opacity-50';
+
+const btnAmber =
+  'inline-flex items-center justify-center gap-1 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:opacity-95 active:scale-[0.98] disabled:opacity-50';
 
 /* ── Tipos ── */
 type EventoProgramado = {
@@ -158,65 +172,100 @@ function FormularioProgramado({
     });
   }
 
-  const inputClass = 'block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
-      <div className="text-sm font-semibold text-amber-900">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 rounded-2xl border border-amber-200/80 bg-gradient-to-b from-amber-50/90 to-white p-5 shadow-sm ring-1 ring-amber-100/60"
+    >
+      <div className="text-sm font-bold text-amber-950">
         {evento?.id ? 'Editar evento programado' : 'Nuevo evento programado'}
       </div>
 
-      {error && <div className="rounded-md bg-red-50 border border-red-200 p-2 text-xs text-red-800">{error}</div>}
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50/90 p-3 text-xs text-red-800">{error}</div>
+      )}
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Estado *</label>
-          <select value={estado} onChange={(e) => setEstado(e.target.value)} className={inputClass} required>
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">Estado *</label>
+          <select value={estado} onChange={(e) => setEstado(e.target.value)} className={field} required>
             <option value="AMARILLO">Amarillo – Atención prevista</option>
             <option value="ROJO">Rojo – Alta afluencia prevista</option>
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Motivo *</label>
-          <input type="text" value={motivo} onChange={(e) => setMotivo(e.target.value)}
-            className={inputClass} placeholder="Ej: Vilafest" required />
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">Motivo *</label>
+          <input
+            type="text"
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+            className={field}
+            placeholder="Ej: Vilafest"
+            required
+          />
         </div>
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">Mensaje público * (visible durante el evento)</label>
-        <textarea value={mensajePublico} onChange={(e) => setMensajePublico(e.target.value)}
-          rows={2} className={inputClass} placeholder="Ej: Se verá afectada la movilidad." required />
+        <label className="mb-1 block text-xs font-medium text-muted-foreground">
+          Mensaje público * (visible durante el evento)
+        </label>
+        <textarea
+          value={mensajePublico}
+          onChange={(e) => setMensajePublico(e.target.value)}
+          rows={2}
+          className={field}
+          placeholder="Ej: Se verá afectada la movilidad."
+          required
+        />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Inicio *</label>
-          <div className="flex gap-1">
-            <input type="date" value={inicioFecha} onChange={(e) => setInicioFecha(e.target.value)}
-              className="flex-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-primary focus:outline-none" required />
-            <input type="time" value={inicioHora} onChange={(e) => setInicioHora(e.target.value)}
-              className="w-20 rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-primary focus:outline-none" required />
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">Inicio *</label>
+          <div className="flex gap-2">
+            <input
+              type="date"
+              value={inicioFecha}
+              onChange={(e) => setInicioFecha(e.target.value)}
+              className={`${field} flex-1`}
+              required
+            />
+            <input
+              type="time"
+              value={inicioHora}
+              onChange={(e) => setInicioHora(e.target.value)}
+              className={`${field} w-24 shrink-0`}
+              required
+            />
           </div>
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Fin *</label>
-          <div className="flex gap-1">
-            <input type="date" value={finFecha} onChange={(e) => setFinFecha(e.target.value)}
-              className="flex-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-primary focus:outline-none" required />
-            <input type="time" value={finHora} onChange={(e) => setFinHora(e.target.value)}
-              className="w-20 rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-primary focus:outline-none" required />
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">Fin *</label>
+          <div className="flex gap-2">
+            <input
+              type="date"
+              value={finFecha}
+              onChange={(e) => setFinFecha(e.target.value)}
+              className={`${field} flex-1`}
+              required
+            />
+            <input
+              type="time"
+              value={finHora}
+              onChange={(e) => setFinHora(e.target.value)}
+              className={`${field} w-24 shrink-0`}
+              required
+            />
           </div>
         </div>
       </div>
 
-      <div className="flex gap-2 pt-1">
-        <button type="submit" disabled={loading}
-          className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50">
-          {loading ? 'Guardando...' : (evento?.id ? 'Guardar cambios' : 'Crear evento')}
+      <div className="flex flex-wrap gap-2 pt-1">
+        <button type="submit" disabled={loading} className={btnAmber}>
+          {loading ? 'Guardando...' : evento?.id ? 'Guardar cambios' : 'Crear evento'}
         </button>
-        <button type="button" onClick={onCancel}
-          className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
+        <button type="button" onClick={onCancel} className={btnSecondary}>
           Cancelar
         </button>
       </div>
@@ -295,76 +344,101 @@ export default function SemaforoGestion({
     callApi({ estado: estadoManual, clearProgramado: true, eventoId });
   }
 
-  const inputClass = 'block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
-
   return (
-    <div className="mt-6 space-y-6">
+    <div className="space-y-8">
       {error && (
-        <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-800">{error}</div>
+        <div className="rounded-2xl border border-red-200 bg-red-50/90 p-4 text-sm text-red-800 shadow-sm">{error}</div>
       )}
 
       {/* ── SEMÁFORO EN TIEMPO REAL ── */}
-      <section className="rounded-lg border border-gray-200 bg-white overflow-hidden">
-        <div className={`flex items-center justify-between gap-2 px-4 py-3 border-b ${ESTADO_CFG[estadoEfectivo]?.bg ?? 'bg-gray-50'} ${ESTADO_CFG[estadoEfectivo]?.border ?? 'border-gray-200'}`}>
-          <div className="flex items-center gap-2">
-            <IconClock className="h-4 w-4 text-gray-500" />
-            <span className="text-sm font-semibold text-gray-800">Semáforo en tiempo real</span>
+      <section className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-md shadow-black/5">
+        <div
+          className={`flex flex-col gap-3 border-b px-5 py-4 sm:flex-row sm:items-center sm:justify-between ${ESTADO_CFG[estadoEfectivo]?.bg ?? 'bg-muted/40'} ${ESTADO_CFG[estadoEfectivo]?.border ?? 'border-border'}`}
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-background/60 shadow-sm ring-1 ring-border/50">
+              <IconClock className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <span className="text-sm font-bold text-foreground">Semáforo en tiempo real</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <EstadoBadge estado={estadoEfectivo} />
             <button
               type="button"
               onClick={() => document.getElementById('form-manual')?.scrollIntoView({ behavior: 'smooth' })}
-              className="flex items-center gap-1 rounded-md border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50"
+              className="inline-flex items-center gap-1 rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
             >
-              <IconEdit className="h-3 w-3" /> Editar
+              <IconEdit className="h-3.5 w-3.5" /> Editar
             </button>
           </div>
         </div>
 
-        <div className="px-4 py-3 text-sm text-gray-600 space-y-1">
-          {mensajePublicoManual && hayManual && <p>{mensajePublicoManual}</p>}
-          {ultimaActualizacion && <p className="text-xs text-gray-400">Actualizado: {formatDate(ultimaActualizacion)}</p>}
-          {caducaEn && hayManual && <p className="text-xs text-gray-400">Expira automáticamente: {formatDate(caducaEn)}</p>}
-          {!hayManual && !eventosProgramados.length && <p className="text-xs italic text-gray-400">Sin incidencias activas.</p>}
+        <div className="space-y-1 px-5 py-4 text-sm text-muted-foreground">
+          {mensajePublicoManual && hayManual && <p className="text-foreground/90">{mensajePublicoManual}</p>}
+          {ultimaActualizacion && (
+            <p className="text-xs text-muted-foreground/80">Actualizado: {formatDate(ultimaActualizacion)}</p>
+          )}
+          {caducaEn && hayManual && (
+            <p className="text-xs text-muted-foreground/80">Expira automáticamente: {formatDate(caducaEn)}</p>
+          )}
+          {!hayManual && !eventosProgramados.length && (
+            <p className="text-xs italic text-muted-foreground">Sin incidencias activas.</p>
+          )}
         </div>
 
         {/* Formulario edición manual */}
-        <form id="form-manual" onSubmit={handleSubmitManual} className="border-t border-gray-100 px-4 py-4 space-y-3 bg-gray-50">
-          <p className="text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded p-2">
+        <form
+          id="form-manual"
+          onSubmit={handleSubmitManual}
+          className="space-y-4 border-t border-border/60 bg-muted/25 px-5 py-5"
+        >
+          <p className="rounded-xl border border-sky-200/80 bg-sky-50/90 p-3 text-xs leading-relaxed text-sky-950">
             Cambia el semáforo <strong>ahora mismo</strong>. Los eventos programados se mantienen independientemente.
             ROJO/AMARILLO caducan a los 7 días si no se quitan.
           </p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Estado *</label>
-              <select value={estadoM} onChange={(e) => setEstadoM(e.target.value)} className={inputClass} required>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Estado *</label>
+              <select value={estadoM} onChange={(e) => setEstadoM(e.target.value)} className={field} required>
                 <option value="VERDE">Verde – Sin incidencias</option>
                 <option value="AMARILLO">Amarillo – Atención</option>
                 <option value="ROJO">Rojo – Alta afluencia</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Mensaje público{estadoM !== 'VERDE' && <span className="text-red-500"> *</span>}
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                Mensaje público{estadoM !== 'VERDE' && <span className="text-destructive"> *</span>}
               </label>
-              <input type="text" value={mensajePublicoM} onChange={(e) => setMensajePublicoM(e.target.value)}
-                className={inputClass} placeholder="Visible para el público" />
+              <input
+                type="text"
+                value={mensajePublicoM}
+                onChange={(e) => setMensajePublicoM(e.target.value)}
+                className={field}
+                placeholder="Visible para el público"
+              />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Mensaje interno (solo gestión)</label>
-            <input type="text" value={mensajeInternoM} onChange={(e) => setMensajeInternoM(e.target.value)}
-              className={inputClass} placeholder="Notas internas" />
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">Mensaje interno (solo gestión)</label>
+            <input
+              type="text"
+              value={mensajeInternoM}
+              onChange={(e) => setMensajeInternoM(e.target.value)}
+              className={field}
+              placeholder="Notas internas"
+            />
           </div>
-          <div className="flex gap-2">
-            <button type="submit" disabled={loading}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+          <div className="flex flex-wrap gap-2">
+            <button type="submit" disabled={loading} className={btnPrimary}>
               {loading ? 'Guardando...' : 'Guardar estado manual'}
             </button>
             {hayManual && (
-              <button type="button" onClick={() => setShowResetModal(true)} disabled={loading}
-                className="rounded-md border border-green-300 bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 hover:bg-green-100 disabled:opacity-50">
+              <button
+                type="button"
+                onClick={() => setShowResetModal(true)}
+                disabled={loading}
+                className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-800 shadow-sm transition-colors hover:bg-emerald-100 disabled:opacity-50"
+              >
                 Reset a VERDE
               </button>
             )}
@@ -374,36 +448,44 @@ export default function SemaforoGestion({
 
       {/* Modal de confirmación para Reset a VERDE */}
       {showResetModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => !resetting && setShowResetModal(false)}>
-          <div className="mx-4 w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px]"
+          onClick={() => !resetting && setShowResetModal(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100">
-                <svg className="h-5 w-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 ring-1 ring-emerald-200/60">
+                <svg
+                  className="h-5 w-5 text-emerald-600"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Restablecer semáforo</h3>
+              <h3 className="text-lg font-bold text-foreground">Restablecer semáforo</h3>
             </div>
-            <p className="mb-2 text-sm text-gray-600">
-              Esto cambiará el semáforo a <strong className="text-green-700">VERDE</strong> y borrará el estado actual (mensaje público, mensaje interno y motivo).
+            <p className="mb-2 text-sm text-muted-foreground">
+              Esto cambiará el semáforo a <strong className="text-emerald-700">VERDE</strong> y borrará el estado
+              actual (mensaje público, mensaje interno y motivo).
             </p>
-            <p className="mb-5 text-xs text-gray-500">
-              Los eventos programados futuros se mantendrán sin cambios.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowResetModal(false)}
-                disabled={resetting}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-              >
+            <p className="mb-5 text-xs text-muted-foreground">Los eventos programados futuros se mantendrán sin cambios.</p>
+            <div className="flex justify-end gap-2 sm:gap-3">
+              <button type="button" onClick={() => setShowResetModal(false)} disabled={resetting} className={btnSecondary}>
                 Cancelar
               </button>
               <button
                 type="button"
                 onClick={handleConfirmReset}
                 disabled={resetting}
-                className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 disabled:opacity-50"
               >
                 {resetting ? 'Restableciendo...' : 'Sí, poner en VERDE'}
               </button>
@@ -413,27 +495,29 @@ export default function SemaforoGestion({
       )}
 
       {/* ── EVENTOS PROGRAMADOS ── */}
-      <section className="rounded-lg border border-gray-200 bg-white overflow-hidden">
-        <div className="flex items-center justify-between gap-2 px-4 py-3 border-b bg-gray-50">
-          <div className="flex items-center gap-2">
-            <IconCalendar className="h-4 w-4 text-gray-500" />
-            <span className="text-sm font-semibold text-gray-800">
+      <section className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-md shadow-black/5">
+        <div className="flex flex-col gap-3 border-b border-border/60 bg-muted/40 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100/80 shadow-sm ring-1 ring-amber-200/50">
+              <IconCalendar className="h-4 w-4 text-amber-800/90" />
+            </div>
+            <span className="text-sm font-bold text-foreground">
               Eventos programados ({eventosProgramados.length})
             </span>
           </div>
           <button
             type="button"
             onClick={() => setEditandoEvento(editandoEvento === 'new' ? null : 'new')}
-            className="flex items-center gap-1 rounded-md bg-amber-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-amber-700"
+            className={btnAmber}
           >
-            <IconPlus className="h-3 w-3" /> Nuevo evento
+            <IconPlus className="h-3.5 w-3.5" /> Nuevo evento
           </button>
         </div>
 
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-border/60">
           {/* Formulario nuevo evento */}
           {editandoEvento === 'new' && (
-            <div className="p-4">
+            <div className="p-5">
               <FormularioProgramado
                 onSave={handleGuardarEvento}
                 onCancel={() => setEditandoEvento(null)}
@@ -445,14 +529,14 @@ export default function SemaforoGestion({
 
           {/* Lista de eventos existentes */}
           {eventosProgramados.length === 0 && editandoEvento !== 'new' && (
-            <p className="px-4 py-4 text-sm text-gray-400 italic">No hay eventos programados.</p>
+            <p className="px-5 py-8 text-center text-sm italic text-muted-foreground">No hay eventos programados.</p>
           )}
 
           {eventosProgramados.map((ev, i) => {
             const cfg = ESTADO_CFG[ev.estado] ?? ESTADO_CFG['VERDE'];
             const estaEditando = editandoEvento === (ev.id ?? `idx-${i}`);
             return (
-              <div key={ev.id ?? i} className="px-4 py-3">
+              <div key={ev.id ?? i} className="px-5 py-4">
                 {estaEditando ? (
                   <FormularioProgramado
                     evento={ev}
@@ -462,30 +546,34 @@ export default function SemaforoGestion({
                     error={null}
                   />
                 ) : (
-                  <div className={`rounded-lg border p-3 ${cfg.bg} ${cfg.border}`}>
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
+                  <div
+                    className={`rounded-xl border p-4 shadow-sm ring-1 ring-black/[0.03] ${cfg.bg} ${cfg.border}`}
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1 flex flex-wrap items-center gap-2">
                           <EstadoBadge estado={ev.estado} />
-                          {ev.motivo && <span className={`text-sm font-medium ${cfg.color}`}>{ev.motivo}</span>}
+                          {ev.motivo && <span className={`text-sm font-semibold ${cfg.color}`}>{ev.motivo}</span>}
                         </div>
                         {ev.mensaje && <p className={`text-sm ${cfg.color}`}>{ev.mensaje}</p>}
-                        <p className="mt-1 text-xs opacity-70">{formatDate(ev.inicio)} → {formatDate(ev.fin)}</p>
+                        <p className="mt-2 text-xs opacity-80">
+                          {formatDate(ev.inicio)} → {formatDate(ev.fin)}
+                        </p>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
+                      <div className="flex shrink-0 flex-wrap items-center gap-2">
                         <button
                           type="button"
                           onClick={() => setEditandoEvento(ev.id ?? `idx-${i}`)}
-                          className="flex items-center gap-1 rounded-md border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                          className="inline-flex items-center gap-1 rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
                         >
-                          <IconEdit className="h-3 w-3" /> Editar
+                          <IconEdit className="h-3.5 w-3.5" /> Editar
                         </button>
                         <button
                           type="button"
                           onClick={() => ev.id && handleBorrarEvento(ev.id)}
-                          className="flex items-center gap-1 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-100"
+                          className="inline-flex items-center gap-1 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-800 shadow-sm transition-colors hover:bg-red-100"
                         >
-                          <IconTrash className="h-3 w-3" /> Borrar
+                          <IconTrash className="h-3.5 w-3.5" /> Borrar
                         </button>
                       </div>
                     </div>
