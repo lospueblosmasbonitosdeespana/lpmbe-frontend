@@ -10,6 +10,9 @@ import {
   GestionHubFooterLink,
   GestionHubHero,
   GestionHubIconAlertTriangle,
+  GestionHubIconMultiexperiencia,
+  GestionHubIconPoiParadas,
+  GestionHubIconServiciosMap,
   GestionHubIconVisitorParking,
   GestionHubIconWebcamRound,
   GestionHubSection,
@@ -20,7 +23,14 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 export const revalidate = 0;
 
-type HubIconKind = 'emoji' | 'alert' | 'webcam' | 'visitorParking';
+type HubIconKind =
+  | 'emoji'
+  | 'alert'
+  | 'webcam'
+  | 'visitorParking'
+  | 'poiParadas'
+  | 'serviciosMap'
+  | 'multiexperiencia';
 
 type Accion = {
   href: string;
@@ -36,6 +46,9 @@ function renderHubIcon(item: Accion) {
   if (item.hubIcon === 'alert') return <GestionHubIconAlertTriangle />;
   if (item.hubIcon === 'webcam') return <GestionHubIconWebcamRound />;
   if (item.hubIcon === 'visitorParking') return <GestionHubIconVisitorParking />;
+  if (item.hubIcon === 'poiParadas') return <GestionHubIconPoiParadas />;
+  if (item.hubIcon === 'serviciosMap') return <GestionHubIconServiciosMap />;
+  if (item.hubIcon === 'multiexperiencia') return <GestionHubIconMultiexperiencia />;
   return <GestionHubEmoji emoji={item.emoji ?? '•'} />;
 }
 
@@ -118,9 +131,9 @@ export default async function GestionPuebloPage({
       subtitle: 'Lugares en el mapa y equipamientos para quien visita el pueblo.',
       tone: 'emerald',
       items: [
-        { href: `${baseUrl}/pois`, title: 'POIs', description: 'Puntos de interés en el mapa', emoji: '📍', accent: 'emerald' },
-        { href: `${baseUrl}/servicios`, title: 'Servicios del visitante', description: 'Lavabos, parking, turismo, pipicán, caravanas…', hubIcon: 'visitorParking', accent: 'sky' },
-        { href: `${baseUrl}/multiexperiencias`, title: 'Multiexperiencias', description: 'Rutas y experiencias', emoji: '🥾', accent: 'amber' },
+        { href: `${baseUrl}/pois`, title: 'POIs', description: 'Puntos de interés en el mapa', hubIcon: 'poiParadas', accent: 'emerald' },
+        { href: `${baseUrl}/servicios`, title: 'Servicios del visitante', description: 'Lavabos, parking, turismo, pipicán, caravanas…', hubIcon: 'serviciosMap', accent: 'sky' },
+        { href: `${baseUrl}/multiexperiencias`, title: 'Multiexperiencias', description: 'Rutas y experiencias', hubIcon: 'multiexperiencia', accent: 'amber' },
       ],
     },
     {

@@ -40,7 +40,7 @@ export function GestionHubIconWebcamRound({ className }: { className?: string })
   );
 }
 
-/** Señal tipo parking (P en azul) + equipamientos del visitante / pueblo. */
+/** Señal tipo parking (P en azul) — legado; preferir GestionHubIconServiciosMap. */
 export function GestionHubIconVisitorParking({ className }: { className?: string }) {
   return (
     <svg className={className ?? 'h-8 w-8 shrink-0 sm:h-[2.1rem] sm:w-[2.1rem]'} viewBox="0 0 24 24" aria-hidden>
@@ -56,6 +56,66 @@ export function GestionHubIconVisitorParking({ className }: { className?: string
       >
         P
       </text>
+    </svg>
+  );
+}
+
+/**
+ * POI en mapa público: círculo burdeos + pin blanco (misma familia que ParadasMap numerado).
+ */
+export function GestionHubIconPoiParadas({ className }: { className?: string }) {
+  return (
+    <svg className={className ?? HUB_SVG_ICON} viewBox="0 0 24 24" aria-hidden>
+      <circle cx="12" cy="12" r="10" fill="#7A1C1C" stroke="#fff" strokeWidth="2" />
+      <path
+        fill="#fff"
+        d="M12 6.25a3.15 3.15 0 0 0-3.15 3.15c0 2.45 3.15 6.1 3.15 6.1s3.15-3.65 3.15-6.1A3.15 3.15 0 0 0 12 6.25zm0 4.1a.95.95 0 1 1 0-1.9.95.95 0 0 1 0 1.9z"
+      />
+    </svg>
+  );
+}
+
+/**
+ * Servicios del visitante: pin azul con P (misma familia visual que MapaServiciosVisitante).
+ */
+export function GestionHubIconServiciosMap({ className }: { className?: string }) {
+  return (
+    <svg className={className ?? HUB_SVG_ICON} viewBox="0 0 24 24" aria-hidden>
+      <path
+        fill="#1d4ed8"
+        stroke="#fff"
+        strokeWidth="1.35"
+        strokeLinejoin="round"
+        d="M12 2.25c-2.85 0-5.15 2.2-5.15 4.95 0 3.65 5.15 9.55 5.15 9.55s5.15-5.9 5.15-9.55c0-2.75-2.3-4.95-5.15-4.95z"
+      />
+      <text
+        x="12"
+        y="10.85"
+        textAnchor="middle"
+        fill="#fff"
+        fontSize="8.5"
+        fontWeight={800}
+        fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+      >
+        P
+      </text>
+    </svg>
+  );
+}
+
+/** Multiexperiencias: ruta con inicio y fin (paradas en el mapa). */
+export function GestionHubIconMultiexperiencia({ className }: { className?: string }) {
+  return (
+    <svg className={className ?? HUB_SVG_ICON} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M4.25 17.75C6.5 12.2 8.35 9.4 10.85 8.35c2.15-.95 3.55.15 5.9-1.55 1.6-1.25 2.35-3.55 2.35-5.35"
+        stroke="#b45309"
+        strokeWidth="2.05"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="4.25" cy="17.75" r="2.95" fill="#b45309" stroke="#fff" strokeWidth="1.35" />
+      <circle cx="18.1" cy="2.65" r="2.55" fill="#d97706" stroke="#fff" strokeWidth="1.35" />
     </svg>
   );
 }
