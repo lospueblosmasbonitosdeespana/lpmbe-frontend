@@ -17,6 +17,21 @@ import {
 type MetricasData = {
   pueblo: { id: number; nombre: string; slug: string };
   periodo: { dias: number; desde: string };
+  ranking: {
+    totalPueblos: number;
+    visitasTotal: { posicion: number; valor: number };
+    visitasPeriodo: { posicion: number; valor: number };
+    visitasGps: { posicion: number; valor: number };
+    visitasManual: { posicion: number; valor: number };
+    visitasGpsMasManual: { posicion: number; valor: number };
+    visitasPeriodoGps: { posicion: number; valor: number };
+    visitasPeriodoManual: { posicion: number; valor: number };
+    visitantesUnicos: { posicion: number; valor: number };
+    valoracionesTotal: { posicion: number; valor: number };
+    valoracionesPeriodo: { posicion: number; valor: number };
+    valoracionesMedia: { posicion: number; valor: number };
+    webPageviews: { posicion: number; valor: number };
+  };
   visitas: {
     total: number;
     periodo: number;
@@ -72,6 +87,29 @@ function KpiCard({
 function formatDay(d: string) {
   const parts = d.split('-');
   return `${parts[2]}/${parts[1]}`;
+}
+
+function RankingCard({
+  label,
+  posicion,
+  total,
+  valor,
+}: {
+  label: string;
+  posicion: number;
+  total: number;
+  valor: string | number;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+      <p className="text-sm font-medium text-muted-foreground">{label}</p>
+      <p className="mt-1 text-2xl font-bold text-foreground">
+        #{posicion}
+        <span className="ml-1 text-base font-medium text-muted-foreground">/ {total}</span>
+      </p>
+      <p className="mt-1 text-xs text-muted-foreground">Valor actual: {valor}</p>
+    </div>
+  );
 }
 
 export default function PuebloMetricasDashboard({
@@ -148,7 +186,7 @@ export default function PuebloMetricasDashboard({
     );
   }
 
-  const { visitas, valoraciones, web } = data;
+  const { visitas, valoraciones, web, ranking } = data;
 
   const chartVisitas = visitas.porDia.map((d) => ({
     dia: formatDay(d.dia),
@@ -192,6 +230,86 @@ export default function PuebloMetricasDashboard({
             {label}
           </button>
         ))}
+      </div>
+
+      <div>
+        <h2 className="mb-4 text-lg font-semibold text-foreground">
+          Ranking entre pueblos
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <RankingCard
+            label="Valoraciones (total)"
+            posicion={ranking.valoracionesTotal.posicion}
+            total={ranking.totalPueblos}
+            valor={ranking.valoracionesTotal.valor.toLocaleString('es-ES')}
+          />
+          <RankingCard
+            label={`Valoraciones (${days}d)`}
+            posicion={ranking.valoracionesPeriodo.posicion}
+            total={ranking.totalPueblos}
+            valor={ranking.valoracionesPeriodo.valor.toLocaleString('es-ES')}
+          />
+          <RankingCard
+            label="Media valoraciones"
+            posicion={ranking.valoracionesMedia.posicion}
+            total={ranking.totalPueblos}
+            valor={ranking.valoracionesMedia.valor.toFixed(1)}
+          />
+          <RankingCard
+            label="Visitas (GPS+Manual)"
+            posicion={ranking.visitasGpsMasManual.posicion}
+            total={ranking.totalPueblos}
+            valor={ranking.visitasGpsMasManual.valor.toLocaleString('es-ES')}
+          />
+          <RankingCard
+            label={`Visitas (${days}d)`}
+            posicion={ranking.visitasPeriodo.posicion}
+            total={ranking.totalPueblos}
+            valor={ranking.visitasPeriodo.valor.toLocaleString('es-ES')}
+          />
+          <RankingCard
+            label="Visitas GPS (total)"
+            posicion={ranking.visitasGps.posicion}
+            total={ranking.totalPueblos}
+            valor={ranking.visitasGps.valor.toLocaleString('es-ES')}
+          />
+          <RankingCard
+            label="Visitas Manual (total)"
+            posicion={ranking.visitasManual.posicion}
+            total={ranking.totalPueblos}
+            valor={ranking.visitasManual.valor.toLocaleString('es-ES')}
+          />
+          <RankingCard
+            label="Visitantes únicos"
+            posicion={ranking.visitantesUnicos.posicion}
+            total={ranking.totalPueblos}
+            valor={ranking.visitantesUnicos.valor.toLocaleString('es-ES')}
+          />
+          <RankingCard
+            label={`GPS (${days}d)`}
+            posicion={ranking.visitasPeriodoGps.posicion}
+            total={ranking.totalPueblos}
+            valor={ranking.visitasPeriodoGps.valor.toLocaleString('es-ES')}
+          />
+          <RankingCard
+            label={`Manual (${days}d)`}
+            posicion={ranking.visitasPeriodoManual.posicion}
+            total={ranking.totalPueblos}
+            valor={ranking.visitasPeriodoManual.valor.toLocaleString('es-ES')}
+          />
+          <RankingCard
+            label={`Pageviews web (${days}d)`}
+            posicion={ranking.webPageviews.posicion}
+            total={ranking.totalPueblos}
+            valor={ranking.webPageviews.valor.toLocaleString('es-ES')}
+          />
+          <RankingCard
+            label="Visitas totales"
+            posicion={ranking.visitasTotal.posicion}
+            total={ranking.totalPueblos}
+            valor={ranking.visitasTotal.valor.toLocaleString('es-ES')}
+          />
+        </div>
       </div>
 
       {/* Visitas */}
