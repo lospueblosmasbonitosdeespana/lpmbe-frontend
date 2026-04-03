@@ -366,32 +366,6 @@ export function IconLandmark() {
   );
 }
 
-/** Eventos de campaña (sustituye emojis en menús de gestión). */
-export function IconCorazonEvento() {
-  return (
-    <svg className={iconClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    </svg>
-  );
-}
-
-export function IconCruzEvento() {
-  return (
-    <svg className={iconClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3v18M8 7h8M8 17h8" />
-    </svg>
-  );
-}
-
-export function IconPinoNavidad() {
-  return (
-    <svg className={iconClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3v4M9 7l3 4 3-4M8 11l4 5 4-5M7 16l5 6 5-6" />
-      <path d="M12 22v-3" />
-    </svg>
-  );
-}
-
 /** Campañas de difusión masiva (notas de prensa, envíos). */
 export function IconMegafono() {
   return (
