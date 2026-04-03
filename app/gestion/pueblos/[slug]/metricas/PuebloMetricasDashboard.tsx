@@ -104,7 +104,7 @@ function RankingCard({
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
       <p className="text-sm font-medium text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-bold text-foreground">
-        #{posicion}
+        {posicion}
         <span className="ml-1 text-base font-medium text-muted-foreground">/ {total}</span>
       </p>
       <p className="mt-1 text-xs text-muted-foreground">Valor actual: {valor}</p>
