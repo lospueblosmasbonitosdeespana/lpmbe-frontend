@@ -9,6 +9,9 @@ import {
   GestionHubEmoji,
   GestionHubFooterLink,
   GestionHubHero,
+  GestionHubIconAlertTriangle,
+  GestionHubIconVisitorParking,
+  GestionHubIconWebcamRound,
   GestionHubSection,
   GestionHubSectionTone,
 } from '../../_components/GestionHub';
@@ -17,14 +20,24 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 export const revalidate = 0;
 
+type HubIconKind = 'emoji' | 'alert' | 'webcam' | 'visitorParking';
+
 type Accion = {
   href: string;
   title: string;
   description: string;
-  emoji: string;
   accent: GestionHubCardAccent;
+  emoji?: string;
+  hubIcon?: HubIconKind;
   disabled?: boolean;
 };
+
+function renderHubIcon(item: Accion) {
+  if (item.hubIcon === 'alert') return <GestionHubIconAlertTriangle />;
+  if (item.hubIcon === 'webcam') return <GestionHubIconWebcamRound />;
+  if (item.hubIcon === 'visitorParking') return <GestionHubIconVisitorParking />;
+  return <GestionHubEmoji emoji={item.emoji ?? '•'} />;
+}
 
 export default async function GestionPuebloPage({
   params,
@@ -85,7 +98,7 @@ export default async function GestionPuebloPage({
       subtitle: 'Avisos, afluencia y redes: lo que el turista ve al planificar la visita.',
       tone: 'coral',
       items: [
-        { href: `${baseUrl}/alertas`, title: 'Alertas', description: 'Avisos y alertas del municipio', emoji: '🔔', accent: 'orange' },
+        { href: `${baseUrl}/alertas`, title: 'Alertas', description: 'Avisos y alertas del municipio', hubIcon: 'alert', accent: 'red' },
         { href: `${baseUrl}/semaforo`, title: 'Semáforo', description: 'Estado turístico y aforo', emoji: '🚦', accent: 'lime' },
         { href: `${baseUrl}/rrss`, title: 'Redes sociales', description: 'Instagram, Facebook, X, YouTube, TikTok y web', emoji: '📱', accent: 'fuchsia' },
       ],
@@ -97,7 +110,7 @@ export default async function GestionPuebloPage({
       items: [
         { href: `${baseUrl}/fotos`, title: 'Fotos del pueblo', description: 'Galería e imágenes destacadas', emoji: '🖼️', accent: 'pink' },
         { href: `${baseUrl}/videos`, title: 'Videos', description: 'Enlaces a YouTube y videos del pueblo', emoji: '🎬', accent: 'violet' },
-        { href: `${baseUrl}/webcam`, title: 'Webcam', description: 'Webcams en directo del pueblo', emoji: '📹', accent: 'cyan' },
+        { href: `${baseUrl}/webcam`, title: 'Webcam', description: 'Webcams en directo del pueblo', hubIcon: 'webcam', accent: 'slate' },
       ],
     },
     {
@@ -106,7 +119,7 @@ export default async function GestionPuebloPage({
       tone: 'emerald',
       items: [
         { href: `${baseUrl}/pois`, title: 'POIs', description: 'Puntos de interés en el mapa', emoji: '📍', accent: 'emerald' },
-        { href: `${baseUrl}/servicios`, title: 'Servicios del visitante', description: 'Lavabos, parking, turismo, pipicán, caravanas…', emoji: '🛎️', accent: 'teal' },
+        { href: `${baseUrl}/servicios`, title: 'Servicios del visitante', description: 'Lavabos, parking, turismo, pipicán, caravanas…', hubIcon: 'visitorParking', accent: 'sky' },
         { href: `${baseUrl}/multiexperiencias`, title: 'Multiexperiencias', description: 'Rutas y experiencias', emoji: '🥾', accent: 'amber' },
       ],
     },
@@ -168,7 +181,7 @@ export default async function GestionPuebloPage({
               href={item.href}
               title={item.title}
               description={item.description}
-              icon={<GestionHubEmoji emoji={item.emoji} />}
+              icon={renderHubIcon(item)}
               accent={item.accent}
               disabled={item.disabled}
             />

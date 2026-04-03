@@ -1,11 +1,62 @@
 import Link from 'next/link';
 
+const HUB_SVG_ICON = 'h-[1.7rem] w-[1.7rem] shrink-0 sm:h-[1.85rem] sm:w-[1.85rem]';
+
 /** Emoji grande para tarjetas de acceso (mismo criterio que campañas estacionales). */
 export function GestionHubEmoji({ emoji, label }: { emoji: string; label?: string }) {
   return (
     <span className="text-[1.9rem] leading-none sm:text-[2.05rem]" role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
       {emoji}
     </span>
+  );
+}
+
+/** Triángulo de alerta rojo (misma lectura que en la web pública / Lucide AlertTriangle). */
+export function GestionHubIconAlertTriangle({ className }: { className?: string }) {
+  return (
+    <svg className={className ?? HUB_SVG_ICON} viewBox="0 0 24 24" aria-hidden>
+      <path
+        d="M12 2.4 21.8 19.8H2.2L12 2.4z"
+        fill="#dc2626"
+        stroke="#b91c1c"
+        strokeWidth={0.85}
+        strokeLinejoin="round"
+      />
+      <path d="M12 8.2v5.2M12 16.4h.02" stroke="white" strokeWidth={1.9} strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** Webcam / cámara redonda tipo periférico, no videocámara de cinta. */
+export function GestionHubIconWebcamRound({ className }: { className?: string }) {
+  return (
+    <svg className={className ?? HUB_SVG_ICON} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="10" r="7.25" fill="#374151" stroke="#1f2937" strokeWidth={1.25} />
+      <circle cx="12" cy="10" r="3.6" fill="#0f172a" opacity={0.88} />
+      <circle cx="9.35" cy="7.85" r="1.05" fill="white" opacity={0.28} />
+      <path d="M12 17.25v2.35" stroke="#4b5563" strokeWidth={2} strokeLinecap="round" />
+      <path d="M8.25 20.5h7.5" stroke="#4b5563" strokeWidth={2} strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** Señal tipo parking (P en azul) + equipamientos del visitante / pueblo. */
+export function GestionHubIconVisitorParking({ className }: { className?: string }) {
+  return (
+    <svg className={className ?? 'h-8 w-8 shrink-0 sm:h-[2.1rem] sm:w-[2.1rem]'} viewBox="0 0 24 24" aria-hidden>
+      <rect x="2.5" y="2.5" width="19" height="19" rx="3.2" fill="#1d4ed8" />
+      <text
+        x="12"
+        y="16.85"
+        textAnchor="middle"
+        fill="white"
+        fontSize="12.5"
+        fontWeight={800}
+        fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+      >
+        P
+      </text>
+    </svg>
   );
 }
 
@@ -43,7 +94,7 @@ export function GestionHubHero({
       />
       <div className="relative">
         <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{title}</h1>
-        <div className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{subtitle}</div>
+        <div className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-foreground/80 sm:text-[0.95rem]">{subtitle}</div>
       </div>
     </div>
   );
@@ -99,9 +150,11 @@ export function GestionHubSection({
   const t = SECTION_TONE[tone] ?? SECTION_TONE.warm;
   return (
     <section className={`mb-8 sm:mb-10 ${t.wrap}`}>
-      <header className={`mb-4 border-l-2 pl-3.5 ${t.bar}`}>
-        <h2 className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{title}</h2>
-        {subtitle ? <p className="mt-1 text-sm text-muted-foreground/90">{subtitle}</p> : null}
+      <header className={`mb-4 border-l-[3px] pl-3.5 ${t.bar}`}>
+        <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-foreground/90 sm:text-sm">{title}</h2>
+        {subtitle ? (
+          <p className="mt-1.5 text-sm font-semibold leading-snug text-foreground/75 dark:text-foreground/80">{subtitle}</p>
+        ) : null}
       </header>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
     </section>
@@ -151,8 +204,8 @@ export function GestionHubCard({
     return (
       <div className="flex min-h-[168px] flex-col rounded-2xl border border-dashed border-border/80 bg-muted/25 p-5 opacity-55">
         <div className={`mb-3 flex h-[3.35rem] w-[3.35rem] items-center justify-center rounded-2xl ring-1 ${well} opacity-70`}>{icon}</div>
-        <h3 className="font-semibold leading-snug text-foreground">{title}</h3>
-        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{description}</p>
+        <h3 className="text-base font-bold leading-snug text-foreground">{title}</h3>
+        <p className="mt-1.5 text-sm font-medium leading-relaxed text-foreground/65 dark:text-foreground/70">{description}</p>
       </div>
     );
   }
@@ -167,10 +220,10 @@ export function GestionHubCard({
       >
         {icon}
       </div>
-      <h3 className="font-semibold leading-snug text-foreground transition-colors group-hover:text-[#8B5E45] dark:group-hover:text-amber-200/90">
+      <h3 className="text-base font-bold leading-snug text-foreground transition-colors group-hover:text-[#8B5E45] dark:group-hover:text-amber-200/90">
         {title}
       </h3>
-      <p className="mt-1.5 flex-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
+      <p className="mt-1.5 flex-1 text-sm font-medium leading-relaxed text-foreground/65 dark:text-foreground/70">{description}</p>
       <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-[#9a6b52] transition-colors group-hover:text-[#7a4f3a] dark:text-amber-200/80 dark:group-hover:text-amber-100">
         Acceder
         <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
