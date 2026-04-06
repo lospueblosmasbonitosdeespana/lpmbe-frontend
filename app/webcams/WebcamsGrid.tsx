@@ -44,11 +44,40 @@ function isEmbeddableIframeUrl(url: string): boolean {
 }
 
 /**
+ * Extrae el hostname de una URL HLS para saber si puede pasar
+ * por el proxy (mismo listado que en /api/webcams/hls-proxy/route.ts).
+ */
+const HLS_PROXY_ALLOWED_HOSTS = [
+  'streaming.comunitatvalenciana.com',
+  // Añadir más hosts aquí igual que en el route.ts del proxy.
+];
+
+function canUseHlsProxy(url: string): boolean {
+  try {
+    const { hostname } = new URL(url);
+    return HLS_PROXY_ALLOWED_HOSTS.some(
+      (h) => hostname === h || hostname.endsWith(`.${h}`),
+    );
+  } catch {
+    return false;
+  }
+}
+
+function buildProxyUrl(src: string): string {
+  return `/api/webcams/hls-proxy?url=${encodeURIComponent(src)}`;
+}
+
+/**
  * Reproduce un stream HLS (.m3u8) directamente en la tarjeta.
- * - Safari: soporte nativo vía <video src>
- * - Resto: carga hls.js dinámicamente (solo en el cliente)
- * Si el stream falla (p.ej. CORS), llama a onError para que el padre
- * muestre el fallback con botón externo.
+ *
+ * Estrategia en dos pasos:
+ * 1. Intenta reproducir el stream directo (sin proxy).
+ * 2. Si falla con error fatal de red (típicamente CORS), y el host está
+ *    en la lista de permitidos, reintenta a través del proxy /api/webcams/hls-proxy.
+ * 3. Si el proxy también falla, llama a onError() y el componente padre
+ *    muestra el overlay con enlace externo.
+ *
+ * En Safari el soporte HLS es nativo y no necesita proxy.
  */
 function HlsVideoPlayer({
   src,
@@ -68,33 +97,41 @@ function HlsVideoPlayer({
     let hlsInstance: import('hls.js').default | null = null;
     let destroyed = false;
 
+    const loadWithHls = async (url: string, isRetry: boolean) => {
+      const { default: Hls } = await import('hls.js');
+      if (!Hls.isSupported() || destroyed) { onError(); return; }
+
+      hlsInstance?.destroy();
+      hlsInstance = new Hls({ autoStartLoad: true, startLevel: -1, debug: false });
+
+      hlsInstance.on(Hls.Events.ERROR, (_evt, data) => {
+        if (!data.fatal) return;
+        if (!isRetry && data.type === 'networkError' && canUseHlsProxy(src)) {
+          // Primera vez que falla y el host tiene proxy → reintentamos vía proxy.
+          hlsInstance?.destroy();
+          hlsInstance = null;
+          void loadWithHls(buildProxyUrl(src), true);
+        } else {
+          // Ya es reintento o no hay proxy para este host → fallback externo.
+          onError();
+        }
+      });
+
+      hlsInstance.loadSource(url);
+      hlsInstance.attachMedia(video);
+      hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play().catch(() => { /* autoplay bloqueado por política del navegador */ });
+      });
+    };
+
     const setup = async () => {
       if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        // Safari — soporte nativo HLS
+        // Safari — soporte nativo HLS, sin CORS issues.
         video.src = src;
         try { await video.play(); } catch { /* autoplay bloqueado — ok, hay controles */ }
         return;
       }
-
-      const { default: Hls } = await import('hls.js');
-      if (!Hls.isSupported() || destroyed) { onError(); return; }
-
-      hlsInstance = new Hls({
-        autoStartLoad: true,
-        startLevel: -1,
-        debug: false,
-      });
-
-      hlsInstance.on(Hls.Events.ERROR, (_evt, data) => {
-        if (data.fatal) onError();
-      });
-
-      hlsInstance.loadSource(src);
-      hlsInstance.attachMedia(video);
-
-      hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.play().catch(() => { /* autoplay bloqueado */ });
-      });
+      await loadWithHls(src, false);
     };
 
     void setup();
@@ -114,7 +151,6 @@ function HlsVideoPlayer({
       controls
       className="h-full w-full object-cover"
       aria-label={alt}
-      onError={onError}
     />
   );
 }
