@@ -55,6 +55,7 @@ export function getNavConfig(options?: Partial<CampaignNavOptions>): NavItem[] {
         links: [
           { labelKey: "seeAll", href: "/pueblos" },
           { labelKey: "interactiveMap", href: "/mapa" },
+          { labelKey: "webcams", href: "/webcams" },
         ],
       },
       {

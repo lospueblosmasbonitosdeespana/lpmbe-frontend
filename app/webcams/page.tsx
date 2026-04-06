@@ -1,0 +1,160 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { getLocale } from 'next-intl/server';
+import { getApiUrl } from '@/lib/api';
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  getOGLocale,
+  seoTitle,
+  seoDescription,
+  type SupportedLocale,
+} from '@/lib/seo';
+import WebcamsGrid from './WebcamsGrid';
+
+export const revalidate = 120;
+
+const PAGE_TITLE: Record<string, string> = {
+  es: 'Webcams en directo de los pueblos más bonitos de España',
+  en: 'Live webcams from Spain\'s most beautiful villages',
+  fr: 'Webcams en direct des plus beaux villages d\'Espagne',
+  de: 'Live-Webcams aus Spaniens schönsten Dörfern',
+  pt: 'Webcams em direto das aldeias mais bonitas de Espanha',
+  it: 'Webcam in diretta dai borghi più belli della Spagna',
+  ca: 'Webcams en directe dels pobles més bonics d\'Espanya',
+};
+
+const PAGE_DESC: Record<string, string> = {
+  es: 'Asómate en tiempo real a los pueblos más bonitos de España. Webcams en directo desde plazas, monumentos y paisajes de los pueblos con más encanto.',
+  en: 'Peek into Spain\'s most beautiful villages in real time. Live webcams from squares, monuments and landscapes of the most charming villages.',
+  fr: 'Découvrez en temps réel les plus beaux villages d\'Espagne. Webcams en direct depuis les places, monuments et paysages.',
+  de: 'Schauen Sie live in Spaniens schönste Dörfer. Webcams von Plätzen, Denkmälern und Landschaften.',
+  pt: 'Espreite em tempo real as aldeias mais bonitas de Espanha. Webcams em direto de praças, monumentos e paisagens.',
+  it: 'Affacciati in tempo reale sui borghi più belli della Spagna. Webcam in diretta da piazze, monumenti e paesaggi.',
+  ca: 'Guaita en temps real als pobles més bonics d\'Espanya. Webcams en directe des de places, monuments i paisatges.',
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const path = '/webcams';
+  const title = seoTitle(PAGE_TITLE[locale] ?? PAGE_TITLE.es);
+  const description = seoDescription(PAGE_DESC[locale] ?? PAGE_DESC.es);
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+    },
+    robots: { index: true, follow: true },
+  };
+}
+
+interface WebcamItem {
+  id: number;
+  nombre: string;
+  url: string;
+  proveedor: string | null;
+  pueblo: {
+    id: number;
+    nombre: string;
+    slug: string;
+    provincia: string;
+    comunidad: string;
+    foto_destacada: string | null;
+  };
+}
+
+async function fetchWebcams(): Promise<WebcamItem[]> {
+  try {
+    const API = getApiUrl();
+    const res = await fetch(`${API}/public/webcams`, { next: { revalidate: 120 } });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+export default async function WebcamsPage() {
+  const webcams = await fetchWebcams();
+
+  const puebloMap = new Map<string, { pueblo: WebcamItem['pueblo']; webcams: WebcamItem[] }>();
+  for (const w of webcams) {
+    const key = w.pueblo.slug;
+    if (!puebloMap.has(key)) {
+      puebloMap.set(key, { pueblo: w.pueblo, webcams: [] });
+    }
+    puebloMap.get(key)!.webcams.push(w);
+  }
+  const groups = Array.from(puebloMap.values());
+
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-neutral-950 dark:to-neutral-900">
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-sky-600 via-blue-700 to-indigo-800 py-16 md:py-24">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+          }} />
+        </div>
+        <div className="relative mx-auto max-w-5xl px-4 text-center text-white">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+            </span>
+            EN DIRECTO
+          </div>
+          <h1 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
+            Webcams en directo
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-blue-100 md:text-xl">
+            Asómate a los pueblos más bonitos de España en tiempo real.
+            Plazas, monumentos y paisajes a un clic.
+          </p>
+          <p className="mt-6 text-sm text-blue-200">
+            {groups.length} pueblos · {webcams.length} webcams
+          </p>
+        </div>
+      </section>
+
+      {/* Grid */}
+      <section className="mx-auto max-w-7xl px-4 py-12 md:py-16">
+        {groups.length === 0 ? (
+          <div className="py-20 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-neutral-800">
+              <svg className="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+            </div>
+            <p className="text-xl text-muted-foreground">No hay webcams disponibles en este momento.</p>
+          </div>
+        ) : (
+          <WebcamsGrid groups={groups.map(g => ({
+            pueblo: g.pueblo,
+            webcams: g.webcams.map(w => ({ id: w.id, nombre: w.nombre, url: w.url, proveedor: w.proveedor })),
+          }))} />
+        )}
+      </section>
+
+      {/* CTA */}
+      <section className="border-t bg-slate-50 py-12 text-center dark:bg-neutral-900/50">
+        <p className="text-muted-foreground">¿Tu pueblo tiene webcam?</p>
+        <Link
+          href="/contacto"
+          className="mt-3 inline-block rounded-full bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+        >
+          Cuéntanoslo
+        </Link>
+      </section>
+    </main>
+  );
+}

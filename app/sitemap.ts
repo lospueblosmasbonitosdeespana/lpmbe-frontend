@@ -251,6 +251,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry('/', 1.0, 'daily'),
     entry('/actualidad', 0.8, 'daily'),
     entry('/mapa', 0.7, 'weekly'),
+    entry('/webcams', 0.6, 'daily'),
     entry('/meteo', 0.5, 'daily'),
     entry('/contacto', 0.3, 'yearly'),
     entry('/newsletter', 0.3, 'yearly'),

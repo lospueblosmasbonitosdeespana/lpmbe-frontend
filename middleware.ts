@@ -317,7 +317,7 @@ export function middleware(req: NextRequest): NextResponse {
     'naturaleza', 'newsletter', 'noche-romantica', 'noticias', 'notificaciones',
     'para-negocios', 'patrimonio', 'petfriendly', 'planifica', 'prensa',
     'privacidad', 'pueblos', 'que-comer', 'recuperar', 'recursos',
-    'redes-sociales', 'registro', 'rutas', 'tienda', 'validador',
+    'redes-sociales', 'registro', 'rutas', 'tienda', 'validador', 'webcams',
   ]);
   const singleSegMatch = pathname.match(/^\/([^/]+)$/);
   if (singleSegMatch) {
