@@ -22,6 +22,7 @@ import {
   type SupportedLocale,
 } from "@/lib/seo";
 import JsonLd from "./components/seo/JsonLd";
+import CountdownHydrator from "./_components/CountdownHydrator";
 
 const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
@@ -162,6 +163,7 @@ export default async function RootLayout({
           <NextIntlClientProvider locale={locale} messages={messages}>
             <GoogleAuthProviderWrapper>
               <WebAnalyticsTracker />
+              <CountdownHydrator />
               <Header locale={locale} />
               {children}
               <Footer locale={locale} />

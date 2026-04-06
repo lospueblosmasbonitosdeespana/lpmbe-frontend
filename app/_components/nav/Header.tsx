@@ -98,13 +98,17 @@ export async function Header({ locale }: HeaderProps) {
 
   if (settings.activeLogo === 'text') {
     logoContent = (
-      <span className="text-base font-semibold">{settings.brandName}</span>
+      <span className="inline-flex items-center h-16 md:h-[96px] text-base font-semibold">{settings.brandName}</span>
     );
   } else if (settings.activeLogo === 'variant' && settings.logoVariantUrl) {
     logoContent = (
       <img
         src={settings.logoVariantUrl}
         alt={settings.logoAlt}
+        width={280}
+        height={96}
+        fetchPriority="high"
+        decoding="sync"
         className={logoClassName}
       />
     );
@@ -115,11 +119,19 @@ export async function Header({ locale }: HeaderProps) {
           <img
             src={settings.logoUrl}
             alt={settings.logoAlt}
+            width={280}
+            height={96}
+            fetchPriority="high"
+            decoding="sync"
             className={`${logoClassName} dark:hidden`}
           />
           <img
             src={settings.logoVariantUrl}
             alt={settings.logoAlt}
+            width={280}
+            height={96}
+            fetchPriority="high"
+            decoding="sync"
             className={`${logoClassName} hidden dark:block`}
           />
         </>
@@ -129,19 +141,23 @@ export async function Header({ locale }: HeaderProps) {
         <img
           src={settings.logoUrl}
           alt={settings.logoAlt}
+          width={280}
+          height={96}
+          fetchPriority="high"
+          decoding="sync"
           className={logoClassName}
         />
       );
     }
   } else {
     logoContent = (
-      <span className="text-base font-semibold">{settings.brandName}</span>
+      <span className="inline-flex items-center h-16 md:h-[96px] text-base font-semibold">{settings.brandName}</span>
     );
   }
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm dark:bg-card dark:border-b dark:border-border dark:shadow-none">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:py-5">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:py-5 min-h-[88px] md:min-h-[136px]">
         <Link href="/" className="block flex-shrink-0 text-foreground dark:text-white" aria-label="Inicio">
           {logoContent}
           <span className="sr-only">Los Pueblos Más Bonitos de España - Inicio</span>

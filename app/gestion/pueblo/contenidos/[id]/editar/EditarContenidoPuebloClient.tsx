@@ -31,6 +31,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
   const [titulo, setTitulo] = useState('');
   const [resumen, setResumen] = useState('');
   const [contenidoMd, setContenidoMd] = useState('');
+  const [blocksJson, setBlocksJson] = useState<unknown>(null);
   const [estado, setEstado] = useState('BORRADOR');
   const [publishedAt, setPublishedAt] = useState('');
   const [fechaInicioLocal, setFechaInicioLocal] = useState('');
@@ -65,6 +66,12 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
         setResumen(data.resumen ?? '');
         setContenidoMd(data.contenidoMd ?? '');
         setEstado(data.estado ?? 'BORRADOR');
+
+        // Si hay blocksJson guardado, activar constructor automáticamente
+        if (data.blocksJson && Array.isArray(data.blocksJson) && data.blocksJson.length > 0) {
+          setBlocksJson(data.blocksJson);
+          setEditorMode('builder');
+        }
         setCoverUrl(data.coverUrl ?? null);
         setGalleryUrls(Array.isArray(data.galleryUrls) ? data.galleryUrls.slice(0, 3) : []);
 
@@ -198,6 +205,7 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
         resumen: resumen.trim() || null,
         contenidoMd,
         estado,
+        ...(blocksJson ? { blocksJson } : {}),
       };
       // No enviar 'tipo' para páginas temáticas: el DTO solo acepta NOTICIA/EVENTO/ARTICULO/PAGINA
       if (!esPaginaTematica) {
@@ -551,7 +559,9 @@ export default function EditarContenidoPuebloClient({ id }: EditarContenidoPuebl
               key={`pueblo-editar-builder-${id}-${builderResetKey}`}
               draftKey={`lpmbe-editar-pueblo-contenido-${id}-draft`}
               initialHtml={contenidoMd}
+              initialBlocks={Array.isArray(blocksJson) ? (blocksJson as any[]) : undefined}
               onChange={(html) => setContenidoMd(html)}
+              onBlocksChange={(blocks) => setBlocksJson(blocks)}
               onClearAll={handleClearAll}
               showBrandLogos={false}
               puebloId={puebloId ? Number(puebloId) : undefined}

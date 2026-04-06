@@ -83,6 +83,8 @@ interface ContentBlockBuilderProps {
   initialBlocks?: ContentBlock[];
   /** Se llama cuando el HTML cambia (al sincronizar) */
   onChange?: (html: string) => void;
+  /** Se llama cuando cambian los bloques (para guardar blocksJson) */
+  onBlocksChange?: (blocks: ContentBlock[]) => void;
   /** Clave para persistir borrador en localStorage */
   draftKey?: string;
   /** Si es false, oculta la librería de logos de marca (asociación). Por defecto true. */
@@ -532,7 +534,7 @@ const PALETTE_BLOCKS: { type: BlockType; label: string }[] = [
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChange, draftKey, showBrandLogos = true, puebloId, puebloNombre, webMode = false, clearDraftOnMount = false, onClearAll }: ContentBlockBuilderProps) {
+export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChange, onBlocksChange, draftKey, showBrandLogos = true, puebloId, puebloNombre, webMode = false, clearDraftOnMount = false, onClearAll }: ContentBlockBuilderProps) {
   const [blocks, setBlocks] = useState<ContentBlock[]>(() => initialBlocks?.length ? initialBlocks : []);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reorderPickSourceId, setReorderPickSourceId] = useState<string | null>(null);
@@ -742,6 +744,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
     if (blocks.length === 0) return; // Don't overwrite parent with empty on initial mount
     const html = renderBlocksToHtml(blocks, webMode);
     onChange?.(html);
+    onBlocksChange?.(blocks);
     // Auto-save blocks so the builder can restore them when the user returns
     if (typeof window !== 'undefined') {
       try {

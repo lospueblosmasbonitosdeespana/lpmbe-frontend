@@ -35,6 +35,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
   const [titulo, setTitulo] = useState('');
   const [resumen, setResumen] = useState('');
   const [contenido, setContenido] = useState('');
+  const [blocksJson, setBlocksJson] = useState<unknown>(null);
   const [estado, setEstado] = useState('PUBLICADA'); // PUBLICADA por defecto
   const [publishedAt, setPublishedAt] = useState('');
   const [fechaInicioLocal, setFechaInicioLocal] = useState('');
@@ -194,6 +195,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
         contenidoMd: contenido,
         estado,
         puebloId,
+        ...(blocksJson ? { blocksJson } : {}),
       };
       if (effectiveCoverUrl) payload.coverUrl = effectiveCoverUrl;
       if (normalizedGalleryUrls.length > 0) payload.galleryUrls = normalizedGalleryUrls;
@@ -594,6 +596,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
                 draftKey={`lpmbe-contenido-pueblo-${puebloId}-${tipo}-draft`}
                 initialHtml={contenido}
                 onChange={(html) => setContenido(html)}
+                onBlocksChange={(blocks) => setBlocksJson(blocks)}
                 onClearAll={handleClearAll}
                 showBrandLogos={false}
                 puebloId={puebloId}
