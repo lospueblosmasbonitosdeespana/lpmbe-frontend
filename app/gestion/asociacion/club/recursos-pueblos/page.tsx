@@ -18,7 +18,7 @@ export default async function RecursosPueblosPage() {
   return (
     <GestionAsociacionSubpageShell
       title="Recursos turísticos por pueblo"
-      subtitle="RRTT del municipio y negocios del Club por pueblo (conteos separados) · Asociación LPMBE"
+      subtitle="Listado de pueblos y recursos turísticos del Club en cada uno · Asociación LPMBE"
       heroIcon={<AsociacionHeroIconMap />}
       maxWidthClass="max-w-5xl"
       backHref={BACK}
