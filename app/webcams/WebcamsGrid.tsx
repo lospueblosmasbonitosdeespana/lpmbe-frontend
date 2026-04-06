@@ -275,7 +275,12 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel }: {
       ) : isImage ? (
         <>
           <LiveBadge label={liveBadgeLabel} />
-          <RefreshingImage src={webcam.url} alt={`${webcam.nombre} – ${pueblo.nombre}`} />
+          {/* key: al cambiar de cámara en el carrusel, sin esto resolvedSrc seguía siendo la JPG anterior */}
+          <RefreshingImage
+            key={webcam.id}
+            src={webcam.url}
+            alt={`${webcam.nombre} – ${pueblo.nombre}`}
+          />
         </>
       ) : isHls && !hlsFailed ? (
         <>
