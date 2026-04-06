@@ -86,6 +86,15 @@ const TEMATICA_SITEMAP_SEGMENTS: Record<string, string> = {
   patrimonio: 'PATRIMONIO',
 };
 
+const EXPERIENCIAS_SEGMENT_BY_TEMATICA_SEGMENT: Record<string, string> = {
+  'que-comer': 'gastronomia',
+  naturaleza: 'naturaleza',
+  cultura: 'cultura',
+  'en-familia': 'en-familia',
+  petfriendly: 'petfriendly',
+  patrimonio: 'patrimonio',
+};
+
 /**
  * Rutas temáticas que realmente tienen al menos una página publicada (ES).
  * Evita 404 en GSC por URLs listadas en el sitemap sin contenido en esa categoría.
@@ -105,6 +114,67 @@ async function fetchTematicaPathsForPueblo(slug: string): Promise<string[]> {
       }
     }
     return out;
+  } catch {
+    return [];
+  }
+}
+
+function toExperienciaPuebloPath(tematicaPath: string): string | null {
+  const parts = tematicaPath.split('/').filter(Boolean);
+  if (parts.length !== 2) return null;
+  const [segment, puebloSlug] = parts;
+  const experienciaSegment = EXPERIENCIAS_SEGMENT_BY_TEMATICA_SEGMENT[segment];
+  if (!experienciaSegment || !puebloSlug) return null;
+  return `/experiencias/${experienciaSegment}/pueblos/${puebloSlug}`;
+}
+
+async function fetchExperienciasAsociacionPaths(): Promise<string[]> {
+  const out: string[] = [];
+  for (const [segment, category] of Object.entries(EXPERIENCIAS_SEGMENT_BY_TEMATICA_SEGMENT)) {
+    const categoryKey = TEMATICA_SITEMAP_SEGMENTS[segment];
+    if (!categoryKey) continue;
+    try {
+      const qs = new URLSearchParams({ category: categoryKey });
+      const res = await fetch(`${API}/public/pages?${qs.toString()}`, { cache: 'no-store' });
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data?.asociacion) out.push(`/experiencias/${category}/asociacion`);
+    } catch {
+      // Ignorar error y continuar con la siguiente categoría.
+    }
+  }
+  return out;
+}
+
+async function fetchParticipatingPuebloSlugs(endpoint: string): Promise<string[]> {
+  try {
+    const res = await fetch(`${API}${endpoint}`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : data?.items ?? [];
+    return items
+      .map((item: any) => item?.pueblo?.slug)
+      .filter((slug: unknown): slug is string => typeof slug === 'string' && slug.trim().length > 0);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchFinDeSemanaPuebloSlugs(): Promise<string[]> {
+  try {
+    const res = await fetch(`${API}/public/planifica/fin-de-semana`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const sources = ['asociacion', 'norte', 'sur', 'este', 'centro'] as const;
+    const slugs = new Set<string>();
+    for (const source of sources) {
+      const events = Array.isArray(data?.[source]) ? data[source] : [];
+      for (const event of events) {
+        const slug = event?.pueblo?.slug;
+        if (typeof slug === 'string' && slug.trim()) slugs.add(slug.trim());
+      }
+    }
+    return Array.from(slugs);
   } catch {
     return [];
   }
@@ -224,13 +294,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // /pueblos/*/categoria/* son noindex (duplican las temáticas SEO /que-comer/*, /patrimonio/*, etc.)
   // No se incluyen en el sitemap.
 
-  const experienciasCategorias = ['gastronomia', 'naturaleza', 'cultura', 'en-familia', 'petfriendly', 'patrimonio'];
-  const experienciasAsociacion = experienciasCategorias.map((cat) =>
-    entry(`/experiencias/${cat}/asociacion`, 0.5, 'monthly')
+  const experienciasAsociacionPaths = await fetchExperienciasAsociacionPaths();
+  const experienciasAsociacion = experienciasAsociacionPaths.map((path) =>
+    entry(path, 0.5, 'monthly'),
   );
-  const experienciasPueblo = pueblosWithImages.flatMap((p) =>
-    experienciasCategorias.map((cat) => entry(`/experiencias/${cat}/pueblos/${p.slug}`, 0.5, 'monthly'))
-  );
+  const experienciasPueblo = tematicaPathsByPueblo
+    .flat()
+    .map(({ path, imageUrl }) => {
+      const experienciaPath = toExperienciaPuebloPath(path);
+      if (!experienciaPath) return null;
+      return entry(experienciaPath, 0.5, 'monthly', imageUrl ? [imageUrl] : undefined);
+    })
+    .filter((item): item is MetadataRoute.Sitemap[number] => Boolean(item));
 
   const extraStatic: MetadataRoute.Sitemap = [
     entry('/prensa', 0.5, 'monthly'),
@@ -251,14 +326,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const socioSlugs = await fetchSlugs('/public/sello/socios').catch(() => [] as string[]);
   const socios = socioSlugs.map((s) => entry(`/el-sello/socios/${s}`, 0.35, 'monthly'));
 
-  const navidadPueblos = pueblosWithImages.map((p) =>
-    entry(`/planifica/navidad/pueblo/${p.slug}`, 0.45, 'monthly')
+  const [navidadParticipantSlugs, finDeSemanaPuebloSlugs, nocheRomanticaParticipantSlugs] = await Promise.all([
+    fetchParticipatingPuebloSlugs('/navidad/pueblos'),
+    fetchFinDeSemanaPuebloSlugs(),
+    fetchParticipatingPuebloSlugs('/noche-romantica/pueblos'),
+  ]);
+  const navidadPueblos = navidadParticipantSlugs.map((slug) =>
+    entry(`/planifica/navidad/pueblo/${slug}`, 0.45, 'monthly'),
   );
-  const finDeSemanaPueblos = pueblosWithImages.map((p) =>
-    entry(`/planifica/fin-de-semana/pueblo/${p.slug}`, 0.45, 'monthly')
+  const finDeSemanaPueblos = finDeSemanaPuebloSlugs.map((slug) =>
+    entry(`/planifica/fin-de-semana/pueblo/${slug}`, 0.45, 'monthly'),
   );
-  const nocheRomanticaPueblos = pueblosWithImages.map((p) =>
-    entry(`/noche-romantica/pueblos-participantes/${p.slug}`, 0.45, 'monthly')
+  const nocheRomanticaPueblos = nocheRomanticaParticipantSlugs.map((slug) =>
+    entry(`/noche-romantica/pueblos-participantes/${slug}`, 0.45, 'monthly'),
   );
 
   return [

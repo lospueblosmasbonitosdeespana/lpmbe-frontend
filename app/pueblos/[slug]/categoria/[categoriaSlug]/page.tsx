@@ -66,6 +66,7 @@ const CATEGORIA_TEMATICA_LABELS: Record<string, string> = {
 
 type TematicaPage = {
   id: number;
+  slug?: string;
   titulo: string;
   resumen?: string | null;
   contenido: string;
@@ -306,7 +307,7 @@ export default async function CategoriaPage({
                     {paginasTematicas.map((page) => (
                       <Link
                         key={page.id}
-                        href={`/pueblos/${slug}/categoria/${categoriaSlug}/${page.id}`}
+                        href={`/pueblos/${slug}/categoria/${categoriaSlug}/${page.slug ?? page.id}`}
                         className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:shadow-xl hover:-translate-y-1"
                       >
                         {/* Foto */}

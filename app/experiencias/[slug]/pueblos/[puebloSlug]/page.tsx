@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 import ContenidoImageCarousel from '@/app/components/ContenidoImageCarousel';
 import { getApiUrl } from '@/lib/api';
@@ -42,6 +43,8 @@ export async function generateMetadata({
   const categoryTitle = config ? t(config.titleKey) : slugToTitle(slug);
   const villageTitle = slugToTitle(puebloSlug) || "Pueblo";
   const path = `/experiencias/${slug}/pueblos/${puebloSlug}`;
+  const page = config ? await getPuebloPage(puebloSlug, config.category, locale) : null;
+  const hasValidContent = Boolean(config && page?.titulo?.trim());
   const metaTitle = seoTitle(tSeo("experienciaPuebloTitle", { categoria: categoryTitle, pueblo: villageTitle }));
   const metaDescription = seoDescription(tSeo("experienciaPuebloDesc", { categoria: categoryTitle.toLowerCase(), pueblo: villageTitle }));
 
@@ -58,6 +61,7 @@ export async function generateMetadata({
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
     },
+    robots: { index: hasValidContent, follow: true },
   };
 }
 
@@ -106,24 +110,13 @@ export default async function PuebloTematicaPage({
   const title = config ? t(config.titleKey) : '';
 
   if (!config) {
-    return (
-      <main className="mx-auto max-w-7xl px-4 py-12">
-        <p className="text-gray-600">{t('categoryNotFound')}</p>
-      </main>
-    );
+    notFound();
   }
 
   const page = await getPuebloPage(puebloSlug, config.category, locale);
 
   if (!page) {
-    return (
-      <main className="mx-auto max-w-7xl px-4 py-12">
-        <Link href={`/experiencias/${slug}`} className="text-sm text-blue-600 hover:underline">
-          {t('backTo', { title })}
-        </Link>
-        <p className="mt-4 text-gray-600">{t('contentUnavailable')}</p>
-      </main>
-    );
+    notFound();
   }
 
   return (

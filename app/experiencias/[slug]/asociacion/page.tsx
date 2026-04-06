@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
 import ContenidoImageCarousel from '@/app/components/ContenidoImageCarousel';
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoDescription, seoTitle, slugToTitle, type SupportedLocale } from '@/lib/seo';
@@ -40,6 +41,8 @@ export async function generateMetadata({
   const config = CATEGORY_MAP[slug];
   const title = config ? t(config.titleKey) : slugToTitle(slug);
   const path = `/experiencias/${slug}/asociacion`;
+  const page = config ? await getAsociacionPage(config.category, locale) : null;
+  const hasValidContent = Boolean(config && page?.titulo?.trim());
   const metaTitle = seoTitle(tSeo("experienciaAsociacionTitle", { tematica: title }));
   const metaDescription = seoDescription(tSeo("experienciaAsociacionDesc", { tematica: title }));
 
@@ -56,6 +59,7 @@ export async function generateMetadata({
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
     },
+    robots: { index: hasValidContent, follow: true },
   };
 }
 
@@ -93,24 +97,13 @@ export default async function AsociacionTematicaPage({
   const title = config ? t(config.titleKey) : '';
 
   if (!config) {
-    return (
-      <main className="mx-auto max-w-7xl px-4 py-12">
-        <p className="text-gray-600">{t('categoryNotFound')}</p>
-      </main>
-    );
+    notFound();
   }
 
   const page = await getAsociacionPage(config.category, locale);
 
   if (!page) {
-    return (
-      <main className="mx-auto max-w-7xl px-4 py-12">
-        <Link href={`/experiencias/${slug}`} className="text-sm text-blue-600 hover:underline">
-          {t('back')}
-        </Link>
-        <p className="mt-4 text-gray-600">{t('contentUnavailable')}</p>
-      </main>
-    );
+    notFound();
   }
 
   return (

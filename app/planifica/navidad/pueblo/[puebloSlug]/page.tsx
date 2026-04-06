@@ -14,7 +14,9 @@ export async function generateMetadata({
   const { puebloSlug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
   const tSeo = await getTranslations('seo');
-  const name = slugToTitle(puebloSlug);
+  const data = await fetchData(puebloSlug, locale);
+  const name = data?.participante?.pueblo?.nombre || slugToTitle(puebloSlug);
+  const hasData = Boolean(data?.participante?.pueblo?.slug);
   const path = `/planifica/navidad/pueblo/${puebloSlug}`;
   const title = seoTitle(tSeo('navidadTitle', { nombre: name }));
   const description = seoDescription(tSeo('navidadDesc', { nombre: name }));
@@ -31,7 +33,7 @@ export async function generateMetadata({
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
     },
-    robots: { index: true, follow: true },
+    robots: { index: hasData, follow: true },
   };
 }
 

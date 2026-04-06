@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import { stripHtml } from "@/app/_lib/html";
@@ -39,6 +40,7 @@ const CATEGORIA_SLUG_TO_KEY: Record<string, string> = {
 
 type PageData = {
   id: number;
+  slug?: string;
   titulo: string;
   resumen?: string | null;
   contenido: string;
@@ -47,25 +49,37 @@ type PageData = {
   updatedAt?: string;
 };
 
-async function getPageById(
+async function getAllPages(
   puebloSlug: string,
   categoriaKey: string,
-  pageId: number,
   locale?: string
-): Promise<PageData | null> {
+): Promise<PageData[]> {
   try {
     const qs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
     const res = await fetch(
       `${getApiUrl()}/public/pueblos/${puebloSlug}/pages${qs}`);
-    if (!res.ok) return null;
+    if (!res.ok) return [];
     const data = await res.json();
     const pages: PageData[] = Array.isArray(data[categoriaKey])
       ? data[categoriaKey]
       : [];
-    return pages.find((p) => p.id === pageId) ?? null;
+    return pages;
   } catch {
-    return null;
+    return [];
   }
+}
+
+function findPageBySlugOrId(pages: PageData[], segment: string): PageData | null {
+  const asNum = Number(segment);
+  if (!Number.isNaN(asNum) && String(asNum) === segment) {
+    return pages.find((p) => p.id === asNum) ?? null;
+  }
+  return pages.find((p) => p.slug === segment) ?? null;
+}
+
+function isNumericSegment(segment: string): boolean {
+  const asNum = Number(segment);
+  return !Number.isNaN(asNum) && String(asNum) === segment;
 }
 
 function slugToNombre(slug: string) {
@@ -83,13 +97,18 @@ export async function generateMetadata({
   const { slug, categoriaSlug, pageId } = await params;
   const locale = await getLocale();
   const categoriaKey = CATEGORIA_SLUG_TO_KEY[categoriaSlug];
-  const page = categoriaKey
-    ? await getPageById(slug, categoriaKey, Number(pageId), locale)
-    : null;
+  const pages = categoriaKey ? await getAllPages(slug, categoriaKey, locale) : [];
+  const page = findPageBySlugOrId(pages, pageId);
+
+  if (page && isNumericSegment(pageId) && page.slug) {
+    return { robots: { index: false, follow: true } };
+  }
+
   const label = CATEGORIA_LABELS[categoriaSlug] ?? "Experiencia";
   const puebloNombre = slugToNombre(slug);
   const title = page?.titulo ?? label;
-  const path = `/pueblos/${slug}/categoria/${categoriaSlug}/${pageId}`;
+  const pageSlug = page?.slug ?? pageId;
+  const path = `/pueblos/${slug}/categoria/${categoriaSlug}/${pageSlug}`;
 
   const titleFull = seoTitle(`${title} · ${puebloNombre}`);
   const descFull = seoDescription(
@@ -144,7 +163,12 @@ export default async function ExperienciaPuebloPage({
     );
   }
 
-  const page = await getPageById(slug, categoriaKey, Number(pageId), locale);
+  const pages = await getAllPages(slug, categoriaKey, locale);
+  const page = findPageBySlugOrId(pages, pageId);
+
+  if (page && isNumericSegment(pageId) && page.slug) {
+    redirect(`/pueblos/${slug}/categoria/${categoriaSlug}/${page.slug}`);
+  }
 
   if (!page) {
     return (
@@ -186,7 +210,6 @@ export default async function ExperienciaPuebloPage({
 
   return (
     <main className="bg-background min-h-screen">
-      {/* Hero con imagen grande si existe */}
       {page.coverUrl && page.coverUrl.trim() ? (
         <div className="relative h-[50vh] min-h-[320px] max-h-[520px] w-full overflow-hidden bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -214,7 +237,6 @@ export default async function ExperienciaPuebloPage({
 
       <Section spacing="md">
         <Container>
-          {/* Breadcrumb */}
           <nav className="mb-8 text-sm text-muted-foreground" aria-label="Breadcrumb">
             <Link href="/pueblos" className="hover:text-foreground">
               Pueblos
@@ -235,7 +257,6 @@ export default async function ExperienciaPuebloPage({
           </nav>
 
           <div className="mx-auto max-w-3xl">
-            {/* Título e intro si no hay imagen de hero */}
             {!page.coverUrl && (
               <>
                 <Eyebrow className="mb-3">{label} · {puebloNombre}</Eyebrow>
@@ -250,7 +271,6 @@ export default async function ExperienciaPuebloPage({
               </>
             )}
 
-            {/* Foto ampliable si hay hero pero también mostramos aquí para zoom */}
             {page.coverUrl && page.coverUrl.trim() && (
               <div className="mb-8 overflow-hidden rounded-2xl">
                 <ZoomableImage
@@ -263,7 +283,6 @@ export default async function ExperienciaPuebloPage({
               </div>
             )}
 
-            {/* Contenido */}
             {page.contenido ? (
               <div className="prose prose-gray prose-lg dark:prose-invert max-w-none [&_img]:max-w-full [&_img]:rounded-xl [&_img]:my-6 [&_h2]:font-serif [&_h3]:font-serif">
                 <SafeHtml html={page.contenido} />
@@ -275,7 +294,6 @@ export default async function ExperienciaPuebloPage({
             )}
           </div>
 
-          {/* Volver al listado */}
           <div className="mt-16 border-t border-border pt-8 text-center">
             <Link
               href={`/pueblos/${slug}/categoria/${categoriaSlug}`}
