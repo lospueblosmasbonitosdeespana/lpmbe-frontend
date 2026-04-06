@@ -9,7 +9,6 @@ const ALLOWED_STREAMING_HOSTS: string[] = [
   'cams.projecte4estacions.com',
   'camserver2.in2thebeach.es',
   'camserver.in2thebeach.es',
-];
   // Añadir más hosts según sea necesario, p.ej.:
   // 'webcam.turismoextremadura.com',
   // 'live.visitcatalunya.cat',
