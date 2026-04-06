@@ -95,22 +95,41 @@ const EXPERIENCIAS_SEGMENT_BY_TEMATICA_SEGMENT: Record<string, string> = {
   patrimonio: 'patrimonio',
 };
 
+type TematicaItem = {
+  /** URL path, ej. /en-familia/ainsa o /en-familia/ainsa/bisontere */
+  path: string;
+  imageUrl?: string | null;
+  updatedAt?: string | null;
+  /** true = página de listado de categoría; false = página individual de contenido */
+  isListing: boolean;
+};
+
 /**
- * Rutas temáticas que realmente tienen al menos una página publicada (ES).
- * Evita 404 en GSC por URLs listadas en el sitemap sin contenido en esa categoría.
+ * Rutas temáticas para un pueblo: devuelve TANTO la página de listado de categoría
+ * COMO cada página individual publicada (las que se crean a diario).
  */
-async function fetchTematicaPathsForPueblo(slug: string): Promise<string[]> {
+async function fetchTematicaItemsForPueblo(puebloSlug: string, puebloImageUrl: string | null): Promise<TematicaItem[]> {
   try {
-    const res = await fetch(`${API}/public/pueblos/${encodeURIComponent(slug)}/pages`, {
+    const res = await fetch(`${API}/public/pueblos/${encodeURIComponent(puebloSlug)}/pages`, {
       cache: 'no-store',
     });
     if (!res.ok) return [];
     const data = await res.json();
-    const out: string[] = [];
+    const out: TematicaItem[] = [];
     for (const [segment, categoryKey] of Object.entries(TEMATICA_SITEMAP_SEGMENTS)) {
       const arr = data[categoryKey];
-      if (Array.isArray(arr) && arr.length > 0) {
-        out.push(`/${segment}/${slug}`);
+      if (!Array.isArray(arr) || arr.length === 0) continue;
+      // Página de listado de la categoría para este pueblo
+      out.push({ path: `/${segment}/${puebloSlug}`, imageUrl: puebloImageUrl, isListing: true });
+      // Páginas individuales (el contenido valioso que se crea cada día)
+      for (const page of arr) {
+        if (!page.slug) continue;
+        out.push({
+          path: `/${segment}/${puebloSlug}/${page.slug}`,
+          imageUrl: page.coverUrl ?? puebloImageUrl,
+          updatedAt: page.updatedAt ?? null,
+          isListing: false,
+        });
       }
     }
     return out;
@@ -214,12 +233,12 @@ function entry(
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [pueblosWithImages, rutaSlugs, noticiaItems, eventoItems, contenidoItems, semanaSantaPueblos] =
+  // Eliminados: /public/noticias y /public/eventos — sus rutas /noticias/[slug] y /eventos/[slug]
+  // no existen en el router. Los contenidos (noticias+eventos+articulos) van todos por /c/[slug].
+  const [pueblosWithImages, rutaSlugs, contenidoItems, semanaSantaPueblos] =
     await Promise.all([
       fetchPueblosWithImages(),
       fetchSlugs('/rutas'),
-      fetchSlugsWithDates('/public/noticias?limit=1000'),
-      fetchSlugsWithDates('/public/eventos?limit=1000'),
       fetchSlugsWithDates('/public/contenidos?limit=2000'),
       fetchSlugs('/semana-santa/pueblos', 'pueblo.slug'),
     ]);
@@ -269,20 +288,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry(`/pueblos/${p.slug}`, 0.9, 'weekly', p.imageUrl ? [p.imageUrl] : undefined)
   );
   const rutas = rutaSlugs.map((s) => entry(`/rutas/${s}`, 0.8, 'weekly'));
-  const noticias = noticiaItems.map((i) => entry(`/noticias/${i.slug}`, 0.75, 'weekly', undefined, i.updatedAt));
-  const eventos = eventoItems.map((i) => entry(`/eventos/${i.slug}`, 0.75, 'weekly', undefined, i.updatedAt));
-  const contenidos = contenidoItems.map((i) => entry(`/c/${i.slug}`, 0.7, 'weekly', undefined, i.updatedAt));
+  // Todos los contenidos (noticias, eventos, artículos) viven en /c/[slug]
+  const contenidos = contenidoItems.map((i) => entry(`/c/${i.slug}`, 0.75, 'weekly', undefined, i.updatedAt));
   const semanaSanta = semanaSantaPueblos.map((s) => entry(`/planifica/semana-santa/pueblo/${s}`, 0.6, 'weekly'));
 
-  const tematicaPathsByPueblo = await Promise.all(
-    pueblosWithImages.map(async (p) => {
-      const paths = await fetchTematicaPathsForPueblo(p.slug);
-      return paths.map((path) => ({ path, imageUrl: p.imageUrl }));
-    }),
+  // Páginas temáticas: listado por categoría/pueblo + páginas individuales (alta prioridad, daily)
+  const tematicaItemsByPueblo = await Promise.all(
+    pueblosWithImages.map((p) => fetchTematicaItemsForPueblo(p.slug, p.imageUrl)),
   );
-  const paginasTematicas = tematicaPathsByPueblo.flat().map(({ path, imageUrl }) =>
-    entry(path, 0.75, 'monthly', imageUrl ? [imageUrl] : undefined),
-  );
+  const allTematicaItems = tematicaItemsByPueblo.flat();
+
+  const paginasTematicasListado = allTematicaItems
+    .filter((i) => i.isListing)
+    .map(({ path, imageUrl }) =>
+      entry(path, 0.7, 'weekly', imageUrl ? [imageUrl] : undefined),
+    );
+
+  // Las páginas individuales son el contenido fresco más valioso: prioridad alta, daily
+  const paginasTematicasIndividuales = allTematicaItems
+    .filter((i) => !i.isListing)
+    .map(({ path, imageUrl, updatedAt }) =>
+      entry(path, 0.85, 'daily', imageUrl ? [imageUrl] : undefined, updatedAt),
+    );
 
   // Páginas Club por pueblo
   const paginasClub = pueblosWithImages.flatMap((p) => [
@@ -298,8 +325,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const experienciasAsociacion = experienciasAsociacionPaths.map((path) =>
     entry(path, 0.5, 'monthly'),
   );
-  const experienciasPueblo = tematicaPathsByPueblo
-    .flat()
+  // Experiencias por pueblo: solo a partir de las páginas de listado (2 segmentos: /categoria/pueblo)
+  const experienciasPueblo = allTematicaItems
+    .filter((i) => i.isListing)
     .map(({ path, imageUrl }) => {
       const experienciaPath = toExperienciaPuebloPath(path);
       if (!experienciaPath) return null;
@@ -343,8 +371,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticPages, ...extraStatic,
-    ...pueblos, ...rutas, ...noticias, ...eventos, ...contenidos,
-    ...semanaSanta, ...paginasTematicas, ...paginasClub,
+    ...pueblos, ...rutas, ...contenidos,
+    ...semanaSanta,
+    ...paginasTematicasListado, ...paginasTematicasIndividuales,
+    ...paginasClub,
     ...experienciasAsociacion, ...experienciasPueblo,
     ...productos, ...recursos, ...socios,
     ...navidadPueblos, ...finDeSemanaPueblos, ...nocheRomanticaPueblos,
