@@ -209,7 +209,7 @@ function ibericamPosterUrl(streamId: string): string {
   return `https://image.ibericam.com/poster/webcam-${streamId}.webp`;
 }
 
-function RefreshingImage({ src, alt }: { src: string; alt: string }) {
+function RefreshingImage({ src, alt, fullSize }: { src: string; alt: string; fullSize?: boolean }) {
   const comillasFolder = getComillasCameraFolder(src);
   const ibericamId = getIbericamStreamId(src);
   const initialSrc = ibericamId ? ibericamPosterUrl(ibericamId) : src;
@@ -261,7 +261,10 @@ function RefreshingImage({ src, alt }: { src: string; alt: string }) {
     <img
       src={`${resolvedSrc}${separator}_t=${cacheBust}`}
       alt={alt}
-      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+      className={fullSize
+        ? "max-h-[90vh] max-w-[95vw] rounded-lg object-contain"
+        : "h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+      }
       loading="lazy"
     />
   );
@@ -275,6 +278,52 @@ function LiveBadge({ label }: { label: string }) {
         <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
       </span>
       {label}
+    </div>
+  );
+}
+
+/** Modal de imagen a pantalla completa para webcams de tipo imagen estática */
+function ImageFullscreenModal({
+  src,
+  alt,
+  onClose,
+}: {
+  src: string;
+  alt: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Cerrar"
+        className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition"
+      >
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      {/* RefreshingImage inside modal so it keeps updating */}
+      <div
+        className="max-h-[90vh] max-w-[95vw] overflow-hidden rounded-lg shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <RefreshingImage src={src} alt={alt} fullSize />
+      </div>
     </div>
   );
 }
@@ -296,6 +345,7 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel, fullscreenL
   const isEmbeddableIframe = isEmbeddableIframeUrl(webcam.url);
   const [visible, setVisible] = useState(false);
   const [hlsFailed, setHlsFailed] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const hlsVideoRef = useRef<HTMLVideoElement | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
@@ -325,6 +375,14 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel, fullscreenL
   }, []);
 
   return (
+    <>
+      {imageModalOpen && isImage && (
+        <ImageFullscreenModal
+          src={webcam.url}
+          alt={`${webcam.nombre} – ${pueblo.nombre}`}
+          onClose={() => setImageModalOpen(false)}
+        />
+      )}
     <div ref={ref} className="relative aspect-video w-full overflow-hidden bg-stone-200 dark:bg-neutral-800">
       {!visible ? (
         <div className="flex h-full items-center justify-center">
@@ -339,6 +397,13 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel, fullscreenL
             src={webcam.url}
             alt={`${webcam.nombre} – ${pueblo.nombre}`}
           />
+          <button
+            type="button"
+            onClick={() => setImageModalOpen(true)}
+            className="absolute bottom-3 right-3 z-10 rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-black/70"
+          >
+            {fullscreenLabel}
+          </button>
         </>
       ) : isHls && !hlsFailed ? (
         <>
@@ -407,6 +472,7 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel, fullscreenL
         </>
       )}
     </div>
+    </>
   );
 }
 
