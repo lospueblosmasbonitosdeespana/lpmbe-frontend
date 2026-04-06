@@ -1784,5 +1784,19 @@
     "screenshotsTitle": "App screenshots",
     "downloadTitle": "Download the app",
     "downloadDescription": "Available for iPhone and Android. Free."
+  },
+  "webcamsPage": {
+    "liveBadge": "LIVE",
+    "heroTitle": "Live webcams",
+    "heroSubtitle": "Peek into Spain's most beautiful villages in real time. Squares, monuments and landscapes just one click away.",
+    "statsVillages": "villages",
+    "viewLiveWebcam": "Watch live webcam",
+    "filterAll": "All",
+    "webcamSingular": "webcam",
+    "webcamPlural": "webcams",
+    "viewVillage": "View village",
+    "noWebcams": "No webcams are available at this time.",
+    "ctaQuestion": "Does your village have a webcam?",
+    "ctaButton": "Tell us"
   }
 }

@@ -1784,5 +1784,19 @@
     "screenshotsTitle": "Captures d'écran de l'app",
     "downloadTitle": "Télécharger l'app",
     "downloadDescription": "Disponible pour iPhone et Android. Gratuit."
+  },
+  "webcamsPage": {
+    "liveBadge": "EN DIRECT",
+    "heroTitle": "Webcams en direct",
+    "heroSubtitle": "Découvrez en temps réel les plus beaux villages d'Espagne. Places, monuments et paysages en un clic.",
+    "statsVillages": "villages",
+    "viewLiveWebcam": "Voir la webcam en direct",
+    "filterAll": "Tous",
+    "webcamSingular": "webcam",
+    "webcamPlural": "webcams",
+    "viewVillage": "Voir le village",
+    "noWebcams": "Aucune webcam n'est disponible pour le moment.",
+    "ctaQuestion": "Votre village a une webcam ?",
+    "ctaButton": "Dites-le nous"
   }
 }

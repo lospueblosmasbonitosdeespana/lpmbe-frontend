@@ -1784,5 +1784,19 @@
     "screenshotsTitle": "Capturas da app",
     "downloadTitle": "Baixar a app",
     "downloadDescription": "Disponível para iPhone e Android. Gratuito."
+  },
+  "webcamsPage": {
+    "liveBadge": "EM DIRETO",
+    "heroTitle": "Webcams em direto",
+    "heroSubtitle": "Espreite em tempo real as aldeias mais bonitas de Espanha. Praças, monumentos e paisagens a um clique.",
+    "statsVillages": "aldeias",
+    "viewLiveWebcam": "Ver webcam em direto",
+    "filterAll": "Todos",
+    "webcamSingular": "webcam",
+    "webcamPlural": "webcams",
+    "viewVillage": "Ver aldeia",
+    "noWebcams": "Não há webcams disponíveis neste momento.",
+    "ctaQuestion": "A sua aldeia tem webcam?",
+    "ctaButton": "Conte-nos"
   }
 }

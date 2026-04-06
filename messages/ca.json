@@ -1784,5 +1784,19 @@
     "screenshotsTitle": "Captures de l'app",
     "downloadTitle": "Baixa l'app",
     "downloadDescription": "Disponible per a iPhone i Android. Gratuït."
+  },
+  "webcamsPage": {
+    "liveBadge": "EN DIRECTE",
+    "heroTitle": "Webcams en directe",
+    "heroSubtitle": "Guaita en temps real als pobles més bonics d'Espanya. Places, monuments i paisatges a un clic.",
+    "statsVillages": "pobles",
+    "viewLiveWebcam": "Veure webcam en directe",
+    "filterAll": "Tots",
+    "webcamSingular": "webcam",
+    "webcamPlural": "webcams",
+    "viewVillage": "Veure poble",
+    "noWebcams": "No hi ha webcams disponibles en aquest moment.",
+    "ctaQuestion": "El teu poble té webcam?",
+    "ctaButton": "Explica'ns-ho"
   }
 }

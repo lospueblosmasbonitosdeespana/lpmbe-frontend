@@ -1784,5 +1784,19 @@
     "screenshotsTitle": "App-Screenshots",
     "downloadTitle": "App herunterladen",
     "downloadDescription": "Verfügbar für iPhone und Android. Kostenlos."
+  },
+  "webcamsPage": {
+    "liveBadge": "LIVE",
+    "heroTitle": "Live-Webcams",
+    "heroSubtitle": "Schauen Sie live in Spaniens schönste Dörfer. Plätze, Denkmäler und Landschaften nur einen Klick entfernt.",
+    "statsVillages": "Dörfer",
+    "viewLiveWebcam": "Webcam live ansehen",
+    "filterAll": "Alle",
+    "webcamSingular": "Webcam",
+    "webcamPlural": "Webcams",
+    "viewVillage": "Dorf ansehen",
+    "noWebcams": "Derzeit sind keine Webcams verfügbar.",
+    "ctaQuestion": "Hat Ihr Dorf eine Webcam?",
+    "ctaButton": "Erzählen Sie uns davon"
   }
 }

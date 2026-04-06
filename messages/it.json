@@ -1784,5 +1784,19 @@
     "screenshotsTitle": "Screenshot dell'app",
     "downloadTitle": "Scarica l'app",
     "downloadDescription": "Disponibile per iPhone e Android. Gratuito."
+  },
+  "webcamsPage": {
+    "liveBadge": "IN DIRETTA",
+    "heroTitle": "Webcam in diretta",
+    "heroSubtitle": "Affacciati in tempo reale sui borghi più belli della Spagna. Piazze, monumenti e paesaggi a un clic.",
+    "statsVillages": "borghi",
+    "viewLiveWebcam": "Guarda la webcam in diretta",
+    "filterAll": "Tutti",
+    "webcamSingular": "webcam",
+    "webcamPlural": "webcam",
+    "viewVillage": "Vedi il borgo",
+    "noWebcams": "Non ci sono webcam disponibili al momento.",
+    "ctaQuestion": "Il tuo borgo ha una webcam?",
+    "ctaButton": "Diccelo"
   }
 }
