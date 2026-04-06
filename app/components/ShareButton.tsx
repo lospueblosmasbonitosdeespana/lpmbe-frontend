@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 
 type ShareButtonProps = {
   url: string;
@@ -22,17 +23,41 @@ function ShareIcon({ className }: { className?: string }) {
 export default function ShareButton({ url, title, variant = "icon", className = "" }: ShareButtonProps) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  const updatePos = useCallback(() => {
+    if (!btnRef.current) return;
+    const rect = btnRef.current.getBoundingClientRect();
+    const dropH = 260;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const openAbove = spaceBelow < dropH && rect.top > dropH;
+    setPos({
+      top: openAbove ? rect.top + window.scrollY - dropH - 4 : rect.bottom + window.scrollY + 4,
+      left: Math.max(8, Math.min(rect.right + window.scrollX - 208, window.innerWidth - 216)),
+    });
+  }, []);
 
   useEffect(() => {
+    if (!open) return;
+    updatePos();
     function handleClickOutside(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false);
+      const target = event.target as Node;
+      if (
+        btnRef.current && !btnRef.current.contains(target) &&
+        dropdownRef.current && !dropdownRef.current.contains(target)
+      ) setOpen(false);
     }
-    if (open) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [open]);
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("scroll", updatePos, true);
+    window.addEventListener("resize", updatePos);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", updatePos, true);
+      window.removeEventListener("resize", updatePos);
+    };
+  }, [open, updatePos]);
 
   const fullUrl =
     typeof window !== "undefined" && url.startsWith("/")
@@ -93,9 +118,60 @@ export default function ShareButton({ url, title, variant = "icon", className = 
     },
   ];
 
-  return (
-    <div className={`relative inline-block ${className}`} ref={ref}>
+  const dropdown = open && pos && createPortal(
+    <div
+      ref={dropdownRef}
+      style={{ position: 'absolute', top: pos.top, left: pos.left, zIndex: 9999 }}
+      className="w-52 overflow-hidden rounded-xl border border-stone-200 bg-white py-1 shadow-xl dark:border-neutral-700 dark:bg-neutral-800"
+      role="menu"
+      aria-label="Compartir en redes sociales"
+    >
+      {links.map(({ label, href, icon }) => (
+        <a
+          key={label}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 transition hover:bg-stone-50 dark:text-neutral-200 dark:hover:bg-neutral-700"
+          role="menuitem"
+          onClick={() => setOpen(false)}
+        >
+          {icon}
+          {label}
+        </a>
+      ))}
       <button
+        type="button"
+        onClick={handleInstagram}
+        className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-stone-700 transition hover:bg-stone-50 dark:text-neutral-200 dark:hover:bg-neutral-700"
+        role="menuitem"
+      >
+        <svg className="h-4 w-4 shrink-0 text-pink-500" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+        Instagram
+      </button>
+      <div className="my-1 border-t border-stone-100 dark:border-neutral-700" />
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-stone-700 transition hover:bg-stone-50 dark:text-neutral-200 dark:hover:bg-neutral-700"
+        role="menuitem"
+      >
+        <svg className="h-4 w-4 shrink-0 text-stone-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        {copied ? '¡Enlace copiado!' : 'Copiar enlace'}
+      </button>
+    </div>,
+    document.body,
+  );
+
+  return (
+    <div className={`relative inline-block ${className}`}>
+      <button
+        ref={btnRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
         className={`inline-flex items-center gap-1.5 rounded-md text-stone-600 transition hover:bg-stone-100 dark:text-neutral-300 dark:hover:bg-neutral-700 ${
@@ -108,52 +184,7 @@ export default function ShareButton({ url, title, variant = "icon", className = 
         <ShareIcon className="h-4 w-4" />
         {variant === "button" && (copied ? "¡Enlace copiado!" : "Compartir")}
       </button>
-      {open && (
-        <div
-          className="absolute right-0 top-full z-50 mt-1 w-52 overflow-hidden rounded-xl border border-stone-200 bg-white py-1 shadow-xl dark:border-neutral-700 dark:bg-neutral-800"
-          role="menu"
-          aria-label="Compartir en redes sociales"
-        >
-          {links.map(({ label, href, icon }) => (
-            <a
-              key={label}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 transition hover:bg-stone-50 dark:text-neutral-200 dark:hover:bg-neutral-700"
-              role="menuitem"
-              onClick={() => setOpen(false)}
-            >
-              {icon}
-              {label}
-            </a>
-          ))}
-          <button
-            type="button"
-            onClick={handleInstagram}
-            className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-stone-700 transition hover:bg-stone-50 dark:text-neutral-200 dark:hover:bg-neutral-700"
-            role="menuitem"
-          >
-            <svg className="h-4 w-4 shrink-0 text-pink-500" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-            </svg>
-            Instagram
-          </button>
-          <div className="my-1 border-t border-stone-100 dark:border-neutral-700" />
-          <button
-            type="button"
-            onClick={handleCopy}
-            className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-stone-700 transition hover:bg-stone-50 dark:text-neutral-200 dark:hover:bg-neutral-700"
-            role="menuitem"
-          >
-            <svg className="h-4 w-4 shrink-0 text-stone-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-            </svg>
-            {copied ? '¡Enlace copiado!' : 'Copiar enlace'}
-          </button>
-        </div>
-      )}
+      {dropdown}
     </div>
   );
 }
