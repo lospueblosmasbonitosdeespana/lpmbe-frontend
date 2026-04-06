@@ -344,9 +344,12 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
       const hours = Math.floor((diffMs % 86400000) / 3600000);
       const mins = Math.floor((diffMs % 3600000) / 60000);
       const secs = Math.floor((diffMs % 60000) / 1000);
-      const cell = (n: number, lbl: string) =>
-        `<td style="padding:0 8px;text-align:center;"><span style="display:block;font-size:36px;font-weight:700;color:${tc};">${String(n).padStart(2, '0')}</span><span style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:${tc};opacity:0.7;">${lbl}</span></td>`;
-      parts.push(`<div style="${wrapStyle}text-align:center;">${b.countdownLabel ? `<p style="margin:0 0 12px;font-size:16px;font-weight:600;color:${tc};">${escHtml(b.countdownLabel)}</p>` : ''}<table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr>${cell(days,'Días')}${cell(hours,'Horas')}${cell(mins,'Min')}${cell(secs,'Seg')}</tr></table><p style="margin:12px 0 0;font-size:12px;color:${tc};opacity:0.6;">${targetDate.toLocaleString('es-ES')}</p></div>`);
+      const cell = (n: number, lbl: string, unit: 'd' | 'h' | 'm' | 's') =>
+        `<td style="padding:0 8px;text-align:center;"><span class="lpbme-cd-${unit}" style="display:block;font-size:36px;font-weight:700;color:${tc};">${String(n).padStart(2, '0')}</span><span style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:${tc};opacity:0.7;">${lbl}</span></td>`;
+      const endIso = escHtml(targetDate.toISOString());
+      parts.push(
+        `<div data-lpbme-countdown="1" data-lpbme-countdown-end="${endIso}" style="${wrapStyle}text-align:center;">${b.countdownLabel ? `<p style="margin:0 0 12px;font-size:16px;font-weight:600;color:${tc};">${escHtml(b.countdownLabel)}</p>` : ''}<table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr>${cell(days, 'Días', 'd')}${cell(hours, 'Horas', 'h')}${cell(mins, 'Min', 'm')}${cell(secs, 'Seg', 's')}</tr></table><p style="margin:12px 0 0;font-size:12px;color:${tc};opacity:0.6;">${targetDate.toLocaleString('es-ES')}</p></div>`,
+      );
     }
   }
   return parts.join('\n');

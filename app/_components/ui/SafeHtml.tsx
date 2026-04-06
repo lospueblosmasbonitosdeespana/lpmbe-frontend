@@ -2,6 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import {
+  attachLiveCountdowns,
+  upgradeLegacyCountdownBlocks,
+} from '@/app/_lib/builder-countdown-dom';
 
 interface SafeHtmlProps {
   html: string;
@@ -80,9 +84,13 @@ export default function SafeHtml({ html, className = '', altFallback }: SafeHtml
     };
     container.addEventListener('click', handleClick);
 
+    upgradeLegacyCountdownBlocks(container);
+    const stopCountdowns = attachLiveCountdowns(container);
+
     return () => {
       observer.disconnect();
       container.removeEventListener('click', handleClick);
+      stopCountdowns();
     };
   }, [processedHtml]);
 
