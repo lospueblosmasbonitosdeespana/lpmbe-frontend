@@ -106,6 +106,7 @@ type Contenido = {
   createdAt?: string;
   fechaInicio?: string;
   fechaFin?: string;
+  pueblo?: { nombre: string; slug?: string; provincia?: string; comunidad?: string } | null;
 };
 
 /**
@@ -197,20 +198,67 @@ const PUBLISHER_ORGANIZATION = {
   },
 } as const;
 
+function buildLocationFromContenido(pueblo?: Contenido['pueblo']): Record<string, unknown> {
+  if (pueblo?.nombre) {
+    return {
+      '@type': 'Place',
+      name: pueblo.nombre,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: pueblo.nombre,
+        ...(pueblo.provincia ? { addressRegion: pueblo.provincia } : {}),
+        addressCountry: 'ES',
+      },
+    };
+  }
+  return {
+    '@type': 'Place',
+    name: 'España',
+    address: { '@type': 'PostalAddress', addressCountry: 'ES' },
+  };
+}
+
 function articleJsonLdFromContenido(contenido: Contenido, canonicalUrl: string): Record<string, unknown> {
   const datePublished = contenido.publishedAt ?? contenido.createdAt;
   const isEvent = contenido.tipo === 'EVENTO';
+
+  if (isEvent) {
+    const desc = contenido.resumen?.trim()
+      || contenido.contenidoMd?.replace(/<[^>]+>/g, '').replace(/[#*`\[\]()]/g, '').replace(/\s+/g, ' ').trim().slice(0, 155)
+      || undefined;
+    const data: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'Event',
+      name: contenido.titulo,
+      url: canonicalUrl,
+      location: buildLocationFromContenido(contenido.pueblo),
+      organizer: PUBLISHER_ORGANIZATION,
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      eventStatus: 'https://schema.org/EventScheduled',
+    };
+    if (contenido.fechaInicio) data.startDate = contenido.fechaInicio;
+    if (contenido.fechaFin) data.endDate = contenido.fechaFin;
+    if (desc) data.description = desc;
+    if (contenido.coverUrl) data.image = contenido.coverUrl;
+    data.offers = {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'EUR',
+      availability: 'https://schema.org/InStock',
+      url: canonicalUrl,
+    };
+    return data;
+  }
+
   const data: Record<string, unknown> = {
     '@context': 'https://schema.org',
-    '@type': isEvent ? 'Event' : 'Article',
-    ...(isEvent ? { name: contenido.titulo } : { headline: contenido.titulo }),
+    '@type': 'Article',
+    headline: contenido.titulo,
     mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
     publisher: PUBLISHER_ORGANIZATION,
     author: PUBLISHER_ORGANIZATION,
   };
   if (datePublished) data.datePublished = datePublished;
-  if (isEvent && contenido.fechaInicio) data.startDate = contenido.fechaInicio;
-  if (isEvent && contenido.fechaFin) data.endDate = contenido.fechaFin;
   if (contenido.coverUrl) data.image = contenido.coverUrl;
   return data;
 }

@@ -29,6 +29,7 @@ type Evento = {
   fechaInicio?: string;
   fechaFin?: string;
   createdAt?: string;
+  pueblo?: { nombre: string; provincia?: string; comunidad?: string } | null;
 };
 
 const PUBLISHER_ORGANIZATION = {
@@ -51,6 +52,29 @@ function descriptionForEvent(evento: Evento): string | undefined {
   return plain.length <= 155 ? plain : `${plain.slice(0, 152).trimEnd()}…`;
 }
 
+function buildLocation(pueblo?: { nombre: string; provincia?: string; comunidad?: string } | null): Record<string, unknown> {
+  if (pueblo?.nombre) {
+    return {
+      '@type': 'Place',
+      name: pueblo.nombre,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: pueblo.nombre,
+        ...(pueblo.provincia ? { addressRegion: pueblo.provincia } : {}),
+        addressCountry: 'ES',
+      },
+    };
+  }
+  return {
+    '@type': 'Place',
+    name: 'España',
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'ES',
+    },
+  };
+}
+
 function eventJsonLd(evento: Evento, canonicalUrl: string): Record<string, unknown> {
   const description = descriptionForEvent(evento);
   const data: Record<string, unknown> = {
@@ -58,6 +82,7 @@ function eventJsonLd(evento: Evento, canonicalUrl: string): Record<string, unkno
     '@type': 'Event',
     name: evento.titulo,
     url: canonicalUrl,
+    location: buildLocation(evento.pueblo),
     organizer: PUBLISHER_ORGANIZATION,
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     eventStatus: 'https://schema.org/EventScheduled',
@@ -66,6 +91,13 @@ function eventJsonLd(evento: Evento, canonicalUrl: string): Record<string, unkno
   if (evento.fechaFin) data.endDate = evento.fechaFin;
   if (description) data.description = description;
   if (evento.coverUrl) data.image = evento.coverUrl;
+  data.offers = {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'EUR',
+    availability: 'https://schema.org/InStock',
+    url: canonicalUrl,
+  };
   return data;
 }
 
