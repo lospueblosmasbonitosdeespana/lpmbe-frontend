@@ -184,9 +184,29 @@ function getComillasCameraFolder(url: string): string | null {
   }
 }
 
+/**
+ * Si la URL es de ibericam (player/fakeClient.html?v=XXX), devuelve el streamId.
+ * Poster: https://image.ibericam.com/poster/webcam-{streamId}.webp (CORS abierto, se actualiza cada ~5 min).
+ */
+function getIbericamStreamId(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    if (!parsed.hostname.endsWith('ibericam.com')) return null;
+    return parsed.searchParams.get('v') || null;
+  } catch {
+    return null;
+  }
+}
+
+function ibericamPosterUrl(streamId: string): string {
+  return `https://image.ibericam.com/poster/webcam-${streamId}.webp`;
+}
+
 function RefreshingImage({ src, alt }: { src: string; alt: string }) {
   const comillasFolder = getComillasCameraFolder(src);
-  const [resolvedSrc, setResolvedSrc] = useState(src);
+  const ibericamId = getIbericamStreamId(src);
+  const initialSrc = ibericamId ? ibericamPosterUrl(ibericamId) : src;
+  const [resolvedSrc, setResolvedSrc] = useState(initialSrc);
   const [cacheBust, setCacheBust] = useState(Date.now());
 
   useEffect(() => {
@@ -208,6 +228,8 @@ function RefreshingImage({ src, alt }: { src: string; alt: string }) {
         } catch {
           // Si falla, mantenemos el src existente como fallback.
         }
+      } else if (ibericamId && active) {
+        setResolvedSrc(ibericamPosterUrl(ibericamId));
       } else if (active) {
         setResolvedSrc(src);
       }
@@ -224,7 +246,7 @@ function RefreshingImage({ src, alt }: { src: string; alt: string }) {
       active = false;
       clearInterval(interval);
     };
-  }, [comillasFolder, src]);
+  }, [comillasFolder, ibericamId, src]);
 
   const separator = resolvedSrc.includes('?') ? '&' : '?';
 
@@ -262,7 +284,7 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel, fullscreenL
   const comillasUseLinkFallback = pueblo.slug === 'comillas';
   const isImage =
     !comillasUseLinkFallback &&
-    (isImageUrl(webcam.url) || !!getComillasCameraFolder(webcam.url));
+    (isImageUrl(webcam.url) || !!getComillasCameraFolder(webcam.url) || !!getIbericamStreamId(webcam.url));
   const isHls = isHlsUrl(webcam.url);
   const isEmbeddableIframe = isEmbeddableIframeUrl(webcam.url);
   const [visible, setVisible] = useState(false);
