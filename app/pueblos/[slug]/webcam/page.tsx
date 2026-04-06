@@ -11,6 +11,7 @@ import {
   uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
+import { resolveWebcamExternalHref } from "@/lib/webcam-external-href";
 
 export const revalidate = 60;
 export async function generateMetadata({
@@ -153,7 +154,7 @@ export default async function WebcamPuebloPage({
                     </p>
                   )}
                   <a
-                    href={webcam.url}
+                    href={resolveWebcamExternalHref(webcam.url, pueblo.slug)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-3 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
