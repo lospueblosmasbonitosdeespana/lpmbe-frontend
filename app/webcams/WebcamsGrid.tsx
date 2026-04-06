@@ -247,8 +247,12 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel }: {
   liveBadgeLabel: string;
   viewLiveLabel: string;
 }) {
-  const isComillas = !!getComillasCameraFolder(webcam.url);
-  const isImage = isImageUrl(webcam.url) || isComillas;
+  // Comillas: no incrustar imagen refrescada (suele fallar / verse en blanco).
+  // Mismo comportamiento que el resto de URLs no embebibles: foto del pueblo + enlace a la página de la webcam.
+  const comillasUseLinkFallback = pueblo.slug === 'comillas';
+  const isImage =
+    !comillasUseLinkFallback &&
+    (isImageUrl(webcam.url) || !!getComillasCameraFolder(webcam.url));
   const isHls = isHlsUrl(webcam.url);
   const isEmbeddableIframe = isEmbeddableIframeUrl(webcam.url);
   const [visible, setVisible] = useState(false);
