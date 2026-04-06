@@ -29,6 +29,10 @@ function isImageUrl(url: string): boolean {
   return /\.(jpe?g|png|gif|webp|bmp)(\?.*)?$/i.test(url);
 }
 
+function isHlsUrl(url: string): boolean {
+  return /\.m3u8(\?.*)?$/i.test(url);
+}
+
 function isEmbeddableIframeUrl(url: string): boolean {
   try {
     const host = new URL(url).hostname.toLowerCase();
@@ -37,6 +41,82 @@ function isEmbeddableIframeUrl(url: string): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Reproduce un stream HLS (.m3u8) directamente en la tarjeta.
+ * - Safari: soporte nativo vía <video src>
+ * - Resto: carga hls.js dinámicamente (solo en el cliente)
+ * Si el stream falla (p.ej. CORS), llama a onError para que el padre
+ * muestre el fallback con botón externo.
+ */
+function HlsVideoPlayer({
+  src,
+  alt,
+  onError,
+}: {
+  src: string;
+  alt: string;
+  onError: () => void;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    let hlsInstance: import('hls.js').default | null = null;
+    let destroyed = false;
+
+    const setup = async () => {
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // Safari — soporte nativo HLS
+        video.src = src;
+        try { await video.play(); } catch { /* autoplay bloqueado — ok, hay controles */ }
+        return;
+      }
+
+      const { default: Hls } = await import('hls.js');
+      if (!Hls.isSupported() || destroyed) { onError(); return; }
+
+      hlsInstance = new Hls({
+        autoStartLoad: true,
+        startLevel: -1,
+        debug: false,
+      });
+
+      hlsInstance.on(Hls.Events.ERROR, (_evt, data) => {
+        if (data.fatal) onError();
+      });
+
+      hlsInstance.loadSource(src);
+      hlsInstance.attachMedia(video);
+
+      hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play().catch(() => { /* autoplay bloqueado */ });
+      });
+    };
+
+    void setup();
+
+    return () => {
+      destroyed = true;
+      hlsInstance?.destroy();
+    };
+  }, [src, onError]);
+
+  return (
+    <video
+      ref={videoRef}
+      muted
+      autoPlay
+      playsInline
+      controls
+      className="h-full w-full object-cover"
+      aria-label={alt}
+      onError={onError}
+    />
+  );
 }
 
 function getComillasCameraFolder(url: string): string | null {
@@ -132,8 +212,10 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel }: {
   viewLiveLabel: string;
 }) {
   const isImage = isImageUrl(webcam.url);
+  const isHls = isHlsUrl(webcam.url);
   const isEmbeddableIframe = isEmbeddableIframeUrl(webcam.url);
   const [visible, setVisible] = useState(false);
+  const [hlsFailed, setHlsFailed] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -157,6 +239,23 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel }: {
         <>
           <LiveBadge label={liveBadgeLabel} />
           <RefreshingImage src={webcam.url} alt={`${webcam.nombre} – ${pueblo.nombre}`} />
+        </>
+      ) : isHls && !hlsFailed ? (
+        <>
+          <LiveBadge label={liveBadgeLabel} />
+          <HlsVideoPlayer
+            src={webcam.url}
+            alt={`${webcam.nombre} – ${pueblo.nombre}`}
+            onError={() => setHlsFailed(true)}
+          />
+          <a
+            href={webcam.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute bottom-3 right-3 z-10 rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-black/70"
+          >
+            {viewLiveLabel} ↗
+          </a>
         </>
       ) : isEmbeddableIframe ? (
         <>
