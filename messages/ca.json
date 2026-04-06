@@ -1798,6 +1798,7 @@
     "viewVillage": "Veure poble",
     "noWebcams": "No hi ha webcams disponibles en aquest moment.",
     "ctaQuestion": "El teu poble té webcam?",
-    "ctaButton": "Explica'ns-ho"
+    "ctaButton": "Explica'ns-ho",
+    "shareWebcam": "Compartir a WhatsApp"
   }
 }

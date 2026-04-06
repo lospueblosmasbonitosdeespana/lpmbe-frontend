@@ -1798,6 +1798,7 @@
     "viewVillage": "Ver pueblo",
     "noWebcams": "No hay webcams disponibles en este momento.",
     "ctaQuestion": "¿Tu pueblo tiene webcam?",
-    "ctaButton": "Cuéntanoslo"
+    "ctaButton": "Cuéntanoslo",
+    "shareWebcam": "Compartir en WhatsApp"
   }
 }

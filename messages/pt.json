@@ -1798,6 +1798,7 @@
     "viewVillage": "Ver aldeia",
     "noWebcams": "Não há webcams disponíveis neste momento.",
     "ctaQuestion": "A sua aldeia tem webcam?",
-    "ctaButton": "Conte-nos"
+    "ctaButton": "Conte-nos",
+    "shareWebcam": "Partilhar no WhatsApp"
   }
 }

@@ -1798,6 +1798,7 @@
     "viewVillage": "Vedi il borgo",
     "noWebcams": "Non ci sono webcam disponibili al momento.",
     "ctaQuestion": "Il tuo borgo ha una webcam?",
-    "ctaButton": "Diccelo"
+    "ctaButton": "Diccelo",
+    "shareWebcam": "Condividi su WhatsApp"
   }
 }

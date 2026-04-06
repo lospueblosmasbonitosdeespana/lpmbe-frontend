@@ -1798,6 +1798,7 @@
     "viewVillage": "View village",
     "noWebcams": "No webcams are available at this time.",
     "ctaQuestion": "Does your village have a webcam?",
-    "ctaButton": "Tell us"
+    "ctaButton": "Tell us",
+    "shareWebcam": "Share on WhatsApp"
   }
 }
