@@ -1,6 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import {
+  useState,
+  useEffect,
+  useRef,
+  forwardRef,
+  useCallback,
+} from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
@@ -75,19 +81,23 @@ function buildProxyUrl(src: string): string {
  * manifest y los .ts es nuestra web, sin CORS cruzado).
  * El resto: intento directo y solo entonces proxy si hay networkError fatal.
  */
-function HlsVideoPlayer({
-  src,
-  alt,
-  onError,
-}: {
-  src: string;
-  alt: string;
-  onError: () => void;
-}) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+const HlsVideoPlayer = forwardRef<
+  HTMLVideoElement,
+  { src: string; alt: string; onError: () => void }
+>(function HlsVideoPlayer({ src, alt, onError }, ref) {
+  const innerRef = useRef<HTMLVideoElement | null>(null);
+
+  const setVideoRef = useCallback(
+    (el: HTMLVideoElement | null) => {
+      innerRef.current = el;
+      if (typeof ref === 'function') ref(el);
+      else if (ref) (ref as { current: HTMLVideoElement | null }).current = el;
+    },
+    [ref],
+  );
 
   useEffect(() => {
-    const video = videoRef.current;
+    const video = innerRef.current;
     if (!video) return;
 
     let hlsInstance: import('hls.js').default | null = null;
@@ -142,7 +152,7 @@ function HlsVideoPlayer({
 
   return (
     <video
-      ref={videoRef}
+      ref={setVideoRef}
       muted
       autoPlay
       playsInline
@@ -151,7 +161,7 @@ function HlsVideoPlayer({
       aria-label={alt}
     />
   );
-}
+});
 
 function getComillasCameraFolder(url: string): string | null {
   try {
@@ -239,11 +249,12 @@ function LiveBadge({ label }: { label: string }) {
   );
 }
 
-function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel }: {
+function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel, fullscreenLabel }: {
   webcam: Webcam;
   pueblo: Pueblo;
   liveBadgeLabel: string;
   viewLiveLabel: string;
+  fullscreenLabel: string;
 }) {
   // Comillas: no incrustar imagen refrescada (suele fallar / verse en blanco).
   // Mismo comportamiento que el resto de URLs no embebibles: foto del pueblo + enlace a la página de la webcam.
@@ -256,6 +267,21 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel }: {
   const [visible, setVisible] = useState(false);
   const [hlsFailed, setHlsFailed] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const hlsVideoRef = useRef<HTMLVideoElement | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+
+  const requestStreamFullscreen = () => {
+    const el = hlsVideoRef.current ?? iframeRef.current;
+    if (!el) return;
+    if (el instanceof HTMLVideoElement) {
+      const v = el as HTMLVideoElement & { webkitEnterFullscreen?: () => void };
+      if (typeof v.webkitEnterFullscreen === 'function') {
+        v.webkitEnterFullscreen();
+        return;
+      }
+    }
+    void el.requestFullscreen?.();
+  };
 
   useEffect(() => {
     const el = ref.current;
@@ -288,23 +314,24 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel }: {
         <>
           <LiveBadge label={liveBadgeLabel} />
           <HlsVideoPlayer
+            ref={hlsVideoRef}
             src={webcam.url}
             alt={`${webcam.nombre} – ${pueblo.nombre}`}
             onError={() => setHlsFailed(true)}
           />
-          <a
-            href={webcam.url}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={requestStreamFullscreen}
             className="absolute bottom-3 right-3 z-10 rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-black/70"
           >
-            {viewLiveLabel} ↗
-          </a>
+            {fullscreenLabel}
+          </button>
         </>
       ) : isEmbeddableIframe ? (
         <>
           <LiveBadge label={liveBadgeLabel} />
           <iframe
+            ref={iframeRef}
             src={webcam.url}
             title={`${webcam.nombre} – ${pueblo.nombre}`}
             className="h-full w-full"
@@ -313,14 +340,13 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel }: {
             allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
           />
-          <a
-            href={webcam.url}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={requestStreamFullscreen}
             className="absolute bottom-3 right-3 rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-black/70"
           >
-            {viewLiveLabel} ↗
-          </a>
+            {fullscreenLabel}
+          </button>
         </>
       ) : (
         <>
@@ -354,17 +380,18 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel }: {
   );
 }
 
-function WebcamCarousel({ webcams, pueblo, liveBadgeLabel, viewLiveLabel }: {
+function WebcamCarousel({ webcams, pueblo, liveBadgeLabel, viewLiveLabel, fullscreenLabel }: {
   webcams: Webcam[];
   pueblo: Pueblo;
   liveBadgeLabel: string;
   viewLiveLabel: string;
+  fullscreenLabel: string;
 }) {
   const [active, setActive] = useState(0);
 
   return (
     <div className="relative">
-      <WebcamCard webcam={webcams[active]} pueblo={pueblo} liveBadgeLabel={liveBadgeLabel} viewLiveLabel={viewLiveLabel} />
+      <WebcamCard webcam={webcams[active]} pueblo={pueblo} liveBadgeLabel={liveBadgeLabel} viewLiveLabel={viewLiveLabel} fullscreenLabel={fullscreenLabel} />
       <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-black/50 px-2 py-1 backdrop-blur-sm">
         {webcams.map((w, i) => (
           <button
@@ -391,6 +418,7 @@ export default function WebcamsGrid({ groups }: { groups: PuebloGroup[] }) {
 
   const liveBadgeLabel = t('liveBadge');
   const viewLiveLabel = t('viewLiveWebcam');
+  const fullscreenLabel = t('fullscreenWebcam');
 
   return (
     <>
@@ -432,9 +460,9 @@ export default function WebcamsGrid({ groups }: { groups: PuebloGroup[] }) {
             className="group overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition-shadow hover:shadow-xl dark:border-neutral-700 dark:bg-neutral-800"
           >
             {webcams.length === 1 ? (
-              <WebcamCard webcam={webcams[0]} pueblo={pueblo} liveBadgeLabel={liveBadgeLabel} viewLiveLabel={viewLiveLabel} />
+              <WebcamCard webcam={webcams[0]} pueblo={pueblo} liveBadgeLabel={liveBadgeLabel} viewLiveLabel={viewLiveLabel} fullscreenLabel={fullscreenLabel} />
             ) : (
-              <WebcamCarousel webcams={webcams} pueblo={pueblo} liveBadgeLabel={liveBadgeLabel} viewLiveLabel={viewLiveLabel} />
+              <WebcamCarousel webcams={webcams} pueblo={pueblo} liveBadgeLabel={liveBadgeLabel} viewLiveLabel={viewLiveLabel} fullscreenLabel={fullscreenLabel} />
             )}
 
             <div className="p-5">
