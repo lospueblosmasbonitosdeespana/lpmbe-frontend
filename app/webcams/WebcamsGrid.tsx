@@ -43,8 +43,13 @@ function isHlsUrl(url: string): boolean {
 function isEmbeddableIframeUrl(url: string): boolean {
   try {
     const host = new URL(url).hostname.toLowerCase();
-    // Hosts verificados para embebido directo en card.
-    return host === 'g0.ipcamlive.com' || host.endsWith('.ipcamlive.com');
+    return (
+      host === 'g0.ipcamlive.com' ||
+      host.endsWith('.ipcamlive.com') ||
+      host === 'www.youtube.com' ||
+      host === 'youtube.com' ||
+      host === 'www.youtube-nocookie.com'
+    );
   } catch {
     return false;
   }
