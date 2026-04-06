@@ -22,11 +22,12 @@ function detectPlatform(): MobilePlatform {
 }
 
 /**
- * Banner de descarga de app. Se renderiza siempre en SSR para reservar
- * espacio y evitar CLS; tras hidratación solo se oculta si fue descartado.
+ * Banner de descarga de app. Empieza oculto en SSR para evitar CLS
+ * cuando el usuario ya lo descartó. Solo se muestra tras comprobar
+ * localStorage en el cliente.
  */
 export default function AppDownloadBanner() {
-  const [dismissed, setDismissed] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [platform, setPlatform] = useState<MobilePlatform>("other");
   const [qrUrl, setQrUrl] = useState<string | null>(null);
 
@@ -36,10 +37,11 @@ export default function AppDownloadBanner() {
     try {
       const dismissedUntil = localStorage.getItem(DISMISS_KEY);
       if (dismissedUntil && Date.now() < Number(dismissedUntil)) {
-        setDismissed(true);
         return;
       }
     } catch {}
+
+    setVisible(true);
 
     if (typeof window !== "undefined") {
       setQrUrl(
@@ -53,10 +55,10 @@ export default function AppDownloadBanner() {
   const dismiss = () => {
     const until = Date.now() + DISMISS_DAYS * 24 * 60 * 60 * 1000;
     try { localStorage.setItem(DISMISS_KEY, String(until)); } catch {}
-    setDismissed(true);
+    setVisible(false);
   };
 
-  if (dismissed) return null;
+  if (!visible) return null;
 
   const primaryHref = platform === "android" ? PLAY_STORE_URL : APP_STORE_URL;
   const primaryLabel =

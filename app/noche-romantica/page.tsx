@@ -90,22 +90,29 @@ export default async function NocheRomanticaPage() {
     <main>
       {/* Logo */}
       {config.logoUrl && (
-        <div className="flex justify-center py-8 bg-white dark:bg-neutral-900">
+        <div className="flex justify-center py-8 bg-white dark:bg-neutral-900 min-h-[128px] md:min-h-[176px]">
           <img
             src={config.logoUrl}
             alt={config.titulo}
-            className="h-24 md:h-32 object-contain"
+            width={320}
+            height={128}
+            fetchPriority="high"
+            decoding="sync"
+            className="h-24 md:h-32 w-auto object-contain"
           />
         </div>
       )}
 
       {/* Hero */}
       {config.heroImageUrl && (
-        <section className="relative w-full">
+        <section className="relative w-full h-[50vh] md:h-[60vh] max-h-[70vh] overflow-hidden bg-muted">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={config.heroImageUrl}
             alt={`${config.titulo} - ${t('edition')} ${config.edicion}`}
-            className="w-full max-h-[70vh] object-cover"
+            className="h-full w-full object-cover"
+            fetchPriority="high"
+            decoding="async"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-8 text-white text-center">

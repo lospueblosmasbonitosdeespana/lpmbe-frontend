@@ -155,7 +155,8 @@ export default async function SemanaSantaPuebloPage({
     <main className="min-h-screen bg-gradient-to-b from-stone-50 via-background to-background">
       {hero && (
         <section className="relative h-[44vh] w-full overflow-hidden bg-muted">
-          <img src={hero} alt={participante.pueblo.nombre} className="h-full w-full object-cover" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={hero} alt={participante.pueblo.nombre} className="h-full w-full object-cover" fetchPriority="high" decoding="async" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 mx-auto max-w-6xl px-6 pb-8 text-white">
             <p className="text-sm uppercase tracking-wide opacity-90">{config.titulo}</p>

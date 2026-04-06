@@ -55,7 +55,7 @@ export async function TematicaDetailPage({
       {page.coverUrl && (
         <div className="relative h-[50vh] min-h-[320px] max-h-[520px] w-full overflow-hidden bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={page.coverUrl} alt={page.titulo} className="h-full w-full object-cover" />
+          <img src={page.coverUrl} alt={page.titulo} className="h-full w-full object-cover" fetchPriority="high" decoding="async" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
             <Container>
