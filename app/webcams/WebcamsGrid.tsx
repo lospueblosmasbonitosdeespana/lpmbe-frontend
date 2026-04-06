@@ -10,6 +10,7 @@ import {
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { resolveWebcamExternalHref } from '@/lib/webcam-external-href';
+import ShareButton from '@/app/components/ShareButton';
 
 interface Pueblo {
   id: number;
@@ -508,31 +509,6 @@ function WebcamCarousel({ webcams, pueblo, liveBadgeLabel, viewLiveLabel, fullsc
 
 const BASE_URL = 'https://lospueblosmasbonitosdeespana.org';
 
-function ShareWhatsAppButton({ slug, villageName, label }: { slug: string; villageName: string; label: string }) {
-  const handleShare = () => {
-    const url = `${BASE_URL}/webcams?pueblo=${encodeURIComponent(slug)}`;
-    const text = encodeURIComponent(`📷 ${villageName} – webcam en directo\n${url}`);
-    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={handleShare}
-      aria-label={label}
-      title={label}
-      className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366]/10 px-3 py-1 text-xs font-medium text-[#128C7E] transition hover:bg-[#25D366]/20 dark:bg-[#25D366]/15 dark:text-[#25D366]"
-    >
-      {/* WhatsApp icon */}
-      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.103 1.508 5.83L0 24l6.335-1.483A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.886 0-3.65-.5-5.18-1.373l-.37-.22-3.762.882.918-3.666-.242-.38A9.944 9.944 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
-      </svg>
-      {label}
-    </button>
-  );
-}
-
 export default function WebcamsGrid({ groups }: { groups: PuebloGroup[] }) {
   const t = useTranslations('webcamsPage');
   const [filter, setFilter] = useState<string | null>(null);
@@ -560,7 +536,6 @@ export default function WebcamsGrid({ groups }: { groups: PuebloGroup[] }) {
   const liveBadgeLabel = t('liveBadge');
   const viewLiveLabel = t('viewLiveWebcam');
   const fullscreenLabel = t('fullscreenWebcam');
-  const shareLabel = t('shareWebcam');
 
   return (
     <>
@@ -634,7 +609,11 @@ export default function WebcamsGrid({ groups }: { groups: PuebloGroup[] }) {
                   {webcams.length} {webcams.length === 1 ? t('webcamSingular') : t('webcamPlural')}
                 </span>
                 <div className="flex items-center gap-3">
-                  <ShareWhatsAppButton slug={pueblo.slug} villageName={pueblo.nombre} label={shareLabel} />
+                  <ShareButton
+                    url={`/webcams?pueblo=${encodeURIComponent(pueblo.slug)}`}
+                    title={`📷 ${pueblo.nombre} – webcam en directo`}
+                    variant="button"
+                  />
                   <Link
                     href={`/pueblos/${pueblo.slug}`}
                     className="text-sm font-medium text-[#b45309] hover:underline"
