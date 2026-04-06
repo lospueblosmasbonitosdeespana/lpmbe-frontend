@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 interface Pueblo {
   id: number;
@@ -48,19 +49,24 @@ function RefreshingImage({ src, alt }: { src: string; alt: string }) {
   );
 }
 
-function LiveBadge() {
+function LiveBadge({ label }: { label: string }) {
   return (
     <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold tracking-wider text-white backdrop-blur-sm">
       <span className="relative flex h-2 w-2">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
         <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
       </span>
-      EN DIRECTO
+      {label}
     </div>
   );
 }
 
-function WebcamCard({ webcam, pueblo }: { webcam: Webcam; pueblo: Pueblo }) {
+function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel }: {
+  webcam: Webcam;
+  pueblo: Pueblo;
+  liveBadgeLabel: string;
+  viewLiveLabel: string;
+}) {
   const isImage = isImageUrl(webcam.url);
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -84,7 +90,7 @@ function WebcamCard({ webcam, pueblo }: { webcam: Webcam; pueblo: Pueblo }) {
         </div>
       ) : isImage ? (
         <>
-          <LiveBadge />
+          <LiveBadge label={liveBadgeLabel} />
           <RefreshingImage src={webcam.url} alt={`${webcam.nombre} – ${pueblo.nombre}`} />
         </>
       ) : (
@@ -109,22 +115,27 @@ function WebcamCard({ webcam, pueblo }: { webcam: Webcam; pueblo: Pueblo }) {
               rel="noopener noreferrer"
               className="rounded-full bg-white/20 px-5 py-2 text-sm font-semibold backdrop-blur-md transition hover:bg-white/30"
             >
-              Ver webcam en directo ↗
+              {viewLiveLabel} ↗
             </a>
           </div>
-          <LiveBadge />
+          <LiveBadge label={liveBadgeLabel} />
         </>
       )}
     </div>
   );
 }
 
-function WebcamCarousel({ webcams, pueblo }: { webcams: Webcam[]; pueblo: Pueblo }) {
+function WebcamCarousel({ webcams, pueblo, liveBadgeLabel, viewLiveLabel }: {
+  webcams: Webcam[];
+  pueblo: Pueblo;
+  liveBadgeLabel: string;
+  viewLiveLabel: string;
+}) {
   const [active, setActive] = useState(0);
 
   return (
     <div className="relative">
-      <WebcamCard webcam={webcams[active]} pueblo={pueblo} />
+      <WebcamCard webcam={webcams[active]} pueblo={pueblo} liveBadgeLabel={liveBadgeLabel} viewLiveLabel={viewLiveLabel} />
       <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-black/50 px-2 py-1 backdrop-blur-sm">
         {webcams.map((w, i) => (
           <button
@@ -144,9 +155,13 @@ function WebcamCarousel({ webcams, pueblo }: { webcams: Webcam[]; pueblo: Pueblo
 }
 
 export default function WebcamsGrid({ groups }: { groups: PuebloGroup[] }) {
+  const t = useTranslations('webcamsPage');
   const [filter, setFilter] = useState<string | null>(null);
   const comunidades = Array.from(new Set(groups.map(g => g.pueblo.comunidad))).sort();
   const filtered = filter ? groups.filter(g => g.pueblo.comunidad === filter) : groups;
+
+  const liveBadgeLabel = t('liveBadge');
+  const viewLiveLabel = t('viewLiveWebcam');
 
   return (
     <>
@@ -160,7 +175,7 @@ export default function WebcamsGrid({ groups }: { groups: PuebloGroup[] }) {
                 : 'bg-white text-stone-600 shadow-sm ring-1 ring-stone-200 hover:bg-stone-50 dark:bg-neutral-800 dark:text-neutral-300 dark:ring-neutral-700'
             }`}
           >
-            Todos ({groups.length})
+            {t('filterAll')} ({groups.length})
           </button>
           {comunidades.map(c => {
             const count = groups.filter(g => g.pueblo.comunidad === c).length;
@@ -188,9 +203,9 @@ export default function WebcamsGrid({ groups }: { groups: PuebloGroup[] }) {
             className="group overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition-shadow hover:shadow-xl dark:border-neutral-700 dark:bg-neutral-800"
           >
             {webcams.length === 1 ? (
-              <WebcamCard webcam={webcams[0]} pueblo={pueblo} />
+              <WebcamCard webcam={webcams[0]} pueblo={pueblo} liveBadgeLabel={liveBadgeLabel} viewLiveLabel={viewLiveLabel} />
             ) : (
-              <WebcamCarousel webcams={webcams} pueblo={pueblo} />
+              <WebcamCarousel webcams={webcams} pueblo={pueblo} liveBadgeLabel={liveBadgeLabel} viewLiveLabel={viewLiveLabel} />
             )}
 
             <div className="p-5">
@@ -212,13 +227,13 @@ export default function WebcamsGrid({ groups }: { groups: PuebloGroup[] }) {
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
                   </svg>
-                  {webcams.length} {webcams.length === 1 ? 'webcam' : 'webcams'}
+                  {webcams.length} {webcams.length === 1 ? t('webcamSingular') : t('webcamPlural')}
                 </span>
                 <Link
                   href={`/pueblos/${pueblo.slug}`}
                   className="text-sm font-medium text-[#b45309] hover:underline"
                 >
-                  Ver pueblo →
+                  {t('viewVillage')} →
                 </Link>
               </div>
             </div>

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { getApiUrl } from '@/lib/api';
 import {
   getCanonicalUrl,
@@ -83,7 +83,10 @@ async function fetchWebcams(): Promise<WebcamItem[]> {
 }
 
 export default async function WebcamsPage() {
-  const webcams = await fetchWebcams();
+  const [webcams, t] = await Promise.all([
+    fetchWebcams(),
+    getTranslations('webcamsPage'),
+  ]);
 
   const puebloMap = new Map<string, { pueblo: WebcamItem['pueblo']; webcams: WebcamItem[] }>();
   for (const w of webcams) {
@@ -111,17 +114,16 @@ export default async function WebcamsPage() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
             </span>
-            EN DIRECTO
+            {t('liveBadge')}
           </div>
           <h1 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
-            Webcams en directo
+            {t('heroTitle')}
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-amber-100 md:text-xl">
-            Asómate a los pueblos más bonitos de España en tiempo real.
-            Plazas, monumentos y paisajes a un clic.
+            {t('heroSubtitle')}
           </p>
           <p className="mt-6 text-sm text-amber-200/80">
-            {groups.length} pueblos · {webcams.length} webcams
+            {groups.length} {t('statsVillages')} · {webcams.length} webcams
           </p>
         </div>
       </section>
@@ -135,7 +137,7 @@ export default async function WebcamsPage() {
                 <path strokeLinecap="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
               </svg>
             </div>
-            <p className="text-xl text-muted-foreground">No hay webcams disponibles en este momento.</p>
+            <p className="text-xl text-muted-foreground">{t('noWebcams')}</p>
           </div>
         ) : (
           <WebcamsGrid groups={groups.map(g => ({
@@ -147,12 +149,12 @@ export default async function WebcamsPage() {
 
       {/* CTA */}
       <section className="border-t border-stone-200 bg-stone-50 py-12 text-center dark:border-neutral-800 dark:bg-neutral-900/50">
-        <p className="text-stone-600 dark:text-neutral-400">¿Tu pueblo tiene webcam?</p>
+        <p className="text-stone-600 dark:text-neutral-400">{t('ctaQuestion')}</p>
         <Link
           href="/contacto"
           className="mt-3 inline-block rounded-full bg-[#b45309] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-800"
         >
-          Cuéntanoslo
+          {t('ctaButton')}
         </Link>
       </section>
     </main>
