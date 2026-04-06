@@ -31,7 +31,7 @@ const PAGE_DESC: Record<string, string> = {
   de: 'Schauen Sie live in Spaniens schönste Dörfer. Webcams von Plätzen, Denkmälern und Landschaften.',
   pt: 'Espreite em tempo real as aldeias mais bonitas de Espanha. Webcams em direto de praças, monumentos e paisagens.',
   it: 'Affacciati in tempo reale sui borghi più belli della Spagna. Webcam in diretta da piazze, monumenti e paesaggi.',
-  ca: 'Guaita en temps real als pobles més bonics d\'Espanya. Webcams en directe des de places, monuments i paisatges.',
+  ca: 'Mira en temps real els pobles més bonics d\'Espanya. Webcams en directe des de places, monuments i paisatges.',
 };
 
 export async function generateMetadata(): Promise<Metadata> {
