@@ -247,7 +247,8 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel }: {
   liveBadgeLabel: string;
   viewLiveLabel: string;
 }) {
-  const isImage = isImageUrl(webcam.url);
+  const isComillas = !!getComillasCameraFolder(webcam.url);
+  const isImage = isImageUrl(webcam.url) || isComillas;
   const isHls = isHlsUrl(webcam.url);
   const isEmbeddableIframe = isEmbeddableIframeUrl(webcam.url);
   const [visible, setVisible] = useState(false);
