@@ -96,10 +96,10 @@ export default async function WebcamsPage() {
   const groups = Array.from(puebloMap.values());
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-neutral-950 dark:to-neutral-900">
+    <main className="min-h-screen bg-gradient-to-b from-stone-50 to-white dark:from-neutral-950 dark:to-neutral-900">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-sky-600 via-blue-700 to-indigo-800 py-16 md:py-24">
-        <div className="absolute inset-0 opacity-10">
+      <section className="relative overflow-hidden bg-gradient-to-br from-amber-700 via-[#b45309] to-amber-900 py-16 md:py-24">
+        <div className="absolute inset-0 opacity-[0.07]">
           <div className="absolute inset-0" style={{
             backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)',
             backgroundSize: '40px 40px',
@@ -116,11 +116,11 @@ export default async function WebcamsPage() {
           <h1 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
             Webcams en directo
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-blue-100 md:text-xl">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-amber-100 md:text-xl">
             Asómate a los pueblos más bonitos de España en tiempo real.
             Plazas, monumentos y paisajes a un clic.
           </p>
-          <p className="mt-6 text-sm text-blue-200">
+          <p className="mt-6 text-sm text-amber-200/80">
             {groups.length} pueblos · {webcams.length} webcams
           </p>
         </div>
@@ -130,8 +130,8 @@ export default async function WebcamsPage() {
       <section className="mx-auto max-w-7xl px-4 py-12 md:py-16">
         {groups.length === 0 ? (
           <div className="py-20 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-neutral-800">
-              <svg className="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-stone-100 dark:bg-neutral-800">
+              <svg className="h-8 w-8 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
               </svg>
             </div>
@@ -146,11 +146,11 @@ export default async function WebcamsPage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t bg-slate-50 py-12 text-center dark:bg-neutral-900/50">
-        <p className="text-muted-foreground">¿Tu pueblo tiene webcam?</p>
+      <section className="border-t border-stone-200 bg-stone-50 py-12 text-center dark:border-neutral-800 dark:bg-neutral-900/50">
+        <p className="text-stone-600 dark:text-neutral-400">¿Tu pueblo tiene webcam?</p>
         <Link
           href="/contacto"
-          className="mt-3 inline-block rounded-full bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+          className="mt-3 inline-block rounded-full bg-[#b45309] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-800"
         >
           Cuéntanoslo
         </Link>

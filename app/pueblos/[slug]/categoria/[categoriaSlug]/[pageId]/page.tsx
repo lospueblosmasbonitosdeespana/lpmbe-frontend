@@ -226,8 +226,8 @@ export default async function ExperienciaPuebloPage({
                 {uniqueH1ForLocale(page.titulo, locale)}
               </h1>
               {page.resumen && (
-                <p className="mt-3 text-base md:text-lg text-white/80 max-w-2xl leading-relaxed">
-                  {stripHtml(page.resumen)}
+                <p className="mt-3 text-base md:text-lg text-white/80 max-w-2xl leading-relaxed line-clamp-3">
+                  {stripHtml(page.resumen).slice(0, 220)}
                 </p>
               )}
             </Container>
