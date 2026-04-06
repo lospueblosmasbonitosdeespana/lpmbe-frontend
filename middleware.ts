@@ -222,6 +222,7 @@ export function middleware(req: NextRequest): NextResponse {
   if (pathname.startsWith('/categoria-producto/')) return permanentRedirect(req, '/tienda');
   if (pathname.startsWith('/producto/')) return permanentRedirect(req, '/tienda');
   if (pathname.startsWith('/tiendapueblos')) return permanentRedirect(req, '/tienda');
+  if (pathname.startsWith('/planifica/la-noche-romantica')) return permanentRedirect(req, '/noche-romantica');
   if (pathname.startsWith('/author/')) return permanentRedirect(req, '/actualidad');
   if (pathname === '/author') return permanentRedirect(req, '/actualidad');
   // Legacy login/proxy (informe noindex GSC + Sitebulb).

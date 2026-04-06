@@ -348,7 +348,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry('/para-negocios', 0.4, 'monthly'),
     entry('/noche-romantica/pueblos-participantes', 0.5, 'monthly'),
     entry('/planifica/navidad', 0.6, 'monthly'),
-    entry('/planifica/la-noche-romantica', 0.5, 'monthly'),
   ];
 
   const productoSlugs = await fetchSlugs('/products').catch(() => [] as string[]);
