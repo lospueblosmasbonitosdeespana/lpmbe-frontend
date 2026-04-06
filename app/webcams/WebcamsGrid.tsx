@@ -46,8 +46,6 @@ function isEmbeddableIframeUrl(url: string): boolean {
     return (
       host === 'g0.ipcamlive.com' ||
       host.endsWith('.ipcamlive.com') ||
-      host === 'www.liveincam.com' ||
-      host === 'liveincam.com' ||
       host === 'www.youtube.com' ||
       host === 'youtube.com' ||
       host === 'www.youtube-nocookie.com'
