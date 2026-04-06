@@ -29,6 +29,7 @@ type PuebloActionsProps = {
   semaforoProgramado?: SemaforoProgramado | null;
   semaforoProgramadoEventos?: SemaforoProgramado[];
   alertasActivasCount?: number;
+  hasWebcam?: boolean;
 };
 
 type ActionBarState = "idle" | "loading" | "success" | "error";
@@ -191,19 +192,25 @@ interface ActionButtonProps {
   href?: string;
   external?: boolean;
   highlighted?: boolean;
+  /** Variante terracota: icono terracota con fondo suave, indica que el recurso existe. */
+  accent?: boolean;
 }
 
-function ActionButton({ icon, label, state = "idle", onClick, href, external, highlighted = false }: ActionButtonProps) {
+function ActionButton({ icon, label, state = "idle", onClick, href, external, highlighted = false, accent = false }: ActionButtonProps) {
   const isLoading = state === "loading";
   const isSuccess = state === "success";
 
   const iconClasses = highlighted
     ? "flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors group-hover:bg-primary/90"
-    : "flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-muted transition-colors group-hover:bg-primary group-hover:text-primary-foreground";
+    : accent
+      ? "flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-[#b45309]/15 text-[#b45309] transition-colors group-hover:bg-[#b45309] group-hover:text-white"
+      : "flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-muted transition-colors group-hover:bg-primary group-hover:text-primary-foreground";
 
   const labelClasses = highlighted
     ? "mt-1 sm:mt-1.5 text-[10px] sm:text-xs font-semibold text-primary transition-colors group-hover:text-primary/80"
-    : "mt-1 sm:mt-1.5 text-[10px] sm:text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground";
+    : accent
+      ? "mt-1 sm:mt-1.5 text-[10px] sm:text-xs font-semibold text-[#b45309] transition-colors group-hover:text-[#b45309]/80"
+      : "mt-1 sm:mt-1.5 text-[10px] sm:text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground";
 
   const buttonContent = (
     <>
@@ -257,6 +264,7 @@ export default function PuebloActions({
   semaforoProgramado,
   semaforoProgramadoEventos,
   alertasActivasCount = 0,
+  hasWebcam = false,
 }: PuebloActionsProps) {
   const t = useTranslations("pueblo");
   const locale = useLocale();
@@ -403,6 +411,7 @@ export default function PuebloActions({
               icon={<WebcamIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
               label={t("actionWebcam")}
               href={`/pueblos/${puebloSlug}/webcam`}
+              accent={hasWebcam}
             />
             <ActionButton
               icon={<MapIcon className="h-4 w-4 sm:h-5 sm:w-5" />}

@@ -732,6 +732,7 @@ export default async function PuebloPage({
         semaforoProgramado={semaforoPueblo.programado ?? null}
         semaforoProgramadoEventos={(semaforoPueblo as any).programado_eventos_list ?? undefined}
         alertasActivasCount={alertasActivasCount}
+        hasWebcam={((pueblo as any)?._webcamCount ?? 0) > 0}
       />
 
       {/* RRSS DEL PUEBLO */}
