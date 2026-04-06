@@ -168,7 +168,6 @@ export function middleware(req: NextRequest): NextResponse {
   if (pathname.startsWith('/about-us')) return permanentRedirect(req, '/el-sello');
   if (pathname.startsWith('/blog/')) return permanentRedirect(req, '/actualidad');
   if (pathname === '/blog') return permanentRedirect(req, '/actualidad');
-  if (pathname.startsWith('/c/')) return permanentRedirect(req, '/actualidad');
   if (pathname === '/register' || pathname === '/password-reset' || pathname === '/test') return permanentRedirect(req, '/');
   if (pathname === '/notifications') return permanentRedirect(req, '/');
   if (pathname === '/finalizar-compra' || pathname === '/carrito') return permanentRedirect(req, '/tienda');
