@@ -39,19 +39,73 @@ function isEmbeddableIframeUrl(url: string): boolean {
   }
 }
 
+function getComillasCameraFolder(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    if (!host.endsWith('comillas.es')) return null;
+
+    // Si ya viene del endpoint get_latest_image.php, usa el folder de querystring.
+    if (parsed.pathname.endsWith('/comillas/camaras/get_latest_image.php')) {
+      const folder = (parsed.searchParams.get('folder') || '').trim();
+      return /^camara\d+$/i.test(folder) ? folder : null;
+    }
+
+    // Si viene una imagen fija, extrae el folder (camara1, camara2, camara3...).
+    const match = parsed.pathname.match(/\/comillas\/camaras\/(camara\d+)\//i);
+    return match?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function RefreshingImage({ src, alt }: { src: string; alt: string }) {
+  const comillasFolder = getComillasCameraFolder(src);
+  const [resolvedSrc, setResolvedSrc] = useState(src);
   const [cacheBust, setCacheBust] = useState(Date.now());
 
   useEffect(() => {
-    const interval = setInterval(() => setCacheBust(Date.now()), 45_000);
-    return () => clearInterval(interval);
-  }, []);
+    let active = true;
 
-  const separator = src.includes('?') ? '&' : '?';
+    const refresh = async () => {
+      if (comillasFolder) {
+        try {
+          const res = await fetch(
+            `/api/webcams/comillas-latest?folder=${encodeURIComponent(comillasFolder)}`,
+            { cache: 'no-store' },
+          );
+          if (res.ok) {
+            const data = await res.json() as { success?: boolean; imageUrl?: string };
+            if (active && data.success && data.imageUrl) {
+              setResolvedSrc(data.imageUrl);
+            }
+          }
+        } catch {
+          // Si falla, mantenemos el src existente como fallback.
+        }
+      } else if (active) {
+        setResolvedSrc(src);
+      }
+
+      if (active) setCacheBust(Date.now());
+    };
+
+    void refresh();
+    const interval = setInterval(() => {
+      void refresh();
+    }, 45_000);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [comillasFolder, src]);
+
+  const separator = resolvedSrc.includes('?') ? '&' : '?';
 
   return (
     <img
-      src={`${src}${separator}_t=${cacheBust}`}
+      src={`${resolvedSrc}${separator}_t=${cacheBust}`}
       alt={alt}
       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
       loading="lazy"
