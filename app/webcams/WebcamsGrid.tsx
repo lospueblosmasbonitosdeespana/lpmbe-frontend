@@ -29,6 +29,16 @@ function isImageUrl(url: string): boolean {
   return /\.(jpe?g|png|gif|webp|bmp)(\?.*)?$/i.test(url);
 }
 
+function isEmbeddableIframeUrl(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    // Hosts verificados para embebido directo en card.
+    return host === 'g0.ipcamlive.com' || host.endsWith('.ipcamlive.com');
+  } catch {
+    return false;
+  }
+}
+
 function RefreshingImage({ src, alt }: { src: string; alt: string }) {
   const [cacheBust, setCacheBust] = useState(Date.now());
 
@@ -68,6 +78,7 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel }: {
   viewLiveLabel: string;
 }) {
   const isImage = isImageUrl(webcam.url);
+  const isEmbeddableIframe = isEmbeddableIframeUrl(webcam.url);
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -92,6 +103,27 @@ function WebcamCard({ webcam, pueblo, liveBadgeLabel, viewLiveLabel }: {
         <>
           <LiveBadge label={liveBadgeLabel} />
           <RefreshingImage src={webcam.url} alt={`${webcam.nombre} – ${pueblo.nombre}`} />
+        </>
+      ) : isEmbeddableIframe ? (
+        <>
+          <LiveBadge label={liveBadgeLabel} />
+          <iframe
+            src={webcam.url}
+            title={`${webcam.nombre} – ${pueblo.nombre}`}
+            className="h-full w-full"
+            loading="lazy"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+          <a
+            href={webcam.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute bottom-3 right-3 rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-black/70"
+          >
+            {viewLiveLabel} ↗
+          </a>
         </>
       ) : (
         <>
