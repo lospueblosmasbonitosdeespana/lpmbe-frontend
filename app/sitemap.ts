@@ -233,12 +233,16 @@ function entry(
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Eliminados: /public/noticias y /public/eventos — sus rutas /noticias/[slug] y /eventos/[slug]
-  // no existen en el router. Los contenidos (noticias+eventos+articulos) van todos por /c/[slug].
-  const [pueblosWithImages, rutaSlugs, contenidoItems, semanaSantaPueblos] =
+  // Tres sistemas de contenido distintos:
+  // - /noticias/[slug] → noticias de la ASOCIACIÓN (modelo Noticia, ruta app/noticias/[slug])
+  // - /eventos/[slug]  → eventos de la ASOCIACIÓN  (modelo Evento,  ruta app/eventos/[slug])
+  // - /c/[slug]        → contenidos de PUEBLOS     (modelo Contenido, incluye noticias+eventos+articulos de pueblos)
+  const [pueblosWithImages, rutaSlugs, noticiaItems, eventoItems, contenidoItems, semanaSantaPueblos] =
     await Promise.all([
       fetchPueblosWithImages(),
       fetchSlugs('/rutas'),
+      fetchSlugsWithDates('/public/noticias?limit=1000'),
+      fetchSlugsWithDates('/public/eventos?limit=1000'),
       fetchSlugsWithDates('/public/contenidos?limit=2000'),
       fetchSlugs('/semana-santa/pueblos', 'pueblo.slug'),
     ]);
@@ -288,7 +292,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry(`/pueblos/${p.slug}`, 0.9, 'weekly', p.imageUrl ? [p.imageUrl] : undefined)
   );
   const rutas = rutaSlugs.map((s) => entry(`/rutas/${s}`, 0.8, 'weekly'));
-  // Todos los contenidos (noticias, eventos, artículos) viven en /c/[slug]
+  const noticias = noticiaItems.map((i) => entry(`/noticias/${i.slug}`, 0.8, 'weekly', undefined, i.updatedAt));
+  const eventos = eventoItems.map((i) => entry(`/eventos/${i.slug}`, 0.8, 'weekly', undefined, i.updatedAt));
+  // Contenidos de pueblos (noticias+eventos+artículos de pueblos) viven en /c/[slug]
   const contenidos = contenidoItems.map((i) => entry(`/c/${i.slug}`, 0.75, 'weekly', undefined, i.updatedAt));
   const semanaSanta = semanaSantaPueblos.map((s) => entry(`/planifica/semana-santa/pueblo/${s}`, 0.6, 'weekly'));
 
@@ -371,7 +377,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticPages, ...extraStatic,
-    ...pueblos, ...rutas, ...contenidos,
+    ...pueblos, ...rutas, ...noticias, ...eventos, ...contenidos,
     ...semanaSanta,
     ...paginasTematicasListado, ...paginasTematicasIndividuales,
     ...paginasClub,
