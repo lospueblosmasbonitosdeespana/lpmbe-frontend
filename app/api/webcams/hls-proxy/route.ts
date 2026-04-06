@@ -6,7 +6,10 @@ import { type NextRequest, NextResponse } from 'next/server';
  */
 const ALLOWED_STREAMING_HOSTS: string[] = [
   'streaming.comunitatvalenciana.com',
-  'cams.projecte4estacions.com', // Projecte 4 Estacions (Vall de Boí, etc.)
+  'cams.projecte4estacions.com',
+  'camserver2.in2thebeach.es',
+  'camserver.in2thebeach.es',
+];
   // Añadir más hosts según sea necesario, p.ej.:
   // 'webcam.turismoextremadura.com',
   // 'live.visitcatalunya.cat',

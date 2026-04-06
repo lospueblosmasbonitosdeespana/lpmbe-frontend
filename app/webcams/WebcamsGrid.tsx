@@ -62,6 +62,8 @@ function isEmbeddableIframeUrl(url: string): boolean {
 const HLS_PROXY_ALLOWED_HOSTS = [
   'streaming.comunitatvalenciana.com',
   'cams.projecte4estacions.com',
+  'camserver2.in2thebeach.es',
+  'camserver.in2thebeach.es',
 ];
 
 function canUseHlsProxy(url: string): boolean {
