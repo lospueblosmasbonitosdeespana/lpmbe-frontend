@@ -65,8 +65,25 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    let hostname = '';
+    try {
+      hostname = new URL(targetUrl).hostname;
+    } catch {
+      /* ignore */
+    }
+
+    const headers: Record<string, string> = {
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    };
+    // Algunos CDNs de streaming exigen referer/origen de un sitio autorizado.
+    if (hostname === 'cams.projecte4estacions.com') {
+      headers.Referer = 'https://www.vallboi.cat/';
+      headers.Origin = 'https://www.vallboi.cat';
+    }
+
     const upstream = await fetch(targetUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0' },
+      headers,
       // No cachear en el servidor — el HLS ya maneja su propio tiempo de refresco.
       cache: 'no-store',
     });

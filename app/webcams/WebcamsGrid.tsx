@@ -70,14 +70,10 @@ function buildProxyUrl(src: string): string {
 /**
  * Reproduce un stream HLS (.m3u8) directamente en la tarjeta.
  *
- * Estrategia en dos pasos:
- * 1. Intenta reproducir el stream directo (sin proxy).
- * 2. Si falla con error fatal de red (típicamente CORS), y el host está
- *    en la lista de permitidos, reintenta a través del proxy /api/webcams/hls-proxy.
- * 3. Si el proxy también falla, llama a onError() y el componente padre
- *    muestra el overlay con enlace externo.
- *
- * En Safari el soporte HLS es nativo y no necesita proxy.
+ * Hosts en HLS_PROXY_ALLOWED_HOSTS suelen bloquear CORS en el navegador: para esos
+ * usamos siempre /api/webcams/hls-proxy (también en Safari nativo; el origen del
+ * manifest y los .ts es nuestra web, sin CORS cruzado).
+ * El resto: intento directo y solo entonces proxy si hay networkError fatal.
  */
 function HlsVideoPlayer({
   src,
@@ -125,13 +121,15 @@ function HlsVideoPlayer({
     };
 
     const setup = async () => {
+      const startWithProxy = canUseHlsProxy(src);
+      const playUrl = startWithProxy ? buildProxyUrl(src) : src;
+
       if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        // Safari — soporte nativo HLS, sin CORS issues.
-        video.src = src;
+        video.src = playUrl;
         try { await video.play(); } catch { /* autoplay bloqueado — ok, hay controles */ }
         return;
       }
-      await loadWithHls(src, false);
+      await loadWithHls(playUrl, startWithProxy);
     };
 
     void setup();
