@@ -129,6 +129,49 @@ export async function TematicaDetailPage({
   );
 }
 
+interface TematicaEmptyProps {
+  slug: string;
+  puebloSlug: string;
+  locale: string;
+}
+
+export function TematicaEmptyUI({ slug, puebloSlug, locale }: TematicaEmptyProps) {
+  const label = CATEGORY_LABELS[slug]?.[locale] ?? CATEGORY_LABELS[slug]?.es ?? slug;
+  const puebloNombre = slugToTitle(puebloSlug);
+
+  return (
+    <main className="bg-background min-h-screen">
+      <Section spacing="md">
+        <Container>
+          <nav className="mb-8 text-sm text-muted-foreground" aria-label="Breadcrumb">
+            <Link href="/pueblos" className="hover:text-foreground">Pueblos</Link>
+            <span className="mx-2">/</span>
+            <Link href={`/pueblos/${puebloSlug}`} className="hover:text-foreground">{puebloNombre}</Link>
+            <span className="mx-2">/</span>
+            <span className="text-foreground">{label}</span>
+          </nav>
+
+          <h1 className="font-serif text-4xl font-medium tracking-tight text-foreground mb-4">
+            {label} — {puebloNombre}
+          </h1>
+
+          <div className="mt-8 rounded-2xl border border-border bg-muted/30 px-8 py-12 text-center">
+            <p className="text-muted-foreground">
+              Todav&iacute;a no hay contenido de {label.toLowerCase()} para {puebloNombre}.
+            </p>
+            <Link
+              href={`/pueblos/${puebloSlug}`}
+              className="mt-4 inline-block text-sm font-medium text-primary hover:underline"
+            >
+              &larr; Volver a {puebloNombre}
+            </Link>
+          </div>
+        </Container>
+      </Section>
+    </main>
+  );
+}
+
 interface TematicaListPageProps {
   slug: string;
   puebloSlug: string;

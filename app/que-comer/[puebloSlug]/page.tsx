@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getCanonicalUrl, getLocaleAlternates, seoTitle, seoDescription, getLocaleFromRequestHeaders, getOGLocale, type SupportedLocale } from "@/lib/seo";
 import { CATEGORY_API_KEYS, getPaginasTematicasByPuebloWithEsFallback, slugify, slugToTitle } from "@/app/_lib/tematica/tematica-helpers";
-import { TematicaListPageUI } from "@/app/_lib/tematica/TematicaPageComponents";
+import { TematicaListPageUI, TematicaEmptyUI } from "@/app/_lib/tematica/TematicaPageComponents";
 
 export const dynamic = "force-dynamic";
 const SLUG = "gastronomia";
@@ -35,6 +34,6 @@ export default async function QueComerListPage({ params }: { params: Promise<{ p
   const h = await headers();
   const locale = getLocaleFromRequestHeaders(h);
   const pages = await getPaginasTematicasByPuebloWithEsFallback(puebloSlug, CATEGORY_API_KEYS[SLUG], locale);
-  if (!pages.length) return notFound();
+  if (!pages.length) return <TematicaEmptyUI slug={URL_SLUG} puebloSlug={puebloSlug} locale={locale} />;
   return <TematicaListPageUI slug={URL_SLUG} puebloSlug={puebloSlug} locale={locale} pages={pages} slugify={slugify} />;
 }

@@ -20,6 +20,8 @@ export async function generateMetadata({
   const path = `/noche-romantica/pueblos-participantes/${puebloSlug}`;
   const title = seoTitle(tSeo('nocheRomanticaPuebloTitle', { nombre: name }));
   const description = seoDescription(tSeo('nocheRomanticaPuebloDesc', { nombre: name }));
+  const data = await fetchPueblo(puebloSlug, locale);
+  const hasData = Boolean(data?.pueblo?.slug);
   return {
     title,
     description,
@@ -33,7 +35,7 @@ export async function generateMetadata({
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
     },
-    robots: { index: true, follow: true },
+    robots: { index: hasData, follow: true },
   };
 }
 
@@ -124,7 +126,22 @@ export default async function PuebloNocheRomanticaPage({
     fetchNRConfig(),
   ]);
 
-  if (!data) notFound();
+  if (!data) {
+    const name = slugToTitle(puebloSlug);
+    return (
+      <main className="mx-auto max-w-4xl px-4 py-12">
+        <div className="rounded-2xl border bg-muted/30 px-8 py-12 text-center">
+          <h1 className="text-2xl font-semibold mb-4">La Noche Rom&aacute;ntica en {name}</h1>
+          <p className="text-muted-foreground">
+            Este pueblo no participa actualmente en La Noche Rom&aacute;ntica.
+          </p>
+          <Link href="/noche-romantica/pueblos-participantes" className="mt-4 inline-block text-sm font-medium text-primary hover:underline">
+            &larr; Ver pueblos participantes
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   const negociosByType = data.negocios.reduce(
     (acc, n) => {

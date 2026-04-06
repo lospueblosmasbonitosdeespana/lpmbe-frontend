@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
+import Link from 'next/link';
 import { getApiUrl } from '@/lib/api';
 import { getLocale, getTranslations } from 'next-intl/server';
-import { notFound } from 'next/navigation';
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import NavidadPuebloClient from './NavidadPuebloClient';
 
@@ -94,6 +94,21 @@ export default async function NavidadPuebloPage({
   const { puebloSlug } = await params;
   const locale = await getLocale();
   const data = await fetchData(puebloSlug, locale);
-  if (!data) notFound();
+  if (!data) {
+    const name = slugToTitle(puebloSlug);
+    return (
+      <main className="mx-auto max-w-4xl px-4 py-12">
+        <div className="rounded-2xl border bg-muted/30 px-8 py-12 text-center">
+          <h1 className="text-2xl font-semibold mb-4">Navidad en {name}</h1>
+          <p className="text-muted-foreground">
+            Este pueblo no participa actualmente en la campa&ntilde;a de Navidad.
+          </p>
+          <Link href="/planifica/navidad" className="mt-4 inline-block text-sm font-medium text-primary hover:underline">
+            &larr; Ver pueblos participantes
+          </Link>
+        </div>
+      </main>
+    );
+  }
   return <NavidadPuebloClient data={data} />;
 }

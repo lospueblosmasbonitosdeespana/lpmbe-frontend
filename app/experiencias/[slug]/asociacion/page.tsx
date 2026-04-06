@@ -103,7 +103,22 @@ export default async function AsociacionTematicaPage({
   const page = await getAsociacionPage(config.category, locale);
 
   if (!page) {
-    notFound();
+    return (
+      <main className="mx-auto max-w-4xl px-4 py-12">
+        <Link href={`/experiencias/${slug}`} className="text-sm text-blue-600 hover:underline">
+          {t('backTo', { title })}
+        </Link>
+        <div className="mt-8 rounded-2xl border bg-muted/30 px-8 py-12 text-center">
+          <h1 className="text-2xl font-semibold mb-4">{title}</h1>
+          <p className="text-muted-foreground">
+            Todav&iacute;a no hay contenido de {title.toLowerCase()} para la asociaci&oacute;n.
+          </p>
+          <Link href={`/experiencias/${slug}`} className="mt-4 inline-block text-sm font-medium text-primary hover:underline">
+            &larr; Volver a {title}
+          </Link>
+        </div>
+      </main>
+    );
   }
 
   return (

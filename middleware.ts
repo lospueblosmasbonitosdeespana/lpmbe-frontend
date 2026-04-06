@@ -156,6 +156,31 @@ export function middleware(req: NextRequest): NextResponse {
     return NextResponse.redirect(destination, 301);
   }
 
+  // === Legacy WP ruta pages: /ruta-*, /ruta_*, multi-word route pages ===
+  if (/^\/ruta[-_]/.test(pathname)) return permanentRedirect(req, '/rutas');
+  if (/^\/mas-bonitos-de-los-pirineos/.test(pathname)) return permanentRedirect(req, '/rutas');
+  if (/^\/pueblos-del-sol-y-la-tramuntana/.test(pathname)) return permanentRedirect(req, '/rutas');
+  if (/^\/el-pirineo-catalan-y-sus-pueblos-mas-bonitos/.test(pathname)) return permanentRedirect(req, '/rutas');
+  if (/^\/medievo-en-estado-puro-al-sur-de-aragon/.test(pathname)) return permanentRedirect(req, '/rutas');
+  if (/^\/ruta-los-nazaries/.test(pathname)) return permanentRedirect(req, '/rutas');
+
+  // Legacy WP misc patterns.
+  if (pathname.startsWith('/about-us')) return permanentRedirect(req, '/el-sello');
+  if (pathname.startsWith('/blog/')) return permanentRedirect(req, '/actualidad');
+  if (pathname === '/blog') return permanentRedirect(req, '/actualidad');
+  if (pathname.startsWith('/c/')) return permanentRedirect(req, '/actualidad');
+  if (pathname === '/register' || pathname === '/password-reset' || pathname === '/test') return permanentRedirect(req, '/');
+  if (pathname === '/notifications') return permanentRedirect(req, '/');
+  if (pathname === '/finalizar-compra' || pathname === '/carrito') return permanentRedirect(req, '/tienda');
+  if (pathname === '/semaforo') return permanentRedirect(req, '/pueblos');
+  if (pathname === '/michelin-mapa-lpmbe') return permanentRedirect(req, '/tienda');
+  if (/^\/certificacion-/.test(pathname)) return permanentRedirect(req, '/el-sello');
+  if (/^\/asamblea-/.test(pathname)) return permanentRedirect(req, '/actualidad');
+  if (/^\/andalucia\//.test(pathname) || /^\/cantabria\//.test(pathname)) return permanentRedirect(req, '/pueblos');
+  if (pathname === '/sa') return permanentRedirect(req, '/');
+  if (/^\/pueblo-/.test(pathname) || pathname === '/pueblo----') return permanentRedirect(req, '/pueblos');
+  if (/^\/10-/.test(pathname) || pathname === '/10-anos') return permanentRedirect(req, '/actualidad');
+
   // Secciones consolidadas en /actualidad (301 en middleware para evitar 308 de permanentRedirect).
   if (pathname === '/noticias') return permanentRedirectPreservingLang(req, '/actualidad?tipo=noticia');
   if (pathname === '/eventos') return permanentRedirectPreservingLang(req, '/actualidad?tipo=evento');
@@ -281,6 +306,26 @@ export function middleware(req: NextRequest): NextResponse {
   // Eliminar query params de tracking/legacy para consolidar canónicas.
   const strippedParamsRedirect = stripNonCanonicalParams(req);
   if (strippedParamsRedirect) return strippedParamsRedirect;
+
+  // === CATCH-ALL LEGACY: single-segment paths not matching any known Next.js route → home ===
+  const KNOWN_TOP_ROUTES = new Set([
+    'actualidad', 'agenda', 'alertas', 'app', 'articulos', 'aviso-legal',
+    'c', 'checkout', 'club', 'colaborador', 'contacto', 'cookies', 'cuenta',
+    'cultura', 'cupones', 'donde-comer', 'donde-comprar', 'donde-dormir',
+    'el-sello', 'en-familia', 'entrar', 'eventos', 'experiencias',
+    'gestion', 'mapa', 'meteo', 'mi-cuenta', 'multiexperiencias',
+    'naturaleza', 'newsletter', 'noche-romantica', 'noticias', 'notificaciones',
+    'para-negocios', 'patrimonio', 'petfriendly', 'planifica', 'prensa',
+    'privacidad', 'pueblos', 'que-comer', 'recuperar', 'recursos',
+    'redes-sociales', 'registro', 'rutas', 'tienda', 'validador',
+  ]);
+  const singleSegMatch = pathname.match(/^\/([^/]+)$/);
+  if (singleSegMatch) {
+    const seg = singleSegMatch[1];
+    if (!KNOWN_TOP_ROUTES.has(seg)) {
+      return permanentRedirect(req, '/');
+    }
+  }
 
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set('x-current-path', canonicalPath);
