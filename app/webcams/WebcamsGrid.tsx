@@ -49,7 +49,7 @@ function isEmbeddableIframeUrl(url: string): boolean {
  */
 const HLS_PROXY_ALLOWED_HOSTS = [
   'streaming.comunitatvalenciana.com',
-  // Añadir más hosts aquí igual que en el route.ts del proxy.
+  'cams.projecte4estacions.com',
 ];
 
 function canUseHlsProxy(url: string): boolean {
