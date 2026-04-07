@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getApiUrl } from '@/lib/api';
 import { getLocale, getTranslations } from 'next-intl/server';
 import {
@@ -37,18 +37,21 @@ type Agenda = {
   esFiestaInteresTuristico?: boolean;
 };
 
+type Dia = {
+  id: number;
+  fecha: string;
+  nombreDia: string;
+  titulo: string | null;
+  descripcion: string | null;
+  fotoUrl: string | null;
+  slug: string;
+};
+
 type Payload = {
   participante: {
     pueblo: { nombre: string; slug: string };
     agenda: Agenda[];
-    dias: Array<{
-      id: number;
-      fecha: string;
-      nombreDia: string;
-      titulo: string | null;
-      descripcion: string | null;
-      fotoUrl: string | null;
-    }>;
+    dias: Dia[];
   };
 };
 
@@ -60,6 +63,15 @@ async function fetchData(slug: string, locale: string): Promise<Payload | null> 
   return res.json();
 }
 
+function isDateFormat(s: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
+
+function findDay(dias: Dia[], param: string): Dia | undefined {
+  if (isDateFormat(param)) return dias.find((d) => d.fecha === param);
+  return dias.find((d) => d.slug === param);
+}
+
 export const revalidate = 60;
 export async function generateMetadata({
   params,
@@ -69,12 +81,13 @@ export async function generateMetadata({
   const { puebloSlug, fecha } = await params;
   const locale = (await getLocale()) as SupportedLocale;
   const tSeo = await getTranslations('seo');
-  const path = `/planifica/semana-santa/pueblo/${puebloSlug}/dia/${fecha}`;
   const data = await fetchData(puebloSlug, locale);
   const nameFallback = slugToTitle(puebloSlug);
-  const day = data?.participante.dias.find((d) => d.fecha === fecha);
+  const day = data ? findDay(data.participante.dias, fecha) : undefined;
   const hasDayData = Boolean(day);
   const puebloName = data?.participante.pueblo.nombre ?? nameFallback;
+  const canonicalSlug = day?.slug ?? fecha;
+  const path = `/planifica/semana-santa/pueblo/${puebloSlug}/dia/${canonicalSlug}`;
   const dateLabel =
     day != null
       ? new Date(day.fecha).toLocaleDateString(locale, {
@@ -118,10 +131,14 @@ export default async function SemanaSantaDiaPage({
   const data = await fetchData(puebloSlug, locale);
   if (!data) return notFound();
 
-  const day = data.participante.dias.find((d) => d.fecha === fecha);
-  const eventos = data.participante.agenda.filter((a) => a.fechaInicio.slice(0, 10) === fecha);
+  const day = findDay(data.participante.dias, fecha);
   if (!day) return notFound();
 
+  if (isDateFormat(fecha) && day.slug) {
+    redirect(`/planifica/semana-santa/pueblo/${puebloSlug}/dia/${day.slug}`);
+  }
+
+  const eventos = data.participante.agenda.filter((a) => a.fechaInicio.slice(0, 10) === day.fecha);
   const timeOpts = { hour: '2-digit' as const, minute: '2-digit' as const, hour12: false as const, timeZone: 'Europe/Madrid' };
 
   return (
@@ -159,7 +176,7 @@ export default async function SemanaSantaDiaPage({
                     )}
                   </div>
                   <ShareButton
-                    url={`/planifica/semana-santa/pueblo/${puebloSlug}/dia/${fecha}`}
+                    url={`/planifica/semana-santa/pueblo/${puebloSlug}/dia/${day.slug}`}
                     title={e.titulo}
                     variant="icon"
                     className="rounded-full border bg-card"
@@ -178,7 +195,7 @@ export default async function SemanaSantaDiaPage({
                     />
                   </div>
                 )}
-                {e.ubicacion && <p className="mt-1 text-sm">📍 {e.ubicacion}</p>}
+                {e.ubicacion && <p className="mt-1 text-sm">{e.ubicacion}</p>}
                 {e.descripcion && <p className="mt-3 text-sm text-muted-foreground">{e.descripcion}</p>}
                 {e.avisosImportantes && (
                   <div className="mt-3 rounded-md border border-amber-300/40 bg-amber-50 px-3 py-2 text-sm text-amber-900">

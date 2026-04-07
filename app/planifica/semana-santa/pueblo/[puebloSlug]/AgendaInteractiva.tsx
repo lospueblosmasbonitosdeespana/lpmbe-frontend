@@ -109,10 +109,12 @@ export default function AgendaInteractiva({
   agenda,
   locale = 'es',
   puebloSlug,
+  diaSlugMap = {},
 }: {
   agenda: AgendaItem[];
   locale?: string;
   puebloSlug: string;
+  diaSlugMap?: Record<string, string>;
 }) {
   const t = useTranslations('planifica.semanaSanta');
   const [open, setOpen] = useState(false);
@@ -305,7 +307,7 @@ export default function AgendaInteractiva({
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">{t('share')}</p>
                 <ShareButton
-                  url={`/planifica/semana-santa/pueblo/${puebloSlug}/dia/${selected.fechaInicio.slice(0, 10)}`}
+                  url={`/planifica/semana-santa/pueblo/${puebloSlug}/dia/${diaSlugMap[selected.fechaInicio.slice(0, 10)] || selected.fechaInicio.slice(0, 10)}`}
                   title={selected.titulo}
                   variant="icon"
                   className="rounded-full border bg-card"

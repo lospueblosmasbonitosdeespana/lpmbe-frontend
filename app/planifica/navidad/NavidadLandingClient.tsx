@@ -32,7 +32,7 @@ export default function NavidadLandingClient({
   config: Config | null;
   pueblos: Item[];
 }) {
-  if (!config?.activo || pueblos.length === 0) {
+  if (!config || pueblos.length === 0) {
     return (
       <main className="mx-auto max-w-6xl px-4 py-16 text-center">
         <div className="mb-6 text-6xl">🎄</div>

@@ -47,6 +47,7 @@ type Dia = {
   titulo: string | null;
   descripcion: string | null;
   fotoUrl: string | null;
+  slug: string;
 };
 
 type Agenda = {
@@ -224,7 +225,12 @@ export default async function SemanaSantaPuebloPage({
           </section>
         )}
 
-        <AgendaInteractiva agenda={participante.agenda} locale={locale} puebloSlug={participante.pueblo.slug} />
+        <AgendaInteractiva
+          agenda={participante.agenda}
+          locale={locale}
+          puebloSlug={participante.pueblo.slug}
+          diaSlugMap={Object.fromEntries(participante.dias.map((d) => [d.fecha, d.slug || d.fecha]))}
+        />
 
         <section className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
@@ -238,7 +244,7 @@ export default async function SemanaSantaPuebloPage({
           ) : (
             <div className="space-y-3">
               {diasConEventos.map((d) => (
-                <Link key={d.id} href={`/planifica/semana-santa/pueblo/${participante.pueblo.slug}/dia/${d.fecha}`}>
+                <Link key={d.id} href={`/planifica/semana-santa/pueblo/${participante.pueblo.slug}/dia/${d.slug || d.fecha}`}>
                   <article className="rounded-xl border bg-background p-4 transition hover:-translate-y-0.5 hover:shadow-sm">
                     <div className="flex items-start justify-between gap-3">
                       <div>
