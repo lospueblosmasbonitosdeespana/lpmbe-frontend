@@ -64,7 +64,7 @@ const FEATURES: Feature[] = [
   { text: `Galería de fotos (hasta ${R.maxPhotos})`, free: F.maxPhotos >= R.maxPhotos, reco: true,                          prem: true },
   { text: "Horarios detallados",                  free: F.publicScheduleVisible,       reco: R.publicScheduleVisible,       prem: P.publicScheduleVisible },
   { text: "Botón WhatsApp directo",               free: F.publicWhatsappVisible,       reco: R.publicWhatsappVisible,       prem: P.publicWhatsappVisible },
-  { text: "Badge «Recomendado por LPMBE»",        free: F.recommendedBadgeEnabled,     reco: R.recommendedBadgeEnabled,     prem: R.recommendedBadgeEnabled || P.premiumBadgeEnabled },
+  { text: "Badge Club LPMBE",                     free: F.recommendedBadgeEnabled,     reco: R.recommendedBadgeEnabled,     prem: R.recommendedBadgeEnabled || P.premiumBadgeEnabled },
   { text: "Traducción automática a 7 idiomas",    free: F.translationEnabled,          reco: R.translationEnabled,          prem: P.translationEnabled },
   { text: `Estadísticas de visitas`,              free: F.statsLevel !== 'NONE',       reco: R.statsLevel !== 'NONE',       prem: P.statsLevel !== 'NONE' },
   { text: `Galería ampliada (hasta ${P.maxPhotos} fotos)`, free: F.maxPhotos >= P.maxPhotos, reco: R.maxPhotos >= P.maxPhotos, prem: true },
@@ -76,7 +76,7 @@ const FEATURES: Feature[] = [
   { text: "Badge Premium dorado",                 free: F.premiumBadgeEnabled,         reco: R.premiumBadgeEnabled,         prem: P.premiumBadgeEnabled },
   { text: "Posición destacada en listados",       free: F.listingPriority === 'HIGH',  reco: R.listingPriority === 'HIGH',  prem: P.listingPriority === 'HIGH' },
   { text: `${P.monthlySocialPostsIncluded} publicación/mes en RRSS de LPMBE`, free: F.monthlySocialPostsIncluded > 0, reco: R.monthlySocialPostsIncluded > 0, prem: P.monthlySocialPostsIncluded > 0 },
-  { text: "Placa física «Recomendado por LPMBE»", free: F.physicalPlaqueIncluded,     reco: R.physicalPlaqueIncluded,      prem: P.physicalPlaqueIncluded },
+  { text: "Placa física Club LPMBE",              free: F.physicalPlaqueIncluded,     reco: R.physicalPlaqueIncluded,      prem: P.physicalPlaqueIncluded },
 ];
 
 export default async function ParaNegociosPage() {
