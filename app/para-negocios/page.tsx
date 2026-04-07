@@ -9,6 +9,7 @@ import {
   type SupportedLocale,
 } from "@/lib/seo";
 import { getLocale, getTranslations } from "next-intl/server";
+import { PLAN_FEATURES } from "@/lib/plan-features";
 
 export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
@@ -47,31 +48,35 @@ const LOCK = (
   </svg>
 );
 
+const F = PLAN_FEATURES.FREE;
+const R = PLAN_FEATURES.RECOMENDADO;
+const P = PLAN_FEATURES.PREMIUM;
+
 type Feature = { text: string; free: boolean; reco: boolean; prem: boolean };
 
 const FEATURES: Feature[] = [
-  { text: "Aparición en listados del Club", free: true, reco: true, prem: true },
-  { text: "Validación QR de socios en la app", free: true, reco: true, prem: true },
-  { text: "Oferta/descuento para socios del Club", free: true, reco: true, prem: true },
-  { text: "1 foto del negocio", free: true, reco: true, prem: true },
-  { text: "Mapa con ubicación y «Cómo llegar»", free: true, reco: true, prem: true },
-  { text: "Galería completa de fotos (hasta 15)", free: false, reco: true, prem: true },
-  { text: "Teléfono, email y web visibles", free: false, reco: true, prem: true },
-  { text: "Horarios detallados", free: false, reco: true, prem: true },
-  { text: "Botón WhatsApp directo", free: false, reco: true, prem: true },
-  { text: "Badge «Recomendado por LPMBE»", free: false, reco: true, prem: true },
-  { text: "Traducción automática a 7 idiomas", free: false, reco: true, prem: true },
-  { text: "Estadísticas de visitas a tu perfil", free: false, reco: true, prem: true },
-  { text: "Galería ampliada (hasta 30 fotos)", free: false, reco: false, prem: true },
-  { text: "Landing completa personalizada", free: false, reco: false, prem: true },
-  { text: "Servicios con iconos (WiFi, parking…)", free: false, reco: false, prem: true },
-  { text: "Ofertas temporales destacadas", free: false, reco: false, prem: true },
-  { text: "Botón de reserva / enlace a tu sistema", free: false, reco: false, prem: true },
-  { text: "Links a tus redes sociales", free: false, reco: false, prem: true },
-  { text: "Badge Premium dorado", free: false, reco: false, prem: true },
-  { text: "Posición destacada en listados", free: false, reco: false, prem: true },
-  { text: "1 publicación/mes en RRSS de LPMBE", free: false, reco: false, prem: true },
-  { text: "Placa física «Recomendado por LPMBE»", free: false, reco: false, prem: true },
+  { text: "Aparición en listados del Club",       free: true,                          reco: true,                          prem: true },
+  { text: "Validación QR de socios en la app",    free: F.qrValidationEnabled,         reco: R.qrValidationEnabled,         prem: P.qrValidationEnabled },
+  { text: "Oferta/descuento para socios del Club", free: F.clubOfferEnabled,            reco: R.clubOfferEnabled,            prem: P.clubOfferEnabled },
+  { text: "1 foto del negocio",                   free: F.maxPhotos >= 1,              reco: R.maxPhotos >= 1,              prem: P.maxPhotos >= 1 },
+  { text: "Mapa con ubicación y «Cómo llegar»",   free: F.publicMapVisible,            reco: R.publicMapVisible,            prem: P.publicMapVisible },
+  { text: "Teléfono, email y web visibles",       free: F.publicPhoneVisible,          reco: R.publicPhoneVisible,          prem: P.publicPhoneVisible },
+  { text: `Galería de fotos (hasta ${R.maxPhotos})`, free: F.maxPhotos >= R.maxPhotos, reco: true,                          prem: true },
+  { text: "Horarios detallados",                  free: F.publicScheduleVisible,       reco: R.publicScheduleVisible,       prem: P.publicScheduleVisible },
+  { text: "Botón WhatsApp directo",               free: F.publicWhatsappVisible,       reco: R.publicWhatsappVisible,       prem: P.publicWhatsappVisible },
+  { text: "Badge «Recomendado por LPMBE»",        free: F.recommendedBadgeEnabled,     reco: R.recommendedBadgeEnabled,     prem: R.recommendedBadgeEnabled || P.premiumBadgeEnabled },
+  { text: "Traducción automática a 7 idiomas",    free: F.translationEnabled,          reco: R.translationEnabled,          prem: P.translationEnabled },
+  { text: `Estadísticas de visitas`,              free: F.statsLevel !== 'NONE',       reco: R.statsLevel !== 'NONE',       prem: P.statsLevel !== 'NONE' },
+  { text: `Galería ampliada (hasta ${P.maxPhotos} fotos)`, free: F.maxPhotos >= P.maxPhotos, reco: R.maxPhotos >= P.maxPhotos, prem: true },
+  { text: "Landing completa personalizada",       free: F.customLandingEnabled,        reco: R.customLandingEnabled,        prem: P.customLandingEnabled },
+  { text: "Servicios con iconos (WiFi, parking…)", free: F.serviceHighlightsEnabled,   reco: R.serviceHighlightsEnabled,    prem: P.serviceHighlightsEnabled },
+  { text: "Ofertas temporales destacadas",        free: F.featuredOffersEnabled,       reco: R.featuredOffersEnabled,       prem: P.featuredOffersEnabled },
+  { text: "Botón de reserva / enlace a tu sistema", free: F.bookingLinkEnabled,        reco: R.bookingLinkEnabled,          prem: P.bookingLinkEnabled },
+  { text: "Links a tus redes sociales",           free: F.socialLinksEnabled,          reco: R.socialLinksEnabled,          prem: P.socialLinksEnabled },
+  { text: "Badge Premium dorado",                 free: F.premiumBadgeEnabled,         reco: R.premiumBadgeEnabled,         prem: P.premiumBadgeEnabled },
+  { text: "Posición destacada en listados",       free: F.listingPriority === 'HIGH',  reco: R.listingPriority === 'HIGH',  prem: P.listingPriority === 'HIGH' },
+  { text: `${P.monthlySocialPostsIncluded} publicación/mes en RRSS de LPMBE`, free: F.monthlySocialPostsIncluded > 0, reco: R.monthlySocialPostsIncluded > 0, prem: P.monthlySocialPostsIncluded > 0 },
+  { text: "Placa física «Recomendado por LPMBE»", free: F.physicalPlaqueIncluded,     reco: R.physicalPlaqueIncluded,      prem: P.physicalPlaqueIncluded },
 ];
 
 export default async function ParaNegociosPage() {
