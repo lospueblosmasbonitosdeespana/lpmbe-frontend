@@ -111,6 +111,7 @@ const EMPTY_EVENTO = {
 export default function GestionPuebloNavidadPage() {
   const { slug } = useParams<{ slug: string }>();
   const [puebloId, setPuebloId] = useState<number | null>(null);
+  const [campaignActive, setCampaignActive] = useState(true);
   const [data, setData] = useState<Participante | null>(null);
   const [notInscribed, setNotInscribed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -141,10 +142,18 @@ export default function GestionPuebloNavidadPage() {
     setNotInscribed(false);
     try {
       const res = await fetch(`/api/admin/navidad/pueblos/by-pueblo/${puebloId}`);
-      if (res.status === 404) { setNotInscribed(true); return; }
+      if (res.status === 404) {
+        setNotInscribed(true);
+        try {
+          const cfgRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/navidad/config`);
+          if (cfgRes.ok) { const cfg = await cfgRes.json(); setCampaignActive(cfg?.activo ?? true); }
+        } catch { /* ignore */ }
+        return;
+      }
       if (!res.ok) throw new Error('Error cargando datos');
       const json = await res.json();
       setData(json.participante);
+      setCampaignActive(json.config?.activo ?? true);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error');
     } finally {
@@ -463,20 +472,35 @@ export default function GestionPuebloNavidadPage() {
         theme="navidad"
       >
         {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-        <div className="rounded-xl border border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-amber-50/70 to-red-50/80 p-6 text-center shadow-sm dark:border-emerald-900/50 dark:from-emerald-950/40 dark:via-amber-950/25 dark:to-red-950/30">
-          <p className="font-semibold text-emerald-900 dark:text-emerald-100">Este pueblo no está inscrito en Navidad este año.</p>
-          <p className="mt-2 text-sm text-emerald-800/90 dark:text-emerald-200/85">Inscribe el pueblo para publicar mercadillos, belenes y cabalgatas.</p>
-        </div>
-        <div className="mt-4">
-          <button
-            type="button"
-            onClick={inscribirse}
-            disabled={inscribing || !puebloId}
-            className={CAMPANA_NAVIDAD.primaryButton}
-          >
-            {inscribing ? 'Inscribiendo...' : 'Inscribirse en Navidad'}
-          </button>
-        </div>
+        {!campaignActive ? (
+          <div className="rounded-xl border border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-amber-50/70 to-red-50/80 px-6 py-8 text-center shadow-sm">
+            <p className="text-2xl">🎄</p>
+            <h2 className="mt-3 text-lg font-semibold text-emerald-900">
+              La campaña de Navidad ha finalizado
+            </h2>
+            <p className="mt-2 text-sm text-emerald-800/90">
+              Las páginas del evento anterior siguen visibles en internet, pero la
+              inscripción y edición no estarán disponibles hasta la próxima edición.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="rounded-xl border border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-amber-50/70 to-red-50/80 p-6 text-center shadow-sm dark:border-emerald-900/50 dark:from-emerald-950/40 dark:via-amber-950/25 dark:to-red-950/30">
+              <p className="font-semibold text-emerald-900 dark:text-emerald-100">Este pueblo no está inscrito en Navidad este año.</p>
+              <p className="mt-2 text-sm text-emerald-800/90 dark:text-emerald-200/85">Inscribe el pueblo para publicar mercadillos, belenes y cabalgatas.</p>
+            </div>
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={inscribirse}
+                disabled={inscribing || !puebloId}
+                className={CAMPANA_NAVIDAD.primaryButton}
+              >
+                {inscribing ? 'Inscribiendo...' : 'Inscribirse en Navidad'}
+              </button>
+            </div>
+          </>
+        )}
       </GestionPuebloSubpageShell>
     );
   }
@@ -500,6 +524,22 @@ export default function GestionPuebloNavidadPage() {
       {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
       {success && <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>}
 
+      {!campaignActive && (
+        <div className="mb-6 rounded-xl border border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-amber-50/70 to-red-50/80 px-5 py-4 shadow-sm">
+          <div className="flex items-start gap-3">
+            <span className="text-xl">🎄</span>
+            <div>
+              <h3 className="font-semibold text-emerald-900">La campaña de Navidad ha finalizado</h3>
+              <p className="mt-1 text-sm text-emerald-800/90">
+                Las páginas del evento siguen visibles en internet pero la edición
+                no está disponible hasta la próxima edición. Puedes consultar los datos del año pasado a continuación.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className={!campaignActive ? 'pointer-events-none select-none opacity-60' : ''}>
       <section className={`mb-8 rounded-xl border p-5 shadow-sm ${CAMPANA_NAVIDAD.sectionAccent}`}>
         <h2 className="mb-4 text-lg font-semibold">Información general</h2>
         <div className="grid gap-4">
@@ -607,6 +647,7 @@ export default function GestionPuebloNavidadPage() {
           </div>
         )}
       </section>
+      </div>
     </GestionPuebloSubpageShell>
   );
 }

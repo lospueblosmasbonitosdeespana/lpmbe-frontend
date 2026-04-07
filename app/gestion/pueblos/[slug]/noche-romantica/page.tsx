@@ -61,6 +61,7 @@ export default function GestionPuebloNocheRomanticaPage() {
 
   const [data, setData] = useState<NRPuebloData | null>(null);
   const [puebloId, setPuebloId] = useState<number | null>(null);
+  const [campaignActive, setCampaignActive] = useState(true);
   const [notInscribed, setNotInscribed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -105,10 +106,16 @@ export default function GestionPuebloNocheRomanticaPage() {
       const res = await fetch(`/api/admin/noche-romantica/pueblos/by-pueblo/${puebloId}`);
       if (res.status === 404) {
         setNotInscribed(true);
+        try {
+          const cfgRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/noche-romantica/config`);
+          if (cfgRes.ok) { const cfg = await cfgRes.json(); setCampaignActive(cfg?.activo ?? true); }
+        } catch { /* ignore */ }
         return;
       }
       if (!res.ok) throw new Error('Error cargando datos');
-      const d = await res.json();
+      const json = await res.json();
+      const d = json.participante ?? json;
+      setCampaignActive(json.config?.activo ?? true);
       setData(d);
       setTitulo(d.titulo ?? '');
       setDescripcion(d.descripcion ?? '');
@@ -316,14 +323,27 @@ export default function GestionPuebloNocheRomanticaPage() {
         heroIcon={<HeroIconHeart />}
         theme="nocheRomantica"
       >
-        <div className="rounded-xl border border-pink-200/80 bg-gradient-to-br from-pink-50 via-fuchsia-50/80 to-violet-50/60 p-6 text-center shadow-sm dark:border-pink-900/50 dark:from-pink-950/40 dark:via-fuchsia-950/30 dark:to-violet-950/30">
-          <p className="font-semibold text-pink-900 dark:text-pink-100">
-            Este pueblo no está inscrito en La Noche Romántica de este año.
-          </p>
-          <p className="mt-2 text-sm text-pink-800/90 dark:text-pink-200/90">
-            Solicita al administrador que lo inscriba desde la sección de gestión de la asociación.
-          </p>
-        </div>
+        {!campaignActive ? (
+          <div className="rounded-xl border border-pink-200/80 bg-gradient-to-br from-pink-50 via-fuchsia-50/80 to-violet-50/60 px-6 py-8 text-center shadow-sm">
+            <p className="text-2xl">❤️</p>
+            <h2 className="mt-3 text-lg font-semibold text-pink-900">
+              La campaña de La Noche Romántica ha finalizado
+            </h2>
+            <p className="mt-2 text-sm text-pink-800/90">
+              Las páginas del evento anterior siguen visibles en internet, pero la
+              inscripción y edición no estarán disponibles hasta la próxima edición.
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-pink-200/80 bg-gradient-to-br from-pink-50 via-fuchsia-50/80 to-violet-50/60 p-6 text-center shadow-sm dark:border-pink-900/50 dark:from-pink-950/40 dark:via-fuchsia-950/30 dark:to-violet-950/30">
+            <p className="font-semibold text-pink-900 dark:text-pink-100">
+              Este pueblo no está inscrito en La Noche Romántica de este año.
+            </p>
+            <p className="mt-2 text-sm text-pink-800/90 dark:text-pink-200/90">
+              Solicita al administrador que lo inscriba desde la sección de gestión de la asociación.
+            </p>
+          </div>
+        )}
       </GestionPuebloSubpageShell>
     );
   }
@@ -357,6 +377,22 @@ export default function GestionPuebloNocheRomanticaPage() {
         <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>
       )}
 
+      {!campaignActive && (
+        <div className="mb-6 rounded-xl border border-pink-200/80 bg-gradient-to-br from-pink-50 via-fuchsia-50/80 to-violet-50/60 px-5 py-4 shadow-sm">
+          <div className="flex items-start gap-3">
+            <span className="text-xl">❤️</span>
+            <div>
+              <h3 className="font-semibold text-pink-900">La campaña de La Noche Romántica ha finalizado</h3>
+              <p className="mt-1 text-sm text-pink-800/90">
+                Las páginas del evento siguen visibles en internet pero la edición
+                no está disponible hasta la próxima edición. Puedes consultar los datos del año pasado a continuación.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className={!campaignActive ? 'pointer-events-none select-none opacity-60' : ''}>
       {/* ==================== INFO GENERAL ==================== */}
       <section className={`mb-8 rounded-xl border p-5 shadow-sm ${CAMPANA_NOCHE_ROMANTICA.sectionAccent}`}>
         <h2 className="mb-4 text-lg font-semibold text-pink-950 dark:text-pink-50">Información general</h2>
@@ -744,6 +780,7 @@ export default function GestionPuebloNocheRomanticaPage() {
           </div>
         )}
       </section>
+      </div>
     </GestionPuebloSubpageShell>
   );
 }

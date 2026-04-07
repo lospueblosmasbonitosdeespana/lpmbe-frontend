@@ -137,6 +137,7 @@ export default function GestionPuebloSemanaSantaPage() {
   const { slug } = useParams<{ slug: string }>();
   const [puebloId, setPuebloId] = useState<number | null>(null);
   const [configDias, setConfigDias] = useState<DiaConfig[]>([]);
+  const [campaignActive, setCampaignActive] = useState(true);
   const [data, setData] = useState<Participante | null>(null);
   const [notInscribed, setNotInscribed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -216,12 +217,17 @@ export default function GestionPuebloSemanaSantaPage() {
       const res = await fetch(`/api/admin/semana-santa/pueblos/by-pueblo/${puebloId}`);
       if (res.status === 404) {
         setNotInscribed(true);
+        try {
+          const cfgRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/semana-santa/config`);
+          if (cfgRes.ok) { const cfg = await cfgRes.json(); setCampaignActive(cfg?.activo ?? true); }
+        } catch { /* ignore */ }
         return;
       }
       if (!res.ok) throw new Error('Error cargando datos');
       const json = await res.json();
       setData(json.participante);
       setConfigDias(json.config?.dias ?? []);
+      setCampaignActive(json.config?.activo ?? true);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error');
     } finally {
@@ -584,19 +590,34 @@ export default function GestionPuebloSemanaSantaPage() {
         maxWidthClass="max-w-5xl"
       >
         {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 text-amber-800">
-          Este pueblo no está inscrito en Semana Santa este año.
-        </div>
-        <div className="mt-4">
-          <button
-            type="button"
-            onClick={inscribirse}
-            disabled={inscribing || !puebloId}
-            className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
-          >
-            {inscribing ? 'Inscribiendo...' : 'Inscribirse'}
-          </button>
-        </div>
+        {!campaignActive ? (
+          <div className="rounded-xl border border-stone-300 bg-stone-50 px-6 py-8 text-center">
+            <p className="text-2xl">✝️</p>
+            <h2 className="mt-3 text-lg font-semibold text-stone-800">
+              La campaña de Semana Santa ha finalizado
+            </h2>
+            <p className="mt-2 text-sm text-stone-600">
+              Las páginas del evento anterior siguen visibles en internet, pero la
+              inscripción y edición no estarán disponibles hasta la próxima edición.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 text-amber-800">
+              Este pueblo no está inscrito en Semana Santa este año.
+            </div>
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={inscribirse}
+                disabled={inscribing || !puebloId}
+                className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              >
+                {inscribing ? 'Inscribiendo...' : 'Inscribirse'}
+              </button>
+            </div>
+          </>
+        )}
       </GestionPuebloSubpageShell>
     );
   }
@@ -619,6 +640,22 @@ export default function GestionPuebloSemanaSantaPage() {
       {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
       {success && <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>}
 
+      {!campaignActive && (
+        <div className="mb-6 rounded-xl border border-stone-300 bg-stone-50 px-5 py-4">
+          <div className="flex items-start gap-3">
+            <span className="text-xl">✝️</span>
+            <div>
+              <h3 className="font-semibold text-stone-800">La campaña de Semana Santa ha finalizado</h3>
+              <p className="mt-1 text-sm text-stone-600">
+                Las páginas del evento siguen visibles en internet pero la edición
+                no está disponible hasta la próxima edición. Puedes consultar los datos del año pasado a continuación.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className={!campaignActive ? 'pointer-events-none select-none opacity-60' : ''}>
       <section className="mb-8 rounded-lg border p-5">
         <h2 className="mb-4 text-lg font-semibold">Información general</h2>
         <div className="grid gap-4">
@@ -1162,6 +1199,7 @@ export default function GestionPuebloSemanaSantaPage() {
           </div>
         )}
       </section>
+      </div>
     </GestionPuebloSubpageShell>
   );
 }
