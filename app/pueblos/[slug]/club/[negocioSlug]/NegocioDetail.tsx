@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { getPlanFeatures, type PlanNegocio } from "@/lib/plan-features";
 
 const TIPO_LABELS: Record<string, string> = {
   HOTEL: "Hotel",
@@ -16,8 +17,6 @@ const TIPO_LABELS: Record<string, string> = {
 };
 
 const DIA_NOMBRES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-
-type PlanNegocio = "FREE" | "RECOMENDADO" | "PREMIUM";
 
 type Imagen = { id: number; url: string; alt: string | null; orden: number };
 
@@ -149,8 +148,9 @@ function MiniMap({ lat, lng, nombre }: { lat: number; lng: number; nombre: strin
 }
 
 function PlanBadge({ plan }: { plan: PlanNegocio }) {
-  if (plan === "FREE") return null;
-  const isPremium = plan === "PREMIUM";
+  const f = getPlanFeatures(plan);
+  if (!f.recommendedBadgeEnabled && !f.premiumBadgeEnabled) return null;
+  const isPremium = f.premiumBadgeEnabled;
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
@@ -340,11 +340,10 @@ export default function NegocioDetail({
 }) {
   const plan: PlanNegocio = (recurso.planNegocio as PlanNegocio) || "FREE";
   const isNegocio = recurso.scope === "NEGOCIO";
-  const isPaid = plan === "RECOMENDADO" || plan === "PREMIUM";
-  // Decisión de producto: en básico también se muestran teléfono/email/web.
-  const showContact = true;
-  const showFullGallery = !isNegocio || isPaid;
-  const showSchedule = !isNegocio || isPaid;
+  const features = getPlanFeatures(plan);
+  const showContact = !isNegocio || features.publicPhoneVisible || features.publicEmailVisible || features.publicWebVisible;
+  const showFullGallery = !isNegocio || features.maxPhotos > 1;
+  const showSchedule = !isNegocio || features.publicScheduleVisible;
 
   const fotos: Imagen[] = recurso.imagenes && recurso.imagenes.length > 0
     ? recurso.imagenes

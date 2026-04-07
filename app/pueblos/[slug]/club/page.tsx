@@ -10,6 +10,7 @@ import {
   seoTitle,
   type SupportedLocale,
 } from "@/lib/seo";
+import { getPlanFeatures } from "@/lib/plan-features";
 
 export const revalidate = 60;
 export async function generateMetadata({
@@ -160,8 +161,9 @@ function RecursoCard({ r, puebloSlug }: { r: Recurso; puebloSlug: string }) {
     : `/pueblos/${puebloSlug}/club/${r.slug}`;
 
   const plan = r.planNegocio ?? "FREE";
-  const isPremium = plan === "PREMIUM";
-  const isRecomendado = plan === "RECOMENDADO";
+  const features = getPlanFeatures(plan);
+  const isPremium = features.premiumBadgeEnabled;
+  const isRecomendado = features.recommendedBadgeEnabled;
   const showPct = r.descuentoPorcentaje != null && r.descuentoPorcentaje > 0;
   const ofertaBienvenida = r.ofertas?.find((o) =>
     (o.titulo ?? "").toLowerCase().includes("bienvenida"),
@@ -196,7 +198,7 @@ function RecursoCard({ r, puebloSlug }: { r: Recurso; puebloSlug: string }) {
               Recomendado
             </span>
           )}
-          {fotos && fotos.length > 1 && (isRecomendado || isPremium) && (
+          {fotos && fotos.length > 1 && features.maxPhotos > 1 && (
             <div className="absolute bottom-2 right-2 flex gap-1">
               {fotos.slice(1, 4).map((img) => (
                 <img key={img.id} src={img.url} alt={img.alt ?? ""} className="h-10 w-10 rounded border-2 border-white object-cover shadow-sm" />

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { compressImage } from '@/src/lib/compressImage';
+import { getPlanFeatures } from '@/lib/plan-features';
 
 type NegocioImage = {
   id: number;
@@ -9,12 +10,6 @@ type NegocioImage = {
   url: string;
   alt: string | null;
   orden: number;
-};
-
-const PLAN_LIMITS: Record<string, number> = {
-  FREE: 1,
-  RECOMENDADO: 15,
-  PREMIUM: 30,
 };
 
 const extractUploadedUrl = (payload: any): string | null => {
@@ -44,7 +39,7 @@ export default function NegocioGallery({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const maxPhotos = PLAN_LIMITS[plan] ?? 1;
+  const maxPhotos = getPlanFeatures(plan).maxPhotos;
   const canUpload = images.length < maxPhotos;
 
   const load = useCallback(async () => {
