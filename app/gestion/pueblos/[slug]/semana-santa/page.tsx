@@ -214,12 +214,22 @@ export default function GestionPuebloSemanaSantaPage() {
     setError(null);
     setNotInscribed(false);
     try {
-      const res = await fetch(`/api/admin/semana-santa/pueblos/by-pueblo/${puebloId}`);
+      const res = await fetch(`/api/admin/semana-santa/pueblos/by-pueblo/${puebloId}`, {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+      if (res.status === 401) { window.location.href = '/entrar'; return; }
       if (res.status === 404) {
         setNotInscribed(true);
         try {
-          const cfgRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/semana-santa/config`);
-          if (cfgRes.ok) { const cfg = await cfgRes.json(); setCampaignActive(cfg?.activo ?? true); }
+          const cfgRes = await fetch(`/api/admin/semana-santa/config`, { credentials: 'include', cache: 'no-store' });
+          if (cfgRes.ok) {
+            const cfg = await cfgRes.json();
+            setCampaignActive(cfg?.activo ?? true);
+          } else {
+            const pubRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/semana-santa/config`);
+            if (pubRes.ok) { const cfg = await pubRes.json(); setCampaignActive(cfg?.activo ?? true); }
+          }
         } catch { /* ignore */ }
         return;
       }
@@ -227,7 +237,7 @@ export default function GestionPuebloSemanaSantaPage() {
       const json = await res.json();
       setData(json.participante);
       setConfigDias(json.config?.dias ?? []);
-      setCampaignActive(json.config?.activo ?? true);
+      setCampaignActive(json.config?.activo ?? false);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error');
     } finally {
