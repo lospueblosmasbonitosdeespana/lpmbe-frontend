@@ -27,9 +27,9 @@ export default function VideosAsociacionClient() {
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
 
-  async function load() {
+  async function load(silent = false) {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setErr(null);
       const res = await fetch("/api/admin/asociacion/videos", {
         credentials: "include",
@@ -45,7 +45,7 @@ export default function VideosAsociacionClient() {
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : "Error");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }
 
@@ -124,13 +124,18 @@ export default function VideosAsociacionClient() {
     }
   }
 
+  const [reordering, setReordering] = useState(false);
+
   async function handleMove(index: number, direction: "up" | "down") {
     const swapIndex = direction === "up" ? index - 1 : index + 1;
     if (swapIndex < 0 || swapIndex >= videos.length) return;
+    if (reordering) return;
 
     const next = [...videos];
     [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
     setVideos(next);
+    setReordering(true);
+    setMensaje(null);
 
     try {
       const res = await fetch("/api/admin/asociacion/videos/reorder", {
@@ -143,9 +148,18 @@ export default function VideosAsociacionClient() {
         window.location.href = "/entrar";
         return;
       }
-      if (!res.ok) throw new Error("Error al reordenar");
-    } catch {
-      load();
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d?.message ?? d?.error ?? `Error ${res.status}`);
+      }
+      setMensaje("Orden guardado");
+      setTimeout(() => setMensaje(null), 2500);
+      load(true);
+    } catch (e) {
+      setMensaje(e instanceof Error ? e.message : "Error al reordenar");
+      load(true);
+    } finally {
+      setReordering(false);
     }
   }
 
@@ -360,7 +374,7 @@ export default function VideosAsociacionClient() {
               <div className="flex flex-col items-center gap-1">
                 <button
                   onClick={() => handleMove(i, "up")}
-                  disabled={i === 0}
+                  disabled={i === 0 || reordering}
                   className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:invisible"
                   title="Subir"
                 >
@@ -373,7 +387,7 @@ export default function VideosAsociacionClient() {
                 </span>
                 <button
                   onClick={() => handleMove(i, "down")}
-                  disabled={i === videos.length - 1}
+                  disabled={i === videos.length - 1 || reordering}
                   className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:invisible"
                   title="Bajar"
                 >
