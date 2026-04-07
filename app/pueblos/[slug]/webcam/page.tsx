@@ -139,6 +139,7 @@ export default async function WebcamPuebloPage({
                 webcam={webcam}
                 puebloNombre={pueblo.nombre}
                 puebloSlug={pueblo.slug}
+                puebloFoto={pueblo.foto_destacada ?? null}
               />
             ))}
           </div>

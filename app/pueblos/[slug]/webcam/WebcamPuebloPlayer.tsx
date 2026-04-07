@@ -25,10 +25,12 @@ export default function WebcamPuebloPlayer({
   webcam,
   puebloNombre,
   puebloSlug,
+  puebloFoto,
 }: {
   webcam: WebcamData;
   puebloNombre: string;
   puebloSlug: string;
+  puebloFoto?: string | null;
 }) {
   const comillasUseLinkFallback = puebloSlug === 'comillas';
   const isImage =
@@ -42,6 +44,7 @@ export default function WebcamPuebloPlayer({
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   const alt = `${webcam.nombre} – ${puebloNombre}`;
+  const showsDirectFeed = isImage || (isHls && !hlsFailed) || isEmbeddableIframe;
 
   const requestFullscreen = () => {
     const el = hlsVideoRef.current ?? iframeRef.current;
@@ -58,7 +61,7 @@ export default function WebcamPuebloPlayer({
 
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-card">
-      <div className="relative aspect-video w-full bg-stone-200 dark:bg-neutral-800">
+      <div className="relative aspect-video w-full overflow-hidden bg-stone-200 dark:bg-neutral-800">
         {isImage ? (
           <>
             <LiveBadge label="EN DIRECTO" />
@@ -110,19 +113,32 @@ export default function WebcamPuebloPlayer({
             </button>
           </>
         ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-stone-300 to-stone-500 text-white">
-            <svg className="h-10 w-10 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
-            </svg>
-            <a
-              href={resolveWebcamExternalHref(webcam.url, puebloSlug)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full bg-white/20 px-5 py-2 text-sm font-semibold backdrop-blur-md transition hover:bg-white/30"
-            >
-              Ver webcam en directo ↗
-            </a>
-          </div>
+          <>
+            {puebloFoto ? (
+              <img
+                src={puebloFoto}
+                alt={puebloNombre}
+                className="h-full w-full object-cover brightness-[0.6]"
+                loading="lazy"
+              />
+            ) : (
+              <div className="h-full w-full bg-gradient-to-br from-stone-300 to-stone-500" />
+            )}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white">
+              <svg className="h-10 w-10 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+              <a
+                href={resolveWebcamExternalHref(webcam.url, puebloSlug)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full bg-white/20 px-5 py-2 text-sm font-semibold backdrop-blur-md transition hover:bg-white/30"
+              >
+                Ver webcam en directo ↗
+              </a>
+            </div>
+            <LiveBadge label="EN DIRECTO" />
+          </>
         )}
       </div>
 
@@ -131,14 +147,6 @@ export default function WebcamPuebloPlayer({
         {webcam.tipo && (
           <p className="mt-1 text-sm text-muted-foreground">{webcam.tipo}</p>
         )}
-        <a
-          href={resolveWebcamExternalHref(webcam.url, puebloSlug)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-        >
-          Ver webcam en nueva pestaña ↗
-        </a>
       </div>
 
       {imageModalOpen && isImage && (
