@@ -11,7 +11,7 @@ import {
   uniqueH1ForLocale,
   type SupportedLocale,
 } from "@/lib/seo";
-import { resolveWebcamExternalHref } from "@/lib/webcam-external-href";
+import WebcamPuebloPlayer from "./WebcamPuebloPlayer";
 
 export const revalidate = 60;
 export async function generateMetadata({
@@ -134,35 +134,12 @@ export default async function WebcamPuebloPage({
         ) : (
           <div className="grid gap-6 sm:grid-cols-1">
             {webcams.map((webcam) => (
-              <div
+              <WebcamPuebloPlayer
                 key={webcam.id}
-                className="overflow-hidden rounded-lg border border-border bg-card"
-              >
-                <div className="aspect-video w-full bg-muted">
-                  <iframe
-                    src={webcam.url}
-                    title={webcam.nombre}
-                    className="h-full w-full"
-                    allowFullScreen
-                  />
-                </div>
-                <div className="p-4">
-                  <h2 className="font-semibold">{webcam.nombre}</h2>
-                  {webcam.tipo && (
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {webcam.tipo}
-                    </p>
-                  )}
-                  <a
-                    href={resolveWebcamExternalHref(webcam.url, pueblo.slug)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-                  >
-                    Ver webcam en nueva pestaña ↗
-                  </a>
-                </div>
-              </div>
+                webcam={webcam}
+                puebloNombre={pueblo.nombre}
+                puebloSlug={pueblo.slug}
+              />
             ))}
           </div>
         )}
