@@ -124,6 +124,31 @@ export default function VideosAsociacionClient() {
     }
   }
 
+  async function handleMove(index: number, direction: "up" | "down") {
+    const swapIndex = direction === "up" ? index - 1 : index + 1;
+    if (swapIndex < 0 || swapIndex >= videos.length) return;
+
+    const next = [...videos];
+    [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
+    setVideos(next);
+
+    try {
+      const res = await fetch("/api/admin/asociacion/videos/reorder", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: next.map((v) => v.id) }),
+        credentials: "include",
+      });
+      if (res.status === 401) {
+        window.location.href = "/entrar";
+        return;
+      }
+      if (!res.ok) throw new Error("Error al reordenar");
+    } catch {
+      load();
+    }
+  }
+
   function startEdit(v: Video) {
     setEditId(v.id);
     setTitulo(v.titulo);
@@ -168,7 +193,7 @@ export default function VideosAsociacionClient() {
       }
     >
       <p className="mb-6 text-sm text-muted-foreground">
-        Videos que se muestran en la home debajo del mapa. Puedes usar enlaces de YouTube o subir videos a R2.
+        Solo los <strong>2 primeros videos</strong> se muestran en la home. Usa las flechas ▲ ▼ para ordenarlos.
       </p>
 
       {mensaje && (
@@ -324,19 +349,56 @@ export default function VideosAsociacionClient() {
             No hay videos. Añade el primero.
           </p>
         ) : (
-          videos.map((v) => (
+          videos.map((v, i) => (
             <div
               key={v.id}
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-4"
+              className={`flex items-center gap-3 rounded-lg border bg-card p-4 ${
+                i < 2 ? "border-primary/40 ring-1 ring-primary/20" : "border-border"
+              }`}
             >
-              <div>
-                <h4 className="font-medium">{v.titulo}</h4>
+              {/* Posición + flechas */}
+              <div className="flex flex-col items-center gap-1">
+                <button
+                  onClick={() => handleMove(i, "up")}
+                  disabled={i === 0}
+                  className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:invisible"
+                  title="Subir"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="18,15 12,9 6,15" /></svg>
+                </button>
+                <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                  i < 2 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                }`}>
+                  {i + 1}
+                </span>
+                <button
+                  onClick={() => handleMove(i, "down")}
+                  disabled={i === videos.length - 1}
+                  className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:invisible"
+                  title="Bajar"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6,9 12,15 18,9" /></svg>
+                </button>
+              </div>
+
+              {/* Info */}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-medium">{v.titulo}</h4>
+                  {i < 2 && (
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                      Visible en home
+                    </span>
+                  )}
+                </div>
                 <p className="mt-1 truncate text-sm text-muted-foreground">{v.url}</p>
                 <span className="mt-1 inline-block rounded bg-muted px-2 py-0.5 text-xs">
                   {v.tipo}
                 </span>
               </div>
-              <div className="flex gap-2">
+
+              {/* Acciones */}
+              <div className="flex gap-2 shrink-0">
                 <button
                   onClick={() => startEdit(v)}
                   className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted"
