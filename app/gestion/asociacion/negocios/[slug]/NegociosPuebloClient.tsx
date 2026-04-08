@@ -974,10 +974,139 @@ export default function NegociosPuebloClient({
                   );
                 })()}
               </div>
+
+              {/* Landing personalizada */}
+              {(() => {
+                const pk = (n.planNegocio ?? 'FREE') as PlanNegocio;
+                const pf = getPlanFeatures(pk);
+                if (!pf.customLandingEnabled) return null;
+                return <NegocioLandingEditor negocio={n} />;
+              })()}
             </div>
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function NegocioLandingEditor({ negocio }: { negocio: Negocio }) {
+  const [config, setConfig] = useState<Record<string, any>>(
+    (negocio.landingConfig as Record<string, any>) ?? {},
+  );
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  const update = (key: string, value: string) =>
+    setConfig((c) => ({ ...c, [key]: value }));
+
+  const handleSave = async () => {
+    setSaving(true);
+    setMsg('');
+    try {
+      const res = await fetch(`/api/club/negocios/${negocio.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ landingConfig: config }),
+      });
+      if (res.ok) setMsg('Guardado');
+      else setMsg('Error al guardar');
+    } catch {
+      setMsg('Error de conexión');
+    }
+    setSaving(false);
+  };
+
+  const landingUrl = `/negocio/${negocio.codigoQr.replace(/^qr-/, '')}`;
+  const slug = (negocio as any).slug;
+  const previewUrl = slug ? `/negocio/${slug}` : landingUrl;
+
+  return (
+    <div className="mt-3 border-t border-gray-100 pt-3">
+      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+        Landing personalizada
+      </h4>
+      <div className="rounded-lg border border-border p-4 space-y-3">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Titular principal</label>
+            <input
+              value={config.headline ?? ''}
+              onChange={(e) => update('headline', e.target.value)}
+              className="w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              placeholder={negocio.nombre}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Subtítulo</label>
+            <input
+              value={config.subheadline ?? ''}
+              onChange={(e) => update('subheadline', e.target.value)}
+              className="w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              placeholder="Descripción breve"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Texto del botón CTA</label>
+            <input
+              value={config.ctaText ?? ''}
+              onChange={(e) => update('ctaText', e.target.value)}
+              className="w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              placeholder="Reservar ahora"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">URL del botón CTA</label>
+            <input
+              value={config.ctaUrl ?? ''}
+              onChange={(e) => update('ctaUrl', e.target.value)}
+              className="w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              placeholder="https://..."
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">URL imagen hero</label>
+            <input
+              value={config.heroImageUrl ?? ''}
+              onChange={(e) => update('heroImageUrl', e.target.value)}
+              className="w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              placeholder="Se usa la primera foto si se deja vacío"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Tema visual</label>
+            <select
+              value={config.theme ?? 'classic'}
+              onChange={(e) => update('theme', e.target.value)}
+              className="w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="classic">Clásico</option>
+              <option value="dark">Oscuro</option>
+              <option value="nature">Naturaleza</option>
+              <option value="elegant">Elegante</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+          >
+            {saving ? 'Guardando...' : 'Guardar landing'}
+          </button>
+          <a
+            href={previewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-primary hover:underline"
+          >
+            Ver landing →
+          </a>
+          {msg && <span className="text-xs text-muted-foreground">{msg}</span>}
+        </div>
+      </div>
     </div>
   );
 }
