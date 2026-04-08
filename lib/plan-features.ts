@@ -179,3 +179,32 @@ export const PLAN_PRICES: Record<PlanNegocio, number | null> = {
   PREMIUM: null,
   SELECTION: null,
 };
+
+export const SERVICIOS_DISPONIBLES: { key: string; label: string; icon: string }[] = [
+  { key: 'WIFI', label: 'WiFi', icon: 'wifi' },
+  { key: 'PARKING', label: 'Parking', icon: 'parking' },
+  { key: 'PISCINA', label: 'Piscina', icon: 'pool' },
+  { key: 'AC', label: 'Aire acondicionado', icon: 'ac' },
+  { key: 'TERRAZA', label: 'Terraza', icon: 'terraza' },
+  { key: 'JARDIN', label: 'Jardín', icon: 'jardin' },
+  { key: 'MASCOTAS', label: 'Admite mascotas', icon: 'mascotas' },
+  { key: 'ACCESIBLE', label: 'Accesible', icon: 'accesible' },
+  { key: 'DESAYUNO', label: 'Desayuno incluido', icon: 'desayuno' },
+  { key: 'MEDIA_PENSION', label: 'Media pensión', icon: 'media_pension' },
+  { key: 'SPA', label: 'Spa / Wellness', icon: 'spa' },
+  { key: 'CHIMENEA', label: 'Chimenea', icon: 'chimenea' },
+  { key: 'COCINA', label: 'Cocina disponible', icon: 'cocina' },
+  { key: 'LAVADORA', label: 'Lavadora', icon: 'lavadora' },
+  { key: 'TV', label: 'Televisión', icon: 'tv' },
+  { key: 'CALEFACCION', label: 'Calefacción', icon: 'calefaccion' },
+];
+
+export const SOCIAL_NETWORKS: { key: string; label: string }[] = [
+  { key: 'instagram', label: 'Instagram' },
+  { key: 'facebook', label: 'Facebook' },
+  { key: 'tiktok', label: 'TikTok' },
+  { key: 'twitter', label: 'X (Twitter)' },
+  { key: 'youtube', label: 'YouTube' },
+  { key: 'tripadvisor', label: 'TripAdvisor' },
+  { key: 'google', label: 'Google Maps / Business' },
+];

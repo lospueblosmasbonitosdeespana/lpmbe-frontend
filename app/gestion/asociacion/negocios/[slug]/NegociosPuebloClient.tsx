@@ -5,6 +5,7 @@ import NegocioGallery from './NegocioGallery';
 import NegocioOfertas from './NegocioOfertas';
 import NegocioStats from './NegocioStats';
 import MapLocationPicker from '@/app/components/MapLocationPicker';
+import { SERVICIOS_DISPONIBLES, SOCIAL_NETWORKS, getPlanFeatures, type PlanNegocio } from '@/lib/plan-features';
 
 const TIPOS_NEGOCIO = [
   'HOTEL',
@@ -45,6 +46,12 @@ type Negocio = {
   telefono?: string | null;
   email?: string | null;
   web?: string | null;
+  whatsapp?: string | null;
+  bookingUrl?: string | null;
+  localidad?: string | null;
+  socialLinks?: Record<string, string> | null;
+  servicios?: string[] | null;
+  landingConfig?: Record<string, any> | null;
   fotoUrl?: string | null;
   lat?: number | null;
   lng?: number | null;
@@ -84,6 +91,11 @@ type FormData = {
   lng: string;
   provincia: string;
   comunidad: string;
+  whatsapp: string;
+  bookingUrl: string;
+  localidad: string;
+  socialLinks: Record<string, string>;
+  servicios: string[];
 };
 
 const emptyForm: FormData = {
@@ -99,6 +111,11 @@ const emptyForm: FormData = {
   lng: '',
   provincia: '',
   comunidad: '',
+  whatsapp: '',
+  bookingUrl: '',
+  localidad: '',
+  socialLinks: {},
+  servicios: [],
 };
 
 export default function NegociosPuebloClient({
@@ -231,6 +248,11 @@ export default function NegociosPuebloClient({
       lng: n.lng != null ? String(n.lng) : '',
       provincia: n.provincia ?? puebloProvincia,
       comunidad: n.comunidad ?? puebloComunidad,
+      whatsapp: n.whatsapp ?? '',
+      bookingUrl: n.bookingUrl ?? '',
+      localidad: n.localidad ?? '',
+      socialLinks: (n.socialLinks as Record<string, string>) ?? {},
+      servicios: (n.servicios as string[]) ?? [],
     });
     setShowForm(true);
     setMsg(null);
@@ -271,6 +293,9 @@ export default function NegociosPuebloClient({
       setNullableField('email', form.email);
       setNullableField('web', form.web);
       setNullableField('contacto', form.contacto);
+      setNullableField('whatsapp', form.whatsapp);
+      setNullableField('bookingUrl', form.bookingUrl);
+      setNullableField('localidad', form.localidad);
       if (form.descuentoPorcentaje.trim()) {
         body.descuentoPorcentaje = Number(form.descuentoPorcentaje);
       }
@@ -278,6 +303,12 @@ export default function NegociosPuebloClient({
       if (form.lng.trim()) body.lng = Number(form.lng);
       if (form.provincia.trim()) body.provincia = form.provincia.trim();
       if (form.comunidad.trim()) body.comunidad = form.comunidad.trim();
+
+      const filteredLinks = Object.fromEntries(
+        Object.entries(form.socialLinks).filter(([, v]) => v.trim()),
+      );
+      body.socialLinks = Object.keys(filteredLinks).length > 0 ? filteredLinks : null;
+      body.servicios = form.servicios.length > 0 ? form.servicios : null;
 
       let res: Response;
       if (editId) {
@@ -483,6 +514,105 @@ export default function NegociosPuebloClient({
               className="w-full max-w-xl rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
+
+          {/* WhatsApp, Booking, Localidad */}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">WhatsApp</label>
+              <input
+                value={form.whatsapp}
+                onChange={(e) => setForm((f) => ({ ...f, whatsapp: e.target.value }))}
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="+34600123456"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Enlace de reservas</label>
+              <input
+                value={form.bookingUrl}
+                onChange={(e) => setForm((f) => ({ ...f, bookingUrl: e.target.value }))}
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="https://booking.com/..."
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Localidad</label>
+              <input
+                value={form.localidad}
+                onChange={(e) => setForm((f) => ({ ...f, localidad: e.target.value }))}
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="Ciudad o localidad"
+              />
+            </div>
+          </div>
+
+          {/* Servicios / amenities */}
+          {(() => {
+            const planKey = (negocioEditando?.planNegocio ?? 'FREE') as PlanNegocio;
+            const pf = getPlanFeatures(planKey);
+            if (!pf.serviceHighlightsEnabled) return null;
+            return (
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-2">Servicios</label>
+                <div className="flex flex-wrap gap-2">
+                  {SERVICIOS_DISPONIBLES.map((s) => {
+                    const active = form.servicios.includes(s.key);
+                    return (
+                      <button
+                        key={s.key}
+                        type="button"
+                        onClick={() =>
+                          setForm((f) => ({
+                            ...f,
+                            servicios: active
+                              ? f.servicios.filter((k) => k !== s.key)
+                              : [...f.servicios, s.key],
+                          }))
+                        }
+                        className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors border ${
+                          active
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-muted text-muted-foreground border-border hover:bg-accent'
+                        }`}
+                      >
+                        {s.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Redes sociales */}
+          {(() => {
+            const planKey = (negocioEditando?.planNegocio ?? 'FREE') as PlanNegocio;
+            const pf = getPlanFeatures(planKey);
+            if (!pf.socialLinksEnabled) return null;
+            return (
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-2">Redes sociales</label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {SOCIAL_NETWORKS.map((sn) => (
+                    <div key={sn.key} className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-muted-foreground w-24 shrink-0">{sn.label}</span>
+                      <input
+                        value={form.socialLinks[sn.key] ?? ''}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            socialLinks: { ...f.socialLinks, [sn.key]: e.target.value },
+                          }))
+                        }
+                        className="w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        placeholder={`https://${sn.key}.com/...`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Descuento resumen: un solo % para listados y cabecera de ficha (distinto de ofertas estructuradas) */}
           <div className="rounded-xl border-2 border-[#c45c48] bg-[#fdf6f3] p-4 sm:p-5 shadow-sm ring-1 ring-[#c45c48]/10">

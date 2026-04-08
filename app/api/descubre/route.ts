@@ -9,7 +9,7 @@ export async function GET(req: Request) {
 
   try {
     const res = await fetchWithTimeout(`${API_BASE}/public/descubre?lang=${lang}`, {
-      next: { revalidate: 300 },
+      next: { revalidate: 60 },
       timeoutMs: 8000,
     });
     if (!res.ok) return NextResponse.json([], { status: res.status });

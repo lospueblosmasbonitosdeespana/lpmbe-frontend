@@ -311,6 +311,18 @@ export default async function ClubPuebloPage({
     }
   } catch {}
 
+  const featuredOffers = negocios
+    .filter((n) => {
+      const f = getPlanFeatures(n.planNegocio);
+      return f.featuredOffersEnabled && n.ofertas?.some((o) => o.destacada);
+    })
+    .flatMap((n) =>
+      (n.ofertas ?? [])
+        .filter((o) => o.destacada)
+        .map((o) => ({ ...o, negocio: n })),
+    )
+    .slice(0, 6);
+
   const PLAN_SORT: Record<string, number> = { PREMIUM: 0, RECOMENDADO: 1, FREE: 2 };
   const negociosByTipo = TIPO_ORDER
     .map((tipo) => ({
@@ -371,6 +383,61 @@ export default async function ClubPuebloPage({
       </div>
 
       <div className="mx-auto max-w-5xl px-4 py-8 space-y-10">
+        {/* Featured offers banner */}
+        {featuredOffers.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-xl">🔥</span>
+              <h2 className="text-xl font-semibold text-foreground">Ofertas destacadas</h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {featuredOffers.map((fo) => {
+                const detailHref = TIPO_TO_ROUTE[fo.negocio.tipo]
+                  ? `/${TIPO_TO_ROUTE[fo.negocio.tipo]}/${slug}/${fo.negocio.slug}`
+                  : `/pueblos/${slug}/club/${fo.negocio.slug}`;
+                return (
+                  <Link
+                    key={`${fo.negocio.id}-${fo.id}`}
+                    href={detailHref}
+                    className="relative overflow-hidden rounded-xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-white p-4 shadow-sm hover:shadow-md transition-all group"
+                  >
+                    <div className="flex items-start gap-3">
+                      {fo.negocio.imagenes?.[0]?.url && (
+                        <img
+                          src={fo.negocio.imagenes[0].url}
+                          alt={fo.negocio.nombre}
+                          className="h-14 w-14 rounded-lg object-cover shrink-0"
+                        />
+                      )}
+                      <div className="min-w-0">
+                        <span className="block text-xs font-medium text-amber-700 truncate">
+                          {fo.negocio.nombre}
+                        </span>
+                        <span className="block text-sm font-bold text-foreground mt-0.5">
+                          {fo.titulo}
+                        </span>
+                        {fo.descuentoPorcentaje != null && fo.descuentoPorcentaje > 0 && (
+                          <span className="mt-1 inline-block rounded bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
+                            {fo.descuentoPorcentaje}% dto.
+                          </span>
+                        )}
+                        {fo.valorFijoCents != null && fo.valorFijoCents > 0 && (
+                          <span className="mt-1 inline-block rounded bg-green-600 px-2 py-0.5 text-xs font-bold text-white">
+                            {(fo.valorFijoCents / 100).toFixed(2)} € gratis
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <span className="block mt-2 text-xs text-primary font-medium group-hover:underline">
+                      Ver oferta →
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         {recursosPueblo.length === 0 && negocios.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center">
             <p className="text-lg text-muted-foreground">

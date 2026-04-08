@@ -54,6 +54,7 @@ const SECCIONES: {
       { href: '/gestion/asociacion/club', title: 'Club de amigos', description: 'Configuración del club y socios', emoji: '👥', accent: 'violet' },
       { href: '/gestion/asociacion/recursos-turisticos', title: 'Recursos turísticos', description: 'Castillos, monasterios y otros recursos de la asociación', emoji: '🏰', accent: 'stone' },
       { href: '/gestion/asociacion/negocios', title: 'Negocios', description: 'Hoteles, restaurantes, casas rurales y comercios de los pueblos', emoji: '🏪', accent: 'teal' },
+      { href: '/gestion/asociacion/selection', title: 'Selection', description: 'Candidaturas y gestión del programa Club LPMBE Selection', emoji: '⭐', accent: 'stone' },
       { href: '/gestion/asociacion/tienda', title: 'Tienda', description: 'Productos, pedidos y promociones online', emoji: '🛒', accent: 'amber' },
       { href: '/gestion/asociacion/app', title: 'App', description: 'Pop-ups y ofertas en la app móvil', emoji: '📱', accent: 'cyan' },
     ],

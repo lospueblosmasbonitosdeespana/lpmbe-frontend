@@ -58,6 +58,7 @@ type Collection = {
   color: string;
   title: string;
   description: string;
+  imageUrl?: string | null;
 };
 
 async function getCollections(locale: string): Promise<Collection[]> {
@@ -65,7 +66,7 @@ async function getCollections(locale: string): Promise<Collection[]> {
   try {
     const res = await fetchWithTimeout(
       `${API_BASE}/public/descubre?lang=${encodeURIComponent(locale)}`,
-      { next: { revalidate: 300 }, timeoutMs: 8000 },
+      { cache: "no-store", timeoutMs: 8000 },
     );
     if (!res.ok) return [];
     return res.json();
