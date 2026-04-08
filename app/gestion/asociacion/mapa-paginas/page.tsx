@@ -183,10 +183,10 @@ const PAGES: PageRow[] = [
     category: 'descubre',
   },
   {
-    url: '/descubre/pueblos-con-nieve-hoy',
-    label: '❄️ Pueblos con nieve hoy',
-    source: 'Datos meteo en tiempo real (Open-Meteo API). Se filtran pueblos con snowfallMm > 0.1.',
-    triggerNew: 'Totalmente automático. Cambia cada hora según la previsión meteorológica.',
+    url: '/descubre/pueblos-con-nieve-fresca',
+    label: '❄️ Pueblos con nieve fresca',
+    source: 'Datos meteo en tiempo real (Open-Meteo API). Nieve real acumulada en las últimas 24h (acumulados.nieve24hCm > 0.1 cm).',
+    triggerNew: 'Totalmente automático. Cambia cada hora con datos reales, no previsión.',
     category: 'descubre',
   },
   {
