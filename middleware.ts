@@ -311,7 +311,7 @@ export function middleware(req: NextRequest): NextResponse {
   const KNOWN_TOP_ROUTES = new Set([
     'actualidad', 'agenda', 'alertas', 'app', 'articulos', 'aviso-legal',
     'c', 'checkout', 'club', 'colaborador', 'contacto', 'cookies', 'cuenta',
-    'cultura', 'cupones', 'donde-comer', 'donde-comprar', 'donde-dormir',
+    'cultura', 'cupones', 'descubre', 'donde-comer', 'donde-comprar', 'donde-dormir',
     'el-sello', 'en-familia', 'entrar', 'eventos', 'experiencias',
     'gestion', 'mapa', 'meteo', 'mi-cuenta', 'multiexperiencias',
     'naturaleza', 'newsletter', 'noche-romantica', 'noticias', 'notificaciones',
