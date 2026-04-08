@@ -45,6 +45,7 @@ type PageData = {
   resumen?: string | null;
   contenido: string;
   coverUrl?: string | null;
+  galleryUrls?: string[];
   category: string;
   updatedAt?: string;
 };
@@ -280,6 +281,28 @@ export default async function ExperienciaPuebloPage({
                   wrapperClassName="aspect-[16/9] w-full rounded-2xl"
                   className="rounded-2xl"
                 />
+              </div>
+            )}
+
+            {/* Fotos de galería (foto 1, 2, 3 de gestión) */}
+            {(page.galleryUrls?.length ?? 0) > 0 && (
+              <div
+                className={`mb-8 grid gap-3 ${
+                  (page.galleryUrls?.length ?? 0) === 1
+                    ? 'grid-cols-1'
+                    : 'grid-cols-2'
+                }`}
+              >
+                {page.galleryUrls!.map((url, i) => (
+                  <ZoomableImage
+                    key={i}
+                    src={url}
+                    alt={`${page.titulo} — foto ${i + 1}`}
+                    fit="cover"
+                    wrapperClassName="aspect-[4/3] w-full overflow-hidden rounded-xl"
+                    className="rounded-xl"
+                  />
+                ))}
               </div>
             )}
 
