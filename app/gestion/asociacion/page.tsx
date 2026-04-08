@@ -69,6 +69,14 @@ const SECCIONES: {
     ],
   },
   {
+    title: 'Documentación interna',
+    subtitle: 'Referencia técnica para el equipo de gestión.',
+    tone: 'sky',
+    items: [
+      { href: '/gestion/asociacion/mapa-paginas', title: 'Mapa de páginas y datos', description: 'Cada página pública, de dónde salen los datos y qué hace falta para que aparezca', emoji: '🗂️', accent: 'sky' },
+    ],
+  },
+  {
     title: 'Archivos, datos y marca',
     subtitle: 'Logos, fototeca, métricas y páginas legales.',
     tone: 'slate',
