@@ -315,9 +315,9 @@ export function middleware(req: NextRequest): NextResponse {
     'el-sello', 'en-familia', 'entrar', 'eventos', 'experiencias',
     'gestion', 'mapa', 'meteo', 'mi-cuenta', 'multiexperiencias',
     'naturaleza', 'newsletter', 'noche-romantica', 'noticias', 'notificaciones',
-    'para-negocios', 'patrimonio', 'petfriendly', 'planifica', 'prensa',
+    'negocio', 'para-negocios', 'patrimonio', 'petfriendly', 'planifica', 'prensa',
     'privacidad', 'pueblos', 'que-comer', 'recuperar', 'recursos',
-    'redes-sociales', 'registro', 'rutas', 'tienda', 'validador', 'webcams',
+    'redes-sociales', 'registro', 'rutas', 'selection', 'tienda', 'validador', 'webcams',
   ]);
   const singleSegMatch = pathname.match(/^\/([^/]+)$/);
   if (singleSegMatch) {

@@ -2,16 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 const TIPOS = [
-  { value: "HOTEL", label: "Hotel / Hotel boutique" },
-  { value: "CASA_RURAL", label: "Casa rural / Agroturismo" },
-  { value: "RESTAURANTE", label: "Restaurante" },
-  { value: "BAR", label: "Bar / Gastrobar" },
-  { value: "BODEGA", label: "Bodega / Enoteca" },
-  { value: "COMERCIO", label: "Comercio / Tienda gourmet" },
-  { value: "EXPERIENCIA", label: "Experiencia / Actividad" },
-  { value: "OTRO", label: "Otro" },
+  { value: "HOTEL", labelKey: "Hotel / Hotel boutique" },
+  { value: "CASA_RURAL", labelKey: "Casa rural / Agroturismo" },
+  { value: "RESTAURANTE", labelKey: "Restaurante" },
+  { value: "BAR", labelKey: "Bar / Gastrobar" },
+  { value: "BODEGA", labelKey: "Bodega / Enoteca" },
+  { value: "COMERCIO", labelKey: "Comercio / Tienda gourmet" },
+  { value: "EXPERIENCIA", labelKey: "Experiencia / Actividad" },
+  { value: "OTRO", labelKey: "Otro" },
 ];
 
 type FormState = {
@@ -39,6 +40,8 @@ const empty: FormState = {
 };
 
 export function CandidaturaForm() {
+  const t = useTranslations("candidatura");
+  const tSel = useTranslations("selection");
   const [form, setForm] = useState<FormState>(empty);
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
@@ -49,7 +52,7 @@ export function CandidaturaForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.nombreNegocio.trim() || !form.contactoEmail.trim() || !form.descripcion.trim()) {
-      setResult({ ok: false, message: "Rellena todos los campos obligatorios." });
+      setResult({ ok: false, message: t("fillRequired") });
       return;
     }
     setSending(true);
@@ -62,13 +65,13 @@ export function CandidaturaForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        setResult({ ok: true, message: data.message || "Candidatura enviada correctamente." });
+        setResult({ ok: true, message: data.message || t("successTitle") });
         setForm(empty);
       } else {
-        setResult({ ok: false, message: data.message || "Error al enviar." });
+        setResult({ ok: false, message: data.message || t("sendError") });
       }
     } catch {
-      setResult({ ok: false, message: "Error de conexión. Inténtalo de nuevo." });
+      setResult({ ok: false, message: t("connectionError") });
     } finally {
       setSending(false);
     }
@@ -81,17 +84,19 @@ export function CandidaturaForm() {
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
           <polyline points="22 4 12 14.01 9 11.01" />
         </svg>
-        <h3 className="mt-4 text-lg font-bold text-green-800">Candidatura recibida</h3>
+        <h3 className="mt-4 text-lg font-bold text-green-800">{t("successTitle")}</h3>
         <p className="mt-2 text-sm text-green-700">{result.message}</p>
         <Link
           href="/selection"
           className="mt-6 inline-block rounded-lg bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-slate-800"
         >
-          Volver a Selection
+          {tSel("backToSelection")}
         </Link>
       </div>
     );
   }
+
+  const inputCls = "w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -102,60 +107,52 @@ export function CandidaturaForm() {
       )}
 
       <fieldset className="space-y-4">
-        <legend className="text-lg font-bold text-foreground">Datos del establecimiento</legend>
+        <legend className="text-lg font-bold text-foreground">{t("establishmentData")}</legend>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Nombre del establecimiento *</label>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">{t("nameLabel")} *</label>
             <input value={form.nombreNegocio} onChange={set("nombreNegocio")} required
-              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Ej: Hotel Rural Los Olivos" />
+              className={inputCls} placeholder={t("namePlaceholder")} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Tipo *</label>
-            <select value={form.tipo} onChange={set("tipo")}
-              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
-              {TIPOS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+            <label className="block text-xs font-medium text-muted-foreground mb-1">{t("typeLabel")} *</label>
+            <select value={form.tipo} onChange={set("tipo")} className={inputCls}>
+              {TIPOS.map((tp) => <option key={tp.value} value={tp.value}>{tp.labelKey}</option>)}
             </select>
           </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Localidad *</label>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">{t("locationLabel")} *</label>
             <input value={form.localidad} onChange={set("localidad")} required
-              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Ej: Ronda" />
+              className={inputCls} placeholder={t("locationPlaceholder")} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Provincia *</label>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">{t("provinceLabel")} *</label>
             <input value={form.provincia} onChange={set("provincia")} required
-              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Ej: Málaga" />
+              className={inputCls} placeholder={t("provincePlaceholder")} />
           </div>
         </div>
         <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">Página web</label>
-          <input value={form.web} onChange={set("web")}
-            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-            placeholder="https://..." />
+          <label className="block text-xs font-medium text-muted-foreground mb-1">{t("websiteLabel")}</label>
+          <input value={form.web} onChange={set("web")} className={inputCls} placeholder="https://..." />
         </div>
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="text-lg font-bold text-foreground">Datos de contacto</legend>
+        <legend className="text-lg font-bold text-foreground">{t("contactData")}</legend>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Nombre *</label>
-            <input value={form.contactoNombre} onChange={set("contactoNombre")} required
-              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+            <label className="block text-xs font-medium text-muted-foreground mb-1">{t("contactNameLabel")} *</label>
+            <input value={form.contactoNombre} onChange={set("contactoNombre")} required className={inputCls} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Email *</label>
-            <input type="email" value={form.contactoEmail} onChange={set("contactoEmail")} required
-              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+            <label className="block text-xs font-medium text-muted-foreground mb-1">{t("contactEmailLabel")} *</label>
+            <input type="email" value={form.contactoEmail} onChange={set("contactoEmail")} required className={inputCls} />
           </div>
         </div>
         <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">Teléfono</label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1">{t("contactPhoneLabel")}</label>
           <input value={form.contactoTelefono} onChange={set("contactoTelefono")}
             className="w-full max-w-xs rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
         </div>
@@ -163,16 +160,15 @@ export function CandidaturaForm() {
 
       <div>
         <label className="block text-xs font-medium text-muted-foreground mb-1">
-          ¿Por qué tu establecimiento debería formar parte de Selection? *
+          {t("motivationLabel")} *
         </label>
         <textarea value={form.descripcion} onChange={set("descripcion")} required rows={5}
-          className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-          placeholder="Cuéntanos qué hace especial a tu negocio, qué experiencia ofreces, premios, reconocimientos..." />
+          className={inputCls} placeholder={t("motivationPlaceholder")} />
       </div>
 
       <button type="submit" disabled={sending}
         className="w-full rounded-lg bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50 transition-colors">
-        {sending ? "Enviando..." : "Enviar candidatura"}
+        {sending ? t("sending") : t("submitButton")}
       </button>
     </form>
   );

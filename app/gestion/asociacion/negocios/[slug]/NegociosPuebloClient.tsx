@@ -995,6 +995,7 @@ function NegocioLandingEditor({ negocio }: { negocio: Negocio }) {
     (negocio.landingConfig as Record<string, any>) ?? {},
   );
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState('');
 
   const update = (key: string, value: string) =>
@@ -1017,9 +1018,46 @@ function NegocioLandingEditor({ negocio }: { negocio: Negocio }) {
     setSaving(false);
   };
 
+  const handleHeroUpload = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e: any) => {
+      const file = e.target?.files?.[0];
+      if (!file) return;
+      setUploading(true);
+      setMsg('');
+      try {
+        const { compressImage } = await import('@/src/lib/compressImage');
+        const compressed = await compressImage(file, {
+          fileName: file.name.replace(/\.[^.]+$/, ''),
+        });
+        const fd = new FormData();
+        fd.append('file', compressed);
+        fd.append('folder', 'negocios/landing');
+        const uploadRes = await fetch('/api/admin/uploads', {
+          method: 'POST',
+          body: fd,
+          credentials: 'include',
+        });
+        const json = await uploadRes.json().catch(() => null);
+        if (!uploadRes.ok) throw new Error(json?.error ?? json?.message ?? `Error ${uploadRes.status}`);
+        const url = json?.url ?? json?.publicUrl ?? json?.data?.url ?? null;
+        if (!url) throw new Error('No se recibió URL de imagen');
+        update('heroImageUrl', url);
+        setMsg('Imagen subida (recuerda guardar)');
+      } catch (err: any) {
+        setMsg(err?.message ?? 'Error subiendo imagen');
+      }
+      setUploading(false);
+    };
+    input.click();
+  };
+
   const landingUrl = `/negocio/${negocio.codigoQr.replace(/^qr-/, '')}`;
   const slug = (negocio as any).slug;
   const previewUrl = slug ? `/negocio/${slug}` : landingUrl;
+  const inputCls = 'w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
 
   return (
     <div className="mt-3 border-t border-gray-100 pt-3">
@@ -1030,56 +1068,41 @@ function NegocioLandingEditor({ negocio }: { negocio: Negocio }) {
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">Titular principal</label>
-            <input
-              value={config.headline ?? ''}
-              onChange={(e) => update('headline', e.target.value)}
-              className="w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder={negocio.nombre}
-            />
+            <input value={config.headline ?? ''} onChange={(e) => update('headline', e.target.value)}
+              className={inputCls} placeholder={negocio.nombre} />
           </div>
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">Subtítulo</label>
-            <input
-              value={config.subheadline ?? ''}
-              onChange={(e) => update('subheadline', e.target.value)}
-              className="w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Descripción breve"
-            />
+            <input value={config.subheadline ?? ''} onChange={(e) => update('subheadline', e.target.value)}
+              className={inputCls} placeholder="Descripción breve" />
           </div>
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">Texto del botón CTA</label>
-            <input
-              value={config.ctaText ?? ''}
-              onChange={(e) => update('ctaText', e.target.value)}
-              className="w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Reservar ahora"
-            />
+            <input value={config.ctaText ?? ''} onChange={(e) => update('ctaText', e.target.value)}
+              className={inputCls} placeholder="Reservar ahora" />
           </div>
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">URL del botón CTA</label>
-            <input
-              value={config.ctaUrl ?? ''}
-              onChange={(e) => update('ctaUrl', e.target.value)}
-              className="w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="https://..."
-            />
+            <input value={config.ctaUrl ?? ''} onChange={(e) => update('ctaUrl', e.target.value)}
+              className={inputCls} placeholder="https://..." />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">URL imagen hero</label>
-            <input
-              value={config.heroImageUrl ?? ''}
-              onChange={(e) => update('heroImageUrl', e.target.value)}
-              className="w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Se usa la primera foto si se deja vacío"
-            />
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Imagen hero</label>
+            <div className="flex gap-2 items-center">
+              <input value={config.heroImageUrl ?? ''} onChange={(e) => update('heroImageUrl', e.target.value)}
+                className={`flex-1 ${inputCls}`} placeholder="URL o sube una imagen" />
+              <button type="button" onClick={handleHeroUpload} disabled={uploading}
+                className="shrink-0 rounded-lg bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent disabled:opacity-50 transition-colors">
+                {uploading ? 'Subiendo...' : 'Subir'}
+              </button>
+            </div>
+            {config.heroImageUrl && (
+              <img src={config.heroImageUrl} alt="Hero preview" className="mt-2 h-24 w-full rounded-lg object-cover border border-border" />
+            )}
           </div>
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">Tema visual</label>
-            <select
-              value={config.theme ?? 'classic'}
-              onChange={(e) => update('theme', e.target.value)}
-              className="w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-            >
+            <select value={config.theme ?? 'classic'} onChange={(e) => update('theme', e.target.value)} className={inputCls}>
               <option value="classic">Clásico</option>
               <option value="dark">Oscuro</option>
               <option value="nature">Naturaleza</option>
@@ -1088,20 +1111,12 @@ function NegocioLandingEditor({ negocio }: { negocio: Negocio }) {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
-          >
+          <button type="button" onClick={handleSave} disabled={saving}
+            className="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
             {saving ? 'Guardando...' : 'Guardar landing'}
           </button>
-          <a
-            href={previewUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-primary hover:underline"
-          >
+          <a href={previewUrl} target="_blank" rel="noopener noreferrer"
+            className="text-xs text-primary hover:underline">
             Ver landing →
           </a>
           {msg && <span className="text-xs text-muted-foreground">{msg}</span>}

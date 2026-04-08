@@ -1,26 +1,51 @@
 import type { Metadata } from "next";
-import { seoTitle, seoDescription } from "@/lib/seo";
+import { getLocale, getTranslations } from "next-intl/server";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  getOGLocale,
+  seoTitle,
+  seoDescription,
+  type SupportedLocale,
+} from "@/lib/seo";
 import { CandidaturaForm } from "./CandidaturaForm";
 
-export const metadata: Metadata = {
-  title: seoTitle("Candidatura Selection | Club LPMBE"),
-  description: seoDescription(
-    "Presenta la candidatura de tu establecimiento para formar parte del programa Club LPMBE Selection."
-  ),
-  robots: { index: true, follow: true },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations("seo");
+  const path = "/selection/candidatura";
+  const title = seoTitle(tSeo("selectionCandidaturaTitle"));
+  const description = seoDescription(tSeo("selectionCandidaturaDesc"));
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
-export default function CandidaturaPage() {
+export default async function CandidaturaPage() {
+  const t = await getTranslations("candidatura");
+  const tSel = await getTranslations("selection");
+
   return (
     <main className="min-h-screen bg-background">
       <div className="bg-gradient-to-b from-slate-900 to-slate-800 text-white">
         <div className="mx-auto max-w-3xl px-4 py-16 text-center">
           <h1 className="text-3xl font-bold sm:text-4xl">
-            Candidatura Club LPMBE Selection
+            {tSel("submitCandidacy")} — Club LPMBE Selection
           </h1>
           <p className="mt-4 text-slate-300 max-w-xl mx-auto">
-            Cuéntanos sobre tu establecimiento. Evaluaremos tu candidatura
-            y nos pondremos en contacto contigo.
+            {tSel("heroDesc")}
           </p>
         </div>
       </div>

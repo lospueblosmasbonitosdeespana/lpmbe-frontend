@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import {
   getCanonicalUrl,
@@ -48,14 +48,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations("seo");
   const recurso = await fetchRecurso(slug, locale);
   const name = recurso?.nombre ?? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const loc = recurso?.localidad ?? recurso?.provincia ?? "";
   const path = `/selection/${slug}`;
-  const title = seoTitle(`${name}${loc ? ` · ${loc}` : ""} | Club LPMBE Selection`);
-  const description = seoDescription(
-    `Descubre ${name}, un establecimiento seleccionado por Los Pueblos Más Bonitos de España.${loc ? ` Ubicado en ${loc}.` : ""} Ofertas y ventajas exclusivas para socios del Club.`
-  );
+  const title = seoTitle(tSeo("selectionDetailTitle", { nombre: `${name}${loc ? ` · ${loc}` : ""}` }));
+  const description = seoDescription(tSeo("selectionDetailDesc", { nombre: name }));
   return {
     title,
     description,
@@ -83,26 +82,27 @@ export default async function SelectionDetailPage({
 }) {
   const { slug } = await params;
   const locale = await getLocale();
+  const t = await getTranslations("selection");
+  const tTabs = await getTranslations("tabs");
   const recurso = await fetchRecurso(slug, locale);
 
   if (!recurso || recurso.activo === false) {
     return (
       <main className="min-h-screen bg-background">
         <div className="mx-auto max-w-4xl px-4 py-8">
-          <h1 className="text-2xl font-bold">Establecimiento no encontrado</h1>
-          <p className="mt-2 text-muted-foreground">
-            Este establecimiento no está disponible o no existe.
-          </p>
+          <h1 className="text-2xl font-bold">{t("notFound")}</h1>
+          <p className="mt-2 text-muted-foreground">{t("notFoundDesc")}</p>
           <Link href="/selection" className="mt-4 inline-block text-primary hover:underline">
-            Volver a Club LPMBE Selection
+            {t("backToSelection")}
           </Link>
         </div>
       </main>
     );
   }
 
+  const homeLabel = tTabs("home");
   const breadcrumbs = [
-    { label: "Inicio", href: "/" },
+    { label: homeLabel, href: "/" },
     { label: "Club LPMBE Selection", href: "/selection" },
     { label: recurso.nombre, href: `/selection/${slug}` },
   ];

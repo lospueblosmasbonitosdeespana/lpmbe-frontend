@@ -16,11 +16,10 @@ export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations("seo");
   const path = "/selection";
-  const title = seoTitle("Club LPMBE Selection | Establecimientos excepcionales");
-  const description = seoDescription(
-    "Descubre los establecimientos seleccionados por Los Pueblos Más Bonitos de España. Hoteles con encanto, restaurantes de autor y experiencias únicas en el entorno rural."
-  );
+  const title = seoTitle(tSeo("selectionTitle"));
+  const description = seoDescription(tSeo("selectionDesc"));
   return {
     title,
     description,
@@ -38,9 +37,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-async function fetchSelectionNegocios() {
+async function fetchSelectionNegocios(locale: string) {
   try {
-    const res = await fetch(`${getApiUrl()}/public/recursos/selection`, {
+    const res = await fetch(`${getApiUrl()}/public/recursos/selection?lang=${locale}`, {
       next: { revalidate: 60 },
     });
     if (!res.ok) return [];
@@ -51,11 +50,12 @@ async function fetchSelectionNegocios() {
 }
 
 export default async function SelectionPage() {
-  const negocios = await fetchSelectionNegocios();
+  const locale = await getLocale();
+  const t = await getTranslations("selection");
+  const negocios = await fetchSelectionNegocios(locale);
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero oscuro premium */}
       <div className="relative bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white">
         <div className="absolute inset-0 bg-[url('/images/selection-pattern.svg')] opacity-5" />
         <div className="relative mx-auto max-w-5xl px-4 py-20 text-center">
@@ -64,21 +64,18 @@ export default async function SelectionPage() {
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
             </svg>
             <h1 className="text-4xl font-bold sm:text-5xl tracking-tight">
-              Club LPMBE Selection
+              {t("heroTitle")}
             </h1>
           </div>
           <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-            Establecimientos excepcionales seleccionados por
-            Los Pueblos Más Bonitos de España
+            {t("heroSubtitle")}
           </p>
           <p className="mt-4 text-sm text-slate-400 max-w-xl mx-auto">
-            Un programa exclusivo para hoteles con encanto, restaurantes de autor
-            y experiencias únicas en el entorno rural español. Dentro o fuera de los pueblos de la red.
+            {t("heroDesc")}
           </p>
         </div>
       </div>
 
-      {/* Qué es Selection */}
       <div className="mx-auto max-w-5xl px-4 py-16">
         <div className="grid gap-8 md:grid-cols-3">
           <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
@@ -87,11 +84,8 @@ export default async function SelectionPage() {
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-foreground">Selección rigurosa</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Cada establecimiento pasa un proceso de evaluación antes de formar parte
-              del programa. Solo los mejores reciben el sello Selection.
-            </p>
+            <h3 className="text-lg font-bold text-foreground">{t("rigorousTitle")}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">{t("rigorousDesc")}</p>
           </div>
           <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-700 mb-4">
@@ -101,11 +95,8 @@ export default async function SelectionPage() {
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-foreground">En toda España</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Negocios excepcionales en rutas entre pueblos, cerca de la costa o en
-              cualquier rincón rural del país. No hace falta estar dentro de un pueblo de la red.
-            </p>
+            <h3 className="text-lg font-bold text-foreground">{t("allSpainTitle")}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">{t("allSpainDesc")}</p>
           </div>
           <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 text-green-700 mb-4">
@@ -114,21 +105,17 @@ export default async function SelectionPage() {
                 <circle cx="12" cy="7" r="4" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-foreground">Ventajas exclusivas</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Los socios del Club de Amigos disfrutan de descuentos y experiencias especiales
-              en cada establecimiento Selection.
-            </p>
+            <h3 className="text-lg font-bold text-foreground">{t("benefitsTitle")}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">{t("benefitsDesc")}</p>
           </div>
         </div>
       </div>
 
-      {/* Grid de negocios Selection */}
       <div className="mx-auto max-w-5xl px-4 pb-16">
         {negocios.length > 0 ? (
           <>
             <h2 className="text-2xl font-bold text-foreground mb-6">
-              Nuestros establecimientos
+              {t("ourEstablishments")}
             </h2>
             <SelectionGrid negocios={negocios} />
           </>
@@ -137,43 +124,40 @@ export default async function SelectionPage() {
             <svg className="mx-auto h-12 w-12 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
             </svg>
-            <h3 className="mt-4 text-lg font-semibold text-slate-700">Próximamente</h3>
+            <h3 className="mt-4 text-lg font-semibold text-slate-700">{t("comingSoon")}</h3>
             <p className="mt-2 text-sm text-slate-500 max-w-md mx-auto">
-              Estamos seleccionando los primeros establecimientos para el programa
-              Club LPMBE Selection. Si crees que tu negocio puede formar parte, no dudes en presentar tu candidatura.
+              {t("comingSoonDesc")}
             </p>
             <Link
               href="/selection/candidatura"
               className="mt-6 inline-block rounded-lg bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors"
             >
-              Presentar candidatura
+              {t("submitCandidacy")}
             </Link>
           </div>
         )}
       </div>
 
-      {/* CTA candidatura */}
       <div className="bg-slate-900 text-white">
         <div className="mx-auto max-w-5xl px-4 py-16 text-center">
           <h2 className="text-2xl font-bold sm:text-3xl">
-            ¿Tu establecimiento es excepcional?
+            {t("ctaTitle")}
           </h2>
           <p className="mt-4 text-slate-300 max-w-xl mx-auto">
-            Hoteles boutique, restaurantes de autor, bodegas con encanto, casas rurales únicas...
-            Si tu negocio ofrece una experiencia memorable, queremos conocerte.
+            {t("ctaDesc")}
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/selection/candidatura"
               className="rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-3 text-sm font-semibold text-white hover:from-amber-600 hover:to-amber-700 transition-all shadow-lg shadow-amber-500/25"
             >
-              Presentar candidatura
+              {t("submitCandidacy")}
             </Link>
             <Link
               href="/para-negocios"
               className="rounded-lg border border-slate-500 px-6 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors"
             >
-              Ver todos los planes
+              {t("viewPlans")}
             </Link>
           </div>
         </div>
