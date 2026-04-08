@@ -272,37 +272,28 @@ export default async function ExperienciaPuebloPage({
               </>
             )}
 
-            {page.coverUrl && page.coverUrl.trim() && (
-              <div className="mb-8 overflow-hidden rounded-2xl">
-                <ZoomableImage
-                  src={page.coverUrl.trim()}
-                  alt={page.titulo}
-                  fit="cover"
-                  wrapperClassName="aspect-[16/9] w-full rounded-2xl"
-                  className="rounded-2xl"
-                />
-              </div>
-            )}
-
-            {/* Fotos de galería (foto 1, 2, 3 de gestión) */}
+            {/* Galería de fotos (portada ya aparece en el hero superior) */}
             {(page.galleryUrls?.length ?? 0) > 0 && (
-              <div
-                className={`mb-8 grid gap-3 ${
-                  (page.galleryUrls?.length ?? 0) === 1
-                    ? 'grid-cols-1'
-                    : 'grid-cols-2'
-                }`}
-              >
-                {page.galleryUrls!.map((url, i) => (
-                  <ZoomableImage
-                    key={i}
-                    src={url}
-                    alt={`${page.titulo} — foto ${i + 1}`}
-                    fit="cover"
-                    wrapperClassName="aspect-[4/3] w-full overflow-hidden rounded-xl"
-                    className="rounded-xl"
-                  />
-                ))}
+              <div className="mb-10">
+                <h2 className="mb-4 text-lg font-semibold text-foreground">Galería</h2>
+                <div
+                  className={`grid gap-2 ${
+                    (page.galleryUrls?.length ?? 0) >= 3
+                      ? 'grid-cols-3'
+                      : 'grid-cols-2'
+                  }`}
+                >
+                  {page.galleryUrls!.map((url, i) => (
+                    <ZoomableImage
+                      key={i}
+                      src={url}
+                      alt={`${page.titulo} — foto ${i + 1}`}
+                      fit="cover"
+                      wrapperClassName="aspect-square w-full overflow-hidden rounded-xl bg-muted"
+                      className="rounded-xl"
+                    />
+                  ))}
+                </div>
               </div>
             )}
 
