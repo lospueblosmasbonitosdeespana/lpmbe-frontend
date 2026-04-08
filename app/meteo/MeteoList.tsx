@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   Sun, CloudSun, Cloud, Cloudy, CloudFog,
   CloudDrizzle, CloudRain, CloudSnow, CloudLightning,
+  Droplets, Thermometer, Waves, Wind,
 } from "lucide-react";
 import { getComunidadFlagSrc } from "@/lib/flags";
 import { SortBar } from "./SortBar";
@@ -35,9 +36,11 @@ type MeteoItem = {
     current: {
       time: string;
       temperatureC: number | null;
+      feelsLikeC?: number | null;
       windKph: number | null;
       windDirDeg: number | null;
       weatherCode: number | null;
+      humidityPct?: number | null;
     };
     daily: Array<{
       date: string;
@@ -49,6 +52,9 @@ type MeteoItem = {
       weatherCode: number | null;
       sunrise: string | null;
       sunset: string | null;
+      uvIndexMax?: number | null;
+      sunshineHours?: number | null;
+      snowfallMm?: number | null;
     }>;
   };
   acumulados?: {
@@ -61,6 +67,16 @@ type MeteoItem = {
     europeanAqi: number | null;
     pm10: number | null;
     pm25: number | null;
+  } | null;
+  floodRisk?: {
+    maxDischarge: number | null;
+    floodAlert: boolean;
+  } | null;
+  marine?: {
+    waveHeight: number | null;
+    waveDirection: number | null;
+    wavePeriod: number | null;
+    seaTempC: number | null;
   } | null;
   alertas?: MeteoAlerta[] | null;
 };
@@ -84,6 +100,15 @@ function getWeatherIconCfg(code: number | null): WIconCfg {
   if ([71, 73, 75, 77, 85, 86].includes(code)) return { Icon: CloudSnow, cls: "text-sky-400" };
   if ([95, 96, 99].includes(code)) return { Icon: CloudLightning, cls: "text-violet-500" };
   return { Icon: Cloud, cls: "text-stone-400" };
+}
+
+function getUvLabel(uv: number | null): { text: string; cls: string } | null {
+  if (uv == null) return null;
+  if (uv <= 2) return { text: `UV ${n(uv, 0)}`, cls: "bg-green-100 text-green-800 border-green-200" };
+  if (uv <= 5) return { text: `UV ${n(uv, 0)}`, cls: "bg-yellow-100 text-yellow-800 border-yellow-200" };
+  if (uv <= 7) return { text: `UV ${n(uv, 0)}`, cls: "bg-orange-100 text-orange-800 border-orange-200" };
+  if (uv <= 10) return { text: `UV ${n(uv, 0)}`, cls: "bg-red-100 text-red-800 border-red-200" };
+  return { text: `UV ${n(uv, 0)}`, cls: "bg-purple-100 text-purple-800 border-purple-200" };
 }
 
 function sortItems(items: MeteoItem[], mode: SortMode): MeteoItem[] {
@@ -140,6 +165,10 @@ interface Labels {
   error: string;
 }
 
+const PILL = "inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border";
+const PILL_DEFAULT = `${PILL} bg-[#efe2d8] text-[#60524d] border-[#e2d5cb] dark:bg-neutral-700 dark:text-neutral-300 dark:border-neutral-600`;
+const PILL_MUTED = `${PILL} bg-[#efe2d8]/50 text-[#a09490] border-[#e2d5cb] dark:bg-neutral-700/50 dark:text-neutral-400 dark:border-neutral-600`;
+
 export function MeteoList({ labels, locale }: { labels: Labels; locale: string }) {
   const [items, setItems] = useState<MeteoItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -189,7 +218,7 @@ export function MeteoList({ labels, locale }: { labels: Labels; locale: string }
   function getAlertLabel(kind: string): string {
     const map: Record<string, string> = {
       SNOW: labels.alertSnow, RAIN: labels.alertRain, WIND: labels.alertWind,
-      FROST: labels.alertFrost, HEAT: labels.alertHeat,
+      FROST: labels.alertFrost, HEAT: labels.alertHeat, FLOOD: "Crecida",
     };
     return map[kind] ?? kind;
   }
@@ -270,12 +299,17 @@ export function MeteoList({ labels, locale }: { labels: Labels; locale: string }
           const nieve24h = it.acumulados?.nieve24hCm ?? it.acumulados?.nieveHoyCm ?? 0;
           const aqi = it.airQuality?.europeanAqi ?? null;
           const aqiInfo = getAqiInfo(aqi);
+          const uvInfo = getUvLabel(d0?.uvIndexMax ?? null);
+          const snowDay = d0?.snowfallMm ?? null;
+          const marine = it.marine;
+          const flood = it.floodRisk;
 
           return (
             <div
               key={it.pueblo.id}
               className="flex flex-wrap items-start gap-4 px-4 py-3 border border-[#e2d5cb] rounded-lg hover:bg-[#e8d9cd] transition bg-[#efe2d8] dark:bg-neutral-800 dark:border-neutral-700 dark:hover:bg-neutral-700"
             >
+              {/* Temperatura */}
               <div className="flex-shrink-0 w-20 text-center">
                 <div className="text-3xl font-bold leading-none">
                   {c.temperatureC === null ? "—" : `${n(c.temperatureC, 0)}°`}
@@ -287,12 +321,20 @@ export function MeteoList({ labels, locale }: { labels: Labels; locale: string }
                     {d0.tMinC !== null && <span className="text-blue-500">↓{n(d0.tMinC, 0)}°</span>}
                   </div>
                 )}
+                {c.feelsLikeC != null && c.temperatureC != null && Math.abs(c.feelsLikeC - c.temperatureC) >= 2 && (
+                  <div className="text-[10px] text-neutral-400 mt-0.5">
+                    <Thermometer size={9} className="inline -mt-0.5 mr-0.5" />
+                    {n(c.feelsLikeC, 0)}°
+                  </div>
+                )}
               </div>
 
+              {/* Icono */}
               <div className="flex-shrink-0 pt-0.5" title={getWeatherText(c.weatherCode)}>
                 {(() => { const { Icon, cls } = getWeatherIconCfg(c.weatherCode); return <Icon size={28} className={cls} strokeWidth={1.5} />; })()}
               </div>
 
+              {/* Info central */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <Link href={`/pueblos/${it.pueblo.slug}`} className="text-lg font-semibold hover:underline">
@@ -307,40 +349,80 @@ export function MeteoList({ labels, locale }: { labels: Labels; locale: string }
                   </div>
                 </div>
 
+                {/* Pills fila 1: lluvia, nieve, viento, prob lluvia */}
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {lluvia24h != null && (
-                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${lluvia24h === 0 ? "bg-[#efe2d8]/50 text-[#a09490] border-[#e2d5cb] dark:bg-neutral-700/50 dark:text-neutral-400 dark:border-neutral-600" : "bg-[#efe2d8] text-[#60524d] border-[#e2d5cb] dark:bg-neutral-700 dark:text-neutral-300 dark:border-neutral-600"}`}>
+                    <span className={lluvia24h === 0 ? PILL_MUTED : PILL_DEFAULT}>
                       <CloudRain size={11} className={lluvia24h === 0 ? "text-stone-300" : "text-slate-500"} strokeWidth={1.5} />
                       {n(lluvia24h, 1)} {labels.mm24h}
                     </span>
                   )}
                   {nieve24h > 0 && (
-                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#efe2d8] text-[#60524d] border border-[#e2d5cb] dark:bg-neutral-700 dark:text-neutral-300 dark:border-neutral-600">
+                    <span className={PILL_DEFAULT}>
                       <CloudSnow size={11} className="text-sky-400" strokeWidth={1.5} />
                       {n(nieve24h, 1)} {labels.snowCm24h}
                     </span>
                   )}
+                  {snowDay != null && snowDay > 0 && nieve24h === 0 && (
+                    <span className={PILL_DEFAULT}>
+                      <CloudSnow size={11} className="text-sky-400" strokeWidth={1.5} />
+                      {n(snowDay, 1)}mm nieve hoy
+                    </span>
+                  )}
                   {c.windKph !== null && c.windKph > 0 && (
-                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#efe2d8] text-[#60524d] border border-[#e2d5cb] dark:bg-neutral-700 dark:text-neutral-300 dark:border-neutral-600">
-                      <CloudFog size={11} className="text-stone-400" strokeWidth={1.5} />
+                    <span className={PILL_DEFAULT}>
+                      <Wind size={11} className="text-stone-400" strokeWidth={1.5} />
                       {n(c.windKph, 0)} {labels.windKph}
                     </span>
                   )}
                   {d0?.precipProbPct != null && d0.precipProbPct > 10 && (
-                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#efe2d8] text-[#60524d] border border-[#e2d5cb] dark:bg-neutral-700 dark:text-neutral-300 dark:border-neutral-600">
+                    <span className={PILL_DEFAULT}>
                       <CloudDrizzle size={11} className="text-slate-400" strokeWidth={1.5} />
                       {n(d0.precipProbPct, 0)}{labels.rainProbPct}
                     </span>
                   )}
+                </div>
+
+                {/* Pills fila 2: AQI, UV, humedad, horas de sol, oleaje, crecida */}
+                <div className="mt-1 flex flex-wrap gap-1.5">
                   {aqi !== null && (
-                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${aqiInfo.cls}`}>
+                    <span className={`${PILL} border ${aqiInfo.cls}`}>
                       🍃 {labels.aqiLabel}: {aqiInfo.label} ({aqi})
+                    </span>
+                  )}
+                  {uvInfo && (
+                    <span className={`${PILL} ${uvInfo.cls}`}>
+                      ☀️ {uvInfo.text}
+                    </span>
+                  )}
+                  {c.humidityPct != null && (
+                    <span className={PILL_MUTED}>
+                      <Droplets size={11} className="text-sky-400" strokeWidth={1.5} />
+                      {n(c.humidityPct, 0)}%
+                    </span>
+                  )}
+                  {d0?.sunshineHours != null && d0.sunshineHours > 0 && (
+                    <span className={PILL_DEFAULT}>
+                      <Sun size={11} className="text-amber-500" strokeWidth={1.5} />
+                      {n(d0.sunshineHours, 1)}h sol
+                    </span>
+                  )}
+                  {marine && marine.waveHeight != null && marine.waveHeight > 0 && (
+                    <span className={PILL_DEFAULT}>
+                      <Waves size={11} className="text-blue-500" strokeWidth={1.5} />
+                      {n(marine.waveHeight, 1)}m oleaje
+                    </span>
+                  )}
+                  {flood && flood.floodAlert && (
+                    <span className={`${PILL} bg-orange-100 text-orange-800 border-orange-200`}>
+                      🌊 Riesgo crecida ({n(flood.maxDischarge, 0)} m³/s)
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="flex-shrink-0 text-right text-sm w-full min-w-0 sm:w-auto sm:min-w-[110px]">
+              {/* Panel derecho: estado, hora, alertas */}
+              <div className="flex-shrink-0 text-right text-sm w-full min-w-0 sm:w-auto sm:min-w-[130px]">
                 <div className="text-[#60524d] text-sm dark:text-neutral-400">{getWeatherText(c.weatherCode)}</div>
                 <div className="text-[#a09490] text-xs mt-0.5 dark:text-neutral-500">{formatTime(c.time)}</div>
                 {alertas.length > 0 && (
@@ -352,9 +434,9 @@ export function MeteoList({ labels, locale }: { labels: Labels; locale: string }
                       const window = formatWindow(a.windowStart, a.windowEnd);
                       return (
                         <div key={`${a.kind}-${idx}`} className="leading-tight text-right">
-                          <span className="text-red-700 font-semibold text-xs leading-tight">
+                          <span className={`font-semibold text-xs leading-tight ${a.kind === 'FLOOD' ? 'text-orange-700' : 'text-red-700'}`}>
                             {main}
-                            {window && <span className="text-red-600 font-normal text-xs ml-1">({window})</span>}
+                            {window && <span className={`font-normal text-xs ml-1 ${a.kind === 'FLOOD' ? 'text-orange-600' : 'text-red-600'}`}>({window})</span>}
                           </span>
                         </div>
                       );

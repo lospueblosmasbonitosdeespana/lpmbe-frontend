@@ -14,9 +14,11 @@ type MeteoResponse = {
   current: {
     time: string;
     temperatureC: number | null;
+    feelsLikeC?: number | null;
     windKph: number | null;
     windDirDeg: number | null;
     weatherCode: number | null;
+    humidityPct?: number | null;
   };
   daily: Array<{
     date: string;
@@ -28,7 +30,31 @@ type MeteoResponse = {
     weatherCode: number | null;
     sunrise: string | null;
     sunset: string | null;
+    uvIndexMax?: number | null;
+    sunshineHours?: number | null;
+    snowfallMm?: number | null;
   }>;
+  acumulados?: {
+    lluviaHoyMm?: number | null;
+    nieveHoyCm?: number | null;
+    lluvia24hMm?: number | null;
+    nieve24hCm?: number | null;
+  };
+  airQuality?: {
+    europeanAqi: number | null;
+    pm10: number | null;
+    pm25: number | null;
+  };
+  floodRisk?: {
+    maxDischarge: number | null;
+    floodAlert: boolean;
+  };
+  marine?: {
+    waveHeight: number | null;
+    waveDirection: number | null;
+    wavePeriod: number | null;
+    seaTempC: number | null;
+  } | null;
   generatedAt: string;
 };
 
@@ -290,8 +316,12 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
   }
 
   const c = data.current;
-  const sunriseStr = data.daily?.[0]?.sunrise ? new Date(data.daily[0].sunrise).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) : "—";
-  const sunsetStr = data.daily?.[0]?.sunset ? new Date(data.daily[0].sunset).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) : "—";
+  const d0 = data.daily?.[0];
+  const sunriseStr = d0?.sunrise ? new Date(d0.sunrise).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) : "—";
+  const sunsetStr = d0?.sunset ? new Date(d0.sunset).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) : "—";
+  const aqi = data.airQuality?.europeanAqi;
+  const marine = data.marine;
+  const flood = data.floodRisk;
 
   return (
     <Section spacing="sm" background="card">
@@ -304,7 +334,13 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
               <span>{t("statusLabel")} <strong>{codeToText(c.weatherCode)}</strong></span>
             </div>
             <span>Temp: <strong>{c.temperatureC == null ? "—" : `${Math.round(c.temperatureC)}°C`}</strong></span>
+            {c.feelsLikeC != null && c.temperatureC != null && Math.abs(c.feelsLikeC - c.temperatureC) >= 2 && (
+              <span className="text-muted-foreground">Sensación: <strong>{Math.round(c.feelsLikeC)}°C</strong></span>
+            )}
             <span>Viento: <strong>{c.windKph == null ? "—" : `${Math.round(c.windKph)} km/h`} {degToCardinal(c.windDirDeg)}</strong></span>
+            {c.humidityPct != null && (
+              <span>Humedad: <strong>{Math.round(c.humidityPct)}%</strong></span>
+            )}
             <span className="flex items-center gap-1">
               <SunIcon className="h-4 w-4 text-amber-500" />
               <span>{sunriseStr}</span>
@@ -313,6 +349,38 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
               <span>{sunsetStr}</span>
             </span>
           </div>
+
+          {/* Extra row: AQI, UV, horas de sol, oleaje, crecida */}
+          <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm">
+            {aqi != null && (
+              <span>Calidad aire: <strong className={aqi <= 40 ? "text-green-700" : aqi <= 60 ? "text-yellow-700" : "text-red-700"}>
+                {aqi <= 20 ? "Buena" : aqi <= 40 ? "Aceptable" : aqi <= 60 ? "Moderada" : "Mala"} ({aqi})
+              </strong></span>
+            )}
+            {d0?.uvIndexMax != null && (
+              <span>UV: <strong className={d0.uvIndexMax <= 2 ? "text-green-700" : d0.uvIndexMax <= 5 ? "text-yellow-700" : d0.uvIndexMax <= 7 ? "text-orange-600" : "text-red-700"}>
+                {Math.round(d0.uvIndexMax)} {d0.uvIndexMax <= 2 ? "(bajo)" : d0.uvIndexMax <= 5 ? "(moderado)" : d0.uvIndexMax <= 7 ? "(alto)" : "(muy alto)"}
+              </strong></span>
+            )}
+            {d0?.sunshineHours != null && d0.sunshineHours > 0 && (
+              <span className="flex items-center gap-1">
+                <SunIcon className="h-3.5 w-3.5 text-amber-500" />
+                <strong>{d0.sunshineHours.toFixed(1)}h sol</strong>
+              </span>
+            )}
+            {d0?.snowfallMm != null && d0.snowfallMm > 0 && (
+              <span className="text-sky-600">Nieve hoy: <strong>{d0.snowfallMm.toFixed(1)}mm</strong></span>
+            )}
+            {marine && marine.waveHeight != null && marine.waveHeight > 0 && (
+              <span className="text-blue-600">Oleaje: <strong>{marine.waveHeight.toFixed(1)}m</strong>
+                {marine.wavePeriod != null && <span className="font-normal"> ({marine.wavePeriod.toFixed(0)}s)</span>}
+              </span>
+            )}
+            {flood && flood.floodAlert && (
+              <span className="text-orange-700 font-semibold">⚠️ Riesgo crecida fluvial ({flood.maxDischarge?.toFixed(0)} m³/s)</span>
+            )}
+          </div>
+
           <Caption className="mt-2 block">{t("updatedAt")} {c.time ? new Date(c.time).toLocaleString() : "—"}</Caption>
         </div>
 
@@ -327,7 +395,7 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
                     <WeatherIcon code={d.weatherCode} className="h-8 w-8 shrink-0" />
                     <span className="text-sm text-muted-foreground">{codeToText(d.weatherCode)}</span>
                   </div>
-                  <div className="mt-1.5 flex items-center gap-3">
+                  <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
                     <p>
                       <span className="text-base font-semibold">{d.tMaxC == null ? "—" : `${Math.round(d.tMaxC)}°`}</span>
                       <span className="text-sm text-muted-foreground"> / {d.tMinC == null ? "—" : `${Math.round(d.tMinC)}°`}</span>
@@ -336,6 +404,15 @@ export default function MeteoPanel({ puebloId }: { puebloId: number }) {
                       <DropletIcon className="h-3 w-3" />
                       <span>{d.precipitationMm == null ? "—" : `${Math.round(d.precipitationMm)}mm`} ({d.precipProbPct == null ? "—" : `${Math.round(d.precipProbPct)}%`})</span>
                     </p>
+                    {d.snowfallMm != null && d.snowfallMm > 0 && (
+                      <p className="text-xs text-sky-500">❄️ {d.snowfallMm.toFixed(1)}mm</p>
+                    )}
+                    {d.uvIndexMax != null && d.uvIndexMax >= 3 && (
+                      <p className={`text-xs ${d.uvIndexMax >= 6 ? "text-orange-600" : "text-yellow-600"}`}>☀️ UV {Math.round(d.uvIndexMax)}</p>
+                    )}
+                    {d.sunshineHours != null && d.sunshineHours > 0 && (
+                      <p className="text-xs text-amber-500">{d.sunshineHours.toFixed(1)}h☀️</p>
+                    )}
                   </div>
                 </div>
               ))}
