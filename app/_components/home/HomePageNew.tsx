@@ -16,6 +16,20 @@ import {
   Sparkles,
   Map,
   Store,
+  Landmark,
+  MountainSnow,
+  Waves,
+  TowerControl,
+  FerrisWheel,
+  Palmtree,
+  Caravan,
+  PlugZap,
+  Heart,
+  Snowflake,
+  Thermometer,
+  Sun,
+  Activity,
+  type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Container } from "@/app/components/ui/container";
@@ -84,6 +98,16 @@ export interface HomeVideoItem {
   thumbnail?: string | null;
 }
 
+type CollectionCard = {
+  slug: string;
+  type: string;
+  icon: string;
+  color: string;
+  title: string;
+  description: string;
+  imageUrl?: string | null;
+};
+
 interface HomePageProps {
   heroSlides?: Array<{ image: string; alt?: string; link?: string }>;
   heroIntervalMs?: number;
@@ -91,6 +115,7 @@ interface HomePageProps {
   heroSubtitle?: string;
   notifications?: NotificationItem[];
   categories?: CategoryCard[];
+  collections?: CollectionCard[];
   routes?: RouteCard[];
   villages?: VillageCard[];
   news?: NewsItem[];
@@ -478,6 +503,108 @@ function IdeasSection({ categories = [] }: { categories: CategoryCard[] }) {
       </Container>
     </Section>
   );
+}
+
+/* ----- COLECCIONES DESCUBRE ----- */
+function CollectionsSection({ collections = [] }: { collections: CollectionCard[] }) {
+  const t = useTranslations("home");
+  if (collections.length === 0) return null;
+
+  return (
+    <Section spacing="lg" background="muted">
+      <Container>
+        <div className="text-center mb-10">
+          <Title as="h2" size="2xl" className="mb-3">
+            {t("collectionsTitle")}
+          </Title>
+          <Muted className="text-base max-w-2xl mx-auto">
+            {t("collectionsDesc")}
+          </Muted>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {collections.map((c) => (
+            <Link
+              key={c.slug}
+              href={`/descubre/${c.slug}`}
+              className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+            >
+              {c.imageUrl ? (
+                <div className="relative aspect-[16/10] overflow-hidden">
+                  <Image
+                    src={c.imageUrl}
+                    alt={c.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h3 className="font-serif text-base font-bold text-white leading-snug drop-shadow-md line-clamp-2">
+                      {c.title}
+                    </h3>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="relative aspect-[16/10] flex items-center justify-center overflow-hidden"
+                  style={{ backgroundColor: `${c.color}12` }}
+                >
+                  <div
+                    className="flex h-16 w-16 items-center justify-center rounded-2xl"
+                    style={{ backgroundColor: `${c.color}20` }}
+                  >
+                    <CollectionMiniIcon name={c.icon} color={c.color} size={32} />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white/80 to-transparent dark:from-neutral-900/80">
+                    <h3 className="font-serif text-base font-bold text-[#3d2c1e] leading-snug line-clamp-2 dark:text-neutral-100">
+                      {c.title}
+                    </h3>
+                  </div>
+                </div>
+              )}
+              <div className="p-3 flex items-center justify-between">
+                <span className="text-xs text-muted-foreground line-clamp-1">{c.description}</span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-primary opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+              </div>
+              <div
+                className="absolute bottom-0 left-0 h-[3px] w-full"
+                style={{ backgroundColor: c.color }}
+              />
+            </Link>
+          ))}
+        </div>
+
+        <div className="text-center mt-8">
+          <Button asChild variant="outline" className="rounded-full bg-transparent">
+            <Link href="/descubre">
+              {t("seeAllCollections")} <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </Container>
+    </Section>
+  );
+}
+
+const COLLECTION_ICON_MAP: Record<string, LucideIcon> = {
+  castle: Landmark, landmark: Landmark,
+  "mountain-snow": MountainSnow, mountain: MountainSnow,
+  waves: Waves,
+  "tower-control": TowerControl, "brick-wall": TowerControl, shield: TowerControl,
+  "ferris-wheel": FerrisWheel, home: FerrisWheel,
+  palmtree: Palmtree,
+  caravan: Caravan,
+  "plug-zap": PlugZap, zap: PlugZap,
+  heart: Heart, users: Heart,
+  snowflake: Snowflake,
+  thermometer: Thermometer, wind: Thermometer,
+  sun: Sun,
+};
+
+function CollectionMiniIcon({ name, color, size = 24 }: { name: string; color: string; size?: number }) {
+  const Icon = COLLECTION_ICON_MAP[name] ?? Activity;
+  return <Icon size={size} style={{ color }} strokeWidth={1.75} />;
 }
 
 /* ----- PUEBLOS DESTACADOS ----- */
@@ -1317,6 +1444,7 @@ export function HomePageNew({
   heroSubtitle,
   notifications = [],
   categories = [],
+  collections = [],
   routes = [],
   villages = [],
   news = [],
@@ -1336,6 +1464,7 @@ export function HomePageNew({
       />
       <NotificationCenter notifications={notifications} />
       <IdeasSection categories={categories} />
+      <CollectionsSection collections={collections} />
       <AsociacionNewsGallerySection news={galeriaNews} />
       <PueblosDestacadosSection villages={villages} />
       <RutasSection routes={routes} />

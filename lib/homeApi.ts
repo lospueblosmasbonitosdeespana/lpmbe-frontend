@@ -51,6 +51,7 @@ export type HomeConfig = {
   };
   mapPreviewImage?: string;
   shopBannerImage?: string;
+  descubreImages?: Record<string, string>;
 };
 
 /**
@@ -132,6 +133,7 @@ export async function getHomeConfig(locale?: string): Promise<HomeConfig> {
       },
       mapPreviewImage: typeof data.mapPreviewImage === 'string' ? data.mapPreviewImage : undefined,
       shopBannerImage: typeof data.shopBannerImage === 'string' ? data.shopBannerImage : undefined,
+      descubreImages: data.descubreImages && typeof data.descubreImages === 'object' ? data.descubreImages : {},
     };
   } catch (err) {
     console.error('[HOME] Error cargando config desde backend:', err);

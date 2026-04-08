@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { getPlanFeatures, type PlanNegocio } from "@/lib/plan-features";
 
@@ -149,20 +149,25 @@ function MiniMap({ lat, lng, nombre }: { lat: number; lng: number; nombre: strin
 
 function PlanBadge({ plan }: { plan: PlanNegocio }) {
   const f = getPlanFeatures(plan);
-  if (!f.recommendedBadgeEnabled && !f.premiumBadgeEnabled) return null;
+  if (!f.recommendedBadgeEnabled && !f.premiumBadgeEnabled && !f.selectionBadgeEnabled) return null;
+  const isSelection = f.selectionBadgeEnabled;
   const isPremium = f.premiumBadgeEnabled;
+  const label = isSelection
+    ? "Club LPMBE Selection"
+    : isPremium
+      ? "Premium Club LPMBE"
+      : "Club LPMBE";
+  const badgeClass = isSelection
+    ? "bg-gradient-to-r from-slate-900 to-slate-700 text-white border border-slate-500"
+    : isPremium
+      ? "bg-amber-100 text-amber-800 border border-amber-300"
+      : "bg-blue-100 text-blue-800 border border-blue-300";
   return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
-        isPremium
-          ? "bg-amber-100 text-amber-800 border border-amber-300"
-          : "bg-blue-100 text-blue-800 border border-blue-300"
-      }`}
-    >
-      {isPremium && (
+    <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${badgeClass}`}>
+      {(isPremium || isSelection) && (
         <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
       )}
-      {isPremium ? "Premium Club LPMBE" : "Club LPMBE"}
+      {label}
     </span>
   );
 }
@@ -340,6 +345,19 @@ export default function NegocioDetail({
 }) {
   const plan: PlanNegocio = (recurso.planNegocio as PlanNegocio) || "FREE";
   const isNegocio = recurso.scope === "NEGOCIO";
+
+  const trackContactClick = useCallback((eventName: string) => {
+    fetch("/api/analytics/event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eventName,
+        eventCategory: "negocio_contact",
+        eventLabel: String(recurso.id),
+        path: typeof window !== "undefined" ? window.location.pathname : "",
+      }),
+    }).catch(() => {});
+  }, [recurso.id]);
   const features = getPlanFeatures(plan);
   const showContact = !isNegocio || features.publicPhoneVisible || features.publicEmailVisible || features.publicWebVisible;
   const showFullGallery = !isNegocio || features.maxPhotos > 1;
@@ -517,6 +535,7 @@ export default function NegocioDetail({
             {recurso.telefono && (
               <a
                 href={`tel:${recurso.telefono}`}
+                onClick={() => trackContactClick("click_phone")}
                 className="flex items-center gap-3 rounded-lg border border-border px-4 py-3 text-sm hover:bg-muted transition-colors"
               >
                 <svg className="h-5 w-5 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -528,6 +547,7 @@ export default function NegocioDetail({
             {recurso.email && (
               <a
                 href={`mailto:${recurso.email}`}
+                onClick={() => trackContactClick("click_email")}
                 className="flex items-center gap-3 rounded-lg border border-border px-4 py-3 text-sm hover:bg-muted transition-colors"
               >
                 <svg className="h-5 w-5 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -542,6 +562,7 @@ export default function NegocioDetail({
                 href={recurso.web.startsWith("http") ? recurso.web : `https://${recurso.web}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackContactClick("click_web")}
                 className="flex items-center gap-3 rounded-lg border border-border px-4 py-3 text-sm hover:bg-muted transition-colors"
               >
                 <svg className="h-5 w-5 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

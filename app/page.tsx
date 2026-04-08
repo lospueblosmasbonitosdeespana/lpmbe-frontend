@@ -337,9 +337,24 @@ async function getRoutesForHome(locale?: string): Promise<RouteCard[]> {
   }
 }
 
+async function getCollectionsForHome(locale: string) {
+  try {
+    const API_BASE = getApiUrl();
+    const res = await fetchWithTimeout(
+      `${API_BASE}/public/descubre?lang=${encodeURIComponent(locale)}`,
+      { cache: "no-store", timeoutMs: 6000, retries: 0 },
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
 export default async function HomePage() {
   const locale = await getLocale();
-  const [config, villages, notifications, routes, news, galeriaNews, videos] = await Promise.all([
+  const [config, villages, notifications, routes, news, galeriaNews, videos, collections] = await Promise.all([
     getHomeConfig(locale),
     getFeaturedPueblos(locale),
     getNotifications(locale),
@@ -347,6 +362,7 @@ export default async function HomePage() {
     getNews(locale),
     getGaleriaAsociacion(locale),
     getHomeVideos(locale),
+    getCollectionsForHome(locale),
   ]);
 
   // Mapear themes a categories
@@ -413,6 +429,7 @@ export default async function HomePage() {
         heroSubtitle={config.hero.subtitle}
         notifications={notifications}
         categories={categories}
+        collections={collections}
         routes={routes}
         galeriaNews={galeriaNews}
         villages={villages}

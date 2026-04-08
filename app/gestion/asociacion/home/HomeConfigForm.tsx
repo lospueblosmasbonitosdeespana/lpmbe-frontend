@@ -106,7 +106,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
           title: config.hero.title,
           subtitle: config.hero.subtitle,
           intervalMs: config.hero.intervalMs,
-          slides,  // ← Incluye slides con hidden=true
+          slides,
         },
         themes: config.themes,
         homeRutas: config.homeRutas,
@@ -114,6 +114,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
         socialLinks: config.socialLinks,
         mapPreviewImage: config.mapPreviewImage?.trim() || undefined,
         shopBannerImage: config.shopBannerImage?.trim() || undefined,
+        descubreImages: config.descubreImages ?? {},
       };
 
       console.log("HOME PAYLOAD", JSON.stringify(payload, null, 2));

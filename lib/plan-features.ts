@@ -5,10 +5,10 @@
  * usa esta config para decidir qué UI mostrar (badges, CTAs, etc.).
  */
 
-export type PlanNegocio = 'FREE' | 'RECOMENDADO' | 'PREMIUM';
+export type PlanNegocio = 'FREE' | 'RECOMENDADO' | 'PREMIUM' | 'SELECTION';
 
 export type StatsLevel = 'NONE' | 'BASIC' | 'ADVANCED';
-export type ListingPriority = 'LOW' | 'MEDIUM' | 'HIGH';
+export type ListingPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'FEATURED';
 
 export interface PlanFeatures {
   maxPhotos: number;
@@ -22,6 +22,7 @@ export interface PlanFeatures {
   clubOfferEnabled: boolean;
   recommendedBadgeEnabled: boolean;
   premiumBadgeEnabled: boolean;
+  selectionBadgeEnabled: boolean;
   translationEnabled: boolean;
   statsLevel: StatsLevel;
   listingPriority: ListingPriority;
@@ -33,6 +34,9 @@ export interface PlanFeatures {
   featuredOffersEnabled: boolean;
   monthlySocialPostsIncluded: number;
   physicalPlaqueIncluded: boolean;
+  selectionPageEnabled: boolean;
+  guideIncluded: boolean;
+  cobranding: boolean;
 }
 
 export const PLAN_FEATURES: Record<PlanNegocio, PlanFeatures> = {
@@ -48,10 +52,11 @@ export const PLAN_FEATURES: Record<PlanNegocio, PlanFeatures> = {
     clubOfferEnabled: true,
     recommendedBadgeEnabled: false,
     premiumBadgeEnabled: false,
+    selectionBadgeEnabled: false,
     translationEnabled: false,
     statsLevel: 'NONE',
     listingPriority: 'LOW',
-    listingSortWeight: 2,
+    listingSortWeight: 3,
     serviceHighlightsEnabled: false,
     bookingLinkEnabled: false,
     socialLinksEnabled: false,
@@ -59,6 +64,9 @@ export const PLAN_FEATURES: Record<PlanNegocio, PlanFeatures> = {
     featuredOffersEnabled: false,
     monthlySocialPostsIncluded: 0,
     physicalPlaqueIncluded: false,
+    selectionPageEnabled: false,
+    guideIncluded: false,
+    cobranding: false,
   },
   RECOMENDADO: {
     maxPhotos: 15,
@@ -72,10 +80,11 @@ export const PLAN_FEATURES: Record<PlanNegocio, PlanFeatures> = {
     clubOfferEnabled: true,
     recommendedBadgeEnabled: true,
     premiumBadgeEnabled: false,
+    selectionBadgeEnabled: false,
     translationEnabled: true,
     statsLevel: 'BASIC',
     listingPriority: 'MEDIUM',
-    listingSortWeight: 1,
+    listingSortWeight: 2,
     serviceHighlightsEnabled: true,
     bookingLinkEnabled: false,
     socialLinksEnabled: false,
@@ -83,6 +92,9 @@ export const PLAN_FEATURES: Record<PlanNegocio, PlanFeatures> = {
     featuredOffersEnabled: false,
     monthlySocialPostsIncluded: 0,
     physicalPlaqueIncluded: false,
+    selectionPageEnabled: false,
+    guideIncluded: false,
+    cobranding: false,
   },
   PREMIUM: {
     maxPhotos: 30,
@@ -96,10 +108,11 @@ export const PLAN_FEATURES: Record<PlanNegocio, PlanFeatures> = {
     clubOfferEnabled: true,
     recommendedBadgeEnabled: false,
     premiumBadgeEnabled: true,
+    selectionBadgeEnabled: false,
     translationEnabled: true,
     statsLevel: 'ADVANCED',
     listingPriority: 'HIGH',
-    listingSortWeight: 0,
+    listingSortWeight: 1,
     serviceHighlightsEnabled: true,
     bookingLinkEnabled: true,
     socialLinksEnabled: true,
@@ -107,6 +120,37 @@ export const PLAN_FEATURES: Record<PlanNegocio, PlanFeatures> = {
     featuredOffersEnabled: true,
     monthlySocialPostsIncluded: 1,
     physicalPlaqueIncluded: true,
+    selectionPageEnabled: false,
+    guideIncluded: false,
+    cobranding: false,
+  },
+  SELECTION: {
+    maxPhotos: 50,
+    publicPhoneVisible: true,
+    publicEmailVisible: true,
+    publicWebVisible: true,
+    publicWhatsappVisible: true,
+    publicScheduleVisible: true,
+    publicMapVisible: true,
+    qrValidationEnabled: true,
+    clubOfferEnabled: true,
+    recommendedBadgeEnabled: false,
+    premiumBadgeEnabled: false,
+    selectionBadgeEnabled: true,
+    translationEnabled: true,
+    statsLevel: 'ADVANCED',
+    listingPriority: 'FEATURED',
+    listingSortWeight: 0,
+    serviceHighlightsEnabled: true,
+    bookingLinkEnabled: true,
+    socialLinksEnabled: true,
+    customLandingEnabled: true,
+    featuredOffersEnabled: true,
+    monthlySocialPostsIncluded: 4,
+    physicalPlaqueIncluded: true,
+    selectionPageEnabled: true,
+    guideIncluded: true,
+    cobranding: true,
   },
 };
 
@@ -119,6 +163,19 @@ export const PLAN_LABELS: Record<PlanNegocio, string> = {
   FREE: 'Gratuito',
   RECOMENDADO: 'Recomendado',
   PREMIUM: 'Premium',
+  SELECTION: 'Selection',
 };
 
+/** Planes para negocios dentro de pueblos de la red */
 export const PLAN_ORDER: PlanNegocio[] = ['FREE', 'RECOMENDADO', 'PREMIUM'];
+
+/** Todos los planes incluyendo Selection (fuera de la red) */
+export const ALL_PLANS: PlanNegocio[] = ['FREE', 'RECOMENDADO', 'PREMIUM', 'SELECTION'];
+
+/** Precios mensuales en euros — null = por determinar */
+export const PLAN_PRICES: Record<PlanNegocio, number | null> = {
+  FREE: 0,
+  RECOMENDADO: null,
+  PREMIUM: null,
+  SELECTION: null,
+};

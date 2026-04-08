@@ -66,7 +66,7 @@ const FEATURES: Feature[] = [
   { text: "Botón WhatsApp directo",               free: F.publicWhatsappVisible,       reco: R.publicWhatsappVisible,       prem: P.publicWhatsappVisible },
   { text: "Badge Club LPMBE",                     free: F.recommendedBadgeEnabled,     reco: R.recommendedBadgeEnabled,     prem: R.recommendedBadgeEnabled || P.premiumBadgeEnabled },
   { text: "Traducción automática a 7 idiomas",    free: F.translationEnabled,          reco: R.translationEnabled,          prem: P.translationEnabled },
-  { text: `Estadísticas de visitas`,              free: F.statsLevel !== 'NONE',       reco: R.statsLevel !== 'NONE',       prem: P.statsLevel !== 'NONE' },
+  { text: "Estadísticas de visitas",              free: F.statsLevel !== 'NONE',       reco: R.statsLevel !== 'NONE',       prem: P.statsLevel !== 'NONE' },
   { text: `Galería ampliada (hasta ${P.maxPhotos} fotos)`, free: F.maxPhotos >= P.maxPhotos, reco: R.maxPhotos >= P.maxPhotos, prem: true },
   { text: "Landing completa personalizada",       free: F.customLandingEnabled,        reco: R.customLandingEnabled,        prem: P.customLandingEnabled },
   { text: "Servicios con iconos (WiFi, parking…)", free: F.serviceHighlightsEnabled,   reco: R.serviceHighlightsEnabled,    prem: P.serviceHighlightsEnabled },
@@ -77,6 +77,22 @@ const FEATURES: Feature[] = [
   { text: "Posición destacada en listados",       free: F.listingPriority === 'HIGH',  reco: R.listingPriority === 'HIGH',  prem: P.listingPriority === 'HIGH' },
   { text: `${P.monthlySocialPostsIncluded} publicación/mes en RRSS de LPMBE`, free: F.monthlySocialPostsIncluded > 0, reco: R.monthlySocialPostsIncluded > 0, prem: P.monthlySocialPostsIncluded > 0 },
   { text: "Placa física Club LPMBE",              free: F.physicalPlaqueIncluded,     reco: R.physicalPlaqueIncluded,      prem: P.physicalPlaqueIncluded },
+];
+
+const S = PLAN_FEATURES.SELECTION;
+const SELECTION_FEATURES = [
+  `Hasta ${S.maxPhotos} fotografías profesionales`,
+  "Landing completamente personalizada",
+  `${S.monthlySocialPostsIncluded} publicaciones/mes en RRSS de LPMBE`,
+  "Presencia destacada en la guía oficial",
+  "Co-branding con la marca LPMBE",
+  "Badge «Club LPMBE Selection»",
+  "Placa física premium grabada",
+  "Traducción automática a 7 idiomas",
+  "Estadísticas avanzadas de visitas y conversión",
+  "Sistema de reservas integrado",
+  "Sección propia en lpmbe.com/selection",
+  "Atención y soporte personalizado",
 ];
 
 export default async function ParaNegociosPage() {
@@ -95,13 +111,20 @@ export default async function ParaNegociosPage() {
         </div>
       </div>
 
-      {/* Pricing cards */}
+      {/* Pricing cards — 3 planes para negocios en la red */}
       <div className="mx-auto max-w-5xl px-4 py-12">
+        <h2 className="text-center text-2xl font-bold text-foreground mb-2">
+          Planes para negocios en pueblos de la red
+        </h2>
+        <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
+          Si tu negocio está en uno de nuestros más de 100 pueblos, elige el plan que mejor se adapte a tus necesidades.
+        </p>
+
         <div className="grid gap-6 md:grid-cols-3">
           {/* FREE */}
           <div className="flex flex-col rounded-2xl border border-border bg-card p-6 shadow-sm">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-foreground">Gratuito</h2>
+              <h3 className="text-xl font-bold text-foreground">Gratuito</h3>
               <div className="mt-3">
                 <span className="text-3xl font-bold text-foreground">0 &euro;</span>
                 <span className="text-sm text-muted-foreground">/mes</span>
@@ -133,10 +156,9 @@ export default async function ParaNegociosPage() {
               Más popular
             </div>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-foreground">Recomendado</h2>
+              <h3 className="text-xl font-bold text-foreground">Recomendado</h3>
               <div className="mt-3">
-                <span className="text-3xl font-bold text-foreground">desde X &euro;</span>
-                <span className="text-sm text-muted-foreground">/mes</span>
+                <span className="text-3xl font-bold text-muted-foreground">Próximamente</span>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
                 Tu negocio visible al completo con galería, contacto y badge.
@@ -157,13 +179,7 @@ export default async function ParaNegociosPage() {
                 href="/contacto"
                 className="block w-full rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
               >
-                Activar plan
-              </Link>
-              <Link
-                href="/contacto"
-                className="block w-full rounded-lg border border-border px-4 py-2 text-center text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
-              >
-                Contactar para más info
+                Quiero saber más
               </Link>
             </div>
           </div>
@@ -172,14 +188,13 @@ export default async function ParaNegociosPage() {
           <div className="flex flex-col rounded-2xl border border-amber-300 bg-card p-6 shadow-sm">
             <div className="mb-6">
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-foreground">Premium</h2>
+                <h3 className="text-xl font-bold text-foreground">Premium</h3>
                 <svg className="h-5 w-5 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                 </svg>
               </div>
               <div className="mt-3">
-                <span className="text-3xl font-bold text-foreground">desde X &euro;</span>
-                <span className="text-sm text-muted-foreground">/mes</span>
+                <span className="text-3xl font-bold text-muted-foreground">Próximamente</span>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
                 Tu landing completa, badge dorado, placa física y presencia en RRSS.
@@ -200,14 +215,65 @@ export default async function ParaNegociosPage() {
                 href="/contacto"
                 className="block w-full rounded-lg bg-amber-500 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-amber-600 transition-colors"
               >
-                Activar Premium
+                Quiero saber más
               </Link>
-              <Link
-                href="/contacto"
-                className="block w-full rounded-lg border border-border px-4 py-2 text-center text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
-              >
-                Contactar para más info
-              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* ─── SELECTION ─── */}
+        <div className="mt-20 relative">
+          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+          <div className="relative rounded-3xl border border-slate-600 p-8 md:p-12">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <svg className="h-8 w-8 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  <h2 className="text-3xl font-bold text-white">Club LPMBE Selection</h2>
+                </div>
+                <p className="text-lg text-slate-300 max-w-xl">
+                  Para establecimientos excepcionales en cualquier punto de España.
+                  Hoteles con encanto, restaurantes de autor, experiencias únicas.
+                </p>
+                <p className="mt-3 text-sm text-slate-400">
+                  Un programa exclusivo por invitación o candidatura para negocios que
+                  representan lo mejor del turismo rural y la gastronomía española,
+                  estén o no en un pueblo de la red.
+                </p>
+
+                <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                  {SELECTION_FEATURES.map((feat) => (
+                    <div key={feat} className="flex items-start gap-2">
+                      <svg className="h-5 w-5 shrink-0 text-amber-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      <span className="text-sm text-slate-200">{feat}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="shrink-0 rounded-2xl border border-slate-600 bg-slate-800/80 p-6 md:w-80">
+                <div className="text-center mb-6">
+                  <p className="text-sm font-medium text-slate-400 uppercase tracking-wider">Precio anual</p>
+                  <p className="mt-2 text-3xl font-bold text-white">Consultar</p>
+                  <p className="mt-1 text-xs text-slate-500">Acceso por invitación o candidatura</p>
+                </div>
+                <Link
+                  href="/selection"
+                  className="block w-full rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 text-center text-sm font-semibold text-white hover:from-amber-600 hover:to-amber-700 transition-all shadow-lg shadow-amber-500/25"
+                >
+                  Descubrir Selection
+                </Link>
+                <Link
+                  href="/selection/candidatura"
+                  className="mt-3 block w-full rounded-lg border border-slate-500 px-4 py-2.5 text-center text-sm font-medium text-slate-300 hover:bg-slate-700 transition-colors"
+                >
+                  Presentar candidatura
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -226,10 +292,10 @@ export default async function ParaNegociosPage() {
 
           <div className="mt-8 grid gap-6 sm:grid-cols-2">
             <div className="rounded-xl border border-border p-5">
-              <h3 className="text-lg font-semibold text-foreground">Incluido en Premium</h3>
+              <h3 className="text-lg font-semibold text-foreground">Incluido en Premium y Selection</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                1 publicación al mes en nuestras redes sociales (Instagram, Facebook).
-                Incluida sin coste adicional con el plan Premium.
+                Publicaciones mensuales en nuestras redes sociales (Instagram, Facebook).
+                {P.monthlySocialPostsIncluded} en Premium, {S.monthlySocialPostsIncluded} en Selection, sin coste adicional.
               </p>
             </div>
             <div className="rounded-xl border border-border p-5">

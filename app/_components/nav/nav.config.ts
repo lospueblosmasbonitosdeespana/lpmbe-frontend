@@ -68,7 +68,7 @@ export function getNavConfig(options?: Partial<CampaignNavOptions>): NavItem[] {
       {
         titleKey: "popular",
         links: [
-          { labelKey: "descubre", href: "/descubre" },
+          { labelKey: "descubreCollections", href: "/descubre" },
           { labelKey: "createRoute", href: "/planifica/crea-mi-ruta" },
           { labelKey: "certificationsByYear", href: "/pueblos/ultimas-incorporaciones" },
         ],
