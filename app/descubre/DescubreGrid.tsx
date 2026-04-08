@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import {
-  Castle, MountainSnow, Waves, BrickWall, Home, Palmtree,
-  Caravan, Zap, Users, Snowflake, Wind, Sun, Satellite,
+  Landmark, MountainSnow, Waves, TowerControl, FerrisWheel, Palmtree,
+  Caravan, PlugZap, Heart, Snowflake, Thermometer, Sun, Activity,
   type LucideIcon,
 } from "lucide-react";
 
@@ -17,23 +17,46 @@ type Collection = {
 };
 
 const ICON_MAP: Record<string, LucideIcon> = {
-  castle: Castle,
+  castle: Landmark,
+  landmark: Landmark,
   "mountain-snow": MountainSnow,
+  mountain: MountainSnow,
   waves: Waves,
-  "brick-wall": BrickWall,
-  home: Home,
+  "tower-control": TowerControl,
+  "brick-wall": TowerControl,
+  shield: TowerControl,
+  "ferris-wheel": FerrisWheel,
+  home: FerrisWheel,
   palmtree: Palmtree,
   caravan: Caravan,
-  zap: Zap,
-  users: Users,
+  "plug-zap": PlugZap,
+  zap: PlugZap,
+  heart: Heart,
+  users: Heart,
   snowflake: Snowflake,
-  wind: Wind,
+  thermometer: Thermometer,
+  wind: Thermometer,
   sun: Sun,
 };
 
+const EMOJI_TO_ICON: Record<string, LucideIcon> = {
+  "🏰": Landmark,
+  "⛰️": MountainSnow,
+  "🌊": Waves,
+  "🧱": TowerControl,
+  "🏘️": FerrisWheel,
+  "🏝️": Palmtree,
+  "🚐": Caravan,
+  "⚡": PlugZap,
+  "👨‍👩‍👧‍👦": Heart,
+  "❄️": Snowflake,
+  "🌬️": Thermometer,
+  "☀️": Sun,
+};
+
 function CollectionIcon({ name, color, size = 24 }: { name: string; color: string; size?: number }) {
-  const Icon = ICON_MAP[name];
-  if (!Icon) return <Satellite size={size} style={{ color }} />;
+  const Icon = ICON_MAP[name] ?? EMOJI_TO_ICON[name];
+  if (!Icon) return <Activity size={size} style={{ color }} strokeWidth={2} />;
   return <Icon size={size} style={{ color }} strokeWidth={1.75} />;
 }
 
@@ -107,7 +130,7 @@ export function DescubreGrid({ collections, locale }: { collections: Collection[
           <div className="flex items-center gap-3 mb-6">
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#e2d5cb] to-transparent dark:via-neutral-700" />
             <h2 className="flex items-center gap-2 font-serif text-lg font-semibold text-[#3d2c1e] whitespace-nowrap dark:text-neutral-200">
-              <Satellite size={18} className="text-[#8B6F47]" />
+              <Activity size={18} className="text-[#8B6F47]" strokeWidth={2} />
               {locale === "es" ? "En tiempo real" : locale === "en" ? "Live weather" : locale === "fr" ? "En temps réel" : "En tiempo real"}
             </h2>
             <div className="h-px flex-1 bg-gradient-to-r from-[#e2d5cb] via-[#e2d5cb] to-transparent dark:from-neutral-700 dark:via-neutral-700" />

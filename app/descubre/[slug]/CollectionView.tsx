@@ -6,29 +6,52 @@ import { getComunidadFlagSrc } from "@/lib/flags";
 import {
   Sun, CloudSun, Cloudy, CloudFog,
   CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Cloud,
-  Castle, MountainSnow, Waves, BrickWall, Home, Palmtree,
-  Caravan, Zap, Users, Snowflake, Wind, Satellite,
+  Landmark, MountainSnow, Waves, TowerControl, FerrisWheel, Palmtree,
+  Caravan, PlugZap, Heart, Snowflake, Thermometer, Activity,
   type LucideIcon,
 } from "lucide-react";
 
 const ICON_MAP: Record<string, LucideIcon> = {
-  castle: Castle,
+  castle: Landmark,
+  landmark: Landmark,
   "mountain-snow": MountainSnow,
+  mountain: MountainSnow,
   waves: Waves,
-  "brick-wall": BrickWall,
-  home: Home,
+  "tower-control": TowerControl,
+  "brick-wall": TowerControl,
+  shield: TowerControl,
+  "ferris-wheel": FerrisWheel,
+  home: FerrisWheel,
   palmtree: Palmtree,
   caravan: Caravan,
-  zap: Zap,
-  users: Users,
+  "plug-zap": PlugZap,
+  zap: PlugZap,
+  heart: Heart,
+  users: Heart,
   snowflake: Snowflake,
-  wind: Wind,
+  thermometer: Thermometer,
+  wind: Thermometer,
   sun: Sun,
 };
 
+const EMOJI_TO_ICON: Record<string, LucideIcon> = {
+  "🏰": Landmark,
+  "⛰️": MountainSnow,
+  "🌊": Waves,
+  "🧱": TowerControl,
+  "🏘️": FerrisWheel,
+  "🏝️": Palmtree,
+  "🚐": Caravan,
+  "⚡": PlugZap,
+  "👨‍👩‍👧‍👦": Heart,
+  "❄️": Snowflake,
+  "🌬️": Thermometer,
+  "☀️": Sun,
+};
+
 function HeroIcon({ name }: { name: string }) {
-  const Icon = ICON_MAP[name];
-  if (!Icon) return <Satellite size={48} className="text-white/90" />;
+  const Icon = ICON_MAP[name] ?? EMOJI_TO_ICON[name];
+  if (!Icon) return <Activity size={48} className="text-white/90" strokeWidth={1.5} />;
   return <Icon size={48} className="text-white/90" strokeWidth={1.5} />;
 }
 
