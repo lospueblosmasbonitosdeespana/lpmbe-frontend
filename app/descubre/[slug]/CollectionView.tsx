@@ -6,7 +6,31 @@ import { getComunidadFlagSrc } from "@/lib/flags";
 import {
   Sun, CloudSun, Cloudy, CloudFog,
   CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Cloud,
+  Castle, MountainSnow, Waves, BrickWall, Home, Palmtree,
+  Caravan, Zap, Users, Snowflake, Wind, Satellite,
+  type LucideIcon,
 } from "lucide-react";
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  castle: Castle,
+  "mountain-snow": MountainSnow,
+  waves: Waves,
+  "brick-wall": BrickWall,
+  home: Home,
+  palmtree: Palmtree,
+  caravan: Caravan,
+  zap: Zap,
+  users: Users,
+  snowflake: Snowflake,
+  wind: Wind,
+  sun: Sun,
+};
+
+function HeroIcon({ name }: { name: string }) {
+  const Icon = ICON_MAP[name];
+  if (!Icon) return <Satellite size={48} className="text-white/90" />;
+  return <Icon size={48} className="text-white/90" strokeWidth={1.5} />;
+}
 
 type Pueblo = {
   id: number;
@@ -95,7 +119,7 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
             </svg>
             {backLabel}
           </Link>
-          <div className="text-5xl mb-4">{data.icon}</div>
+          <div className="mb-4"><HeroIcon name={data.icon} /></div>
           <h1 className="font-serif text-3xl font-bold text-white md:text-5xl tracking-tight">
             {data.title}
           </h1>

@@ -1,6 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import {
+  Castle, MountainSnow, Waves, BrickWall, Home, Palmtree,
+  Caravan, Zap, Users, Snowflake, Wind, Sun, Satellite,
+  type LucideIcon,
+} from "lucide-react";
 
 type Collection = {
   slug: string;
@@ -10,6 +15,27 @@ type Collection = {
   title: string;
   description: string;
 };
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  castle: Castle,
+  "mountain-snow": MountainSnow,
+  waves: Waves,
+  "brick-wall": BrickWall,
+  home: Home,
+  palmtree: Palmtree,
+  caravan: Caravan,
+  zap: Zap,
+  users: Users,
+  snowflake: Snowflake,
+  wind: Wind,
+  sun: Sun,
+};
+
+function CollectionIcon({ name, color, size = 24 }: { name: string; color: string; size?: number }) {
+  const Icon = ICON_MAP[name];
+  if (!Icon) return <Satellite size={size} style={{ color }} />;
+  return <Icon size={size} style={{ color }} strokeWidth={1.75} />;
+}
 
 const TYPE_LABELS: Record<string, Record<string, string>> = {
   es: { highlight: "Patrimonio", service: "Servicios", meteo: "Tiempo real", static: "Geografía" },
@@ -29,7 +55,7 @@ export function DescubreGrid({ collections, locale }: { collections: Collection[
 
   return (
     <div className="mx-auto max-w-[80rem] px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-      {/* Static collections — big visual cards */}
+      {/* Static collections */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {statics.map((c) => (
           <Link
@@ -40,10 +66,10 @@ export function DescubreGrid({ collections, locale }: { collections: Collection[
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <span
-                  className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl"
+                  className="flex h-12 w-12 items-center justify-center rounded-xl"
                   style={{ backgroundColor: `${c.color}15` }}
                 >
-                  {c.icon}
+                  <CollectionIcon name={c.icon} color={c.color} size={26} />
                 </span>
                 <span
                   className="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full"
@@ -80,8 +106,8 @@ export function DescubreGrid({ collections, locale }: { collections: Collection[
         <div className="mt-12">
           <div className="flex items-center gap-3 mb-6">
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#e2d5cb] to-transparent dark:via-neutral-700" />
-            <h2 className="font-serif text-lg font-semibold text-[#3d2c1e] whitespace-nowrap dark:text-neutral-200">
-              <span className="mr-2">📡</span>
+            <h2 className="flex items-center gap-2 font-serif text-lg font-semibold text-[#3d2c1e] whitespace-nowrap dark:text-neutral-200">
+              <Satellite size={18} className="text-[#8B6F47]" />
               {locale === "es" ? "En tiempo real" : locale === "en" ? "Live weather" : locale === "fr" ? "En temps réel" : "En tiempo real"}
             </h2>
             <div className="h-px flex-1 bg-gradient-to-r from-[#e2d5cb] via-[#e2d5cb] to-transparent dark:from-neutral-700 dark:via-neutral-700" />
@@ -95,10 +121,10 @@ export function DescubreGrid({ collections, locale }: { collections: Collection[
                 className="group relative flex items-start gap-4 rounded-xl border border-[#e2d5cb] bg-gradient-to-br from-white to-[#faf7f4] p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 dark:from-neutral-900 dark:to-neutral-800 dark:border-neutral-700"
               >
                 <span
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-xl"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg"
                   style={{ backgroundColor: `${c.color}18` }}
                 >
-                  {c.icon}
+                  <CollectionIcon name={c.icon} color={c.color} size={22} />
                 </span>
                 <div className="min-w-0">
                   <h3 className="font-serif text-base font-semibold text-[#3d2c1e] group-hover:text-[#8B6F47] transition-colors dark:text-neutral-100">
