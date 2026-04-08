@@ -272,30 +272,35 @@ export default async function ExperienciaPuebloPage({
               </>
             )}
 
-            {/* Galería de fotos (portada ya aparece en el hero superior) */}
-            {(page.galleryUrls?.length ?? 0) > 0 && (
-              <div className="mb-10">
-                <h2 className="mb-4 text-lg font-semibold text-foreground">Galería</h2>
-                <div
-                  className={`grid gap-2 ${
-                    (page.galleryUrls?.length ?? 0) >= 3
-                      ? 'grid-cols-3'
-                      : 'grid-cols-2'
-                  }`}
-                >
-                  {page.galleryUrls!.map((url, i) => (
-                    <ZoomableImage
-                      key={i}
-                      src={url}
-                      alt={`${page.titulo} — foto ${i + 1}`}
-                      fit="cover"
-                      wrapperClassName="aspect-square w-full overflow-hidden rounded-xl bg-muted"
-                      className="rounded-xl"
-                    />
-                  ))}
+            {/* Galería: portada + fotos de galería — todas juntas */}
+            {(() => {
+              const allPhotos = [
+                ...(page.coverUrl?.trim() ? [page.coverUrl.trim()] : []),
+                ...(page.galleryUrls ?? []),
+              ].filter(Boolean) as string[];
+              if (allPhotos.length === 0) return null;
+              const cols =
+                allPhotos.length === 1 ? 'grid-cols-1' :
+                allPhotos.length === 2 ? 'grid-cols-2' :
+                'grid-cols-3';
+              return (
+                <div className="mb-10">
+                  <h2 className="mb-4 text-lg font-semibold text-foreground">Galería</h2>
+                  <div className={`grid gap-2 ${cols}`}>
+                    {allPhotos.map((url, i) => (
+                      <ZoomableImage
+                        key={i}
+                        src={url}
+                        alt={`${page.titulo} — foto ${i + 1}`}
+                        fit="cover"
+                        wrapperClassName="aspect-[4/3] w-full overflow-hidden rounded-xl bg-muted"
+                        className="rounded-xl"
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {page.contenido ? (
               <div className="prose prose-gray prose-lg dark:prose-invert max-w-none [&_img]:max-w-full [&_img]:rounded-xl [&_img]:my-6 [&_h2]:font-serif [&_h3]:font-serif">
