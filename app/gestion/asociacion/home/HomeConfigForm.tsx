@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { updateHomeConfig, type HomeConfig, type HomeSlide, type HomeTheme } from "@/lib/homeApi";
 
 type HomeConfigFormProps = {
@@ -33,6 +33,7 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
     },
     mapPreviewImage: configWithDefaults.mapPreviewImage ?? '',
     shopBannerImage: configWithDefaults.shopBannerImage ?? '',
+    descubreImages: configWithDefaults.descubreImages ?? {},
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -639,6 +640,13 @@ export default function HomeConfigForm({ initialConfig }: HomeConfigFormProps) {
         </div>
       </section>
 
+      {/* Fotos de colecciones Descubre */}
+      <DescubreImagesSection
+        descubreImages={config.descubreImages ?? {}}
+        onChange={(images) => setConfig((prev) => ({ ...prev, descubreImages: images }))}
+        uploadImage={uploadImage}
+      />
+
       {/* Botón guardar */}
       <div className="flex items-center gap-4">
         <button
@@ -792,6 +800,160 @@ function SlideEditor({
             </button>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ----- DESCUBRE IMAGES SECTION ----- */
+function DescubreImagesSection({
+  descubreImages,
+  onChange,
+  uploadImage,
+}: {
+  descubreImages: Record<string, string>;
+  onChange: (images: Record<string, string>) => void;
+  uploadImage: (file: File, folder?: string) => Promise<string>;
+}) {
+  const [collections, setCollections] = useState<Array<{ slug: string; title: string }>>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/descubre?lang=es")
+      .then((r) => r.json())
+      .then((data: any[]) => {
+        if (Array.isArray(data)) {
+          setCollections(data.map((c) => ({ slug: c.slug, title: c.title })));
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoaded(true));
+  }, []);
+
+  if (!loaded) {
+    return (
+      <section className="rounded-lg border border-border bg-white p-6">
+        <h2 className="text-xl font-semibold mb-4">Fotos de colecciones &ldquo;Descubre&rdquo;</h2>
+        <p className="text-sm text-muted-foreground">Cargando colecciones...</p>
+      </section>
+    );
+  }
+
+  if (collections.length === 0) {
+    return (
+      <section className="rounded-lg border border-border bg-white p-6">
+        <h2 className="text-xl font-semibold mb-4">Fotos de colecciones &ldquo;Descubre&rdquo;</h2>
+        <p className="text-sm text-muted-foreground">No se pudieron cargar las colecciones.</p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded-lg border border-border bg-white p-6">
+      <h2 className="text-xl font-semibold mb-2">Fotos de colecciones &ldquo;Descubre&rdquo;</h2>
+      <p className="text-sm text-muted-foreground mb-6">
+        Asigna una foto a cada colección. Si no tiene foto, se usará automáticamente la del primer pueblo.
+      </p>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        {collections.map((col) => (
+          <DescubreImageItem
+            key={col.slug}
+            slug={col.slug}
+            title={col.title}
+            imageUrl={descubreImages[col.slug] ?? ""}
+            onChangeUrl={(url) => {
+              const next = { ...descubreImages };
+              if (url) {
+                next[col.slug] = url;
+              } else {
+                delete next[col.slug];
+              }
+              onChange(next);
+            }}
+            uploadImage={uploadImage}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function DescubreImageItem({
+  slug, title, imageUrl, onChangeUrl, uploadImage,
+}: {
+  slug: string;
+  title: string;
+  imageUrl: string;
+  onChangeUrl: (url: string) => void;
+  uploadImage: (file: File, folder?: string) => Promise<string>;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [localUploading, setLocalUploading] = useState(false);
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLocalUploading(true);
+    try {
+      const url = await uploadImage(file, `home/descubre`);
+      onChangeUrl(url);
+    } catch (err: any) {
+      alert("Error subiendo imagen: " + (err.message ?? ""));
+    } finally {
+      setLocalUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-border p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold truncate">{title}</h3>
+        <span className="text-[10px] font-mono text-muted-foreground">{slug}</span>
+      </div>
+
+      {imageUrl && (
+        <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-muted">
+          <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+        </div>
+      )}
+
+      <input type="hidden" />
+      <input
+        type="url"
+        value={imageUrl}
+        onChange={(e) => onChangeUrl(e.target.value)}
+        placeholder="URL de la imagen o sube una..."
+        className="w-full rounded border border-border px-3 py-1.5 text-sm"
+      />
+
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFile}
+      />
+
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={localUploading}
+          className="rounded bg-black px-3 py-1.5 text-xs font-medium text-white hover:bg-black/90 disabled:bg-gray-400"
+        >
+          {localUploading ? "Subiendo..." : imageUrl ? "Cambiar" : "Subir foto"}
+        </button>
+        {imageUrl && (
+          <button
+            type="button"
+            onClick={() => onChangeUrl("")}
+            className="rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
+          >
+            Quitar
+          </button>
+        )}
       </div>
     </div>
   );

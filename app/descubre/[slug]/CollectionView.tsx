@@ -80,6 +80,7 @@ type CollectionData = {
   color: string;
   title: string;
   description: string;
+  imageUrl?: string | null;
   pueblos: Pueblo[];
   count: number;
   generatedAt: string;
@@ -125,13 +126,32 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
   return (
     <>
       {/* Hero */}
-      <section
-        className="relative overflow-hidden py-16 md:py-24"
-        style={{
-          background: `linear-gradient(135deg, ${data.color}E6 0%, ${data.color}99 50%, ${data.color}CC 100%)`,
-        }}
-      >
-        <div className="absolute inset-0 bg-black/10" />
+      <section className="relative overflow-hidden py-16 md:py-24">
+        {data.imageUrl ? (
+          <>
+            <Image
+              src={data.imageUrl}
+              alt={data.title}
+              fill
+              className="object-cover"
+              priority
+              sizes="100vw"
+            />
+            <div className="absolute inset-0 bg-black/50" />
+            <div
+              className="absolute inset-0 mix-blend-multiply opacity-40"
+              style={{ backgroundColor: data.color }}
+            />
+          </>
+        ) : (
+          <>
+            <div
+              className="absolute inset-0"
+              style={{ background: `linear-gradient(135deg, ${data.color}E6 0%, ${data.color}99 50%, ${data.color}CC 100%)` }}
+            />
+            <div className="absolute inset-0 bg-black/10" />
+          </>
+        )}
         <div className="relative mx-auto max-w-5xl px-4 text-center">
           <Link
             href="/descubre"
