@@ -17,7 +17,7 @@ import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Eyebrow } from "@/app/components/ui/typography";
 import SafeHtml from "@/app/_components/ui/SafeHtml";
-import ZoomableImage from "@/app/components/ZoomableImage";
+import ContenidoImageCarousel from "@/app/components/ContenidoImageCarousel";
 
 export const revalidate = 60;
 const CATEGORIA_LABELS: Record<string, string> = {
@@ -272,33 +272,15 @@ export default async function ExperienciaPuebloPage({
               </>
             )}
 
-            {/* Galería: portada + fotos de galería — todas juntas */}
+            {/* Galería: carrusel con portada + fotos de galería */}
             {(() => {
               const allPhotos = [
                 ...(page.coverUrl?.trim() ? [page.coverUrl.trim()] : []),
                 ...(page.galleryUrls ?? []),
               ].filter(Boolean) as string[];
               if (allPhotos.length === 0) return null;
-              const cols =
-                allPhotos.length === 1 ? 'grid-cols-1' :
-                allPhotos.length === 2 ? 'grid-cols-2' :
-                'grid-cols-3';
               return (
-                <div className="mb-10">
-                  <h2 className="mb-4 text-lg font-semibold text-foreground">Galería</h2>
-                  <div className={`grid gap-2 ${cols}`}>
-                    {allPhotos.map((url, i) => (
-                      <ZoomableImage
-                        key={i}
-                        src={url}
-                        alt={`${page.titulo} — foto ${i + 1}`}
-                        fit="cover"
-                        wrapperClassName="aspect-[4/3] w-full overflow-hidden rounded-xl bg-muted"
-                        className="rounded-xl"
-                      />
-                    ))}
-                  </div>
-                </div>
+                <ContenidoImageCarousel images={allPhotos} alt={page.titulo} />
               );
             })()}
 
