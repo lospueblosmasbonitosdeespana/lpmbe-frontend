@@ -83,6 +83,7 @@ async function getAdminHomeConfig(token: string): Promise<HomeConfig> {
       },
       mapPreviewImage: typeof data.mapPreviewImage === 'string' ? data.mapPreviewImage : '',
       shopBannerImage: typeof data.shopBannerImage === 'string' ? data.shopBannerImage : '',
+      descubreImages: data.descubreImages && typeof data.descubreImages === 'object' ? data.descubreImages : {},
     };
   } catch (err) {
     console.error('[ADMIN HOME] Error cargando config:', err);
