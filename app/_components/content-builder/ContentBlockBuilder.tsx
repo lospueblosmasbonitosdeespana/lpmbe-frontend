@@ -44,7 +44,7 @@ export interface ContentBlock {
   socialYoutube?: string;
   countdownDate?: string;
   countdownLabel?: string;
-  align?: 'left' | 'center' | 'right';
+  align?: 'left' | 'center' | 'right' | 'full';
   backgroundColor?: string;
   textColor?: string;
   paddingY?: number;
@@ -56,6 +56,8 @@ export interface ContentBlock {
   imgBorderRadius?: number;
   imgPaddingV?: number;
   imgPaddingH?: number;
+  imgPosition?: 'left' | 'right';
+  imgTextRatio?: '30-70' | '40-60' | '50-50' | '60-40' | '70-30';
 }
 
 interface BuilderTemplate {
@@ -169,6 +171,8 @@ function createBlock(type: BlockType, patch: Partial<ContentBlock> = {}): Conten
     textColor: type === 'countdown' ? '#ffffff' : '#111111',
     paddingY: 10,
     borderRadius: 8,
+    imgPosition: type === 'imgText' ? 'left' : undefined,
+    imgTextRatio: type === 'imgText' ? '40-60' : undefined,
     ...patch,
   };
 }
@@ -181,7 +185,11 @@ function normalizeBlocks(value: unknown): ContentBlock[] {
     return arr.map((b) => {
       const src = (b && typeof b === 'object' ? b : {}) as Record<string, unknown>;
       const alignRaw = String(src.align || 'left');
-      const align = (alignRaw === 'center' || alignRaw === 'right' ? alignRaw : 'left') as 'left' | 'center' | 'right';
+      const align = (['center', 'right', 'full'].includes(alignRaw) ? alignRaw : 'left') as 'left' | 'center' | 'right' | 'full';
+      const imgPosRaw = String(src.imgPosition || 'left');
+      const imgPosition = (imgPosRaw === 'right' ? 'right' : 'left') as 'left' | 'right';
+      const ratioRaw = String(src.imgTextRatio || '40-60');
+      const imgTextRatio = (['30-70', '40-60', '50-50', '60-40', '70-30'].includes(ratioRaw) ? ratioRaw : '40-60') as ContentBlock['imgTextRatio'];
       return {
         id: String(src.id || newId()),
         type: String(src.type || 'text') as BlockType,
@@ -208,6 +216,8 @@ function normalizeBlocks(value: unknown): ContentBlock[] {
         textColor: String(src.textColor || '#111111'),
         paddingY: Number(src.paddingY ?? 10),
         borderRadius: Number(src.borderRadius ?? 8),
+        imgPosition,
+        imgTextRatio,
       };
     });
   } catch {
@@ -238,16 +248,19 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
     } else if (b.type === 'image') {
       const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
       if (safeUrl) {
+        const isFull = align === 'full';
         const imgStyle = [
-          b.imgWidth ? `width:${b.imgWidth}px` : 'max-width:100%',
-          b.imgHeight ? `height:${b.imgHeight}px` : 'height:auto',
-          'display:inline-block',
+          isFull ? 'width:100%' : (b.imgWidth ? `width:${b.imgWidth}px` : 'max-width:100%'),
+          isFull ? 'height:auto' : (b.imgHeight ? `height:${b.imgHeight}px` : 'height:auto'),
+          isFull ? 'display:block' : 'display:inline-block',
           b.imgBorderRadius ? `border-radius:${b.imgBorderRadius}px` : '',
           b.imgPaddingV || b.imgPaddingH ? `padding:${b.imgPaddingV || 0}px ${b.imgPaddingH || 0}px` : '',
         ].filter(Boolean).join(';');
         const imgTag = `<img src="${escHtml(safeUrl)}" alt="${escHtml(b.content || '')}" style="${imgStyle}" />`;
-        const wrapped = b.imgLinkUrl ? `<a href="${escHtml(b.imgLinkUrl)}" target="_blank" style="display:inline-block;">${imgTag}</a>` : imgTag;
-        parts.push(`<div style="${wrapStyle}text-align:${align};">${wrapped}</div>`);
+        const linkStyle = isFull ? 'display:block;' : 'display:inline-block;';
+        const wrapped = b.imgLinkUrl ? `<a href="${escHtml(b.imgLinkUrl)}" target="_blank" style="${linkStyle}">${imgTag}</a>` : imgTag;
+        const divAlign = isFull ? 'text-align:center;' : `text-align:${align};`;
+        parts.push(`<div style="${wrapStyle}${divAlign}">${wrapped}</div>`);
       }
     } else if (b.type === 'button') {
       const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
@@ -294,7 +307,13 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
     } else if (b.type === 'imgText') {
       const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
       if (safeUrl) {
-        parts.push(`<div style="${wrapStyle}"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="40%" style="padding:8px;vertical-align:top;"><img src="${escHtml(safeUrl)}" style="width:100%;height:auto;display:block;" /></td><td width="60%" style="padding:8px;vertical-align:top;">${b.content || ''}</td></tr></table></div>`);
+        const ratio = b.imgTextRatio || '40-60';
+        const [imgPct, txtPct] = ratio.split('-');
+        const pos = b.imgPosition || 'left';
+        const imgTd = `<td width="${imgPct}%" style="padding:8px;vertical-align:top;"><img src="${escHtml(safeUrl)}" style="width:100%;height:auto;display:block;" /></td>`;
+        const txtTd = `<td width="${txtPct}%" style="padding:8px;vertical-align:top;">${b.content || ''}</td>`;
+        const cells = pos === 'right' ? `${txtTd}${imgTd}` : `${imgTd}${txtTd}`;
+        parts.push(`<div style="${wrapStyle}"><table width="100%" cellpadding="0" cellspacing="0"><tr>${cells}</tr></table></div>`);
       } else {
         parts.push(`<div style="${wrapStyle}">${b.content || ''}</div>`);
       }
@@ -1505,10 +1524,11 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                 </label>
                 <label className="text-xs text-muted-foreground">
                   Alineación
-                  <select value={selectedBlock.align || 'left'} onChange={(e) => updateSelected({ align: (e.target.value as 'left' | 'center' | 'right') })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm">
+                  <select value={selectedBlock.align || 'left'} onChange={(e) => updateSelected({ align: (e.target.value as 'left' | 'center' | 'right' | 'full') })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm">
                     <option value="left">Izquierda</option>
                     <option value="center">Centro</option>
                     <option value="right">Derecha</option>
+                    <option value="full">Ancho completo</option>
                   </select>
                 </label>
 
@@ -1518,6 +1538,29 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                     <p className="mb-1 text-xs text-muted-foreground">{selectedBlock.type === 'heading' ? 'Contenido del titular' : 'Contenido del bloque'}</p>
                     <BlockRichEditor content={selectedBlock.content || ''} onChange={(html) => updateSelected({ content: html })} placeholder={selectedBlock.type === 'heading' ? 'Escribe el titular...' : 'Escribe el contenido...'} />
                   </div>
+                )}
+
+                {/* imgText position & ratio */}
+                {selectedBlock.type === 'imgText' && (
+                  <>
+                    <label className="text-xs text-muted-foreground">
+                      Posición imagen
+                      <select value={selectedBlock.imgPosition || 'left'} onChange={(e) => updateSelected({ imgPosition: e.target.value as 'left' | 'right' })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm">
+                        <option value="left">Izquierda</option>
+                        <option value="right">Derecha</option>
+                      </select>
+                    </label>
+                    <label className="text-xs text-muted-foreground">
+                      Proporciones
+                      <select value={selectedBlock.imgTextRatio || '40-60'} onChange={(e) => updateSelected({ imgTextRatio: e.target.value as ContentBlock['imgTextRatio'] })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm">
+                        <option value="30-70">30% img / 70% texto</option>
+                        <option value="40-60">40% img / 60% texto</option>
+                        <option value="50-50">50% / 50%</option>
+                        <option value="60-40">60% img / 40% texto</option>
+                        <option value="70-30">70% img / 30% texto</option>
+                      </select>
+                    </label>
+                  </>
                 )}
 
                 {/* Image alt text */}
@@ -1607,17 +1650,32 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                 {/* Columns 2 */}
                 {selectedBlock.type === 'columns2' && (
                   <>
-                    <label className="text-xs text-muted-foreground md:col-span-2">Columna izquierda<textarea rows={4} value={selectedBlock.colLeft || ''} onChange={(e) => updateSelected({ colLeft: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" /></label>
-                    <label className="text-xs text-muted-foreground md:col-span-2">Columna derecha<textarea rows={4} value={selectedBlock.colRight || ''} onChange={(e) => updateSelected({ colRight: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" /></label>
+                    <div className="md:col-span-2">
+                      <p className="mb-1 text-xs text-muted-foreground">Columna izquierda</p>
+                      <BlockRichEditor content={selectedBlock.colLeft || ''} onChange={(html) => updateSelected({ colLeft: html })} placeholder="Columna izquierda..." />
+                    </div>
+                    <div className="md:col-span-2">
+                      <p className="mb-1 text-xs text-muted-foreground">Columna derecha</p>
+                      <BlockRichEditor content={selectedBlock.colRight || ''} onChange={(html) => updateSelected({ colRight: html })} placeholder="Columna derecha..." />
+                    </div>
                   </>
                 )}
 
                 {/* Columns 3 */}
                 {selectedBlock.type === 'columns3' && (
                   <>
-                    <label className="text-xs text-muted-foreground md:col-span-2">Columna izquierda<textarea rows={3} value={selectedBlock.colLeft || ''} onChange={(e) => updateSelected({ colLeft: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" /></label>
-                    <label className="text-xs text-muted-foreground md:col-span-2">Columna central<textarea rows={3} value={selectedBlock.colCenter || ''} onChange={(e) => updateSelected({ colCenter: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" /></label>
-                    <label className="text-xs text-muted-foreground md:col-span-2">Columna derecha<textarea rows={3} value={selectedBlock.colRight || ''} onChange={(e) => updateSelected({ colRight: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" /></label>
+                    <div className="md:col-span-2">
+                      <p className="mb-1 text-xs text-muted-foreground">Columna izquierda</p>
+                      <BlockRichEditor content={selectedBlock.colLeft || ''} onChange={(html) => updateSelected({ colLeft: html })} placeholder="Columna izquierda..." />
+                    </div>
+                    <div className="md:col-span-2">
+                      <p className="mb-1 text-xs text-muted-foreground">Columna central</p>
+                      <BlockRichEditor content={selectedBlock.colCenter || ''} onChange={(html) => updateSelected({ colCenter: html })} placeholder="Columna central..." />
+                    </div>
+                    <div className="md:col-span-2">
+                      <p className="mb-1 text-xs text-muted-foreground">Columna derecha</p>
+                      <BlockRichEditor content={selectedBlock.colRight || ''} onChange={(html) => updateSelected({ colRight: html })} placeholder="Columna derecha..." />
+                    </div>
                   </>
                 )}
 
@@ -1821,6 +1879,9 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
             imageUrl={currentUrl}
             alt={editBlock.content || ''}
             linkUrl={editBlock.imgLinkUrl || ''}
+            initialWidth={editBlock.imgWidth}
+            initialHeight={editBlock.imgHeight}
+            initialBorderRadius={editBlock.imgBorderRadius}
             onClose={() => setImageEditorBlock(null)}
             onUploadCropped={async (file) => {
               const url = await uploadImageForBlock(file, editBlock.id, imageEditorBlock.field);
@@ -1837,6 +1898,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                         imgWidth: result.width,
                         imgHeight: result.height,
                         imgLinkUrl: result.linkUrl,
+                        ...(result.borderRadius !== undefined ? { imgBorderRadius: result.borderRadius } : {}),
                       }
                     : b
                 )

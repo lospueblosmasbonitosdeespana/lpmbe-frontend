@@ -1,354 +1,205 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
-import ReactCrop, { type Crop, type PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
+import { useState, useRef, useEffect } from 'react';
 
-export interface ImageEditResult {
-  url: string;
-  width?: number;
-  height?: number;
-  alt?: string;
-  linkUrl?: string;
-}
-
-interface Props {
+type ImageEditorModalProps = {
   imageUrl: string;
   alt?: string;
   linkUrl?: string;
-  onApply: (result: ImageEditResult) => void;
+  initialWidth?: number;
+  initialHeight?: number;
+  initialBorderRadius?: number;
   onClose: () => void;
   onUploadCropped?: (file: File) => Promise<string>;
-}
+  onApply: (result: {
+    url: string;
+    alt?: string;
+    width?: number;
+    height?: number;
+    linkUrl?: string;
+    borderRadius?: number;
+  }) => void;
+};
 
-function centerAspectCrop(w: number, h: number): Crop {
-  return centerCrop(makeAspectCrop({ unit: '%', width: 90 }, w / h, w, h), w, h);
-}
-
-export default function ImageEditorModal({ imageUrl, alt = '', linkUrl = '', onApply, onClose, onUploadCropped }: Props) {
-  const imgRef = useRef<HTMLImageElement | null>(null);
-  const [crop, setCrop] = useState<Crop>();
-  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
+export default function ImageEditorModal({
+  imageUrl,
+  alt: initialAlt = '',
+  linkUrl: initialLinkUrl = '',
+  initialWidth,
+  initialHeight,
+  initialBorderRadius,
+  onClose,
+  onApply,
+}: ImageEditorModalProps) {
+  const [url, setUrl] = useState(imageUrl);
+  const [alt, setAlt] = useState(initialAlt);
+  const [linkUrl, setLinkUrl] = useState(initialLinkUrl);
+  const [width, setWidth] = useState<number | undefined>(initialWidth);
+  const [height, setHeight] = useState<number | undefined>(initialHeight);
   const [naturalW, setNaturalW] = useState(0);
   const [naturalH, setNaturalH] = useState(0);
-  const [displayW, setDisplayW] = useState(0);
-  const [displayH, setDisplayH] = useState(0);
-  const [widthInput, setWidthInput] = useState('');
-  const [heightInput, setHeightInput] = useState('');
-  const [ratioLocked, setRatioLocked] = useState(true);
-  const [altText, setAltText] = useState(alt);
-  const [link, setLink] = useState(linkUrl);
-  const [paddingV, setPaddingV] = useState(0);
-  const [paddingH, setPaddingH] = useState(0);
-  const [borderRadius, setBorderRadius] = useState(0);
-  const [tab, setTab] = useState<'crop' | 'styles'>('crop');
-  const [applying, setApplying] = useState(false);
-  const [cropMode, setCropMode] = useState(false);
-  const [imgLoadError, setImgLoadError] = useState(false);
+  const [keepRatio, setKeepRatio] = useState(true);
+  const [borderRadius, setBorderRadius] = useState(initialBorderRadius ?? 0);
+  const backdropRef = useRef<HTMLDivElement>(null);
 
-  function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
-    const { naturalWidth, naturalHeight, width, height } = e.currentTarget;
-    setNaturalW(naturalWidth);
-    setNaturalH(naturalHeight);
-    setDisplayW(naturalWidth);
-    setDisplayH(naturalHeight);
-    setWidthInput(String(naturalWidth));
-    setHeightInput(String(naturalHeight));
-    setCrop(centerAspectCrop(width, height));
-  }
+  useEffect(() => {
+    if (!imageUrl) return;
+    const img = new window.Image();
+    img.onload = () => {
+      setNaturalW(img.naturalWidth);
+      setNaturalH(img.naturalHeight);
+      setWidth((prev) => prev ?? img.naturalWidth);
+      setHeight((prev) => prev ?? img.naturalHeight);
+    };
+    img.src = imageUrl;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imageUrl]);
 
-  function handleWidthChange(val: string) {
-    setWidthInput(val);
-    const n = parseInt(val, 10);
-    if (!n || !naturalW) return;
-    setDisplayW(n);
-    if (ratioLocked && naturalH) {
-      const h = Math.round((n / naturalW) * naturalH);
-      setDisplayH(h);
-      setHeightInput(String(h));
+  const handleWidthChange = (v: number) => {
+    setWidth(v);
+    if (keepRatio && naturalW > 0) {
+      setHeight(Math.round((v / naturalW) * naturalH));
     }
-  }
+  };
 
-  function handleHeightChange(val: string) {
-    setHeightInput(val);
-    const n = parseInt(val, 10);
-    if (!n || !naturalH) return;
-    setDisplayH(n);
-    if (ratioLocked && naturalW) {
-      const w = Math.round((n / naturalH) * naturalW);
-      setDisplayW(w);
-      setWidthInput(String(w));
+  const handleHeightChange = (v: number) => {
+    setHeight(v);
+    if (keepRatio && naturalH > 0) {
+      setWidth(Math.round((v / naturalH) * naturalW));
     }
-  }
+  };
 
-  function resetToOriginal() {
-    setWidthInput(String(naturalW));
-    setHeightInput(String(naturalH));
-    setDisplayW(naturalW);
-    setDisplayH(naturalH);
-  }
-
-  async function getCroppedBlob(): Promise<Blob | null> {
-    if (!completedCrop || !imgRef.current) return null;
-    const img = imgRef.current;
-    const scaleX = img.naturalWidth / img.width;
-    const scaleY = img.naturalHeight / img.height;
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-    const targetW = displayW || Math.round(completedCrop.width * scaleX);
-    const targetH = displayH || Math.round(completedCrop.height * scaleY);
-    canvas.width = targetW;
-    canvas.height = targetH;
-    ctx.drawImage(
-      img,
-      completedCrop.x * scaleX,
-      completedCrop.y * scaleY,
-      completedCrop.width * scaleX,
-      completedCrop.height * scaleY,
-      0, 0, targetW, targetH,
-    );
-    return new Promise((resolve) => canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.9));
-  }
-
-  async function handleApply() {
-    setApplying(true);
-    try {
-      let finalUrl = imageUrl;
-
-      // Si hay recorte activo y tenemos la función de upload
-      if (cropMode && completedCrop && onUploadCropped && !imgLoadError) {
-        const blob = await getCroppedBlob();
-        if (blob) {
-          const file = new File([blob], 'cropped.jpg', { type: 'image/jpeg' });
-          finalUrl = await onUploadCropped(file);
-        }
-      }
-
-      onApply({
-        url: finalUrl,
-        width: displayW || undefined,
-        height: displayH || undefined,
-        alt: altText,
-        linkUrl: link,
-      });
-    } finally {
-      setApplying(false);
-    }
-  }
+  const presets = [
+    { label: 'Original', w: naturalW, h: naturalH },
+    { label: 'Pequeña (300px)', w: 300, h: naturalH && naturalW ? Math.round((300 / naturalW) * naturalH) : 200 },
+    { label: 'Media (500px)', w: 500, h: naturalH && naturalW ? Math.round((500 / naturalW) * naturalH) : 350 },
+    { label: 'Grande (800px)', w: 800, h: naturalH && naturalW ? Math.round((800 / naturalW) * naturalH) : 550 },
+  ];
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="relative flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
-          <h2 className="text-base font-semibold text-slate-800">Editar imagen</h2>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
-          </button>
+    <div
+      ref={backdropRef}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
+    >
+      <div className="w-full max-w-lg rounded-xl bg-white shadow-2xl dark:bg-neutral-900">
+        <div className="flex items-center justify-between border-b px-5 py-3">
+          <h3 className="text-base font-semibold">Editar imagen</h3>
+          <button onClick={onClose} className="text-xl leading-none text-muted-foreground hover:text-foreground">&times;</button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-slate-200">
-          {(['crop', 'styles'] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-5 py-2.5 text-sm font-medium transition-colors ${tab === t ? 'border-b-2 border-primary text-primary' : 'text-slate-500 hover:text-slate-700'}`}
-            >
-              {t === 'crop' ? 'Imagen' : 'Estilos'}
-            </button>
-          ))}
-        </div>
-
-        <div className="overflow-y-auto">
-          {tab === 'crop' && (
-            <div className="p-5 space-y-5">
-              {/* Preview / Crop area */}
-              <div className="flex justify-center rounded-xl border border-slate-200 bg-slate-50 p-3 min-h-48 items-center overflow-hidden">
-                {imageUrl ? (
-                  cropMode && !imgLoadError ? (
-                    <ReactCrop
-                      crop={crop}
-                      onChange={(c) => setCrop(c)}
-                      onComplete={(c) => setCompletedCrop(c)}
-                      className="max-h-72 max-w-full"
-                    >
-                      <img
-                        ref={imgRef}
-                        src={imageUrl}
-                        crossOrigin="anonymous"
-                        onLoad={onImageLoad}
-                        onError={() => { setImgLoadError(true); setCropMode(false); }}
-                        alt="Editar"
-                        className="max-h-72 max-w-full object-contain"
-                      />
-                    </ReactCrop>
-                  ) : (
-                    <img
-                      ref={imgRef}
-                      src={imageUrl}
-                      onLoad={onImageLoad}
-                      onError={() => setImgLoadError(true)}
-                      alt="Preview"
-                      style={{
-                        maxHeight: '288px',
-                        maxWidth: '100%',
-                        objectFit: 'contain',
-                        width: displayW ? `${displayW}px` : undefined,
-                        borderRadius: borderRadius ? `${borderRadius}px` : undefined,
-                        padding: `${paddingV}px ${paddingH}px`,
-                      }}
-                    />
-                  )
-                ) : (
-                  <p className="text-sm text-slate-400">Sin imagen</p>
-                )}
-              </div>
-
-              {/* Crop toggle */}
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => { setCropMode((v) => !v); setImgLoadError(false); }}
-                  className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${cropMode ? 'border-primary bg-primary text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M6 2v14a2 2 0 002 2h14"/><path d="M18 22V8a2 2 0 00-2-2H2"/>
-                  </svg>
-                  {cropMode ? 'Recortando...' : 'Recortar'}
-                </button>
-                {imgLoadError && (
-                  <p className="text-xs text-amber-600">⚠ La imagen no soporta recorte por CORS. El resto de ediciones sí funcionan.</p>
-                )}
-              </div>
-
-              {/* Dimensions */}
-              <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Dimensiones</p>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <label className="text-xs text-slate-500">Ancho (px)</label>
-                    <input
-                      type="number"
-                      value={widthInput}
-                      onChange={(e) => handleWidthChange(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setRatioLocked((v) => !v)}
-                    className={`mt-5 rounded-lg border p-2 transition-colors ${ratioLocked ? 'border-primary bg-primary/10 text-primary' : 'border-slate-300 text-slate-400 hover:border-slate-400'}`}
-                    title={ratioLocked ? 'Proporciones bloqueadas' : 'Proporciones libres'}
-                  >
-                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      {ratioLocked
-                        ? <><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></>
-                        : <><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 019.9-1" /></>}
-                    </svg>
-                  </button>
-                  <div className="flex-1">
-                    <label className="text-xs text-slate-500">Alto (px)</label>
-                    <input
-                      type="number"
-                      value={heightInput}
-                      onChange={(e) => handleHeightChange(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={resetToOriginal}
-                    className="mt-5 rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50"
-                  >
-                    Original
-                  </button>
-                </div>
-              </div>
-
-              {/* Alt text */}
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Texto alternativo (SEO)</label>
-                <input
-                  type="text"
-                  value={altText}
-                  onChange={(e) => setAltText(e.target.value)}
-                  placeholder="Descripción de la imagen"
-                  className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-              </div>
-
-              {/* Link */}
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Enlace al clicar (opcional)</label>
-                <input
-                  type="url"
-                  value={link}
-                  onChange={(e) => setLink(e.target.value)}
-                  placeholder="https://..."
-                  className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-              </div>
+        <div className="space-y-4 p-5">
+          {url && (
+            <div className="flex justify-center rounded-lg bg-neutral-100 p-3 dark:bg-neutral-800">
+              <img
+                src={url}
+                alt={alt}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: 220,
+                  objectFit: 'contain',
+                  borderRadius: borderRadius > 0 ? borderRadius : undefined,
+                }}
+              />
             </div>
           )}
 
-          {tab === 'styles' && (
-            <div className="p-5 space-y-5">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Padding vertical (px)</label>
-                  <input type="number" min={0} max={80} value={paddingV} onChange={(e) => setPaddingV(Number(e.target.value))}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Padding horizontal (px)</label>
-                  <input type="number" min={0} max={80} value={paddingH} onChange={(e) => setPaddingH(Number(e.target.value))}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Radio de borde (px)</label>
-                  <input type="number" min={0} max={100} value={borderRadius} onChange={(e) => setBorderRadius(Number(e.target.value))}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                </div>
-              </div>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="text-xs text-muted-foreground">
+              Ancho (px)
+              <input
+                type="number"
+                value={width ?? ''}
+                onChange={(e) => handleWidthChange(parseInt(e.target.value) || 0)}
+                className="mt-1 w-full rounded-md border px-2 py-1.5 text-sm"
+              />
+            </label>
+            <label className="text-xs text-muted-foreground">
+              Alto (px)
+              <input
+                type="number"
+                value={height ?? ''}
+                onChange={(e) => handleHeightChange(parseInt(e.target.value) || 0)}
+                className="mt-1 w-full rounded-md border px-2 py-1.5 text-sm"
+              />
+            </label>
+          </div>
 
-              {/* Preview with styles */}
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 flex justify-center">
-                {imageUrl && (
-                  <img
-                    src={imageUrl}
-                    alt={altText}
-                    style={{
-                      maxWidth: '100%',
-                      maxHeight: '200px',
-                      objectFit: 'contain',
-                      padding: `${paddingV}px ${paddingH}px`,
-                      borderRadius: `${borderRadius}px`,
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-          )}
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <input type="checkbox" checked={keepRatio} onChange={(e) => setKeepRatio(e.target.checked)} />
+            Mantener proporción
+          </label>
+
+          <div className="flex flex-wrap gap-2">
+            {presets.filter(p => p.w > 0).map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => { setWidth(p.w); setHeight(p.h); }}
+                className="rounded-md border px-2.5 py-1 text-xs hover:bg-primary/10"
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          <label className="text-xs text-muted-foreground">
+            Bordes redondeados (px)
+            <input
+              type="range"
+              min={0}
+              max={50}
+              value={borderRadius}
+              onChange={(e) => setBorderRadius(parseInt(e.target.value))}
+              className="mt-1 w-full"
+            />
+            <span className="text-xs">{borderRadius}px</span>
+          </label>
+
+          <label className="text-xs text-muted-foreground">
+            Texto alternativo (alt)
+            <input
+              value={alt}
+              onChange={(e) => setAlt(e.target.value)}
+              className="mt-1 w-full rounded-md border px-2 py-1.5 text-sm"
+              placeholder="Descripción de la imagen"
+            />
+          </label>
+
+          <label className="text-xs text-muted-foreground">
+            Enlace al pulsar (opcional)
+            <input
+              value={linkUrl}
+              onChange={(e) => setLinkUrl(e.target.value)}
+              className="mt-1 w-full rounded-md border px-2 py-1.5 text-sm"
+              placeholder="https://..."
+            />
+          </label>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-5 py-3">
+        <div className="flex justify-end gap-2 border-t px-5 py-3">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="rounded-md border px-4 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800"
           >
             Cancelar
           </button>
           <button
             type="button"
-            onClick={handleApply}
-            disabled={applying}
-            className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60 hover:opacity-90 transition-opacity"
+            onClick={() => {
+              onApply({
+                url,
+                alt,
+                width: width || undefined,
+                height: height || undefined,
+                linkUrl: linkUrl || undefined,
+                borderRadius: borderRadius > 0 ? borderRadius : undefined,
+              });
+            }}
+            className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
           >
-            {applying ? 'Aplicando...' : 'Aplicar'}
+            Aplicar
           </button>
         </div>
       </div>
