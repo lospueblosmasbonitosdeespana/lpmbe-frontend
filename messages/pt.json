@@ -173,6 +173,8 @@
       "toggleServicios": "Serviços",
       "sinHorario": "Não é especificado o calendário",
       "goTo": "Ir para",
+      "searchPlaceholder": "Procurar serviço...",
+      "noResults": "Sem resultados",
       "tipos": {
         "LAVABO": "Casas de banho públicas",
         "PARKING": "Estacionamento",

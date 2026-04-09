@@ -173,6 +173,8 @@
       "toggleServicios": "Services",
       "sinHorario": "Pas de calendrier spécifié",
       "goTo": "Aller à",
+      "searchPlaceholder": "Chercher un service...",
+      "noResults": "Aucun résultat",
       "tipos": {
         "LAVABO": "Toilettes publiques",
         "PARKING": "Parking",

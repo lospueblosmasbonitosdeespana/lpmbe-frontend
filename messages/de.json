@@ -173,6 +173,8 @@
       "toggleServicios": "Dienstleistungen",
       "sinHorario": "Kein Zeitplan angegeben",
       "goTo": "Gehe zu",
+      "searchPlaceholder": "Service suchen...",
+      "noResults": "Keine Ergebnisse",
       "tipos": {
         "LAVABO": "Öffentliche Toiletten",
         "PARKING": "Parken",

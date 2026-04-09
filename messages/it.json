@@ -173,6 +173,8 @@
       "toggleServicios": "Servizi",
       "sinHorario": "Nessun orario specificato",
       "goTo": "Vai a",
+      "searchPlaceholder": "Cerca servizio...",
+      "noResults": "Nessun risultato",
       "tipos": {
         "LAVABO": "Servizi igienici pubblici",
         "PARKING": "Parcheggio",

@@ -173,6 +173,8 @@
       "toggleServicios": "Serveis",
       "sinHorario": "Sense horari específic",
       "goTo": "Ves a",
+      "searchPlaceholder": "Cercar servei...",
+      "noResults": "Sense resultats",
       "tipos": {
         "LAVABO": "Wàteres públiques",
         "PARKING": "Aparcament",

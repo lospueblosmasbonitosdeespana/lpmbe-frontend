@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import 'leaflet/dist/leaflet.css';
 import { getResourceColor, getResourceSvg } from '@/lib/resource-types';
@@ -35,6 +35,38 @@ function formatHorario(horario: HorarioServicio): string {
   return lineas.join('<br/>');
 }
 
+function MapController({ commandRef, leaflet }: {
+  commandRef: React.MutableRefObject<{ flyTo: (lat: number, lng: number, zoom: number) => void; flyToBounds: (coords: [number, number][]) => void } | null>;
+  leaflet: typeof import('leaflet') | null;
+}) {
+  const [rl2, setRl2] = useState<typeof import('react-leaflet') | null>(null);
+  useEffect(() => {
+    import('react-leaflet').then(setRl2);
+  }, []);
+  if (!rl2) return null;
+  return <MapControllerInner commandRef={commandRef} leaflet={leaflet} useMap={rl2.useMap} />;
+}
+
+function MapControllerInner({ commandRef, leaflet, useMap }: {
+  commandRef: React.MutableRefObject<{ flyTo: (lat: number, lng: number, zoom: number) => void; flyToBounds: (coords: [number, number][]) => void } | null>;
+  leaflet: typeof import('leaflet') | null;
+  useMap: () => any;
+}) {
+  const map = useMap();
+  useEffect(() => {
+    commandRef.current = {
+      flyTo: (lat, lng, z) => map.flyTo([lat, lng], z, { duration: 0.8 }),
+      flyToBounds: (coords) => {
+        if (leaflet && coords.length > 0) {
+          const bounds = leaflet.latLngBounds(coords.map(([la, ln]) => leaflet.latLng(la, ln)));
+          map.flyToBounds(bounds, { padding: [40, 40], duration: 0.8 });
+        }
+      },
+    };
+  }, [map, leaflet, commandRef]);
+  return null;
+}
+
 export default function ParadasMap({
   paradas,
   puebloNombre,
@@ -53,6 +85,9 @@ export default function ParadasMap({
 
   const [showPois, setShowPois] = useState(true);
   const [showServicios, setShowServicios] = useState(true);
+  const [servicioSearchText, setServicioSearchText] = useState('');
+  const [highlightedServicioIds, setHighlightedServicioIds] = useState<number[]>([]);
+  const mapCommandRef = useRef<{ flyTo: (lat: number, lng: number, zoom: number) => void; flyToBounds: (coords: [number, number][]) => void } | null>(null);
 
   const hasServicios = puntosServicio.filter(
     (p) => typeof p.lat === 'number' && typeof p.lng === 'number'
@@ -201,6 +236,37 @@ export default function ParadasMap({
     [L],
   );
 
+  const createServicioIconHighlighted = useCallback(
+    (tipo: string) => {
+      if (!L) return undefined;
+      const cfg = getTipoServicioConfig(tipo);
+      if (!cfg) return undefined;
+      return L.divIcon({
+        className: '',
+        html: `<div style="
+          background: ${cfg.color};
+          width: 46px;
+          height: 46px;
+          border-radius: 50% 50% 50% 0;
+          transform: rotate(-45deg);
+          border: 3px solid #FFD700;
+          box-shadow: 0 3px 12px rgba(0,0,0,0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        ">
+          <div style="transform: rotate(45deg); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+            ${cfg.svg}
+          </div>
+        </div>`,
+        iconSize: [46, 46],
+        iconAnchor: [23, 46],
+        popupAnchor: [0, -48],
+      });
+    },
+    [L],
+  );
+
   if (paradasConCoords.length === 0 && serviciosConCoords.length === 0) return null;
 
   if (!mounted || !L || !RL) {
@@ -262,6 +328,86 @@ export default function ParadasMap({
         </div>
       )}
 
+      {/* Buscador de servicios */}
+      {hasServicios && (
+        <div className="relative mb-3">
+          <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input
+              type="text"
+              className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
+              placeholder={tServ('searchPlaceholder')}
+              value={servicioSearchText}
+              onChange={(e) => {
+                setServicioSearchText(e.target.value);
+                if (!e.target.value.trim()) setHighlightedServicioIds([]);
+              }}
+            />
+            {servicioSearchText.length > 0 && (
+              <button type="button" onClick={() => { setServicioSearchText(''); setHighlightedServicioIds([]); }} className="text-gray-400 hover:text-gray-600">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            )}
+          </div>
+          {servicioSearchText.trim().length > 0 && (() => {
+            const q = servicioSearchText.trim().toLowerCase();
+            const results = serviciosConCoords.filter((p) => {
+              const cfg = getTipoServicioConfig(p.tipo);
+              const label = cfg ? tServ(`tipos.${cfg.i18nKey}`) : p.tipo;
+              const nombre = p.nombre ?? '';
+              return label.toLowerCase().includes(q) || nombre.toLowerCase().includes(q);
+            });
+            if (results.length === 0) {
+              return <div className="mt-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-center text-xs text-gray-400">{tServ('noResults')}</div>;
+            }
+            const grouped: Record<string, typeof results> = {};
+            for (const r of results) {
+              const cfg = getTipoServicioConfig(r.tipo);
+              const label = cfg ? tServ(`tipos.${cfg.i18nKey}`) : r.tipo;
+              const key = r.nombre ? `${label} — ${r.nombre}` : label;
+              if (!grouped[key]) grouped[key] = [];
+              grouped[key].push(r);
+            }
+            return (
+              <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-[200px] overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                {Object.entries(grouped).map(([label, items]) => {
+                  const first = items[0];
+                  const cfg = getTipoServicioConfig(first.tipo);
+                  return (
+                    <button
+                      key={label}
+                      type="button"
+                      className="flex w-full items-center gap-2 border-b border-gray-100 px-3 py-2 text-left text-sm hover:bg-gray-50 last:border-0"
+                      onClick={() => {
+                        const ids = items.map((i) => i.id);
+                        setHighlightedServicioIds(ids);
+                        setServicioSearchText('');
+                        const coords = items.map((i) => [i.lat as number, i.lng as number] as [number, number]);
+                        if (coords.length === 1) {
+                          mapCommandRef.current?.flyTo(coords[0][0], coords[0][1], 17);
+                        } else {
+                          mapCommandRef.current?.flyToBounds(coords);
+                        }
+                      }}
+                    >
+                      <span
+                        className="inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full"
+                        style={{ background: cfg?.color ?? '#6b7280' }}
+                        dangerouslySetInnerHTML={{ __html: cfg?.svg ?? '' }}
+                      />
+                      <span className="flex-1 truncate font-medium text-gray-800">{label}</span>
+                      {items.length > 1 && (
+                        <span className="text-xs text-gray-400">{items.length}</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
       <div
         style={{
           width: '100%',
@@ -283,6 +429,7 @@ export default function ParadasMap({
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          <MapController commandRef={mapCommandRef} leaflet={L} />
 
           {/* Marcadores de POIs / paradas */}
           {showPois &&
@@ -330,7 +477,8 @@ export default function ParadasMap({
           {showServicios &&
             serviciosConCoords.map((punto) => {
               const cfg = getTipoServicioConfig(punto.tipo);
-              const icon = createServicioIcon(punto.tipo);
+              const isHighlighted = highlightedServicioIds.includes(punto.id);
+              const icon = isHighlighted ? createServicioIconHighlighted(punto.tipo) : createServicioIcon(punto.tipo);
               const tieneHorario =
                 punto.horario &&
                 Object.values(punto.horario).some((v) => v && (v as string).trim());

@@ -173,6 +173,8 @@
       "toggleServicios": "Services",
       "sinHorario": "No schedule specified",
       "goTo": "Go to",
+      "searchPlaceholder": "Search service...",
+      "noResults": "No results",
       "tipos": {
         "LAVABO": "Public toilets",
         "PARKING": "Parking",
