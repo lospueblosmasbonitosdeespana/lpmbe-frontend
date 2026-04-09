@@ -827,6 +827,7 @@ export default function NotasPrensaNewsletterClient({
   const [newsletterComposerMode, setNewsletterComposerMode] = useState<'editor' | 'builder'>('builder');
   const [pressComposerMode, setPressComposerMode] = useState<'editor' | 'builder'>('builder');
   const [pressBuilderHtml, setPressBuilderHtml] = useState('');
+  const [pressBuilderBlocks, setPressBuilderBlocks] = useState<unknown[]>([]);
   const [pressBuilderResetKey, setPressBuilderResetKey] = useState(0);
   const [newsletterTemplates, setNewsletterTemplates] = useState<NewsletterTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
@@ -2213,6 +2214,9 @@ export default function NotasPrensaNewsletterClient({
           puebloSlug: campaignForm.puebloSlug.trim() || undefined,
           coverUrl: firstPhoto,
           galleryUrls: allGalleryUrls.length > 0 ? allGalleryUrls : undefined,
+          blocksJson: pressComposerMode === 'builder' && pressBuilderBlocks.length > 0
+            ? pressBuilderBlocks
+            : undefined,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -4030,6 +4034,7 @@ export default function NotasPrensaNewsletterClient({
                     draftKey="lpmbe-press-builder-draft"
                     showBrandLogos={true}
                     onChange={(html) => setPressBuilderHtml(html)}
+                    onBlocksChange={(blocks) => setPressBuilderBlocks(blocks)}
                   />
                 </div>
               ) : (
