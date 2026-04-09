@@ -8,9 +8,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  const days = req.nextUrl.searchParams.get('days') || '30';
   const API_BASE = getApiUrl();
-  const url = `${API_BASE}/admin/datos/pueblos-metricas-comparativas?days=${days}`;
+  const params = new URLSearchParams();
+  const days = req.nextUrl.searchParams.get('days');
+  const month = req.nextUrl.searchParams.get('month');
+  const year = req.nextUrl.searchParams.get('year');
+  if (month) params.set('month', month);
+  else if (year) params.set('year', year);
+  else params.set('days', days || '30');
+  const url = `${API_BASE}/admin/datos/pueblos-metricas-comparativas?${params.toString()}`;
 
   try {
     const upstream = await fetch(url, {
