@@ -84,12 +84,17 @@ export default function NRExpandableCard({
               <p className="text-xs font-semibold uppercase tracking-wider text-rose-600 mb-1.5">Para reservar</p>
               <div className="flex flex-wrap gap-3">
                 {telefono && (
-                  <a
-                    href={`tel:${telefono.replace(/\s/g, '')}`}
-                    className="inline-flex items-center gap-1.5 text-sm text-gray-700 hover:text-rose-600 transition-colors"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(`¿Llamar al ${telefono}?`)) {
+                        window.location.href = `tel:${telefono.replace(/\s/g, '')}`;
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 text-sm text-gray-700 hover:text-rose-600 transition-colors cursor-pointer"
                   >
                     📞 {telefono}
-                  </a>
+                  </button>
                 )}
                 {email && (
                   <a
