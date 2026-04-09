@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import ActividadDashboard from './ActividadDashboard';
 
 const PueblosDashboard = lazy(() => import('./PueblosDashboard'));
+const PueblosMetricasComparativas = lazy(() => import('./PueblosMetricasComparativas'));
 const WebDashboard = lazy(() => import('./WebDashboard'));
 const AppDashboard = dynamic(() => import('./AppDashboard'), { ssr: false });
 const InternoDashboard = lazy(() => import('./InternoDashboard'));
@@ -19,6 +20,7 @@ const TABS = [
   { key: 'app' as const, labelKey: 'tabApp' as const },
   { key: 'interno' as const, labelKey: 'tabInterno' as const },
   { key: 'pueblos' as const, labelKey: 'tabPueblos' as const },
+  { key: 'metricas-pueblos' as const, label: 'Métricas pueblos' as const },
   { key: 'web' as const, labelKey: 'tabWeb' as const },
   { key: 'puntos' as const, labelKey: 'tabPuntosPueblos' as const },
 ] as const;
@@ -83,6 +85,11 @@ export default function DatosTabs({
       {active === 'pueblos' && (
         <Suspense fallback={<Spinner label={t('loading')} />}>
           <PueblosDashboard />
+        </Suspense>
+      )}
+      {active === 'metricas-pueblos' && (
+        <Suspense fallback={<Spinner label={t('loading')} />}>
+          <PueblosMetricasComparativas />
         </Suspense>
       )}
       {active === 'web' && (
