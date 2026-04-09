@@ -45,6 +45,9 @@ interface Actividad {
   descripcion: string | null;
   horario: string | null;
   fotoUrl: string | null;
+  direccion: string | null;
+  lat: number | null;
+  lng: number | null;
 }
 
 interface Negocio {
@@ -55,6 +58,9 @@ interface Negocio {
   horario: string | null;
   menuUrl: string | null;
   fotoUrl: string | null;
+  direccion: string | null;
+  lat: number | null;
+  lng: number | null;
 }
 
 interface NRPuebloDetail {
@@ -295,6 +301,21 @@ export default async function PuebloNocheRomanticaPage({
                           🕐 {a.horario}
                         </p>
                       )}
+                      {a.direccion && (
+                        <p className="mt-1 text-sm text-gray-500">
+                          📍 {a.direccion}
+                          {a.lat && a.lng && (
+                            <a
+                              href={`https://www.google.com/maps?q=${a.lat},${a.lng}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="ml-2 text-rose-600 hover:underline"
+                            >
+                              Ver mapa
+                            </a>
+                          )}
+                        </p>
+                      )}
                       {a.descripcion && (
                         <p className="mt-2 text-gray-600 leading-relaxed whitespace-pre-line">
                           {a.descripcion}
@@ -342,6 +363,21 @@ export default async function PuebloNocheRomanticaPage({
                             {n.horario && (
                               <p className="text-sm text-rose-600">
                                 🕐 {n.horario}
+                              </p>
+                            )}
+                            {n.direccion && (
+                              <p className="mt-1 text-sm text-gray-500">
+                                📍 {n.direccion}
+                                {n.lat && n.lng && (
+                                  <a
+                                    href={`https://www.google.com/maps?q=${n.lat},${n.lng}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="ml-2 text-rose-600 hover:underline"
+                                  >
+                                    Ver mapa
+                                  </a>
+                                )}
                               </p>
                             )}
                             {n.descripcion && (

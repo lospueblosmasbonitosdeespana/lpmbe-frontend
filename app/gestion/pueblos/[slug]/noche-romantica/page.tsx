@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
+import MapLocationPicker from '@/app/components/MapLocationPicker';
 import { CAMPANA_NOCHE_ROMANTICA } from '../../../_components/gestion-campana-themes';
 import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
 import { HeroIconHeart } from '../../_components/gestion-pueblo-hero-icons';
@@ -15,6 +16,9 @@ interface Actividad {
   descripcion: string | null;
   horario: string | null;
   fotoUrl: string | null;
+  direccion: string | null;
+  lat: number | null;
+  lng: number | null;
   orden: number;
 }
 
@@ -26,6 +30,9 @@ interface Negocio {
   horario: string | null;
   menuUrl: string | null;
   fotoUrl: string | null;
+  direccion: string | null;
+  lat: number | null;
+  lng: number | null;
   orden: number;
 }
 
@@ -35,7 +42,7 @@ interface NRPuebloData {
   cartelUrl: string | null;
   titulo: string | null;
   descripcion: string | null;
-  pueblo: { id: number; nombre: string; slug: string };
+  pueblo: { id: number; nombre: string; slug: string; lat?: number; lng?: number };
   actividades: Actividad[];
   negocios: Negocio[];
 }
@@ -73,18 +80,19 @@ export default function GestionPuebloNocheRomanticaPage() {
   const [descripcion, setDescripcion] = useState('');
   const [cartelUrl, setCartelUrl] = useState('');
 
+  const [puebloCoords, setPuebloCoords] = useState<[number, number]>([40.4168, -3.7038]);
+
   // Formularios inline
   const [showNewActividad, setShowNewActividad] = useState(false);
-  const [newActividad, setNewActividad] = useState({ titulo: '', descripcion: '', horario: '', fotoUrl: '' });
+  const [newActividad, setNewActividad] = useState({ titulo: '', descripcion: '', horario: '', fotoUrl: '', direccion: '', lat: 0, lng: 0 });
   const [editingActividad, setEditingActividad] = useState<number | null>(null);
-  const [editActividad, setEditActividad] = useState({ titulo: '', descripcion: '', horario: '', fotoUrl: '' });
+  const [editActividad, setEditActividad] = useState({ titulo: '', descripcion: '', horario: '', fotoUrl: '', direccion: '', lat: 0, lng: 0 });
 
   const [showNewNegocio, setShowNewNegocio] = useState(false);
-  const [newNegocio, setNewNegocio] = useState({ tipo: 'RESTAURANTE', nombre: '', descripcion: '', horario: '', fotoUrl: '', menuUrl: '' });
+  const [newNegocio, setNewNegocio] = useState({ tipo: 'RESTAURANTE', nombre: '', descripcion: '', horario: '', fotoUrl: '', menuUrl: '', direccion: '', lat: 0, lng: 0 });
   const [editingNegocio, setEditingNegocio] = useState<number | null>(null);
-  const [editNegocio, setEditNegocio] = useState({ tipo: 'RESTAURANTE', nombre: '', descripcion: '', horario: '', fotoUrl: '', menuUrl: '' });
+  const [editNegocio, setEditNegocio] = useState({ tipo: 'RESTAURANTE', nombre: '', descripcion: '', horario: '', fotoUrl: '', menuUrl: '', direccion: '', lat: 0, lng: 0 });
 
-  // Resolve puebloId from slug
   useEffect(() => {
     (async () => {
       try {
@@ -92,6 +100,7 @@ export default function GestionPuebloNocheRomanticaPage() {
         if (res.ok) {
           const p = await res.json();
           setPuebloId(p.id);
+          if (p.lat && p.lng) setPuebloCoords([p.lat, p.lng]);
         }
       } catch { /* ignore */ }
     })();
@@ -181,10 +190,13 @@ export default function GestionPuebloNocheRomanticaPage() {
           descripcion: newActividad.descripcion || null,
           horario: newActividad.horario || null,
           fotoUrl: newActividad.fotoUrl || null,
+          direccion: newActividad.direccion || null,
+          lat: newActividad.lat || null,
+          lng: newActividad.lng || null,
         }),
       });
       if (!res.ok) throw new Error('Error creando actividad');
-      setNewActividad({ titulo: '', descripcion: '', horario: '', fotoUrl: '' });
+      setNewActividad({ titulo: '', descripcion: '', horario: '', fotoUrl: '', direccion: '', lat: 0, lng: 0 });
       setShowNewActividad(false);
       await loadData();
       flash('Actividad creada');
@@ -207,6 +219,9 @@ export default function GestionPuebloNocheRomanticaPage() {
           descripcion: editActividad.descripcion || null,
           horario: editActividad.horario || null,
           fotoUrl: editActividad.fotoUrl || null,
+          direccion: editActividad.direccion || null,
+          lat: editActividad.lat || null,
+          lng: editActividad.lng || null,
         }),
       });
       if (!res.ok) throw new Error('Error editando actividad');
@@ -250,10 +265,13 @@ export default function GestionPuebloNocheRomanticaPage() {
           horario: newNegocio.horario || null,
           fotoUrl: newNegocio.fotoUrl || null,
           menuUrl: newNegocio.menuUrl || null,
+          direccion: newNegocio.direccion || null,
+          lat: newNegocio.lat || null,
+          lng: newNegocio.lng || null,
         }),
       });
       if (!res.ok) throw new Error('Error creando negocio');
-      setNewNegocio({ tipo: 'RESTAURANTE', nombre: '', descripcion: '', horario: '', fotoUrl: '', menuUrl: '' });
+      setNewNegocio({ tipo: 'RESTAURANTE', nombre: '', descripcion: '', horario: '', fotoUrl: '', menuUrl: '', direccion: '', lat: 0, lng: 0 });
       setShowNewNegocio(false);
       await loadData();
       flash('Negocio añadido');
@@ -278,6 +296,9 @@ export default function GestionPuebloNocheRomanticaPage() {
           horario: editNegocio.horario || null,
           fotoUrl: editNegocio.fotoUrl || null,
           menuUrl: editNegocio.menuUrl || null,
+          direccion: editNegocio.direccion || null,
+          lat: editNegocio.lat || null,
+          lng: editNegocio.lng || null,
         }),
       });
       if (!res.ok) throw new Error('Error editando negocio');
@@ -488,6 +509,30 @@ export default function GestionPuebloNocheRomanticaPage() {
               folder="noche-romantica/actividades"
               previewHeight="h-32"
             />
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Dirección / Ubicación</label>
+              <input
+                type="text"
+                className="w-full rounded-md border px-3 py-2 text-sm"
+                placeholder="Ej: Plaza Mayor, 1"
+                value={newActividad.direccion}
+                onChange={(e) => setNewActividad({ ...newActividad, direccion: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Mapa de situación</label>
+              <MapLocationPicker
+                center={puebloCoords}
+                zoom={15}
+                height="250px"
+                selectedPosition={newActividad.lat ? { lat: newActividad.lat, lng: newActividad.lng } : null}
+                onLocationSelect={(lat, lng, name) => {
+                  setNewActividad({ ...newActividad, lat, lng, direccion: name || newActividad.direccion });
+                }}
+                searchPlaceholder="Buscar lugar en el pueblo…"
+                activeHint="Haz clic en el mapa o busca para situar la actividad."
+              />
+            </div>
             <div className="flex gap-2">
               <button onClick={createActividad} disabled={saving || !newActividad.titulo.trim()} className={CAMPANA_NOCHE_ROMANTICA.primaryButtonSm}>
                 Crear
@@ -536,6 +581,30 @@ export default function GestionPuebloNocheRomanticaPage() {
                       folder="noche-romantica/actividades"
                       previewHeight="h-32"
                     />
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">Dirección / Ubicación</label>
+                      <input
+                        type="text"
+                        className="w-full rounded-md border px-3 py-2 text-sm"
+                        placeholder="Ej: Plaza Mayor, 1"
+                        value={editActividad.direccion}
+                        onChange={(e) => setEditActividad({ ...editActividad, direccion: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">Mapa de situación</label>
+                      <MapLocationPicker
+                        center={editActividad.lat ? [editActividad.lat, editActividad.lng] : puebloCoords}
+                        zoom={15}
+                        height="250px"
+                        selectedPosition={editActividad.lat ? { lat: editActividad.lat, lng: editActividad.lng } : null}
+                        onLocationSelect={(lat, lng, name) => {
+                          setEditActividad({ ...editActividad, lat, lng, direccion: name || editActividad.direccion });
+                        }}
+                        searchPlaceholder="Buscar lugar en el pueblo…"
+                        activeHint="Haz clic en el mapa o busca para situar la actividad."
+                      />
+                    </div>
                     <div className="flex gap-2">
                       <button onClick={() => saveActividad(a.id)} disabled={saving} className={CAMPANA_NOCHE_ROMANTICA.primaryButtonSm}>
                         Guardar
@@ -554,6 +623,7 @@ export default function GestionPuebloNocheRomanticaPage() {
                       <div>
                         <h3 className="font-medium">{a.titulo}</h3>
                         {a.horario && <p className="text-sm text-primary">{a.horario}</p>}
+                        {a.direccion && <p className="text-xs text-muted-foreground">📍 {a.direccion}</p>}
                         {a.descripcion && <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{a.descripcion}</p>}
                       </div>
                     </div>
@@ -566,6 +636,9 @@ export default function GestionPuebloNocheRomanticaPage() {
                             descripcion: a.descripcion ?? '',
                             horario: a.horario ?? '',
                             fotoUrl: a.fotoUrl ?? '',
+                            direccion: a.direccion ?? '',
+                            lat: a.lat ?? 0,
+                            lng: a.lng ?? 0,
                           });
                         }}
                         className="rounded-md border px-2 py-1 text-xs text-muted-foreground hover:text-primary"
@@ -656,6 +729,30 @@ export default function GestionPuebloNocheRomanticaPage() {
                 previewHeight="h-28"
               />
             </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Dirección / Ubicación</label>
+              <input
+                type="text"
+                className="w-full rounded-md border px-3 py-2 text-sm"
+                placeholder="Ej: Calle Real, 5"
+                value={newNegocio.direccion}
+                onChange={(e) => setNewNegocio({ ...newNegocio, direccion: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Mapa de situación</label>
+              <MapLocationPicker
+                center={puebloCoords}
+                zoom={15}
+                height="250px"
+                selectedPosition={newNegocio.lat ? { lat: newNegocio.lat, lng: newNegocio.lng } : null}
+                onLocationSelect={(lat, lng, name) => {
+                  setNewNegocio({ ...newNegocio, lat, lng, direccion: name || newNegocio.direccion });
+                }}
+                searchPlaceholder="Buscar lugar en el pueblo…"
+                activeHint="Haz clic en el mapa o busca para situar el negocio."
+              />
+            </div>
             <div className="flex gap-2">
               <button onClick={createNegocio} disabled={saving || !newNegocio.nombre.trim()} className={CAMPANA_NOCHE_ROMANTICA.primaryButtonSm}>
                 Crear
@@ -730,6 +827,30 @@ export default function GestionPuebloNocheRomanticaPage() {
                               previewHeight="h-28"
                             />
                           </div>
+                          <div>
+                            <label className="mb-1 block text-xs font-medium text-muted-foreground">Dirección / Ubicación</label>
+                            <input
+                              type="text"
+                              className="w-full rounded-md border px-3 py-2 text-sm"
+                              placeholder="Ej: Calle Real, 5"
+                              value={editNegocio.direccion}
+                              onChange={(e) => setEditNegocio({ ...editNegocio, direccion: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-xs font-medium text-muted-foreground">Mapa de situación</label>
+                            <MapLocationPicker
+                              center={editNegocio.lat ? [editNegocio.lat, editNegocio.lng] : puebloCoords}
+                              zoom={15}
+                              height="250px"
+                              selectedPosition={editNegocio.lat ? { lat: editNegocio.lat, lng: editNegocio.lng } : null}
+                              onLocationSelect={(lat, lng, name) => {
+                                setEditNegocio({ ...editNegocio, lat, lng, direccion: name || editNegocio.direccion });
+                              }}
+                              searchPlaceholder="Buscar lugar en el pueblo…"
+                              activeHint="Haz clic en el mapa o busca para situar el negocio."
+                            />
+                          </div>
                           <div className="flex gap-2">
                             <button onClick={() => saveNegocio(n.id)} disabled={saving} className={CAMPANA_NOCHE_ROMANTICA.primaryButtonSm}>
                               Guardar
@@ -748,6 +869,7 @@ export default function GestionPuebloNocheRomanticaPage() {
                             <div>
                               <h4 className="font-medium">{n.nombre}</h4>
                               {n.horario && <p className="text-sm text-primary">{n.horario}</p>}
+                              {n.direccion && <p className="text-xs text-muted-foreground">📍 {n.direccion}</p>}
                               {n.descripcion && <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{n.descripcion}</p>}
                               {n.menuUrl && (
                                 <a href={n.menuUrl} target="_blank" rel="noopener" className="mt-1 inline-block text-xs text-primary hover:underline">
@@ -767,6 +889,9 @@ export default function GestionPuebloNocheRomanticaPage() {
                                   horario: n.horario ?? '',
                                   fotoUrl: n.fotoUrl ?? '',
                                   menuUrl: n.menuUrl ?? '',
+                                  direccion: n.direccion ?? '',
+                                  lat: n.lat ?? 0,
+                                  lng: n.lng ?? 0,
                                 });
                               }}
                               className="rounded-md border px-2 py-1 text-xs text-muted-foreground hover:text-primary"
