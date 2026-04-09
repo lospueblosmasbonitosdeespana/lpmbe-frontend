@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations, getLocale } from 'next-intl/server';
 import { Clock } from 'lucide-react';
 import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
+import NRExpandableCard from './NRExpandableCard';
 
 export const revalidate = 60;
 export async function generateMetadata({
@@ -278,9 +279,11 @@ export default async function PuebloNocheRomanticaPage({
             </h2>
             <div className="space-y-4">
               {data.actividades.map((a) => (
-                <div
+                <NRExpandableCard
                   key={a.id}
-                  className="overflow-hidden rounded-xl border bg-white shadow-sm"
+                  direccion={a.direccion}
+                  lat={a.lat}
+                  lng={a.lng}
                 >
                   <div className="flex flex-col sm:flex-row">
                     {a.fotoUrl && (
@@ -292,7 +295,7 @@ export default async function PuebloNocheRomanticaPage({
                         />
                       </div>
                     )}
-                    <div className="p-5 flex-1">
+                    <div className="p-5 flex-1 pr-12">
                       <h3 className="text-lg font-semibold text-gray-800">
                         {a.titulo}
                       </h3>
@@ -304,16 +307,6 @@ export default async function PuebloNocheRomanticaPage({
                       {a.direccion && (
                         <p className="mt-1 text-sm text-gray-500">
                           📍 {a.direccion}
-                          {a.lat && a.lng && (
-                            <a
-                              href={`https://www.google.com/maps?q=${a.lat},${a.lng}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="ml-2 text-rose-600 hover:underline"
-                            >
-                              Ver mapa
-                            </a>
-                          )}
                         </p>
                       )}
                       {a.descripcion && (
@@ -323,17 +316,17 @@ export default async function PuebloNocheRomanticaPage({
                       )}
                     </div>
                   </div>
-                </div>
+                </NRExpandableCard>
               ))}
             </div>
           </section>
         )}
 
-        {/* Negocios */}
+        {/* Establecimientos participantes */}
         {Object.keys(negociosByType).length > 0 && (
           <section className="mb-10">
-            <h2 className="mb-6 text-xl font-bold text-gray-800">
-              {t('whereEatSleepShop')}
+            <h2 className="mb-6 text-xl font-bold text-gray-800 flex items-center gap-2">
+              <span>🏪</span> {t('participatingEstablishments')}
             </h2>
             <div className="space-y-8">
               {Object.entries(negociosByType).map(([tipo, negocios]) => {
@@ -345,9 +338,13 @@ export default async function PuebloNocheRomanticaPage({
                     </h3>
                     <div className="grid gap-4 sm:grid-cols-2">
                       {negocios.map((n) => (
-                        <div
+                        <NRExpandableCard
                           key={n.id}
-                          className="overflow-hidden rounded-xl border bg-white shadow-sm"
+                          direccion={n.direccion}
+                          lat={n.lat}
+                          lng={n.lng}
+                          menuUrl={n.menuUrl}
+                          menuLabel={t('viewMenu')}
                         >
                           {n.fotoUrl && (
                             <img
@@ -356,7 +353,7 @@ export default async function PuebloNocheRomanticaPage({
                               className="h-40 w-full object-cover"
                             />
                           )}
-                          <div className="p-4">
+                          <div className="p-4 pr-12">
                             <h4 className="font-semibold text-gray-800">
                               {n.nombre}
                             </h4>
@@ -368,16 +365,6 @@ export default async function PuebloNocheRomanticaPage({
                             {n.direccion && (
                               <p className="mt-1 text-sm text-gray-500">
                                 📍 {n.direccion}
-                                {n.lat && n.lng && (
-                                  <a
-                                    href={`https://www.google.com/maps?q=${n.lat},${n.lng}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="ml-2 text-rose-600 hover:underline"
-                                  >
-                                    Ver mapa
-                                  </a>
-                                )}
                               </p>
                             )}
                             {n.descripcion && (
@@ -385,18 +372,8 @@ export default async function PuebloNocheRomanticaPage({
                                 {n.descripcion}
                               </p>
                             )}
-                            {n.menuUrl && (
-                              <a
-                                href={n.menuUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="mt-2 inline-block text-sm text-rose-600 hover:underline"
-                              >
-                                📋 {t('viewMenu')}
-                              </a>
-                            )}
                           </div>
-                        </div>
+                        </NRExpandableCard>
                       ))}
                     </div>
                   </div>
