@@ -239,6 +239,26 @@ figure img:not([class*="leaflet-"]),
 .safe-html-content a { @apply text-blue-600 hover:text-blue-800 underline; }
 .safe-html-content strong { @apply font-semibold text-gray-900; }
 .safe-html-content hr { @apply my-8 border-gray-200; }
+
+/*
+ * Herencia de color en HTML con estilos inline (contenido creado en modo HTML).
+ * TipTap envuelve texto suelto dentro de <div> en <p>, lo que causa que las
+ * reglas CSS de arriba (text-gray-700, text-gray-900) sobreescriban el color
+ * heredado del div padre. Esta regla restaura la herencia.
+ * Los <p> con style="color:..." inline NO se ven afectados (inline > class).
+ */
+.safe-html-content div[style] p,
+.safe-html-content div[style] li,
+.safe-html-content div[style] h2,
+.safe-html-content div[style] h3,
+.safe-html-content div[style] strong,
+.safe-html-content div[style] em,
+.safe-html-content div[style] span,
+.safe-html-content blockquote[style] p,
+.safe-html-content blockquote[style] strong,
+.safe-html-content blockquote[style] em {
+  color: inherit;
+}
 .safe-html-content img {
   height: auto !important;
   object-fit: contain !important;
@@ -254,6 +274,20 @@ figure img:not([class*="leaflet-"]),
 .dark .safe-html-content li { color: oklch(0.92 0 0); }
 .dark .safe-html-content a { color: var(--primary); }
 .dark .safe-html-content hr { border-color: oklch(1 0 0 / 0.15); }
+
+/* Dark mode: misma herencia para divs con estilos inline */
+.dark .safe-html-content div[style] p,
+.dark .safe-html-content div[style] li,
+.dark .safe-html-content div[style] h2,
+.dark .safe-html-content div[style] h3,
+.dark .safe-html-content div[style] strong,
+.dark .safe-html-content div[style] em,
+.dark .safe-html-content div[style] span,
+.dark .safe-html-content blockquote[style] p,
+.dark .safe-html-content blockquote[style] strong,
+.dark .safe-html-content blockquote[style] em {
+  color: inherit;
+}
 /* Grid de países - contenedor */
 .safe-html-content .grid-paises-internacional {
   display: grid !important;
