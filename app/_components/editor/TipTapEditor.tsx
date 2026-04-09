@@ -15,6 +15,7 @@ import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import { useCallback, useState } from 'react';
 import { Sparkles } from 'lucide-react';
+import { HtmlAttributePreserver, DivBlock } from './tiptap-html-preserve';
 
 const GridPaises = Node.create({
   name: 'gridPaisesInternacional',
@@ -63,6 +64,8 @@ export default function TipTapEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
+      HtmlAttributePreserver,
+      DivBlock,
       GridPaises,
       PaisCard,
       Underline,

@@ -15,6 +15,7 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import Highlight from '@tiptap/extension-highlight';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
+import { HtmlAttributePreserver, DivBlock } from '@/app/_components/editor/tiptap-html-preserve';
 
 const ContentBlockBuilder = dynamic(
   () => import('@/app/_components/content-builder/ContentBlockBuilder'),
@@ -499,6 +500,8 @@ function BlockRichEditor({
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
       }),
+      HtmlAttributePreserver,
+      DivBlock,
       Underline,
       TextStyle,
       Color,
@@ -865,6 +868,8 @@ export default function NotasPrensaNewsletterClient({
       StarterKit.configure({
         heading: { levels: [2, 3] },
       }),
+      HtmlAttributePreserver,
+      DivBlock,
       Link.configure({
         openOnClick: false,
         autolink: true,

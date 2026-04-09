@@ -16,6 +16,7 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import Highlight from '@tiptap/extension-highlight';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
+import { HtmlAttributePreserver, DivBlock } from '../editor/tiptap-html-preserve';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -419,6 +420,7 @@ function BlockRichEditor({ content, onChange, placeholder }: { content: string; 
   const ed = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
+      HtmlAttributePreserver, DivBlock,
       Underline, TextStyle, Color,
       Highlight.configure({ multicolor: true }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
