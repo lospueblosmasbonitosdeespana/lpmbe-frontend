@@ -21,13 +21,14 @@ export default function NRExpandableCard({
   menuLabel = 'Ver carta / menú',
 }: NRExpandableCardProps) {
   const [open, setOpen] = useState(false);
-  const hasExtra = (direccion && lat && lng) || menuUrl;
+  const hasCoords = !!(lat && lng);
+  const hasExtra = hasCoords || menuUrl;
 
   return (
     <div className="overflow-hidden rounded-xl border bg-white shadow-sm transition-shadow hover:shadow-md">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => hasExtra && setOpen((v) => !v)}
         className="w-full text-left"
       >
         <div className="relative">
@@ -44,12 +45,14 @@ export default function NRExpandableCard({
 
       {open && hasExtra && (
         <div className="border-t border-rose-100 bg-rose-50/30 px-5 py-4 space-y-4">
-          {direccion && lat && lng && (
+          {hasCoords && (
             <>
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <MapPin className="h-4 w-4 text-rose-500 flex-shrink-0" />
-                <span>{direccion}</span>
-              </div>
+              {direccion && (
+                <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <MapPin className="h-4 w-4 text-rose-500 flex-shrink-0" />
+                  <span>{direccion}</span>
+                </div>
+              )}
               <div className="overflow-hidden rounded-lg border border-rose-200">
                 <iframe
                   title="Ubicación"
@@ -57,7 +60,7 @@ export default function NRExpandableCard({
                   height="220"
                   style={{ border: 0 }}
                   loading="lazy"
-                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.003},${lat - 0.002},${lng + 0.003},${lat + 0.002}&layer=mapnik&marker=${lat},${lng}`}
+                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${lng! - 0.003},${lat! - 0.002},${lng! + 0.003},${lat! + 0.002}&layer=mapnik&marker=${lat},${lng}`}
                 />
               </div>
               <a
