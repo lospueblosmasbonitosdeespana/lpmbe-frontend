@@ -205,8 +205,8 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
           </div>
         ) : isMeteo ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {data.pueblos.map((p, idx) => (
-              <PuebloCard key={p.id} pueblo={p} color={data.color} rank={idx + 1} />
+            {data.pueblos.map((p) => (
+              <PuebloCard key={p.id} pueblo={p} color={data.color} />
             ))}
           </div>
         ) : (
@@ -241,7 +241,7 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
   );
 }
 
-function PuebloCard({ pueblo: p, color, rank }: { pueblo: Pueblo; color: string; rank?: number }) {
+function PuebloCard({ pueblo: p, color }: { pueblo: Pueblo; color: string }) {
   const flagSrc = getComunidadFlagSrc(p.comunidad);
   const hasPhoto = !!p.foto_destacada;
   const badge = p.highlightExtra ?? (p.habitantes ? `${p.habitantes} hab.` : null);
@@ -267,15 +267,9 @@ function PuebloCard({ pueblo: p, color, rank }: { pueblo: Pueblo; color: string;
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
-        {rank != null && (
-          <span className="absolute top-3 left-3 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-xs font-bold text-white backdrop-blur-sm">
-            {rank}
-          </span>
-        )}
-
         {badge && (
           <span
-            className="absolute top-3 right-3 rounded-full px-2.5 py-0.5 text-xs font-bold text-white shadow-sm"
+            className="absolute top-3 right-3 rounded-full px-2.5 py-0.5 text-xs font-bold text-neutral-900 shadow-sm"
             style={{ backgroundColor: color }}
           >
             {badge}
