@@ -10,6 +10,8 @@ interface NRExpandableCardProps {
   lng?: number | null;
   menuUrl?: string | null;
   menuLabel?: string;
+  telefono?: string | null;
+  email?: string | null;
 }
 
 export default function NRExpandableCard({
@@ -19,10 +21,13 @@ export default function NRExpandableCard({
   lng,
   menuUrl,
   menuLabel = 'Ver carta / menú',
+  telefono,
+  email,
 }: NRExpandableCardProps) {
   const [open, setOpen] = useState(false);
   const hasCoords = !!(lat && lng);
-  const hasExtra = hasCoords || menuUrl;
+  const hasContact = !!(telefono || email);
+  const hasExtra = hasCoords || menuUrl || hasContact;
 
   return (
     <div className="overflow-hidden rounded-xl border bg-white shadow-sm transition-shadow hover:shadow-md">
@@ -73,6 +78,29 @@ export default function NRExpandableCard({
                 Cómo llegar
               </a>
             </>
+          )}
+          {hasContact && (
+            <div className="rounded-lg border border-rose-200 bg-white px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-rose-600 mb-1.5">Para reservar</p>
+              <div className="flex flex-wrap gap-3">
+                {telefono && (
+                  <a
+                    href={`tel:${telefono.replace(/\s/g, '')}`}
+                    className="inline-flex items-center gap-1.5 text-sm text-gray-700 hover:text-rose-600 transition-colors"
+                  >
+                    📞 {telefono}
+                  </a>
+                )}
+                {email && (
+                  <a
+                    href={`mailto:${email}`}
+                    className="inline-flex items-center gap-1.5 text-sm text-gray-700 hover:text-rose-600 transition-colors"
+                  >
+                    ✉️ {email}
+                  </a>
+                )}
+              </div>
+            </div>
           )}
           {menuUrl && (
             <a

@@ -33,6 +33,8 @@ interface Negocio {
   direccion: string | null;
   lat: number | null;
   lng: number | null;
+  telefono: string | null;
+  email: string | null;
   orden: number;
 }
 
@@ -89,9 +91,9 @@ export default function GestionPuebloNocheRomanticaPage() {
   const [editActividad, setEditActividad] = useState({ titulo: '', descripcion: '', horario: '', fotoUrl: '', direccion: '', lat: 0, lng: 0 });
 
   const [showNewNegocio, setShowNewNegocio] = useState(false);
-  const [newNegocio, setNewNegocio] = useState({ tipo: 'RESTAURANTE', nombre: '', descripcion: '', horario: '', fotoUrl: '', menuUrl: '', direccion: '', lat: 0, lng: 0 });
+  const [newNegocio, setNewNegocio] = useState({ tipo: 'RESTAURANTE', nombre: '', descripcion: '', horario: '', fotoUrl: '', menuUrl: '', direccion: '', lat: 0, lng: 0, telefono: '', email: '' });
   const [editingNegocio, setEditingNegocio] = useState<number | null>(null);
-  const [editNegocio, setEditNegocio] = useState({ tipo: 'RESTAURANTE', nombre: '', descripcion: '', horario: '', fotoUrl: '', menuUrl: '', direccion: '', lat: 0, lng: 0 });
+  const [editNegocio, setEditNegocio] = useState({ tipo: 'RESTAURANTE', nombre: '', descripcion: '', horario: '', fotoUrl: '', menuUrl: '', direccion: '', lat: 0, lng: 0, telefono: '', email: '' });
 
   useEffect(() => {
     (async () => {
@@ -268,10 +270,12 @@ export default function GestionPuebloNocheRomanticaPage() {
           direccion: newNegocio.direccion || null,
           lat: newNegocio.lat || null,
           lng: newNegocio.lng || null,
+          telefono: newNegocio.telefono || null,
+          email: newNegocio.email || null,
         }),
       });
       if (!res.ok) throw new Error('Error creando negocio');
-      setNewNegocio({ tipo: 'RESTAURANTE', nombre: '', descripcion: '', horario: '', fotoUrl: '', menuUrl: '', direccion: '', lat: 0, lng: 0 });
+      setNewNegocio({ tipo: 'RESTAURANTE', nombre: '', descripcion: '', horario: '', fotoUrl: '', menuUrl: '', direccion: '', lat: 0, lng: 0, telefono: '', email: '' });
       setShowNewNegocio(false);
       await loadData();
       flash('Negocio añadido');
@@ -299,6 +303,8 @@ export default function GestionPuebloNocheRomanticaPage() {
           direccion: editNegocio.direccion || null,
           lat: editNegocio.lat || null,
           lng: editNegocio.lng || null,
+          telefono: editNegocio.telefono || null,
+          email: editNegocio.email || null,
         }),
       });
       if (!res.ok) throw new Error('Error editando negocio');
@@ -713,6 +719,28 @@ export default function GestionPuebloNocheRomanticaPage() {
               value={newNegocio.horario}
               onChange={(e) => setNewNegocio({ ...newNegocio, horario: e.target.value })}
             />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">Teléfono de reservas</label>
+                <input
+                  type="tel"
+                  className="w-full rounded-md border px-3 py-2 text-sm"
+                  placeholder="Ej: +34 922 123 456"
+                  value={newNegocio.telefono}
+                  onChange={(e) => setNewNegocio({ ...newNegocio, telefono: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">Email de reservas</label>
+                <input
+                  type="email"
+                  className="w-full rounded-md border px-3 py-2 text-sm"
+                  placeholder="Ej: reservas@restaurante.com"
+                  value={newNegocio.email}
+                  onChange={(e) => setNewNegocio({ ...newNegocio, email: e.target.value })}
+                />
+              </div>
+            </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <R2ImageUploader
                 label="Foto del negocio"
@@ -811,6 +839,28 @@ export default function GestionPuebloNocheRomanticaPage() {
                             value={editNegocio.horario}
                             onChange={(e) => setEditNegocio({ ...editNegocio, horario: e.target.value })}
                           />
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <div>
+                              <label className="mb-1 block text-xs font-medium text-muted-foreground">Teléfono de reservas</label>
+                              <input
+                                type="tel"
+                                className="w-full rounded-md border px-3 py-2 text-sm"
+                                placeholder="Ej: +34 922 123 456"
+                                value={editNegocio.telefono}
+                                onChange={(e) => setEditNegocio({ ...editNegocio, telefono: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <label className="mb-1 block text-xs font-medium text-muted-foreground">Email de reservas</label>
+                              <input
+                                type="email"
+                                className="w-full rounded-md border px-3 py-2 text-sm"
+                                placeholder="Ej: reservas@restaurante.com"
+                                value={editNegocio.email}
+                                onChange={(e) => setEditNegocio({ ...editNegocio, email: e.target.value })}
+                              />
+                            </div>
+                          </div>
                           <div className="grid gap-4 sm:grid-cols-2">
                             <R2ImageUploader
                               label="Foto del negocio"
@@ -870,6 +920,13 @@ export default function GestionPuebloNocheRomanticaPage() {
                               <h4 className="font-medium">{n.nombre}</h4>
                               {n.horario && <p className="text-sm text-primary">{n.horario}</p>}
                               {n.direccion && <p className="text-xs text-muted-foreground">📍 {n.direccion}</p>}
+                              {(n.telefono || n.email) && (
+                                <p className="text-xs text-muted-foreground">
+                                  {n.telefono && <>📞 {n.telefono}</>}
+                                  {n.telefono && n.email && <> · </>}
+                                  {n.email && <>✉️ {n.email}</>}
+                                </p>
+                              )}
                               {n.descripcion && <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{n.descripcion}</p>}
                               {n.menuUrl && (
                                 <a href={n.menuUrl} target="_blank" rel="noopener" className="mt-1 inline-block text-xs text-primary hover:underline">
@@ -892,6 +949,8 @@ export default function GestionPuebloNocheRomanticaPage() {
                                   direccion: n.direccion ?? '',
                                   lat: n.lat ?? 0,
                                   lng: n.lng ?? 0,
+                                  telefono: n.telefono ?? '',
+                                  email: n.email ?? '',
                                 });
                               }}
                               className="rounded-md border px-2 py-1 text-xs text-muted-foreground hover:text-primary"

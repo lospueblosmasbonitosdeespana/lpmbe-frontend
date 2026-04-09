@@ -62,6 +62,8 @@ interface Negocio {
   direccion: string | null;
   lat: number | null;
   lng: number | null;
+  telefono: string | null;
+  email: string | null;
 }
 
 interface NRPuebloDetail {
@@ -345,6 +347,8 @@ export default async function PuebloNocheRomanticaPage({
                           lng={n.lng}
                           menuUrl={n.menuUrl}
                           menuLabel={t('viewMenu')}
+                          telefono={n.telefono}
+                          email={n.email}
                         >
                           {n.fotoUrl && (
                             <img
