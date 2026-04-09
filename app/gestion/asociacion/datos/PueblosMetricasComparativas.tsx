@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 /* ─── Types ────────────────────────────────────────────────────────────── */
 
@@ -179,14 +180,36 @@ function KpiCard({ label, value, sub, accent, tip }: { label: string; value: str
 }
 
 function InfoTip({ text }: { text: string }) {
+  const [show, setShow] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const iconRef = useRef<HTMLSpanElement>(null);
+
+  const handleEnter = () => {
+    if (!iconRef.current) return;
+    const rect = iconRef.current.getBoundingClientRect();
+    setPos({ top: rect.bottom + 6, left: rect.left + rect.width / 2 });
+    setShow(true);
+  };
+
   return (
-    <span className="group relative ml-1 inline-flex cursor-help">
+    <span
+      ref={iconRef}
+      className="ml-1 inline-flex cursor-help"
+      onMouseEnter={handleEnter}
+      onMouseLeave={() => setShow(false)}
+    >
       <svg className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground transition-colors" viewBox="0 0 20 20" fill="currentColor">
         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
       </svg>
-      <span className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 -translate-x-1/2 rounded-lg bg-foreground px-3 py-2 text-xs font-normal leading-snug text-background shadow-lg opacity-0 transition-opacity group-hover:opacity-100 w-56 text-center">
-        {text}
-      </span>
+      {show && pos && createPortal(
+        <div
+          style={{ position: 'fixed', top: pos.top, left: pos.left, transform: 'translateX(-50%)' }}
+          className="z-[9999] pointer-events-none rounded-lg bg-foreground px-3 py-2 text-xs font-normal leading-snug text-background shadow-lg w-60 text-center"
+        >
+          {text}
+        </div>,
+        document.body,
+      )}
     </span>
   );
 }
