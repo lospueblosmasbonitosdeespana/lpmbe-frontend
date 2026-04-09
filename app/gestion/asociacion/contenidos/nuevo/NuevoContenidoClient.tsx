@@ -19,6 +19,7 @@ type TematicaPage = {
   contenido: string;
   coverUrl?: string | null;
   published: boolean;
+  blocksJson?: unknown[] | null;
 };
 
 type TematicasPages = {
@@ -104,9 +105,10 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           setContenido(page.contenido);
           setCoverUrl(page.coverUrl || null);
           setEstado(page.published ? 'PUBLICADA' : 'BORRADOR');
-          // Si hay contenido existente → HTML directo para no perder nada.
-          // El constructor no puede reconstruir HTML arbitrario en bloques.
-          if (page.contenido) {
+          if (page.blocksJson && Array.isArray(page.blocksJson) && page.blocksJson.length > 0) {
+            setBlocksJson(page.blocksJson);
+            setEditorMode('builder');
+          } else if (page.contenido) {
             setEditorMode('html');
           } else {
             setEditorMode('builder');
@@ -723,11 +725,13 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
               <ContentBlockBuilder
                 key={`asoc-nuevo-builder-${builderResetKey}-${categoria || 'nuevo'}`}
                 draftKey={`lpmbe-contenido-asoc-PAGINA-${categoria || 'nuevo'}-draft`}
-                initialHtml=""
+                initialHtml={contenido}
+                initialBlocks={Array.isArray(blocksJson) ? (blocksJson as any[]) : undefined}
                 onChange={handleBuilderChange}
                 onBlocksChange={(blocks) => setBlocksJson(blocks)}
                 onClearAll={handleClearAll}
                 webMode={true}
+                clearDraftOnMount={!!existingPageId}
               />
             </div>
 
