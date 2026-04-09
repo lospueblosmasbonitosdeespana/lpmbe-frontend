@@ -389,6 +389,43 @@ const PAGES: PageRow[] = [
     triggerNew: 'Se configura desde Gestión > Asociación > Club.',
     category: 'club',
   },
+  {
+    url: '/para-negocios',
+    label: 'Planes para negocios',
+    source: 'Página estática con los planes (Gratuito, Recomendado, Premium, Selection). Plan features definidos en lib/plan-features.ts (frontend) y common/constants.ts (backend).',
+    triggerNew: 'Se edita directamente en el código (plan-features.ts). Los precios de Stripe se configuran en el backend.',
+    category: 'club',
+  },
+
+  // ── Selection ──
+  {
+    url: '/selection',
+    label: 'Club LPMBE Selection — Listado',
+    source: 'Tabla RecursoTuristico con planNegocio=SELECTION y activo=true. API /public/recursos/selection. Incluye filtros por tipo y búsqueda.',
+    triggerNew: 'Cuando un negocio se activa con plan Selection desde Gestión > Asociación > Negocios.',
+    category: 'selection',
+  },
+  {
+    url: '/selection/[slug]',
+    label: 'Detalle de negocio Selection',
+    source: 'Tabla RecursoTuristico por slug, con imagenes, ofertas, servicios, socialLinks. API /public/recursos/[slug]. Siempre traducido (7 idiomas).',
+    triggerNew: 'Automática al activar un negocio con plan Selection.',
+    category: 'selection',
+  },
+  {
+    url: '/selection/candidatura',
+    label: 'Formulario de candidatura Selection',
+    source: 'Formulario público → tabla SelectionCandidatura. Envía email al admin + guarda en BD. Traducido (7 idiomas).',
+    triggerNew: 'Página fija. Los envíos se gestionan desde Gestión > Asociación > Selection.',
+    category: 'selection',
+  },
+  {
+    url: '/negocio/[slug]',
+    label: 'Landing personalizada de negocio',
+    source: 'Tabla RecursoTuristico con campo landingConfig (JSON). Headline, subtítulo, CTA, hero, tema visual. Solo para planes Premium/Selection con customLandingEnabled.',
+    triggerNew: 'El negocio configura su landing desde Gestión > Negocios > [negocio] > Landing personalizada. Incluye subida de imagen hero a R2.',
+    category: 'selection',
+  },
 
   // ── Recursos turísticos ──
   {
@@ -434,6 +471,99 @@ const PAGES: PageRow[] = [
     triggerNew: 'Automáticas por cron (jueves) + manuales desde Gestión.',
     category: 'general',
   },
+
+  // ── App ──
+  {
+    url: '/app',
+    label: 'Página de la App',
+    source: 'Página estática con enlaces a App Store y Google Play. QR de descarga.',
+    triggerNew: 'Se edita directamente en el código.',
+    category: 'general',
+  },
+
+  // ── Prensa ──
+  {
+    url: '/prensa',
+    label: 'Prensa y medios',
+    source: 'Tabla PressRelease + PressMention. Comunicados, menciones en medios y kit de prensa.',
+    triggerNew: 'Se publican desde Gestión > Asociación > Prensa y medios.',
+    category: 'actualidad',
+  },
+
+  // ── Newsletter ──
+  {
+    url: '/newsletter',
+    label: 'Suscripción newsletter',
+    source: 'Formulario público → tabla NewsletterSubscriber.',
+    triggerNew: 'Página fija.',
+    category: 'general',
+  },
+
+  // ── Planifica (nuevas) ──
+  {
+    url: '/planifica/fin-de-semana',
+    label: 'Planifica: Fin de semana',
+    source: 'Notificación de fin de semana: eventos, meteo y sugerencias por región (Norte, Sur, Este, Centro). Cron del jueves.',
+    triggerNew: 'Automático cada jueves. Se basa en eventos y meteo del fin de semana.',
+    category: 'campañas',
+  },
+  {
+    url: '/planifica/fin-de-semana/pueblo/[slug]',
+    label: 'Planifica: Pueblo este fin de semana',
+    source: 'Detalle de un pueblo con sus eventos y meteo del fin de semana.',
+    triggerNew: 'Automático cada jueves.',
+    category: 'campañas',
+  },
+  {
+    url: '/planifica/crea-mi-ruta',
+    label: 'Planifica: Crea mi ruta',
+    source: 'Herramienta interactiva para crear rutas personalizadas entre pueblos. Sin BD, todo en cliente.',
+    triggerNew: 'Página fija.',
+    category: 'campañas',
+  },
+  {
+    url: '/planifica/mis-rutas',
+    label: 'Planifica: Mis rutas guardadas',
+    source: 'Rutas guardadas en localStorage del usuario.',
+    triggerNew: 'Página fija.',
+    category: 'campañas',
+  },
+
+  // ── Redes sociales ──
+  {
+    url: '/redes-sociales',
+    label: 'Redes sociales',
+    source: 'Página estática con enlaces a Instagram, Facebook, X, YouTube.',
+    triggerNew: 'Se edita directamente en el código.',
+    category: 'general',
+  },
+
+  // ── Validador QR ──
+  {
+    url: '/validador/[recursoId]',
+    label: 'Validador QR de recurso',
+    source: 'Tabla RecursoTuristico por código QR. Permite a socios del Club validar visitas.',
+    triggerNew: 'Automático al crear un negocio con código QR.',
+    category: 'club',
+  },
+
+  // ── Cupones ──
+  {
+    url: '/cupones',
+    label: 'Cupones activos',
+    source: 'Tabla Cupon. Cupones de descuento para la tienda.',
+    triggerNew: 'Se crean desde Gestión > Asociación > Tienda > Cupones.',
+    category: 'tienda',
+  },
+
+  // ── Páginas de gestión relevantes ──
+  {
+    url: '/gestion/asociacion/selection',
+    label: '[GESTIÓN] Admin candidaturas Selection',
+    source: 'Tabla SelectionCandidatura. Listado con filtro por estado (Pendiente, En revisión, Aprobada, Rechazada). Al cambiar estado se envía email al solicitante.',
+    triggerNew: 'Se reciben candidaturas desde /selection/candidatura.',
+    category: 'selection',
+  },
 ];
 
 const CATEGORY_META: Record<string, { label: string; color: string; bg: string }> = {
@@ -443,8 +573,9 @@ const CATEGORY_META: Record<string, { label: string; color: string; bg: string }
   meteo:         { label: 'Meteorología',           color: 'text-cyan-700 dark:text-cyan-300',     bg: 'bg-cyan-50 dark:bg-cyan-950/40' },
   experiencias:  { label: 'Experiencias / Categorías', color: 'text-emerald-700 dark:text-emerald-300', bg: 'bg-emerald-50 dark:bg-emerald-950/40' },
   negocios:      { label: 'Negocios',              color: 'text-teal-700 dark:text-teal-300',     bg: 'bg-teal-50 dark:bg-teal-950/40' },
+  selection:     { label: 'Selection (negocios premium)', color: 'text-amber-800 dark:text-amber-200', bg: 'bg-gradient-to-r from-amber-50 to-slate-50 dark:from-amber-950/40 dark:to-slate-950/40' },
   actualidad:    { label: 'Actualidad',             color: 'text-rose-700 dark:text-rose-300',     bg: 'bg-rose-50 dark:bg-rose-950/40' },
-  campañas:      { label: 'Campañas estacionales',  color: 'text-fuchsia-700 dark:text-fuchsia-300', bg: 'bg-fuchsia-50 dark:bg-fuchsia-950/40' },
+  campañas:      { label: 'Campañas / Planifica',   color: 'text-fuchsia-700 dark:text-fuchsia-300', bg: 'bg-fuchsia-50 dark:bg-fuchsia-950/40' },
   rutas:         { label: 'Rutas',                  color: 'text-orange-700 dark:text-orange-300', bg: 'bg-orange-50 dark:bg-orange-950/40' },
   sello:         { label: 'El Sello',               color: 'text-yellow-700 dark:text-yellow-300', bg: 'bg-yellow-50 dark:bg-yellow-950/40' },
   tienda:        { label: 'Tienda',                 color: 'text-violet-700 dark:text-violet-300', bg: 'bg-violet-50 dark:bg-violet-950/40' },
@@ -550,9 +681,11 @@ export default async function MapaPaginasPage() {
         <ul className="space-y-2 text-sm text-foreground/80">
           <li><strong>Automáticas por publicar pueblo:</strong> listado, ficha, mapa, meteo, comunidades, provincias, últimas incorporaciones.</li>
           <li><strong>Dependen del alcalde:</strong> páginas de categoría, vídeos, POIs, webcam, highlights (castillo, murallas…), servicios (autocaravanas, cargador…).</li>
-          <li><strong>Dependen de la asociación:</strong> noticias, eventos, rutas, experiencias, negocios, campañas, recursos turísticos, tienda, club.</li>
+          <li><strong>Dependen de la asociación:</strong> noticias, eventos, rutas, experiencias, negocios, campañas, recursos turísticos, tienda, club, candidaturas Selection.</li>
+          <li><strong>Dependen del negocio:</strong> landing personalizada (/negocio/[slug]), fotos, servicios, redes sociales, ofertas. Solo planes Premium/Selection.</li>
           <li><strong>Totalmente automáticas (meteo):</strong> nieve hoy, más frescos, mejor tiempo, alertas flood.</li>
-          <li><strong>Requieren código:</strong> añadir un pueblo costero a la Marine API (constants.ts), crear nueva colección en Descubre (descubre.collections.ts).</li>
+          <li><strong>Traducción (i18n):</strong> Selection siempre traducido (7 idiomas). Negocios FREE no se traducen; desde Recomendado sí. La UI de /selection y /candidatura están traducidas.</li>
+          <li><strong>Requieren código:</strong> añadir un pueblo costero a la Marine API (constants.ts), crear nueva colección en Descubre (descubre.collections.ts), precios Stripe (negocio-plan.service.ts).</li>
         </ul>
       </div>
     </GestionAsociacionSubpageShell>
