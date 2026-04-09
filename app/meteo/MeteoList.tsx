@@ -305,9 +305,10 @@ export function MeteoList({ labels, locale }: { labels: Labels; locale: string }
           const flood = it.floodRisk;
 
           return (
-            <div
+            <Link
               key={it.pueblo.id}
-              className="flex flex-wrap items-start gap-4 px-4 py-3 border border-[#e2d5cb] rounded-lg hover:bg-[#e8d9cd] transition bg-[#efe2d8] dark:bg-neutral-800 dark:border-neutral-700 dark:hover:bg-neutral-700"
+              href={`/pueblos/${it.pueblo.slug}/meteo`}
+              className="flex flex-wrap items-start gap-4 px-4 py-3 border border-[#e2d5cb] rounded-lg hover:bg-[#e8d9cd] transition bg-[#efe2d8] dark:bg-neutral-800 dark:border-neutral-700 dark:hover:bg-neutral-700 no-underline text-inherit cursor-pointer"
             >
               {/* Temperatura */}
               <div className="flex-shrink-0 w-20 text-center">
@@ -337,9 +338,9 @@ export function MeteoList({ labels, locale }: { labels: Labels; locale: string }
               {/* Info central */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Link href={`/pueblos/${it.pueblo.slug}`} className="text-lg font-semibold hover:underline">
+                  <span className="text-lg font-semibold">
                     {it.pueblo.nombre}
-                  </Link>
+                  </span>
                   <div className="flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-400">
                     {flagSrc && (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -444,7 +445,7 @@ export function MeteoList({ labels, locale }: { labels: Labels; locale: string }
                   </div>
                 )}
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>

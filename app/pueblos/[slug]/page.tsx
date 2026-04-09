@@ -807,7 +807,7 @@ export default async function PuebloPage({
       />
 
       {/* METEO - Diseño imagen referencia */}
-      <MeteoPanel puebloId={puebloSafe.id} />
+      <MeteoPanel puebloId={puebloSafe.id} puebloSlug={puebloSafe.slug} />
 
       {/* TEXTO: Enunciado + Descripción - Diseño tourism-website-design */}
       {(puebloSafe.lead || puebloSafe.descripcion) && (() => {
