@@ -161,7 +161,7 @@ function CrecBadge({ value }: { value: number | null }) {
   );
 }
 
-function KpiCard({ label, value, sub, accent }: { label: string; value: string | number; sub?: string; accent?: string }) {
+function KpiCard({ label, value, sub, accent, tip }: { label: string; value: string | number; sub?: string; accent?: string; tip?: string }) {
   const accentStyles: Record<string, string> = {
     visitas: 'border-l-4 border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20',
     valoraciones: 'border-l-4 border-l-amber-500 bg-amber-50/50 dark:bg-amber-950/20',
@@ -169,12 +169,25 @@ function KpiCard({ label, value, sub, accent }: { label: string; value: string |
   };
   return (
     <div className={`rounded-xl border border-border bg-card p-5 shadow-sm ${accent ? accentStyles[accent] ?? '' : ''}`}>
-      <p className="text-sm font-medium text-muted-foreground">{label}</p>
+      <p className="text-sm font-medium text-muted-foreground">{label}{tip && <InfoTip text={tip} />}</p>
       <p className="mt-1 text-3xl font-bold text-foreground">
         {typeof value === 'number' ? value.toLocaleString('es-ES') : value}
       </p>
       {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
     </div>
+  );
+}
+
+function InfoTip({ text }: { text: string }) {
+  return (
+    <span className="group relative ml-1 inline-flex cursor-help">
+      <svg className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground transition-colors" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+      </svg>
+      <span className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 -translate-x-1/2 rounded-lg bg-foreground px-3 py-2 text-xs font-normal leading-snug text-background shadow-lg opacity-0 transition-opacity group-hover:opacity-100 w-56 text-center">
+        {text}
+      </span>
+    </span>
   );
 }
 
@@ -294,11 +307,18 @@ export default function PueblosMetricasComparativas() {
 
   const { kpis } = data;
 
-  const ThBtn = ({ label, sk, className = '' }: { label: string; sk: SortKey; className?: string }) => (
+  const ThBtn = ({ label, sk, className = '', tip }: { label: string; sk: SortKey; className?: string; tip?: string }) => (
     <th className={`px-3 py-2.5 text-xs font-semibold text-muted-foreground cursor-pointer select-none hover:text-foreground whitespace-nowrap ${className}`}>
       <button onClick={() => toggleSort(sk)} className="inline-flex items-center gap-0">
         {label}<SortIcon active={sortKey === sk} dir={sortDir} />
       </button>
+      {tip && <InfoTip text={tip} />}
+    </th>
+  );
+
+  const ThInfo = ({ label, tip, className = '' }: { label: string; tip: string; className?: string }) => (
+    <th className={`px-3 py-2.5 text-xs font-semibold text-muted-foreground whitespace-nowrap ${className}`}>
+      {label}{tip && <InfoTip text={tip} />}
     </th>
   );
 
@@ -401,13 +421,13 @@ export default function PueblosMetricasComparativas() {
 
       {/* ── KPIs globales ────────────────────────────────────────────── */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
-        <KpiCard label="Pueblos" value={kpis.totalPueblos} />
-        <KpiCard label="Visitas totales" value={kpis.totalVisitas} accent="visitas" />
-        <KpiCard label={`Visitas (${periodLabel})`} value={kpis.totalVisitasPeriodo} accent="visitas" />
-        <KpiCard label="Valoraciones" value={kpis.totalValoraciones} accent="valoraciones" />
-        <KpiCard label={`Val. (${periodLabel})`} value={kpis.totalValoracionesPeriodo} accent="valoraciones" />
-        <KpiCard label={`Web (${periodLabel})`} value={kpis.totalWebPeriodo} accent="web" />
-        <KpiCard label="Media global" value={`${kpis.mediaGlobal} ★`} accent="valoraciones" />
+        <KpiCard label="Pueblos" value={kpis.totalPueblos} tip="Pueblos activos en la red LPMBE (excluye expulsados)." />
+        <KpiCard label="Visitas totales" value={kpis.totalVisitas} accent="visitas" tip="Suma de todas las visitas registradas en la app «Planifica Fin de semana» desde el inicio." />
+        <KpiCard label={`Visitas (${periodLabel})`} value={kpis.totalVisitasPeriodo} accent="visitas" tip="Visitas registradas en la app durante el periodo seleccionado (GPS + manuales)." />
+        <KpiCard label="Valoraciones" value={kpis.totalValoraciones} accent="valoraciones" tip="Total de reseñas con estrellas dejadas por usuarios en la app." />
+        <KpiCard label={`Val. (${periodLabel})`} value={kpis.totalValoracionesPeriodo} accent="valoraciones" tip="Nuevas valoraciones recibidas durante el periodo seleccionado." />
+        <KpiCard label={`Web (${periodLabel})`} value={kpis.totalWebPeriodo} accent="web" tip="Páginas vistas en la web lospueblosmasbonitosdeespana.org (URLs de pueblos) durante el periodo." />
+        <KpiCard label="Media global" value={`${kpis.mediaGlobal} ★`} accent="valoraciones" tip="Media ponderada de las notas de todos los pueblos (1 a 5 estrellas)." />
       </div>
 
       {/* ── Controles ────────────────────────────────────────────────── */}
@@ -468,60 +488,60 @@ export default function PueblosMetricasComparativas() {
 
               {view === 'resumen' && (
                 <>
-                  <ThBtn label={`Vis. ${periodLabel}`} sk="visitas.periodo" className="text-right" />
-                  <th className="px-3 py-2.5 text-right text-xs font-semibold text-muted-foreground">Δ</th>
-                  <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground">Rk Vis</th>
-                  <ThBtn label={`Val. ${periodLabel}`} sk="valoraciones.periodo" className="text-right" />
-                  <ThBtn label="★" sk="valoraciones.media" className="text-right" />
-                  <th className="px-3 py-2.5 text-right text-xs font-semibold text-muted-foreground">Δ</th>
-                  <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground">Rk Val</th>
-                  <ThBtn label={`Web ${periodLabel}`} sk="web.pageviewsPeriodo" className="text-right" />
-                  <th className="px-3 py-2.5 text-right text-xs font-semibold text-muted-foreground">Δ</th>
-                  <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground">Rk Web</th>
+                  <ThBtn label={`Vis. ${periodLabel}`} sk="visitas.periodo" className="text-right" tip="Visitas registradas en la app «Planifica Fin de semana» durante el periodo seleccionado (GPS + manuales)." />
+                  <ThInfo label="Δ" tip="Porcentaje de crecimiento de visitas comparado con el periodo anterior de la misma duración." className="text-right" />
+                  <ThInfo label="Rk Vis" tip="Posición en el ranking de visitas del periodo entre todos los pueblos. La flecha indica si ha subido o bajado de puesto en los últimos 7 días." className="text-center" />
+                  <ThBtn label={`Val. ${periodLabel}`} sk="valoraciones.periodo" className="text-right" tip="Nuevas valoraciones (reseñas con estrellas) recibidas en la app durante el periodo." />
+                  <ThBtn label="★" sk="valoraciones.media" className="text-right" tip="Nota media histórica del pueblo (de 1 a 5 estrellas), calculada sobre todas las valoraciones recibidas." />
+                  <ThInfo label="Δ" tip="Porcentaje de crecimiento de valoraciones comparado con el periodo anterior." className="text-right" />
+                  <ThInfo label="Rk Val" tip="Posición en el ranking de valoraciones del periodo. La flecha indica cambio en los últimos 7 días." className="text-center" />
+                  <ThBtn label={`Web ${periodLabel}`} sk="web.pageviewsPeriodo" className="text-right" tip="Páginas vistas en la web (lospueblosmasbonitosdeespana.org) de las URLs del pueblo durante el periodo." />
+                  <ThInfo label="Δ" tip="Porcentaje de crecimiento del tráfico web comparado con el periodo anterior." className="text-right" />
+                  <ThInfo label="Rk Web" tip="Posición en el ranking de tráfico web del periodo. La flecha indica cambio en los últimos 7 días." className="text-center" />
                 </>
               )}
 
               {view === 'ranking' && (
                 <>
-                  <ThBtn label="Rk Vis. Total" sk="ranking.visitasTotal" className="text-center" />
-                  <ThBtn label={`Rk Vis. ${periodLabel}`} sk="ranking.visitasPeriodo" className="text-center" />
-                  <ThBtn label="Rk Val. Total" sk="ranking.valTotal" className="text-center" />
-                  <ThBtn label={`Rk Val. ${periodLabel}`} sk="ranking.valPeriodo" className="text-center" />
-                  <ThBtn label="Rk Nota ★" sk="ranking.valMedia" className="text-center" />
-                  <ThBtn label={`Rk Web ${periodLabel}`} sk="ranking.webPeriodo" className="text-center" />
+                  <ThBtn label="Rk Vis. Total" sk="ranking.visitasTotal" className="text-center" tip="Posición por total histórico de visitas registradas en la app (GPS + manuales)." />
+                  <ThBtn label={`Rk Vis. ${periodLabel}`} sk="ranking.visitasPeriodo" className="text-center" tip="Posición por visitas solo en el periodo seleccionado." />
+                  <ThBtn label="Rk Val. Total" sk="ranking.valTotal" className="text-center" tip="Posición por número total histórico de valoraciones recibidas." />
+                  <ThBtn label={`Rk Val. ${periodLabel}`} sk="ranking.valPeriodo" className="text-center" tip="Posición por valoraciones recibidas solo en el periodo seleccionado." />
+                  <ThBtn label="Rk Nota ★" sk="ranking.valMedia" className="text-center" tip="Posición por nota media de estrellas (de 1 a 5). Mayor nota = mejor posición." />
+                  <ThBtn label={`Rk Web ${periodLabel}`} sk="ranking.webPeriodo" className="text-center" tip="Posición por páginas vistas en la web del pueblo durante el periodo." />
                 </>
               )}
 
               {view === 'visitas' && (
                 <>
-                  <ThBtn label="Totales" sk="visitas.total" className="text-right" />
-                  <ThBtn label={periodLabel} sk="visitas.periodo" className="text-right" />
-                  <ThBtn label="GPS" sk="visitas.gps" className="text-right" />
-                  <th className="px-3 py-2.5 text-right text-xs font-semibold text-muted-foreground">Manual</th>
-                  <ThBtn label="Únicos" sk="visitas.visitantesUnicos" className="text-right" />
-                  <th className="px-3 py-2.5 text-right text-xs font-semibold text-muted-foreground">% GPS</th>
-                  <ThBtn label="Δ" sk="visitas.crecimientoPct" className="text-right" />
-                  <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground">Rk</th>
+                  <ThBtn label="Totales" sk="visitas.total" className="text-right" tip="Todas las visitas registradas en la app desde el inicio (acumulado histórico)." />
+                  <ThBtn label={periodLabel} sk="visitas.periodo" className="text-right" tip="Visitas registradas solo durante el periodo seleccionado." />
+                  <ThBtn label="GPS" sk="visitas.gps" className="text-right" tip="Visitas validadas por geolocalización: el usuario estaba físicamente cerca del pueblo." />
+                  <ThInfo label="Manual" tip="Visitas marcadas manualmente por el usuario sin validación GPS." className="text-right" />
+                  <ThBtn label="Únicos" sk="visitas.visitantesUnicos" className="text-right" tip="Número de usuarios distintos que han registrado al menos una visita (histórico)." />
+                  <ThInfo label="% GPS" tip="Porcentaje de visitas validadas por GPS sobre el total. Mayor % = más fiabilidad." className="text-right" />
+                  <ThBtn label="Δ" sk="visitas.crecimientoPct" className="text-right" tip="Crecimiento de visitas del periodo vs el periodo anterior de la misma duración." />
+                  <ThInfo label="Rk" tip="Posición en el ranking de visitas del periodo. La flecha indica cambio en 7 días." className="text-center" />
                 </>
               )}
 
               {view === 'valoraciones' && (
                 <>
-                  <ThBtn label="Total" sk="valoraciones.total" className="text-right" />
-                  <ThBtn label={periodLabel} sk="valoraciones.periodo" className="text-right" />
-                  <ThBtn label="Media ★" sk="valoraciones.media" className="text-right" />
-                  <ThBtn label="Δ" sk="valoraciones.crecimientoPct" className="text-right" />
-                  <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground">Rk Total</th>
-                  <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground">Rk ★</th>
+                  <ThBtn label="Total" sk="valoraciones.total" className="text-right" tip="Total histórico de valoraciones (reseñas con estrellas) recibidas." />
+                  <ThBtn label={periodLabel} sk="valoraciones.periodo" className="text-right" tip="Valoraciones nuevas recibidas durante el periodo seleccionado." />
+                  <ThBtn label="Media ★" sk="valoraciones.media" className="text-right" tip="Nota media histórica (1 a 5 estrellas) sobre todas las valoraciones." />
+                  <ThBtn label="Δ" sk="valoraciones.crecimientoPct" className="text-right" tip="Crecimiento de valoraciones del periodo vs el periodo anterior." />
+                  <ThInfo label="Rk Total" tip="Posición en el ranking por total histórico de valoraciones." className="text-center" />
+                  <ThInfo label="Rk ★" tip="Posición en el ranking por nota media de estrellas." className="text-center" />
                 </>
               )}
 
               {view === 'web' && (
                 <>
-                  <ThBtn label={periodLabel} sk="web.pageviewsPeriodo" className="text-right" />
-                  <ThBtn label="Histórico" sk="web.pageviewsHistorico" className="text-right" />
-                  <ThBtn label="Δ" sk="web.crecimientoPct" className="text-right" />
-                  <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground">Rk</th>
+                  <ThBtn label={periodLabel} sk="web.pageviewsPeriodo" className="text-right" tip="Páginas vistas en la web del pueblo durante el periodo seleccionado." />
+                  <ThBtn label="Histórico" sk="web.pageviewsHistorico" className="text-right" tip="Total acumulado de páginas vistas en la web del pueblo desde que hay medición." />
+                  <ThBtn label="Δ" sk="web.crecimientoPct" className="text-right" tip="Crecimiento del tráfico web del periodo vs el periodo anterior." />
+                  <ThInfo label="Rk" tip="Posición en el ranking de tráfico web del periodo. La flecha indica cambio en 7 días." className="text-center" />
                 </>
               )}
             </tr>
