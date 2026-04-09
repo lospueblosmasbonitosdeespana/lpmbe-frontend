@@ -1,29 +1,26 @@
 import { NextResponse } from 'next/server';
-import { getToken } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { AUTH_COOKIE_NAME } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 
-export const dynamic = 'force-dynamic';
-export const maxDuration = 30;
+async function getToken(): Promise<string | null> {
+  const store = await cookies();
+  return store.get(AUTH_COOKIE_NAME)?.value ?? null;
+}
 
 export async function GET() {
   const token = await getToken();
-  if (!token) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  }
+  if (!token) return NextResponse.json({}, { status: 200 });
 
   const API_BASE = getApiUrl();
-
-  const res = await fetch(`${API_BASE}/admin/asociacion/pages`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+  const upstream = await fetch(`${API_BASE}/admin/pages?scope=ASOCIACION`, {
+    headers: { Authorization: `Bearer ${token}` },
     cache: 'no-store',
   });
 
-  const text = await res.text();
-  
+  const text = await upstream.text();
   return new NextResponse(text, {
-    status: res.status,
+    status: upstream.status,
     headers: { 'Content-Type': 'application/json' },
   });
 }

@@ -1,52 +1,33 @@
 import { NextResponse } from 'next/server';
-import { getToken } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { AUTH_COOKIE_NAME } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 
-export const dynamic = 'force-dynamic';
-export const maxDuration = 30;
+async function getToken(): Promise<string | null> {
+  const store = await cookies();
+  return store.get(AUTH_COOKIE_NAME)?.value ?? null;
+}
 
 export async function POST(req: Request) {
   const token = await getToken();
-  if (!token) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  }
+  if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
   const API_BASE = getApiUrl();
-  const body = await req.json();
+  const body = await req.text();
 
-  const puebloId = body.puebloId;
-
-  const cleanPayload: any = {
-    scope: body.scope ?? 'PUEBLO',
-    puebloId: puebloId ?? null,
-    category: body.category,
-    titulo: body.titulo,
-    resumen: body.resumen || null,
-    contenido: body.contenido,
-    coverUrl: body.coverUrl || null,
-    published: !!body.published,
-  };
-  if (Array.isArray(body.galleryUrls)) {
-    cleanPayload.galleryUrls = body.galleryUrls;
-  }
-
-  const endpoint = puebloId
-    ? `${API_BASE}/admin/pueblos/${puebloId}/pages`
-    : `${API_BASE}/admin/pages`;
-
-  const res = await fetch(endpoint, {
+  const upstream = await fetch(`${API_BASE}/admin/pages`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify(cleanPayload),
+    body,
     cache: 'no-store',
   });
 
-  const text = await res.text();
+  const text = await upstream.text();
   return new NextResponse(text, {
-    status: res.status,
+    status: upstream.status,
     headers: { 'Content-Type': 'application/json' },
   });
 }

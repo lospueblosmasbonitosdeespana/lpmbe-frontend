@@ -26,6 +26,7 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
   const [titulo, setTitulo] = useState('');
   const [resumen, setResumen] = useState('');
   const [contenidoMd, setContenidoMd] = useState('');
+  const [blocksJson, setBlocksJson] = useState<unknown>(null);
   const [estado, setEstado] = useState('BORRADOR');
   const [publishedAt, setPublishedAt] = useState('');
   const [fechaInicioLocal, setFechaInicioLocal] = useState('');
@@ -56,6 +57,12 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
         setResumen(data.resumen ?? '');
         setContenidoMd(data.contenidoMd ?? '');
         setEstado(data.estado ?? 'BORRADOR');
+
+        if (data.blocksJson && Array.isArray(data.blocksJson) && data.blocksJson.length > 0) {
+          setBlocksJson(data.blocksJson);
+          setEditorMode('builder');
+        }
+
         setCoverUrl(data.coverUrl ?? null);
         setGalleryUrls(Array.isArray(data.galleryUrls) ? data.galleryUrls.slice(0, 3) : []);
 
@@ -185,6 +192,7 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
         resumen: resumen.trim() || null,
         contenidoMd,
         estado,
+        ...(blocksJson ? { blocksJson } : {}),
       };
       payload.galleryUrls = normalizedGalleryUrls;
       payload.coverUrl = newCoverUrl ?? null;
@@ -554,7 +562,9 @@ export default function EditarContenidoClient({ id }: EditarContenidoClientProps
                 key={`asoc-editar-builder-${id}-${builderResetKey}`}
                 draftKey={`lpmbe-editar-asoc-contenido-${id}-draft`}
                 initialHtml={contenidoMd}
+                initialBlocks={Array.isArray(blocksJson) ? (blocksJson as any[]) : undefined}
                 onChange={(html) => setContenidoMd(html)}
+                onBlocksChange={(blocks) => setBlocksJson(blocks)}
                 onClearAll={handleClearAll}
                 webMode={true}
                 clearDraftOnMount={true}

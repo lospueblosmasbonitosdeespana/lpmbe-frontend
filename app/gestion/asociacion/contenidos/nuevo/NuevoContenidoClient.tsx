@@ -52,6 +52,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
   const [titulo, setTitulo] = useState('');
   const [resumen, setResumen] = useState('');
   const [contenido, setContenido] = useState('');
+  const [blocksJson, setBlocksJson] = useState<unknown>(null);
   const [estado, setEstado] = useState('BORRADOR');
   const [publishedAt, setPublishedAt] = useState('');
   const [fechaInicioLocal, setFechaInicioLocal] = useState('');
@@ -291,6 +292,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           published: estado === 'PUBLICADA',
           coverUrl: finalCoverUrl ?? null,
           galleryUrls: normalizedGalleryUrls,
+          ...(blocksJson ? { blocksJson } : {}),
         };
 
         console.log('[POST /admin/pages ASOCIACION] Payload:', JSON.stringify(payload, null, 2));
@@ -320,6 +322,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
         resumen: resumen.trim() || null,
         contenidoMd: contenidoFinal,
         estado,
+        ...(blocksJson ? { blocksJson } : {}),
       };
       if (finalCoverUrl) payload.coverUrl = finalCoverUrl;
       payload.galleryUrls = normalizedGalleryUrls;
@@ -722,6 +725,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
                 draftKey={`lpmbe-contenido-asoc-PAGINA-${categoria || 'nuevo'}-draft`}
                 initialHtml=""
                 onChange={handleBuilderChange}
+                onBlocksChange={(blocks) => setBlocksJson(blocks)}
                 onClearAll={handleClearAll}
                 webMode={true}
               />

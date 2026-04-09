@@ -165,6 +165,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
           resumen: resumen.trim() || null,
           contenido: contenido,
           published: estado === 'PUBLICADA',
+          ...(blocksJson ? { blocksJson } : {}),
         };
         if (effectiveCoverUrl) payload.coverUrl = effectiveCoverUrl;
         if (normalizedGalleryUrls.length > 0) payload.galleryUrls = normalizedGalleryUrls;
