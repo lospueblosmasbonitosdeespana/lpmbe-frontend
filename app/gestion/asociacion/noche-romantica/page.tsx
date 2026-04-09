@@ -495,38 +495,61 @@ export default function GestionNocheRomanticaPage() {
             </div>
           </section>
 
-          {/* Estado */}
+          {/* Estado — Controles de visibilidad */}
           <section className="rounded-lg border p-5">
-            <h2 className="mb-4 text-lg font-semibold">Estado</h2>
-            <div className="space-y-3">
-              <label className="flex items-center gap-3">
+            <h2 className="mb-4 text-lg font-semibold">Estado de la campaña</h2>
+            <div className="space-y-4">
+              {/* 1. Web pública: Header + página /noche-romantica + gestión alcaldes */}
+              <label className="flex items-start gap-3 rounded-lg border border-border p-3 hover:bg-muted/30 transition-colors cursor-pointer">
                 <input
                   type="checkbox"
                   checked={config.activo}
                   onChange={(e) => setConfig({ ...config, activo: e.target.checked })}
-                  className="h-4 w-4 rounded border-border"
+                  className="mt-0.5 h-4 w-4 rounded border-border accent-primary"
                 />
-                <span className="text-sm font-medium">Evento activo (web)</span>
+                <div>
+                  <span className="text-sm font-semibold">Activar en la web pública</span>
+                  <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+                    Muestra «La Noche Romántica» en el menú de navegación de la web y habilita la página pública.
+                    También permite a los alcaldes gestionar la participación de su pueblo.
+                  </p>
+                  {config.activo && (
+                    <div className="mt-2 flex items-center gap-1.5 text-xs text-emerald-700">
+                      <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                      Visible en la web — menú, página y gestión de alcaldes activos
+                    </div>
+                  )}
+                </div>
               </label>
-              <label className="flex items-center gap-3">
+
+              {/* 2. App móvil */}
+              <label className="flex items-start gap-3 rounded-lg border border-rose-200 p-3 hover:bg-rose-50/40 transition-colors cursor-pointer">
                 <input
                   type="checkbox"
                   checked={config.activaEnApp}
                   onChange={(e) => setConfig({ ...config, activaEnApp: e.target.checked })}
-                  className="h-4 w-4 rounded border-border accent-rose-600"
+                  className="mt-0.5 h-4 w-4 rounded border-border accent-rose-600"
                 />
                 <div>
-                  <span className="text-sm font-medium">Activar La Noche Romántica en la App</span>
-                  <p className="text-xs text-muted-foreground">
-                    Muestra el logo del evento en la ficha de los pueblos participantes dentro de la app móvil
+                  <span className="text-sm font-semibold">Activar en la app móvil</span>
+                  <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+                    Muestra el logo y la sección de La Noche Romántica en la app (ficha de pueblos participantes, landing del evento).
                   </p>
+                  {config.activaEnApp && (
+                    <div className="mt-2 flex items-center gap-1.5 text-xs text-rose-700">
+                      <span className="inline-block h-2 w-2 rounded-full bg-rose-500" />
+                      Activo en la app para {pueblos.length} pueblo{pueblos.length !== 1 ? 's' : ''} participante{pueblos.length !== 1 ? 's' : ''}
+                    </div>
+                  )}
                 </div>
               </label>
-              {config.activaEnApp && (
-                <div className="ml-7 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-                  ❤️ La Noche Romántica se muestra actualmente en la app para {pueblos.length} pueblo{pueblos.length !== 1 ? 's' : ''} participante{pueblos.length !== 1 ? 's' : ''}
-                </div>
-              )}
+
+              {/* Resumen visual */}
+              <div className="rounded-md border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground space-y-1">
+                <p className="font-medium text-foreground/80">Resumen:</p>
+                <p>Web pública (header + página + alcaldes): <strong className={config.activo ? 'text-emerald-700' : 'text-red-600'}>{config.activo ? 'ACTIVO' : 'INACTIVO'}</strong></p>
+                <p>App móvil (logo + landing + pueblos): <strong className={config.activaEnApp ? 'text-rose-700' : 'text-red-600'}>{config.activaEnApp ? 'ACTIVO' : 'INACTIVO'}</strong></p>
+              </div>
             </div>
           </section>
 
