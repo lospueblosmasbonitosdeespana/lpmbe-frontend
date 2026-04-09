@@ -164,6 +164,19 @@ export default async function PuebloNocheRomanticaPage({
 
   return (
     <main className="min-h-screen">
+      {/* Logo NR */}
+      {nrConfig.logoUrl && (
+        <div className="flex justify-center py-6 bg-white dark:bg-neutral-900">
+          <Link href="/noche-romantica">
+            <img
+              src={nrConfig.logoUrl}
+              alt={t('title')}
+              className="h-20 md:h-24 w-auto object-contain"
+            />
+          </Link>
+        </div>
+      )}
+
       {/* Hero / Cartel con imagen */}
       {heroImage ? (
         <section className="relative w-full bg-gray-100">
