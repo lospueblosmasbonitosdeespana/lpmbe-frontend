@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { getComunidadFlagSrc } from "@/lib/flags";
@@ -122,6 +123,23 @@ const VILLAGES_LABEL: Record<string, string> = {
 export function CollectionView({ data, locale }: { data: CollectionData; locale: string }) {
   const backLabel = BACK_LABELS[locale] ?? BACK_LABELS.es;
   const villagesLabel = VILLAGES_LABEL[locale] ?? VILLAGES_LABEL.es;
+  const isMeteo = data.type === "meteo";
+
+  const byCCAA = React.useMemo(() => {
+    if (isMeteo) return {};
+    const acc: Record<string, Pueblo[]> = {};
+    for (const p of data.pueblos) {
+      const key = p.comunidad || "—";
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(p);
+    }
+    return acc;
+  }, [data.pueblos, isMeteo]);
+
+  const comunidades = React.useMemo(
+    () => Object.keys(byCCAA).sort((a, b) => a.localeCompare(b, locale || "es")),
+    [byCCAA, locale],
+  );
 
   return (
     <>
@@ -175,15 +193,9 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
         </div>
       </section>
 
-      {/* Grid */}
+      {/* Content */}
       <section className="mx-auto max-w-[80rem] px-4 sm:px-6 lg:px-8 py-10 md:py-14">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {data.pueblos.map((p) => (
-            <PuebloCard key={p.id} pueblo={p} color={data.color} />
-          ))}
-        </div>
-
-        {data.pueblos.length === 0 && (
+        {data.pueblos.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-lg text-neutral-500">
               {locale === "es"
@@ -191,22 +203,54 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
                 : "No villages in this collection at this time."}
             </p>
           </div>
+        ) : isMeteo ? (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {data.pueblos.map((p, idx) => (
+              <PuebloCard key={p.id} pueblo={p} color={data.color} rank={idx + 1} />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-10">
+            {comunidades.map((ccaa) => {
+              const flag = getComunidadFlagSrc(ccaa);
+              return (
+                <div key={ccaa}>
+                  <div className="flex items-center gap-3 mb-5">
+                    {flag && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={flag} alt={ccaa} className="h-5 w-7 rounded-sm object-cover" />
+                    )}
+                    <h2 className="font-serif text-lg font-semibold text-[#3d2c1e] dark:text-neutral-100">
+                      {ccaa}
+                    </h2>
+                    <span className="text-sm text-neutral-400">({byCCAA[ccaa].length})</span>
+                    <div className="h-px flex-1 bg-[#e2d5cb] dark:bg-neutral-700" />
+                  </div>
+                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {byCCAA[ccaa].map((p) => (
+                      <PuebloCard key={p.id} pueblo={p} color={data.color} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
       </section>
     </>
   );
 }
 
-function PuebloCard({ pueblo: p, color }: { pueblo: Pueblo; color: string }) {
+function PuebloCard({ pueblo: p, color, rank }: { pueblo: Pueblo; color: string; rank?: number }) {
   const flagSrc = getComunidadFlagSrc(p.comunidad);
   const hasPhoto = !!p.foto_destacada;
+  const badge = p.highlightExtra ?? (p.habitantes ? `${p.habitantes} hab.` : null);
 
   return (
     <Link
       href={`/pueblos/${p.slug}`}
       className="group relative flex flex-col overflow-hidden rounded-xl border border-[#e2d5cb] bg-white shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 dark:bg-neutral-900 dark:border-neutral-700"
     >
-      {/* Image */}
       <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-[#efe2d8] to-[#d4c4b5]">
         {hasPhoto ? (
           <Image
@@ -223,33 +267,28 @@ function PuebloCard({ pueblo: p, color }: { pueblo: Pueblo; color: string }) {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
-        {/* Badge / extra data */}
-        {p.highlightExtra && (
-          <span
-            className="absolute top-3 right-3 rounded-full px-2.5 py-0.5 text-xs font-bold text-white shadow-sm"
-            style={{ backgroundColor: color }}
-          >
-            {p.highlightExtra}
-          </span>
-        )}
-        {p.habitantes && (
-          <span
-            className="absolute top-3 right-3 rounded-full px-2.5 py-0.5 text-xs font-bold text-white shadow-sm"
-            style={{ backgroundColor: color }}
-          >
-            {p.habitantes} hab.
+        {rank != null && (
+          <span className="absolute top-3 left-3 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-xs font-bold text-white backdrop-blur-sm">
+            {rank}
           </span>
         )}
 
-        {/* Meteo overlay */}
-        {p.meteo && p.meteo.temperatureC != null && (
+        {badge && (
+          <span
+            className="absolute top-3 right-3 rounded-full px-2.5 py-0.5 text-xs font-bold text-white shadow-sm"
+            style={{ backgroundColor: color }}
+          >
+            {badge}
+          </span>
+        )}
+
+        {p.meteo && p.meteo.temperatureC != null && !p.highlightExtra && (
           <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-neutral-800 shadow-sm">
             <WeatherIcon code={p.meteo.weatherCode} />
             <span>{Math.round(p.meteo.temperatureC)}°</span>
           </div>
         )}
 
-        {/* Name overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <h2 className="font-serif text-lg font-bold text-white drop-shadow-md leading-tight">
             {p.nombre}
@@ -257,7 +296,6 @@ function PuebloCard({ pueblo: p, color }: { pueblo: Pueblo; color: string }) {
         </div>
       </div>
 
-      {/* Info */}
       <div className="flex items-center gap-2 px-4 py-3">
         {flagSrc && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -272,7 +310,6 @@ function PuebloCard({ pueblo: p, color }: { pueblo: Pueblo; color: string }) {
         </span>
       </div>
 
-      {/* Bottom accent */}
       <div
         className="h-0.5 w-full transition-all group-hover:h-1"
         style={{ backgroundColor: color }}
