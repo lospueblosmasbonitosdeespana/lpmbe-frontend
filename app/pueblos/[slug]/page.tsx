@@ -35,6 +35,7 @@ import { DetailGallerySection } from "@/app/components/ui/detail-gallery-section
 import { PointsOfInterest } from "@/app/components/pueblos/PointsOfInterest";
 import RotatedImage from "@/app/components/RotatedImage";
 import { stripHtml } from "@/app/_lib/html";
+import { getCanonicalVideoSegment } from "@/lib/video-seo";
 
 /** Distancia Haversine en km */
 function haversineKm(
@@ -685,7 +686,7 @@ export default async function PuebloPage({
     .map((v: { id: number; titulo?: string; url?: string }) => {
       const { embedUrl, videoId } = getEmbedUrlAndId(v.url || "");
       if (!embedUrl || !embedUrl.includes("youtube") || !videoId) return null;
-      const watchPageUrl = `${base}/pueblos/${puebloSafe.slug}/videos/${v.id}`;
+      const watchPageUrl = `${base}/pueblos/${puebloSafe.slug}/videos/${getCanonicalVideoSegment(v)}`;
       return {
         "@context": "https://schema.org",
         "@type": "VideoObject" as const,
@@ -1151,7 +1152,7 @@ export default async function PuebloPage({
                   if (v.url.includes("/embed/")) return v.url;
                   return v.url;
                 })();
-                const watchHref = `/pueblos/${puebloSafe.slug}/videos/${v.id}`;
+                const watchHref = `/pueblos/${puebloSafe.slug}/videos/${getCanonicalVideoSegment(v)}`;
                 const card = (
                   <>
                     <div className="aspect-video w-full bg-muted">

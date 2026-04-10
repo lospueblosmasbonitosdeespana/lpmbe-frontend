@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { getBaseUrl, SUPPORTED_LOCALES, DEFAULT_LOCALE, pathForLocale } from '@/lib/seo';
 import { getApiUrl, getPuebloMainPhoto } from '@/lib/api';
+import { getCanonicalVideoSegment } from '@/lib/video-seo';
 
 type SitemapEntry = MetadataRoute.Sitemap[number];
 
@@ -61,16 +62,36 @@ async function fetchSlugsWithDates(endpoint: string, slugField = 'slug', dateFie
 }
 
 /** Para sitemap de imágenes: pueblos con slug + URL de foto principal (para indexación en Google). */
-async function fetchPueblosWithImages(): Promise<{ slug: string; imageUrl: string | null }[]> {
+async function fetchPueblosWithImages(): Promise<{ id: number; slug: string; imageUrl: string | null }[]> {
   try {
     const res = await fetch(`${API}/pueblos`, { cache: 'no-store' });
     if (!res.ok) return [];
     const data = await res.json();
     const items = Array.isArray(data) ? data : data?.items ?? [];
     return items.map((p: any) => ({
+      id: Number(p?.id ?? 0),
       slug: p?.slug ?? '',
       imageUrl: getPuebloMainPhoto(p),
-    })).filter((p: { slug: string }) => p.slug);
+    })).filter((p: { id: number; slug: string }) => p.id > 0 && p.slug);
+  } catch {
+    return [];
+  }
+}
+
+type SitemapVideoItem = { id: number; titulo: string };
+
+async function fetchVideosByPuebloId(puebloId: number): Promise<SitemapVideoItem[]> {
+  try {
+    const res = await fetch(`${API}/pueblos/${puebloId}/videos`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : [];
+    return items
+      .map((v: any) => ({
+        id: Number(v?.id ?? 0),
+        titulo: String(v?.titulo ?? '').trim(),
+      }))
+      .filter((v: SitemapVideoItem) => v.id > 0 && v.titulo.length > 0);
   } catch {
     return [];
   }
@@ -292,6 +313,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pueblos = pueblosWithImages.map((p) =>
     entry(`/pueblos/${p.slug}`, 0.9, 'weekly', p.imageUrl ? [p.imageUrl] : undefined)
   );
+  const videosList = pueblosWithImages.map((p) =>
+    entry(`/pueblos/${p.slug}/videos`, 0.55, 'monthly', p.imageUrl ? [p.imageUrl] : undefined)
+  );
+  const videosByPueblo = await Promise.all(
+    pueblosWithImages.map(async (p) => ({
+      slug: p.slug,
+      videos: await fetchVideosByPuebloId(p.id),
+    })),
+  );
+  const videosDetail = videosByPueblo.flatMap((p) =>
+    p.videos.map((v) =>
+      entry(`/pueblos/${p.slug}/videos/${getCanonicalVideoSegment(v)}`, 0.5, 'monthly'),
+    ),
+  );
   const rutas = rutaSlugs.map((s) => entry(`/rutas/${s}`, 0.8, 'weekly'));
   const noticias = noticiaItems.map((i) => entry(`/noticias/${i.slug}`, 0.8, 'weekly', undefined, i.updatedAt));
   const eventos = eventoItems.map((i) => entry(`/eventos/${i.slug}`, 0.8, 'weekly', undefined, i.updatedAt));
@@ -377,7 +412,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticPages, ...extraStatic,
-    ...pueblos, ...rutas, ...noticias, ...eventos, ...contenidos,
+    ...pueblos, ...videosList, ...videosDetail, ...rutas, ...noticias, ...eventos, ...contenidos,
     ...semanaSanta,
     ...paginasTematicasListado, ...paginasTematicasIndividuales,
     ...paginasClub,

@@ -13,6 +13,7 @@ import {
   type SupportedLocale,
 } from "@/lib/seo";
 import JsonLd from "@/app/components/seo/JsonLd";
+import { extractYoutubeId, getCanonicalVideoSegment } from "@/lib/video-seo";
 
 export const revalidate = 60;
 export async function generateMetadata({
@@ -51,16 +52,6 @@ type Video = {
   thumbnail?: string | null;
   createdAt?: string;
 };
-
-function extractYoutubeId(url: string): string | null {
-  const watchMatch = url.match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
-  if (watchMatch) return watchMatch[1];
-  const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
-  if (shortMatch) return shortMatch[1];
-  const embedMatch = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
-  if (embedMatch) return embedMatch[1];
-  return null;
-}
 
 function extractYoutubeEmbedUrl(url: string): string {
   const watchMatch = url.match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
@@ -181,7 +172,7 @@ export default async function VideosPuebloPage({
           <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
             {videos.map((video) => {
               const embedUrl = extractYoutubeEmbedUrl(video.url);
-              const watchHref = `/pueblos/${pueblo.slug}/videos/${video.id}`;
+              const watchHref = `/pueblos/${pueblo.slug}/videos/${getCanonicalVideoSegment(video)}`;
               const card = (
                 <>
                   <div className="aspect-video w-full bg-muted">

@@ -14,6 +14,11 @@ import {
   type SupportedLocale,
 } from "@/lib/seo";
 import JsonLd from "@/app/components/seo/JsonLd";
+import {
+  extractVideoIdFromSegment,
+  extractYoutubeId,
+  getCanonicalVideoSegment,
+} from "@/lib/video-seo";
 
 export const dynamic = "force-dynamic";
 
@@ -24,16 +29,6 @@ type Video = {
   thumbnail?: string | null;
 };
 
-function extractYoutubeId(url: string): string | null {
-  const watchMatch = url.match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
-  if (watchMatch) return watchMatch[1];
-  const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
-  if (shortMatch) return shortMatch[1];
-  const embedMatch = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
-  if (embedMatch) return embedMatch[1];
-  return null;
-}
-
 function getEmbedUrl(url: string): string {
   const id = extractYoutubeId(url);
   if (id) return `https://www.youtube.com/embed/${id}`;
@@ -43,8 +38,9 @@ function getEmbedUrl(url: string): string {
 
 /** Resuelve por id numérico de BD o por id de YouTube (rutas antiguas). */
 function resolveVideo(videos: Video[], segment: string): Video | undefined {
-  if (/^\d+$/.test(segment)) {
-    const id = Number(segment);
+  const idFromSegment = extractVideoIdFromSegment(segment);
+  if (idFromSegment !== null) {
+    const id = idFromSegment;
     const byId = videos.find((v) => v.id === id);
     if (byId) return byId;
   }
@@ -88,7 +84,7 @@ export async function generateMetadata({
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const { pueblo, videos } = await fetchPuebloVideos(slug, locale);
   const video = pueblo ? resolveVideo(videos, videoId) : undefined;
-  const canonicalSeg = video ? String(video.id) : videoId;
+  const canonicalSeg = video ? getCanonicalVideoSegment(video) : videoId;
   const path = `/pueblos/${slug}/videos/${canonicalSeg}`;
   const ytId = video ? extractYoutubeId(video.url) : null;
   const title = video
@@ -171,7 +167,7 @@ export default async function VideoWatchPage({
     );
   }
 
-  const canonicalSeg = String(video.id);
+  const canonicalSeg = getCanonicalVideoSegment(video);
   if (videoId !== canonicalSeg) {
     permanentRedirect(withPreservedSearch(`/pueblos/${pueblo.slug}/videos/${canonicalSeg}`, sp));
   }
