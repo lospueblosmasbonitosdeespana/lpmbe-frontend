@@ -58,9 +58,13 @@ type Payload = {
 async function fetchData(slug: string, locale: string): Promise<Payload | null> {
   const API = getApiUrl();
   const lang = encodeURIComponent(locale);
-  const res = await fetch(`${API}/semana-santa/pueblos/${slug}?lang=${lang}`);
-  if (!res.ok) return null;
-  return res.json();
+  try {
+    const res = await fetch(`${API}/semana-santa/pueblos/${slug}?lang=${lang}`);
+    if (!res.ok) return null;
+    return (await res.json()) as Payload;
+  } catch {
+    return null;
+  }
 }
 
 function isDateFormat(s: string): boolean {
@@ -73,6 +77,39 @@ function findDay(dias: Dia[], param: string): Dia | undefined {
 }
 
 export const revalidate = 60;
+
+function safeDateLabel(isoDate: string | null | undefined, locale: string): string {
+  if (!isoDate) return '';
+  const dt = new Date(isoDate);
+  if (Number.isNaN(dt.getTime())) return String(isoDate);
+  try {
+    return dt.toLocaleDateString(locale, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  } catch {
+    return String(isoDate);
+  }
+}
+
+function safeTimeLabel(isoDateTime: string | null | undefined, locale: string): string {
+  if (!isoDateTime) return '';
+  const dt = new Date(isoDateTime);
+  if (Number.isNaN(dt.getTime())) return '';
+  try {
+    return dt.toLocaleTimeString(locale, {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Europe/Madrid',
+    });
+  } catch {
+    return '';
+  }
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -88,15 +125,7 @@ export async function generateMetadata({
   const puebloName = data?.participante.pueblo.nombre ?? nameFallback;
   const canonicalSlug = day?.slug ?? fecha;
   const path = `/planifica/semana-santa/pueblo/${puebloSlug}/dia/${canonicalSlug}`;
-  const dateLabel =
-    day != null
-      ? new Date(day.fecha).toLocaleDateString(locale, {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        })
-      : fecha;
+  const dateLabel = day != null ? safeDateLabel(day.fecha, locale) : fecha;
   const title = hasDayData
     ? seoTitle(tSeo('semanaSantaDiaTitle', { nombre: puebloName, fecha: dateLabel }))
     : seoTitle(tSeo('semanaSantaTitle', { nombre: puebloName }));
@@ -138,8 +167,11 @@ export default async function SemanaSantaDiaPage({
     redirect(`/planifica/semana-santa/pueblo/${puebloSlug}/dia/${day.slug}`);
   }
 
-  const eventos = data.participante.agenda.filter((a) => a.fechaInicio.slice(0, 10) === day.fecha);
-  const timeOpts = { hour: '2-digit' as const, minute: '2-digit' as const, hour12: false as const, timeZone: 'Europe/Madrid' };
+  const agenda = Array.isArray(data.participante.agenda) ? data.participante.agenda : [];
+  const eventos = agenda.filter((a) => {
+    const inicio = typeof a?.fechaInicio === 'string' ? a.fechaInicio : '';
+    return inicio.slice(0, 10) === day.fecha;
+  });
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
@@ -152,9 +184,7 @@ export default async function SemanaSantaDiaPage({
         <h1 className="font-serif text-3xl font-medium">
           {translateHolyWeekDayLabel(day.titulo || day.nombreDia, t)}
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {new Date(day.fecha).toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">{safeDateLabel(day.fecha, locale)}</p>
         {day.descripcion && <p className="mt-3 text-muted-foreground">{day.descripcion}</p>}
       </header>
 
@@ -183,8 +213,8 @@ export default async function SemanaSantaDiaPage({
                   />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {new Date(e.fechaInicio).toLocaleTimeString(locale, timeOpts)}
-                  {e.fechaFin ? ` - ${new Date(e.fechaFin).toLocaleTimeString(locale, timeOpts)}` : ''}
+                  {safeTimeLabel(e.fechaInicio, locale)}
+                  {e.fechaFin ? ` - ${safeTimeLabel(e.fechaFin, locale)}` : ''}
                 </p>
                 {e.fotoUrl && (
                   <div className="mt-3 overflow-hidden rounded-lg border bg-muted/30">
