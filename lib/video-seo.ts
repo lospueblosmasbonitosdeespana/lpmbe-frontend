@@ -9,8 +9,8 @@ function normalizeSlugText(value: string): string {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\\s-]/g, "")
-    .replace(/\\s+/g, "-")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 }
@@ -35,18 +35,18 @@ export function getCanonicalVideoSegment(video: PuebloVideoSeo): string {
  */
 export function extractVideoIdFromSegment(segment: string): number | null {
   if (!segment) return null;
-  if (/^\\d+$/.test(segment)) return Number(segment);
-  const m = segment.match(/-(\\d+)$/);
+  if (/^\d+$/.test(segment)) return Number(segment);
+  const m = segment.match(/-(\d+)$/);
   if (!m) return null;
   return Number(m[1]);
 }
 
 export function extractYoutubeId(url: string): string | null {
-  const watchMatch = (url || "").match(/(?:youtube\\.com\\/watch\\?v=)([a-zA-Z0-9_-]{11})/);
+  const watchMatch = (url || "").match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
   if (watchMatch) return watchMatch[1];
-  const shortMatch = (url || "").match(/youtu\\.be\\/([a-zA-Z0-9_-]{11})/);
+  const shortMatch = (url || "").match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
   if (shortMatch) return shortMatch[1];
-  const embedMatch = (url || "").match(/youtube\\.com\\/embed\\/([a-zA-Z0-9_-]{11})/);
+  const embedMatch = (url || "").match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
   if (embedMatch) return embedMatch[1];
   return null;
 }
