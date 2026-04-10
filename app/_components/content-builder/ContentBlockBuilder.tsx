@@ -21,7 +21,7 @@ import { HtmlAttributePreserver, DivBlock } from '../editor/tiptap-html-preserve
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type BlockType =
-  | 'heading' | 'text' | 'image' | 'button' | 'iconButton'
+  | 'heading' | 'text' | 'image' | 'button' | 'iconButton' | 'buttonRow'
   | 'columns2' | 'columns3' | 'gallery' | 'figure' | 'imgText'
   | 'socialLinks' | 'countdown' | 'divider';
 
@@ -61,6 +61,8 @@ export interface ContentBlock {
   colLeftImg?: string;
   colRightImg?: string;
   colCenterImg?: string;
+  btn2Label?: string;
+  btn2Url?: string;
 }
 
 interface BuilderTemplate {
@@ -154,8 +156,10 @@ function createBlock(type: BlockType, patch: Partial<ContentBlock> = {}): Conten
       : type === 'button' ? 'Llamada a la acción'
       : type === 'figure' || type === 'imgText' ? 'Texto al lado de la imagen'
       : '',
-    label: type === 'button' ? 'Leer más' : type === 'iconButton' ? 'Icono' : '',
-    url: ['image', 'figure', 'imgText', 'button'].includes(type) ? '' : '',
+    label: type === 'button' || type === 'buttonRow' ? 'Leer más' : type === 'iconButton' ? 'Icono' : '',
+    url: ['image', 'figure', 'imgText', 'button', 'buttonRow'].includes(type) ? '' : '',
+    btn2Label: type === 'buttonRow' ? 'Conoce más' : '',
+    btn2Url: type === 'buttonRow' ? '' : '',
     iconUrl: type === 'iconButton' ? '' : '',
     caption: type === 'figure' ? 'Pie de imagen' : '',
     colLeft: ['columns2', 'columns3'].includes(type) ? 'Columna izquierda' : '',
@@ -224,6 +228,8 @@ function normalizeBlocks(value: unknown): ContentBlock[] {
         colLeftImg: sanitizeTemplateUrl(String(src.colLeftImg || '')),
         colRightImg: sanitizeTemplateUrl(String(src.colRightImg || '')),
         colCenterImg: sanitizeTemplateUrl(String(src.colCenterImg || '')),
+        btn2Label: String(src.btn2Label || ''),
+        btn2Url: sanitizeTemplateUrl(String(src.btn2Url || '')),
       };
     });
   } catch {
@@ -272,6 +278,17 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
       const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
       if (safeUrl) {
         parts.push(`<div style="${wrapStyle}text-align:${align};"><a href="${escHtml(safeUrl)}" style="display:inline-block;padding:12px 28px;background:#c0392b;color:#fff;border-radius:${br}px;text-decoration:none;font-weight:600;">${escHtml(b.label || b.content || 'Leer más')}</a></div>`);
+      }
+    } else if (b.type === 'buttonRow') {
+      const url1 = sanitizeTemplateUrl(String(b.url || ''));
+      const url2 = sanitizeTemplateUrl(String(b.btn2Url || ''));
+      const label1 = escHtml(b.label || 'Botón 1');
+      const label2 = escHtml(b.btn2Label || 'Botón 2');
+      const btnStyle = `display:inline-block;padding:12px 28px;background:#c0392b;color:#fff;border-radius:${br}px;text-decoration:none;font-weight:600;`;
+      const btn1 = url1 ? `<a href="${escHtml(url1)}" style="${btnStyle}">${label1}</a>` : '';
+      const btn2 = url2 ? `<a href="${escHtml(url2)}" style="${btnStyle}">${label2}</a>` : '';
+      if (btn1 || btn2) {
+        parts.push(`<div style="${wrapStyle}text-align:${align};"><table role="presentation" cellpadding="0" cellspacing="0" style="margin:${align === 'center' ? '0 auto' : align === 'right' ? '0 0 0 auto' : '0'};"><tr>${btn1 ? `<td style="padding:0 8px 0 0;">${btn1}</td>` : ''}${btn2 ? `<td style="padding:0 0 0 8px;">${btn2}</td>` : ''}</tr></table></div>`);
       }
     } else if (b.type === 'iconButton') {
       const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
@@ -434,6 +451,7 @@ function PaletteIcon({ type }: { type: BlockType }) {
   if (type === 'text') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="3" y="6" width="18" height="2.2" rx="1.1" fill="currentColor" /><rect x="3" y="10.2" width="18" height="2.2" rx="1.1" fill="currentColor" opacity="0.85" /><rect x="3" y="14.4" width="16" height="2.2" rx="1.1" fill="currentColor" opacity="0.7" /></svg>;
   if (type === 'image') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" /><circle cx="9" cy="9" r="1.7" fill="currentColor" /><path d="M5.5 18l4.8-5 3.3 3.2 2.5-2.4 2.4 4.2z" fill="currentColor" opacity="0.85" /></svg>;
   if (type === 'button') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="4" y="7" width="16" height="10" rx="3" fill="currentColor" /><rect x="8" y="11" width="8" height="2" rx="1" fill="#fff" /></svg>;
+  if (type === 'buttonRow') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="1" y="8" width="10" height="8" rx="2.5" fill="currentColor" /><rect x="3.5" y="11.2" width="5" height="1.6" rx="0.8" fill="#fff" /><rect x="13" y="8" width="10" height="8" rx="2.5" fill="currentColor" /><rect x="15.5" y="11.2" width="5" height="1.6" rx="0.8" fill="#fff" /></svg>;
   if (type === 'iconButton') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="5" y="5" width="14" height="14" rx="3" fill="currentColor" /><circle cx="12" cy="12" r="3" fill="#fff" /></svg>;
   if (type === 'columns2') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" /><rect x="5.2" y="7.2" width="5.8" height="4" rx="0.8" fill="currentColor" opacity="0.5" /><circle cx="7" cy="8.4" r="0.7" fill="#fff" opacity="0.8" /><path d="M5.5 10.5l1.8-1.3 1.5 1 1.5-0.8 0.7 0.6z" fill="#fff" opacity="0.6" /><rect x="5.5" y="12" width="5.2" height="0.8" rx="0.4" fill="currentColor" opacity="0.6" /><rect x="5.5" y="13.5" width="4" height="0.8" rx="0.4" fill="currentColor" opacity="0.4" /><rect x="13" y="7.2" width="5.8" height="4" rx="0.8" fill="currentColor" opacity="0.5" /><circle cx="14.8" cy="8.4" r="0.7" fill="#fff" opacity="0.8" /><path d="M13.3 10.5l1.8-1.3 1.5 1 1.5-0.8 0.7 0.6z" fill="#fff" opacity="0.6" /><rect x="13.3" y="12" width="5.2" height="0.8" rx="0.4" fill="currentColor" opacity="0.6" /><rect x="13.3" y="13.5" width="4" height="0.8" rx="0.4" fill="currentColor" opacity="0.4" /></svg>;
   if (type === 'columns3') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" /><rect x="4.5" y="7" width="3.8" height="3" rx="0.6" fill="currentColor" opacity="0.5" /><circle cx="5.6" cy="7.9" r="0.5" fill="#fff" opacity="0.7" /><rect x="4.8" y="10.5" width="3.2" height="0.6" rx="0.3" fill="currentColor" opacity="0.6" /><rect x="4.8" y="11.6" width="2.5" height="0.6" rx="0.3" fill="currentColor" opacity="0.4" /><rect x="10.1" y="7" width="3.8" height="3" rx="0.6" fill="currentColor" opacity="0.5" /><circle cx="11.2" cy="7.9" r="0.5" fill="#fff" opacity="0.7" /><rect x="10.4" y="10.5" width="3.2" height="0.6" rx="0.3" fill="currentColor" opacity="0.6" /><rect x="10.4" y="11.6" width="2.5" height="0.6" rx="0.3" fill="currentColor" opacity="0.4" /><rect x="15.7" y="7" width="3.8" height="3" rx="0.6" fill="currentColor" opacity="0.5" /><circle cx="16.8" cy="7.9" r="0.5" fill="#fff" opacity="0.7" /><rect x="16" y="10.5" width="3.2" height="0.6" rx="0.3" fill="currentColor" opacity="0.6" /><rect x="16" y="11.6" width="2.5" height="0.6" rx="0.3" fill="currentColor" opacity="0.4" /></svg>;
@@ -559,7 +577,8 @@ function BlockRichEditor({ content, onChange, placeholder }: { content: string; 
 const PALETTE_BLOCKS: { type: BlockType; label: string }[] = [
   { type: 'heading', label: 'Titular' }, { type: 'text', label: 'Texto' },
   { type: 'image', label: 'Imagen' }, { type: 'button', label: 'Botón' },
-  { type: 'iconButton', label: 'Icono btn' }, { type: 'columns2', label: '2 columnas' },
+  { type: 'buttonRow', label: '2 Botones' }, { type: 'iconButton', label: 'Icono btn' },
+  { type: 'columns2', label: '2 columnas' },
   { type: 'columns3', label: '3 columnas' }, { type: 'gallery', label: 'Galería' },
   { type: 'figure', label: 'Figura' }, { type: 'imgText', label: 'Img+Texto' },
   { type: 'socialLinks', label: 'Social' }, { type: 'countdown', label: 'Contador' },
@@ -1515,6 +1534,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                     <div className="rounded border border-dashed border-border bg-muted/20 px-2 py-1.5 text-xs text-muted-foreground">
                       {block.type === 'divider' ? 'Separador horizontal'
                         : block.type === 'button' ? `${block.label || 'Botón'} → ${block.url || 'sin URL'}`
+                        : block.type === 'buttonRow' ? `[${block.label || 'Btn1'}] [${block.btn2Label || 'Btn2'}]`
                         : block.type === 'gallery' ? `Galería: ${(block.imageUrls || []).length} imagen(es)`
                         : block.type === 'countdown' ? `Contador: ${block.countdownDate || 'sin fecha'}`
                         : block.type === 'columns2' ? `2 col${block.colLeftImg || block.colRightImg ? ' 📷' : ''}: ${(block.colLeft || '').slice(0, 20)} | ${(block.colRight || '').slice(0, 20)}`
@@ -1660,6 +1680,40 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                     {selectedBlock.type === 'iconButton' ? 'Etiqueta icono' : 'Texto del botón'}
                     <input value={selectedBlock.label || ''} onChange={(e) => updateSelected({ label: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" />
                   </label>
+                )}
+
+                {/* Button Row (2 buttons side by side) */}
+                {selectedBlock.type === 'buttonRow' && (
+                  <div className="md:col-span-2 space-y-3">
+                    <div className="flex gap-3">
+                      <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
+                        <p className="text-xs font-semibold text-foreground">Botón izquierdo</p>
+                        <label className="block text-xs text-muted-foreground">
+                          Texto
+                          <input value={selectedBlock.label || ''} onChange={(e) => updateSelected({ label: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="Leer más" />
+                        </label>
+                        <label className="block text-xs text-muted-foreground">
+                          URL
+                          <input value={selectedBlock.url || ''} onChange={(e) => updateSelected({ url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
+                        </label>
+                      </div>
+                      <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
+                        <p className="text-xs font-semibold text-foreground">Botón derecho</p>
+                        <label className="block text-xs text-muted-foreground">
+                          Texto
+                          <input value={selectedBlock.btn2Label || ''} onChange={(e) => updateSelected({ btn2Label: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="Conoce más" />
+                        </label>
+                        <label className="block text-xs text-muted-foreground">
+                          URL
+                          <input value={selectedBlock.btn2Url || ''} onChange={(e) => updateSelected({ btn2Url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
+                        </label>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center gap-3 rounded-md border border-dashed border-border bg-white/50 p-2">
+                      <span className="inline-block rounded-md bg-[#c0392b] px-4 py-1.5 text-xs font-semibold text-white">{selectedBlock.label || 'Botón 1'}</span>
+                      <span className="inline-block rounded-md bg-[#c0392b] px-4 py-1.5 text-xs font-semibold text-white">{selectedBlock.btn2Label || 'Botón 2'}</span>
+                    </div>
+                  </div>
                 )}
 
                 {/* Columns 2 */}

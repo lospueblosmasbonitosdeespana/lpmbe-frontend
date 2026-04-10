@@ -53,6 +53,7 @@ type NewsletterBlockType =
   | 'text'
   | 'image'
   | 'button'
+  | 'buttonRow'
   | 'iconButton'
   | 'columns2'
   | 'columns3'
@@ -90,6 +91,8 @@ type NewsletterBlock = {
   colLeftImg?: string;
   colRightImg?: string;
   colCenterImg?: string;
+  btn2Label?: string;
+  btn2Url?: string;
 };
 type NewsletterTemplate = {
   id: number;
@@ -173,13 +176,15 @@ function createBlock(type: NewsletterBlockType, patch: Partial<NewsletterBlock> 
               : type === 'imgText'
                 ? 'Texto al lado de la imagen'
                 : '',
-    label: type === 'button' ? 'Leer más' : type === 'iconButton' ? 'Icono' : '',
+    label: type === 'button' || type === 'buttonRow' ? 'Leer más' : type === 'iconButton' ? 'Icono' : '',
     url:
       type === 'image' || type === 'figure' || type === 'imgText'
         ? ''
-        : type === 'button'
+        : type === 'button' || type === 'buttonRow'
           ? ''
           : '',
+    btn2Label: type === 'buttonRow' ? 'Conoce más' : '',
+    btn2Url: type === 'buttonRow' ? '' : '',
     iconUrl: type === 'iconButton' ? '' : '',
     caption: type === 'figure' ? 'Pie de imagen' : '',
     colLeft: type === 'columns2' || type === 'columns3' ? 'Columna izquierda' : '',
@@ -285,6 +290,9 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
         text: 'text',
         image: 'image',
         button: 'button',
+        buttonrow: 'buttonRow',
+        button_row: 'buttonRow',
+        'button-row': 'buttonRow',
         iconbutton: 'iconButton',
         icon_button: 'iconButton',
         'icon-button': 'iconButton',
@@ -348,6 +356,8 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
         colLeftImg: sanitizeTemplateUrl(String(b.colLeftImg || '')),
         colRightImg: sanitizeTemplateUrl(String(b.colRightImg || '')),
         colCenterImg: sanitizeTemplateUrl(String(b.colCenterImg || '')),
+        btn2Label: String(b.btn2Label || ''),
+        btn2Url: sanitizeTemplateUrl(String(b.btn2Url || '')),
       };
     })
     .filter((b) => b.id);
@@ -398,6 +408,19 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         )}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:#8B5E3C;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:600;">${escapeHtml(
           label,
         )}</a></p></div>`;
+      }
+      if (block.type === 'buttonRow') {
+        const url1 = sanitizeTemplateUrl(String(block.url || ''));
+        const url2 = sanitizeTemplateUrl(String(block.btn2Url || ''));
+        const label1 = escapeHtml(String(block.label || 'Botón 1'));
+        const label2 = escapeHtml(String(block.btn2Label || 'Botón 2'));
+        const btnStyle = `display:inline-block;background:#8B5E3C;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:600;`;
+        const b1 = url1 ? `<a href="${escapeHtml(url1)}" target="_blank" rel="noopener noreferrer" style="${btnStyle}">${label1}</a>` : '';
+        const b2 = url2 ? `<a href="${escapeHtml(url2)}" target="_blank" rel="noopener noreferrer" style="${btnStyle}">${label2}</a>` : '';
+        if (b1 || b2) {
+          return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" style="margin:${align === 'center' ? '0 auto' : align === 'right' ? '0 0 0 auto' : '0'};"><tr>${b1 ? `<td style="padding:0 8px 0 0;">${b1}</td>` : ''}${b2 ? `<td style="padding:0 0 0 8px;">${b2}</td>` : ''}</tr></table></div>`;
+        }
+        return '';
       }
       if (block.type === 'iconButton') {
         const url = sanitizeTemplateUrl(String(block.url || ''));
@@ -688,6 +711,16 @@ function renderPaletteIcon(type: NewsletterBlockType) {
       <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
         <rect x="4" y="7" width="16" height="10" rx="3" fill="currentColor" />
         <rect x="8" y="11" width="8" height="2" rx="1" fill="#fff" />
+      </svg>
+    );
+  }
+  if (type === 'buttonRow') {
+    return (
+      <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary" aria-hidden="true">
+        <rect x="1" y="8" width="10" height="8" rx="2.5" fill="currentColor" />
+        <rect x="3.5" y="11.2" width="5" height="1.6" rx="0.8" fill="#fff" />
+        <rect x="13" y="8" width="10" height="8" rx="2.5" fill="currentColor" />
+        <rect x="15.5" y="11.2" width="5" height="1.6" rx="0.8" fill="#fff" />
       </svg>
     );
   }
@@ -3041,6 +3074,21 @@ export default function NotasPrensaNewsletterClient({
                               type="button"
                               draggable
                               onDragStart={(e) => {
+                                setDraggingPaletteType('buttonRow');
+                                e.dataTransfer.setData('text/newsletter-block-type', 'buttonRow');
+                                e.dataTransfer.effectAllowed = 'copy';
+                              }}
+                              onDragEnd={() => setDraggingPaletteType(null)}
+                              onClick={() => addNewsletterBlock('buttonRow')}
+                              className="flex flex-col items-center justify-center gap-1 rounded-md border bg-background px-2 py-2 text-center text-[11px] font-medium hover:border-primary/60 hover:bg-primary/5"
+                            >
+                              {renderPaletteIcon('buttonRow')}
+                              2 Botones
+                            </button>
+                            <button
+                              type="button"
+                              draggable
+                              onDragStart={(e) => {
                                 setDraggingPaletteType('iconButton');
                                 e.dataTransfer.setData('text/newsletter-block-type', 'iconButton');
                                 e.dataTransfer.effectAllowed = 'copy';
@@ -3400,7 +3448,9 @@ export default function NotasPrensaNewsletterClient({
                                     <div className="rounded border border-dashed border-border bg-muted/20 px-2 py-1.5 text-xs text-muted-foreground">
                                       {block.type === 'button'
                                         ? `${block.label || 'Botón'} -> ${block.url || 'sin URL'}`
-                                        : block.type === 'iconButton'
+                                        : block.type === 'buttonRow'
+                                          ? `[${block.label || 'Btn1'}] [${block.btn2Label || 'Btn2'}]`
+                                          : block.type === 'iconButton'
                                           ? `Icono cuadrado: ${block.label || 'sin etiqueta'} -> ${block.url || 'sin URL'}`
                                           : block.type === 'columns2'
                                             ? `2 col: ${(block.colLeft || '').slice(0, 20)} | ${(block.colRight || '').slice(0, 20)}`
@@ -3894,6 +3944,39 @@ export default function NotasPrensaNewsletterClient({
                                     className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
                                   />
                                 </label>
+                              )}
+
+                              {selectedNewsletterBlock.type === 'buttonRow' && (
+                                <div className="md:col-span-2 space-y-3">
+                                  <div className="flex gap-3">
+                                    <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
+                                      <p className="text-xs font-semibold text-foreground">Botón izquierdo</p>
+                                      <label className="block text-xs text-muted-foreground">
+                                        Texto
+                                        <input value={selectedNewsletterBlock.label || ''} onChange={(e) => updateSelectedNewsletterBlock({ label: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="Leer más" />
+                                      </label>
+                                      <label className="block text-xs text-muted-foreground">
+                                        URL
+                                        <input value={selectedNewsletterBlock.url || ''} onChange={(e) => updateSelectedNewsletterBlock({ url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
+                                      </label>
+                                    </div>
+                                    <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
+                                      <p className="text-xs font-semibold text-foreground">Botón derecho</p>
+                                      <label className="block text-xs text-muted-foreground">
+                                        Texto
+                                        <input value={selectedNewsletterBlock.btn2Label || ''} onChange={(e) => updateSelectedNewsletterBlock({ btn2Label: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="Conoce más" />
+                                      </label>
+                                      <label className="block text-xs text-muted-foreground">
+                                        URL
+                                        <input value={selectedNewsletterBlock.btn2Url || ''} onChange={(e) => updateSelectedNewsletterBlock({ btn2Url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center justify-center gap-3 rounded-md border border-dashed border-border bg-white/50 p-2">
+                                    <span className="inline-block rounded-md bg-[#8B5E3C] px-4 py-1.5 text-xs font-semibold text-white">{selectedNewsletterBlock.label || 'Botón 1'}</span>
+                                    <span className="inline-block rounded-md bg-[#8B5E3C] px-4 py-1.5 text-xs font-semibold text-white">{selectedNewsletterBlock.btn2Label || 'Botón 2'}</span>
+                                  </div>
+                                </div>
                               )}
 
                               <label className="text-xs text-muted-foreground">
