@@ -87,6 +87,9 @@ type NewsletterBlock = {
   paddingY?: number;
   borderRadius?: number;
   imageWidth?: string;
+  colLeftImg?: string;
+  colRightImg?: string;
+  colCenterImg?: string;
 };
 type NewsletterTemplate = {
   id: number;
@@ -342,6 +345,9 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
         textColor: String(b.textColor || '#111111'),
         paddingY: Math.max(0, Math.min(40, paddingY)),
         borderRadius: Math.max(0, Math.min(30, borderRadius)),
+        colLeftImg: sanitizeTemplateUrl(String(b.colLeftImg || '')),
+        colRightImg: sanitizeTemplateUrl(String(b.colRightImg || '')),
+        colCenterImg: sanitizeTemplateUrl(String(b.colCenterImg || '')),
       };
     })
     .filter((b) => b.id);
@@ -407,15 +413,22 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         )}" alt="${escapeHtml(label)}" style="width:30px;height:30px;object-fit:contain;" /></a></p></div>`;
       }
       if (block.type === 'columns2') {
+        const colImgStyle = 'width:100%;height:auto;border-radius:6px;display:block;margin-bottom:8px;';
+        const leftImg = block.colLeftImg ? `<img src="${escapeHtml(block.colLeftImg)}" alt="" style="${colImgStyle}" />` : '';
+        const rightImg = block.colRightImg ? `<img src="${escapeHtml(block.colRightImg)}" alt="" style="${colImgStyle}" />` : '';
         const left = escapeHtml(block.colLeft || '').replace(/\n/g, '<br/>');
         const right = escapeHtml(block.colRight || '').replace(/\n/g, '<br/>');
-        return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="50%" valign="top" style="padding:0 8px 0 0;font-size:15px;line-height:1.6;color:${textColor};">${left}</td><td width="50%" valign="top" style="padding:0 0 0 8px;font-size:15px;line-height:1.6;color:${textColor};">${right}</td></tr></table></div>`;
+        return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="50%" valign="top" style="padding:0 8px 0 0;font-size:15px;line-height:1.6;color:${textColor};">${leftImg}${left}</td><td width="50%" valign="top" style="padding:0 0 0 8px;font-size:15px;line-height:1.6;color:${textColor};">${rightImg}${right}</td></tr></table></div>`;
       }
       if (block.type === 'columns3') {
+        const colImgStyle = 'width:100%;height:auto;border-radius:6px;display:block;margin-bottom:8px;';
+        const leftImg = block.colLeftImg ? `<img src="${escapeHtml(block.colLeftImg)}" alt="" style="${colImgStyle}" />` : '';
+        const centerImg = block.colCenterImg ? `<img src="${escapeHtml(block.colCenterImg)}" alt="" style="${colImgStyle}" />` : '';
+        const rightImg = block.colRightImg ? `<img src="${escapeHtml(block.colRightImg)}" alt="" style="${colImgStyle}" />` : '';
         const left = escapeHtml(block.colLeft || '').replace(/\n/g, '<br/>');
         const center = escapeHtml(block.colCenter || '').replace(/\n/g, '<br/>');
         const right = escapeHtml(block.colRight || '').replace(/\n/g, '<br/>');
-        return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="33%" valign="top" style="padding:0 6px 0 0;font-size:15px;line-height:1.6;color:${textColor};">${left}</td><td width="34%" valign="top" style="padding:0 6px;font-size:15px;line-height:1.6;color:${textColor};">${center}</td><td width="33%" valign="top" style="padding:0 0 0 6px;font-size:15px;line-height:1.6;color:${textColor};">${right}</td></tr></table></div>`;
+        return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="33%" valign="top" style="padding:0 6px 0 0;font-size:15px;line-height:1.6;color:${textColor};">${leftImg}${left}</td><td width="34%" valign="top" style="padding:0 6px;font-size:15px;line-height:1.6;color:${textColor};">${centerImg}${center}</td><td width="33%" valign="top" style="padding:0 0 0 6px;font-size:15px;line-height:1.6;color:${textColor};">${rightImg}${right}</td></tr></table></div>`;
       }
       if (block.type === 'gallery') {
         const urls = (block.imageUrls || []).map((u) => sanitizeTemplateUrl(String(u || ''))).filter(Boolean);
@@ -862,6 +875,8 @@ export default function NotasPrensaNewsletterClient({
   const photosInputRef = useRef<HTMLInputElement | null>(null);
   const newsletterImageInputRef = useRef<HTMLInputElement | null>(null);
   const newsletterIconInputRef = useRef<HTMLInputElement | null>(null);
+  const newsletterColImgInputRef = useRef<HTMLInputElement | null>(null);
+  const [nlColImgUploadField, setNlColImgUploadField] = useState<'colLeftImg' | 'colRightImg' | 'colCenterImg' | null>(null);
   const htmlTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const editor = useEditor({
@@ -1515,7 +1530,7 @@ export default function NotasPrensaNewsletterClient({
   async function uploadNewsletterImageForBlock(
     file: File,
     blockId: string,
-    targetField: 'url' | 'iconUrl' | 'gallery' = 'url',
+    targetField: 'url' | 'iconUrl' | 'gallery' | 'colLeftImg' | 'colRightImg' | 'colCenterImg' = 'url',
   ) {
     if (!file) return;
     setUploadingNewsletterImage(true);
@@ -3507,72 +3522,73 @@ export default function NotasPrensaNewsletterClient({
                                 </div>
                               )}
 
-                              {selectedNewsletterBlock.type === 'columns2' && (
+                              {(selectedNewsletterBlock.type === 'columns2' || selectedNewsletterBlock.type === 'columns3') && (
                                 <>
-                                  <label className="text-xs text-muted-foreground md:col-span-2">
-                                    Columna izquierda
-                                    <textarea
-                                      rows={4}
-                                      value={selectedNewsletterBlock.colLeft || ''}
-                                      onChange={(e) =>
-                                        updateSelectedNewsletterBlock({
-                                          colLeft: e.target.value,
-                                        })
-                                      }
-                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                    />
-                                  </label>
-                                  <label className="text-xs text-muted-foreground md:col-span-2">
-                                    Columna derecha
-                                    <textarea
-                                      rows={4}
-                                      value={selectedNewsletterBlock.colRight || ''}
-                                      onChange={(e) =>
-                                        updateSelectedNewsletterBlock({
-                                          colRight: e.target.value,
-                                        })
-                                      }
-                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                    />
-                                  </label>
-                                </>
-                              )}
-
-                              {selectedNewsletterBlock.type === 'columns3' && (
-                                <>
-                                  <label className="text-xs text-muted-foreground md:col-span-2">
-                                    Columna izquierda
-                                    <textarea
-                                      rows={3}
-                                      value={selectedNewsletterBlock.colLeft || ''}
-                                      onChange={(e) =>
-                                        updateSelectedNewsletterBlock({ colLeft: e.target.value })
-                                      }
-                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                    />
-                                  </label>
-                                  <label className="text-xs text-muted-foreground md:col-span-2">
-                                    Columna central
-                                    <textarea
-                                      rows={3}
-                                      value={selectedNewsletterBlock.colCenter || ''}
-                                      onChange={(e) =>
-                                        updateSelectedNewsletterBlock({ colCenter: e.target.value })
-                                      }
-                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                    />
-                                  </label>
-                                  <label className="text-xs text-muted-foreground md:col-span-2">
-                                    Columna derecha
-                                    <textarea
-                                      rows={3}
-                                      value={selectedNewsletterBlock.colRight || ''}
-                                      onChange={(e) =>
-                                        updateSelectedNewsletterBlock({ colRight: e.target.value })
-                                      }
-                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                    />
-                                  </label>
+                                  {(selectedNewsletterBlock.type === 'columns2'
+                                    ? (['colLeftImg', 'colRightImg'] as const)
+                                    : (['colLeftImg', 'colCenterImg', 'colRightImg'] as const)
+                                  ).map((imgField, idx) => {
+                                    const textField = selectedNewsletterBlock.type === 'columns3'
+                                      ? (idx === 0 ? 'colLeft' : idx === 1 ? 'colCenter' : 'colRight')
+                                      : (idx === 0 ? 'colLeft' : 'colRight');
+                                    const labels = selectedNewsletterBlock.type === 'columns3'
+                                      ? ['Columna izquierda', 'Columna central', 'Columna derecha']
+                                      : ['Columna izquierda', 'Columna derecha'];
+                                    const label = labels[idx];
+                                    const imgUrl = selectedNewsletterBlock[imgField] || '';
+                                    return (
+                                      <div key={imgField} className="md:col-span-2 space-y-2 rounded-lg border border-border/60 bg-muted/5 p-3">
+                                        <p className="text-xs font-semibold text-foreground">{label}</p>
+                                        <div className="rounded-md border border-dashed border-border bg-white p-2">
+                                          <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Imagen (opcional)</p>
+                                          {imgUrl ? (
+                                            <div className="relative mb-2">
+                                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                                              <img src={imgUrl} alt="" className="h-28 w-full rounded-md object-cover" />
+                                              <button type="button" onClick={() => updateSelectedNewsletterBlock({ [imgField]: '' })} className="absolute right-1 top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow hover:bg-red-700">✕</button>
+                                            </div>
+                                          ) : (
+                                            <div className="mb-2 space-y-1.5">
+                                              <button
+                                                type="button"
+                                                disabled={uploadingNewsletterImage}
+                                                onClick={() => { setNlColImgUploadField(imgField); setTimeout(() => newsletterColImgInputRef.current?.click(), 50); }}
+                                                className="flex w-full items-center justify-center gap-1.5 rounded-md border border-primary/40 bg-primary/5 px-3 py-2.5 text-xs font-medium text-primary hover:bg-primary/10 disabled:opacity-50 transition-colors"
+                                              >
+                                                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 16V8m0 0l-3 3m3-3l3 3" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+                                                {uploadingNewsletterImage && nlColImgUploadField === imgField ? 'Subiendo...' : 'Subir foto'}
+                                              </button>
+                                              <input
+                                                type="text"
+                                                placeholder="o pega URL de imagen..."
+                                                className="w-full rounded-md border border-border px-2 py-1 text-xs text-muted-foreground placeholder:text-muted-foreground/50"
+                                                onBlur={(e) => { const v = e.target.value.trim(); if (v) { updateSelectedNewsletterBlock({ [imgField]: v }); e.target.value = ''; } }}
+                                                onKeyDown={(e) => { if (e.key === 'Enter') { const v = (e.target as HTMLInputElement).value.trim(); if (v) { updateSelectedNewsletterBlock({ [imgField]: v }); (e.target as HTMLInputElement).value = ''; } } }}
+                                              />
+                                            </div>
+                                          )}
+                                        </div>
+                                        <div>
+                                          <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Texto</p>
+                                          <textarea
+                                            rows={selectedNewsletterBlock.type === 'columns3' ? 3 : 4}
+                                            value={selectedNewsletterBlock[textField] || ''}
+                                            onChange={(e) => updateSelectedNewsletterBlock({ [textField]: e.target.value })}
+                                            className="w-full rounded-md border border-border px-2 py-1 text-sm"
+                                            placeholder={`${label}...`}
+                                          />
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                  <input ref={newsletterColImgInputRef} type="file" accept="image/*" disabled={uploadingNewsletterImage} className="sr-only"
+                                    onChange={async (e) => {
+                                      const f = e.target.files?.[0];
+                                      if (!f || !nlColImgUploadField || !selectedNewsletterBlockId) return;
+                                      await uploadNewsletterImageForBlock(f, selectedNewsletterBlockId, nlColImgUploadField);
+                                      setNlColImgUploadField(null);
+                                      e.currentTarget.value = '';
+                                    }} />
                                 </>
                               )}
 
