@@ -58,6 +58,9 @@ export interface ContentBlock {
   imgPaddingH?: number;
   imgPosition?: 'left' | 'right';
   imgTextRatio?: '30-70' | '40-60' | '50-50' | '60-40' | '70-30';
+  colLeftImg?: string;
+  colRightImg?: string;
+  colCenterImg?: string;
 }
 
 interface BuilderTemplate {
@@ -218,6 +221,9 @@ function normalizeBlocks(value: unknown): ContentBlock[] {
         borderRadius: Number(src.borderRadius ?? 8),
         imgPosition,
         imgTextRatio,
+        colLeftImg: sanitizeTemplateUrl(String(src.colLeftImg || '')),
+        colRightImg: sanitizeTemplateUrl(String(src.colRightImg || '')),
+        colCenterImg: sanitizeTemplateUrl(String(src.colCenterImg || '')),
       };
     });
   } catch {
@@ -279,9 +285,16 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
     } else if (b.type === 'divider') {
       parts.push(`<div style="padding:8px 0;"><hr style="border:none;border-top:1px solid #e5e7eb;" /></div>`);
     } else if (b.type === 'columns2') {
-      parts.push(`<div style="${wrapStyle}"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="50%" style="padding:8px;vertical-align:top;">${b.colLeft || ''}</td><td width="50%" style="padding:8px;vertical-align:top;">${b.colRight || ''}</td></tr></table></div>`);
+      const colImgStyle = 'width:100%;height:auto;border-radius:6px;display:block;margin-bottom:8px;';
+      const leftImg = b.colLeftImg ? `<img src="${escHtml(b.colLeftImg)}" alt="" style="${colImgStyle}" />` : '';
+      const rightImg = b.colRightImg ? `<img src="${escHtml(b.colRightImg)}" alt="" style="${colImgStyle}" />` : '';
+      parts.push(`<div style="${wrapStyle}"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="50%" style="padding:8px;vertical-align:top;">${leftImg}${b.colLeft || ''}</td><td width="50%" style="padding:8px;vertical-align:top;">${rightImg}${b.colRight || ''}</td></tr></table></div>`);
     } else if (b.type === 'columns3') {
-      parts.push(`<div style="${wrapStyle}"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="33%" style="padding:8px;vertical-align:top;">${b.colLeft || ''}</td><td width="33%" style="padding:8px;vertical-align:top;">${b.colCenter || ''}</td><td width="34%" style="padding:8px;vertical-align:top;">${b.colRight || ''}</td></tr></table></div>`);
+      const colImgStyle = 'width:100%;height:auto;border-radius:6px;display:block;margin-bottom:8px;';
+      const leftImg = b.colLeftImg ? `<img src="${escHtml(b.colLeftImg)}" alt="" style="${colImgStyle}" />` : '';
+      const centerImg = b.colCenterImg ? `<img src="${escHtml(b.colCenterImg)}" alt="" style="${colImgStyle}" />` : '';
+      const rightImg = b.colRightImg ? `<img src="${escHtml(b.colRightImg)}" alt="" style="${colImgStyle}" />` : '';
+      parts.push(`<div style="${wrapStyle}"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="33%" style="padding:8px;vertical-align:top;">${leftImg}${b.colLeft || ''}</td><td width="33%" style="padding:8px;vertical-align:top;">${centerImg}${b.colCenter || ''}</td><td width="34%" style="padding:8px;vertical-align:top;">${rightImg}${b.colRight || ''}</td></tr></table></div>`);
     } else if (b.type === 'gallery') {
       const imgs = (b.imageUrls || []).map((u) => sanitizeTemplateUrl(String(u || ''))).filter(Boolean);
       if (imgs.length) {
@@ -606,6 +619,8 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
   const iconInputRef = useRef<HTMLInputElement | null>(null);
   const logoInputRef = useRef<HTMLInputElement | null>(null);
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
+  const colImgInputRef = useRef<HTMLInputElement | null>(null);
+  const [colImgUploadField, setColImgUploadField] = useState<'colLeftImg' | 'colRightImg' | 'colCenterImg' | null>(null);
 
   const storageKey = draftKey || 'lpmbe-content-builder-draft';
   const draftsListKey = `${storageKey}:saved-list`;
@@ -851,7 +866,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
 
   // ─── Upload ──────────────────────────────────────────────────────────────────
 
-  async function uploadImageForBlock(file: File, blockId: string, field: 'url' | 'iconUrl' | 'gallery' = 'url'): Promise<string | undefined> {
+  async function uploadImageForBlock(file: File, blockId: string, field: 'url' | 'iconUrl' | 'gallery' | 'colLeftImg' | 'colRightImg' | 'colCenterImg' = 'url'): Promise<string | undefined> {
     setUploading(true);
     setErr(null);
     try {
@@ -1650,32 +1665,72 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                 {/* Columns 2 */}
                 {selectedBlock.type === 'columns2' && (
                   <>
-                    <div className="md:col-span-2">
-                      <p className="mb-1 text-xs text-muted-foreground">Columna izquierda</p>
-                      <BlockRichEditor content={selectedBlock.colLeft || ''} onChange={(html) => updateSelected({ colLeft: html })} placeholder="Columna izquierda..." />
-                    </div>
-                    <div className="md:col-span-2">
-                      <p className="mb-1 text-xs text-muted-foreground">Columna derecha</p>
-                      <BlockRichEditor content={selectedBlock.colRight || ''} onChange={(html) => updateSelected({ colRight: html })} placeholder="Columna derecha..." />
-                    </div>
+                    {(['colLeftImg', 'colRightImg'] as const).map((imgField, idx) => {
+                      const textField = idx === 0 ? 'colLeft' : 'colRight';
+                      const label = idx === 0 ? 'Columna izquierda' : 'Columna derecha';
+                      const imgUrl = selectedBlock[imgField] || '';
+                      return (
+                        <div key={imgField} className="md:col-span-2 space-y-2">
+                          <p className="mb-1 text-xs font-semibold text-muted-foreground">{label}</p>
+                          <div className="rounded-md border border-dashed border-border bg-muted/10 p-2">
+                            {imgUrl ? (
+                              <div className="relative mb-2">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={imgUrl} alt="" className="h-24 w-full rounded object-cover" />
+                                <button type="button" onClick={() => updateSelected({ [imgField]: '' })} className="absolute right-1 top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow">✕</button>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled={uploading}
+                                onClick={() => { setColImgUploadField(imgField); setTimeout(() => colImgInputRef.current?.click(), 50); }}
+                                className="flex w-full items-center justify-center gap-1.5 rounded border border-dashed border-primary/30 bg-primary/5 px-3 py-2 text-xs text-primary hover:bg-primary/10 disabled:opacity-50 mb-2"
+                              >
+                                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 16V8m0 0l-3 3m3-3l3 3" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+                                {uploading ? 'Subiendo...' : 'Añadir imagen'}
+                              </button>
+                            )}
+                          </div>
+                          <BlockRichEditor content={selectedBlock[textField] || ''} onChange={(html) => updateSelected({ [textField]: html })} placeholder={`${label}...`} />
+                        </div>
+                      );
+                    })}
                   </>
                 )}
 
                 {/* Columns 3 */}
                 {selectedBlock.type === 'columns3' && (
                   <>
-                    <div className="md:col-span-2">
-                      <p className="mb-1 text-xs text-muted-foreground">Columna izquierda</p>
-                      <BlockRichEditor content={selectedBlock.colLeft || ''} onChange={(html) => updateSelected({ colLeft: html })} placeholder="Columna izquierda..." />
-                    </div>
-                    <div className="md:col-span-2">
-                      <p className="mb-1 text-xs text-muted-foreground">Columna central</p>
-                      <BlockRichEditor content={selectedBlock.colCenter || ''} onChange={(html) => updateSelected({ colCenter: html })} placeholder="Columna central..." />
-                    </div>
-                    <div className="md:col-span-2">
-                      <p className="mb-1 text-xs text-muted-foreground">Columna derecha</p>
-                      <BlockRichEditor content={selectedBlock.colRight || ''} onChange={(html) => updateSelected({ colRight: html })} placeholder="Columna derecha..." />
-                    </div>
+                    {(['colLeftImg', 'colCenterImg', 'colRightImg'] as const).map((imgField, idx) => {
+                      const textField = idx === 0 ? 'colLeft' : idx === 1 ? 'colCenter' : 'colRight';
+                      const label = idx === 0 ? 'Columna izquierda' : idx === 1 ? 'Columna central' : 'Columna derecha';
+                      const imgUrl = selectedBlock[imgField] || '';
+                      return (
+                        <div key={imgField} className="md:col-span-2 space-y-2">
+                          <p className="mb-1 text-xs font-semibold text-muted-foreground">{label}</p>
+                          <div className="rounded-md border border-dashed border-border bg-muted/10 p-2">
+                            {imgUrl ? (
+                              <div className="relative mb-2">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={imgUrl} alt="" className="h-24 w-full rounded object-cover" />
+                                <button type="button" onClick={() => updateSelected({ [imgField]: '' })} className="absolute right-1 top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow">✕</button>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled={uploading}
+                                onClick={() => { setColImgUploadField(imgField); setTimeout(() => colImgInputRef.current?.click(), 50); }}
+                                className="flex w-full items-center justify-center gap-1.5 rounded border border-dashed border-primary/30 bg-primary/5 px-3 py-2 text-xs text-primary hover:bg-primary/10 disabled:opacity-50 mb-2"
+                              >
+                                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 16V8m0 0l-3 3m3-3l3 3" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+                                {uploading ? 'Subiendo...' : 'Añadir imagen'}
+                              </button>
+                            )}
+                          </div>
+                          <BlockRichEditor content={selectedBlock[textField] || ''} onChange={(html) => updateSelected({ [textField]: html })} placeholder={`${label}...`} />
+                        </div>
+                      );
+                    })}
                   </>
                 )}
 
@@ -1762,6 +1817,16 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                       }} />
                   </div>
                 )}
+
+                {/* Hidden input for column image upload */}
+                <input ref={colImgInputRef} type="file" accept="image/*" disabled={uploading} className="sr-only"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f || !colImgUploadField || !selectedId) return;
+                    await uploadImageForBlock(f, selectedId, colImgUploadField);
+                    setColImgUploadField(null);
+                    e.currentTarget.value = '';
+                  }} />
 
                 {/* Social links */}
                 {selectedBlock.type === 'socialLinks' && (
