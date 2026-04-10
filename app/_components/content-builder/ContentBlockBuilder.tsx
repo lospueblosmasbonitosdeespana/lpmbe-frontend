@@ -435,8 +435,8 @@ function PaletteIcon({ type }: { type: BlockType }) {
   if (type === 'image') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" /><circle cx="9" cy="9" r="1.7" fill="currentColor" /><path d="M5.5 18l4.8-5 3.3 3.2 2.5-2.4 2.4 4.2z" fill="currentColor" opacity="0.85" /></svg>;
   if (type === 'button') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="4" y="7" width="16" height="10" rx="3" fill="currentColor" /><rect x="8" y="11" width="8" height="2" rx="1" fill="#fff" /></svg>;
   if (type === 'iconButton') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="5" y="5" width="14" height="14" rx="3" fill="currentColor" /><circle cx="12" cy="12" r="3" fill="#fff" /></svg>;
-  if (type === 'columns2') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" /><rect x="5.2" y="7.2" width="5.8" height="9.6" rx="1.2" fill="currentColor" opacity="0.9" /><rect x="13" y="7.2" width="5.8" height="9.6" rx="1.2" fill="currentColor" opacity="0.65" /></svg>;
-  if (type === 'columns3') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" /><rect x="4.8" y="7.2" width="3.8" height="9.6" rx="1" fill="currentColor" opacity="0.9" /><rect x="10.1" y="7.2" width="3.8" height="9.6" rx="1" fill="currentColor" opacity="0.75" /><rect x="15.4" y="7.2" width="3.8" height="9.6" rx="1" fill="currentColor" opacity="0.6" /></svg>;
+  if (type === 'columns2') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" /><rect x="5.2" y="7.2" width="5.8" height="4" rx="0.8" fill="currentColor" opacity="0.5" /><circle cx="7" cy="8.4" r="0.7" fill="#fff" opacity="0.8" /><path d="M5.5 10.5l1.8-1.3 1.5 1 1.5-0.8 0.7 0.6z" fill="#fff" opacity="0.6" /><rect x="5.5" y="12" width="5.2" height="0.8" rx="0.4" fill="currentColor" opacity="0.6" /><rect x="5.5" y="13.5" width="4" height="0.8" rx="0.4" fill="currentColor" opacity="0.4" /><rect x="13" y="7.2" width="5.8" height="4" rx="0.8" fill="currentColor" opacity="0.5" /><circle cx="14.8" cy="8.4" r="0.7" fill="#fff" opacity="0.8" /><path d="M13.3 10.5l1.8-1.3 1.5 1 1.5-0.8 0.7 0.6z" fill="#fff" opacity="0.6" /><rect x="13.3" y="12" width="5.2" height="0.8" rx="0.4" fill="currentColor" opacity="0.6" /><rect x="13.3" y="13.5" width="4" height="0.8" rx="0.4" fill="currentColor" opacity="0.4" /></svg>;
+  if (type === 'columns3') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" /><rect x="4.5" y="7" width="3.8" height="3" rx="0.6" fill="currentColor" opacity="0.5" /><circle cx="5.6" cy="7.9" r="0.5" fill="#fff" opacity="0.7" /><rect x="4.8" y="10.5" width="3.2" height="0.6" rx="0.3" fill="currentColor" opacity="0.6" /><rect x="4.8" y="11.6" width="2.5" height="0.6" rx="0.3" fill="currentColor" opacity="0.4" /><rect x="10.1" y="7" width="3.8" height="3" rx="0.6" fill="currentColor" opacity="0.5" /><circle cx="11.2" cy="7.9" r="0.5" fill="#fff" opacity="0.7" /><rect x="10.4" y="10.5" width="3.2" height="0.6" rx="0.3" fill="currentColor" opacity="0.6" /><rect x="10.4" y="11.6" width="2.5" height="0.6" rx="0.3" fill="currentColor" opacity="0.4" /><rect x="15.7" y="7" width="3.8" height="3" rx="0.6" fill="currentColor" opacity="0.5" /><circle cx="16.8" cy="7.9" r="0.5" fill="#fff" opacity="0.7" /><rect x="16" y="10.5" width="3.2" height="0.6" rx="0.3" fill="currentColor" opacity="0.6" /><rect x="16" y="11.6" width="2.5" height="0.6" rx="0.3" fill="currentColor" opacity="0.4" /></svg>;
   if (type === 'gallery') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="2" y="5" width="8.5" height="6.5" rx="1.5" fill="currentColor" opacity="0.9" /><rect x="13.5" y="5" width="8.5" height="6.5" rx="1.5" fill="currentColor" opacity="0.7" /><rect x="2" y="13.5" width="8.5" height="6.5" rx="1.5" fill="currentColor" opacity="0.6" /><rect x="13.5" y="13.5" width="8.5" height="6.5" rx="1.5" fill="currentColor" opacity="0.45" /></svg>;
   if (type === 'figure') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="3" y="3" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" /><circle cx="9" cy="8" r="1.5" fill="currentColor" /><path d="M5.5 15l4.2-4.3 3 2.8 2.3-2.1 2.5 3.6z" fill="currentColor" opacity="0.8" /><rect x="5" y="19" width="14" height="2" rx="1" fill="currentColor" opacity="0.5" /></svg>;
   if (type === 'imgText') return <svg viewBox="0 0 24 24" className="h-8 w-8 text-primary"><rect x="2" y="5" width="9" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none" /><circle cx="6.5" cy="10" r="1.2" fill="currentColor" /><path d="M3.5 16l2.5-3 2 1.8 1.5-1.3 1.5 2.5z" fill="currentColor" opacity="0.7" /><rect x="13.5" y="6" width="8.5" height="2" rx="1" fill="currentColor" opacity="0.9" /><rect x="13.5" y="10" width="8.5" height="1.6" rx="0.8" fill="currentColor" opacity="0.7" /><rect x="13.5" y="13.2" width="7" height="1.6" rx="0.8" fill="currentColor" opacity="0.55" /></svg>;
@@ -559,8 +559,8 @@ function BlockRichEditor({ content, onChange, placeholder }: { content: string; 
 const PALETTE_BLOCKS: { type: BlockType; label: string }[] = [
   { type: 'heading', label: 'Titular' }, { type: 'text', label: 'Texto' },
   { type: 'image', label: 'Imagen' }, { type: 'button', label: 'Botón' },
-  { type: 'iconButton', label: 'Icono btn' }, { type: 'columns2', label: '2 Col' },
-  { type: 'columns3', label: '3 Col' }, { type: 'gallery', label: 'Galería' },
+  { type: 'iconButton', label: 'Icono btn' }, { type: 'columns2', label: '2 columnas' },
+  { type: 'columns3', label: '3 columnas' }, { type: 'gallery', label: 'Galería' },
   { type: 'figure', label: 'Figura' }, { type: 'imgText', label: 'Img+Texto' },
   { type: 'socialLinks', label: 'Social' }, { type: 'countdown', label: 'Contador' },
   { type: 'divider', label: 'Divisor' },
@@ -1517,8 +1517,8 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                         : block.type === 'button' ? `${block.label || 'Botón'} → ${block.url || 'sin URL'}`
                         : block.type === 'gallery' ? `Galería: ${(block.imageUrls || []).length} imagen(es)`
                         : block.type === 'countdown' ? `Contador: ${block.countdownDate || 'sin fecha'}`
-                        : block.type === 'columns2' ? `2 col: ${(block.colLeft || '').slice(0, 20)} | ${(block.colRight || '').slice(0, 20)}`
-                        : block.type === 'columns3' ? `3 col: ${(block.colLeft || '').slice(0, 15)} | ${(block.colCenter || '').slice(0, 15)} | ${(block.colRight || '').slice(0, 15)}`
+                        : block.type === 'columns2' ? `2 col${block.colLeftImg || block.colRightImg ? ' 📷' : ''}: ${(block.colLeft || '').slice(0, 20)} | ${(block.colRight || '').slice(0, 20)}`
+                        : block.type === 'columns3' ? `3 col${block.colLeftImg || block.colCenterImg || block.colRightImg ? ' 📷' : ''}: ${(block.colLeft || '').slice(0, 15)} | ${(block.colCenter || '').slice(0, 15)} | ${(block.colRight || '').slice(0, 15)}`
                         : block.type === 'socialLinks' ? `Social: ${[block.socialFacebook && 'FB', block.socialTwitter && 'X', block.socialInstagram && 'IG'].filter(Boolean).join(', ') || 'sin redes'}`
                         : (block.content || block.url || 'Bloque sin contenido').slice(0, 60)}
                     </div>
@@ -1663,71 +1663,64 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                 )}
 
                 {/* Columns 2 */}
-                {selectedBlock.type === 'columns2' && (
+                {(selectedBlock.type === 'columns2' || selectedBlock.type === 'columns3') && (
                   <>
-                    {(['colLeftImg', 'colRightImg'] as const).map((imgField, idx) => {
-                      const textField = idx === 0 ? 'colLeft' : 'colRight';
-                      const label = idx === 0 ? 'Columna izquierda' : 'Columna derecha';
+                    {(selectedBlock.type === 'columns2'
+                      ? (['colLeftImg', 'colRightImg'] as const)
+                      : (['colLeftImg', 'colCenterImg', 'colRightImg'] as const)
+                    ).map((imgField, idx) => {
+                      const textField = selectedBlock.type === 'columns3'
+                        ? (idx === 0 ? 'colLeft' : idx === 1 ? 'colCenter' : 'colRight')
+                        : (idx === 0 ? 'colLeft' : 'colRight');
+                      const labels = selectedBlock.type === 'columns3'
+                        ? ['Columna izquierda', 'Columna central', 'Columna derecha']
+                        : ['Columna izquierda', 'Columna derecha'];
+                      const label = labels[idx];
                       const imgUrl = selectedBlock[imgField] || '';
                       return (
-                        <div key={imgField} className="md:col-span-2 space-y-2">
-                          <p className="mb-1 text-xs font-semibold text-muted-foreground">{label}</p>
-                          <div className="rounded-md border border-dashed border-border bg-muted/10 p-2">
+                        <div key={imgField} className="md:col-span-2 space-y-2 rounded-lg border border-border/60 bg-muted/5 p-3">
+                          <p className="text-xs font-semibold text-foreground">{label}</p>
+                          <div className="rounded-md border border-dashed border-border bg-white p-2">
+                            <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Imagen (opcional)</p>
                             {imgUrl ? (
                               <div className="relative mb-2">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={imgUrl} alt="" className="h-24 w-full rounded object-cover" />
-                                <button type="button" onClick={() => updateSelected({ [imgField]: '' })} className="absolute right-1 top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow">✕</button>
+                                <img src={imgUrl} alt="" className="h-28 w-full rounded-md object-cover" />
+                                <button type="button" onClick={() => updateSelected({ [imgField]: '' })} className="absolute right-1 top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow hover:bg-red-700">✕</button>
                               </div>
                             ) : (
-                              <button
-                                type="button"
-                                disabled={uploading}
-                                onClick={() => { setColImgUploadField(imgField); setTimeout(() => colImgInputRef.current?.click(), 50); }}
-                                className="flex w-full items-center justify-center gap-1.5 rounded border border-dashed border-primary/30 bg-primary/5 px-3 py-2 text-xs text-primary hover:bg-primary/10 disabled:opacity-50 mb-2"
-                              >
-                                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 16V8m0 0l-3 3m3-3l3 3" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
-                                {uploading ? 'Subiendo...' : 'Añadir imagen'}
-                              </button>
-                            )}
-                          </div>
-                          <BlockRichEditor content={selectedBlock[textField] || ''} onChange={(html) => updateSelected({ [textField]: html })} placeholder={`${label}...`} />
-                        </div>
-                      );
-                    })}
-                  </>
-                )}
-
-                {/* Columns 3 */}
-                {selectedBlock.type === 'columns3' && (
-                  <>
-                    {(['colLeftImg', 'colCenterImg', 'colRightImg'] as const).map((imgField, idx) => {
-                      const textField = idx === 0 ? 'colLeft' : idx === 1 ? 'colCenter' : 'colRight';
-                      const label = idx === 0 ? 'Columna izquierda' : idx === 1 ? 'Columna central' : 'Columna derecha';
-                      const imgUrl = selectedBlock[imgField] || '';
-                      return (
-                        <div key={imgField} className="md:col-span-2 space-y-2">
-                          <p className="mb-1 text-xs font-semibold text-muted-foreground">{label}</p>
-                          <div className="rounded-md border border-dashed border-border bg-muted/10 p-2">
-                            {imgUrl ? (
-                              <div className="relative mb-2">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={imgUrl} alt="" className="h-24 w-full rounded object-cover" />
-                                <button type="button" onClick={() => updateSelected({ [imgField]: '' })} className="absolute right-1 top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow">✕</button>
+                              <div className="mb-2 space-y-1.5">
+                                <button
+                                  type="button"
+                                  disabled={uploading}
+                                  onClick={() => { setColImgUploadField(imgField); setTimeout(() => colImgInputRef.current?.click(), 50); }}
+                                  className="flex w-full items-center justify-center gap-1.5 rounded-md border border-primary/40 bg-primary/5 px-3 py-2.5 text-xs font-medium text-primary hover:bg-primary/10 disabled:opacity-50 transition-colors"
+                                >
+                                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 16V8m0 0l-3 3m3-3l3 3" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+                                  {uploading && colImgUploadField === imgField ? 'Subiendo...' : 'Subir foto'}
+                                </button>
+                                <input
+                                  type="text"
+                                  placeholder="o pega URL de imagen..."
+                                  className="w-full rounded-md border border-border px-2 py-1 text-xs text-muted-foreground placeholder:text-muted-foreground/50"
+                                  onBlur={(e) => {
+                                    const v = e.target.value.trim();
+                                    if (v) { updateSelected({ [imgField]: v }); e.target.value = ''; }
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      const v = (e.target as HTMLInputElement).value.trim();
+                                      if (v) { updateSelected({ [imgField]: v }); (e.target as HTMLInputElement).value = ''; }
+                                    }
+                                  }}
+                                />
                               </div>
-                            ) : (
-                              <button
-                                type="button"
-                                disabled={uploading}
-                                onClick={() => { setColImgUploadField(imgField); setTimeout(() => colImgInputRef.current?.click(), 50); }}
-                                className="flex w-full items-center justify-center gap-1.5 rounded border border-dashed border-primary/30 bg-primary/5 px-3 py-2 text-xs text-primary hover:bg-primary/10 disabled:opacity-50 mb-2"
-                              >
-                                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 16V8m0 0l-3 3m3-3l3 3" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
-                                {uploading ? 'Subiendo...' : 'Añadir imagen'}
-                              </button>
                             )}
                           </div>
-                          <BlockRichEditor content={selectedBlock[textField] || ''} onChange={(html) => updateSelected({ [textField]: html })} placeholder={`${label}...`} />
+                          <div>
+                            <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Texto</p>
+                            <BlockRichEditor content={selectedBlock[textField] || ''} onChange={(html) => updateSelected({ [textField]: html })} placeholder={`${label}...`} />
+                          </div>
                         </div>
                       );
                     })}
