@@ -115,6 +115,8 @@ interface ContentBlockBuilderProps {
   clearDraftOnMount?: boolean;
   /** Permite limpiar todo el formulario padre (no solo bloques). */
   onClearAll?: () => void;
+  /** Base SEO para nombrar archivos subidos (ej: titulo-de-pagina). */
+  uploadFileNameBase?: string;
 }
 
 interface SavedBuilderDraft {
@@ -303,14 +305,14 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
       parts.push(`<div style="padding:8px 0;"><hr style="border:none;border-top:1px solid #e5e7eb;" /></div>`);
     } else if (b.type === 'columns2') {
       const colImgStyle = 'width:100%;height:auto;border-radius:6px;display:block;margin-bottom:8px;';
-      const leftImg = b.colLeftImg ? `<img src="${escHtml(b.colLeftImg)}" alt="" style="${colImgStyle}" />` : '';
-      const rightImg = b.colRightImg ? `<img src="${escHtml(b.colRightImg)}" alt="" style="${colImgStyle}" />` : '';
+      const leftImg = b.colLeftImg ? `<img src="${escHtml(b.colLeftImg)}" alt="Imagen columna izquierda" style="${colImgStyle}" />` : '';
+      const rightImg = b.colRightImg ? `<img src="${escHtml(b.colRightImg)}" alt="Imagen columna derecha" style="${colImgStyle}" />` : '';
       parts.push(`<div style="${wrapStyle}"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="50%" style="padding:8px;vertical-align:top;">${leftImg}${b.colLeft || ''}</td><td width="50%" style="padding:8px;vertical-align:top;">${rightImg}${b.colRight || ''}</td></tr></table></div>`);
     } else if (b.type === 'columns3') {
       const colImgStyle = 'width:100%;height:auto;border-radius:6px;display:block;margin-bottom:8px;';
-      const leftImg = b.colLeftImg ? `<img src="${escHtml(b.colLeftImg)}" alt="" style="${colImgStyle}" />` : '';
-      const centerImg = b.colCenterImg ? `<img src="${escHtml(b.colCenterImg)}" alt="" style="${colImgStyle}" />` : '';
-      const rightImg = b.colRightImg ? `<img src="${escHtml(b.colRightImg)}" alt="" style="${colImgStyle}" />` : '';
+      const leftImg = b.colLeftImg ? `<img src="${escHtml(b.colLeftImg)}" alt="Imagen columna izquierda" style="${colImgStyle}" />` : '';
+      const centerImg = b.colCenterImg ? `<img src="${escHtml(b.colCenterImg)}" alt="Imagen columna central" style="${colImgStyle}" />` : '';
+      const rightImg = b.colRightImg ? `<img src="${escHtml(b.colRightImg)}" alt="Imagen columna derecha" style="${colImgStyle}" />` : '';
       parts.push(`<div style="${wrapStyle}"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="33%" style="padding:8px;vertical-align:top;">${leftImg}${b.colLeft || ''}</td><td width="33%" style="padding:8px;vertical-align:top;">${centerImg}${b.colCenter || ''}</td><td width="34%" style="padding:8px;vertical-align:top;">${rightImg}${b.colRight || ''}</td></tr></table></div>`);
     } else if (b.type === 'gallery') {
       const imgs = (b.imageUrls || []).map((u) => sanitizeTemplateUrl(String(u || ''))).filter(Boolean);
@@ -319,7 +321,7 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
         const rows: string[] = [];
         for (let i = 0; i < imgs.length; i += 2) {
           const pair = imgs.slice(i, i + 2);
-          const cells = pair.map((u) => `<td width="50%" style="padding:4px;"><img src="${escHtml(u)}" style="width:100%;height:160px;object-fit:cover;display:block;border-radius:6px;" /></td>`).join('');
+          const cells = pair.map((u) => `<td width="50%" style="padding:4px;"><img src="${escHtml(u)}" alt="Imagen de galería" style="width:100%;height:160px;object-fit:cover;display:block;border-radius:6px;" /></td>`).join('');
           // Si la fila tiene solo 1 imagen, añadir celda vacía para mantener el layout
           const rowCells = pair.length === 1 ? cells + '<td width="50%" style="padding:4px;"></td>' : cells;
           rows.push(`<tr>${rowCells}</tr>`);
@@ -332,7 +334,8 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
     } else if (b.type === 'figure') {
       const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
       if (safeUrl) {
-        parts.push(`<figure style="${wrapStyle}text-align:${align};margin:0;"><img src="${escHtml(safeUrl)}" alt="${escHtml(b.caption || '')}" style="max-width:100%;height:auto;" /><figcaption style="margin-top:6px;font-size:13px;color:#666;">${escHtml(b.caption || '')}</figcaption></figure>`);
+        const altText = b.caption || b.content || 'Imagen destacada';
+        parts.push(`<figure style="${wrapStyle}text-align:${align};margin:0;"><img src="${escHtml(safeUrl)}" alt="${escHtml(altText)}" style="max-width:100%;height:auto;" /><figcaption style="margin-top:6px;font-size:13px;color:#666;">${escHtml(b.caption || '')}</figcaption></figure>`);
       }
     } else if (b.type === 'imgText') {
       const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
@@ -340,7 +343,7 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
         const ratio = b.imgTextRatio || '40-60';
         const [imgPct, txtPct] = ratio.split('-');
         const pos = b.imgPosition || 'left';
-        const imgTd = `<td width="${imgPct}%" style="padding:8px;vertical-align:top;"><img src="${escHtml(safeUrl)}" style="width:100%;height:auto;display:block;" /></td>`;
+        const imgTd = `<td width="${imgPct}%" style="padding:8px;vertical-align:top;"><img src="${escHtml(safeUrl)}" alt="Imagen del bloque" style="width:100%;height:auto;display:block;" /></td>`;
         const txtTd = `<td width="${txtPct}%" style="padding:8px;vertical-align:top;">${b.content || ''}</td>`;
         const cells = pos === 'right' ? `${txtTd}${imgTd}` : `${imgTd}${txtTd}`;
         parts.push(`<div style="${wrapStyle}"><table width="100%" cellpadding="0" cellspacing="0"><tr>${cells}</tr></table></div>`);
@@ -587,7 +590,20 @@ const PALETTE_BLOCKS: { type: BlockType; label: string }[] = [
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChange, onBlocksChange, draftKey, showBrandLogos = true, puebloId, puebloNombre, webMode = false, clearDraftOnMount = false, onClearAll }: ContentBlockBuilderProps) {
+export default function ContentBlockBuilder({
+  initialHtml,
+  initialBlocks,
+  onChange,
+  onBlocksChange,
+  draftKey,
+  showBrandLogos = true,
+  puebloId,
+  puebloNombre,
+  webMode = false,
+  clearDraftOnMount = false,
+  onClearAll,
+  uploadFileNameBase,
+}: ContentBlockBuilderProps) {
   const [blocks, setBlocks] = useState<ContentBlock[]>(() => initialBlocks?.length ? initialBlocks : []);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reorderPickSourceId, setReorderPickSourceId] = useState<string | null>(null);
@@ -892,6 +908,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
       const fd = new FormData();
       fd.append('file', file);
       fd.append('folder', 'contenidos/builder');
+      if (uploadFileNameBase) fd.append('fileNameBase', uploadFileNameBase);
       const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
       const data = await res.json().catch(() => ({})) as Record<string, unknown>;
       if (!res.ok || !data.url) throw new Error((data.error as string) || 'Error subiendo imagen');
@@ -1843,6 +1860,7 @@ export default function ContentBlockBuilder({ initialHtml, initialBlocks, onChan
                           const fd = new FormData();
                           fd.append('file', f);
                           fd.append('folder', 'contenidos/gallery');
+                          if (uploadFileNameBase) fd.append('fileNameBase', uploadFileNameBase);
                           const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
                           const data = await res.json().catch(() => ({})) as Record<string, unknown>;
                           if (!res.ok || !data.url) throw new Error(String(data.error || 'Error subiendo'));

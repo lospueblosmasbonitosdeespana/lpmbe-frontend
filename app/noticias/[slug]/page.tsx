@@ -180,7 +180,16 @@ export default async function NoticiaPage({
                 {isHtmlContent(texto) ? (
                   <div dangerouslySetInnerHTML={{ __html: injectImgAlt(texto, noticia.titulo) }} />
                 ) : (
-                  <ReactMarkdown>{texto}</ReactMarkdown>
+                  <ReactMarkdown
+                    components={{
+                      img: ({ alt, ...props }) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img {...props} alt={alt?.trim() || noticia.titulo} />
+                      ),
+                    }}
+                  >
+                    {texto}
+                  </ReactMarkdown>
                 )}
               </div>
             );

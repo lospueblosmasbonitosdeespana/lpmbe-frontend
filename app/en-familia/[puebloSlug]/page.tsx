@@ -19,10 +19,13 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
   const path = `/${SLUG}/${puebloSlug}`;
   const title = seoTitle(tSeo("enFamiliaTitle", { nombre: puebloNombre }));
   const description = seoDescription(tSeo("enFamiliaDesc", { nombre: puebloNombre }));
+  const alternates = hasValidContent
+    ? { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) }
+    : undefined;
   return {
     title,
     description,
-    alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) },
+    alternates,
     openGraph: {
       title,
       description,

@@ -68,6 +68,21 @@ const nextConfig: NextConfig = {
         destination: '/tienda',
         statusCode: 301,
       },
+      {
+        source: '/tienda/pack%20pins',
+        destination: '/tienda/pack-pins',
+        statusCode: 301,
+      },
+      {
+        source: '/tienda/pin%20special%20edition',
+        destination: '/tienda/pin-special-edition',
+        statusCode: 301,
+      },
+      {
+        source: '/tienda/pin%20pueblos%20bonitos',
+        destination: '/tienda/pin-pueblos-bonitos',
+        statusCode: 301,
+      },
       // Redirecciones 301: URLs antiguas de experiencias temáticas → nuevas rutas SEO
       {
         source: '/experiencias/gastronomia/pueblos/:puebloSlug',

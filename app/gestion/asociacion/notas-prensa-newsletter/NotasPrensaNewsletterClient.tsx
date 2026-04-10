@@ -226,6 +226,18 @@ function normalizeForSearch(value: string): string {
     .trim();
 }
 
+function buildUploadFileNameBase(raw: string, fallback = 'imagen'): string {
+  const normalized = String(raw || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80);
+  return normalized || fallback;
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -437,17 +449,27 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
       }
       if (block.type === 'columns2') {
         const colImgStyle = 'width:100%;height:auto;border-radius:6px;display:block;margin-bottom:8px;';
-        const leftImg = block.colLeftImg ? `<img src="${escapeHtml(block.colLeftImg)}" alt="" style="${colImgStyle}" />` : '';
-        const rightImg = block.colRightImg ? `<img src="${escapeHtml(block.colRightImg)}" alt="" style="${colImgStyle}" />` : '';
+        const leftImg = block.colLeftImg
+          ? `<img src="${escapeHtml(block.colLeftImg)}" alt="Imagen columna izquierda" style="${colImgStyle}" />`
+          : '';
+        const rightImg = block.colRightImg
+          ? `<img src="${escapeHtml(block.colRightImg)}" alt="Imagen columna derecha" style="${colImgStyle}" />`
+          : '';
         const left = escapeHtml(block.colLeft || '').replace(/\n/g, '<br/>');
         const right = escapeHtml(block.colRight || '').replace(/\n/g, '<br/>');
         return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="50%" valign="top" style="padding:0 8px 0 0;font-size:15px;line-height:1.6;color:${textColor};">${leftImg}${left}</td><td width="50%" valign="top" style="padding:0 0 0 8px;font-size:15px;line-height:1.6;color:${textColor};">${rightImg}${right}</td></tr></table></div>`;
       }
       if (block.type === 'columns3') {
         const colImgStyle = 'width:100%;height:auto;border-radius:6px;display:block;margin-bottom:8px;';
-        const leftImg = block.colLeftImg ? `<img src="${escapeHtml(block.colLeftImg)}" alt="" style="${colImgStyle}" />` : '';
-        const centerImg = block.colCenterImg ? `<img src="${escapeHtml(block.colCenterImg)}" alt="" style="${colImgStyle}" />` : '';
-        const rightImg = block.colRightImg ? `<img src="${escapeHtml(block.colRightImg)}" alt="" style="${colImgStyle}" />` : '';
+        const leftImg = block.colLeftImg
+          ? `<img src="${escapeHtml(block.colLeftImg)}" alt="Imagen columna izquierda" style="${colImgStyle}" />`
+          : '';
+        const centerImg = block.colCenterImg
+          ? `<img src="${escapeHtml(block.colCenterImg)}" alt="Imagen columna central" style="${colImgStyle}" />`
+          : '';
+        const rightImg = block.colRightImg
+          ? `<img src="${escapeHtml(block.colRightImg)}" alt="Imagen columna derecha" style="${colImgStyle}" />`
+          : '';
         const left = escapeHtml(block.colLeft || '').replace(/\n/g, '<br/>');
         const center = escapeHtml(block.colCenter || '').replace(/\n/g, '<br/>');
         const right = escapeHtml(block.colRight || '').replace(/\n/g, '<br/>');
@@ -459,7 +481,7 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         const imgs = urls
           .map(
             (u) =>
-              `<td style="padding:4px;"><img src="${escapeHtml(u)}" alt="" style="width:100%;height:auto;border-radius:6px;display:block;" /></td>`,
+              `<td style="padding:4px;"><img src="${escapeHtml(u)}" alt="Imagen de galería" style="width:100%;height:auto;border-radius:6px;display:block;" /></td>`,
           )
           .join('');
         return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr>${imgs}</tr></table></div>`;
@@ -468,7 +490,8 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         const url = sanitizeTemplateUrl(String(block.url || ''));
         const cap = String(block.caption || '').trim();
         if (!url) return '';
-        return `<div style="${boxStyle}"><figure style="margin:0;text-align:${align};"><img src="${escapeHtml(url)}" alt="${escapeHtml(cap)}" style="max-width:100%;height:auto;border-radius:10px;" />${cap ? `<figcaption style="margin-top:6px;font-size:13px;color:#666;text-align:center;">${escapeHtml(cap)}</figcaption>` : ''}</figure></div>`;
+        const alt = cap || block.content || 'Imagen destacada';
+        return `<div style="${boxStyle}"><figure style="margin:0;text-align:${align};"><img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" style="max-width:100%;height:auto;border-radius:10px;" />${cap ? `<figcaption style="margin-top:6px;font-size:13px;color:#666;text-align:center;">${escapeHtml(cap)}</figcaption>` : ''}</figure></div>`;
       }
       if (block.type === 'imgText') {
         const url = sanitizeTemplateUrl(String(block.url || ''));
@@ -476,7 +499,7 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         const isHtml = raw.includes('<');
         const text = isHtml ? raw : escapeHtml(raw).replace(/\n/g, '<br/>');
         if (!url) return `<div style="${boxStyle}"><div style="margin:0;font-size:16px;line-height:1.6;color:${textColor};">${text}</div></div>`;
-        return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="40%" valign="top" style="padding:0 12px 0 0;"><img src="${escapeHtml(url)}" alt="" style="width:100%;height:auto;border-radius:8px;display:block;" /></td><td width="60%" valign="top" style="font-size:15px;line-height:1.6;color:${textColor};">${text}</td></tr></table></div>`;
+        return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="40%" valign="top" style="padding:0 12px 0 0;"><img src="${escapeHtml(url)}" alt="Imagen del bloque" style="width:100%;height:auto;border-radius:8px;display:block;" /></td><td width="60%" valign="top" style="font-size:15px;line-height:1.6;color:${textColor};">${text}</td></tr></table></div>`;
       }
       if (block.type === 'socialLinks') {
         const iconSize = 40;
@@ -833,6 +856,10 @@ export default function NotasPrensaNewsletterClient({
     puebloSlug: '',
     source: '',
   });
+  const uploadFileNameBase = buildUploadFileNameBase(
+    campaignForm.subject,
+    mode === 'newsletter' ? 'newsletter' : 'nota-prensa',
+  );
   const [pressForm, setPressForm] = useState({
     email: '',
     name: '',
@@ -1572,6 +1599,7 @@ export default function NotasPrensaNewsletterClient({
       const fd = new FormData();
       fd.append('file', file);
       fd.append('folder', 'newsletter/templates');
+      fd.append('fileNameBase', uploadFileNameBase);
       const res = await fetch('/api/admin/uploads', {
         method: 'POST',
         body: fd,
@@ -2075,6 +2103,7 @@ export default function NotasPrensaNewsletterClient({
         const fd = new FormData();
         fd.append('file', file);
         fd.append('folder', 'newsletter/press');
+        fd.append('fileNameBase', uploadFileNameBase);
         const res = await fetch('/api/admin/uploads', {
           method: 'POST',
           body: fd,
@@ -4134,6 +4163,7 @@ export default function NotasPrensaNewsletterClient({
                     showBrandLogos={true}
                     onChange={(html) => setPressBuilderHtml(html)}
                     onBlocksChange={(blocks) => setPressBuilderBlocks(blocks)}
+                    uploadFileNameBase={uploadFileNameBase}
                   />
                 </div>
               ) : (
@@ -4955,6 +4985,7 @@ export default function NotasPrensaNewsletterClient({
               const fd = new FormData();
               fd.append('file', file);
               fd.append('folder', 'newsletter/templates');
+              fd.append('fileNameBase', uploadFileNameBase);
               const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
               const data = await res.json().catch(() => ({}));
               if (!res.ok || !data?.url) throw new Error('Error subiendo imagen recortada');

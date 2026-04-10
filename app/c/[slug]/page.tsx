@@ -371,7 +371,16 @@ export default async function ContenidoPage({
                 {isHtmlContent(body) ? (
                   <div dangerouslySetInnerHTML={{ __html: injectImgAlt(body, titulo) }} />
                 ) : (
-                  <ReactMarkdown>{autoLinkUrls(body)}</ReactMarkdown>
+                  <ReactMarkdown
+                    components={{
+                      img: ({ alt, ...props }) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img {...props} alt={alt?.trim() || titulo} />
+                      ),
+                    }}
+                  >
+                    {autoLinkUrls(body)}
+                  </ReactMarkdown>
                 )}
               </div>
             )}
@@ -475,7 +484,16 @@ export default async function ContenidoPage({
               />
             ) : (
               <div className="prose-contenido text-base leading-relaxed text-foreground">
-                <ReactMarkdown>{autoLinkUrls(contenido.contenidoMd)}</ReactMarkdown>
+                <ReactMarkdown
+                  components={{
+                    img: ({ alt, ...props }) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img {...props} alt={alt?.trim() || contenido.titulo} />
+                    ),
+                  }}
+                >
+                  {autoLinkUrls(contenido.contenidoMd)}
+                </ReactMarkdown>
               </div>
             )
           ) : contenido.resumen ? (
@@ -487,7 +505,16 @@ export default async function ContenidoPage({
               />
             ) : (
               <div className="prose-contenido text-base leading-relaxed text-foreground">
-                <ReactMarkdown>{autoLinkUrls(contenido.resumen)}</ReactMarkdown>
+                <ReactMarkdown
+                  components={{
+                    img: ({ alt, ...props }) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img {...props} alt={alt?.trim() || contenido.titulo} />
+                    ),
+                  }}
+                >
+                  {autoLinkUrls(contenido.resumen)}
+                </ReactMarkdown>
               </div>
             )
           ) : null}

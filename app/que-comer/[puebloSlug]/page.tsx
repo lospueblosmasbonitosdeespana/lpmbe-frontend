@@ -20,10 +20,13 @@ export async function generateMetadata({ params }: { params: Promise<{ puebloSlu
   const path = `/${URL_SLUG}/${puebloSlug}`;
   const title = seoTitle(tSeo("queComerTitle", { nombre: puebloNombre }));
   const description = seoDescription(tSeo("queComerDesc", { nombre: puebloNombre }));
+  const alternates = hasValidContent
+    ? { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) }
+    : undefined;
   return {
     title,
     description,
-    alternates: { canonical: getCanonicalUrl(path, locale as SupportedLocale), languages: getLocaleAlternates(path) },
+    alternates,
     robots: { index: hasValidContent, follow: true },
     openGraph: { title, description, type: "website", url: getCanonicalUrl(path, locale as SupportedLocale), locale: getOGLocale(locale as SupportedLocale) },
   };

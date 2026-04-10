@@ -28,6 +28,17 @@ function normalizeSitemapImageUrls(images?: string[]): string[] | undefined {
 }
 const API = getApiUrl();
 
+function normalizePathSegment(value: string): string {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 async function fetchSlugs(endpoint: string, slugField = 'slug'): Promise<string[]> {
   try {
     const res = await fetch(`${API}${endpoint}`, { cache: 'no-store' });
@@ -37,6 +48,20 @@ async function fetchSlugs(endpoint: string, slugField = 'slug'): Promise<string[
     const readPath = (obj: any, path: string) =>
       path.split('.').reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), obj);
     return items.map((i: any) => readPath(i, slugField)).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchDescubreSlugs(): Promise<string[]> {
+  try {
+    const res = await fetch(`${API}/public/descubre?lang=es`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : [];
+    return items
+      .map((item: any) => String(item?.slug || '').trim())
+      .filter(Boolean);
   } catch {
     return [];
   }
@@ -258,7 +283,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // - /noticias/[slug] → noticias de la ASOCIACIÓN (modelo Noticia, ruta app/noticias/[slug])
   // - /eventos/[slug]  → eventos de la ASOCIACIÓN  (modelo Evento,  ruta app/eventos/[slug])
   // - /c/[slug]        → contenidos de PUEBLOS     (modelo Contenido, incluye noticias+eventos+articulos de pueblos)
-  const [pueblosWithImages, rutaSlugs, noticiaItems, eventoItems, contenidoItems, semanaSantaPueblos] =
+  const [pueblosWithImages, rutaSlugs, noticiaItems, eventoItems, contenidoItems, semanaSantaPueblos, descubreSlugs] =
     await Promise.all([
       fetchPueblosWithImages(),
       fetchSlugs('/rutas'),
@@ -266,6 +291,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       fetchSlugsWithDates('/public/eventos?limit=1000'),
       fetchSlugsWithDates('/public/contenidos?limit=2000'),
       fetchSlugs('/semana-santa/pueblos', 'pueblo.slug'),
+      fetchDescubreSlugs(),
     ]);
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -304,6 +330,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry('/pueblos/ultimas-incorporaciones', 0.6, 'monthly'),
     entry('/rutas', 0.8, 'weekly'),
     entry('/recursos', 0.5, 'monthly'),
+    entry('/descubre', 0.65, 'weekly'),
     entry('/redes-sociales', 0.3, 'yearly'),
     entry('/aviso-legal', 0.1, 'yearly'),
     entry('/privacidad', 0.1, 'yearly'),
@@ -332,6 +359,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const eventos = eventoItems.map((i) => entry(`/eventos/${i.slug}`, 0.8, 'weekly', undefined, i.updatedAt));
   // Contenidos de pueblos (noticias+eventos+artículos de pueblos) viven en /c/[slug]
   const contenidos = contenidoItems.map((i) => entry(`/c/${i.slug}`, 0.75, 'weekly', undefined, i.updatedAt));
+  const descubre = descubreSlugs.map((slug) => entry(`/descubre/${slug}`, 0.6, 'weekly'));
   const semanaSanta = semanaSantaPueblos.map((s) => entry(`/planifica/semana-santa/pueblo/${s}`, 0.6, 'weekly'));
 
   // Páginas temáticas: listado por categoría/pueblo + páginas individuales (alta prioridad, daily)
@@ -387,7 +415,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   const productoSlugs = await fetchSlugs('/products').catch(() => [] as string[]);
-  const productos = productoSlugs.map((s) => entry(`/tienda/${s}`, 0.55, 'monthly'));
+  const productos = productoSlugs
+    .map((s) => normalizePathSegment(s))
+    .filter(Boolean)
+    .map((s) => entry(`/tienda/${s}`, 0.55, 'monthly'));
 
   const recursoSlugs = await fetchSlugs('/public/recursos?limit=500').catch(() => [] as string[]);
   const recursos = recursoSlugs.map((s) => entry(`/recursos/${s}`, 0.45, 'monthly'));
@@ -412,7 +443,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticPages, ...extraStatic,
-    ...pueblos, ...videosList, ...videosDetail, ...rutas, ...noticias, ...eventos, ...contenidos,
+    ...pueblos, ...videosList, ...videosDetail, ...rutas, ...noticias, ...eventos, ...contenidos, ...descubre,
     ...semanaSanta,
     ...paginasTematicasListado, ...paginasTematicasIndividuales,
     ...paginasClub,
