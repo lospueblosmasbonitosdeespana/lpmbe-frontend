@@ -120,14 +120,17 @@ export async function generateMetadata({
   const description = hasPoiData
     ? seoDescription(`${poiReadable} · ${puebloName}`, 160)
     : seoDescription(tSeo("lugaresDeInteresDesc", { nombre: puebloName }), 160);
+  const alternates = hasPoiData
+    ? {
+        canonical: getCanonicalUrl(path, locale as SupportedLocale),
+        languages: getLocaleAlternates(path),
+      }
+    : undefined;
 
   return {
     title,
     description,
-    alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
-      languages: getLocaleAlternates(path),
-    },
+    alternates,
     robots: { index: hasPoiData, follow: true },
     openGraph: {
       title,
