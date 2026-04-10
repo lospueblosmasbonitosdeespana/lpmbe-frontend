@@ -686,7 +686,8 @@ export default async function PuebloPage({
     .map((v: { id: number; titulo?: string; url?: string }) => {
       const { embedUrl, videoId } = getEmbedUrlAndId(v.url || "");
       if (!embedUrl || !embedUrl.includes("youtube") || !videoId) return null;
-      const watchPageUrl = `${base}/pueblos/${puebloSafe.slug}/videos/${getCanonicalVideoSegment(v)}`;
+      const canonicalVideo = { id: v.id, titulo: v.titulo || "video" };
+      const watchPageUrl = `${base}/pueblos/${puebloSafe.slug}/videos/${getCanonicalVideoSegment(canonicalVideo)}`;
       return {
         "@context": "https://schema.org",
         "@type": "VideoObject" as const,
