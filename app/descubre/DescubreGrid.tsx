@@ -92,15 +92,28 @@ export function DescubreGrid({ collections, locale }: { collections: Collection[
               <Link
                 key={c.slug}
                 href={`/descubre/${c.slug}`}
-                className="group relative flex items-start gap-4 rounded-xl border border-[#e2d5cb] bg-gradient-to-br from-white to-[#faf7f4] p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 dark:from-neutral-900 dark:to-neutral-800 dark:border-neutral-700"
+                className="group relative flex overflow-hidden rounded-xl border border-[#e2d5cb] bg-gradient-to-br from-white to-[#faf7f4] shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 dark:from-neutral-900 dark:to-neutral-800 dark:border-neutral-700"
               >
-                <span
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg"
-                  style={{ backgroundColor: `${c.color}18` }}
-                >
-                  <CollectionIcon name={c.icon} color={c.color} size={22} />
-                </span>
-                <div className="min-w-0">
+                {c.imageUrl ? (
+                  <div className="relative w-24 shrink-0 sm:w-28">
+                    <Image
+                      src={c.imageUrl}
+                      alt={c.title}
+                      fill
+                      className="object-cover"
+                      sizes="112px"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/20 dark:to-neutral-900/30" />
+                  </div>
+                ) : (
+                  <span
+                    className="flex w-16 shrink-0 items-center justify-center"
+                    style={{ backgroundColor: `${c.color}12` }}
+                  >
+                    <CollectionIcon name={c.icon} color={c.color} size={24} />
+                  </span>
+                )}
+                <div className="flex min-w-0 flex-1 flex-col justify-center p-4">
                   <h3 className="font-serif text-base font-semibold text-[#3d2c1e] group-hover:text-[#8B6F47] transition-colors dark:text-neutral-100">
                     {c.title}
                   </h3>

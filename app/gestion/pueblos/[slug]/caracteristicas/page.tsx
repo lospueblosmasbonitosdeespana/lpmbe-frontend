@@ -8,6 +8,9 @@ import CaracteristicasClient from './CaracteristicasClient';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+const HERO_BG =
+  'linear-gradient(135deg, #a0705a 0%, #b8856d 40%, #c49a82 100%)';
+
 export default async function CaracteristicasPage({
   params,
 }: {
@@ -38,42 +41,48 @@ export default async function CaracteristicasPage({
   }
 
   return (
-    <main className="mx-auto max-w-5xl p-6">
-      <div className="mb-4">
-        <Link
-          href={`/gestion/pueblos/${slug}`}
-          className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Volver a gestión del pueblo
-        </Link>
-      </div>
+    <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+      <Link
+        href={`/gestion/pueblos/${slug}`}
+        className="mb-6 inline-flex items-center gap-2 rounded-xl border border-border/80 bg-background/80 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all hover:border-primary/25 hover:bg-muted/50 hover:text-foreground"
+      >
+        <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+        Volver a gestión del pueblo
+      </Link>
 
-      <div className="mb-6 flex flex-col gap-2 border-b border-border/60 pb-6 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-amber-700/90 dark:text-amber-400">
-            Características del pueblo
-          </p>
-          <h1 className="mt-1 font-serif text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
-            ¿Qué tiene tu pueblo?
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Pueblo: <strong className="font-medium text-foreground">{pueblo?.nombre ?? slug}</strong>
-          </p>
+      <div
+        className="relative mb-8 overflow-hidden rounded-2xl p-6 text-white sm:p-8"
+        style={{ background: HERO_BG }}
+      >
+        <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/8 blur-3xl" aria-hidden />
+        <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-white/6 blur-3xl" aria-hidden />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex items-start gap-3 sm:items-center">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 shadow-inner backdrop-blur-sm">
+              <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+                <path d="M3 21h18M3 7v14M21 7v14M6 11h4M6 15h4M14 11h4M14 15h4M10 21V7l2-4 2 4v14" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+                Características del pueblo
+              </h1>
+              <p className="mt-0.5 text-sm text-white/80">
+                {pueblo?.nombre ?? slug} — Marca lo que tiene tu pueblo para aparecer en las colecciones temáticas
+              </p>
+            </div>
+          </div>
         </div>
-        <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-lg text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-          🏷️
-        </span>
       </div>
 
-      <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-        Marca las características reales de tu pueblo: patrimonio, naturaleza, gastronomía, servicios…
+      <div className="mb-6 rounded-xl border border-border/60 bg-muted/30 px-4 py-3 text-sm leading-relaxed text-muted-foreground">
+        Selecciona las características reales de tu pueblo: patrimonio, naturaleza, gastronomía, servicios…
         Estos datos permiten que el pueblo aparezca en las{' '}
         <span className="font-medium text-foreground">colecciones temáticas</span> de la web
-        (ej. "Pueblos con castillo", "Pueblos con piscinas naturales").
-      </p>
+        (ej. &quot;Pueblos con castillo&quot;, &quot;Pueblos con piscinas naturales&quot;).
+      </div>
 
       {!pueblo?.id ? (
         <div className="rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive">
@@ -82,6 +91,18 @@ export default async function CaracteristicasPage({
       ) : (
         <CaracteristicasClient puebloId={pueblo.id} slug={slug} puebloNombre={pueblo.nombre} />
       )}
+
+      <div className="mt-10 border-t border-border/60 pt-6">
+        <Link
+          href={`/gestion/pueblos/${slug}`}
+          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Volver a gestión del pueblo
+        </Link>
+      </div>
     </main>
   );
 }
