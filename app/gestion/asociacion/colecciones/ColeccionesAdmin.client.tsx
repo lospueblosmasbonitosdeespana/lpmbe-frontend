@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { GestionAsociacionSubpageShell } from '../_components/GestionAsociacionSubpageShell';
 
@@ -22,6 +22,22 @@ type Coleccion = {
   createdAt: string;
 };
 
+type TagDef = {
+  id: number;
+  tag: string;
+  categoria: string;
+  nombre_i18n: Record<string, string>;
+  icono: string;
+  color: string;
+  activo: boolean;
+};
+
+type ServicioOption = {
+  tipo: string;
+  etiqueta: string;
+  emoji: string;
+};
+
 const field =
   'mt-1.5 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm shadow-sm transition-colors focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20';
 
@@ -39,34 +55,64 @@ const sectionHead = 'border-b border-border/60 bg-muted/30 px-5 py-3 sm:px-6';
 const sectionBody = 'p-5 sm:p-6';
 
 const FUENTE_LABELS: Record<string, string> = {
-  caracteristica: '🏷️ Característica',
-  servicio: '🔧 Servicio',
+  caracteristica: '🏰 Característica',
+  servicio: '📍 Servicio del mapa',
   highlight: '📊 Highlight',
   ids: '📋 IDs fijos',
   comunidad: '🗺️ Comunidad',
   meteo: '🌤️ Meteo',
 };
 
+const SERVICIOS_PARA_COLECCION: ServicioOption[] = [
+  { tipo: 'CARAVANAS', etiqueta: 'Área de caravanas', emoji: '🚐' },
+  { tipo: 'BANO_NATURAL', etiqueta: 'Zona natural de baño', emoji: '🏊' },
+  { tipo: 'PLAYA', etiqueta: 'Playa', emoji: '🏖️' },
+  { tipo: 'COCHE_ELECTRICO', etiqueta: 'Cargador eléctrico', emoji: '⚡' },
+  { tipo: 'COCHE_ELECTRICO_ULTRA', etiqueta: 'Cargador ultra-rápido (150+ kW)', emoji: '⚡' },
+  { tipo: 'PIPICAN', etiqueta: 'Pipicán (pet-friendly)', emoji: '🐕' },
+  { tipo: 'ALQUILER_BICI', etiqueta: 'Alquiler de bicicletas', emoji: '🚲' },
+  { tipo: 'PICNIC', etiqueta: 'Zona picnic / Merendero', emoji: '🧺' },
+  { tipo: 'PARQUE_INFANTIL', etiqueta: 'Parque infantil', emoji: '🎠' },
+  { tipo: 'DESFIBRILADOR', etiqueta: 'Desfibrilador', emoji: '❤️' },
+];
+
+const CATEGORY_LABELS: Record<string, string> = {
+  PATRIMONIO_MILITAR: '⚔️ Patrimonio militar',
+  PATRIMONIO_RELIGIOSO: '⛪ Patrimonio religioso',
+  PATRIMONIO_CIVIL: '🏛️ Patrimonio civil',
+  PATRIMONIO_ARQUEOLOGICO: '🏺 Patrimonio y estilos',
+  NATURALEZA: '🌿 Naturaleza',
+  GASTRONOMIA: '🍷 Gastronomía y tradición',
+  ATMOSFERA: '✨ Atmósfera',
+  ACCESIBILIDAD: '♿ Accesibilidad y práctica',
+};
+
 export default function ColeccionesAdmin() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [colecciones, setColecciones] = useState<Coleccion[]>([]);
+  const [tags, setTags] = useState<TagDef[]>([]);
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [showNew, setShowNew] = useState(false);
 
-  const fetchColecciones = useCallback(async () => {
+  const fetchAll = useCallback(async () => {
     try {
       setLoading(true);
       setErr(null);
-      const res = await fetch('/api/admin/colecciones', {
-        credentials: 'include',
-        cache: 'no-store',
-      });
-      if (res.status === 401) { window.location.href = '/entrar'; return; }
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data = await res.json();
-      setColecciones(Array.isArray(data) ? data : []);
+      const [resCol, resTags] = await Promise.all([
+        fetch('/api/admin/colecciones', { credentials: 'include', cache: 'no-store' }),
+        fetch('/api/public/tag-definiciones', { cache: 'no-store' }),
+      ]);
+      if (resCol.status === 401) { window.location.href = '/entrar'; return; }
+      if (!resCol.ok) throw new Error(`Error ${resCol.status}`);
+      const colData = await resCol.json();
+      setColecciones(Array.isArray(colData) ? colData : []);
+
+      if (resTags.ok) {
+        const tagData = await resTags.json();
+        setTags(Array.isArray(tagData) ? tagData : []);
+      }
     } catch (e: any) {
       setErr(e.message);
     } finally {
@@ -74,7 +120,27 @@ export default function ColeccionesAdmin() {
     }
   }, []);
 
-  useEffect(() => { fetchColecciones(); }, [fetchColecciones]);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  const usedTags = useMemo(() => {
+    const set = new Set<string>();
+    for (const col of colecciones) {
+      if (col.fuente === 'caracteristica' && col.filtro?.tag) {
+        set.add(col.filtro.tag);
+      }
+    }
+    return set;
+  }, [colecciones]);
+
+  const usedServicios = useMemo(() => {
+    const set = new Set<string>();
+    for (const col of colecciones) {
+      if (col.fuente === 'servicio' && col.filtro?.tipo) {
+        set.add(col.filtro.tipo);
+      }
+    }
+    return set;
+  }, [colecciones]);
 
   async function toggleActiva(col: Coleccion) {
     try {
@@ -131,7 +197,7 @@ export default function ColeccionesAdmin() {
 
   const shell = {
     title: 'Colecciones',
-    subtitle: 'Páginas de "Descubre": crear, activar/desactivar, editar y ordenar colecciones temáticas.',
+    subtitle: 'Crear y gestionar páginas temáticas de "Descubre" basadas en características de los pueblos o en los servicios del mapa.',
     heroAction: (
       <button
         onClick={() => setShowNew(true)}
@@ -180,7 +246,10 @@ export default function ColeccionesAdmin() {
 
       {showNew && (
         <NewColeccionForm
-          onCreated={() => { setShowNew(false); fetchColecciones(); }}
+          tags={tags}
+          usedTags={usedTags}
+          usedServicios={usedServicios}
+          onCreated={() => { setShowNew(false); fetchAll(); }}
           onCancel={() => setShowNew(false)}
         />
       )}
@@ -209,7 +278,7 @@ export default function ColeccionesAdmin() {
                   onToggleActiva={() => toggleActiva(col)}
                   onDelete={() => deleteCol(col)}
                   onUpdateOrden={(n) => updateOrden(col, n)}
-                  onSaved={() => { setEditingId(null); fetchColecciones(); }}
+                  onSaved={() => { setEditingId(null); fetchAll(); }}
                 />
               ))}
             </div>
@@ -239,7 +308,7 @@ export default function ColeccionesAdmin() {
                   onToggleActiva={() => toggleActiva(col)}
                   onDelete={() => deleteCol(col)}
                   onUpdateOrden={(n) => updateOrden(col, n)}
-                  onSaved={() => { setEditingId(null); fetchColecciones(); }}
+                  onSaved={() => { setEditingId(null); fetchAll(); }}
                 />
               ))}
             </div>
@@ -248,9 +317,9 @@ export default function ColeccionesAdmin() {
       )}
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
-        Las 11 colecciones originales (castillos, montaña, costeros…) están hardcodeadas y no aparecen aquí.
+        Las 11 colecciones originales (castillos, montaña, costeros…) están incluidas por defecto y no aparecen aquí.
         <br />
-        Solo se gestionan aquí las colecciones creadas desde la base de datos.
+        Aquí se gestionan las colecciones nuevas creadas por el equipo.
       </p>
     </GestionAsociacionSubpageShell>
   );
@@ -275,6 +344,12 @@ function ColeccionRow({
   onUpdateOrden: (n: number) => void;
   onSaved: () => void;
 }) {
+  const filtroLabel = col.fuente === 'caracteristica' && col.filtro?.tag
+    ? col.filtro.tag
+    : col.fuente === 'servicio' && col.filtro?.tipo
+    ? col.filtro.tipo
+    : '';
+
   return (
     <div className={`rounded-xl border p-4 transition-all ${
       col.activa
@@ -282,21 +357,24 @@ function ColeccionRow({
         : 'border-dashed border-border/50 bg-muted/20 opacity-75'
     }`}>
       <div className="flex items-center gap-3">
-        {/* Color dot */}
         <div
           className="h-3 w-3 shrink-0 rounded-full"
           style={{ backgroundColor: col.color }}
         />
 
-        {/* Info */}
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h3 className="truncate text-sm font-semibold text-foreground">
               {col.titulo_i18n.es}
             </h3>
             <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
               {FUENTE_LABELS[col.fuente] ?? col.fuente}
             </span>
+            {filtroLabel && (
+              <span className="shrink-0 rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-950/30 dark:text-blue-400">
+                {filtroLabel}
+              </span>
+            )}
             {!col.activa && (
               <span className="shrink-0 rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
                 Desactivada
@@ -304,11 +382,10 @@ function ColeccionRow({
             )}
           </div>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            /descubre/{col.slug} · Orden: {col.orden} · Min pueblos: {col.minPueblos}
+            /descubre/{col.slug} · Orden: {col.orden} · Mín. pueblos: {col.minPueblos}
           </p>
         </div>
 
-        {/* Actions */}
         <div className="flex shrink-0 items-center gap-2">
           <Link
             href={`/descubre/${col.slug}`}
@@ -358,11 +435,11 @@ function EditColeccionForm({
   const [color, setColor] = useState(col.color);
   const [imagenUrl, setImagenUrl] = useState(col.imagenUrl ?? '');
   const [saving, setSaving] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [errMsg, setErrMsg] = useState<string | null>(null);
 
   async function handleSave() {
     setSaving(true);
-    setErr(null);
+    setErrMsg(null);
     try {
       const body: any = {
         orden,
@@ -396,7 +473,7 @@ function EditColeccionForm({
       }
       onSaved();
     } catch (e: any) {
-      setErr(e.message);
+      setErrMsg(e.message);
     } finally {
       setSaving(false);
     }
@@ -406,33 +483,34 @@ function EditColeccionForm({
     <div className="mt-4 space-y-3 border-t border-border/40 pt-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="text-xs font-medium text-muted-foreground">Título (ES)</label>
+          <label className="text-xs font-medium text-muted-foreground">Título de la página</label>
           <input value={tituloEs} onChange={(e) => setTituloEs(e.target.value)} className={field} />
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground">SEO Title (ES)</label>
-          <input value={seoTitleEs} onChange={(e) => setSeoTitleEs(e.target.value)} className={field} />
+          <label className="text-xs font-medium text-muted-foreground">Título SEO (Google)</label>
+          <input value={seoTitleEs} onChange={(e) => setSeoTitleEs(e.target.value)} className={field} placeholder="Se genera automáticamente si lo dejas vacío" />
         </div>
       </div>
       <div>
-        <label className="text-xs font-medium text-muted-foreground">Descripción (ES)</label>
+        <label className="text-xs font-medium text-muted-foreground">Descripción de la página</label>
         <textarea value={descEs} onChange={(e) => setDescEs(e.target.value)} rows={2} className={field} />
       </div>
       <div>
-        <label className="text-xs font-medium text-muted-foreground">SEO Description (ES)</label>
-        <textarea value={seoDescEs} onChange={(e) => setSeoDescEs(e.target.value)} rows={2} className={field} />
+        <label className="text-xs font-medium text-muted-foreground">Descripción SEO (Google)</label>
+        <textarea value={seoDescEs} onChange={(e) => setSeoDescEs(e.target.value)} rows={2} className={field} placeholder="Se usa la descripción si lo dejas vacío" />
       </div>
       <div className="grid gap-3 sm:grid-cols-4">
         <div>
-          <label className="text-xs font-medium text-muted-foreground">Orden</label>
+          <label className="text-xs font-medium text-muted-foreground">Posición</label>
           <input type="number" value={orden} onChange={(e) => setOrden(Number(e.target.value))} className={field} />
+          <p className="mt-0.5 text-[10px] text-muted-foreground">Menor = más arriba</p>
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground">Mín. pueblos</label>
+          <label className="text-xs font-medium text-muted-foreground">Mín. pueblos para mostrar</label>
           <input type="number" value={minPueblos} onChange={(e) => setMinPueblos(Number(e.target.value))} className={field} />
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground">Icono (Lucide)</label>
+          <label className="text-xs font-medium text-muted-foreground">Icono</label>
           <input value={icono} onChange={(e) => setIcono(e.target.value)} className={field} placeholder="castle" />
         </div>
         <div>
@@ -441,19 +519,15 @@ function EditColeccionForm({
         </div>
       </div>
       <div>
-        <label className="text-xs font-medium text-muted-foreground">URL imagen (opcional)</label>
+        <label className="text-xs font-medium text-muted-foreground">Imagen de cabecera (URL, opcional)</label>
         <input value={imagenUrl} onChange={(e) => setImagenUrl(e.target.value)} className={field} placeholder="https://…" />
       </div>
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span>Filtro:</span>
-        <code className="rounded bg-muted px-1.5 py-0.5">{JSON.stringify(col.filtro)}</code>
-      </div>
 
-      {err && <p className="text-sm text-red-600">{err}</p>}
+      {errMsg && <p className="text-sm text-red-600">{errMsg}</p>}
 
       <div className="flex gap-2">
         <button onClick={handleSave} disabled={saving} className={btnPrimary}>
-          {saving ? 'Guardando…' : 'Guardar'}
+          {saving ? 'Guardando…' : 'Guardar cambios'}
         </button>
         <button onClick={onCancel} className={btnSecondary}>Cancelar</button>
       </div>
@@ -461,28 +535,72 @@ function EditColeccionForm({
   );
 }
 
-/* ────── Formulario de nueva colección ────── */
+/* ────── Formulario de nueva colección (rediseñado) ────── */
 
 function NewColeccionForm({
+  tags,
+  usedTags,
+  usedServicios,
   onCreated,
   onCancel,
 }: {
+  tags: TagDef[];
+  usedTags: Set<string>;
+  usedServicios: Set<string>;
   onCreated: () => void;
   onCancel: () => void;
 }) {
-  const [slug, setSlug] = useState('');
-  const [fuente, setFuente] = useState('caracteristica');
+  const [step, setStep] = useState<'source' | 'pick' | 'details'>('source');
+  const [fuente, setFuente] = useState<'caracteristica' | 'servicio'>('caracteristica');
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [selectedServicio, setSelectedServicio] = useState<string | null>(null);
+  const [searchQ, setSearchQ] = useState('');
+
   const [tituloEs, setTituloEs] = useState('');
+  const [slug, setSlug] = useState('');
   const [descEs, setDescEs] = useState('');
   const [seoTitleEs, setSeoTitleEs] = useState('');
   const [seoDescEs, setSeoDescEs] = useState('');
-  const [filtroJson, setFiltroJson] = useState('{ "tag": "" }');
   const [icono, setIcono] = useState('tag');
   const [color, setColor] = useState('#8B6F47');
   const [orden, setOrden] = useState(50);
   const [minPueblos, setMinPueblos] = useState(1);
   const [saving, setSaving] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [errMsg, setErrMsg] = useState<string | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const availableTags = useMemo(() => {
+    return tags
+      .filter((t) => t.activo && !usedTags.has(t.tag))
+      .sort((a, b) => {
+        if (a.categoria !== b.categoria) return a.categoria.localeCompare(b.categoria);
+        return (a.nombre_i18n.es ?? a.tag).localeCompare(b.nombre_i18n.es ?? b.tag);
+      });
+  }, [tags, usedTags]);
+
+  const availableServicios = useMemo(() => {
+    return SERVICIOS_PARA_COLECCION.filter((s) => !usedServicios.has(s.tipo));
+  }, [usedServicios]);
+
+  const filteredTags = useMemo(() => {
+    if (!searchQ.trim()) return availableTags;
+    const q = searchQ.toLowerCase();
+    return availableTags.filter(
+      (t) =>
+        (t.nombre_i18n.es ?? '').toLowerCase().includes(q) ||
+        t.tag.toLowerCase().includes(q) ||
+        t.categoria.toLowerCase().includes(q),
+    );
+  }, [availableTags, searchQ]);
+
+  const groupedTags = useMemo(() => {
+    const groups: Record<string, TagDef[]> = {};
+    for (const t of filteredTags) {
+      if (!groups[t.categoria]) groups[t.categoria] = [];
+      groups[t.categoria].push(t);
+    }
+    return groups;
+  }, [filteredTags]);
 
   function autoSlug(title: string) {
     return title
@@ -492,20 +610,42 @@ function NewColeccionForm({
       .replace(/^-|-$/g, '');
   }
 
+  function selectTag(tag: TagDef) {
+    setSelectedTag(tag.tag);
+    setSelectedServicio(null);
+    const nombre = tag.nombre_i18n.es ?? tag.tag;
+    const titulo = `Pueblos con ${nombre.toLowerCase()}`;
+    setTituloEs(titulo);
+    setSlug(autoSlug(titulo));
+    setIcono(tag.icono);
+    setColor(tag.color);
+    setDescEs(`Descubre los pueblos más bonitos de España que cuentan con ${nombre.toLowerCase()}.`);
+    setStep('details');
+  }
+
+  function selectServicio(srv: ServicioOption) {
+    setSelectedServicio(srv.tipo);
+    setSelectedTag(null);
+    const titulo = `Pueblos con ${srv.etiqueta.toLowerCase()}`;
+    setTituloEs(titulo);
+    setSlug(autoSlug(titulo));
+    setIcono('map-pin');
+    setColor('#8B6F47');
+    setDescEs(`Pueblos bonitos de España que disponen de ${srv.etiqueta.toLowerCase()} para los visitantes.`);
+    setStep('details');
+  }
+
   async function handleCreate() {
     setSaving(true);
-    setErr(null);
+    setErrMsg(null);
     try {
-      let filtro: any;
-      try {
-        filtro = JSON.parse(filtroJson);
-      } catch {
-        throw new Error('Filtro JSON inválido');
-      }
-
       const finalSlug = slug.trim() || autoSlug(tituloEs);
-      if (!finalSlug) throw new Error('Se necesita un slug');
+      if (!finalSlug) throw new Error('Se necesita un título');
       if (!tituloEs.trim()) throw new Error('Se necesita un título');
+
+      const filtro = fuente === 'caracteristica'
+        ? { tag: selectedTag }
+        : { tipo: selectedServicio };
 
       const body = {
         slug: finalSlug,
@@ -533,7 +673,7 @@ function NewColeccionForm({
       }
       onCreated();
     } catch (e: any) {
-      setErr(e.message);
+      setErrMsg(e.message);
     } finally {
       setSaving(false);
     }
@@ -542,89 +682,254 @@ function NewColeccionForm({
   return (
     <div className={`${sectionCard} mb-6`}>
       <div className={sectionHead}>
-        <h2 className="text-sm font-semibold text-foreground">Nueva colección</h2>
+        <h2 className="text-sm font-semibold text-foreground">
+          {step === 'source' && 'Nueva colección — Paso 1: Tipo de página'}
+          {step === 'pick' && `Nueva colección — Paso 2: Elige ${fuente === 'caracteristica' ? 'la característica' : 'el servicio'}`}
+          {step === 'details' && 'Nueva colección — Paso 3: Detalles de la página'}
+        </h2>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          {step === 'source' && '¿Qué tipo de dato alimenta esta colección?'}
+          {step === 'pick' && fuente === 'caracteristica'
+            ? `Se muestran las características que aún no tienen página (${availableTags.length} disponibles)`
+            : step === 'pick'
+            ? `Se muestran los servicios del mapa que aún no tienen página (${availableServicios.length} disponibles)`
+            : 'Revisa y personaliza los textos antes de crear la página'}
+        </p>
       </div>
-      <div className={`${sectionBody} space-y-3`}>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">Título (ES) *</label>
-            <input
-              value={tituloEs}
-              onChange={(e) => {
-                setTituloEs(e.target.value);
-                if (!slug) setSlug('');
-              }}
-              className={field}
-              placeholder="Pueblos con…"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">Slug (auto o manual)</label>
-            <input
-              value={slug || autoSlug(tituloEs)}
-              onChange={(e) => setSlug(e.target.value)}
-              className={field}
-              placeholder="pueblos-con-…"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="text-xs font-medium text-muted-foreground">Descripción (ES)</label>
-          <textarea value={descEs} onChange={(e) => setDescEs(e.target.value)} rows={2} className={field} />
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">SEO Title (ES)</label>
-            <input value={seoTitleEs} onChange={(e) => setSeoTitleEs(e.target.value)} className={field} placeholder="Autogenerado si vacío" />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">SEO Description (ES)</label>
-            <input value={seoDescEs} onChange={(e) => setSeoDescEs(e.target.value)} className={field} placeholder="Usa descripción si vacío" />
-          </div>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">Fuente</label>
-            <select value={fuente} onChange={(e) => setFuente(e.target.value)} className={field}>
-              <option value="caracteristica">Característica (tag)</option>
-              <option value="servicio">Servicio</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">Icono (Lucide)</label>
-            <input value={icono} onChange={(e) => setIcono(e.target.value)} className={field} placeholder="castle" />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">Color</label>
-            <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="mt-1.5 h-10 w-full cursor-pointer rounded-xl border border-input" />
-          </div>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">Filtro (JSON) *</label>
-            <input value={filtroJson} onChange={(e) => setFiltroJson(e.target.value)} className={field} placeholder='{ "tag": "CASTILLO" }' />
-            <p className="mt-1 text-[10px] text-muted-foreground">
-              Característica: {'{ "tag": "NOMBRE_TAG" }'} · Servicio: {'{ "tipo": "TIPO" }'}
+      <div className={`${sectionBody} space-y-4`}>
+
+        {/* STEP 1: Elegir fuente */}
+        {step === 'source' && (
+          <div className="space-y-3">
+            <p className="text-sm text-foreground">
+              Cada colección agrupa pueblos que comparten algo en común. Elige de dónde viene ese dato:
             </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <button
+                onClick={() => { setFuente('caracteristica'); setStep('pick'); }}
+                className={`rounded-xl border-2 p-4 text-left transition-all hover:border-primary/50 hover:shadow-md ${
+                  fuente === 'caracteristica' ? 'border-primary bg-primary/5' : 'border-border'
+                }`}
+              >
+                <div className="text-lg">🏰</div>
+                <div className="mt-1 text-sm font-semibold text-foreground">Característica del pueblo</div>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Catedrales, castillos, bodegas, murallas… marcadas por los alcaldes en la sección "Características".
+                </p>
+                <p className="mt-1 text-[10px] font-medium text-emerald-600">
+                  {availableTags.length} disponibles sin página
+                </p>
+              </button>
+              <button
+                onClick={() => { setFuente('servicio'); setStep('pick'); }}
+                className={`rounded-xl border-2 p-4 text-left transition-all hover:border-primary/50 hover:shadow-md ${
+                  fuente === 'servicio' ? 'border-primary bg-primary/5' : 'border-border'
+                }`}
+              >
+                <div className="text-lg">📍</div>
+                <div className="mt-1 text-sm font-semibold text-foreground">Servicio del mapa</div>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Áreas de caravanas, cargadores eléctricos, pipicán… marcados en el mapa con ubicación exacta.
+                </p>
+                <p className="mt-1 text-[10px] font-medium text-emerald-600">
+                  {availableServicios.length} disponibles sin página
+                </p>
+              </button>
+            </div>
           </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">Orden</label>
-            <input type="number" value={orden} onChange={(e) => setOrden(Number(e.target.value))} className={field} />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">Mín. pueblos</label>
-            <input type="number" value={minPueblos} onChange={(e) => setMinPueblos(Number(e.target.value))} className={field} />
-          </div>
-        </div>
+        )}
 
-        {err && <p className="text-sm text-red-600">{err}</p>}
+        {/* STEP 2: Elegir tag o servicio */}
+        {step === 'pick' && fuente === 'caracteristica' && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <button onClick={() => setStep('source')} className={btnSecondary}>
+                ← Atrás
+              </button>
+              <input
+                type="text"
+                value={searchQ}
+                onChange={(e) => setSearchQ(e.target.value)}
+                placeholder="Buscar característica…"
+                className={`${field} mt-0`}
+              />
+            </div>
 
-        <div className="flex gap-2">
-          <button onClick={handleCreate} disabled={saving} className={btnPrimary}>
-            {saving ? 'Creando…' : 'Crear colección'}
-          </button>
-          <button onClick={onCancel} className={btnSecondary}>Cancelar</button>
-        </div>
+            {filteredTags.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                {searchQ
+                  ? 'No se encontraron características con ese nombre'
+                  : 'Todas las características ya tienen colección'}
+              </p>
+            ) : (
+              <div className="max-h-[400px] space-y-4 overflow-y-auto pr-1">
+                {Object.entries(groupedTags).map(([cat, catTags]) => (
+                  <div key={cat}>
+                    <h4 className="sticky top-0 z-10 mb-2 rounded-lg bg-muted/80 px-2 py-1 text-xs font-semibold text-muted-foreground backdrop-blur-sm">
+                      {CATEGORY_LABELS[cat] ?? cat}
+                    </h4>
+                    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+                      {catTags.map((tag) => (
+                        <button
+                          key={tag.id}
+                          onClick={() => selectTag(tag)}
+                          className="flex items-center gap-2 rounded-lg border border-border/60 bg-card px-3 py-2 text-left text-sm transition-all hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm"
+                        >
+                          <span
+                            className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                            style={{ backgroundColor: tag.color }}
+                          />
+                          <span className="truncate text-foreground">{tag.nombre_i18n.es ?? tag.tag}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {step === 'pick' && fuente === 'servicio' && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <button onClick={() => setStep('source')} className={btnSecondary}>
+                ← Atrás
+              </button>
+            </div>
+
+            {availableServicios.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                Todos los servicios ya tienen colección
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {availableServicios.map((srv) => (
+                  <button
+                    key={srv.tipo}
+                    onClick={() => selectServicio(srv)}
+                    className="flex items-center gap-2 rounded-lg border border-border/60 bg-card px-3 py-2.5 text-left text-sm transition-all hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm"
+                  >
+                    <span className="shrink-0 text-base">{srv.emoji}</span>
+                    <span className="truncate text-foreground">{srv.etiqueta}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* STEP 3: Detalles */}
+        {step === 'details' && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <button onClick={() => setStep('pick')} className={btnSecondary}>
+                ← Cambiar selección
+              </button>
+              <div className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-1.5">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
+                <span className="text-xs font-medium text-foreground">
+                  {fuente === 'caracteristica'
+                    ? tags.find((t) => t.tag === selectedTag)?.nombre_i18n.es ?? selectedTag
+                    : SERVICIOS_PARA_COLECCION.find((s) => s.tipo === selectedServicio)?.etiqueta ?? selectedServicio}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Título de la página *</label>
+                <input
+                  value={tituloEs}
+                  onChange={(e) => {
+                    setTituloEs(e.target.value);
+                    setSlug(autoSlug(e.target.value));
+                  }}
+                  className={field}
+                  placeholder="Pueblos con…"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">URL de la página</label>
+                <div className="mt-1.5 flex items-center gap-0 rounded-xl border border-input bg-muted/30 text-sm">
+                  <span className="shrink-0 pl-3 text-muted-foreground">/descubre/</span>
+                  <input
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value)}
+                    className="flex-1 border-0 bg-transparent py-2.5 pr-3 text-sm text-foreground focus:outline-none"
+                    placeholder="pueblos-con-…"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Descripción de la página</label>
+              <textarea value={descEs} onChange={(e) => setDescEs(e.target.value)} rows={2} className={field} />
+              <p className="mt-0.5 text-[10px] text-muted-foreground">Texto introductorio que verán los visitantes en la parte superior de la página.</p>
+            </div>
+
+            {/* Opciones avanzadas colapsables */}
+            <button
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <span className={`transition-transform ${showAdvanced ? 'rotate-90' : ''}`}>▶</span>
+              Opciones avanzadas (SEO, posición, icono)
+            </button>
+
+            {showAdvanced && (
+              <div className="space-y-3 rounded-xl border border-border/40 bg-muted/10 p-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Título SEO (Google)</label>
+                    <input value={seoTitleEs} onChange={(e) => setSeoTitleEs(e.target.value)} className={field} placeholder="Se genera automáticamente si lo dejas vacío" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Descripción SEO (Google)</label>
+                    <input value={seoDescEs} onChange={(e) => setSeoDescEs(e.target.value)} className={field} placeholder="Se usa la descripción si lo dejas vacío" />
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-4">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Posición</label>
+                    <input type="number" value={orden} onChange={(e) => setOrden(Number(e.target.value))} className={field} />
+                    <p className="mt-0.5 text-[10px] text-muted-foreground">Menor = más arriba en la lista</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Mín. pueblos</label>
+                    <input type="number" value={minPueblos} onChange={(e) => setMinPueblos(Number(e.target.value))} className={field} />
+                    <p className="mt-0.5 text-[10px] text-muted-foreground">Solo se muestra si hay al menos este nº de pueblos</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Icono</label>
+                    <input value={icono} onChange={(e) => setIcono(e.target.value)} className={field} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Color</label>
+                    <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="mt-1.5 h-10 w-full cursor-pointer rounded-xl border border-input" />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {errMsg && <p className="text-sm text-red-600">{errMsg}</p>}
+
+            <div className="flex gap-2">
+              <button onClick={handleCreate} disabled={saving} className={btnPrimary}>
+                {saving ? 'Creando página…' : 'Crear página de colección'}
+              </button>
+              <button onClick={onCancel} className={btnSecondary}>Cancelar</button>
+            </div>
+          </div>
+        )}
+
+        {/* Cancel en steps 1 y 2 */}
+        {(step === 'source' || step === 'pick') && (
+          <div className="flex justify-end">
+            <button onClick={onCancel} className={btnSecondary}>Cancelar</button>
+          </div>
+        )}
       </div>
     </div>
   );
