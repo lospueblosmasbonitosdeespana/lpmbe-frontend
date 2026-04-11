@@ -5,10 +5,13 @@ import { useState, useMemo, memo, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { AlertTriangle } from "lucide-react";
 import SemaforoBadge from "../components/pueblos/SemaforoBadge";
+import { TagIcon } from "@/lib/tag-icon-map";
 import { type Pueblo, getPuebloMainPhoto } from "@/lib/api";
 import { usePuebloPhotos } from "@/app/hooks/usePuebloPhotos";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Container } from "@/app/components/ui/container";
+
+type TagBadge = { tag: string; icono: string; color: string; nombre_i18n: Record<string, string>; cantidad: number | null };
 
 type PueblosListProps = {
   pueblos: Pueblo[];
@@ -38,18 +41,22 @@ function ImagePlaceholder() {
   );
 }
 
+const MAX_VISIBLE_TAGS = 5;
+
 const PuebloCard = memo(function PuebloCard({
   pueblo,
   foto,
   isPriority,
   observe,
   alertCount,
+  tags,
 }: {
   pueblo: Pueblo;
   foto: string | null;
   isPriority: boolean;
   observe: (el: HTMLElement | null) => void;
   alertCount: number;
+  tags?: TagBadge[];
 }) {
   const [imgError, setImgError] = useState(false);
   const showImage = foto && !imgError;
@@ -61,6 +68,9 @@ const PuebloCard = memo(function PuebloCard({
     "estado" in pueblo.semaforo
       ? (pueblo.semaforo as { estado?: string }).estado
       : null);
+
+  const visibleTags = tags?.slice(0, MAX_VISIBLE_TAGS);
+  const extraCount = tags ? Math.max(0, tags.length - MAX_VISIBLE_TAGS) : 0;
 
   return (
     <article
@@ -95,6 +105,28 @@ const PuebloCard = memo(function PuebloCard({
           <p className="mt-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
             {pueblo.provincia}, {pueblo.comunidad}
           </p>
+          {visibleTags && visibleTags.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap items-center gap-1">
+              {visibleTags.map((t) => (
+                <span
+                  key={t.tag}
+                  className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5"
+                  style={{ backgroundColor: `${t.color}14` }}
+                  title={t.nombre_i18n?.es ?? t.tag}
+                >
+                  <TagIcon name={t.icono} color={t.color} size={12} />
+                  {t.cantidad && t.cantidad > 1 && (
+                    <span className="text-[9px] font-semibold leading-none" style={{ color: t.color }}>
+                      {t.cantidad}
+                    </span>
+                  )}
+                </span>
+              ))}
+              {extraCount > 0 && (
+                <span className="text-[9px] font-medium text-muted-foreground">+{extraCount}</span>
+              )}
+            </div>
+          )}
         </div>
       </Link>
 
@@ -165,6 +197,7 @@ export default function PueblosList({
     return filtered;
   }, [pueblosOrdenados, comunidadNorm, provinciaNorm, searchTerm]);
 
+  const [bulkTags, setBulkTags] = useState<Record<string, TagBadge[]>>({});
   const t = useTranslations("explore");
   const tTabs = useTranslations("tabs");
   const hasActiveFilters = comunidadNorm || provinciaNorm;
@@ -191,16 +224,30 @@ export default function PueblosList({
         }
 
         if (!cancelled) setAlertCounts(nextCounts);
-      } catch {
-        // Silencioso: sin alertas se mantiene vacío
-      }
+      } catch {}
     }
 
     loadAlertCounts();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const ids = pueblosOrdenados.map((p) => p.id);
+    if (ids.length === 0) return;
+
+    async function loadBulkTags() {
+      try {
+        const res = await fetch(`/api/public/caracteristicas/bulk?ids=${ids.join(",")}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled && data && typeof data === "object") setBulkTags(data);
+      } catch {}
+    }
+
+    loadBulkTags();
+    return () => { cancelled = true; };
+  }, [pueblosOrdenados]);
 
   const breadcrumbItems = [
     { label: tTabs("pueblos"), href: "/pueblos" },
@@ -299,6 +346,7 @@ export default function PueblosList({
                   isPriority={isPriority}
                   observe={observe}
                   alertCount={alertCounts[pueblo.slug] ?? 0}
+                  tags={bulkTags[String(pueblo.id)]}
                 />
               );
             })}

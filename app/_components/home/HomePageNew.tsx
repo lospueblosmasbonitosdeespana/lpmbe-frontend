@@ -16,21 +16,8 @@ import {
   Sparkles,
   Map,
   Store,
-  Landmark,
-  MountainSnow,
-  Waves,
-  TowerControl,
-  FerrisWheel,
-  Palmtree,
-  Caravan,
-  PlugZap,
-  Heart,
-  Snowflake,
-  Thermometer,
-  Sun,
-  Activity,
-  type LucideIcon,
 } from "lucide-react";
+import { resolveTagIcon } from "@/lib/tag-icon-map";
 import { cn } from "@/lib/utils";
 import { Container } from "@/app/components/ui/container";
 import { Section } from "@/app/components/ui/section";
@@ -587,23 +574,8 @@ function CollectionsSection({ collections = [] }: { collections: CollectionCard[
   );
 }
 
-const COLLECTION_ICON_MAP: Record<string, LucideIcon> = {
-  castle: Landmark, landmark: Landmark,
-  "mountain-snow": MountainSnow, mountain: MountainSnow,
-  waves: Waves,
-  "tower-control": TowerControl, "brick-wall": TowerControl, shield: TowerControl,
-  "ferris-wheel": FerrisWheel, home: FerrisWheel,
-  palmtree: Palmtree,
-  caravan: Caravan,
-  "plug-zap": PlugZap, zap: PlugZap,
-  heart: Heart, users: Heart,
-  snowflake: Snowflake,
-  thermometer: Thermometer, wind: Thermometer,
-  sun: Sun,
-};
-
 function CollectionMiniIcon({ name, color, size = 24 }: { name: string; color: string; size?: number }) {
-  const Icon = COLLECTION_ICON_MAP[name] ?? Activity;
+  const Icon = resolveTagIcon(name);
   return <Icon size={size} style={{ color }} strokeWidth={1.75} />;
 }
 

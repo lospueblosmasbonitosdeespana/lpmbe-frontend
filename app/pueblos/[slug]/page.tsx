@@ -22,6 +22,7 @@ import MeteoPanel from "./_components/MeteoPanel";
 import { getComunidadFlagSrc } from "@/lib/flags";
 import TematicasPuebloTabs from "./TematicasPuebloTabs";
 import PueblosCercanosSection from "./_components/PueblosCercanosSection";
+import { CaracteristicasSection } from "./_components/CaracteristicasSection";
 import { QueHacerSection } from "./_components/QueHacerSection";
 import { DetailPageHero } from "@/app/components/ui/detail-page-hero";
 import { DetailIntroSection } from "@/app/components/ui/detail-section";
@@ -357,12 +358,13 @@ export default async function PuebloPage({
   const API_BASE = getApiUrl();
   const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
   const langParam = locale ? `&lang=${encodeURIComponent(locale)}` : "";
-  const [pueblo, pueblosLite, pagesRes, puntosServicioRes, alertasFeedRes] = await Promise.all([
+  const [pueblo, pueblosLite, pagesRes, puntosServicioRes, alertasFeedRes, caracteristicasRes] = await Promise.all([
     getPuebloBySlug(slug, locale),
     getPueblosLite(locale),
     fetch(`${API_BASE}/public/pueblos/${slug}/pages${langQs}`).catch(() => null),
     fetch(`${API_BASE}/pueblos/${slug}/puntos-servicio`).catch(() => null),
     fetch(`${API_BASE}/public/notificaciones/feed?limit=200&tipos=ALERTA_PUEBLO${langParam}`).catch(() => null),
+    fetch(`${API_BASE}/public/pueblos/${slug}/caracteristicas`, { next: { revalidate: 120 } }).catch(() => null),
   ]);
 
   // Páginas temáticas del pueblo (contenidos temáticos) - ahora son arrays por categoría
@@ -435,6 +437,28 @@ export default async function PuebloPage({
     } catch {
       // ignorar
     }
+  }
+
+  type CaracteristicaPublic = {
+    id: number;
+    nivel: string | null;
+    siglo: string | null;
+    visitable: boolean | null;
+    cantidad: number | null;
+    tag: {
+      tag: string;
+      categoria: string;
+      nombre_i18n: Record<string, string>;
+      icono: string;
+      color: string;
+    };
+  };
+  let caracteristicas: CaracteristicaPublic[] = [];
+  if (caracteristicasRes?.ok) {
+    try {
+      const cData = await caracteristicasRes.json();
+      if (Array.isArray(cData)) caracteristicas = cData;
+    } catch {}
   }
 
   const puebloSafe: PuebloSafe = {
@@ -807,6 +831,9 @@ export default async function PuebloPage({
         columns={4}
         background="default"
       />
+
+      {/* QUÉ ENCONTRARÁS AQUÍ - Iconos de características */}
+      <CaracteristicasSection items={caracteristicas} locale={locale} />
 
       {/* METEO - Diseño imagen referencia */}
       <MeteoPanel puebloId={puebloSafe.id} puebloSlug={puebloSafe.slug} />

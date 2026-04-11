@@ -7,52 +7,11 @@ import { getComunidadFlagSrc } from "@/lib/flags";
 import {
   Sun, CloudSun, Cloudy, CloudFog,
   CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Cloud,
-  Landmark, MountainSnow, Waves, TowerControl, FerrisWheel, Palmtree,
-  Caravan, PlugZap, Heart, Snowflake, Thermometer, Activity,
-  type LucideIcon,
 } from "lucide-react";
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  castle: Landmark,
-  landmark: Landmark,
-  "mountain-snow": MountainSnow,
-  mountain: MountainSnow,
-  waves: Waves,
-  "tower-control": TowerControl,
-  "brick-wall": TowerControl,
-  shield: TowerControl,
-  "ferris-wheel": FerrisWheel,
-  home: FerrisWheel,
-  palmtree: Palmtree,
-  caravan: Caravan,
-  "plug-zap": PlugZap,
-  zap: PlugZap,
-  heart: Heart,
-  users: Heart,
-  snowflake: Snowflake,
-  thermometer: Thermometer,
-  wind: Thermometer,
-  sun: Sun,
-};
-
-const EMOJI_TO_ICON: Record<string, LucideIcon> = {
-  "🏰": Landmark,
-  "⛰️": MountainSnow,
-  "🌊": Waves,
-  "🧱": TowerControl,
-  "🏘️": FerrisWheel,
-  "🏝️": Palmtree,
-  "🚐": Caravan,
-  "⚡": PlugZap,
-  "👨‍👩‍👧‍👦": Heart,
-  "❄️": Snowflake,
-  "🌬️": Thermometer,
-  "☀️": Sun,
-};
+import { resolveTagIcon, TagIcon } from "@/lib/tag-icon-map";
 
 function HeroIcon({ name }: { name: string }) {
-  const Icon = ICON_MAP[name] ?? EMOJI_TO_ICON[name];
-  if (!Icon) return <Activity size={48} className="text-white/90" strokeWidth={1.5} />;
+  const Icon = resolveTagIcon(name);
   return <Icon size={48} className="text-white/90" strokeWidth={1.5} />;
 }
 
@@ -120,10 +79,24 @@ const VILLAGES_LABEL: Record<string, string> = {
   ca: "pobles",
 };
 
+type TagBadge = { tag: string; icono: string; color: string; nombre_i18n: Record<string, string>; cantidad: number | null };
+
 export function CollectionView({ data, locale }: { data: CollectionData; locale: string }) {
   const backLabel = BACK_LABELS[locale] ?? BACK_LABELS.es;
   const villagesLabel = VILLAGES_LABEL[locale] ?? VILLAGES_LABEL.es;
   const isMeteo = data.type === "meteo";
+
+  const [bulkTags, setBulkTags] = React.useState<Record<string, TagBadge[]>>({});
+  React.useEffect(() => {
+    const ids = data.pueblos.map((p) => p.id);
+    if (ids.length === 0) return;
+    let cancelled = false;
+    fetch(`/api/public/caracteristicas/bulk?ids=${ids.join(",")}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (!cancelled && d) setBulkTags(d); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [data.pueblos]);
 
   const byCCAA = React.useMemo(() => {
     if (isMeteo) return {};
@@ -206,7 +179,7 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
         ) : isMeteo ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {data.pueblos.map((p) => (
-              <PuebloCard key={p.id} pueblo={p} color={data.color} />
+              <PuebloCard key={p.id} pueblo={p} color={data.color} tags={bulkTags[String(p.id)]} />
             ))}
           </div>
         ) : (
@@ -228,7 +201,7 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
                   </div>
                   <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {byCCAA[ccaa].map((p) => (
-                      <PuebloCard key={p.id} pueblo={p} color={data.color} />
+                      <PuebloCard key={p.id} pueblo={p} color={data.color} tags={bulkTags[String(p.id)]} />
                     ))}
                   </div>
                 </div>
@@ -241,10 +214,14 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
   );
 }
 
-function PuebloCard({ pueblo: p, color }: { pueblo: Pueblo; color: string }) {
+const MAX_TAGS_VISIBLE = 5;
+
+function PuebloCard({ pueblo: p, color, tags }: { pueblo: Pueblo; color: string; tags?: TagBadge[] }) {
   const flagSrc = getComunidadFlagSrc(p.comunidad);
   const hasPhoto = !!p.foto_destacada;
   const badge = p.highlightExtra ?? (p.habitantes ? `${p.habitantes} hab.` : null);
+  const visibleTags = tags?.slice(0, MAX_TAGS_VISIBLE);
+  const extraCount = tags ? Math.max(0, tags.length - MAX_TAGS_VISIBLE) : 0;
 
   return (
     <Link
@@ -290,22 +267,46 @@ function PuebloCard({ pueblo: p, color }: { pueblo: Pueblo; color: string }) {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 px-4 py-3">
-        {flagSrc && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={flagSrc}
-            alt={p.comunidad}
-            className="h-4 w-6 rounded-sm object-cover shrink-0"
-          />
+      <div className="px-4 py-3 space-y-1.5">
+        <div className="flex items-center gap-2">
+          {flagSrc && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={flagSrc}
+              alt={p.comunidad}
+              className="h-4 w-6 rounded-sm object-cover shrink-0"
+            />
+          )}
+          <span className="text-sm text-neutral-600 truncate dark:text-neutral-400">
+            {p.provincia} · {p.comunidad}
+          </span>
+        </div>
+        {visibleTags && visibleTags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1">
+            {visibleTags.map((t) => (
+              <span
+                key={t.tag}
+                className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5"
+                style={{ backgroundColor: `${t.color}14` }}
+                title={t.nombre_i18n?.es ?? t.tag}
+              >
+                <TagIcon name={t.icono} color={t.color} size={12} />
+                {t.cantidad && t.cantidad > 1 && (
+                  <span className="text-[9px] font-semibold leading-none" style={{ color: t.color }}>
+                    {t.cantidad}
+                  </span>
+                )}
+              </span>
+            ))}
+            {extraCount > 0 && (
+              <span className="text-[9px] font-medium text-neutral-400">+{extraCount}</span>
+            )}
+          </div>
         )}
-        <span className="text-sm text-neutral-600 truncate dark:text-neutral-400">
-          {p.provincia} · {p.comunidad}
-        </span>
       </div>
 
       <div
-        className="h-0.5 w-full transition-all group-hover:h-1"
+        className="h-0.5 w-full mt-auto transition-all group-hover:h-1"
         style={{ backgroundColor: color }}
       />
     </Link>

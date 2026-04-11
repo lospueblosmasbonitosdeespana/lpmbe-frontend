@@ -2,11 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Landmark, MountainSnow, Waves, TowerControl, FerrisWheel, Palmtree,
-  Caravan, PlugZap, Heart, Snowflake, Thermometer, Sun, Activity,
-  type LucideIcon,
-} from "lucide-react";
+import { resolveTagIcon } from "@/lib/tag-icon-map";
 
 type Collection = {
   slug: string;
@@ -18,31 +14,8 @@ type Collection = {
   imageUrl?: string | null;
 };
 
-const ICON_MAP: Record<string, LucideIcon> = {
-  castle: Landmark, landmark: Landmark,
-  "mountain-snow": MountainSnow, mountain: MountainSnow,
-  waves: Waves,
-  "tower-control": TowerControl, "brick-wall": TowerControl, shield: TowerControl,
-  "ferris-wheel": FerrisWheel, home: FerrisWheel,
-  palmtree: Palmtree,
-  caravan: Caravan,
-  "plug-zap": PlugZap, zap: PlugZap,
-  heart: Heart, users: Heart,
-  snowflake: Snowflake,
-  thermometer: Thermometer, wind: Thermometer,
-  sun: Sun,
-};
-
-const EMOJI_TO_ICON: Record<string, LucideIcon> = {
-  "\u{1F3F0}": Landmark, "\u26F0\uFE0F": MountainSnow, "\u{1F30A}": Waves,
-  "\u{1F9F1}": TowerControl, "\u{1F3D8}\uFE0F": FerrisWheel, "\u{1F3DD}\uFE0F": Palmtree,
-  "\u{1F690}": Caravan, "\u26A1": PlugZap, "\u{1F468}\u200D\u{1F469}\u200D\u{1F467}\u200D\u{1F466}": Heart,
-  "\u2744\uFE0F": Snowflake, "\u{1F32C}\uFE0F": Thermometer, "\u2600\uFE0F": Sun,
-};
-
 function CollectionIcon({ name, color, size = 24 }: { name: string; color: string; size?: number }) {
-  const Icon = ICON_MAP[name] ?? EMOJI_TO_ICON[name];
-  if (!Icon) return <Activity size={size} style={{ color }} strokeWidth={2} />;
+  const Icon = resolveTagIcon(name);
   return <Icon size={size} style={{ color }} strokeWidth={1.75} />;
 }
 
