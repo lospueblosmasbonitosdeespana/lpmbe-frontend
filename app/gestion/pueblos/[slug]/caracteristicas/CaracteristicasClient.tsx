@@ -24,6 +24,7 @@ type CaracteristicaExistente = {
   siglo: string | null;
   detalle: string | null;
   visitable: boolean | null;
+  cantidad: number | null;
   poiId: number | null;
   pageId: number | null;
   fotoOverride: string | null;
@@ -37,6 +38,7 @@ type LocalState = {
   nivel: string | null;
   siglo: string;
   visitable: boolean | null;
+  cantidad: number | null;
   detalle: string;
   poiId: number | null;
   pageId: number | null;
@@ -169,6 +171,7 @@ export default function CaracteristicasClient({
                 nivel: ex.nivel,
                 siglo: ex.siglo ?? '',
                 visitable: ex.visitable,
+                cantidad: ex.cantidad,
                 detalle: ex.detalle ?? '',
                 poiId: ex.poiId,
                 pageId: ex.pageId,
@@ -179,6 +182,7 @@ export default function CaracteristicasClient({
                 nivel: null,
                 siglo: '',
                 visitable: null,
+                cantidad: null,
                 detalle: '',
                 poiId: null,
                 pageId: null,
@@ -252,6 +256,7 @@ export default function CaracteristicasClient({
             siglo: s.siglo.trim() || null,
             detalle: s.detalle.trim() || null,
             visitable: s.visitable,
+            cantidad: s.cantidad != null && s.cantidad > 0 ? s.cantidad : null,
             poiId: s.poiId,
             pageId: s.pageId,
             fotoOverride: s.fotoOverride.trim() || null,
@@ -365,28 +370,44 @@ export default function CaracteristicasClient({
                       }`}
                     >
                       {/* Toggle row */}
-                      <label className="flex cursor-pointer items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={state.activo}
-                          onChange={() => toggle(tag.id)}
-                          className="h-4 w-4 shrink-0 rounded border-input text-amber-600 accent-amber-600"
-                        />
-                        <span className="flex-1 text-sm font-medium text-foreground">{nombre}</span>
+                      <div className="flex items-center gap-3">
+                        <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={state.activo}
+                            onChange={() => toggle(tag.id)}
+                            className="h-4 w-4 shrink-0 rounded border-input text-amber-600 accent-amber-600"
+                          />
+                          <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{nombre}</span>
+                        </label>
                         {state.activo && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleExpand(tag);
-                            }}
-                            className="text-xs font-medium text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300"
-                            title="Editar detalles"
-                          >
-                            {isExpanded ? '▲' : '▼'}
-                          </button>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <div className="flex items-center gap-1" title="¿Cuántos hay? (ej. 8 palacios)">
+                              <span className="text-[10px] text-muted-foreground">×</span>
+                              <input
+                                type="number"
+                                min={1}
+                                max={99}
+                                value={state.cantidad ?? ''}
+                                onChange={(e) => {
+                                  const v = e.target.value ? parseInt(e.target.value, 10) : null;
+                                  updateField(tag.id, 'cantidad', v);
+                                }}
+                                placeholder="1"
+                                className="h-7 w-11 rounded-lg border border-input bg-background px-1.5 text-center text-xs tabular-nums shadow-sm focus-visible:border-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleExpand(tag)}
+                              className="text-xs font-medium text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300"
+                              title="Editar detalles"
+                            >
+                              {isExpanded ? '▲' : '▼'}
+                            </button>
+                          </div>
                         )}
-                      </label>
+                      </div>
 
                       {/* Detalles expandidos */}
                       {state.activo && isExpanded && (
