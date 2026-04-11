@@ -44,6 +44,7 @@ const SECCIONES: {
       { href: '/gestion/asociacion/contenidos', title: 'Contenidos', description: 'Páginas, noticias y eventos globales', emoji: '📰', accent: 'rose' },
       { href: '/gestion/asociacion/notificaciones', title: 'Notificaciones', description: 'Noticias, eventos y alertas en un solo listado', emoji: '📋', accent: 'sky' },
       { href: '/gestion/asociacion/alertas', title: 'Alertas globales', description: 'Avisos visibles a nivel nacional', hubIcon: 'alert', accent: 'red' },
+      { href: '/gestion/asociacion/colecciones', title: 'Colecciones', description: 'Páginas temáticas de Descubre: crear, activar/desactivar y ordenar', emoji: '📚', accent: 'orange' },
     ],
   },
   {
