@@ -214,9 +214,31 @@ export default function ColeccionesAdmin() {
     }
   }
 
+  const activas = colecciones.filter((c) => c.activa);
+  const inactivas = colecciones.filter((c) => !c.activa);
+  const totalPueblosActivas = activas.reduce((sum, c) => sum + (colCounts[c.id] ?? 0), 0);
+
   const shell = {
     title: 'Colecciones',
-    subtitle: 'Crear y gestionar páginas temáticas de "Descubre" basadas en características de los pueblos o en los servicios del mapa.',
+    subtitle: (
+      <span>
+        Gestiona las páginas temáticas de <strong className="text-white">/descubre</strong>.
+        Las 8 primeras aparecen en la home.
+      </span>
+    ),
+    heroBadges: (
+      <div className="flex flex-wrap gap-2">
+        <span className="rounded-lg bg-white/15 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+          {activas.length} activas
+        </span>
+        <span className="rounded-lg bg-white/10 px-2.5 py-1 text-xs font-medium text-white/80 backdrop-blur-sm">
+          {inactivas.length} desactivadas
+        </span>
+        <span className="rounded-lg bg-white/10 px-2.5 py-1 text-xs font-medium text-white/80 backdrop-blur-sm">
+          ~{totalPueblosActivas} pueblos en total
+        </span>
+      </div>
+    ),
     heroAction: (
       <button
         onClick={() => setShowNew(true)}
@@ -247,9 +269,6 @@ export default function ColeccionesAdmin() {
       </GestionAsociacionSubpageShell>
     );
   }
-
-  const activas = colecciones.filter((c) => c.activa);
-  const inactivas = colecciones.filter((c) => !c.activa);
 
   async function persistOrder(reordered: Coleccion[]) {
     setSavingOrder(true);
@@ -357,79 +376,91 @@ export default function ColeccionesAdmin() {
       {/* Activas */}
       <div className={sectionCard}>
         <div className={sectionHead}>
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <h2 className="text-sm font-semibold text-foreground">
-                Colecciones activas ({activas.length})
+                Colecciones activas
+                <span className="ml-1.5 text-muted-foreground font-normal">({activas.length})</span>
               </h2>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                Visibles en /descubre y en el sitemap. Las 8 primeras aparecen en la home.
-                {savingOrder && <span className="ml-2 text-amber-600">Guardando orden…</span>}
+                Arrastra las filas para cambiar el orden.
+                {savingOrder && <span className="ml-2 font-medium text-amber-600">Guardando…</span>}
               </p>
             </div>
-            <span className="shrink-0 rounded-lg bg-primary/10 px-2.5 py-1 text-[10px] font-bold text-primary">
-              HOME = top 8 · Arrastra para reordenar
-            </span>
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="hidden rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 sm:inline-flex">
+                Visibles en /descubre
+              </span>
+            </div>
           </div>
         </div>
-        <div className={sectionBody}>
+        <div className="divide-y divide-border/40">
           {activas.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No hay colecciones activas.</p>
+            <p className="px-5 py-8 text-center text-sm text-muted-foreground">No hay colecciones activas.</p>
           ) : (
-            <div className="space-y-0.5">
+            <>
               {activas.map((col, idx) => (
-                <div
-                  key={col.id}
-                  draggable
-                  onDragStart={(e) => {
-                    setDragIdx(idx);
-                    e.dataTransfer.effectAllowed = 'move';
-                    if (e.currentTarget instanceof HTMLElement) {
-                      e.currentTarget.style.opacity = '0.5';
-                    }
-                  }}
-                  onDragEnd={(e) => {
-                    if (e.currentTarget instanceof HTMLElement) {
-                      e.currentTarget.style.opacity = '1';
-                    }
-                    if (dragIdx !== null && dragOverIdx !== null && dragIdx !== dragOverIdx) {
-                      handleDragEnd(dragIdx, dragOverIdx);
-                    }
-                    setDragIdx(null);
-                    setDragOverIdx(null);
-                  }}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = 'move';
-                    setDragOverIdx(idx);
-                  }}
-                  onDragLeave={() => {
-                    if (dragOverIdx === idx) setDragOverIdx(null);
-                  }}
-                  className={`transition-all duration-150 ${
-                    dragOverIdx === idx && dragIdx !== null && dragIdx !== idx
-                      ? dragIdx < idx
-                        ? 'border-b-2 border-primary/60'
-                        : 'border-t-2 border-primary/60'
-                      : ''
-                  }`}
-                >
-                  <ColeccionRow
-                    col={col}
-                    idx={idx}
-                    totalActivas={activas.length}
-                    counts={counts}
-                    colPuebloCount={colCounts[col.id] ?? null}
-                    isEditing={editingId === col.id}
-                    onToggleEdit={() => setEditingId(editingId === col.id ? null : col.id)}
-                    onToggleActiva={() => toggleActiva(col)}
-                    onDelete={() => setDeleteTarget(col)}
-                    onSaved={() => { setEditingId(null); fetchAll(); }}
-                    isDragging={dragIdx === idx}
-                  />
+                <div key={col.id}>
+                  {/* Separador HOME/resto */}
+                  {idx === 8 && (
+                    <div className="flex items-center gap-3 bg-muted/20 px-5 py-2">
+                      <div className="h-px flex-1 bg-border/60" />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                        Resto de colecciones (no aparecen en Home)
+                      </span>
+                      <div className="h-px flex-1 bg-border/60" />
+                    </div>
+                  )}
+                  <div
+                    draggable
+                    onDragStart={(e) => {
+                      setDragIdx(idx);
+                      e.dataTransfer.effectAllowed = 'move';
+                      if (e.currentTarget instanceof HTMLElement) {
+                        e.currentTarget.style.opacity = '0.4';
+                      }
+                    }}
+                    onDragEnd={(e) => {
+                      if (e.currentTarget instanceof HTMLElement) {
+                        e.currentTarget.style.opacity = '1';
+                      }
+                      if (dragIdx !== null && dragOverIdx !== null && dragIdx !== dragOverIdx) {
+                        handleDragEnd(dragIdx, dragOverIdx);
+                      }
+                      setDragIdx(null);
+                      setDragOverIdx(null);
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = 'move';
+                      setDragOverIdx(idx);
+                    }}
+                    onDragLeave={() => {
+                      if (dragOverIdx === idx) setDragOverIdx(null);
+                    }}
+                    className={`transition-all duration-100 ${
+                      dragOverIdx === idx && dragIdx !== null && dragIdx !== idx
+                        ? 'bg-primary/5 ring-1 ring-inset ring-primary/30'
+                        : ''
+                    }`}
+                  >
+                    <ColeccionRow
+                      col={col}
+                      idx={idx}
+                      totalActivas={activas.length}
+                      counts={counts}
+                      colPuebloCount={colCounts[col.id] ?? null}
+                      isEditing={editingId === col.id}
+                      onToggleEdit={() => setEditingId(editingId === col.id ? null : col.id)}
+                      onToggleActiva={() => toggleActiva(col)}
+                      onDelete={() => setDeleteTarget(col)}
+                      onSaved={() => { setEditingId(null); fetchAll(); }}
+                      isDragging={dragIdx === idx}
+                    />
+                  </div>
                 </div>
               ))}
-            </div>
+            </>
           )}
         </div>
       </div>
@@ -439,37 +470,32 @@ export default function ColeccionesAdmin() {
         <div className={`${sectionCard} mt-6`}>
           <div className={sectionHead}>
             <h2 className="text-sm font-semibold text-foreground">
-              Colecciones desactivadas ({inactivas.length})
+              Colecciones desactivadas
+              <span className="ml-1.5 text-muted-foreground font-normal">({inactivas.length})</span>
             </h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              No se muestran en la web hasta activarlas
+              No se muestran en la web. Puedes activarlas cuando quieras.
             </p>
           </div>
-          <div className={sectionBody}>
-            <div className="space-y-2">
-              {inactivas.map((col, idx) => (
-                <ColeccionRow
-                  key={col.id}
-                  col={col}
-                  idx={idx}
-                  totalActivas={0}
-                  counts={counts}
-                  colPuebloCount={colCounts[col.id] ?? null}
-                  isEditing={editingId === col.id}
-                  onToggleEdit={() => setEditingId(editingId === col.id ? null : col.id)}
-                  onToggleActiva={() => toggleActiva(col)}
-                  onDelete={() => setDeleteTarget(col)}
-                  onSaved={() => { setEditingId(null); fetchAll(); }}
-                />
-              ))}
-            </div>
+          <div className="divide-y divide-border/40">
+            {inactivas.map((col, idx) => (
+              <ColeccionRow
+                key={col.id}
+                col={col}
+                idx={idx}
+                totalActivas={0}
+                counts={counts}
+                colPuebloCount={colCounts[col.id] ?? null}
+                isEditing={editingId === col.id}
+                onToggleEdit={() => setEditingId(editingId === col.id ? null : col.id)}
+                onToggleActiva={() => toggleActiva(col)}
+                onDelete={() => setDeleteTarget(col)}
+                onSaved={() => { setEditingId(null); fetchAll(); }}
+              />
+            ))}
           </div>
         </div>
       )}
-
-      <p className="mt-6 text-center text-xs text-muted-foreground">
-        Todas las colecciones se gestionan desde aquí. Las 8 primeras colecciones activas aparecen en la página de inicio.
-      </p>
     </GestionAsociacionSubpageShell>
   );
 }
@@ -502,134 +528,111 @@ function ColeccionRow({
   isDragging?: boolean;
 }) {
   const isHome = col.activa && idx < 8;
-
   const displayCount = colPuebloCount;
 
   return (
-    <div className={`rounded-xl border transition-all ${
-      isDragging ? 'opacity-40 scale-[0.98]' : ''
-    } ${
-      col.activa
-        ? isHome
-          ? 'border-primary/30 bg-primary/[0.02]'
-          : 'border-border/70 bg-card'
-        : 'border-dashed border-border/50 bg-muted/20 opacity-75'
-    }`}>
-      <div className="flex items-stretch gap-0">
-        {/* Drag handle (solo activas) */}
+    <div className={`transition-all ${isDragging ? 'opacity-30 scale-[0.98]' : ''}`}>
+      <div className={`flex items-center gap-0 ${col.activa ? 'hover:bg-muted/20' : 'opacity-60 hover:opacity-80'} transition-colors`}>
+        {/* Drag handle + posición */}
         {col.activa && (
           <div
-            className="flex w-8 shrink-0 cursor-grab items-center justify-center rounded-l-xl border-r border-border/30 bg-muted/30 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground active:cursor-grabbing"
+            className="flex w-12 shrink-0 cursor-grab flex-col items-center justify-center gap-0.5 py-3 text-muted-foreground/40 transition-colors hover:text-muted-foreground active:cursor-grabbing"
             title="Arrastra para reordenar"
           >
-            <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor">
-              <circle cx="5" cy="3" r="1.2" />
-              <circle cx="11" cy="3" r="1.2" />
-              <circle cx="5" cy="8" r="1.2" />
-              <circle cx="11" cy="8" r="1.2" />
-              <circle cx="5" cy="13" r="1.2" />
-              <circle cx="11" cy="13" r="1.2" />
+            <span className="text-[10px] font-bold tabular-nums text-muted-foreground/50">{idx + 1}</span>
+            <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="5" cy="5" r="1.2" /><circle cx="11" cy="5" r="1.2" />
+              <circle cx="5" cy="11" r="1.2" /><circle cx="11" cy="11" r="1.2" />
             </svg>
           </div>
         )}
 
         {/* Miniatura */}
-        <div className={`relative w-20 shrink-0 overflow-hidden bg-muted sm:w-24 ${!col.activa ? 'rounded-l-xl' : ''}`}>
+        <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-muted sm:w-[88px]">
           {col.imagenUrl ? (
-            <Image
-              src={col.imagenUrl}
-              alt={col.titulo_i18n.es ?? ''}
-              fill
-              className="object-cover"
-              sizes="96px"
-            />
+            <Image src={col.imagenUrl} alt="" fill className="object-cover" sizes="88px" />
           ) : (
-            <div className="flex h-full items-center justify-center text-2xl text-muted-foreground/40">
-              📷
-            </div>
+            <div className="flex h-full w-full items-center justify-center text-lg text-muted-foreground/30">{col.icono || '📷'}</div>
           )}
           {isHome && (
-            <div className="absolute left-0.5 top-0.5 rounded bg-primary/90 px-1 py-0.5 text-[8px] font-bold uppercase leading-none text-white shadow-sm">
+            <div className="absolute left-0 top-0 rounded-br-md bg-primary/90 px-1 py-0.5 text-[7px] font-bold uppercase leading-none text-white">
               HOME
             </div>
           )}
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-3">
-          <div className="flex flex-wrap items-center gap-1.5">
-            {col.activa && (
-              <span className="shrink-0 w-5 text-center text-[10px] font-bold tabular-nums text-muted-foreground/60">
-                {idx + 1}
-              </span>
-            )}
-            <span className="text-sm font-semibold text-foreground truncate">
-              {col.titulo_i18n.es}
-            </span>
+        {/* Info */}
+        <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-2.5">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-[13px] font-semibold text-foreground">{col.titulo_i18n.es}</span>
             {displayCount !== null && (
-              <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${
-                displayCount === 0
+              <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold tabular-nums leading-none ${
+                col.fuente === 'meteo'
+                  ? 'bg-sky-50 text-sky-600 dark:bg-sky-950/30 dark:text-sky-400'
+                  : displayCount === 0
                   ? 'bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400'
                   : displayCount < 3
                   ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400'
                   : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
               }`}>
-                {col.fuente === 'meteo' ? 'Dinámico' : `${displayCount} pueblo${displayCount !== 1 ? 's' : ''}`}
-              </span>
-            )}
-            <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-              {FUENTE_LABELS[col.fuente] ?? col.fuente}
-            </span>
-            {!col.activa && (
-              <span className="shrink-0 rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
-                Desactivada
+                {col.fuente === 'meteo' ? 'Dinámico' : `${displayCount}`}
               </span>
             )}
           </div>
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            /descubre/{col.slug} · Min: {col.minPueblos}
-          </p>
+          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+            <span className="truncate">/descubre/{col.slug}</span>
+            <span className="shrink-0 text-muted-foreground/30">·</span>
+            <span className="shrink-0">{FUENTE_LABELS[col.fuente] ?? col.fuente}</span>
+          </div>
         </div>
 
-        {/* Acciones con texto claro */}
-        <div className="flex items-center gap-1 border-l border-border/40 px-2">
+        {/* Acciones */}
+        <div className="flex shrink-0 items-center gap-0.5 px-3">
           <Link
             href={`/descubre/${col.slug}`}
             target="_blank"
-            className="rounded-md px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            title="Abrir la página pública en una nueva pestaña"
+            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            Ver
+            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+            <span className="hidden sm:inline">Ver</span>
           </Link>
           <button
-            onClick={onToggleActiva}
-            className={`rounded-md px-2 py-1.5 text-[11px] font-medium transition-colors ${
-              col.activa
-                ? 'text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30'
-                : 'text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/30'
-            }`}
-            title={col.activa ? 'Ocultar temporalmente esta página (no se elimina)' : 'Hacer visible esta página en la web'}
+            onClick={onToggleEdit}
+            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            {col.activa ? 'Desactivar' : 'Activar'}
+            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+            <span className="hidden sm:inline">Editar</span>
           </button>
           <button
-            onClick={onToggleEdit}
-            className="rounded-md px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            title="Editar título, descripción, foto y configuración SEO"
+            onClick={onToggleActiva}
+            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
+              col.activa
+                ? 'text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/30'
+                : 'text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/30'
+            }`}
+            title={col.activa ? 'Ocultar temporalmente (no elimina)' : 'Hacer visible en la web'}
           >
-            Editar
+            {col.activa ? (
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" /></svg>
+            ) : (
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+            )}
+            <span className="hidden sm:inline">{col.activa ? 'Ocultar' : 'Activar'}</span>
           </button>
           <button
             onClick={onDelete}
-            className="rounded-md px-2 py-1.5 text-[11px] font-medium text-red-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
-            title="Eliminar permanentemente esta colección"
+            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+            title="Eliminar permanentemente"
           >
-            Eliminar
+            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
           </button>
         </div>
       </div>
 
       {isEditing && (
-        <EditColeccionForm col={col} onSaved={onSaved} onCancel={onToggleEdit} />
+        <div className="border-t border-border/40">
+          <EditColeccionForm col={col} onSaved={onSaved} onCancel={onToggleEdit} />
+        </div>
       )}
     </div>
   );
