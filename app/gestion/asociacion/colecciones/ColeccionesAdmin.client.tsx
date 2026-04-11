@@ -87,11 +87,14 @@ const CATEGORY_LABELS: Record<string, string> = {
   ACCESIBILIDAD: '♿ Accesibilidad y práctica',
 };
 
+type PuebloCounts = { tags: Record<string, number>; servicios: Record<string, number> };
+
 export default function ColeccionesAdmin() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [colecciones, setColecciones] = useState<Coleccion[]>([]);
   const [tags, setTags] = useState<TagDef[]>([]);
+  const [counts, setCounts] = useState<PuebloCounts>({ tags: {}, servicios: {} });
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [showNew, setShowNew] = useState(false);
@@ -100,9 +103,10 @@ export default function ColeccionesAdmin() {
     try {
       setLoading(true);
       setErr(null);
-      const [resCol, resTags] = await Promise.all([
+      const [resCol, resTags, resCounts] = await Promise.all([
         fetch('/api/admin/colecciones', { credentials: 'include', cache: 'no-store' }),
         fetch('/api/public/tag-definiciones', { cache: 'no-store' }),
+        fetch('/api/public/caracteristicas/counts', { cache: 'no-store' }),
       ]);
       if (resCol.status === 401) { window.location.href = '/entrar'; return; }
       if (!resCol.ok) throw new Error(`Error ${resCol.status}`);
@@ -119,6 +123,13 @@ export default function ColeccionesAdmin() {
             if (Array.isArray(catTags)) flat.push(...(catTags as TagDef[]));
           }
           setTags(flat);
+        }
+      }
+
+      if (resCounts.ok) {
+        const countsData = await resCounts.json();
+        if (countsData && countsData.tags) {
+          setCounts(countsData);
         }
       }
     } catch (e: any) {
@@ -257,6 +268,7 @@ export default function ColeccionesAdmin() {
           tags={tags}
           usedTags={usedTags}
           usedServicios={usedServicios}
+          counts={counts}
           onCreated={() => { setShowNew(false); fetchAll(); }}
           onCancel={() => setShowNew(false)}
         />
@@ -281,6 +293,7 @@ export default function ColeccionesAdmin() {
                 <ColeccionRow
                   key={col.id}
                   col={col}
+                  counts={counts}
                   isEditing={editingId === col.id}
                   onToggleEdit={() => setEditingId(editingId === col.id ? null : col.id)}
                   onToggleActiva={() => toggleActiva(col)}
@@ -311,6 +324,7 @@ export default function ColeccionesAdmin() {
                 <ColeccionRow
                   key={col.id}
                   col={col}
+                  counts={counts}
                   isEditing={editingId === col.id}
                   onToggleEdit={() => setEditingId(editingId === col.id ? null : col.id)}
                   onToggleActiva={() => toggleActiva(col)}
@@ -337,6 +351,7 @@ export default function ColeccionesAdmin() {
 
 function ColeccionRow({
   col,
+  counts,
   isEditing,
   onToggleEdit,
   onToggleActiva,
@@ -345,6 +360,7 @@ function ColeccionRow({
   onSaved,
 }: {
   col: Coleccion;
+  counts: PuebloCounts;
   isEditing: boolean;
   onToggleEdit: () => void;
   onToggleActiva: () => void;
@@ -357,6 +373,12 @@ function ColeccionRow({
     : col.fuente === 'servicio' && col.filtro?.tipo
     ? col.filtro.tipo
     : '';
+
+  const puebloCount = col.fuente === 'caracteristica' && col.filtro?.tag
+    ? counts.tags[col.filtro.tag] ?? 0
+    : col.fuente === 'servicio' && col.filtro?.tipo
+    ? counts.servicios[col.filtro.tipo] ?? 0
+    : null;
 
   return (
     <div className={`rounded-xl border p-4 transition-all ${
@@ -375,14 +397,20 @@ function ColeccionRow({
             <h3 className="truncate text-sm font-semibold text-foreground">
               {col.titulo_i18n.es}
             </h3>
+            {puebloCount !== null && (
+              <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${
+                puebloCount === 0
+                  ? 'bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400'
+                  : puebloCount < 3
+                  ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400'
+                  : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
+              }`}>
+                {puebloCount} pueblo{puebloCount !== 1 ? 's' : ''}
+              </span>
+            )}
             <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
               {FUENTE_LABELS[col.fuente] ?? col.fuente}
             </span>
-            {filtroLabel && (
-              <span className="shrink-0 rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-950/30 dark:text-blue-400">
-                {filtroLabel}
-              </span>
-            )}
             {!col.activa && (
               <span className="shrink-0 rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
                 Desactivada
@@ -549,12 +577,14 @@ function NewColeccionForm({
   tags,
   usedTags,
   usedServicios,
+  counts,
   onCreated,
   onCancel,
 }: {
   tags: TagDef[];
   usedTags: Set<string>;
   usedServicios: Set<string>;
+  counts: PuebloCounts;
   onCreated: () => void;
   onCancel: () => void;
 }) {
@@ -777,19 +807,27 @@ function NewColeccionForm({
                       {CATEGORY_LABELS[cat] ?? cat}
                     </h4>
                     <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
-                      {catTags.map((tag) => (
-                        <button
-                          key={tag.id}
-                          onClick={() => selectTag(tag)}
-                          className="flex items-center gap-2 rounded-lg border border-border/60 bg-card px-3 py-2 text-left text-sm transition-all hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm"
-                        >
-                          <span
-                            className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
-                            style={{ backgroundColor: tag.color }}
-                          />
-                          <span className="truncate text-foreground">{tag.nombre_i18n.es ?? tag.tag}</span>
-                        </button>
-                      ))}
+                      {catTags.map((tag) => {
+                        const cnt = counts.tags[tag.tag] ?? 0;
+                        return (
+                          <button
+                            key={tag.id}
+                            onClick={() => selectTag(tag)}
+                            className="flex items-center gap-2 rounded-lg border border-border/60 bg-card px-3 py-2 text-left text-sm transition-all hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm"
+                          >
+                            <span
+                              className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                              style={{ backgroundColor: tag.color }}
+                            />
+                            <span className="min-w-0 flex-1 truncate text-foreground">{tag.nombre_i18n.es ?? tag.tag}</span>
+                            <span className={`shrink-0 rounded px-1 py-0.5 text-[10px] font-bold tabular-nums ${
+                              cnt === 0 ? 'text-muted-foreground/50' : cnt < 3 ? 'text-amber-600' : 'text-emerald-600'
+                            }`}>
+                              {cnt}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
@@ -812,16 +850,24 @@ function NewColeccionForm({
               </p>
             ) : (
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {availableServicios.map((srv) => (
-                  <button
-                    key={srv.tipo}
-                    onClick={() => selectServicio(srv)}
-                    className="flex items-center gap-2 rounded-lg border border-border/60 bg-card px-3 py-2.5 text-left text-sm transition-all hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm"
-                  >
-                    <span className="shrink-0 text-base">{srv.emoji}</span>
-                    <span className="truncate text-foreground">{srv.etiqueta}</span>
-                  </button>
-                ))}
+                {availableServicios.map((srv) => {
+                  const cnt = counts.servicios[srv.tipo] ?? 0;
+                  return (
+                    <button
+                      key={srv.tipo}
+                      onClick={() => selectServicio(srv)}
+                      className="flex items-center gap-2 rounded-lg border border-border/60 bg-card px-3 py-2.5 text-left text-sm transition-all hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm"
+                    >
+                      <span className="shrink-0 text-base">{srv.emoji}</span>
+                      <span className="min-w-0 flex-1 truncate text-foreground">{srv.etiqueta}</span>
+                      <span className={`shrink-0 rounded px-1 py-0.5 text-[10px] font-bold tabular-nums ${
+                        cnt === 0 ? 'text-muted-foreground/50' : cnt < 3 ? 'text-amber-600' : 'text-emerald-600'
+                      }`}>
+                        {cnt}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
