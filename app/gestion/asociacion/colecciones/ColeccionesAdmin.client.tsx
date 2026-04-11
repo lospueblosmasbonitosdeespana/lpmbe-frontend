@@ -100,6 +100,9 @@ export default function ColeccionesAdmin() {
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [showNew, setShowNew] = useState(false);
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -234,10 +237,6 @@ export default function ColeccionesAdmin() {
 
   const activas = colecciones.filter((c) => c.activa);
   const inactivas = colecciones.filter((c) => !c.activa);
-
-  const [dragIdx, setDragIdx] = useState<number | null>(null);
-  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
-  const [savingOrder, setSavingOrder] = useState(false);
 
   async function persistOrder(reordered: Coleccion[]) {
     setSavingOrder(true);
