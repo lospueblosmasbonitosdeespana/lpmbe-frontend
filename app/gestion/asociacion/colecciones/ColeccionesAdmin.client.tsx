@@ -154,7 +154,7 @@ export default function ColeccionesAdmin() {
   const usedServicios = useMemo(() => {
     const set = new Set<string>();
     for (const col of colecciones) {
-      if (col.fuente === 'servicio' && col.filtro?.tipo) {
+      if ((col.fuente === 'servicio' || col.fuente === 'service') && col.filtro?.tipo) {
         set.add(col.filtro.tipo);
       }
     }
@@ -339,9 +339,7 @@ export default function ColeccionesAdmin() {
       )}
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
-        Las 11 colecciones originales (castillos, montaña, costeros…) están incluidas por defecto y no aparecen aquí.
-        <br />
-        Aquí se gestionan las colecciones nuevas creadas por el equipo.
+        Todas las colecciones se gestionan desde aquí. Puedes activar, desactivar y reordenar cualquiera.
       </p>
     </GestionAsociacionSubpageShell>
   );
@@ -370,13 +368,15 @@ function ColeccionRow({
 }) {
   const filtroLabel = col.fuente === 'caracteristica' && col.filtro?.tag
     ? col.filtro.tag
-    : col.fuente === 'servicio' && col.filtro?.tipo
+    : (col.fuente === 'servicio' || col.fuente === 'service') && col.filtro?.tipo
     ? col.filtro.tipo
-    : '';
+    : col.fuente === 'highlight' && col.filtro?.etiqueta
+    ? String(col.filtro.etiqueta)
+    : col.fuente;
 
   const puebloCount = col.fuente === 'caracteristica' && col.filtro?.tag
     ? counts.tags[col.filtro.tag] ?? 0
-    : col.fuente === 'servicio' && col.filtro?.tipo
+    : (col.fuente === 'servicio' || col.fuente === 'service') && col.filtro?.tipo
     ? counts.servicios[col.filtro.tipo] ?? 0
     : null;
 

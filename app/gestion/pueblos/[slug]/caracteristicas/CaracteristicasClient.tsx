@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 
 /* ────── Tipos ────── */
 
@@ -17,6 +17,8 @@ type TagDef = {
   tieneVisitable: boolean;
 };
 
+type MxItem = { id: number; titulo: string; foto: string | null; slug: string };
+
 type CaracteristicaExistente = {
   id: number;
   tagId: number;
@@ -27,10 +29,12 @@ type CaracteristicaExistente = {
   cantidad: number | null;
   poiId: number | null;
   pageId: number | null;
+  multiexperienciaId: number | null;
   fotoOverride: string | null;
   tag: TagDef;
   poi?: { id: number; nombre: string; foto: string | null } | null;
   page?: { id: number; titulo: string; coverUrl: string | null } | null;
+  multiexperiencia?: MxItem | null;
 };
 
 type LocalState = {
@@ -42,15 +46,17 @@ type LocalState = {
   detalle: string;
   poiId: number | null;
   pageId: number | null;
+  multiexperienciaId: number | null;
   fotoOverride: string;
 };
 
-type Suggestion = {
+type LinkedContent = {
   pois: { id: number; nombre: string; foto: string | null }[];
-  pages: { id: number; titulo: string; coverUrl: string | null }[];
+  pages: { id: number; titulo: string; slug: string; coverUrl: string | null }[];
+  multiexperiencias: MxItem[];
 };
 
-/* ────── Estilos reutilizables (misma familia que en-cifras, descripcion) ────── */
+/* ────── Estilos ────── */
 
 const field =
   'mt-1.5 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm shadow-sm transition-colors focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20';
@@ -62,7 +68,7 @@ const sectionCard = 'overflow-hidden rounded-2xl border border-border/80 bg-card
 const sectionHead = 'border-b border-border/60 bg-muted/30 px-5 py-3 sm:px-6';
 const sectionBody = 'p-5 sm:p-6';
 
-/* ────── Nombres legibles de categorías ────── */
+/* ────── Labels ────── */
 
 const CATEGORY_LABELS: Record<string, string> = {
   PATRIMONIO_MILITAR: '🏰 Patrimonio Militar',
@@ -78,8 +84,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 function categoryLabel(cat: string) {
   return CATEGORY_LABELS[cat] ?? cat;
 }
-
-/* ────── Nombres de nivel para UI ────── */
 
 const NIVEL_LABELS: Record<string, string> = {
   VISITABLE: '🏰 Visitable / Monumental',
@@ -121,7 +125,7 @@ export default function CaracteristicasClient({
 
   const [tagsByCategory, setTagsByCategory] = useState<Record<string, TagDef[]>>({});
   const [localState, setLocalState] = useState<Record<number, LocalState>>({});
-  const [suggestions, setSuggestions] = useState<Record<number, Suggestion>>({});
+  const [linkedContent, setLinkedContent] = useState<LinkedContent | null>(null);
   const [expandedTag, setExpandedTag] = useState<number | null>(null);
   const [filterText, setFilterText] = useState('');
 
@@ -141,15 +145,8 @@ export default function CaracteristicasClient({
         }),
       ]);
 
-      if (existRes.status === 401) {
-        window.location.href = '/entrar';
-        return;
-      }
-      if (existRes.status === 403) {
-        setErr('No tienes permisos para editar este pueblo.');
-        return;
-      }
-
+      if (existRes.status === 401) { window.location.href = '/entrar'; return; }
+      if (existRes.status === 403) { setErr('No tienes permisos para editar este pueblo.'); return; }
       if (!tagsRes.ok) throw new Error('Error al cargar tags');
       if (!existRes.ok) throw new Error('Error al cargar características');
 
@@ -175,6 +172,7 @@ export default function CaracteristicasClient({
                 detalle: ex.detalle ?? '',
                 poiId: ex.poiId,
                 pageId: ex.pageId,
+                multiexperienciaId: ex.multiexperienciaId ?? null,
                 fotoOverride: ex.fotoOverride ?? '',
               }
             : {
@@ -186,6 +184,7 @@ export default function CaracteristicasClient({
                 detalle: '',
                 poiId: null,
                 pageId: null,
+                multiexperienciaId: null,
                 fotoOverride: '',
               };
         }
@@ -198,9 +197,17 @@ export default function CaracteristicasClient({
     }
   }, [puebloId]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useEffect(() => { loadData(); }, [loadData]);
+
+  const loadLinkedContent = useCallback(async () => {
+    if (linkedContent) return;
+    try {
+      const res = await fetch(`/api/admin/pueblos/${puebloId}/linked-content`, {
+        credentials: 'include', cache: 'no-store',
+      });
+      if (res.ok) setLinkedContent(await res.json());
+    } catch { /* silently fail */ }
+  }, [puebloId, linkedContent]);
 
   function toggle(tagId: number) {
     setLocalState((prev) => {
@@ -210,36 +217,34 @@ export default function CaracteristicasClient({
     });
   }
 
-  function updateField(tagId: number, field: keyof LocalState, value: any) {
+  function updateField(tagId: number, key: keyof LocalState, value: any) {
     setLocalState((prev) => {
       const cur = prev[tagId];
       if (!cur) return prev;
-      return { ...prev, [tagId]: { ...cur, [field]: value } };
+      return { ...prev, [tagId]: { ...cur, [key]: value } };
     });
-  }
-
-  async function loadSuggestions(tagId: number, tagName: string) {
-    if (suggestions[tagId]) return;
-    try {
-      const res = await fetch(`/api/admin/pueblos/${puebloId}/caracteristicas/suggest/${tagName}`, {
-        credentials: 'include',
-        cache: 'no-store',
-      });
-      if (res.ok) {
-        const data: Suggestion = await res.json();
-        setSuggestions((prev) => ({ ...prev, [tagId]: data }));
-      }
-    } catch {
-      // silently fail
-    }
   }
 
   function handleExpand(tag: TagDef) {
     const newId = expandedTag === tag.id ? null : tag.id;
     setExpandedTag(newId);
-    if (newId !== null) {
-      loadSuggestions(tag.id, tag.tag);
-    }
+    if (newId !== null) loadLinkedContent();
+  }
+
+  function selectLinked(tagId: number, type: 'poi' | 'page' | 'mx', id: number | null) {
+    setLocalState(prev => {
+      const cur = prev[tagId];
+      if (!cur) return prev;
+      return {
+        ...prev,
+        [tagId]: {
+          ...cur,
+          poiId: type === 'poi' ? id : null,
+          pageId: type === 'page' ? id : null,
+          multiexperienciaId: type === 'mx' ? id : null,
+        },
+      };
+    });
   }
 
   async function handleGuardar() {
@@ -259,6 +264,7 @@ export default function CaracteristicasClient({
             cantidad: s.cantidad != null && s.cantidad > 0 ? s.cantidad : null,
             poiId: s.poiId,
             pageId: s.pageId,
+            multiexperienciaId: s.multiexperienciaId,
             fotoOverride: s.fotoOverride.trim() || null,
           };
         });
@@ -270,14 +276,8 @@ export default function CaracteristicasClient({
         credentials: 'include',
       });
 
-      if (res.status === 401) {
-        window.location.href = '/entrar';
-        return;
-      }
-      if (res.status === 403) {
-        setMensaje('No tienes permisos');
-        return;
-      }
+      if (res.status === 401) { window.location.href = '/entrar'; return; }
+      if (res.status === 403) { setMensaje('No tienes permisos'); return; }
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
         throw new Error((d as { error?: string }).error ?? `Error ${res.status}`);
@@ -298,9 +298,7 @@ export default function CaracteristicasClient({
     return (
       <div className="space-y-4 animate-pulse">
         <div className="h-12 rounded-2xl bg-muted/60" />
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-40 rounded-2xl bg-muted/50" />
-        ))}
+        {[1, 2, 3].map((i) => <div key={i} className="h-40 rounded-2xl bg-muted/50" />)}
       </div>
     );
   }
@@ -369,15 +367,10 @@ export default function CaracteristicasClient({
                           : 'border-border/60 bg-muted/10 hover:border-border'
                       }`}
                     >
-                      {/* Toggle row */}
+                      {/* Toggle */}
                       <div className="flex items-center gap-3">
                         <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
-                          <input
-                            type="checkbox"
-                            checked={state.activo}
-                            onChange={() => toggle(tag.id)}
-                            className="h-4 w-4 shrink-0 rounded border-input text-amber-600 accent-amber-600"
-                          />
+                          <input type="checkbox" checked={state.activo} onChange={() => toggle(tag.id)} className="h-4 w-4 shrink-0 rounded border-input text-amber-600 accent-amber-600" />
                           <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{nombre}</span>
                         </label>
                         {state.activo && (
@@ -385,24 +378,14 @@ export default function CaracteristicasClient({
                             <div className="flex items-center gap-1" title="¿Cuántos hay? (ej. 8 palacios)">
                               <span className="text-[10px] text-muted-foreground">×</span>
                               <input
-                                type="number"
-                                min={1}
-                                max={99}
+                                type="number" min={1} max={99}
                                 value={state.cantidad ?? ''}
-                                onChange={(e) => {
-                                  const v = e.target.value ? parseInt(e.target.value, 10) : null;
-                                  updateField(tag.id, 'cantidad', v);
-                                }}
+                                onChange={(e) => updateField(tag.id, 'cantidad', e.target.value ? parseInt(e.target.value, 10) : null)}
                                 placeholder="1"
                                 className="h-7 w-11 rounded-lg border border-input bg-background px-1.5 text-center text-xs tabular-nums shadow-sm focus-visible:border-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20"
                               />
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => handleExpand(tag)}
-                              className="text-xs font-medium text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300"
-                              title="Editar detalles"
-                            >
+                            <button type="button" onClick={() => handleExpand(tag)} className="text-xs font-medium text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300" title="Editar detalles">
                               {isExpanded ? '▲' : '▼'}
                             </button>
                           </div>
@@ -412,48 +395,29 @@ export default function CaracteristicasClient({
                       {/* Detalles expandidos */}
                       {state.activo && isExpanded && (
                         <div className="mt-3 space-y-3 border-t border-border/40 pt-3">
-                          {/* Nivel */}
                           {niveles && niveles.length > 0 && (
                             <div>
                               <label className="text-xs font-medium text-muted-foreground">Nivel / Estado</label>
-                              <select
-                                value={state.nivel ?? ''}
-                                onChange={(e) => updateField(tag.id, 'nivel', e.target.value || null)}
-                                className={field}
-                              >
+                              <select value={state.nivel ?? ''} onChange={(e) => updateField(tag.id, 'nivel', e.target.value || null)} className={field}>
                                 <option value="">— Sin especificar —</option>
-                                {niveles.map((n) => (
-                                  <option key={n} value={n}>{nivelLabel(n)}</option>
-                                ))}
+                                {niveles.map((n) => <option key={n} value={n}>{nivelLabel(n)}</option>)}
                               </select>
                             </div>
                           )}
 
-                          {/* Siglo */}
                           {tag.tieneSiglo && (
                             <div>
                               <label className="text-xs font-medium text-muted-foreground">Siglo / Época</label>
-                              <input
-                                type="text"
-                                value={state.siglo}
-                                onChange={(e) => updateField(tag.id, 'siglo', e.target.value)}
-                                placeholder="Ej: S. XII, S. XVI-XVIII"
-                                maxLength={30}
-                                className={field}
-                              />
+                              <input type="text" value={state.siglo} onChange={(e) => updateField(tag.id, 'siglo', e.target.value)} placeholder="Ej: S. XII, S. XVI-XVIII" maxLength={30} className={field} />
                             </div>
                           )}
 
-                          {/* Visitable */}
                           {tag.tieneVisitable && (
                             <div>
                               <label className="text-xs font-medium text-muted-foreground">¿Es visitable?</label>
                               <select
                                 value={state.visitable === true ? 'true' : state.visitable === false ? 'false' : ''}
-                                onChange={(e) => {
-                                  const v = e.target.value;
-                                  updateField(tag.id, 'visitable', v === '' ? null : v === 'true');
-                                }}
+                                onChange={(e) => updateField(tag.id, 'visitable', e.target.value === '' ? null : e.target.value === 'true')}
                                 className={field}
                               >
                                 <option value="">— Sin especificar —</option>
@@ -463,34 +427,21 @@ export default function CaracteristicasClient({
                             </div>
                           )}
 
-                          {/* Detalle */}
                           <div>
                             <label className="text-xs font-medium text-muted-foreground">Detalle (opcional)</label>
-                            <input
-                              type="text"
-                              value={state.detalle}
-                              onChange={(e) => updateField(tag.id, 'detalle', e.target.value)}
-                              placeholder="Breve nota visible en la web"
-                              maxLength={120}
-                              className={field}
-                            />
+                            <input type="text" value={state.detalle} onChange={(e) => updateField(tag.id, 'detalle', e.target.value)} placeholder="Breve nota visible en la web" maxLength={120} className={field} />
                           </div>
 
-                          {/* Vincular POI / Page */}
-                          <SuggestionPicker
+                          {/* Contenido vinculado */}
+                          <ContentLinker
                             tagId={tag.id}
-                            suggestion={suggestions[tag.id]}
+                            puebloId={puebloId}
+                            linkedContent={linkedContent}
                             selectedPoiId={state.poiId}
                             selectedPageId={state.pageId}
+                            selectedMxId={state.multiexperienciaId}
                             fotoOverride={state.fotoOverride}
-                            onSelectPoi={(id) => {
-                              updateField(tag.id, 'poiId', id);
-                              updateField(tag.id, 'pageId', null);
-                            }}
-                            onSelectPage={(id) => {
-                              updateField(tag.id, 'pageId', id);
-                              updateField(tag.id, 'poiId', null);
-                            }}
+                            onSelect={(type, id) => selectLinked(tag.id, type, id)}
                             onFotoOverride={(url) => updateField(tag.id, 'fotoOverride', url)}
                           />
                         </div>
@@ -504,17 +455,14 @@ export default function CaracteristicasClient({
         );
       })}
 
-      {/* Barra de guardado */}
+      {/* Barra guardado */}
       <div className="sticky bottom-4 z-10 flex flex-col gap-3 rounded-2xl border border-border/80 bg-card/95 px-5 py-4 shadow-lg backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
           <span className="font-semibold text-foreground">{activoCount}</span> característica{activoCount !== 1 ? 's' : ''} seleccionada{activoCount !== 1 ? 's' : ''}
         </p>
         <div className="flex items-center gap-3">
           {mensaje && (
-            <p
-              className={`text-sm font-medium ${mensajeEsError ? 'text-destructive' : 'text-emerald-700 dark:text-emerald-400'}`}
-              role="status"
-            >
+            <p className={`text-sm font-medium ${mensajeEsError ? 'text-destructive' : 'text-emerald-700 dark:text-emerald-400'}`} role="status">
               {mensaje}
             </p>
           )}
@@ -527,105 +475,188 @@ export default function CaracteristicasClient({
   );
 }
 
-/* ────── Sub-componente: selector de POI / Page / foto ────── */
+/* ────── Sub-componente: selector de contenido vinculado ────── */
 
-function SuggestionPicker({
+function ContentLinker({
   tagId,
-  suggestion,
+  puebloId,
+  linkedContent,
   selectedPoiId,
   selectedPageId,
+  selectedMxId,
   fotoOverride,
-  onSelectPoi,
-  onSelectPage,
+  onSelect,
   onFotoOverride,
 }: {
   tagId: number;
-  suggestion?: Suggestion;
+  puebloId: number;
+  linkedContent: LinkedContent | null;
   selectedPoiId: number | null;
   selectedPageId: number | null;
+  selectedMxId: number | null;
   fotoOverride: string;
-  onSelectPoi: (id: number | null) => void;
-  onSelectPage: (id: number | null) => void;
+  onSelect: (type: 'poi' | 'page' | 'mx', id: number | null) => void;
   onFotoOverride: (url: string) => void;
 }) {
-  const hasSuggestions = suggestion && (suggestion.pois.length > 0 || suggestion.pages.length > 0);
+  const [showList, setShowList] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const hasLink = selectedPoiId || selectedPageId || selectedMxId;
+
+  const selectedName = useMemo(() => {
+    if (!linkedContent) return null;
+    if (selectedPoiId) {
+      const p = linkedContent.pois.find(x => x.id === selectedPoiId);
+      return p ? `📍 ${p.nombre}` : null;
+    }
+    if (selectedMxId) {
+      const mx = linkedContent.multiexperiencias.find(x => x.id === selectedMxId);
+      return mx ? `🗺️ ${mx.titulo}` : null;
+    }
+    if (selectedPageId) {
+      const pg = linkedContent.pages.find(x => x.id === selectedPageId);
+      return pg ? `📄 ${pg.titulo}` : null;
+    }
+    return null;
+  }, [linkedContent, selectedPoiId, selectedPageId, selectedMxId]);
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch(`/api/admin/pueblos/${puebloId}/media`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Error al subir imagen');
+      const data = await res.json();
+      if (data.url) onFotoOverride(data.url);
+    } catch {
+      /* ignore */
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  }
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground">Foto para colecciones</p>
+      <p className="text-xs font-semibold text-muted-foreground">Imagen y enlace para colecciones</p>
+      <p className="text-[11px] text-muted-foreground/80">
+        Si esta característica pertenece a un contenido existente del pueblo (POI, experiencia o página temática),
+        vincúlalo para usar su foto en la tarjeta de colección y enlazar directamente.
+      </p>
 
-      {!suggestion && (
-        <p className="text-xs text-muted-foreground/70 italic">Cargando sugerencias…</p>
+      {/* Enlace actual o botón para vincular */}
+      {hasLink && selectedName ? (
+        <div className="flex items-center gap-2 rounded-lg border border-amber-300/50 bg-amber-50/40 px-3 py-2 text-xs dark:border-amber-700/40 dark:bg-amber-950/20">
+          <span className="flex-1 truncate font-medium">{selectedName}</span>
+          <button type="button" onClick={() => { onSelect('poi', null); setShowList(false); }} className="shrink-0 text-muted-foreground hover:text-destructive">✕</button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowList(!showList)}
+          className="w-full rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground hover:border-amber-400 hover:text-foreground transition-colors"
+        >
+          {showList ? '▲ Cerrar lista' : '🔗 Vincular a un contenido existente'}
+        </button>
       )}
 
-      {suggestion && !hasSuggestions && (
-        <p className="text-xs text-muted-foreground/70">No se encontraron POIs ni páginas relacionadas.</p>
-      )}
+      {/* Lista expandida de contenidos */}
+      {showList && linkedContent && (
+        <div className="max-h-52 overflow-y-auto rounded-xl border border-border/60 bg-background">
+          {linkedContent.pois.length > 0 && (
+            <div>
+              <div className="sticky top-0 bg-muted/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Puntos de interés (POIs)
+              </div>
+              {linkedContent.pois.map(p => (
+                <button
+                  key={`poi-${p.id}`} type="button"
+                  onClick={() => { onSelect('poi', p.id); setShowList(false); }}
+                  className={`flex w-full items-center gap-2 px-3 py-1.5 text-xs hover:bg-muted/30 transition-colors ${selectedPoiId === p.id ? 'bg-amber-50/50 dark:bg-amber-950/20' : ''}`}
+                >
+                  {p.foto ? <img src={p.foto} alt="" className="h-6 w-6 shrink-0 rounded object-cover" /> : <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted text-[10px]">📍</span>}
+                  <span className="truncate">{p.nombre}</span>
+                  {p.foto && <span className="ml-auto shrink-0 text-[10px] text-emerald-600">con foto</span>}
+                </button>
+              ))}
+            </div>
+          )}
 
-      {hasSuggestions && (
-        <div className="space-y-1.5">
-          {suggestion!.pois.map((p) => (
-            <label
-              key={`poi-${p.id}`}
-              className={`flex cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs transition-colors ${
-                selectedPoiId === p.id ? 'border-amber-400 bg-amber-50/60 dark:border-amber-700 dark:bg-amber-950/30' : 'border-border/50 hover:border-border'
-              }`}
-            >
-              <input
-                type="radio"
-                name={`foto-source-${tagId}`}
-                checked={selectedPoiId === p.id}
-                onChange={() => onSelectPoi(p.id)}
-                className="h-3 w-3 accent-amber-600"
-              />
-              {p.foto && (
-                <img src={p.foto} alt="" className="h-6 w-6 shrink-0 rounded object-cover" />
-              )}
-              <span className="truncate">POI: {p.nombre}</span>
-            </label>
-          ))}
-          {suggestion!.pages.map((p) => (
-            <label
-              key={`page-${p.id}`}
-              className={`flex cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs transition-colors ${
-                selectedPageId === p.id ? 'border-amber-400 bg-amber-50/60 dark:border-amber-700 dark:bg-amber-950/30' : 'border-border/50 hover:border-border'
-              }`}
-            >
-              <input
-                type="radio"
-                name={`foto-source-${tagId}`}
-                checked={selectedPageId === p.id}
-                onChange={() => onSelectPage(p.id)}
-                className="h-3 w-3 accent-amber-600"
-              />
-              {p.coverUrl && (
-                <img src={p.coverUrl} alt="" className="h-6 w-6 shrink-0 rounded object-cover" />
-              )}
-              <span className="truncate">Página: {p.titulo}</span>
-            </label>
-          ))}
-          {(selectedPoiId || selectedPageId) && (
-            <button
-              type="button"
-              onClick={() => { onSelectPoi(null); onSelectPage(null); }}
-              className="text-xs text-muted-foreground hover:text-foreground"
-            >
-              ✕ Quitar enlace
-            </button>
+          {linkedContent.multiexperiencias.length > 0 && (
+            <div>
+              <div className="sticky top-0 bg-muted/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Experiencias
+              </div>
+              {linkedContent.multiexperiencias.map(mx => (
+                <button
+                  key={`mx-${mx.id}`} type="button"
+                  onClick={() => { onSelect('mx', mx.id); setShowList(false); }}
+                  className={`flex w-full items-center gap-2 px-3 py-1.5 text-xs hover:bg-muted/30 transition-colors ${selectedMxId === mx.id ? 'bg-amber-50/50 dark:bg-amber-950/20' : ''}`}
+                >
+                  {mx.foto ? <img src={mx.foto} alt="" className="h-6 w-6 shrink-0 rounded object-cover" /> : <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted text-[10px]">🗺️</span>}
+                  <span className="truncate">{mx.titulo}</span>
+                  {mx.foto && <span className="ml-auto shrink-0 text-[10px] text-emerald-600">con foto</span>}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {linkedContent.pages.length > 0 && (
+            <div>
+              <div className="sticky top-0 bg-muted/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Páginas temáticas
+              </div>
+              {linkedContent.pages.map(pg => (
+                <button
+                  key={`pg-${pg.id}`} type="button"
+                  onClick={() => { onSelect('page', pg.id); setShowList(false); }}
+                  className={`flex w-full items-center gap-2 px-3 py-1.5 text-xs hover:bg-muted/30 transition-colors ${selectedPageId === pg.id ? 'bg-amber-50/50 dark:bg-amber-950/20' : ''}`}
+                >
+                  {pg.coverUrl ? <img src={pg.coverUrl} alt="" className="h-6 w-6 shrink-0 rounded object-cover" /> : <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted text-[10px]">📄</span>}
+                  <span className="truncate">{pg.titulo}</span>
+                  {pg.coverUrl && <span className="ml-auto shrink-0 text-[10px] text-emerald-600">con foto</span>}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {linkedContent.pois.length === 0 && linkedContent.multiexperiencias.length === 0 && linkedContent.pages.length === 0 && (
+            <p className="px-3 py-4 text-center text-xs text-muted-foreground">No hay contenidos disponibles en este pueblo.</p>
           )}
         </div>
       )}
 
-      <div>
-        <label className="text-xs text-muted-foreground">URL de foto manual (override)</label>
-        <input
-          type="url"
-          value={fotoOverride}
-          onChange={(e) => onFotoOverride(e.target.value)}
-          placeholder="https://…"
-          className={field}
-        />
+      {/* Subida manual de foto */}
+      <div className="flex items-center gap-2">
+        <input ref={fileRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" id={`foto-upload-${tagId}`} />
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          className="rounded-lg border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground hover:border-primary hover:text-foreground transition-colors disabled:opacity-50"
+        >
+          {uploading ? 'Subiendo…' : '📷 Subir foto'}
+        </button>
+        {fotoOverride && (
+          <div className="flex items-center gap-1.5">
+            <img src={fotoOverride} alt="" className="h-7 w-7 rounded object-cover" />
+            <button type="button" onClick={() => onFotoOverride('')} className="text-xs text-muted-foreground hover:text-destructive">✕</button>
+          </div>
+        )}
       </div>
+      {!hasLink && !fotoOverride && (
+        <p className="text-[10px] text-muted-foreground/60 italic">Sin enlace ni foto: se usará la foto general del pueblo.</p>
+      )}
     </div>
   );
 }
