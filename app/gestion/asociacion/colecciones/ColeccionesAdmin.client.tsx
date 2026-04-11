@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { GestionAsociacionSubpageShell } from '../_components/GestionAsociacionSubpageShell';
+import { uploadImageToR2 } from '@/src/lib/uploadHelper';
 
 type Coleccion = {
   id: number;
@@ -196,24 +198,6 @@ export default function ColeccionesAdmin() {
     }
   }
 
-  async function updateOrden(col: Coleccion, newOrden: number) {
-    try {
-      const res = await fetch(`/api/admin/colecciones/${col.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orden: newOrden }),
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setColecciones((prev) =>
-        prev.map((c) => (c.id === col.id ? { ...c, orden: newOrden } : c))
-          .sort((a, b) => a.orden - b.orden),
-      );
-    } catch (e: any) {
-      setMensaje(`Error: ${e.message}`);
-    }
-  }
-
   const shell = {
     title: 'Colecciones',
     subtitle: 'Crear y gestionar páginas temáticas de "Descubre" basadas en características de los pueblos o en los servicios del mapa.',
@@ -251,6 +235,32 @@ export default function ColeccionesAdmin() {
   const activas = colecciones.filter((c) => c.activa);
   const inactivas = colecciones.filter((c) => !c.activa);
 
+  async function swapOrden(idx: number, direction: 'up' | 'down') {
+    const list = [...activas];
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= list.length) return;
+
+    const a = list[idx];
+    const b = list[targetIdx];
+    const items = [
+      { id: a.id, orden: b.orden },
+      { id: b.id, orden: a.orden },
+    ];
+
+    try {
+      const res = await fetch('/api/admin/colecciones/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items }),
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error(`Error ${res.status}`);
+      fetchAll();
+    } catch (e: any) {
+      setMensaje(`Error: ${e.message}`);
+    }
+  }
+
   return (
     <GestionAsociacionSubpageShell {...shell}>
       {mensaje && (
@@ -277,28 +287,38 @@ export default function ColeccionesAdmin() {
       {/* Activas */}
       <div className={sectionCard}>
         <div className={sectionHead}>
-          <h2 className="text-sm font-semibold text-foreground">
-            Colecciones activas ({activas.length})
-          </h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Visibles en /descubre y en el sitemap
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">
+                Colecciones activas ({activas.length})
+              </h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Visibles en /descubre y en el sitemap. Las 8 primeras aparecen en la home.
+              </p>
+            </div>
+            <span className="shrink-0 rounded-lg bg-primary/10 px-2.5 py-1 text-[10px] font-bold text-primary">
+              HOME = top 8
+            </span>
+          </div>
         </div>
         <div className={sectionBody}>
           {activas.length === 0 ? (
             <p className="text-sm text-muted-foreground">No hay colecciones activas.</p>
           ) : (
             <div className="space-y-2">
-              {activas.map((col) => (
+              {activas.map((col, idx) => (
                 <ColeccionRow
                   key={col.id}
                   col={col}
+                  idx={idx}
+                  totalActivas={activas.length}
                   counts={counts}
                   isEditing={editingId === col.id}
                   onToggleEdit={() => setEditingId(editingId === col.id ? null : col.id)}
                   onToggleActiva={() => toggleActiva(col)}
                   onDelete={() => deleteCol(col)}
-                  onUpdateOrden={(n) => updateOrden(col, n)}
+                  onMoveUp={() => swapOrden(idx, 'up')}
+                  onMoveDown={() => swapOrden(idx, 'down')}
                   onSaved={() => { setEditingId(null); fetchAll(); }}
                 />
               ))}
@@ -320,16 +340,17 @@ export default function ColeccionesAdmin() {
           </div>
           <div className={sectionBody}>
             <div className="space-y-2">
-              {inactivas.map((col) => (
+              {inactivas.map((col, idx) => (
                 <ColeccionRow
                   key={col.id}
                   col={col}
+                  idx={idx}
+                  totalActivas={0}
                   counts={counts}
                   isEditing={editingId === col.id}
                   onToggleEdit={() => setEditingId(editingId === col.id ? null : col.id)}
                   onToggleActiva={() => toggleActiva(col)}
                   onDelete={() => deleteCol(col)}
-                  onUpdateOrden={(n) => updateOrden(col, n)}
                   onSaved={() => { setEditingId(null); fetchAll(); }}
                 />
               ))}
@@ -339,7 +360,7 @@ export default function ColeccionesAdmin() {
       )}
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
-        Todas las colecciones se gestionan desde aquí. Puedes activar, desactivar y reordenar cualquiera.
+        Todas las colecciones se gestionan desde aquí. Las 8 primeras colecciones activas aparecen en la página de inicio.
       </p>
     </GestionAsociacionSubpageShell>
   );
@@ -349,30 +370,30 @@ export default function ColeccionesAdmin() {
 
 function ColeccionRow({
   col,
+  idx,
+  totalActivas,
   counts,
   isEditing,
   onToggleEdit,
   onToggleActiva,
   onDelete,
-  onUpdateOrden,
+  onMoveUp,
+  onMoveDown,
   onSaved,
 }: {
   col: Coleccion;
+  idx: number;
+  totalActivas: number;
   counts: PuebloCounts;
   isEditing: boolean;
   onToggleEdit: () => void;
   onToggleActiva: () => void;
   onDelete: () => void;
-  onUpdateOrden: (n: number) => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
   onSaved: () => void;
 }) {
-  const filtroLabel = col.fuente === 'caracteristica' && col.filtro?.tag
-    ? col.filtro.tag
-    : (col.fuente === 'servicio' || col.fuente === 'service') && col.filtro?.tipo
-    ? col.filtro.tipo
-    : col.fuente === 'highlight' && col.filtro?.etiqueta
-    ? String(col.filtro.etiqueta)
-    : col.fuente;
+  const isHome = col.activa && idx < 8;
 
   const puebloCount = col.fuente === 'caracteristica' && col.filtro?.tag
     ? counts.tags[col.filtro.tag] ?? 0
@@ -381,22 +402,41 @@ function ColeccionRow({
     : null;
 
   return (
-    <div className={`rounded-xl border p-4 transition-all ${
+    <div className={`rounded-xl border transition-all ${
       col.activa
-        ? 'border-border/70 bg-card'
+        ? isHome
+          ? 'border-primary/30 bg-primary/[0.02]'
+          : 'border-border/70 bg-card'
         : 'border-dashed border-border/50 bg-muted/20 opacity-75'
     }`}>
-      <div className="flex items-center gap-3">
-        <div
-          className="h-3 w-3 shrink-0 rounded-full"
-          style={{ backgroundColor: col.color }}
-        />
+      <div className="flex items-stretch gap-0">
+        {/* Miniatura */}
+        <div className="relative w-20 shrink-0 overflow-hidden rounded-l-xl bg-muted sm:w-24">
+          {col.imagenUrl ? (
+            <Image
+              src={col.imagenUrl}
+              alt={col.titulo_i18n.es ?? ''}
+              fill
+              className="object-cover"
+              sizes="96px"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-2xl text-muted-foreground/40">
+              📷
+            </div>
+          )}
+          {isHome && (
+            <div className="absolute left-0.5 top-0.5 rounded bg-primary/90 px-1 py-0.5 text-[8px] font-bold uppercase leading-none text-white shadow-sm">
+              HOME
+            </div>
+          )}
+        </div>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate text-sm font-semibold text-foreground">
+        <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-3">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-sm font-semibold text-foreground truncate">
               {col.titulo_i18n.es}
-            </h3>
+            </span>
             {puebloCount !== null && (
               <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${
                 puebloCount === 0
@@ -418,27 +458,50 @@ function ColeccionRow({
             )}
           </div>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            /descubre/{col.slug} · Orden: {col.orden} · Mín. pueblos: {col.minPueblos}
+            /descubre/{col.slug} · Pos: {col.orden} · Min: {col.minPueblos}
           </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        {/* Flechas de orden (solo para activas) */}
+        {col.activa && onMoveUp && onMoveDown && (
+          <div className="flex flex-col justify-center gap-0.5 border-l border-border/40 px-1.5">
+            <button
+              onClick={onMoveUp}
+              disabled={idx === 0}
+              className="rounded p-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-25 disabled:hover:bg-transparent"
+              title="Subir"
+            >
+              ▲
+            </button>
+            <button
+              onClick={onMoveDown}
+              disabled={idx >= totalActivas - 1}
+              className="rounded p-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-25 disabled:hover:bg-transparent"
+              title="Bajar"
+            >
+              ▼
+            </button>
+          </div>
+        )}
+
+        {/* Acciones */}
+        <div className="flex flex-col items-center justify-center gap-1 border-l border-border/40 px-2">
           <Link
             href={`/descubre/${col.slug}`}
             target="_blank"
-            className="text-xs text-muted-foreground hover:text-foreground"
+            className="rounded p-1 text-xs text-muted-foreground hover:text-foreground"
             title="Ver página pública"
           >
             🔗
           </Link>
-          <button onClick={onToggleActiva} className={btnSecondary} title={col.activa ? 'Desactivar' : 'Activar'}>
-            {col.activa ? '⏸️' : '▶️'}
+          <button onClick={onToggleActiva} className="rounded p-1 text-xs text-muted-foreground hover:text-foreground" title={col.activa ? 'Desactivar' : 'Activar'}>
+            {col.activa ? '⏸' : '▶'}
           </button>
-          <button onClick={onToggleEdit} className={btnSecondary} title="Editar">
+          <button onClick={onToggleEdit} className="rounded p-1 text-xs text-muted-foreground hover:text-foreground" title="Editar">
             ✏️
           </button>
-          <button onClick={onDelete} className={btnDanger} title="Eliminar">
-            🗑️
+          <button onClick={onDelete} className="rounded p-1 text-xs text-red-400 hover:text-red-600" title="Eliminar">
+            🗑
           </button>
         </div>
       </div>
@@ -471,7 +534,26 @@ function EditColeccionForm({
   const [color, setColor] = useState(col.color);
   const [imagenUrl, setImagenUrl] = useState(col.imagenUrl ?? '');
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function handleUploadFoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setErrMsg(null);
+    try {
+      const result = await uploadImageToR2(file, 'colecciones');
+      setImagenUrl(result.url);
+      if (result.warning) setErrMsg(result.warning);
+    } catch (err: any) {
+      setErrMsg(err.message ?? 'Error subiendo imagen');
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  }
 
   async function handleSave() {
     setSaving(true);
@@ -516,33 +598,82 @@ function EditColeccionForm({
   }
 
   return (
-    <div className="mt-4 space-y-3 border-t border-border/40 pt-4">
+    <div className="space-y-3 border-t border-border/40 p-4">
+      {/* Foto de portada */}
+      <div>
+        <label className="text-xs font-semibold text-foreground">Foto de portada</label>
+        <p className="mb-2 text-[10px] text-muted-foreground">
+          Esta imagen aparece en la tarjeta de la home y en la cabecera de la coleccion. Sube una nueva o pega una URL.
+        </p>
+        <div className="flex items-start gap-3">
+          {imagenUrl ? (
+            <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
+              <Image src={imagenUrl} alt="" fill className="object-cover" sizes="128px" />
+              <button
+                onClick={() => setImagenUrl('')}
+                className="absolute right-0.5 top-0.5 rounded bg-black/60 px-1 py-0.5 text-[10px] text-white hover:bg-black/80"
+                title="Quitar imagen"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <div className="flex h-20 w-32 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-border/60 bg-muted/30 text-muted-foreground/40">
+              <span className="text-2xl">📷</span>
+            </div>
+          )}
+          <div className="flex flex-col gap-2">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              onChange={handleUploadFoto}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className={btnSecondary}
+            >
+              {uploading ? 'Subiendo...' : 'Subir foto'}
+            </button>
+            <input
+              value={imagenUrl}
+              onChange={(e) => setImagenUrl(e.target.value)}
+              className={`${field} mt-0 text-xs`}
+              placeholder="o pega una URL directa..."
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="text-xs font-medium text-muted-foreground">Título de la página</label>
+          <label className="text-xs font-medium text-muted-foreground">Titulo de la pagina</label>
           <input value={tituloEs} onChange={(e) => setTituloEs(e.target.value)} className={field} />
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground">Título SEO (Google)</label>
-          <input value={seoTitleEs} onChange={(e) => setSeoTitleEs(e.target.value)} className={field} placeholder="Se genera automáticamente si lo dejas vacío" />
+          <label className="text-xs font-medium text-muted-foreground">Titulo SEO (Google)</label>
+          <input value={seoTitleEs} onChange={(e) => setSeoTitleEs(e.target.value)} className={field} placeholder="Se genera automaticamente si lo dejas vacio" />
         </div>
       </div>
       <div>
-        <label className="text-xs font-medium text-muted-foreground">Descripción de la página</label>
+        <label className="text-xs font-medium text-muted-foreground">Descripcion de la pagina</label>
         <textarea value={descEs} onChange={(e) => setDescEs(e.target.value)} rows={2} className={field} />
       </div>
       <div>
-        <label className="text-xs font-medium text-muted-foreground">Descripción SEO (Google)</label>
-        <textarea value={seoDescEs} onChange={(e) => setSeoDescEs(e.target.value)} rows={2} className={field} placeholder="Se usa la descripción si lo dejas vacío" />
+        <label className="text-xs font-medium text-muted-foreground">Descripcion SEO (Google)</label>
+        <textarea value={seoDescEs} onChange={(e) => setSeoDescEs(e.target.value)} rows={2} className={field} placeholder="Se usa la descripcion si lo dejas vacio" />
       </div>
       <div className="grid gap-3 sm:grid-cols-4">
         <div>
-          <label className="text-xs font-medium text-muted-foreground">Posición</label>
+          <label className="text-xs font-medium text-muted-foreground">Posicion</label>
           <input type="number" value={orden} onChange={(e) => setOrden(Number(e.target.value))} className={field} />
-          <p className="mt-0.5 text-[10px] text-muted-foreground">Menor = más arriba</p>
+          <p className="mt-0.5 text-[10px] text-muted-foreground">Menor = mas arriba</p>
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground">Mín. pueblos para mostrar</label>
+          <label className="text-xs font-medium text-muted-foreground">Min. pueblos para mostrar</label>
           <input type="number" value={minPueblos} onChange={(e) => setMinPueblos(Number(e.target.value))} className={field} />
         </div>
         <div>
@@ -554,16 +685,12 @@ function EditColeccionForm({
           <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="mt-1.5 h-10 w-full cursor-pointer rounded-xl border border-input" />
         </div>
       </div>
-      <div>
-        <label className="text-xs font-medium text-muted-foreground">Imagen de cabecera (URL, opcional)</label>
-        <input value={imagenUrl} onChange={(e) => setImagenUrl(e.target.value)} className={field} placeholder="https://…" />
-      </div>
 
       {errMsg && <p className="text-sm text-red-600">{errMsg}</p>}
 
       <div className="flex gap-2">
-        <button onClick={handleSave} disabled={saving} className={btnPrimary}>
-          {saving ? 'Guardando…' : 'Guardar cambios'}
+        <button onClick={handleSave} disabled={saving || uploading} className={btnPrimary}>
+          {saving ? 'Guardando...' : 'Guardar cambios'}
         </button>
         <button onClick={onCancel} className={btnSecondary}>Cancelar</button>
       </div>
