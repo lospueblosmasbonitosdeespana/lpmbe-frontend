@@ -111,7 +111,15 @@ export default function ColeccionesAdmin() {
 
       if (resTags.ok) {
         const tagData = await resTags.json();
-        setTags(Array.isArray(tagData) ? tagData : []);
+        if (Array.isArray(tagData)) {
+          setTags(tagData);
+        } else if (tagData && typeof tagData === 'object') {
+          const flat: TagDef[] = [];
+          for (const catTags of Object.values(tagData)) {
+            if (Array.isArray(catTags)) flat.push(...(catTags as TagDef[]));
+          }
+          setTags(flat);
+        }
       }
     } catch (e: any) {
       setErr(e.message);
