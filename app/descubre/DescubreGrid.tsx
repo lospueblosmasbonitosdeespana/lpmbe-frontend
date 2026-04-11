@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { resolveTagIcon } from "@/lib/tag-icon-map";
+import { Activity } from "lucide-react";
 
 type Collection = {
   slug: string;
