@@ -1863,5 +1863,12 @@
     "ctaQuestion": "Votre village a une webcam ?",
     "ctaButton": "Dites-le nous",
     "shareWebcam": "Partager sur WhatsApp"
+  },
+  "meteoDetailPage": {
+    "title": "Météo et prévisions",
+    "home": "Accueil",
+    "metaDescription": "Prévisions météo complètes pour {nombre}, {provincia} : température, pluie, vent, UV, qualité de l'air et plus.",
+    "seeFullMeteo": "Voir les prévisions complètes",
+    "backToPueblo": "Retour au village"
   }
 }

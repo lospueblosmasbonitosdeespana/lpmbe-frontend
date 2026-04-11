@@ -1863,5 +1863,12 @@
     "ctaQuestion": "A sua aldeia tem webcam?",
     "ctaButton": "Conte-nos",
     "shareWebcam": "Partilhar no WhatsApp"
+  },
+  "meteoDetailPage": {
+    "title": "Tempo e previsão meteorológica",
+    "home": "Início",
+    "metaDescription": "Previsão meteorológica completa para {nombre}, {provincia}: temperatura, chuva, vento, UV, qualidade do ar e mais.",
+    "seeFullMeteo": "Ver previsão completa",
+    "backToPueblo": "Voltar à aldeia"
   }
 }

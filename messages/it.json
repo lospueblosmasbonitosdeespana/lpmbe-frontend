@@ -1863,5 +1863,12 @@
     "ctaQuestion": "Il tuo borgo ha una webcam?",
     "ctaButton": "Diccelo",
     "shareWebcam": "Condividi su WhatsApp"
+  },
+  "meteoDetailPage": {
+    "title": "Meteo e previsioni",
+    "home": "Home",
+    "metaDescription": "Previsioni meteo complete per {nombre}, {provincia}: temperatura, pioggia, vento, UV, qualità dell'aria e altro.",
+    "seeFullMeteo": "Vedi previsioni complete",
+    "backToPueblo": "Torna al borgo"
   }
 }

@@ -1863,5 +1863,12 @@
     "ctaQuestion": "El teu poble té webcam?",
     "ctaButton": "Explica'ns-ho",
     "shareWebcam": "Compartir a WhatsApp"
+  },
+  "meteoDetailPage": {
+    "title": "Temps i previsió meteorològica",
+    "home": "Inici",
+    "metaDescription": "Previsió meteorològica completa per a {nombre}, {provincia}: temperatura, pluja, vent, UV, qualitat de l'aire i més.",
+    "seeFullMeteo": "Veure previsió completa",
+    "backToPueblo": "Tornar al poble"
   }
 }

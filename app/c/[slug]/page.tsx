@@ -292,6 +292,12 @@ export async function generateMetadata({
     };
   }
 
+  if (page.type === 'contenido') {
+    const tipo = page.data.tipo;
+    if (tipo === 'NOTICIA') return { alternates: { canonical: getCanonicalUrl(`/noticias/${slug}`, lang) } };
+    if (tipo === 'EVENTO') return { alternates: { canonical: getCanonicalUrl(`/eventos/${slug}`, lang) } };
+  }
+
   const titulo = page.data.titulo;
   const rawDescription =
     page.type === 'contenido'
@@ -343,6 +349,12 @@ export default async function ContenidoPage({
 
   if (!page) {
     permanentRedirect('/actualidad');
+  }
+
+  if (page.type === 'contenido') {
+    const tipo = page.data.tipo;
+    if (tipo === 'NOTICIA') permanentRedirect(`/noticias/${slug}`);
+    if (tipo === 'EVENTO') permanentRedirect(`/eventos/${slug}`);
   }
 
   // Páginas estáticas (contacto, privacidad, aviso-legal, cookies): traducidas con DeepL
