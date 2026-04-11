@@ -104,7 +104,7 @@ export default async function GestionPuebloPage({
         { href: contenidosUrl, title: 'Contenidos', description: 'Páginas, noticias y eventos del pueblo', emoji: '📰', accent: 'rose', disabled: !puebloId },
         { href: `${baseUrl}/descripcion`, title: 'Información y descripción', description: 'Coordenadas, textos y descripciones', emoji: '📝', accent: 'sky' },
         { href: `${baseUrl}/en-cifras`, title: 'En cifras', description: 'Datos y estadísticas del municipio', emoji: '📊', accent: 'violet' },
-        { href: `${baseUrl}/caracteristicas`, title: 'Características del pueblo', description: 'Castillo, murallas, naturaleza, piscinas… para colecciones temáticas', emoji: '🏷️', accent: 'amber' },
+        { href: `${baseUrl}/caracteristicas`, title: 'Características del pueblo', description: 'Castillo, murallas, naturaleza, piscinas… para colecciones temáticas', emoji: '🏰', accent: 'orange' },
       ],
     },
     {
