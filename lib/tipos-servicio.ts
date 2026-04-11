@@ -12,6 +12,7 @@ export type TipoServicio =
   | 'TAXI'
   | 'AUTOBUS'
   | 'COCHE_ELECTRICO'
+  | 'COCHE_ELECTRICO_ULTRA'
   | 'ALQUILER_BICI'
   | 'FUENTE'
   | 'POLICIA'
@@ -161,6 +162,18 @@ export const TIPOS_SERVICIO: TipoServicioConfig[] = [
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">
       <path d="M20 11V7l-2-2h-2V3H8v2H6L4 7v9h2a2 2 0 0 0 4 0h4a2 2 0 0 0 4 0h2v-3l-2-2zM6 8.5l1-1.5h10l1 1.5V11H6V8.5zM8 17a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm8 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm1-5H7v-1h10v1zm1.5-4l1 1H14v-1h4.5z"/>
       <path d="M11 2l-4 6h3v4l4-6h-3V2z"/>
+    </svg>`,
+  },
+  {
+    tipo: 'COCHE_ELECTRICO_ULTRA',
+    etiqueta: 'Cargador ultra-rápido (150+ kW)',
+    i18nKey: 'COCHE_ELECTRICO_ULTRA',
+    color: '#059669',
+    emoji: '⚡',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">
+      <path d="M11 2l-4 6h3v4l4-6h-3V2z"/>
+      <path d="M7 15l-3 5h3v2l3-5H7v-2z"/>
+      <path d="M17 15l-3 5h3v2l3-5h-3v-2z"/>
     </svg>`,
   },
   {
