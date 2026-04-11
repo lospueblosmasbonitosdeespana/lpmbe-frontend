@@ -18,6 +18,12 @@ type TagDef = {
 };
 
 type MxItem = { id: number; titulo: string; foto: string | null; slug: string };
+type ParadaMxItem = {
+  id: number;
+  nombre: string;
+  foto: string | null;
+  multiexperiencia: MxItem | null;
+};
 
 type CaracteristicaExistente = {
   id: number;
@@ -53,7 +59,7 @@ type LocalState = {
 type LinkedContent = {
   pois: { id: number; nombre: string; foto: string | null }[];
   pages: { id: number; titulo: string; slug: string; coverUrl: string | null }[];
-  multiexperiencias: MxItem[];
+  paradasMx: ParadaMxItem[];
 };
 
 /* ────── Estilos ────── */
@@ -508,11 +514,13 @@ function ContentLinker({
     if (!linkedContent) return null;
     if (selectedPoiId) {
       const p = linkedContent.pois.find(x => x.id === selectedPoiId);
-      return p ? `📍 ${p.nombre}` : null;
+      if (p) return `📍 ${p.nombre}`;
+      const parada = linkedContent.paradasMx.find(x => x.id === selectedPoiId);
+      if (parada) return `🗺️ ${parada.nombre}${parada.multiexperiencia ? ` (${parada.multiexperiencia.titulo.slice(0, 30)}…)` : ''}`;
     }
     if (selectedMxId) {
-      const mx = linkedContent.multiexperiencias.find(x => x.id === selectedMxId);
-      return mx ? `🗺️ ${mx.titulo}` : null;
+      const parada = linkedContent.paradasMx.find(x => x.id === selectedMxId);
+      return parada ? `🗺️ ${parada.nombre}` : null;
     }
     if (selectedPageId) {
       const pg = linkedContent.pages.find(x => x.id === selectedPageId);
@@ -592,24 +600,36 @@ function ContentLinker({
             </div>
           )}
 
-          {linkedContent.multiexperiencias.length > 0 && (
-            <div>
-              <div className="sticky top-0 bg-muted/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                Experiencias
+          {linkedContent.paradasMx.length > 0 && (() => {
+            const grouped = new Map<string, { mx: MxItem; paradas: ParadaMxItem[] }>();
+            for (const p of linkedContent.paradasMx) {
+              const key = p.multiexperiencia?.titulo ?? 'Sin experiencia';
+              if (!grouped.has(key)) grouped.set(key, { mx: p.multiexperiencia!, paradas: [] });
+              grouped.get(key)!.paradas.push(p);
+            }
+            return Array.from(grouped.entries()).map(([title, { paradas }]) => (
+              <div key={title}>
+                <div className="sticky top-0 bg-muted/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  🗺️ {title}
+                </div>
+                {paradas.map(p => (
+                  <button
+                    key={`parada-${p.id}`} type="button"
+                    onClick={() => {
+                      onSelect('poi', p.id);
+                      if (p.foto) onFotoOverride(p.foto);
+                      setShowList(false);
+                    }}
+                    className={`flex w-full items-center gap-2 px-3 py-1.5 text-xs hover:bg-muted/30 transition-colors ${selectedPoiId === p.id ? 'bg-amber-50/50 dark:bg-amber-950/20' : ''}`}
+                  >
+                    {p.foto ? <img src={p.foto} alt="" className="h-6 w-6 shrink-0 rounded object-cover" /> : <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted text-[10px]">🗺️</span>}
+                    <span className="truncate">{p.nombre}</span>
+                    {p.foto && <span className="ml-auto shrink-0 text-[10px] text-emerald-600">con foto</span>}
+                  </button>
+                ))}
               </div>
-              {linkedContent.multiexperiencias.map(mx => (
-                <button
-                  key={`mx-${mx.id}`} type="button"
-                  onClick={() => { onSelect('mx', mx.id); setShowList(false); }}
-                  className={`flex w-full items-center gap-2 px-3 py-1.5 text-xs hover:bg-muted/30 transition-colors ${selectedMxId === mx.id ? 'bg-amber-50/50 dark:bg-amber-950/20' : ''}`}
-                >
-                  {mx.foto ? <img src={mx.foto} alt="" className="h-6 w-6 shrink-0 rounded object-cover" /> : <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted text-[10px]">🗺️</span>}
-                  <span className="truncate">{mx.titulo}</span>
-                  {mx.foto && <span className="ml-auto shrink-0 text-[10px] text-emerald-600">con foto</span>}
-                </button>
-              ))}
-            </div>
-          )}
+            ));
+          })()}
 
           {linkedContent.pages.length > 0 && (
             <div>
@@ -630,7 +650,7 @@ function ContentLinker({
             </div>
           )}
 
-          {linkedContent.pois.length === 0 && linkedContent.multiexperiencias.length === 0 && linkedContent.pages.length === 0 && (
+          {linkedContent.pois.length === 0 && linkedContent.paradasMx.length === 0 && linkedContent.pages.length === 0 && (
             <p className="px-3 py-4 text-center text-xs text-muted-foreground">No hay contenidos disponibles en este pueblo.</p>
           )}
         </div>
