@@ -103,15 +103,19 @@ export default function ColeccionesAdmin() {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const [savingOrder, setSavingOrder] = useState(false);
+  const [colCounts, setColCounts] = useState<Record<number, number>>({});
+  const [deleteTarget, setDeleteTarget] = useState<Coleccion | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchAll = useCallback(async () => {
     try {
       setLoading(true);
       setErr(null);
-      const [resCol, resTags, resCounts] = await Promise.all([
+      const [resCol, resTags, resCounts, resColCounts] = await Promise.all([
         fetch('/api/admin/colecciones', { credentials: 'include', cache: 'no-store' }),
         fetch('/api/public/tag-definiciones', { cache: 'no-store' }),
         fetch('/api/public/caracteristicas/counts', { cache: 'no-store' }),
+        fetch('/api/admin/colecciones/counts', { credentials: 'include', cache: 'no-store' }),
       ]);
       if (resCol.status === 401) { window.location.href = '/entrar'; return; }
       if (!resCol.ok) throw new Error(`Error ${resCol.status}`);
@@ -136,6 +140,11 @@ export default function ColeccionesAdmin() {
         if (countsData && countsData.tags) {
           setCounts(countsData);
         }
+      }
+
+      if (resColCounts.ok) {
+        const cc = await resColCounts.json();
+        if (cc && typeof cc === 'object') setColCounts(cc);
       }
     } catch (e: any) {
       setErr(e.message);
@@ -185,19 +194,23 @@ export default function ColeccionesAdmin() {
     }
   }
 
-  async function deleteCol(col: Coleccion) {
-    if (!confirm(`¿Eliminar "${col.titulo_i18n.es}" permanentemente?`)) return;
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/colecciones/${col.id}`, {
+      const res = await fetch(`/api/admin/colecciones/${deleteTarget.id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
       if (!res.ok) throw new Error(`Error ${res.status}`);
-      setColecciones((prev) => prev.filter((c) => c.id !== col.id));
-      setMensaje(`"${col.titulo_i18n.es}" eliminada`);
+      setColecciones((prev) => prev.filter((c) => c.id !== deleteTarget.id));
+      setMensaje(`"${deleteTarget.titulo_i18n.es}" eliminada`);
       setTimeout(() => setMensaje(null), 3000);
+      setDeleteTarget(null);
     } catch (e: any) {
       setMensaje(`Error: ${e.message}`);
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -283,6 +296,53 @@ export default function ColeccionesAdmin() {
         </div>
       )}
 
+      {/* Modal de confirmación de borrado */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => !deleting && setDeleteTarget(null)}>
+          <div className="mx-4 w-full max-w-md rounded-2xl border border-red-200 bg-white p-6 shadow-2xl dark:border-red-900 dark:bg-neutral-900" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 text-lg dark:bg-red-950/50">
+                ⚠️
+              </div>
+              <h3 className="text-lg font-bold text-foreground">Eliminar colección</h3>
+            </div>
+            <div className="space-y-3 text-sm">
+              <p className="font-medium text-foreground">
+                Vas a eliminar permanentemente <strong>&quot;{deleteTarget.titulo_i18n.es}&quot;</strong>.
+              </p>
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950/30">
+                <p className="font-semibold text-red-700 dark:text-red-400">Consecuencias:</p>
+                <ul className="mt-1.5 list-inside list-disc space-y-1 text-red-600 dark:text-red-400">
+                  <li>La página <code className="rounded bg-red-100 px-1 dark:bg-red-950/50">/descubre/{deleteTarget.slug}</code> dejará de existir</li>
+                  <li>Si Google la tiene indexada, generará un <strong>error 404</strong> que puede afectar al SEO</li>
+                  <li>Los enlaces compartidos en redes sociales dejarán de funcionar</li>
+                  <li>Esta acción <strong>no se puede deshacer</strong></li>
+                </ul>
+              </div>
+              <p className="text-muted-foreground">
+                Si solo quieres ocultarla temporalmente, usa el botón <strong>&quot;Desactivar&quot;</strong> en su lugar.
+              </p>
+            </div>
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleting ? 'Eliminando...' : 'Sí, eliminar permanentemente'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showNew && (
         <NewColeccionForm
           tags={tags}
@@ -359,10 +419,11 @@ export default function ColeccionesAdmin() {
                     idx={idx}
                     totalActivas={activas.length}
                     counts={counts}
+                    colPuebloCount={colCounts[col.id] ?? null}
                     isEditing={editingId === col.id}
                     onToggleEdit={() => setEditingId(editingId === col.id ? null : col.id)}
                     onToggleActiva={() => toggleActiva(col)}
-                    onDelete={() => deleteCol(col)}
+                    onDelete={() => setDeleteTarget(col)}
                     onSaved={() => { setEditingId(null); fetchAll(); }}
                     isDragging={dragIdx === idx}
                   />
@@ -393,10 +454,11 @@ export default function ColeccionesAdmin() {
                   idx={idx}
                   totalActivas={0}
                   counts={counts}
+                  colPuebloCount={colCounts[col.id] ?? null}
                   isEditing={editingId === col.id}
                   onToggleEdit={() => setEditingId(editingId === col.id ? null : col.id)}
                   onToggleActiva={() => toggleActiva(col)}
-                  onDelete={() => deleteCol(col)}
+                  onDelete={() => setDeleteTarget(col)}
                   onSaved={() => { setEditingId(null); fetchAll(); }}
                 />
               ))}
@@ -419,6 +481,7 @@ function ColeccionRow({
   idx,
   totalActivas,
   counts,
+  colPuebloCount,
   isEditing,
   onToggleEdit,
   onToggleActiva,
@@ -430,6 +493,7 @@ function ColeccionRow({
   idx: number;
   totalActivas: number;
   counts: PuebloCounts;
+  colPuebloCount: number | null;
   isEditing: boolean;
   onToggleEdit: () => void;
   onToggleActiva: () => void;
@@ -439,11 +503,7 @@ function ColeccionRow({
 }) {
   const isHome = col.activa && idx < 8;
 
-  const puebloCount = col.fuente === 'caracteristica' && col.filtro?.tag
-    ? counts.tags[col.filtro.tag] ?? 0
-    : (col.fuente === 'servicio' || col.fuente === 'service') && col.filtro?.tipo
-    ? counts.servicios[col.filtro.tipo] ?? 0
-    : null;
+  const displayCount = colPuebloCount;
 
   return (
     <div className={`rounded-xl border transition-all ${
@@ -505,15 +565,15 @@ function ColeccionRow({
             <span className="text-sm font-semibold text-foreground truncate">
               {col.titulo_i18n.es}
             </span>
-            {puebloCount !== null && (
+            {displayCount !== null && (
               <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${
-                puebloCount === 0
+                displayCount === 0
                   ? 'bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400'
-                  : puebloCount < 3
+                  : displayCount < 3
                   ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400'
                   : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
               }`}>
-                {puebloCount} pueblo{puebloCount !== 1 ? 's' : ''}
+                {col.fuente === 'meteo' ? 'Dinámico' : `${displayCount} pueblo${displayCount !== 1 ? 's' : ''}`}
               </span>
             )}
             <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
@@ -530,24 +590,40 @@ function ColeccionRow({
           </p>
         </div>
 
-        {/* Acciones */}
-        <div className="flex flex-col items-center justify-center gap-1 border-l border-border/40 px-2">
+        {/* Acciones con texto claro */}
+        <div className="flex items-center gap-1 border-l border-border/40 px-2">
           <Link
             href={`/descubre/${col.slug}`}
             target="_blank"
-            className="rounded p-1 text-xs text-muted-foreground hover:text-foreground"
-            title="Ver página pública"
+            className="rounded-md px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            title="Abrir la página pública en una nueva pestaña"
           >
-            🔗
+            Ver
           </Link>
-          <button onClick={onToggleActiva} className="rounded p-1 text-xs text-muted-foreground hover:text-foreground" title={col.activa ? 'Desactivar' : 'Activar'}>
-            {col.activa ? '⏸' : '▶'}
+          <button
+            onClick={onToggleActiva}
+            className={`rounded-md px-2 py-1.5 text-[11px] font-medium transition-colors ${
+              col.activa
+                ? 'text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30'
+                : 'text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/30'
+            }`}
+            title={col.activa ? 'Ocultar temporalmente esta página (no se elimina)' : 'Hacer visible esta página en la web'}
+          >
+            {col.activa ? 'Desactivar' : 'Activar'}
           </button>
-          <button onClick={onToggleEdit} className="rounded p-1 text-xs text-muted-foreground hover:text-foreground" title="Editar">
-            ✏️
+          <button
+            onClick={onToggleEdit}
+            className="rounded-md px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            title="Editar título, descripción, foto y configuración SEO"
+          >
+            Editar
           </button>
-          <button onClick={onDelete} className="rounded p-1 text-xs text-red-400 hover:text-red-600" title="Eliminar">
-            🗑
+          <button
+            onClick={onDelete}
+            className="rounded-md px-2 py-1.5 text-[11px] font-medium text-red-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+            title="Eliminar permanentemente esta colección"
+          >
+            Eliminar
           </button>
         </div>
       </div>
