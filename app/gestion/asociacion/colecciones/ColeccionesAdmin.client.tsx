@@ -235,18 +235,13 @@ export default function ColeccionesAdmin() {
   const activas = colecciones.filter((c) => c.activa);
   const inactivas = colecciones.filter((c) => !c.activa);
 
-  async function swapOrden(idx: number, direction: 'up' | 'down') {
-    const list = [...activas];
-    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
-    if (targetIdx < 0 || targetIdx >= list.length) return;
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
 
-    const a = list[idx];
-    const b = list[targetIdx];
-    const items = [
-      { id: a.id, orden: b.orden },
-      { id: b.id, orden: a.orden },
-    ];
-
+  async function persistOrder(reordered: Coleccion[]) {
+    setSavingOrder(true);
+    const items = reordered.map((c, i) => ({ id: c.id, orden: i }));
     try {
       const res = await fetch('/api/admin/colecciones/reorder', {
         method: 'PUT',
@@ -255,10 +250,26 @@ export default function ColeccionesAdmin() {
         credentials: 'include',
       });
       if (!res.ok) throw new Error(`Error ${res.status}`);
+      setMensaje('Orden actualizado');
+      setTimeout(() => setMensaje(null), 2000);
       fetchAll();
     } catch (e: any) {
       setMensaje(`Error: ${e.message}`);
+    } finally {
+      setSavingOrder(false);
     }
+  }
+
+  function handleDragEnd(fromIdx: number, toIdx: number) {
+    if (fromIdx === toIdx) return;
+    const list = [...activas];
+    const [moved] = list.splice(fromIdx, 1);
+    list.splice(toIdx, 0, moved);
+    setColecciones((prev) => {
+      const inactive = prev.filter(c => !c.activa);
+      return [...list.map((c, i) => ({ ...c, orden: i })), ...inactive];
+    });
+    persistOrder(list);
   }
 
   return (
@@ -294,10 +305,11 @@ export default function ColeccionesAdmin() {
               </h2>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 Visibles en /descubre y en el sitemap. Las 8 primeras aparecen en la home.
+                {savingOrder && <span className="ml-2 text-amber-600">Guardando orden…</span>}
               </p>
             </div>
             <span className="shrink-0 rounded-lg bg-primary/10 px-2.5 py-1 text-[10px] font-bold text-primary">
-              HOME = top 8
+              HOME = top 8 · Arrastra para reordenar
             </span>
           </div>
         </div>
@@ -305,22 +317,57 @@ export default function ColeccionesAdmin() {
           {activas.length === 0 ? (
             <p className="text-sm text-muted-foreground">No hay colecciones activas.</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-0.5">
               {activas.map((col, idx) => (
-                <ColeccionRow
+                <div
                   key={col.id}
-                  col={col}
-                  idx={idx}
-                  totalActivas={activas.length}
-                  counts={counts}
-                  isEditing={editingId === col.id}
-                  onToggleEdit={() => setEditingId(editingId === col.id ? null : col.id)}
-                  onToggleActiva={() => toggleActiva(col)}
-                  onDelete={() => deleteCol(col)}
-                  onMoveUp={() => swapOrden(idx, 'up')}
-                  onMoveDown={() => swapOrden(idx, 'down')}
-                  onSaved={() => { setEditingId(null); fetchAll(); }}
-                />
+                  draggable
+                  onDragStart={(e) => {
+                    setDragIdx(idx);
+                    e.dataTransfer.effectAllowed = 'move';
+                    if (e.currentTarget instanceof HTMLElement) {
+                      e.currentTarget.style.opacity = '0.5';
+                    }
+                  }}
+                  onDragEnd={(e) => {
+                    if (e.currentTarget instanceof HTMLElement) {
+                      e.currentTarget.style.opacity = '1';
+                    }
+                    if (dragIdx !== null && dragOverIdx !== null && dragIdx !== dragOverIdx) {
+                      handleDragEnd(dragIdx, dragOverIdx);
+                    }
+                    setDragIdx(null);
+                    setDragOverIdx(null);
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    setDragOverIdx(idx);
+                  }}
+                  onDragLeave={() => {
+                    if (dragOverIdx === idx) setDragOverIdx(null);
+                  }}
+                  className={`transition-all duration-150 ${
+                    dragOverIdx === idx && dragIdx !== null && dragIdx !== idx
+                      ? dragIdx < idx
+                        ? 'border-b-2 border-primary/60'
+                        : 'border-t-2 border-primary/60'
+                      : ''
+                  }`}
+                >
+                  <ColeccionRow
+                    col={col}
+                    idx={idx}
+                    totalActivas={activas.length}
+                    counts={counts}
+                    isEditing={editingId === col.id}
+                    onToggleEdit={() => setEditingId(editingId === col.id ? null : col.id)}
+                    onToggleActiva={() => toggleActiva(col)}
+                    onDelete={() => deleteCol(col)}
+                    onSaved={() => { setEditingId(null); fetchAll(); }}
+                    isDragging={dragIdx === idx}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -377,9 +424,8 @@ function ColeccionRow({
   onToggleEdit,
   onToggleActiva,
   onDelete,
-  onMoveUp,
-  onMoveDown,
   onSaved,
+  isDragging,
 }: {
   col: Coleccion;
   idx: number;
@@ -389,9 +435,8 @@ function ColeccionRow({
   onToggleEdit: () => void;
   onToggleActiva: () => void;
   onDelete: () => void;
-  onMoveUp?: () => void;
-  onMoveDown?: () => void;
   onSaved: () => void;
+  isDragging?: boolean;
 }) {
   const isHome = col.activa && idx < 8;
 
@@ -403,6 +448,8 @@ function ColeccionRow({
 
   return (
     <div className={`rounded-xl border transition-all ${
+      isDragging ? 'opacity-40 scale-[0.98]' : ''
+    } ${
       col.activa
         ? isHome
           ? 'border-primary/30 bg-primary/[0.02]'
@@ -410,8 +457,25 @@ function ColeccionRow({
         : 'border-dashed border-border/50 bg-muted/20 opacity-75'
     }`}>
       <div className="flex items-stretch gap-0">
+        {/* Drag handle (solo activas) */}
+        {col.activa && (
+          <div
+            className="flex w-8 shrink-0 cursor-grab items-center justify-center rounded-l-xl border-r border-border/30 bg-muted/30 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground active:cursor-grabbing"
+            title="Arrastra para reordenar"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="5" cy="3" r="1.2" />
+              <circle cx="11" cy="3" r="1.2" />
+              <circle cx="5" cy="8" r="1.2" />
+              <circle cx="11" cy="8" r="1.2" />
+              <circle cx="5" cy="13" r="1.2" />
+              <circle cx="11" cy="13" r="1.2" />
+            </svg>
+          </div>
+        )}
+
         {/* Miniatura */}
-        <div className="relative w-20 shrink-0 overflow-hidden rounded-l-xl bg-muted sm:w-24">
+        <div className={`relative w-20 shrink-0 overflow-hidden bg-muted sm:w-24 ${!col.activa ? 'rounded-l-xl' : ''}`}>
           {col.imagenUrl ? (
             <Image
               src={col.imagenUrl}
@@ -434,6 +498,11 @@ function ColeccionRow({
 
         <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-3">
           <div className="flex flex-wrap items-center gap-1.5">
+            {col.activa && (
+              <span className="shrink-0 w-5 text-center text-[10px] font-bold tabular-nums text-muted-foreground/60">
+                {idx + 1}
+              </span>
+            )}
             <span className="text-sm font-semibold text-foreground truncate">
               {col.titulo_i18n.es}
             </span>
@@ -458,31 +527,9 @@ function ColeccionRow({
             )}
           </div>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            /descubre/{col.slug} · Pos: {col.orden} · Min: {col.minPueblos}
+            /descubre/{col.slug} · Min: {col.minPueblos}
           </p>
         </div>
-
-        {/* Flechas de orden (solo para activas) */}
-        {col.activa && onMoveUp && onMoveDown && (
-          <div className="flex flex-col justify-center gap-0.5 border-l border-border/40 px-1.5">
-            <button
-              onClick={onMoveUp}
-              disabled={idx === 0}
-              className="rounded p-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-25 disabled:hover:bg-transparent"
-              title="Subir"
-            >
-              ▲
-            </button>
-            <button
-              onClick={onMoveDown}
-              disabled={idx >= totalActivas - 1}
-              className="rounded p-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-25 disabled:hover:bg-transparent"
-              title="Bajar"
-            >
-              ▼
-            </button>
-          </div>
-        )}
 
         {/* Acciones */}
         <div className="flex flex-col items-center justify-center gap-1 border-l border-border/40 px-2">

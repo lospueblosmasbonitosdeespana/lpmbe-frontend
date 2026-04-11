@@ -14,7 +14,7 @@ export async function GET(
   try {
     const res = await fetchWithTimeout(
       `${API_BASE}/public/descubre/${encodeURIComponent(slug)}?lang=${lang}`,
-      { next: { revalidate: 60 }, timeoutMs: 15000 },
+      { next: { revalidate: 15 }, timeoutMs: 15000 },
     );
     if (!res.ok) return NextResponse.json({ error: 'not_found' }, { status: res.status });
     const data = await res.json();
