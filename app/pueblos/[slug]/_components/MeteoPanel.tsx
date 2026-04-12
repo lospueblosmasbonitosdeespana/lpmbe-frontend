@@ -114,9 +114,9 @@ export default function MeteoPanel({
   return (
     <Section spacing="sm" background="card">
       <Container>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-          {/* Current conditions hero */}
-          <div className="flex items-center gap-4 flex-1">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8">
+          {/* Current conditions */}
+          <div className="flex items-center gap-4">
             <WIcon size={56} className={wCls} strokeWidth={1.5} />
             <div>
               <div className="text-4xl font-bold font-serif tracking-tight leading-none">
