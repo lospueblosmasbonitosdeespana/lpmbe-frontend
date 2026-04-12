@@ -183,7 +183,7 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
         ) : isMeteo ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {data.pueblos.map((p) => (
-              <PuebloCard key={p.id} pueblo={p} color={data.color} tags={bulkTags[String(p.id)]} />
+              <PuebloCard key={p.id} pueblo={p} color={data.color} tags={bulkTags[String(p.id)]} locale={locale} />
             ))}
           </div>
         ) : (
@@ -205,7 +205,7 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
                   </div>
                   <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {byCCAA[ccaa].map((p) => (
-                      <PuebloCard key={p.id} pueblo={p} color={data.color} tags={bulkTags[String(p.id)]} />
+                      <PuebloCard key={p.id} pueblo={p} color={data.color} tags={bulkTags[String(p.id)]} locale={locale} />
                     ))}
                   </div>
                 </div>
@@ -218,7 +218,7 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
   );
 }
 
-function PuebloCard({ pueblo: p, color, tags }: { pueblo: Pueblo; color: string; tags?: TagBadge[] }) {
+function PuebloCard({ pueblo: p, color, tags, locale = "es" }: { pueblo: Pueblo; color: string; tags?: TagBadge[]; locale?: string }) {
   const flagSrc = getComunidadFlagSrc(p.comunidad);
   const hasPhoto = !!p.foto_destacada;
   const badge = p.highlightExtra ?? (p.habitantes ? `${p.habitantes} hab.` : null);
@@ -305,7 +305,7 @@ function PuebloCard({ pueblo: p, color, tags }: { pueblo: Pueblo; color: string;
                 key={t.tag}
                 className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5"
                 style={{ backgroundColor: `${t.color}14` }}
-                title={t.nombre_i18n?.es ?? t.tag}
+                title={t.nombre_i18n?.[locale] ?? t.nombre_i18n?.es ?? t.tag}
               >
                 <TagIcon name={t.icono} color={t.color} size={12} />
                 {t.cantidad && t.cantidad > 1 && (
