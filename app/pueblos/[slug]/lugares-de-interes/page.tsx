@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { decode as heDecode } from "he";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug } from "@/lib/api";
 import {
@@ -148,7 +149,10 @@ export default async function LugaresDeInteresPage({
     categoriaTematica?: string | null;
     categoria?: string | null;
   }) => {
-    const descLimpia = (poi.descripcion_larga?.replace(/<[^>]*>/g, "") ?? poi.descripcion_corta ?? "").trim();
+    const rawDesc = poi.descripcion_larga
+      ? heDecode(poi.descripcion_larga.replace(/<[^>]*>/g, ""))
+      : (poi.descripcion_corta ?? "");
+    const descLimpia = rawDesc.trim();
     return {
       id: poi.id,
       name: poi.nombre,

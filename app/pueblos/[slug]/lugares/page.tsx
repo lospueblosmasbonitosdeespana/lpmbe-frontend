@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { decode as heDecode } from "he";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getPuebloBySlug, getApiUrl } from "@/lib/api";
 import {
@@ -217,7 +218,9 @@ export default async function LugaresPage({
                 id: poi.id,
                 name: poi.nombre,
                 type: CATEGORIA_TEMATICA_LABELS[poi.categoriaTematica ?? ""] ?? poi.categoria ?? "Punto de interés",
-                description: poi.descripcion_larga?.replace(/<[^>]*>/g, "").slice(0, 120) ?? poi.descripcion_corta ?? "",
+                description: poi.descripcion_larga
+                  ? heDecode(poi.descripcion_larga.replace(/<[^>]*>/g, "")).slice(0, 120)
+                  : (poi.descripcion_corta ?? ""),
                 image: poi.foto,
                 rotation: poi.rotation,
                 href: `/pueblos/${slug}/pois/${poi.slug || poi.id}`,
