@@ -8,7 +8,7 @@ import {
   GlassWater, Store, Paintbrush, Star, Film, Footprints, Accessibility,
   Laptop, Tent, Mountain, BrickWall, Sparkle, Hexagon, Pentagon, Diamond,
   Scroll, Trophy, Medal, Amphora, BookOpen, Clapperboard,
-  Fence, Pipette, RadioTower, Compass, Castle,
+  Fence, ShowerHead, RadioTower, Compass, Castle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -41,7 +41,7 @@ export const TAG_ICON_MAP: Record<string, LucideIcon> = {
   clapperboard: Clapperboard,
   lock: Lock,
   route: Route,
-  pipette: Pipette,
+  "shower-head": ShowerHead,
   droplets: Droplets,
   droplet: Droplet,
   circle: Circle,
