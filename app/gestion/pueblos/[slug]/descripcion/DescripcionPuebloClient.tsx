@@ -65,12 +65,16 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
   const [lead, setLead] = useState("");
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
+  const [altitud, setAltitud] = useState<string>("");
+  const [poblacion, setPoblacion] = useState<string>("");
+  const [puntosVisita, setPuntosVisita] = useState<string>("");
   const [anioIncorporacion, setAnioIncorporacion] = useState<string>("");
   const [anioExpulsion, setAnioExpulsion] = useState<string>("");
   const [anioReincorporacion, setAnioReincorporacion] = useState<string>("");
   const [userRol, setUserRol] = useState<string>("");
   const [guardando, setGuardando] = useState(false);
   const [guardandoCoords, setGuardandoCoords] = useState(false);
+  const [guardandoFicha, setGuardandoFicha] = useState(false);
   const [guardandoAnio, setGuardandoAnio] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
 
@@ -131,6 +135,18 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
         setLead(data?.lead ?? "");
 
         try {
+          const fichaRes = await fetch(`/api/admin/pueblos/${id}/ficha`, {
+            credentials: "include", cache: "no-store",
+          });
+          if (fichaRes.ok) {
+            const ficha = await fichaRes.json();
+            if (ficha.altitud != null) setAltitud(String(ficha.altitud));
+            if (ficha.poblacion != null) setPoblacion(String(ficha.poblacion));
+            if (ficha.puntosVisita != null) setPuntosVisita(String(ficha.puntosVisita));
+          }
+        } catch { /* ignore */ }
+
+        try {
           const meRes = await fetch("/api/auth/me", { credentials: "include" });
           if (meRes.ok) {
             const me = await meRes.json();
@@ -187,6 +203,36 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
     },
     [puebloId]
   );
+
+  async function handleGuardarFicha() {
+    if (!puebloId) return;
+    setGuardandoFicha(true);
+    setMensaje(null);
+    try {
+      const r = await fetch(`/api/admin/pueblos/${puebloId}/ficha`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          altitud: altitud ? parseInt(altitud, 10) : null,
+          poblacion: poblacion ? parseInt(poblacion, 10) : null,
+          puntosVisita: puntosVisita ? parseInt(puntosVisita, 10) : null,
+        }),
+        credentials: "include",
+      });
+      if (r.status === 401) { window.location.href = "/entrar"; return; }
+      if (r.status === 403) { setMensaje("No tienes permisos"); return; }
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        throw new Error(d?.error ?? d?.message ?? `Error ${r.status}`);
+      }
+      setMensaje("Datos del pueblo guardados");
+      setTimeout(() => setMensaje(null), 3000);
+    } catch (e: any) {
+      setMensaje(e?.message ?? "Error al guardar datos del pueblo");
+    } finally {
+      setGuardandoFicha(false);
+    }
+  }
 
   async function handleGuardarAnio() {
     if (!puebloId) return;
@@ -391,6 +437,58 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
           {guardandoCoords && (
             <p className="mt-3 text-xs font-medium text-sky-700 dark:text-sky-300">Guardando coordenadas…</p>
           )}
+        </div>
+      </div>
+
+      <div className={`${sectionCard} mt-6`}>
+        <div className={`${sectionHead} bg-emerald-50/50 dark:bg-emerald-950/20`}>
+          <h2 className="text-sm font-bold text-foreground">Datos del pueblo</h2>
+          <p className="mt-1 text-xs font-medium text-muted-foreground">
+            Altitud, habitantes y puntos de visita. Estos datos se usan en las colecciones y la ficha pública.
+          </p>
+        </div>
+        <div className={`${sectionBody} space-y-4`}>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground">Altitud (metros)</label>
+              <input
+                type="number"
+                min={0}
+                max={9999}
+                value={altitud}
+                onChange={(e) => setAltitud(e.target.value)}
+                className={field}
+                placeholder="Ej: 589"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground">Habitantes (censo)</label>
+              <input
+                type="number"
+                min={0}
+                max={999999}
+                value={poblacion}
+                onChange={(e) => setPoblacion(e.target.value)}
+                className={field}
+                placeholder="Ej: 2.100"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground">Puntos de visita</label>
+              <input
+                type="number"
+                min={0}
+                max={999}
+                value={puntosVisita}
+                onChange={(e) => setPuntosVisita(e.target.value)}
+                className={field}
+                placeholder="Ej: 12"
+              />
+            </div>
+          </div>
+          <button type="button" onClick={handleGuardarFicha} disabled={guardandoFicha} className={btnAmber}>
+            {guardandoFicha ? "Guardando…" : "Guardar datos del pueblo"}
+          </button>
         </div>
       </div>
 
