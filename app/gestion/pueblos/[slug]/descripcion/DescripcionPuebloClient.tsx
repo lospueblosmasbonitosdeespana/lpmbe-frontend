@@ -67,7 +67,6 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
   const [lng, setLng] = useState<number | null>(null);
   const [altitud, setAltitud] = useState<string>("");
   const [poblacion, setPoblacion] = useState<string>("");
-  const [puntosVisita, setPuntosVisita] = useState<string>("");
   const [anioIncorporacion, setAnioIncorporacion] = useState<string>("");
   const [anioExpulsion, setAnioExpulsion] = useState<string>("");
   const [anioReincorporacion, setAnioReincorporacion] = useState<string>("");
@@ -142,7 +141,6 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
             const ficha = await fichaRes.json();
             if (ficha.altitud != null) setAltitud(String(ficha.altitud));
             if (ficha.poblacion != null) setPoblacion(String(ficha.poblacion));
-            if (ficha.puntosVisita != null) setPuntosVisita(String(ficha.puntosVisita));
           }
         } catch { /* ignore */ }
 
@@ -215,7 +213,6 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
         body: JSON.stringify({
           altitud: altitud ? parseInt(altitud, 10) : null,
           poblacion: poblacion ? parseInt(poblacion, 10) : null,
-          puntosVisita: puntosVisita ? parseInt(puntosVisita, 10) : null,
         }),
         credentials: "include",
       });
@@ -448,7 +445,7 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
           </p>
         </div>
         <div className={`${sectionBody} space-y-4`}>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-xs font-semibold text-muted-foreground">Altitud (metros)</label>
               <input
@@ -471,18 +468,6 @@ export default function DescripcionPuebloClient({ slug }: { slug: string }) {
                 onChange={(e) => setPoblacion(e.target.value)}
                 className={field}
                 placeholder="Ej: 2.100"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-muted-foreground">Puntos de visita</label>
-              <input
-                type="number"
-                min={0}
-                max={999}
-                value={puntosVisita}
-                onChange={(e) => setPuntosVisita(e.target.value)}
-                className={field}
-                placeholder="Ej: 12"
               />
             </div>
           </div>
