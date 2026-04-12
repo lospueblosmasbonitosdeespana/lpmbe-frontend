@@ -28,6 +28,7 @@ type Pueblo = {
   habitantes?: string | null;
   linkUrl?: string | null;
   linkedName?: string | null;
+  detalle?: string | null;
   meteo?: {
     temperatureC: number | null;
     weatherCode: number | null;
@@ -216,14 +217,10 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
   );
 }
 
-const MAX_TAGS_VISIBLE = 5;
-
 function PuebloCard({ pueblo: p, color, tags }: { pueblo: Pueblo; color: string; tags?: TagBadge[] }) {
   const flagSrc = getComunidadFlagSrc(p.comunidad);
   const hasPhoto = !!p.foto_destacada;
   const badge = p.highlightExtra ?? (p.habitantes ? `${p.habitantes} hab.` : null);
-  const visibleTags = tags?.slice(0, MAX_TAGS_VISIBLE);
-  const extraCount = tags ? Math.max(0, tags.length - MAX_TAGS_VISIBLE) : 0;
   const href = p.linkUrl || `/pueblos/${p.slug}`;
 
   return (
@@ -264,14 +261,14 @@ function PuebloCard({ pueblo: p, color, tags }: { pueblo: Pueblo; color: string;
         )}
 
         <div className="absolute bottom-0 left-0 right-0 p-4">
-          <h2 className="font-serif text-lg font-bold text-white drop-shadow-md leading-tight">
-            {p.nombre}
-          </h2>
           {p.linkedName && (
-            <p className="text-xs text-white/80 mt-0.5 truncate drop-shadow-sm">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-white/70 drop-shadow-sm mb-0.5">
               {p.linkedName}
             </p>
           )}
+          <h2 className="font-serif text-lg font-bold text-white drop-shadow-md leading-tight">
+            {p.nombre}
+          </h2>
         </div>
       </div>
 
@@ -289,9 +286,14 @@ function PuebloCard({ pueblo: p, color, tags }: { pueblo: Pueblo; color: string;
             {p.provincia} · {p.comunidad}
           </span>
         </div>
-        {visibleTags && visibleTags.length > 0 && (
+        {p.detalle && (
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 leading-relaxed">
+            {p.detalle}
+          </p>
+        )}
+        {tags && tags.length > 0 && (
           <div className="flex flex-wrap items-center gap-1">
-            {visibleTags.map((t) => (
+            {tags.map((t) => (
               <span
                 key={t.tag}
                 className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5"
@@ -306,9 +308,6 @@ function PuebloCard({ pueblo: p, color, tags }: { pueblo: Pueblo; color: string;
                 )}
               </span>
             ))}
-            {extraCount > 0 && (
-              <span className="text-[9px] font-medium text-neutral-400">+{extraCount}</span>
-            )}
           </div>
         )}
       </div>
