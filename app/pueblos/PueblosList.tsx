@@ -41,7 +41,7 @@ function ImagePlaceholder() {
   );
 }
 
-const MAX_VISIBLE_TAGS = 5;
+// All tags are displayed without truncation
 
 const PuebloCard = memo(function PuebloCard({
   pueblo,
@@ -69,8 +69,7 @@ const PuebloCard = memo(function PuebloCard({
       ? (pueblo.semaforo as { estado?: string }).estado
       : null);
 
-  const visibleTags = tags?.slice(0, MAX_VISIBLE_TAGS);
-  const extraCount = tags ? Math.max(0, tags.length - MAX_VISIBLE_TAGS) : 0;
+  const visibleTags = tags;
 
   return (
     <article
@@ -122,9 +121,6 @@ const PuebloCard = memo(function PuebloCard({
                   )}
                 </span>
               ))}
-              {extraCount > 0 && (
-                <span className="text-[9px] font-medium text-muted-foreground">+{extraCount}</span>
-              )}
             </div>
           )}
         </div>

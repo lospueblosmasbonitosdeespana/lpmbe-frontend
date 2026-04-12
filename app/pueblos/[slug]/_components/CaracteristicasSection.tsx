@@ -6,6 +6,7 @@ type Caracteristica = {
   siglo: string | null;
   visitable: boolean | null;
   cantidad: number | null;
+  detalle: string | null;
   tag: {
     tag: string;
     categoria: string;
@@ -79,6 +80,11 @@ export function CaracteristicasSection({
                 {extras.length > 0 && (
                   <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400 truncate">
                     {extras.join(" · ")}
+                  </p>
+                )}
+                {c.detalle && (
+                  <p className="mt-0.5 text-[11px] text-neutral-400 dark:text-neutral-500 truncate italic">
+                    {c.detalle}
                   </p>
                 )}
               </div>

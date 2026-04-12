@@ -35,6 +35,10 @@ type CollectionData = {
     foto_destacada: string | null;
     highlightExtra?: string | null;
     habitantes?: string | null;
+    linkUrl?: string | null;
+    linkedName?: string | null;
+    detalle?: string | null;
+    visitable?: boolean | null;
     meteo?: {
       temperatureC: number | null;
       weatherCode: number | null;

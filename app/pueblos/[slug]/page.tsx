@@ -445,6 +445,7 @@ export default async function PuebloPage({
     siglo: string | null;
     visitable: boolean | null;
     cantidad: number | null;
+    detalle: string | null;
     tag: {
       tag: string;
       categoria: string;
