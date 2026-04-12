@@ -59,6 +59,7 @@ type Collection = {
   title: string;
   description: string;
   imageUrl?: string | null;
+  count?: number;
 };
 
 async function getCollections(locale: string): Promise<Collection[]> {

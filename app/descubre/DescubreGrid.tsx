@@ -13,6 +13,7 @@ type Collection = {
   title: string;
   description: string;
   imageUrl?: string | null;
+  count?: number;
 };
 
 function CollectionIcon({ name, color, size = 24 }: { name: string; color: string; size?: number }) {
@@ -20,14 +21,9 @@ function CollectionIcon({ name, color, size = 24 }: { name: string; color: strin
   return <Icon size={size} style={{ color }} strokeWidth={1.75} />;
 }
 
-const TYPE_LABELS: Record<string, Record<string, string>> = {
-  es: { highlight: "Patrimonio", service: "Servicios", meteo: "Tiempo real", static: "Geografía" },
-  en: { highlight: "Heritage", service: "Services", meteo: "Live weather", static: "Geography" },
-  fr: { highlight: "Patrimoine", service: "Services", meteo: "Météo en direct", static: "Géographie" },
-  de: { highlight: "Kulturerbe", service: "Dienste", meteo: "Live-Wetter", static: "Geographie" },
-  pt: { highlight: "Património", service: "Serviços", meteo: "Tempo real", static: "Geografia" },
-  it: { highlight: "Patrimonio", service: "Servizi", meteo: "Meteo live", static: "Geografia" },
-  ca: { highlight: "Patrimoni", service: "Serveis", meteo: "Temps real", static: "Geografia" },
+const PUEBLOS_LABEL: Record<string, string> = {
+  es: "pueblos", en: "villages", fr: "villages", de: "Dörfer",
+  pt: "aldeias", it: "borghi", ca: "pobles",
 };
 
 const EXPLORE_LABELS: Record<string, string> = {
@@ -36,7 +32,7 @@ const EXPLORE_LABELS: Record<string, string> = {
 };
 
 export function DescubreGrid({ collections, locale }: { collections: Collection[]; locale: string }) {
-  const labels = TYPE_LABELS[locale] ?? TYPE_LABELS.es;
+  const pueblosLabel = PUEBLOS_LABEL[locale] ?? PUEBLOS_LABEL.es;
   const exploreLabel = EXPLORE_LABELS[locale] ?? EXPLORE_LABELS.es;
 
   const statics = collections.filter((c) => c.type !== "meteo");
@@ -46,7 +42,7 @@ export function DescubreGrid({ collections, locale }: { collections: Collection[
     <div className="mx-auto max-w-[80rem] px-4 sm:px-6 lg:px-8 py-12 md:py-16">
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {statics.map((c) => (
-          <CollectionCard key={c.slug} collection={c} labels={labels} exploreLabel={exploreLabel} />
+          <CollectionCard key={c.slug} collection={c} pueblosLabel={pueblosLabel} exploreLabel={exploreLabel} />
         ))}
       </div>
 
@@ -108,11 +104,23 @@ export function DescubreGrid({ collections, locale }: { collections: Collection[
   );
 }
 
+function CountBadge({ count, label, color }: { count?: number; label: string; color: string }) {
+  if (!count) return null;
+  return (
+    <span
+      className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-sm"
+      style={{ color }}
+    >
+      {count} {label}
+    </span>
+  );
+}
+
 function CollectionCard({
-  collection: c, labels, exploreLabel,
+  collection: c, pueblosLabel, exploreLabel,
 }: {
   collection: Collection;
-  labels: Record<string, string>;
+  pueblosLabel: string;
   exploreLabel: string;
 }) {
   const hasImage = !!c.imageUrl;
@@ -136,12 +144,7 @@ function CollectionCard({
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/90 backdrop-blur-sm shadow-sm">
               <CollectionIcon name={c.icon} color={c.color} size={20} />
             </span>
-            <span
-              className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-sm"
-              style={{ color: c.color }}
-            >
-              {labels[c.type] ?? c.type}
-            </span>
+            <CountBadge count={c.count} label={pueblosLabel} color={c.color} />
           </div>
           <div className="absolute bottom-0 left-0 right-0 p-4">
             <h2 className="font-serif text-xl font-bold text-white drop-shadow-md leading-tight">
@@ -178,12 +181,7 @@ function CollectionCard({
           >
             <CollectionIcon name={c.icon} color={c.color} size={26} />
           </span>
-          <span
-            className="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full"
-            style={{ color: c.color, backgroundColor: `${c.color}12` }}
-          >
-            {labels[c.type] ?? c.type}
-          </span>
+          <CountBadge count={c.count} label={pueblosLabel} color={c.color} />
         </div>
         <h2 className="font-serif text-xl font-semibold text-[#3d2c1e] group-hover:text-[#8B6F47] transition-colors dark:text-neutral-100 dark:group-hover:text-amber-400">
           {c.title}
