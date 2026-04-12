@@ -26,6 +26,8 @@ type Pueblo = {
   foto_destacada: string | null;
   highlightExtra?: string | null;
   habitantes?: string | null;
+  linkUrl?: string | null;
+  linkedName?: string | null;
   meteo?: {
     temperatureC: number | null;
     weatherCode: number | null;
@@ -222,17 +224,18 @@ function PuebloCard({ pueblo: p, color, tags }: { pueblo: Pueblo; color: string;
   const badge = p.highlightExtra ?? (p.habitantes ? `${p.habitantes} hab.` : null);
   const visibleTags = tags?.slice(0, MAX_TAGS_VISIBLE);
   const extraCount = tags ? Math.max(0, tags.length - MAX_TAGS_VISIBLE) : 0;
+  const href = p.linkUrl || `/pueblos/${p.slug}`;
 
   return (
     <Link
-      href={`/pueblos/${p.slug}`}
+      href={href}
       className="group relative flex flex-col overflow-hidden rounded-xl border border-[#e2d5cb] bg-white shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 dark:bg-neutral-900 dark:border-neutral-700"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-[#efe2d8] to-[#d4c4b5]">
         {hasPhoto ? (
           <Image
             src={p.foto_destacada!}
-            alt={p.nombre}
+            alt={p.linkedName ?? p.nombre}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-110"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
@@ -264,6 +267,11 @@ function PuebloCard({ pueblo: p, color, tags }: { pueblo: Pueblo; color: string;
           <h2 className="font-serif text-lg font-bold text-white drop-shadow-md leading-tight">
             {p.nombre}
           </h2>
+          {p.linkedName && (
+            <p className="text-xs text-white/80 mt-0.5 truncate drop-shadow-sm">
+              {p.linkedName}
+            </p>
+          )}
         </div>
       </div>
 
