@@ -1134,8 +1134,8 @@ export default async function PuebloPage({
               </div>
               <ParadasMap
                 paradas={
-                  poisPOI.filter((p: Poi) => p.lat != null && p.lng != null).length > 0
-                    ? poisPOI
+                  allPoisPOI.filter((p: Poi) => p.lat != null && p.lng != null).length > 0
+                    ? allPoisPOI
                         .filter((p: Poi) => p.lat != null && p.lng != null)
                         .map((p: Poi) => ({
                           titulo: p.nombre,
