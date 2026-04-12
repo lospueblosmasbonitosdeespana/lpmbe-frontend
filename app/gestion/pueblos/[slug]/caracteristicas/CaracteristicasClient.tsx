@@ -60,6 +60,7 @@ type LinkedContent = {
   pois: { id: number; nombre: string; foto: string | null }[];
   pages: { id: number; titulo: string; slug: string; coverUrl: string | null }[];
   paradasMx: ParadaMxItem[];
+  multiexperiencias?: MxItem[];
 };
 
 /* ────── Estilos ────── */
@@ -600,6 +601,29 @@ function ContentLinker({
             </div>
           )}
 
+          {(linkedContent.multiexperiencias ?? []).length > 0 && (
+            <div>
+              <div className="sticky top-0 bg-muted/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Experiencias del pueblo
+              </div>
+              {(linkedContent.multiexperiencias ?? []).map(mx => (
+                <button
+                  key={`mx-${mx.id}`} type="button"
+                  onClick={() => {
+                    onSelect('mx', mx.id);
+                    if (mx.foto) onFotoOverride(mx.foto);
+                    setShowList(false);
+                  }}
+                  className={`flex w-full items-center gap-2 px-3 py-1.5 text-xs hover:bg-muted/30 transition-colors ${selectedMxId === mx.id ? 'bg-amber-50/50 dark:bg-amber-950/20' : ''}`}
+                >
+                  {mx.foto ? <img src={mx.foto} alt="" className="h-6 w-6 shrink-0 rounded object-cover" /> : <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted text-[10px]">🗺️</span>}
+                  <span className="truncate font-medium">{mx.titulo}</span>
+                  {mx.foto && <span className="ml-auto shrink-0 text-[10px] text-emerald-600">con foto</span>}
+                </button>
+              ))}
+            </div>
+          )}
+
           {linkedContent.paradasMx.length > 0 && (() => {
             const grouped = new Map<string, { mx: MxItem; paradas: ParadaMxItem[] }>();
             for (const p of linkedContent.paradasMx) {
@@ -610,7 +634,7 @@ function ContentLinker({
             return Array.from(grouped.entries()).map(([title, { paradas }]) => (
               <div key={title}>
                 <div className="sticky top-0 bg-muted/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  🗺️ {title}
+                  Paradas · {title}
                 </div>
                 {paradas.map(p => (
                   <button
@@ -650,7 +674,7 @@ function ContentLinker({
             </div>
           )}
 
-          {linkedContent.pois.length === 0 && linkedContent.paradasMx.length === 0 && linkedContent.pages.length === 0 && (
+          {linkedContent.pois.length === 0 && linkedContent.paradasMx.length === 0 && linkedContent.pages.length === 0 && (linkedContent.multiexperiencias ?? []).length === 0 && (
             <p className="px-3 py-4 text-center text-xs text-muted-foreground">No hay contenidos disponibles en este pueblo.</p>
           )}
         </div>
