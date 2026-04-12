@@ -29,6 +29,7 @@ type Pueblo = {
   linkUrl?: string | null;
   linkedName?: string | null;
   detalle?: string | null;
+  visitable?: boolean | null;
   meteo?: {
     temperatureC: number | null;
     weatherCode: number | null;
@@ -285,6 +286,12 @@ function PuebloCard({ pueblo: p, color, tags }: { pueblo: Pueblo; color: string;
           <span className="text-sm text-neutral-600 truncate dark:text-neutral-400">
             {p.provincia} · {p.comunidad}
           </span>
+          {p.visitable && (
+            <span className="ml-auto shrink-0 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+              Visitable
+            </span>
+          )}
         </div>
         {p.detalle && (
           <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 leading-relaxed">
