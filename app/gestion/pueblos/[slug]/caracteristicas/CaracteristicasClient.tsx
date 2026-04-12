@@ -32,7 +32,6 @@ type CaracteristicaExistente = {
   tag: TagDef;
   poi?: { id: number; nombre: string; foto: string | null } | null;
   page?: { id: number; titulo: string; coverUrl: string | null } | null;
-  multiexperiencia?: MxItem | null;
 };
 
 type LocalState = {
@@ -436,7 +435,6 @@ export default function CaracteristicasClient({
                             linkedContent={linkedContent}
                             selectedPoiId={state.poiId}
                             selectedPageId={state.pageId}
-                            selectedMxId={state.multiexperienciaId}
                             fotoOverride={state.fotoOverride}
                             onSelect={(type, id) => selectLinked(tag.id, type, id)}
                             onFotoOverride={(url) => updateField(tag.id, 'fotoOverride', url)}
@@ -480,7 +478,6 @@ function ContentLinker({
   linkedContent,
   selectedPoiId,
   selectedPageId,
-  selectedMxId,
   fotoOverride,
   onSelect,
   onFotoOverride,
@@ -490,7 +487,6 @@ function ContentLinker({
   linkedContent: LinkedContent | null;
   selectedPoiId: number | null;
   selectedPageId: number | null;
-  selectedMxId: number | null;
   fotoOverride: string;
   onSelect: (type: 'poi' | 'page', id: number | null) => void;
   onFotoOverride: (url: string) => void;
