@@ -155,8 +155,17 @@ const nextConfig: NextConfig = {
         destination: '/patrimonio/:puebloSlug',
         permanent: true,
       },
-      // Redirecciones para la ruta antigua /pueblos/[slug]/categoria/[categoria]/[pageId]
-      // No se redirige para no romper navegación interna, pero se añaden canonicals en las páginas
+      // Redirecciones 301: /pueblos/SLUG/paginas/PAGE → /pueblos/SLUG/categoria/CAT/PAGE
+      // URLs antiguas generadas por descubre que Google ya indexó
+      { source: '/pueblos/ainsa/paginas/la-morisma', destination: '/pueblos/ainsa/categoria/en-familia/la-morisma', permanent: true },
+      { source: '/pueblos/anso/paginas/dia-del-traje-tradicional-ansotano', destination: '/pueblos/anso/categoria/en-familia/dia-del-traje-tradicional-ansotano', permanent: true },
+      { source: '/pueblos/atienza/paginas/la-caballada', destination: '/pueblos/atienza/categoria/en-familia/la-caballada', permanent: true },
+      { source: '/pueblos/banos-de-la-encina/paginas/camarin-barroco-de-la-ermita-del-cristo-del-llano', destination: '/pueblos/banos-de-la-encina/categoria/patrimonio/camarin-barroco-de-la-ermita-del-cristo-del-llano', permanent: true },
+      { source: '/pueblos/betancuria/paginas/parque-rural-de-betancuria', destination: '/pueblos/betancuria/categoria/naturaleza/parque-rural-de-betancuria', permanent: true },
+      { source: '/pueblos/briones/paginas/jornadas-medievales', destination: '/pueblos/briones/categoria/en-familia/jornadas-medievales', permanent: true },
+      { source: '/pueblos/candelario/paginas/boda-tipica', destination: '/pueblos/candelario/categoria/en-familia/boda-tipica', permanent: true },
+      // Fallback: cualquier /pueblos/SLUG/paginas/X no mapeado → ficha del pueblo
+      { source: '/pueblos/:slug/paginas/:page', destination: '/pueblos/:slug', permanent: true },
     ];
   },
   images: {
