@@ -110,7 +110,8 @@ const PUEBLO_KEYWORDS = [
 // Páginas temáticas generales (sin pueblo detectado)
 // navKey → clave del namespace 'nav' para obtener label traducida
 const TEMATICAS = [
-  { navKey: 'noticias',   extraNavKey: 'eventos',   keywords: ['noticias', 'eventos', 'alertas', 'notificaciones'], label: 'Noticias y eventos',  href: '/notificaciones',          icon: Newspaper },
+  { navKey: 'noticias',    extraNavKey: 'eventos',   keywords: ['noticias', 'eventos', 'alertas', 'notificaciones'], label: 'Noticias y eventos',  href: '/notificaciones',  icon: Newspaper },
+  { navKey: 'descubre',    extraNavKey: null,        keywords: ['colecciones', 'descubre', 'tematicas'],             label: 'Descubre colecciones', href: '/descubre',        icon: Landmark },
   { navKey: 'gastronomia', extraNavKey: null,        keywords: ['gastronomia', 'comer'],              label: 'Gastronomía',  href: '/experiencias/gastronomia', icon: UtensilsCrossed },
   { navKey: 'family',      extraNavKey: null,        keywords: ['familia', 'ninos', 'en familia'],    label: 'En familia',   href: '/experiencias/en-familia',  icon: Users },
   { navKey: 'petfriendly', extraNavKey: null,        keywords: ['petfriendly', 'mascotas', 'perros'], label: 'Pet friendly', href: '/experiencias/petfriendly', icon: PawPrint },
@@ -213,19 +214,21 @@ export default function ExplorarBar() {
   // Mapa de keywords traducidos → keyword base en español (para matching multilingüe)
   const localeKeyMap = useMemo<Record<string, string>>(() => {
     const pairs: [string, string][] = [
-      [norm(tNav('meteo')),       'meteo'],
-      [norm(tNav('gastronomia')), 'gastronomia'],
-      [norm(tNav('nature')),      'naturaleza'],
-      [norm(tNav('culture')),     'cultura'],
-      [norm(tNav('family')),      'familia'],
-      [norm(tNav('petfriendly')), 'petfriendly'],
-      [norm(tNav('patrimonio')),  'patrimonio'],
-      [norm(tNav('noticias')),    'noticias'],
-      [norm(tNav('eventos')),     'eventos'],
-      [norm(tNav('actualidad')),  'actualidad'],
-      [norm(tNav('rutas')),       'rutas'],
-      [norm(tNav('queVer')),      'ver'],
-      [norm(tNav('servicios')),   'servicios'],
+      [norm(tNav('meteo')),        'meteo'],
+      [norm(tNav('gastronomia')),  'gastronomia'],
+      [norm(tNav('nature')),       'naturaleza'],
+      [norm(tNav('culture')),      'cultura'],
+      [norm(tNav('family')),       'familia'],
+      [norm(tNav('petfriendly')),  'petfriendly'],
+      [norm(tNav('patrimonio')),   'patrimonio'],
+      [norm(tNav('noticias')),     'noticias'],
+      [norm(tNav('eventos')),      'eventos'],
+      [norm(tNav('actualidad')),   'actualidad'],
+      [norm(tNav('rutas')),        'rutas'],
+      [norm(tNav('queVer')),       'ver'],
+      [norm(tNav('servicios')),    'servicios'],
+      [norm(tNav('descubre')),     'descubre'],
+      [norm(tNav('sectionColecciones')), 'colecciones'],
     ];
     // Elimina entradas donde el keyword ya coincide con el español (no-op)
     return Object.fromEntries(pairs.filter(([k, v]) => k !== v));
