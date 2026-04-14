@@ -41,42 +41,41 @@ const SVC_COLOR_MAP = new Map<string, string>(
   TIPOS_SERVICIO.map((t) => [t.tipo, t.color]),
 );
 
-// Aliases de búsqueda para detectar el tipo de servicio por palabras clave
 const SVC_SEARCH_ALIASES: Record<string, string[]> = {
-  PARKING:              ['parking', 'aparcamiento', 'aparcar'],
-  TURISMO:              ['turismo', 'oficina de turismo', 'informacion turistica'],
-  FARMACIA:             ['farmacia', 'medicamento'],
-  HOSPITAL:             ['hospital', 'centro de salud', 'medico', 'urgencias'],
-  COCHE_ELECTRICO:      ['cargador electrico', 'coche electrico', 'recarga', 'electrolinera'],
-  COCHE_ELECTRICO_ULTRA:['ultra rapido', 'ultrarapido'],
-  CARAVANAS:            ['caravana', 'autocaravana', 'camper', 'pernocta'],
-  LAVABO:               ['lavabo', 'aseo', 'wc', 'bano publico'],
-  GASOLINERA:           ['gasolinera', 'gasolina', 'combustible'],
-  SUPERMERCADO:         ['supermercado', 'compra', 'tienda alimentacion'],
-  AUTOBUS:              ['autobus', 'bus', 'estacion de bus'],
-  TAXI:                 ['taxi'],
-  TREN:                 ['tren', 'estacion de tren', 'renfe'],
-  BANCO:                ['banco', 'cajero', 'cajero automatico'],
-  POLICIA:              ['policia', 'guardia civil'],
-  FUENTE:               ['fuente', 'agua potable'],
-  PICNIC:               ['picnic', 'merendero', 'area picnic'],
-  PARQUE_INFANTIL:      ['parque infantil', 'juegos infantiles'],
-  PLAYA:                ['playa'],
-  BANO_NATURAL:         ['bano natural', 'piscina natural', 'piscina fluvial', 'rio'],
-  PIPICAN:              ['pipican', 'area canina', 'perros', 'mascotas'],
-  ALQUILER_BICI:        ['bicicleta', 'bici', 'alquiler bici', 'alquiler de bicicletas'],
-  DESFIBRILADOR:        ['desfibrilador', 'dea'],
+  PARKING:               ['parking', 'aparcamiento', 'aparcar'],
+  TURISMO:               ['turismo', 'oficina de turismo', 'informacion turistica'],
+  FARMACIA:              ['farmacia', 'medicamento'],
+  HOSPITAL:              ['hospital', 'centro de salud', 'medico', 'urgencias'],
+  COCHE_ELECTRICO:       ['cargador electrico', 'coche electrico', 'recarga', 'electrolinera'],
+  COCHE_ELECTRICO_ULTRA: ['ultra rapido', 'ultrarapido', 'cargador ultra'],
+  CARAVANAS:             ['caravana', 'autocaravana', 'camper', 'pernocta'],
+  LAVABO:                ['lavabo', 'aseo', 'wc', 'bano publico'],
+  GASOLINERA:            ['gasolinera', 'gasolina', 'combustible'],
+  SUPERMERCADO:          ['supermercado', 'compra', 'tienda alimentacion'],
+  AUTOBUS:               ['autobus', 'bus', 'estacion de bus'],
+  TAXI:                  ['taxi'],
+  TREN:                  ['tren', 'estacion de tren', 'renfe'],
+  BANCO:                 ['banco', 'cajero', 'cajero automatico'],
+  POLICIA:               ['policia', 'guardia civil'],
+  FUENTE:                ['fuente', 'agua potable'],
+  PICNIC:                ['picnic', 'merendero', 'area picnic'],
+  PARQUE_INFANTIL:       ['parque infantil', 'juegos infantiles'],
+  PLAYA:                 ['playa'],
+  BANO_NATURAL:          ['bano natural', 'piscina natural', 'piscina fluvial'],
+  PIPICAN:               ['pipican', 'area canina', 'perros'],
+  ALQUILER_BICI:         ['bicicleta', 'bici', 'alquiler bici', 'alquiler de bicicletas'],
+  DESFIBRILADOR:         ['desfibrilador', 'dea'],
 };
 
 const PUEBLO_KEYWORDS = [
-  { keyword: 'noticias',   label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`,        icon: Newspaper },
-  { keyword: 'eventos',    label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`,        icon: Newspaper },
-  { keyword: 'articulos',  label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`,        icon: Newspaper },
-  { keyword: 'actualidad', label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`,        icon: Newspaper },
-  { keyword: 'comer',      label: 'Qué comer',  path: (s: string) => `/que-comer/${s}`,                icon: UtensilsCrossed },
+  { keyword: 'noticias',   label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`,         icon: Newspaper },
+  { keyword: 'eventos',    label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`,         icon: Newspaper },
+  { keyword: 'articulos',  label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`,         icon: Newspaper },
+  { keyword: 'actualidad', label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`,         icon: Newspaper },
+  { keyword: 'comer',      label: 'Qué comer',  path: (s: string) => `/que-comer/${s}`,                 icon: UtensilsCrossed },
   { keyword: 'ver',        label: 'Qué ver',    path: (s: string) => `/pueblos/${s}/lugares-de-interes`, icon: Landmark },
-  { keyword: 'tiempo',     label: 'Tiempo',     path: (s: string) => `/pueblos/${s}/meteo`,             icon: CloudSun },
-  { keyword: 'meteo',      label: 'Tiempo',     path: (s: string) => `/pueblos/${s}/meteo`,             icon: CloudSun },
+  { keyword: 'tiempo',     label: 'Tiempo',     path: (s: string) => `/pueblos/${s}/meteo`,              icon: CloudSun },
+  { keyword: 'meteo',      label: 'Tiempo',     path: (s: string) => `/pueblos/${s}/meteo`,              icon: CloudSun },
 ] as const;
 
 const PUEBLO_QUICK_LINKS = [
@@ -94,15 +93,64 @@ function toSlug(text: string): string {
     .replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 }
 
-function matchSvcType(q: string): string | null {
-  for (const [tipo, aliases] of Object.entries(SVC_SEARCH_ALIASES)) {
-    if (aliases.some((a) => q.includes(norm(a)))) return tipo;
+/**
+ * Intenta extraer un pueblo del query.
+ * Soporta "ainsa parking", "parking ainsa", "ainsa" y nombres compuestos.
+ * Devuelve el pueblo encontrado y el resto del query.
+ */
+function findPuebloInQuery(
+  q: string,
+  pueblos: PuebloLite[],
+): { pueblo: PuebloLite; remainder: string } | null {
+  // Ordenar de mayor a menor longitud para priorizar nombres compuestos
+  const sorted = [...pueblos].sort((a, b) => b.nombre.length - a.nombre.length);
+
+  for (const pueblo of sorted) {
+    const pNorm = norm(pueblo.nombre);
+
+    if (q === pNorm) return { pueblo, remainder: '' };
+
+    // Pueblo al inicio: "ainsa parking" / "ainsa p"
+    if (q.startsWith(pNorm + ' ')) {
+      return { pueblo, remainder: q.slice(pNorm.length + 1).trim() };
+    }
+
+    // Pueblo al final: "parking ainsa"
+    if (q.endsWith(' ' + pNorm)) {
+      return { pueblo, remainder: q.slice(0, q.length - pNorm.length - 1).trim() };
+    }
   }
-  // también coincide con la etiqueta del tipo
-  for (const t of TIPOS_SERVICIO) {
-    if (q.includes(norm(t.etiqueta))) return t.tipo;
-  }
+
   return null;
+}
+
+/**
+ * Devuelve los tipos de servicio que coinciden (total o parcialmente) con el texto dado.
+ */
+function getMatchingServiceTypes(
+  partial: string,
+): Array<{ tipo: string; label: string; color: string }> {
+  if (!partial) return [];
+  const results: Array<{ tipo: string; label: string; color: string }> = [];
+  const seen = new Set<string>();
+
+  for (const t of TIPOS_SERVICIO) {
+    if (seen.has(t.tipo)) continue;
+    const label = norm(t.etiqueta);
+    const aliases = (SVC_SEARCH_ALIASES[t.tipo] ?? []).map(norm);
+
+    const matches =
+      label.startsWith(partial) ||
+      label.includes(partial) ||
+      aliases.some((a) => a.startsWith(partial) || a.includes(partial));
+
+    if (matches) {
+      results.push({ tipo: t.tipo, label: t.etiqueta, color: t.color });
+      seen.add(t.tipo);
+    }
+  }
+
+  return results.slice(0, 7);
 }
 
 export default function ExplorarBar() {
@@ -141,80 +189,60 @@ export default function ExplorarBar() {
   }, []);
 
   const q = norm(query.trim());
-  const hasQuery = q.length >= 2;
+  const hasQuery = q.length >= 1;
 
-  // ── Detectar si el query contiene un tipo de servicio ─────────────────────
-  const detectedSvcType = useMemo(() => {
-    if (!hasQuery) return null;
-    return matchSvcType(q);
-  }, [hasQuery, q]);
+  // ── Detectar pueblo dentro del query ─────────────────────────────────────
+  const parsedQuery = useMemo(() => {
+    if (!hasQuery || !pueblos) return null;
+    return findPuebloInQuery(q, pueblos);
+  }, [hasQuery, q, pueblos]);
 
-  // ── Detectar si hay también un pueblo en el query ─────────────────────────
-  const matchedPuebloForSvc = useMemo(() => {
-    if (!detectedSvcType || !pueblos) return null;
-    // eliminar los alias del tipo del query para quedarnos con el pueblo
-    let rest = q;
-    const aliases = SVC_SEARCH_ALIASES[detectedSvcType] ?? [];
-    for (const a of aliases) { rest = rest.replace(norm(a), '').trim(); }
-    rest = rest.replace(norm(SVC_LABEL_MAP.get(detectedSvcType) ?? ''), '').trim();
-    if (rest.length < 2) return null;
-    return (
-      pueblos.find((p) => norm(p.nombre).includes(rest) || norm(p.slug).includes(rest)) ?? null
-    );
-  }, [detectedSvcType, q, pueblos]);
+  // ── Cuando hay pueblo: servicios que coinciden con el resto ───────────────
+  const matchingServices = useMemo(() => {
+    if (!parsedQuery) return [];
+    const { remainder } = parsedQuery;
+    if (!remainder) return [];
+    return getMatchingServiceTypes(remainder);
+  }, [parsedQuery]);
 
-  // ── Sección de página de pueblo (noticias, meteo…) ───────────────────────
+  // ── Sección de pueblo (noticias, meteo…) cuando hay pueblo + keyword ──────
   const sectionKeyword = useMemo(() => {
-    if (!hasQuery || detectedSvcType) return null;
-    return PUEBLO_KEYWORDS.find(sec => q.includes(sec.keyword)) ?? null;
-  }, [hasQuery, q, detectedSvcType]);
+    if (!parsedQuery?.remainder) return null;
+    return PUEBLO_KEYWORDS.find((sec) => parsedQuery.remainder.includes(sec.keyword)) ?? null;
+  }, [parsedQuery]);
 
-  const puebloQuery = useMemo(() => {
-    if (sectionKeyword) return q.replace(sectionKeyword.keyword, '').trim();
-    return q;
-  }, [q, sectionKeyword]);
+  // ── Búsqueda general sin pueblo detectado ─────────────────────────────────
+  const matchingPueblos = useMemo(() => {
+    if (!hasQuery || !pueblos || parsedQuery) return [];
+    return pueblos
+      .filter(
+        (p) =>
+          norm(p.nombre).includes(q) ||
+          norm(p.provincia).includes(q) ||
+          norm(p.comunidad).includes(q),
+      )
+      .slice(0, 5);
+  }, [hasQuery, pueblos, q, parsedQuery]);
 
-  // ── Tags / colecciones ────────────────────────────────────────────────────
-  const matchingTags = useMemo(
-    () =>
-      hasQuery && tags && !sectionKeyword && !detectedSvcType
-        ? tags
-            .filter((t) => {
-              const name = norm(t.nombre_i18n?.es ?? '');
-              return name.includes(q) || norm(t.tag).includes(q);
-            })
-            .slice(0, 4)
-        : [],
-    [hasQuery, tags, q, sectionKeyword, detectedSvcType],
-  );
-
-  // ── Pueblos ───────────────────────────────────────────────────────────────
-  const matchingPueblos = useMemo(
-    () =>
-      hasQuery && pueblos && !detectedSvcType
-        ? pueblos
-            .filter(
-              (p) =>
-                norm(p.nombre).includes(puebloQuery) ||
-                norm(p.provincia).includes(puebloQuery) ||
-                norm(p.comunidad).includes(puebloQuery),
-            )
-            .slice(0, sectionKeyword ? 3 : 5)
-        : [],
-    [hasQuery, pueblos, puebloQuery, sectionKeyword, detectedSvcType],
-  );
+  const matchingTags = useMemo(() => {
+    if (!hasQuery || !tags || parsedQuery) return [];
+    return tags
+      .filter((t) => {
+        const name = norm(t.nombre_i18n?.es ?? '');
+        return name.includes(q) || norm(t.tag).includes(q);
+      })
+      .slice(0, 4);
+  }, [hasQuery, tags, q, parsedQuery]);
 
   if (hidden) return null;
 
   const close = () => { setFocused(false); setQuery(''); };
 
-  const svcLabel = detectedSvcType ? (SVC_LABEL_MAP.get(detectedSvcType) ?? detectedSvcType) : '';
-  const svcColor = detectedSvcType ? (SVC_COLOR_MAP.get(detectedSvcType) ?? '#6b7280') : '#6b7280';
-
   const hasAnyResults =
-    !!detectedSvcType ||
+    !!parsedQuery ||
     matchingTags.length > 0 ||
     matchingPueblos.length > 0;
+
   const showDropdown = focused && hasQuery;
 
   return (
@@ -249,112 +277,80 @@ export default function ExplorarBar() {
             <div className="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-[70vh] overflow-y-auto rounded-xl border border-border bg-card shadow-xl">
               {hasAnyResults ? (
                 <>
-                  {/* ── Servicio detectado ───────────────────────────── */}
-                  {detectedSvcType && (
-                    <div>
-                      <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        Servicios del visitante
-                      </p>
-
-                      {matchedPuebloForSvc ? (
-                        /* Tipo + pueblo → UN resultado → mapa del pueblo */
-                        <Link
-                          href={`/pueblos/${matchedPuebloForSvc.slug}#mapa`}
-                          onClick={close}
-                          className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
-                        >
-                          <div
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                            style={{ backgroundColor: `${svcColor}20` }}
-                          >
-                            <MapPin className="h-4 w-4" style={{ color: svcColor }} />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-foreground">
-                              {svcLabel} en {matchedPuebloForSvc.nombre}
-                            </p>
-                            <p className="truncate text-[11px] text-muted-foreground">
-                              Ver en el mapa del pueblo
-                            </p>
-                          </div>
-                          <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
-                        </Link>
-                      ) : (
-                        /* Solo tipo → pide añadir el pueblo */
-                        <div className="px-3 py-2">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                              style={{ backgroundColor: `${svcColor}20` }}
+                  {/* ── MODO PUEBLO DETECTADO ──────────────────────────────── */}
+                  {parsedQuery && (
+                    <>
+                      {/* Servicios que coinciden con el resto del query */}
+                      {matchingServices.length > 0 && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Servicios en {parsedQuery.pueblo.nombre}
+                          </p>
+                          {matchingServices.map((svc) => (
+                            <Link
+                              key={svc.tipo}
+                              href={`/pueblos/${parsedQuery.pueblo.slug}#mapa`}
+                              onClick={close}
+                              className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
                             >
-                              <MapPin className="h-4 w-4" style={{ color: svcColor }} />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-medium text-foreground">
-                                {svcLabel}
-                              </p>
-                              <p className="truncate text-[11px] text-muted-foreground">
-                                Añade el nombre del pueblo (ej: &ldquo;{query} Aínsa&rdquo;)
-                              </p>
-                            </div>
-                          </div>
+                              <div
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                                style={{ backgroundColor: `${svc.color}20` }}
+                              >
+                                <MapPin className="h-4 w-4" style={{ color: svc.color }} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium text-foreground">
+                                  {svc.label} en {parsedQuery.pueblo.nombre}
+                                </p>
+                                <p className="truncate text-[11px] text-muted-foreground">
+                                  Ver en el mapa del pueblo
+                                </p>
+                              </div>
+                              <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
+                            </Link>
+                          ))}
                         </div>
                       )}
-                    </div>
-                  )}
 
-                  {/* ── Tags / colecciones ───────────────────────────── */}
-                  {matchingTags.length > 0 && (
-                    <div>
-                      <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        Características
-                      </p>
-                      {matchingTags.map((t) => {
-                        const slug = t.slug || toSlug(t.nombre_i18n?.es ?? t.tag);
-                        return (
+                      {/* Sección de pueblo (noticias, meteo…) */}
+                      {sectionKeyword && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            {sectionKeyword.label}
+                          </p>
                           <Link
-                            key={t.tag}
-                            href={`/explorar/${slug}`}
+                            href={sectionKeyword.path(parsedQuery.pueblo.slug)}
                             onClick={close}
                             className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
                           >
-                            <div
-                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                              style={{ backgroundColor: `${t.color}18` }}
-                            >
-                              <TagIcon name={t.icono} color={t.color} size={16} />
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                              <sectionKeyword.icon className="h-4 w-4 text-primary" />
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-sm font-medium text-foreground">
-                                {t.nombre_i18n?.es ?? t.tag}
+                                {sectionKeyword.label} de {parsedQuery.pueblo.nombre}
                               </p>
                             </div>
-                            <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                              {t.count} pueblos
-                            </span>
                           </Link>
-                        );
-                      })}
-                    </div>
-                  )}
+                        </div>
+                      )}
 
-                  {/* ── Pueblos ──────────────────────────────────────── */}
-                  {matchingPueblos.length > 0 && (
-                    <div>
-                      <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        {sectionKeyword ? `${sectionKeyword.label} en pueblos` : 'Pueblos'}
-                      </p>
-                      {matchingPueblos.map((p) => (
-                        <div key={p.id}>
+                      {/* El pueblo siempre visible para acceder directamente */}
+                      <div>
+                        <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Pueblo
+                        </p>
+                        <div>
                           <Link
-                            href={sectionKeyword ? sectionKeyword.path(p.slug) : `/pueblos/${p.slug}`}
+                            href={`/pueblos/${parsedQuery.pueblo.slug}`}
                             onClick={close}
                             className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
                           >
-                            {p.foto ? (
+                            {parsedQuery.pueblo.foto ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
-                                src={p.foto}
+                                src={parsedQuery.pueblo.foto}
                                 alt=""
                                 className="h-8 w-8 shrink-0 rounded-lg object-cover"
                               />
@@ -365,43 +361,144 @@ export default function ExplorarBar() {
                             )}
                             <div className="min-w-0 flex-1">
                               <p className="flex items-center gap-1.5 truncate text-sm font-medium text-foreground">
-                                {sectionKeyword ? `${sectionKeyword.label} de ${p.nombre}` : p.nombre}
-                                {p.semaforoEstado && SEMAFORO_COLORS[p.semaforoEstado] && (
-                                  <span
-                                    className="inline-block h-2 w-2 shrink-0 rounded-full"
-                                    style={{ backgroundColor: SEMAFORO_COLORS[p.semaforoEstado] }}
-                                    title={
-                                      p.semaforoEstado === 'VERDE' ? 'Ideal para visitar'
-                                      : p.semaforoEstado === 'AMARILLO' ? 'Afluencia media'
-                                      : p.semaforoEstado === 'ROJO' ? 'Alta afluencia'
-                                      : ''
-                                    }
-                                  />
-                                )}
+                                {parsedQuery.pueblo.nombre}
+                                {parsedQuery.pueblo.semaforoEstado &&
+                                  SEMAFORO_COLORS[parsedQuery.pueblo.semaforoEstado] && (
+                                    <span
+                                      className="inline-block h-2 w-2 shrink-0 rounded-full"
+                                      style={{ backgroundColor: SEMAFORO_COLORS[parsedQuery.pueblo.semaforoEstado!] }}
+                                      title={
+                                        parsedQuery.pueblo.semaforoEstado === 'VERDE' ? 'Ideal para visitar'
+                                        : parsedQuery.pueblo.semaforoEstado === 'AMARILLO' ? 'Afluencia media'
+                                        : parsedQuery.pueblo.semaforoEstado === 'ROJO' ? 'Alta afluencia'
+                                        : ''
+                                      }
+                                    />
+                                  )}
                               </p>
                               <p className="truncate text-[11px] text-muted-foreground">
-                                {p.provincia}
+                                {parsedQuery.pueblo.provincia}
                               </p>
                             </div>
                           </Link>
-                          {!sectionKeyword && (
-                            <div className="flex flex-wrap gap-1 px-3 pb-2 pl-14">
-                              {PUEBLO_QUICK_LINKS.map((sec) => (
-                                <Link
-                                  key={sec.label}
-                                  href={sec.path(p.slug)}
-                                  onClick={close}
-                                  className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
-                                >
-                                  <sec.icon className="h-2.5 w-2.5" />
-                                  {sec.label}
-                                </Link>
-                              ))}
-                            </div>
-                          )}
+                          <div className="flex flex-wrap gap-1 px-3 pb-2 pl-14">
+                            {PUEBLO_QUICK_LINKS.map((sec) => (
+                              <Link
+                                key={sec.label}
+                                href={sec.path(parsedQuery.pueblo.slug)}
+                                onClick={close}
+                                className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                              >
+                                <sec.icon className="h-2.5 w-2.5" />
+                                {sec.label}
+                              </Link>
+                            ))}
+                          </div>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* ── MODO BÚSQUEDA GENERAL ──────────────────────────────── */}
+                  {!parsedQuery && (
+                    <>
+                      {matchingTags.length > 0 && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Características
+                          </p>
+                          {matchingTags.map((t) => {
+                            const slug = t.slug || toSlug(t.nombre_i18n?.es ?? t.tag);
+                            return (
+                              <Link
+                                key={t.tag}
+                                href={`/explorar/${slug}`}
+                                onClick={close}
+                                className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                              >
+                                <div
+                                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                                  style={{ backgroundColor: `${t.color}18` }}
+                                >
+                                  <TagIcon name={t.icono} color={t.color} size={16} />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-medium text-foreground">
+                                    {t.nombre_i18n?.es ?? t.tag}
+                                  </p>
+                                </div>
+                                <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                                  {t.count} pueblos
+                                </span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {matchingPueblos.length > 0 && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Pueblos
+                          </p>
+                          {matchingPueblos.map((p) => (
+                            <div key={p.id}>
+                              <Link
+                                href={`/pueblos/${p.slug}`}
+                                onClick={close}
+                                className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                              >
+                                {p.foto ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={p.foto}
+                                    alt=""
+                                    className="h-8 w-8 shrink-0 rounded-lg object-cover"
+                                  />
+                                ) : (
+                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                                  </div>
+                                )}
+                                <div className="min-w-0 flex-1">
+                                  <p className="flex items-center gap-1.5 truncate text-sm font-medium text-foreground">
+                                    {p.nombre}
+                                    {p.semaforoEstado && SEMAFORO_COLORS[p.semaforoEstado] && (
+                                      <span
+                                        className="inline-block h-2 w-2 shrink-0 rounded-full"
+                                        style={{ backgroundColor: SEMAFORO_COLORS[p.semaforoEstado] }}
+                                        title={
+                                          p.semaforoEstado === 'VERDE' ? 'Ideal para visitar'
+                                          : p.semaforoEstado === 'AMARILLO' ? 'Afluencia media'
+                                          : p.semaforoEstado === 'ROJO' ? 'Alta afluencia'
+                                          : ''
+                                        }
+                                      />
+                                    )}
+                                  </p>
+                                  <p className="truncate text-[11px] text-muted-foreground">
+                                    {p.provincia}
+                                  </p>
+                                </div>
+                              </Link>
+                              <div className="flex flex-wrap gap-1 px-3 pb-2 pl-14">
+                                {PUEBLO_QUICK_LINKS.map((sec) => (
+                                  <Link
+                                    key={sec.label}
+                                    href={sec.path(p.slug)}
+                                    onClick={close}
+                                    className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                                  >
+                                    <sec.icon className="h-2.5 w-2.5" />
+                                    {sec.label}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
                 </>
               ) : (
