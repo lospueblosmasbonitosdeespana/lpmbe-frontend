@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import {
@@ -188,18 +188,7 @@ export default async function PoiPage({
 
   const data = result?.data ?? null;
   if (!data) {
-    return (
-      <main className="mx-auto max-w-[1200px] px-6 py-8 bg-background">
-        <h1 className="text-3xl font-bold text-foreground my-4">Punto de interés no disponible</h1>
-        <p className="text-muted-foreground">No se ha podido cargar este punto de interés.</p>
-        <Link
-          href={`/pueblos/${puebloSlug}/lugares-de-interes`}
-          className="mt-6 inline-block text-primary hover:underline"
-        >
-          Volver a lugares de interés
-        </Link>
-      </main>
-    );
+    notFound();
   }
 
   const foto = pickFotoPrincipal(data);
