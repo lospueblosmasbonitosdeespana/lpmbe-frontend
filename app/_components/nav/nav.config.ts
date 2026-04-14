@@ -53,8 +53,8 @@ export function getNavConfig(options?: Partial<CampaignNavOptions>): NavItem[] {
       {
         titleKey: "explore",
         links: [
-          { labelKey: "explorar", href: "/explorar" },
           { labelKey: "seeAll", href: "/pueblos" },
+          { labelKey: "explorar", href: "/explorar" },
           { labelKey: "interactiveMap", href: "/mapa" },
           { labelKey: "webcams", href: "/webcams" },
         ],

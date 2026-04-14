@@ -23,6 +23,7 @@ import {
 } from "@/lib/seo";
 import JsonLd from "./components/seo/JsonLd";
 import CountdownHydrator from "./_components/CountdownHydrator";
+import ExplorarBar from "./_components/nav/ExplorarBar";
 
 const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
@@ -165,6 +166,7 @@ export default async function RootLayout({
               <WebAnalyticsTracker />
               <CountdownHydrator />
               <Header locale={locale} />
+              <ExplorarBar />
               {children}
               <Footer locale={locale} />
               <SpeedInsights />
