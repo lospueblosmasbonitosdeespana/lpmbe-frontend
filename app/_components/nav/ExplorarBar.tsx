@@ -5,7 +5,8 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Search, X, MapPin, Wrench,
-  Newspaper, CalendarDays, UtensilsCrossed, Landmark, TreePine, PawPrint, Users,
+  Newspaper, UtensilsCrossed, Landmark, TreePine, PawPrint, Users,
+  CloudSun, TrafficCone,
 } from 'lucide-react';
 import { TagIcon } from '@/lib/tag-icon-map';
 
@@ -35,14 +36,28 @@ type SvcCount = {
   count: number;
 };
 
-const PUEBLO_SECTIONS = [
-  { keyword: 'noticias', label: 'Noticias', path: (s: string) => `/pueblos/${s}#noticias`, icon: Newspaper },
-  { keyword: 'eventos', label: 'Eventos', path: (s: string) => `/pueblos/${s}#eventos`, icon: CalendarDays },
+const PUEBLO_KEYWORDS = [
+  { keyword: 'noticias', label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`, icon: Newspaper },
+  { keyword: 'eventos', label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`, icon: Newspaper },
+  { keyword: 'articulos', label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`, icon: Newspaper },
+  { keyword: 'actualidad', label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`, icon: Newspaper },
   { keyword: 'comer', label: 'Qué comer', path: (s: string) => `/que-comer/${s}`, icon: UtensilsCrossed },
   { keyword: 'ver', label: 'Qué ver', path: (s: string) => `/patrimonio/${s}`, icon: Landmark },
   { keyword: 'naturaleza', label: 'Naturaleza', path: (s: string) => `/naturaleza/${s}`, icon: TreePine },
   { keyword: 'familia', label: 'En familia', path: (s: string) => `/en-familia/${s}`, icon: Users },
   { keyword: 'mascotas', label: 'Petfriendly', path: (s: string) => `/petfriendly/${s}`, icon: PawPrint },
+  { keyword: 'tiempo', label: 'Tiempo', path: (s: string) => `/pueblos/${s}#meteo`, icon: CloudSun },
+  { keyword: 'meteo', label: 'Tiempo', path: (s: string) => `/pueblos/${s}#meteo`, icon: CloudSun },
+  { keyword: 'semaforo', label: 'Semáforo', path: (s: string) => `/pueblos/${s}#semaforo`, icon: TrafficCone },
+] as const;
+
+const PUEBLO_QUICK_LINKS = [
+  { label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`, icon: Newspaper },
+  { label: 'Qué comer', path: (s: string) => `/que-comer/${s}`, icon: UtensilsCrossed },
+  { label: 'Qué ver', path: (s: string) => `/patrimonio/${s}`, icon: Landmark },
+  { label: 'Naturaleza', path: (s: string) => `/naturaleza/${s}`, icon: TreePine },
+  { label: 'Tiempo', path: (s: string) => `/pueblos/${s}#meteo`, icon: CloudSun },
+  { label: 'Semáforo', path: (s: string) => `/pueblos/${s}#semaforo`, icon: TrafficCone },
 ] as const;
 
 const norm = (s: string) =>
@@ -95,7 +110,7 @@ export default function ExplorarBar() {
 
   const sectionKeyword = useMemo(() => {
     if (!hasQuery) return null;
-    return PUEBLO_SECTIONS.find(sec => q.includes(sec.keyword)) ?? null;
+    return PUEBLO_KEYWORDS.find(sec => q.includes(sec.keyword)) ?? null;
   }, [hasQuery, q]);
 
   const puebloQuery = useMemo(() => {
@@ -290,9 +305,9 @@ export default function ExplorarBar() {
                           </Link>
                           {!sectionKeyword && (
                             <div className="flex flex-wrap gap-1 px-3 pb-2 pl-14">
-                              {PUEBLO_SECTIONS.slice(0, 5).map((sec) => (
+                              {PUEBLO_QUICK_LINKS.map((sec) => (
                                 <Link
-                                  key={sec.keyword}
+                                  key={sec.label}
                                   href={sec.path(p.slug)}
                                   onClick={close}
                                   className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
