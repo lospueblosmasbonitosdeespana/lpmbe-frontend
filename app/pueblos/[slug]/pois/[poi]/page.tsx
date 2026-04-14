@@ -22,20 +22,24 @@ function isNumeric(s: string) {
 }
 
 /**
- * If a slug ends with -N (numeric suffix), generate candidate slugs
- * by trying other suffixes (-1, -2, -3) or the base without suffix.
+ * Generate candidate slugs when the original is not found.
+ * Handles two cases:
+ *  - slug has suffix -N: try other suffixes and the base
+ *  - slug has NO suffix: try -1, -2, -3 (common migration artifact)
  */
 function slugFallbackCandidates(slug: string): string[] {
   const match = slug.match(/^(.+)-(\d+)$/);
-  if (!match) return [];
-  const base = match[1];
-  const num = parseInt(match[2], 10);
-  const candidates: string[] = [];
-  for (let i = 1; i <= 4; i++) {
-    if (i !== num) candidates.push(`${base}-${i}`);
+  if (match) {
+    const base = match[1];
+    const num = parseInt(match[2], 10);
+    const candidates: string[] = [];
+    for (let i = 1; i <= 4; i++) {
+      if (i !== num) candidates.push(`${base}-${i}`);
+    }
+    candidates.push(base);
+    return candidates;
   }
-  candidates.push(base);
-  return candidates;
+  return [`${slug}-1`, `${slug}-2`, `${slug}-3`];
 }
 
 function pickDescripcionHtml(poi: any): string | null {
