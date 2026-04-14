@@ -190,16 +190,23 @@ export default function ExplorarBar() {
       fetch('/api/public/explorar').then((r) => r.json()),
       fetch('/api/public/explorar/counts?soloColecciones=true').then((r) => r.json()),
       fetch('/api/public/rutas').then((r) => r.json()).catch(() => []),
-      fetch('/api/public/descubre').then((r) => r.json()).catch(() => []),
     ])
-      .then(([explorar, counts, rutasData, descubreData]) => {
+      .then(([explorar, counts, rutasData]) => {
         setPueblos(explorar.pueblos ?? []);
         setTags(counts.tags ?? []);
         setMxList(Array.isArray(rutasData) ? rutasData.filter((r: RutaLite) => r.activo) : []);
-        setDescubreList(Array.isArray(descubreData) ? descubreData : []);
       })
       .catch(() => {});
   }, [hidden, pueblos]);
+
+  // Colecciones /descubre/ siempre frescas — sin caché en cliente
+  useEffect(() => {
+    if (hidden) return;
+    fetch('/api/public/descubre')
+      .then((r) => r.json())
+      .then((data) => setDescubreList(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, [hidden]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
