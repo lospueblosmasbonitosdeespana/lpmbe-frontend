@@ -1,49 +1,42 @@
 'use client';
 
-import Link from 'next/link';
-import { Search, Castle, TreePine, Car, MapPin } from 'lucide-react';
-import { usePathname } from 'next/navigation';
-
-const QUICK_FILTERS = [
-  { label: 'Castillos', href: '/explorar/castillo', icon: Castle },
-  { label: 'Naturaleza', href: '/explorar/parque-natural', icon: TreePine },
-  { label: 'Servicios', href: '/explorar/parking', icon: Car },
-  { label: 'Norte', href: '/explorar?region=norte', icon: MapPin },
-];
+import { useRouter, usePathname } from 'next/navigation';
+import { useState, useRef } from 'react';
+import { Search } from 'lucide-react';
 
 export default function ExplorarBar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [query, setQuery] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
   if (pathname?.startsWith('/explorar')) return null;
   if (pathname?.startsWith('/gestion')) return null;
 
-  return (
-    <div className="border-b border-border/40 bg-gradient-to-r from-primary/[0.03] to-primary/[0.06] dark:from-primary/[0.06] dark:to-primary/[0.10]">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2">
-        <Link
-          href="/explorar"
-          className="group flex min-w-0 flex-1 items-center gap-2.5 rounded-xl border border-border/60 bg-white/80 px-3.5 py-2 shadow-sm transition-all hover:border-primary/30 hover:shadow-md dark:bg-card/80"
-        >
-          <Search className="h-4 w-4 shrink-0 text-primary/60 transition-colors group-hover:text-primary" />
-          <span className="truncate text-sm text-muted-foreground transition-colors group-hover:text-foreground">
-            Busca tu pueblo: patrimonio, naturaleza, servicios...
-          </span>
-        </Link>
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    router.push('/explorar');
+  }
 
-        <div className="hidden items-center gap-1.5 sm:flex">
-          {QUICK_FILTERS.map((f) => {
-            const Icon = f.icon;
-            return (
-              <Link
-                key={f.href}
-                href={f.href}
-                className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-white/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary dark:bg-card/70"
-              >
-                <Icon className="h-3 w-3" />
-                {f.label}
-              </Link>
-            );
-          })}
-        </div>
+  function handleFocus() {
+    router.push('/explorar');
+  }
+
+  return (
+    <div className="border-b border-border/30 bg-muted/30 dark:bg-muted/10">
+      <div className="mx-auto max-w-6xl px-4 py-1.5">
+        <form onSubmit={handleSubmit} className="flex items-center gap-2">
+          <button
+            type="submit"
+            className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg bg-background/80 px-3 py-1.5 text-left shadow-[inset_0_0_0_1px] shadow-border/40 transition-all hover:shadow-primary/30 dark:bg-card/60"
+            onClick={handleFocus}
+          >
+            <Search className="h-3.5 w-3.5 shrink-0 text-primary/50" />
+            <span className="text-[13px] text-muted-foreground/70">
+              Busca pueblos por patrimonio, naturaleza o servicios del visitante
+            </span>
+          </button>
+        </form>
       </div>
     </div>
   );
