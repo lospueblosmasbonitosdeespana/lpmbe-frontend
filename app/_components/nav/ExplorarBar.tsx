@@ -30,6 +30,14 @@ type TagCount = {
   count: number;
 };
 
+type MxLite = {
+  id: number;
+  titulo: string | Record<string, string>;
+  slug: string | null;
+  categoria: string | null;
+  pueblos: Array<{ pueblo: { slug: string; nombre: string } }>;
+};
+
 const SEMAFORO_COLORS: Record<string, string> = {
   VERDE: '#22c55e', AMARILLO: '#eab308', ROJO: '#ef4444', GRIS: '#9ca3af',
 };
@@ -159,6 +167,7 @@ export default function ExplorarBar() {
   const [focused, setFocused] = useState(false);
   const [pueblos, setPueblos] = useState<PuebloLite[] | null>(null);
   const [tags, setTags] = useState<TagCount[] | null>(null);
+  const [mxList, setMxList] = useState<MxLite[] | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -170,10 +179,12 @@ export default function ExplorarBar() {
     Promise.all([
       fetch('/api/public/explorar').then((r) => r.json()),
       fetch('/api/public/explorar/counts?soloColecciones=true').then((r) => r.json()),
+      fetch('/api/public/multiexperiencias').then((r) => r.json()).catch(() => []),
     ])
-      .then(([explorar, counts]) => {
+      .then(([explorar, counts, mxData]) => {
         setPueblos(explorar.pueblos ?? []);
         setTags(counts.tags ?? []);
+        setMxList(Array.isArray(mxData) ? mxData : []);
       })
       .catch(() => {});
   }, [hidden, pueblos]);
@@ -212,27 +223,61 @@ export default function ExplorarBar() {
   }, [parsedQuery]);
 
   // ── Búsqueda general sin pueblo detectado ─────────────────────────────────
+  // Palabras individuales del query (≥3 chars) para búsqueda tolerante
+  const qWords = useMemo(
+    () => q.split(/\s+/).filter((w) => w.length >= 3),
+    [q],
+  );
+
   const matchingPueblos = useMemo(() => {
     if (!hasQuery || !pueblos || parsedQuery) return [];
     return pueblos
-      .filter(
-        (p) =>
-          norm(p.nombre).includes(q) ||
-          norm(p.provincia).includes(q) ||
-          norm(p.comunidad).includes(q),
-      )
+      .filter((p) => {
+        const nombre = norm(p.nombre);
+        const prov = norm(p.provincia);
+        const com = norm(p.comunidad);
+        return (
+          nombre.includes(q) ||
+          prov.includes(q) ||
+          com.includes(q) ||
+          qWords.some((w) => nombre.includes(w) || prov.includes(w) || com.includes(w))
+        );
+      })
       .slice(0, 5);
-  }, [hasQuery, pueblos, q, parsedQuery]);
+  }, [hasQuery, pueblos, q, qWords, parsedQuery]);
 
   const matchingTags = useMemo(() => {
     if (!hasQuery || !tags || parsedQuery) return [];
     return tags
       .filter((t) => {
         const name = norm(t.nombre_i18n?.es ?? '');
-        return name.includes(q) || norm(t.tag).includes(q);
+        const tagKey = norm(t.tag);
+        return (
+          name.includes(q) ||
+          tagKey.includes(q) ||
+          q.includes(name) ||          // "pueblos con castillo" contiene "castillo"
+          qWords.some((w) => name.includes(w) || tagKey.includes(w))
+        );
+      })
+      .slice(0, 6);
+  }, [hasQuery, tags, q, qWords, parsedQuery]);
+
+  const matchingMx = useMemo(() => {
+    if (!hasQuery || !mxList || parsedQuery) return [];
+    return mxList
+      .filter((mx) => {
+        const titulo =
+          typeof mx.titulo === 'string'
+            ? norm(mx.titulo)
+            : norm((mx.titulo as Record<string, string>)?.es ?? '');
+        return (
+          titulo.includes(q) ||
+          q.includes(titulo) ||
+          qWords.some((w) => titulo.includes(w))
+        );
       })
       .slice(0, 4);
-  }, [hasQuery, tags, q, parsedQuery]);
+  }, [hasQuery, mxList, q, qWords, parsedQuery]);
 
   if (hidden) return null;
 
@@ -241,7 +286,8 @@ export default function ExplorarBar() {
   const hasAnyResults =
     !!parsedQuery ||
     matchingTags.length > 0 ||
-    matchingPueblos.length > 0;
+    matchingPueblos.length > 0 ||
+    matchingMx.length > 0;
 
   const showDropdown = focused && hasQuery;
 
@@ -430,6 +476,47 @@ export default function ExplorarBar() {
                                 <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                                   {t.count} pueblos
                                 </span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {matchingMx.length > 0 && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Rutas y experiencias
+                          </p>
+                          {matchingMx.map((mx) => {
+                            const titulo =
+                              typeof mx.titulo === 'string'
+                                ? mx.titulo
+                                : (mx.titulo as Record<string, string>)?.es ?? '';
+                            const firstPueblo = mx.pueblos?.[0]?.pueblo;
+                            const href = firstPueblo
+                              ? `/pueblos/${firstPueblo.slug}/experiencias/${mx.slug ?? mx.id}`
+                              : '#';
+                            return (
+                              <Link
+                                key={mx.id}
+                                href={href}
+                                onClick={close}
+                                className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                              >
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
+                                  <Landmark className="h-4 w-4 text-amber-600" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-medium text-foreground">
+                                    {titulo}
+                                  </p>
+                                  {firstPueblo && (
+                                    <p className="truncate text-[11px] text-muted-foreground">
+                                      {firstPueblo.nombre}
+                                      {mx.pueblos.length > 1 && ` +${mx.pueblos.length - 1} pueblos`}
+                                    </p>
+                                  )}
+                                </div>
                               </Link>
                             );
                           })}
