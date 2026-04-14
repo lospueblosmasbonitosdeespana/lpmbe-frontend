@@ -28,6 +28,7 @@ type TagCount = {
   icono: string;
   color: string;
   count: number;
+  hasSlug?: boolean; // true = colección activa con página /explorar/[slug]
 };
 
 type RutaLite = {
@@ -35,6 +36,15 @@ type RutaLite = {
   titulo: string;
   slug: string;
   activo: boolean;
+};
+
+type DescubreColeccion = {
+  slug: string;
+  title: string;
+  description: string;
+  icon: string;
+  color: string;
+  count?: number;
 };
 
 const SEMAFORO_COLORS: Record<string, string> = {
@@ -167,6 +177,7 @@ export default function ExplorarBar() {
   const [pueblos, setPueblos] = useState<PuebloLite[] | null>(null);
   const [tags, setTags] = useState<TagCount[] | null>(null);
   const [mxList, setMxList] = useState<RutaLite[] | null>(null);
+  const [descubreList, setDescubreList] = useState<DescubreColeccion[] | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -179,11 +190,13 @@ export default function ExplorarBar() {
       fetch('/api/public/explorar').then((r) => r.json()),
       fetch('/api/public/explorar/counts?soloColecciones=true').then((r) => r.json()),
       fetch('/api/public/rutas').then((r) => r.json()).catch(() => []),
+      fetch('/api/public/descubre').then((r) => r.json()).catch(() => []),
     ])
-      .then(([explorar, counts, rutasData]) => {
+      .then(([explorar, counts, rutasData, descubreData]) => {
         setPueblos(explorar.pueblos ?? []);
         setTags(counts.tags ?? []);
         setMxList(Array.isArray(rutasData) ? rutasData.filter((r: RutaLite) => r.activo) : []);
+        setDescubreList(Array.isArray(descubreData) ? descubreData : []);
       })
       .catch(() => {});
   }, [hidden, pueblos]);
@@ -275,6 +288,21 @@ export default function ExplorarBar() {
       .slice(0, 5);
   }, [hasQuery, mxList, q, qWords, parsedQuery]);
 
+  const matchingDescubre = useMemo(() => {
+    if (!hasQuery || !descubreList || parsedQuery) return [];
+    return descubreList
+      .filter((c) => {
+        const title = norm(c.title);
+        const desc = norm(c.description ?? '');
+        return (
+          title.includes(q) ||
+          q.includes(title) ||
+          qWords.some((w) => title.includes(w) || desc.includes(w))
+        );
+      })
+      .slice(0, 4);
+  }, [hasQuery, descubreList, q, qWords, parsedQuery]);
+
   if (hidden) return null;
 
   const close = () => { setFocused(false); setQuery(''); };
@@ -283,7 +311,8 @@ export default function ExplorarBar() {
     !!parsedQuery ||
     matchingTags.length > 0 ||
     matchingPueblos.length > 0 ||
-    matchingMx.length > 0;
+    matchingMx.length > 0 ||
+    matchingDescubre.length > 0;
 
   const showDropdown = focused && hasQuery;
 
@@ -475,6 +504,39 @@ export default function ExplorarBar() {
                               </Link>
                             );
                           })}
+                        </div>
+                      )}
+
+                      {matchingDescubre.length > 0 && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Colecciones
+                          </p>
+                          {matchingDescubre.map((c) => (
+                            <Link
+                              key={c.slug}
+                              href={`/descubre/${c.slug}`}
+                              onClick={close}
+                              className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                            >
+                              <div
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-lg"
+                                style={{ backgroundColor: `${c.color}20` }}
+                              >
+                                <span>{c.icon}</span>
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium text-foreground">
+                                  {c.title}
+                                </p>
+                                {c.count != null && (
+                                  <p className="truncate text-[11px] text-muted-foreground">
+                                    {c.count} pueblos
+                                  </p>
+                                )}
+                              </div>
+                            </Link>
+                          ))}
                         </div>
                       )}
 
