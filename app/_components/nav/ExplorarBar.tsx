@@ -111,7 +111,7 @@ const PUEBLO_KEYWORDS = [
 // navKey → clave del namespace 'nav' para obtener label traducida
 const TEMATICAS = [
   { navKey: 'noticias',    extraNavKey: 'eventos',   keywords: ['noticias', 'eventos', 'alertas', 'notificaciones'], label: 'Noticias y eventos',  href: '/notificaciones',  icon: Newspaper },
-  { navKey: 'descubre',    extraNavKey: null,        keywords: ['colecciones', 'descubre', 'tematicas'],             label: 'Descubre colecciones', href: '/descubre',        icon: Landmark },
+  { navKey: 'sectionColecciones', extraNavKey: null,        keywords: ['colecciones', 'descubre', 'tematicas'],             label: 'Colecciones', href: '/descubre',        icon: Landmark },
   { navKey: 'gastronomia', extraNavKey: null,        keywords: ['gastronomia', 'comer'],              label: 'Gastronomía',  href: '/experiencias/gastronomia', icon: UtensilsCrossed },
   { navKey: 'family',      extraNavKey: null,        keywords: ['familia', 'ninos', 'en familia'],    label: 'En familia',   href: '/experiencias/en-familia',  icon: Users },
   { navKey: 'petfriendly', extraNavKey: null,        keywords: ['petfriendly', 'mascotas', 'perros'], label: 'Pet friendly', href: '/experiencias/petfriendly', icon: PawPrint },
