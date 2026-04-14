@@ -16,6 +16,14 @@ type PuebloLite = {
   provincia: string;
   comunidad: string;
   foto: string | null;
+  semaforoEstado?: string | null;
+};
+
+const SEMAFORO_COLORS: Record<string, string> = {
+  VERDE: '#22c55e',
+  AMARILLO: '#eab308',
+  ROJO: '#ef4444',
+  GRIS: '#9ca3af',
 };
 
 type TagCount = {
@@ -286,10 +294,17 @@ export default function ExplorarBar() {
                               </div>
                             )}
                             <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-medium text-foreground">
+                              <p className="flex items-center gap-1.5 truncate text-sm font-medium text-foreground">
                                 {sectionKeyword
                                   ? `${sectionKeyword.label} de ${p.nombre}`
                                   : p.nombre}
+                                {p.semaforoEstado && SEMAFORO_COLORS[p.semaforoEstado] && (
+                                  <span
+                                    className="inline-block h-2 w-2 shrink-0 rounded-full"
+                                    style={{ backgroundColor: SEMAFORO_COLORS[p.semaforoEstado] }}
+                                    title={p.semaforoEstado === 'VERDE' ? 'Ideal para visitar' : p.semaforoEstado === 'AMARILLO' ? 'Afluencia media' : p.semaforoEstado === 'ROJO' ? 'Alta afluencia' : ''}
+                                  />
+                                )}
                               </p>
                               <p className="truncate text-[11px] text-muted-foreground">
                                 {p.provincia}
