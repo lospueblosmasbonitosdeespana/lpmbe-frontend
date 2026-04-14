@@ -112,6 +112,7 @@ const PUEBLO_KEYWORDS = [
 const TEMATICAS = [
   { navKey: 'noticias',    extraNavKey: 'eventos',   keywords: ['noticias', 'eventos', 'alertas', 'notificaciones'], label: 'Noticias y eventos',  href: '/notificaciones',  icon: Newspaper },
   { navKey: 'appPage',     extraNavKey: null,        keywords: ['app', 'descargar', 'aplicacion', 'movil'],          label: 'App oficial',         href: '/app',             icon: Smartphone },
+  { navKey: 'meteo',       extraNavKey: null,        keywords: ['meteo', 'tiempo general', 'lluvia', 'temperatura', 'clima'], label: 'Meteo', href: '/meteo', icon: CloudSun },
   { navKey: 'sectionColecciones', extraNavKey: null, keywords: ['colecciones', 'descubre', 'tematicas'],             label: 'Colecciones',         href: '/descubre',        icon: Landmark },
   { navKey: 'gastronomia', extraNavKey: null,        keywords: ['gastronomia', 'comer'],              label: 'Gastronomía',  href: '/experiencias/gastronomia', icon: UtensilsCrossed },
   { navKey: 'family',      extraNavKey: null,        keywords: ['familia', 'ninos', 'en familia'],    label: 'En familia',   href: '/experiencias/en-familia',  icon: Users },
