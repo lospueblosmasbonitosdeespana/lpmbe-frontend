@@ -89,6 +89,7 @@ export async function QueHacerSection({
                       src={ruta.foto_portada}
                       alt={ruta.titulo}
                       fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
@@ -123,6 +124,7 @@ export async function QueHacerSection({
                       src={mx.foto}
                       alt={mx.titulo}
                       fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
