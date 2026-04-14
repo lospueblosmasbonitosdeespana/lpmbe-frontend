@@ -79,6 +79,7 @@ export function MegaMenu({ items: itemsProp }: { items?: NavItem[] }) {
             }
 
             const isOpen = openLabel === label;
+            const megaHref = item.columns?.[0]?.links?.[0]?.href;
 
             return (
               <div
@@ -90,14 +91,26 @@ export function MegaMenu({ items: itemsProp }: { items?: NavItem[] }) {
                 }}
                 onMouseLeave={scheduleClose}
               >
-                <button
-                  type="button"
-                  className="text-sm font-medium text-foreground hover:underline hover:text-primary"
-                  aria-haspopup="true"
-                  aria-expanded={isOpen}
-                >
-                  {label}
-                </button>
+                {megaHref ? (
+                  <Link
+                    href={megaHref}
+                    className="text-sm font-medium text-foreground hover:underline hover:text-primary"
+                    aria-haspopup="true"
+                    aria-expanded={isOpen}
+                    onClick={() => setOpenLabel(null)}
+                  >
+                    {label}
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    className="text-sm font-medium text-foreground hover:underline hover:text-primary"
+                    aria-haspopup="true"
+                    aria-expanded={isOpen}
+                  >
+                    {label}
+                  </button>
+                )}
 
                 {/* Puente invisible para que no se cierre al bajar el ratón */}
                 {isOpen && (

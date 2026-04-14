@@ -5,8 +5,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Search, X, MapPin, Wrench,
-  Newspaper, UtensilsCrossed, Landmark, TreePine, PawPrint, Users,
-  CloudSun, TrafficCone,
+  Newspaper, UtensilsCrossed, Landmark, CloudSun,
 } from 'lucide-react';
 import { TagIcon } from '@/lib/tag-icon-map';
 
@@ -42,22 +41,16 @@ const PUEBLO_KEYWORDS = [
   { keyword: 'articulos', label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`, icon: Newspaper },
   { keyword: 'actualidad', label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`, icon: Newspaper },
   { keyword: 'comer', label: 'Qué comer', path: (s: string) => `/que-comer/${s}`, icon: UtensilsCrossed },
-  { keyword: 'ver', label: 'Qué ver', path: (s: string) => `/patrimonio/${s}`, icon: Landmark },
-  { keyword: 'naturaleza', label: 'Naturaleza', path: (s: string) => `/naturaleza/${s}`, icon: TreePine },
-  { keyword: 'familia', label: 'En familia', path: (s: string) => `/en-familia/${s}`, icon: Users },
-  { keyword: 'mascotas', label: 'Petfriendly', path: (s: string) => `/petfriendly/${s}`, icon: PawPrint },
-  { keyword: 'tiempo', label: 'Tiempo', path: (s: string) => `/pueblos/${s}#meteo`, icon: CloudSun },
-  { keyword: 'meteo', label: 'Tiempo', path: (s: string) => `/pueblos/${s}#meteo`, icon: CloudSun },
-  { keyword: 'semaforo', label: 'Semáforo', path: (s: string) => `/pueblos/${s}#semaforo`, icon: TrafficCone },
+  { keyword: 'ver', label: 'Qué ver', path: (s: string) => `/pueblos/${s}/lugares-de-interes`, icon: Landmark },
+  { keyword: 'tiempo', label: 'Tiempo', path: (s: string) => `/pueblos/${s}/meteo`, icon: CloudSun },
+  { keyword: 'meteo', label: 'Tiempo', path: (s: string) => `/pueblos/${s}/meteo`, icon: CloudSun },
 ] as const;
 
 const PUEBLO_QUICK_LINKS = [
   { label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`, icon: Newspaper },
   { label: 'Qué comer', path: (s: string) => `/que-comer/${s}`, icon: UtensilsCrossed },
-  { label: 'Qué ver', path: (s: string) => `/patrimonio/${s}`, icon: Landmark },
-  { label: 'Naturaleza', path: (s: string) => `/naturaleza/${s}`, icon: TreePine },
-  { label: 'Tiempo', path: (s: string) => `/pueblos/${s}#meteo`, icon: CloudSun },
-  { label: 'Semáforo', path: (s: string) => `/pueblos/${s}#semaforo`, icon: TrafficCone },
+  { label: 'Qué ver', path: (s: string) => `/pueblos/${s}/lugares-de-interes`, icon: Landmark },
+  { label: 'Tiempo', path: (s: string) => `/pueblos/${s}/meteo`, icon: CloudSun },
 ] as const;
 
 const norm = (s: string) =>
@@ -179,7 +172,7 @@ export default function ExplorarBar() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setFocused(true)}
-              placeholder="Buscar pueblo, castillo, naturaleza, servicios..."
+              placeholder="Buscar pueblo, castillo, servicios..."
               enterKeyHint="search"
               autoComplete="off"
               className="w-full rounded-xl border border-border bg-background py-2 pl-9 pr-9 text-sm transition-all placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-card/80"
@@ -328,14 +321,6 @@ export default function ExplorarBar() {
                   No se encontraron resultados para &ldquo;{query}&rdquo;
                 </div>
               )}
-              <Link
-                href="/explorar"
-                onClick={() => setFocused(false)}
-                className="flex items-center justify-center gap-1.5 border-t border-border/40 px-3 py-2.5 text-xs font-medium text-primary transition-colors hover:bg-primary/5"
-              >
-                <Search className="h-3 w-3" />
-                Explorar con filtros avanzados
-              </Link>
             </div>
           )}
         </div>
