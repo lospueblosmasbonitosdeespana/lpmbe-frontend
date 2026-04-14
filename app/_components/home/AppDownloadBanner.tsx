@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const DISMISS_KEY = "app_download_banner_dismissed_until";
 const DISMISS_DAYS = 7;
@@ -22,26 +22,29 @@ function detectPlatform(): MobilePlatform {
 }
 
 /**
- * Banner de descarga de app. Empieza oculto en SSR para evitar CLS
- * cuando el usuario ya lo descartó. Solo se muestra tras comprobar
- * localStorage en el cliente.
+ * Banner de descarga de app.
+ * Starts VISIBLE in SSR to avoid CLS for most users.
+ * After hydration, hides only if the user previously dismissed it.
  */
 export default function AppDownloadBanner() {
-  const [visible, setVisible] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [platform, setPlatform] = useState<MobilePlatform>("other");
   const [qrUrl, setQrUrl] = useState<string | null>(null);
+  const checked = useRef(false);
 
   useEffect(() => {
+    if (checked.current) return;
+    checked.current = true;
+
     setPlatform(detectPlatform());
 
     try {
       const dismissedUntil = localStorage.getItem(DISMISS_KEY);
       if (dismissedUntil && Date.now() < Number(dismissedUntil)) {
+        setHidden(true);
         return;
       }
     } catch {}
-
-    setVisible(true);
 
     if (typeof window !== "undefined") {
       setQrUrl(
@@ -55,10 +58,10 @@ export default function AppDownloadBanner() {
   const dismiss = () => {
     const until = Date.now() + DISMISS_DAYS * 24 * 60 * 60 * 1000;
     try { localStorage.setItem(DISMISS_KEY, String(until)); } catch {}
-    setVisible(false);
+    setHidden(true);
   };
 
-  if (!visible) return null;
+  if (hidden) return null;
 
   const primaryHref = platform === "android" ? PLAY_STORE_URL : APP_STORE_URL;
   const primaryLabel =

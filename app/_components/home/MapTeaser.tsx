@@ -39,6 +39,7 @@ export function MapTeaser() {
               src="/mapa_espana_pueblos.png"
               alt="Vista previa del mapa de España"
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
               priority={false}
             />

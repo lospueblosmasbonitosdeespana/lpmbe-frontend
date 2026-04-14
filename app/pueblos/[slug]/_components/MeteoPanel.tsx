@@ -92,12 +92,22 @@ export default function MeteoPanel({
     return (
       <Section spacing="sm" background="card">
         <Container>
-          <div className="animate-pulse flex items-center gap-6 py-4">
-            <div className="h-16 w-16 rounded-full bg-muted" />
+          <div className="animate-pulse flex items-center justify-center gap-6 min-h-[88px]">
+            <div className="h-14 w-14 rounded-full bg-muted" />
             <div className="space-y-2">
               <div className="h-8 w-24 rounded bg-muted" />
               <div className="h-4 w-32 rounded bg-muted" />
             </div>
+            <div className="hidden sm:flex gap-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex flex-col items-center gap-1 min-w-[60px]">
+                  <div className="h-3 w-8 rounded bg-muted" />
+                  <div className="h-5 w-5 rounded bg-muted" />
+                  <div className="h-3 w-10 rounded bg-muted" />
+                </div>
+              ))}
+            </div>
+            <div className="h-10 w-40 rounded-full bg-muted hidden sm:block" />
           </div>
         </Container>
       </Section>
@@ -114,7 +124,7 @@ export default function MeteoPanel({
   return (
     <Section spacing="sm" background="card">
       <Container>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 min-h-[88px]">
           {/* Current conditions */}
           <div className="flex items-center gap-4">
             <WIcon size={56} className={wCls} strokeWidth={1.5} />

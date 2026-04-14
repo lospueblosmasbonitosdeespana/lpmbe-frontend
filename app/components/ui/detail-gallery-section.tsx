@@ -97,6 +97,7 @@ export function DetailGallerySection({
               src={image.src || "/placeholder.svg"}
               alt={image.alt}
               fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               style={rot ? { transform: `rotate(${rot}deg)` } : undefined}
             />
@@ -123,6 +124,7 @@ export function DetailGallerySection({
             src={images[0].src || "/placeholder.svg"}
             alt={images[0].alt}
             fill
+            sizes="100vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             style={rot ? { transform: `rotate(${rot}deg)` } : undefined}
           />
@@ -148,6 +150,7 @@ export function DetailGallerySection({
                   src={image.src || "/placeholder.svg"}
                   alt={image.alt}
                   fill
+                  sizes="(max-width: 640px) 100vw, 50vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   style={rot ? { transform: `rotate(${rot}deg)` } : undefined}
                 />
@@ -174,6 +177,7 @@ export function DetailGallerySection({
               src={featured.src || "/placeholder.svg"}
               alt={featured.alt}
               fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               style={featuredRot ? { transform: `rotate(${featuredRot}deg)` } : undefined}
             />
@@ -192,6 +196,7 @@ export function DetailGallerySection({
                   src={image.src || "/placeholder.svg"}
                   alt={image.alt}
                   fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   style={rot ? { transform: `rotate(${rot}deg)` } : undefined}
                 />
@@ -218,6 +223,7 @@ export function DetailGallerySection({
             src={featured.src || "/placeholder.svg"}
             alt={featured.alt}
             fill
+            sizes="(max-width: 1024px) 100vw, 50vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             style={featuredRot ? { transform: `rotate(${featuredRot}deg)` } : undefined}
           />
@@ -237,6 +243,7 @@ export function DetailGallerySection({
                   src={image.src || "/placeholder.svg"}
                   alt={image.alt}
                   fill
+                  sizes="(max-width: 1024px) 50vw, 25vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   style={rot ? { transform: `rotate(${rot}deg)` } : undefined}
                 />

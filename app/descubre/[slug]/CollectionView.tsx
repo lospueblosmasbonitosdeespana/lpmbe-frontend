@@ -298,25 +298,27 @@ function PuebloCard({ pueblo: p, color, tags, locale = "es" }: { pueblo: Pueblo;
             {p.detalle}
           </p>
         )}
-        {tags && tags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1">
-            {tags.map((t) => (
-              <span
-                key={t.tag}
-                className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5"
-                style={{ backgroundColor: `${t.color}14` }}
-                title={t.nombre_i18n?.[locale] ?? t.nombre_i18n?.es ?? t.tag}
-              >
-                <TagIcon name={t.icono} color={t.color} size={12} />
-                {t.cantidad && t.cantidad > 1 && (
-                  <span className="text-[9px] font-semibold leading-none" style={{ color: t.color }}>
-                    {t.cantidad}
-                  </span>
-                )}
-              </span>
-            ))}
-          </div>
-        )}
+        <div className="min-h-[22px]">
+          {tags && tags.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1">
+              {tags.map((t) => (
+                <span
+                  key={t.tag}
+                  className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5"
+                  style={{ backgroundColor: `${t.color}14` }}
+                  title={t.nombre_i18n?.[locale] ?? t.nombre_i18n?.es ?? t.tag}
+                >
+                  <TagIcon name={t.icono} color={t.color} size={12} />
+                  {t.cantidad && t.cantidad > 1 && (
+                    <span className="text-[9px] font-semibold leading-none" style={{ color: t.color }}>
+                      {t.cantidad}
+                    </span>
+                  )}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div

@@ -184,6 +184,7 @@ function HeroSection({
                 src={slide.image}
                 alt={slide.alt || t("heroTitle").replace(/\n/g, " ")}
                 fill
+                sizes="100vw"
                 priority={idx === 0}
                 className="object-cover"
               />
@@ -195,6 +196,7 @@ function HeroSection({
             src="/hero/1.jpg"
             alt={t("heroTitle").replace(/\n/g, " ")}
             fill
+            sizes="100vw"
             priority
             className="object-cover"
           />
@@ -452,6 +454,7 @@ function IdeasSection({ categories = [] }: { categories: CategoryCard[] }) {
                     src={cat.image}
                     alt={cat.name}
                     fill
+                    sizes="(max-width: 768px) 160px, 16vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 ) : (
@@ -620,6 +623,7 @@ function PueblosDestacadosSection({
                     src={village.image}
                     alt={village.name}
                     fill
+                    sizes="(max-width: 640px) 50vw, 25vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 ) : (
@@ -690,6 +694,7 @@ function RutasSection({ routes = [] }: { routes: RouteCard[] }) {
                           src={route.image}
                           alt={route.name}
                           fill
+                          sizes="64px"
                           className="object-cover"
                         />
                       ) : (
@@ -727,6 +732,7 @@ function RutasSection({ routes = [] }: { routes: RouteCard[] }) {
                 src={routes[0].image}
                 alt={t("featuredRoute")}
                 fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"
               />
             ) : (
@@ -774,6 +780,7 @@ function ActualidadSection({ news = [] }: { news: NewsItem[] }) {
                     src={news[0].image}
                     alt={news[0].title}
                     fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
@@ -817,6 +824,7 @@ function ActualidadSection({ news = [] }: { news: NewsItem[] }) {
                       src={item.image}
                       alt={item.title}
                       fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
@@ -879,6 +887,7 @@ function MapaSection({ mapPreviewImage }: { mapPreviewImage?: string }) {
               src={mapPreviewImage || "/mapa_espana_pueblos.png"}
               alt={tMapas("alt")}
               fill
+              sizes="(max-width: 768px) 100vw, 1200px"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/15 group-hover:bg-black/10 transition" />
@@ -1000,6 +1009,7 @@ function TiendaBanner({ shopBannerImage }: { shopBannerImage?: string }) {
               src={shopBannerImage || "/hero/2.jpg"}
               alt={t("theShop")}
               fill
+              sizes="(max-width: 768px) 100vw, 1200px"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-primary/60 via-primary/30 to-transparent" />
@@ -1334,6 +1344,7 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
                     src={latest.image}
                     alt={latest.title}
                     fill
+                    sizes="(max-width: 768px) 320px, 40vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 ) : (
@@ -1371,6 +1382,7 @@ function AsociacionNewsGallerySection({ news = [] }: { news: NewsItem[] }) {
                       src={item.image}
                       alt={item.title}
                       fill
+                      sizes="(max-width: 768px) 160px, 20vw"
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   ) : (
