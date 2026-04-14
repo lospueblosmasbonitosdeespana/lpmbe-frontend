@@ -246,36 +246,22 @@ async function fetchFinDeSemanaPuebloSlugs(): Promise<string[]> {
 }
 
 const EXPLORAR_TAG_TO_SLUG: Record<string, string> = {
-  CASTILLO: 'castillo', ALCAZABA: 'alcazaba', MURALLAS: 'murallas',
-  TORRE_HOMENAJE: 'torre-del-homenaje', TORRE_DEFENSIVA: 'torre-defensiva',
-  CATEDRAL: 'catedral', COLEGIATA: 'colegiata', MONASTERIO: 'monasterio',
-  CONVENTO: 'convento', IGLESIA: 'iglesia', ERMITA: 'ermita', CRIPTA: 'cripta',
-  RETABLO: 'retablo', ORGANO: 'organo-historico', TALLA_RELIGIOSA: 'talla-religiosa',
-  PALACIO: 'palacio', PLAZA_MAYOR_DESTACADA: 'plaza-mayor',
-  PUENTE_HISTORICO: 'puente-historico', PUERTA_ARCO: 'puerta-arco',
-  SOPORTALES: 'soportales', CLAUSTRO: 'claustro', PINTURA_MURAL: 'pintura-mural',
-  LAVADERO_ANTIGUO: 'lavadero', FUENTE_PATRIMONIAL: 'fuente-patrimonial',
-  CASCADA: 'cascada', CUEVA_VISITABLE: 'cueva-visitable', MIRADOR_SINGULAR: 'mirador',
-  PARQUE_NATURAL: 'parque-natural', GEOPARQUE: 'geoparque', RIO: 'rio',
-  LAGO_EMBALSE: 'lago-embalse', DESFILADERO: 'desfiladero', TERMAS: 'termas',
-  POZAS: 'pozas-naturales', MONUMENTO_NATURAL: 'monumento-natural',
-  YACIMIENTO_ARQUEOLOGICO: 'yacimiento-arqueologico', MONUMENTOS_ROMANOS: 'monumentos-romanos',
-  JOYA_ROMANICA: 'romanico', JOYA_GOTICA: 'gotico', JOYA_MUDEJAR: 'mudejar',
-  JOYA_RENACENTISTA: 'renacentista', JOYA_BARROCA: 'barroco',
-  CASCO_HISTORICO_BIC: 'casco-historico-bic', PATRIMONIO_HUMANIDAD: 'patrimonio-humanidad',
+  CASTILLO: 'castillo', MURALLAS: 'murallas', CATEDRAL: 'catedral',
+  MONASTERIO: 'monasterio', TALLA_RELIGIOSA: 'talla-religiosa',
+  PLAZA_MAYOR_DESTACADA: 'plaza-mayor', PUENTE_HISTORICO: 'puente-historico',
+  PLAZA_TOROS: 'plaza-de-toros', CASCADA: 'cascada', CUEVA_VISITABLE: 'cueva-visitable',
+  MIRADOR_SINGULAR: 'mirador', VIA_VERDE: 'via-verde', PARQUE_NATURAL: 'parque-natural',
+  DESFILADERO: 'desfiladero', POZAS: 'pozas-naturales', MONUMENTO_NATURAL: 'monumento-natural',
+  YACIMIENTO_ARQUEOLOGICO: 'yacimiento-arqueologico',
   PUEBLO_PIEDRA: 'pueblo-de-piedra', PUEBLO_BLANCO: 'pueblo-blanco',
-  PUEBLO_CINE: 'pueblo-de-cine', CAMINO_SANTIAGO: 'camino-de-santiago',
-  JUDERIA: 'juderia', MUSEO_SINGULAR: 'museo-singular', ARTESANIA: 'artesania',
+  STARLIGHT: 'starlight', JUDERIA: 'juderia', MUSEO_SINGULAR: 'museo-singular',
+  BODEGA_SUBTERRANEA: 'bodega-subterranea',
   FIESTA_INTERES_NACIONAL: 'fiesta-nacional', FIESTA_INTERES_REGIONAL: 'fiesta-regional',
-  DOP_IGP: 'denominacion-de-origen',
 };
 
 const EXPLORAR_SVC_TO_SLUG: Record<string, string> = {
-  PARKING: 'parking', TURISMO: 'oficina-de-turismo', FARMACIA: 'farmacia',
-  HOSPITAL: 'hospital', COCHE_ELECTRICO: 'cargador-electrico', CARAVANAS: 'area-de-caravanas',
-  PARQUE_INFANTIL: 'parque-infantil', LAVABO: 'lavabos-publicos',
-  AUTOBUS: 'autobus', SUPERMERCADO: 'supermercado', PICNIC: 'zona-picnic',
-  FUENTE: 'fuente-de-agua', DESFIBRILADOR: 'desfibrilador',
+  COCHE_ELECTRICO: 'cargador-electrico', COCHE_ELECTRICO_ULTRA: 'cargador-ultra-rapido',
+  CARAVANAS: 'area-de-caravanas',
 };
 
 const EXPLORAR_LOCATION_SLUGS = ['norte', 'sur', 'este', 'centro', 'andalucia', 'aragon', 'asturias', 'cataluna', 'galicia', 'extremadura', 'cantabria', 'castilla-y-leon', 'castilla-la-mancha', 'pais-vasco', 'navarra', 'valencia', 'la-rioja', 'canarias', 'baleares', 'madrid'];
