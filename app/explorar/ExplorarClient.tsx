@@ -209,10 +209,12 @@ export default function ExplorarClient({
     const labels: Array<{ key: string; label: string; type: 'tag' | 'servicio' | 'region' | 'comunidad' }> = [];
     for (const tag of selectedTags) {
       const def = counts?.tags.find(t => t.tag === tag);
-      labels.push({ key: tag, label: def?.nombre_i18n?.es ?? tag, type: 'tag' });
+      const slugEntry = Object.values(FILTER_SLUG_MAP).find(m => m.type === 'tag' && m.key === tag);
+      labels.push({ key: tag, label: def?.nombre_i18n?.es ?? slugEntry?.label_es ?? tag, type: 'tag' });
     }
     for (const svc of selectedServicios) {
-      labels.push({ key: svc, label: SERVICIO_LABELS[svc] ?? svc, type: 'servicio' });
+      const slugEntry = Object.values(FILTER_SLUG_MAP).find(m => m.type === 'servicio' && m.key === svc);
+      labels.push({ key: svc, label: SERVICIO_LABELS[svc] ?? slugEntry?.label_es ?? svc, type: 'servicio' });
     }
     if (selectedRegion) {
       labels.push({ key: selectedRegion, label: REGION_LABELS[selectedRegion] ?? selectedRegion, type: 'region' });

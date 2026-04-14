@@ -284,7 +284,7 @@ type ExplorarCountsResult = { tags: Array<{ tag: string; count: number }>; servi
 
 async function fetchExplorarCounts(): Promise<ExplorarCountsResult> {
   try {
-    const res = await fetch(`${API}/public/explorar/counts`, { cache: 'no-store' });
+    const res = await fetch(`${API}/public/explorar/counts?soloColecciones=true`, { cache: 'no-store' });
     if (!res.ok) return { tags: [], servicios: [] };
     return await res.json();
   } catch {

@@ -8,14 +8,37 @@ import {
   parseExplorarSlug,
   buildExplorarTitle,
   buildExplorarDescription,
-  FILTER_SLUG_MAP,
-  LOCATION_SLUG_MAP,
 } from '@/lib/explorar-slugs';
 import { getApiUrl } from '@/lib/api';
 
 type Props = {
   params: Promise<{ filtros: string[] }>;
 };
+
+async function fetchActiveCollectionKeys(): Promise<{
+  tags: Set<string>;
+  servicios: Set<string>;
+}> {
+  const API_BASE = getApiUrl();
+  try {
+    const res = await fetch(
+      `${API_BASE}/public/explorar/counts?soloColecciones=true`,
+      { next: { revalidate: 300 } },
+    );
+    if (!res.ok) return { tags: new Set(), servicios: new Set() };
+    const data = await res.json();
+    return {
+      tags: new Set(
+        (data.tags ?? []).map((t: { tag: string }) => t.tag),
+      ),
+      servicios: new Set(
+        (data.servicios ?? []).map((s: { tipo: string }) => s.tipo),
+      ),
+    };
+  } catch {
+    return { tags: new Set(), servicios: new Set() };
+  }
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { filtros } = await params;
@@ -32,7 +55,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (location?.type === 'region') qp.set('region', location.key);
     if (location?.type === 'comunidad') qp.set('comunidad', location.key);
 
-    const res = await fetch(`${API_BASE}/public/explorar?${qp}`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${API_BASE}/public/explorar?${qp}`, {
+      next: { revalidate: 3600 },
+    });
     if (res.ok) {
       const data = await res.json();
       total = data.total ?? 0;
@@ -54,6 +79,14 @@ export default async function ExplorarFiltrosPage({ params }: Props) {
   const { filter, location } = parseExplorarSlug(filtros);
 
   if (!filter && !location) notFound();
+
+  if (filter) {
+    const active = await fetchActiveCollectionKeys();
+    const isApproved =
+      (filter.type === 'tag' && active.tags.has(filter.key)) ||
+      (filter.type === 'servicio' && active.servicios.has(filter.key));
+    if (!isApproved) notFound();
+  }
 
   const breadcrumbItems: Array<{ label: string; href?: string }> = [
     { label: 'Inicio', href: '/' },
@@ -80,23 +113,29 @@ export default async function ExplorarFiltrosPage({ params }: Props) {
           {titleParts.join(' ')}
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          Datos de primera mano verificados por los municipios. Filtra para encontrar tu pueblo ideal.
+          Datos de primera mano verificados por los municipios. Filtra para
+          encontrar tu pueblo ideal.
         </p>
       </div>
 
-      <Suspense fallback={
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="animate-pulse rounded-xl border border-border bg-card">
-              <div className="aspect-[16/10] bg-muted" />
-              <div className="space-y-2 p-3">
-                <div className="h-4 w-3/4 rounded bg-muted" />
-                <div className="h-3 w-1/2 rounded bg-muted" />
+      <Suspense
+        fallback={
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                className="animate-pulse rounded-xl border border-border bg-card"
+              >
+                <div className="aspect-[16/10] bg-muted" />
+                <div className="space-y-2 p-3">
+                  <div className="h-4 w-3/4 rounded bg-muted" />
+                  <div className="h-3 w-1/2 rounded bg-muted" />
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      }>
+            ))}
+          </div>
+        }
+      >
         <ExplorarClient initialFilter={filter} initialLocation={location} />
       </Suspense>
     </Container>
