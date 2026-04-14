@@ -294,7 +294,8 @@ export default async function MultiexperienciaPage({
               return (
                 <article
                   key={key}
-                  className="rounded-xl overflow-hidden border border-border bg-card dark:bg-card"
+                  id={`parada-${num}`}
+                  className="rounded-xl overflow-hidden border border-border bg-card dark:bg-card scroll-mt-4"
                 >
                   {/* Foto: usa Client Component para ocultar el bloque si la imagen falla */}
                   {p.foto ? (
