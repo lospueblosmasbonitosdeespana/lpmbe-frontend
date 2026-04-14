@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import {
@@ -18,6 +19,23 @@ import ZoomableImage from "@/app/components/ZoomableImage";
 export const revalidate = 60;
 function isNumeric(s: string) {
   return /^\d+$/.test(s);
+}
+
+/**
+ * If a slug ends with -N (numeric suffix), generate candidate slugs
+ * by trying other suffixes (-1, -2, -3) or the base without suffix.
+ */
+function slugFallbackCandidates(slug: string): string[] {
+  const match = slug.match(/^(.+)-(\d+)$/);
+  if (!match) return [];
+  const base = match[1];
+  const num = parseInt(match[2], 10);
+  const candidates: string[] = [];
+  for (let i = 1; i <= 4; i++) {
+    if (i !== num) candidates.push(`${base}-${i}`);
+  }
+  candidates.push(base);
+  return candidates;
 }
 
 function pickDescripcionHtml(poi: any): string | null {
@@ -39,39 +57,44 @@ function pickFotoPrincipal(poi: any): string | null {
   return poi?.fotoUrl ?? poi?.foto ?? poi?.imagen ?? null;
 }
 
-async function fetchPoi(puebloSlug: string, poiParam: string, locale?: string) {
+async function fetchPoiBySlugOrId(
+  puebloSlug: string,
+  poiParam: string,
+  locale?: string,
+): Promise<{ data: any; redirectSlug?: string } | null> {
   const API_BASE = getApiUrl();
-  const buildUrl = (lang?: string) => {
+  const buildUrl = (slug: string, lang?: string) => {
     const qs = lang ? `?lang=${encodeURIComponent(lang)}` : "";
-    return isNumeric(poiParam)
-      ? `${API_BASE}/pueblos/${puebloSlug}/pois/${poiParam}${qs}`
-      : `${API_BASE}/pueblos/${puebloSlug}/pois/slug/${poiParam}${qs}`;
+    return isNumeric(slug)
+      ? `${API_BASE}/pueblos/${puebloSlug}/pois/${slug}${qs}`
+      : `${API_BASE}/pueblos/${puebloSlug}/pois/slug/${slug}${qs}`;
   };
 
-  const fetchOne = async (lang?: string) =>
-    fetchWithTimeout(buildUrl(lang), {
-      headers: lang ? { "Accept-Language": lang } : undefined,
-    });
+  const tryFetch = async (slug: string, lang?: string) => {
+    try {
+      const res = await fetchWithTimeout(buildUrl(slug, lang), {
+        headers: lang ? { "Accept-Language": lang } : undefined,
+      });
+      if (res.ok) return res.json();
+    } catch { /* ignore */ }
+    return null;
+  };
 
-  try {
-    const res = await fetchOne(locale);
-    if (res.ok) return res.json();
-    if (locale && locale !== "es") {
-      const fallbackRes = await fetchOne("es");
-      if (fallbackRes.ok) return fallbackRes.json();
+  // Try the original slug
+  let data = await tryFetch(poiParam, locale);
+  if (!data && locale && locale !== "es") data = await tryFetch(poiParam, "es");
+  if (data) return { data };
+
+  // Slug not found — try fallback candidates (handles deleted duplicates)
+  if (!isNumeric(poiParam)) {
+    for (const candidate of slugFallbackCandidates(poiParam)) {
+      data = await tryFetch(candidate, locale);
+      if (!data && locale && locale !== "es") data = await tryFetch(candidate, "es");
+      if (data) return { data, redirectSlug: candidate };
     }
-    return null;
-  } catch {
-    if (locale && locale !== "es") {
-      try {
-        const fallbackRes = await fetchOne("es");
-        if (fallbackRes.ok) return fallbackRes.json();
-      } catch {
-        // ignore fallback error
-      }
-    }
-    return null;
   }
+
+  return null;
 }
 
 async function fetchPoiFast(puebloSlug: string, poiParam: string, locale?: string) {
@@ -95,10 +118,8 @@ async function fetchPoiFast(puebloSlug: string, poiParam: string, locale?: strin
       const fb = await fetchOne("es");
       if (fb.ok) return fb.json();
     }
-    return null;
-  } catch {
-    return null;
-  }
+  } catch { /* ignore */ }
+  return null;
 }
 
 export async function generateMetadata({
@@ -155,7 +176,13 @@ export default async function PoiPage({
   const { slug: puebloSlug, poi } = await params;
   const locale = await getLocale();
   const t = await getTranslations("poiPage");
-  const data = await fetchPoi(puebloSlug, poi, locale);
+  const result = await fetchPoiBySlugOrId(puebloSlug, poi, locale);
+
+  if (result?.redirectSlug) {
+    redirect(`/pueblos/${puebloSlug}/pois/${result.redirectSlug}`);
+  }
+
+  const data = result?.data ?? null;
   if (!data) {
     return (
       <main className="mx-auto max-w-[1200px] px-6 py-8 bg-background">
