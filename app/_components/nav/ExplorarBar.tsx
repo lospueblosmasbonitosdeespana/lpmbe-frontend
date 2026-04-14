@@ -61,7 +61,7 @@ export default function ExplorarBar() {
     if (hidden || pueblos) return;
     Promise.all([
       fetch('/api/public/explorar').then((r) => r.json()),
-      fetch('/api/public/explorar/counts').then((r) => r.json()),
+      fetch('/api/public/explorar/counts?soloColecciones=true').then((r) => r.json()),
     ])
       .then(([explorar, counts]) => {
         setPueblos(explorar.pueblos ?? []);
