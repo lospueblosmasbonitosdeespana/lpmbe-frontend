@@ -527,10 +527,10 @@ export default function ExplorarBar() {
                               className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
                             >
                               <div
-                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-lg"
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
                                 style={{ backgroundColor: `${c.color}20` }}
                               >
-                                <span>{c.icon}</span>
+                                <Landmark className="h-4 w-4" style={{ color: c.color || '#6b7280' }} />
                               </div>
                               <div className="min-w-0 flex-1">
                                 <p className="truncate text-sm font-medium text-foreground">
