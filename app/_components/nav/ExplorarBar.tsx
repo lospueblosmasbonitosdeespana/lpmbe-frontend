@@ -1,13 +1,14 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import {
-  Search, X, MapPin, Wrench,
+  Search, X, MapPin, ExternalLink,
   Newspaper, UtensilsCrossed, Landmark, CloudSun,
 } from 'lucide-react';
 import { TagIcon } from '@/lib/tag-icon-map';
+import { TIPOS_SERVICIO } from '@/lib/tipos-servicio';
 
 type PuebloLite = {
   id: number;
@@ -17,13 +18,6 @@ type PuebloLite = {
   comunidad: string;
   foto: string | null;
   semaforoEstado?: string | null;
-};
-
-const SEMAFORO_COLORS: Record<string, string> = {
-  VERDE: '#22c55e',
-  AMARILLO: '#eab308',
-  ROJO: '#ef4444',
-  GRIS: '#9ca3af',
 };
 
 type TagCount = {
@@ -36,11 +30,53 @@ type TagCount = {
   count: number;
 };
 
-type SvcCount = {
+type SvcTypeCount = { tipo: string; count: number };
+
+type ServiceResult = {
+  id: number;
   tipo: string;
-  slug?: string;
-  label?: string;
-  count: number;
+  nombre: string | null;
+  lat: number;
+  lng: number;
+  pueblo: { slug: string; nombre: string };
+  googleMapsUrl: string;
+};
+
+const SEMAFORO_COLORS: Record<string, string> = {
+  VERDE: '#22c55e', AMARILLO: '#eab308', ROJO: '#ef4444', GRIS: '#9ca3af',
+};
+
+const SVC_LABEL_MAP = new Map<string, string>(
+  TIPOS_SERVICIO.map((t) => [t.tipo, t.etiqueta]),
+);
+const SVC_COLOR_MAP = new Map<string, string>(
+  TIPOS_SERVICIO.map((t) => [t.tipo, t.color]),
+);
+
+const SVC_SEARCH_ALIASES: Record<string, string[]> = {
+  PARKING: ['parking', 'aparcamiento', 'aparcar'],
+  TURISMO: ['turismo', 'oficina de turismo', 'informacion'],
+  FARMACIA: ['farmacia', 'medicamento'],
+  HOSPITAL: ['hospital', 'centro de salud', 'medico', 'urgencias'],
+  COCHE_ELECTRICO: ['cargador', 'electrico', 'carga'],
+  COCHE_ELECTRICO_ULTRA: ['ultra', 'rapido', 'ultrarapido'],
+  CARAVANAS: ['caravana', 'autocaravana', 'camper', 'pernocta'],
+  LAVABO: ['lavabo', 'bano', 'aseo', 'wc'],
+  GASOLINERA: ['gasolinera', 'gasolina', 'combustible'],
+  SUPERMERCADO: ['supermercado', 'compra', 'tienda'],
+  AUTOBUS: ['autobus', 'bus', 'transporte'],
+  TAXI: ['taxi'],
+  TREN: ['tren', 'estacion', 'renfe'],
+  BANCO: ['banco', 'cajero', 'dinero'],
+  POLICIA: ['policia', 'guardia civil', 'seguridad'],
+  FUENTE: ['fuente', 'agua'],
+  PICNIC: ['picnic', 'merendero'],
+  PARQUE_INFANTIL: ['parque infantil', 'ninos', 'juegos'],
+  PLAYA: ['playa'],
+  BANO_NATURAL: ['bano natural', 'piscina natural', 'rio'],
+  PIPICAN: ['pipican', 'perro', 'mascota'],
+  ALQUILER_BICI: ['bicicleta', 'bici', 'alquiler bici'],
+  DESFIBRILADOR: ['desfibrilador', 'dea'],
 };
 
 const PUEBLO_KEYWORDS = [
@@ -69,15 +105,27 @@ function toSlug(text: string): string {
     .replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 }
 
+function matchSvcType(q: string): string | null {
+  for (const [tipo, aliases] of Object.entries(SVC_SEARCH_ALIASES)) {
+    if (aliases.some((a) => q.includes(a))) return tipo;
+    const label = norm(SVC_LABEL_MAP.get(tipo) ?? '');
+    if (label && q.includes(label)) return tipo;
+  }
+  return null;
+}
+
 export default function ExplorarBar() {
   const pathname = usePathname();
   const [query, setQuery] = useState('');
   const [focused, setFocused] = useState(false);
   const [pueblos, setPueblos] = useState<PuebloLite[] | null>(null);
   const [tags, setTags] = useState<TagCount[] | null>(null);
-  const [servicios, setServicios] = useState<SvcCount[] | null>(null);
+  const [svcCounts, setSvcCounts] = useState<SvcTypeCount[] | null>(null);
+  const [svcResults, setSvcResults] = useState<ServiceResult[]>([]);
+  const [svcLoading, setSvcLoading] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const svcAbortRef = useRef<AbortController | null>(null);
 
   const hidden =
     pathname?.startsWith('/gestion') || pathname?.startsWith('/explorar');
@@ -87,11 +135,12 @@ export default function ExplorarBar() {
     Promise.all([
       fetch('/api/public/explorar').then((r) => r.json()),
       fetch('/api/public/explorar/counts?soloColecciones=true').then((r) => r.json()),
+      fetch('/api/public/puntos-servicio/counts').then((r) => r.json()),
     ])
-      .then(([explorar, counts]) => {
+      .then(([explorar, counts, svcCountsData]) => {
         setPueblos(explorar.pueblos ?? []);
         setTags(counts.tags ?? []);
-        setServicios(counts.servicios ?? []);
+        setSvcCounts(Array.isArray(svcCountsData) ? svcCountsData : []);
       })
       .catch(() => {});
   }, [hidden, pueblos]);
@@ -114,14 +163,64 @@ export default function ExplorarBar() {
     return PUEBLO_KEYWORDS.find(sec => q.includes(sec.keyword)) ?? null;
   }, [hasQuery, q]);
 
+  const detectedSvcType = useMemo(() => {
+    if (!hasQuery || sectionKeyword) return null;
+    return matchSvcType(q);
+  }, [hasQuery, q, sectionKeyword]);
+
   const puebloQuery = useMemo(() => {
-    if (!sectionKeyword) return q;
-    return q.replace(sectionKeyword.keyword, '').trim();
-  }, [q, sectionKeyword]);
+    if (sectionKeyword) return q.replace(sectionKeyword.keyword, '').trim();
+    if (detectedSvcType) {
+      let rest = q;
+      const aliases = SVC_SEARCH_ALIASES[detectedSvcType] ?? [];
+      for (const a of aliases) {
+        rest = rest.replace(a, '').trim();
+      }
+      const label = norm(SVC_LABEL_MAP.get(detectedSvcType) ?? '');
+      if (label) rest = rest.replace(label, '').trim();
+      return rest;
+    }
+    return q;
+  }, [q, sectionKeyword, detectedSvcType]);
+
+  const matchedPuebloForSvc = useMemo(() => {
+    if (!detectedSvcType || !puebloQuery || puebloQuery.length < 2 || !pueblos) return null;
+    return pueblos.find(
+      (p) => norm(p.nombre).includes(puebloQuery) || norm(p.slug).includes(puebloQuery),
+    ) ?? null;
+  }, [detectedSvcType, puebloQuery, pueblos]);
+
+  const fetchSvcPoints = useCallback(async (tipo: string, puebloSlug: string) => {
+    svcAbortRef.current?.abort();
+    const controller = new AbortController();
+    svcAbortRef.current = controller;
+    setSvcLoading(true);
+    try {
+      const qs = new URLSearchParams({ tipo, pueblo: puebloSlug });
+      const res = await fetch(`/api/public/puntos-servicio/buscar?${qs}`, {
+        signal: controller.signal,
+      });
+      if (!res.ok) { setSvcResults([]); return; }
+      const data = await res.json();
+      setSvcResults(Array.isArray(data) ? data : []);
+    } catch {
+      if (!controller.signal.aborted) setSvcResults([]);
+    } finally {
+      setSvcLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (detectedSvcType && matchedPuebloForSvc) {
+      fetchSvcPoints(detectedSvcType, matchedPuebloForSvc.slug);
+    } else {
+      setSvcResults([]);
+    }
+  }, [detectedSvcType, matchedPuebloForSvc, fetchSvcPoints]);
 
   const matchingTags = useMemo(
     () =>
-      hasQuery && tags && !sectionKeyword
+      hasQuery && tags && !sectionKeyword && !detectedSvcType
         ? tags
             .filter((t) => {
               const name = norm(t.nombre_i18n?.es ?? '');
@@ -129,25 +228,35 @@ export default function ExplorarBar() {
             })
             .slice(0, 4)
         : [],
-    [hasQuery, tags, q, sectionKeyword],
+    [hasQuery, tags, q, sectionKeyword, detectedSvcType],
   );
 
-  const matchingSvcs = useMemo(
-    () =>
-      hasQuery && servicios && !sectionKeyword
-        ? servicios
-            .filter((s) => {
-              const label = norm(s.label ?? s.tipo);
-              return label.includes(q) || norm(s.tipo).includes(q);
-            })
-            .slice(0, 3)
-        : [],
-    [hasQuery, servicios, q, sectionKeyword],
+  const matchingSvcTypes = useMemo(
+    () => {
+      if (!hasQuery || !svcCounts || sectionKeyword) return [];
+      if (detectedSvcType && matchedPuebloForSvc) return [];
+      const matches: Array<SvcTypeCount & { label: string; color: string }> = [];
+      for (const sc of svcCounts) {
+        const label = SVC_LABEL_MAP.get(sc.tipo) ?? sc.tipo;
+        const color = SVC_COLOR_MAP.get(sc.tipo) ?? '#6b7280';
+        const aliases = SVC_SEARCH_ALIASES[sc.tipo] ?? [];
+        const normLabel = norm(label);
+        if (
+          normLabel.includes(q) ||
+          norm(sc.tipo).includes(q) ||
+          aliases.some((a) => q.includes(a) || a.includes(q))
+        ) {
+          matches.push({ ...sc, label, color });
+        }
+      }
+      return matches.slice(0, 5);
+    },
+    [hasQuery, svcCounts, q, sectionKeyword, detectedSvcType, matchedPuebloForSvc],
   );
 
   const matchingPueblos = useMemo(
     () =>
-      hasQuery && pueblos
+      hasQuery && pueblos && !detectedSvcType
         ? pueblos
             .filter(
               (p) =>
@@ -157,7 +266,7 @@ export default function ExplorarBar() {
             )
             .slice(0, sectionKeyword ? 3 : 5)
         : [],
-    [hasQuery, pueblos, puebloQuery, sectionKeyword],
+    [hasQuery, pueblos, puebloQuery, sectionKeyword, detectedSvcType],
   );
 
   if (hidden) return null;
@@ -165,8 +274,14 @@ export default function ExplorarBar() {
   const close = () => { setFocused(false); setQuery(''); };
 
   const hasAnyResults =
-    matchingTags.length > 0 || matchingSvcs.length > 0 || matchingPueblos.length > 0;
+    matchingTags.length > 0 ||
+    matchingSvcTypes.length > 0 ||
+    matchingPueblos.length > 0 ||
+    svcResults.length > 0 ||
+    (detectedSvcType && !matchedPuebloForSvc);
   const showDropdown = focused && hasQuery;
+
+  const svcTypeLabel = detectedSvcType ? (SVC_LABEL_MAP.get(detectedSvcType) ?? detectedSvcType) : '';
 
   return (
     <div className="border-b border-border/30 bg-muted/30 dark:bg-muted/10">
@@ -180,7 +295,7 @@ export default function ExplorarBar() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setFocused(true)}
-              placeholder="Buscar pueblo, castillo, servicios..."
+              placeholder="Buscar pueblo, parking, farmacia, castillo..."
               enterKeyHint="search"
               autoComplete="off"
               className="w-full rounded-xl border border-border bg-background py-2 pl-9 pr-9 text-sm transition-all placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-card/80"
@@ -200,6 +315,92 @@ export default function ExplorarBar() {
             <div className="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-[70vh] overflow-y-auto rounded-xl border border-border bg-card shadow-xl">
               {hasAnyResults ? (
                 <>
+                  {/* Service type + pueblo → real geolocated points */}
+                  {detectedSvcType && matchedPuebloForSvc && (
+                    <div>
+                      <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {svcTypeLabel} en {matchedPuebloForSvc.nombre}
+                      </p>
+                      {svcLoading && (
+                        <p className="px-3 py-2 text-xs text-muted-foreground">Buscando...</p>
+                      )}
+                      {!svcLoading && svcResults.length === 0 && (
+                        <p className="px-3 py-2 text-xs text-muted-foreground">
+                          No hay {svcTypeLabel.toLowerCase()} en {matchedPuebloForSvc.nombre}
+                        </p>
+                      )}
+                      {svcResults.map((r) => (
+                        <a
+                          key={r.id}
+                          href={r.googleMapsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={close}
+                          className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                        >
+                          <div
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                            style={{ backgroundColor: `${SVC_COLOR_MAP.get(r.tipo) ?? '#6b7280'}20` }}
+                          >
+                            <MapPin className="h-4 w-4" style={{ color: SVC_COLOR_MAP.get(r.tipo) ?? '#6b7280' }} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-foreground">
+                              {r.nombre ?? svcTypeLabel}
+                            </p>
+                            <p className="truncate text-[11px] text-muted-foreground">
+                              Abrir en Google Maps
+                            </p>
+                          </div>
+                          <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Service type only → show type with count */}
+                  {detectedSvcType && !matchedPuebloForSvc && (
+                    <div>
+                      <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Servicios del visitante
+                      </p>
+                      <p className="px-3 py-2 text-xs text-muted-foreground">
+                        Escribe el nombre del pueblo para ver los {svcTypeLabel.toLowerCase()} (ej: &ldquo;{query} ainsa&rdquo;)
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Generic service type matches (no specific type+pueblo) */}
+                  {matchingSvcTypes.length > 0 && (
+                    <div>
+                      <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Servicios del visitante
+                      </p>
+                      {matchingSvcTypes.map((s) => (
+                        <div
+                          key={s.tipo}
+                          className="flex items-center gap-3 px-3 py-2"
+                        >
+                          <div
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                            style={{ backgroundColor: `${s.color}20` }}
+                          >
+                            <MapPin className="h-4 w-4" style={{ color: s.color }} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-foreground">
+                              {s.label}
+                            </p>
+                            <p className="truncate text-[11px] text-muted-foreground">
+                              En {s.count} pueblos — escribe un pueblo para ver puntos concretos
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Tags (colecciones) */}
                   {matchingTags.length > 0 && (
                     <div>
                       <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -234,37 +435,7 @@ export default function ExplorarBar() {
                     </div>
                   )}
 
-                  {matchingSvcs.length > 0 && (
-                    <div>
-                      <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        Servicios del visitante
-                      </p>
-                      {matchingSvcs.map((s) => {
-                        const slug = s.slug || toSlug(s.label ?? s.tipo);
-                        return (
-                          <Link
-                            key={s.tipo}
-                            href={`/explorar/${slug}`}
-                            onClick={close}
-                            className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
-                          >
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                              <Wrench className="h-4 w-4 text-primary" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-medium text-foreground">
-                                {s.label ?? s.tipo}
-                              </p>
-                            </div>
-                            <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                              {s.count} pueblos
-                            </span>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-
+                  {/* Pueblos */}
                   {matchingPueblos.length > 0 && (
                     <div>
                       <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
