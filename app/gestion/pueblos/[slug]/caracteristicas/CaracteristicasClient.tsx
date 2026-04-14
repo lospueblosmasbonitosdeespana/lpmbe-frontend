@@ -28,10 +28,12 @@ type CaracteristicaExistente = {
   poiId: number | null;
   pageId: number | null;
   multiexperienciaId: number | null;
+  paradaOrden: number | null;
   fotoOverride: string | null;
   tag: TagDef;
   poi?: { id: number; nombre: string; foto: string | null } | null;
   page?: { id: number; titulo: string; coverUrl: string | null } | null;
+  multiexperiencia?: { id: number; titulo: string; foto: string | null; slug: string } | null;
 };
 
 type LocalState = {
@@ -44,12 +46,16 @@ type LocalState = {
   poiId: number | null;
   pageId: number | null;
   multiexperienciaId: number | null;
+  paradaOrden: number | null;
   fotoOverride: string;
 };
+
+type MxInfo = { id: number; titulo: string; foto: string | null; slug: string };
 
 type LinkedContent = {
   pois: { id: number; nombre: string; foto: string | null }[];
   pages: { id: number; titulo: string; slug: string; coverUrl: string | null }[];
+  multiexperiencias?: MxInfo[];
 };
 
 /* ────── Estilos ────── */
@@ -169,6 +175,7 @@ export default function CaracteristicasClient({
                 poiId: ex.poiId,
                 pageId: ex.pageId,
                 multiexperienciaId: ex.multiexperienciaId ?? null,
+                paradaOrden: ex.paradaOrden ?? null,
                 fotoOverride: ex.fotoOverride ?? '',
               }
             : {
@@ -181,6 +188,7 @@ export default function CaracteristicasClient({
                 poiId: null,
                 pageId: null,
                 multiexperienciaId: null,
+                paradaOrden: null,
                 fotoOverride: '',
               };
         }
@@ -227,7 +235,7 @@ export default function CaracteristicasClient({
     if (newId !== null) loadLinkedContent();
   }
 
-  function selectLinked(tagId: number, type: 'poi' | 'page', id: number | null) {
+  function selectLinked(tagId: number, type: 'poi' | 'page' | 'mx', id: number | null, paradaOrden?: number | null) {
     setLocalState(prev => {
       const cur = prev[tagId];
       if (!cur) return prev;
@@ -237,7 +245,8 @@ export default function CaracteristicasClient({
             ...cur,
             poiId: type === 'poi' ? id : null,
             pageId: type === 'page' ? id : null,
-            multiexperienciaId: null,
+            multiexperienciaId: type === 'mx' ? id : null,
+            paradaOrden: type === 'mx' ? (paradaOrden ?? null) : null,
           },
         };
     });
@@ -261,6 +270,7 @@ export default function CaracteristicasClient({
             poiId: s.poiId,
             pageId: s.pageId,
             multiexperienciaId: s.multiexperienciaId,
+            paradaOrden: s.paradaOrden,
             fotoOverride: s.fotoOverride.trim() || null,
           };
         });
@@ -432,11 +442,14 @@ export default function CaracteristicasClient({
                           <ContentLinker
                             tagId={tag.id}
                             puebloId={puebloId}
+                            slug={slug}
                             linkedContent={linkedContent}
                             selectedPoiId={state.poiId}
                             selectedPageId={state.pageId}
+                            selectedMxId={state.multiexperienciaId}
+                            selectedParadaOrden={state.paradaOrden}
                             fotoOverride={state.fotoOverride}
-                            onSelect={(type, id) => selectLinked(tag.id, type, id)}
+                            onSelect={(type, id, paradaOrden) => selectLinked(tag.id, type, id, paradaOrden)}
                             onFotoOverride={(url) => updateField(tag.id, 'fotoOverride', url)}
                           />
                         </div>
@@ -472,30 +485,41 @@ export default function CaracteristicasClient({
 
 /* ────── Sub-componente: selector de contenido vinculado ────── */
 
+type Parada = { titulo: string; foto: string | null; orden: number | null };
+
 function ContentLinker({
   tagId,
   puebloId,
+  slug,
   linkedContent,
   selectedPoiId,
   selectedPageId,
+  selectedMxId,
+  selectedParadaOrden,
   fotoOverride,
   onSelect,
   onFotoOverride,
 }: {
   tagId: number;
   puebloId: number;
+  slug: string;
   linkedContent: LinkedContent | null;
   selectedPoiId: number | null;
   selectedPageId: number | null;
+  selectedMxId: number | null;
+  selectedParadaOrden: number | null;
   fotoOverride: string;
-  onSelect: (type: 'poi' | 'page', id: number | null) => void;
+  onSelect: (type: 'poi' | 'page' | 'mx', id: number | null, paradaOrden?: number | null) => void;
   onFotoOverride: (url: string) => void;
 }) {
   const [showList, setShowList] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [expandedMxId, setExpandedMxId] = useState<number | null>(null);
+  const [paradasCache, setParadasCache] = useState<Record<number, Parada[]>>({});
+  const [loadingParadas, setLoadingParadas] = useState(false);
 
-  const hasLink = selectedPoiId || selectedPageId;
+  const hasLink = selectedPoiId || selectedPageId || selectedMxId;
 
   const selectedName = useMemo(() => {
     if (!linkedContent) return null;
@@ -507,8 +531,46 @@ function ContentLinker({
       const pg = linkedContent.pages.find(x => x.id === selectedPageId);
       return pg ? `📄 ${pg.titulo}` : null;
     }
+    if (selectedMxId) {
+      const mx = linkedContent.multiexperiencias?.find(x => x.id === selectedMxId);
+      if (mx) {
+        if (selectedParadaOrden) {
+          const paradas = paradasCache[selectedMxId];
+          const p = paradas?.[selectedParadaOrden - 1];
+          return `🗺️ ${mx.titulo} → Parada ${selectedParadaOrden}${p?.titulo ? `: ${p.titulo}` : ''}`;
+        }
+        return `🗺️ ${mx.titulo}`;
+      }
+    }
     return null;
-  }, [linkedContent, selectedPoiId, selectedPageId]);
+  }, [linkedContent, selectedPoiId, selectedPageId, selectedMxId, selectedParadaOrden, paradasCache]);
+
+  async function loadParadas(mxId: number) {
+    if (paradasCache[mxId]) return;
+    setLoadingParadas(true);
+    try {
+      const res = await fetch(`/api/public/multiexperiencias/${mxId}/paradas`);
+      if (res.ok) {
+        const data: Parada[] = await res.json();
+        setParadasCache(prev => ({ ...prev, [mxId]: data }));
+      }
+    } catch { /* ignore */ }
+    finally { setLoadingParadas(false); }
+  }
+
+  function handleMxExpand(mxId: number) {
+    if (expandedMxId === mxId) {
+      setExpandedMxId(null);
+    } else {
+      setExpandedMxId(mxId);
+      loadParadas(mxId);
+    }
+  }
+
+  function clearSelection() {
+    onSelect('poi', null);
+    setShowList(false);
+  }
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -535,6 +597,9 @@ function ContentLinker({
     }
   }
 
+  const mxList = linkedContent?.multiexperiencias ?? [];
+  const hasAny = (linkedContent?.pois?.length ?? 0) > 0 || (linkedContent?.pages?.length ?? 0) > 0 || mxList.length > 0;
+
   return (
     <div className="space-y-2">
       <p className="text-xs font-semibold text-muted-foreground">Imagen y enlace para colecciones</p>
@@ -543,11 +608,11 @@ function ContentLinker({
         vincúlalo para usar su foto en la tarjeta de colección y enlazar directamente.
       </p>
 
-      {/* Enlace actual o botón para vincular */}
       {hasLink && selectedName ? (
         <div className="flex items-center gap-2 rounded-lg border border-amber-300/50 bg-amber-50/40 px-3 py-2 text-xs dark:border-amber-700/40 dark:bg-amber-950/20">
           <span className="flex-1 truncate font-medium">{selectedName}</span>
-          <button type="button" onClick={() => { onSelect('poi', null); setShowList(false); }} className="shrink-0 text-muted-foreground hover:text-destructive">✕</button>        </div>
+          <button type="button" onClick={clearSelection} className="shrink-0 text-muted-foreground hover:text-destructive">✕</button>
+        </div>
       ) : (
         <button
           type="button"
@@ -558,12 +623,11 @@ function ContentLinker({
         </button>
       )}
 
-      {/* Lista expandida de contenidos */}
       {showList && linkedContent && (
-        <div className="max-h-52 overflow-y-auto rounded-xl border border-border/60 bg-background">
+        <div className="max-h-72 overflow-y-auto rounded-xl border border-border/60 bg-background">
           {linkedContent.pois.length > 0 && (
             <div>
-              <div className="sticky top-0 bg-muted/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="sticky top-0 z-10 bg-muted/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Puntos de interés (POIs)
               </div>
               {linkedContent.pois.map(p => (
@@ -582,7 +646,7 @@ function ContentLinker({
 
           {linkedContent.pages.length > 0 && (
             <div>
-              <div className="sticky top-0 bg-muted/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="sticky top-0 z-10 bg-muted/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Páginas temáticas
               </div>
               {linkedContent.pages.map(pg => (
@@ -599,7 +663,63 @@ function ContentLinker({
             </div>
           )}
 
-          {linkedContent.pois.length === 0 && linkedContent.pages.length === 0 && (
+          {mxList.length > 0 && (
+            <div>
+              <div className="sticky top-0 z-10 bg-muted/50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Experiencias (multiexperiencias)
+              </div>
+              {mxList.map(mx => {
+                const isExpanded = expandedMxId === mx.id;
+                const paradas = paradasCache[mx.id];
+                return (
+                  <div key={`mx-${mx.id}`}>
+                    <div className="flex w-full items-center gap-2 px-3 py-1.5 text-xs">
+                      <button type="button" onClick={() => handleMxExpand(mx.id)} className="flex flex-1 items-center gap-2 hover:bg-muted/30 transition-colors rounded py-0.5 min-w-0">
+                        {mx.foto ? <img src={mx.foto} alt="" className="h-6 w-6 shrink-0 rounded object-cover" /> : <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted text-[10px]">🗺️</span>}
+                        <span className="truncate font-medium">{mx.titulo}</span>
+                        <span className="shrink-0 text-[10px] text-muted-foreground">{isExpanded ? '▲' : '▼'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { onSelect('mx', mx.id); setShowList(false); }}
+                        className="shrink-0 rounded px-2 py-0.5 text-[10px] text-primary hover:bg-primary/10 transition-colors"
+                        title="Vincular a toda la experiencia"
+                      >
+                        toda
+                      </button>
+                    </div>
+                    {isExpanded && (
+                      <div className="ml-4 border-l border-border/40 pl-2">
+                        {loadingParadas && !paradas && (
+                          <p className="px-3 py-2 text-[10px] text-muted-foreground animate-pulse">Cargando paradas…</p>
+                        )}
+                        {paradas && paradas.length === 0 && (
+                          <p className="px-3 py-2 text-[10px] text-muted-foreground">Sin paradas.</p>
+                        )}
+                        {paradas && paradas.map((p, idx) => {
+                          const num = idx + 1;
+                          return (
+                            <button
+                              key={`mx-${mx.id}-p-${num}`} type="button"
+                              onClick={() => { onSelect('mx', mx.id, num); setShowList(false); }}
+                              className="flex w-full items-center gap-2 px-3 py-1.5 text-xs hover:bg-muted/30 transition-colors"
+                            >
+                              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/80 text-[9px] font-bold text-primary-foreground">{num}</span>
+                              {p.foto ? <img src={p.foto} alt="" className="h-6 w-6 shrink-0 rounded object-cover" /> : <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted text-[10px]">📷</span>}
+                              <span className="truncate">{p.titulo || `Parada ${num}`}</span>
+                              {p.foto && <span className="ml-auto shrink-0 text-[10px] text-emerald-600">con foto</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {!hasAny && (
             <p className="px-3 py-4 text-center text-xs text-muted-foreground">No hay contenidos disponibles en este pueblo.</p>
           )}
         </div>
