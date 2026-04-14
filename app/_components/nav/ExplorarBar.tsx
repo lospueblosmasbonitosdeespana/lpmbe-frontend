@@ -1,41 +1,35 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Search } from 'lucide-react';
 
 export default function ExplorarBar() {
   const pathname = usePathname();
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
 
   if (pathname?.startsWith('/explorar')) return null;
   if (pathname?.startsWith('/gestion')) return null;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    router.push('/explorar');
-  }
-
-  function handleFocus() {
-    router.push('/explorar');
+    const q = query.trim();
+    router.push(q ? `/explorar?q=${encodeURIComponent(q)}` : '/explorar');
   }
 
   return (
     <div className="border-b border-border/30 bg-muted/30 dark:bg-muted/10">
       <div className="mx-auto max-w-6xl px-4 py-1.5">
-        <form onSubmit={handleSubmit} className="flex items-center gap-2">
-          <button
-            type="submit"
-            className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg bg-background/80 px-3 py-1.5 text-left shadow-[inset_0_0_0_1px] shadow-border/40 transition-all hover:shadow-primary/30 dark:bg-card/60"
-            onClick={handleFocus}
-          >
-            <Search className="h-3.5 w-3.5 shrink-0 text-primary/50" />
-            <span className="text-[13px] text-muted-foreground/70">
-              Busca pueblos por patrimonio, naturaleza o servicios del visitante
-            </span>
-          </button>
+        <form onSubmit={handleSubmit} className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-primary/50" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Busca pueblos por patrimonio, naturaleza o servicios del visitante"
+            className="w-full rounded-lg bg-background/80 py-1.5 pl-9 pr-3 text-[13px] shadow-[inset_0_0_0_1px] shadow-border/40 transition-all placeholder:text-muted-foreground/60 focus:shadow-primary/40 focus:outline-none dark:bg-card/60"
+          />
         </form>
       </div>
     </div>

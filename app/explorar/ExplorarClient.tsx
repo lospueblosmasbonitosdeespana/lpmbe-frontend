@@ -104,7 +104,7 @@ export default function ExplorarClient({
   const [data, setData] = useState<ExplorarData | null>(null);
   const [counts, setCounts] = useState<CountsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [textSearch, setTextSearch] = useState('');
+  const [textSearch, setTextSearch] = useState(searchParams.get('q') ?? '');
   const [openSection, setOpenSection] = useState<string | null>(null);
 
   const [selectedTags, setSelectedTags] = useState<string[]>(
