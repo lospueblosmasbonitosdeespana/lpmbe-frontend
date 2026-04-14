@@ -108,6 +108,7 @@ const PUEBLO_KEYWORDS = [
 
 // Páginas temáticas generales (sin pueblo detectado)
 const TEMATICAS = [
+  { keywords: ['noticias', 'eventos', 'alertas', 'notificaciones', 'actualidad asociacion'], label: 'Noticias y eventos',  href: '/notificaciones',          icon: Newspaper },
   { keywords: ['gastronomia', 'comer'],              label: 'Gastronomía',  href: '/experiencias/gastronomia', icon: UtensilsCrossed },
   { keywords: ['familia', 'ninos', 'en familia'],    label: 'En familia',   href: '/experiencias/en-familia',  icon: Users },
   { keywords: ['petfriendly', 'mascotas', 'perros'], label: 'Pet friendly', href: '/experiencias/petfriendly', icon: PawPrint },
@@ -599,7 +600,9 @@ export default function ExplorarBar() {
                                     {t.label}
                                   </p>
                                   <p className="truncate text-[11px] text-muted-foreground">
-                                    Experiencias en todos los pueblos
+                                    {t.href === '/notificaciones'
+                                      ? 'Noticias, eventos y alertas de la asociación'
+                                      : 'Experiencias en todos los pueblos'}
                                   </p>
                                 </div>
                               </Link>
