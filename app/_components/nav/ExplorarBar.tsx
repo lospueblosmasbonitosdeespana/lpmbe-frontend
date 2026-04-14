@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import {
   Search, X, MapPin,
   Newspaper, UtensilsCrossed, Landmark, CloudSun,
-  Users, PawPrint, Building2, Palette, TreePine,
+  Users, PawPrint, Building2, Palette, TreePine, Smartphone,
 } from 'lucide-react';
 import { TagIcon } from '@/lib/tag-icon-map';
 import { TIPOS_SERVICIO } from '@/lib/tipos-servicio';
@@ -111,7 +111,8 @@ const PUEBLO_KEYWORDS = [
 // navKey → clave del namespace 'nav' para obtener label traducida
 const TEMATICAS = [
   { navKey: 'noticias',    extraNavKey: 'eventos',   keywords: ['noticias', 'eventos', 'alertas', 'notificaciones'], label: 'Noticias y eventos',  href: '/notificaciones',  icon: Newspaper },
-  { navKey: 'sectionColecciones', extraNavKey: null,        keywords: ['colecciones', 'descubre', 'tematicas'],             label: 'Colecciones', href: '/descubre',        icon: Landmark },
+  { navKey: 'appPage',     extraNavKey: null,        keywords: ['app', 'descargar', 'aplicacion', 'movil'],          label: 'App oficial',         href: '/app',             icon: Smartphone },
+  { navKey: 'sectionColecciones', extraNavKey: null, keywords: ['colecciones', 'descubre', 'tematicas'],             label: 'Colecciones',         href: '/descubre',        icon: Landmark },
   { navKey: 'gastronomia', extraNavKey: null,        keywords: ['gastronomia', 'comer'],              label: 'Gastronomía',  href: '/experiencias/gastronomia', icon: UtensilsCrossed },
   { navKey: 'family',      extraNavKey: null,        keywords: ['familia', 'ninos', 'en familia'],    label: 'En familia',   href: '/experiencias/en-familia',  icon: Users },
   { navKey: 'petfriendly', extraNavKey: null,        keywords: ['petfriendly', 'mascotas', 'perros'], label: 'Pet friendly', href: '/experiencias/petfriendly', icon: PawPrint },
@@ -647,7 +648,9 @@ export default function ExplorarBar() {
                                   <p className="truncate text-[11px] text-muted-foreground">
                                     {t.href === '/notificaciones'
                                       ? tNav('searchAssocDesc')
-                                      : tNav('searchAllVillages')}
+                                      : t.href === '/app'
+                                        ? tNav('searchAppDesc')
+                                        : tNav('searchAllVillages')}
                                   </p>
                                 </div>
                               </Link>
