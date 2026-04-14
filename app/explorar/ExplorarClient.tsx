@@ -3,7 +3,11 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, X, MapPin, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import {
+  Search, X, MapPin, SlidersHorizontal, ChevronDown,
+  Shield, Church, Landmark, Clock, TreePine, Heart, Sparkles, Accessibility, Wrench,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { TagIcon } from '@/lib/tag-icon-map';
 import {
   LOCATION_SLUG_MAP,
@@ -80,15 +84,15 @@ const SERVICIO_LABELS: Record<string, string> = {
   PLAYA: 'Playa',
 };
 
-const CATEGORY_MAP: Record<string, { label: string; emoji: string; order: number }> = {
-  PATRIMONIO_MILITAR: { label: 'Patrimonio Militar', emoji: '🏰', order: 0 },
-  PATRIMONIO_RELIGIOSO: { label: 'Patrimonio Religioso', emoji: '⛪', order: 1 },
-  PATRIMONIO_CIVIL: { label: 'Patrimonio Civil', emoji: '🏛️', order: 2 },
-  PATRIMONIO_ARQUEOLOGICO: { label: 'Estilos y Época', emoji: '🎨', order: 3 },
-  NATURALEZA: { label: 'Naturaleza', emoji: '🌿', order: 4 },
-  GASTRONOMIA: { label: 'Tradición', emoji: '🍷', order: 5 },
-  ATMOSFERA: { label: 'Atmósfera', emoji: '✨', order: 6 },
-  ACCESIBILIDAD: { label: 'Accesibilidad', emoji: '♿', order: 7 },
+const CATEGORY_MAP: Record<string, { label: string; icon: LucideIcon; order: number }> = {
+  PATRIMONIO_MILITAR: { label: 'Patrimonio Militar', icon: Shield, order: 0 },
+  PATRIMONIO_RELIGIOSO: { label: 'Patrimonio Religioso', icon: Church, order: 1 },
+  PATRIMONIO_CIVIL: { label: 'Patrimonio Civil', icon: Landmark, order: 2 },
+  PATRIMONIO_ARQUEOLOGICO: { label: 'Estilos y Época', icon: Clock, order: 3 },
+  NATURALEZA: { label: 'Naturaleza', icon: TreePine, order: 4 },
+  GASTRONOMIA: { label: 'Tradición', icon: Heart, order: 5 },
+  ATMOSFERA: { label: 'Atmósfera', icon: Sparkles, order: 6 },
+  ACCESIBILIDAD: { label: 'Accesibilidad', icon: Accessibility, order: 7 },
 };
 
 export default function ExplorarClient({
@@ -253,6 +257,7 @@ export default function ExplorarClient({
           const cfg = CATEGORY_MAP[cat];
           const isOpen = openSection === cat;
           const hasActive = tagsByCategory[cat]?.some(t => selectedTags.includes(t.tag!));
+          const Icon = cfg?.icon ?? SlidersHorizontal;
           return (
             <button
               key={cat}
@@ -265,7 +270,7 @@ export default function ExplorarClient({
                     : 'border-border bg-card text-muted-foreground hover:border-primary/20 hover:text-foreground'
               }`}
             >
-              <span>{cfg?.emoji ?? '📋'}</span>
+              <Icon className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">{cfg?.label ?? cat}</span>
               <ChevronDown className={`h-3 w-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -282,7 +287,7 @@ export default function ExplorarClient({
                 : 'border-border bg-card text-muted-foreground hover:border-primary/20 hover:text-foreground'
           }`}
         >
-          <span>🚗</span>
+          <Wrench className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">Servicios</span>
           <ChevronDown className={`h-3 w-3 transition-transform ${openSection === 'servicios' ? 'rotate-180' : ''}`} />
         </button>
