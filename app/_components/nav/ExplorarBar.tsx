@@ -6,6 +6,7 @@ import Link from 'next/link';
 import {
   Search, X, MapPin,
   Newspaper, UtensilsCrossed, Landmark, CloudSun,
+  Users, PawPrint, Building2, Palette, TreePine,
 } from 'lucide-react';
 import { TagIcon } from '@/lib/tag-icon-map';
 import { TIPOS_SERVICIO } from '@/lib/tipos-servicio';
@@ -85,15 +86,35 @@ const SVC_SEARCH_ALIASES: Record<string, string[]> = {
 };
 
 const PUEBLO_KEYWORDS = [
-  { keyword: 'noticias',   label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`,         icon: Newspaper },
-  { keyword: 'eventos',    label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`,         icon: Newspaper },
-  { keyword: 'articulos',  label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`,         icon: Newspaper },
-  { keyword: 'actualidad', label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`,         icon: Newspaper },
-  { keyword: 'comer',      label: 'Qué comer',  path: (s: string) => `/que-comer/${s}`,                 icon: UtensilsCrossed },
-  { keyword: 'ver',        label: 'Qué ver',    path: (s: string) => `/pueblos/${s}/lugares-de-interes`, icon: Landmark },
-  { keyword: 'tiempo',     label: 'Tiempo',     path: (s: string) => `/pueblos/${s}/meteo`,              icon: CloudSun },
-  { keyword: 'meteo',      label: 'Tiempo',     path: (s: string) => `/pueblos/${s}/meteo`,              icon: CloudSun },
+  { keyword: 'noticias',    label: 'Actualidad',   path: (s: string) => `/pueblos/${s}/actualidad`,            icon: Newspaper },
+  { keyword: 'eventos',     label: 'Actualidad',   path: (s: string) => `/pueblos/${s}/actualidad`,            icon: Newspaper },
+  { keyword: 'articulos',   label: 'Actualidad',   path: (s: string) => `/pueblos/${s}/actualidad`,            icon: Newspaper },
+  { keyword: 'actualidad',  label: 'Actualidad',   path: (s: string) => `/pueblos/${s}/actualidad`,            icon: Newspaper },
+  { keyword: 'comer',       label: 'Gastronomía',  path: (s: string) => `/que-comer/${s}`,                     icon: UtensilsCrossed },
+  { keyword: 'gastronomia', label: 'Gastronomía',  path: (s: string) => `/que-comer/${s}`,                     icon: UtensilsCrossed },
+  { keyword: 'ver',         label: 'Qué ver',      path: (s: string) => `/pueblos/${s}/lugares-de-interes`,    icon: Landmark },
+  { keyword: 'tiempo',      label: 'Tiempo',       path: (s: string) => `/pueblos/${s}/meteo`,                 icon: CloudSun },
+  { keyword: 'meteo',       label: 'Tiempo',       path: (s: string) => `/pueblos/${s}/meteo`,                 icon: CloudSun },
+  { keyword: 'familia',     label: 'En familia',   path: (s: string) => `/pueblos/${s}/categoria/en-familia`,  icon: Users },
+  { keyword: 'ninos',       label: 'En familia',   path: (s: string) => `/pueblos/${s}/categoria/en-familia`,  icon: Users },
+  { keyword: 'petfriendly', label: 'Pet friendly', path: (s: string) => `/pueblos/${s}/categoria/petfriendly`, icon: PawPrint },
+  { keyword: 'mascotas',    label: 'Pet friendly', path: (s: string) => `/pueblos/${s}/categoria/petfriendly`, icon: PawPrint },
+  { keyword: 'patrimonio',  label: 'Patrimonio',   path: (s: string) => `/pueblos/${s}/categoria/patrimonio`,  icon: Building2 },
+  { keyword: 'cultura',     label: 'Cultura',      path: (s: string) => `/pueblos/${s}/categoria/cultura`,     icon: Palette },
+  { keyword: 'cultural',    label: 'Cultura',      path: (s: string) => `/pueblos/${s}/categoria/cultura`,     icon: Palette },
+  { keyword: 'naturaleza',  label: 'Naturaleza',   path: (s: string) => `/pueblos/${s}/categoria/naturaleza`,  icon: TreePine },
+  { keyword: 'paisaje',     label: 'Naturaleza',   path: (s: string) => `/pueblos/${s}/categoria/naturaleza`,  icon: TreePine },
 ] as const;
+
+// Páginas temáticas generales (sin pueblo detectado)
+const TEMATICAS = [
+  { keywords: ['gastronomia', 'comer'],              label: 'Gastronomía',  href: '/experiencias/gastronomia', icon: UtensilsCrossed },
+  { keywords: ['familia', 'ninos', 'en familia'],    label: 'En familia',   href: '/experiencias/en-familia',  icon: Users },
+  { keywords: ['petfriendly', 'mascotas', 'perros'], label: 'Pet friendly', href: '/experiencias/petfriendly', icon: PawPrint },
+  { keywords: ['patrimonio'],                        label: 'Patrimonio',   href: '/experiencias/patrimonio',  icon: Building2 },
+  { keywords: ['cultura', 'cultural'],               label: 'Cultura',      href: '/experiencias/cultura',     icon: Palette },
+  { keywords: ['naturaleza', 'paisaje'],             label: 'Naturaleza',   href: '/experiencias/naturaleza',  icon: TreePine },
+];
 
 const PUEBLO_QUICK_LINKS = [
   { label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`,         icon: Newspaper },
@@ -311,6 +332,13 @@ export default function ExplorarBar() {
       .slice(0, 4);
   }, [hasQuery, descubreList, q, qWords, parsedQuery]);
 
+  const matchingTematicas = useMemo(() => {
+    if (!hasQuery || parsedQuery) return [];
+    return TEMATICAS.filter((t) =>
+      t.keywords.some((kw) => q.includes(norm(kw)) || norm(kw).includes(q)),
+    );
+  }, [hasQuery, q, parsedQuery]);
+
   if (hidden) return null;
 
   const close = () => { setFocused(false); setQuery(''); };
@@ -320,7 +348,8 @@ export default function ExplorarBar() {
     matchingTags.length > 0 ||
     matchingPueblos.length > 0 ||
     matchingMx.length > 0 ||
-    matchingDescubre.length > 0;
+    matchingDescubre.length > 0 ||
+    matchingTematicas.length > 0;
 
   const showDropdown = focused && hasQuery;
 
@@ -545,6 +574,37 @@ export default function ExplorarBar() {
                               </div>
                             </Link>
                           ))}
+                        </div>
+                      )}
+
+                      {matchingTematicas.length > 0 && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Temáticas
+                          </p>
+                          {matchingTematicas.map((t) => {
+                            const Icon = t.icon;
+                            return (
+                              <Link
+                                key={t.href}
+                                href={t.href}
+                                onClick={close}
+                                className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                              >
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                                  <Icon className="h-4 w-4 text-primary" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-medium text-foreground">
+                                    {t.label}
+                                  </p>
+                                  <p className="truncate text-[11px] text-muted-foreground">
+                                    Experiencias en todos los pueblos
+                                  </p>
+                                </div>
+                              </Link>
+                            );
+                          })}
                         </div>
                       )}
 
