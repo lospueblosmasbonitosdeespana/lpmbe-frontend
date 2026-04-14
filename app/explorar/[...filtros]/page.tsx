@@ -15,34 +15,9 @@ type Props = {
   params: Promise<{ filtros: string[] }>;
 };
 
-async function fetchActiveCollectionKeys(): Promise<{
-  tags: Set<string>;
-  servicios: Set<string>;
-}> {
-  const API_BASE = getApiUrl();
-  try {
-    const res = await fetch(
-      `${API_BASE}/public/explorar/counts?soloColecciones=true`,
-      { next: { revalidate: 300 } },
-    );
-    if (!res.ok) return { tags: new Set(), servicios: new Set() };
-    const data = await res.json();
-    return {
-      tags: new Set(
-        (data.tags ?? []).map((t: { tag: string }) => t.tag),
-      ),
-      servicios: new Set(
-        (data.servicios ?? []).map((s: { tipo: string }) => s.tipo),
-      ),
-    };
-  } catch {
-    return { tags: new Set(), servicios: new Set() };
-  }
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { filtros } = await params;
-  const { filter, location } = parseExplorarSlug(filtros);
+  const { filter, location } = await parseExplorarSlug(filtros);
 
   if (!filter && !location) return {};
 
@@ -76,17 +51,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ExplorarFiltrosPage({ params }: Props) {
   const { filtros } = await params;
-  const { filter, location } = parseExplorarSlug(filtros);
+  const { filter, location } = await parseExplorarSlug(filtros);
 
   if (!filter && !location) notFound();
-
-  if (filter) {
-    const active = await fetchActiveCollectionKeys();
-    const isApproved =
-      (filter.type === 'tag' && active.tags.has(filter.key)) ||
-      (filter.type === 'servicio' && active.servicios.has(filter.key));
-    if (!isApproved) notFound();
-  }
 
   const breadcrumbItems: Array<{ label: string; href?: string }> = [
     { label: 'Inicio', href: '/' },

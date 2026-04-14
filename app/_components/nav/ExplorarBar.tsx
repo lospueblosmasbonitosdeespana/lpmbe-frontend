@@ -5,8 +5,6 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { Search, X, MapPin, Wrench } from 'lucide-react';
 import { TagIcon } from '@/lib/tag-icon-map';
-import { filterToSlug } from '@/lib/explorar-slugs';
-
 type PuebloLite = {
   id: number;
   slug: string;
@@ -18,6 +16,7 @@ type PuebloLite = {
 
 type TagCount = {
   tag: string;
+  slug: string;
   categoria: string;
   nombre_i18n: Record<string, string>;
   icono: string;
@@ -27,18 +26,9 @@ type TagCount = {
 
 type SvcCount = {
   tipo: string;
+  slug: string;
+  label: string;
   count: number;
-};
-
-const SVC_LABELS: Record<string, string> = {
-  PARKING: 'Aparcamiento', TURISMO: 'Oficina de turismo', FARMACIA: 'Farmacia',
-  HOSPITAL: 'Centro de salud', PARQUE_INFANTIL: 'Parque infantil', LAVABO: 'Lavabos públicos',
-  AUTOBUS: 'Autobús', CARAVANAS: 'Área de caravanas', BANCO: 'Cajero / Banco',
-  FUENTE: 'Fuente de agua', COCHE_ELECTRICO: 'Cargador eléctrico', PICNIC: 'Zona de picnic',
-  POLICIA: 'Policía', SUPERMERCADO: 'Supermercado', GASOLINERA: 'Gasolinera',
-  DESFIBRILADOR: 'Desfibrilador', TAXI: 'Taxi', BANO_NATURAL: 'Baño natural',
-  PIPICAN: 'Pipicán', TREN: 'Tren', ALQUILER_BICI: 'Alquiler bici',
-  COCHE_ELECTRICO_ULTRA: 'Carga ultra-rápida', PLAYA: 'Playa',
 };
 
 const norm = (s: string) =>
@@ -102,7 +92,7 @@ export default function ExplorarBar() {
       hasQuery && servicios
         ? servicios
             .filter((s) => {
-              const label = norm(SVC_LABELS[s.tipo] ?? s.tipo);
+              const label = norm(s.label ?? s.tipo);
               return label.includes(q) || norm(s.tipo).includes(q);
             })
             .slice(0, 3)
@@ -172,12 +162,11 @@ export default function ExplorarBar() {
                         Características
                       </p>
                       {matchingTags.map((t) => {
-                        const slug = filterToSlug('tag', t.tag);
-                        if (!slug) return null;
+                        if (!t.slug) return null;
                         return (
                           <Link
                             key={t.tag}
-                            href={`/explorar/${slug}`}
+                            href={`/explorar/${t.slug}`}
                             onClick={() => {
                               setFocused(false);
                               setQuery('');
@@ -210,12 +199,11 @@ export default function ExplorarBar() {
                         Servicios del visitante
                       </p>
                       {matchingSvcs.map((s) => {
-                        const slug = filterToSlug('servicio', s.tipo);
-                        if (!slug) return null;
+                        if (!s.slug) return null;
                         return (
                           <Link
                             key={s.tipo}
-                            href={`/explorar/${slug}`}
+                            href={`/explorar/${s.slug}`}
                             onClick={() => {
                               setFocused(false);
                               setQuery('');
@@ -227,7 +215,7 @@ export default function ExplorarBar() {
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-sm font-medium text-foreground">
-                                {SVC_LABELS[s.tipo] ?? s.tipo}
+                                {s.label ?? s.tipo}
                               </p>
                             </div>
                             <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">

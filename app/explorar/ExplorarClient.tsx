@@ -6,9 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, X, MapPin, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { TagIcon } from '@/lib/tag-icon-map';
 import {
-  FILTER_SLUG_MAP,
   LOCATION_SLUG_MAP,
-  filterToSlug,
   locationToSlug,
   type FilterMapping,
   type LocationMapping,
@@ -38,6 +36,8 @@ type PuebloResult = {
 type CountItem = {
   tag?: string;
   tipo?: string;
+  slug?: string;
+  label?: string;
   categoria?: string;
   nombre_i18n?: Record<string, string>;
   icono?: string;
@@ -209,12 +209,11 @@ export default function ExplorarClient({
     const labels: Array<{ key: string; label: string; type: 'tag' | 'servicio' | 'region' | 'comunidad' }> = [];
     for (const tag of selectedTags) {
       const def = counts?.tags.find(t => t.tag === tag);
-      const slugEntry = Object.values(FILTER_SLUG_MAP).find(m => m.type === 'tag' && m.key === tag);
-      labels.push({ key: tag, label: def?.nombre_i18n?.es ?? slugEntry?.label_es ?? tag, type: 'tag' });
+      labels.push({ key: tag, label: def?.nombre_i18n?.es ?? tag, type: 'tag' });
     }
     for (const svc of selectedServicios) {
-      const slugEntry = Object.values(FILTER_SLUG_MAP).find(m => m.type === 'servicio' && m.key === svc);
-      labels.push({ key: svc, label: SERVICIO_LABELS[svc] ?? slugEntry?.label_es ?? svc, type: 'servicio' });
+      const svcDef = counts?.servicios.find(s => s.tipo === svc);
+      labels.push({ key: svc, label: svcDef?.label ?? SERVICIO_LABELS[svc] ?? svc, type: 'servicio' });
     }
     if (selectedRegion) {
       labels.push({ key: selectedRegion, label: REGION_LABELS[selectedRegion] ?? selectedRegion, type: 'region' });

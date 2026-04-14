@@ -245,28 +245,10 @@ async function fetchFinDeSemanaPuebloSlugs(): Promise<string[]> {
   }
 }
 
-const EXPLORAR_TAG_TO_SLUG: Record<string, string> = {
-  CASTILLO: 'castillo', MURALLAS: 'murallas', CATEDRAL: 'catedral',
-  MONASTERIO: 'monasterio', TALLA_RELIGIOSA: 'talla-religiosa',
-  PLAZA_MAYOR_DESTACADA: 'plaza-mayor', PUENTE_HISTORICO: 'puente-historico',
-  PLAZA_TOROS: 'plaza-de-toros', CASCADA: 'cascada', CUEVA_VISITABLE: 'cueva-visitable',
-  MIRADOR_SINGULAR: 'mirador', VIA_VERDE: 'via-verde', PARQUE_NATURAL: 'parque-natural',
-  DESFILADERO: 'desfiladero', POZAS: 'pozas-naturales', MONUMENTO_NATURAL: 'monumento-natural',
-  YACIMIENTO_ARQUEOLOGICO: 'yacimiento-arqueologico',
-  PUEBLO_PIEDRA: 'pueblo-de-piedra', PUEBLO_BLANCO: 'pueblo-blanco',
-  STARLIGHT: 'starlight', JUDERIA: 'juderia', MUSEO_SINGULAR: 'museo-singular',
-  BODEGA_SUBTERRANEA: 'bodega-subterranea',
-  FIESTA_INTERES_NACIONAL: 'fiesta-nacional', FIESTA_INTERES_REGIONAL: 'fiesta-regional',
+type ExplorarCountsResult = {
+  tags: Array<{ tag: string; slug: string; count: number }>;
+  servicios: Array<{ tipo: string; slug: string; count: number }>;
 };
-
-const EXPLORAR_SVC_TO_SLUG: Record<string, string> = {
-  COCHE_ELECTRICO: 'cargador-electrico', COCHE_ELECTRICO_ULTRA: 'cargador-ultra-rapido',
-  CARAVANAS: 'area-de-caravanas',
-};
-
-const EXPLORAR_LOCATION_SLUGS = ['norte', 'sur', 'este', 'centro', 'andalucia', 'aragon', 'asturias', 'cataluna', 'galicia', 'extremadura', 'cantabria', 'castilla-y-leon', 'castilla-la-mancha', 'pais-vasco', 'navarra', 'valencia', 'la-rioja', 'canarias', 'baleares', 'madrid'];
-
-type ExplorarCountsResult = { tags: Array<{ tag: string; count: number }>; servicios: Array<{ tipo: string; count: number }> };
 
 async function fetchExplorarCounts(): Promise<ExplorarCountsResult> {
   try {
@@ -478,14 +460,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const explorarPages: MetadataRoute.Sitemap = [entry('/explorar', 0.8, 'weekly')];
   const MIN_PUEBLOS_SITEMAP = 3;
   for (const t of explorarCounts.tags) {
-    const slug = EXPLORAR_TAG_TO_SLUG[t.tag];
-    if (!slug || t.count < MIN_PUEBLOS_SITEMAP) continue;
-    explorarPages.push(entry(`/explorar/${slug}`, 0.65, 'weekly'));
+    if (!t.slug || t.count < MIN_PUEBLOS_SITEMAP) continue;
+    explorarPages.push(entry(`/explorar/${t.slug}`, 0.65, 'weekly'));
   }
   for (const s of explorarCounts.servicios) {
-    const slug = EXPLORAR_SVC_TO_SLUG[s.tipo];
-    if (!slug || s.count < MIN_PUEBLOS_SITEMAP) continue;
-    explorarPages.push(entry(`/explorar/${slug}`, 0.6, 'weekly'));
+    if (!s.slug || s.count < MIN_PUEBLOS_SITEMAP) continue;
+    explorarPages.push(entry(`/explorar/${s.slug}`, 0.6, 'weekly'));
   }
 
   return [

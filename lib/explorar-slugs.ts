@@ -1,3 +1,5 @@
+import { getApiUrl } from '@/lib/api';
+
 export type FilterType = 'tag' | 'servicio';
 export type LocationType = 'region' | 'comunidad';
 
@@ -12,40 +14,6 @@ export interface LocationMapping {
   key: string;
   label_es: string;
 }
-
-export const FILTER_SLUG_MAP: Record<string, FilterMapping> = {
-  // ── 25 tags con colección activa aprobada ──
-  'castillo': { type: 'tag', key: 'CASTILLO', label_es: 'Castillo' },
-  'murallas': { type: 'tag', key: 'MURALLAS', label_es: 'Murallas' },
-  'catedral': { type: 'tag', key: 'CATEDRAL', label_es: 'Catedral' },
-  'monasterio': { type: 'tag', key: 'MONASTERIO', label_es: 'Monasterio' },
-  'talla-religiosa': { type: 'tag', key: 'TALLA_RELIGIOSA', label_es: 'Talla religiosa' },
-  'plaza-mayor': { type: 'tag', key: 'PLAZA_MAYOR_DESTACADA', label_es: 'Plaza mayor' },
-  'puente-historico': { type: 'tag', key: 'PUENTE_HISTORICO', label_es: 'Puente histórico' },
-  'plaza-de-toros': { type: 'tag', key: 'PLAZA_TOROS', label_es: 'Plaza de toros' },
-  'cascada': { type: 'tag', key: 'CASCADA', label_es: 'Cascada' },
-  'cueva-visitable': { type: 'tag', key: 'CUEVA_VISITABLE', label_es: 'Cueva visitable' },
-  'mirador': { type: 'tag', key: 'MIRADOR_SINGULAR', label_es: 'Mirador singular' },
-  'via-verde': { type: 'tag', key: 'VIA_VERDE', label_es: 'Vía verde' },
-  'parque-natural': { type: 'tag', key: 'PARQUE_NATURAL', label_es: 'Parque natural' },
-  'desfiladero': { type: 'tag', key: 'DESFILADERO', label_es: 'Desfiladero' },
-  'pozas-naturales': { type: 'tag', key: 'POZAS', label_es: 'Pozas naturales' },
-  'monumento-natural': { type: 'tag', key: 'MONUMENTO_NATURAL', label_es: 'Monumento natural' },
-  'yacimiento-arqueologico': { type: 'tag', key: 'YACIMIENTO_ARQUEOLOGICO', label_es: 'Yacimiento arqueológico' },
-  'pueblo-de-piedra': { type: 'tag', key: 'PUEBLO_PIEDRA', label_es: 'Pueblo de piedra' },
-  'pueblo-blanco': { type: 'tag', key: 'PUEBLO_BLANCO', label_es: 'Pueblo blanco' },
-  'starlight': { type: 'tag', key: 'STARLIGHT', label_es: 'Certificación Starlight' },
-  'juderia': { type: 'tag', key: 'JUDERIA', label_es: 'Barrio judío' },
-  'museo-singular': { type: 'tag', key: 'MUSEO_SINGULAR', label_es: 'Museo singular' },
-  'bodega-subterranea': { type: 'tag', key: 'BODEGA_SUBTERRANEA', label_es: 'Bodega subterránea' },
-  'fiesta-nacional': { type: 'tag', key: 'FIESTA_INTERES_NACIONAL', label_es: 'Fiesta de interés nacional' },
-  'fiesta-regional': { type: 'tag', key: 'FIESTA_INTERES_REGIONAL', label_es: 'Fiesta de interés regional' },
-
-  // ── 3 servicios con colección activa aprobada ──
-  'cargador-electrico': { type: 'servicio', key: 'COCHE_ELECTRICO', label_es: 'Cargador eléctrico' },
-  'cargador-ultra-rapido': { type: 'servicio', key: 'COCHE_ELECTRICO_ULTRA', label_es: 'Cargador ultra-rápido' },
-  'area-de-caravanas': { type: 'servicio', key: 'CARAVANAS', label_es: 'Área de caravanas' },
-};
 
 export const LOCATION_SLUG_MAP: Record<string, LocationMapping> = {
   'norte': { type: 'region', key: 'norte', label_es: 'Norte de España' },
@@ -71,14 +39,54 @@ export const LOCATION_SLUG_MAP: Record<string, LocationMapping> = {
   'valencia': { type: 'comunidad', key: 'Comunidad Valenciana', label_es: 'Comunidad Valenciana' },
 };
 
-export function parseExplorarSlug(segments: string[]): {
+/**
+ * Fetches the dynamic slug → filter mapping from active collections in the backend.
+ * Cached with revalidate so it's not called on every single request.
+ */
+export async function fetchFilterSlugMap(): Promise<Record<string, FilterMapping>> {
+  const API_BASE = getApiUrl();
+  try {
+    const res = await fetch(
+      `${API_BASE}/public/explorar/counts?soloColecciones=true`,
+      { next: { revalidate: 300 } },
+    );
+    if (!res.ok) return {};
+    const data = await res.json();
+    const map: Record<string, FilterMapping> = {};
+    for (const t of data.tags ?? []) {
+      if (t.slug) {
+        map[t.slug] = {
+          type: 'tag',
+          key: t.tag,
+          label_es: t.nombre_i18n?.es ?? t.tag,
+        };
+      }
+    }
+    for (const s of data.servicios ?? []) {
+      if (s.slug) {
+        map[s.slug] = {
+          type: 'servicio',
+          key: s.tipo,
+          label_es: s.label ?? s.tipo,
+        };
+      }
+    }
+    return map;
+  } catch {
+    return {};
+  }
+}
+
+export async function parseExplorarSlug(segments: string[]): Promise<{
   filter: FilterMapping | null;
   location: LocationMapping | null;
-} {
+}> {
   if (segments.length === 0) return { filter: null, location: null };
 
   const first = segments[0];
-  const filter = FILTER_SLUG_MAP[first] ?? null;
+
+  const filterMap = await fetchFilterSlugMap();
+  const filter = filterMap[first] ?? null;
 
   let location: LocationMapping | null = null;
   if (segments.length >= 2) {
@@ -90,13 +98,6 @@ export function parseExplorarSlug(segments: string[]): {
   }
 
   return { filter, location };
-}
-
-export function filterToSlug(type: FilterType, key: string): string | null {
-  for (const [slug, m] of Object.entries(FILTER_SLUG_MAP)) {
-    if (m.type === type && m.key === key) return slug;
-  }
-  return null;
 }
 
 export function locationToSlug(type: LocationType, key: string): string | null {
