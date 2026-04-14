@@ -3,8 +3,12 @@
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
-import { Search, X, MapPin, Wrench } from 'lucide-react';
+import {
+  Search, X, MapPin, Wrench,
+  Newspaper, CalendarDays, UtensilsCrossed, Landmark, TreePine, PawPrint, Users,
+} from 'lucide-react';
 import { TagIcon } from '@/lib/tag-icon-map';
+
 type PuebloLite = {
   id: number;
   slug: string;
@@ -16,7 +20,7 @@ type PuebloLite = {
 
 type TagCount = {
   tag: string;
-  slug: string;
+  slug?: string;
   categoria: string;
   nombre_i18n: Record<string, string>;
   icono: string;
@@ -26,13 +30,28 @@ type TagCount = {
 
 type SvcCount = {
   tipo: string;
-  slug: string;
-  label: string;
+  slug?: string;
+  label?: string;
   count: number;
 };
 
+const PUEBLO_SECTIONS = [
+  { keyword: 'noticias', label: 'Noticias', path: (s: string) => `/pueblos/${s}#noticias`, icon: Newspaper },
+  { keyword: 'eventos', label: 'Eventos', path: (s: string) => `/pueblos/${s}#eventos`, icon: CalendarDays },
+  { keyword: 'comer', label: 'Qué comer', path: (s: string) => `/que-comer/${s}`, icon: UtensilsCrossed },
+  { keyword: 'ver', label: 'Qué ver', path: (s: string) => `/patrimonio/${s}`, icon: Landmark },
+  { keyword: 'naturaleza', label: 'Naturaleza', path: (s: string) => `/naturaleza/${s}`, icon: TreePine },
+  { keyword: 'familia', label: 'En familia', path: (s: string) => `/en-familia/${s}`, icon: Users },
+  { keyword: 'mascotas', label: 'Petfriendly', path: (s: string) => `/petfriendly/${s}`, icon: PawPrint },
+] as const;
+
 const norm = (s: string) =>
   s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+function toSlug(text: string): string {
+  return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+}
 
 export default function ExplorarBar() {
   const pathname = usePathname();
@@ -74,9 +93,19 @@ export default function ExplorarBar() {
   const q = norm(query.trim());
   const hasQuery = q.length >= 2;
 
+  const sectionKeyword = useMemo(() => {
+    if (!hasQuery) return null;
+    return PUEBLO_SECTIONS.find(sec => q.includes(sec.keyword)) ?? null;
+  }, [hasQuery, q]);
+
+  const puebloQuery = useMemo(() => {
+    if (!sectionKeyword) return q;
+    return q.replace(sectionKeyword.keyword, '').trim();
+  }, [q, sectionKeyword]);
+
   const matchingTags = useMemo(
     () =>
-      hasQuery && tags
+      hasQuery && tags && !sectionKeyword
         ? tags
             .filter((t) => {
               const name = norm(t.nombre_i18n?.es ?? '');
@@ -84,12 +113,12 @@ export default function ExplorarBar() {
             })
             .slice(0, 4)
         : [],
-    [hasQuery, tags, q],
+    [hasQuery, tags, q, sectionKeyword],
   );
 
   const matchingSvcs = useMemo(
     () =>
-      hasQuery && servicios
+      hasQuery && servicios && !sectionKeyword
         ? servicios
             .filter((s) => {
               const label = norm(s.label ?? s.tipo);
@@ -97,7 +126,7 @@ export default function ExplorarBar() {
             })
             .slice(0, 3)
         : [],
-    [hasQuery, servicios, q],
+    [hasQuery, servicios, q, sectionKeyword],
   );
 
   const matchingPueblos = useMemo(
@@ -106,16 +135,18 @@ export default function ExplorarBar() {
         ? pueblos
             .filter(
               (p) =>
-                norm(p.nombre).includes(q) ||
-                norm(p.provincia).includes(q) ||
-                norm(p.comunidad).includes(q),
+                norm(p.nombre).includes(puebloQuery) ||
+                norm(p.provincia).includes(puebloQuery) ||
+                norm(p.comunidad).includes(puebloQuery),
             )
-            .slice(0, 5)
+            .slice(0, sectionKeyword ? 3 : 5)
         : [],
-    [hasQuery, pueblos, q],
+    [hasQuery, pueblos, puebloQuery, sectionKeyword],
   );
 
   if (hidden) return null;
+
+  const close = () => { setFocused(false); setQuery(''); };
 
   const hasAnyResults =
     matchingTags.length > 0 || matchingSvcs.length > 0 || matchingPueblos.length > 0;
@@ -141,10 +172,7 @@ export default function ExplorarBar() {
             {query && (
               <button
                 type="button"
-                onClick={() => {
-                  setQuery('');
-                  inputRef.current?.focus();
-                }}
+                onClick={() => { setQuery(''); inputRef.current?.focus(); }}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground/50 hover:text-foreground"
               >
                 <X className="h-4 w-4" />
@@ -153,7 +181,7 @@ export default function ExplorarBar() {
           </div>
 
           {showDropdown && (
-            <div className="absolute left-0 right-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-border bg-card shadow-xl">
+            <div className="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-[70vh] overflow-y-auto rounded-xl border border-border bg-card shadow-xl">
               {hasAnyResults ? (
                 <>
                   {matchingTags.length > 0 && (
@@ -162,15 +190,12 @@ export default function ExplorarBar() {
                         Características
                       </p>
                       {matchingTags.map((t) => {
-                        if (!t.slug) return null;
+                        const slug = t.slug || toSlug(t.nombre_i18n?.es ?? t.tag);
                         return (
                           <Link
                             key={t.tag}
-                            href={`/explorar/${t.slug}`}
-                            onClick={() => {
-                              setFocused(false);
-                              setQuery('');
-                            }}
+                            href={`/explorar/${slug}`}
+                            onClick={close}
                             className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
                           >
                             <div
@@ -199,15 +224,12 @@ export default function ExplorarBar() {
                         Servicios del visitante
                       </p>
                       {matchingSvcs.map((s) => {
-                        if (!s.slug) return null;
+                        const slug = s.slug || toSlug(s.label ?? s.tipo);
                         return (
                           <Link
                             key={s.tipo}
-                            href={`/explorar/${s.slug}`}
-                            onClick={() => {
-                              setFocused(false);
-                              setQuery('');
-                            }}
+                            href={`/explorar/${slug}`}
+                            onClick={close}
                             className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
                           >
                             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
@@ -230,39 +252,58 @@ export default function ExplorarBar() {
                   {matchingPueblos.length > 0 && (
                     <div>
                       <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        Pueblos
+                        {sectionKeyword
+                          ? `${sectionKeyword.label} en pueblos`
+                          : 'Pueblos'}
                       </p>
                       {matchingPueblos.map((p) => (
-                        <Link
-                          key={p.id}
-                          href={`/pueblos/${p.slug}`}
-                          onClick={() => {
-                            setFocused(false);
-                            setQuery('');
-                          }}
-                          className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
-                        >
-                          {p.foto ? (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img
-                              src={p.foto}
-                              alt=""
-                              className="h-8 w-8 shrink-0 rounded-lg object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                              <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <div key={p.id}>
+                          <Link
+                            href={sectionKeyword
+                              ? sectionKeyword.path(p.slug)
+                              : `/pueblos/${p.slug}`}
+                            onClick={close}
+                            className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                          >
+                            {p.foto ? (
+                              /* eslint-disable-next-line @next/next/no-img-element */
+                              <img
+                                src={p.foto}
+                                alt=""
+                                className="h-8 w-8 shrink-0 rounded-lg object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                <MapPin className="h-4 w-4 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium text-foreground">
+                                {sectionKeyword
+                                  ? `${sectionKeyword.label} de ${p.nombre}`
+                                  : p.nombre}
+                              </p>
+                              <p className="truncate text-[11px] text-muted-foreground">
+                                {p.provincia}
+                              </p>
+                            </div>
+                          </Link>
+                          {!sectionKeyword && (
+                            <div className="flex flex-wrap gap-1 px-3 pb-2 pl-14">
+                              {PUEBLO_SECTIONS.slice(0, 5).map((sec) => (
+                                <Link
+                                  key={sec.keyword}
+                                  href={sec.path(p.slug)}
+                                  onClick={close}
+                                  className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                                >
+                                  <sec.icon className="h-2.5 w-2.5" />
+                                  {sec.label}
+                                </Link>
+                              ))}
                             </div>
                           )}
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium text-foreground">
-                              {p.nombre}
-                            </p>
-                            <p className="truncate text-[11px] text-muted-foreground">
-                              {p.provincia}
-                            </p>
-                          </div>
-                        </Link>
+                        </div>
                       ))}
                     </div>
                   )}
