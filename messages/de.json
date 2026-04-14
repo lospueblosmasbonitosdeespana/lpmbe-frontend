@@ -1093,7 +1093,8 @@
     "alertasPueblosSection": "Dorfwarnungen",
     "alertaDefault": "Warnung",
     "alertasVerTodas": "Alle Warnungen für {nombre} anzeigen →",
-    "alertasBackLink": "← Zurück zum Benachrichtigungszentrum"
+    "alertasBackLink": "← Zurück zum Benachrichtigungszentrum",
+    "activeAlerts": "Aktive Warnungen"
   },
   "visitedVillages": {
     "title": "Meine besuchten Dörfer",

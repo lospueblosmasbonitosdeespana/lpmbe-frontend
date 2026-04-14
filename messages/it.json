@@ -1093,7 +1093,8 @@
     "alertasPueblosSection": "Avvisi dei borghi",
     "alertaDefault": "Avviso",
     "alertasVerTodas": "Vedi tutti gli avvisi di {nombre} →",
-    "alertasBackLink": "← Torna al centro notifiche"
+    "alertasBackLink": "← Torna al centro notifiche",
+    "activeAlerts": "Avvisi attivi"
   },
   "visitedVillages": {
     "title": "I miei villaggi visitati",

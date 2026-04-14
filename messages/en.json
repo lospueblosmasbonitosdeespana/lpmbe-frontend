@@ -1093,7 +1093,8 @@
     "alertasPueblosSection": "Village alerts",
     "alertaDefault": "Alert",
     "alertasVerTodas": "See all alerts for {nombre} →",
-    "alertasBackLink": "← Back to notification centre"
+    "alertasBackLink": "← Back to notification centre",
+    "activeAlerts": "Active alerts"
   },
   "visitedVillages": {
     "title": "My visited villages",

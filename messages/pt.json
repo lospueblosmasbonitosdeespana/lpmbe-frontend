@@ -1093,7 +1093,8 @@
     "alertasPueblosSection": "Alertas das aldeias",
     "alertaDefault": "Alerta",
     "alertasVerTodas": "Ver todas as alertas de {nombre} →",
-    "alertasBackLink": "← Voltar ao centro de notificações"
+    "alertasBackLink": "← Voltar ao centro de notificações",
+    "activeAlerts": "Alertas ativas"
   },
   "visitedVillages": {
     "title": "As minhas aldeias visitadas",

@@ -1093,7 +1093,8 @@
     "alertasPueblosSection": "Alertes de pobles",
     "alertaDefault": "Alerta",
     "alertasVerTodas": "Veure totes les alertes de {nombre} →",
-    "alertasBackLink": "← Tornar al centre de notificacions"
+    "alertasBackLink": "← Tornar al centre de notificacions",
+    "activeAlerts": "Alertes actives"
   },
   "visitedVillages": {
     "title": "Els pobles que he visitat",

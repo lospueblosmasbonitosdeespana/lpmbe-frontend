@@ -40,8 +40,8 @@ function normArray(data: unknown): any[] {
   return [];
 }
 
-function formatFecha(d: Date) {
-  return d.toLocaleDateString("es-ES", {
+function formatFecha(d: Date, locale: string) {
+  return d.toLocaleDateString(locale, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -51,6 +51,9 @@ function formatFecha(d: Date) {
 // ─── tarjeta individual ───────────────────────────────────────────────────────
 
 function FeedCard({ item }: { item: FeedItem }) {
+  const t = useTranslations("notifications");
+  const locale = useLocale();
+
   const tipo = item.tipo.toLowerCase();
   const isAlerta = tipo === "alerta" || tipo === "alerta_pueblo";
   const isSemaforo = tipo === "semaforo";
@@ -102,7 +105,7 @@ function FeedCard({ item }: { item: FeedItem }) {
             </div>
           )}
           <p className="font-semibold text-foreground leading-snug">
-            {item.titulo || "Sin título"}
+            {item.titulo || t("noTitle")}
           </p>
           {subtexto ? (
             <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
@@ -110,7 +113,7 @@ function FeedCard({ item }: { item: FeedItem }) {
             </p>
           ) : null}
           <p className="mt-2 text-xs text-muted-foreground">
-            {formatFecha(item.date)}
+            {formatFecha(item.date, locale)}
           </p>
         </div>
       </div>
@@ -118,17 +121,19 @@ function FeedCard({ item }: { item: FeedItem }) {
   );
 }
 
-// ─── contenido principal ──────────────────────────────────────────────────────
+// ─── tabs (con claves de traducción) ─────────────────────────────────────────
 
 const TABS = [
-  { id: "todo", label: "Todo", icon: Bell },
-  { id: "noticias", label: "Noticias", icon: Newspaper },
-  { id: "eventos", label: "Eventos", icon: CalendarDays },
-  { id: "alertas", label: "Alertas", icon: AlertTriangle },
-  { id: "semaforos", label: "Semáforos", icon: TrafficCone },
+  { id: "todo",      labelKey: "all",       icon: Bell },
+  { id: "noticias",  labelKey: "news",      icon: Newspaper },
+  { id: "eventos",   labelKey: "events",    icon: CalendarDays },
+  { id: "alertas",   labelKey: "alerts",    icon: AlertTriangle },
+  { id: "semaforos", labelKey: "semaforos", icon: TrafficCone },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
+
+// ─── contenido principal ──────────────────────────────────────────────────────
 
 function NotificacionesContent() {
   const locale = useLocale();
@@ -138,7 +143,6 @@ function NotificacionesContent() {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // tab activo desde query param o default "todo"
   const tipoQuery = (searchParams.get("tipo") ?? "").toLowerCase();
   const initialTab: TabId =
     tipoQuery === "alerta"
@@ -153,7 +157,6 @@ function NotificacionesContent() {
 
   const [activeTab, setActiveTab] = useState<TabId>(initialTab);
 
-  // Marcar vistas
   useEffect(() => {
     try {
       localStorage.setItem("lpmbe_notificaciones_vistas_at", new Date().toISOString());
@@ -250,10 +253,8 @@ function NotificacionesContent() {
       {/* Cabecera */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-4xl font-semibold">Centro de notificaciones</h1>
-          <p className="mt-2 text-muted-foreground">
-            Noticias, alertas y estado de semáforos.
-          </p>
+          <h1 className="text-4xl font-semibold">{t("centerTitle")}</h1>
+          <p className="mt-2 text-muted-foreground">{t("pageSubtitle")}</p>
         </div>
         <div className="flex gap-2 shrink-0">
           <Link
@@ -261,7 +262,7 @@ function NotificacionesContent() {
             className="inline-flex items-center gap-1.5 px-3 py-2 border border-border rounded-lg hover:bg-muted/50 transition text-sm font-medium"
           >
             <AlertTriangle className="h-4 w-4 text-orange-500" />
-            Alertas activas
+            {t("activeAlerts")}
           </Link>
           <Link
             href="/meteo"
@@ -275,7 +276,7 @@ function NotificacionesContent() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-border mb-6 overflow-x-auto">
-        {TABS.map(({ id, label, icon: Icon }) => {
+        {TABS.map(({ id, labelKey, icon: Icon }) => {
           const count =
             id === "todo"
               ? items.length
@@ -297,7 +298,7 @@ function NotificacionesContent() {
               }`}
             >
               <Icon className="h-4 w-4" />
-              {label}
+              {t(labelKey)}
               {count > 0 && (
                 <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-xs font-semibold">
                   {count}
@@ -318,7 +319,7 @@ function NotificacionesContent() {
       ) : filtered.length === 0 ? (
         <div className="rounded-xl border border-border bg-muted/30 p-10 text-center text-muted-foreground">
           <Bell className="h-8 w-8 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">No hay elementos en esta categoría.</p>
+          <p className="text-sm">{t("noNotificationsNow")}</p>
         </div>
       ) : (
         <div className="space-y-3">
