@@ -97,9 +97,9 @@ const PUEBLO_KEYWORDS = [
 
 const PUEBLO_QUICK_LINKS = [
   { label: 'Actualidad', path: (s: string) => `/pueblos/${s}/actualidad`,         icon: Newspaper },
-  { label: 'Qué comer',  path: (s: string) => `/que-comer/${s}`,                  icon: UtensilsCrossed },
   { label: 'Qué ver',    path: (s: string) => `/pueblos/${s}/lugares-de-interes`, icon: Landmark },
   { label: 'Tiempo',     path: (s: string) => `/pueblos/${s}/meteo`,              icon: CloudSun },
+  { label: 'Servicios',  path: (s: string) => `/pueblos/${s}#mapa`,               icon: MapPin },
 ] as const;
 
 const norm = (s: string) =>
@@ -159,7 +159,8 @@ function getMatchingServiceTypes(
     const matches =
       label.startsWith(partial) ||
       label.includes(partial) ||
-      aliases.some((a) => a.startsWith(partial) || a.includes(partial));
+      partial.includes(label) ||   // "farmacia de".includes("farmacia") → true
+      aliases.some((a) => a.startsWith(partial) || a.includes(partial) || partial.includes(a));
 
     if (matches) {
       results.push({ tipo: t.tipo, label: t.etiqueta, color: t.color });
