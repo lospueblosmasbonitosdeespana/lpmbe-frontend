@@ -30,12 +30,11 @@ type TagCount = {
   count: number;
 };
 
-type MxLite = {
+type RutaLite = {
   id: number;
-  titulo: string | Record<string, string>;
-  slug: string | null;
-  categoria: string | null;
-  pueblos: Array<{ pueblo: { slug: string; nombre: string } }>;
+  titulo: string;
+  slug: string;
+  activo: boolean;
 };
 
 const SEMAFORO_COLORS: Record<string, string> = {
@@ -167,7 +166,7 @@ export default function ExplorarBar() {
   const [focused, setFocused] = useState(false);
   const [pueblos, setPueblos] = useState<PuebloLite[] | null>(null);
   const [tags, setTags] = useState<TagCount[] | null>(null);
-  const [mxList, setMxList] = useState<MxLite[] | null>(null);
+  const [mxList, setMxList] = useState<RutaLite[] | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -179,12 +178,12 @@ export default function ExplorarBar() {
     Promise.all([
       fetch('/api/public/explorar').then((r) => r.json()),
       fetch('/api/public/explorar/counts?soloColecciones=true').then((r) => r.json()),
-      fetch('/api/public/multiexperiencias').then((r) => r.json()).catch(() => []),
+      fetch('/api/public/rutas').then((r) => r.json()).catch(() => []),
     ])
-      .then(([explorar, counts, mxData]) => {
+      .then(([explorar, counts, rutasData]) => {
         setPueblos(explorar.pueblos ?? []);
         setTags(counts.tags ?? []);
-        setMxList(Array.isArray(mxData) ? mxData : []);
+        setMxList(Array.isArray(rutasData) ? rutasData.filter((r: RutaLite) => r.activo) : []);
       })
       .catch(() => {});
   }, [hidden, pueblos]);
@@ -265,18 +264,15 @@ export default function ExplorarBar() {
   const matchingMx = useMemo(() => {
     if (!hasQuery || !mxList || parsedQuery) return [];
     return mxList
-      .filter((mx) => {
-        const titulo =
-          typeof mx.titulo === 'string'
-            ? norm(mx.titulo)
-            : norm((mx.titulo as Record<string, string>)?.es ?? '');
+      .filter((r) => {
+        const titulo = norm(r.titulo);
         return (
           titulo.includes(q) ||
           q.includes(titulo) ||
           qWords.some((w) => titulo.includes(w))
         );
       })
-      .slice(0, 4);
+      .slice(0, 5);
   }, [hasQuery, mxList, q, qWords, parsedQuery]);
 
   if (hidden) return null;
@@ -485,41 +481,25 @@ export default function ExplorarBar() {
                       {matchingMx.length > 0 && (
                         <div>
                           <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Rutas y experiencias
+                            Rutas
                           </p>
-                          {matchingMx.map((mx) => {
-                            const titulo =
-                              typeof mx.titulo === 'string'
-                                ? mx.titulo
-                                : (mx.titulo as Record<string, string>)?.es ?? '';
-                            const firstPueblo = mx.pueblos?.[0]?.pueblo;
-                            const href = firstPueblo
-                              ? `/pueblos/${firstPueblo.slug}/experiencias/${mx.slug ?? mx.id}`
-                              : '#';
-                            return (
-                              <Link
-                                key={mx.id}
-                                href={href}
-                                onClick={close}
-                                className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
-                              >
-                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
-                                  <Landmark className="h-4 w-4 text-amber-600" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="truncate text-sm font-medium text-foreground">
-                                    {titulo}
-                                  </p>
-                                  {firstPueblo && (
-                                    <p className="truncate text-[11px] text-muted-foreground">
-                                      {firstPueblo.nombre}
-                                      {mx.pueblos.length > 1 && ` +${mx.pueblos.length - 1} pueblos`}
-                                    </p>
-                                  )}
-                                </div>
-                              </Link>
-                            );
-                          })}
+                          {matchingMx.map((ruta) => (
+                            <Link
+                              key={ruta.id}
+                              href={`/rutas/${ruta.slug}`}
+                              onClick={close}
+                              className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                            >
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
+                                <Landmark className="h-4 w-4 text-amber-600" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium text-foreground">
+                                  {ruta.titulo}
+                                </p>
+                              </div>
+                            </Link>
+                          ))}
                         </div>
                       )}
 
