@@ -417,7 +417,7 @@ export default function ExplorarBar() {
               placeholder={tNav('searchPlaceholder')}
               enterKeyHint="search"
               autoComplete="off"
-              className="w-full rounded-xl border border-border bg-background py-2 pl-9 pr-9 text-base sm:text-sm transition-all placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-card/80"
+              className="w-full rounded-xl border border-primary/50 bg-background py-2 pl-9 pr-9 text-base sm:text-sm transition-all placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25 dark:bg-card/80"
             />
             {query && (
               <button
