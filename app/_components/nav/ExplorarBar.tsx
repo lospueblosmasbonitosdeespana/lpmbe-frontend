@@ -1,16 +1,18 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   Search, X, MapPin,
   Newspaper, UtensilsCrossed, Landmark, CloudSun,
-  Users, PawPrint, Building2, Palette, TreePine, Smartphone,
+  Users, PawPrint, Building2, Palette, TreePine, Smartphone, Store,
 } from 'lucide-react';
 import { TagIcon } from '@/lib/tag-icon-map';
 import { TIPOS_SERVICIO } from '@/lib/tipos-servicio';
+
+// ── Tipos ─────────────────────────────────────────────────────────────────────
 
 type PuebloLite = {
   id: number;
@@ -47,6 +49,36 @@ type DescubreColeccion = {
   icon: string;
   color: string;
   count?: number;
+};
+
+type GlobalSearchResult = {
+  tags: Array<{
+    tag: string;
+    nombre: string;
+    icono: string;
+    color: string;
+    categoria: string;
+    pueblosCount: number;
+    coleccionSlug: string | null;
+  }>;
+  multiexperiencias: Array<{
+    slug: string;
+    titulo: string;
+    tipo: string;
+    categoria: string | null;
+  }>;
+  recursos: Array<{
+    slug: string | null;
+    nombre: string;
+    tipo: string;
+    puebloNombre: string | null;
+    puebloSlug: string | null;
+  }>;
+  colecciones: Array<{
+    slug: string;
+    titulo: string;
+    descripcion: string;
+  }>;
 };
 
 const SEMAFORO_COLORS: Record<string, string> = {
@@ -202,14 +234,18 @@ function getMatchingServiceTypes(
 export default function ExplorarBar() {
   const pathname = usePathname();
   const tNav = useTranslations('nav');
+  const locale = useLocale();
   const [query, setQuery] = useState('');
   const [focused, setFocused] = useState(false);
   const [pueblos, setPueblos] = useState<PuebloLite[] | null>(null);
   const [tags, setTags] = useState<TagCount[] | null>(null);
   const [mxList, setMxList] = useState<RutaLite[] | null>(null);
   const [descubreList, setDescubreList] = useState<DescubreColeccion[] | null>(null);
+  const [globalSearch, setGlobalSearch] = useState<GlobalSearchResult | null>(null);
+  const [globalSearchLoading, setGlobalSearchLoading] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const hidden =
     pathname?.startsWith('/gestion') || pathname?.startsWith('/explorar');
@@ -260,6 +296,27 @@ export default function ExplorarBar() {
       .then((data) => setDescubreList(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, [hidden]);
+
+  // ── Búsqueda global al backend (debounce 350ms, mín. 3 chars) ───────────────
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (trimmed.length < 3) {
+      setGlobalSearch(null);
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setGlobalSearchLoading(true);
+      fetch(`/api/public/search?q=${encodeURIComponent(trimmed)}&lang=${locale}`)
+        .then((r) => r.json())
+        .then((data) => setGlobalSearch(data))
+        .catch(() => setGlobalSearch(null))
+        .finally(() => setGlobalSearchLoading(false));
+    }, 350);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [query, locale]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -398,7 +455,14 @@ export default function ExplorarBar() {
     matchingPueblos.length > 0 ||
     matchingMx.length > 0 ||
     matchingDescubre.length > 0 ||
-    matchingTematicas.length > 0;
+    matchingTematicas.length > 0 ||
+    !!(globalSearch && (
+      globalSearch.tags.length > 0 ||
+      globalSearch.multiexperiencias.length > 0 ||
+      globalSearch.recursos.length > 0 ||
+      globalSearch.colecciones.length > 0
+    )) ||
+    globalSearchLoading;
 
   const showDropdown = focused && hasQuery;
 
@@ -680,6 +744,125 @@ export default function ExplorarBar() {
                                 <p className="truncate text-sm font-medium text-foreground">
                                   {ruta.titulo}
                                 </p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* ── RESULTADOS GLOBALES (tags BD, multiexperiencias, recursos, colecciones) ── */}
+                      {globalSearchLoading && !globalSearch && (
+                        <div className="flex items-center gap-2 px-4 py-3 text-[11px] text-muted-foreground">
+                          <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          Buscando contenido...
+                        </div>
+                      )}
+
+                      {/* Tags del backend que no están ya en matchingTags del frontend */}
+                      {globalSearch && globalSearch.tags.length > 0 && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Características
+                          </p>
+                          {globalSearch.tags.map((t) => (
+                            <Link
+                              key={t.tag}
+                              href={t.coleccionSlug ? `/descubre/${t.coleccionSlug}` : `/explorar/${t.tag.toLowerCase().replace(/_/g, '-')}`}
+                              onClick={close}
+                              className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                            >
+                              <div
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                                style={{ backgroundColor: `${t.color}18` }}
+                              >
+                                <TagIcon name={t.icono} color={t.color} size={16} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium text-foreground">{t.nombre}</p>
+                                {t.pueblosCount > 0 && (
+                                  <p className="truncate text-[11px] text-muted-foreground">{t.pueblosCount} pueblos</p>
+                                )}
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Colecciones del backend */}
+                      {globalSearch && globalSearch.colecciones.length > 0 && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            {tNav('sectionColecciones')}
+                          </p>
+                          {globalSearch.colecciones.map((c) => (
+                            <Link
+                              key={c.slug}
+                              href={`/descubre/${c.slug}`}
+                              onClick={close}
+                              className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                            >
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                                <Landmark className="h-4 w-4 text-primary" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium text-foreground">{c.titulo}</p>
+                                {c.descripcion && (
+                                  <p className="truncate text-[11px] text-muted-foreground">{c.descripcion}</p>
+                                )}
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Multiexperiencias del backend */}
+                      {globalSearch && globalSearch.multiexperiencias.length > 0 && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Experiencias
+                          </p>
+                          {globalSearch.multiexperiencias.map((mx) => (
+                            <Link
+                              key={mx.slug}
+                              href={`/rutas/${mx.slug}`}
+                              onClick={close}
+                              className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                            >
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
+                                <Landmark className="h-4 w-4 text-amber-600" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium text-foreground">{mx.titulo}</p>
+                                {mx.categoria && (
+                                  <p className="truncate text-[11px] text-muted-foreground capitalize">{mx.categoria}</p>
+                                )}
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Recursos / negocios del backend */}
+                      {globalSearch && globalSearch.recursos.length > 0 && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Negocios y servicios
+                          </p>
+                          {globalSearch.recursos.map((r, i) => (
+                            <Link
+                              key={r.slug ?? i}
+                              href={r.slug ? `/negocio/${r.slug}` : r.puebloSlug ? `/pueblos/${r.puebloSlug}` : '/'}
+                              onClick={close}
+                              className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                            >
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                <Store className="h-4 w-4 text-muted-foreground" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium text-foreground">{r.nombre}</p>
+                                {r.puebloNombre && (
+                                  <p className="truncate text-[11px] text-muted-foreground">{r.puebloNombre}</p>
+                                )}
                               </div>
                             </Link>
                           ))}
