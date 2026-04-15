@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import Link from 'next/link';
@@ -884,32 +885,45 @@ export default function ExplorarBar() {
                         </div>
                       )}
 
-                      {/* Pages temáticas (gastronomía, cultura, naturaleza…) */}
-                      {globalSearch && globalSearch.pages && globalSearch.pages.length > 0 && (
-                        <div>
-                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            {tNav('sectionTematicas')}
-                          </p>
-                          {globalSearch.pages.map((pg) => (
-                            <Link
-                              key={pg.id}
-                              href={pg.href}
-                              onClick={close}
-                              className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
-                            >
-                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                                <Newspaper className="h-4 w-4 text-primary" />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-medium text-foreground">{pg.titulo}</p>
-                                <p className="truncate text-[11px] text-muted-foreground">
-                                  {pg.puebloNombre ?? pg.categorySlug}
-                                </p>
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
-                      )}
+                      {/* Pages temáticas (gastronomía, cultura, naturaleza, en familia, petfriendly, patrimonio…) */}
+                      {globalSearch && globalSearch.pages && globalSearch.pages.length > 0 && (() => {
+                        const CAT_META: Record<string, { label: string; icon: React.ElementType; bg: string; fg: string }> = {
+                          gastronomia:  { label: 'Gastronomía',  icon: UtensilsCrossed, bg: 'bg-amber-500/10',   fg: 'text-amber-600' },
+                          naturaleza:   { label: 'Naturaleza',   icon: TreePine,        bg: 'bg-green-500/10',   fg: 'text-green-600' },
+                          cultura:      { label: 'Cultura',      icon: Palette,         bg: 'bg-purple-500/10',  fg: 'text-purple-600' },
+                          'en-familia': { label: 'En familia',   icon: Users,           bg: 'bg-blue-500/10',    fg: 'text-blue-600' },
+                          petfriendly:  { label: 'Pet friendly', icon: PawPrint,        bg: 'bg-teal-500/10',    fg: 'text-teal-600' },
+                          patrimonio:   { label: 'Patrimonio',   icon: Building2,       bg: 'bg-stone-500/10',   fg: 'text-stone-600' },
+                        };
+                        return (
+                          <div>
+                            <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              {tNav('sectionTematicas')}
+                            </p>
+                            {globalSearch.pages.map((pg) => {
+                              const meta = CAT_META[pg.categorySlug] ?? { label: pg.categorySlug, icon: Landmark, bg: 'bg-primary/10', fg: 'text-primary' };
+                              const CatIcon = meta.icon;
+                              const subtitle = [pg.puebloNombre, meta.label].filter(Boolean).join(' · ');
+                              return (
+                                <Link
+                                  key={pg.id}
+                                  href={pg.href}
+                                  onClick={close}
+                                  className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                                >
+                                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${meta.bg}`}>
+                                    <CatIcon className={`h-4 w-4 ${meta.fg}`} />
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-sm font-medium text-foreground">{pg.titulo}</p>
+                                    <p className="truncate text-[11px] text-muted-foreground">{subtitle}</p>
+                                  </div>
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
 
                       {/* Noticias */}
                       {globalSearch && globalSearch.noticias && globalSearch.noticias.length > 0 && (
