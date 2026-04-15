@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   const lang = searchParams.get('lang') ?? 'es';
 
   if (!q || q.trim().length < 2) {
-    return NextResponse.json({ tags: [], multiexperiencias: [], recursos: [], colecciones: [] });
+    return NextResponse.json({ tags: [], multiexperiencias: [], recursos: [], colecciones: [], pages: [], noticias: [] });
   }
 
   const API_BASE = getApiUrl();
@@ -19,11 +19,11 @@ export async function GET(req: NextRequest) {
       cache: 'no-store',
     });
     if (!res.ok) {
-      return NextResponse.json({ tags: [], multiexperiencias: [], recursos: [], colecciones: [] }, { status: res.status });
+      return NextResponse.json({ tags: [], multiexperiencias: [], recursos: [], colecciones: [], pages: [], noticias: [] }, { status: res.status });
     }
     const data = await res.json();
     return NextResponse.json(data);
   } catch {
-    return NextResponse.json({ tags: [], multiexperiencias: [], recursos: [], colecciones: [] }, { status: 502 });
+    return NextResponse.json({ tags: [], multiexperiencias: [], recursos: [], colecciones: [], pages: [], noticias: [] }, { status: 502 });
   }
 }

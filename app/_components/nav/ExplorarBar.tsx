@@ -79,6 +79,21 @@ type GlobalSearchResult = {
     titulo: string;
     descripcion: string;
   }>;
+  pages: Array<{
+    id: number;
+    titulo: string;
+    resumen: string | null;
+    category: string;
+    categorySlug: string;
+    puebloNombre: string | null;
+    puebloSlug: string | null;
+    href: string;
+  }>;
+  noticias: Array<{
+    slug: string;
+    titulo: string;
+    puebloNombre: string | null;
+  }>;
 };
 
 const SEMAFORO_COLORS: Record<string, string> = {
@@ -862,6 +877,60 @@ export default function ExplorarBar() {
                                 <p className="truncate text-sm font-medium text-foreground">{r.nombre}</p>
                                 {r.puebloNombre && (
                                   <p className="truncate text-[11px] text-muted-foreground">{r.puebloNombre}</p>
+                                )}
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Pages temáticas (gastronomía, cultura, naturaleza…) */}
+                      {globalSearch && globalSearch.pages && globalSearch.pages.length > 0 && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            {tNav('sectionTematicas')}
+                          </p>
+                          {globalSearch.pages.map((pg) => (
+                            <Link
+                              key={pg.id}
+                              href={pg.href}
+                              onClick={close}
+                              className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                            >
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                                <Newspaper className="h-4 w-4 text-primary" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium text-foreground">{pg.titulo}</p>
+                                <p className="truncate text-[11px] text-muted-foreground">
+                                  {pg.puebloNombre ?? pg.categorySlug}
+                                </p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Noticias */}
+                      {globalSearch && globalSearch.noticias && globalSearch.noticias.length > 0 && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            {tNav('noticias')}
+                          </p>
+                          {globalSearch.noticias.map((n) => (
+                            <Link
+                              key={n.slug}
+                              href={`/actualidad/${n.slug}`}
+                              onClick={close}
+                              className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                            >
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
+                                <Newspaper className="h-4 w-4 text-amber-600" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium text-foreground">{n.titulo}</p>
+                                {n.puebloNombre && (
+                                  <p className="truncate text-[11px] text-muted-foreground">{n.puebloNombre}</p>
                                 )}
                               </div>
                             </Link>
