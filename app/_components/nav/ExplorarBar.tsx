@@ -476,7 +476,9 @@ export default function ExplorarBar() {
       globalSearch.tags.length > 0 ||
       globalSearch.multiexperiencias.length > 0 ||
       globalSearch.recursos.length > 0 ||
-      globalSearch.colecciones.length > 0
+      globalSearch.colecciones.length > 0 ||
+      (globalSearch.pages?.length ?? 0) > 0 ||
+      (globalSearch.noticias?.length ?? 0) > 0
     )) ||
     globalSearchLoading;
 
