@@ -2266,7 +2266,9 @@ export default function NotasPrensaNewsletterClient({
     setPublishingWeb(true);
     try {
       let finalHtml = campaignForm.html.trim();
-      if (pressSendMode === 'editor' && pressComposerMode === 'builder') {
+      if (mode === 'newsletter' && newsletterComposerMode === 'builder') {
+        finalHtml = renderNewsletterBlocksToHtml(newsletterBlocks).trim();
+      } else if (pressSendMode === 'editor' && pressComposerMode === 'builder') {
         finalHtml = pressBuilderHtml.trim();
       } else if (editorMode === 'visual' && editor) {
         finalHtml = editor.getHTML().trim();
@@ -2320,7 +2322,9 @@ export default function NotasPrensaNewsletterClient({
 
   function buildWebPreviewHtml() {
     let html = campaignForm.html.trim();
-    if (editorMode === 'visual' && editor) {
+    if (mode === 'newsletter' && newsletterComposerMode === 'builder') {
+      html = renderNewsletterBlocksToHtml(newsletterBlocks).trim();
+    } else if (editorMode === 'visual' && editor) {
       html = editor.getHTML().trim();
     }
     if (pressPhotoUrls.length > 0) {
