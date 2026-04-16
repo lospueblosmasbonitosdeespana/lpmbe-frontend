@@ -141,6 +141,10 @@ function sanitizeTemplateUrl(raw: string): string {
   const url = String(raw || '').trim();
   if (!url) return '';
   if (url === 'https://...' || url === 'http://...' || /https?:\/\/\.\.\./i.test(url)) return '';
+  // Auto-añadir https:// si la URL no tiene protocolo (evita URLs relativas rotas en email)
+  if (!/^https?:\/\//i.test(url) && !/^\/\//i.test(url) && !/^mailto:/i.test(url)) {
+    return `https://${url}`;
+  }
   return url;
 }
 

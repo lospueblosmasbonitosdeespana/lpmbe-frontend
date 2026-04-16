@@ -157,6 +157,10 @@ function sanitizeTemplateUrl(raw: string): string {
   const url = String(raw || '').trim();
   if (!url) return '';
   if (url === 'https://...' || url === 'http://...' || /https?:\/\/\.\.\./i.test(url)) return '';
+  // Auto-añadir https:// si la URL no tiene protocolo (evita URLs relativas rotas en email)
+  if (!/^https?:\/\//i.test(url) && !/^\/\//i.test(url) && !/^mailto:/i.test(url)) {
+    return `https://${url}`;
+  }
   return url;
 }
 
@@ -504,7 +508,7 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
       if (block.type === 'socialLinks') {
         const iconSize = 40;
         const makeIcon = (url: string, bgColor: string, iconSlug: string, label: string) =>
-          `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:0 6px;text-decoration:none;" title="${label}">` +
+          `<a href="${escapeHtml(sanitizeTemplateUrl(url))}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:0 6px;text-decoration:none;" title="${label}">` +
           `<table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table;border-collapse:collapse;"><tr>` +
           `<td style="background:${bgColor};border-radius:50%;width:${iconSize}px;height:${iconSize}px;text-align:center;vertical-align:middle;padding:0;">` +
           `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/${iconSlug}.svg" width="20" height="20" style="filter:invert(1);display:block;margin:10px auto;" alt="${label}" />` +
