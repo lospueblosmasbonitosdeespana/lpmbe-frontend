@@ -580,8 +580,9 @@ function ContentLinker({
     try {
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('folder', 'caracteristicas');
 
-      const res = await fetch(`/api/admin/pueblos/${puebloId}/media`, {
+      const res = await fetch('/api/media/upload', {
         method: 'POST',
         body: formData,
         credentials: 'include',

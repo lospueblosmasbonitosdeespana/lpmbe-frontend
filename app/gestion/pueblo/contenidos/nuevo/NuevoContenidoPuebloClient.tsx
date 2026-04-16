@@ -156,10 +156,9 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
         .slice(0, 3);
       const effectiveCoverUrl = uploadedCoverUrl || coverUrl || normalizedGalleryUrls[0] || null;
 
-      // 2. Si es PÁGINA, usar endpoint /admin/pages
+      // 2. Si es PÁGINA, usar endpoint por pueblo (soporta ADMIN y ALCALDE)
       if (tipo === 'PAGINA') {
         const payload: any = {
-          puebloId,
           category: categoria,
           titulo: titulo.trim(),
           resumen: resumen.trim() || null,
@@ -170,7 +169,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
         if (effectiveCoverUrl) payload.coverUrl = effectiveCoverUrl;
         if (normalizedGalleryUrls.length > 0) payload.galleryUrls = normalizedGalleryUrls;
 
-        const res = await fetch('/api/admin/pages', {
+        const res = await fetch(`/api/admin/pueblos/${puebloId}/pages`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
