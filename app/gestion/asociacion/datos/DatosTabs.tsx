@@ -14,6 +14,7 @@ const InternoDashboard = lazy(() => import('./InternoDashboard'));
 const PuntosPueblosClient = lazy(() => import('./puntos-pueblos/PuntosPueblosClient'));
 const NewsletterDashboard = lazy(() => import('./NewsletterDashboard'));
 const HttpErroresDashboard = lazy(() => import('./HttpErroresDashboard'));
+const SeoAuditoriaDashboard = lazy(() => import('./SeoAuditoriaDashboard'));
 
 const TABS = [
   { key: 'usuarios' as const, labelKey: 'tabUsuarios' as const },
@@ -24,7 +25,8 @@ const TABS = [
   { key: 'metricas-pueblos' as const, label: 'Métricas pueblos' as const },
   { key: 'web' as const, labelKey: 'tabWeb' as const },
   { key: 'puntos' as const, labelKey: 'tabPuntosPueblos' as const },
-  { key: 'errores' as const, label: 'Errores HTTP' as const },
+  { key: 'errores' as const, label: 'Errores' as const },
+  { key: 'seo' as const, label: 'SEO' as const },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
@@ -45,10 +47,12 @@ export default function DatosTabs({
   defaultTab,
   canViewNewsletter = false,
   canViewErrores = false,
+  canViewSeo = false,
 }: {
   defaultTab: TabKey;
   canViewNewsletter?: boolean;
   canViewErrores?: boolean;
+  canViewSeo?: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -65,7 +69,11 @@ export default function DatosTabs({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-1 rounded-lg bg-muted p-1">
-        {TABS.filter((tab) => (canViewNewsletter || tab.key !== 'newsletter') && (canViewErrores || tab.key !== 'errores')).map((tab) => (
+        {TABS.filter((tab) =>
+          (canViewNewsletter || tab.key !== 'newsletter') &&
+          (canViewErrores || tab.key !== 'errores') &&
+          (canViewSeo || tab.key !== 'seo'),
+        ).map((tab) => (
           <button
             key={tab.key}
             onClick={() => switchTab(tab.key)}
@@ -119,6 +127,11 @@ export default function DatosTabs({
       {active === 'errores' && canViewErrores && (
         <Suspense fallback={<Spinner label={t('loading')} />}>
           <HttpErroresDashboard />
+        </Suspense>
+      )}
+      {active === 'seo' && canViewSeo && (
+        <Suspense fallback={<Spinner label={t('loading')} />}>
+          <SeoAuditoriaDashboard />
         </Suspense>
       )}
     </div>

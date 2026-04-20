@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const params = new URLSearchParams();
-  ['windowMinutes', 'limit'].forEach((key) => {
+  ['windowMinutes', 'limit', 'category'].forEach((key) => {
     const val = searchParams.get(key);
     if (val != null && val !== '') params.set(key, val);
   });
