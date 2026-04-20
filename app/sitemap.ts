@@ -337,6 +337,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry('/experiencias/petfriendly', 0.65, 'monthly'),
     entry('/experiencias/patrimonio', 0.65, 'monthly'),
     entry('/multiexperiencias', 0.6, 'weekly'),
+    entry('/planifica', 0.8, 'weekly'),
     entry('/planifica/crea-mi-ruta', 0.7, 'monthly'),
     entry('/planifica/fin-de-semana', 0.7, 'monthly'),
     entry('/planifica/semana-santa', 0.7, 'daily'),

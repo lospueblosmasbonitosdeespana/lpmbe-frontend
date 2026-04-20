@@ -548,7 +548,7 @@ export default function ExplorarBar() {
                       {matchingServices.length > 0 && (
                         <div>
                           <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Servicios en {parsedQuery.pueblo.nombre}
+                            {tNav('searchServicesInVillage', { name: parsedQuery.pueblo.nombre })}
                           </p>
                           {matchingServices.map((svc) => (
                             <Link
@@ -565,10 +565,10 @@ export default function ExplorarBar() {
                               </div>
                               <div className="min-w-0 flex-1">
                                 <p className="truncate text-sm font-medium text-foreground">
-                                  {svc.label} en {parsedQuery.pueblo.nombre}
+                                  {tNav('searchServiceItem', { service: svc.label, name: parsedQuery.pueblo.nombre })}
                                 </p>
                                 <p className="truncate text-[11px] text-muted-foreground">
-                                  Ver en el mapa del pueblo
+                                  {tNav('searchSeeOnMap')}
                                 </p>
                               </div>
                               <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
@@ -603,7 +603,7 @@ export default function ExplorarBar() {
                       {/* El pueblo siempre visible para acceder directamente */}
                       <div>
                         <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          Pueblo
+                          {tNav('searchSectionPueblo')}
                         </p>
                         <div>
                           <Link
@@ -632,9 +632,9 @@ export default function ExplorarBar() {
                                       className="inline-block h-2 w-2 shrink-0 rounded-full"
                                       style={{ backgroundColor: SEMAFORO_COLORS[parsedQuery.pueblo.semaforoEstado!] }}
                                       title={
-                                        parsedQuery.pueblo.semaforoEstado === 'VERDE' ? 'Ideal para visitar'
-                                        : parsedQuery.pueblo.semaforoEstado === 'AMARILLO' ? 'Afluencia media'
-                                        : parsedQuery.pueblo.semaforoEstado === 'ROJO' ? 'Alta afluencia'
+                                        parsedQuery.pueblo.semaforoEstado === 'VERDE' ? tNav('searchSemaforoGreen')
+                                        : parsedQuery.pueblo.semaforoEstado === 'AMARILLO' ? tNav('searchSemaforoYellow')
+                                        : parsedQuery.pueblo.semaforoEstado === 'ROJO' ? tNav('searchSemaforoRed')
                                         : ''
                                       }
                                     />
@@ -703,7 +703,7 @@ export default function ExplorarBar() {
                       {matchingTags.length > 0 && (
                         <div>
                           <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Características
+                            {tNav('searchSectionCaracteristicas')}
                           </p>
                           {matchingTags.map((t) => {
                             const slug = t.slug || toSlug(t.nombre_i18n?.es ?? t.tag);
@@ -722,11 +722,11 @@ export default function ExplorarBar() {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <p className="truncate text-sm font-medium text-foreground">
-                                    {t.nombre_i18n?.es ?? t.tag}
+                                    {t.nombre_i18n?.[locale] ?? t.nombre_i18n?.es ?? t.tag}
                                   </p>
                                 </div>
                                 <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                                  {t.count} pueblos
+                                  {tNav('searchVillageCount', { count: t.count })}
                                 </span>
                               </Link>
                             );
@@ -758,7 +758,7 @@ export default function ExplorarBar() {
                                 </p>
                                 {c.count != null && (
                                   <p className="truncate text-[11px] text-muted-foreground">
-                                    {c.count} pueblos
+                                    {tNav('searchVillageCount', { count: c.count })}
                                   </p>
                                 )}
                               </div>
@@ -831,7 +831,7 @@ export default function ExplorarBar() {
                       {globalSearchLoading && !globalSearch && (
                         <div className="flex items-center gap-2 px-4 py-3 text-[11px] text-muted-foreground">
                           <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                          Buscando contenido...
+                          {tNav('searchLoading')}
                         </div>
                       )}
 
@@ -839,7 +839,7 @@ export default function ExplorarBar() {
                       {globalSearch && globalSearch.tags.length > 0 && (
                         <div>
                           <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Características
+                            {tNav('searchSectionCaracteristicas')}
                           </p>
                           {globalSearch.tags.map((t) => (
                             <Link
@@ -857,7 +857,7 @@ export default function ExplorarBar() {
                               <div className="min-w-0 flex-1">
                                 <p className="truncate text-sm font-medium text-foreground">{t.nombre}</p>
                                 {t.pueblosCount > 0 && (
-                                  <p className="truncate text-[11px] text-muted-foreground">{t.pueblosCount} pueblos</p>
+                                  <p className="truncate text-[11px] text-muted-foreground">{tNav('searchVillageCount', { count: t.pueblosCount })}</p>
                                 )}
                               </div>
                             </Link>
@@ -896,7 +896,7 @@ export default function ExplorarBar() {
                       {globalSearch && globalSearch.multiexperiencias.length > 0 && (
                         <div>
                           <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Experiencias
+                            {tNav('searchSectionExperiencias')}
                           </p>
                           {globalSearch.multiexperiencias.map((mx) => (
                             <Link
@@ -923,7 +923,7 @@ export default function ExplorarBar() {
                       {globalSearch && globalSearch.recursos.length > 0 && (
                         <div>
                           <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Negocios y servicios
+                            {tNav('searchSectionNegocios')}
                           </p>
                           {globalSearch.recursos.map((r, i) => (
                             <Link
@@ -1077,7 +1077,7 @@ export default function ExplorarBar() {
                       {matchingPueblos.length > 0 && (
                         <div>
                           <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Pueblos
+                            {tNav('searchSectionPueblos')}
                           </p>
                           {matchingPueblos.map((p) => (
                             <div key={p.id}>
@@ -1106,9 +1106,9 @@ export default function ExplorarBar() {
                                         className="inline-block h-2 w-2 shrink-0 rounded-full"
                                         style={{ backgroundColor: SEMAFORO_COLORS[p.semaforoEstado] }}
                                         title={
-                                          p.semaforoEstado === 'VERDE' ? 'Ideal para visitar'
-                                          : p.semaforoEstado === 'AMARILLO' ? 'Afluencia media'
-                                          : p.semaforoEstado === 'ROJO' ? 'Alta afluencia'
+                                          p.semaforoEstado === 'VERDE' ? tNav('searchSemaforoGreen')
+                                          : p.semaforoEstado === 'AMARILLO' ? tNav('searchSemaforoYellow')
+                                          : p.semaforoEstado === 'ROJO' ? tNav('searchSemaforoRed')
                                           : ''
                                         }
                                       />
