@@ -1962,7 +1962,10 @@ export default function NotasPrensaNewsletterClient({
       if (!campaignForm.subject.trim()) throw new Error('El asunto es obligatorio');
 
       let finalHtml = '';
-      const testTo = ['asociacion@lospueblosmasbonitosdeespana.org'];
+      const testTo = [
+        'asociacion@lospueblosmasbonitosdeespana.org',
+        'info@lospueblosmasbonitosdeespana.org',
+      ];
       const kind = mode === 'press' ? 'PRESS' : 'NEWSLETTER';
       let attachmentUrls: Array<{ url: string; filename?: string; contentType?: string }> | undefined;
 
@@ -4783,7 +4786,7 @@ export default function NotasPrensaNewsletterClient({
               disabled={sendingTest || loading}
               onClick={handleTestSend}
               className="rounded-lg border-2 border-blue-500 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-60"
-              title="Envía una prueba a asociacion@lospueblosmasbonitosdeespana.org"
+              title="Envía una prueba a asociacion@ e info@lospueblosmasbonitosdeespana.org"
             >
               {sendingTest ? 'Enviando prueba…' : 'Envío prueba'}
             </button>
