@@ -13,6 +13,7 @@ const AppDashboard = dynamic(() => import('./AppDashboard'), { ssr: false });
 const InternoDashboard = lazy(() => import('./InternoDashboard'));
 const PuntosPueblosClient = lazy(() => import('./puntos-pueblos/PuntosPueblosClient'));
 const NewsletterDashboard = lazy(() => import('./NewsletterDashboard'));
+const HttpErroresDashboard = lazy(() => import('./HttpErroresDashboard'));
 
 const TABS = [
   { key: 'usuarios' as const, labelKey: 'tabUsuarios' as const },
@@ -23,6 +24,7 @@ const TABS = [
   { key: 'metricas-pueblos' as const, label: 'Métricas pueblos' as const },
   { key: 'web' as const, labelKey: 'tabWeb' as const },
   { key: 'puntos' as const, labelKey: 'tabPuntosPueblos' as const },
+  { key: 'errores' as const, label: 'Errores HTTP' as const },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
@@ -42,9 +44,11 @@ function Spinner({ label }: { label: string }) {
 export default function DatosTabs({
   defaultTab,
   canViewNewsletter = false,
+  canViewErrores = false,
 }: {
   defaultTab: TabKey;
   canViewNewsletter?: boolean;
+  canViewErrores?: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -61,7 +65,7 @@ export default function DatosTabs({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-1 rounded-lg bg-muted p-1">
-        {TABS.filter((tab) => canViewNewsletter || tab.key !== 'newsletter').map((tab) => (
+        {TABS.filter((tab) => (canViewNewsletter || tab.key !== 'newsletter') && (canViewErrores || tab.key !== 'errores')).map((tab) => (
           <button
             key={tab.key}
             onClick={() => switchTab(tab.key)}
@@ -110,6 +114,11 @@ export default function DatosTabs({
       {active === 'puntos' && (
         <Suspense fallback={<Spinner label={t('loading')} />}>
           <PuntosPueblosClient />
+        </Suspense>
+      )}
+      {active === 'errores' && canViewErrores && (
+        <Suspense fallback={<Spinner label={t('loading')} />}>
+          <HttpErroresDashboard />
         </Suspense>
       )}
     </div>

@@ -15,10 +15,10 @@ export default async function DatosPage({
 
   const { tab } = await searchParams;
   const allowedTabs = me.rol === 'ADMIN'
-    ? ['usuarios', 'pueblos', 'metricas-pueblos', 'web', 'app', 'interno', 'puntos', 'newsletter']
+    ? ['usuarios', 'pueblos', 'metricas-pueblos', 'web', 'app', 'interno', 'puntos', 'newsletter', 'errores']
     : ['usuarios', 'pueblos', 'metricas-pueblos', 'web', 'app', 'interno', 'puntos'];
   const activeTab = allowedTabs.includes(tab ?? '')
-    ? (tab as 'usuarios' | 'pueblos' | 'metricas-pueblos' | 'web' | 'app' | 'interno' | 'puntos' | 'newsletter')
+    ? (tab as 'usuarios' | 'pueblos' | 'metricas-pueblos' | 'web' | 'app' | 'interno' | 'puntos' | 'newsletter' | 'errores')
     : 'usuarios';
   const t = await getTranslations('gestion');
 
@@ -41,7 +41,11 @@ export default async function DatosPage({
         </div>
       </div>
 
-      <DatosTabs defaultTab={activeTab} canViewNewsletter={me.rol === 'ADMIN'} />
+      <DatosTabs
+        defaultTab={activeTab}
+        canViewNewsletter={me.rol === 'ADMIN'}
+        canViewErrores={me.rol === 'ADMIN'}
+      />
     </main>
   );
 }
