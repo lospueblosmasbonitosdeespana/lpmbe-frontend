@@ -60,6 +60,7 @@ export default function TipTapEditor({
   const [isUploading, setIsUploading] = useState(false);
   const [showImageSizeModal, setShowImageSizeModal] = useState(false);
   const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
+  const [, setEditorTick] = useState(0);
 
   const editor = useEditor({
     extensions: [
@@ -84,6 +85,7 @@ export default function TipTapEditor({
     ],
     content,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    onSelectionUpdate: () => setEditorTick((v) => v + 1),
     editorProps: {
       attributes: {
         class:
@@ -105,19 +107,56 @@ export default function TipTapEditor({
     },
   });
 
+  const buildImageStyle = useCallback((width: string, align: 'left' | 'center' | 'right' = 'center', rounded = true) => {
+    const isPixel = width.endsWith('px');
+    const sizeStyle = isPixel
+      ? `width:${width};max-width:100%;height:auto;`
+      : `width:${width};max-width:${width};height:auto;`;
+    const marginByAlign =
+      align === 'center'
+        ? 'margin:16px auto;'
+        : align === 'right'
+        ? 'margin:16px 0 16px auto;'
+        : 'margin:16px auto 16px 0;';
+    const roundedStyle = rounded ? 'border-radius:0.5rem;' : '';
+    return `display:block;${sizeStyle}${marginByAlign}${roundedStyle}`;
+  }, []);
+
   const insertImageWithSize = useCallback((url: string, size: ImageSize) => {
     if (!editor) return;
     const { width } = IMAGE_SIZES[size];
-    const style = `max-width: ${width}; width: 100%; height: auto; border-radius: 0.5rem; margin: 1rem 0;`;
-    editor.chain().focus().setImage({ src: url, alt: 'Imagen' }).run();
-    setTimeout(() => {
-      const images = editor.view.dom.querySelectorAll('img.editor-image');
-      const lastImage = images[images.length - 1] as HTMLImageElement;
-      if (lastImage && lastImage.src === url) { lastImage.style.cssText = style; onChange(editor.getHTML()); }
-    }, 100);
+    const style = buildImageStyle(width, 'center', true);
+    const snippet = `<p style="text-align:center;margin:0;"><img src="${url}" alt="Imagen" class="editor-image" style="${style}" align="center" /></p>`;
+    editor.chain().focus().insertContent(snippet).run();
     setShowImageSizeModal(false);
     setPendingImageUrl(null);
-  }, [editor, onChange]);
+  }, [editor, buildImageStyle]);
+
+  const resizeSelectedImage = useCallback((width: string, align: 'left' | 'center' | 'right') => {
+    if (!editor || !editor.isActive('image')) return;
+    const newStyle = buildImageStyle(width, align, true);
+    editor.chain().focus().updateAttributes('image', { htmlStyle: newStyle }).run();
+  }, [editor, buildImageStyle]);
+
+  const deleteSelectedImage = useCallback(() => {
+    if (!editor || !editor.isActive('image')) return;
+    editor.chain().focus().deleteSelection().run();
+  }, [editor]);
+
+  const getImageCurrentWidth = useCallback((): string => {
+    if (!editor) return '160px';
+    const s = String((editor.getAttributes('image') as { htmlStyle?: string } | null)?.htmlStyle || '');
+    const m = s.match(/width\s*:\s*([^;]+);/i);
+    return m ? m[1].trim() : '160px';
+  }, [editor]);
+
+  const getImageCurrentAlign = useCallback((): 'left' | 'center' | 'right' => {
+    if (!editor) return 'center';
+    const s = String((editor.getAttributes('image') as { htmlStyle?: string } | null)?.htmlStyle || '');
+    if (/margin\s*:\s*[^;]*\s+0\s+\S+\s+auto/i.test(s)) return 'right';
+    if (/margin\s*:\s*[^;]+\s+auto\b(?!\s+\S+\s+0\s*;)/i.test(s) && !/auto\s+0\s*;/i.test(s)) return 'center';
+    return 'left';
+  }, [editor]);
 
   const handleImageUploadWithSize = useCallback(async (file: File) => {
     if (!onUploadImage || !editor) return;
@@ -298,6 +337,48 @@ export default function TipTapEditor({
           <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><path d="M4 4l12 12M16 4L4 16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><text x="7" y="12" fontSize="7" fontWeight="bold" fill="currentColor">T</text></svg>
         </button>
       </div>
+
+      {/* ── BARRA CONTEXTUAL DE IMAGEN ──────────────────────────────────── */}
+      {editor.isActive('image') ? (
+        <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 dark:border-amber-700 dark:bg-amber-950/40">
+          <span className="text-xs font-semibold text-amber-900 dark:text-amber-200">Imagen:</span>
+          <span className="text-[11px] font-semibold text-muted-foreground">Tamaño:</span>
+          {(['80px', '120px', '160px', '200px', '40%', '60%', '80%', '100%'] as const).map((w) => (
+            <button
+              key={w}
+              type="button"
+              onClick={() => resizeSelectedImage(w, getImageCurrentAlign())}
+              className="rounded border border-border bg-background px-2 py-1 text-[11px] font-medium hover:bg-muted"
+            >
+              {w}
+            </button>
+          ))}
+          <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+          <span className="text-[11px] font-semibold text-muted-foreground">Alineación:</span>
+          {([
+            { value: 'left' as const, label: 'Izq' },
+            { value: 'center' as const, label: 'Centro' },
+            { value: 'right' as const, label: 'Dcha' },
+          ]).map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => resizeSelectedImage(getImageCurrentWidth(), value)}
+              className="rounded border border-border bg-background px-2 py-1 text-[11px] font-medium hover:bg-muted"
+            >
+              {label}
+            </button>
+          ))}
+          <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+          <button
+            type="button"
+            onClick={deleteSelectedImage}
+            className="rounded border border-red-300 bg-background px-2 py-1 text-[11px] font-medium text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/40"
+          >
+            Eliminar
+          </button>
+        </div>
+      ) : null}
 
       {/* ── EDITOR AREA ─────────────────────────────────────────────────── */}
       <div className="group overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all duration-200 hover:shadow-md focus-within:border-transparent focus-within:ring-2 focus-within:ring-blue-500 dark:bg-zinc-950">

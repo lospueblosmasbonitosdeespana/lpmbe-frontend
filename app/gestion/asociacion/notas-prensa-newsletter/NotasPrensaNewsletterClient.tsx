@@ -934,6 +934,7 @@ export default function NotasPrensaNewsletterClient({
   const [logoInsertWidth, setLogoInsertWidth] = useState<'100%' | '80%' | '60%' | '40%' | '200px' | '160px' | '120px' | '80px'>('160px');
   const [logoInsertAlign, setLogoInsertAlign] = useState<'left' | 'center' | 'right'>('center');
   const [emailPhotoWidth, setEmailPhotoWidth] = useState<'100%' | '80%' | '60%' | '40%' | '30%' | '20%'>('40%');
+  const [emailPhotoAlign, setEmailPhotoAlign] = useState<'left' | 'center' | 'right'>('center');
   const [webPhotoWidth, setWebPhotoWidth] = useState<'100%' | '80%' | '60%'>('100%');
   const logoUploadInputRef = useRef<HTMLInputElement | null>(null);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
@@ -943,6 +944,7 @@ export default function NotasPrensaNewsletterClient({
   const newsletterColImgInputRef = useRef<HTMLInputElement | null>(null);
   const [nlColImgUploadField, setNlColImgUploadField] = useState<'colLeftImg' | 'colRightImg' | 'colCenterImg' | null>(null);
   const htmlTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [, setEditorTick] = useState(0);
 
   const editor = useEditor({
     extensions: [
@@ -967,6 +969,11 @@ export default function NotasPrensaNewsletterClient({
     content: campaignForm.html || '<p></p>',
     onUpdate: ({ editor }) => {
       setCampaignForm((s) => ({ ...s, html: editor.getHTML() }));
+    },
+    onSelectionUpdate: () => {
+      // Fuerza re-render para que aparezca/desaparezca la barra contextual
+      // de imagen cuando se selecciona/deselecciona una imagen.
+      setEditorTick((v) => v + 1);
     },
     editorProps: {
       attributes: {
@@ -2049,31 +2056,17 @@ export default function NotasPrensaNewsletterClient({
   function insertPhotoIntoContent(url: string) {
     const cleanUrl = String(url || '').trim();
     if (!cleanUrl) return;
-
-    if (editorMode === 'visual' && editor) {
-      editor.chain().focus().setImage({ src: cleanUrl, alt: 'Imagen nota de prensa' }).run();
-      setInsertedPhotoUrls((prev) => (prev.includes(cleanUrl) ? prev : [...prev, cleanUrl]));
-      return;
-    }
-
-    const textarea = htmlTextareaRef.current;
-    const snippet = `<div style="margin:12px 0;text-align:center;"><img src="${cleanUrl}" alt="Imagen nota de prensa" style="max-width:${emailPhotoWidth};height:auto;border-radius:8px;" /></div>`;
-    if (!textarea) {
-      setCampaignForm((s) => ({ ...s, html: `${s.html}\n${snippet}`.trim() }));
-      setInsertedPhotoUrls((prev) => (prev.includes(cleanUrl) ? prev : [...prev, cleanUrl]));
-      return;
-    }
-
-    const start = textarea.selectionStart ?? textarea.value.length;
-    const end = textarea.selectionEnd ?? textarea.value.length;
-    const before = campaignForm.html.slice(0, start);
-    const after = campaignForm.html.slice(end);
-    const next = `${before}${snippet}${after}`;
-    setCampaignForm((s) => ({ ...s, html: next }));
+    insertImageAtCursor(cleanUrl, 'Imagen nota de prensa', emailPhotoWidth, emailPhotoAlign, true);
     setInsertedPhotoUrls((prev) => (prev.includes(cleanUrl) ? prev : [...prev, cleanUrl]));
   }
 
-  function insertImageAtCursor(url: string, alt: string, width: string, align: 'left' | 'center' | 'right' = 'center') {
+  function insertImageAtCursor(
+    url: string,
+    alt: string,
+    width: string,
+    align: 'left' | 'center' | 'right' = 'center',
+    rounded = false,
+  ) {
     const cleanUrl = String(url || '').trim();
     if (!cleanUrl) return;
     const marginByAlign =
@@ -2086,7 +2079,8 @@ export default function NotasPrensaNewsletterClient({
     const sizeStyle = isPixel
       ? `width:${width};max-width:100%;height:auto;`
       : `width:${width};max-width:${width};height:auto;`;
-    const imgStyle = `display:block;${sizeStyle}${marginByAlign}`;
+    const roundedStyle = rounded ? 'border-radius:8px;' : '';
+    const imgStyle = `display:block;${sizeStyle}${marginByAlign}${roundedStyle}`;
     const snippet = `<p style="text-align:${align};margin:0;"><img src="${cleanUrl}" alt="${alt}" style="${imgStyle}" align="${align}" /></p>`;
 
     if (editorMode === 'visual' && editor) {
@@ -2103,6 +2097,32 @@ export default function NotasPrensaNewsletterClient({
     const before = campaignForm.html.slice(0, start);
     const after = campaignForm.html.slice(start);
     setCampaignForm((s) => ({ ...s, html: `${before}${snippet}${after}` }));
+  }
+
+  // Reajusta tamaño/alineación de la imagen seleccionada en el editor visual.
+  function resizeSelectedImage(width: string, align: 'left' | 'center' | 'right') {
+    if (!editor || !editor.isActive('image')) return;
+    const marginByAlign =
+      align === 'center'
+        ? 'margin:16px auto;'
+        : align === 'right'
+        ? 'margin:16px 0 16px auto;'
+        : 'margin:16px auto 16px 0;';
+    const isPixel = width.endsWith('px');
+    const sizeStyle = isPixel
+      ? `width:${width};max-width:100%;height:auto;`
+      : `width:${width};max-width:${width};height:auto;`;
+    // Conserva border-radius si ya lo tenía (caso fotos).
+    const currentStyle = String((editor.getAttributes('image') as { htmlStyle?: string } | null)?.htmlStyle || '');
+    const radiusMatch = currentStyle.match(/border-radius\s*:\s*[^;]+;?/i);
+    const roundedStyle = radiusMatch ? radiusMatch[0].endsWith(';') ? radiusMatch[0] : `${radiusMatch[0]};` : '';
+    const newStyle = `display:block;${sizeStyle}${marginByAlign}${roundedStyle}`;
+    editor.chain().focus().updateAttributes('image', { htmlStyle: newStyle }).run();
+  }
+
+  function deleteSelectedImage() {
+    if (!editor || !editor.isActive('image')) return;
+    editor.chain().focus().deleteSelection().run();
   }
 
   async function uploadPressPhotos() {
@@ -4437,6 +4457,61 @@ export default function NotasPrensaNewsletterClient({
                         Rehacer
                       </button>
                     </div>
+                    {editor?.isActive('image') ? (
+                      <div className="flex flex-wrap items-center gap-2 rounded-md border border-amber-300 bg-amber-50 p-2">
+                        <span className="text-xs font-semibold text-amber-900">Imagen seleccionada:</span>
+                        <span className="text-[11px] font-semibold text-muted-foreground">Tamaño:</span>
+                        {(['80px', '120px', '160px', '200px', '40%', '60%', '80%', '100%'] as const).map((w) => (
+                          <button
+                            key={w}
+                            type="button"
+                            onClick={() => {
+                              const currentAlign = (() => {
+                                const s = String((editor?.getAttributes('image') as { htmlStyle?: string } | null)?.htmlStyle || '');
+                                if (/margin\s*:\s*[^;]*0\s+auto\b/i.test(s) || /margin\s*:\s*\d+\S*\s+auto\s*;?/i.test(s)) return 'center' as const;
+                                if (/margin\s*:\s*[^;]*0\s+0\s+\S+\s+auto/i.test(s)) return 'right' as const;
+                                return 'left' as const;
+                              })();
+                              resizeSelectedImage(w, currentAlign);
+                            }}
+                            className="rounded border border-border bg-white px-2 py-1 text-[11px] font-medium hover:bg-muted"
+                          >
+                            {w}
+                          </button>
+                        ))}
+                        <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+                        <span className="text-[11px] font-semibold text-muted-foreground">Alineación:</span>
+                        {([
+                          { value: 'left' as const, label: 'Izq' },
+                          { value: 'center' as const, label: 'Centro' },
+                          { value: 'right' as const, label: 'Dcha' },
+                        ]).map(({ value, label }) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => {
+                              const currentWidth = (() => {
+                                const s = String((editor?.getAttributes('image') as { htmlStyle?: string } | null)?.htmlStyle || '');
+                                const m = s.match(/width\s*:\s*([^;]+);/i);
+                                return m ? m[1].trim() : '160px';
+                              })();
+                              resizeSelectedImage(currentWidth, value);
+                            }}
+                            className="rounded border border-border bg-white px-2 py-1 text-[11px] font-medium hover:bg-muted"
+                          >
+                            {label}
+                          </button>
+                        ))}
+                        <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+                        <button
+                          type="button"
+                          onClick={deleteSelectedImage}
+                          className="rounded border border-red-300 bg-white px-2 py-1 text-[11px] font-medium text-red-700 hover:bg-red-50"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    ) : null}
                     <EditorContent editor={editor} />
                   </div>
                 ) : (
@@ -4497,6 +4572,23 @@ export default function NotasPrensaNewsletterClient({
                             type="button"
                             onClick={() => setEmailPhotoWidth(value)}
                             className={`rounded border px-2 py-1 text-[11px] font-medium transition ${emailPhotoWidth === value ? 'border-primary bg-primary text-white' : 'border-border bg-white hover:bg-muted'}`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-slate-50 px-3 py-2">
+                        <span className="text-xs font-semibold text-muted-foreground">Alineación:</span>
+                        {([
+                          { value: 'left' as const, label: 'Izquierda' },
+                          { value: 'center' as const, label: 'Centro' },
+                          { value: 'right' as const, label: 'Derecha' },
+                        ]).map(({ value, label }) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => setEmailPhotoAlign(value)}
+                            className={`rounded border px-2 py-1 text-[11px] font-medium transition ${emailPhotoAlign === value ? 'border-primary bg-primary text-white' : 'border-border bg-white hover:bg-muted'}`}
                           >
                             {label}
                           </button>
