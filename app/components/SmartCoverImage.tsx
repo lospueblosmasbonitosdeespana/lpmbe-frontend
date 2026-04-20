@@ -1,87 +1,89 @@
 'use client';
 
-import { useState } from 'react';
-import ZoomableImage from '@/app/components/ZoomableImage';
+import { useEffect, useState } from 'react';
 
 type Props = {
   src: string;
   alt: string;
 };
 
-type Orientation = 'unknown' | 'landscape' | 'portrait' | 'square';
-
 /**
- * Muestra la imagen de portada adaptándose a su orientación real.
- *
- * El contenedor SIEMPRE usa aspect-[16/10] para evitar CLS: el tamaño
- * no cambia cuando se detecta la orientación, solo cambia la presentación
- * interna (landscape → cover directo; portrait/square → blurred backdrop).
+ * Imagen de portada que se muestra completa, respetando su proporción
+ * real (sin recortes ni "marco" fijo). Limita la altura a 80vh para
+ * evitar fotos verticales gigantescas y abre lightbox al hacer clic.
  */
 export default function SmartCoverImage({ src, alt }: Props) {
-  const [orientation, setOrientation] = useState<Orientation>('unknown');
+  const [open, setOpen] = useState(false);
 
-  function handleLoad(e: React.SyntheticEvent<HTMLImageElement>) {
-    const img = e.currentTarget;
-    const ratio = img.naturalWidth / img.naturalHeight;
-    if (ratio > 1.2) setOrientation('landscape');
-    else if (ratio < 0.85) setOrientation('portrait');
-    else setOrientation('square');
-  }
-
-  const isLandscape = orientation === 'landscape';
+  useEffect(() => {
+    if (!open) return;
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onEsc);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onEsc);
+    };
+  }, [open]);
 
   return (
-    <div className="relative w-full max-w-[900px] mx-auto mb-12 rounded-xl overflow-hidden flex items-center justify-center bg-muted aspect-[16/10]">
-      {/* Imagen oculta para detectar orientación real sin afectar layout */}
-      {orientation === 'unknown' && (
-        <img
-          src={src}
-          alt=""
-          aria-hidden="true"
-          onLoad={handleLoad}
-          className="hidden"
-        />
-      )}
-
-      {isLandscape ? (
-        <ZoomableImage
-          src={src}
-          alt={alt}
-          fit="contain"
-          wrapperClassName="h-full w-full"
-          className="block"
-        />
-      ) : (
-        <>
-          {/* Fondo desenfocado: misma imagen estirada */}
+    <>
+      <div className="mx-auto mb-12 flex w-full max-w-[1100px] justify-center px-4">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="group block cursor-zoom-in overflow-hidden rounded-xl bg-muted shadow-sm transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
+          aria-label={`Ampliar imagen: ${alt}`}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={src}
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              filter: 'blur(28px) brightness(0.75) saturate(1.2)',
-              transform: 'scale(1.1)',
-            }}
+            alt={alt}
+            referrerPolicy="no-referrer"
+            draggable={false}
+            className="block h-auto w-auto max-w-full max-h-[80vh] object-contain"
           />
-          {/* Imagen real centrada encima */}
-          <div
-            className="relative z-[1] mx-8 my-8 w-full"
-            style={{ maxWidth: orientation === 'portrait' ? '420px' : '560px' }}
+        </button>
+      </div>
+
+      {open && (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setOpen(false)}
+          onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
+          onContextMenu={(e) => e.preventDefault()}
+          className="fixed inset-0 z-[10000] flex cursor-zoom-out items-center justify-center bg-black/90 p-4"
+          aria-label="Cerrar imagen ampliada"
+        >
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="absolute right-5 top-5 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-xl text-black shadow"
+            aria-label="Cerrar"
           >
-            <ZoomableImage
+            ×
+          </button>
+          <div
+            className="relative"
+            onClick={(e) => e.stopPropagation()}
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={src}
               alt={alt}
-              fit="contain"
-              wrapperClassName="w-full rounded-md"
-              className="max-h-[720px] rounded-md shadow-lg"
+              referrerPolicy="no-referrer"
+              draggable={false}
+              className="block max-h-[92vh] max-w-full cursor-default object-contain"
             />
+            <div className="absolute inset-0" aria-hidden="true" />
           </div>
-        </>
+        </div>
       )}
-    </div>
+    </>
   );
 }
