@@ -58,6 +58,9 @@ export interface ContentBlock {
   imgPaddingH?: number;
   imgPosition?: 'left' | 'right';
   imgTextRatio?: '30-70' | '40-60' | '50-50' | '60-40' | '70-30';
+  // Selector rápido de ancho (string: '80px' | '160px' | '50%' | '100%' …).
+  // Si está presente tiene prioridad sobre imgWidth/imgHeight numéricos.
+  imageWidth?: string;
   colLeftImg?: string;
   colRightImg?: string;
   colCenterImg?: string;
@@ -231,6 +234,13 @@ function normalizeBlocks(value: unknown): ContentBlock[] {
         borderRadius: Number(src.borderRadius ?? 8),
         imgPosition,
         imgTextRatio,
+        imgWidth: typeof src.imgWidth === 'number' ? (src.imgWidth as number) : undefined,
+        imgHeight: typeof src.imgHeight === 'number' ? (src.imgHeight as number) : undefined,
+        imgLinkUrl: src.imgLinkUrl ? sanitizeTemplateUrl(String(src.imgLinkUrl)) : undefined,
+        imgBorderRadius: typeof src.imgBorderRadius === 'number' ? (src.imgBorderRadius as number) : undefined,
+        imgPaddingV: typeof src.imgPaddingV === 'number' ? (src.imgPaddingV as number) : undefined,
+        imgPaddingH: typeof src.imgPaddingH === 'number' ? (src.imgPaddingH as number) : undefined,
+        imageWidth: src.imageWidth ? String(src.imageWidth) : undefined,
         colLeftImg: sanitizeTemplateUrl(String(src.colLeftImg || '')),
         colRightImg: sanitizeTemplateUrl(String(src.colRightImg || '')),
         colCenterImg: sanitizeTemplateUrl(String(src.colCenterImg || '')),
@@ -267,8 +277,10 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
       const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
       if (safeUrl) {
         const isFull = align === 'full';
+        // imageWidth (string: '80px' / '100%') tiene prioridad sobre imgWidth (px).
+        const widthStr = b.imageWidth || (b.imgWidth ? `${b.imgWidth}px` : '');
         const imgStyle = [
-          isFull ? 'width:100%' : (b.imgWidth ? `width:${b.imgWidth}px` : 'max-width:100%'),
+          isFull ? 'width:100%' : (widthStr ? `width:${widthStr};max-width:100%` : 'max-width:100%'),
           isFull ? 'height:auto' : (b.imgHeight ? `height:${b.imgHeight}px` : 'height:auto'),
           isFull ? 'display:block' : 'display:inline-block',
           b.imgBorderRadius ? `border-radius:${b.imgBorderRadius}px` : '',
@@ -1433,7 +1445,7 @@ export default function ContentBlockBuilder({
                         <img src={logo.url} alt={logo.nombre} className="mx-auto h-10 max-w-full object-contain" />
                         <p className="mt-1 truncate text-center text-[10px] text-muted-foreground">{logo.nombre}</p>
                         <button type="button"
-                          onClick={() => { const b = createBlock('image', { url: logo.url, content: logo.nombre, align: 'center' }); setBlocks((p) => [...p, b]); setSelectedId(b.id); onChange?.(renderBlocksToHtml([...blocks, b], webMode)); }}
+                          onClick={() => { const b = createBlock('image', { url: logo.url, content: logo.nombre, align: 'center', imageWidth: '160px', imgWidth: 160 }); setBlocks((p) => [...p, b]); setSelectedId(b.id); onChange?.(renderBlocksToHtml([...blocks, b], webMode)); }}
                           className="absolute right-1 top-1 hidden rounded bg-primary px-1 py-0.5 text-[10px] font-bold text-white group-hover:block">+</button>
                       </div>
                     ))}
@@ -1472,7 +1484,7 @@ export default function ContentBlockBuilder({
                         <p className="mt-1 truncate text-center text-[10px] text-muted-foreground">{logo.nombre}</p>
                         <div className="absolute right-1 top-1 hidden flex-col gap-0.5 group-hover:flex">
                           <button type="button"
-                            onClick={() => { const b = createBlock('image', { url: logo.url, content: logo.nombre, align: 'center' }); setBlocks((p) => [...p, b]); setSelectedId(b.id); onChange?.(renderBlocksToHtml([...blocks, b], webMode)); }}
+                            onClick={() => { const b = createBlock('image', { url: logo.url, content: logo.nombre, align: 'center', imageWidth: '160px', imgWidth: 160 }); setBlocks((p) => [...p, b]); setSelectedId(b.id); onChange?.(renderBlocksToHtml([...blocks, b], webMode)); }}
                             className="rounded bg-primary px-1 py-0.5 text-[10px] font-bold text-white">+</button>
                           <button type="button" onClick={() => deletePuebloLogo(logo.id)}
                             className="rounded bg-red-500 px-1 py-0.5 text-[10px] font-bold text-white">✕</button>
@@ -1516,7 +1528,7 @@ export default function ContentBlockBuilder({
               const logoUrl = e.dataTransfer.getData('text/builder-logo-url');
               const logoName = e.dataTransfer.getData('text/builder-logo-name');
               if (logoUrl) {
-                const b = createBlock('image', { url: logoUrl, content: logoName || 'Logo', align: 'center' });
+                const b = createBlock('image', { url: logoUrl, content: logoName || 'Logo', align: 'center', imageWidth: '160px', imgWidth: 160 });
                 setBlocks((prev) => [...prev, b]);
                 setSelectedId(b.id);
                 return;
@@ -1633,6 +1645,40 @@ export default function ContentBlockBuilder({
                     URL{selectedBlock.type === 'figure' || selectedBlock.type === 'imgText' ? ' imagen' : ''}
                     <input value={selectedBlock.url || ''} onChange={(e) => updateSelected({ url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
                   </label>
+                )}
+
+                {/* Selector rápido de ancho (solo bloque image, equivale al del newsletter) */}
+                {selectedBlock.type === 'image' && (
+                  <div className="md:col-span-2">
+                    <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Ancho de imagen</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {['80px', '120px', '160px', '200px', '250px', '300px', '50%', '75%', '100%'].map((w) => {
+                        const current = selectedBlock.imageWidth
+                          || (selectedBlock.imgWidth ? `${selectedBlock.imgWidth}px` : '100%');
+                        const active = current === w;
+                        return (
+                          <button
+                            key={w}
+                            type="button"
+                            onClick={() => {
+                              const patch: Partial<ContentBlock> = { imageWidth: w };
+                              // Si elige un valor en px sincroniza también imgWidth numérico
+                              // para que el editor de recorte y el render mantengan coherencia.
+                              if (w.endsWith('px')) {
+                                patch.imgWidth = parseInt(w, 10);
+                              } else {
+                                patch.imgWidth = undefined;
+                              }
+                              updateSelected(patch);
+                            }}
+                            className={`rounded border px-2 py-1 text-[11px] font-medium transition ${active ? 'border-primary bg-primary text-white' : 'border-border bg-white hover:bg-muted'}`}
+                          >
+                            {w}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
 
                 {/* Image upload for image/figure/imgText */}
