@@ -932,6 +932,7 @@ export default function NotasPrensaNewsletterClient({
   const [sendingTest, setSendingTest] = useState(false);
   const [showPressLogos, setShowPressLogos] = useState(false);
   const [logoInsertWidth, setLogoInsertWidth] = useState<'100%' | '80%' | '60%' | '40%' | '200px' | '160px' | '120px' | '80px'>('160px');
+  const [logoInsertAlign, setLogoInsertAlign] = useState<'left' | 'center' | 'right'>('center');
   const [emailPhotoWidth, setEmailPhotoWidth] = useState<'100%' | '80%' | '60%' | '40%' | '30%' | '20%'>('40%');
   const [webPhotoWidth, setWebPhotoWidth] = useState<'100%' | '80%' | '60%'>('100%');
   const logoUploadInputRef = useRef<HTMLInputElement | null>(null);
@@ -958,6 +959,7 @@ export default function NotasPrensaNewsletterClient({
         inline: false,
         allowBase64: false,
       }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Placeholder.configure({
         placeholder: 'Escribe aquí la nota de prensa...',
       }),
@@ -4222,6 +4224,23 @@ export default function NotasPrensaNewsletterClient({
                         </button>
                       ))}
                     </div>
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-semibold text-muted-foreground">Alineación:</span>
+                      {([
+                        { value: 'left' as const, label: 'Izquierda' },
+                        { value: 'center' as const, label: 'Centro' },
+                        { value: 'right' as const, label: 'Derecha' },
+                      ]).map(({ value, label }) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setLogoInsertAlign(value)}
+                          className={`rounded border px-2 py-1 text-[11px] font-medium transition ${logoInsertAlign === value ? 'border-primary bg-primary text-white' : 'border-border bg-white hover:bg-muted'}`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
                     <p className="mb-2 text-xs text-muted-foreground">Haz clic en un logo para insertarlo en la posición del cursor</p>
                     {brandLogos.length === 0 ? (
                       <p className="py-3 text-center text-xs text-muted-foreground">No hay logos en la biblioteca. Súbelos desde Gestión &gt; Logos.</p>
@@ -4232,7 +4251,7 @@ export default function NotasPrensaNewsletterClient({
                             key={logo.id}
                             type="button"
                             onClick={() => {
-                              insertImageAtCursor(logo.url, logo.nombre || 'Logo', logoInsertWidth);
+                              insertImageAtCursor(logo.url, logo.nombre || 'Logo', logoInsertWidth, logoInsertAlign);
                               setShowPressLogos(false);
                             }}
                             className="group flex flex-col items-center gap-1 rounded-lg border border-border p-2 hover:border-primary hover:bg-primary/5"
@@ -4308,6 +4327,52 @@ export default function NotasPrensaNewsletterClient({
                       >
                         H3
                       </button>
+                      <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().setTextAlign('left').run()}
+                        className={`rounded border px-2 py-1 text-xs font-semibold ${
+                          editor?.isActive({ textAlign: 'left' }) ? 'bg-primary text-primary-foreground' : 'bg-background'
+                        }`}
+                        title="Alinear a la izquierda"
+                        aria-label="Alinear a la izquierda"
+                      >
+                        ⯇
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().setTextAlign('center').run()}
+                        className={`rounded border px-2 py-1 text-xs font-semibold ${
+                          editor?.isActive({ textAlign: 'center' }) ? 'bg-primary text-primary-foreground' : 'bg-background'
+                        }`}
+                        title="Centrar"
+                        aria-label="Centrar"
+                      >
+                        ⯀
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().setTextAlign('right').run()}
+                        className={`rounded border px-2 py-1 text-xs font-semibold ${
+                          editor?.isActive({ textAlign: 'right' }) ? 'bg-primary text-primary-foreground' : 'bg-background'
+                        }`}
+                        title="Alinear a la derecha"
+                        aria-label="Alinear a la derecha"
+                      >
+                        ⯈
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().setTextAlign('justify').run()}
+                        className={`rounded border px-2 py-1 text-xs font-semibold ${
+                          editor?.isActive({ textAlign: 'justify' }) ? 'bg-primary text-primary-foreground' : 'bg-background'
+                        }`}
+                        title="Justificar"
+                        aria-label="Justificar"
+                      >
+                        ☰
+                      </button>
+                      <span className="mx-1 h-5 w-px bg-border" aria-hidden />
                       <button
                         type="button"
                         onClick={() => editor?.chain().focus().toggleBulletList().run()}
