@@ -63,6 +63,7 @@ type GlobalSearchResult = {
     coleccionSlug: string | null;
   }>;
   multiexperiencias: Array<{
+    id?: number;
     slug: string;
     titulo: string;
     tipo: string;
