@@ -3,13 +3,20 @@ import { getApiUrl } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
 
+// Respuesta vacía con todas las secciones que el cliente espera. Mantenerla
+// centralizada evita olvidar una sección al añadir nuevas (pois, eventos…).
+const EMPTY_RESULT = {
+  tags: [], multiexperiencias: [], recursos: [],
+  colecciones: [], pages: [], noticias: [], eventos: [], pois: [],
+};
+
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const q = searchParams.get('q') ?? '';
   const lang = searchParams.get('lang') ?? 'es';
 
   if (!q || q.trim().length < 2) {
-    return NextResponse.json({ tags: [], multiexperiencias: [], recursos: [], colecciones: [], pages: [], noticias: [] });
+    return NextResponse.json(EMPTY_RESULT);
   }
 
   const API_BASE = getApiUrl();
@@ -19,11 +26,11 @@ export async function GET(req: NextRequest) {
       cache: 'no-store',
     });
     if (!res.ok) {
-      return NextResponse.json({ tags: [], multiexperiencias: [], recursos: [], colecciones: [], pages: [], noticias: [] }, { status: res.status });
+      return NextResponse.json(EMPTY_RESULT, { status: res.status });
     }
     const data = await res.json();
     return NextResponse.json(data);
   } catch {
-    return NextResponse.json({ tags: [], multiexperiencias: [], recursos: [], colecciones: [], pages: [], noticias: [] }, { status: 502 });
+    return NextResponse.json(EMPTY_RESULT, { status: 502 });
   }
 }

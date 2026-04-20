@@ -108,6 +108,16 @@ type GlobalSearchResult = {
     fechaInicio?: string | null;
     fechaFin?: string | null;
   }>;
+  pois?: Array<{
+    id: number;
+    slug: string | null;
+    nombre: string;
+    categoria: string | null;
+    foto: string | null;
+    puebloSlug: string;
+    puebloNombre: string;
+    href: string;
+  }>;
 };
 
 const SEMAFORO_COLORS: Record<string, string> = {
@@ -492,7 +502,8 @@ export default function ExplorarBar() {
       globalSearch.colecciones.length > 0 ||
       (globalSearch.pages?.length ?? 0) > 0 ||
       (globalSearch.noticias?.length ?? 0) > 0 ||
-      (globalSearch.eventos?.length ?? 0) > 0
+      (globalSearch.eventos?.length ?? 0) > 0 ||
+      (globalSearch.pois?.length ?? 0) > 0
     )) ||
     globalSearchLoading;
 
@@ -649,6 +660,40 @@ export default function ExplorarBar() {
                           </div>
                         </div>
                       </div>
+
+                      {/* POIs también en modo pueblo detectado: "castillo ampudia" */}
+                      {globalSearch && globalSearch.pois && globalSearch.pois.length > 0 && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            {tNav('queVer')}
+                          </p>
+                          {globalSearch.pois.map((poi) => (
+                            <Link
+                              key={`poi-pq-${poi.id}`}
+                              href={poi.href}
+                              onClick={close}
+                              className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                            >
+                              {poi.foto ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={poi.foto}
+                                  alt=""
+                                  className="h-8 w-8 shrink-0 rounded-lg object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-500/10">
+                                  <Landmark className="h-4 w-4 text-stone-600" />
+                                </div>
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium text-foreground">{poi.nombre}</p>
+                                <p className="truncate text-[11px] text-muted-foreground">{poi.puebloNombre}</p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
                     </>
                   )}
 
@@ -989,6 +1034,40 @@ export default function ExplorarBar() {
                                 {e.puebloNombre && (
                                   <p className="truncate text-[11px] text-muted-foreground">{e.puebloNombre}</p>
                                 )}
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* POIs (lugares de interés) — p.ej. "castillo de ampudia" */}
+                      {globalSearch && globalSearch.pois && globalSearch.pois.length > 0 && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            {tNav('queVer')}
+                          </p>
+                          {globalSearch.pois.map((poi) => (
+                            <Link
+                              key={`poi-${poi.id}`}
+                              href={poi.href}
+                              onClick={close}
+                              className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                            >
+                              {poi.foto ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={poi.foto}
+                                  alt=""
+                                  className="h-8 w-8 shrink-0 rounded-lg object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-500/10">
+                                  <Landmark className="h-4 w-4 text-stone-600" />
+                                </div>
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium text-foreground">{poi.nombre}</p>
+                                <p className="truncate text-[11px] text-muted-foreground">{poi.puebloNombre}</p>
                               </div>
                             </Link>
                           ))}
