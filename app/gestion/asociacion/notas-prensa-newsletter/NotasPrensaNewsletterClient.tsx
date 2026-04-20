@@ -2076,12 +2076,18 @@ export default function NotasPrensaNewsletterClient({
   function insertImageAtCursor(url: string, alt: string, width: string, align: 'left' | 'center' | 'right' = 'center') {
     const cleanUrl = String(url || '').trim();
     if (!cleanUrl) return;
-    const alignStyle = align === 'center' ? 'text-align:center;' : align === 'right' ? 'text-align:right;' : '';
+    const marginByAlign =
+      align === 'center'
+        ? 'margin:16px auto;'
+        : align === 'right'
+        ? 'margin:16px 0 16px auto;'
+        : 'margin:16px auto 16px 0;';
     const isPixel = width.endsWith('px');
-    const imgStyle = isPixel
+    const sizeStyle = isPixel
       ? `width:${width};max-width:100%;height:auto;`
       : `width:${width};max-width:${width};height:auto;`;
-    const snippet = `<div style="margin:16px 0;${alignStyle}"><img src="${cleanUrl}" alt="${alt}" style="${imgStyle}" /></div>`;
+    const imgStyle = `display:block;${sizeStyle}${marginByAlign}`;
+    const snippet = `<p style="text-align:${align};margin:0;"><img src="${cleanUrl}" alt="${alt}" style="${imgStyle}" align="${align}" /></p>`;
 
     if (editorMode === 'visual' && editor) {
       editor.chain().focus().insertContent(snippet).run();
