@@ -9,7 +9,7 @@ import { getApiUrl } from '@/lib/api';
 import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from '@/lib/seo';
 import JsonLd from '@/app/components/seo/JsonLd';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
-import { injectImgAlt } from '@/app/_lib/html';
+import SafeHtml from '@/app/_components/ui/SafeHtml';
 
 const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'] as const;
 
@@ -178,7 +178,7 @@ export default async function NoticiaPage({
             return (
               <div style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }} className="prose-contenido">
                 {isHtmlContent(texto) ? (
-                  <div dangerouslySetInnerHTML={{ __html: injectImgAlt(texto, noticia.titulo) }} />
+                  <SafeHtml html={texto} altFallback={noticia.titulo} />
                 ) : (
                   <ReactMarkdown
                     components={{

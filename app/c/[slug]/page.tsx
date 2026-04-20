@@ -8,7 +8,7 @@ import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
 import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoDescription, seoTitle } from '@/lib/seo';
-import { autoLinkUrls, injectImgAlt } from '@/app/_lib/html';
+import { autoLinkUrls } from '@/app/_lib/html';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 import JsonLd from '@/app/components/seo/JsonLd';
 import ContenidoImageCarousel from '@/app/components/ContenidoImageCarousel';
@@ -381,7 +381,7 @@ export default async function ContenidoPage({
             {body && (
               <div className="prose-contenido text-base leading-relaxed text-foreground">
                 {isHtmlContent(body) ? (
-                  <div dangerouslySetInnerHTML={{ __html: injectImgAlt(body, titulo) }} />
+                  <SafeHtml html={body} altFallback={titulo} />
                 ) : (
                   <ReactMarkdown
                     components={{
