@@ -2,7 +2,17 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-type Category = 'http' | 'slow' | 'unhandled' | 'cron' | 'email';
+type Category =
+  | 'http'
+  | 'slow'
+  | 'unhandled'
+  | 'cron'
+  | 'email'
+  | 'notif'
+  | 'club'
+  | 'cms'
+  | 'stripe'
+  | 'auth';
 
 type ErrorEntry = {
   ts: number;
@@ -57,6 +67,11 @@ const CATEGORIES: { value: '' | Category; label: string }[] = [
   { value: 'unhandled', label: 'Node no capturado' },
   { value: 'cron', label: 'Cron jobs' },
   { value: 'email', label: 'Emails' },
+  { value: 'notif', label: 'Notificaciones' },
+  { value: 'club', label: 'Club / Socios' },
+  { value: 'cms', label: 'Contenidos (CMS)' },
+  { value: 'stripe', label: 'Stripe / pagos' },
+  { value: 'auth', label: 'Auth' },
 ];
 
 function formatTs(ts: number) {
@@ -82,6 +97,21 @@ function statusBadgeClass(e: { category: Category; status: number }) {
   }
   if (e.category === 'email') {
     return 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400';
+  }
+  if (e.category === 'notif') {
+    return 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400';
+  }
+  if (e.category === 'club') {
+    return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400';
+  }
+  if (e.category === 'cms') {
+    return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
+  }
+  if (e.category === 'stripe') {
+    return 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400';
+  }
+  if (e.category === 'auth') {
+    return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
   }
   if (e.status >= 500) {
     return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
@@ -110,14 +140,26 @@ function categoryLabel(c: Category): string {
       return 'Cron';
     case 'email':
       return 'Email';
+    case 'notif':
+      return 'Notif';
+    case 'club':
+      return 'Club';
+    case 'cms':
+      return 'CMS';
+    case 'stripe':
+      return 'Stripe';
+    case 'auth':
+      return 'Auth';
     default:
       return c;
   }
 }
 
+const NON_HTTP_CATEGORIES: Category[] = ['unhandled', 'cron', 'email', 'notif', 'club', 'cms', 'stripe', 'auth'];
+
 function statusLabel(e: { category: Category; status: number; durationMs?: number }): string {
   if (e.category === 'slow') return `${e.durationMs ?? e.status} ms`;
-  if (e.category === 'unhandled' || e.category === 'cron' || e.category === 'email') return 'ERR';
+  if (NON_HTTP_CATEGORIES.includes(e.category)) return 'ERR';
   return String(e.status);
 }
 
@@ -256,6 +298,11 @@ export default function HttpErroresDashboard() {
             <Stat label="Node" value={counts?.unhandled ?? 0} tone="fuchsia" />
             <Stat label="Cron" value={counts?.cron ?? 0} tone="indigo" />
             <Stat label="Email" value={counts?.email ?? 0} tone="teal" />
+            <Stat label="Notif" value={counts?.notif ?? 0} tone="cyan" />
+            <Stat label="Club" value={counts?.club ?? 0} tone="rose" />
+            <Stat label="CMS" value={counts?.cms ?? 0} tone="emerald" />
+            <Stat label="Stripe" value={counts?.stripe ?? 0} tone="violet" />
+            <Stat label="Auth" value={counts?.auth ?? 0} tone="yellow" />
           </div>
         )}
       </section>
@@ -381,31 +428,38 @@ export default function HttpErroresDashboard() {
   );
 }
 
-function Stat({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number | string;
-  tone: 'red' | 'amber' | 'purple' | 'fuchsia' | 'indigo' | 'teal' | 'neutral';
-}) {
-  const toneClass =
-    tone === 'red'
-      ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300'
-      : tone === 'amber'
-        ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300'
-        : tone === 'purple'
-          ? 'border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900 dark:bg-purple-950 dark:text-purple-300'
-          : tone === 'fuchsia'
-            ? 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700 dark:border-fuchsia-900 dark:bg-fuchsia-950 dark:text-fuchsia-300'
-            : tone === 'indigo'
-              ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950 dark:text-indigo-300'
-              : tone === 'teal'
-                ? 'border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-900 dark:bg-teal-950 dark:text-teal-300'
-                : 'border-border bg-card text-foreground';
+type Tone =
+  | 'red'
+  | 'amber'
+  | 'purple'
+  | 'fuchsia'
+  | 'indigo'
+  | 'teal'
+  | 'cyan'
+  | 'rose'
+  | 'emerald'
+  | 'violet'
+  | 'yellow'
+  | 'neutral';
+
+const TONE_CLASSES: Record<Tone, string> = {
+  red: 'border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300',
+  amber: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300',
+  purple: 'border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900 dark:bg-purple-950 dark:text-purple-300',
+  fuchsia: 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700 dark:border-fuchsia-900 dark:bg-fuchsia-950 dark:text-fuchsia-300',
+  indigo: 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950 dark:text-indigo-300',
+  teal: 'border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-900 dark:bg-teal-950 dark:text-teal-300',
+  cyan: 'border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-900 dark:bg-cyan-950 dark:text-cyan-300',
+  rose: 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-300',
+  emerald: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300',
+  violet: 'border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-900 dark:bg-violet-950 dark:text-violet-300',
+  yellow: 'border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-300',
+  neutral: 'border-border bg-card text-foreground',
+};
+
+function Stat({ label, value, tone }: { label: string; value: number | string; tone: Tone }) {
   return (
-    <div className={`rounded-lg border p-3 ${toneClass}`}>
+    <div className={`rounded-lg border p-3 ${TONE_CLASSES[tone]}`}>
       <div className="text-xs uppercase opacity-80">{label}</div>
       <div className="mt-1 text-xl font-semibold tabular-nums">{value}</div>
     </div>

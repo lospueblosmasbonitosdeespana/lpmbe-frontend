@@ -61,7 +61,9 @@ async function fetchData(slug: string, locale: string): Promise<Payload | null> 
   try {
     const res = await fetch(`${API}/semana-santa/pueblos/${slug}?lang=${lang}`);
     if (!res.ok) return null;
-    return (await res.json()) as Payload;
+    const data = await res.json();
+    if (data && data.participa === false) return null;
+    return data as Payload;
   } catch {
     return null;
   }

@@ -96,7 +96,10 @@ async function fetchPueblo(slug: string, lang?: string): Promise<NRPuebloDetail 
     const langParam = lang && lang !== 'es' ? `?lang=${lang}` : '';
     const res = await fetch(`${API_BASE}/noche-romantica/pueblos/${slug}${langParam}`);
     if (!res.ok) return null;
-    return await res.json();
+    const data = await res.json();
+    // El backend ahora devuelve 200 con { participa: false } cuando el pueblo no participa
+    if (data && data.participa === false) return null;
+    return data;
   } catch {
     return null;
   }
