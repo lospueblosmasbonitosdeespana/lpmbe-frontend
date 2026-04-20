@@ -94,7 +94,19 @@ type GlobalSearchResult = {
   noticias: Array<{
     slug: string;
     titulo: string;
+    resumen?: string | null;
+    coverUrl?: string | null;
     puebloNombre: string | null;
+    fecha?: string | null;
+  }>;
+  eventos?: Array<{
+    slug: string;
+    titulo: string;
+    resumen?: string | null;
+    coverUrl?: string | null;
+    puebloNombre: string | null;
+    fechaInicio?: string | null;
+    fechaFin?: string | null;
   }>;
 };
 
@@ -479,7 +491,8 @@ export default function ExplorarBar() {
       globalSearch.recursos.length > 0 ||
       globalSearch.colecciones.length > 0 ||
       (globalSearch.pages?.length ?? 0) > 0 ||
-      (globalSearch.noticias?.length ?? 0) > 0
+      (globalSearch.noticias?.length ?? 0) > 0 ||
+      (globalSearch.eventos?.length ?? 0) > 0
     )) ||
     globalSearchLoading;
 
@@ -937,7 +950,7 @@ export default function ExplorarBar() {
                           {globalSearch.noticias.map((n) => (
                             <Link
                               key={n.slug}
-                              href={`/actualidad/${n.slug}`}
+                              href={`/noticias/${n.slug}`}
                               onClick={close}
                               className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
                             >
@@ -948,6 +961,33 @@ export default function ExplorarBar() {
                                 <p className="truncate text-sm font-medium text-foreground">{n.titulo}</p>
                                 {n.puebloNombre && (
                                   <p className="truncate text-[11px] text-muted-foreground">{n.puebloNombre}</p>
+                                )}
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Eventos */}
+                      {globalSearch && globalSearch.eventos && globalSearch.eventos.length > 0 && (
+                        <div>
+                          <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            {tNav('eventos')}
+                          </p>
+                          {globalSearch.eventos.map((e) => (
+                            <Link
+                              key={e.slug}
+                              href={`/eventos/${e.slug}`}
+                              onClick={close}
+                              className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
+                            >
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-rose-500/10">
+                                <Newspaper className="h-4 w-4 text-rose-600" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium text-foreground">{e.titulo}</p>
+                                {e.puebloNombre && (
+                                  <p className="truncate text-[11px] text-muted-foreground">{e.puebloNombre}</p>
                                 )}
                               </div>
                             </Link>
