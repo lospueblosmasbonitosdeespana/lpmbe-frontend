@@ -6,10 +6,19 @@ import R2ImageUploader from '@/app/components/R2ImageUploader';
 type CampanaKey = 'semana-santa' | 'navidad' | 'noche-romantica';
 
 interface Edicion {
+  id: number;
   anio: number;
-  activa: boolean;
+  activo: boolean;
   editable: boolean;
-  cartelUrl?: string | null;
+  cartelHorizontalUrl?: string | null;
+  cartelVerticalUrl?: string | null;
+  updatedAt?: string;
+  _count?: { agenda: number; dias: number };
+}
+
+interface EdicionesResponse {
+  activeAnio: number;
+  ediciones: Edicion[];
 }
 
 interface LandingAdmin {
@@ -60,10 +69,15 @@ export default function CampanaLandingEditor({ campana, puebloId, puebloSlug }: 
   const meta = CAMPAIGN_META[campana];
   const [data, setData] = useState<LandingAdmin | null>(null);
   const [ediciones, setEdiciones] = useState<Edicion[]>([]);
+  const [activeAnio, setActiveAnio] = useState<number | null>(null);
+  const [userRol, setUserRol] = useState<string | null>(null);
   const [descripcion, setDescripcion] = useState('');
   const [heroImageUrl, setHeroImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [cloning, setCloning] = useState(false);
+  const [cloneDestino, setCloneDestino] = useState<string>('');
+  const [cloneOrigen, setCloneOrigen] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -72,7 +86,7 @@ export default function CampanaLandingEditor({ campana, puebloId, puebloSlug }: 
     setLoading(true);
     setError(null);
     try {
-      const [landingRes, edicionesRes] = await Promise.all([
+      const [landingRes, edicionesRes, meRes] = await Promise.all([
         fetch(`/api/admin/${campana}/pueblos/by-pueblo/${puebloId}/landing`, {
           credentials: 'include',
           cache: 'no-store',
@@ -81,6 +95,7 @@ export default function CampanaLandingEditor({ campana, puebloId, puebloSlug }: 
           credentials: 'include',
           cache: 'no-store',
         }),
+        fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' }),
       ]);
       if (landingRes.ok) {
         const json = (await landingRes.json()) as LandingAdmin;
@@ -91,8 +106,19 @@ export default function CampanaLandingEditor({ campana, puebloId, puebloSlug }: 
         setError('No se pudo cargar el contenido perenne.');
       }
       if (edicionesRes.ok) {
-        const list = (await edicionesRes.json()) as Edicion[];
-        setEdiciones(list);
+        const body = (await edicionesRes.json()) as EdicionesResponse | Edicion[];
+        if (Array.isArray(body)) {
+          setEdiciones(body);
+          setActiveAnio(null);
+        } else {
+          setEdiciones(body.ediciones ?? []);
+          setActiveAnio(body.activeAnio);
+          setCloneDestino(String((body.activeAnio ?? new Date().getFullYear()) + 1));
+        }
+      }
+      if (meRes.ok) {
+        const me = await meRes.json();
+        setUserRol(me?.rol ?? null);
       }
     } catch {
       setError('No se pudo cargar el contenido perenne.');
@@ -130,9 +156,54 @@ export default function CampanaLandingEditor({ campana, puebloId, puebloSlug }: 
     }
   };
 
+  const clonar = async (anioOrigen: number) => {
+    if (!puebloId) return;
+    const destino = Number(cloneDestino);
+    if (!Number.isInteger(destino) || destino < 2000 || destino > 2100) {
+      setError('Año destino inválido');
+      return;
+    }
+    if (destino === anioOrigen) {
+      setError('El año destino debe ser distinto del origen');
+      return;
+    }
+    if (ediciones.some((e) => e.anio === destino)) {
+      setError(`Ya existe una edición ${destino}. Elige otro año o borra la existente.`);
+      return;
+    }
+    const confirmar = window.confirm(
+      `¿Clonar la edición ${anioOrigen} a ${destino}? Se copiarán los datos del pueblo, agenda y días. Podrás editarla después.`,
+    );
+    if (!confirmar) return;
+    setCloning(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/admin/${campana}/pueblos/by-pueblo/${puebloId}/ediciones/${destino}/clonar-desde/${anioOrigen}`,
+        {
+          method: 'POST',
+          credentials: 'include',
+        },
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.message ?? 'No se pudo clonar la edición');
+      }
+      setSuccess(`Edición ${destino} creada a partir de ${anioOrigen}`);
+      setTimeout(() => setSuccess(null), 3500);
+      setCloneOrigen(null);
+      await load();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'No se pudo clonar la edición');
+    } finally {
+      setCloning(false);
+    }
+  };
+
   if (!puebloId) return null;
 
-  const edicionesPasadas = ediciones.filter((e) => !e.activa);
+  const isAdmin = userRol === 'ADMIN';
+  const edicionesOrdenadas = [...ediciones].sort((a, b) => b.anio - a.anio);
 
   return (
     <section className="mb-8 rounded-lg border border-emerald-200 bg-emerald-50/30 p-5">
@@ -187,26 +258,102 @@ export default function CampanaLandingEditor({ campana, puebloId, puebloSlug }: 
         </div>
       )}
 
-      {edicionesPasadas.length > 0 && (
+      {!loading && edicionesOrdenadas.length > 0 && (
         <div className="mt-6 rounded-md border border-emerald-200 bg-white p-4">
-          <h3 className="text-sm font-semibold">Ediciones anteriores publicadas</h3>
+          <div className="flex items-baseline justify-between gap-4">
+            <h3 className="text-sm font-semibold">Ediciones</h3>
+            {activeAnio != null && (
+              <span className="text-xs text-muted-foreground">
+                Año activo: <strong>{activeAnio}</strong>
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Estas ediciones históricas están congeladas y son visibles en la web como archivo
-            SEO. No se pueden editar.
+            Cada edición es un snapshot anual. Las anteriores quedan congeladas como archivo SEO
+            y solo un administrador puede crear nuevas ediciones clonando años anteriores.
           </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {edicionesPasadas.map((e) => (
-              <a
-                key={e.anio}
-                href={meta.archiveBaseUrl(puebloSlug, e.anio)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-accent"
-              >
-                Ver {e.anio}
-                <span className="text-[10px] opacity-60">↗</span>
-              </a>
-            ))}
+
+          {isAdmin && (
+            <div className="mt-3 flex flex-wrap items-center gap-2 rounded border border-dashed border-emerald-300 bg-emerald-50/50 p-2 text-xs">
+              <span className="font-medium">Clonar a año destino:</span>
+              <input
+                type="number"
+                min={2000}
+                max={2100}
+                value={cloneDestino}
+                onChange={(e) => setCloneDestino(e.target.value)}
+                className="w-24 rounded border bg-white px-2 py-1 text-xs"
+              />
+              <span className="text-muted-foreground">
+                (selecciona debajo desde qué año clonar)
+              </span>
+            </div>
+          )}
+
+          <div className="mt-3 divide-y divide-border rounded border">
+            {edicionesOrdenadas.map((e) => {
+              const isActive = activeAnio != null && e.anio === activeAnio;
+              const cartel = e.cartelHorizontalUrl || e.cartelVerticalUrl;
+              return (
+                <div
+                  key={e.id}
+                  className="flex flex-wrap items-center justify-between gap-3 p-3 text-xs"
+                >
+                  <div className="flex items-center gap-3">
+                    {cartel && (
+                      <img
+                        src={cartel}
+                        alt=""
+                        className="h-12 w-12 rounded object-cover"
+                        loading="lazy"
+                      />
+                    )}
+                    <div>
+                      <div className="font-semibold text-sm">
+                        {e.anio}{' '}
+                        {isActive ? (
+                          <span className="ml-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800">
+                            activa
+                          </span>
+                        ) : (
+                          <span className="ml-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                            archivo
+                          </span>
+                        )}
+                      </div>
+                      {e._count && (
+                        <div className="text-[10px] text-muted-foreground">
+                          {e._count.dias} días · {e._count.agenda} actos
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={meta.archiveBaseUrl(puebloSlug, e.anio)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-full border border-border bg-background px-3 py-1 font-medium hover:bg-accent"
+                    >
+                      Ver ↗
+                    </a>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => clonar(e.anio)}
+                        disabled={cloning}
+                        className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 font-medium text-emerald-800 hover:bg-emerald-100 disabled:opacity-50"
+                      >
+                        {cloning && cloneOrigen === e.anio
+                          ? 'Clonando…'
+                          : `Clonar → ${cloneDestino || '?'}`}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
