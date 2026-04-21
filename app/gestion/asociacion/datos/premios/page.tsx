@@ -13,7 +13,7 @@ export default async function PremiosPage() {
 
   return (
     <GestionAsociacionSubpageShell
-      title="12 Premios"
+      title="10 Premios"
       subtitle={
         <>
           Reconocimientos anuales a los pueblos de la red · Ranking completo de 126

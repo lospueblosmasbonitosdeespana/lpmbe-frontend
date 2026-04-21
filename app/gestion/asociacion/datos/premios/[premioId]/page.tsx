@@ -29,7 +29,7 @@ export default async function PremioDetallePage({
       title={`Premio ${String(premioId).padStart(2, '0')}`}
       subtitle="Ranking completo por pueblo · descarga CSV disponible"
       backHref="/gestion/asociacion/datos/premios"
-      backLabel="Volver a 12 Premios"
+      backLabel="Volver a 10 Premios"
       maxWidthClass="max-w-6xl"
     >
       <PremioDetalleClient

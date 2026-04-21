@@ -121,10 +121,10 @@ export default function PremiosAdminDashboard() {
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-                12 Premios · Asamblea Nacional
+                10 Premios · Asamblea Nacional
               </h1>
               <p className="mt-0.5 text-sm text-white/80">
-                Ranking de los 126 pueblos en los 12 premios que se entregan cada octubre.
+                Ranking de los pueblos en los 10 premios que se entregan cada octubre.
               </p>
             </div>
           </div>
@@ -168,7 +168,7 @@ export default function PremiosAdminDashboard() {
               Premios activos
             </span>
             <span className="text-lg font-bold">
-              {loadingResumen ? '…' : `${totalImplementados} / 12`}
+              {loadingResumen ? '…' : `${totalImplementados} / 10`}
             </span>
           </div>
           {edicion && !edicion.cerrada && edicionId && (
@@ -183,7 +183,7 @@ export default function PremiosAdminDashboard() {
         </div>
       )}
 
-      {/* Grid de 12 premios */}
+      {/* Grid de los 10 premios */}
       {loadingResumen ? (
         <div className="py-20 text-center text-sm text-muted-foreground">
           Calculando rankings…

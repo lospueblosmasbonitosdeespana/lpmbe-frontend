@@ -136,8 +136,9 @@ export const PREMIOS_UI: Record<number, PremioUI> = {
     tint: PALETAS[0],
   },
   2: {
-    titulo: 'Más Visitado (GPS)',
-    descripcion: 'Pueblo con más visitas físicas detectadas por geolocalización.',
+    titulo: 'Más Visitado',
+    descripcion:
+      'Visitas físicas totales al pueblo: GPS automático + registros manuales, para no premiar sólo a los pueblos junto a una autovía.',
     unidad: 'visitas',
     implementado: true,
     Icon: MapPin,
@@ -169,7 +170,8 @@ export const PREMIOS_UI: Record<number, PremioUI> = {
   },
   6: {
     titulo: 'Pueblo Revelación',
-    descripcion: 'Mayor crecimiento relativo respecto al periodo anterior.',
+    descripcion:
+      'Mayor crecimiento relativo en visitas totales (GPS + manuales), canjes del Club y visitas en web/app respecto al periodo anterior.',
     unidad: '%',
     implementado: true,
     Icon: Rocket,
@@ -188,8 +190,9 @@ export const PREMIOS_UI: Record<number, PremioUI> = {
   // hasta que se defina un nuevo criterio: no se calculan ni se muestran.
   10: {
     titulo: 'Mejor Tejido Local',
-    descripcion: 'Más negocios, hoteles y restaurantes adheridos al Club.',
-    unidad: 'negocios',
+    descripcion:
+      'Recursos turísticos propios del pueblo (monumentos, museos, iglesias, oficinas de turismo…) + negocios adheridos al Club con plan de pago (hoteles, casas rurales, restaurantes, tiendas).',
+    unidad: 'recursos + negocios',
     implementado: true,
     Icon: Store,
     tint: PALETAS[7],

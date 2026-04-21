@@ -44,7 +44,7 @@ export default async function PuebloPremiosPage({
   return (
     <GestionPuebloSubpageShell
       slug={slug}
-      title="12 Premios"
+      title="10 Premios"
       subtitle={
         <>
           Tu posición en los reconocimientos anuales ·{' '}

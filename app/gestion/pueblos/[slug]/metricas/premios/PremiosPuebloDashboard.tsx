@@ -9,11 +9,15 @@ import {
   type Tendencia,
 } from '../../../../_lib/premiosUI';
 
-const VENTANAS: Array<{ value: 3 | 7 | 15 | 30; label: string }> = [
+type VentanaDias = 3 | 7 | 15 | 30 | 90 | 180;
+
+const VENTANAS: Array<{ value: VentanaDias; label: string }> = [
   { value: 3, label: '3 días' },
   { value: 7, label: '7 días' },
   { value: 15, label: '15 días' },
   { value: 30, label: '30 días' },
+  { value: 90, label: '3 meses' },
+  { value: 180, label: '6 meses' },
 ];
 
 interface Edicion {
@@ -175,9 +179,11 @@ export default function PremiosPuebloDashboard({
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
           Cada tarjeta muestra <strong className="text-foreground/80">tu posición</strong> en ese
-          premio durante el periodo anual. Usa los botones{' '}
-          <strong className="text-foreground/80">3d · 7d · 15d · 30d</strong> para ver tu posición
-          en una ventana móvil reciente (útil para detectar tendencias).
+          premio durante el periodo anual. Pulsa{' '}
+          <strong className="text-foreground/80">3d · 7d · 15d · 30d · 3m · 6m</strong> para ver tu
+          posición en una ventana móvil reciente; pulsa{' '}
+          <strong className="text-foreground/80">Anual</strong> para volver al periodo completo de
+          la edición.
         </p>
       </div>
 
@@ -265,10 +271,14 @@ function TarjetaPremio({
   const [ventanaData, setVentanaData] = useState<Posicion | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const consultarVentana = async (days: 3 | 7 | 15 | 30) => {
+  const volverAnual = () => {
+    setVentana(null);
+    setVentanaData(null);
+  };
+
+  const consultarVentana = async (days: VentanaDias) => {
     if (ventana === days) {
-      setVentana(null);
-      setVentanaData(null);
+      volverAnual();
       return;
     }
     setVentana(days);
@@ -291,6 +301,8 @@ function TarjetaPremio({
   const pendiente = posicion.razon === 'pendiente';
   const datosActivos = ventanaData && ventana != null ? ventanaData : posicion;
   const pos = datosActivos.posicion;
+  const ventanaLabel =
+    ventana != null ? (VENTANAS.find((v) => v.value === ventana)?.label ?? `${ventana}d`) : null;
 
   return (
     <div
@@ -370,7 +382,7 @@ function TarjetaPremio({
                 <span
                   className={`rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ${ui.tint.pill}`}
                 >
-                  Ventana {ventana}d
+                  Últimos {ventanaLabel}
                 </span>
               ) : (
                 <span className="text-[10px] text-muted-foreground/70">· periodo anual</span>
@@ -378,12 +390,14 @@ function TarjetaPremio({
             </div>
           </div>
 
-          {/* Vecinos: 2 arriba y 2 abajo del pueblo (solo en vista anual) */}
-          {ventana == null && posicion.vecinos && posicion.vecinos.length > 0 && pos != null && (
+          {/* Vecinos: 2 arriba y 2 abajo del pueblo. Disponible en cualquier
+              ventana (anual y móviles) — el backend devuelve `vecinos` también
+              para 3/7/15/30/90/180d. */}
+          {datosActivos.vecinos && datosActivos.vecinos.length > 0 && pos != null && (
             <div className="mt-3 overflow-hidden rounded-xl border border-black/5 bg-white/60 dark:border-white/5 dark:bg-zinc-900/40">
               {(() => {
-                const arriba = (posicion.vecinos ?? []).filter((v) => v.posicion < pos);
-                const abajo = (posicion.vecinos ?? []).filter((v) => v.posicion > pos);
+                const arriba = (datosActivos.vecinos ?? []).filter((v) => v.posicion < pos);
+                const abajo = (datosActivos.vecinos ?? []).filter((v) => v.posicion > pos);
                 const filas: Array<{
                   key: string;
                   posicion: number;
@@ -406,9 +420,9 @@ function TarjetaPremio({
                     key: 'yo',
                     posicion: pos,
                     nombre: puebloNombre,
-                    tendencia: posicion.tendencia,
-                    prev: posicion.posicionAnterior ?? null,
-                    valor: posicion.valor,
+                    tendencia: datosActivos.tendencia,
+                    prev: datosActivos.posicionAnterior ?? null,
+                    valor: datosActivos.valor,
                     yo: true,
                   },
                   ...abajo.map((v) => ({
@@ -449,14 +463,29 @@ function TarjetaPremio({
             </div>
           )}
 
-          <div className="mt-3 flex gap-1">
+          {/* Controles de ventana: "Anual" a la izquierda para volver al
+              periodo completo (importante en ediciones inaugurales donde las
+              ventanas móviles aún están vacías). */}
+          <div className="mt-3 flex flex-wrap gap-1">
+            <button
+              type="button"
+              onClick={volverAnual}
+              disabled={loading}
+              className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 ${
+                ventana == null
+                  ? `border-transparent text-white shadow-sm ${ui.tint.iconBg}`
+                  : 'border-border bg-white/60 text-foreground hover:bg-white dark:bg-zinc-900/40 dark:hover:bg-zinc-800'
+              }`}
+            >
+              Anual
+            </button>
             {VENTANAS.map(({ value, label }) => (
               <button
                 key={value}
                 type="button"
                 onClick={() => consultarVentana(value)}
                 disabled={loading}
-                className={`flex-1 rounded-lg border px-2 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 ${
+                className={`min-w-[44px] flex-1 rounded-lg border px-2 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 ${
                   ventana === value
                     ? `border-transparent text-white shadow-sm ${ui.tint.iconBg}`
                     : 'border-border bg-white/60 text-foreground hover:bg-white dark:bg-zinc-900/40 dark:hover:bg-zinc-800'

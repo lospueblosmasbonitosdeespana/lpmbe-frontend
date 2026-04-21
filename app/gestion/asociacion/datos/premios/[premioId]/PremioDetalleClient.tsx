@@ -44,10 +44,22 @@ interface PremioMeta {
 interface RankingResponse {
   edicion: Edicion;
   premio: PremioMeta;
+  ventana?: number | null;
   totalPueblos: number;
   participantes: number;
   ranking: Entry[];
 }
+
+type VentanaDias = 3 | 7 | 15 | 30 | 90 | 180;
+
+const VENTANAS_ADMIN: Array<{ value: VentanaDias; label: string }> = [
+  { value: 3, label: '3d' },
+  { value: 7, label: '7d' },
+  { value: 15, label: '15d' },
+  { value: 30, label: '30d' },
+  { value: 90, label: '3m' },
+  { value: 180, label: '6m' },
+];
 
 interface PuebloMin {
   id: number;
@@ -112,6 +124,7 @@ export default function PremioDetalleClient({
 }) {
   const [ediciones, setEdiciones] = useState<Edicion[]>([]);
   const [edicionId, setEdicionId] = useState<number | null>(edicionIdInicial ?? null);
+  const [ventana, setVentana] = useState<VentanaDias | null>(null);
   const [data, setData] = useState<RankingResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -134,7 +147,11 @@ export default function PremioDetalleClient({
     if (edicionId == null) return;
     setLoading(true);
     setError(null);
-    fetch(`/api/admin/premios/${edicionId}/${premioId}`, { cache: 'no-store' })
+    const url =
+      ventana != null
+        ? `/api/admin/premios/${edicionId}/${premioId}?days=${ventana}`
+        : `/api/admin/premios/${edicionId}/${premioId}`;
+    fetch(url, { cache: 'no-store' })
       .then(async (r) => {
         if (!r.ok) throw new Error(await r.text());
         return r.json();
@@ -142,7 +159,7 @@ export default function PremioDetalleClient({
       .then((d: RankingResponse) => setData(d))
       .catch((e) => setError(e?.message || 'Error'))
       .finally(() => setLoading(false));
-  }, [edicionId, premioId]);
+  }, [edicionId, premioId, ventana]);
 
   const exportCsv = () => {
     if (!data) return;
@@ -195,7 +212,7 @@ export default function PremioDetalleClient({
             className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/90 ring-1 ring-white/20 backdrop-blur-sm transition hover:bg-white/20"
           >
             <ArrowLeft className="h-3 w-3" />
-            Volver a los 12 premios
+            Volver a los 10 premios
           </Link>
           <div className="flex items-start gap-4">
             {Icon && (
@@ -258,6 +275,38 @@ export default function PremioDetalleClient({
                     Unidad
                   </span>
                   <span className="text-sm font-semibold">{data.premio.unidad}</span>
+                </div>
+                <div className="rounded-xl bg-white/10 px-3 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+                  <span className="block text-[10px] font-semibold uppercase tracking-wide text-white/60">
+                    Ventana
+                  </span>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setVentana(null)}
+                      className={`rounded-md px-2 py-0.5 text-xs font-semibold transition-colors ${
+                        ventana == null
+                          ? 'bg-white text-foreground shadow-sm'
+                          : 'bg-white/10 text-white hover:bg-white/20'
+                      }`}
+                    >
+                      Anual
+                    </button>
+                    {VENTANAS_ADMIN.map(({ value, label }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setVentana(value)}
+                        className={`rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums transition-colors ${
+                          ventana === value
+                            ? 'bg-white text-foreground shadow-sm'
+                            : 'bg-white/10 text-white hover:bg-white/20'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 {data.ranking.length > 0 && (
                   <button
