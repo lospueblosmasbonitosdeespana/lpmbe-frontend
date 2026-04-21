@@ -6,6 +6,7 @@ import R2ImageUploader from '@/app/components/R2ImageUploader';
 import MapLocationPicker from '@/app/components/MapLocationPicker';
 import { CAMPANA_NOCHE_ROMANTICA } from '../../../_components/gestion-campana-themes';
 import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
+import CampanaLandingEditor from '../../_components/CampanaLandingEditor';
 import { HeroIconHeart } from '../../_components/gestion-pueblo-hero-icons';
 
 // ==================== TYPES ====================
@@ -360,6 +361,7 @@ export default function GestionPuebloNocheRomanticaPage() {
         heroIcon={<HeroIconHeart />}
         theme="nocheRomantica"
       >
+        <CampanaLandingEditor campana="noche-romantica" puebloId={puebloId} puebloSlug={slug} />
         {!campaignActive ? (
           <div className="rounded-xl border border-pink-200/80 bg-gradient-to-br from-pink-50 via-fuchsia-50/80 to-violet-50/60 px-6 py-8 text-center shadow-sm">
             <p className="text-2xl">❤️</p>
@@ -413,6 +415,8 @@ export default function GestionPuebloNocheRomanticaPage() {
       {success && (
         <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>
       )}
+
+      <CampanaLandingEditor campana="noche-romantica" puebloId={puebloId} puebloSlug={slug} />
 
       {!campaignActive && (
         <div className="mb-6 rounded-xl border border-pink-200/80 bg-gradient-to-br from-pink-50 via-fuchsia-50/80 to-violet-50/60 px-5 py-4 shadow-sm">

@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
 import { CAMPANA_NAVIDAD } from '../../../_components/gestion-campana-themes';
 import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
+import CampanaLandingEditor from '../../_components/CampanaLandingEditor';
 import { HeroIconTree } from '../../_components/gestion-pueblo-hero-icons';
 
 const TIPO_LABELS: Record<string, string> = {
@@ -482,6 +483,7 @@ export default function GestionPuebloNavidadPage() {
         theme="navidad"
       >
         {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        <CampanaLandingEditor campana="navidad" puebloId={puebloId} puebloSlug={slug} />
         {!campaignActive ? (
           <div className="rounded-xl border border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-amber-50/70 to-red-50/80 px-6 py-8 text-center shadow-sm">
             <p className="text-2xl">🎄</p>
@@ -533,6 +535,8 @@ export default function GestionPuebloNavidadPage() {
     >
       {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
       {success && <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>}
+
+      <CampanaLandingEditor campana="navidad" puebloId={puebloId} puebloSlug={slug} />
 
       {!campaignActive && (
         <div className="mb-6 rounded-xl border border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-amber-50/70 to-red-50/80 px-5 py-4 shadow-sm">

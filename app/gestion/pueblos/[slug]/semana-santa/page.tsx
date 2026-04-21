@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
 import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
 import { HeroIconCross } from '../../_components/gestion-pueblo-hero-icons';
+import CampanaLandingEditor from '../../_components/CampanaLandingEditor';
 import dynamic from 'next/dynamic';
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -600,6 +601,7 @@ export default function GestionPuebloSemanaSantaPage() {
         maxWidthClass="max-w-5xl"
       >
         {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        <CampanaLandingEditor campana="semana-santa" puebloId={puebloId} puebloSlug={slug} />
         {!campaignActive ? (
           <div className="rounded-xl border border-stone-300 bg-stone-50 px-6 py-8 text-center">
             <p className="text-2xl">✝️</p>
@@ -649,6 +651,8 @@ export default function GestionPuebloSemanaSantaPage() {
     >
       {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
       {success && <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>}
+
+      <CampanaLandingEditor campana="semana-santa" puebloId={puebloId} puebloSlug={slug} />
 
       {!campaignActive && (
         <div className="mb-6 rounded-xl border border-stone-300 bg-stone-50 px-5 py-4">
