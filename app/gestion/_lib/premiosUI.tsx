@@ -8,7 +8,7 @@ import {
   Plane,
   Rocket,
   Hammer,
-  PenSquare,
+  HelpCircle,
   ClipboardCheck,
   Store,
   Users,
@@ -180,18 +180,19 @@ export const PREMIOS_UI: Record<number, PremioUI> = {
   7: {
     titulo: 'Pueblo Más Trabajador',
     descripcion:
-      'Eventos + noticias + páginas + POIs + documentos compartidos con la red (las del ADMIN no cuentan).',
+      'Eventos + noticias + páginas + POIs + documentos compartidos con la red + multiexperiencias y paradas (lo que haga un ADMIN no cuenta; las multiexperiencias cuentan desde el 1-mar-2026).',
     unidad: 'aportaciones',
     implementado: true,
     Icon: Hammer,
     tint: PALETAS[6],
   },
   8: {
-    titulo: 'Más Trabajador · Contenidos',
-    descripcion: 'Más contenidos editoriales publicados (noticias, artículos, rutas…).',
-    unidad: 'publicaciones',
-    implementado: true,
-    Icon: PenSquare,
+    titulo: 'Reservado · por definir',
+    descripcion:
+      'Slot libre: el "Más Trabajador por contenidos" se consolidó en el Premio 07. A la espera de propuesta del jurado.',
+    unidad: '—',
+    implementado: false,
+    Icon: HelpCircle,
     tint: PALETAS[7],
   },
   9: {
