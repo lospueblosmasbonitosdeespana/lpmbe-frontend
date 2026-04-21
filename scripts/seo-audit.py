@@ -75,6 +75,31 @@ DEFAULT_URLS: list[str] = [
     f"{SITE}/naturaleza/alquezar",
     # Temática intencionalmente vacía (debe salir como "noindex intencional")
     f"{SITE}/patrimonio/albarracin",
+
+    # Colecciones (CollectionPage + ItemList + BreadcrumbList)
+    f"{SITE}/descubre",
+    f"{SITE}/descubre/pueblos-con-castillo",
+    f"{SITE}/descubre/pueblos-costeros",
+
+    # Rutas
+    f"{SITE}/rutas",
+
+    # Videos (CollectionPage + VideoObject + BreadcrumbList)
+    f"{SITE}/pueblos/albarracin/videos",
+
+    # Webcams
+    f"{SITE}/webcams",
+
+    # Planifica / Noche Romántica (editorial con logo OG fallback)
+    f"{SITE}/planifica",
+    f"{SITE}/planifica/fin-de-semana",
+    f"{SITE}/planifica/navidad",
+    f"{SITE}/planifica/semana-santa",
+    f"{SITE}/noche-romantica",
+    f"{SITE}/noche-romantica/pueblos-participantes",
+
+    # Club LPMBE Selection
+    f"{SITE}/selection",
 ]
 
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 " \
