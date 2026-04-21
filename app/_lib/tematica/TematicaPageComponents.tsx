@@ -6,6 +6,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { stripHtml } from "@/app/_lib/html";
 import {
+  getBaseUrl,
   uniqueH1ForLocale,
 } from "@/lib/seo";
 import { Section } from "@/app/components/ui/section";
@@ -13,6 +14,7 @@ import { Container } from "@/app/components/ui/container";
 import { Eyebrow } from "@/app/components/ui/typography";
 import SafeHtml from "@/app/_components/ui/SafeHtml";
 import ContenidoImageCarousel from "@/app/components/ContenidoImageCarousel";
+import JsonLd from "@/app/components/seo/JsonLd";
 import {
   CATEGORY_LABELS,
   CATEGORY_API_KEYS,
@@ -50,8 +52,51 @@ export async function TematicaDetailPage({
     ...(page.galleryUrls ?? []),
   ].filter(Boolean) as string[];
 
+  const baseUrl = getBaseUrl();
+  const pageUrl = `${baseUrl}/${slug}/${puebloSlug}/${pageSlug}`;
+  const resumenText = page.resumen ? stripHtml(page.resumen) : "";
+  const descriptionForLd =
+    resumenText ||
+    (page.contenido ? stripHtml(page.contenido).slice(0, 280) : `${label} · ${puebloNombre}`);
+
+  const articleLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: page.titulo,
+    description: descriptionForLd,
+    url: pageUrl,
+    inLanguage: locale,
+    articleSection: label,
+    ...(allImages.length > 0 ? { image: allImages.slice(0, 10) } : {}),
+    ...(page.updatedAt ? { dateModified: page.updatedAt } : {}),
+    mainEntityOfPage: pageUrl,
+    about: {
+      "@type": "TouristAttraction",
+      name: puebloNombre,
+      url: `${baseUrl}/pueblos/${puebloSlug}`,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Los Pueblos Más Bonitos de España",
+      url: baseUrl,
+    },
+  };
+
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Pueblos", item: `${baseUrl}/pueblos` },
+      { "@type": "ListItem", position: 2, name: puebloNombre, item: `${baseUrl}/pueblos/${puebloSlug}` },
+      { "@type": "ListItem", position: 3, name: label, item: `${baseUrl}/${slug}/${puebloSlug}` },
+      { "@type": "ListItem", position: 4, name: page.titulo, item: pageUrl },
+    ],
+  };
+
   return (
     <main className="bg-background min-h-screen">
+      <JsonLd data={articleLd} />
+      <JsonLd data={breadcrumbLd} />
       {page.coverUrl && (
         <div className="relative h-[50vh] min-h-[320px] max-h-[520px] w-full overflow-hidden bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -190,8 +235,60 @@ export function TematicaListPageUI({
   const label = CATEGORY_LABELS[slug]?.[locale] ?? CATEGORY_LABELS[slug]?.es ?? slug;
   const puebloNombre = slugToTitle(puebloSlug);
 
+  const baseUrl = getBaseUrl();
+  const pageUrl = `${baseUrl}/${slug}/${puebloSlug}`;
+  const firstCover = pages.find((p) => p.coverUrl)?.coverUrl ?? null;
+
+  const collectionLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `${label} · ${puebloNombre}`,
+    description: `${label} en ${puebloNombre}: contenidos, lugares y rutas seleccionadas.`,
+    url: pageUrl,
+    inLanguage: locale,
+    ...(firstCover ? { image: firstCover } : {}),
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Los Pueblos Más Bonitos de España",
+      url: baseUrl,
+    },
+    about: {
+      "@type": "TouristAttraction",
+      name: puebloNombre,
+      url: `${baseUrl}/pueblos/${puebloSlug}`,
+    },
+    mainEntity: {
+      "@type": "ItemList",
+      name: `${label} · ${puebloNombre}`,
+      numberOfItems: pages.length,
+      itemListElement: pages.map((page, i) => {
+        const pageSlug = page.slug ?? slugify(page.titulo);
+        const itemUrl = `${baseUrl}/${slug}/${puebloSlug}/${pageSlug}`;
+        return {
+          "@type": "ListItem",
+          position: i + 1,
+          url: itemUrl,
+          name: page.titulo,
+          ...(page.coverUrl ? { image: page.coverUrl } : {}),
+        };
+      }),
+    },
+  };
+
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Pueblos", item: `${baseUrl}/pueblos` },
+      { "@type": "ListItem", position: 2, name: puebloNombre, item: `${baseUrl}/pueblos/${puebloSlug}` },
+      { "@type": "ListItem", position: 3, name: label, item: pageUrl },
+    ],
+  };
+
   return (
     <main className="bg-background min-h-screen">
+      <JsonLd data={collectionLd} />
+      <JsonLd data={breadcrumbLd} />
       <Section spacing="md">
         <Container>
           <nav className="mb-8 text-sm text-muted-foreground" aria-label="Breadcrumb">

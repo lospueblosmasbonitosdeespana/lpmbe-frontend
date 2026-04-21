@@ -24,6 +24,7 @@ type CollectionData = {
   description: string;
   seoTitle: string;
   seoDescription: string;
+  imageUrl: string | null;
   pueblos: Array<{
     id: number;
     slug: string;
@@ -76,6 +77,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!data) return { title: "Not found" };
 
   const path = `/descubre/${slug}`;
+  const ogImages = data.imageUrl ? [{ url: data.imageUrl }] : undefined;
   return {
     title: { absolute: data.seoTitle },
     description: data.seoDescription,
@@ -83,11 +85,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
+    robots: { index: true, follow: true },
     openGraph: {
       title: data.seoTitle,
       description: data.seoDescription,
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
+      type: "website",
+      ...(ogImages ? { images: ogImages } : {}),
+    },
+    twitter: {
+      card: ogImages ? "summary_large_image" : "summary",
+      title: data.seoTitle,
+      description: data.seoDescription,
+      ...(data.imageUrl ? { images: [data.imageUrl] } : {}),
     },
   };
 }
@@ -100,23 +111,68 @@ export default async function DescubreSlugPage({ params }: PageProps) {
   if (!data) notFound();
 
   const baseUrl = getBaseUrl();
-  const itemListLd = {
+  const pageUrl = `${baseUrl}/descubre/${data.slug}`;
+
+  const collectionLd: Record<string, unknown> = {
     "@context": "https://schema.org",
-    "@type": "ItemList",
+    "@type": "CollectionPage",
     name: data.seoTitle,
     description: data.seoDescription,
-    numberOfItems: data.count,
-    itemListElement: data.pueblos.map((p, i) => ({
-      "@type": "ListItem",
-      position: i + 1,
-      name: p.nombre,
-      url: `${baseUrl}/pueblos/${p.slug}`,
-    })),
+    url: pageUrl,
+    ...(data.imageUrl ? { image: data.imageUrl } : {}),
+    inLanguage: locale,
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Los Pueblos Más Bonitos de España",
+      url: baseUrl,
+    },
+    mainEntity: {
+      "@type": "ItemList",
+      name: data.seoTitle,
+      numberOfItems: data.count,
+      itemListElement: data.pueblos.map((p, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        url: `${baseUrl}/pueblos/${p.slug}`,
+        item: {
+          "@type": "TouristAttraction",
+          name: p.nombre,
+          url: `${baseUrl}/pueblos/${p.slug}`,
+          ...(p.foto_destacada ? { image: p.foto_destacada } : {}),
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: p.nombre,
+            addressRegion: p.provincia,
+            addressCountry: "ES",
+          },
+          ...(p.lat && p.lng
+            ? {
+                geo: {
+                  "@type": "GeoCoordinates",
+                  latitude: p.lat,
+                  longitude: p.lng,
+                },
+              }
+            : {}),
+        },
+      })),
+    },
+  };
+
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: `${baseUrl}/` },
+      { "@type": "ListItem", position: 2, name: "Descubre", item: `${baseUrl}/descubre` },
+      { "@type": "ListItem", position: 3, name: data.title, item: pageUrl },
+    ],
   };
 
   return (
     <main className="min-h-screen">
-      <JsonLd data={itemListLd} />
+      <JsonLd data={collectionLd} />
+      <JsonLd data={breadcrumbLd} />
       <CollectionView data={data} locale={locale} />
     </main>
   );

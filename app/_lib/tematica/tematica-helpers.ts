@@ -2,7 +2,16 @@
  * Helpers compartidos para las páginas SEO temáticas:
  * /gastronomia, /naturaleza, /cultura, /en-familia, /petfriendly, /patrimonio
  */
+import type { Metadata } from "next";
 import { getApiUrl } from "@/lib/api";
+import {
+  getCanonicalUrl,
+  getLocaleAlternates,
+  getOGLocale,
+  seoTitle,
+  seoDescription,
+  type SupportedLocale,
+} from "@/lib/seo";
 
 export const CATEGORY_API_KEYS: Record<string, string> = {
   gastronomia: "GASTRONOMIA",
@@ -147,6 +156,55 @@ export async function getPaginasTematicasByPuebloWithEsFallback(
     return getPaginasTematicasByPueblo(puebloSlug, categoryKey, "es");
   }
   return [];
+}
+
+/**
+ * Genera el objeto `Metadata` de las páginas de listado temáticas por pueblo
+ * (`/patrimonio/[puebloSlug]`, `/que-comer/[puebloSlug]`, …). Comparte lógica
+ * para los 6 segmentos: canonical + hreflang, og:image con la primera cover
+ * disponible y noindex cuando no hay contenido que mostrar.
+ */
+export async function buildTematicaListMetadata(params: {
+  slug: string;
+  puebloSlug: string;
+  locale: SupportedLocale | string;
+  titleText: string;
+  descriptionText: string;
+  pages: TematicaPageData[];
+}): Promise<Metadata> {
+  const { slug, puebloSlug, locale, titleText, descriptionText, pages } = params;
+  const hasValidContent = pages.length > 0;
+  const path = `/${slug}/${puebloSlug}`;
+  const title = seoTitle(titleText);
+  const description = seoDescription(descriptionText);
+  const alternates = hasValidContent
+    ? {
+        canonical: getCanonicalUrl(path, locale as SupportedLocale),
+        languages: getLocaleAlternates(path),
+      }
+    : undefined;
+  const firstCover = pages.find((p) => p.coverUrl)?.coverUrl ?? null;
+  const ogImages = firstCover ? [{ url: firstCover }] : undefined;
+  return {
+    title,
+    description,
+    alternates,
+    robots: { index: hasValidContent, follow: true },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      locale: getOGLocale(locale as SupportedLocale),
+      type: "website",
+      ...(ogImages ? { images: ogImages } : {}),
+    },
+    twitter: {
+      card: ogImages ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(firstCover ? { images: [firstCover] } : {}),
+    },
+  };
 }
 
 /** Obtiene una página por slug (o fallback slugify del título) */

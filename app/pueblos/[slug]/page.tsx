@@ -307,22 +307,47 @@ export async function generateMetadata({
 
   let name = slugToTitle(slug) || "Pueblo";
   let provincia = "";
+  let leadText: string | null = null;
+  let descripcionText: string | null = null;
+  let ogImage: string | null = null;
   try {
     const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
     if (pueblo?.nombre) name = pueblo.nombre;
     if (pueblo?.provincia) provincia = pueblo.provincia;
+    leadText = (pueblo as any)?.lead ?? null;
+    descripcionText = pueblo?.descripcion ?? null;
+    ogImage =
+      (pueblo as any)?.foto_destacada ??
+      (Array.isArray(pueblo?.fotosPueblo) && pueblo.fotosPueblo.length > 0
+        ? pueblo.fotosPueblo[0]?.url ?? null
+        : null);
   } catch {}
 
   const provinciaStr = provincia ? `, ${provincia}` : "";
   const siteName = tSeo("siteName");
-  const titleBase = `${name}${provinciaStr} | ${siteName}`;
+
+  // Title: en ES, usamos plantilla enriquecida ("{nombre} ({provincia}): qué ver, rutas y fotos | LPMBE")
+  // En otros idiomas mantenemos la plantilla original (sufijo con SITE_NAME) para no romper variantes existentes.
+  const isEs = String(locale).toLowerCase() === "es";
+  const provinciaParen = provincia ? ` (${provincia})` : "";
+  const titleBase = isEs
+    ? `${name}${provinciaParen}: qué ver, rutas y fotos | LPMBE`
+    : `${name}${provinciaStr} | ${siteName}`;
   const title = seoAbsoluteTitle(titleBase);
+
+  // Description dinámica: priorizamos lead → descripcion → plantilla i18n.
+  const leadClean = leadText ? cleanText(stripHtml(leadText)) : "";
+  const descClean = descripcionText ? cleanText(stripHtml(descripcionText)) : "";
+  const dynamicSource = leadClean || descClean;
   const description = seoDescription(
-    tSeo("puebloDescription", {
-      nombre: name,
-      provincia: provinciaStr,
-    })
+    dynamicSource ||
+      tSeo("puebloDescription", {
+        nombre: name,
+        provincia: provinciaStr,
+      })
   );
+
+  const ogImages = ogImage ? [{ url: ogImage }] : undefined;
 
   return {
     title: { absolute: title },
@@ -338,11 +363,13 @@ export async function generateMetadata({
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
       type: "article",
+      ...(ogImages ? { images: ogImages } : {}),
     },
     twitter: {
-      card: "summary",
+      card: ogImages ? "summary_large_image" : "summary",
       title,
       description,
+      ...(ogImages ? { images: [ogImage as string] } : {}),
     },
   };
 }
@@ -660,6 +687,32 @@ export default async function PuebloPage({
 
   const base = getBaseUrl();
   const galleryImageUrls = [heroImage, ...fotosGalería.map((f: FotoPueblo) => f.url)].filter(Boolean).slice(0, 10) as string[];
+  // containedInPlace: jerarquía Provincia → Comunidad Autónoma → España, útil para la comprensión
+  // geográfica de Google y reforzar señales locales.
+  const containedInPlace = puebloSafe.provincia
+    ? {
+        "@type": "AdministrativeArea",
+        name: puebloSafe.provincia,
+        ...(puebloSafe.comunidad
+          ? {
+              containedInPlace: {
+                "@type": "AdministrativeArea",
+                name: puebloSafe.comunidad,
+                containedInPlace: {
+                  "@type": "Country",
+                  name: "España",
+                },
+              },
+            }
+          : {
+              containedInPlace: {
+                "@type": "Country",
+                name: "España",
+              },
+            }),
+      }
+    : undefined;
+
   const puebloLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "TouristAttraction",
@@ -675,6 +728,7 @@ export default async function PuebloPage({
       addressRegion: puebloSafe.provincia,
       addressCountry: "ES",
     },
+    ...(containedInPlace ? { containedInPlace } : {}),
     ...(puebloSafe.lat && puebloSafe.lng
       ? {
           geo: {
@@ -736,7 +790,11 @@ export default async function PuebloPage({
       ))}
       {/* HERO - Diseño tourism-website-design */}
       <DetailPageHero
-        title={uniqueH1ForLocale(puebloSafe.nombre, locale)}
+        title={
+          String(locale).toLowerCase() === "es"
+            ? `${puebloSafe.nombre} · Pueblo más bonito de España`
+            : uniqueH1ForLocale(puebloSafe.nombre, locale)
+        }
         eyebrow={`${puebloSafe.comunidad} / ${puebloSafe.provincia}`}
         metadata={heroMetadata}
         image={heroImage}
