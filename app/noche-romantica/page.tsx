@@ -1,6 +1,17 @@
+import type { Metadata } from 'next';
+import { cache } from 'react';
 import Link from 'next/link';
 import { getTranslations, getLocale } from 'next-intl/server';
 import { getApiUrl } from '@/lib/api';
+import {
+  getCanonicalUrl,
+  getDefaultOgImage,
+  getLocaleAlternates,
+  getOGLocale,
+  seoDescription,
+  seoTitle,
+  type SupportedLocale,
+} from '@/lib/seo';
 import CountdownBeso from './CountdownBeso';
 
 export const revalidate = 60;
@@ -19,6 +30,81 @@ interface NRConfig {
   videoUrl: string | null;
   videoTipo: 'YOUTUBE' | 'R2';
   activo: boolean;
+}
+
+const LANDING_TITLE: Record<string, string> = {
+  es: 'La Noche Romántica en los pueblos más bonitos de España',
+  en: 'La Noche Romántica in the most beautiful villages of Spain',
+  fr: 'La Noche Romántica dans les plus beaux villages d’Espagne',
+  de: 'La Noche Romántica in den schönsten Dörfern Spaniens',
+  pt: 'La Noche Romántica nas aldeias mais bonitas de Espanha',
+  it: 'La Noche Romántica nei borghi più belli di Spagna',
+  ca: 'La Noche Romántica als pobles més bonics d’Espanya',
+};
+
+const LANDING_DESC: Record<string, string> = {
+  es: 'Descubre La Noche Romántica: una velada mágica en los pueblos más bonitos de España con cenas, actividades, música y experiencias únicas para parejas.',
+  en: 'Discover La Noche Romántica: a magical evening in the most beautiful villages of Spain with dinners, activities, music and unique experiences for couples.',
+  fr: 'Découvrez La Noche Romántica : une soirée magique dans les plus beaux villages d’Espagne avec dîners, activités, musique et expériences uniques pour les couples.',
+  de: 'Entdecke La Noche Romántica: ein magischer Abend in den schönsten Dörfern Spaniens mit Abendessen, Aktivitäten, Musik und einzigartigen Erlebnissen für Paare.',
+  pt: 'Descobre La Noche Romántica: uma noite mágica nas aldeias mais bonitas de Espanha com jantares, atividades, música e experiências únicas para casais.',
+  it: 'Scopri La Noche Romántica: una serata magica nei borghi più belli di Spagna con cene, attività, musica ed esperienze uniche per le coppie.',
+  ca: 'Descobreix La Noche Romántica: una vetllada màgica als pobles més bonics d’Espanya amb sopars, activitats, música i experiències úniques per a parelles.',
+};
+
+const fetchConfigCached = cache(async (locale: string): Promise<NRConfig | null> => {
+  try {
+    const API_BASE = getApiUrl();
+    const url =
+      locale && locale !== 'es'
+        ? `${API_BASE}/noche-romantica/config?lang=${locale}`
+        : `${API_BASE}/noche-romantica/config`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+});
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const config = await fetchConfigCached(locale);
+  const path = '/noche-romantica';
+  const baseTitle = config?.titulo?.trim() || (LANDING_TITLE[locale] ?? LANDING_TITLE.es);
+  const titleWithEdition = config?.edicion
+    ? `${baseTitle} · ${config.edicion}ª edición ${config.anio ?? ''}`.trim()
+    : baseTitle;
+  const title = seoTitle(titleWithEdition);
+  const description = seoDescription(
+    config?.subtitulo?.trim() ||
+      config?.descripcion1Texto?.trim() ||
+      (LANDING_DESC[locale] ?? LANDING_DESC.es),
+  );
+  const heroImage = config?.heroImageUrl?.trim() || config?.logoUrl?.trim() || getDefaultOgImage();
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+      type: 'website',
+      images: [{ url: heroImage, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [heroImage],
+    },
+    robots: { index: true, follow: true },
+  };
 }
 
 function formatFechaEvento(fecha: string | null, edicion: number, editionLabel: string): string {
@@ -54,22 +140,10 @@ function getYouTubeEmbedUrl(url: string): string | null {
   }
 }
 
-async function fetchConfig(locale: string): Promise<NRConfig | null> {
-  try {
-    const API_BASE = getApiUrl();
-    const url = locale && locale !== 'es' ? `${API_BASE}/noche-romantica/config?lang=${locale}` : `${API_BASE}/noche-romantica/config`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  }
-}
-
 export default async function NocheRomanticaPage() {
   const t = await getTranslations('nocheRomantica');
   const locale = await getLocale();
-  const config = await fetchConfig(locale);
+  const config = await fetchConfigCached(locale);
 
   if (!config) {
     return (

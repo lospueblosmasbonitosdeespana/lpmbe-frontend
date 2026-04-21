@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { cache } from 'react';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/api';
 import { getLocale, getTranslations } from 'next-intl/server';
-import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
+import { getCanonicalUrl, getDefaultOgImage, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import NavidadPuebloClient from './NavidadPuebloClient';
 
 export const revalidate = 60;
@@ -19,7 +20,14 @@ export async function generateMetadata({
   const hasData = Boolean(data?.participante?.pueblo?.slug);
   const path = `/planifica/navidad/pueblo/${puebloSlug}`;
   const title = seoTitle(tSeo('navidadTitle', { nombre: name }));
-  const description = seoDescription(tSeo('navidadDesc', { nombre: name }));
+  const description = seoDescription(
+    data?.participante?.descripcion?.trim() || tSeo('navidadDesc', { nombre: name }),
+  );
+  const ogImage = hasData
+    ? data?.participante?.cartelUrl?.trim() ||
+      data?.participante?.pueblo?.foto_destacada?.trim() ||
+      getDefaultOgImage()
+    : getDefaultOgImage();
   return {
     title,
     description,
@@ -32,6 +40,14 @@ export async function generateMetadata({
       description,
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
+      type: hasData ? 'article' : 'website',
+      images: [{ url: ogImage, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage],
     },
     robots: { index: hasData, follow: true },
   };
@@ -78,7 +94,7 @@ type Payload = {
   participante: Participante;
 };
 
-async function fetchData(slug: string, locale: string): Promise<Payload | null> {
+const fetchData = cache(async (slug: string, locale: string): Promise<Payload | null> => {
   const API = getApiUrl();
   const lang = encodeURIComponent(locale);
   const res = await fetch(`${API}/navidad/pueblos/${slug}?lang=${lang}`);
@@ -86,7 +102,7 @@ async function fetchData(slug: string, locale: string): Promise<Payload | null> 
   const data = await res.json();
   if (data && data.participa === false) return null;
   return data;
-}
+});
 
 export default async function NavidadPuebloPage({
   params,

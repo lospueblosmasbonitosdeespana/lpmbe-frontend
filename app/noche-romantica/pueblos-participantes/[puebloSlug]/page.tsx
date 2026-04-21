@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { cache } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getApiUrl } from '@/lib/api';
 import { notFound } from 'next/navigation';
 import { getTranslations, getLocale } from 'next-intl/server';
 import { Clock } from 'lucide-react';
-import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
+import { getCanonicalUrl, getDefaultOgImage, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import NRExpandableCard from './NRExpandableCard';
 
 export const revalidate = 60;
@@ -17,12 +18,21 @@ export async function generateMetadata({
   const { puebloSlug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
   const tSeo = await getTranslations('seo');
-  const name = slugToTitle(puebloSlug);
-  const path = `/noche-romantica/pueblos-participantes/${puebloSlug}`;
-  const title = seoTitle(tSeo('nocheRomanticaPuebloTitle', { nombre: name }));
-  const description = seoDescription(tSeo('nocheRomanticaPuebloDesc', { nombre: name }));
   const data = await fetchPueblo(puebloSlug, locale);
   const hasData = Boolean(data?.pueblo?.slug);
+  const name = data?.pueblo?.nombre || slugToTitle(puebloSlug);
+  const path = `/noche-romantica/pueblos-participantes/${puebloSlug}`;
+  const title = seoTitle(tSeo('nocheRomanticaPuebloTitle', { nombre: name }));
+  const description = seoDescription(
+    data?.descripcion?.trim() || tSeo('nocheRomanticaPuebloDesc', { nombre: name }),
+  );
+  // Si el pueblo participa, usamos su cartel / foto; si no, OG por defecto
+  // (y el noindex ya evita que la página "no participa" aparezca en Google).
+  const ogImage = hasData
+    ? data?.cartelUrl?.trim() ||
+      data?.pueblo?.foto_destacada?.trim() ||
+      getDefaultOgImage()
+    : getDefaultOgImage();
   return {
     title,
     description,
@@ -35,6 +45,14 @@ export async function generateMetadata({
       description,
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
+      type: hasData ? 'article' : 'website',
+      images: [{ url: ogImage, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage],
     },
     robots: { index: hasData, follow: true },
   };
@@ -90,20 +108,22 @@ interface NRConfig {
   activa?: boolean;
 }
 
-async function fetchPueblo(slug: string, lang?: string): Promise<NRPuebloDetail | null> {
-  try {
-    const API_BASE = getApiUrl();
-    const langParam = lang && lang !== 'es' ? `?lang=${lang}` : '';
-    const res = await fetch(`${API_BASE}/noche-romantica/pueblos/${slug}${langParam}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    // El backend ahora devuelve 200 con { participa: false } cuando el pueblo no participa
-    if (data && data.participa === false) return null;
-    return data;
-  } catch {
-    return null;
-  }
-}
+const fetchPueblo = cache(
+  async (slug: string, lang?: string): Promise<NRPuebloDetail | null> => {
+    try {
+      const API_BASE = getApiUrl();
+      const langParam = lang && lang !== 'es' ? `?lang=${lang}` : '';
+      const res = await fetch(`${API_BASE}/noche-romantica/pueblos/${slug}${langParam}`);
+      if (!res.ok) return null;
+      const data = await res.json();
+      // El backend ahora devuelve 200 con { participa: false } cuando el pueblo no participa
+      if (data && data.participa === false) return null;
+      return data;
+    } catch {
+      return null;
+    }
+  },
+);
 
 async function fetchNRConfig(): Promise<NRConfig> {
   try {

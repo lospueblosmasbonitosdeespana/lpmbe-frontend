@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { cache } from 'react';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/api';
 import AgendaInteractiva from './AgendaInteractiva';
 import { getLocale, getTranslations } from 'next-intl/server';
-import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
+import { getCanonicalUrl, getDefaultOgImage, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, slugToTitle, type SupportedLocale } from "@/lib/seo";
 import { translateHolyWeekDayLabel } from './day-labels';
 import ImagenConLightbox from './ImagenConLightbox';
 import StreamPlayer from './StreamPlayer';
@@ -18,10 +19,20 @@ export async function generateMetadata({
   const { puebloSlug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
   const tSeo = await getTranslations('seo');
-  const name = slugToTitle(puebloSlug);
+  const data = await fetchData(puebloSlug, locale);
+  const hasData = Boolean(data?.participante?.pueblo?.slug);
+  const name = data?.participante?.pueblo?.nombre || slugToTitle(puebloSlug);
   const path = `/planifica/semana-santa/pueblo/${puebloSlug}`;
   const title = seoTitle(tSeo('semanaSantaTitle', { nombre: name }));
-  const description = seoDescription(tSeo('semanaSantaDesc', { nombre: name }));
+  const description = seoDescription(
+    data?.participante?.descripcion?.trim() || tSeo('semanaSantaDesc', { nombre: name }),
+  );
+  const ogImage = hasData
+    ? data?.participante?.cartelHorizontalUrl?.trim() ||
+      data?.participante?.pueblo?.foto_destacada?.trim() ||
+      data?.participante?.cartelVerticalUrl?.trim() ||
+      getDefaultOgImage()
+    : getDefaultOgImage();
   return {
     title,
     description,
@@ -34,8 +45,16 @@ export async function generateMetadata({
       description,
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
+      type: hasData ? 'article' : 'website',
+      images: [{ url: ogImage, alt: title }],
     },
-    robots: { index: Boolean(await fetchData(puebloSlug, locale)), follow: true },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage],
+    },
+    robots: { index: hasData, follow: true },
   };
 }
 
@@ -93,7 +112,7 @@ type Payload = {
   };
 };
 
-async function fetchData(slug: string, locale: string): Promise<Payload | null> {
+const fetchData = cache(async (slug: string, locale: string): Promise<Payload | null> => {
   const API = getApiUrl();
   const lang = encodeURIComponent(locale);
   const res = await fetch(`${API}/semana-santa/pueblos/${slug}?lang=${lang}`);
@@ -101,7 +120,7 @@ async function fetchData(slug: string, locale: string): Promise<Payload | null> 
   const data = await res.json();
   if (data && data.participa === false) return null;
   return data;
-}
+});
 
 export default async function SemanaSantaPuebloPage({
   params,

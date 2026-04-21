@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
+import { cache } from 'react';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { getApiUrl } from '@/lib/api';
 import { getLocale, getTranslations } from 'next-intl/server';
 import {
   getCanonicalUrl,
+  getDefaultOgImage,
   getLocaleAlternates,
   getOGLocale,
   seoDescription,
@@ -49,13 +51,15 @@ type Dia = {
 
 type Payload = {
   participante: {
-    pueblo: { nombre: string; slug: string };
+    pueblo: { nombre: string; slug: string; foto_destacada?: string | null };
+    cartelHorizontalUrl?: string | null;
+    cartelVerticalUrl?: string | null;
     agenda: Agenda[];
     dias: Dia[];
   };
 };
 
-async function fetchData(slug: string, locale: string): Promise<Payload | null> {
+const fetchData = cache(async (slug: string, locale: string): Promise<Payload | null> => {
   const API = getApiUrl();
   const lang = encodeURIComponent(locale);
   try {
@@ -67,7 +71,7 @@ async function fetchData(slug: string, locale: string): Promise<Payload | null> 
   } catch {
     return null;
   }
-}
+});
 
 function isDateFormat(s: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(s);
@@ -132,8 +136,18 @@ export async function generateMetadata({
     ? seoTitle(tSeo('semanaSantaDiaTitle', { nombre: puebloName, fecha: dateLabel }))
     : seoTitle(tSeo('semanaSantaTitle', { nombre: puebloName }));
   const description = hasDayData
-    ? seoDescription(tSeo('semanaSantaDiaDesc', { nombre: puebloName, fecha: dateLabel }))
+    ? seoDescription(
+        day?.descripcion?.trim() ||
+          tSeo('semanaSantaDiaDesc', { nombre: puebloName, fecha: dateLabel }),
+      )
     : seoDescription(tSeo('semanaSantaDesc', { nombre: puebloName }));
+  const ogImage = hasDayData
+    ? day?.fotoUrl?.trim() ||
+      data?.participante?.cartelHorizontalUrl?.trim() ||
+      data?.participante?.pueblo?.foto_destacada?.trim() ||
+      data?.participante?.cartelVerticalUrl?.trim() ||
+      getDefaultOgImage()
+    : getDefaultOgImage();
   return {
     title,
     description,
@@ -146,6 +160,14 @@ export async function generateMetadata({
       description,
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
+      type: hasDayData ? 'article' : 'website',
+      images: [{ url: ogImage, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage],
     },
     robots: { index: hasDayData, follow: true },
   };
