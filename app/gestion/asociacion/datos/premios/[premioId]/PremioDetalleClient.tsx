@@ -17,8 +17,29 @@ interface Entry {
   puebloSlug: string | null;
   provincia: string | null;
   posicion: number;
+  posicionAnterior?: number | null;
+  tendencia?: 'up' | 'down' | 'same' | 'new' | null;
   valor: number;
   metadata: Record<string, unknown> | null;
+}
+
+function TrendCell({ t, prev }: { t?: Entry['tendencia']; prev?: number | null }) {
+  if (!t) return <span className="text-muted-foreground">—</span>;
+  if (t === 'up')
+    return (
+      <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold" title={prev ? `Antes: #${prev}` : undefined}>
+        ▲ <span className="text-xs tabular-nums">{prev ? `${prev}→` : ''}</span>
+      </span>
+    );
+  if (t === 'down')
+    return (
+      <span className="inline-flex items-center gap-1 text-rose-600 font-semibold" title={prev ? `Antes: #${prev}` : undefined}>
+        ▼ <span className="text-xs tabular-nums">{prev ? `${prev}→` : ''}</span>
+      </span>
+    );
+  if (t === 'same')
+    return <span className="text-muted-foreground">=</span>;
+  return <span className="rounded bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold text-sky-800">NUEVO</span>;
 }
 
 interface PremioMeta {
@@ -221,6 +242,7 @@ export default function PremioDetalleClient({
             <thead className="border-b border-border bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
               <tr>
                 <th className="px-4 py-2.5 text-left">#</th>
+                <th className="px-3 py-2.5 text-left">Tendencia</th>
                 <th className="px-4 py-2.5 text-left">Pueblo</th>
                 <th className="px-4 py-2.5 text-left">Provincia</th>
                 <th className="px-4 py-2.5 text-right">Valor</th>
@@ -246,6 +268,9 @@ export default function PremioDetalleClient({
                     >
                       {r.posicion}
                     </span>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <TrendCell t={r.tendencia} prev={r.posicionAnterior} />
                   </td>
                   <td className="px-4 py-2.5 font-medium text-foreground">
                     {r.puebloNombre ?? `#${r.puebloId}`}

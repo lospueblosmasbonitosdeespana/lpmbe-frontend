@@ -13,9 +13,9 @@ const PREMIOS_UI: Record<
   4: { titulo: 'Más Activo del Club', descripcion: 'Canjes de QR del Club de Amigos.', unidad: 'canjes', emoji: '🎟️' },
   5: { titulo: 'Más Internacional', descripcion: '% de visitantes extranjeros (datos Telefónica Tech).', unidad: '%', emoji: '🌍' },
   6: { titulo: 'Pueblo Revelación', descripcion: 'Crecimiento relativo respecto al periodo anterior.', unidad: '%', emoji: '🚀' },
-  7: { titulo: 'Trabajador · Eventos y Noticias', descripcion: 'Eventos y noticias publicados por el pueblo.', unidad: 'publicaciones', emoji: '🎭' },
+  7: { titulo: 'Pueblo Más Trabajador', descripcion: 'Eventos + noticias + páginas temáticas + POIs creados por el pueblo.', unidad: 'publicaciones', emoji: '🎭' },
   8: { titulo: 'Trabajador · Contenidos', descripcion: 'Noticias, artículos, rutas y páginas propias.', unidad: 'contenidos', emoji: '✍️' },
-  9: { titulo: 'Mejor Fichado', descripcion: 'Completitud de tu ficha (fotos, traducciones, recursos).', unidad: 'índice', emoji: '🗂️' },
+  9: { titulo: 'Ficha Más Completa', descripcion: '% de la ficha del pueblo rellenada: foto, escudo, descripción, historia, fotos, vídeos, webcams, audioguías, POIs, contenidos y recursos.', unidad: 'score / 100', emoji: '🗂️' },
   10: { titulo: 'Mejor Tejido Local', descripcion: 'Negocios y alojamientos adheridos al Club.', unidad: 'negocios', emoji: '🏪' },
   11: { titulo: 'Más Visitado por el Club', descripcion: 'Visitas del Club de Amigos, ponderado por el nº de recursos del pueblo.', unidad: 'visitas/recurso', emoji: '⚡' },
   12: { titulo: 'Especial del Jurado', descripcion: 'Asignación manual por iniciativas singulares.', unidad: '—', emoji: '🏆' },
@@ -40,9 +40,44 @@ interface Edicion {
 interface Posicion {
   premioId: number;
   posicion: number | null;
+  posicionAnterior?: number | null;
+  tendencia?: 'up' | 'down' | 'same' | 'new' | null;
   total: number;
   valor: number | null;
   razon?: 'pendiente' | 'sin_datos' | 'no_ranked';
+}
+
+function TrendBadge({ t, prev }: { t?: Posicion['tendencia']; prev?: number | null }) {
+  if (!t) return null;
+  if (t === 'up')
+    return (
+      <span
+        className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700"
+        title={prev ? `Periodo anterior: #${prev}` : undefined}
+      >
+        ▲ {prev ? `desde ${prev}ª` : 'sube'}
+      </span>
+    );
+  if (t === 'down')
+    return (
+      <span
+        className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700"
+        title={prev ? `Periodo anterior: #${prev}` : undefined}
+      >
+        ▼ {prev ? `desde ${prev}ª` : 'baja'}
+      </span>
+    );
+  if (t === 'same')
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+        = se mantiene
+      </span>
+    );
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2 py-0.5 text-[11px] font-semibold text-sky-700">
+      NUEVO
+    </span>
+  );
 }
 
 interface ResumenResponse {
@@ -293,6 +328,10 @@ function TarjetaPremio({
                 <span className="text-sm text-muted-foreground">
                   de {datosActivos.total}
                 </span>
+                <TrendBadge
+                  t={(datosActivos as Posicion).tendencia}
+                  prev={(datosActivos as Posicion).posicionAnterior}
+                />
               </>
             )}
           </div>

@@ -15,9 +15,9 @@ const PREMIOS_UI: Record<
   4: { titulo: 'Más Activo del Club', descripcion: 'Mayor volumen de canjes de QR del Club.', unidad: 'canjes', implementado: true, emoji: '🎟️' },
   5: { titulo: 'Más Internacional', descripcion: '% de visitantes extranjeros (datos Telefónica Tech).', unidad: '%', implementado: false, emoji: '🌍' },
   6: { titulo: 'Pueblo Revelación', descripcion: 'Mayor crecimiento relativo del periodo.', unidad: '%', implementado: true, emoji: '🚀' },
-  7: { titulo: 'Más Trabajador · Eventos y Noticias', descripcion: 'Más eventos y noticias publicados por el pueblo.', unidad: 'publicaciones', implementado: true, emoji: '🎭' },
+  7: { titulo: 'Más Trabajador', descripcion: 'Eventos + noticias + páginas temáticas + POIs creados por el pueblo (las del ADMIN no cuentan).', unidad: 'publicaciones', implementado: true, emoji: '🎭' },
   8: { titulo: 'Más Trabajador · Contenidos', descripcion: 'Más noticias, artículos, páginas y rutas propias.', unidad: 'publicaciones', implementado: true, emoji: '✍️' },
-  9: { titulo: 'Mejor Fichado', descripcion: 'Ficha más completa: fotos, traducciones, recursos.', unidad: 'índice', implementado: true, emoji: '🗂️' },
+  9: { titulo: 'Ficha Más Completa', descripcion: 'Puntuación 0-100 según qué campos de la ficha tiene rellenos (foto, escudo, descripción, historia, fotos, vídeos, webcams, audioguías, POIs, contenidos, recursos).', unidad: 'score / 100', implementado: true, emoji: '🗂️' },
   10: { titulo: 'Mejor Tejido Local', descripcion: 'Más negocios y alojamientos adheridos al Club.', unidad: 'negocios', implementado: true, emoji: '🏪' },
   11: { titulo: 'Más Visitado por el Club', descripcion: 'Visitas del Club ponderadas por el nº de recursos del pueblo.', unidad: 'visitas/recurso', implementado: true, emoji: '⚡' },
   12: { titulo: 'Especial del Jurado', descripcion: 'Iniciativas singulares, a decisión del jurado.', unidad: 'manual', implementado: true, emoji: '🏆' },
@@ -36,9 +36,38 @@ interface Edicion {
 interface TopEntry {
   puebloId: number;
   posicion: number;
+  posicionAnterior?: number | null;
+  tendencia?: 'up' | 'down' | 'same' | 'new' | null;
   valor: number;
   puebloNombre: string | null;
   puebloSlug: string | null;
+}
+
+function TrendArrow({ t }: { t?: 'up' | 'down' | 'same' | 'new' | null }) {
+  if (!t) return null;
+  if (t === 'up')
+    return (
+      <span title="Sube respecto al periodo anterior" className="text-emerald-600 text-[11px] font-bold">
+        ▲
+      </span>
+    );
+  if (t === 'down')
+    return (
+      <span title="Baja respecto al periodo anterior" className="text-rose-600 text-[11px] font-bold">
+        ▼
+      </span>
+    );
+  if (t === 'same')
+    return (
+      <span title="Se mantiene" className="text-muted-foreground text-[11px]">
+        =
+      </span>
+    );
+  return (
+    <span title="Nuevo en el ranking" className="text-sky-600 text-[10px] font-semibold">
+      NEW
+    </span>
+  );
 }
 
 interface Resumen {
@@ -235,6 +264,7 @@ export default function PremiosAdminDashboard() {
                             >
                               {t.posicion}
                             </span>
+                            <TrendArrow t={t.tendencia} />
                             <span className="truncate">{t.puebloNombre ?? `#${t.puebloId}`}</span>
                           </span>
                           <span className="shrink-0 tabular-nums text-xs text-muted-foreground">
