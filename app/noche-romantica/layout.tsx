@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
-import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from '@/lib/seo';
+import { getCanonicalUrl, getDefaultOgImage, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from '@/lib/seo';
 
 const PAGE_TITLE: Record<string, string> = {
   es: 'La Noche Romántica en los pueblos más bonitos de España',
@@ -39,6 +39,14 @@ export async function generateMetadata(): Promise<Metadata> {
       description,
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
+      type: 'website',
+      images: [{ url: getDefaultOgImage(), alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [getDefaultOgImage()],
     },
     robots: { index: true, follow: true },
   };

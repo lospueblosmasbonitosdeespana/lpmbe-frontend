@@ -89,10 +89,12 @@ export async function generateMetadata({
   const path = `/rutas/${slug}`;
 
   let name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  let cover: string | null = null;
   try {
     const rutas = await getRutas(locale);
     const rutaBasica = rutas.find((r) => r.slug === slug);
     if (rutaBasica?.titulo) name = rutaBasica.titulo.trim();
+    cover = rutaBasica?.foto_portada ?? null;
   } catch {
     // fallback al nombre derivado del slug
   }
@@ -102,6 +104,7 @@ export async function generateMetadata({
   const description =
     seoDescription(tSeo("rutaDetalleDesc", { nombre: name })) ||
     DEFAULT_DESCRIPTION;
+  const ogImages = cover ? [{ url: cover, alt: name }] : undefined;
   return {
     title,
     description,
@@ -116,11 +119,13 @@ export async function generateMetadata({
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
       type: "article",
+      ...(ogImages ? { images: ogImages } : {}),
     },
     twitter: {
-      card: "summary",
+      card: cover ? "summary_large_image" : "summary",
       title,
       description,
+      ...(cover ? { images: [cover] } : {}),
     },
   };
 }
@@ -219,8 +224,50 @@ export default async function RutaPage({
         }
       : null;
 
+  const touristTripLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "TouristTrip",
+    name: ruta.titulo,
+    url: `${base}${pathRuta}`,
+    inLanguage: locale,
+    ...(ruta.descripcion
+      ? {
+          description: seoDescription(
+            ruta.descripcion.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
+            300,
+          ),
+        }
+      : {}),
+    ...(ruta.foto_portada ? { image: ruta.foto_portada } : {}),
+    provider: {
+      "@type": "Organization",
+      name: "Los Pueblos Más Bonitos de España",
+      url: base,
+    },
+    ...(pueblosOrdenados.length > 0
+      ? {
+          itinerary: {
+            "@type": "ItemList",
+            numberOfItems: pueblosOrdenados.length,
+            itemListElement: pueblosOrdenados.map((p: any, i: number) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              item: {
+                "@type": "TouristAttraction",
+                name: typeof p === "object" && p?.nombre ? p.nombre : String(p),
+                ...(typeof p === "object" && p?.slug
+                  ? { url: `${base}/pueblos/${p.slug}` }
+                  : {}),
+              },
+            })),
+          },
+        }
+      : {}),
+  };
+
   return (
     <main className="mx-auto max-w-5xl px-4 py-12">
+      <JsonLd data={touristTripLd} />
       <JsonLd data={breadcrumbLd} />
       {itemListLd && <JsonLd data={itemListLd} />}
       {/* Breadcrumb */}

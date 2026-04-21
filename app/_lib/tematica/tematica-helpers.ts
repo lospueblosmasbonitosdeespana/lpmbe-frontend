@@ -207,6 +207,66 @@ export async function buildTematicaListMetadata(params: {
   };
 }
 
+/**
+ * Metadata para detalle de página temática (`/patrimonio/[puebloSlug]/[pageSlug]`,
+ * `/cultura/...`, etc.). Normaliza OG/Twitter y usa la cover de la página
+ * como imagen editorial.
+ */
+export async function buildTematicaDetailMetadata(params: {
+  slug: string;
+  puebloSlug: string;
+  pageSlug: string;
+  locale: SupportedLocale | string;
+  titleText: string;
+  descriptionText: string;
+  coverUrl?: string | null;
+  hasValidContent: boolean;
+  articleSection?: string;
+}): Promise<Metadata> {
+  const {
+    slug,
+    puebloSlug,
+    pageSlug,
+    locale,
+    titleText,
+    descriptionText,
+    coverUrl,
+    hasValidContent,
+    articleSection,
+  } = params;
+  const path = `/${slug}/${puebloSlug}/${pageSlug}`;
+  const title = seoTitle(titleText);
+  const description = seoDescription(descriptionText);
+  const alternates = hasValidContent
+    ? {
+        canonical: getCanonicalUrl(path, locale as SupportedLocale),
+        languages: getLocaleAlternates(path),
+      }
+    : undefined;
+  const ogImages = coverUrl ? [{ url: coverUrl }] : undefined;
+  return {
+    title,
+    description,
+    alternates,
+    robots: { index: hasValidContent, follow: true },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale as SupportedLocale),
+      type: "article",
+      locale: getOGLocale(locale as SupportedLocale),
+      ...(ogImages ? { images: ogImages } : {}),
+    },
+    twitter: {
+      card: coverUrl ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(coverUrl ? { images: [coverUrl] } : {}),
+    },
+    ...(articleSection ? { other: { "article:section": articleSection } } : {}),
+  };
+}
+
 /** Obtiene una página por slug (o fallback slugify del título) */
 export async function getPaginaTematicaBySlug(
   puebloSlug: string,

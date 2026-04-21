@@ -94,6 +94,8 @@ export async function generateMetadata({
     ? seoDescription(`${video.titulo} · ${name}`)
     : seoDescription(tSeo("videosDesc", { nombre: name }));
   const hasVideoData = Boolean(video);
+  const thumbnailUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null;
+  const ogImages = thumbnailUrl ? [{ url: thumbnailUrl, alt: video?.titulo ?? name }] : undefined;
 
   return {
     title,
@@ -109,6 +111,13 @@ export async function generateMetadata({
       locale: getOGLocale(locale as SupportedLocale),
       type: hasVideoData ? "video.other" : "article",
       videos: ytId ? [{ url: `https://www.youtube.com/watch?v=${ytId}` }] : undefined,
+      ...(ogImages ? { images: ogImages } : {}),
+    },
+    twitter: {
+      card: thumbnailUrl ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(thumbnailUrl ? { images: [thumbnailUrl] } : {}),
     },
     robots: { index: hasVideoData, follow: true },
   };
@@ -209,9 +218,22 @@ export default async function VideoWatchPage({
     { label: video.titulo, href: path },
   ];
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: base },
+      { "@type": "ListItem", position: 2, name: "Pueblos", item: `${base}/pueblos` },
+      { "@type": "ListItem", position: 3, name: pueblo.nombre, item: `${base}/pueblos/${pueblo.slug}` },
+      { "@type": "ListItem", position: 4, name: "Videos", item: `${base}/pueblos/${pueblo.slug}/videos` },
+      { "@type": "ListItem", position: 5, name: video.titulo, item: `${base}${path}` },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-background">
       <JsonLd data={videoLd} />
+      <JsonLd data={breadcrumbLd} />
       <div className="border-b border-border bg-card">
         <div className="mx-auto max-w-4xl px-4 py-6">
           <nav className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">

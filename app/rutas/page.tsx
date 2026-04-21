@@ -3,9 +3,10 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getRutas } from "@/lib/api";
 import { createExcerpt } from "@/lib/sanitizeHtml";
-import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
 import RutaMiniMap from "@/app/_components/RutaMiniMap";
 import RutaCardStats from "@/app/_components/RutaCardStats";
+import JsonLd from "@/app/components/seo/JsonLd";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
@@ -13,6 +14,20 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = "/rutas";
   const title = t("rutasListTitle");
   const description = t("rutasListDescription");
+
+  let firstCover: string | null = null;
+  let rutasCount = 0;
+  try {
+    const rutas = await getRutas(locale);
+    const activas = rutas.filter((r) => r.activo);
+    rutasCount = activas.length;
+    firstCover = activas.find((r) => r.foto_portada)?.foto_portada ?? null;
+  } catch {
+    firstCover = null;
+  }
+  const finalOgImage = firstCover ?? `${getBaseUrl()}/brand/logo-lpbe-1.png`;
+  const hasContent = rutasCount > 0;
+
   return {
     title,
     description,
@@ -20,11 +35,20 @@ export async function generateMetadata(): Promise<Metadata> {
       canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
+    robots: { index: hasContent, follow: true },
     openGraph: {
       title,
       description,
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
+      type: "website",
+      images: [{ url: finalOgImage, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [finalOgImage],
     },
   };
 }
@@ -33,13 +57,54 @@ export const revalidate = 60;
 export default async function RutasPage() {
   const locale = await getLocale();
   const t = await getTranslations("rutas");
+  const tSeo = await getTranslations("seo");
   const tHome = await getTranslations("home");
   const rutas = await getRutas(locale);
 
   const rutasActivas = rutas.filter((r) => r.activo);
 
+  const base = getBaseUrl();
+  const pageUrl = getCanonicalUrl("/rutas", locale as SupportedLocale);
+  const collectionLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: tSeo("rutasListTitle"),
+    description: tSeo("rutasListDescription"),
+    url: pageUrl,
+    inLanguage: locale,
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Los Pueblos Más Bonitos de España",
+      url: base,
+    },
+    ...(rutasActivas.length > 0
+      ? {
+          mainEntity: {
+            "@type": "ItemList",
+            numberOfItems: rutasActivas.length,
+            itemListElement: rutasActivas.slice(0, 100).map((r, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              url: `${base}/rutas/${r.slug}`,
+              name: r.titulo,
+            })),
+          },
+        }
+      : {}),
+  };
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: base },
+      { "@type": "ListItem", position: 2, name: t("title"), item: pageUrl },
+    ],
+  };
+
   return (
     <main className="mx-auto max-w-7xl px-4 py-12">
+      <JsonLd data={collectionLd} />
+      <JsonLd data={breadcrumbLd} />
       <div className="mb-8">
         <h1 className="text-3xl font-bold">{t("title")}</h1>
         <p className="mt-2 text-gray-600">

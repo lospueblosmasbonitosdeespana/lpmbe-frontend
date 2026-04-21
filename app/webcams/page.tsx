@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { getApiUrl } from '@/lib/api';
 import {
+  getBaseUrl,
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
@@ -11,6 +12,7 @@ import {
   type SupportedLocale,
 } from '@/lib/seo';
 import WebcamsGrid from './WebcamsGrid';
+import JsonLd from '@/app/components/seo/JsonLd';
 
 export const revalidate = 120;
 
@@ -39,6 +41,18 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = '/webcams';
   const title = seoTitle(PAGE_TITLE[locale] ?? PAGE_TITLE.es);
   const description = seoDescription(PAGE_DESC[locale] ?? PAGE_DESC.es);
+
+  let ogImage: string | null = null;
+  let hasWebcams = false;
+  try {
+    const webcams = await fetchWebcams();
+    hasWebcams = webcams.length > 0;
+    ogImage = webcams.find((w) => w.pueblo?.foto_destacada)?.pueblo.foto_destacada ?? null;
+  } catch {
+    ogImage = null;
+  }
+  const finalOgImage = ogImage ?? `${getBaseUrl()}/brand/logo-lpbe-1.png`;
+
   return {
     title,
     description,
@@ -51,8 +65,16 @@ export async function generateMetadata(): Promise<Metadata> {
       description,
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
+      type: 'website',
+      images: [{ url: finalOgImage, alt: title }],
     },
-    robots: { index: true, follow: true },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [finalOgImage],
+    },
+    robots: { index: hasWebcams, follow: true },
   };
 }
 
@@ -98,8 +120,55 @@ export default async function WebcamsPage() {
   }
   const groups = Array.from(puebloMap.values());
 
+  const locale = await getLocale();
+  const base = getBaseUrl();
+  const pageUrl = getCanonicalUrl('/webcams', locale as SupportedLocale);
+  const title = seoTitle(PAGE_TITLE[locale] ?? PAGE_TITLE.es);
+  const description = seoDescription(PAGE_DESC[locale] ?? PAGE_DESC.es);
+  const firstCover = groups.find((g) => g.pueblo.foto_destacada)?.pueblo.foto_destacada ?? null;
+
+  const collectionLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: title,
+    description,
+    url: pageUrl,
+    inLanguage: locale,
+    ...(firstCover ? { image: firstCover } : {}),
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'Los Pueblos Más Bonitos de España',
+      url: base,
+    },
+    ...(groups.length > 0
+      ? {
+          mainEntity: {
+            '@type': 'ItemList',
+            numberOfItems: groups.length,
+            itemListElement: groups.slice(0, 100).map((g, i) => ({
+              '@type': 'ListItem',
+              position: i + 1,
+              url: `${base}/pueblos/${g.pueblo.slug}/webcam`,
+              name: `Webcam · ${g.pueblo.nombre}`,
+              ...(g.pueblo.foto_destacada ? { image: g.pueblo.foto_destacada } : {}),
+            })),
+          },
+        }
+      : {}),
+  };
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: base },
+      { '@type': 'ListItem', position: 2, name: 'Webcams', item: pageUrl },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-stone-50 to-white dark:from-neutral-950 dark:to-neutral-900">
+      <JsonLd data={collectionLd} />
+      <JsonLd data={breadcrumbLd} />
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-amber-700 via-[#b45309] to-amber-900 py-16 md:py-24">
         <div className="absolute inset-0 opacity-[0.07]">

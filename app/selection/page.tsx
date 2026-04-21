@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import {
+  getBaseUrl,
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
@@ -11,6 +12,7 @@ import {
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import { SelectionGrid } from "./SelectionGrid";
+import JsonLd from "@/app/components/seo/JsonLd";
 
 export const revalidate = 60;
 
@@ -20,6 +22,18 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = "/selection";
   const title = seoTitle(tSeo("selectionTitle"));
   const description = seoDescription(tSeo("selectionDesc"));
+
+  let ogImage: string | null = null;
+  try {
+    const negocios = await fetchSelectionNegocios(locale);
+    ogImage =
+      negocios?.find((n: { imagenes?: Array<{ url?: string }> }) => n?.imagenes?.[0]?.url)
+        ?.imagenes?.[0]?.url ?? null;
+  } catch {
+    ogImage = null;
+  }
+  const finalOgImage = ogImage ?? `${getBaseUrl()}/brand/logo-lpbe-1.png`;
+
   return {
     title,
     description,
@@ -32,6 +46,14 @@ export async function generateMetadata(): Promise<Metadata> {
       description,
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
+      type: "website",
+      images: [{ url: finalOgImage, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [finalOgImage],
     },
     robots: { index: true, follow: true },
   };
@@ -52,10 +74,52 @@ async function fetchSelectionNegocios(locale: string) {
 export default async function SelectionPage() {
   const locale = await getLocale();
   const t = await getTranslations("selection");
+  const tSeo = await getTranslations("seo");
   const negocios = await fetchSelectionNegocios(locale);
+
+  const base = getBaseUrl();
+  const pageUrl = getCanonicalUrl("/selection", locale as SupportedLocale);
+  const collectionLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: seoTitle(tSeo("selectionTitle")),
+    description: seoDescription(tSeo("selectionDesc")),
+    url: pageUrl,
+    inLanguage: locale,
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Los Pueblos Más Bonitos de España",
+      url: base,
+    },
+    ...(Array.isArray(negocios) && negocios.length > 0
+      ? {
+          mainEntity: {
+            "@type": "ItemList",
+            numberOfItems: negocios.length,
+            itemListElement: negocios.slice(0, 100).map((n: any, i: number) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              url: `${base}/selection/${n.slug}`,
+              name: n.nombre,
+              ...(n.imagenes?.[0]?.url ? { image: n.imagenes[0].url } : {}),
+            })),
+          },
+        }
+      : {}),
+  };
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: base },
+      { "@type": "ListItem", position: 2, name: "Club LPMBE Selection", item: pageUrl },
+    ],
+  };
 
   return (
     <main className="min-h-screen bg-background">
+      <JsonLd data={collectionLd} />
+      <JsonLd data={breadcrumbLd} />
       <div className="relative bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white">
         <div className="absolute inset-0 bg-[url('/images/selection-pattern.svg')] opacity-5" />
         <div className="relative mx-auto max-w-5xl px-4 py-20 text-center">

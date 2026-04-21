@@ -3,12 +3,14 @@ import { getLocale } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import { fetchWithTimeout } from "@/lib/fetch-safe";
 import {
+  getBaseUrl,
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
   type SupportedLocale,
 } from "@/lib/seo";
 import { DescubreGrid } from "./DescubreGrid";
+import JsonLd from "@/app/components/seo/JsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -35,18 +37,39 @@ const DESCRIPTIONS: Record<string, string> = {
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as SupportedLocale;
   const path = "/descubre";
+  const title = TITLES[locale] ?? TITLES.es;
+  const description = DESCRIPTIONS[locale] ?? DESCRIPTIONS.es;
+
+  let ogImage: string | null = null;
+  try {
+    const collections = await getCollections(locale);
+    ogImage = collections.find((c) => c?.imageUrl)?.imageUrl ?? null;
+  } catch {
+    ogImage = null;
+  }
+  const finalOgImage = ogImage ?? `${getBaseUrl()}/brand/logo-lpbe-1.png`;
+
   return {
-    title: { absolute: TITLES[locale] ?? TITLES.es },
-    description: DESCRIPTIONS[locale] ?? DESCRIPTIONS.es,
+    title: { absolute: title },
+    description,
     alternates: {
       canonical: getCanonicalUrl(path, locale),
       languages: getLocaleAlternates(path),
     },
+    robots: { index: true, follow: true },
     openGraph: {
-      title: TITLES[locale] ?? TITLES.es,
-      description: DESCRIPTIONS[locale] ?? DESCRIPTIONS.es,
+      title,
+      description,
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
+      type: "website",
+      images: [{ url: finalOgImage, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [finalOgImage],
     },
   };
 }
@@ -91,8 +114,52 @@ export default async function DescubrePage() {
   const collections = await getCollections(locale);
   const hero = HERO_TITLES[locale] ?? HERO_TITLES.es;
 
+  const base = getBaseUrl();
+  const pageUrl = getCanonicalUrl("/descubre", locale as SupportedLocale);
+  const title = TITLES[locale] ?? TITLES.es;
+  const description = DESCRIPTIONS[locale] ?? DESCRIPTIONS.es;
+  const firstCoverCollection = collections.find((c) => c?.imageUrl) ?? null;
+
+  const collectionLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: title,
+    description,
+    url: pageUrl,
+    inLanguage: locale,
+    ...(firstCoverCollection?.imageUrl ? { image: firstCoverCollection.imageUrl } : {}),
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Los Pueblos Más Bonitos de España",
+      url: base,
+    },
+    mainEntity:
+      collections.length > 0
+        ? {
+            "@type": "ItemList",
+            numberOfItems: collections.length,
+            itemListElement: collections.slice(0, 100).map((c, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              url: `${base}/descubre/${c.slug}`,
+              name: c.title,
+            })),
+          }
+        : undefined,
+  };
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: base },
+      { "@type": "ListItem", position: 2, name: hero.main, item: pageUrl },
+    ],
+  };
+
   return (
     <main className="min-h-screen">
+      <JsonLd data={collectionLd} />
+      <JsonLd data={breadcrumbLd} />
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#3d2c1e] via-[#5a3d28] to-[#4a6741] py-20 md:py-28">
         <div className="absolute inset-0 bg-[url('/brand/pattern-subtle.svg')] opacity-5" />

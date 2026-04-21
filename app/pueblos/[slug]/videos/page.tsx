@@ -28,6 +28,32 @@ export async function generateMetadata({
   const path = `/pueblos/${slug}/videos`;
   const title = seoTitle(tSeo("videosTitle", { nombre: name }));
   const description = seoDescription(tSeo("videosDesc", { nombre: name }));
+
+  // Foto OG: thumbnail del primer vídeo (si existe) o foto_destacada del pueblo
+  let ogImage: string | null = null;
+  let hasVideos = false;
+  try {
+    const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+    if (pueblo) {
+      const API_BASE = getApiUrl();
+      const res = await fetch(`${API_BASE}/pueblos/${pueblo.id}/videos`, { cache: "no-store" });
+      if (res?.ok) {
+        const videos: Array<{ url?: string }> = await res.json().catch(() => []);
+        hasVideos = Array.isArray(videos) && videos.length > 0;
+        const firstYtId = videos.map((v) => extractYoutubeId(v.url || "")).find(Boolean);
+        if (firstYtId) {
+          ogImage = `https://img.youtube.com/vi/${firstYtId}/hqdefault.jpg`;
+        }
+      }
+      if (!ogImage) {
+        ogImage = (pueblo as { foto_destacada?: string | null })?.foto_destacada ?? null;
+      }
+    }
+  } catch {
+    // noop
+  }
+  const ogImages = ogImage ? [{ url: ogImage, alt: title }] : undefined;
+
   return {
     title,
     description,
@@ -35,12 +61,20 @@ export async function generateMetadata({
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
-    robots: { index: true, follow: true },
+    robots: { index: hasVideos, follow: true },
     openGraph: {
       title,
       description,
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
+      type: "website",
+      ...(ogImages ? { images: ogImages } : {}),
+    },
+    twitter: {
+      card: ogImage ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(ogImage ? { images: [ogImage] } : {}),
     },
   };
 }
@@ -109,6 +143,65 @@ export default async function VideosPuebloPage({
   ];
 
   const base = getBaseUrl();
+  const listPath = `/pueblos/${pueblo.slug}/videos`;
+  const listUrl = getCanonicalUrl(listPath, locale as SupportedLocale);
+  const firstYtId = videos.map((v) => extractYoutubeId(v.url)).find(Boolean);
+  const coverFromYt = firstYtId
+    ? `https://img.youtube.com/vi/${firstYtId}/hqdefault.jpg`
+    : null;
+  const coverImage = coverFromYt ?? pueblo.foto_destacada ?? null;
+
+  const collectionLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `Videos · ${pueblo.nombre}`,
+    description: `Vídeos sobre ${pueblo.nombre}: rincones, rutas y experiencias.`,
+    url: listUrl,
+    inLanguage: locale,
+    ...(coverImage ? { image: coverImage } : {}),
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Los Pueblos Más Bonitos de España",
+      url: base,
+    },
+    about: {
+      "@type": "TouristAttraction",
+      name: pueblo.nombre,
+      url: `${base}/pueblos/${pueblo.slug}`,
+    },
+    ...(videos.length > 0
+      ? {
+          mainEntity: {
+            "@type": "ItemList",
+            numberOfItems: videos.length,
+            itemListElement: videos.slice(0, 50).map((v, i) => {
+              const ytId = extractYoutubeId(v.url);
+              const seg = getCanonicalVideoSegment(v);
+              return {
+                "@type": "ListItem",
+                position: i + 1,
+                url: `${base}/pueblos/${pueblo.slug}/videos/${seg}`,
+                name: v.titulo,
+                ...(ytId
+                  ? { image: `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` }
+                  : {}),
+              };
+            }),
+          },
+        }
+      : {}),
+  };
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: base },
+      { "@type": "ListItem", position: 2, name: "Pueblos", item: `${base}/pueblos` },
+      { "@type": "ListItem", position: 3, name: pueblo.nombre, item: `${base}/pueblos/${pueblo.slug}` },
+      { "@type": "ListItem", position: 4, name: "Videos", item: `${base}${listPath}` },
+    ],
+  };
+
   const videoLds = videos.map((v) => {
     const ytId = extractYoutubeId(v.url);
     const thumbnailUrl = ytId
@@ -131,6 +224,8 @@ export default async function VideosPuebloPage({
 
   return (
     <main className="min-h-screen bg-background">
+      <JsonLd data={collectionLd} />
+      <JsonLd data={breadcrumbLd} />
       {videoLds.map((ld, i) => (
         <JsonLd key={i} data={ld} />
       ))}

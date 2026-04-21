@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import {
+  getBaseUrl,
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
@@ -12,6 +13,7 @@ import {
 } from "@/lib/seo";
 import { getPlanFeatures } from "@/lib/plan-features";
 import { NegocioLanding } from "./NegocioLanding";
+import JsonLd from "@/app/components/seo/JsonLd";
 
 export const revalidate = 60;
 
@@ -87,9 +89,16 @@ export async function generateMetadata({
       description,
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
+      type: "website",
       ...(recurso?.imagenes?.[0]?.url && {
         images: [{ url: recurso.imagenes[0].url, alt: name }],
       }),
+    },
+    twitter: {
+      card: recurso?.imagenes?.[0]?.url ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(recurso?.imagenes?.[0]?.url ? { images: [recurso.imagenes[0].url] } : {}),
     },
     robots: { index: true, follow: true },
   };
@@ -140,5 +149,46 @@ export default async function NegocioLandingPage({
     );
   }
 
-  return <NegocioLanding recurso={recurso} />;
+  const base = getBaseUrl();
+  const pagePath = `/negocio/${slug}`;
+  const pageUrl = getCanonicalUrl(pagePath, locale as SupportedLocale);
+  const localBusinessLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: recurso.nombre,
+    url: pageUrl,
+    ...(recurso.descripcion
+      ? { description: seoDescription(recurso.descripcion.replace(/<[^>]+>/g, " "), 300) }
+      : {}),
+    ...(recurso.imagenes?.[0]?.url ? { image: recurso.imagenes[0].url } : {}),
+    ...(recurso.telefono ? { telephone: recurso.telefono } : {}),
+    ...(recurso.email ? { email: recurso.email } : {}),
+    ...(recurso.web ? { sameAs: [recurso.web] } : {}),
+    ...(recurso.localidad || recurso.provincia
+      ? {
+          address: {
+            "@type": "PostalAddress",
+            addressCountry: "ES",
+            ...(recurso.localidad ? { addressLocality: recurso.localidad } : {}),
+            ...(recurso.provincia ? { addressRegion: recurso.provincia } : {}),
+          },
+        }
+      : {}),
+  };
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: base },
+      { "@type": "ListItem", position: 2, name: recurso.nombre, item: `${base}${pagePath}` },
+    ],
+  };
+
+  return (
+    <>
+      <JsonLd data={localBusinessLd} />
+      <JsonLd data={breadcrumbLd} />
+      <NegocioLanding recurso={recurso} />
+    </>
+  );
 }

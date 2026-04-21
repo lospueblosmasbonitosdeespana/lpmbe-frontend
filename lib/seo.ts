@@ -29,6 +29,14 @@ export function getBaseUrl(): string {
 }
 
 /**
+ * URL absoluta a la imagen OG por defecto (logo de marca). Se usa como
+ * fallback cuando una página editorial no tiene una imagen propia.
+ */
+export function getDefaultOgImage(): string {
+  return `${getBaseUrl()}/brand/logo-lpbe-1.png`;
+}
+
+/**
  * Path con query ?lang= para un idioma (para alternates).
  * path: sin query, ej. /pueblos/alarcon
  */

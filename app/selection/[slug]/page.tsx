@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import {
+  getBaseUrl,
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
@@ -11,6 +12,7 @@ import {
   type SupportedLocale,
 } from "@/lib/seo";
 import NegocioDetail from "@/app/pueblos/[slug]/club/[negocioSlug]/NegocioDetail";
+import JsonLd from "@/app/components/seo/JsonLd";
 
 export const revalidate = 60;
 
@@ -68,9 +70,16 @@ export async function generateMetadata({
       description,
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
+      type: "website",
       ...(recurso?.imagenes?.[0]?.url && {
         images: [{ url: recurso.imagenes[0].url, alt: name }],
       }),
+    },
+    twitter: {
+      card: recurso?.imagenes?.[0]?.url ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(recurso?.imagenes?.[0]?.url ? { images: [recurso.imagenes[0].url] } : {}),
     },
   };
 }
@@ -109,8 +118,43 @@ export default async function SelectionDetailPage({
 
   const puebloSlug = recurso.pueblo?.slug ?? "selection";
 
+  const base = getBaseUrl();
+  const selectionPath = `/selection/${slug}`;
+  const selectionUrl = getCanonicalUrl(selectionPath, locale as SupportedLocale);
+  const localBusinessLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: recurso.nombre,
+    url: selectionUrl,
+    ...(recurso.descripcion
+      ? { description: seoDescription(recurso.descripcion.replace(/<[^>]+>/g, " "), 300) }
+      : {}),
+    ...(recurso.imagenes?.[0]?.url ? { image: recurso.imagenes[0].url } : {}),
+    ...(recurso.localidad || recurso.provincia
+      ? {
+          address: {
+            "@type": "PostalAddress",
+            addressCountry: "ES",
+            ...(recurso.localidad ? { addressLocality: recurso.localidad } : {}),
+            ...(recurso.provincia ? { addressRegion: recurso.provincia } : {}),
+          },
+        }
+      : {}),
+  };
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: homeLabel, item: base },
+      { "@type": "ListItem", position: 2, name: "Club LPMBE Selection", item: `${base}/selection` },
+      { "@type": "ListItem", position: 3, name: recurso.nombre, item: `${base}${selectionPath}` },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-background">
+      <JsonLd data={localBusinessLd} />
+      <JsonLd data={breadcrumbLd} />
       <div className="border-b border-border bg-card">
         <div className="mx-auto max-w-4xl px-4 py-6">
           <nav className="mb-4 flex items-center gap-2 text-sm text-muted-foreground flex-wrap">

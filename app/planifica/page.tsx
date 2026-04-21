@@ -15,6 +15,7 @@ import {
 import { getLocale, getTranslations } from "next-intl/server";
 import {
   getCanonicalUrl,
+  getDefaultOgImage,
   getLocaleAlternates,
   getOGLocale,
   type SupportedLocale,
@@ -41,11 +42,13 @@ export async function generateMetadata(): Promise<Metadata> {
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
       type: "website",
+      images: [{ url: getDefaultOgImage(), alt: title }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: [getDefaultOgImage()],
     },
   };
 }

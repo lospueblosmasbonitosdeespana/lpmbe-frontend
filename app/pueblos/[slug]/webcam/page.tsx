@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
 import {
+  getBaseUrl,
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
@@ -12,6 +13,7 @@ import {
   type SupportedLocale,
 } from "@/lib/seo";
 import WebcamPuebloPlayer from "./WebcamPuebloPlayer";
+import JsonLd from "@/app/components/seo/JsonLd";
 
 export const revalidate = 60;
 export async function generateMetadata({
@@ -22,10 +24,30 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const tSeo = await getTranslations("seo");
-  const name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/webcam`;
+
+  let name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  let ogImage: string | null = null;
+  let hasWebcams = false;
+  try {
+    const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
+    if (pueblo) {
+      name = pueblo.nombre ?? name;
+      ogImage = (pueblo as { foto_destacada?: string | null }).foto_destacada ?? null;
+      const API_BASE = getApiUrl();
+      const res = await fetch(`${API_BASE}/pueblos/${pueblo.id}/webcams`, { cache: "no-store" });
+      if (res?.ok) {
+        const wc: Array<unknown> = await res.json().catch(() => []);
+        hasWebcams = Array.isArray(wc) && wc.length > 0;
+      }
+    }
+  } catch {
+    // noop
+  }
   const title = seoTitle(tSeo("puebloWebcamTitle", { nombre: name }));
   const description = seoDescription(tSeo("puebloWebcamDesc", { nombre: name }));
+  const ogImages = ogImage ? [{ url: ogImage, alt: title }] : undefined;
+
   return {
     title,
     description,
@@ -33,12 +55,20 @@ export async function generateMetadata({
       canonical: getCanonicalUrl(path, locale as SupportedLocale),
       languages: getLocaleAlternates(path),
     },
-    robots: { index: true, follow: true },
+    robots: { index: hasWebcams, follow: true },
     openGraph: {
       title,
       description,
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
+      type: "website",
+      ...(ogImages ? { images: ogImages } : {}),
+    },
+    twitter: {
+      card: ogImage ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(ogImage ? { images: [ogImage] } : {}),
     },
   };
 }
@@ -95,8 +125,43 @@ export default async function WebcamPuebloPage({
     { label: "Webcam", href: `/pueblos/${pueblo.slug}/webcam` },
   ];
 
+  const base = getBaseUrl();
+  const webcamPath = `/pueblos/${pueblo.slug}/webcam`;
+  const pageUrl = getCanonicalUrl(webcamPath, locale as SupportedLocale);
+  const collectionLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `Webcam · ${pueblo.nombre}`,
+    description: `Webcams en directo de ${pueblo.nombre}.`,
+    url: pageUrl,
+    inLanguage: locale,
+    ...(pueblo.foto_destacada ? { image: pueblo.foto_destacada } : {}),
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Los Pueblos Más Bonitos de España",
+      url: base,
+    },
+    about: {
+      "@type": "TouristAttraction",
+      name: pueblo.nombre,
+      url: `${base}/pueblos/${pueblo.slug}`,
+    },
+  };
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: base },
+      { "@type": "ListItem", position: 2, name: "Pueblos", item: `${base}/pueblos` },
+      { "@type": "ListItem", position: 3, name: pueblo.nombre, item: `${base}/pueblos/${pueblo.slug}` },
+      { "@type": "ListItem", position: 4, name: "Webcam", item: `${base}${webcamPath}` },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-background">
+      <JsonLd data={collectionLd} />
+      <JsonLd data={breadcrumbLd} />
       <div className="border-b border-border bg-card">
         <div className="mx-auto max-w-4xl px-4 py-6">
           <nav className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from 'next/link';
 import { getTranslations, getLocale } from 'next-intl/server';
 import { getApiUrl } from '@/lib/api';
-import { getCanonicalUrl, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
+import { getCanonicalUrl, getDefaultOgImage, getLocaleAlternates, getOGLocale, seoTitle, seoDescription, type SupportedLocale } from "@/lib/seo";
 
 export const revalidate = 60;
 const PAGE_TITLE: Record<string, string> = {
@@ -42,6 +42,14 @@ export async function generateMetadata(): Promise<Metadata> {
       description,
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
+      type: "website",
+      images: [{ url: getDefaultOgImage(), alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [getDefaultOgImage()],
     },
     robots: { index: true, follow: true },
   };
