@@ -192,6 +192,7 @@ export default function PremiosAdminDashboard() {
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {resumen.premios.map((premio) => {
             const ui = PREMIOS_UI[premio.premioId];
+            if (!ui) return null;
             const Icon = ui.Icon;
             return (
               <Link

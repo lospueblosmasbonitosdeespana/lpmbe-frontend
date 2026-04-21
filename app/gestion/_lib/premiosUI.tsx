@@ -8,8 +8,6 @@ import {
   Plane,
   Rocket,
   Hammer,
-  HelpCircle,
-  ClipboardCheck,
   Store,
   Users,
   Crown,
@@ -186,31 +184,15 @@ export const PREMIOS_UI: Record<number, PremioUI> = {
     Icon: Hammer,
     tint: PALETAS[6],
   },
-  8: {
-    titulo: 'Reservado · por definir',
-    descripcion:
-      'Slot libre: el "Más Trabajador por contenidos" se consolidó en el Premio 07. A la espera de propuesta del jurado.',
-    unidad: '—',
-    implementado: false,
-    Icon: HelpCircle,
-    tint: PALETAS[7],
-  },
-  9: {
-    titulo: 'Ficha Más Completa',
-    descripcion:
-      'Score 0-100 según qué campos tiene rellenos la ficha del pueblo (foto, escudo, descripción, historia, fotos, vídeos, webcams, audioguías, POIs, contenidos y recursos).',
-    unidad: 'score / 100',
-    implementado: true,
-    Icon: ClipboardCheck,
-    tint: PALETAS[8],
-  },
+  // NOTA: los slots 8 y 9 están RESERVADOS. Los 12 premios se quedan en 10
+  // hasta que se defina un nuevo criterio: no se calculan ni se muestran.
   10: {
     titulo: 'Mejor Tejido Local',
     descripcion: 'Más negocios, hoteles y restaurantes adheridos al Club.',
     unidad: 'negocios',
     implementado: true,
     Icon: Store,
-    tint: PALETAS[9],
+    tint: PALETAS[7],
   },
   11: {
     titulo: 'Más Visitado por el Club',
@@ -219,7 +201,7 @@ export const PREMIOS_UI: Record<number, PremioUI> = {
     unidad: 'vis/recurso',
     implementado: true,
     Icon: Users,
-    tint: PALETAS[10],
+    tint: PALETAS[8],
   },
   12: {
     titulo: 'Especial del Jurado',
@@ -227,16 +209,18 @@ export const PREMIOS_UI: Record<number, PremioUI> = {
     unidad: 'manual',
     implementado: true,
     Icon: Crown,
-    tint: PALETAS[11],
+    tint: PALETAS[9],
   },
 };
+
+// IDs de los 10 premios activos (tras reservar los slots 8 y 9).
+export const PREMIOS_IDS_VISIBLES = [1, 2, 3, 4, 5, 6, 7, 10, 11, 12];
 
 // ——— Formato de valores por premio ————————————————————————————————————
 export function formatValor(premioId: number, valor: number | null): string {
   if (valor == null) return '—';
   if (premioId === 1) return valor.toFixed(2) + ' ★';
   if (premioId === 6) return (valor >= 0 ? '+' : '') + valor.toFixed(1) + '%';
-  if (premioId === 9) return Math.round(valor) + ' / 100';
   if (premioId === 11) return valor.toFixed(2) + ' vis/rec';
   return Math.round(valor).toLocaleString('es-ES');
 }

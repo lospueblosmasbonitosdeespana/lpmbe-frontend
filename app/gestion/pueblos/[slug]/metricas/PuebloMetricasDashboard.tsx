@@ -13,6 +13,17 @@ import {
   Tooltip,
   Cell,
 } from 'recharts';
+import {
+  Trophy,
+  ArrowRight,
+  Eye,
+  MapPinned,
+  Users,
+  Smartphone,
+  Star,
+  Globe,
+  Sparkles,
+} from 'lucide-react';
 
 type MetricasData = {
   pueblo: { id: number; nombre: string; slug: string };
@@ -67,25 +78,59 @@ function KpiCard({
   value,
   sub,
   accent = 'default',
+  icon: Icon,
 }: {
   label: string;
   value: string | number;
   sub?: string;
   accent?: 'default' | 'visitas' | 'valoraciones' | 'web';
+  icon?: React.ComponentType<{ className?: string }>;
 }) {
-  const accentStyles = {
-    default: '',
-    visitas: 'border-l-4 border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20',
-    valoraciones: 'border-l-4 border-l-amber-500 bg-amber-50/50 dark:bg-amber-950/20',
-    web: 'border-l-4 border-l-blue-500 bg-blue-50/50 dark:bg-blue-950/20',
+  const accentStyles: Record<string, { card: string; iconBg: string; ring: string }> = {
+    default: {
+      card: 'bg-card',
+      iconBg: 'bg-gradient-to-br from-zinc-400 to-zinc-500',
+      ring: 'ring-border',
+    },
+    visitas: {
+      card: 'bg-gradient-to-b from-emerald-50/70 to-white dark:from-emerald-950/30 dark:to-card',
+      iconBg: 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-200/60',
+      ring: 'ring-emerald-200/70 dark:ring-emerald-900/50',
+    },
+    valoraciones: {
+      card: 'bg-gradient-to-b from-amber-50/70 to-white dark:from-amber-950/30 dark:to-card',
+      iconBg: 'bg-gradient-to-br from-amber-500 to-amber-600 shadow-amber-200/60',
+      ring: 'ring-amber-200/70 dark:ring-amber-900/50',
+    },
+    web: {
+      card: 'bg-gradient-to-b from-blue-50/70 to-white dark:from-blue-950/30 dark:to-card',
+      iconBg: 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-200/60',
+      ring: 'ring-blue-200/70 dark:ring-blue-900/50',
+    },
   };
+  const style = accentStyles[accent];
   return (
-    <div className={`rounded-xl border border-border bg-card p-5 shadow-sm ${accentStyles[accent]}`}>
-      <p className="text-sm font-medium text-muted-foreground">{label}</p>
-      <p className="mt-1 text-3xl font-bold text-foreground">
-        {typeof value === 'number' ? value.toLocaleString('es-ES') : value}
-      </p>
-      {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
+    <div
+      className={`rounded-2xl border border-transparent p-4 shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg ring-1 ${style.ring} ${style.card}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {label}
+          </p>
+          <p className="mt-1 text-3xl font-black tabular-nums text-foreground">
+            {typeof value === 'number' ? value.toLocaleString('es-ES') : value}
+          </p>
+        </div>
+        {Icon && (
+          <div
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-md ${style.iconBg}`}
+          >
+            <Icon className="h-5 w-5 text-white" />
+          </div>
+        )}
+      </div>
+      {sub && <p className="mt-2 text-xs text-muted-foreground">{sub}</p>}
     </div>
   );
 }
@@ -142,6 +187,8 @@ function RankingCard({
   valor,
   descripcion,
   tendencia7d,
+  icon: Icon,
+  accent = 'slate',
 }: {
   label: string;
   posicion: number;
@@ -149,20 +196,79 @@ function RankingCard({
   valor: string | number;
   descripcion: string;
   tendencia7d?: 'up' | 'down' | 'same';
+  icon?: React.ComponentType<{ className?: string }>;
+  accent?: 'amber' | 'emerald' | 'blue' | 'rose' | 'slate';
 }) {
   const t7 = tendencia7d ?? 'same';
+  const accentStyles: Record<string, { ring: string; iconBg: string; badge: string }> = {
+    slate: {
+      ring: 'ring-zinc-200/70 dark:ring-zinc-800',
+      iconBg: 'bg-gradient-to-br from-zinc-400 to-zinc-500',
+      badge: 'bg-zinc-100 text-zinc-700',
+    },
+    amber: {
+      ring: 'ring-amber-200/70',
+      iconBg: 'bg-gradient-to-br from-amber-500 to-amber-600',
+      badge: 'bg-amber-100 text-amber-800',
+    },
+    emerald: {
+      ring: 'ring-emerald-200/70',
+      iconBg: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
+      badge: 'bg-emerald-100 text-emerald-800',
+    },
+    blue: {
+      ring: 'ring-blue-200/70',
+      iconBg: 'bg-gradient-to-br from-blue-500 to-blue-600',
+      badge: 'bg-blue-100 text-blue-800',
+    },
+    rose: {
+      ring: 'ring-rose-200/70',
+      iconBg: 'bg-gradient-to-br from-rose-500 to-rose-600',
+      badge: 'bg-rose-100 text-rose-800',
+    },
+  };
+  const style = accentStyles[accent];
+  const podio = posicion <= 3;
   return (
-    <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <p className="text-sm font-medium text-muted-foreground">{label}</p>
-      <div className="mt-1 flex items-center justify-between gap-3">
-        <p className="text-2xl font-bold text-foreground">
-          {posicion}
-          <span className="ml-1 text-base font-medium text-muted-foreground">/ {total}</span>
-        </p>
-        <RankingTendenciaIcon tendencia={t7} />
+    <div
+      className={`rounded-2xl border border-transparent bg-card p-4 shadow-md ring-1 ${style.ring} transition-all hover:-translate-y-0.5 hover:shadow-lg`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {label}
+          </p>
+          <div className="mt-1 flex items-baseline gap-2">
+            <p
+              className={`text-3xl font-black tabular-nums ${
+                podio ? 'text-amber-600' : 'text-foreground'
+              }`}
+            >
+              {posicion}
+              <span className="ml-1 text-sm font-medium text-muted-foreground">ª / {total}</span>
+            </p>
+            {podio && <Trophy className="h-4 w-4 text-amber-500" />}
+          </div>
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          {Icon && (
+            <div
+              className={`flex h-9 w-9 items-center justify-center rounded-xl shadow-md ${style.iconBg}`}
+            >
+              <Icon className="h-4 w-4 text-white" />
+            </div>
+          )}
+          <RankingTendenciaIcon tendencia={t7} />
+        </div>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">Valor actual: {valor}</p>
-      <p className="mt-1 text-xs text-muted-foreground">{descripcion}</p>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <span
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${style.badge}`}
+        >
+          {valor}
+        </span>
+        <span className="text-[11px] text-muted-foreground">{descripcion}</span>
+      </div>
     </div>
   );
 }
@@ -259,22 +365,36 @@ export default function PuebloMetricasDashboard({
 
   return (
     <div className="space-y-8">
-      {/* Tile 12 Premios */}
+      {/* Tile 10 Premios */}
       <a
         href={`/gestion/pueblos/${slug}/metricas/premios`}
-        className="flex items-center gap-4 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-amber-100/40 to-background p-4 transition-colors hover:border-amber-300 hover:bg-amber-50/80"
+        className="group relative flex items-center gap-4 overflow-hidden rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50 via-amber-100/70 to-white p-5 shadow-md shadow-amber-100/40 transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-amber-900/50 dark:from-amber-950/40 dark:to-card"
       >
-        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-200 text-2xl" aria-hidden>
-          🏆
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.2),transparent_60%)]" aria-hidden />
+        <span
+          className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 shadow-lg shadow-amber-200"
+          aria-hidden
+        >
+          <Trophy className="h-7 w-7 text-white" strokeWidth={2} />
         </span>
-        <div className="flex-1">
-          <div className="text-sm font-semibold text-foreground">12 Premios</div>
-          <div className="text-xs text-muted-foreground">
-            Tu posición en los reconocimientos anuales y en ventanas móviles de
-            3, 7, 15 y 30 días.
+        <div className="relative flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-amber-700">
+              Ranking anual
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold text-amber-800 ring-1 ring-amber-200">
+              <Sparkles className="h-3 w-3" /> 10 premios
+            </span>
+          </div>
+          <div className="mt-0.5 text-base font-bold text-foreground">Los 10 Premios</div>
+          <div className="mt-0.5 text-xs text-muted-foreground">
+            Tu posición en cada premio, con los pueblos que tienes por encima y
+            por debajo, y flechas de tendencia en tiempo real.
           </div>
         </div>
-        <span className="text-sm font-medium text-amber-800">Ver →</span>
+        <span className="relative inline-flex items-center gap-1.5 rounded-full bg-amber-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-transform group-hover:translate-x-0.5">
+          Ver <ArrowRight className="h-3.5 w-3.5" />
+        </span>
       </a>
 
       {/* Period selector */}
@@ -315,100 +435,124 @@ export default function PuebloMetricasDashboard({
         </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <RankingCard
-            label="Ranking en valoraciones (histórico)"
+            label="Valoraciones (histórico)"
             posicion={ranking.valoracionesTotal.posicion}
             total={ranking.totalPueblos}
             valor={ranking.valoracionesTotal.valor.toLocaleString('es-ES')}
-            descripcion="Número total de reseñas recibidas."
+            descripcion="Nº total de reseñas."
             tendencia7d={ranking.valoracionesTotal.tendencia7d}
+            icon={Star}
+            accent="amber"
           />
           <RankingCard
-            label={`Ranking en valoraciones (${days} días)`}
+            label={`Valoraciones (${days}d)`}
             posicion={ranking.valoracionesPeriodo.posicion}
             total={ranking.totalPueblos}
             valor={ranking.valoracionesPeriodo.valor.toLocaleString('es-ES')}
-            descripcion={`Reseñas nuevas en los últimos ${days} días.`}
+            descripcion={`Reseñas nuevas en ${days}d.`}
             tendencia7d={ranking.valoracionesPeriodo.tendencia7d}
+            icon={Star}
+            accent="amber"
           />
           <RankingCard
-            label="Ranking en nota media"
+            label="Nota media"
             posicion={ranking.valoracionesMedia.posicion}
             total={ranking.totalPueblos}
-            valor={ranking.valoracionesMedia.valor.toFixed(1)}
-            descripcion="Promedio de estrellas (de 1 a 5)."
+            valor={ranking.valoracionesMedia.valor.toFixed(1) + ' ★'}
+            descripcion="Media ponderada."
             tendencia7d={ranking.valoracionesMedia.tendencia7d}
+            icon={Star}
+            accent="amber"
           />
           <RankingCard
-            label="Ranking en visitas totales (GPS + Manual)"
+            label="Visitas totales (GPS + Manual)"
             posicion={ranking.visitasGpsMasManual.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitasGpsMasManual.valor.toLocaleString('es-ES')}
-            descripcion="Suma de todas las visitas registradas en la app."
+            descripcion="Todas las visitas en la app."
             tendencia7d={ranking.visitasGpsMasManual.tendencia7d}
+            icon={Eye}
+            accent="emerald"
           />
           <RankingCard
-            label={`Ranking en visitas (${days} días)`}
+            label={`Visitas (${days}d)`}
             posicion={ranking.visitasPeriodo.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitasPeriodo.valor.toLocaleString('es-ES')}
-            descripcion={`Visitas registradas solo en este periodo de ${days} días.`}
+            descripcion={`Visitas en los últimos ${days} días.`}
             tendencia7d={ranking.visitasPeriodo.tendencia7d}
+            icon={Eye}
+            accent="emerald"
           />
           <RankingCard
-            label="Ranking en visitas GPS (histórico)"
+            label="Visitas GPS (histórico)"
             posicion={ranking.visitasGps.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitasGps.valor.toLocaleString('es-ES')}
-            descripcion="Visitas validadas por geolocalización del usuario."
+            descripcion="Geolocalizadas."
             tendencia7d={ranking.visitasGps.tendencia7d}
+            icon={MapPinned}
+            accent="emerald"
           />
           <RankingCard
-            label="Ranking en visitas manuales (histórico)"
+            label="Visitas manuales (histórico)"
             posicion={ranking.visitasManual.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitasManual.valor.toLocaleString('es-ES')}
-            descripcion="Visitas marcadas manualmente por el usuario."
+            descripcion="Marcadas por el usuario."
             tendencia7d={ranking.visitasManual.tendencia7d}
+            icon={Smartphone}
+            accent="emerald"
           />
           <RankingCard
-            label="Ranking en visitantes únicos"
+            label="Visitantes únicos"
             posicion={ranking.visitantesUnicos.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitantesUnicos.valor.toLocaleString('es-ES')}
-            descripcion="Usuarios distintos que han registrado visita."
+            descripcion="Usuarios distintos."
             tendencia7d={ranking.visitantesUnicos.tendencia7d}
+            icon={Users}
+            accent="emerald"
           />
           <RankingCard
-            label={`Ranking en visitas GPS (${days} días)`}
+            label={`Visitas GPS (${days}d)`}
             posicion={ranking.visitasPeriodoGps.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitasPeriodoGps.valor.toLocaleString('es-ES')}
-            descripcion="Visitas con geolocalización en el periodo actual."
+            descripcion="GPS en el periodo."
             tendencia7d={ranking.visitasPeriodoGps.tendencia7d}
+            icon={MapPinned}
+            accent="emerald"
           />
           <RankingCard
-            label={`Ranking en visitas manuales (${days} días)`}
+            label={`Visitas manuales (${days}d)`}
             posicion={ranking.visitasPeriodoManual.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitasPeriodoManual.valor.toLocaleString('es-ES')}
-            descripcion="Visitas marcadas manualmente en el periodo actual."
+            descripcion="Manuales en el periodo."
             tendencia7d={ranking.visitasPeriodoManual.tendencia7d}
+            icon={Smartphone}
+            accent="emerald"
           />
           <RankingCard
-            label={`Ranking en tráfico de páginas (${days} días)`}
+            label={`Tráfico web/app (${days}d)`}
             posicion={ranking.webPageviews.posicion}
             total={ranking.totalPueblos}
             valor={ranking.webPageviews.valor.toLocaleString('es-ES')}
-            descripcion="Visitas a URLs del pueblo en la web."
+            descripcion="Páginas vistas en web/app."
             tendencia7d={ranking.webPageviews.tendencia7d}
+            icon={Globe}
+            accent="blue"
           />
           <RankingCard
-            label="Ranking en visitas globales"
+            label="Visitas globales"
             posicion={ranking.visitasTotal.posicion}
             total={ranking.totalPueblos}
             valor={ranking.visitasTotal.valor.toLocaleString('es-ES')}
-            descripcion="Total histórico de visitas en la app."
+            descripcion="Total histórico."
             tendencia7d={ranking.visitasTotal.tendencia7d}
+            icon={Eye}
+            accent="emerald"
           />
         </div>
       </div>
@@ -424,24 +568,28 @@ export default function PuebloMetricasDashboard({
             value={visitas.total}
             sub="Histórico acumulado en app"
             accent="visitas"
+            icon={Eye}
           />
           <KpiCard
             label={`Visitas en ${days} días`}
             value={visitas.periodo}
             sub="Solo en el periodo seleccionado"
             accent="visitas"
+            icon={Eye}
           />
           <KpiCard
             label="Visitantes únicos"
             value={visitas.visitantesUnicos}
-            sub="Usuarios distintos que han visitado el pueblo"
+            sub="Usuarios distintos"
             accent="visitas"
+            icon={Users}
           />
           <KpiCard
             label="Visitas GPS / Manual"
             value={`${visitas.gps} / ${visitas.manual}`}
-            sub="GPS = geolocalizada, Manual = marcada por el usuario"
+            sub="GPS geolocalizadas / marcadas por el usuario"
             accent="visitas"
+            icon={MapPinned}
           />
         </div>
         {chartVisitas.length > 0 && (
@@ -477,29 +625,44 @@ export default function PuebloMetricasDashboard({
             value={valoraciones.total}
             sub="Reseñas acumuladas"
             accent="valoraciones"
+            icon={Star}
           />
           <KpiCard
             label={`Valoraciones en ${days} días`}
             value={valoraciones.periodo}
             sub="Reseñas nuevas en el periodo"
             accent="valoraciones"
+            icon={Star}
           />
           <KpiCard
             label="Nota media"
-            value={valoraciones.media.toFixed(1)}
+            value={valoraciones.media.toFixed(1) + ' ★'}
             sub="Promedio de estrellas (1 a 5)"
             accent="valoraciones"
+            icon={Sparkles}
           />
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm border-l-4 border-l-amber-500 bg-amber-50/50 dark:bg-amber-950/20">
-            <p className="text-sm font-medium text-muted-foreground">Valoraciones de 5★</p>
-            <p className="mt-1 text-3xl font-bold text-foreground">
-              {(valoraciones.distribucion[5] ?? 0).toLocaleString('es-ES')}
-            </p>
-            <div className="mt-3 grid grid-cols-5 gap-2 text-center">
+          <div className="rounded-2xl border border-transparent bg-gradient-to-b from-amber-50/70 to-white p-4 shadow-md ring-1 ring-amber-200/70 transition-all hover:-translate-y-0.5 hover:shadow-lg dark:from-amber-950/30 dark:to-card dark:ring-amber-900/50">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Valoraciones de 5★
+                </p>
+                <p className="mt-1 text-3xl font-black tabular-nums text-foreground">
+                  {(valoraciones.distribucion[5] ?? 0).toLocaleString('es-ES')}
+                </p>
+              </div>
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 shadow-md">
+                <Star className="h-5 w-5 text-white" />
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-5 gap-1.5 text-center">
               {[1, 2, 3, 4, 5].map((star) => (
-                <div key={star} className="rounded-md border border-border bg-background px-2 py-1">
-                  <p className="text-xs text-muted-foreground">{star}★</p>
-                  <p className="text-sm font-semibold text-foreground">
+                <div
+                  key={star}
+                  className="rounded-md bg-white/80 px-1 py-1 ring-1 ring-amber-200/60 dark:bg-zinc-900/40 dark:ring-amber-900/50"
+                >
+                  <p className="text-[10px] font-bold text-amber-700">{star}★</p>
+                  <p className="text-sm font-bold tabular-nums text-foreground">
                     {(valoraciones.distribucion[star] ?? 0).toLocaleString('es-ES')}
                   </p>
                 </div>
@@ -572,6 +735,7 @@ export default function PuebloMetricasDashboard({
               value={web.pageviews}
               sub="Suma de Web + App"
               accent="web"
+              icon={Globe}
             />
           )}
           <KpiCard
@@ -579,6 +743,7 @@ export default function PuebloMetricasDashboard({
             value={web.pageviewsWeb}
             sub="Tráfico web de URLs del pueblo"
             accent="web"
+            icon={Globe}
           />
           {hasAppData && (
             <KpiCard
@@ -586,6 +751,7 @@ export default function PuebloMetricasDashboard({
               value={web.pageviewsApp}
               sub="Tráfico app detectado en URLs del pueblo"
               accent="web"
+              icon={Smartphone}
             />
           )}
           <KpiCard
@@ -593,12 +759,14 @@ export default function PuebloMetricasDashboard({
             value={web.pageviewsHistorico}
             sub="Acumulado desde que hay medición"
             accent="web"
+            icon={Eye}
           />
           <KpiCard
             label="Sesiones únicas"
             value={web.sesionesUnicas}
             sub={`Navegadores/sesiones distintas en ${days} días`}
             accent="web"
+            icon={Users}
           />
           <KpiCard
             label="Crecimiento"
@@ -609,6 +777,7 @@ export default function PuebloMetricasDashboard({
             }
             sub={`vs ${days} días anteriores`}
             accent="web"
+            icon={Sparkles}
           />
         </div>
         {chartWeb.length > 0 && (

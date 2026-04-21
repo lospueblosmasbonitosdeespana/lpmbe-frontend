@@ -25,6 +25,16 @@ interface Edicion {
   cerrada: boolean;
 }
 
+interface Vecino {
+  puebloId: number;
+  puebloNombre: string | null;
+  puebloSlug: string | null;
+  posicion: number;
+  posicionAnterior: number | null;
+  tendencia: Tendencia;
+  valor: number;
+}
+
 interface Posicion {
   premioId: number;
   posicion: number | null;
@@ -33,6 +43,7 @@ interface Posicion {
   total: number;
   valor: number | null;
   razon?: 'pendiente' | 'sin_datos' | 'no_ranked';
+  vecinos?: Vecino[];
 }
 
 interface ResumenResponse {
@@ -62,7 +73,13 @@ function formatFecha(iso: string): string {
   }
 }
 
-export default function PremiosPuebloDashboard({ puebloId }: { puebloId: number }) {
+export default function PremiosPuebloDashboard({
+  puebloId,
+  puebloNombre,
+}: {
+  puebloId: number;
+  puebloNombre: string;
+}) {
   const [resumen, setResumen] = useState<ResumenResponse | null>(null);
   const [historico, setHistorico] = useState<HistoricoItem[]>([]);
   const [mostrarHistorico, setMostrarHistorico] = useState(false);
@@ -164,10 +181,15 @@ export default function PremiosPuebloDashboard({ puebloId }: { puebloId: number 
         </p>
       </div>
 
-      {/* Grid de 12 premios */}
+      {/* Grid de los 10 premios */}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {resumen.posiciones.map((p) => (
-          <TarjetaPremio key={p.premioId} puebloId={puebloId} posicion={p} />
+          <TarjetaPremio
+            key={p.premioId}
+            puebloId={puebloId}
+            puebloNombre={puebloNombre}
+            posicion={p}
+          />
         ))}
       </div>
 
@@ -228,7 +250,15 @@ export default function PremiosPuebloDashboard({ puebloId }: { puebloId: number 
   );
 }
 
-function TarjetaPremio({ puebloId, posicion }: { puebloId: number; posicion: Posicion }) {
+function TarjetaPremio({
+  puebloId,
+  puebloNombre,
+  posicion,
+}: {
+  puebloId: number;
+  puebloNombre: string;
+  posicion: Posicion;
+}) {
   const ui = PREMIOS_UI[posicion.premioId];
   const Icon = ui?.Icon;
   const [ventana, setVentana] = useState<number | null>(null);
@@ -347,6 +377,77 @@ function TarjetaPremio({ puebloId, posicion }: { puebloId: number; posicion: Pos
               )}
             </div>
           </div>
+
+          {/* Vecinos: 2 arriba y 2 abajo del pueblo (solo en vista anual) */}
+          {ventana == null && posicion.vecinos && posicion.vecinos.length > 0 && pos != null && (
+            <div className="mt-3 overflow-hidden rounded-xl border border-black/5 bg-white/60 dark:border-white/5 dark:bg-zinc-900/40">
+              {(() => {
+                const arriba = (posicion.vecinos ?? []).filter((v) => v.posicion < pos);
+                const abajo = (posicion.vecinos ?? []).filter((v) => v.posicion > pos);
+                const filas: Array<{
+                  key: string;
+                  posicion: number;
+                  nombre: string;
+                  tendencia: Tendencia;
+                  prev: number | null;
+                  valor: number | null;
+                  yo: boolean;
+                }> = [
+                  ...arriba.map((v) => ({
+                    key: `u-${v.puebloId}`,
+                    posicion: v.posicion,
+                    nombre: v.puebloNombre ?? '—',
+                    tendencia: v.tendencia,
+                    prev: v.posicionAnterior,
+                    valor: v.valor,
+                    yo: false,
+                  })),
+                  {
+                    key: 'yo',
+                    posicion: pos,
+                    nombre: puebloNombre,
+                    tendencia: posicion.tendencia,
+                    prev: posicion.posicionAnterior ?? null,
+                    valor: posicion.valor,
+                    yo: true,
+                  },
+                  ...abajo.map((v) => ({
+                    key: `d-${v.puebloId}`,
+                    posicion: v.posicion,
+                    nombre: v.puebloNombre ?? '—',
+                    tendencia: v.tendencia,
+                    prev: v.posicionAnterior,
+                    valor: v.valor,
+                    yo: false,
+                  })),
+                ];
+                return filas.map((f) => (
+                  <div
+                    key={f.key}
+                    className={`flex items-center gap-2 px-3 py-1.5 text-xs ${
+                      f.yo
+                        ? `${ui.tint.pill} font-bold`
+                        : 'text-foreground/80 hover:bg-black/[0.02]'
+                    } ${f.key.startsWith('d-') || f.yo ? 'border-t border-black/5 dark:border-white/5' : ''}`}
+                  >
+                    <span className="w-8 shrink-0 text-right font-bold tabular-nums">
+                      {f.posicion}ª
+                    </span>
+                    <span className="flex-1 truncate">
+                      {f.nombre}
+                      {f.yo && <span className="ml-1 text-[10px] font-bold uppercase opacity-70">· tú</span>}
+                    </span>
+                    <span className="shrink-0">
+                      <TrendBadge t={f.tendencia} prev={f.prev} compact />
+                    </span>
+                    <span className="w-16 shrink-0 text-right font-semibold tabular-nums">
+                      {formatValor(posicion.premioId, f.valor)}
+                    </span>
+                  </div>
+                ));
+              })()}
+            </div>
+          )}
 
           <div className="mt-3 flex gap-1">
             {VENTANAS.map(({ value, label }) => (

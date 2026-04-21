@@ -69,7 +69,7 @@ export default async function PuebloPremiosPage({
         </svg>
       }
     >
-      <PremiosPuebloDashboard puebloId={puebloId} />
+      <PremiosPuebloDashboard puebloId={puebloId} puebloNombre={puebloNombre} />
     </GestionPuebloSubpageShell>
   );
 }
