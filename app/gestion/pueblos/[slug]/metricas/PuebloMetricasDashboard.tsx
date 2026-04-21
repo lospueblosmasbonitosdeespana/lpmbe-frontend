@@ -397,6 +397,39 @@ export default function PuebloMetricasDashboard({
         </span>
       </a>
 
+      {/* Tile Reports mensuales */}
+      <a
+        href={`/gestion/pueblos/${slug}/metricas/reports-mensuales`}
+        className="group relative flex items-center gap-4 overflow-hidden rounded-2xl border border-orange-200/80 bg-gradient-to-br from-orange-50 via-orange-100/60 to-white p-5 shadow-md shadow-orange-100/40 transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-orange-900/50 dark:from-orange-950/40 dark:to-card"
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(249,115,22,0.18),transparent_60%)]" aria-hidden />
+        <span
+          className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 shadow-lg shadow-orange-200"
+          aria-hidden
+        >
+          <svg className="h-7 w-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l9 6 9-6M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" />
+          </svg>
+        </span>
+        <div className="relative flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-orange-700">
+              Día 1 de cada mes
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold text-orange-800 ring-1 ring-orange-200">
+              Automático
+            </span>
+          </div>
+          <div className="mt-0.5 text-base font-bold text-foreground">Reports mensuales</div>
+          <div className="mt-0.5 text-xs text-muted-foreground">
+            El resumen del mes que recibes por email (visitas, web, club, valoraciones, premios y tu trabajo propio).
+          </div>
+        </div>
+        <span className="relative inline-flex items-center gap-1.5 rounded-full bg-orange-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-transform group-hover:translate-x-0.5">
+          Ver <ArrowRight className="h-3.5 w-3.5" />
+        </span>
+      </a>
+
       {/* Period selector */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm text-muted-foreground">Periodo:</span>
