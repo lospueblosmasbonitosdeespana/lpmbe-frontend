@@ -59,18 +59,39 @@ export async function generateMetadata({
   const { puebloSlug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
   const tSeo = await getTranslations('seo');
-  const data = await fetchEdicionActiva(puebloSlug, locale);
+  const [data, landing] = await Promise.all([
+    fetchEdicionActiva(puebloSlug, locale),
+    fetchLanding(puebloSlug, locale),
+  ]);
   const hasData = Boolean(data?.participante?.pueblo?.slug);
-  const name = data?.participante?.pueblo?.nombre || slugToTitle(puebloSlug);
+  const hasLandingText = Boolean(landing?.landing?.descripcion?.trim());
+  const hasArchivo = (landing?.edicionesDisponibles?.length ?? 0) > 0;
+  // La landing perenne es indexable si hay cualquier contenido útil:
+  // edición activa, descripción perenne escrita por el alcalde, o al menos
+  // una edición histórica publicada (archivo SEO).
+  const shouldIndex = hasData || hasLandingText || hasArchivo;
+
+  const name =
+    data?.participante?.pueblo?.nombre ||
+    landing?.pueblo?.nombre ||
+    slugToTitle(puebloSlug);
   const path = `/planifica/semana-santa/pueblo/${puebloSlug}`;
   const title = seoTitle(tSeo('semanaSantaTitle', { nombre: name }));
   const description = seoDescription(
-    data?.participante?.descripcion?.trim() || tSeo('semanaSantaDesc', { nombre: name }),
+    data?.participante?.descripcion?.trim() ||
+      landing?.landing?.descripcion?.trim() ||
+      tSeo('semanaSantaDesc', { nombre: name }),
   );
-  const ogImage = hasData
+  const edicionesOrdenadas = [...(landing?.edicionesDisponibles ?? [])].sort(
+    (a, b) => b.anio - a.anio,
+  );
+  const ogImage = shouldIndex
     ? data?.participante?.cartelHorizontalUrl?.trim() ||
-      data?.participante?.pueblo?.foto_destacada?.trim() ||
       data?.participante?.cartelVerticalUrl?.trim() ||
+      landing?.landing?.heroImageUrl?.trim() ||
+      edicionesOrdenadas[0]?.cartelUrl?.trim() ||
+      data?.participante?.pueblo?.foto_destacada?.trim() ||
+      landing?.pueblo?.foto_destacada?.trim() ||
       getDefaultOgImage()
     : getDefaultOgImage();
   return {
@@ -85,7 +106,7 @@ export async function generateMetadata({
       description,
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
-      type: hasData ? 'article' : 'website',
+      type: shouldIndex ? 'article' : 'website',
       images: [{ url: ogImage, alt: title }],
     },
     twitter: {
@@ -94,7 +115,7 @@ export async function generateMetadata({
       description,
       images: [ogImage],
     },
-    robots: { index: hasData, follow: true },
+    robots: { index: shouldIndex, follow: true },
   };
 }
 

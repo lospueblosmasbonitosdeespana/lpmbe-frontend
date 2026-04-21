@@ -64,16 +64,33 @@ export async function generateMetadata({
   const { puebloSlug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
   const tSeo = await getTranslations('seo');
-  const data = await fetchPueblo(puebloSlug, locale);
+  const [data, landing] = await Promise.all([
+    fetchPueblo(puebloSlug, locale),
+    fetchLanding(puebloSlug, locale),
+  ]);
   const hasData = Boolean(data?.pueblo?.slug);
-  const name = data?.pueblo?.nombre || slugToTitle(puebloSlug);
+  const hasLandingText = Boolean(landing?.landing?.descripcion?.trim());
+  const hasArchivo = (landing?.edicionesDisponibles?.length ?? 0) > 0;
+  const shouldIndex = hasData || hasLandingText || hasArchivo;
+
+  const name =
+    data?.pueblo?.nombre || landing?.pueblo?.nombre || slugToTitle(puebloSlug);
   const path = `/noche-romantica/pueblos-participantes/${puebloSlug}`;
   const title = seoTitle(tSeo('nocheRomanticaPuebloTitle', { nombre: name }));
   const description = seoDescription(
-    data?.descripcion?.trim() || tSeo('nocheRomanticaPuebloDesc', { nombre: name }),
+    data?.descripcion?.trim() ||
+      landing?.landing?.descripcion?.trim() ||
+      tSeo('nocheRomanticaPuebloDesc', { nombre: name }),
   );
-  const ogImage = hasData
-    ? data?.cartelUrl?.trim() || data?.pueblo?.foto_destacada?.trim() || getDefaultOgImage()
+  const edicionesOrdenadas = [...(landing?.edicionesDisponibles ?? [])].sort(
+    (a, b) => b.anio - a.anio,
+  );
+  const ogImage = shouldIndex
+    ? data?.cartelUrl?.trim() ||
+      landing?.landing?.heroImageUrl?.trim() ||
+      edicionesOrdenadas[0]?.cartelUrl?.trim() ||
+      data?.pueblo?.foto_destacada?.trim() ||
+      getDefaultOgImage()
     : getDefaultOgImage();
   return {
     title,
@@ -87,7 +104,7 @@ export async function generateMetadata({
       description,
       url: getCanonicalUrl(path, locale),
       locale: getOGLocale(locale),
-      type: hasData ? 'article' : 'website',
+      type: shouldIndex ? 'article' : 'website',
       images: [{ url: ogImage, alt: title }],
     },
     twitter: {
@@ -96,7 +113,7 @@ export async function generateMetadata({
       description,
       images: [ogImage],
     },
-    robots: { index: hasData, follow: true },
+    robots: { index: shouldIndex, follow: true },
   };
 }
 
