@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { getApiUrl } from '@/lib/api';
 import {
+  getBaseUrl,
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
@@ -10,29 +11,9 @@ import {
   seoTitle,
   type SupportedLocale,
 } from '@/lib/seo';
+import JsonLd from '@/app/components/seo/JsonLd';
 
 export const revalidate = 60;
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = (await getLocale()) as SupportedLocale;
-  const tSeo = await getTranslations('seo');
-  const path = '/multiexperiencias';
-  const title = seoTitle(tSeo('multiexperienciasListTitle'));
-  const description = seoDescription(tSeo('multiexperienciasListDesc'));
-  return {
-    title,
-    description,
-    alternates: {
-      canonical: getCanonicalUrl(path, locale),
-      languages: getLocaleAlternates(path),
-    },
-    openGraph: {
-      title,
-      description,
-      url: getCanonicalUrl(path, locale),
-      locale: getOGLocale(locale),
-    },
-  };
-}
 
 type Multiexperiencia = {
   id: number;
@@ -71,11 +52,47 @@ async function getMultiexperiencias(locale?: string): Promise<Multiexperiencia[]
   }
 }
 
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations('seo');
+  const path = '/multiexperiencias';
+  const title = seoTitle(tSeo('multiexperienciasListTitle'));
+  const description = seoDescription(tSeo('multiexperienciasListDesc'));
+
+  // Primera MX con foto como og:image representativa
+  const items = await getMultiexperiencias(locale);
+  const firstFoto = items.map((m) => m.foto).find((f): f is string => Boolean(f)) ?? null;
+  const ogImages = firstFoto ? [{ url: firstFoto }] : undefined;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(path, locale),
+      languages: getLocaleAlternates(path),
+    },
+    robots: { index: items.length > 0, follow: true },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(path, locale),
+      locale: getOGLocale(locale),
+      type: 'website',
+      ...(ogImages ? { images: ogImages } : {}),
+    },
+    twitter: {
+      card: ogImages ? 'summary_large_image' : 'summary',
+      title,
+      description,
+      ...(firstFoto ? { images: [firstFoto] } : {}),
+    },
+  };
+}
+
 export default async function MultiexperienciasPage() {
   const locale = await getLocale();
   const items = await getMultiexperiencias(locale);
 
-  // Agrupar por CCAA
   const byCCAA = items.reduce((acc, item) => {
     const ccaa = item.pueblo?.comunidad ?? 'Sin comunidad';
     acc[ccaa] = acc[ccaa] || [];
@@ -83,11 +100,56 @@ export default async function MultiexperienciasPage() {
     return acc;
   }, {} as Record<string, Multiexperiencia[]>);
 
-  // Ordenar comunidades alfabéticamente
   const comunidades = Object.keys(byCCAA).sort((a, b) => a.localeCompare(b, 'es'));
+
+  const base = getBaseUrl();
+  const pageUrl = `${base}/multiexperiencias`;
+  const firstFoto = items.map((m) => m.foto).find((f): f is string => Boolean(f)) ?? null;
+
+  const collectionLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Multiexperiencias · Los Pueblos Más Bonitos de España',
+    description:
+      'Directorio de experiencias y rutas autoguiadas en los pueblos más bonitos de España.',
+    url: pageUrl,
+    inLanguage: locale,
+    ...(firstFoto ? { image: firstFoto } : {}),
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'Los Pueblos Más Bonitos de España',
+      url: base,
+    },
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: items.length,
+      itemListElement: items.slice(0, 100).map((m, i) => {
+        const href = m.pueblo?.slug && m.slug
+          ? `${base}/pueblos/${m.pueblo.slug}/experiencias/${m.slug}`
+          : null;
+        return {
+          '@type': 'ListItem',
+          position: i + 1,
+          ...(href ? { url: href } : {}),
+          name: m.titulo,
+          ...(m.foto ? { image: m.foto } : {}),
+        };
+      }),
+    },
+  };
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: base },
+      { '@type': 'ListItem', position: 2, name: 'Multiexperiencias', item: pageUrl },
+    ],
+  };
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-12">
+      <JsonLd data={collectionLd} />
+      <JsonLd data={breadcrumbLd} />
       <div className="mb-8">
         <h1 className="text-3xl font-semibold">Multiexperiencias en los pueblos más bonitos de España</h1>
         <p className="mt-2 text-gray-600">
@@ -114,7 +176,6 @@ export default async function MultiexperienciasPage() {
                 {/* Grid de cards */}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
                   {itemsCCAA.map((item) => {
-                    // Construir href solo si tenemos los datos necesarios
                     const hasValidData = item.pueblo?.slug && item.slug;
                     const href = hasValidData
                       ? `/pueblos/${item.pueblo!.slug}/experiencias/${item.slug}`
@@ -124,7 +185,6 @@ export default async function MultiexperienciasPage() {
 
                     const CardContent = (
                       <>
-                        {/* Imagen */}
                         {item.foto && (
                           <div className="h-28 w-full overflow-hidden rounded-t-lg bg-background">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -136,7 +196,6 @@ export default async function MultiexperienciasPage() {
                           </div>
                         )}
 
-                        {/* Contenido */}
                         <div className="p-2.5">
                           <h3 className="line-clamp-2 text-sm font-semibold leading-snug">
                             {item.titulo}

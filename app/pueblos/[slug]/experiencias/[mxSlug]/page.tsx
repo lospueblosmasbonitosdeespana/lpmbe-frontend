@@ -10,7 +10,6 @@ import {
   getOGLocale,
   seoTitle,
   seoDescription,
-  slugDisambiguatorForTitle,
   slugToTitle,
   uniqueH1ForLocale,
   type SupportedLocale,
@@ -64,6 +63,7 @@ export async function generateMetadata({
   const puebloName = pueblo?.nombre?.trim() || fallbackPuebloName;
   let expName = fallbackExpName;
   let descPlain = "";
+  let mxFoto: string | null = null;
   let hasValidExperience = false;
 
   if (pueblo) {
@@ -77,16 +77,21 @@ export async function generateMetadata({
       descPlain = mx.descripcion
         ? mx.descripcion.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 130)
         : "";
+      mxFoto = mx.foto ?? null;
       hasValidExperience = true;
     }
   }
 
+  // Fallback de imagen: foto de la MX → foto destacada del pueblo
+  const ogImageUrl = mxFoto ?? (pueblo as { foto_destacada?: string | null } | null)?.foto_destacada ?? null;
+
   const path = `/pueblos/${slug}/experiencias/${mxSlug}`;
-  const mxDis = slugDisambiguatorForTitle(mxSlug);
-  const title = seoTitle(`${expName} · ${puebloName}${mxDis}`);
+  const title = seoTitle(`${expName} · ${puebloName}`);
   const description = hasValidExperience
     ? seoDescription(`${expName} · ${puebloName}${descPlain ? `. ${descPlain}` : ""}`) || DEFAULT_DESCRIPTION
     : seoDescription(tSeo("tematicaDetalleDesc", { titulo: expName, pueblo: puebloName })) || DEFAULT_DESCRIPTION;
+
+  const ogImages = ogImageUrl ? [{ url: ogImageUrl }] : undefined;
 
   return {
     title,
@@ -102,11 +107,13 @@ export async function generateMetadata({
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
       type: "article",
+      ...(ogImages ? { images: ogImages } : {}),
     },
     twitter: {
-      card: "summary",
+      card: ogImages ? "summary_large_image" : "summary",
       title,
       description,
+      ...(ogImageUrl ? { images: [ogImageUrl] } : {}),
     },
   };
 }
@@ -177,6 +184,58 @@ export default async function MultiexperienciaPage({
 
   const tPueblo = await getTranslations("puebloPage");
   const base = getBaseUrl();
+  const mxUrl = `${base}/pueblos/${pueblo.slug}/experiencias/${mxSlug}`;
+  const mxDescPlain = mx.descripcion
+    ? mx.descripcion.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
+    : "";
+  const itinerary = paradas
+    .map((p: any, idx: number) => {
+      const name = (p?.titulo && String(p.titulo).trim()) || `Parada ${idx + 1}`;
+      const hasGeo = typeof p?.lat === "number" && typeof p?.lng === "number";
+      const entry: Record<string, unknown> = {
+        "@type": "Place",
+        name,
+        ...(p?.descripcion ? { description: String(p.descripcion).slice(0, 500) } : {}),
+        ...(p?.foto ? { image: p.foto } : {}),
+      };
+      if (hasGeo) {
+        entry.geo = { "@type": "GeoCoordinates", latitude: p.lat, longitude: p.lng };
+      }
+      return entry;
+    })
+    .slice(0, 30);
+
+  const mxLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "TouristTrip",
+    name: mx.titulo,
+    url: mxUrl,
+    inLanguage: locale,
+    ...(mxDescPlain ? { description: mxDescPlain.slice(0, 500) } : {}),
+    ...(mx.foto ? { image: mx.foto } : {}),
+    touristType: mx.categoria ? String(mx.categoria) : undefined,
+    partOfTrip: {
+      "@type": "TouristAttraction",
+      name: pueblo.nombre,
+      url: `${base}/pueblos/${pueblo.slug}`,
+    },
+    ...(itinerary.length > 0
+      ? {
+          itinerary: {
+            "@type": "ItemList",
+            numberOfItems: itinerary.length,
+            itemListElement: itinerary.map((place, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              item: place,
+            })),
+          },
+        }
+      : {}),
+  };
+  // limpiar campos undefined (touristType si no hay)
+  Object.keys(mxLd).forEach((k) => mxLd[k] === undefined && delete mxLd[k]);
+
   const breadcrumbLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -184,12 +243,13 @@ export default async function MultiexperienciaPage({
       { "@type": "ListItem", position: 1, name: tPueblo("breadcrumbHome"), item: base },
       { "@type": "ListItem", position: 2, name: tPueblo("breadcrumbPueblos"), item: `${base}/pueblos` },
       { "@type": "ListItem", position: 3, name: pueblo.nombre, item: `${base}/pueblos/${pueblo.slug}` },
-      { "@type": "ListItem", position: 4, name: mx.titulo, item: `${base}/pueblos/${pueblo.slug}/experiencias/${mxSlug}` },
+      { "@type": "ListItem", position: 4, name: mx.titulo, item: mxUrl },
     ],
   };
 
   return (
     <main className="mx-auto max-w-[1200px] px-6 py-8 bg-background">
+      <JsonLd data={mxLd} />
       <JsonLd data={breadcrumbLd} />
       {/* Breadcrumb */}
       <div className="mb-6">
