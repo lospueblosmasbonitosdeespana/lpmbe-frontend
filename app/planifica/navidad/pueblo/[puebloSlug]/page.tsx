@@ -94,6 +94,13 @@ type Payload = {
   participante: Participante;
 };
 
+type LandingData = {
+  pueblo: { id: number; slug: string; nombre: string };
+  landing: { descripcion: string | null; heroImageUrl: string | null } | null;
+  edicionesDisponibles: Array<{ anio: number; cartelUrl?: string | null }>;
+  edicionActiva: { anio: number; activa: boolean };
+};
+
 const fetchData = cache(async (slug: string, locale: string): Promise<Payload | null> => {
   const API = getApiUrl();
   const lang = encodeURIComponent(locale);
@@ -104,6 +111,18 @@ const fetchData = cache(async (slug: string, locale: string): Promise<Payload | 
   return data;
 });
 
+const fetchLanding = cache(async (slug: string, locale: string): Promise<LandingData | null> => {
+  const API = getApiUrl();
+  const lang = encodeURIComponent(locale);
+  try {
+    const res = await fetch(`${API}/navidad/pueblos/${slug}/landing?lang=${lang}`);
+    if (!res.ok) return null;
+    return (await res.json()) as LandingData;
+  } catch {
+    return null;
+  }
+});
+
 export default async function NavidadPuebloPage({
   params,
 }: {
@@ -111,22 +130,85 @@ export default async function NavidadPuebloPage({
 }) {
   const { puebloSlug } = await params;
   const locale = await getLocale();
-  const data = await fetchData(puebloSlug, locale);
+  const [data, landingData] = await Promise.all([
+    fetchData(puebloSlug, locale),
+    fetchLanding(puebloSlug, locale),
+  ]);
+
+  const edicionesAnteriores = (landingData?.edicionesDisponibles ?? []).filter(
+    (e) => !data || e.anio !== data.config.anio,
+  );
+
   if (!data) {
-    const name = slugToTitle(puebloSlug);
+    const name = landingData?.pueblo?.nombre || slugToTitle(puebloSlug);
     return (
       <main className="mx-auto max-w-4xl px-4 py-12">
         <div className="rounded-2xl border bg-muted/30 px-8 py-12 text-center">
           <h1 className="text-2xl font-semibold mb-4">Navidad en {name}</h1>
-          <p className="text-muted-foreground">
-            Este pueblo no participa actualmente en la campa&ntilde;a de Navidad.
-          </p>
-          <Link href="/planifica/navidad" className="mt-4 inline-block text-sm font-medium text-primary hover:underline">
+          {landingData?.landing?.descripcion ? (
+            <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
+              {landingData.landing.descripcion}
+            </p>
+          ) : (
+            <p className="text-muted-foreground">
+              Este pueblo no participa actualmente en la campa&ntilde;a de Navidad.
+            </p>
+          )}
+          {edicionesAnteriores.length > 0 && (
+            <div className="mt-8">
+              <h2 className="mb-3 text-lg font-semibold">Ediciones anteriores</h2>
+              <div className="flex flex-wrap justify-center gap-2">
+                {edicionesAnteriores.map((e) => (
+                  <Link
+                    key={e.anio}
+                    href={`/planifica/navidad/pueblo/${puebloSlug}/${e.anio}`}
+                    className="rounded-full border border-border bg-card px-4 py-1.5 text-sm font-medium hover:bg-accent"
+                  >
+                    {e.anio}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          <Link href="/planifica/navidad" className="mt-6 inline-block text-sm font-medium text-primary hover:underline">
             &larr; Ver pueblos participantes
           </Link>
         </div>
       </main>
     );
   }
-  return <NavidadPuebloClient data={data} />;
+
+  return (
+    <>
+      <NavidadPuebloClient data={data} />
+      {(landingData?.landing?.descripcion || edicionesAnteriores.length > 0) && (
+        <div className="mx-auto max-w-6xl px-6 pb-12">
+          {landingData?.landing?.descripcion && (
+            <section className="mb-8 rounded-2xl border border-border bg-card p-6 shadow-sm">
+              <h2 className="font-serif text-2xl font-medium">Historia y tradición</h2>
+              <p className="mt-3 whitespace-pre-line text-muted-foreground leading-relaxed">
+                {landingData.landing.descripcion}
+              </p>
+            </section>
+          )}
+          {edicionesAnteriores.length > 0 && (
+            <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+              <h2 className="font-serif text-2xl font-medium">Ediciones anteriores</h2>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {edicionesAnteriores.map((e) => (
+                  <Link
+                    key={e.anio}
+                    href={`/planifica/navidad/pueblo/${puebloSlug}/${e.anio}`}
+                    className="inline-flex items-center rounded-full border border-border bg-background px-4 py-1.5 text-sm font-medium transition hover:bg-accent"
+                  >
+                    {e.anio}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
+    </>
+  );
 }
