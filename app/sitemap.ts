@@ -87,7 +87,7 @@ async function fetchSlugsWithDates(endpoint: string, slugField = 'slug', dateFie
 }
 
 /** Para sitemap de imágenes: pueblos con slug + URL de foto principal (para indexación en Google). */
-async function fetchPueblosWithImages(): Promise<{ id: number; slug: string; imageUrl: string | null }[]> {
+async function fetchPueblosWithImages(): Promise<{ id: number; slug: string; imageUrl: string | null; updatedAt: string | null }[]> {
   try {
     const res = await fetch(`${API}/pueblos`, { cache: 'no-store' });
     if (!res.ok) return [];
@@ -97,6 +97,7 @@ async function fetchPueblosWithImages(): Promise<{ id: number; slug: string; ima
       id: Number(p?.id ?? 0),
       slug: p?.slug ?? '',
       imageUrl: getPuebloMainPhoto(p),
+      updatedAt: typeof p?.updatedAt === 'string' ? p.updatedAt : null,
     })).filter((p: { id: number; slug: string }) => p.id > 0 && p.slug);
   } catch {
     return [];
@@ -355,7 +356,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   const pueblos = pueblosWithImages.map((p) =>
-    entry(`/pueblos/${p.slug}`, 0.9, 'weekly', p.imageUrl ? [p.imageUrl] : undefined)
+    entry(`/pueblos/${p.slug}`, 0.9, 'weekly', p.imageUrl ? [p.imageUrl] : undefined, p.updatedAt)
   );
   const videosList = pueblosWithImages.map((p) =>
     entry(`/pueblos/${p.slug}/videos`, 0.55, 'monthly', p.imageUrl ? [p.imageUrl] : undefined)
