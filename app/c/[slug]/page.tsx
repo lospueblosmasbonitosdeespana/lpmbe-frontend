@@ -218,19 +218,20 @@ function buildLocationFromContenido(pueblo?: Contenido['pueblo']): Record<string
   };
 }
 
-function articleJsonLdFromContenido(contenido: Contenido, canonicalUrl: string): Record<string, unknown> {
+function articleJsonLdFromContenido(contenido: Contenido, canonicalUrl: string, lang: string): Record<string, unknown> {
   const datePublished = contenido.publishedAt ?? contenido.createdAt;
   const isEvent = contenido.tipo === 'EVENTO';
+  const desc = contenido.resumen?.trim()
+    || (contenido.contenidoMd ? plainDescription(contenido.contenidoMd) : '')
+    || undefined;
 
   if (isEvent) {
-    const desc = contenido.resumen?.trim()
-      || contenido.contenidoMd?.replace(/<[^>]+>/g, '').replace(/[#*`\[\]()]/g, '').replace(/\s+/g, ' ').trim().slice(0, 155)
-      || undefined;
     const data: Record<string, unknown> = {
       '@context': 'https://schema.org',
       '@type': 'Event',
       name: contenido.titulo,
       url: canonicalUrl,
+      inLanguage: lang,
       location: buildLocationFromContenido(contenido.pueblo),
       organizer: PUBLISHER_ORGANIZATION,
       eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
@@ -250,20 +251,27 @@ function articleJsonLdFromContenido(contenido: Contenido, canonicalUrl: string):
     return data;
   }
 
+  // NewsArticle para NOTICIA, Article para el resto (ARTICULO, PAGINA...)
+  const type = contenido.tipo === 'NOTICIA' ? 'NewsArticle' : 'Article';
   const data: Record<string, unknown> = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': type,
     headline: contenido.titulo,
     mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
     publisher: PUBLISHER_ORGANIZATION,
     author: PUBLISHER_ORGANIZATION,
+    inLanguage: lang,
   };
-  if (datePublished) data.datePublished = datePublished;
-  if (contenido.coverUrl) data.image = contenido.coverUrl;
+  if (datePublished) {
+    data.datePublished = datePublished;
+    data.dateModified = datePublished;
+  }
+  if (desc) data.description = desc;
+  if (contenido.coverUrl) data.image = [contenido.coverUrl];
   return data;
 }
 
-function articleJsonLdStatic(titulo: string, canonicalUrl: string): Record<string, unknown> {
+function articleJsonLdStatic(titulo: string, canonicalUrl: string, lang: string): Record<string, unknown> {
   return {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -271,6 +279,23 @@ function articleJsonLdStatic(titulo: string, canonicalUrl: string): Record<strin
     mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
     publisher: PUBLISHER_ORGANIZATION,
     author: PUBLISHER_ORGANIZATION,
+    inLanguage: lang,
+  };
+}
+
+function breadcrumbLdContenido(titulo: string, canonicalUrl: string, baseUrl: string, tipo?: string): Record<string, unknown> {
+  const isStatic = !tipo || tipo === 'PAGINA';
+  const items: Array<Record<string, unknown>> = [
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: baseUrl },
+  ];
+  if (!isStatic) {
+    items.push({ '@type': 'ListItem', position: 2, name: 'Actualidad', item: `${baseUrl}/actualidad` });
+  }
+  items.push({ '@type': 'ListItem', position: items.length + 1, name: titulo, item: canonicalUrl });
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items,
   };
 }
 
@@ -364,9 +389,12 @@ export default async function ContenidoPage({
     const lang = locale as SupportedLocale;
     const t = PRIVACY_LOCATION_BLOCK[lang];
 
+    const base = getBaseUrl();
+    const canonicalUrl = `${base}/c/${slug}`;
     return (
       <main className="px-5 py-10 md:py-[40px]">
-        <JsonLd data={articleJsonLdStatic(titulo, `${getBaseUrl()}/c/${slug}`)} />
+        <JsonLd data={articleJsonLdStatic(titulo, canonicalUrl, lang)} />
+        <JsonLd data={breadcrumbLdContenido(titulo, canonicalUrl, base, 'PAGINA')} />
         <article>
           <div className="max-w-[720px] mx-auto px-5">
             <header className="mb-10">
@@ -451,9 +479,13 @@ export default async function ContenidoPage({
   };
   const tipoBadgeLabel = tActualidad(tipoBadgeKey[contenido.tipo] ?? 'page');
 
+  const base = getBaseUrl();
+  const canonicalUrl = `${base}/c/${slug}`;
+
   return (
     <main className="px-5 py-10 md:py-[40px]">
-      <JsonLd data={articleJsonLdFromContenido(contenido, `${getBaseUrl()}/c/${slug}`)} />
+      <JsonLd data={articleJsonLdFromContenido(contenido, canonicalUrl, locale)} />
+      <JsonLd data={breadcrumbLdContenido(contenido.titulo, canonicalUrl, base, contenido.tipo)} />
       <article>
         {headerImages.length > 1 ? (
           <ContenidoImageCarousel images={headerImages} alt={contenido.titulo} />

@@ -55,8 +55,13 @@ function descriptionForNewsArticle(noticia: Noticia): string | undefined {
   return plain.length <= 155 ? plain : `${plain.slice(0, 152).trimEnd()}…`;
 }
 
-function newsArticleJsonLd(noticia: Noticia, canonicalUrl: string): Record<string, unknown> {
+function newsArticleJsonLd(
+  noticia: Noticia & { updatedAt?: string },
+  canonicalUrl: string,
+  lang: string,
+): Record<string, unknown> {
   const datePublished = noticia.publishedAt ?? noticia.createdAt;
+  const dateModified = noticia.updatedAt ?? datePublished;
   const description = descriptionForNewsArticle(noticia);
   const data: Record<string, unknown> = {
     '@context': 'https://schema.org',
@@ -65,11 +70,25 @@ function newsArticleJsonLd(noticia: Noticia, canonicalUrl: string): Record<strin
     mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
     publisher: PUBLISHER_ORGANIZATION,
     author: PUBLISHER_ORGANIZATION,
+    inLanguage: lang,
   };
   if (datePublished) data.datePublished = datePublished;
+  if (dateModified) data.dateModified = dateModified;
   if (description) data.description = description;
-  if (noticia.coverUrl) data.image = noticia.coverUrl;
+  if (noticia.coverUrl) data.image = [noticia.coverUrl];
   return data;
+}
+
+function breadcrumbLdNoticia(titulo: string, canonicalUrl: string, baseUrl: string): Record<string, unknown> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: baseUrl },
+      { '@type': 'ListItem', position: 2, name: 'Actualidad', item: `${baseUrl}/actualidad` },
+      { '@type': 'ListItem', position: 3, name: titulo, item: canonicalUrl },
+    ],
+  };
 }
 
 async function fetchNoticia(slug: string): Promise<Noticia | null> {
@@ -141,10 +160,13 @@ export default async function NoticiaPage({
   const locale = await getLocale();
   const lang = SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? (locale as SupportedLocale) : 'es';
   const fechaFormateada = noticia.createdAt ? formatDateTimeEs(noticia.createdAt, lang) : '';
+  const base = getBaseUrl();
+  const canonicalUrl = `${base}/noticias/${slug}`;
 
   return (
     <main style={{ padding: '40px 20px' }}>
-      <JsonLd data={newsArticleJsonLd(noticia, `${getBaseUrl()}/noticias/${slug}`)} />
+      <JsonLd data={newsArticleJsonLd(noticia, canonicalUrl, lang)} />
+      <JsonLd data={breadcrumbLdNoticia(noticia.titulo, canonicalUrl, base)} />
       <article>
         {noticia.coverUrl && noticia.coverUrl.trim() && (
           <SmartCoverImage src={noticia.coverUrl.trim()} alt={noticia.titulo} />

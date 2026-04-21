@@ -1,244 +1,222 @@
-'use client';
+import type { Metadata } from 'next';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { getApiUrl } from '@/lib/api';
+import {
+  getBaseUrl,
+  getCanonicalUrl,
+  getLocaleAlternates,
+  getOGLocale,
+  seoDescription,
+  seoTitle,
+  type SupportedLocale,
+} from '@/lib/seo';
+import JsonLd from '@/app/components/seo/JsonLd';
+import ActualidadClient from './ActualidadClient';
 
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState, Suspense } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
-import ShareButton from '@/app/components/ShareButton';
-import { stripHtml } from '@/app/_lib/html';
+export const revalidate = 60;
 
-type Contenido = {
+const VALID_TIPOS = ['noticia', 'evento', 'articulo'] as const;
+type Tipo = (typeof VALID_TIPOS)[number];
+
+type ActualidadItem = {
   id: number;
   titulo: string;
   slug: string;
-  resumen?: string;
-  coverUrl?: string;
-  tipo: string;
-  publishedAt?: string;
-  createdAt?: string;
-  _source: 'contenido' | 'notificacion';
+  coverUrl?: string | null;
+  tipo?: string;
+  publishedAt?: string | null;
+  createdAt?: string | null;
+  fechaInicio?: string | null;
+  source: 'contenido' | 'noticia' | 'evento';
 };
 
-function ActualidadContent() {
-  const t = useTranslations('actualidad');
-  const locale = useLocale();
-  const searchParams = useSearchParams();
-  const tipoRaw = searchParams.get('tipo') ?? 'todos';
-  const tipoParam = tipoRaw.toUpperCase();
-  const langQs = `&lang=${encodeURIComponent(locale)}`;
-  const TIPOS = [
-    { key: 'todos', label: t('all') },
-    { key: 'noticia', label: t('news') },
-    { key: 'evento', label: t('events') },
-    { key: 'articulo', label: t('articles') },
-  ];
-  const tipoToLabel: Record<string, string> = {
-    NOTICIA: t('news'),
-    EVENTO: t('events'),
-    ARTICULO: t('articles'),
-  };
-  const dateLocale = locale === 'es' ? 'es-ES' : locale === 'ca' ? 'ca-ES' : locale === 'en' ? 'en-GB' : locale === 'fr' ? 'fr-FR' : locale === 'de' ? 'de-DE' : locale === 'pt' ? 'pt-PT' : locale === 'it' ? 'it-IT' : 'es-ES';
-  
-  const [items, setItems] = useState<Contenido[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      try {
-        setLoading(true);
-        
-        // Buscar en AMBAS tablas: Contenido (/contenidos) y Notificacion (/noticias, /eventos)
-        // Los contenidos van a /c/[slug], las notificaciones a /noticias/[slug] o /eventos/[slug]
-        const fetches: { url: string; tipo: string; source: 'contenido' | 'notificacion' }[] = [];
-
-        if (tipoParam === 'TODOS' || tipoParam === 'NOTICIA') {
-          fetches.push({ url: `/api/public/contenidos?scope=ASOCIACION&tipo=NOTICIA&limit=50${langQs}`, tipo: 'NOTICIA', source: 'contenido' });
-          fetches.push({ url: `/api/public/noticias?limit=50${langQs}`, tipo: 'NOTICIA', source: 'notificacion' });
-        }
-        if (tipoParam === 'TODOS' || tipoParam === 'EVENTO') {
-          fetches.push({ url: `/api/public/contenidos?scope=ASOCIACION&tipo=EVENTO&limit=50${langQs}`, tipo: 'EVENTO', source: 'contenido' });
-          fetches.push({ url: `/api/public/eventos?limit=50${langQs}`, tipo: 'EVENTO', source: 'notificacion' });
-        }
-        if (tipoParam === 'TODOS' || tipoParam === 'ARTICULO') {
-          fetches.push({ url: `/api/public/contenidos?scope=ASOCIACION&tipo=ARTICULO&limit=50${langQs}`, tipo: 'ARTICULO', source: 'contenido' });
-        }
-
-        const responses = await Promise.all(fetches.map(f => fetch(f.url, { cache: 'no-store' }).then(r => ({ r, tipo: f.tipo, source: f.source }))));
-        const allItems: Contenido[] = [];
-        const seenSlugs = new Set<string>();
-
-        // Priorizar contenidos (tienen contenido completo) sobre notificaciones
-        const sorted = [...responses].sort((a, b) => (a.source === 'contenido' ? -1 : 1) - (b.source === 'contenido' ? -1 : 1));
-
-        for (const { r, tipo, source } of sorted) {
-          if (!r.ok) continue;
-          const json = await r.json().catch(() => []);
-          const arr = Array.isArray(json) ? json : (json?.items ?? []);
-          for (const item of arr) {
-            const slug = item.slug ?? null;
-            const dedupeKey = slug ?? `${source}-${item.id}`;
-            if (seenSlugs.has(dedupeKey)) continue;
-            seenSlugs.add(dedupeKey);
-            allItems.push({
-              id: item.id,
-              titulo: item.titulo ?? '(sin título)',
-              slug: slug ?? `_no-slug-${item.id}`,
-              resumen: item.resumen ?? item.contenidoMd ?? item.contenido ?? undefined,
-              coverUrl: item.coverUrl ?? undefined,
-              tipo: (item.tipo ?? tipo).toUpperCase(),
-              publishedAt: item.publishedAt ?? item.fechaInicio ?? undefined,
-              createdAt: item.createdAt ?? undefined,
-              _source: source,
-            });
-          }
-        }
-
-        allItems.sort((a, b) => {
-          const isEventoA = (a.tipo ?? '').toUpperCase() === 'EVENTO';
-          const isEventoB = (b.tipo ?? '').toUpperCase() === 'EVENTO';
-          if (isEventoA && isEventoB) {
-            return new Date(a.publishedAt ?? a.createdAt ?? 0).getTime() - new Date(b.publishedAt ?? b.createdAt ?? 0).getTime();
-          }
-          if (isEventoA) return -1;
-          if (isEventoB) return 1;
-          return new Date(b.publishedAt ?? b.createdAt ?? 0).getTime() - new Date(a.publishedAt ?? a.createdAt ?? 0).getTime();
-        });
-
-        if (!cancelled) setItems(allItems.slice(0, 50));
-      } catch {
-        if (!cancelled) setItems([]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [tipoParam, locale]);
-
-  return (
-    <main className="mx-auto max-w-4xl px-6 py-10">
-      <div className="mb-8">
-        <h1 className="text-4xl font-semibold">{t('title')}</h1>
-        <p className="mt-2 text-muted-foreground">
-          {t('pageDesc')}
-        </p>
-      </div>
-
-      <div className="mb-6 flex flex-wrap gap-2">
-        {TIPOS.map((t) => (
-          <Link
-            key={t.key}
-            href={t.key === 'todos' ? '/actualidad' : `/actualidad?tipo=${t.key}`}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-              tipoParam === t.key.toUpperCase()
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-foreground hover:bg-muted/80'
-            }`}
-          >
-            {t.label}
-          </Link>
-        ))}
-      </div>
-
-      {loading ? (
-        <div className="min-h-[320px] flex items-center justify-center text-muted-foreground" aria-busy="true">
-          {t('loading')}
-        </div>
-      ) : items.length === 0 ? (
-        <div className="rounded-md border border-border p-6 text-muted-foreground">
-          {t('noContent')}
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {items.map((item) => {
-            let href: string;
-            if (item.slug && !item.slug.startsWith('_no-slug-')) {
-              if (item._source === 'contenido') {
-                href = `/c/${item.slug}`;
-              } else {
-                const tipo = item.tipo.toUpperCase();
-                if (tipo === 'NOTICIA') href = `/noticias/${item.slug}`;
-                else if (tipo === 'EVENTO') href = `/eventos/${item.slug}`;
-                else href = `/c/${item.slug}`;
-              }
-            } else {
-              href = '/actualidad';
-            }
-            const fecha = item.publishedAt ?? item.createdAt;
-            const fechaFormateada = fecha
-              ? new Date(fecha).toLocaleDateString(dateLocale, {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })
-              : '';
-
-            return (
-              <article key={item.id} className="border-b border-border pb-6 last:border-0">
-                <div className="flex items-start justify-between gap-4">
-                  <Link href={href} className="group flex-1 min-w-0">
-                    {item.coverUrl && item.coverUrl.trim() && (
-                    <div className="mb-4 overflow-hidden rounded-lg aspect-video bg-muted">
-                      <img
-                        src={item.coverUrl.trim()}
-                        alt={item.titulo}
-                        width={640}
-                        height={360}
-                        className="h-full w-full object-contain p-2"
-                      />
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-medium text-muted-foreground uppercase">
-                      {tipoToLabel[item.tipo] ?? item.tipo}
-                    </span>
-                    {fechaFormateada && (
-                      <>
-                        <span className="text-muted-foreground/60">·</span>
-                        <span className="text-xs text-muted-foreground">{fechaFormateada}</span>
-                      </>
-                    )}
-                  </div>
-
-                  <h2 className="text-2xl font-semibold group-hover:underline">
-                    {item.titulo}
-                  </h2>
-
-                  {item.resumen && (
-                    <p className="mt-3 text-muted-foreground line-clamp-2">{stripHtml(item.resumen)}</p>
-                  )}
-
-                  <span className="mt-3 inline-block text-sm font-medium text-primary group-hover:underline">
-                    {t('readMore')}
-                  </span>
-                </Link>
-                  <ShareButton url={href} title={item.titulo} variant="icon" className="shrink-0 mt-1" />
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      )}
-
-      <div className="mt-10">
-        <Link href="/" className="text-sm hover:underline">
-          {t('backToHome')}
-        </Link>
-      </div>
-    </main>
-  );
+function normalizeTipo(value: string | string[] | undefined): Tipo | null {
+  if (!value) return null;
+  const raw = Array.isArray(value) ? value[0] : value;
+  const lower = raw.toLowerCase();
+  return (VALID_TIPOS as readonly string[]).includes(lower) ? (lower as Tipo) : null;
 }
 
-export default function ActualidadPage() {
+async function fetchActualidadItems(locale: string, tipoFilter: Tipo | null): Promise<ActualidadItem[]> {
+  try {
+    const base = getApiUrl();
+    const langQs = `lang=${encodeURIComponent(locale)}`;
+    const urls: { url: string; source: ActualidadItem['source']; tipoFallback?: string }[] = [];
+    const wantAll = tipoFilter === null;
+
+    if (wantAll || tipoFilter === 'noticia') {
+      urls.push({ url: `${base}/public/contenidos?scope=ASOCIACION&tipo=NOTICIA&limit=30&${langQs}`, source: 'contenido', tipoFallback: 'NOTICIA' });
+      urls.push({ url: `${base}/public/noticias?limit=30&${langQs}`, source: 'noticia', tipoFallback: 'NOTICIA' });
+    }
+    if (wantAll || tipoFilter === 'evento') {
+      urls.push({ url: `${base}/public/contenidos?scope=ASOCIACION&tipo=EVENTO&limit=30&${langQs}`, source: 'contenido', tipoFallback: 'EVENTO' });
+      urls.push({ url: `${base}/public/eventos?limit=30&${langQs}`, source: 'evento', tipoFallback: 'EVENTO' });
+    }
+    if (wantAll || tipoFilter === 'articulo') {
+      urls.push({ url: `${base}/public/contenidos?scope=ASOCIACION&tipo=ARTICULO&limit=30&${langQs}`, source: 'contenido', tipoFallback: 'ARTICULO' });
+    }
+
+    const responses = await Promise.all(
+      urls.map(async ({ url, source, tipoFallback }) => {
+        try {
+          const res = await fetch(url, { headers: { 'Accept-Language': locale }, cache: 'no-store' });
+          if (!res.ok) return [] as ActualidadItem[];
+          const json = await res.json();
+          const arr = Array.isArray(json) ? json : json?.items ?? [];
+          return arr.map((item: any) => ({
+            id: Number(item?.id ?? 0),
+            titulo: String(item?.titulo ?? ''),
+            slug: String(item?.slug ?? ''),
+            coverUrl: item?.coverUrl ?? null,
+            tipo: String(item?.tipo ?? tipoFallback ?? '').toUpperCase(),
+            publishedAt: item?.publishedAt ?? null,
+            createdAt: item?.createdAt ?? null,
+            fechaInicio: item?.fechaInicio ?? null,
+            source,
+          })) as ActualidadItem[];
+        } catch {
+          return [];
+        }
+      }),
+    );
+    const all = responses.flat().filter((x) => x.id && x.slug);
+    const seen = new Set<string>();
+    const deduped: ActualidadItem[] = [];
+    for (const it of all) {
+      const key = `${it.source}-${it.slug}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      deduped.push(it);
+    }
+    return deduped.sort((a, b) => {
+      const ta = new Date(a.publishedAt ?? a.createdAt ?? 0).getTime();
+      const tb = new Date(b.publishedAt ?? b.createdAt ?? 0).getTime();
+      return tb - ta;
+    });
+  } catch {
+    return [];
+  }
+}
+
+function hrefForItem(item: ActualidadItem): string {
+  if (item.source === 'contenido') return `/c/${item.slug}`;
+  if (item.source === 'noticia') return `/noticias/${item.slug}`;
+  return `/eventos/${item.slug}`;
+}
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams?: Promise<{ tipo?: string | string[] }>;
+}): Promise<Metadata> {
+  const locale = (await getLocale()) as SupportedLocale;
+  const tSeo = await getTranslations('seo');
+  const tActualidad = await getTranslations('actualidad');
+  const sp = searchParams ? await searchParams : {};
+  const tipoFilter = normalizeTipo(sp.tipo);
+
+  const sectionBase = tSeo('actualidadTitle');
+  const sectionDesc = tSeo('actualidadDescription');
+  const tipoLabel =
+    tipoFilter === 'noticia'
+      ? tActualidad('news')
+      : tipoFilter === 'evento'
+        ? tActualidad('events')
+        : tipoFilter === 'articulo'
+          ? tActualidad('articles')
+          : null;
+  const title = seoTitle(tipoLabel ? `${tipoLabel} · ${sectionBase}` : sectionBase);
+  const description = seoDescription(sectionDesc);
+
+  // og:image = primera foto del listado (server-side)
+  const items = await fetchActualidadItems(locale, tipoFilter);
+  const firstCover = items.map((i) => i.coverUrl).find((c): c is string => Boolean(c)) ?? null;
+  const ogImages = firstCover ? [{ url: firstCover }] : undefined;
+
+  const basePath = '/actualidad';
+  // Para filtros por tipo, el canonical apunta al filtro (preserva señal de indexabilidad independiente)
+  const filterPath = tipoFilter ? `${basePath}?tipo=${tipoFilter}` : basePath;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: getCanonicalUrl(filterPath, locale),
+      languages: getLocaleAlternates(basePath),
+    },
+    robots: { index: true, follow: true },
+    openGraph: {
+      title,
+      description,
+      url: getCanonicalUrl(filterPath, locale),
+      locale: getOGLocale(locale),
+      type: 'website',
+      ...(ogImages ? { images: ogImages } : {}),
+    },
+    twitter: {
+      card: ogImages ? 'summary_large_image' : 'summary',
+      title,
+      description,
+      ...(firstCover ? { images: [firstCover] } : {}),
+    },
+  };
+}
+
+export default async function ActualidadPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ tipo?: string | string[] }>;
+}) {
+  const locale = await getLocale();
+  const sp = searchParams ? await searchParams : {};
+  const tipoFilter = normalizeTipo(sp.tipo);
+  const items = await fetchActualidadItems(locale, tipoFilter);
+  const base = getBaseUrl();
+  const pageUrl = tipoFilter
+    ? `${base}/actualidad?tipo=${tipoFilter}`
+    : `${base}/actualidad`;
+
+  const firstCover = items.map((i) => i.coverUrl).find((c): c is string => Boolean(c)) ?? null;
+
+  const collectionLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Actualidad · Los Pueblos Más Bonitos de España',
+    description: 'Noticias, eventos y artículos sobre los pueblos más bonitos de España.',
+    url: pageUrl,
+    inLanguage: locale,
+    ...(firstCover ? { image: firstCover } : {}),
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'Los Pueblos Más Bonitos de España',
+      url: base,
+    },
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: items.length,
+      itemListElement: items.slice(0, 50).map((it, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: `${base}${hrefForItem(it)}`,
+        name: it.titulo,
+        ...(it.coverUrl ? { image: it.coverUrl } : {}),
+      })),
+    },
+  };
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: base },
+      { '@type': 'ListItem', position: 2, name: 'Actualidad', item: `${base}/actualidad` },
+    ],
+  };
+
   return (
-    <Suspense fallback={<div className="mx-auto max-w-4xl px-6 py-10 text-muted-foreground">...</div>}>
-      <ActualidadContent />
-    </Suspense>
+    <>
+      <JsonLd data={collectionLd} />
+      <JsonLd data={breadcrumbLd} />
+      <ActualidadClient />
+    </>
   );
 }

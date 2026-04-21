@@ -6,7 +6,7 @@ import BackButton from '@/app/c/[slug]/BackButton';
 import ShareButton from '@/app/components/ShareButton';
 import { formatEventoRangeEs, formatDateTimeEs } from '@/app/_lib/dates';
 import { getApiUrl } from '@/lib/api';
-import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoDescription, type SupportedLocale } from '@/lib/seo';
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, seoDescription, seoTitle, type SupportedLocale } from '@/lib/seo';
 import JsonLd from '@/app/components/seo/JsonLd';
 import SmartCoverImage from '@/app/components/SmartCoverImage';
 import SafeHtml from '@/app/_components/ui/SafeHtml';
@@ -76,13 +76,14 @@ function buildLocation(pueblo?: { nombre: string; provincia?: string; comunidad?
   };
 }
 
-function eventJsonLd(evento: Evento, canonicalUrl: string): Record<string, unknown> {
+function eventJsonLd(evento: Evento, canonicalUrl: string, lang: string): Record<string, unknown> {
   const description = descriptionForEvent(evento);
   const data: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Event',
     name: evento.titulo,
     url: canonicalUrl,
+    inLanguage: lang,
     location: buildLocation(evento.pueblo),
     organizer: PUBLISHER_ORGANIZATION,
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
@@ -100,6 +101,18 @@ function eventJsonLd(evento: Evento, canonicalUrl: string): Record<string, unkno
     url: canonicalUrl,
   };
   return data;
+}
+
+function breadcrumbLdEvento(titulo: string, canonicalUrl: string, baseUrl: string): Record<string, unknown> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: baseUrl },
+      { '@type': 'ListItem', position: 2, name: 'Actualidad', item: `${baseUrl}/actualidad` },
+      { '@type': 'ListItem', position: 3, name: titulo, item: canonicalUrl },
+    ],
+  };
 }
 
 async function fetchEvento(slug: string): Promise<Evento | null> {
@@ -130,27 +143,31 @@ export async function generateMetadata({
     return { title: tSeo('eventoNotFound') };
   }
 
-  const description = evento.resumen ?? '';
+  const rawDesc = descriptionForEvent(evento);
+  const description = rawDesc ? seoDescription(rawDesc, 160) : undefined;
+  const title = seoTitle(evento.titulo);
 
   const path = `/eventos/${slug}`;
   return {
-    title: evento.titulo,
-    description: description || undefined,
+    title,
+    description,
     alternates: {
       canonical: getCanonicalUrl(path, lang),
       languages: getLocaleAlternates(path),
     },
     openGraph: {
-      title: evento.titulo,
-      description: description || undefined,
+      title,
+      description,
       url: getCanonicalUrl(path, lang),
       locale: getOGLocale(lang as SupportedLocale),
+      type: 'article',
       images: evento.coverUrl ? [{ url: evento.coverUrl }] : [],
     },
     twitter: {
       card: evento.coverUrl ? 'summary_large_image' : 'summary',
-      title: evento.titulo,
-      description: description || undefined,
+      title,
+      description,
+      ...(evento.coverUrl ? { images: [evento.coverUrl] } : {}),
     },
   };
 }
@@ -168,10 +185,13 @@ export default async function EventoPage({
   const locale = await getLocale();
   const lang = SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? (locale as SupportedLocale) : 'es';
   const fechaFormateada = evento.createdAt ? formatDateTimeEs(evento.createdAt, lang) : '';
+  const base = getBaseUrl();
+  const canonicalUrl = `${base}/eventos/${slug}`;
 
   return (
     <main style={{ padding: '40px 20px' }}>
-      <JsonLd data={eventJsonLd(evento, `${getBaseUrl()}/eventos/${slug}`)} />
+      <JsonLd data={eventJsonLd(evento, canonicalUrl, lang)} />
+      <JsonLd data={breadcrumbLdEvento(evento.titulo, canonicalUrl, base)} />
       <article>
         {evento.coverUrl && evento.coverUrl.trim() && (
           <SmartCoverImage src={evento.coverUrl.trim()} alt={evento.titulo} />
