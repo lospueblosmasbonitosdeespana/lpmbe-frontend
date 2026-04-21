@@ -767,6 +767,11 @@ export default async function PuebloPage({
       if (!embedUrl || !embedUrl.includes("youtube") || !videoId) return null;
       const canonicalVideo = { id: v.id, titulo: v.titulo || "video" };
       const watchPageUrl = `${base}/pueblos/${puebloSafe.slug}/videos/${getCanonicalVideoSegment(canonicalVideo)}`;
+      // ISO 8601 completo con zona horaria (Google recomienda evitar fechas solo YYYY-MM-DD).
+      const rawCreatedAt = (v as { createdAt?: string }).createdAt;
+      const uploadDate = rawCreatedAt
+        ? new Date(rawCreatedAt).toISOString()
+        : "2024-01-01T00:00:00Z";
       return {
         "@context": "https://schema.org",
         "@type": "VideoObject" as const,
@@ -776,7 +781,7 @@ export default async function PuebloPage({
         embedUrl,
         contentUrl: `https://www.youtube.com/watch?v=${videoId}`,
         thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-        uploadDate: (v as { createdAt?: string }).createdAt ?? "2024-01-01",
+        uploadDate,
       };
     })
     .filter(Boolean);
