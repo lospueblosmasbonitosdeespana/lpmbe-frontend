@@ -1,27 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-
-// Catálogo frontend de los 12 premios. Mantener en sync con backend/src/premios/premios.types.ts
-// Sólo usamos meta visual aquí; el backend es la fuente de verdad para los datos.
-const PREMIOS_UI: Record<
-  number,
-  { titulo: string; descripcion: string; unidad: string; implementado: boolean; emoji: string }
-> = {
-  1: { titulo: 'Pueblo Mejor Valorado', descripcion: 'Media bayesiana de las reseñas (ponderada por nº de votos).', unidad: '★ de 5', implementado: true, emoji: '★' },
-  2: { titulo: 'Más Visitado (GPS)', descripcion: 'Mayor número de visitas físicas reales.', unidad: 'visitas', implementado: true, emoji: '📍' },
-  3: { titulo: 'Más Visitado en Web/App', descripcion: 'Mayor número de consultas digitales.', unidad: 'vistas', implementado: true, emoji: '🌐' },
-  4: { titulo: 'Más Activo del Club', descripcion: 'Mayor volumen de canjes de QR del Club.', unidad: 'canjes', implementado: true, emoji: '🎟️' },
-  5: { titulo: 'Más Internacional', descripcion: '% de visitantes extranjeros (datos Telefónica Tech).', unidad: '%', implementado: false, emoji: '🌍' },
-  6: { titulo: 'Pueblo Revelación', descripcion: 'Mayor crecimiento relativo del periodo.', unidad: '%', implementado: true, emoji: '🚀' },
-  7: { titulo: 'Más Trabajador', descripcion: 'Eventos + noticias + páginas temáticas + POIs creados por el pueblo (las del ADMIN no cuentan).', unidad: 'publicaciones', implementado: true, emoji: '🎭' },
-  8: { titulo: 'Más Trabajador · Contenidos', descripcion: 'Más noticias, artículos, páginas y rutas propias.', unidad: 'publicaciones', implementado: true, emoji: '✍️' },
-  9: { titulo: 'Ficha Más Completa', descripcion: 'Puntuación 0-100 según qué campos de la ficha tiene rellenos (foto, escudo, descripción, historia, fotos, vídeos, webcams, audioguías, POIs, contenidos, recursos).', unidad: 'score / 100', implementado: true, emoji: '🗂️' },
-  10: { titulo: 'Mejor Tejido Local', descripcion: 'Más negocios y alojamientos adheridos al Club.', unidad: 'negocios', implementado: true, emoji: '🏪' },
-  11: { titulo: 'Más Visitado por el Club', descripcion: 'Visitas del Club ponderadas por el nº de recursos del pueblo.', unidad: 'visitas/recurso', implementado: true, emoji: '⚡' },
-  12: { titulo: 'Especial del Jurado', descripcion: 'Iniciativas singulares, a decisión del jurado.', unidad: 'manual', implementado: true, emoji: '🏆' },
-};
+import { useEffect, useState } from 'react';
+import { Trophy, ArrowRight, Lock } from 'lucide-react';
+import {
+  PREMIOS_UI,
+  HERO_GRADIENT,
+  formatValor,
+  TrendBadge,
+  type Tendencia,
+} from '../../../_lib/premiosUI';
 
 interface Edicion {
   id: number;
@@ -37,37 +25,10 @@ interface TopEntry {
   puebloId: number;
   posicion: number;
   posicionAnterior?: number | null;
-  tendencia?: 'up' | 'down' | 'same' | 'new' | null;
+  tendencia?: Tendencia;
   valor: number;
   puebloNombre: string | null;
   puebloSlug: string | null;
-}
-
-function TrendArrow({ t }: { t?: 'up' | 'down' | 'same' | 'new' | null }) {
-  if (!t) return null;
-  if (t === 'up')
-    return (
-      <span title="Sube respecto al periodo anterior" className="text-emerald-600 text-[11px] font-bold">
-        ▲
-      </span>
-    );
-  if (t === 'down')
-    return (
-      <span title="Baja respecto al periodo anterior" className="text-rose-600 text-[11px] font-bold">
-        ▼
-      </span>
-    );
-  if (t === 'same')
-    return (
-      <span title="Se mantiene" className="text-muted-foreground text-[11px]">
-        =
-      </span>
-    );
-  return (
-    <span title="Nuevo en el ranking" className="text-sky-600 text-[10px] font-semibold">
-      NEW
-    </span>
-  );
 }
 
 interface Resumen {
@@ -90,14 +51,6 @@ interface Resumen {
   }>;
 }
 
-function formatValor(premioId: number, valor: number): string {
-  if (premioId === 1) return valor.toFixed(2) + ' ★';
-  if (premioId === 6) return (valor >= 0 ? '+' : '') + valor.toFixed(1) + '%';
-  if (premioId === 9) return Math.round(valor) + ' / 100';
-  if (premioId === 11) return valor.toFixed(2) + ' vis/rec';
-  return Math.round(valor).toLocaleString('es-ES');
-}
-
 function formatFecha(iso: string): string {
   try {
     return new Date(iso).toLocaleDateString('es-ES', {
@@ -118,13 +71,10 @@ export default function PremiosAdminDashboard() {
   const [loadingResumen, setLoadingResumen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Carga inicial de ediciones
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/admin/premios/ediciones', {
-          cache: 'no-store',
-        });
+        const res = await fetch('/api/admin/premios/ediciones', { cache: 'no-store' });
         if (!res.ok) throw new Error('No se pudieron cargar las ediciones');
         const data: Edicion[] = await res.json();
         setEdiciones(data);
@@ -138,7 +88,6 @@ export default function PremiosAdminDashboard() {
     })();
   }, []);
 
-  // Cada vez que cambia la edición, recargar resumen
   useEffect(() => {
     if (edicionId == null) return;
     setLoadingResumen(true);
@@ -154,50 +103,82 @@ export default function PremiosAdminDashboard() {
   }, [edicionId]);
 
   const edicion = resumen?.edicion;
+  const totalImplementados = resumen?.premios.filter((p) => p.meta.implementado).length ?? 0;
 
   return (
     <div className="space-y-8">
-      {/* Selector de edición */}
-      <div className="flex flex-wrap items-end gap-4 rounded-xl border border-border/70 bg-card p-4">
-        <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Edición
-          </label>
-          <select
-            value={edicionId ?? ''}
-            onChange={(e) => setEdicionId(Number(e.target.value))}
-            disabled={loadingEd || ediciones.length === 0}
-            className="min-w-[260px] rounded-lg border border-border bg-background px-3 py-2 text-sm"
-          >
-            {ediciones.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.etiqueta} {e.cerrada ? '(cerrada)' : '· en curso'}
-              </option>
-            ))}
-          </select>
-        </div>
-        {edicion && (
-          <div className="text-sm text-muted-foreground">
-            <div>
-              <span className="font-medium text-foreground">Periodo:</span>{' '}
-              {formatFecha(edicion.inicio)} → {formatFecha(edicion.fin)}
+      {/* Hero */}
+      <div
+        className="relative overflow-hidden rounded-2xl p-6 text-white sm:p-8"
+        style={{ background: HERO_GRADIENT }}
+      >
+        <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 shadow-inner backdrop-blur-sm">
+              <Trophy className="h-6 w-6 text-white" />
             </div>
             <div>
-              <span className="font-medium text-foreground">Pueblos elegibles:</span>{' '}
-              {resumen?.totalPueblos ?? '—'}
+              <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+                12 Premios · Asamblea Nacional
+              </h1>
+              <p className="mt-0.5 text-sm text-white/80">
+                Ranking de los 126 pueblos en los 12 premios que se entregan cada octubre.
+              </p>
             </div>
           </div>
-        )}
-        {edicion && !edicion.cerrada && edicionId && (
-          <CerrarEdicionButton
-            edicionId={edicionId}
-            onDone={() => setEdicionId(edicionId)}
-          />
-        )}
+        </div>
+        <div className="relative mt-5 flex flex-wrap gap-3">
+          <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+            <label className="block text-[10px] font-semibold uppercase tracking-wide text-white/60">
+              Edición
+            </label>
+            <select
+              value={edicionId ?? ''}
+              onChange={(e) => setEdicionId(Number(e.target.value))}
+              disabled={loadingEd || ediciones.length === 0}
+              className="mt-1 min-w-[220px] bg-transparent text-sm font-semibold text-white outline-none [&>option]:text-foreground"
+            >
+              {ediciones.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.etiqueta} {e.cerrada ? '(cerrada)' : '· en curso'}
+                </option>
+              ))}
+            </select>
+          </div>
+          {edicion && (
+            <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+              <span className="block text-[10px] font-semibold uppercase tracking-wide text-white/60">
+                Periodo
+              </span>
+              <span className="text-sm font-semibold">
+                {formatFecha(edicion.inicio)} → {formatFecha(edicion.fin)}
+              </span>
+            </div>
+          )}
+          <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+            <span className="block text-[10px] font-semibold uppercase tracking-wide text-white/60">
+              Pueblos elegibles
+            </span>
+            <span className="text-lg font-bold">{resumen?.totalPueblos ?? '—'}</span>
+          </div>
+          <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+            <span className="block text-[10px] font-semibold uppercase tracking-wide text-white/60">
+              Premios activos
+            </span>
+            <span className="text-lg font-bold">
+              {loadingResumen ? '…' : `${totalImplementados} / 12`}
+            </span>
+          </div>
+          {edicion && !edicion.cerrada && edicionId && (
+            <CerrarEdicionButton edicionId={edicionId} onDone={() => setEdicionId(edicionId)} />
+          )}
+        </div>
       </div>
 
       {error && (
-        <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+        <div className="rounded-xl border border-rose-200 bg-rose-50/70 p-4 text-sm text-rose-800">
           {error}
         </div>
       )}
@@ -208,40 +189,46 @@ export default function PremiosAdminDashboard() {
           Calculando rankings…
         </div>
       ) : resumen ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {resumen.premios.map((premio) => {
             const ui = PREMIOS_UI[premio.premioId];
+            const Icon = ui.Icon;
             return (
               <Link
                 key={premio.premioId}
                 href={`/gestion/asociacion/datos/premios/${premio.premioId}?edicionId=${resumen.edicion.id}`}
-                className="group flex flex-col rounded-2xl border border-border/70 bg-card p-5 shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
+                className={`group overflow-hidden rounded-2xl border ${ui.tint.border} ${ui.tint.bg} p-5 shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg`}
               >
-                <div className="mb-2 flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-lg"
-                      aria-hidden
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl shadow-md ${ui.tint.iconBg}`}
                     >
-                      {ui?.emoji}
-                    </span>
-                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      #{String(premio.premioId).padStart(2, '0')}
-                    </span>
+                      <Icon className="h-5 w-5 text-white" strokeWidth={2} />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                        Premio {String(premio.premioId).padStart(2, '0')}
+                      </span>
+                      <h3 className="text-base font-bold leading-tight text-foreground">
+                        {ui.titulo}
+                      </h3>
+                    </div>
                   </div>
                   {!premio.meta.implementado && (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">
-                      Próximamente
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800 ring-1 ring-amber-200">
+                      <Lock className="h-3 w-3" />
+                      Pendiente
                     </span>
                   )}
                 </div>
-                <h3 className="text-base font-semibold text-foreground">
-                  {premio.meta.titulo}
-                </h3>
-                <p className="mt-1 text-xs text-muted-foreground">{premio.meta.descripcion}</p>
+
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  {ui.descripcion}
+                </p>
 
                 {premio.meta.implementado ? (
-                  <div className="mt-4 space-y-1.5 text-sm">
+                  <div className="mt-4 space-y-1.5">
                     {premio.top.length === 0 ? (
                       <p className="text-xs italic text-muted-foreground">
                         Aún no hay datos suficientes.
@@ -250,24 +237,26 @@ export default function PremiosAdminDashboard() {
                       premio.top.map((t, i) => (
                         <div
                           key={t.puebloId}
-                          className="flex items-center justify-between gap-2 rounded-md bg-muted/40 px-2 py-1.5"
+                          className="flex items-center justify-between gap-2 rounded-xl bg-white/70 px-2.5 py-1.5 ring-1 ring-black/5 dark:bg-zinc-900/40 dark:ring-white/5"
                         >
-                          <span className="flex items-center gap-2 truncate">
+                          <span className="flex min-w-0 flex-1 items-center gap-2">
                             <span
-                              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold tabular-nums ${
                                 i === 0
-                                  ? 'bg-amber-400 text-amber-950'
+                                  ? 'bg-amber-400 text-amber-950 ring-1 ring-amber-600/20'
                                   : i === 1
-                                    ? 'bg-zinc-300 text-zinc-800'
-                                    : 'bg-amber-700/50 text-amber-50'
+                                    ? 'bg-zinc-300 text-zinc-800 ring-1 ring-zinc-400/40'
+                                    : 'bg-amber-700/70 text-amber-50 ring-1 ring-amber-900/40'
                               }`}
                             >
                               {t.posicion}
                             </span>
-                            <TrendArrow t={t.tendencia} />
-                            <span className="truncate">{t.puebloNombre ?? `#${t.puebloId}`}</span>
+                            <span className="truncate text-sm font-semibold text-foreground">
+                              {t.puebloNombre ?? `#${t.puebloId}`}
+                            </span>
+                            <TrendBadge t={t.tendencia} prev={t.posicionAnterior} compact />
                           </span>
-                          <span className="shrink-0 tabular-nums text-xs text-muted-foreground">
+                          <span className="shrink-0 text-xs font-semibold tabular-nums text-muted-foreground">
                             {formatValor(premio.premioId, t.valor)}
                           </span>
                         </div>
@@ -275,13 +264,17 @@ export default function PremiosAdminDashboard() {
                     )}
                   </div>
                 ) : (
-                  <p className="mt-4 rounded-md bg-amber-50 p-2 text-xs text-amber-900">
-                    {premio.meta.razonPendiente ?? 'Pendiente de implementación.'}
+                  <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900">
+                    {premio.meta.razonPendiente ??
+                      'Este premio requiere datos externos o una implementación específica.'}
                   </p>
                 )}
 
-                <div className="mt-4 text-xs font-medium text-primary group-hover:underline">
-                  Ver ranking completo →
+                <div
+                  className={`mt-4 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ring-1 ${ui.tint.pill} transition-transform group-hover:translate-x-0.5`}
+                >
+                  Ver ranking completo
+                  <ArrowRight className="h-3 w-3" />
                 </div>
               </Link>
             );
@@ -292,13 +285,7 @@ export default function PremiosAdminDashboard() {
   );
 }
 
-function CerrarEdicionButton({
-  edicionId,
-  onDone,
-}: {
-  edicionId: number;
-  onDone: () => void;
-}) {
+function CerrarEdicionButton({ edicionId, onDone }: { edicionId: number; onDone: () => void }) {
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -329,17 +316,13 @@ function CerrarEdicionButton({
       type="button"
       onClick={cerrar}
       disabled={busy}
-      className={`ml-auto rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+      className={`ml-auto rounded-xl px-4 py-2 text-sm font-bold ring-1 backdrop-blur-sm transition-colors disabled:opacity-50 ${
         confirming
-          ? 'border-destructive bg-destructive text-destructive-foreground hover:brightness-110'
-          : 'border-border bg-background hover:bg-muted'
-      } disabled:opacity-50`}
+          ? 'bg-red-500/90 text-white ring-red-300/60 hover:bg-red-600'
+          : 'bg-white/10 text-white ring-white/25 hover:bg-white/20'
+      }`}
     >
-      {busy
-        ? 'Cerrando…'
-        : confirming
-          ? 'Confirmar cierre anticipado'
-          : 'Cerrar edición ahora'}
+      {busy ? 'Cerrando…' : confirming ? 'Confirmar cierre anticipado' : 'Cerrar edición ahora'}
     </button>
   );
 }

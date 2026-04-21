@@ -1,6 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { ArrowLeft, Download, TrendingUp, TrendingDown, Minus, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import {
+  PREMIOS_UI,
+  HERO_GRADIENT,
+  formatValor,
+  type Tendencia,
+} from '../../../../_lib/premiosUI';
 
 interface Edicion {
   id: number;
@@ -18,28 +26,9 @@ interface Entry {
   provincia: string | null;
   posicion: number;
   posicionAnterior?: number | null;
-  tendencia?: 'up' | 'down' | 'same' | 'new' | null;
+  tendencia?: Tendencia;
   valor: number;
   metadata: Record<string, unknown> | null;
-}
-
-function TrendCell({ t, prev }: { t?: Entry['tendencia']; prev?: number | null }) {
-  if (!t) return <span className="text-muted-foreground">—</span>;
-  if (t === 'up')
-    return (
-      <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold" title={prev ? `Antes: #${prev}` : undefined}>
-        ▲ <span className="text-xs tabular-nums">{prev ? `${prev}→` : ''}</span>
-      </span>
-    );
-  if (t === 'down')
-    return (
-      <span className="inline-flex items-center gap-1 text-rose-600 font-semibold" title={prev ? `Antes: #${prev}` : undefined}>
-        ▼ <span className="text-xs tabular-nums">{prev ? `${prev}→` : ''}</span>
-      </span>
-    );
-  if (t === 'same')
-    return <span className="text-muted-foreground">=</span>;
-  return <span className="rounded bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold text-sky-800">NUEVO</span>;
 }
 
 interface PremioMeta {
@@ -66,12 +55,40 @@ interface PuebloMin {
   slug: string;
 }
 
-function formatValor(premioId: number, valor: number): string {
-  if (premioId === 1) return valor.toFixed(2) + ' ★';
-  if (premioId === 6) return (valor >= 0 ? '+' : '') + valor.toFixed(1) + '%';
-  if (premioId === 9) return Math.round(valor) + ' / 100';
-  if (premioId === 11) return valor.toFixed(2) + ' vis/rec';
-  return Math.round(valor).toLocaleString('es-ES');
+function TrendCell({ t, prev }: { t?: Tendencia; prev?: number | null }) {
+  if (!t) return <span className="text-muted-foreground">—</span>;
+  if (t === 'up')
+    return (
+      <span
+        className="inline-flex items-center gap-1 font-semibold text-emerald-600"
+        title={prev ? `Antes: #${prev}` : undefined}
+      >
+        <TrendingUp className="h-4 w-4" />
+        <span className="text-xs tabular-nums">{prev ? `${prev}→` : ''}</span>
+      </span>
+    );
+  if (t === 'down')
+    return (
+      <span
+        className="inline-flex items-center gap-1 font-semibold text-rose-600"
+        title={prev ? `Antes: #${prev}` : undefined}
+      >
+        <TrendingDown className="h-4 w-4" />
+        <span className="text-xs tabular-nums">{prev ? `${prev}→` : ''}</span>
+      </span>
+    );
+  if (t === 'same')
+    return (
+      <span className="inline-flex items-center text-muted-foreground">
+        <Minus className="h-4 w-4" />
+      </span>
+    );
+  return (
+    <span className="inline-flex items-center gap-1 rounded bg-sky-100 px-1.5 py-0.5 text-[10px] font-bold text-sky-800 ring-1 ring-sky-200">
+      <Sparkles className="h-3 w-3" />
+      NUEVO
+    </span>
+  );
 }
 
 function formatFecha(iso: string): string {
@@ -101,9 +118,7 @@ export default function PremioDetalleClient({
 
   useEffect(() => {
     (async () => {
-      const res = await fetch('/api/admin/premios/ediciones', {
-        cache: 'no-store',
-      });
+      const res = await fetch('/api/admin/premios/ediciones', { cache: 'no-store' });
       if (res.ok) {
         const list: Edicion[] = await res.json();
         setEdiciones(list);
@@ -132,13 +147,15 @@ export default function PremioDetalleClient({
   const exportCsv = () => {
     if (!data) return;
     const rows = [
-      ['posicion', 'puebloId', 'pueblo', 'provincia', 'valor'],
+      ['posicion', 'puebloId', 'pueblo', 'provincia', 'valor', 'tendencia', 'posicionAnterior'],
       ...data.ranking.map((r) => [
         r.posicion,
         r.puebloId,
         r.puebloNombre ?? '',
         r.provincia ?? '',
         r.valor,
+        r.tendencia ?? '',
+        r.posicionAnterior ?? '',
       ]),
     ];
     const csv = rows
@@ -160,47 +177,102 @@ export default function PremioDetalleClient({
     URL.revokeObjectURL(url);
   };
 
+  const ui = PREMIOS_UI[premioId];
+  const Icon = ui?.Icon;
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end gap-4 rounded-xl border border-border/70 bg-card p-4">
-        <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Edición
-          </label>
-          <select
-            value={edicionId ?? ''}
-            onChange={(e) => setEdicionId(Number(e.target.value))}
-            className="min-w-[260px] rounded-lg border border-border bg-background px-3 py-2 text-sm"
+      {/* Hero del premio */}
+      <div
+        className="relative overflow-hidden rounded-2xl p-6 text-white sm:p-8"
+        style={{ background: HERO_GRADIENT }}
+      >
+        <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+        <div className="relative">
+          <Link
+            href="/gestion/asociacion/datos/premios"
+            className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/90 ring-1 ring-white/20 backdrop-blur-sm transition hover:bg-white/20"
           >
-            {ediciones.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.etiqueta} {e.cerrada ? '(cerrada)' : '· en curso'}
-              </option>
-            ))}
-          </select>
-        </div>
-        {data && (
-          <div className="flex-1 text-sm text-muted-foreground">
-            <div className="text-base font-semibold text-foreground">
-              {data.premio.titulo}
+            <ArrowLeft className="h-3 w-3" />
+            Volver a los 12 premios
+          </Link>
+          <div className="flex items-start gap-4">
+            {Icon && (
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15 shadow-inner backdrop-blur-sm">
+                <Icon className="h-6 w-6 text-white" />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">
+                Premio {String(premioId).padStart(2, '0')}
+              </span>
+              <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+                {data?.premio.titulo ?? ui?.titulo}
+              </h1>
+              <p className="mt-1 max-w-3xl text-sm text-white/85">
+                {data?.premio.descripcion ?? ui?.descripcion}
+              </p>
             </div>
-            <p>{data.premio.descripcion}</p>
-            <p className="mt-1 text-xs">
-              Unidad: <span className="font-medium">{data.premio.unidad}</span> · Periodo:{' '}
-              {formatFecha(data.edicion.inicio)} → {formatFecha(data.edicion.fin)} ·{' '}
-              {data.participantes} con datos de {data.totalPueblos} pueblos elegibles
-            </p>
           </div>
-        )}
-        {data && data.ranking.length > 0 && (
-          <button
-            type="button"
-            onClick={exportCsv}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium hover:bg-muted"
-          >
-            Exportar CSV
-          </button>
-        )}
+          <div className="mt-5 flex flex-wrap gap-3">
+            <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+              <label className="block text-[10px] font-semibold uppercase tracking-wide text-white/60">
+                Edición
+              </label>
+              <select
+                value={edicionId ?? ''}
+                onChange={(e) => setEdicionId(Number(e.target.value))}
+                className="mt-0.5 min-w-[200px] bg-transparent text-sm font-semibold text-white outline-none [&>option]:text-foreground"
+              >
+                {ediciones.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.etiqueta} {e.cerrada ? '(cerrada)' : '· en curso'}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {data && (
+              <>
+                <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+                  <span className="block text-[10px] font-semibold uppercase tracking-wide text-white/60">
+                    Periodo
+                  </span>
+                  <span className="text-sm font-semibold">
+                    {formatFecha(data.edicion.inicio)} → {formatFecha(data.edicion.fin)}
+                  </span>
+                </div>
+                <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+                  <span className="block text-[10px] font-semibold uppercase tracking-wide text-white/60">
+                    Participan
+                  </span>
+                  <span className="text-lg font-bold tabular-nums">
+                    {data.participantes}
+                    <span className="ml-1 text-xs font-normal text-white/70">
+                      / {data.totalPueblos}
+                    </span>
+                  </span>
+                </div>
+                <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+                  <span className="block text-[10px] font-semibold uppercase tracking-wide text-white/60">
+                    Unidad
+                  </span>
+                  <span className="text-sm font-semibold">{data.premio.unidad}</span>
+                </div>
+                {data.ranking.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={exportCsv}
+                    className="ml-auto inline-flex items-center gap-1.5 rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white ring-1 ring-white/25 backdrop-blur-sm transition-colors hover:bg-white/20"
+                  >
+                    <Download className="h-4 w-4" />
+                    CSV
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Premio 12: formulario de asignación manual */}
@@ -215,17 +287,15 @@ export default function PremioDetalleClient({
       )}
 
       {error && (
-        <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+        <div className="rounded-xl border border-rose-200 bg-rose-50/70 p-4 text-sm text-rose-800">
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="py-20 text-center text-sm text-muted-foreground">
-          Calculando ranking…
-        </div>
+        <div className="py-20 text-center text-sm text-muted-foreground">Calculando ranking…</div>
       ) : !data ? null : !data.premio.implementado && premioId !== 12 ? (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-5 text-sm text-amber-900">
           <strong>Premio pendiente de implementación.</strong>
           <p className="mt-2">
             {data.premio.razonPendiente ??
@@ -233,37 +303,39 @@ export default function PremioDetalleClient({
           </p>
         </div>
       ) : data.ranking.length === 0 ? (
-        <div className="rounded-lg border border-border bg-muted/30 p-10 text-center text-sm text-muted-foreground">
+        <div className="rounded-2xl border border-border bg-muted/30 p-10 text-center text-sm text-muted-foreground">
           Aún no hay datos suficientes para este premio en la edición seleccionada.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div
+          className={`overflow-hidden rounded-2xl border ${ui?.tint.border ?? 'border-border'} bg-card shadow-md`}
+        >
           <table className="w-full text-sm">
-            <thead className="border-b border-border bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
+            <thead className="border-b border-border bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
               <tr>
-                <th className="px-4 py-2.5 text-left">#</th>
-                <th className="px-3 py-2.5 text-left">Tendencia</th>
-                <th className="px-4 py-2.5 text-left">Pueblo</th>
-                <th className="px-4 py-2.5 text-left">Provincia</th>
-                <th className="px-4 py-2.5 text-right">Valor</th>
+                <th className="px-4 py-3 text-left">#</th>
+                <th className="px-3 py-3 text-left">Tendencia</th>
+                <th className="px-4 py-3 text-left">Pueblo</th>
+                <th className="px-4 py-3 text-left">Provincia</th>
+                <th className="px-4 py-3 text-right">Valor</th>
               </tr>
             </thead>
             <tbody>
               {data.ranking.map((r) => (
                 <tr
                   key={r.puebloId}
-                  className="border-b border-border/60 last:border-0 hover:bg-muted/30"
+                  className="border-b border-border/40 last:border-0 transition-colors hover:bg-muted/30"
                 >
                   <td className="px-4 py-2.5 tabular-nums">
                     <span
-                      className={`inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded-full px-1.5 text-xs font-semibold ${
+                      className={`inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full px-1.5 text-xs font-bold ring-1 ${
                         r.posicion === 1
-                          ? 'bg-amber-400 text-amber-950'
+                          ? 'bg-amber-400 text-amber-950 ring-amber-600/30'
                           : r.posicion === 2
-                            ? 'bg-zinc-300 text-zinc-800'
+                            ? 'bg-zinc-300 text-zinc-800 ring-zinc-400/40'
                             : r.posicion === 3
-                              ? 'bg-amber-700/50 text-amber-50'
-                              : 'bg-muted text-muted-foreground'
+                              ? 'bg-amber-700/70 text-amber-50 ring-amber-900/40'
+                              : 'bg-muted text-muted-foreground ring-border'
                       }`}
                     >
                       {r.posicion}
@@ -272,13 +344,11 @@ export default function PremioDetalleClient({
                   <td className="px-3 py-2.5">
                     <TrendCell t={r.tendencia} prev={r.posicionAnterior} />
                   </td>
-                  <td className="px-4 py-2.5 font-medium text-foreground">
+                  <td className="px-4 py-2.5 font-semibold text-foreground">
                     {r.puebloNombre ?? `#${r.puebloId}`}
                   </td>
-                  <td className="px-4 py-2.5 text-muted-foreground">
-                    {r.provincia ?? '—'}
-                  </td>
-                  <td className="px-4 py-2.5 text-right tabular-nums">
+                  <td className="px-4 py-2.5 text-muted-foreground">{r.provincia ?? '—'}</td>
+                  <td className="px-4 py-2.5 text-right font-semibold tabular-nums">
                     {formatValor(premioId, r.valor)}
                   </td>
                 </tr>
@@ -343,9 +413,7 @@ function JuradoForm({
     if (!confirm('¿Quitar el Premio Especial del Jurado de esta edición?')) return;
     setBusy(true);
     try {
-      const res = await fetch(`/api/admin/premios/${edicionId}/12`, {
-        method: 'DELETE',
-      });
+      const res = await fetch(`/api/admin/premios/${edicionId}/12`, { method: 'DELETE' });
       if (!res.ok) throw new Error(await res.text());
       setPuebloId('');
       setMotivo('');
@@ -359,21 +427,18 @@ function JuradoForm({
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
-      <h3 className="text-base font-semibold text-foreground">
+    <div className="overflow-hidden rounded-2xl border border-violet-200/80 bg-gradient-to-b from-violet-50/60 to-white p-5 shadow-md shadow-violet-100/40 dark:border-violet-800/50 dark:from-violet-950/30 dark:to-card">
+      <h3 className="text-base font-bold text-foreground">
         Asignación manual · Premio Especial del Jurado
       </h3>
       <p className="mt-1 text-xs text-muted-foreground">
         Decisión discrecional del jurado por iniciativas singulares.
       </p>
-
       <div className="mt-4 grid gap-3 sm:grid-cols-[260px_1fr_auto_auto]">
         <select
           value={puebloId}
-          onChange={(e) =>
-            setPuebloId(e.target.value === '' ? '' : Number(e.target.value))
-          }
-          className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+          onChange={(e) => setPuebloId(e.target.value === '' ? '' : Number(e.target.value))}
+          className="rounded-xl border border-border bg-background px-3 py-2 text-sm"
         >
           <option value="">— Selecciona pueblo —</option>
           {pueblos.map((p) => (
@@ -387,13 +452,13 @@ function JuradoForm({
           value={motivo}
           onChange={(e) => setMotivo(e.target.value)}
           placeholder="Motivo del premio (mínimo 10 caracteres)"
-          className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+          className="rounded-xl border border-border bg-background px-3 py-2 text-sm"
         />
         <button
           type="button"
           onClick={guardar}
           disabled={busy}
-          className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:brightness-110 disabled:opacity-50"
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:brightness-110 disabled:opacity-50"
         >
           {busy ? 'Guardando…' : 'Guardar'}
         </button>
@@ -402,7 +467,7 @@ function JuradoForm({
             type="button"
             onClick={limpiar}
             disabled={busy}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+            className="rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold hover:bg-muted disabled:opacity-50"
           >
             Quitar
           </button>
