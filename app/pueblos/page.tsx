@@ -43,6 +43,10 @@ export async function generateMetadata(): Promise<Metadata> {
 type SearchParams = {
   comunidad?: string;
   provincia?: string;
+  /** Búsqueda libre (usada por el sitelinks searchbox de Google y enlaces externos). */
+  q?: string;
+  /** Alias de `q`, coincide con el endpoint `/pueblos?search=` del backend. */
+  search?: string;
 };
 
 async function getPueblos(locale?: string) {
@@ -59,6 +63,7 @@ export default async function PueblosPage({
   const t = await getTranslations("explore");
   const comunidad = (sp.comunidad ?? "").trim();
   const provincia = (sp.provincia ?? "").trim();
+  const initialSearchTerm = (sp.q ?? sp.search ?? "").trim();
 
   try {
     const pueblos = await getPueblos(locale);
@@ -67,6 +72,7 @@ export default async function PueblosPage({
         pueblos={pueblos}
         initialComunidad={comunidad}
         initialProvincia={provincia}
+        initialSearchTerm={initialSearchTerm}
       />
     );
   } catch {

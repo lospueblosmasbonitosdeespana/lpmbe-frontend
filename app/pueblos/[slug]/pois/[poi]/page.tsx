@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getApiUrl } from "@/lib/api";
 import {
+  getBaseUrl,
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
@@ -13,8 +14,9 @@ import {
   type SupportedLocale,
 } from "@/lib/seo";
 import { fetchWithTimeout } from "@/lib/fetch-safe";
-import { injectImgAlt } from "@/app/_lib/html";
+import { injectImgAlt, stripHtml } from "@/app/_lib/html";
 import ZoomableImage from "@/app/components/ZoomableImage";
+import JsonLd from "@/app/components/seo/JsonLd";
 
 export const revalidate = 60;
 function isNumeric(s: string) {
@@ -142,8 +144,10 @@ export async function generateMetadata({
   const title = hasPoiData
     ? seoTitle(`${poiReadable} · ${puebloName}`)
     : seoTitle(tSeo("lugaresDeInteresTitle", { nombre: puebloName }));
+  const descSource = data?.descripcion_larga || data?.descripcionLarga || data?.descripcion || "";
+  const descClean = descSource ? stripHtml(String(descSource)).trim() : "";
   const description = hasPoiData
-    ? seoDescription(`${poiReadable} · ${puebloName}`, 160)
+    ? seoDescription(descClean || `${poiReadable} · ${puebloName}`, 160)
     : seoDescription(tSeo("lugaresDeInteresDesc", { nombre: puebloName }), 160);
   const alternates = hasPoiData
     ? {
@@ -151,6 +155,9 @@ export async function generateMetadata({
         languages: getLocaleAlternates(path),
       }
     : undefined;
+
+  const poiImage = pickFotoPrincipal(data) ?? null;
+  const ogImages = poiImage ? [{ url: poiImage }] : undefined;
 
   return {
     title,
@@ -163,11 +170,13 @@ export async function generateMetadata({
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
       type: "article",
+      ...(ogImages ? { images: ogImages } : {}),
     },
     twitter: {
-      card: "summary",
+      card: ogImages ? "summary_large_image" : "summary",
       title,
       description,
+      ...(poiImage ? { images: [poiImage] } : {}),
     },
   };
 }
@@ -196,6 +205,79 @@ export default async function PoiPage({
   const puebloNombre = data.pueblo?.nombre ?? "Pueblo";
   const puebloProvincia = data.pueblo?.provincia ?? null;
   const puebloComunidad = data.pueblo?.comunidad ?? null;
+
+  const base = getBaseUrl();
+  const poiUrl = `${base}/pueblos/${puebloSlug}/pois/${poi}`;
+  const allPhotos = (() => {
+    const urls: string[] = [];
+    if (foto) urls.push(foto);
+    const fotos = Array.isArray(data?.fotosPoi) ? data.fotosPoi : [];
+    for (const f of fotos) {
+      const u = typeof f?.url === "string" ? f.url : null;
+      if (u && !urls.includes(u)) urls.push(u);
+    }
+    return urls.slice(0, 10);
+  })();
+
+  const descTextPoi = descripcionHtml ? stripHtml(descripcionHtml).slice(0, 300) : "";
+
+  const containedInPlace = puebloProvincia
+    ? {
+        "@type": "AdministrativeArea",
+        name: puebloProvincia,
+        ...(puebloComunidad
+          ? {
+              containedInPlace: {
+                "@type": "AdministrativeArea",
+                name: puebloComunidad,
+                containedInPlace: { "@type": "Country", name: "España" },
+              },
+            }
+          : { containedInPlace: { "@type": "Country", name: "España" } }),
+      }
+    : undefined;
+
+  const poiLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "TouristAttraction",
+    name: data.nombre,
+    url: poiUrl,
+    ...(descTextPoi ? { description: descTextPoi } : {}),
+    ...(allPhotos.length > 0 ? { image: allPhotos } : {}),
+    ...(data.categoria ? { additionalType: String(data.categoria) } : {}),
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: puebloNombre,
+      ...(puebloProvincia ? { addressRegion: puebloProvincia } : {}),
+      addressCountry: "ES",
+    },
+    ...(containedInPlace ? { containedInPlace } : {}),
+    ...(data.lat && data.lng
+      ? {
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: data.lat,
+            longitude: data.lng,
+          },
+        }
+      : {}),
+    isPartOf: {
+      "@type": "TouristAttraction",
+      name: puebloNombre,
+      url: `${base}/pueblos/${puebloSlug}`,
+    },
+  };
+
+  const poiBreadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Pueblos", item: `${base}/pueblos` },
+      { "@type": "ListItem", position: 2, name: puebloNombre, item: `${base}/pueblos/${puebloSlug}` },
+      { "@type": "ListItem", position: 3, name: data.nombre, item: poiUrl },
+    ],
+  };
+
   const backToVars = {
     nombre: puebloNombre,
     name: puebloNombre,
@@ -209,6 +291,8 @@ export default async function PoiPage({
 
   return (
     <main className="mx-auto max-w-[1200px] px-6 py-8 bg-background">
+      <JsonLd data={poiLd} />
+      <JsonLd data={poiBreadcrumbLd} />
       <div className="mb-6">
         <Link href={`/pueblos/${puebloSlug}`} className="text-primary hover:underline">
           {t("backTo", backToVars)}

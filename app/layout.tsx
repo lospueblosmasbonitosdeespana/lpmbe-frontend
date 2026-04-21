@@ -124,17 +124,36 @@ export default async function RootLayout({
   const locale = await getLocale();
   const messages = await getMessages();
 
+  const base = getBaseUrl();
   const organizationLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: SITE_NAME,
-    url: getBaseUrl(),
-    logo: `${getBaseUrl()}/brand/logo-favicon.png`,
+    url: base,
+    logo: `${base}/brand/logo-favicon.png`,
     sameAs: [
       "https://www.facebook.com/lospueblosmasbonitos",
       "https://www.instagram.com/lospueblosmasbonitosdeespana",
       "https://www.youtube.com/@lospueblosmasbonitos",
     ],
+  };
+
+  // WebSite JSON-LD + SearchAction: habilita el sitelinks searchbox en Google
+  // (la query se redirige a /pueblos?search=...). Ver schema.org/SearchAction.
+  const websiteLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_NAME,
+    url: base,
+    inLanguage: locale,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${base}/pueblos?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
   };
 
   return (
@@ -160,6 +179,7 @@ export default async function RootLayout({
 })();`}
         </Script>
         <JsonLd data={organizationLd} />
+        <JsonLd data={websiteLd} />
         <ThemeProvider>
           <NextIntlClientProvider locale={locale} messages={messages}>
             <GoogleAuthProviderWrapper>

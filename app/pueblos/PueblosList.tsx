@@ -17,6 +17,7 @@ type PueblosListProps = {
   pueblos: Pueblo[];
   initialComunidad?: string;
   initialProvincia?: string;
+  initialSearchTerm?: string;
 };
 
 const norm = (s: string) => s.trim().toLowerCase();
@@ -149,11 +150,12 @@ const PuebloCard = memo(function PuebloCard({
 });
 
 export default function PueblosList({
+  initialSearchTerm = "",
   pueblos: initialPueblos,
   initialComunidad = "",
   initialProvincia = "",
 }: PueblosListProps) {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [alertCounts, setAlertCounts] = useState<Record<string, number>>({});
 
   const comunidadNorm = initialComunidad ? norm(initialComunidad) : "";
