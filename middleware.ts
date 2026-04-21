@@ -128,6 +128,45 @@ export function middleware(req: NextRequest): NextResponse {
   // /app es una ruta activa para redireccion inteligente a stores.
   if (pathname === '/app') return NextResponse.next();
 
+  // === LEGACY WP: URLs con extensión .html/.htm/.php/.asp/.aspx/.jsp ===
+  // Google tiene indexadas miles de URLs del WordPress antiguo (apagado desde hace años)
+  // con estas extensiones. Hasta hoy pasaban por las page.tsx, que llamaban al backend y
+  // generaban 404 antes de redirigir. Ahora cortamos aquí en middleware: 301 directo,
+  // sin tocar el backend, al destino actual apropiado.
+  const LEGACY_EXT = /\.(?:html?|php|aspx?|jsp)$/i;
+  if (LEGACY_EXT.test(pathname)) {
+    if (pathname.startsWith('/eventos/')) {
+      return permanentRedirectPreservingLang(req, '/actualidad?tipo=evento');
+    }
+    if (pathname.startsWith('/noticias/')) {
+      return permanentRedirectPreservingLang(req, '/actualidad?tipo=noticia');
+    }
+    if (pathname.startsWith('/articulos/')) {
+      return permanentRedirectPreservingLang(req, '/actualidad?tipo=articulo');
+    }
+    if (pathname.startsWith('/c/') || pathname.startsWith('/noticias-y-eventos/')) {
+      return permanentRedirectPreservingLang(req, '/actualidad');
+    }
+    if (pathname.startsWith('/pueblos/') || pathname.startsWith('/ficha-pueblo/')) {
+      return permanentRedirect(req, '/pueblos');
+    }
+    if (pathname.startsWith('/products/') || pathname.startsWith('/producto/') || pathname.startsWith('/tienda/')) {
+      return permanentRedirect(req, '/tienda');
+    }
+    if (pathname.startsWith('/rutas/') || pathname.startsWith('/ruta-') || pathname.startsWith('/ruta_')) {
+      return permanentRedirect(req, '/rutas');
+    }
+    if (pathname.startsWith('/experiencias/')) {
+      return permanentRedirect(req, '/experiencias');
+    }
+    if (pathname.startsWith('/descubre/')) {
+      return permanentRedirect(req, '/descubre');
+    }
+    // Escaneos de bots buscando WordPress/PHP (wp-login.php, xmlrpc.php, index.php, etc.)
+    // y cualquier otra URL legacy sin destino específico → home.
+    return permanentRedirect(req, '/');
+  }
+
   // === FICHA-PUEBLO legacy WP: /ficha-pueblo/SLUG → /pueblos/SLUG (301, un solo salto) ===
   const fichaMatch = pathname.match(/^(?:\/(en|fr|de|pt|it|ca))?\/ficha-pueblo(?:\/(.+))?$/);
   if (fichaMatch) {
@@ -346,6 +385,10 @@ export function middleware(req: NextRequest): NextResponse {
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\..*).*)',
+    // Procesamos todo salvo /api, chunks de Next, favicon, sitemap, robots y assets reales.
+    // NO excluimos rutas con extensión arbitraria: necesitamos que /eventos/x.html,
+    // /products/x.php, etc. pasen por el middleware para redirigirlas (legacy WP).
+    // Sólo excluimos extensiones de assets físicos.
+    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:woff2?|ttf|otf|eot|jpe?g|png|gif|webp|avif|svg|ico|js|mjs|css|map|mp4|webm|mp3|wav|pdf|zip|txt|xml|json)$).*)',
   ],
 };
