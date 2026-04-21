@@ -48,6 +48,16 @@ export default function robots(): MetadataRoute.Robots {
           '/cupones',
           '/planifica/mis-rutas',
           '/newsletter/baja',
+          // Extensiones legacy del antiguo WordPress: ya no existen en el
+          // sitio actual. El middleware las redirige a 301, pero también le
+          // pedimos a Google que deje de rastrearlas para acelerar la limpieza
+          // de su índice (proceso de 2-3 meses típicamente).
+          '/*.html$',
+          '/*.htm$',
+          '/*.php$',
+          '/*.asp$',
+          '/*.aspx$',
+          '/*.jsp$',
         ],
       },
     ],
