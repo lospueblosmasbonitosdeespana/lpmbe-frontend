@@ -171,6 +171,7 @@ export default function HttpErroresDashboard() {
   const [categoryFilter, setCategoryFilter] = useState<'' | Category>('');
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [openStack, setOpenStack] = useState<number | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -209,6 +210,72 @@ export default function HttpErroresDashboard() {
       await fetchData();
     } finally {
       setClearing(false);
+    }
+  };
+
+  const exportCsv = async () => {
+    setExporting(true);
+    try {
+      const params = new URLSearchParams();
+      if (windowMinutes) params.set('windowMinutes', windowMinutes);
+      if (categoryFilter) params.set('category', categoryFilter);
+      params.set('limit', '1000');
+      const res = await fetch(`/api/admin/http-errors?${params}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const payload: Response = await res.json();
+
+      const HEADERS = [
+        'fecha_iso',
+        'fecha_local',
+        'categoria',
+        'metodo',
+        'ruta',
+        'status',
+        'duracion_ms',
+        'mensaje',
+        'ip',
+        'user_agent',
+        'stack',
+      ];
+      const escape = (v: unknown): string => {
+        if (v === null || v === undefined) return '';
+        const s = String(v).replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim();
+        if (/[",;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+        return s;
+      };
+      const rows: string[] = [HEADERS.join(',')];
+      for (const e of payload.entries) {
+        rows.push([
+          new Date(e.ts).toISOString(),
+          formatTs(e.ts),
+          e.category,
+          e.method,
+          e.path,
+          e.status,
+          e.durationMs ?? '',
+          e.message,
+          e.ip ?? '',
+          e.userAgent ?? '',
+          e.stack ?? '',
+        ].map(escape).join(','));
+      }
+      const csv = '\uFEFF' + rows.join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      const cat = categoryFilter || 'todas';
+      const win = windowMinutes || 'todo';
+      a.href = url;
+      a.download = `errores-lpmbe_${cat}_${win}min_${stamp}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      alert(`No se pudo exportar el CSV: ${e?.message ?? 'error desconocido'}`);
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -273,6 +340,15 @@ export default function HttpErroresDashboard() {
             className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-50"
           >
             {loading ? 'Cargando…' : 'Refrescar'}
+          </button>
+
+          <button
+            onClick={exportCsv}
+            disabled={exporting}
+            title="Descarga un CSV con todos los eventos que coinciden con los filtros actuales (máx. 1000)."
+            className="rounded-md border border-blue-300 bg-blue-50 px-3 py-1.5 text-sm text-blue-700 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300 disabled:opacity-50"
+          >
+            {exporting ? 'Exportando…' : 'Descargar CSV'}
           </button>
 
           <button
