@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { cookies, headers } from 'next/headers';
 import { permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -157,10 +158,14 @@ async function fetchContenido(slug: string, lang: string): Promise<Contenido | n
   return res.json();
 }
 
-/** Para slugs legales, intenta static-pages (DeepL); si no hay, usa contenido. */
-async function fetchPageData(slug: string, lang: string): Promise<
+/**
+ * Para slugs legales, intenta static-pages (DeepL); si no hay, usa contenido.
+ * Deduplicado con React `cache()`: `generateMetadata` y el render de la página
+ * comparten la misma respuesta, evitando 2 llamadas al backend por visita.
+ */
+const fetchPageData = cache(async (slug: string, lang: string): Promise<
   { type: 'static'; data: StaticPageData } | { type: 'contenido'; data: Contenido } | null
-> {
+> => {
   const staticKey = STATIC_SLUG_TO_KEY[slug];
   if (staticKey) {
     const staticPage = await fetchStaticPage(staticKey, lang);
@@ -169,7 +174,7 @@ async function fetchPageData(slug: string, lang: string): Promise<
   const contenido = await fetchContenido(slug, lang);
   if (contenido) return { type: 'contenido', data: contenido };
   return null;
-}
+});
 
 function plainDescription(htmlOrMd: string): string {
   const unescaped = htmlOrMd

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -24,24 +25,20 @@ function isNumeric(s: string) {
 }
 
 /**
- * Generate candidate slugs when the original is not found.
- * Handles two cases:
- *  - slug has suffix -N: try other suffixes and the base
- *  - slug has NO suffix: try -1, -2, -3 (common migration artifact)
+ * Generate fallback candidate slugs when the original is not found.
+ * Caso real observado en GSC y logs de producción:
+ *   Google tiene indexadas URLs legacy con sufijo numérico (fuente-de-san-antonio-1,
+ *   plaza-mayor-2, etc.) que ya no existen. El canónico actual es siempre el base
+ *   sin sufijo. Por eso devolvemos SOLO el base: un único intento extra, sin
+ *   amplificar con -1..-4 (eso generaba 8-10 404 por cada visita real en el log
+ *   del backend).
+ *
+ * Si el slug ya no tiene sufijo y falla, no adivinamos: devolvemos lista vacía.
  */
 function slugFallbackCandidates(slug: string): string[] {
   const match = slug.match(/^(.+)-(\d+)$/);
-  if (match) {
-    const base = match[1];
-    const num = parseInt(match[2], 10);
-    const candidates: string[] = [];
-    for (let i = 1; i <= 4; i++) {
-      if (i !== num) candidates.push(`${base}-${i}`);
-    }
-    candidates.push(base);
-    return candidates;
-  }
-  return [`${slug}-1`, `${slug}-2`, `${slug}-3`];
+  if (match) return [match[1]];
+  return [];
 }
 
 function pickDescripcionHtml(poi: any): string | null {
@@ -63,70 +60,55 @@ function pickFotoPrincipal(poi: any): string | null {
   return poi?.fotoUrl ?? poi?.foto ?? poi?.imagen ?? null;
 }
 
-async function fetchPoiBySlugOrId(
-  puebloSlug: string,
-  poiParam: string,
-  locale?: string,
-): Promise<{ data: any; redirectSlug?: string } | null> {
-  const API_BASE = getApiUrl();
-  const buildUrl = (slug: string, lang?: string) => {
-    const qs = lang ? `?lang=${encodeURIComponent(lang)}` : "";
-    return isNumeric(slug)
-      ? `${API_BASE}/pueblos/${puebloSlug}/pois/${slug}${qs}`
-      : `${API_BASE}/pueblos/${puebloSlug}/pois/slug/${slug}${qs}`;
-  };
+type PoiFetchResult = { data: any; redirectSlug?: string } | null;
 
-  const tryFetch = async (slug: string, lang?: string) => {
-    try {
-      const res = await fetchWithTimeout(buildUrl(slug, lang), {
-        headers: lang ? { "Accept-Language": lang } : undefined,
-      });
-      if (res.ok) return res.json();
-    } catch { /* ignore */ }
+/**
+ * Fetch canónico del POI, compartido entre `generateMetadata` y el render de la
+ * página gracias a `cache()` de React: una sola llamada al backend por visita
+ * (antes se llamaba 2 veces, una por metadata y otra por render → 2× 404 en log).
+ */
+const fetchPoi = cache(
+  async (puebloSlug: string, poiParam: string, locale?: string): Promise<PoiFetchResult> => {
+    const API_BASE = getApiUrl();
+    const buildUrl = (slug: string, lang?: string) => {
+      const qs = lang ? `?lang=${encodeURIComponent(lang)}` : "";
+      return isNumeric(slug)
+        ? `${API_BASE}/pueblos/${puebloSlug}/pois/${slug}${qs}`
+        : `${API_BASE}/pueblos/${puebloSlug}/pois/slug/${slug}${qs}`;
+    };
+
+    const tryFetch = async (slug: string, lang?: string) => {
+      try {
+        const res = await fetchWithTimeout(buildUrl(slug, lang), {
+          headers: lang ? { "Accept-Language": lang } : undefined,
+          timeoutMs: 4000,
+          retries: 0,
+        });
+        if (res.ok) return res.json();
+      } catch { /* ignore */ }
+      return null;
+    };
+
+    // 1) Slug original en el idioma pedido.
+    let data = await tryFetch(poiParam, locale);
+    // 2) Fallback a ES sólo si no es ya ES (POIs tienen i18n cargado en el mismo registro;
+    //    este reintento cubre casos de slugs que existen en ES pero no en otro locale).
+    if (!data && locale && locale !== "es") data = await tryFetch(poiParam, "es");
+    if (data) return { data };
+
+    // 3) Fallback controlado a slug base sin sufijo (1 solo intento). Cubre URLs
+    //    legacy indexadas por Google con -1/-2/… que ahora son duplicados.
+    if (!isNumeric(poiParam)) {
+      for (const candidate of slugFallbackCandidates(poiParam)) {
+        data = await tryFetch(candidate, locale);
+        if (!data && locale && locale !== "es") data = await tryFetch(candidate, "es");
+        if (data) return { data, redirectSlug: candidate };
+      }
+    }
+
     return null;
-  };
-
-  // Try the original slug
-  let data = await tryFetch(poiParam, locale);
-  if (!data && locale && locale !== "es") data = await tryFetch(poiParam, "es");
-  if (data) return { data };
-
-  // Slug not found — try fallback candidates (handles deleted duplicates)
-  if (!isNumeric(poiParam)) {
-    for (const candidate of slugFallbackCandidates(poiParam)) {
-      data = await tryFetch(candidate, locale);
-      if (!data && locale && locale !== "es") data = await tryFetch(candidate, "es");
-      if (data) return { data, redirectSlug: candidate };
-    }
-  }
-
-  return null;
-}
-
-async function fetchPoiFast(puebloSlug: string, poiParam: string, locale?: string) {
-  const API_BASE = getApiUrl();
-  const buildUrl = (lang?: string) => {
-    const qs = lang ? `?lang=${encodeURIComponent(lang)}` : "";
-    return isNumeric(poiParam)
-      ? `${API_BASE}/pueblos/${puebloSlug}/pois/${poiParam}${qs}`
-      : `${API_BASE}/pueblos/${puebloSlug}/pois/slug/${poiParam}${qs}`;
-  };
-  const fetchOne = async (lang?: string) =>
-    fetchWithTimeout(buildUrl(lang), {
-      headers: lang ? { "Accept-Language": lang } : undefined,
-      timeoutMs: 4000,
-      retries: 0,
-    });
-  try {
-    const res = await fetchOne(locale);
-    if (res.ok) return res.json();
-    if (locale && locale !== "es") {
-      const fb = await fetchOne("es");
-      if (fb.ok) return fb.json();
-    }
-  } catch { /* ignore */ }
-  return null;
-}
+  },
+);
 
 export async function generateMetadata({
   params,
@@ -137,7 +119,8 @@ export async function generateMetadata({
   const locale = await getLocale();
   const tSeo = await getTranslations("seo");
   const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const data = await fetchPoiFast(slug, poi, locale);
+  const result = await fetchPoi(slug, poi, locale);
+  const data = result?.data ?? null;
   const hasPoiData = Boolean(data?.nombre?.trim());
   const poiReadable = data?.nombre?.trim() || poi.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const path = `/pueblos/${slug}/pois/${poi}`;
@@ -189,7 +172,7 @@ export default async function PoiPage({
   const { slug: puebloSlug, poi } = await params;
   const locale = await getLocale();
   const t = await getTranslations("poiPage");
-  const result = await fetchPoiBySlugOrId(puebloSlug, poi, locale);
+  const result = await fetchPoi(puebloSlug, poi, locale);
 
   if (result?.redirectSlug) {
     redirect(`/pueblos/${puebloSlug}/pois/${result.redirectSlug}`);

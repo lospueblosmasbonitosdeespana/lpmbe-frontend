@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
@@ -91,7 +92,12 @@ function breadcrumbLdNoticia(titulo: string, canonicalUrl: string, baseUrl: stri
   };
 }
 
-async function fetchNoticia(slug: string): Promise<Noticia | null> {
+/**
+ * Fetch de la noticia deduplicado con React `cache()`: `generateMetadata` y la
+ * página comparten el mismo resultado, evitando 2 llamadas (y por tanto 2× 404
+ * en el log del backend cuando el slug no existe).
+ */
+const fetchNoticia = cache(async (slug: string): Promise<Noticia | null> => {
   const locale = await getLocale();
   const lang = SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? (locale as SupportedLocale) : 'es';
 
@@ -102,7 +108,7 @@ async function fetchNoticia(slug: string): Promise<Noticia | null> {
 
   if (!res.ok) return null;
   return res.json();
-}
+});
 
 export async function generateMetadata({
   params,
