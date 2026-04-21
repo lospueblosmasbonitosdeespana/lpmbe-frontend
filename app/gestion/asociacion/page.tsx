@@ -86,6 +86,7 @@ const SECCIONES: {
       { href: '/gestion/asociacion/logos-ayuntamientos', title: 'Logos de Ayuntamientos', description: 'Logos de alcaldes para el constructor y eventos', emoji: '🏛️', accent: 'stone' },
       { href: '/gestion/asociacion/fotos', title: 'Fotos', description: 'Galerías, POIs, multiexperiencias, eventos y contenidos', emoji: '🖼️', accent: 'pink' },
       { href: '/gestion/asociacion/datos', title: 'Datos', description: 'Métricas, clientes y suscriptores', emoji: '📊', accent: 'indigo' },
+      { href: '/gestion/asociacion/datos/premios', title: '12 Premios', description: 'Ranking anual de los pueblos · 126 posiciones por categoría', emoji: '🏆', accent: 'amber' },
       { href: '/gestion/asociacion/ajustes', title: 'Ajustes de marca y logos', description: 'Logo del sitio, header/footer y biblioteca', emoji: '⚙️', accent: 'slate' },
       { href: '/gestion/asociacion/el-sello', title: 'El Sello (CMS)', description: 'Páginas y contenidos de El Sello', emoji: '🏅', accent: 'amber' },
       { href: '/gestion/asociacion/el-sello/documentos', title: 'Documentos', description: 'PDFs (Estatutos, Carta de Calidad)', emoji: '📄', accent: 'yellow' },

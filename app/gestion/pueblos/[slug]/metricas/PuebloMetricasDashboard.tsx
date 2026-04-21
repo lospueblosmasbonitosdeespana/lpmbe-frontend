@@ -259,6 +259,24 @@ export default function PuebloMetricasDashboard({
 
   return (
     <div className="space-y-8">
+      {/* Tile 12 Premios */}
+      <a
+        href={`/gestion/pueblos/${slug}/metricas/premios`}
+        className="flex items-center gap-4 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-amber-100/40 to-background p-4 transition-colors hover:border-amber-300 hover:bg-amber-50/80"
+      >
+        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-200 text-2xl" aria-hidden>
+          🏆
+        </span>
+        <div className="flex-1">
+          <div className="text-sm font-semibold text-foreground">12 Premios</div>
+          <div className="text-xs text-muted-foreground">
+            Tu posición en los reconocimientos anuales y en ventanas móviles de
+            3, 7, 15 y 30 días.
+          </div>
+        </div>
+        <span className="text-sm font-medium text-amber-800">Ver →</span>
+      </a>
+
       {/* Period selector */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm text-muted-foreground">Periodo:</span>
