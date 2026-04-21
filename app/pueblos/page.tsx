@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { getPueblosLite } from "@/lib/api";
-import { getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
+import { getPueblosLite, getPuebloMainPhoto } from "@/lib/api";
+import { getBaseUrl, getCanonicalUrl, getLocaleAlternates, getOGLocale, type SupportedLocale } from "@/lib/seo";
 import PueblosList from "./PueblosList";
 
 // 🔒 Evita SSG / paths raros
@@ -24,6 +24,25 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = PUEBLOS_TITLE[locale] ?? PUEBLOS_TITLE.es;
   const description = t("pueblosListDescription");
   const canonicalUrl = getCanonicalUrl(path, locale);
+
+  // Imagen OG: primera foto disponible del listado de pueblos (editorial, apta
+  // para redes sociales). Fallback al logo de marca si no hay ninguna.
+  const baseUrl = getBaseUrl();
+  let ogImage: string | null = null;
+  try {
+    const pueblos = await getPueblosLite(locale);
+    for (const p of pueblos ?? []) {
+      const photo = getPuebloMainPhoto(p);
+      if (photo) {
+        ogImage = photo;
+        break;
+      }
+    }
+  } catch {
+    ogImage = null;
+  }
+  const finalOgImage = ogImage ?? `${baseUrl}/brand/logo-lpbe-1.png`;
+
   return {
     title: { absolute: title },
     description,
@@ -34,8 +53,16 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      url: getCanonicalUrl(path, locale),
+      url: canonicalUrl,
       locale: getOGLocale(locale),
+      type: "website",
+      images: [{ url: finalOgImage, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [finalOgImage],
     },
   };
 }

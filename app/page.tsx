@@ -43,6 +43,19 @@ export async function generateMetadata(): Promise<Metadata> {
   };
   const homeTitle = homeTitleByLocale[locale] ?? homeTitleByLocale.es;
   const homeDescription = homeDescriptionByLocale[locale] ?? homeDescriptionByLocale.es;
+
+  // Imagen OG: primera slide del hero (editorial, apta para redes sociales).
+  // Fallback al logo de marca si el backend no responde.
+  const baseUrl = getBaseUrl();
+  let ogImage: string | null = null;
+  try {
+    const config = await getHomeConfig(locale);
+    ogImage = config.hero.slides?.find((s) => s?.image?.trim() && !s?.hidden)?.image ?? null;
+  } catch {
+    ogImage = null;
+  }
+  const finalOgImage = ogImage ?? `${baseUrl}/brand/logo-lpbe-1.png`;
+
   return {
     title: { absolute: homeTitle },
     description: homeDescription,
@@ -55,6 +68,14 @@ export async function generateMetadata(): Promise<Metadata> {
       description: homeDescription,
       url: getCanonicalUrl(path, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
+      type: "website",
+      images: [{ url: finalOgImage, alt: homeTitle }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: homeTitle,
+      description: homeDescription,
+      images: [finalOgImage],
     },
   };
 }
