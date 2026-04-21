@@ -9,17 +9,17 @@ const PREMIOS_UI: Record<
   number,
   { titulo: string; descripcion: string; unidad: string; implementado: boolean; emoji: string }
 > = {
-  1: { titulo: 'Pueblo Mejor Valorado', descripcion: 'Media más alta en reseñas de visitantes.', unidad: '★ de 5', implementado: true, emoji: '★' },
+  1: { titulo: 'Pueblo Mejor Valorado', descripcion: 'Media bayesiana de las reseñas (ponderada por nº de votos).', unidad: '★ de 5', implementado: true, emoji: '★' },
   2: { titulo: 'Más Visitado (GPS)', descripcion: 'Mayor número de visitas físicas reales.', unidad: 'visitas', implementado: true, emoji: '📍' },
   3: { titulo: 'Más Visitado en Web/App', descripcion: 'Mayor número de consultas digitales.', unidad: 'vistas', implementado: true, emoji: '🌐' },
   4: { titulo: 'Más Activo del Club', descripcion: 'Mayor volumen de canjes de QR del Club.', unidad: 'canjes', implementado: true, emoji: '🎟️' },
-  5: { titulo: 'Más Internacional', descripcion: 'Mayor diversidad de idiomas y países.', unidad: 'índice', implementado: false, emoji: '🌍' },
+  5: { titulo: 'Más Internacional', descripcion: '% de visitantes extranjeros (datos Telefónica Tech).', unidad: '%', implementado: false, emoji: '🌍' },
   6: { titulo: 'Pueblo Revelación', descripcion: 'Mayor crecimiento relativo del periodo.', unidad: '%', implementado: true, emoji: '🚀' },
-  7: { titulo: 'Más Trabajador · Eventos', descripcion: 'Más eventos publicados desde el pueblo.', unidad: 'eventos', implementado: false, emoji: '🎭' },
+  7: { titulo: 'Más Trabajador · Eventos y Noticias', descripcion: 'Más eventos y noticias publicados por el pueblo.', unidad: 'publicaciones', implementado: true, emoji: '🎭' },
   8: { titulo: 'Más Trabajador · Contenidos', descripcion: 'Más noticias, artículos, páginas y rutas propias.', unidad: 'publicaciones', implementado: true, emoji: '✍️' },
-  9: { titulo: 'Mejor Fichado', descripcion: 'Ficha más completa: fotos, traducciones, recursos.', unidad: 'índice', implementado: false, emoji: '🗂️' },
+  9: { titulo: 'Mejor Fichado', descripcion: 'Ficha más completa: fotos, traducciones, recursos.', unidad: 'índice', implementado: true, emoji: '🗂️' },
   10: { titulo: 'Mejor Tejido Local', descripcion: 'Más negocios y alojamientos adheridos al Club.', unidad: 'negocios', implementado: true, emoji: '🏪' },
-  11: { titulo: 'Más Ágil', descripcion: 'Mejor gestión del semáforo y las alertas.', unidad: 'índice', implementado: false, emoji: '⚡' },
+  11: { titulo: 'Más Visitado por el Club', descripcion: 'Visitas del Club ponderadas por el nº de recursos del pueblo.', unidad: 'visitas/recurso', implementado: true, emoji: '⚡' },
   12: { titulo: 'Especial del Jurado', descripcion: 'Iniciativas singulares, a decisión del jurado.', unidad: 'manual', implementado: true, emoji: '🏆' },
 };
 
@@ -64,6 +64,8 @@ interface Resumen {
 function formatValor(premioId: number, valor: number): string {
   if (premioId === 1) return valor.toFixed(2) + ' ★';
   if (premioId === 6) return (valor >= 0 ? '+' : '') + valor.toFixed(1) + '%';
+  if (premioId === 9) return Math.round(valor) + ' / 100';
+  if (premioId === 11) return valor.toFixed(2) + ' vis/rec';
   return Math.round(valor).toLocaleString('es-ES');
 }
 

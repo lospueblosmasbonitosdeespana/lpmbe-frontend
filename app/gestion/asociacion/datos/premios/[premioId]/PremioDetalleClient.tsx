@@ -48,6 +48,8 @@ interface PuebloMin {
 function formatValor(premioId: number, valor: number): string {
   if (premioId === 1) return valor.toFixed(2) + ' ★';
   if (premioId === 6) return (valor >= 0 ? '+' : '') + valor.toFixed(1) + '%';
+  if (premioId === 9) return Math.round(valor) + ' / 100';
+  if (premioId === 11) return valor.toFixed(2) + ' vis/rec';
   return Math.round(valor).toLocaleString('es-ES');
 }
 

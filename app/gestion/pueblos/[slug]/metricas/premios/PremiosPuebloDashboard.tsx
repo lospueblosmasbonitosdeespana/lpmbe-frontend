@@ -11,13 +11,13 @@ const PREMIOS_UI: Record<
   2: { titulo: 'Más Visitado (GPS)', descripcion: 'Visitas físicas reales registradas por GPS.', unidad: 'visitas', emoji: '📍' },
   3: { titulo: 'Más Visitado en Web/App', descripcion: 'Páginas vistas de tu pueblo en la web y la app.', unidad: 'vistas', emoji: '🌐' },
   4: { titulo: 'Más Activo del Club', descripcion: 'Canjes de QR del Club de Amigos.', unidad: 'canjes', emoji: '🎟️' },
-  5: { titulo: 'Más Internacional', descripcion: 'Diversidad de idiomas y países.', unidad: 'índice', emoji: '🌍' },
+  5: { titulo: 'Más Internacional', descripcion: '% de visitantes extranjeros (datos Telefónica Tech).', unidad: '%', emoji: '🌍' },
   6: { titulo: 'Pueblo Revelación', descripcion: 'Crecimiento relativo respecto al periodo anterior.', unidad: '%', emoji: '🚀' },
-  7: { titulo: 'Trabajador · Eventos', descripcion: 'Eventos publicados por el propio pueblo.', unidad: 'eventos', emoji: '🎭' },
+  7: { titulo: 'Trabajador · Eventos y Noticias', descripcion: 'Eventos y noticias publicados por el pueblo.', unidad: 'publicaciones', emoji: '🎭' },
   8: { titulo: 'Trabajador · Contenidos', descripcion: 'Noticias, artículos, rutas y páginas propias.', unidad: 'contenidos', emoji: '✍️' },
   9: { titulo: 'Mejor Fichado', descripcion: 'Completitud de tu ficha (fotos, traducciones, recursos).', unidad: 'índice', emoji: '🗂️' },
   10: { titulo: 'Mejor Tejido Local', descripcion: 'Negocios y alojamientos adheridos al Club.', unidad: 'negocios', emoji: '🏪' },
-  11: { titulo: 'Más Ágil', descripcion: 'Gestión del semáforo y respuesta a alertas.', unidad: 'índice', emoji: '⚡' },
+  11: { titulo: 'Más Visitado por el Club', descripcion: 'Visitas del Club de Amigos, ponderado por el nº de recursos del pueblo.', unidad: 'visitas/recurso', emoji: '⚡' },
   12: { titulo: 'Especial del Jurado', descripcion: 'Asignación manual por iniciativas singulares.', unidad: '—', emoji: '🏆' },
 };
 
@@ -64,6 +64,8 @@ function formatValor(premioId: number, valor: number | null): string {
   if (valor == null) return '—';
   if (premioId === 1) return valor.toFixed(2) + ' ★';
   if (premioId === 6) return (valor >= 0 ? '+' : '') + valor.toFixed(1) + '%';
+  if (premioId === 9) return Math.round(valor) + ' / 100';
+  if (premioId === 11) return valor.toFixed(2) + ' vis/rec';
   return Math.round(valor).toLocaleString('es-ES');
 }
 
