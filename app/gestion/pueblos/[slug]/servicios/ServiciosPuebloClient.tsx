@@ -127,7 +127,8 @@ export default function ServiciosPuebloClient({
     setIsCreating(false);
     // El backend devuelve `horarioTramos` ya estructurado. Si por alguna
     // razón no viniera, parseamos el `horario` legacy (string) a tramos.
-    const tramos = row.horarioTramos ?? toHorarioTramos(row.horario);
+    const tramos =
+      row.horarioTramos ?? toHorarioTramos(row.horario as Record<string, unknown> | null | undefined);
     setForm({
       tipo: row.tipo as TipoServicio,
       nombre: row.nombre ?? "",
@@ -439,7 +440,8 @@ export default function ServiciosPuebloClient({
           {rows.map((row) => {
             const cfg = getTipoServicioConfig(row.tipo);
             const isEditing = editingId === row.id;
-            const tramosRow = row.horarioTramos ?? toHorarioTramos(row.horario);
+            const tramosRow =
+              row.horarioTramos ?? toHorarioTramos(row.horario as Record<string, unknown> | null | undefined);
             const tieneHorario = hasAnyTramo(tramosRow);
             return (
               <div
