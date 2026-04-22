@@ -1,7 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Download, TrendingUp, TrendingDown, Minus, Sparkles } from 'lucide-react';
+import {
+  ArrowLeft,
+  Download,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Sparkles,
+  BookOpen,
+} from 'lucide-react';
 import Link from 'next/link';
 import {
   PREMIOS_UI,
@@ -308,11 +316,24 @@ export default function PremioDetalleClient({
                     ))}
                   </div>
                 </div>
+                {premioId === 7 && (
+                  <Link
+                    href={
+                      data.edicion.id
+                        ? `/gestion/asociacion/datos/premios/7/baremo?edicionId=${data.edicion.id}`
+                        : '/gestion/asociacion/datos/premios/7/baremo'
+                    }
+                    className="ml-auto inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-sm font-bold text-foreground shadow-sm ring-1 ring-white/40 transition-colors hover:bg-white/90"
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    Ver baremo de puntos
+                  </Link>
+                )}
                 {data.ranking.length > 0 && (
                   <button
                     type="button"
                     onClick={exportCsv}
-                    className="ml-auto inline-flex items-center gap-1.5 rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white ring-1 ring-white/25 backdrop-blur-sm transition-colors hover:bg-white/20"
+                    className={`${premioId === 7 ? '' : 'ml-auto'} inline-flex items-center gap-1.5 rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white ring-1 ring-white/25 backdrop-blur-sm transition-colors hover:bg-white/20`}
                   >
                     <Download className="h-4 w-4" />
                     CSV

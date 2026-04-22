@@ -225,6 +225,12 @@ export function formatValor(premioId: number, valor: number | null): string {
   if (premioId === 1) return valor.toFixed(2) + ' ★';
   if (premioId === 6) return (valor >= 0 ? '+' : '') + valor.toFixed(1) + '%';
   if (premioId === 11) return valor.toFixed(2) + ' vis/rec';
+  if (premioId === 7) {
+    const txt = Number.isInteger(valor)
+      ? valor.toLocaleString('es-ES')
+      : valor.toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    return `${txt} pt${valor === 1 ? '' : 's'}`;
+  }
   return Math.round(valor).toLocaleString('es-ES');
 }
 
