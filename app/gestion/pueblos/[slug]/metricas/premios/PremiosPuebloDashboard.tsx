@@ -349,6 +349,15 @@ function TarjetaPremio({
 
       <p className="text-xs leading-relaxed text-muted-foreground">{ui.descripcion}</p>
 
+      {posicion.premioId === 6 && (
+        <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50/70 p-3 text-[11px] leading-relaxed text-rose-900 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-200">
+          <strong className="font-bold">Este premio NO se otorga en la edición 2025/2026.</strong>{' '}
+          La app se lanzó en 2025, así que aún no existe un año anterior con el que comparar el
+          crecimiento. Los datos mostrados son orientativos (comparan con un periodo sin actividad real)
+          y se concederá oficialmente por primera vez en la edición 2026/2027.
+        </div>
+      )}
+
       {pendiente ? (
         <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900">
           Este premio estará disponible en breve.
