@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Lock } from 'lucide-react';
+import Link from 'next/link';
+import { BookOpen, Lock } from 'lucide-react';
 import {
   PREMIOS_UI,
   formatValor,
@@ -88,9 +89,11 @@ function formatFecha(iso: string): string {
 export default function PremiosPuebloDashboard({
   puebloId,
   puebloNombre,
+  puebloSlug,
 }: {
   puebloId: number;
   puebloNombre: string;
+  puebloSlug: string;
 }) {
   const [resumen, setResumen] = useState<ResumenResponse | null>(null);
   const [historico, setHistorico] = useState<HistoricoItem[]>([]);
@@ -202,6 +205,8 @@ export default function PremiosPuebloDashboard({
             key={p.premioId}
             puebloId={puebloId}
             puebloNombre={puebloNombre}
+            puebloSlug={puebloSlug}
+            edicionId={resumen.edicion.id}
             posicion={p}
           />
         ))}
@@ -267,10 +272,14 @@ export default function PremiosPuebloDashboard({
 function TarjetaPremio({
   puebloId,
   puebloNombre,
+  puebloSlug,
+  edicionId,
   posicion,
 }: {
   puebloId: number;
   puebloNombre: string;
+  puebloSlug: string;
+  edicionId: number;
   posicion: Posicion;
 }) {
   const ui = PREMIOS_UI[posicion.premioId];
@@ -512,6 +521,19 @@ function TarjetaPremio({
               </button>
             ))}
           </div>
+
+          {/* P7 · botón al baremo para que el alcalde vea cómo se puntúa. */}
+          {posicion.premioId === 7 && (
+            <Link
+              href={`/gestion/asociacion/datos/premios/7/baremo?edicionId=${edicionId}&from=${encodeURIComponent(
+                `/gestion/pueblos/${puebloSlug}/metricas/premios`,
+              )}`}
+              className={`mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors ${ui.tint.iconBg} hover:opacity-90`}
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              Ver baremo de puntos
+            </Link>
+          )}
         </>
       )}
     </div>

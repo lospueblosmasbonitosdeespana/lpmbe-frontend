@@ -46,9 +46,9 @@ const BAREMO: FilaBaremo[] = [
     nota: 'Cada POI nuevo suma.',
   },
   {
-    accion: 'Crear una multiexperiencia con al menos una parada',
+    accion: 'Crear una multiexperiencia con al menos 4 paradas',
     puntos: '4',
-    nota: 'Las MX sin paradas no puntúan (no tienen sentido turístico).',
+    nota: 'Se suman paradas del legado (overrides) + paradas nuevas (custom activas). Una MX con menos de 4 paradas no se considera un producto turístico válido y no puntúa.',
   },
   {
     accion: 'Compartir un documento con el resto de la red',
@@ -98,23 +98,37 @@ const BONUS: FilaBaremo[] = [
 export default async function BaremoPremio7Page({
   searchParams,
 }: {
-  searchParams: Promise<{ edicionId?: string }>;
+  searchParams: Promise<{ edicionId?: string; from?: string }>;
 }) {
   const me = await getMeServer();
   if (!me) redirect('/entrar');
-  if (me.rol !== 'ADMIN') redirect('/mi-cuenta');
+  const rolesPermitidos = new Set(['ADMIN', 'ALCALDE', 'EDITOR', 'COLABORADOR']);
+  if (!rolesPermitidos.has(me.rol)) redirect('/mi-cuenta');
 
-  const { edicionId } = await searchParams;
-  const backHref = edicionId
-    ? `/gestion/asociacion/datos/premios/7?edicionId=${edicionId}`
-    : '/gestion/asociacion/datos/premios/7';
+  const esAdmin = me.rol === 'ADMIN';
+  const { edicionId, from } = await searchParams;
+  // `from` sólo se acepta si es una ruta interna relativa (evita open-redirect).
+  const fromSanitizado =
+    from && from.startsWith('/') && !from.startsWith('//') ? from : null;
+  const backHref =
+    fromSanitizado ??
+    (esAdmin
+      ? edicionId
+        ? `/gestion/asociacion/datos/premios/7?edicionId=${edicionId}`
+        : '/gestion/asociacion/datos/premios/7'
+      : '/mi-cuenta');
+  const backLabel = fromSanitizado
+    ? 'Volver'
+    : esAdmin
+      ? 'Volver al Premio 07'
+      : 'Volver a mi cuenta';
 
   return (
     <GestionAsociacionSubpageShell
       title="Baremo · Pueblo Más Trabajador"
       subtitle="Cuánto vale cada cosa que hace el pueblo en la web"
       backHref={backHref}
-      backLabel="Volver al Premio 07"
+      backLabel={backLabel}
       maxWidthClass="max-w-5xl"
     >
       <div className="space-y-6">
@@ -131,7 +145,7 @@ export default async function BaremoPremio7Page({
               className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/90 ring-1 ring-white/20 backdrop-blur-sm transition hover:bg-white/20"
             >
               <ArrowLeft className="h-3 w-3" />
-              Volver al Premio 07
+              {backLabel}
             </Link>
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15 shadow-inner backdrop-blur-sm">
