@@ -107,16 +107,21 @@ export default function ValidarQRPage() {
 
       {/* Input QR */}
       <div>
-        <label className="mb-1 block text-sm font-medium">Código QR del socio</label>
+        <label className="mb-1 block text-sm font-medium">Código QR o código corto del socio</label>
         <input
           type="text"
           value={qrInput}
           onChange={(e) => setQrInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleScan()}
-          placeholder="Escanea o pega el código QR aquí"
+          placeholder="Pega el QR o teclea el código de 6 caracteres (ej. ABC-D23)"
           autoFocus
           className="w-full rounded-lg border border-border bg-card px-3 py-2.5 text-base"
         />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Si el socio no puede mostrar el QR, puede dictarte el código corto
+          que aparece debajo en su app (6 caracteres, caduca en 5 minutos igual
+          que el QR).
+        </p>
       </div>
 
       {/* Adultos y menores */}

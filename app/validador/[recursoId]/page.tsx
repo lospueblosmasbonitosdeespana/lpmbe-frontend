@@ -87,6 +87,8 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
   const [metricasPueblo, setMetricasPueblo] = useState<Metricas>(() => normalizeMetricas(null));
   const [metricasPuebloError, setMetricasPuebloError] = useState<string | null>(null);
   const [wakeLockActive, setWakeLockActive] = useState(false);
+  const [manualInput, setManualInput] = useState('');
+  const [showManual, setShowManual] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanningRef = useRef(false);
   const scannerRunningRef = useRef(false);
@@ -374,8 +376,13 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
     }
     lastScanRef.current = { text: raw, at: Date.now() };
 
-    // Validar token antes de llamar a la API
-    if (!token || token.length < 10) {
+    // Validar token antes de llamar a la API.
+    // Aceptamos tanto tokens QR largos (>= 10 chars) como códigos cortos
+    // humanos (4-12 chars con o sin guiones). El backend se encarga de la
+    // validación real contra las emisiones activas.
+    const sinSeparadores = token.replace(/[\s\-_.·]/g, '');
+    const tokenTooShort = !token || sinSeparadores.length < 4;
+    if (tokenTooShort) {
       setStatus('INVALID');
       playBeepInvalid();
       setTimeout(() => {
@@ -617,9 +624,112 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
             }}
           />
           
-          <p style={{ fontSize: 14, opacity: 0.7, textAlign: 'center', marginBottom: 24 }}>
+          <p style={{ fontSize: 14, opacity: 0.7, textAlign: 'center', marginBottom: 12 }}>
             Alinea el código QR frente a la cámara del ordenador
           </p>
+
+          {/* Entrada manual (código corto humano de 6 caracteres) */}
+          <div style={{ marginBottom: 24, textAlign: 'center' }}>
+            {!showManual ? (
+              <button
+                type="button"
+                onClick={() => setShowManual(true)}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #ddd',
+                  borderRadius: 6,
+                  padding: '8px 14px',
+                  fontSize: 13,
+                  cursor: 'pointer',
+                }}
+              >
+                ¿Sin cámara? Introducir código manualmente
+              </button>
+            ) : (
+              <div
+                style={{
+                  border: '1px solid #ddd',
+                  borderRadius: 6,
+                  padding: 12,
+                  textAlign: 'left',
+                }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+                  Código corto del socio
+                </div>
+                <div style={{ fontSize: 12, opacity: 0.75, marginBottom: 8 }}>
+                  El socio puede dictártelo desde su app. Son 6 caracteres, por
+                  ejemplo <code>ABC-D23</code>. Caduca en 5 minutos igual que
+                  el QR.
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    type="text"
+                    value={manualInput}
+                    onChange={(e) => setManualInput(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && manualInput.trim()) {
+                        handleScan(manualInput.trim());
+                        setManualInput('');
+                      }
+                    }}
+                    placeholder="ABC-D23"
+                    maxLength={12}
+                    autoFocus
+                    style={{
+                      flex: 1,
+                      padding: '8px 10px',
+                      fontSize: 18,
+                      letterSpacing: 2,
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                      textTransform: 'uppercase',
+                      border: '1px solid #ccc',
+                      borderRadius: 4,
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!manualInput.trim()) return;
+                      handleScan(manualInput.trim());
+                      setManualInput('');
+                    }}
+                    disabled={!manualInput.trim() || status !== 'SCANNING'}
+                    style={{
+                      padding: '8px 14px',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      background: '#111827',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                      opacity: !manualInput.trim() || status !== 'SCANNING' ? 0.5 : 1,
+                    }}
+                  >
+                    Validar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowManual(false);
+                      setManualInput('');
+                    }}
+                    style={{
+                      padding: '8px 10px',
+                      fontSize: 13,
+                      background: 'transparent',
+                      border: '1px solid #ddd',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
       {status === 'SCANNING' && (
         <div style={{ textAlign: 'center', fontSize: 18, color: '#666' }}>
