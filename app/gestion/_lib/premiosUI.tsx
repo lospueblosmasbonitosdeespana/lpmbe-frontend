@@ -171,7 +171,7 @@ export const PREMIOS_UI: Record<number, PremioUI> = {
   6: {
     titulo: 'Pueblo Revelación',
     descripcion:
-      'Mayor crecimiento relativo respecto al año anterior (visitas, canjes del Club y tráfico web/app). En la edición 2025/2026 NO se otorga: la app se lanzó en 2025 y no hay año anterior con el que comparar. El premio se concederá por primera vez en la edición 2026/2027.',
+      'Mayor crecimiento relativo respecto al año anterior (visitas, canjes del Club y tráfico web/app). En la edición 2026 NO se otorga: la app se lanzó a finales de 2025 y no hay año anterior con el que comparar. El premio se concederá por primera vez en la edición 2027.',
     unidad: '%',
     implementado: true,
     Icon: Rocket,

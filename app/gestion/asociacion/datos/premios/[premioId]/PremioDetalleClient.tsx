@@ -256,10 +256,10 @@ export default function PremioDetalleClient({
               </p>
               {premioId === 6 && data && !data.edicion.cerrada && (
                 <div className="mt-3 rounded-xl border border-amber-300/40 bg-amber-500/15 p-3 text-xs leading-relaxed text-amber-100 ring-1 ring-amber-300/20">
-                  <strong className="font-bold">Edición 2025/2026: no se otorga.</strong> La app se
-                  lanzó en 2025 y no hay año anterior con el que comparar el crecimiento. El ranking
-                  se muestra a título orientativo (compara con un periodo sin actividad real).
-                  El premio se concederá oficialmente por primera vez en la edición 2026/2027.
+                  <strong className="font-bold">Edición 2026: no se otorga.</strong> La app se lanzó
+                  a finales de 2025 y no hay año anterior con el que comparar el crecimiento. El
+                  ranking se muestra a título orientativo. El premio se concederá oficialmente por
+                  primera vez en la edición 2027.
                 </div>
               )}
             </div>
