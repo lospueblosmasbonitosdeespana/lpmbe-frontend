@@ -138,7 +138,7 @@ export const PREMIOS_UI: Record<number, PremioUI> = {
   2: {
     titulo: 'Más Visitado',
     descripcion:
-      'Visitas físicas totales al pueblo: GPS automático + registros manuales, para no premiar sólo a los pueblos junto a una autovía.',
+      'Visitas totales al pueblo (detectadas por la app y registradas manualmente).',
     unidad: 'visitas',
     implementado: true,
     Icon: MapPin,
