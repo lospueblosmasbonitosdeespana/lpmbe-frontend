@@ -129,7 +129,7 @@ export const PREMIOS_UI: Record<number, PremioUI> = {
   1: {
     titulo: 'Pueblo Mejor Valorado',
     descripcion:
-      'Media ponderada (bayesiana) de las valoraciones de visitantes. Penaliza pocos votos muy altos.',
+      'Se muestra tu media real (★), pero el ranking usa una media ponderada con la media de la red para que no gane un pueblo con 3 votos perfectos frente a otro con 150. Cuantas más valoraciones acumules, más se acerca tu score a tu media real.',
     unidad: '★ de 5',
     implementado: true,
     Icon: Star,

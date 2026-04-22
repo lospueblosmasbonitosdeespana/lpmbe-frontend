@@ -418,15 +418,76 @@ export default function PremioDetalleClient({
                     {r.puebloNombre ?? `#${r.puebloId}`}
                   </td>
                   <td className="px-4 py-2.5 text-muted-foreground">{r.provincia ?? '—'}</td>
-                  <td className="px-4 py-2.5 text-right font-semibold tabular-nums">
-                    {formatValor(premioId, r.valor)}
+                  <td className="px-4 py-2.5 text-right tabular-nums">
+                    {premioId === 1 ? (
+                      <MejorValoradoValor valor={r.valor} meta={r.metadata} />
+                    ) : (
+                      <span className="font-semibold">{formatValor(premioId, r.valor)}</span>
+                    )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          {premioId === 1 && (
+            <div className="border-t border-border/60 bg-muted/20 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
+              <strong className="text-foreground">¿Cómo se lee?</strong> La cifra
+              grande es la <em>media real</em> del pueblo (★ sobre <em>n</em> valoraciones).
+              El ranking se ordena por el <em>score bayesiano</em> (cifra pequeña
+              entre paréntesis), que pondera la media real con la media de la red
+              para que un pueblo con pocos votos muy altos no gane a otro con
+              muchos votos altos. A más valoraciones acumuladas, más se acercan
+              ambas cifras.
+            </div>
+          )}
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * Celda específica del P1 en el ranking admin: media real como cifra
+ * principal y score bayesiano entre paréntesis, con tooltip.
+ */
+function MejorValoradoValor({
+  valor,
+  meta,
+}: {
+  valor: number;
+  meta: Record<string, unknown> | null;
+}) {
+  const n = (meta?.n as number | undefined) ?? 0;
+  const mediaBruta = (meta?.mediaBruta as number | undefined) ?? 0;
+  const mediaGlobal = (meta?.mediaGlobal as number | undefined) ?? 0;
+  const pesoReal = (meta?.pesoReal as number | undefined) ?? 0;
+  const pesoPct = Math.round(pesoReal * 100);
+
+  if (n === 0) {
+    return (
+      <span className="text-xs text-muted-foreground" title="Sin valoraciones en el periodo">
+        —
+      </span>
+    );
+  }
+
+  return (
+    <div
+      className="flex flex-col items-end leading-tight"
+      title={
+        `Media real: ${mediaBruta.toFixed(2)} ★ sobre ${n} valoraciones\n` +
+        `Media de la red (prior): ${mediaGlobal.toFixed(2)} ★\n` +
+        `Score bayesiano (ordena el ranking): ${valor.toFixed(2)}\n` +
+        `Peso de la media real en el score: ${pesoPct}%`
+      }
+    >
+      <span className="font-bold text-foreground">
+        {mediaBruta.toFixed(2)} ★
+        <span className="ml-1 text-[10px] font-normal text-muted-foreground">· {n}</span>
+      </span>
+      <span className="text-[10px] font-medium text-muted-foreground/80">
+        score {valor.toFixed(2)}
+      </span>
     </div>
   );
 }
