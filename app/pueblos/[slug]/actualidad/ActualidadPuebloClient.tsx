@@ -30,61 +30,32 @@ type ActualidadPuebloClientProps = {
   h1Label?: string;
   h1Archivo?: string;
 };
-const NEWS_VISIBLE_DAYS = 30;
-
-function isOlderThanDays(value?: string | null, days = NEWS_VISIBLE_DAYS): boolean {
-  if (!value) return false;
-  const ts = new Date(value).getTime();
-  if (Number.isNaN(ts)) return false;
-  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
-  return ts < cutoff;
-}
-
 function procesarContenidos(contenidos: Contenido[]) {
+  // El endpoint ya filtra por visibilidad (solo activos). Aquí solo
+  // ordenamos y separamos por tipo. El modo archivo usa otra fuente.
   const ahora = new Date();
 
   const eventos = contenidos.filter((c) => c.tipo === 'EVENTO');
   const noticias = contenidos.filter((c) => c.tipo === 'NOTICIA');
   const articulos = contenidos.filter((c) => c.tipo === 'ARTICULO');
 
-  const eventosActivos = eventos
-    .filter((e) => {
-      const fin = e.fechaFin ?? e.fechaInicio;
-      if (!fin) return false;
-      return new Date(fin) >= ahora;
-    })
-    .sort((a, b) => {
-      const fa = a.fechaInicio ? new Date(a.fechaInicio) : null;
-      const fb = b.fechaInicio ? new Date(b.fechaInicio) : null;
-      if (!fa || !fb) return 0;
-      const aStarted = fa.getTime() < ahora.getTime();
-      const bStarted = fb.getTime() < ahora.getTime();
-      if (aStarted && !bStarted) return 1;
-      if (!aStarted && bStarted) return -1;
-      return fa.getTime() - fb.getTime();
-    });
+  const eventosActivos = [...eventos].sort((a, b) => {
+    const fa = a.fechaInicio ? new Date(a.fechaInicio) : null;
+    const fb = b.fechaInicio ? new Date(b.fechaInicio) : null;
+    if (!fa || !fb) return 0;
+    const aStarted = fa.getTime() < ahora.getTime();
+    const bStarted = fb.getTime() < ahora.getTime();
+    if (aStarted && !bStarted) return 1;
+    if (!aStarted && bStarted) return -1;
+    return fa.getTime() - fb.getTime();
+  });
 
-  const noticiasOrdenadas = [...noticias].sort((a, b) => {
+  const noticiasActivas = [...noticias].sort((a, b) => {
     const pa = a.publishedAt ?? a.createdAt ?? '';
     const pb = b.publishedAt ?? b.createdAt ?? '';
     if (!pa || !pb) return 0;
     return new Date(pb).getTime() - new Date(pa).getTime();
   });
-  const noticiasActivas = noticiasOrdenadas.filter((n) => !isOlderThanDays(n.publishedAt ?? n.createdAt ?? null));
-  const noticiasAnteriores = noticiasOrdenadas.filter((n) => isOlderThanDays(n.publishedAt ?? n.createdAt ?? null));
-
-  const eventosAnteriores = eventos
-    .filter((e) => {
-      const fin = e.fechaFin ?? e.fechaInicio;
-      if (!fin) return false;
-      return new Date(fin) < ahora;
-    })
-    .sort((a, b) => {
-      const fa = a.fechaInicio ? new Date(a.fechaInicio) : null;
-      const fb = b.fechaInicio ? new Date(b.fechaInicio) : null;
-      if (!fa || !fb) return 0;
-      return fb.getTime() - fa.getTime();
-    });
 
   const articulosOrdenados = [...articulos].sort((a, b) => {
     const pa = a.publishedAt ?? a.createdAt ?? '';
@@ -95,9 +66,7 @@ function procesarContenidos(contenidos: Contenido[]) {
 
   return {
     noticiasActivas,
-    noticiasAnteriores,
     eventosActivos,
-    eventosAnteriores,
     articulos: articulosOrdenados,
   };
 }
@@ -187,15 +156,19 @@ export default function ActualidadPuebloClient({
   const [items, setItems] = useState<Contenido[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const modoLower = (modo ?? '').toLowerCase();
+  const isArchivo = modoLower === 'archivo';
+
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
       try {
         setLoading(true);
-        const res = await fetch(`/api/public/contenidos?puebloId=${puebloId}&limit=50`, {
-          cache: 'no-store',
-        });
+        const url = isArchivo
+          ? `/api/public/pueblos/${puebloId}/archivo?limit=100`
+          : `/api/public/contenidos?puebloId=${puebloId}&limit=50`;
+        const res = await fetch(url, { cache: 'no-store' });
 
         if (!res.ok) throw new Error('Error cargando contenidos');
 
@@ -216,10 +189,39 @@ export default function ActualidadPuebloClient({
     return () => {
       cancelled = true;
     };
-  }, [puebloId]);
+  }, [puebloId, isArchivo]);
 
-  const { noticiasActivas, noticiasAnteriores, eventosActivos, eventosAnteriores, articulos } = useMemo(
+  const { noticiasActivas, eventosActivos, articulos } = useMemo(
     () => procesarContenidos(items),
+    [items]
+  );
+
+  // En modo archivo, el endpoint ya devuelve solo noticias antiguas y
+  // eventos pasados. Los clasificamos directamente por tipo para no
+  // depender del filtro por fecha del cliente (que podría descartar
+  // algún borderline).
+  const archivoNoticias = useMemo(
+    () =>
+      items
+        .filter((c) => c.tipo === 'NOTICIA')
+        .sort((a, b) => {
+          const pa = a.publishedAt ?? a.createdAt ?? '';
+          const pb = b.publishedAt ?? b.createdAt ?? '';
+          if (!pa || !pb) return 0;
+          return new Date(pb).getTime() - new Date(pa).getTime();
+        }),
+    [items]
+  );
+  const archivoEventos = useMemo(
+    () =>
+      items
+        .filter((c) => c.tipo === 'EVENTO')
+        .sort((a, b) => {
+          const fa = a.fechaInicio ? new Date(a.fechaInicio) : null;
+          const fb = b.fechaInicio ? new Date(b.fechaInicio) : null;
+          if (!fa || !fb) return 0;
+          return fb.getTime() - fa.getTime();
+        }),
     [items]
   );
 
@@ -228,7 +230,7 @@ export default function ActualidadPuebloClient({
   const verMasNoticias = noticiasActivas.length > LIMIT_RESUMEN;
   const verMasEventos = eventosActivos.length > LIMIT_RESUMEN;
   const verMasArticulos = articulos.length > LIMIT_RESUMEN;
-  const isArchivoMode = (modo ?? '').toLowerCase() === 'archivo';
+  const isArchivoMode = isArchivo;
 
   // Vista filtrada por tipo
   const tipoNorm = tipo?.toUpperCase();
@@ -288,7 +290,7 @@ export default function ActualidadPuebloClient({
 
   // Vista archivo: noticias + eventos anteriores
   if (isArchivoMode) {
-    const hayArchivo = noticiasAnteriores.length > 0 || eventosAnteriores.length > 0;
+    const hayArchivo = archivoNoticias.length > 0 || archivoEventos.length > 0;
     return (
       <main className="mx-auto max-w-4xl px-6 py-10">
         <div className="mb-8">
@@ -316,11 +318,11 @@ export default function ActualidadPuebloClient({
           <div className="space-y-10">
             <section>
               <h2 className="text-xl font-semibold mb-4">Noticias anteriores</h2>
-              {noticiasAnteriores.length === 0 ? (
+              {archivoNoticias.length === 0 ? (
                 <p className="text-gray-500">No hay noticias anteriores.</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {noticiasAnteriores.map((item) => (
+                  {archivoNoticias.map((item) => (
                     <TarjetaContenido key={`na-${item.id}`} item={item} esEvento={false} />
                   ))}
                 </div>
@@ -328,11 +330,11 @@ export default function ActualidadPuebloClient({
             </section>
             <section>
               <h2 className="text-xl font-semibold mb-4">Eventos anteriores</h2>
-              {eventosAnteriores.length === 0 ? (
+              {archivoEventos.length === 0 ? (
                 <p className="text-gray-500">No hay eventos anteriores.</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {eventosAnteriores.map((item) => (
+                  {archivoEventos.map((item) => (
                     <TarjetaContenido key={`ea-${item.id}`} item={item} esEvento />
                   ))}
                 </div>
@@ -468,7 +470,7 @@ export default function ActualidadPuebloClient({
       {!loading && (
         <div className="mt-12 text-center">
           <Link
-            href={`${baseUrl}?modo=archivo`}
+            href={`/pueblos/${puebloSlug}/archivo`}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-400 transition"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
