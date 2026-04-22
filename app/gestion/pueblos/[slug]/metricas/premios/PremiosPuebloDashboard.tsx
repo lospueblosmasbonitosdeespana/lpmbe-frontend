@@ -383,6 +383,7 @@ function TarjetaPremio({
                     <TrendBadge
                       t={(datosActivos as Posicion).tendencia}
                       prev={(datosActivos as Posicion).posicionAnterior}
+                      labelRef={ventana != null ? 'ventana anterior' : 'hace 7 días'}
                     />
                   </span>
                 </>
@@ -478,7 +479,12 @@ function TarjetaPremio({
                       {f.yo && <span className="ml-1 text-[10px] font-bold uppercase opacity-70">· tú</span>}
                     </span>
                     <span className="shrink-0">
-                      <TrendBadge t={f.tendencia} prev={f.prev} compact />
+                      <TrendBadge
+                        t={f.tendencia}
+                        prev={f.prev}
+                        compact
+                        labelRef={ventana != null ? 'ventana anterior' : 'hace 7 días'}
+                      />
                     </span>
                     <span className="w-16 shrink-0 text-right font-semibold tabular-nums">
                       {formatValor(posicion.premioId, f.valor)}

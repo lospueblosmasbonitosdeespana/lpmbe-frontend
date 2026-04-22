@@ -75,13 +75,23 @@ interface PuebloMin {
   slug: string;
 }
 
-function TrendCell({ t, prev }: { t?: Tendencia; prev?: number | null }) {
+function TrendCell({
+  t,
+  prev,
+  labelRef,
+}: {
+  t?: Tendencia;
+  prev?: number | null;
+  /** Texto que acompaña al "Antes" en el tooltip (p.ej. "hace 7 días" o "ventana anterior"). */
+  labelRef?: string;
+}) {
   if (!t) return <span className="text-muted-foreground">—</span>;
+  const ref = labelRef ?? 'antes';
   if (t === 'up')
     return (
       <span
         className="inline-flex items-center gap-1 font-semibold text-emerald-600"
-        title={prev ? `Antes: #${prev}` : undefined}
+        title={prev ? `${ref}: #${prev}` : undefined}
       >
         <TrendingUp className="h-4 w-4" />
         <span className="text-xs tabular-nums">{prev ? `${prev}→` : ''}</span>
@@ -91,7 +101,7 @@ function TrendCell({ t, prev }: { t?: Tendencia; prev?: number | null }) {
     return (
       <span
         className="inline-flex items-center gap-1 font-semibold text-rose-600"
-        title={prev ? `Antes: #${prev}` : undefined}
+        title={prev ? `${ref}: #${prev}` : undefined}
       >
         <TrendingDown className="h-4 w-4" />
         <span className="text-xs tabular-nums">{prev ? `${prev}→` : ''}</span>
@@ -99,12 +109,18 @@ function TrendCell({ t, prev }: { t?: Tendencia; prev?: number | null }) {
     );
   if (t === 'same')
     return (
-      <span className="inline-flex items-center text-muted-foreground">
+      <span
+        className="inline-flex items-center text-muted-foreground"
+        title={prev ? `${ref}: #${prev} (sin cambios)` : undefined}
+      >
         <Minus className="h-4 w-4" />
       </span>
     );
   return (
-    <span className="inline-flex items-center gap-1 rounded bg-sky-100 px-1.5 py-0.5 text-[10px] font-bold text-sky-800 ring-1 ring-sky-200">
+    <span
+      className="inline-flex items-center gap-1 rounded bg-sky-100 px-1.5 py-0.5 text-[10px] font-bold text-sky-800 ring-1 ring-sky-200"
+      title={`No estaba en el ranking ${ref}`}
+    >
       <Sparkles className="h-3 w-3" />
       NUEVO
     </span>
@@ -412,7 +428,11 @@ export default function PremioDetalleClient({
                     </span>
                   </td>
                   <td className="px-3 py-2.5">
-                    <TrendCell t={r.tendencia} prev={r.posicionAnterior} />
+                    <TrendCell
+                      t={r.tendencia}
+                      prev={r.posicionAnterior}
+                      labelRef={ventana != null ? `ventana anterior` : `hace 7 días`}
+                    />
                   </td>
                   <td className="px-4 py-2.5 font-semibold text-foreground">
                     {r.puebloNombre ?? `#${r.puebloId}`}

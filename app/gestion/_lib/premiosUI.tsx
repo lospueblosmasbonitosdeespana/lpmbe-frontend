@@ -241,18 +241,22 @@ export function TrendBadge({
   t,
   prev,
   compact = false,
+  labelRef,
 }: {
   t?: Tendencia;
   prev?: number | null;
   compact?: boolean;
+  /** Etiqueta textual del periodo de referencia (p.ej. "hace 7 días" o "ventana anterior"). */
+  labelRef?: string;
 }) {
   if (!t) return null;
   const base =
     'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1';
+  const ref = labelRef ?? 'antes';
   if (t === 'up')
     return (
       <span
-        title={prev ? `Antes: ${prev}ª` : 'Sube respecto al periodo anterior'}
+        title={prev ? `${ref}: ${prev}ª` : `Sube respecto a ${ref}`}
         className={`${base} bg-emerald-50 text-emerald-700 ring-emerald-200`}
       >
         <TrendingUp className="h-3 w-3" />
@@ -262,7 +266,7 @@ export function TrendBadge({
   if (t === 'down')
     return (
       <span
-        title={prev ? `Antes: ${prev}ª` : 'Baja respecto al periodo anterior'}
+        title={prev ? `${ref}: ${prev}ª` : `Baja respecto a ${ref}`}
         className={`${base} bg-rose-50 text-rose-700 ring-rose-200`}
       >
         <TrendingDown className="h-3 w-3" />
@@ -272,7 +276,7 @@ export function TrendBadge({
   if (t === 'same')
     return (
       <span
-        title="Se mantiene"
+        title={prev ? `${ref}: ${prev}ª (sin cambios)` : `Se mantiene respecto a ${ref}`}
         className={`${base} bg-muted text-muted-foreground ring-border`}
       >
         <Minus className="h-3 w-3" />
@@ -281,7 +285,7 @@ export function TrendBadge({
     );
   return (
     <span
-      title="Nuevo en el ranking"
+      title={`No estaba en el ranking ${ref}`}
       className={`${base} bg-sky-50 text-sky-700 ring-sky-200`}
     >
       <Sparkles className="h-3 w-3" />
