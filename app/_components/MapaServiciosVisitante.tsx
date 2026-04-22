@@ -2,7 +2,15 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
-import { TIPOS_SERVICIO, DIAS_SEMANA, getTipoServicioConfig, type HorarioServicio } from '@/lib/tipos-servicio';
+import {
+  TIPOS_SERVICIO,
+  DIAS_SEMANA,
+  getTipoServicioConfig,
+  toHorarioTramos,
+  hasAnyTramo,
+  type HorarioServicio,
+  type HorarioTramos,
+} from '@/lib/tipos-servicio';
 
 type PuntoServicio = {
   id: number;
@@ -11,14 +19,23 @@ type PuntoServicio = {
   lat?: number | null;
   lng?: number | null;
   horario?: HorarioServicio | null;
+  horarioTramos?: HorarioTramos | null;
 };
 
-function formatHorario(horario: HorarioServicio): string {
+function formatHorario(tramos: HorarioTramos): string {
   const lineas: string[] = [];
   for (const { key, label } of DIAS_SEMANA) {
-    const val = horario[key];
-    if (val && val.trim()) {
-      lineas.push(`<strong>${label}:</strong> ${val}`);
+    const dia = tramos[key] ?? [];
+    if (dia.length === 0) continue;
+    if (dia.length === 1) {
+      lineas.push(
+        `<strong>${label}:</strong> ${dia[0].abre}–${dia[0].cierra}`,
+      );
+    } else {
+      const partes = dia
+        .map((t) => `${t.abre}–${t.cierra}`)
+        .join(' · ');
+      lineas.push(`<strong>${label}:</strong> ${partes}`);
     }
   }
   return lineas.join('<br/>');
@@ -132,7 +149,10 @@ export default function MapaServiciosVisitante({
         {puntosConCoords.map((punto) => {
           const cfg = getTipoServicioConfig(punto.tipo);
           const icon = createIcon(punto.tipo);
-          const tieneHorario = punto.horario && Object.values(punto.horario).some((v) => v && (v as string).trim());
+          // Preferimos `horarioTramos` (nuevo) si viene del backend; si no,
+          // parseamos el `horario` legacy en tramos al vuelo.
+          const tramos = punto.horarioTramos ?? toHorarioTramos(punto.horario);
+          const tieneHorario = hasAnyTramo(tramos);
           return (
             <Marker
               key={punto.id}
@@ -167,7 +187,7 @@ export default function MapaServiciosVisitante({
                   {tieneHorario && (
                     <div
                       style={{ marginTop: '6px', fontSize: '12px', lineHeight: '1.5', color: '#374151' }}
-                      dangerouslySetInnerHTML={{ __html: formatHorario(punto.horario as HorarioServicio) }}
+                      dangerouslySetInnerHTML={{ __html: formatHorario(tramos) }}
                     />
                   )}
                   {!tieneHorario && (

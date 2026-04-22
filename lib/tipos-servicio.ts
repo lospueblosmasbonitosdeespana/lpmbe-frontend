@@ -285,4 +285,124 @@ export const DIAS_SEMANA = [
 
 export type DiaSemana = (typeof DIAS_SEMANA)[number]['key'];
 
+/**
+ * Formato legacy: texto libre por día (p.ej. "9:00-14:00, 16:00-19:00").
+ * Lo mantenemos para compatibilidad hacia atrás con clientes ya desplegados
+ * (app móvil publicada, sitemap de servicios…).
+ */
 export type HorarioServicio = Partial<Record<DiaSemana, string | null>>;
+
+/**
+ * Formato nuevo estructurado. Cada día es una lista de tramos "abre-cierra" en
+ * HH:MM (24h). 0 tramos = cerrado, 1 = intensivo, 2 = mañana/tarde.
+ */
+export type Tramo = { abre: string; cierra: string };
+export type HorarioTramos = Partial<Record<DiaSemana, Tramo[]>>;
+
+const TIME_RE = /^([01]?\d|2[0-3]):[0-5]\d$/;
+
+function normalizeTime(raw: string): string | null {
+  const s = raw.trim();
+  if (!s) return null;
+  // Acepta "9:00", "09:00", "9.00", "9h", "9"
+  const match = s.match(/^(\d{1,2})(?:[:.h]?(\d{0,2}))?$/);
+  if (!match) return null;
+  const h = Number(match[1]);
+  const m = match[2] ? Number(match[2]) : 0;
+  if (Number.isNaN(h) || Number.isNaN(m)) return null;
+  if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+/**
+ * Convierte el string legacy de un día (p.ej. "9:00-14:00, 16:00-19:00") en
+ * tramos estructurados. Devuelve `[]` si el string está vacío o no parseable.
+ */
+export function parseLegacyDia(raw: string | null | undefined): Tramo[] {
+  if (!raw) return [];
+  const tramos: Tramo[] = [];
+  for (const part of raw.split(/[,;]/)) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    const [a, c] = trimmed.split(/[-–—]/).map((s) => s.trim());
+    const abre = normalizeTime(a ?? '');
+    const cierra = normalizeTime(c ?? '');
+    if (abre && cierra) tramos.push({ abre, cierra });
+  }
+  return tramos;
+}
+
+function isTramoArray(v: unknown): v is Tramo[] {
+  return (
+    Array.isArray(v) &&
+    v.every(
+      (x) =>
+        x != null &&
+        typeof x === 'object' &&
+        typeof (x as any).abre === 'string' &&
+        typeof (x as any).cierra === 'string',
+    )
+  );
+}
+
+/**
+ * Normaliza cualquier forma de horario (legacy string, nuevo array, objeto
+ * antiguo, `null`, `undefined`) a `HorarioTramos` completo con las 7 claves.
+ */
+export function toHorarioTramos(
+  input: HorarioServicio | HorarioTramos | Record<string, unknown> | null | undefined,
+): HorarioTramos {
+  const out: HorarioTramos = {};
+  if (!input) return out;
+  for (const { key } of DIAS_SEMANA) {
+    const raw = (input as Record<string, unknown>)[key];
+    if (raw == null) {
+      out[key] = [];
+      continue;
+    }
+    if (typeof raw === 'string') {
+      out[key] = parseLegacyDia(raw);
+      continue;
+    }
+    if (isTramoArray(raw)) {
+      out[key] = raw
+        .map((t) => {
+          const abre = normalizeTime(t.abre);
+          const cierra = normalizeTime(t.cierra);
+          return abre && cierra ? { abre, cierra } : null;
+        })
+        .filter((t): t is Tramo => t !== null);
+      continue;
+    }
+    out[key] = [];
+  }
+  return out;
+}
+
+/** Devuelve la versión string legacy de un día: "09:00-14:00, 16:00-19:00". */
+export function diaToLegacyString(tramos: Tramo[] | undefined | null): string {
+  if (!tramos || tramos.length === 0) return '';
+  return tramos.map((t) => `${t.abre}-${t.cierra}`).join(', ');
+}
+
+/** Convierte tramos a un `HorarioServicio` legacy (para compat). */
+export function horarioTramosToLegacy(horario: HorarioTramos): HorarioServicio {
+  const out: HorarioServicio = {};
+  for (const { key } of DIAS_SEMANA) {
+    const s = diaToLegacyString(horario[key]);
+    if (s) out[key] = s;
+  }
+  return out;
+}
+
+export function hasAnyTramo(horario: HorarioTramos): boolean {
+  return DIAS_SEMANA.some(({ key }) => (horario[key]?.length ?? 0) > 0);
+}
+
+export function isValidTramo(t: Tramo): boolean {
+  return (
+    TIME_RE.test(t.abre) &&
+    TIME_RE.test(t.cierra) &&
+    t.abre < t.cierra
+  );
+}

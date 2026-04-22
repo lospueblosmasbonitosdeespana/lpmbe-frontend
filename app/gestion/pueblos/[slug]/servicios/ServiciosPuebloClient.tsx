@@ -6,8 +6,12 @@ import {
   TIPOS_SERVICIO,
   DIAS_SEMANA,
   getTipoServicioConfig,
+  toHorarioTramos,
+  hasAnyTramo,
+  type DiaSemana,
   type TipoServicio,
-  type HorarioServicio,
+  type HorarioTramos,
+  type Tramo,
 } from "@/lib/tipos-servicio";
 
 type PuntoServicioRow = {
@@ -16,7 +20,8 @@ type PuntoServicioRow = {
   nombre?: string | null;
   lat?: number | null;
   lng?: number | null;
-  horario?: HorarioServicio | null;
+  horario?: unknown;
+  horarioTramos?: HorarioTramos | null;
   orden?: number | null;
 };
 
@@ -25,18 +30,20 @@ type FormState = {
   nombre: string;
   lat: number | null;
   lng: number | null;
-  horario: HorarioServicio;
+  horario: HorarioTramos;
 };
 
-const HORARIO_VACIO: HorarioServicio = {
-  lunes: "",
-  martes: "",
-  miercoles: "",
-  jueves: "",
-  viernes: "",
-  sabado: "",
-  domingo: "",
-};
+function horarioVacio(): HorarioTramos {
+  return {
+    lunes: [],
+    martes: [],
+    miercoles: [],
+    jueves: [],
+    viernes: [],
+    sabado: [],
+    domingo: [],
+  };
+}
 
 function formVacio(): FormState {
   return {
@@ -44,12 +51,14 @@ function formVacio(): FormState {
     nombre: "",
     lat: null,
     lng: null,
-    horario: { ...HORARIO_VACIO },
+    horario: horarioVacio(),
   };
 }
 
-function hasHorario(horario: HorarioServicio): boolean {
-  return Object.values(horario).some((v) => v != null && v.trim() !== "");
+/** Texto resumen para mostrar en la tarjeta de listado de un punto. */
+function formatTramosDia(tramos: Tramo[] | undefined): string {
+  if (!tramos || tramos.length === 0) return "Cerrado";
+  return tramos.map((t) => `${t.abre}–${t.cierra}`).join(" · ");
 }
 
 export default function ServiciosPuebloClient({
@@ -116,15 +125,18 @@ export default function ServiciosPuebloClient({
   function startEdit(row: PuntoServicioRow) {
     setEditingId(row.id);
     setIsCreating(false);
+    // El backend devuelve `horarioTramos` ya estructurado. Si por alguna
+    // razón no viniera, parseamos el `horario` legacy (string) a tramos.
+    const tramos = row.horarioTramos ?? toHorarioTramos(row.horario);
     setForm({
       tipo: row.tipo as TipoServicio,
       nombre: row.nombre ?? "",
       lat: row.lat ?? null,
       lng: row.lng ?? null,
-      horario: { ...HORARIO_VACIO, ...(row.horario ?? {}) },
+      horario: { ...horarioVacio(), ...tramos },
     });
     setFormError(null);
-    setShowHorario(hasHorario({ ...HORARIO_VACIO, ...(row.horario ?? {}) }));
+    setShowHorario(hasAnyTramo(tramos));
     if (row.lat != null && row.lng != null) {
       setFlyTo([row.lat, row.lng]);
     }
@@ -156,9 +168,9 @@ export default function ServiciosPuebloClient({
         nombre: form.nombre.trim() || undefined,
         lat: form.lat,
         lng: form.lng,
-        horario: hasHorario(form.horario)
+        horario: hasAnyTramo(form.horario)
           ? Object.fromEntries(
-              Object.entries(form.horario).filter(([, v]) => v != null && (v as string).trim() !== "")
+              DIAS_SEMANA.map(({ key }) => [key, form.horario[key] ?? []]),
             )
           : null,
       };
@@ -370,28 +382,10 @@ export default function ServiciosPuebloClient({
             </button>
 
             {showHorario && (
-              <div className="mt-3 space-y-2">
-                {DIAS_SEMANA.map(({ key, label }) => (
-                  <div key={key} className="flex items-center gap-3">
-                    <span className="w-20 text-xs font-medium text-foreground/75">{label}</span>
-                    <input
-                      type="text"
-                      value={form.horario[key] ?? ""}
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          horario: { ...f.horario, [key]: e.target.value },
-                        }))
-                      }
-                      placeholder="ej: 9:00-14:00, 16:00-19:00"
-                      className="flex-1 rounded border border-border bg-background px-2 py-1 text-xs text-foreground focus:border-blue-400 focus:outline-none"
-                    />
-                  </div>
-                ))}
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Deja vacío el día si está cerrado. Ej: "9:00-14:00" o "9:00-14:00, 16:00-19:00"
-                </p>
-              </div>
+              <HorarioEditor
+                value={form.horario}
+                onChange={(h) => setForm((f) => ({ ...f, horario: h }))}
+              />
             )}
           </div>
 
@@ -445,6 +439,8 @@ export default function ServiciosPuebloClient({
           {rows.map((row) => {
             const cfg = getTipoServicioConfig(row.tipo);
             const isEditing = editingId === row.id;
+            const tramosRow = row.horarioTramos ?? toHorarioTramos(row.horario);
+            const tieneHorario = hasAnyTramo(tramosRow);
             return (
               <div
                 key={row.id}
@@ -475,15 +471,17 @@ export default function ServiciosPuebloClient({
                       ) : (
                         <p className="text-xs text-amber-600">Sin coordenadas</p>
                       )}
-                      {row.horario && hasHorario(row.horario) && (
+                      {tieneHorario && (
                         <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
-                          {DIAS_SEMANA.map(({ key, label }) =>
-                            row.horario?.[key] ? (
+                          {DIAS_SEMANA.map(({ key, label }) => {
+                            const tramos = tramosRow[key] ?? [];
+                            if (tramos.length === 0) return null;
+                            return (
                               <span key={key} className="block">
-                                <span className="font-medium">{label}:</span> {row.horario[key]}
+                                <span className="font-medium">{label}:</span> {formatTramosDia(tramos)}
                               </span>
-                            ) : null
-                          )}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -510,6 +508,191 @@ export default function ServiciosPuebloClient({
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Editor de horarios (dos tramos por día: mañana / tarde)            */
+/* ------------------------------------------------------------------ */
+
+const DEFAULT_MANANA: Tramo = { abre: "09:00", cierra: "14:00" };
+const DEFAULT_TARDE: Tramo = { abre: "16:00", cierra: "19:00" };
+
+function HorarioEditor({
+  value,
+  onChange,
+}: {
+  value: HorarioTramos;
+  onChange: (h: HorarioTramos) => void;
+}) {
+  function setDia(dia: DiaSemana, tramos: Tramo[]) {
+    onChange({ ...value, [dia]: tramos });
+  }
+
+  function setTramo(dia: DiaSemana, idx: 0 | 1, tramo: Tramo | null) {
+    const arr = [...(value[dia] ?? [])];
+    if (tramo == null) {
+      arr.splice(idx, 1);
+    } else {
+      arr[idx] = tramo;
+    }
+    setDia(dia, arr);
+  }
+
+  function copiarLunesALaborables() {
+    const base = value.lunes ?? [];
+    const next: HorarioTramos = { ...value };
+    (["martes", "miercoles", "jueves", "viernes"] as const).forEach((d) => {
+      next[d] = base.map((t) => ({ ...t }));
+    });
+    onChange(next);
+  }
+
+  function cerrarTodos() {
+    onChange(horarioVacio());
+  }
+
+  return (
+    <div className="mt-3 space-y-2">
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={copiarLunesALaborables}
+          className="rounded border border-blue-300 bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-200"
+        >
+          Copiar Lunes → Mar-Vie
+        </button>
+        <button
+          type="button"
+          onClick={cerrarTodos}
+          className="rounded border border-border bg-card px-2 py-1 text-xs text-muted-foreground hover:bg-muted/40"
+        >
+          Cerrado toda la semana
+        </button>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px] text-xs">
+          <thead>
+            <tr className="text-left text-[10px] uppercase tracking-wide text-muted-foreground">
+              <th className="px-2 py-1 font-medium">Día</th>
+              <th className="px-2 py-1 font-medium">Mañana</th>
+              <th className="px-2 py-1 font-medium">Tarde</th>
+              <th className="px-2 py-1" />
+            </tr>
+          </thead>
+          <tbody>
+            {DIAS_SEMANA.map(({ key, label }) => {
+              const dia = value[key] ?? [];
+              const manana = dia[0];
+              const tarde = dia[1];
+              const cerrado = dia.length === 0;
+              return (
+                <tr key={key} className="border-t border-border/60">
+                  <td className="px-2 py-1.5 font-medium text-foreground/80">{label}</td>
+                  <td className="px-2 py-1.5">
+                    <TramoInput
+                      value={manana ?? null}
+                      onChange={(t) => setTramo(key, 0, t)}
+                      onAdd={() => setTramo(key, 0, DEFAULT_MANANA)}
+                      disabled={cerrado}
+                    />
+                  </td>
+                  <td className="px-2 py-1.5">
+                    <TramoInput
+                      value={tarde ?? null}
+                      onChange={(t) => setTramo(key, 1, t)}
+                      onAdd={() => {
+                        // Si no hay mañana aún, añadir primero la mañana.
+                        const arr = [...(value[key] ?? [])];
+                        if (arr.length === 0) arr.push(DEFAULT_MANANA);
+                        arr[1] = DEFAULT_TARDE;
+                        setDia(key, arr);
+                      }}
+                      disabled={cerrado}
+                    />
+                  </td>
+                  <td className="px-2 py-1.5 whitespace-nowrap">
+                    {cerrado ? (
+                      <button
+                        type="button"
+                        onClick={() => setDia(key, [DEFAULT_MANANA])}
+                        className="rounded border border-blue-300 bg-blue-50 px-2 py-0.5 text-[11px] text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-200"
+                      >
+                        Abrir
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setDia(key, [])}
+                        className="rounded border border-border bg-card px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-muted/40"
+                      >
+                        Cerrado
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Deja un día en "Cerrado" si ese día no hay servicio. Usa solo la columna "Mañana" para horario intensivo.
+      </p>
+    </div>
+  );
+}
+
+function TramoInput({
+  value,
+  onChange,
+  onAdd,
+  disabled,
+}: {
+  value: Tramo | null;
+  onChange: (t: Tramo | null) => void;
+  onAdd: () => void;
+  disabled?: boolean;
+}) {
+  if (disabled) {
+    return <span className="text-muted-foreground">—</span>;
+  }
+  if (value == null) {
+    return (
+      <button
+        type="button"
+        onClick={onAdd}
+        className="rounded border border-dashed border-border px-2 py-0.5 text-[11px] text-muted-foreground hover:border-blue-300 hover:text-blue-700"
+      >
+        + Añadir
+      </button>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1">
+      <input
+        type="time"
+        value={value.abre}
+        onChange={(e) => onChange({ ...value, abre: e.target.value })}
+        className="w-[90px] rounded border border-border bg-background px-1.5 py-1 text-xs text-foreground focus:border-blue-400 focus:outline-none"
+      />
+      <span className="text-muted-foreground">–</span>
+      <input
+        type="time"
+        value={value.cierra}
+        onChange={(e) => onChange({ ...value, cierra: e.target.value })}
+        className="w-[90px] rounded border border-border bg-background px-1.5 py-1 text-xs text-foreground focus:border-blue-400 focus:outline-none"
+      />
+      <button
+        type="button"
+        onClick={() => onChange(null)}
+        className="rounded px-1.5 py-0.5 text-muted-foreground hover:bg-red-50 hover:text-red-600"
+        title="Quitar tramo"
+      >
+        ×
+      </button>
     </div>
   );
 }
