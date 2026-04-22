@@ -101,11 +101,62 @@ const MAX_PAGE_TITLE = MAX_TITLE_TOTAL - TEMPLATE_SUFFIX_LEN; // 41
 
 function decodeBasicHtmlEntities(text: string): string {
   return text
+    .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
-    .replace(/&#x27;|&#39;/g, "'");
+    .replace(/&#x27;|&#39;|&apos;/g, "'")
+    .replace(/&mdash;/g, "—")
+    .replace(/&ndash;/g, "–")
+    .replace(/&hellip;/g, "…");
+}
+
+/**
+ * Heurística: detecta si el texto contiene etiquetas HTML reales (no un simple
+ * "2 < 3"). Cualquier carácter "<" seguido de una letra o "/" indica marcado.
+ */
+const HTML_TAG_RE = /<\/?[a-z][^>]*>/i;
+
+/**
+ * Limpia un texto arbitrario (HTML o Markdown) y lo deja apto para
+ * `<meta description>` y `og:description`:
+ *
+ * 1. Si detecta marcado HTML, elimina `<script>`/`<style>` con contenido,
+ *    elimina el resto de tags y decodifica entities.
+ * 2. Si no hay tags, decodifica entities por si el texto viene pre-escapado.
+ * 3. Limpia símbolos típicos de Markdown (#, *, `, [, ], (, )) solo para
+ *    títulos/resúmenes; no agresivo para no comer URLs legítimas con
+ *    paréntesis (por eso se limita a los caracteres de marcado estrictos).
+ * 4. Colapsa espacios en blanco.
+ *
+ * El orden (decodificar solo si hay tags) evita comer los `<`/`>` literales
+ * en textos tipo "edad < 12 años".
+ */
+function stripMarkupToPlain(text: string): string {
+  let out = text;
+  if (HTML_TAG_RE.test(out)) {
+    out = out
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<br\s*\/?>/gi, " ")
+      .replace(/<\/?(p|div|li|h[1-6]|blockquote|ul|ol|tr|td|th)\b[^>]*>/gi, " ")
+      .replace(/<[^>]+>/g, "");
+    out = decodeBasicHtmlEntities(out);
+    if (HTML_TAG_RE.test(out)) {
+      out = out.replace(/<[^>]+>/g, " ");
+    }
+  } else if (/&[a-z#0-9]+;/i.test(out)) {
+    out = decodeBasicHtmlEntities(out);
+  }
+  out = out
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/(^|\n)\s*>+\s?/g, "$1")
+    .replace(/[`*_~#|]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return out;
 }
 
 /**
@@ -113,7 +164,7 @@ function decodeBasicHtmlEntities(text: string): string {
  * Si cabe entero, lo devuelve tal cual. Si no, corta con "…".
  */
 export function seoTitle(title: string): string {
-  const normalized = decodeBasicHtmlEntities(title).replace(/\s+/g, " ").trim();
+  const normalized = stripMarkupToPlain(title);
   if (!normalized) return "Contenido";
   if (normalized.length <= MAX_PAGE_TITLE) return normalized;
   if (MAX_PAGE_TITLE <= 8) return normalized.slice(0, MAX_PAGE_TITLE - 1).trimEnd() + "…";
@@ -129,7 +180,7 @@ const MAX_ABSOLUTE_TITLE = 70;
  * Truncate at 70 chars (no template suffix will be appended).
  */
 export function seoAbsoluteTitle(title: string): string {
-  const normalized = decodeBasicHtmlEntities(title).replace(/\s+/g, " ").trim();
+  const normalized = stripMarkupToPlain(title);
   if (!normalized) return SITE_NAME;
   if (normalized.length <= MAX_ABSOLUTE_TITLE) return normalized;
   return normalized.slice(0, MAX_ABSOLUTE_TITLE - 1).trimEnd() + "…";
@@ -204,7 +255,7 @@ export function metaLocaleLead(locale: SupportedLocale | string | undefined): st
  */
 export function uniqueH1ForLocale(base: string, locale: string | undefined): string {
   const l = String(locale ?? "es").toLowerCase();
-  const trimmed = decodeBasicHtmlEntities(base).replace(/\s+/g, " ").trim();
+  const trimmed = stripMarkupToPlain(base);
   if (!trimmed) return "Contenido";
   if (l === "es") return trimmed;
   const tag = l.toUpperCase();
@@ -249,7 +300,7 @@ export function slugDisambiguatorForTitle(slug: string): string {
  * Trunca una meta description a max chars (por defecto 155).
  */
 export function seoDescription(text: string, max = 155): string {
-  const clean = decodeBasicHtmlEntities(text).replace(/\s+/g, ' ').trim();
+  const clean = stripMarkupToPlain(text);
   if (!clean) return DEFAULT_DESCRIPTION;
   const safeMax = Math.min(max, 155);
   if (clean.length <= safeMax) return clean;
