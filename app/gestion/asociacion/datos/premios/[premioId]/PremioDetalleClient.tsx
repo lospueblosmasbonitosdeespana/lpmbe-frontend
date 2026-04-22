@@ -433,11 +433,10 @@ export default function PremioDetalleClient({
             <div className="border-t border-border/60 bg-muted/20 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
               <strong className="text-foreground">¿Cómo se lee?</strong> La cifra
               grande es la <em>media real</em> del pueblo (★ sobre <em>n</em> valoraciones).
-              El ranking se ordena por el <em>score bayesiano</em> (cifra pequeña
-              entre paréntesis), que pondera la media real con la media de la red
-              para que un pueblo con pocos votos muy altos no gane a otro con
-              muchos votos altos. A más valoraciones acumuladas, más se acercan
-              ambas cifras.
+              El ranking se ordena por el <em>límite inferior de confianza</em>
+              (Wilson LB 95%): premia pueblos con muchas valoraciones consistentes
+              sobre los que tienen pocas muy altas. Se requiere un mínimo de 3
+              valoraciones para concursar.
             </div>
           )}
         </div>
@@ -448,7 +447,7 @@ export default function PremioDetalleClient({
 
 /**
  * Celda específica del P1 en el ranking admin: media real como cifra
- * principal y score bayesiano entre paréntesis, con tooltip.
+ * principal y confianza Wilson 95% entre paréntesis, con tooltip.
  */
 function MejorValoradoValor({
   valor,
@@ -458,10 +457,10 @@ function MejorValoradoValor({
   meta: Record<string, unknown> | null;
 }) {
   const n = (meta?.n as number | undefined) ?? 0;
-  const mediaBruta = (meta?.mediaBruta as number | undefined) ?? 0;
+  const mediaBruta = (meta?.mediaBruta as number | undefined) ?? valor;
   const mediaGlobal = (meta?.mediaGlobal as number | undefined) ?? 0;
-  const pesoReal = (meta?.pesoReal as number | undefined) ?? 0;
-  const pesoPct = Math.round(pesoReal * 100);
+  const wilsonLB = meta?.wilsonLB as number | undefined;
+  const nMin = (meta?.nMin as number | undefined) ?? 3;
 
   if (n === 0) {
     return (
@@ -470,24 +469,39 @@ function MejorValoradoValor({
       </span>
     );
   }
+  if (n < nMin) {
+    return (
+      <span
+        className="text-xs text-muted-foreground"
+        title={`Se necesitan al menos ${nMin} valoraciones para concursar (tiene ${n}).`}
+      >
+        {mediaBruta.toFixed(2)} ★ · {n}
+      </span>
+    );
+  }
 
+  const wilsonPct =
+    typeof wilsonLB === 'number' ? Math.round(wilsonLB * 1000) / 10 : null;
   return (
     <div
       className="flex flex-col items-end leading-tight"
       title={
         `Media real: ${mediaBruta.toFixed(2)} ★ sobre ${n} valoraciones\n` +
-        `Media de la red (prior): ${mediaGlobal.toFixed(2)} ★\n` +
-        `Score bayesiano (ordena el ranking): ${valor.toFixed(2)}\n` +
-        `Peso de la media real en el score: ${pesoPct}%`
+        `Media de la red: ${mediaGlobal.toFixed(2)} ★` +
+        (wilsonPct != null
+          ? `\nConfianza inferior (Wilson 95%): ${wilsonPct.toFixed(1)}%\nEl ranking se ordena por la confianza inferior: a más valoraciones consistentes, mayor confianza.`
+          : '')
       }
     >
       <span className="font-bold text-foreground">
         {mediaBruta.toFixed(2)} ★
         <span className="ml-1 text-[10px] font-normal text-muted-foreground">· {n}</span>
       </span>
-      <span className="text-[10px] font-medium text-muted-foreground/80">
-        score {valor.toFixed(2)}
-      </span>
+      {wilsonPct != null && (
+        <span className="text-[10px] font-medium text-muted-foreground/80">
+          conf. {wilsonPct.toFixed(1)}%
+        </span>
+      )}
     </div>
   );
 }

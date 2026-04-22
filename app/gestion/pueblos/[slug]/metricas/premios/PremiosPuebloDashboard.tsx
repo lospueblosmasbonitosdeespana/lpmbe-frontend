@@ -53,8 +53,8 @@ interface Posicion {
     n?: number;
     mediaBruta?: number;
     mediaGlobal?: number;
-    m?: number;
-    pesoReal?: number;
+    wilsonLB?: number;
+    nMin?: number;
     [key: string]: unknown;
   };
 }
@@ -406,9 +406,9 @@ function TarjetaPremio({
               )}
             </div>
 
-            {/* P1 · Mejor Valorado: detalle de la media real + explicación
-                del score bayesiano. Se muestra siempre que el backend envía
-                metadata (n, mediaBruta, mediaGlobal, m, pesoReal). */}
+            {/* P1 · Mejor Valorado: detalle de la media real + confianza
+                Wilson LB 95%. Se muestra siempre que el backend envía
+                metadata (n, mediaBruta, mediaGlobal, wilsonLB, nMin). */}
             {posicion.premioId === 1 &&
               datosActivos.metadata &&
               typeof datosActivos.metadata.n === 'number' && (
@@ -542,10 +542,10 @@ function TarjetaPremio({
 
 /**
  * Detalle del P1 (Mejor Valorado): muestra la media REAL del pueblo como
- * cifra principal (★ 4.9 · 87 valoraciones) y explica por qué el score del
- * ranking no es exactamente esa media (prior bayesiano hacia la media de
- * la red, `m`). Así el alcalde entiende que su media real cuenta desde la
- * primera valoración aunque el ranking sea conservador.
+ * cifra principal (★ 4.9 · 87 valoraciones). El orden del ranking se
+ * calcula con Wilson lower bound al 95%: a más valoraciones consistentes,
+ * más arriba se queda el pueblo. Así una media "perfecta" con pocos votos
+ * no supera a una media alta con muchos votos.
  */
 function MejorValoradoDetalle({
   meta,
@@ -554,17 +554,17 @@ function MejorValoradoDetalle({
     n?: number;
     mediaBruta?: number;
     mediaGlobal?: number;
-    m?: number;
-    pesoReal?: number;
+    wilsonLB?: number;
+    nMin?: number;
     [key: string]: unknown;
   };
 }) {
   const n = meta.n ?? 0;
   const media = meta.mediaBruta ?? 0;
   const global = meta.mediaGlobal ?? 0;
-  const m = meta.m ?? 10;
-  const peso = meta.pesoReal ?? 0;
-  const pesoPct = Math.round(peso * 100);
+  const wilsonLB = meta.wilsonLB ?? 0;
+  const nMin = meta.nMin ?? 3;
+  const wilsonPct = Math.round(wilsonLB * 1000) / 10;
 
   if (n === 0) {
     return (
@@ -572,6 +572,29 @@ function MejorValoradoDetalle({
         <span className="font-semibold">Aún sin valoraciones en el periodo.</span>{' '}
         La media de la red es <strong>{global.toFixed(2)} ★</strong>. En cuanto los
         visitantes empiecen a valorarte aparecerás en el ranking.
+      </div>
+    );
+  }
+  if (n < nMin) {
+    const faltan = nMin - n;
+    return (
+      <div className="mt-2 rounded-lg border border-dashed border-amber-200 bg-amber-50/50 p-2.5 text-[11px] leading-relaxed text-amber-900">
+        <div className="flex flex-wrap items-baseline gap-x-2">
+          <span className="text-[10px] font-bold uppercase tracking-wide text-amber-700">
+            Tu media real
+          </span>
+          <span className="text-lg font-black tabular-nums text-amber-800">
+            {media.toFixed(2)} ★
+          </span>
+          <span className="text-[11px] font-medium text-amber-800/90">
+            sobre {n} valoración{n === 1 ? '' : 'es'}
+          </span>
+        </div>
+        <p className="mt-1 text-[11px] text-amber-900/85">
+          Necesitas al menos <strong>{nMin} valoraciones</strong> para entrar
+          en el ranking ({faltan === 1 ? 'falta 1' : `faltan ${faltan}`}). La
+          media de la red es <strong>{global.toFixed(2)} ★</strong>.
+        </p>
       </div>
     );
   }
@@ -590,14 +613,12 @@ function MejorValoradoDetalle({
         </span>
       </div>
       <p className="mt-1 text-[11px] text-amber-900/85">
-        El ranking usa una <strong>media ponderada</strong> para que no gane un
-        pueblo con 3 votos perfectos frente a uno con 150. Tu media real pesa{' '}
-        <strong>{pesoPct}%</strong> en tu score; el resto es la media de la red{' '}
-        <strong>({global.toFixed(2)} ★)</strong>. A más valoraciones, más se acerca
-        tu score a tu media real.
-        <span className="ml-1 text-amber-900/60">
-          (prior actual: m={m})
-        </span>
+        El ranking usa un <strong>límite inferior de confianza al 95%</strong>{' '}
+        (Wilson) para que una media perfecta con pocos votos no gane a una
+        media alta con muchos votos. Tu confianza inferior es{' '}
+        <strong>{wilsonPct.toFixed(1)}%</strong>. Media de la red:{' '}
+        <strong>{global.toFixed(2)} ★</strong>. A más valoraciones, tu
+        confianza inferior se acerca a tu media real.
       </p>
     </div>
   );
