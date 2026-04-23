@@ -122,6 +122,7 @@ type NewsletterDraftPayload = {
     subject: string;
     html: string;
     includeNational: boolean;
+    includeInternational: boolean;
     ccaa: string;
     provincia: string;
     puebloSlug: string;
@@ -861,6 +862,7 @@ export default function NotasPrensaNewsletterClient({
     preheader: '',
     html: '',
     includeNational: true,
+    includeInternational: false,
     ccaa: '',
     provincia: '',
     puebloSlug: '',
@@ -1175,6 +1177,7 @@ export default function NotasPrensaNewsletterClient({
       preheader: '',
       html: '',
       includeNational: true,
+      includeInternational: false,
       ccaa: '',
       provincia: '',
       puebloSlug: '',
@@ -1544,6 +1547,7 @@ export default function NotasPrensaNewsletterClient({
   function buildPressFilters() {
     return {
       includeNational: campaignForm.includeNational,
+      includeInternational: campaignForm.includeInternational,
       ccaas: selectedCcaas,
       provincias: selectedProvincias,
       puebloSlug: resolvePuebloSlug(campaignForm.puebloSlug),
@@ -2594,20 +2598,36 @@ export default function NotasPrensaNewsletterClient({
               <div className="grid gap-3 md:grid-cols-3">
               <label className="text-sm font-medium text-blue-900">
                 <span className="mb-1 block">Alcance</span>
-                <label className="inline-flex items-center gap-2 rounded-lg border-2 border-blue-200 bg-white px-3 py-2.5 text-sm shadow-sm transition hover:border-blue-400">
-                  <input
-                    type="checkbox"
-                    checked={campaignForm.includeNational}
-                    onChange={(e) =>
-                      setCampaignForm((s) => ({
-                        ...s,
-                        includeNational: e.target.checked,
-                      }))
-                    }
-                    className="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span>Medios nacionales</span>
-                </label>
+                <div className="flex flex-col gap-2">
+                  <label className="inline-flex items-center gap-2 rounded-lg border-2 border-blue-200 bg-white px-3 py-2.5 text-sm shadow-sm transition hover:border-blue-400">
+                    <input
+                      type="checkbox"
+                      checked={campaignForm.includeNational}
+                      onChange={(e) =>
+                        setCampaignForm((s) => ({
+                          ...s,
+                          includeNational: e.target.checked,
+                        }))
+                      }
+                      className="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span>Medios nacionales</span>
+                  </label>
+                  <label className="inline-flex items-center gap-2 rounded-lg border-2 border-blue-200 bg-white px-3 py-2.5 text-sm shadow-sm transition hover:border-blue-400">
+                    <input
+                      type="checkbox"
+                      checked={campaignForm.includeInternational}
+                      onChange={(e) =>
+                        setCampaignForm((s) => ({
+                          ...s,
+                          includeInternational: e.target.checked,
+                        }))
+                      }
+                      className="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span>Medios internacionales</span>
+                  </label>
+                </div>
               </label>
               <label className="text-sm font-medium text-blue-900">
                 Comunidad Autónoma
