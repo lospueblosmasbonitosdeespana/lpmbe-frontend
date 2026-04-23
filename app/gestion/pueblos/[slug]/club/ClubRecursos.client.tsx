@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import HorariosEditor, { HorarioDia, CierreEspecial } from '@/app/_components/editor/HorariosEditor';
 import MapLocationPicker from '@/app/components/MapLocationPicker';
-import { Gift, Layers, Euro, Plus, Trash2 } from 'lucide-react';
+import { Gift, Layers, Euro, Plus, Trash2, Upload, Image as ImageIcon } from 'lucide-react';
+import { uploadImageToR2 } from '@/src/lib/uploadHelper';
 
 type RecursoPrecio = {
   id?: number;
@@ -754,6 +755,28 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
             <label className="text-sm text-muted-foreground">Activo</label>
           </div>
 
+          <ExtrasEditor
+            disabled={creando}
+            regaloActivo={nuevoRegaloActivo}
+            setRegaloActivo={setNuevoRegaloActivo}
+            regaloTitulo={nuevoRegaloTitulo}
+            setRegaloTitulo={setNuevoRegaloTitulo}
+            regaloDescripcion={nuevoRegaloDescripcion}
+            setRegaloDescripcion={setNuevoRegaloDescripcion}
+            regaloFotoUrl={nuevoRegaloFotoUrl}
+            setRegaloFotoUrl={setNuevoRegaloFotoUrl}
+            regaloCondiciones={nuevoRegaloCondiciones}
+            setRegaloCondiciones={setNuevoRegaloCondiciones}
+            esCombo={nuevoEsCombo}
+            setEsCombo={setNuevoEsCombo}
+            comboComponentesIds={nuevoComboComponentesIds}
+            setComboComponentesIds={setNuevoComboComponentesIds}
+            precios={nuevoPrecios}
+            setPrecios={setNuevoPrecios}
+            recursosDelPueblo={recursos}
+            recursoActualId={null}
+          />
+
           {/* Geolocalización */}
           <div className="rounded-lg border-2 border-emerald-300 bg-emerald-50/50 p-4 space-y-3">
             <div className="flex items-center gap-2">
@@ -785,28 +808,6 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
               </div>
             </div>
           </div>
-
-          <ExtrasEditor
-            disabled={creando}
-            regaloActivo={nuevoRegaloActivo}
-            setRegaloActivo={setNuevoRegaloActivo}
-            regaloTitulo={nuevoRegaloTitulo}
-            setRegaloTitulo={setNuevoRegaloTitulo}
-            regaloDescripcion={nuevoRegaloDescripcion}
-            setRegaloDescripcion={setNuevoRegaloDescripcion}
-            regaloFotoUrl={nuevoRegaloFotoUrl}
-            setRegaloFotoUrl={setNuevoRegaloFotoUrl}
-            regaloCondiciones={nuevoRegaloCondiciones}
-            setRegaloCondiciones={setNuevoRegaloCondiciones}
-            esCombo={nuevoEsCombo}
-            setEsCombo={setNuevoEsCombo}
-            comboComponentesIds={nuevoComboComponentesIds}
-            setComboComponentesIds={setNuevoComboComponentesIds}
-            precios={nuevoPrecios}
-            setPrecios={setNuevoPrecios}
-            recursosDelPueblo={recursos}
-            recursoActualId={null}
-          />
 
           <div className="flex gap-2">
             <button type="button" onClick={handleCrear} disabled={creando || !nuevoNombre.trim() || !nuevoTipo.trim()} className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50">
@@ -880,6 +881,28 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                     <label className="text-sm text-muted-foreground">Activo</label>
                   </div>
 
+                  <ExtrasEditor
+                    disabled={guardando}
+                    regaloActivo={editRegaloActivo}
+                    setRegaloActivo={setEditRegaloActivo}
+                    regaloTitulo={editRegaloTitulo}
+                    setRegaloTitulo={setEditRegaloTitulo}
+                    regaloDescripcion={editRegaloDescripcion}
+                    setRegaloDescripcion={setEditRegaloDescripcion}
+                    regaloFotoUrl={editRegaloFotoUrl}
+                    setRegaloFotoUrl={setEditRegaloFotoUrl}
+                    regaloCondiciones={editRegaloCondiciones}
+                    setRegaloCondiciones={setEditRegaloCondiciones}
+                    esCombo={editEsCombo}
+                    setEsCombo={setEditEsCombo}
+                    comboComponentesIds={editComboComponentesIds}
+                    setComboComponentesIds={setEditComboComponentesIds}
+                    precios={editPrecios}
+                    setPrecios={setEditPrecios}
+                    recursosDelPueblo={recursos}
+                    recursoActualId={r.id}
+                  />
+
                   {/* Geolocalización (edición) */}
                   <div className={`rounded-lg border-2 p-4 space-y-3 ${editLat && editLng ? 'border-emerald-300 bg-emerald-50/50' : 'border-red-300 bg-red-50/50'}`}>
                     <div className="flex items-center gap-2">
@@ -914,28 +937,6 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                       </div>
                     </div>
                   </div>
-
-                  <ExtrasEditor
-                    disabled={guardando}
-                    regaloActivo={editRegaloActivo}
-                    setRegaloActivo={setEditRegaloActivo}
-                    regaloTitulo={editRegaloTitulo}
-                    setRegaloTitulo={setEditRegaloTitulo}
-                    regaloDescripcion={editRegaloDescripcion}
-                    setRegaloDescripcion={setEditRegaloDescripcion}
-                    regaloFotoUrl={editRegaloFotoUrl}
-                    setRegaloFotoUrl={setEditRegaloFotoUrl}
-                    regaloCondiciones={editRegaloCondiciones}
-                    setRegaloCondiciones={setEditRegaloCondiciones}
-                    esCombo={editEsCombo}
-                    setEsCombo={setEditEsCombo}
-                    comboComponentesIds={editComboComponentesIds}
-                    setComboComponentesIds={setEditComboComponentesIds}
-                    precios={editPrecios}
-                    setPrecios={setEditPrecios}
-                    recursosDelPueblo={recursos}
-                    recursoActualId={r.id}
-                  />
 
                   {/* Horarios y cierres especiales */}
                   <div className="rounded-lg border border-border bg-muted/30/60 p-4 mt-2">
@@ -1117,18 +1118,18 @@ function ExtrasEditor({
           </label>
         </div>
         <p className="text-xs text-amber-800">
-          Se mostrará a los socios junto al descuento (puede combinarse). Déjalo desactivado si este recurso no ofrece regalo.
+          Regalo que recibe el socio del Club al visitar el recurso. Puede combinarse con el descuento. Déjalo desactivado si no ofreces regalo.
         </p>
         {regaloActivo && (
           <>
             <div>
-              <label className="block text-xs text-amber-900 mb-1">Título *</label>
+              <label className="block text-xs text-amber-900 mb-1">Título del regalo *</label>
               <input
                 type="text"
                 value={regaloTitulo}
                 onChange={(e) => setRegaloTitulo(e.target.value)}
                 disabled={disabled}
-                placeholder="Ej. Postre de la casa de regalo"
+                placeholder="Ej. Llavero del pueblo · Calendario · Imán · Postal"
                 className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
               />
             </div>
@@ -1139,20 +1140,15 @@ function ExtrasEditor({
                 onChange={(e) => setRegaloDescripcion(e.target.value)}
                 disabled={disabled}
                 rows={2}
+                placeholder="Ej. Llavero artesanal con el escudo del pueblo"
                 className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
               />
             </div>
-            <div>
-              <label className="block text-xs text-amber-900 mb-1">URL de la foto</label>
-              <input
-                type="url"
-                value={regaloFotoUrl}
-                onChange={(e) => setRegaloFotoUrl(e.target.value)}
-                disabled={disabled}
-                placeholder="https://…"
-                className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50 font-mono"
-              />
-            </div>
+            <RegaloFotoUploader
+              regaloFotoUrl={regaloFotoUrl}
+              setRegaloFotoUrl={setRegaloFotoUrl}
+              disabled={disabled}
+            />
             <div>
               <label className="block text-xs text-amber-900 mb-1">Condiciones (opcional)</label>
               <textarea
@@ -1160,7 +1156,7 @@ function ExtrasEditor({
                 onChange={(e) => setRegaloCondiciones(e.target.value)}
                 disabled={disabled}
                 rows={2}
-                placeholder="Ej. Uno por mesa · Solo en horario de comida"
+                placeholder="Ej. Uno por socio · Hasta agotar existencias"
                 className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
               />
             </div>
@@ -1350,5 +1346,101 @@ function ExtrasEditor({
         )}
       </div>
     </>
+  );
+}
+
+function RegaloFotoUploader({
+  regaloFotoUrl,
+  setRegaloFotoUrl,
+  disabled,
+}: {
+  regaloFotoUrl: string;
+  setRegaloFotoUrl: (v: string) => void;
+  disabled?: boolean;
+}) {
+  const [subiendo, setSubiendo] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFile = async (file: File | null | undefined) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setError('El archivo debe ser una imagen');
+      return;
+    }
+    setError(null);
+    setSubiendo(true);
+    try {
+      const { url } = await uploadImageToR2(file, 'regalos-club');
+      setRegaloFotoUrl(url);
+    } catch (e: any) {
+      setError(e?.message || 'Error subiendo la imagen');
+    } finally {
+      setSubiendo(false);
+    }
+  };
+
+  return (
+    <div>
+      <label className="block text-xs text-amber-900 mb-1">Foto del regalo (opcional)</label>
+      <p className="text-[11px] text-amber-800 mb-2">
+        Sube una foto del regalo (llavero, calendario, imán, etc.). Se guarda automáticamente en nuestro almacenamiento seguro.
+      </p>
+
+      {regaloFotoUrl ? (
+        <div className="flex items-start gap-3 p-2 border rounded bg-white">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={regaloFotoUrl}
+            alt="Regalo"
+            className="h-24 w-24 object-cover rounded border"
+          />
+          <div className="flex-1 flex flex-col gap-2">
+            <label className="inline-flex items-center gap-2 px-3 py-1.5 text-xs border rounded bg-white hover:bg-muted/30 cursor-pointer w-fit">
+              <Upload className="h-3.5 w-3.5" aria-hidden />
+              {subiendo ? 'Subiendo…' : 'Cambiar foto'}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={disabled || subiendo}
+                onChange={(e) => handleFile(e.target.files?.[0])}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => setRegaloFotoUrl('')}
+              disabled={disabled || subiendo}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs border rounded bg-white text-red-700 hover:bg-red-50 disabled:opacity-50 w-fit"
+            >
+              <Trash2 className="h-3.5 w-3.5" aria-hidden />
+              Quitar foto
+            </button>
+          </div>
+        </div>
+      ) : (
+        <label className="inline-flex items-center gap-2 px-3 py-2 text-sm border-2 border-dashed rounded bg-white hover:bg-muted/30 cursor-pointer w-full justify-center text-amber-900">
+          {subiendo ? (
+            <>
+              <ImageIcon className="h-4 w-4" aria-hidden />
+              Subiendo…
+            </>
+          ) : (
+            <>
+              <Upload className="h-4 w-4" aria-hidden />
+              Subir foto del regalo
+            </>
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            disabled={disabled || subiendo}
+            onChange={(e) => handleFile(e.target.files?.[0])}
+          />
+        </label>
+      )}
+
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+    </div>
   );
 }

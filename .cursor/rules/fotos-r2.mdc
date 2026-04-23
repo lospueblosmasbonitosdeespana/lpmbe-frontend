@@ -1,0 +1,91 @@
+# Fotos: SIEMPRE subida a R2 — regla de oro
+
+## Regla absoluta
+
+En **TODO** el proyecto LPMBE (panel de gestión web, backend, app móvil) las
+fotos/imágenes se cargan **exclusivamente subiéndolas** y almacenándolas en
+**Cloudflare R2**. La UI **nunca** debe pedir una URL externa para una foto.
+
+### Qué hacer
+
+- El usuario (alcalde, admin, socio) sube la foto desde su dispositivo.
+- El navegador comprime/optimiza la imagen en cliente con
+ `@/src/lib/compressImage` (web) para evitar el límite de ~4,5 MB de Vercel.
+- Se envía por `multipart/form-data` a `POST /api/admin/uploads` (proxy) →
+ backend `POST /admin/uploads` → `MediaService.uploadGenericImage(file, folder)`.
+- El backend guarda el objeto en R2 bajo la carpeta pertinente (`productos/`,
+ `negocios/`, `regalos-club/`, `avatars/{userId}/`, etc.) y responde
+ `{ url, filename, size, mimetype }`.
+- Se persiste **solo la `url` pública** de R2 en BD. El frontend y la app la
+ renderizan directamente.
+- Si el recurso no tiene foto, **no pasa nada**: la UI muestra un placeholder
+ o la oculta. No es obligatorio.
+
+### Qué NO hacer
+
+**Nunca** poner en la UI un campo:
+
+- ❌ "URL de la foto" / "Enlace a la imagen" / "Dirección de la imagen" (text input, type="url").
+- ❌ Pegar URLs de Imgur, Flickr, Google Photos, Dropbox, etc.
+- ❌ Insertar `<img src="…externo…">` que dependa de un dominio de terceros.
+- ❌ "URL de vídeo" con mp4 remoto: igual, subir a R2 o usar un player oficial
+ (YouTube/Vimeo) con su widget.
+
+**Excepción**: campos ya existentes como `web`, `bookingUrl`, `whatsapp`, enlaces
+a redes sociales, enlaces a YouTube/Vimeo — esos sí son URLs externas legítimas,
+no son fotos.
+
+### Uploader estándar (referencia)
+
+Patrón canónico para el frontend (Next.js):
+
+```tsx
+async function subirFoto(file: File, folder: string): Promise<string> {
+ const compressed = await compressImage(file, {
+   fileName: file.name.replace(/\.[^.]+$/, ''),
+ });
+ const fd = new FormData();
+ fd.append('file', compressed);
+ fd.append('folder', folder); // p.ej. 'regalos-club', 'negocios', 'productos'
+
+ const res = await fetch('/api/admin/uploads', {
+   method: 'POST',
+   body: fd,
+   credentials: 'include',
+ });
+ const data = await res.json().catch(() => ({}));
+ if (!res.ok) throw new Error(data?.error ?? data?.message ?? 'Error subiendo imagen');
+ const url = data?.url ?? data?.publicUrl;
+ if (!url) throw new Error('La subida no devolvió URL');
+ return url;
+}
+```
+
+Ejemplos de componentes que **siguen esta pauta correctamente** (usar como
+referencia al añadir uploaders nuevos):
+
+- `frontend/app/gestion/asociacion/tienda/productos/ProductosAdminClient.tsx`
+- `frontend/app/gestion/asociacion/negocios/[slug]/NegocioGallery.tsx`
+- `frontend/app/gestion/asociacion/videos/VideosAsociacionClient.tsx`
+- `frontend/app/gestion/asociacion/app/promos/AppPromoForm.client.tsx`
+
+### UI recomendada para un campo "Foto"
+
+1. Botón "Subir foto" con icono Lucide `Upload` (ver `iconos-lucide.mdc`).
+2. Si hay foto: miniatura + botón "Cambiar foto" / "Quitar foto".
+3. Indicador de progreso durante la subida.
+4. Mensaje de error claro si algo falla.
+5. **No** poner placeholder `https://…` ni describir el campo como "URL".
+
+### Instrucción al agente
+
+- Al escribir formularios nuevos: nunca añadir un `<input type="url">` para una
+ foto. Implementar siempre el uploader.
+- Al revisar formularios existentes: si encuentras un input de URL para foto,
+ sustitúyelo por el uploader como parte del cambio, aunque no se haya pedido
+ explícitamente (menciónalo en el commit).
+- Si dudas de la carpeta (`folder`) a usar, pregunta o escoge una descriptiva:
+ `regalos-club/`, `banners/`, `recursos/`, etc.
+
+Esta regla es **tan estricta como "Iconos: SIEMPRE Lucide"** y debe respetarse
+sin excepción para cualquier foto del producto.
