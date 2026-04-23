@@ -1,0 +1,101 @@
+# Iconos: SIEMPRE Lucide — regla de oro
+
+## Regla absoluta
+
+En **TODO** el proyecto LPMBE (frontend web, backend HTML de emails, app móvil,
+paneles de gestión) los iconos se implementan **exclusivamente** con la librería
+**Lucide**:
+
+| Plataforma | Paquete |
+|---|---|
+| `frontend/` (Next.js) | `lucide-react` |
+| `rork-pueblos-bonitos-app/` (Expo/RN) | `lucide-react-native` |
+| `backend/` (HTML emails, si procede) | `lucide-static` o SVG inline de lucide.dev |
+
+## Qué NO usar
+
+**Nunca** introduzcas:
+
+- Emojis en UI de producto como sustitutos de iconos (❌ `🎁`, `🔗`, `💶`, `✅`, `⚠️`, `📍`, `📧`, `📞`, `🏛️`, `🗺️`, `⭐`, `🎯`, `📊`, `🔍`, `📱`, `💬`, `📝`, `🗓️`, `🕐`…). Se permiten emojis sólo en:
+ - Textos redactados por el propio usuario.
+ - Asuntos/cuerpos de email cuando claramente es contenido editorial.
+ - Notas temporales en consola/logs internos.
+- Otras librerías de iconos: heroicons, react-icons, font-awesome, material-icons, tabler-icons, ionicons, feather-icons (Lucide es el fork mantenido), bootstrap-icons, etc.
+- SVGs propios copiados a mano cuando ya existe el icono equivalente en Lucide.
+
+## Excepciones legítimas
+
+Están permitidos (no son "iconos"):
+- **Logos** propios o de terceros (logo LPMBE, Google, Apple, Stripe…).
+- **Pictogramas de marca** (banderas de idioma, logos de comunidades autónomas, etc.).
+- **SVG decorativo/ilustrativo** único (no genérico).
+- **Emojis dentro de contenido editorial** escrito por el alcalde/usuario final.
+
+## Convenciones de uso
+
+### Tamaños típicos
+
+```tsx
+<IconName size={14} />   // inline con texto pequeño
+<IconName size={16} />   // botones, badges
+<IconName size={20} />   // inputs, headers de sección
+<IconName size={24} />   // acciones principales
+<IconName size={32} />   // ilustraciones/empty states
+```
+
+### Color
+
+Usar `currentColor` por defecto (hereda del texto) y aplicar `className="text-..."`
+para colorearlo. En React Native, pasar `color` como prop.
+
+### Accesibilidad
+
+- Si el icono acompaña a un texto → `aria-hidden` (no necesita label).
+- Si el icono es la única información (botón icon-only) → añadir `aria-label`
+ descriptivo o `title`.
+
+## Mapeo de emojis habituales → Lucide
+
+| Emoji | Lucide | Uso |
+|---|---|---|
+| 🎁 | `Gift` | regalo |
+| 🔗 | `Link` / `Layers` | combo / enlace |
+| 💶 💰 | `Euro` / `DollarSign` | precios |
+| ✅ | `Check` / `CheckCircle2` | confirmación |
+| ❌ ✖️ | `X` / `XCircle` | error/cerrar |
+| ⚠️ | `AlertTriangle` | warning |
+| ℹ️ | `Info` | info |
+| 📍 | `MapPin` | ubicación |
+| 📧 | `Mail` | email |
+| 📞 ☎️ | `Phone` | teléfono |
+| 🌐 | `Globe` | web |
+| 🕐 ⏰ | `Clock` | horario |
+| 🗓️ 📅 | `Calendar` / `CalendarX` | calendario |
+| ⭐ | `Star` | favorito/destacado |
+| 🔍 | `Search` | buscar |
+| 📊 | `BarChart3` | métricas |
+| 👥 | `Users` | personas |
+| 👶 | `Baby` | menores |
+| 🏷️ | `Tag` | categoría |
+| 🗑️ | `Trash2` | borrar |
+| ✏️ | `Pencil` / `Edit` | editar |
+| ➕ | `Plus` | añadir |
+| ➖ | `Minus` | quitar |
+| 🔒 | `Lock` | cerrado |
+| 🔓 | `Unlock` | abierto |
+| ⚡ | `Zap` | acción rápida |
+| 📷 | `Camera` / `ImageIcon` | foto |
+| 🎬 | `Film` | vídeo |
+| 🔔 | `Bell` | notificación |
+
+Si no encuentras un icono, consulta https://lucide.dev y añade la fila a esta tabla.
+
+## Instrucción para el agente
+
+- Al escribir/editar UI: si vas a poner un emoji con función de icono, detente y
+ usa el componente Lucide equivalente.
+- Al revisar código existente: si te topas con emojis usados como iconos en UI,
+ propón o ejecuta su sustitución por el icono Lucide correspondiente como parte
+ del trabajo, incluso si no estaba pedido explícitamente (mencionarlo en el commit).
+- En el panel de gestión, evitar también iconos nativos/emoji en labels de
+ selects, botones, tabs y badges.
