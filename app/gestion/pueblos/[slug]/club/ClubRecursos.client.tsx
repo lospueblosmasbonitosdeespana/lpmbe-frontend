@@ -5,6 +5,26 @@ import { useRouter } from 'next/navigation';
 import HorariosEditor, { HorarioDia, CierreEspecial } from '@/app/_components/editor/HorariosEditor';
 import MapLocationPicker from '@/app/components/MapLocationPicker';
 
+type RecursoPrecio = {
+  id?: number;
+  etiqueta: string;
+  edadMin?: number | null;
+  edadMax?: number | null;
+  precioCents: number;
+  aplicaDescuentoClub: boolean;
+  orden?: number;
+};
+
+type ComboItem = {
+  orden: number;
+  componente: {
+    id: number;
+    nombre: string;
+    tipo: string;
+    fotoUrl?: string | null;
+  };
+};
+
 type Recurso = {
   id: number;
   nombre: string;
@@ -22,6 +42,15 @@ type Recurso = {
   lng?: number | null;
   horariosSemana?: HorarioDia[];
   cierresEspeciales?: CierreEspecial[];
+  // Extras Club
+  regaloActivo?: boolean;
+  regaloTitulo?: string | null;
+  regaloDescripcion?: string | null;
+  regaloFotoUrl?: string | null;
+  regaloCondiciones?: string | null;
+  esCombo?: boolean;
+  comboItems?: ComboItem[];
+  precios?: RecursoPrecio[];
 };
 
 function formatCondiciones(r: Recurso): string {
@@ -85,6 +114,17 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
   const [editLng, setEditLng] = useState('');
   const [editHorariosSemana, setEditHorariosSemana] = useState<HorarioDia[]>([]);
   const [editCierresEspeciales, setEditCierresEspeciales] = useState<CierreEspecial[]>([]);
+  // Regalo
+  const [editRegaloActivo, setEditRegaloActivo] = useState(false);
+  const [editRegaloTitulo, setEditRegaloTitulo] = useState('');
+  const [editRegaloDescripcion, setEditRegaloDescripcion] = useState('');
+  const [editRegaloFotoUrl, setEditRegaloFotoUrl] = useState('');
+  const [editRegaloCondiciones, setEditRegaloCondiciones] = useState('');
+  // Combo
+  const [editEsCombo, setEditEsCombo] = useState(false);
+  const [editComboComponentesIds, setEditComboComponentesIds] = useState<number[]>([]);
+  // Precios por tramo
+  const [editPrecios, setEditPrecios] = useState<RecursoPrecio[]>([]);
   const [guardando, setGuardando] = useState(false);
 
   const mapCenter: [number, number] =
@@ -281,6 +321,24 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
     setEditLng(r.lng != null ? String(r.lng) : '');
     setEditHorariosSemana(r.horariosSemana ?? []);
     setEditCierresEspeciales(r.cierresEspeciales ?? []);
+    setEditRegaloActivo(r.regaloActivo === true);
+    setEditRegaloTitulo(r.regaloTitulo ?? '');
+    setEditRegaloDescripcion(r.regaloDescripcion ?? '');
+    setEditRegaloFotoUrl(r.regaloFotoUrl ?? '');
+    setEditRegaloCondiciones(r.regaloCondiciones ?? '');
+    setEditEsCombo(r.esCombo === true);
+    setEditComboComponentesIds((r.comboItems ?? []).map((c) => c.componente.id));
+    setEditPrecios(
+      (r.precios ?? []).map((p) => ({
+        id: p.id,
+        etiqueta: p.etiqueta,
+        edadMin: p.edadMin ?? null,
+        edadMax: p.edadMax ?? null,
+        precioCents: p.precioCents,
+        aplicaDescuentoClub: p.aplicaDescuentoClub,
+        orden: p.orden,
+      })),
+    );
   }
 
   function handleCancelarEdicion() {
@@ -293,6 +351,14 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
     setEditEsExterno(false);
     setEditLat('');
     setEditLng('');
+    setEditRegaloActivo(false);
+    setEditRegaloTitulo('');
+    setEditRegaloDescripcion('');
+    setEditRegaloFotoUrl('');
+    setEditRegaloCondiciones('');
+    setEditEsCombo(false);
+    setEditComboComponentesIds([]);
+    setEditPrecios([]);
   }
 
   async function handleGuardar(id: number) {
@@ -321,6 +387,22 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
       return;
     }
 
+    if (editEsCombo && editComboComponentesIds.length < 2) {
+      setError('Un combo debe incluir al menos 2 recursos componentes.');
+      return;
+    }
+
+    for (const p of editPrecios) {
+      if (!p.etiqueta?.trim()) {
+        setError('Todas las filas de precio necesitan una etiqueta (p. ej. "Adulto").');
+        return;
+      }
+      if (!Number.isFinite(p.precioCents) || p.precioCents < 0) {
+        setError(`Precio inválido para "${p.etiqueta}".`);
+        return;
+      }
+    }
+
     setGuardando(true);
     setError(null);
 
@@ -337,6 +419,24 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
         lng: Number(editLng),
         horariosSemana: editHorariosSemana.map(({ diaSemana, abierto, horaAbre, horaCierra }) => ({ diaSemana, abierto, horaAbre, horaCierra })),
         cierresEspeciales: editCierresEspeciales.map(({ fecha, motivo }) => ({ fecha, motivo })),
+        // Regalo del Club
+        regaloActivo: editRegaloActivo,
+        regaloTitulo: editRegaloActivo ? editRegaloTitulo.trim() || null : null,
+        regaloDescripcion: editRegaloActivo ? editRegaloDescripcion.trim() || null : null,
+        regaloFotoUrl: editRegaloActivo ? editRegaloFotoUrl.trim() || null : null,
+        regaloCondiciones: editRegaloActivo ? editRegaloCondiciones.trim() || null : null,
+        // Combo
+        esCombo: editEsCombo,
+        comboComponentesIds: editEsCombo ? editComboComponentesIds : [],
+        // Precios por tramo
+        precios: editPrecios.map((p, i) => ({
+          etiqueta: p.etiqueta.trim(),
+          edadMin: p.edadMin ?? null,
+          edadMax: p.edadMax ?? null,
+          precioCents: Math.max(0, Math.round(p.precioCents)),
+          aplicaDescuentoClub: p.aplicaDescuentoClub,
+          orden: i,
+        })),
       };
 
       if (editDescuento) {
@@ -739,6 +839,255 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                     </div>
                   </div>
 
+                  {/* 🎁 Regalo del Club */}
+                  <div className="rounded-lg border-2 border-amber-300 bg-amber-50/50 p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg" aria-hidden>🎁</span>
+                        <h4 className="text-sm font-semibold text-amber-900">Regalo del Club</h4>
+                      </div>
+                      <label className="inline-flex items-center gap-2 text-sm text-amber-900">
+                        <input
+                          type="checkbox"
+                          checked={editRegaloActivo}
+                          onChange={(e) => setEditRegaloActivo(e.target.checked)}
+                          disabled={guardando}
+                        />
+                        Activar regalo
+                      </label>
+                    </div>
+                    <p className="text-xs text-amber-800">
+                      Se mostrará a los socios junto al descuento (puede combinarse). Déjalo desactivado si este recurso no ofrece regalo.
+                    </p>
+                    {editRegaloActivo && (
+                      <>
+                        <div>
+                          <label className="block text-xs text-amber-900 mb-1">Título *</label>
+                          <input
+                            type="text"
+                            value={editRegaloTitulo}
+                            onChange={(e) => setEditRegaloTitulo(e.target.value)}
+                            disabled={guardando}
+                            placeholder="Ej. Postre de la casa de regalo"
+                            className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-amber-900 mb-1">Descripción</label>
+                          <textarea
+                            value={editRegaloDescripcion}
+                            onChange={(e) => setEditRegaloDescripcion(e.target.value)}
+                            disabled={guardando}
+                            rows={2}
+                            className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-amber-900 mb-1">URL de la foto</label>
+                          <input
+                            type="url"
+                            value={editRegaloFotoUrl}
+                            onChange={(e) => setEditRegaloFotoUrl(e.target.value)}
+                            disabled={guardando}
+                            placeholder="https://…"
+                            className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50 font-mono"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-amber-900 mb-1">Condiciones (opcional)</label>
+                          <textarea
+                            value={editRegaloCondiciones}
+                            onChange={(e) => setEditRegaloCondiciones(e.target.value)}
+                            disabled={guardando}
+                            rows={2}
+                            placeholder="Ej. Uno por mesa · Solo en horario de comida"
+                            className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Combo */}
+                  <div className="rounded-lg border-2 border-purple-300 bg-purple-50/50 p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg" aria-hidden>🔗</span>
+                        <h4 className="text-sm font-semibold text-purple-900">Combo (agrupa varios recursos)</h4>
+                      </div>
+                      <label className="inline-flex items-center gap-2 text-sm text-purple-900">
+                        <input
+                          type="checkbox"
+                          checked={editEsCombo}
+                          onChange={(e) => setEditEsCombo(e.target.checked)}
+                          disabled={guardando}
+                        />
+                        Es un combo
+                      </label>
+                    </div>
+                    <p className="text-xs text-purple-800">
+                      Un combo agrupa 2 o más recursos del pueblo bajo un único QR y precio. Al validar el combo, se marcan como visitados todos los componentes. Los componentes no pueden ser a su vez otros combos.
+                    </p>
+                    {editEsCombo && (
+                      <div className="max-h-64 overflow-y-auto rounded border bg-white p-2">
+                        {recursos.filter((x) => x.id !== r.id && !x.esCombo).length === 0 ? (
+                          <p className="text-xs text-muted-foreground py-2">No hay otros recursos disponibles en este pueblo para añadir al combo.</p>
+                        ) : (
+                          recursos
+                            .filter((x) => x.id !== r.id && !x.esCombo)
+                            .map((x) => {
+                              const checked = editComboComponentesIds.includes(x.id);
+                              return (
+                                <label key={x.id} className="flex items-center gap-2 py-1 text-sm">
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    onChange={(e) => {
+                                      setEditComboComponentesIds((prev) =>
+                                        e.target.checked
+                                          ? [...prev, x.id]
+                                          : prev.filter((id) => id !== x.id),
+                                      );
+                                    }}
+                                    disabled={guardando}
+                                  />
+                                  <span className="font-medium">{x.nombre}</span>
+                                  <span className="text-muted-foreground">· {x.tipo || '—'}</span>
+                                </label>
+                              );
+                            })
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Precios por tramo */}
+                  <div className="rounded-lg border-2 border-slate-300 bg-slate-50 p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg" aria-hidden>💶</span>
+                        <h4 className="text-sm font-semibold text-slate-800">Precios por tramo de edad o público</h4>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditPrecios((prev) => [
+                            ...prev,
+                            { etiqueta: '', edadMin: null, edadMax: null, precioCents: 0, aplicaDescuentoClub: true, orden: prev.length },
+                          ])
+                        }
+                        disabled={guardando}
+                        className="px-3 py-1 text-xs border rounded bg-white hover:bg-muted/30 disabled:opacity-50"
+                      >
+                        + Añadir tramo
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-600">
+                      Si añades tramos, sustituirán al precio único para los socios del Club. El descuento solo se aplica en los tramos donde marques "Aplica descuento Club".
+                    </p>
+
+                    {editPrecios.length === 0 ? (
+                      <p className="text-xs italic text-slate-500">No hay tramos definidos. Se usará el precio único.</p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full min-w-[640px] text-xs">
+                          <thead className="text-slate-700">
+                            <tr>
+                              <th className="text-left font-medium pb-1">Etiqueta</th>
+                              <th className="text-left font-medium pb-1 w-20">Edad min</th>
+                              <th className="text-left font-medium pb-1 w-20">Edad max</th>
+                              <th className="text-left font-medium pb-1 w-24">Precio (€)</th>
+                              <th className="text-left font-medium pb-1 w-28">Descuento Club</th>
+                              <th className="pb-1 w-10" />
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {editPrecios.map((p, i) => (
+                              <tr key={i} className="border-t">
+                                <td className="py-1 pr-2">
+                                  <input
+                                    type="text"
+                                    value={p.etiqueta}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setEditPrecios((prev) => prev.map((q, j) => (j === i ? { ...q, etiqueta: val } : q)));
+                                    }}
+                                    disabled={guardando}
+                                    placeholder="Adulto / Niño / Jubilado"
+                                    className="w-full px-2 py-1 border rounded text-sm disabled:opacity-50"
+                                  />
+                                </td>
+                                <td className="py-1 pr-2">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={p.edadMin ?? ''}
+                                    onChange={(e) => {
+                                      const v = e.target.value;
+                                      setEditPrecios((prev) => prev.map((q, j) => (j === i ? { ...q, edadMin: v === '' ? null : Number(v) } : q)));
+                                    }}
+                                    disabled={guardando}
+                                    className="w-full px-2 py-1 border rounded text-sm disabled:opacity-50"
+                                  />
+                                </td>
+                                <td className="py-1 pr-2">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={p.edadMax ?? ''}
+                                    onChange={(e) => {
+                                      const v = e.target.value;
+                                      setEditPrecios((prev) => prev.map((q, j) => (j === i ? { ...q, edadMax: v === '' ? null : Number(v) } : q)));
+                                    }}
+                                    disabled={guardando}
+                                    className="w-full px-2 py-1 border rounded text-sm disabled:opacity-50"
+                                  />
+                                </td>
+                                <td className="py-1 pr-2">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={(p.precioCents / 100).toString()}
+                                    onChange={(e) => {
+                                      const euros = Number(e.target.value);
+                                      const cents = Number.isFinite(euros) ? Math.round(euros * 100) : 0;
+                                      setEditPrecios((prev) => prev.map((q, j) => (j === i ? { ...q, precioCents: cents } : q)));
+                                    }}
+                                    disabled={guardando}
+                                    className="w-full px-2 py-1 border rounded text-sm disabled:opacity-50 font-mono"
+                                  />
+                                </td>
+                                <td className="py-1 pr-2 text-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={p.aplicaDescuentoClub}
+                                    onChange={(e) => {
+                                      const checked = e.target.checked;
+                                      setEditPrecios((prev) => prev.map((q, j) => (j === i ? { ...q, aplicaDescuentoClub: checked } : q)));
+                                    }}
+                                    disabled={guardando}
+                                  />
+                                </td>
+                                <td className="py-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditPrecios((prev) => prev.filter((_, j) => j !== i))}
+                                    disabled={guardando}
+                                    className="text-red-600 hover:text-red-800 disabled:opacity-50"
+                                    title="Eliminar tramo"
+                                  >
+                                    ✕
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Horarios y cierres especiales */}
                   <div className="rounded-lg border border-border bg-muted/30/60 p-4 mt-2">
                     <h4 className="text-sm font-semibold text-gray-700 mb-3">Horarios y cierres especiales</h4>
@@ -787,6 +1136,21 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             Sin ubicación
+                          </span>
+                        )}
+                        {r.regaloActivo && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-amber-50 text-amber-700 border border-amber-200">
+                            🎁 Regalo
+                          </span>
+                        )}
+                        {r.esCombo && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-purple-50 text-purple-700 border border-purple-200">
+                            🔗 Combo ({r.comboItems?.length ?? 0})
+                          </span>
+                        )}
+                        {(r.precios?.length ?? 0) > 0 && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-slate-100 text-slate-700 border border-slate-300">
+                            💶 {r.precios!.length} tramo{r.precios!.length > 1 ? 's' : ''}
                           </span>
                         )}
                       </div>
