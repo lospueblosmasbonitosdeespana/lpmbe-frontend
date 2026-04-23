@@ -13,6 +13,25 @@ interface WakeLockSentinel {
   addEventListener(type: 'release', listener: () => void): void;
 }
 
+type ComboPendienteSocio = {
+  userId: number | null;
+  nombre: string;
+  combo: { id: number; nombre: string };
+  adultos: number;
+  menores: number;
+  compradoA: string;
+  yaVisitado: boolean;
+  visitadoA: string | null;
+};
+
+type CombosHoyResp = {
+  recurso: { id: number; slug: string | null; nombre: string };
+  esParteDeCombo: boolean;
+  sociosConCombo: ComboPendienteSocio[];
+  totalPendientes: number;
+  totalVisitados: number;
+};
+
 type Metricas = {
   hoy: {
     total: number;
@@ -86,6 +105,7 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
   const [puebloId, setPuebloId] = useState<number | null>(null);
   const [metricasPueblo, setMetricasPueblo] = useState<Metricas>(() => normalizeMetricas(null));
   const [metricasPuebloError, setMetricasPuebloError] = useState<string | null>(null);
+  const [combosHoy, setCombosHoy] = useState<CombosHoyResp | null>(null);
   const [wakeLockActive, setWakeLockActive] = useState(false);
   const [manualInput, setManualInput] = useState('');
   const [showManual, setShowManual] = useState(false);
@@ -355,6 +375,49 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
     return () => clearInterval(interval);
   }, [puebloId]);
 
+  // Polling de socios con combo activo hoy que deben pasar por este recurso.
+  // Cada 15s. El endpoint backend ya filtra por "hoy", así que al pasar de
+  // medianoche el listado se vacía automáticamente.
+  useEffect(() => {
+    if (!recursoId) return;
+
+    async function loadCombosHoy() {
+      try {
+        const res = await fetch(
+          `/api/club/validador/combos-pendientes-hoy/${recursoId}`,
+          { cache: 'no-store' },
+        );
+        if (!res.ok) {
+          setCombosHoy(null);
+          return;
+        }
+        const data = (await res.json()) as CombosHoyResp;
+        setCombosHoy(data);
+      } catch {
+        setCombosHoy(null);
+      }
+    }
+
+    loadCombosHoy();
+    const interval = setInterval(loadCombosHoy, 15000);
+    return () => clearInterval(interval);
+  }, [recursoId]);
+
+  async function refreshCombosHoy() {
+    if (!recursoId) return;
+    try {
+      const res = await fetch(
+        `/api/club/validador/combos-pendientes-hoy/${recursoId}`,
+        { cache: 'no-store' },
+      );
+      if (!res.ok) return;
+      const data = (await res.json()) as CombosHoyResp;
+      setCombosHoy(data);
+    } catch {
+      // ignorar
+    }
+  }
+
   async function handleScan(rawText: string) {
     if (status !== 'SCANNING') return;
     
@@ -473,6 +536,7 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
         if (puebloId) {
           refreshMetricasPueblo();
         }
+        refreshCombosHoy();
       }, 500);
     } catch (e: any) {
       showingResultRef.current = true;
@@ -538,6 +602,7 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
               if (puebloId) {
                 refreshMetricasPueblo();
               }
+              refreshCombosHoy();
             }}
             style={{
               padding: '8px 16px',
@@ -572,6 +637,202 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
       <div style={{ fontSize: 14, color: '#666', marginBottom: 24 }}>
         Recurso ID: {recursoId}
       </div>
+
+      {/* Panel de combos activos hoy: socios que han comprado un combo que
+          incluye este recurso y deben pasar por aquí. Se vacía al pasar de
+          medianoche (el backend filtra por "hoy"). */}
+      {combosHoy?.esParteDeCombo && (combosHoy.sociosConCombo?.length ?? 0) > 0 && (
+        <div
+          style={{
+            marginBottom: 24,
+            border: combosHoy.totalPendientes > 0 ? '2px solid #dc2626' : '2px solid #16a34a',
+            borderRadius: 12,
+            overflow: 'hidden',
+            background: '#fff',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+          }}
+        >
+          <div
+            style={{
+              padding: '12px 16px',
+              background: combosHoy.totalPendientes > 0 ? '#fef2f2' : '#f0fdf4',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              flexWrap: 'wrap',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: 0.8,
+                  textTransform: 'uppercase',
+                  color: combosHoy.totalPendientes > 0 ? '#991b1b' : '#166534',
+                }}
+              >
+                {combosHoy.totalPendientes > 0
+                  ? 'Socios con combo activo HOY — pendientes de pasar aquí'
+                  : 'Todos los socios con combo ya pasaron hoy'}
+              </div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#111827', marginTop: 2 }}>
+                {combosHoy.totalPendientes} pendiente{combosHoy.totalPendientes === 1 ? '' : 's'}
+                {' · '}
+                {combosHoy.totalVisitados} ya pasó{combosHoy.totalVisitados === 1 ? '' : 'ron'} hoy
+              </div>
+            </div>
+            <button
+              onClick={refreshCombosHoy}
+              style={{
+                padding: '6px 12px',
+                fontSize: 13,
+                border: '1px solid #d1d5db',
+                borderRadius: 6,
+                background: '#fff',
+                color: '#111827',
+                cursor: 'pointer',
+              }}
+            >
+              Actualizar
+            </button>
+          </div>
+          <div style={{ padding: 0 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+              <thead>
+                <tr style={{ background: '#f9fafb' }}>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600, color: '#374151', borderBottom: '1px solid #e5e7eb' }}>
+                    Socio
+                  </th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600, color: '#374151', borderBottom: '1px solid #e5e7eb' }}>
+                    Combo
+                  </th>
+                  <th style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600, color: '#374151', borderBottom: '1px solid #e5e7eb' }}>
+                    Personas
+                  </th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600, color: '#374151', borderBottom: '1px solid #e5e7eb' }}>
+                    Comprado
+                  </th>
+                  <th style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600, color: '#374151', borderBottom: '1px solid #e5e7eb' }}>
+                    Estado
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {combosHoy.sociosConCombo.map((s, idx) => {
+                  const horaCompra = new Date(s.compradoA).toLocaleTimeString('es-ES', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  });
+                  const horaVisita = s.visitadoA
+                    ? new Date(s.visitadoA).toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                    : null;
+                  return (
+                    <tr
+                      key={`${s.userId}-${s.combo.id}-${idx}`}
+                      style={{
+                        background: s.yaVisitado ? '#f9fafb' : '#fff',
+                      }}
+                    >
+                      <td
+                        style={{
+                          padding: '10px 12px',
+                          borderBottom: '1px solid #f3f4f6',
+                          fontWeight: s.yaVisitado ? 400 : 600,
+                          color: s.yaVisitado ? '#6b7280' : '#111827',
+                          textDecoration: s.yaVisitado ? 'line-through' : 'none',
+                        }}
+                      >
+                        {s.nombre}
+                      </td>
+                      <td
+                        style={{
+                          padding: '10px 12px',
+                          borderBottom: '1px solid #f3f4f6',
+                          color: '#374151',
+                        }}
+                      >
+                        {s.combo.nombre}
+                      </td>
+                      <td
+                        style={{
+                          padding: '10px 12px',
+                          textAlign: 'center',
+                          borderBottom: '1px solid #f3f4f6',
+                          color: '#374151',
+                        }}
+                      >
+                        {s.adultos}A{s.menores > 0 ? ` + ${s.menores}m` : ''}
+                      </td>
+                      <td
+                        style={{
+                          padding: '10px 12px',
+                          borderBottom: '1px solid #f3f4f6',
+                          color: '#6b7280',
+                        }}
+                      >
+                        {horaCompra}
+                      </td>
+                      <td
+                        style={{
+                          padding: '10px 12px',
+                          textAlign: 'center',
+                          borderBottom: '1px solid #f3f4f6',
+                        }}
+                      >
+                        {s.yaVisitado ? (
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              padding: '4px 10px',
+                              borderRadius: 999,
+                              background: '#dcfce7',
+                              color: '#166534',
+                              fontSize: 12,
+                              fontWeight: 700,
+                            }}
+                          >
+                            ✓ Pasó {horaVisita ? `a las ${horaVisita}` : ''}
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              padding: '4px 10px',
+                              borderRadius: 999,
+                              background: '#fee2e2',
+                              color: '#991b1b',
+                              fontSize: 12,
+                              fontWeight: 700,
+                            }}
+                          >
+                            ● Pendiente
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div
+            style={{
+              padding: '8px 16px',
+              fontSize: 12,
+              color: '#6b7280',
+              background: '#f9fafb',
+              borderTop: '1px solid #e5e7eb',
+            }}
+          >
+            El listado se actualiza cada 15 s y se vacía automáticamente a medianoche.
+          </div>
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
         {/* Columna izquierda: Escáner */}
