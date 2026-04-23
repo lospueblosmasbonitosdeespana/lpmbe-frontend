@@ -403,17 +403,16 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         const url = sanitizeTemplateUrl(String(block.url || ''));
         if (!url) return '';
         const imgW = block.imageWidth || '100%';
-        const marginStyle = align === 'center'
-          ? 'display:block;margin:0 auto;'
-          : align === 'right'
-            ? 'display:block;margin-left:auto;margin-right:0;'
-            : 'display:block;';
+        // Email-safe: envolver en <table align> para que el centrado funcione en
+        // iOS Mail/Gmail móvil (donde `margin:0 auto` en <img> a veces falla).
+        const tdAlign = align === 'center' ? 'center' : align === 'right' ? 'right' : 'left';
         const imgStyle = imgW === '100%'
-          ? `max-width:100%;height:auto;border-radius:10px;${marginStyle}`
-          : `width:${imgW};max-width:100%;height:auto;border-radius:10px;${marginStyle}`;
-        return `<div style="${boxStyle}"><p style="margin:0;text-align:${align};"><img src="${escapeHtml(
-          url,
-        )}" alt="${escapeHtml(block.content || 'Imagen newsletter')}" style="${imgStyle}" /></p></div>`;
+          ? `max-width:100%;height:auto;border-radius:10px;display:block;`
+          : `width:${imgW};max-width:100%;height:auto;border-radius:10px;display:inline-block;`;
+        const img = `<img src="${escapeHtml(url)}" alt="${escapeHtml(
+          block.content || 'Imagen newsletter',
+        )}" style="${imgStyle}" />`;
+        return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;"><tr><td align="${tdAlign}" valign="top" style="text-align:${align};">${img}</td></tr></table></div>`;
       }
       if (block.type === 'button') {
         const url = sanitizeTemplateUrl(String(block.url || ''));
@@ -459,8 +458,12 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         const rightImg = block.colRightImg
           ? `<img src="${escapeHtml(block.colRightImg)}" alt="Imagen columna derecha" style="${colImgStyle}" />`
           : '';
-        const left = escapeHtml(block.colLeft || '').replace(/\n/g, '<br/>');
-        const right = escapeHtml(block.colRight || '').replace(/\n/g, '<br/>');
+        // Si el texto ya es HTML (viene del editor rico), se respeta tal cual.
+        // Si es texto plano legado, se escapa y se convierten saltos de línea.
+        const colLeftRaw = block.colLeft || '';
+        const colRightRaw = block.colRight || '';
+        const left = colLeftRaw.includes('<') ? colLeftRaw : escapeHtml(colLeftRaw).replace(/\n/g, '<br/>');
+        const right = colRightRaw.includes('<') ? colRightRaw : escapeHtml(colRightRaw).replace(/\n/g, '<br/>');
         return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="50%" valign="top" style="padding:0 8px 0 0;font-size:15px;line-height:1.6;color:${textColor};">${leftImg}${left}</td><td width="50%" valign="top" style="padding:0 0 0 8px;font-size:15px;line-height:1.6;color:${textColor};">${rightImg}${right}</td></tr></table></div>`;
       }
       if (block.type === 'columns3') {
@@ -474,9 +477,12 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         const rightImg = block.colRightImg
           ? `<img src="${escapeHtml(block.colRightImg)}" alt="Imagen columna derecha" style="${colImgStyle}" />`
           : '';
-        const left = escapeHtml(block.colLeft || '').replace(/\n/g, '<br/>');
-        const center = escapeHtml(block.colCenter || '').replace(/\n/g, '<br/>');
-        const right = escapeHtml(block.colRight || '').replace(/\n/g, '<br/>');
+        const colLeftRaw = block.colLeft || '';
+        const colCenterRaw = block.colCenter || '';
+        const colRightRaw = block.colRight || '';
+        const left = colLeftRaw.includes('<') ? colLeftRaw : escapeHtml(colLeftRaw).replace(/\n/g, '<br/>');
+        const center = colCenterRaw.includes('<') ? colCenterRaw : escapeHtml(colCenterRaw).replace(/\n/g, '<br/>');
+        const right = colRightRaw.includes('<') ? colRightRaw : escapeHtml(colRightRaw).replace(/\n/g, '<br/>');
         return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="33%" valign="top" style="padding:0 6px 0 0;font-size:15px;line-height:1.6;color:${textColor};">${leftImg}${left}</td><td width="34%" valign="top" style="padding:0 6px;font-size:15px;line-height:1.6;color:${textColor};">${centerImg}${center}</td><td width="33%" valign="top" style="padding:0 0 0 6px;font-size:15px;line-height:1.6;color:${textColor};">${rightImg}${right}</td></tr></table></div>`;
       }
       if (block.type === 'gallery') {
@@ -3688,11 +3694,9 @@ export default function NotasPrensaNewsletterClient({
                                         </div>
                                         <div>
                                           <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Texto</p>
-                                          <textarea
-                                            rows={selectedNewsletterBlock.type === 'columns3' ? 3 : 4}
-                                            value={selectedNewsletterBlock[textField] || ''}
-                                            onChange={(e) => updateSelectedNewsletterBlock({ [textField]: e.target.value })}
-                                            className="w-full rounded-md border border-border px-2 py-1 text-sm"
+                                          <BlockRichEditor
+                                            content={selectedNewsletterBlock[textField] || ''}
+                                            onChange={(html) => updateSelectedNewsletterBlock({ [textField]: html })}
                                             placeholder={`${label}...`}
                                           />
                                         </div>

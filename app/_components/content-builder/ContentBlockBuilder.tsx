@@ -277,7 +277,6 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
       const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
       if (safeUrl) {
         const isFull = align === 'full';
-        // imageWidth (string: '80px' / '100%') tiene prioridad sobre imgWidth (px).
         const widthStr = b.imageWidth || (b.imgWidth ? `${b.imgWidth}px` : '');
         const imgStyle = [
           isFull ? 'width:100%' : (widthStr ? `width:${widthStr};max-width:100%` : 'max-width:100%'),
@@ -289,8 +288,17 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
         const imgTag = `<img src="${escHtml(safeUrl)}" alt="${escHtml(b.content || '')}" style="${imgStyle}" />`;
         const linkStyle = isFull ? 'display:block;' : 'display:inline-block;';
         const wrapped = b.imgLinkUrl ? `<a href="${escHtml(b.imgLinkUrl)}" target="_blank" style="${linkStyle}">${imgTag}</a>` : imgTag;
-        const divAlign = isFull ? 'text-align:center;' : `text-align:${align};`;
-        parts.push(`<div style="${wrapStyle}${divAlign}">${wrapped}</div>`);
+        if (webMode) {
+          // En la web basta con text-align; no hace falta tabla.
+          const divAlign = isFull ? 'text-align:center;' : `text-align:${align};`;
+          parts.push(`<div style="${wrapStyle}${divAlign}">${wrapped}</div>`);
+        } else {
+          // Email-safe: envolver en tabla con align para que iOS Mail/Gmail
+          // móvil respeten el centrado aun sin `margin:0 auto` fiable en <img>.
+          const tdAlign = isFull ? 'center' : (align === 'right' ? 'right' : align === 'center' ? 'center' : 'left');
+          const divAlign = isFull ? 'text-align:center;' : `text-align:${align};`;
+          parts.push(`<div style="${wrapStyle}${divAlign}"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;"><tr><td align="${tdAlign}" valign="top" style="text-align:${isFull ? 'center' : align};">${wrapped}</td></tr></table></div>`);
+        }
       }
     } else if (b.type === 'button') {
       const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
