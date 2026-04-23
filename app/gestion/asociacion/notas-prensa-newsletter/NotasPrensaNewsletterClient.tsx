@@ -898,6 +898,7 @@ export default function NotasPrensaNewsletterClient({
   const [webContentKind, setWebContentKind] = useState<'NOTICIA' | 'ARTICULO'>('NOTICIA');
   const [publishingWeb, setPublishingWeb] = useState(false);
   const [syncingCampaignId, setSyncingCampaignId] = useState<number | null>(null);
+  const [resendingCampaignId, setResendingCampaignId] = useState<number | null>(null);
   const [showWebPreview, setShowWebPreview] = useState(false);
   const [showSendPreview, setShowSendPreview] = useState(false);
   const [geoPueblos, setGeoPueblos] = useState<GeoPueblo[]>([]);
@@ -5101,6 +5102,47 @@ export default function NotasPrensaNewsletterClient({
                           )}
                           {syncingCampaignId === c.id ? 'Sincronizando…' : 'Actualizar'}
                         </button>
+                        {(() => {
+                          const delivered = (c.deliveredCount || 0) + (c.bouncedCount || 0);
+                          const gap = (c.totalRecipients || 0) - delivered;
+                          if (c.status !== 'SENT' || gap <= 0) return null;
+                          return (
+                            <button
+                              type="button"
+                              disabled={resendingCampaignId === c.id}
+                              title={`Reenviar a los ${gap} destinatarios que no recibieron el email`}
+                              onClick={async () => {
+                                if (!window.confirm(`Reenviar el correo a los ${gap} destinatarios que no lo recibieron?\n\nLos que ya lo tienen (${delivered}) NO se verán afectados.`)) return;
+                                setResendingCampaignId(c.id);
+                                setError(null);
+                                setMessage(null);
+                                try {
+                                  const res = await fetch(`/api/admin/newsletter/campaigns/${c.id}/resend-failed`, { method: 'POST' });
+                                  const data = await res.json().catch(() => ({}));
+                                  if (!res.ok) throw new Error(data?.message || 'Error reenviando');
+                                  setMessage(`Reenvío completado: ${data.resent || 0} enviados, ${data.failed || 0} fallidos (de ${data.attempted || gap} intentos).`);
+                                  await loadData();
+                                } catch (e: any) {
+                                  setError(e?.message || 'Error reenviando fallidos');
+                                } finally {
+                                  setResendingCampaignId(null);
+                                }
+                              }}
+                              className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition ${
+                                resendingCampaignId === c.id
+                                  ? 'border-orange-300 bg-orange-100 text-orange-800 cursor-wait'
+                                  : 'border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100'
+                              }`}
+                            >
+                              {resendingCampaignId === c.id ? (
+                                <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" strokeDasharray="31.4 31.4" strokeLinecap="round" /></svg>
+                              ) : (
+                                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 4v6h6" /><path d="M20 20v-6h-6" /><path d="M4 10a8 8 0 0 1 14-4" /><path d="M20 14a8 8 0 0 1-14 4" /></svg>
+                              )}
+                              {resendingCampaignId === c.id ? 'Reenviando…' : `Reenviar ${gap}`}
+                            </button>
+                          );
+                        })()}
                         <a
                           href={`/gestion/asociacion/notas-prensa-newsletter/${c.kind === 'NEWSLETTER' ? 'newsletter' : 'notas-prensa'}/campanas/${c.id}`}
                           className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
