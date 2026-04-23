@@ -1384,14 +1384,6 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                           Con descuento: {((r.precioCents / 100) * (1 - r.descuentoPorcentaje / 100)).toFixed(2)} €
                         </div>
                       )}
-                      {r.esCombo && (
-                        <div
-                          data-build="ahorro-debug-v3"
-                          className="mt-2 rounded border border-rose-400 bg-rose-50 p-2 text-xs font-mono text-rose-900 break-all"
-                        >
-                          <strong>[debug v3]</strong> esCombo={String(r.esCombo)} · ahorroCombo={JSON.stringify(r.ahorroCombo ?? null)} · precioCents={String(r.precioCents)} · comboItems.len={r.comboItems?.length ?? 0}
-                        </div>
-                      )}
                       {r.esCombo && r.ahorroCombo && (
                         <div
                           data-testid="combo-ahorro"
