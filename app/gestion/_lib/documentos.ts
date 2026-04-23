@@ -1,4 +1,4 @@
-export type TipoDoc = 'LOGO' | 'PAPELERIA' | 'ORDENANZA' | 'CARTEL' | 'OTRO';
+export type TipoDoc = 'LOGO' | 'PAPELERIA' | 'ORDENANZA' | 'CARTEL' | 'MANUAL_WEB' | 'OTRO';
 export type TemaOrdenanza =
   | 'EMBELLECIMIENTO_ESTETICA'
   | 'RESIDUOS_BASURAS'
@@ -31,6 +31,7 @@ export const TIPO_LABELS: Record<TipoDoc, string> = {
   PAPELERIA: 'Papelería',
   ORDENANZA: 'Ordenanza',
   CARTEL: 'Cartel',
+  MANUAL_WEB: 'Manual Web',
   OTRO: 'Otro documento',
 };
 
@@ -39,6 +40,7 @@ export const TIPO_COLORS: Record<TipoDoc, string> = {
   PAPELERIA: 'bg-purple-100 text-purple-700 border-purple-200',
   ORDENANZA: 'bg-amber-100 text-amber-700 border-amber-200',
   CARTEL: 'bg-green-100 text-green-700 border-green-200',
+  MANUAL_WEB: 'bg-sky-100 text-sky-700 border-sky-200',
   OTRO: 'bg-gray-100 text-gray-600 border-gray-200',
 };
 

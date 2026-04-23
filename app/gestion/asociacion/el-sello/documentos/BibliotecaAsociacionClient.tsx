@@ -14,7 +14,7 @@ import {
   isDestacadoActivo,
 } from '../../../_lib/documentos';
 
-const TIPOS_DISPONIBLES: TipoDoc[] = ['PAPELERIA', 'ORDENANZA', 'CARTEL', 'OTRO'];
+const TIPOS_DISPONIBLES: TipoDoc[] = ['PAPELERIA', 'ORDENANZA', 'CARTEL', 'MANUAL_WEB', 'OTRO'];
 
 const DESIGN_ACCEPT = '.ai,.eps,.psd,.indd,.tif,.tiff';
 const BASE_ACCEPT = 'image/*,.svg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip';

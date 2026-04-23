@@ -1,6 +1,8 @@
 import { getMeServer } from '@/lib/me';
 import { getMisPueblosServer } from '@/lib/misPueblos';
-import { getPuebloBySlug } from '@/lib/api';
+import { getApiUrl, getPuebloBySlug } from '@/lib/api';
+import { getToken } from '@/lib/auth';
+import { fetchWithTimeout } from '@/lib/fetch-safe';
 import { redirect } from 'next/navigation';
 import {
   GestionHubBackLink,
@@ -18,6 +20,34 @@ import {
   GestionHubSection,
   GestionHubSectionTone,
 } from '../../_components/GestionHub';
+
+type ManualWebDoc = {
+  id: number;
+  nombre: string;
+  url: string;
+  descripcion: string | null;
+  tipo: string;
+};
+
+async function getManualesWeb(): Promise<ManualWebDoc[]> {
+  try {
+    const token = await getToken();
+    if (!token) return [];
+    const res = await fetchWithTimeout(
+      `${getApiUrl()}/admin/documentos-pueblo?compartidos=true`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
+      },
+    );
+    if (!res.ok) return [];
+    const all = await res.json();
+    if (!Array.isArray(all)) return [];
+    return (all as ManualWebDoc[]).filter((d) => d?.tipo === 'MANUAL_WEB');
+  } catch {
+    return [];
+  }
+}
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -83,6 +113,8 @@ export default async function GestionPuebloPage({
   } catch (_e) {
     puebloNombre = slug;
   }
+
+  const manualesWeb = await getManualesWeb();
 
   const baseUrl = `/gestion/pueblos/${slug}`;
   const contenidosUrl = puebloId
@@ -180,6 +212,27 @@ export default async function GestionPuebloPage({
         <div className="-mt-4 mb-8 rounded-xl border border-amber-200/80 bg-amber-50/90 p-4 text-sm text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
           No se pudo obtener el ID del pueblo. Algunas acciones pueden no estar disponibles.
         </div>
+      )}
+
+      {manualesWeb.length > 0 && (
+        <GestionHubSection
+          title="Manual y ayuda de la web"
+          subtitle="Guías publicadas por la asociación para sacar el máximo partido a la plataforma."
+          tone="sky"
+        >
+          {manualesWeb.map((m) => (
+            <GestionHubCard
+              key={m.id}
+              href={m.url}
+              title={m.nombre}
+              description={m.descripcion ?? 'Abrir documento PDF'}
+              icon={<GestionHubEmoji emoji="📘" />}
+              accent="sky"
+              external
+              ctaLabel="Abrir PDF"
+            />
+          ))}
+        </GestionHubSection>
       )}
 
       {secciones.map((sec) => (

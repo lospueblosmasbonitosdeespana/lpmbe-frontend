@@ -15,7 +15,7 @@ import {
 } from '../_lib/documentos';
 
 const ALL_TEMAS = Object.keys(TEMA_ORDENANZA_LABELS) as TemaOrdenanza[];
-const TIPOS_SIN_LOGO: TipoDoc[] = ['PAPELERIA', 'ORDENANZA', 'CARTEL', 'OTRO'];
+const TIPOS_SIN_LOGO: TipoDoc[] = ['PAPELERIA', 'ORDENANZA', 'CARTEL', 'MANUAL_WEB', 'OTRO'];
 
 type LogoAsociacion = {
   id: number;
@@ -340,6 +340,7 @@ export default function DocumentosCompartidosClient() {
   const temasConDocs = ALL_TEMAS.filter((t) => ordenanzasPorTema[t].length > 0);
   const docsNoOrdenanza = filtered.filter((d) => d.tipo !== 'ORDENANZA');
   const docsOrdenanza = filtered.filter((d) => d.tipo === 'ORDENANZA');
+  const docsManualWeb = filtered.filter((d) => d.tipo === 'MANUAL_WEB');
 
   const docsDestacados = useMemo(() => allDocs.filter(isDestacadoActivo), [allDocs]);
 
@@ -532,6 +533,22 @@ export default function DocumentosCompartidosClient() {
         </section>
       )}
 
+      {/* ── SECCIÓN MANUAL Y AYUDA DE LA WEB ── */}
+      {!loading && showDocSections && docsManualWeb.length > 0 && (
+        <CollapsibleSection
+          iconBg="bg-gradient-to-br from-sky-500 to-sky-600 shadow-sky-200"
+          icon={<svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" /><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" /></svg>}
+          title="Manual y ayuda de la web"
+          count={docsManualWeb.length}
+          countColor="bg-sky-100 text-sky-700 border-sky-200"
+          defaultOpen={true}
+        >
+          <div className="flex flex-col gap-2">
+            {docsManualWeb.map((doc) => <DocCard key={doc.id} doc={doc} />)}
+          </div>
+        </CollapsibleSection>
+      )}
+
       {/* ── SECCIÓN LOGOS DE LA ASOCIACIÓN ── */}
       {!loading && showLogosSection && (
         <CollapsibleSection
@@ -550,7 +567,7 @@ export default function DocumentosCompartidosClient() {
       {/* ── SECCIÓN OTROS DOCUMENTOS ── */}
       {!loading && showDocSections && docsNoOrdenanza.length > 0 && (
         <div className="space-y-3">
-          {TIPOS_SIN_LOGO.filter((t) => docsNoOrdenanza.filter(d => d.tipo === t).length > 0).map((tipo) => {
+          {TIPOS_SIN_LOGO.filter((t) => t !== 'MANUAL_WEB' && docsNoOrdenanza.filter(d => d.tipo === t).length > 0).map((tipo) => {
             const grupo = docsNoOrdenanza.filter((d) => d.tipo === tipo);
             if (grupo.length === 0) return null;
             const esAsociacion = grupo.every((d) => d.fuente === 'ASOCIACION');

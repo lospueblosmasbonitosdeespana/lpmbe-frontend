@@ -293,6 +293,8 @@ export function GestionHubCard({
   icon,
   disabled,
   accent = 'stone',
+  external,
+  ctaLabel,
 }: {
   href: string;
   title: string;
@@ -300,9 +302,12 @@ export function GestionHubCard({
   icon: React.ReactNode;
   disabled?: boolean;
   accent?: GestionHubCardAccent;
+  external?: boolean;
+  ctaLabel?: string;
 }) {
   const well = CARD_ACCENT[accent] ?? CARD_ACCENT.stone;
   const linkRow = CARD_LINK_ROW[accent] ?? CARD_LINK_DEFAULT;
+  const cta = ctaLabel ?? (external ? 'Abrir' : 'Acceder');
 
   if (disabled) {
     return (
@@ -314,11 +319,8 @@ export function GestionHubCard({
     );
   }
 
-  return (
-    <Link
-      href={href}
-      className={`group flex min-h-[168px] flex-col rounded-2xl border border-border/70 bg-card/95 p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:bg-card ${linkRow.border}`}
-    >
+  const inner = (
+    <>
       <div
         className={`mb-3 flex h-[3.35rem] w-[3.35rem] shrink-0 items-center justify-center rounded-2xl shadow-sm ring-1 transition-transform duration-200 group-hover:scale-[1.03] ${well}`}
       >
@@ -329,11 +331,27 @@ export function GestionHubCard({
       </h3>
       <p className="mt-1.5 flex-1 text-sm font-medium leading-relaxed text-foreground/75 dark:text-foreground/85">{description}</p>
       <span className={`mt-4 inline-flex items-center gap-1 text-sm font-medium transition-colors ${linkRow.link}`}>
-        Acceder
+        {cta}
         <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
           <path d="M5 12h14M12 5l7 7-7 7" />
         </svg>
       </span>
+    </>
+  );
+
+  const cardCls = `group flex min-h-[168px] flex-col rounded-2xl border border-border/70 bg-card/95 p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:bg-card ${linkRow.border}`;
+
+  if (external) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={cardCls}>
+        {inner}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={href} className={cardCls}>
+      {inner}
     </Link>
   );
 }
