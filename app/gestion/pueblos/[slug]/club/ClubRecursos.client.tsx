@@ -1867,6 +1867,18 @@ function ComboForm({
   const precioNum = Number(precio);
   const hayPrecio = precio !== '' && !isNaN(precioNum) && precioNum >= 0;
 
+  // Cálculo del ahorro del combo en vivo (para vender bien el combo en el preview)
+  const sumaComponentesCents = componentesIds.reduce((acc, id) => {
+    const r = recursosDelPueblo.find((x) => x.id === id);
+    return acc + (r?.precioCents ?? 0);
+  }, 0);
+  const sumaComponentesEur = sumaComponentesCents / 100;
+  const ahorroEur = hayPrecio && precioNum > 0 ? sumaComponentesEur - precioNum : 0;
+  const hayAhorro = sumaComponentesCents > 0 && ahorroEur > 0;
+  const ahorroPorcentaje = hayAhorro
+    ? Math.max(0, Math.min(100, Math.round((ahorroEur / sumaComponentesEur) * 100)))
+    : 0;
+
   return (
     <div className="mt-6 rounded-xl border-2 border-purple-300 bg-gradient-to-br from-purple-50 via-fuchsia-50 to-pink-50 p-5 space-y-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
@@ -2278,7 +2290,19 @@ function ComboForm({
               {componentesIds.length > 0
                 ? `Incluye ${componentesIds.length} recurso${componentesIds.length > 1 ? 's' : ''}`
                 : 'Añade componentes al combo'}
-              {hayPrecio && ` · ${precioNum.toFixed(2)} €`}
+              {hayPrecio && hayAhorro ? (
+                <>
+                  {' · '}
+                  <span className="text-muted-foreground line-through">
+                    {sumaComponentesEur.toFixed(2)} €
+                  </span>
+                  <span className="ml-1.5 font-bold text-emerald-700">
+                    {precioNum.toFixed(2)} €
+                  </span>
+                </>
+              ) : (
+                hayPrecio && ` · ${precioNum.toFixed(2)} €`
+              )}
               {descuento && Number(descuento) > 0 && ` · −${descuento}% socios`}
             </p>
             {descripcion.trim() && (
@@ -2289,6 +2313,30 @@ function ComboForm({
             )}
           </div>
         </div>
+
+        {/* Badge vendible de ahorro (solo si realmente hay ahorro) */}
+        {hayAhorro && (
+          <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 flex items-center gap-2">
+            <div className="h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 text-xs font-extrabold">
+              −{ahorroPorcentaje}%
+            </div>
+            <div className="text-sm leading-tight">
+              <div className="font-bold text-emerald-900">
+                Ahorras {ahorroEur.toFixed(2)} € con el combo
+              </div>
+              <div className="text-[11px] text-emerald-800">
+                Sumados sueltos: {sumaComponentesEur.toFixed(2)} € · Precio combo: {precioNum.toFixed(2)} €
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Aviso si aún falta información para calcular el ahorro */}
+        {!hayAhorro && componentesIds.length >= 2 && hayPrecio && sumaComponentesCents === 0 && (
+          <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
+            Para que el visitante vea el ahorro, asegúrate de que cada recurso del combo tenga su precio individual configurado.
+          </div>
+        )}
       </div>
 
       <div className="flex gap-2 pt-1">
