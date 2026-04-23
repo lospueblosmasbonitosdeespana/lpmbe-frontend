@@ -905,7 +905,7 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
                   cursor: 'pointer',
                 }}
               >
-                ¿Sin cámara? Introducir código manualmente
+                ¿Sin cámara o con lector USB? Introducir código aquí
               </button>
             ) : (
               <div
@@ -917,34 +917,51 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
                 }}
               >
                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
-                  Código corto del socio
+                  Código del socio
                 </div>
                 <div style={{ fontSize: 12, opacity: 0.75, marginBottom: 8 }}>
-                  El socio puede dictártelo desde su app. Son 6 caracteres, por
-                  ejemplo <code>ABC-D23</code>. Caduca en 5 minutos igual que
-                  el QR.
+                  Funciona con tres métodos:
+                  <br />· <strong>Dictado</strong>: el socio te lee su código
+                  corto tipo <code>ABC-D23</code> (6 caracteres).
+                  <br />· <strong>Lector QR USB</strong>: conéctalo al
+                  ordenador, haz clic aquí y dispara el lector sobre el QR del
+                  socio. Se valida solo al pulsar Enter.
+                  <br />· <strong>Pegado</strong>: también puedes pegar el
+                  payload <code>LPBME:QR:…</code> completo.
+                  <br />Caduca en 5 minutos igual que el QR.
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <input
                     type="text"
                     value={manualInput}
-                    onChange={(e) => setManualInput(e.target.value.toUpperCase())}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      // Si parece payload largo de QR (LPBME:... o muy largo),
+                      // lo dejamos tal cual. Si es código corto humano, lo
+                      // pasamos a mayúsculas para normalizar.
+                      const esPayloadLargo =
+                        raw.startsWith('LPBME:') ||
+                        raw.startsWith('lpbme:') ||
+                        raw.length > 14;
+                      setManualInput(
+                        esPayloadLargo ? raw.trim() : raw.toUpperCase(),
+                      );
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && manualInput.trim()) {
                         handleScan(manualInput.trim());
                         setManualInput('');
                       }
                     }}
-                    placeholder="ABC-D23"
-                    maxLength={12}
+                    placeholder="ABC-D23  o  LPBME:QR:…"
+                    maxLength={200}
                     autoFocus
                     style={{
                       flex: 1,
                       padding: '8px 10px',
                       fontSize: 18,
-                      letterSpacing: 2,
+                      letterSpacing: manualInput.length > 14 ? 0 : 2,
                       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                      textTransform: 'uppercase',
                       border: '1px solid #ccc',
                       borderRadius: 4,
                     }}
