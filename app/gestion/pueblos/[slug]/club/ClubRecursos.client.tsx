@@ -732,6 +732,16 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
             </div>
           </div>
 
+          <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            <p className="font-medium mb-1">Más opciones tras crear</p>
+            <p className="text-xs leading-relaxed">
+              Una vez guardado, pulsa <strong>Editar</strong> en el recurso para activar:
+              🎁 <strong>Regalo del Club</strong> (combinable con el descuento %),
+              🔗 <strong>Combo</strong> (agrupa varios recursos con un único QR) y
+              💶 <strong>Precios por tramo de edad o público</strong> (Adulto, Niños, Jubilados…).
+            </p>
+          </div>
+
           <div className="flex gap-2">
             <button type="button" onClick={handleCrear} disabled={creando || !nuevoNombre.trim() || !nuevoTipo.trim()} className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50">
               {creando ? 'Creando…' : 'Crear recurso'}
