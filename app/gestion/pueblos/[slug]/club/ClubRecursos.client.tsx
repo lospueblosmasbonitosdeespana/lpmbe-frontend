@@ -1385,7 +1385,11 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                         </div>
                       )}
                       {r.esCombo && r.ahorroCombo && (
-                        <div className="mt-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm">
+                        <div
+                          data-testid="combo-ahorro"
+                          data-build="ahorro-v2"
+                          className="mt-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm"
+                        >
                           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                             <span className="text-emerald-800 font-semibold">
                               Ahorro del combo:{' '}
