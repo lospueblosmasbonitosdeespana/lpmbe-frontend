@@ -43,7 +43,6 @@ type FiltersResponse = {
 type OverviewResponse = {
   total: number;
   byScope: Array<{ scope: string; total: number }>;
-  nationalMediaTotal?: number;
   withSent: number;
   withOpens: number;
   activos90d: number;
@@ -60,7 +59,7 @@ type OverviewResponse = {
   bounceRate: number;
 };
 
-type QuickScope = '' | 'NACIONAL' | 'CCAA' | 'PROVINCIA' | 'LOCAL';
+type QuickScope = '' | 'NACIONAL' | 'INTERNACIONAL' | 'CCAA' | 'PROVINCIA' | 'LOCAL';
 type Health =
   | ''
   | 'active_90d'
@@ -120,6 +119,7 @@ const PAGE_SIZE = 100;
 
 const SCOPE_LABELS: Record<string, string> = {
   NACIONAL: 'Nacional',
+  INTERNACIONAL: 'Internacional',
   CCAA: 'Autonómico',
   PROVINCIA: 'Provincial',
   LOCAL: 'Local',
@@ -218,10 +218,6 @@ export default function PressContactsManagerClient() {
   const [health, setHealth] = useState<Health>('');
   const [ccaa, setCcaa] = useState('');
   const [provincia, setProvincia] = useState('');
-  // Eje ortogonal a scope: identifica cabeceras nacionales (RTVE, EFE,
-  // Europa Press, COPE, SER, ABC, El País, etc.) aunque el contacto
-  // concreto sea una delegación autonómica o provincial.
-  const [nationalMedia, setNationalMedia] = useState(false);
 
   const [sortKey, setSortKey] = useState<SortKey>('createdAt');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
@@ -314,7 +310,6 @@ export default function PressContactsManagerClient() {
         if (ccaa) params.set('ccaa', ccaa);
         if (provincia) params.set('provincia', provincia);
         if (health) params.set('health', health);
-        if (nationalMedia) params.set('nationalMedia', 'true');
         params.set('sort', sortKey);
         params.set('sortDir', sortDir);
         const res = await fetch(
@@ -341,7 +336,7 @@ export default function PressContactsManagerClient() {
         setLoading(false);
       }
     },
-    [search, quickScope, ccaa, provincia, health, nationalMedia, sortKey, sortDir],
+    [search, quickScope, ccaa, provincia, health, sortKey, sortDir],
   );
 
   useEffect(() => {
@@ -355,7 +350,7 @@ export default function PressContactsManagerClient() {
   useEffect(() => {
     loadData(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quickScope, ccaa, provincia, health, nationalMedia, sortKey, sortDir]);
+  }, [quickScope, ccaa, provincia, health, sortKey, sortDir]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) {
@@ -636,7 +631,6 @@ export default function PressContactsManagerClient() {
       if (ccaa) params.set('ccaa', ccaa);
       if (provincia) params.set('provincia', provincia);
       if (health) params.set('health', health);
-      if (nationalMedia) params.set('nationalMedia', 'true');
       params.set('sort', sortKey);
       params.set('sortDir', sortDir);
       const res = await fetch(`/api/admin/newsletter/press-contacts?${params.toString()}`, {
@@ -816,7 +810,7 @@ export default function PressContactsManagerClient() {
                 </div>
               ))}
               <p className="text-[11px] text-amber-800">
-                Consejo: conserva la fila con el ámbito más específico (LOCAL &gt; PROVINCIA &gt; CCAA &gt; NACIONAL),
+                Consejo: conserva la fila con el ámbito más específico (LOCAL &gt; PROVINCIA &gt; CCAA &gt; NACIONAL/INTERNACIONAL),
                 normalmente es la más útil para segmentar envíos.
               </p>
             </div>
@@ -872,6 +866,7 @@ export default function PressContactsManagerClient() {
             {([
               { value: '', label: 'Todos' },
               { value: 'NACIONAL', label: 'Nacionales' },
+              { value: 'INTERNACIONAL', label: 'Internacionales' },
               { value: 'CCAA', label: 'Autonómicos' },
               { value: 'PROVINCIA', label: 'Provinciales' },
               { value: 'LOCAL', label: 'Locales' },
@@ -907,38 +902,6 @@ export default function PressContactsManagerClient() {
           </div>
         </div>
 
-        {/* Cabeceras nacionales (eje ortogonal a Ámbito) */}
-        <div className="mt-3">
-          <div className="text-xs font-medium text-muted-foreground">Cabeceras de medios nacionales</div>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => setNationalMedia((v) => !v)}
-              title={
-                'Incluye delegaciones autonómicas/provinciales de cabeceras nacionales ' +
-                '(RTVE, EFE, Europa Press, COPE, SER, ABC, El País, El Mundo, Onda Cero, ' +
-                'La Sexta, Antena 3, Mediaset, El Confidencial, El Español, La Vanguardia, La Razón…).'
-              }
-              className={[
-                'rounded-full px-3 py-1.5 text-xs font-medium transition',
-                nationalMedia
-                  ? 'border border-primary bg-primary text-primary-foreground'
-                  : 'border border-border bg-background text-foreground hover:border-primary/40',
-              ].join(' ')}
-            >
-              {nationalMedia ? 'Solo cabeceras nacionales' : 'Mostrar solo cabeceras nacionales'}
-              {overview?.nationalMediaTotal !== undefined ? (
-                <span
-                  className={['ml-1 text-[10px]', nationalMedia ? 'text-primary-foreground/80' : 'text-muted-foreground'].join(' ')}
-                >
-                  ({overview.nationalMediaTotal})
-                </span>
-              ) : null}
-            </button>
-            <span className="text-[11px] text-muted-foreground">
-              Incluye delegaciones autonómicas/provinciales. No cambia el ámbito ni afecta a los envíos segmentados por CCAA/provincia.
-            </span>
-          </div>
-        </div>
 
         {/* Salud */}
         <div className="mt-4">
@@ -1026,11 +989,10 @@ export default function PressContactsManagerClient() {
         </div>
 
         {/* Chips activos */}
-        {(quickScope || health || ccaa || provincia || search.trim() || nationalMedia) ? (
+        {(quickScope || health || ccaa || provincia || search.trim()) ? (
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <span>Filtros activos:</span>
             {quickScope ? <ActiveChip>Ámbito: {SCOPE_LABELS[quickScope] || quickScope}</ActiveChip> : null}
-            {nationalMedia ? <ActiveChip>Cabeceras nacionales</ActiveChip> : null}
             {health ? (
               <ActiveChip>
                 Salud: {HEALTH_OPTIONS.find((h) => h.value === health)?.label || health}
@@ -1046,7 +1008,6 @@ export default function PressContactsManagerClient() {
                 setCcaa('');
                 setProvincia('');
                 setSearch('');
-                setNationalMedia(false);
                 setTimeout(() => loadData(0), 0);
               }}
               className="rounded-full border border-border bg-background px-2 py-0.5 text-xs hover:border-primary/40"
@@ -1066,7 +1027,7 @@ export default function PressContactsManagerClient() {
             <code className="rounded bg-muted px-1">name</code>,{' '}
             <code className="rounded bg-muted px-1">media_outlet</code>,{' '}
             <code className="rounded bg-muted px-1">scope</code>{' '}
-            (NACIONAL / CCAA / PROVINCIA / LOCAL),{' '}
+            (NACIONAL / INTERNACIONAL / CCAA / PROVINCIA / LOCAL),{' '}
             <code className="rounded bg-muted px-1">ccaa</code>,{' '}
             <code className="rounded bg-muted px-1">provincia</code>,{' '}
             <code className="rounded bg-muted px-1">pueblo_slug</code>. Si el email ya existe con el mismo
@@ -1127,6 +1088,7 @@ export default function PressContactsManagerClient() {
                 className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
               >
                 <option value="NACIONAL">Nacional</option>
+                <option value="INTERNACIONAL">Internacional</option>
                 <option value="CCAA">Autonómico</option>
                 <option value="PROVINCIA">Provincial</option>
                 <option value="LOCAL">Local</option>
@@ -1208,6 +1170,7 @@ export default function PressContactsManagerClient() {
                 className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
               >
                 <option value="NACIONAL">Nacional</option>
+                <option value="INTERNACIONAL">Internacional</option>
                 <option value="CCAA">Autonómico</option>
                 <option value="PROVINCIA">Provincial</option>
                 <option value="LOCAL">Local</option>
@@ -1279,7 +1242,7 @@ export default function PressContactsManagerClient() {
             </button>
             <div className="ml-2 flex items-center gap-1">
               <span>Cambiar ámbito a:</span>
-              {(['NACIONAL', 'CCAA', 'PROVINCIA', 'LOCAL'] as const).map((s) => (
+              {(['NACIONAL', 'INTERNACIONAL', 'CCAA', 'PROVINCIA', 'LOCAL'] as const).map((s) => (
                 <button
                   key={s}
                   onClick={() => bulkScope(s)}
