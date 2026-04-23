@@ -453,9 +453,10 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
       // Marcar que estamos mostrando resultado (evitar refrescar métricas)
       showingResultRef.current = true;
 
-      if (data?.valido === true || data?.resultado === 'OK') {
+      if (data?.valido === true || data?.resultado === 'OK' || data?.resultado === 'OK_VIA_COMBO') {
         setStatus('VALID');
-        setMotivo(null);
+        // Si es OK_VIA_COMBO, guardamos el mensaje como subtítulo informativo
+        setMotivo(data?.resultado === 'OK_VIA_COMBO' ? (data?.mensaje ?? 'Incluido en combo pagado') : null);
         playBeepValid(); // Sonido de válido
       } else {
         setStatus('INVALID');
@@ -739,9 +740,29 @@ export default function ValidadorPage({ params }: { params: Promise<{ recursoId:
 
       {status === 'VALID' && (
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 48, fontWeight: 700, color: '#22c55e', marginBottom: 16 }}>
+          <div style={{ fontSize: 48, fontWeight: 700, color: '#22c55e', marginBottom: 8 }}>
             VÁLIDO
           </div>
+          {lastResult?.resultado === 'OK_VIA_COMBO' && (
+            <div style={{
+              display: 'inline-block',
+              padding: '6px 12px',
+              background: '#f3e8ff',
+              border: '2px solid #a855f7',
+              borderRadius: 8,
+              fontSize: 15,
+              fontWeight: 600,
+              color: '#6b21a8',
+              marginBottom: 12,
+            }}>
+              Incluido en combo pagado
+            </div>
+          )}
+          {motivo && lastResult?.resultado === 'OK_VIA_COMBO' && (
+            <div style={{ fontSize: 14, color: '#6b21a8', marginBottom: 12 }}>
+              {motivo}
+            </div>
+          )}
           {lastResult && (
             <div style={{ fontSize: 14, color: '#666', marginTop: 16 }}>
               <div>Pueblo: {lastResult?.puebloNombre ?? lastResult?.pueblo?.nombre ?? lastResult?.pueblo ?? '—'}</div>

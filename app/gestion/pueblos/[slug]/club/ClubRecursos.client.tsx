@@ -24,7 +24,15 @@ type ComboItem = {
     nombre: string;
     tipo: string;
     fotoUrl?: string | null;
+    precioCents?: number | null;
   };
+};
+
+type PerteneceACombo = {
+  id: number;
+  nombre: string;
+  slug?: string | null;
+  fotoUrl?: string | null;
 };
 
 type Recurso = {
@@ -51,7 +59,11 @@ type Recurso = {
   regaloFotoUrl?: string | null;
   regaloCondiciones?: string | null;
   esCombo?: boolean;
+  comboHighlight?: string | null;
+  comboDescripcion?: string | null;
+  comboCondiciones?: string | null;
   comboItems?: ComboItem[];
+  perteneceACombos?: PerteneceACombo[];
   precios?: RecursoPrecio[];
 };
 
@@ -107,6 +119,9 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
   const [nuevoRegaloCondiciones, setNuevoRegaloCondiciones] = useState('');
   const [nuevoEsCombo, setNuevoEsCombo] = useState(false);
   const [nuevoComboComponentesIds, setNuevoComboComponentesIds] = useState<number[]>([]);
+  const [nuevoComboHighlight, setNuevoComboHighlight] = useState('');
+  const [nuevoComboDescripcion, setNuevoComboDescripcion] = useState('');
+  const [nuevoComboCondiciones, setNuevoComboCondiciones] = useState('');
   const [nuevoPrecios, setNuevoPrecios] = useState<RecursoPrecio[]>([]);
   const [creando, setCreando] = useState(false);
 
@@ -134,6 +149,9 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
   // Combo
   const [editEsCombo, setEditEsCombo] = useState(false);
   const [editComboComponentesIds, setEditComboComponentesIds] = useState<number[]>([]);
+  const [editComboHighlight, setEditComboHighlight] = useState('');
+  const [editComboDescripcion, setEditComboDescripcion] = useState('');
+  const [editComboCondiciones, setEditComboCondiciones] = useState('');
   // Precios por tramo
   const [editPrecios, setEditPrecios] = useState<RecursoPrecio[]>([]);
   const [guardando, setGuardando] = useState(false);
@@ -250,6 +268,9 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
     setNuevoRegaloCondiciones('');
     setNuevoEsCombo(false);
     setNuevoComboComponentesIds([]);
+    setNuevoComboHighlight('');
+    setNuevoComboDescripcion('');
+    setNuevoComboCondiciones('');
     setNuevoPrecios([]);
   }
 
@@ -321,6 +342,9 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
         regaloCondiciones: nuevoRegaloActivo ? nuevoRegaloCondiciones.trim() || null : null,
         esCombo: nuevoEsCombo,
         comboComponentesIds: nuevoEsCombo ? nuevoComboComponentesIds : [],
+        comboHighlight: nuevoEsCombo ? nuevoComboHighlight.trim() || null : null,
+        comboDescripcion: nuevoEsCombo ? nuevoComboDescripcion.trim() || null : null,
+        comboCondiciones: nuevoEsCombo ? nuevoComboCondiciones.trim() || null : null,
         precios: nuevoPrecios.map((p, idx) => ({
           etiqueta: p.etiqueta.trim(),
           edadMin: p.edadMin ?? null,
@@ -383,6 +407,9 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
     setEditRegaloCondiciones(r.regaloCondiciones ?? '');
     setEditEsCombo(r.esCombo === true);
     setEditComboComponentesIds((r.comboItems ?? []).map((c) => c.componente.id));
+    setEditComboHighlight(r.comboHighlight ?? '');
+    setEditComboDescripcion(r.comboDescripcion ?? '');
+    setEditComboCondiciones(r.comboCondiciones ?? '');
     setEditPrecios(
       (r.precios ?? []).map((p) => ({
         id: p.id,
@@ -413,6 +440,9 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
     setEditRegaloCondiciones('');
     setEditEsCombo(false);
     setEditComboComponentesIds([]);
+    setEditComboHighlight('');
+    setEditComboDescripcion('');
+    setEditComboCondiciones('');
     setEditPrecios([]);
   }
 
@@ -483,6 +513,9 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
         // Combo
         esCombo: editEsCombo,
         comboComponentesIds: editEsCombo ? editComboComponentesIds : [],
+        comboHighlight: editEsCombo ? editComboHighlight.trim() || null : null,
+        comboDescripcion: editEsCombo ? editComboDescripcion.trim() || null : null,
+        comboCondiciones: editEsCombo ? editComboCondiciones.trim() || null : null,
         // Precios por tramo
         precios: editPrecios.map((p, i) => ({
           etiqueta: p.etiqueta.trim(),
@@ -771,6 +804,14 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
             setEsCombo={setNuevoEsCombo}
             comboComponentesIds={nuevoComboComponentesIds}
             setComboComponentesIds={setNuevoComboComponentesIds}
+            comboHighlight={nuevoComboHighlight}
+            setComboHighlight={setNuevoComboHighlight}
+            comboDescripcion={nuevoComboDescripcion}
+            setComboDescripcion={setNuevoComboDescripcion}
+            comboCondiciones={nuevoComboCondiciones}
+            setComboCondiciones={setNuevoComboCondiciones}
+            comboTitulo={nuevoNombre}
+            comboPrecioEuros={nuevoPrecio}
             precios={nuevoPrecios}
             setPrecios={setNuevoPrecios}
             recursosDelPueblo={recursos}
@@ -897,6 +938,14 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                     setEsCombo={setEditEsCombo}
                     comboComponentesIds={editComboComponentesIds}
                     setComboComponentesIds={setEditComboComponentesIds}
+                    comboHighlight={editComboHighlight}
+                    setComboHighlight={setEditComboHighlight}
+                    comboDescripcion={editComboDescripcion}
+                    setComboDescripcion={setEditComboDescripcion}
+                    comboCondiciones={editComboCondiciones}
+                    setComboCondiciones={setEditComboCondiciones}
+                    comboTitulo={editNombre}
+                    comboPrecioEuros={editPrecio}
                     precios={editPrecios}
                     setPrecios={setEditPrecios}
                     recursosDelPueblo={recursos}
@@ -1000,6 +1049,17 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                             Combo ({r.comboItems?.length ?? 0})
                           </span>
                         )}
+                        {(r.perteneceACombos?.length ?? 0) > 0 && (
+                          <span
+                            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200"
+                            title={`Incluido en: ${r.perteneceACombos!.map((c) => c.nombre).join(', ')}`}
+                          >
+                            <Layers className="h-3 w-3" aria-hidden />
+                            {r.perteneceACombos!.length === 1
+                              ? `Parte del combo «${r.perteneceACombos![0].nombre}»`
+                              : `Parte de ${r.perteneceACombos!.length} combos`}
+                          </span>
+                        )}
                         {(r.precios?.length ?? 0) > 0 && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-slate-100 text-slate-700 border border-slate-300">
                             <Euro className="h-3 w-3" aria-hidden />
@@ -1075,6 +1135,16 @@ type ExtrasEditorProps = {
   setEsCombo: (v: boolean) => void;
   comboComponentesIds: number[];
   setComboComponentesIds: React.Dispatch<React.SetStateAction<number[]>>;
+  comboHighlight: string;
+  setComboHighlight: (v: string) => void;
+  comboDescripcion: string;
+  setComboDescripcion: (v: string) => void;
+  comboCondiciones: string;
+  setComboCondiciones: (v: string) => void;
+  /** Título del combo (= nombre del recurso padre), solo para preview */
+  comboTitulo: string;
+  /** Precio del combo (= precioCents en euros, string), solo para preview */
+  comboPrecioEuros: string;
   precios: RecursoPrecio[];
   setPrecios: React.Dispatch<React.SetStateAction<RecursoPrecio[]>>;
   recursosDelPueblo: Recurso[];
@@ -1090,6 +1160,11 @@ function ExtrasEditor({
   regaloCondiciones, setRegaloCondiciones,
   esCombo, setEsCombo,
   comboComponentesIds, setComboComponentesIds,
+  comboHighlight, setComboHighlight,
+  comboDescripcion, setComboDescripcion,
+  comboCondiciones, setComboCondiciones,
+  comboTitulo,
+  comboPrecioEuros,
   precios, setPrecios,
   recursosDelPueblo,
   recursoActualId,
@@ -1164,14 +1239,17 @@ function ExtrasEditor({
         )}
       </div>
 
-      {/* Combo */}
-      <div className="rounded-lg border-2 border-purple-300 bg-purple-50/50 p-4 space-y-3">
+      {/* Combo — bloque comercial atractivo para animar a los pueblos */}
+      <div className="rounded-xl border-2 border-purple-300 bg-gradient-to-br from-purple-50 via-fuchsia-50 to-pink-50 p-4 space-y-3 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Layers className="h-5 w-5 text-purple-700" aria-hidden />
-            <h4 className="text-sm font-semibold text-purple-900">Combo (agrupa varios recursos)</h4>
+            <h4 className="text-sm font-semibold text-purple-900">Combo turístico</h4>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded-full bg-purple-600 text-white">
+              Recomendado
+            </span>
           </div>
-          <label className="inline-flex items-center gap-2 text-sm text-purple-900">
+          <label className="inline-flex items-center gap-2 text-sm font-medium text-purple-900">
             <input
               type="checkbox"
               checked={esCombo}
@@ -1181,38 +1259,160 @@ function ExtrasEditor({
             Es un combo
           </label>
         </div>
-        <p className="text-xs text-purple-800">
-          Un combo agrupa este recurso con 1 o más recursos adicionales del pueblo, bajo un único QR y precio. Al validar el combo, se marcan como visitados todos los componentes seleccionados. Los componentes no pueden ser a su vez otros combos.
-        </p>
+        <div className="rounded-lg bg-white/70 border border-purple-200 p-3 text-xs text-purple-900 leading-relaxed">
+          <p className="font-semibold mb-1">¿Qué es un combo?</p>
+          <p>
+            Un combo agrupa varios recursos turísticos del pueblo bajo un <strong>único QR, un único código de 6 dígitos y un único precio</strong>. El visitante paga una sola vez y puede visitar todos los recursos incluidos el mismo día.
+          </p>
+          <p className="mt-1">
+            Es la mejor forma de <strong>aumentar las visitas cruzadas</strong> entre museos, rutas y lugares emblemáticos. Al validar el combo en cualquiera de sus componentes, todos quedan marcados como pagados.
+          </p>
+        </div>
         {esCombo && (
-          <div className="max-h-64 overflow-y-auto rounded border bg-white p-2">
-            {componentesCandidatos.length === 0 ? (
-              <p className="text-xs text-muted-foreground py-2">
-                {recursoActualId == null
-                  ? 'Guarda primero el recurso y luego edítalo para añadir componentes al combo (necesitas otros recursos creados en este pueblo).'
-                  : 'No hay otros recursos disponibles en este pueblo para añadir al combo.'}
+          <div className="space-y-3">
+            {/* Título del combo (= nombre del recurso arriba) */}
+            <div className="rounded-lg border border-purple-300 bg-white p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-purple-700 mb-1">
+                Título del combo
               </p>
-            ) : (
-              componentesCandidatos.map((x) => {
-                const checked = comboComponentesIds.includes(x.id);
-                return (
-                  <label key={x.id} className="flex items-center gap-2 py-1 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={(e) => {
-                        setComboComponentesIds((prev) =>
-                          e.target.checked ? [...prev, x.id] : prev.filter((id) => id !== x.id),
-                        );
-                      }}
-                      disabled={disabled}
-                    />
-                    <span className="font-medium">{x.nombre}</span>
-                    <span className="text-muted-foreground">· {x.tipo || '—'}</span>
-                  </label>
-                );
-              })
-            )}
+              <p className="text-sm text-slate-700">
+                <span className="font-semibold">{comboTitulo.trim() || 'Sin título'}</span>
+                <span className="ml-2 text-xs text-muted-foreground">
+                  (es el <em>Nombre</em> que pusiste arriba: cámbialo allí)
+                </span>
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Ejemplos vendibles: «Combo de Museos de Calaceite», «Ruta de los 3 miradores», «Pase del casco histórico».
+              </p>
+            </div>
+
+            {/* Claim comercial */}
+            <div>
+              <label className="block text-xs text-purple-900 mb-1 font-medium">
+                Claim comercial <span className="text-muted-foreground font-normal">(opcional, destaca el ahorro)</span>
+              </label>
+              <input
+                type="text"
+                value={comboHighlight}
+                onChange={(e) => setComboHighlight(e.target.value)}
+                disabled={disabled}
+                maxLength={80}
+                placeholder="Ej. ¡Ahorra 5 € visitando los 3 museos con una sola entrada!"
+                className="w-full px-3 py-2 border border-purple-200 rounded text-sm bg-white disabled:opacity-50"
+              />
+            </div>
+
+            {/* Descripción comercial */}
+            <div>
+              <label className="block text-xs text-purple-900 mb-1 font-medium">
+                Descripción del combo <span className="text-muted-foreground font-normal">(opcional)</span>
+              </label>
+              <textarea
+                value={comboDescripcion}
+                onChange={(e) => setComboDescripcion(e.target.value)}
+                disabled={disabled}
+                rows={3}
+                placeholder="Ej. Con esta entrada única visita los 3 museos del casco histórico y recorre la historia del pueblo. Válido todo el día; puedes empezar por donde prefieras."
+                className="w-full px-3 py-2 border border-purple-200 rounded text-sm bg-white disabled:opacity-50"
+              />
+            </div>
+
+            {/* Componentes */}
+            <div>
+              <label className="block text-xs text-purple-900 mb-1 font-medium">
+                Recursos incluidos en el combo *
+              </label>
+              <div className="max-h-64 overflow-y-auto rounded border border-purple-200 bg-white p-2">
+                {componentesCandidatos.length === 0 ? (
+                  <p className="text-xs text-muted-foreground py-2">
+                    {recursoActualId == null
+                      ? 'Guarda primero el recurso y luego edítalo para añadir componentes al combo (necesitas otros recursos creados en este pueblo).'
+                      : 'No hay otros recursos disponibles en este pueblo para añadir al combo.'}
+                  </p>
+                ) : (
+                  componentesCandidatos.map((x) => {
+                    const checked = comboComponentesIds.includes(x.id);
+                    return (
+                      <label
+                        key={x.id}
+                        className={`flex items-center gap-2 px-2 py-1.5 text-sm rounded cursor-pointer ${
+                          checked ? 'bg-purple-100' : 'hover:bg-muted/30'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            setComboComponentesIds((prev) =>
+                              e.target.checked ? [...prev, x.id] : prev.filter((id) => id !== x.id),
+                            );
+                          }}
+                          disabled={disabled}
+                        />
+                        <span className="font-medium">{x.nombre}</span>
+                        <span className="text-muted-foreground text-xs">· {x.tipo || '—'}</span>
+                        {typeof x.precioCents === 'number' && x.precioCents > 0 && (
+                          <span className="ml-auto text-xs text-muted-foreground">
+                            {(x.precioCents / 100).toFixed(2)} €
+                          </span>
+                        )}
+                      </label>
+                    );
+                  })
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                El combo incluirá este recurso + los seleccionados. Al menos 1 componente adicional. Los componentes no pueden ser a su vez otros combos.
+              </p>
+            </div>
+
+            {/* Condiciones */}
+            <div>
+              <label className="block text-xs text-purple-900 mb-1 font-medium">
+                Condiciones de uso <span className="text-muted-foreground font-normal">(opcional)</span>
+              </label>
+              <input
+                type="text"
+                value={comboCondiciones}
+                onChange={(e) => setComboCondiciones(e.target.value)}
+                disabled={disabled}
+                maxLength={140}
+                placeholder="Ej. Válido todo el día · 1 uso por persona · No reembolsable"
+                className="w-full px-3 py-2 border border-purple-200 rounded text-sm bg-white disabled:opacity-50"
+              />
+            </div>
+
+            {/* Preview: cómo lo verá el visitante */}
+            <div className="rounded-lg border-2 border-dashed border-purple-400 bg-white p-4">
+              <p className="text-[10px] uppercase tracking-wide font-semibold text-purple-700 mb-2">
+                Así verá el combo el visitante
+              </p>
+              <div className="flex items-start gap-3">
+                <div className="h-14 w-14 rounded-lg bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center text-white flex-shrink-0">
+                  <Layers className="h-7 w-7" aria-hidden />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h5 className="font-bold text-base text-slate-900 leading-tight">
+                    {comboTitulo.trim() || 'Título del combo'}
+                  </h5>
+                  {comboHighlight.trim() && (
+                    <p className="text-sm text-purple-700 font-medium mt-0.5">{comboHighlight}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {comboComponentesIds.length > 0
+                      ? `Incluye ${comboComponentesIds.length + 1} recursos`
+                      : 'Añade componentes al combo'}
+                    {comboPrecioEuros && ` · ${Number(comboPrecioEuros).toFixed(2)} €`}
+                  </p>
+                  {comboDescripcion.trim() && (
+                    <p className="text-xs text-slate-700 mt-2 line-clamp-3">{comboDescripcion}</p>
+                  )}
+                  {comboCondiciones.trim() && (
+                    <p className="text-[11px] text-muted-foreground italic mt-1">{comboCondiciones}</p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
