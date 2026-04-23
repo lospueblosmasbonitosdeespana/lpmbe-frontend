@@ -66,6 +66,11 @@ type Recurso = {
   perteneceACombos?: PerteneceACombo[];
   soloEnCombo?: boolean;
   precios?: RecursoPrecio[];
+  ahorroCombo?: {
+    sumaComponentesCents: number;
+    ahorroCents: number;
+    ahorroPorcentaje: number;
+  } | null;
 };
 
 function formatCondiciones(r: Recurso): string {
@@ -1377,6 +1382,33 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                       {r.descuentoPorcentaje && r.precioCents && (
                         <div className="text-sm text-green-600 font-medium">
                           Con descuento: {((r.precioCents / 100) * (1 - r.descuentoPorcentaje / 100)).toFixed(2)} €
+                        </div>
+                      )}
+                      {r.esCombo && r.ahorroCombo && (
+                        <div className="mt-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm">
+                          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                            <span className="text-emerald-800 font-semibold">
+                              Ahorro del combo:{' '}
+                              {(r.ahorroCombo.ahorroCents / 100).toFixed(2)} €
+                              {' '}
+                              <span className="inline-flex items-center rounded-full bg-emerald-600 text-white text-xs font-bold px-2 py-0.5 ml-1">
+                                −{r.ahorroCombo.ahorroPorcentaje}%
+                              </span>
+                            </span>
+                          </div>
+                          <div className="text-xs text-emerald-700/90 mt-0.5">
+                            Por separado costaría{' '}
+                            <span className="line-through">
+                              {(r.ahorroCombo.sumaComponentesCents / 100).toFixed(2)} €
+                            </span>
+                            {r.precioCents ? (
+                              <>
+                                {' '}
+                                · En combo:{' '}
+                                <strong>{(r.precioCents / 100).toFixed(2)} €</strong>
+                              </>
+                            ) : null}
+                          </div>
                         </div>
                       )}
                       <div className="text-sm text-muted-foreground">
