@@ -135,6 +135,12 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
   const [comboEdadMaxMenor, setComboEdadMaxMenor] = useState('12');
   const [comboActivo, setComboActivo] = useState(true);
   const [comboComponentesIds, setComboComponentesIds] = useState<number[]>([]);
+  const [comboRegaloActivo, setComboRegaloActivo] = useState(false);
+  const [comboRegaloTitulo, setComboRegaloTitulo] = useState('');
+  const [comboRegaloDescripcion, setComboRegaloDescripcion] = useState('');
+  const [comboRegaloFotoUrl, setComboRegaloFotoUrl] = useState('');
+  const [comboRegaloCondiciones, setComboRegaloCondiciones] = useState('');
+  const [comboPrecios, setComboPrecios] = useState<RecursoPrecio[]>([]);
   const [creandoCombo, setCreandoCombo] = useState(false);
 
   // Edición de combo
@@ -150,6 +156,12 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
   const [editComboEdadMaxMenor, setEditComboEdadMaxMenor] = useState('12');
   const [editComboActivo, setEditComboActivo] = useState(true);
   const [editComboComponentesIds, setEditComboComponentesIds] = useState<number[]>([]);
+  const [editComboRegaloActivo, setEditComboRegaloActivo] = useState(false);
+  const [editComboRegaloTitulo, setEditComboRegaloTitulo] = useState('');
+  const [editComboRegaloDescripcion, setEditComboRegaloDescripcion] = useState('');
+  const [editComboRegaloFotoUrl, setEditComboRegaloFotoUrl] = useState('');
+  const [editComboRegaloCondiciones, setEditComboRegaloCondiciones] = useState('');
+  const [editComboPrecios, setEditComboPrecios] = useState<RecursoPrecio[]>([]);
   const [guardandoCombo, setGuardandoCombo] = useState(false);
 
   // Edición
@@ -305,6 +317,12 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
     setComboEdadMaxMenor('12');
     setComboActivo(true);
     setComboComponentesIds([]);
+    setComboRegaloActivo(false);
+    setComboRegaloTitulo('');
+    setComboRegaloDescripcion('');
+    setComboRegaloFotoUrl('');
+    setComboRegaloCondiciones('');
+    setComboPrecios([]);
   }
 
   async function handleCrear() {
@@ -586,6 +604,20 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
       setError('El descuento Club debe ser un número entre 0 y 100.');
       return;
     }
+    if (comboRegaloActivo && !comboRegaloTitulo.trim()) {
+      setError('Si activas el regalo del Club en el combo, el título es obligatorio.');
+      return;
+    }
+    for (const p of comboPrecios) {
+      if (!p.etiqueta.trim()) {
+        setError('Cada tramo de precio del combo debe tener una etiqueta (ej. "Adulto").');
+        return;
+      }
+      if (!Number.isFinite(p.precioCents) || p.precioCents < 0) {
+        setError('Los precios por tramo del combo deben ser números positivos.');
+        return;
+      }
+    }
 
     setCreandoCombo(true);
     setError(null);
@@ -602,14 +634,25 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
         // El combo se ubica en el centro del pueblo (no necesita mapa propio)
         lat: puebloLat ?? 40.4168,
         lng: puebloLng ?? -3.7038,
-        regaloActivo: false,
+        regaloActivo: comboRegaloActivo,
+        regaloTitulo: comboRegaloActivo ? comboRegaloTitulo.trim() || null : null,
+        regaloDescripcion: comboRegaloActivo ? comboRegaloDescripcion.trim() || null : null,
+        regaloFotoUrl: comboRegaloActivo ? comboRegaloFotoUrl.trim() || null : null,
+        regaloCondiciones: comboRegaloActivo ? comboRegaloCondiciones.trim() || null : null,
         esCombo: true,
         comboComponentesIds: comboComponentesIds,
         comboHighlight: comboHighlight.trim() || null,
         comboDescripcion: comboDescripcion.trim() || null,
         comboCondiciones: comboCondiciones.trim() || null,
         soloEnCombo: false,
-        precios: [],
+        precios: comboPrecios.map((p, idx) => ({
+          etiqueta: p.etiqueta.trim(),
+          edadMin: p.edadMin ?? null,
+          edadMax: p.edadMax ?? null,
+          precioCents: Math.max(0, Math.round(p.precioCents)),
+          aplicaDescuentoClub: p.aplicaDescuentoClub,
+          orden: idx,
+        })),
       };
       if (comboDescuento) body.descuentoPorcentaje = Number(comboDescuento);
       if (comboPrecio !== '') body.precioCents = Math.round(Number(comboPrecio) * 100);
@@ -647,10 +690,32 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
     setEditComboEdadMaxMenor(String(r.edadMaxMenor ?? 12));
     setEditComboActivo(r.activo);
     setEditComboComponentesIds((r.comboItems ?? []).map((c) => c.componente.id));
+    setEditComboRegaloActivo(r.regaloActivo === true);
+    setEditComboRegaloTitulo(r.regaloTitulo ?? '');
+    setEditComboRegaloDescripcion(r.regaloDescripcion ?? '');
+    setEditComboRegaloFotoUrl(r.regaloFotoUrl ?? '');
+    setEditComboRegaloCondiciones(r.regaloCondiciones ?? '');
+    setEditComboPrecios(
+      (r.precios ?? []).map((p) => ({
+        id: p.id,
+        etiqueta: p.etiqueta,
+        edadMin: p.edadMin ?? null,
+        edadMax: p.edadMax ?? null,
+        precioCents: p.precioCents,
+        aplicaDescuentoClub: p.aplicaDescuentoClub,
+        orden: p.orden,
+      })),
+    );
   }
 
   function handleCancelarEdicionCombo() {
     setEditandoComboId(null);
+    setEditComboRegaloActivo(false);
+    setEditComboRegaloTitulo('');
+    setEditComboRegaloDescripcion('');
+    setEditComboRegaloFotoUrl('');
+    setEditComboRegaloCondiciones('');
+    setEditComboPrecios([]);
   }
 
   async function handleGuardarCombo(id: number) {
@@ -665,6 +730,20 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
     if (editComboPrecio && (isNaN(Number(editComboPrecio)) || Number(editComboPrecio) < 0)) {
       setError('El precio del combo debe ser un número positivo.');
       return;
+    }
+    if (editComboRegaloActivo && !editComboRegaloTitulo.trim()) {
+      setError('Si activas el regalo del Club en el combo, el título es obligatorio.');
+      return;
+    }
+    for (const p of editComboPrecios) {
+      if (!p.etiqueta?.trim()) {
+        setError('Todas las filas de precio del combo necesitan una etiqueta.');
+        return;
+      }
+      if (!Number.isFinite(p.precioCents) || p.precioCents < 0) {
+        setError(`Precio inválido para "${p.etiqueta}" en el combo.`);
+        return;
+      }
     }
 
     setGuardandoCombo(true);
@@ -682,6 +761,19 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
         comboHighlight: editComboHighlight.trim() || null,
         comboDescripcion: editComboDescripcion.trim() || null,
         comboCondiciones: editComboCondiciones.trim() || null,
+        regaloActivo: editComboRegaloActivo,
+        regaloTitulo: editComboRegaloActivo ? editComboRegaloTitulo.trim() || null : null,
+        regaloDescripcion: editComboRegaloActivo ? editComboRegaloDescripcion.trim() || null : null,
+        regaloFotoUrl: editComboRegaloActivo ? editComboRegaloFotoUrl.trim() || null : null,
+        regaloCondiciones: editComboRegaloActivo ? editComboRegaloCondiciones.trim() || null : null,
+        precios: editComboPrecios.map((p, i) => ({
+          etiqueta: p.etiqueta.trim(),
+          edadMin: p.edadMin ?? null,
+          edadMax: p.edadMax ?? null,
+          precioCents: Math.max(0, Math.round(p.precioCents)),
+          aplicaDescuentoClub: p.aplicaDescuentoClub,
+          orden: i,
+        })),
       };
       body.descuentoPorcentaje = editComboDescuento ? Number(editComboDescuento) : null;
       body.precioCents = editComboPrecio !== '' ? Math.round(Number(editComboPrecio) * 100) : null;
@@ -1032,6 +1124,12 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
           edadMaxMenor={comboEdadMaxMenor} setEdadMaxMenor={setComboEdadMaxMenor}
           activo={comboActivo} setActivo={setComboActivo}
           componentesIds={comboComponentesIds} setComponentesIds={setComboComponentesIds}
+          regaloActivo={comboRegaloActivo} setRegaloActivo={setComboRegaloActivo}
+          regaloTitulo={comboRegaloTitulo} setRegaloTitulo={setComboRegaloTitulo}
+          regaloDescripcion={comboRegaloDescripcion} setRegaloDescripcion={setComboRegaloDescripcion}
+          regaloFotoUrl={comboRegaloFotoUrl} setRegaloFotoUrl={setComboRegaloFotoUrl}
+          regaloCondiciones={comboRegaloCondiciones} setRegaloCondiciones={setComboRegaloCondiciones}
+          precios={comboPrecios} setPrecios={setComboPrecios}
           recursosDelPueblo={recursos}
           recursoActualId={null}
           onSubmit={handleCrearCombo}
@@ -1069,6 +1167,12 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                   edadMaxMenor={editComboEdadMaxMenor} setEdadMaxMenor={setEditComboEdadMaxMenor}
                   activo={editComboActivo} setActivo={setEditComboActivo}
                   componentesIds={editComboComponentesIds} setComponentesIds={setEditComboComponentesIds}
+                  regaloActivo={editComboRegaloActivo} setRegaloActivo={setEditComboRegaloActivo}
+                  regaloTitulo={editComboRegaloTitulo} setRegaloTitulo={setEditComboRegaloTitulo}
+                  regaloDescripcion={editComboRegaloDescripcion} setRegaloDescripcion={setEditComboRegaloDescripcion}
+                  regaloFotoUrl={editComboRegaloFotoUrl} setRegaloFotoUrl={setEditComboRegaloFotoUrl}
+                  regaloCondiciones={editComboRegaloCondiciones} setRegaloCondiciones={setEditComboRegaloCondiciones}
+                  precios={editComboPrecios} setPrecios={setEditComboPrecios}
                   recursosDelPueblo={recursos}
                   recursoActualId={r.id}
                   onSubmit={() => handleGuardarCombo(r.id)}
@@ -1683,6 +1787,15 @@ type ComboFormProps = {
   activo: boolean; setActivo: (v: boolean) => void;
   componentesIds: number[];
   setComponentesIds: React.Dispatch<React.SetStateAction<number[]>>;
+  // Regalo del Club para el combo
+  regaloActivo: boolean; setRegaloActivo: (v: boolean) => void;
+  regaloTitulo: string; setRegaloTitulo: (v: string) => void;
+  regaloDescripcion: string; setRegaloDescripcion: (v: string) => void;
+  regaloFotoUrl: string; setRegaloFotoUrl: (v: string) => void;
+  regaloCondiciones: string; setRegaloCondiciones: (v: string) => void;
+  // Precios por tramo del combo
+  precios: RecursoPrecio[];
+  setPrecios: React.Dispatch<React.SetStateAction<RecursoPrecio[]>>;
   recursosDelPueblo: Recurso[];
   recursoActualId: number | null;
   onSubmit: () => void;
@@ -1703,6 +1816,12 @@ function ComboForm({
   edadMaxMenor, setEdadMaxMenor,
   activo, setActivo,
   componentesIds, setComponentesIds,
+  regaloActivo, setRegaloActivo,
+  regaloTitulo, setRegaloTitulo,
+  regaloDescripcion, setRegaloDescripcion,
+  regaloFotoUrl, setRegaloFotoUrl,
+  regaloCondiciones, setRegaloCondiciones,
+  precios, setPrecios,
   recursosDelPueblo, recursoActualId,
   onSubmit, onCancel, submitting,
 }: ComboFormProps) {
@@ -1842,6 +1961,199 @@ function ComboForm({
             <input type="number" min="0" value={edadMaxMenor} onChange={(e) => setEdadMaxMenor(e.target.value)} disabled={disabled} className="w-full px-2 py-1.5 border rounded text-sm disabled:opacity-50" />
           </div>
         </div>
+      </div>
+
+      {/* Regalo del Club para el combo */}
+      <div className="rounded-lg border-2 border-amber-300 bg-amber-50/60 p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Gift className="h-5 w-5 text-amber-700" aria-hidden />
+            <h4 className="text-sm font-semibold text-amber-900">Regalo del Club para el combo</h4>
+          </div>
+          <label className="inline-flex items-center gap-2 text-sm text-amber-900">
+            <input
+              type="checkbox"
+              checked={regaloActivo}
+              onChange={(e) => setRegaloActivo(e.target.checked)}
+              disabled={disabled}
+            />
+            Activar regalo
+          </label>
+        </div>
+        <p className="text-xs text-amber-800">
+          Regalo adicional que recibe el socio al comprar este combo (ej. llavero, calendario, postal). Se entrega al validar el QR o el código del combo en el primer recurso visitado.
+        </p>
+        {regaloActivo && (
+          <>
+            <div>
+              <label className="block text-xs text-amber-900 mb-1">Título del regalo *</label>
+              <input
+                type="text"
+                value={regaloTitulo}
+                onChange={(e) => setRegaloTitulo(e.target.value)}
+                disabled={disabled}
+                placeholder="Ej. Llavero del pueblo · Calendario · Imán · Postal"
+                className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-amber-900 mb-1">Descripción</label>
+              <textarea
+                value={regaloDescripcion}
+                onChange={(e) => setRegaloDescripcion(e.target.value)}
+                disabled={disabled}
+                rows={2}
+                placeholder="Ej. Llavero artesanal con el escudo del pueblo"
+                className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
+              />
+            </div>
+            <RegaloFotoUploader
+              regaloFotoUrl={regaloFotoUrl}
+              setRegaloFotoUrl={setRegaloFotoUrl}
+              disabled={disabled}
+            />
+            <div>
+              <label className="block text-xs text-amber-900 mb-1">Condiciones (opcional)</label>
+              <textarea
+                value={regaloCondiciones}
+                onChange={(e) => setRegaloCondiciones(e.target.value)}
+                disabled={disabled}
+                rows={2}
+                placeholder="Ej. Uno por socio · Hasta agotar existencias"
+                className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
+              />
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Precios por tramo del combo */}
+      <div className="rounded-lg border-2 border-slate-300 bg-slate-50 p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Euro className="h-5 w-5 text-slate-700" aria-hidden />
+            <h4 className="text-sm font-semibold text-slate-800">Precios del combo por tramo de edad o público</h4>
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              setPrecios((prev) => [
+                ...prev,
+                { etiqueta: '', edadMin: null, edadMax: null, precioCents: 0, aplicaDescuentoClub: true, orden: prev.length },
+              ])
+            }
+            disabled={disabled}
+            className="inline-flex items-center gap-1 px-3 py-1 text-xs border rounded bg-white hover:bg-muted/30 disabled:opacity-50"
+          >
+            <Plus className="h-3.5 w-3.5" aria-hidden />
+            Añadir tramo
+          </button>
+        </div>
+        <p className="text-xs text-slate-600">
+          Si añades tramos, sustituirán al precio único del combo. El descuento Club solo se aplica en los tramos donde marques &quot;Aplica descuento Club&quot;. Útil para ofrecer precios distintos a menores, jubilados, familia, etc.
+        </p>
+
+        {precios.length === 0 ? (
+          <p className="text-xs italic text-slate-500">No hay tramos definidos. Se usará el precio único del combo.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-xs">
+              <thead className="text-slate-700">
+                <tr>
+                  <th className="text-left font-medium pb-1">Etiqueta</th>
+                  <th className="text-left font-medium pb-1 w-20">Edad min</th>
+                  <th className="text-left font-medium pb-1 w-20">Edad max</th>
+                  <th className="text-left font-medium pb-1 w-24">Precio (€)</th>
+                  <th className="text-left font-medium pb-1 w-28">Descuento Club</th>
+                  <th className="pb-1 w-10" />
+                </tr>
+              </thead>
+              <tbody>
+                {precios.map((p, i) => (
+                  <tr key={i} className="border-t">
+                    <td className="py-1 pr-2">
+                      <input
+                        type="text"
+                        value={p.etiqueta}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setPrecios((prev) => prev.map((q, j) => (j === i ? { ...q, etiqueta: val } : q)));
+                        }}
+                        disabled={disabled}
+                        placeholder="Adulto / Niño / Jubilado / Familia"
+                        className="w-full px-2 py-1 border rounded text-sm disabled:opacity-50"
+                      />
+                    </td>
+                    <td className="py-1 pr-2">
+                      <input
+                        type="number"
+                        min="0"
+                        value={p.edadMin ?? ''}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setPrecios((prev) => prev.map((q, j) => (j === i ? { ...q, edadMin: v === '' ? null : Number(v) } : q)));
+                        }}
+                        disabled={disabled}
+                        className="w-full px-2 py-1 border rounded text-sm disabled:opacity-50"
+                      />
+                    </td>
+                    <td className="py-1 pr-2">
+                      <input
+                        type="number"
+                        min="0"
+                        value={p.edadMax ?? ''}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setPrecios((prev) => prev.map((q, j) => (j === i ? { ...q, edadMax: v === '' ? null : Number(v) } : q)));
+                        }}
+                        disabled={disabled}
+                        className="w-full px-2 py-1 border rounded text-sm disabled:opacity-50"
+                      />
+                    </td>
+                    <td className="py-1 pr-2">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={(p.precioCents / 100).toString()}
+                        onChange={(e) => {
+                          const euros = Number(e.target.value);
+                          const cents = Number.isFinite(euros) ? Math.round(euros * 100) : 0;
+                          setPrecios((prev) => prev.map((q, j) => (j === i ? { ...q, precioCents: cents } : q)));
+                        }}
+                        disabled={disabled}
+                        className="w-full px-2 py-1 border rounded text-sm disabled:opacity-50 font-mono"
+                      />
+                    </td>
+                    <td className="py-1 pr-2 text-center">
+                      <input
+                        type="checkbox"
+                        checked={p.aplicaDescuentoClub}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setPrecios((prev) => prev.map((q, j) => (j === i ? { ...q, aplicaDescuentoClub: checked } : q)));
+                        }}
+                        disabled={disabled}
+                      />
+                    </td>
+                    <td className="py-1">
+                      <button
+                        type="button"
+                        onClick={() => setPrecios((prev) => prev.filter((_, j) => j !== i))}
+                        disabled={disabled}
+                        className="text-red-600 hover:text-red-800 disabled:opacity-50 inline-flex items-center"
+                        title="Eliminar tramo"
+                        aria-label="Eliminar tramo"
+                      >
+                        <Trash2 className="h-4 w-4" aria-hidden />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <div>
