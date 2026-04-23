@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import Link from 'next/link';
 import {
   TipoDoc,
   TemaOrdenanza,
@@ -182,6 +183,51 @@ function DocCard({ doc }: { doc: DocumentoItem }) {
     ...(doc.archivosAdicionales ?? []),
   ];
   const tieneMultiples = todosLosArchivos.length > 1;
+  const esManualWeb = doc.tipo === 'MANUAL_WEB';
+
+  // Los manuales web navegan a su página de detalle (muestra todos los
+  // archivos con previsualización). El resto mantiene el despliegue inline.
+  if (esManualWeb) {
+    return (
+      <Link
+        href={`/gestion/manuales/${doc.id}?from=/gestion/documentos-compartidos`}
+        className="group flex items-start gap-4 overflow-hidden rounded-2xl border-2 border-transparent bg-card p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md dark:hover:border-sky-900/60"
+      >
+        <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-sky-50 to-sky-100 ring-1 ring-sky-200/60 overflow-hidden dark:from-sky-950/40 dark:to-sky-900/30 dark:ring-sky-800/50">
+          <svg className="h-5 w-5 text-sky-700 dark:text-sky-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+            <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" />
+            <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
+          </svg>
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-base text-foreground leading-tight transition-colors group-hover:text-sky-900 dark:group-hover:text-sky-100">{doc.nombre}</p>
+          {doc.descripcion && (
+            <p className="mt-0.5 text-sm text-muted-foreground break-words leading-relaxed line-clamp-2">
+              {doc.descripcion}
+            </p>
+          )}
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            {doc.fuente === 'ASOCIACION' ? (
+              <span className="rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">LPMBE</span>
+            ) : doc.pueblo && (
+              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-200">{doc.pueblo.nombre}</span>
+            )}
+            <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${TIPO_COLORS[doc.tipo]}`}>{TIPO_LABELS[doc.tipo]}</span>
+            <span className="text-[11px] text-muted-foreground/70">{new Date(doc.createdAt).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            <span className="rounded-full bg-gradient-to-r from-sky-100 to-sky-50 px-2 py-0.5 text-[11px] font-bold text-sky-700 ring-1 ring-sky-200/60 dark:from-sky-950/60 dark:to-sky-900/50 dark:text-sky-200 dark:ring-sky-800/50">
+              {todosLosArchivos.length} {todosLosArchivos.length === 1 ? 'archivo' : 'archivos'}
+            </span>
+          </div>
+        </div>
+        <span className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-lg bg-sky-600/10 px-2.5 py-1 text-xs font-semibold text-sky-700 transition-colors group-hover:bg-sky-600 group-hover:text-white dark:text-sky-200">
+          Abrir
+          <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </span>
+      </Link>
+    );
+  }
 
   return (
     <div className={`group overflow-hidden rounded-2xl border-2 transition-all duration-300 ${open ? 'border-primary/30 bg-gradient-to-b from-amber-50/40 to-card shadow-lg shadow-amber-100/40 dark:from-amber-950/20' : 'border-transparent bg-card shadow-sm hover:border-amber-100 hover:shadow-md dark:hover:border-amber-900/60'}`}>
