@@ -256,24 +256,36 @@ export default function PressContactsManagerClient() {
   const page = useMemo(() => Math.floor(offset / PAGE_SIZE) + 1, [offset]);
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / PAGE_SIZE)), [total]);
 
-  const loadFilters = useCallback(async () => {
-    setFiltersLoading(true);
-    try {
-      const res = await fetch('/api/admin/newsletter/press-contacts/filters', { cache: 'no-store' });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok) {
-        setFilters({
-          scopes: Array.isArray(data?.scopes) ? data.scopes : [],
-          ccaas: Array.isArray(data?.ccaas) ? data.ccaas : [],
-          provincias: Array.isArray(data?.provincias) ? data.provincias : [],
-        });
+  const loadFilters = useCallback(
+    async (opts?: { scope?: string; ccaa?: string; provincia?: string; search?: string }) => {
+      setFiltersLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (opts?.scope) params.set('scope', opts.scope);
+        if (opts?.ccaa) params.set('ccaa', opts.ccaa);
+        if (opts?.provincia) params.set('provincia', opts.provincia);
+        if (opts?.search) params.set('search', opts.search);
+        const qs = params.toString();
+        const res = await fetch(
+          `/api/admin/newsletter/press-contacts/filters${qs ? `?${qs}` : ''}`,
+          { cache: 'no-store' },
+        );
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          setFilters({
+            scopes: Array.isArray(data?.scopes) ? data.scopes : [],
+            ccaas: Array.isArray(data?.ccaas) ? data.ccaas : [],
+            provincias: Array.isArray(data?.provincias) ? data.provincias : [],
+          });
+        }
+      } catch {
+        // ignore
+      } finally {
+        setFiltersLoading(false);
       }
-    } catch {
-      // ignore
-    } finally {
-      setFiltersLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   const loadOverview = useCallback(async () => {
     try {
@@ -340,7 +352,6 @@ export default function PressContactsManagerClient() {
   );
 
   useEffect(() => {
-    loadFilters();
     loadOverview();
     loadDuplicates();
     loadData(0);
@@ -351,6 +362,15 @@ export default function PressContactsManagerClient() {
     loadData(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quickScope, ccaa, provincia, health, sortKey, sortDir]);
+
+  // Recarga los contadores del dropdown CCAA/Provincia teniendo en cuenta
+  // el ámbito/CCAA/provincia/búsqueda actuales. Así el dropdown no miente
+  // (p.ej. "Extremadura (33)" cuando el scope=CCAA filtra a 0). Se ejecuta
+  // también en el mount con los valores iniciales.
+  useEffect(() => {
+    loadFilters({ scope: quickScope, ccaa, provincia, search: search.trim() });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quickScope, ccaa, provincia, search]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) {

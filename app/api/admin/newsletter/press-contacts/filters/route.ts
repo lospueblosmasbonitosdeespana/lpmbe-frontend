@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
   const token = await getToken();
   if (!token) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -10,7 +10,9 @@ export async function GET(_req: NextRequest) {
 
   try {
     const API_BASE = getApiUrl();
-    const res = await fetch(`${API_BASE}/admin/newsletter/press-contacts/filters`, {
+    const qs = req.nextUrl.searchParams.toString();
+    const suffix = qs ? `?${qs}` : '';
+    const res = await fetch(`${API_BASE}/admin/newsletter/press-contacts/filters${suffix}`, {
       headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',
     });
