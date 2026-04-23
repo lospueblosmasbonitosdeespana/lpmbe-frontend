@@ -284,8 +284,8 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
       return;
     }
 
-    if (nuevoEsCombo && nuevoComboComponentesIds.length < 2) {
-      setError('Un combo debe agrupar al menos 2 recursos.');
+    if (nuevoEsCombo && nuevoComboComponentesIds.length < 1) {
+      setError('Un combo debe incluir al menos 1 recurso adicional (el combo total = este recurso + los componentes).');
       return;
     }
 
@@ -442,8 +442,8 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
       return;
     }
 
-    if (editEsCombo && editComboComponentesIds.length < 2) {
-      setError('Un combo debe incluir al menos 2 recursos componentes.');
+    if (editEsCombo && editComboComponentesIds.length < 1) {
+      setError('Un combo debe incluir al menos 1 recurso adicional (el combo total = este recurso + los componentes).');
       return;
     }
 
@@ -1182,7 +1182,7 @@ function ExtrasEditor({
           </label>
         </div>
         <p className="text-xs text-purple-800">
-          Un combo agrupa 2 o más recursos del pueblo bajo un único QR y precio. Al validar el combo, se marcan como visitados todos los componentes. Los componentes no pueden ser a su vez otros combos.
+          Un combo agrupa este recurso con 1 o más recursos adicionales del pueblo, bajo un único QR y precio. Al validar el combo, se marcan como visitados todos los componentes seleccionados. Los componentes no pueden ser a su vez otros combos.
         </p>
         {esCombo && (
           <div className="max-h-64 overflow-y-auto rounded border bg-white p-2">
