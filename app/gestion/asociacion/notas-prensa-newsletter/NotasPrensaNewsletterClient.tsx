@@ -1,6 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import DraftsAndScheduler, {
+  type DraftRow as SharedDraftRow,
+  type DraftSnapshot as SharedDraftSnapshot,
+} from './_components/DraftsAndScheduler';
 import dynamic from 'next/dynamic';
 import ImageEditorModal from '@/app/_components/content-builder/ImageEditorModal';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -2411,6 +2415,95 @@ export default function NotasPrensaNewsletterClient({
 
   const selectedNewsletterBlock =
     newsletterBlocks.find((b) => b.id === selectedNewsletterBlockId) || null;
+
+  // ------- Borradores + Programación (DraftsAndScheduler) -------
+  const getSharedSnapshot = useCallback(async (): Promise<SharedDraftSnapshot> => {
+    const payload = buildDraftPayload();
+    const filters =
+      mode === 'press'
+        ? buildPressFilters()
+        : { source: campaignForm.source };
+
+    const attachmentUrls: Array<{
+      url: string;
+      filename?: string;
+      contentType?: string;
+    }> = [];
+    if (mode === 'press') {
+      if (pressPdfUrl) {
+        attachmentUrls.push({
+          url: pressPdfUrl,
+          filename: 'nota-prensa.pdf',
+          contentType: 'application/pdf',
+        });
+      }
+      if (Array.isArray(pressPhotoUrls) && pressPhotoUrls.length > 0) {
+        pressPhotoUrls.forEach((u, i) => {
+          const fname = u.split('/').pop()?.split('?')[0] || `foto-${i + 1}.jpg`;
+          attachmentUrls.push({
+            url: u,
+            filename: fname,
+            contentType: 'image/jpeg',
+          });
+        });
+      }
+      if (Array.isArray(pressAttachments) && pressAttachments.length > 0) {
+        pressAttachments.forEach((a) =>
+          attachmentUrls.push({
+            url: a.url,
+            filename: a.name,
+            contentType: a.contentType,
+          }),
+        );
+      }
+    }
+
+    return {
+      subject: campaignForm.subject || '',
+      contentHtml: payload.campaignForm?.html || campaignForm.html || '',
+      blocksJson: payload,
+      filters,
+      attachmentUrls,
+    };
+  }, [
+    buildDraftPayload,
+    buildPressFilters,
+    mode,
+    campaignForm.source,
+    campaignForm.subject,
+    campaignForm.html,
+    pressPdfUrl,
+    pressPhotoUrls,
+    pressAttachments,
+  ]);
+
+  const loadSharedDraft = useCallback(
+    (draft: SharedDraftRow) => {
+      try {
+        const payload = draft.blocksJson as any;
+        if (payload && typeof payload === 'object') {
+          applyDraftPayload(payload);
+        } else {
+          setCampaignForm((prev) => ({
+            ...prev,
+            subject: draft.subject || prev.subject,
+            html: draft.contentHtml || prev.html,
+          }));
+        }
+      } catch (e) {
+        // fallback: carga mínima
+        setCampaignForm((prev) => ({
+          ...prev,
+          subject: draft.subject || prev.subject,
+          html: draft.contentHtml || prev.html,
+        }));
+      }
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    },
+    [applyDraftPayload, setCampaignForm],
+  );
 
   return (
     <div className={embeddedInShell ? 'space-y-8' : 'mt-8 space-y-8'}>
@@ -4993,6 +5086,13 @@ export default function NotasPrensaNewsletterClient({
           </div>
         </form>
       </section>
+
+      <DraftsAndScheduler
+        kind={mode === 'press' ? 'PRESS' : 'NEWSLETTER'}
+        getSnapshot={getSharedSnapshot}
+        onLoadDraft={loadSharedDraft}
+        onAfterSend={() => loadData()}
+      />
 
       <section id="ultimas-campanias" className="rounded-xl border border-border bg-card p-5">
         <h2 className="text-lg font-semibold">Últimas campañas</h2>

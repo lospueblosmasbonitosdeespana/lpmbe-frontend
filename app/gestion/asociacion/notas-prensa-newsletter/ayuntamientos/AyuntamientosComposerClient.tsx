@@ -3,6 +3,9 @@
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ContentBlock } from '@/app/_components/content-builder/ContentBlockBuilder';
+import DraftsAndScheduler, {
+  type DraftRow,
+} from '../_components/DraftsAndScheduler';
 
 const ContentBlockBuilder = dynamic(
   () => import('@/app/_components/content-builder/ContentBlockBuilder'),
@@ -144,6 +147,34 @@ export default function AyuntamientosComposerClient() {
     }),
     [selectedRegions, selectedRoles, includeAlcaldesUser, includeInstitutional],
   );
+
+  const getSnapshot = useCallback(
+    () => ({
+      subject: subject.trim(),
+      contentHtml: html,
+      blocksJson: blocks,
+      filters,
+    }),
+    [subject, html, blocks, filters],
+  );
+
+  const loadFromDraft = useCallback((draft: DraftRow) => {
+    setSubject(draft.subject || '');
+    setHtml(draft.contentHtml || '');
+    if (Array.isArray(draft.blocksJson)) {
+      setBlocks(draft.blocksJson as ContentBlock[]);
+    }
+    const f = (draft.filters || {}) as Record<string, unknown>;
+    const regs = Array.isArray(f.regions) ? (f.regions as RegionCode[]) : [];
+    const roles = Array.isArray(f.roles) ? (f.roles as string[]) : [];
+    setSelectedRegions(new Set(regs));
+    setSelectedRoles(new Set(roles));
+    if (typeof f.includeAlcaldesUser === 'boolean')
+      setIncludeAlcaldesUser(f.includeAlcaldesUser);
+    if (typeof f.includeInstitutional === 'boolean')
+      setIncludeInstitutional(f.includeInstitutional);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const canSend = subject.trim().length > 0 && html.trim().length > 0 && !sending;
 
@@ -436,6 +467,13 @@ export default function AyuntamientosComposerClient() {
           </div>
         </div>
       </section>
+
+      <DraftsAndScheduler
+        kind="AYUNTAMIENTOS"
+        getSnapshot={getSnapshot}
+        onLoadDraft={loadFromDraft}
+        onAfterSend={() => loadCampaigns()}
+      />
 
       <section className="rounded-xl border border-border bg-card p-5">
         <div className="flex items-center justify-between">
