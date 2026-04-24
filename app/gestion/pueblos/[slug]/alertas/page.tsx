@@ -16,6 +16,7 @@ type Notif = {
   slug?: string | null;
   pueblo?: { slug?: string | null } | null;
   createdAt?: string;
+  expiresAt?: string | null;
 };
 
 function getPuebloSlug(n: Notif) {

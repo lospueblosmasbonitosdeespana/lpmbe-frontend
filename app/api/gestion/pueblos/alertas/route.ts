@@ -96,6 +96,17 @@ export async function POST(req: Request) {
   const puebloSlug = body?.puebloSlug;
   const titulo = typeof body?.titulo === 'string' ? body.titulo.trim() : '';
   const contenido = typeof body?.contenido === 'string' ? body.contenido.trim() : '';
+  // expiresInDays: número (1–365), 0 = sin caducidad. Si no se envía, backend aplica default 10.
+  const rawExpires = body?.expiresInDays;
+  let expiresInDays: number | null | undefined = undefined;
+  if (rawExpires === 0 || rawExpires === '0' || rawExpires === null) {
+    expiresInDays = 0;
+  } else if (typeof rawExpires === 'number' && Number.isFinite(rawExpires)) {
+    expiresInDays = Math.max(0, Math.min(365, Math.floor(rawExpires)));
+  } else if (typeof rawExpires === 'string' && rawExpires !== '') {
+    const n = Number(rawExpires);
+    if (Number.isFinite(n)) expiresInDays = Math.max(0, Math.min(365, Math.floor(n)));
+  }
 
   if (!puebloSlug) return NextResponse.json({ message: 'puebloSlug requerido' }, { status: 400 });
   if (!titulo) return NextResponse.json({ message: 'titulo requerido' }, { status: 400 });
@@ -109,7 +120,7 @@ export async function POST(req: Request) {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ titulo, contenido: contenido || null }),
+    body: JSON.stringify({ titulo, contenido: contenido || null, expiresInDays }),
     cache: 'no-store',
   });
 
@@ -130,6 +141,7 @@ export async function POST(req: Request) {
       puebloSlug,
       titulo,
       contenido: contenido || null,
+      expiresInDays,
     }),
     cache: 'no-store',
   });

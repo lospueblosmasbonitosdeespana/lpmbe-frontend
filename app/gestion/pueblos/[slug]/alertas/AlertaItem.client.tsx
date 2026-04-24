@@ -11,19 +11,26 @@ type Props = {
     contenido: string;
     tipo: string;
     createdAt?: string | null;
+    expiresAt?: string | null;
   };
   slug: string;
 };
 
+function formatFecha(d: string | null | undefined) {
+  if (!d) return null;
+  return new Date(d).toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 export default function AlertaItem({ alerta, slug }: Props) {
   const router = useRouter();
-  const fecha = alerta.createdAt
-    ? new Date(alerta.createdAt).toLocaleDateString("es-ES", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      })
-    : null;
+  const fecha = formatFecha(alerta.createdAt);
+  const fechaCaducidad = formatFecha(alerta.expiresAt);
+  const caducada = alerta.expiresAt ? new Date(alerta.expiresAt).getTime() < Date.now() : false;
+  const sinCaducidad = !alerta.expiresAt;
 
   return (
     <article className="group overflow-hidden rounded-2xl border border-amber-100/90 bg-white shadow-sm transition-all duration-300 hover:border-amber-200 hover:shadow-md">
@@ -43,9 +50,24 @@ export default function AlertaItem({ alerta, slug }: Props) {
               </time>
             )}
           </div>
-          <span className="mt-1.5 inline-block rounded-full border border-amber-200/80 bg-amber-50/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800/90">
-            Aviso municipal
-          </span>
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            <span className="inline-block rounded-full border border-amber-200/80 bg-amber-50/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800/90">
+              Aviso municipal
+            </span>
+            {caducada ? (
+              <span className="inline-block rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                Caducada · ya no se muestra al público
+              </span>
+            ) : sinCaducidad ? (
+              <span className="inline-block rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                Sin caducidad
+              </span>
+            ) : fechaCaducidad ? (
+              <span className="inline-block rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                Activa hasta {fechaCaducidad}
+              </span>
+            ) : null}
+          </div>
           {alerta.contenido?.trim() ? (
             <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{alerta.contenido}</p>
           ) : (
