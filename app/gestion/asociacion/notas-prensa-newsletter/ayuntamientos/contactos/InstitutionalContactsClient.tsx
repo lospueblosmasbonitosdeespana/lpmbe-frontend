@@ -155,6 +155,7 @@ export default function InstitutionalContactsClient() {
   const [preview, setPreview] = useState<VcfPreview | null>(null);
   const [importExRoles, setImportExRoles] = useState(true);
   const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const page = useMemo(() => Math.floor(offset / PAGE_SIZE) + 1, [offset]);
@@ -363,15 +364,56 @@ export default function InstitutionalContactsClient() {
     }
   }
 
-  function onPickVcfFiles(e: React.ChangeEvent<HTMLInputElement>) {
-    const list = e.target.files;
-    if (!list || list.length === 0) return;
+  function addFiles(list: FileList | File[] | null) {
+    if (!list) return;
     const arr: File[] = [];
-    for (let i = 0; i < list.length; i++) arr.push(list[i]);
-    setPendingFiles(arr);
+    for (let i = 0; i < list.length; i++) {
+      const f = (list as any)[i] as File;
+      const name = (f.name || '').toLowerCase();
+      if (name.endsWith('.vcf') || name.endsWith('.vcard')) {
+        arr.push(f);
+      }
+    }
+    if (arr.length === 0) {
+      setError('Solo se aceptan archivos .vcf / .vcard');
+      return;
+    }
+    setPendingFiles((prev) => {
+      const existing = prev || [];
+      // Dedupe por nombre+size para que no se dupliquen al arrastrar varias veces
+      const key = (f: File) => `${f.name}::${f.size}`;
+      const existingKeys = new Set(existing.map(key));
+      const merged = [...existing];
+      for (const f of arr) {
+        if (!existingKeys.has(key(f))) merged.push(f);
+      }
+      return merged;
+    });
     setPreview(null);
     setMessage(null);
     setError(null);
+  }
+
+  function onPickVcfFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    addFiles(e.target.files);
+    // limpiamos el input para poder volver a seleccionar el mismo archivo si hiciera falta
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  function removePendingFile(idx: number) {
+    setPendingFiles((prev) => {
+      if (!prev) return prev;
+      const next = prev.slice();
+      next.splice(idx, 1);
+      return next.length === 0 ? null : next;
+    });
+    setPreview(null);
+  }
+
+  function clearPendingFiles() {
+    setPendingFiles(null);
+    setPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
   async function runVcfImport(apply: boolean) {
@@ -581,33 +623,131 @@ export default function InstitutionalContactsClient() {
             aplicar. El sistema descarta automáticamente los que ya son{' '}
             <strong>alcalde usuario</strong> (rol ALCALDE activo en la web).
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".vcf,text/vcard,text/x-vcard"
-              multiple
-              onChange={onPickVcfFiles}
-              disabled={importing}
-              className="text-sm"
-            />
-            <label className="flex items-center gap-2 text-xs">
-              <input
-                type="checkbox"
-                checked={importExRoles}
-                onChange={(e) => setImportExRoles(e.target.checked)}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".vcf,.vcard,text/vcard,text/x-vcard"
+            multiple
+            onChange={onPickVcfFiles}
+            disabled={importing}
+            className="sr-only"
+          />
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            onDragEnter={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsDragging(true);
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsDragging(true);
+            }}
+            onDragLeave={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsDragging(false);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsDragging(false);
+              if (e.dataTransfer?.files?.length) {
+                addFiles(e.dataTransfer.files);
+              }
+            }}
+            disabled={importing}
+            className={[
+              'mt-3 flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-8 text-center transition',
+              isDragging
+                ? 'border-primary bg-primary/5'
+                : 'border-amber-400 bg-white hover:border-primary hover:bg-amber-50',
+              importing ? 'cursor-wait opacity-60' : 'cursor-pointer',
+            ].join(' ')}
+          >
+            <svg
+              className="h-10 w-10 text-amber-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M7 16a4 4 0 01-.88-7.9 5 5 0 019.9-1A5.5 5.5 0 0117 16h-1m-4-4v8m0-8l-3 3m3-3l3 3"
               />
-              Importar ex-cargos como <strong>baja</strong> (quedan archivados,
-              no reciben envíos)
-            </label>
-          </div>
+            </svg>
+            <div className="text-sm font-semibold text-amber-900">
+              Pulsa aquí o arrastra los .vcf
+            </div>
+            <div className="text-xs text-amber-800">
+              Acepta varios archivos a la vez (Norte, Sur, Centro, Este). Solo
+              .vcf / .vcard.
+            </div>
+          </button>
+
+          {pendingFiles && pendingFiles.length > 0 ? (
+            <div className="mt-3 rounded-lg border border-amber-200 bg-white p-3">
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-semibold text-amber-900">
+                  {pendingFiles.length}{' '}
+                  {pendingFiles.length === 1 ? 'archivo listo' : 'archivos listos'}
+                </div>
+                <button
+                  type="button"
+                  onClick={clearPendingFiles}
+                  className="text-xs text-muted-foreground underline"
+                >
+                  Vaciar lista
+                </button>
+              </div>
+              <ul className="mt-2 space-y-1">
+                {pendingFiles.map((f, idx) => (
+                  <li
+                    key={`${f.name}-${f.size}-${idx}`}
+                    className="flex items-center justify-between rounded border border-amber-100 bg-amber-50/40 px-2 py-1 text-xs"
+                  >
+                    <span className="truncate">
+                      <span className="font-mono">{f.name}</span>
+                      <span className="ml-2 text-muted-foreground">
+                        {(f.size / 1024).toFixed(0)} KB
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removePendingFile(idx)}
+                      className="shrink-0 text-red-700 hover:underline"
+                    >
+                      Quitar
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          <label className="mt-3 flex items-center gap-2 text-xs">
+            <input
+              type="checkbox"
+              checked={importExRoles}
+              onChange={(e) => setImportExRoles(e.target.checked)}
+            />
+            Importar ex-cargos como <strong>baja</strong> (quedan archivados,
+            no reciben envíos)
+          </label>
+
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               onClick={() => runVcfImport(false)}
               disabled={importing || !pendingFiles || pendingFiles.length === 0}
-              className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium disabled:opacity-50"
+              className="rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium disabled:opacity-50"
             >
-              {importing ? '…' : 'Previsualizar (dry-run)'}
+              {importing ? '…' : '1 · Previsualizar (dry-run)'}
             </button>
             <button
               onClick={() => runVcfImport(true)}
@@ -616,8 +756,13 @@ export default function InstitutionalContactsClient() {
               }
               className="rounded-lg border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50"
             >
-              {importing ? '…' : 'Aplicar importación'}
+              {importing ? '…' : '2 · Aplicar importación'}
             </button>
+            {!preview && pendingFiles && pendingFiles.length > 0 ? (
+              <span className="self-center text-[11px] text-amber-800">
+                Primero pulsa «Previsualizar» para ver el plan.
+              </span>
+            ) : null}
           </div>
 
           {preview ? (
