@@ -166,6 +166,14 @@ const nextConfig: NextConfig = {
       { source: '/pueblos/candelario/paginas/boda-tipica', destination: '/pueblos/candelario/categoria/en-familia/boda-tipica', permanent: true },
       // Fallback: cualquier /pueblos/SLUG/paginas/X no mapeado → ficha del pueblo
       { source: '/pueblos/:slug/paginas/:page', destination: '/pueblos/:slug', permanent: true },
+      // Redirects 301: eventos con slugs "malos" generados por el bug de NFD/Unicode
+      // (títulos con caracteres Mathematical Bold 𝐅𝐄𝐒𝐓𝐈𝐕𝐀𝐋 producían slugs vacíos → '-2','-3','-6'...)
+      { source: '/eventos/-2', destination: '/eventos/facticias-indumentaria-tradicional-de-olivenza-en-retratos', permanent: true },
+      { source: '/eventos/-3', destination: '/eventos/exposicion-del-175-aniversario-de-la-filarmonica-de-olivenza', permanent: true },
+      { source: '/eventos/-4', destination: '/eventos/concierto-de-la-banda-de-musica-del-conservatorio-juan-vazquez', permanent: true },
+      { source: '/eventos/-5', destination: '/eventos/concierto-del-175-aniversario-de-la-filarmonica-de-olivenza', permanent: true },
+      { source: '/eventos/-6', destination: '/eventos/festival-jazz-vejer-del-25-al-27-de-junio', permanent: true },
+      { source: '/eventos/-7', destination: '/eventos/festival-vejer-flamenco-del-8-al-11-de-julio', permanent: true },
     ];
   },
   images: {
