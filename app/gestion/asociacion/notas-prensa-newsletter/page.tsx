@@ -24,7 +24,7 @@ export default async function NotasPrensaNewsletterPage() {
       backHref={ASOCIACION_BACK}
       backLabel={ASOCIACION_BACK_LABEL}
     >
-      <section className="grid gap-4 md:grid-cols-2">
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <article className="rounded-xl border border-border bg-card p-6">
           <h2 className="text-lg font-semibold">Newsletter</h2>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -49,6 +49,33 @@ export default async function NotasPrensaNewsletterPage() {
           >
             Ir a Notas de prensa
           </Link>
+        </article>
+
+        <article className="rounded-xl border-2 border-amber-300 bg-amber-50/50 p-6">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-amber-800">
+              Nuevo
+            </span>
+            <h2 className="text-lg font-semibold">Ayuntamientos</h2>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Comunicaciones internas a alcaldes y personal de ayuntamiento
+            (concejales, oficinas de turismo…). Mismo constructor visual.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link
+              href="/gestion/asociacion/notas-prensa-newsletter/ayuntamientos"
+              className="inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+            >
+              Ir a Ayuntamientos
+            </Link>
+            <Link
+              href="/gestion/asociacion/notas-prensa-newsletter/ayuntamientos/contactos"
+              className="inline-flex rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium"
+            >
+              Gestionar contactos
+            </Link>
+          </div>
         </article>
       </section>
     </GestionAsociacionSubpageShell>

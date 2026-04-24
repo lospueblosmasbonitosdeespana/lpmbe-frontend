@@ -134,6 +134,35 @@ export default function DatosUsuariosPage() {
         </p>
       </div>
 
+      <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50/60 p-4 text-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="font-semibold text-amber-900">
+              Contactos institucionales vs usuarios
+            </div>
+            <p className="mt-1 text-amber-900">
+              Esta pantalla lista <strong>usuarios</strong> de la web (con login y rol).
+              Los <strong>contactos institucionales</strong> (alcaldes, concejales, técnicos de turismo…
+              importados por vCard) son solo destinatarios de email; no tienen acceso ni aparecen aquí.
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <Link
+              href="/gestion/asociacion/datos/usuarios-por-pueblo"
+              className="rounded-lg border border-amber-400 bg-white px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-100"
+            >
+              Ver usuarios + institucionales por pueblo
+            </Link>
+            <Link
+              href="/gestion/asociacion/notas-prensa-newsletter/ayuntamientos/contactos"
+              className="rounded-lg border border-amber-400 bg-white px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-100"
+            >
+              Gestionar contactos institucionales
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <div className="mb-6 flex flex-wrap items-center gap-4">
         <input
           type="search"
