@@ -6,7 +6,7 @@ import { getApiUrl } from '@/lib/api';
  * POST /api/admin/uploads/press-attachment
  * Proxy streaming al backend para subir adjuntos de notas de prensa a R2.
  * Acepta: vídeo, audio, PDF, Word, Excel, PowerPoint, ZIP, CSV, imágenes.
- * Límite: 50MB.
+ * Límite: 12MB.
  */
 export async function POST(req: Request) {
   const token = await getToken();

@@ -1997,7 +1997,7 @@ export default function NotasPrensaNewsletterClient({
         let pdfUrl = pressPdfUrl.trim();
         if (!pdfUrl && pressPdfFile) pdfUrl = await uploadPressPdf();
         if (!pdfUrl) throw new Error('Debes subir un PDF para el envío');
-        let pdfFilename = pressPdfFile?.name || pdfUrl.split('/').pop()?.split('?')[0] || '';
+        const pdfFilename = pressPdfFile?.name || pdfUrl.split('/').pop()?.split('?')[0] || '';
         finalHtml = buildPdfEmailHtml(campaignForm.subject.trim(), pdfUrl);
         finalHtml = injectPreheader(finalHtml, campaignForm.preheader);
         const safeFilename = pdfFilename || `nota-prensa-${Date.now()}.pdf`;
@@ -2193,6 +2193,9 @@ export default function NotasPrensaNewsletterClient({
     if (!/\.pdf$/i.test(pressPdfFile.name) && pressPdfFile.type !== 'application/pdf') {
       throw new Error('El archivo debe ser PDF');
     }
+    if (pressPdfFile.size > 12 * 1024 * 1024) {
+      throw new Error('El PDF supera el límite máximo de 12MB para envío por email');
+    }
 
     setUploadingPdf(true);
     try {
@@ -2240,6 +2243,9 @@ export default function NotasPrensaNewsletterClient({
   }
 
   async function uploadPressAttachmentFile(file: File): Promise<{ url: string; name: string; contentType: string; size: number }> {
+    if (file.size > 12 * 1024 * 1024) {
+      throw new Error('El adjunto supera el límite máximo de 12MB para envío por email');
+    }
     const fd = new FormData();
     fd.append('file', file);
     fd.append('folder', 'newsletter/press-attachments');
@@ -2429,15 +2435,37 @@ export default function NotasPrensaNewsletterClient({
       filename?: string;
       contentType?: string;
     }> = [];
+    let contentHtml = payload.campaignForm?.html || campaignForm.html || '';
     if (mode === 'press') {
-      if (pressPdfUrl) {
+      if (pressSendMode === 'pdf') {
+        let pdfUrl = pressPdfUrl.trim();
+        let pdfFilename = '';
+        if (!pdfUrl && pressPdfFile) {
+          pdfUrl = await uploadPressPdf();
+        }
+        if (pressPdfFile?.name) {
+          pdfFilename = pressPdfFile.name;
+        }
+        if (!pdfFilename && pdfUrl) {
+          const fromUrl = pdfUrl.split('/').pop() || '';
+          pdfFilename = fromUrl.split('?')[0] || '';
+        }
+        if (!pdfUrl) {
+          throw new Error('Debes subir un PDF para programar el envío');
+        }
+        contentHtml = injectPreheader(
+          buildPdfEmailHtml(campaignForm.subject.trim(), pdfUrl),
+          campaignForm.preheader,
+        ).trim();
+        const safeFilename = pdfFilename || `nota-prensa-${Date.now()}.pdf`;
         attachmentUrls.push({
-          url: pressPdfUrl,
-          filename: 'nota-prensa.pdf',
+          url: pdfUrl,
+          filename: safeFilename.toLowerCase().endsWith('.pdf')
+            ? safeFilename
+            : `${safeFilename}.pdf`,
           contentType: 'application/pdf',
         });
-      }
-      if (Array.isArray(pressPhotoUrls) && pressPhotoUrls.length > 0) {
+      } else if (Array.isArray(pressPhotoUrls) && pressPhotoUrls.length > 0) {
         pressPhotoUrls.forEach((u, i) => {
           const fname = u.split('/').pop()?.split('?')[0] || `foto-${i + 1}.jpg`;
           attachmentUrls.push({
@@ -2460,7 +2488,7 @@ export default function NotasPrensaNewsletterClient({
 
     return {
       subject: campaignForm.subject || '',
-      contentHtml: payload.campaignForm?.html || campaignForm.html || '',
+      contentHtml,
       blocksJson: payload,
       filters,
       attachmentUrls,
@@ -2471,10 +2499,14 @@ export default function NotasPrensaNewsletterClient({
     mode,
     campaignForm.source,
     campaignForm.subject,
+    campaignForm.preheader,
     campaignForm.html,
+    pressSendMode,
+    pressPdfFile,
     pressPdfUrl,
     pressPhotoUrls,
     pressAttachments,
+    uploadPressPdf,
   ]);
 
   const loadSharedDraft = useCallback(
@@ -4805,7 +4837,7 @@ export default function NotasPrensaNewsletterClient({
             <div className="space-y-3 rounded-lg border border-border p-3">
               <p className="text-sm font-medium">Adjuntos adicionales</p>
               <p className="text-xs text-muted-foreground">
-                Vídeo (MP4, MOV), audio (MP3, WAV), documentos (Word, Excel, PowerPoint), imágenes o ZIP. Máx. 50MB por archivo · 5 adjuntos en total.
+                Vídeo (MP4, MOV), audio (MP3, WAV), documentos (Word, Excel, PowerPoint), imágenes o ZIP. Máx. 12MB por archivo · 5 adjuntos adicionales.
               </p>
 
               {/* Lista de adjuntos ya añadidos */}
@@ -4846,7 +4878,7 @@ export default function NotasPrensaNewsletterClient({
                     type="file"
                     className="sr-only"
                     disabled={uploadingAttachment}
-                    accept="video/mp4,video/quicktime,video/webm,video/x-msvideo,audio/mpeg,audio/mp3,audio/wav,audio/wave,audio/x-wav,audio/aac,audio/ogg,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/csv,application/zip,.mp4,.mov,.mp3,.wav,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.zip,.avi"
+                    accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif,video/mp4,video/quicktime,video/webm,video/x-msvideo,audio/mpeg,audio/mp3,audio/wav,audio/wave,audio/x-wav,audio/aac,audio/ogg,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/csv,application/zip,.mp4,.mov,.mp3,.wav,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.zip,.avi"
                     onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
