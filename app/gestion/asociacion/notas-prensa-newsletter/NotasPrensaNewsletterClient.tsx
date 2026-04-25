@@ -2704,6 +2704,24 @@ export default function NotasPrensaNewsletterClient({
                   2) Enviar desde PDF
                 </button>
               </div>
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                {pressSendMode === 'pdf' ? (
+                  <p>
+                    <strong>Se enviará:</strong> asunto, preheader, email breve automático, PDF principal y adjuntos adicionales.
+                    El contenido del editor no se usa en este modo.
+                  </p>
+                ) : (
+                  <p>
+                    <strong>Se enviará:</strong> asunto, preheader, contenido creado en editor, fotos insertadas/subidas para la nota y adjuntos adicionales.
+                    El PDF principal no se usa en este modo.
+                  </p>
+                )}
+                {pressSendMode === 'editor' && (pressPdfFile || pressPdfUrl) ? (
+                  <p className="mt-1">
+                    Hay un PDF preparado para “Enviar desde PDF”. No se adjuntará mientras estés en “Crear en editor”.
+                  </p>
+                ) : null}
+              </div>
             </div>
           ) : null}
 
@@ -4291,6 +4309,36 @@ export default function NotasPrensaNewsletterClient({
           {(mode !== 'press' || pressSendMode === 'editor') &&
           (mode !== 'newsletter' || newsletterComposerMode === 'editor') ? (
             <>
+              {mode === 'press' && pressSendMode === 'editor' && (pressPdfFile || pressPdfUrl) ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="font-semibold">PDF preparado para el modo “Enviar desde PDF”</p>
+                      <p className="text-xs">
+                        {pressPdfFile
+                          ? `Seleccionado: ${pressPdfFile.name}`
+                          : 'PDF subido y listo para usar si cambias al modo PDF.'}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPressSendMode('pdf')}
+                        className="rounded-md border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold"
+                      >
+                        Cambiar a PDF
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleRemovePdf}
+                        className="rounded-md border border-red-300 bg-white px-3 py-1.5 text-xs font-semibold text-red-700"
+                      >
+                        Quitar PDF
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
               {/* Selector Constructor / Editor clásico para PRENSA */}
               {mode === 'press' && pressSendMode === 'editor' && (
                 <div className="flex flex-wrap items-stretch gap-3 rounded-lg border border-border p-3">
@@ -4677,7 +4725,7 @@ export default function NotasPrensaNewsletterClient({
               </label>
               )}
 
-              {mode === 'press' ? (
+              {mode === 'press' && pressSendMode === 'editor' ? (
                 <div className="space-y-3">
                   <label className="block text-sm">
                     Fotos para la nota (máximo 10)
@@ -4783,6 +4831,10 @@ export default function NotasPrensaNewsletterClient({
 
           {mode === 'press' && pressSendMode === 'pdf' ? (
             <div className="space-y-3 rounded-lg border border-border p-3">
+              <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-900">
+                El PDF será el documento principal del envío. Las fotos de prensa deben añadirse abajo como
+                <strong> adjuntos adicionales</strong> para que vayan junto al PDF.
+              </div>
               <label className="block text-sm">
                 Subir PDF de la nota
                 <input
