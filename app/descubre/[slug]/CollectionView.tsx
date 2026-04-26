@@ -295,12 +295,15 @@ function PuebloCard({ pueblo: p, color, tags, locale = "es" }: { pueblo: Pueblo;
         {ranking ? (
           <>
             <span
-              className="absolute top-3 left-3 inline-flex h-7 min-w-7 items-center justify-center rounded-full px-2 text-xs font-extrabold text-neutral-900 shadow-md"
+              className="absolute top-3 left-3 inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-[11px] font-bold text-neutral-900 shadow-sm"
               style={{ backgroundColor: color }}
             >
               {ranking.position}
             </span>
-            <span className="absolute top-3 right-3 rounded-full bg-white/95 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-neutral-800 shadow-sm">
+            <span
+              className="absolute top-3 right-3 rounded-full px-2.5 py-0.5 text-xs font-bold text-neutral-900 shadow-sm"
+              style={{ backgroundColor: color }}
+            >
               {ranking.metric}
             </span>
           </>
@@ -430,12 +433,15 @@ function PuebloCardFeature({
           {ranking ? (
             <>
               <span
-                className="absolute top-3 left-3 inline-flex h-9 min-w-9 items-center justify-center rounded-full px-2.5 text-base font-extrabold text-neutral-900 shadow-md ring-2 ring-white/70"
+                className="absolute top-3 left-3 inline-flex h-7 min-w-7 items-center justify-center rounded-full px-2 text-xs font-bold text-neutral-900 shadow-md"
                 style={{ backgroundColor: color }}
               >
                 {ranking.position}
               </span>
-              <span className="absolute top-3 right-3 rounded-full bg-white/95 backdrop-blur-sm px-3 py-1 text-xs font-semibold text-neutral-800 shadow-sm">
+              <span
+                className="absolute top-3 right-3 rounded-full px-3 py-1 text-xs font-bold text-neutral-900 shadow-md"
+                style={{ backgroundColor: color }}
+              >
                 {ranking.metric}
               </span>
             </>
