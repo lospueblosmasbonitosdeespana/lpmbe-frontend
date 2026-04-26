@@ -59,11 +59,40 @@ const sectionBody = 'p-5 sm:p-6';
 const FUENTE_LABELS: Record<string, string> = {
   caracteristica: '🏰 Característica',
   servicio: '📍 Servicio del mapa',
+  ranking: '🏆 Valoraciones y usuarios',
   highlight: '📊 Highlight',
   ids: '📋 IDs fijos',
   comunidad: '🗺️ Comunidad',
   meteo: '🌤️ Meteo',
+  campo_pueblo: '📐 Campo del pueblo',
 };
+
+// Métricas disponibles para colecciones tipo ranking (Bloque A+B+C+D)
+const RANKING_METRICAS: Array<{
+  metric: 'rating' | 'visitas' | 'pageviews';
+  etiqueta: string;
+  emoji: string;
+  desc: string;
+}> = [
+  { metric: 'rating', etiqueta: 'Mejor valorados', emoji: '⭐', desc: 'Pueblos con mejor nota media (Wilson, mín. 3 valoraciones)' },
+  { metric: 'visitas', etiqueta: 'Más visitados', emoji: '📍', desc: 'Pueblos con más visitas registradas (GPS + manuales)' },
+  { metric: 'pageviews', etiqueta: 'Más buscados online', emoji: '🔍', desc: 'Pueblos cuya página oficial recibe más visitas' },
+];
+
+const RANKING_SCOPES: Array<{
+  scope: 'nacional' | 'norte' | 'sur' | 'este' | 'centro' | 'caracteristica' | 'servicio' | 'altura';
+  etiqueta: string;
+  desc: string;
+}> = [
+  { scope: 'nacional', etiqueta: 'Nacional', desc: 'Toda España' },
+  { scope: 'norte', etiqueta: 'Región Norte', desc: 'Galicia, Asturias, Cantabria, País Vasco, La Rioja, Burgos, Palencia, León' },
+  { scope: 'sur', etiqueta: 'Región Sur', desc: 'Canarias, Andalucía, Murcia, Albacete, Badajoz' },
+  { scope: 'este', etiqueta: 'Región Este', desc: 'Baleares, Aragón, Cataluña, Comunidad Valenciana, Navarra' },
+  { scope: 'centro', etiqueta: 'Región Centro', desc: 'Castilla y León (resto), Castilla-La Mancha (resto), Cáceres, Madrid' },
+  { scope: 'caracteristica', etiqueta: 'Por característica', desc: 'Filtrar por una característica del pueblo (castillo, murallas…)' },
+  { scope: 'servicio', etiqueta: 'Junto al mar', desc: 'Pueblos con playa cercana (servicio PLAYA)' },
+  { scope: 'altura', etiqueta: 'En altura (>1000m)', desc: 'Pueblos por encima de 1.000 m de altitud' },
+];
 
 const SERVICIOS_PARA_COLECCION: ServicioOption[] = [
   { tipo: 'CARAVANAS', etiqueta: 'Área de caravanas', emoji: '🚐' },
@@ -659,9 +688,17 @@ function EditColeccionForm({
   const [color, setColor] = useState(col.color);
   const [imagenUrl, setImagenUrl] = useState(col.imagenUrl ?? '');
   const [saving, setSaving] = useState(false);
+  const [translating, setTranslating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const idiomasCubiertos = useMemo(() => {
+    const required = ['es', 'en', 'fr', 'de', 'pt', 'it', 'ca'];
+    const t = col.titulo_i18n ?? {};
+    const d = col.descripcion_i18n ?? {};
+    return required.filter((l) => (t[l] ?? '').trim() && (d[l] ?? '').trim()).length;
+  }, [col]);
 
   async function handleUploadFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -719,6 +756,29 @@ function EditColeccionForm({
       setErrMsg(e.message);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleTranslate() {
+    if (!confirm('Traducir esta colección a inglés, francés, alemán, portugués, italiano y catalán con DeepL?\n\nSe sobrescribirán los textos existentes en esos idiomas (el español se mantiene tal cual).')) {
+      return;
+    }
+    setTranslating(true);
+    setErrMsg(null);
+    try {
+      const res = await fetch(`/api/admin/colecciones/${col.id}/translate`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const t = await res.text().catch(() => '');
+        throw new Error(t || `Error ${res.status}`);
+      }
+      onSaved();
+    } catch (e: any) {
+      setErrMsg(e.message);
+    } finally {
+      setTranslating(false);
     }
   }
 
@@ -811,6 +871,34 @@ function EditColeccionForm({
         </div>
       </div>
 
+      {/* Idiomas / DeepL */}
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border/60 bg-muted/20 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className="text-base">🌐</span>
+          <div>
+            <div className="text-xs font-semibold text-foreground">
+              Idiomas: <span className={idiomasCubiertos === 7 ? 'text-emerald-600' : 'text-amber-600'}>{idiomasCubiertos}/7</span>
+            </div>
+            <div className="text-[10px] text-muted-foreground">
+              {idiomasCubiertos === 7
+                ? 'Cubiertos: es · en · fr · de · pt · it · ca'
+                : 'Faltan idiomas para SEO internacional. Pulsa traducir.'}
+            </div>
+          </div>
+        </div>
+        <div className="ml-auto">
+          <button
+            type="button"
+            onClick={handleTranslate}
+            disabled={translating || saving}
+            className={btnSecondary}
+            title="Traduce título, descripción y meta SEO al resto de idiomas con DeepL"
+          >
+            {translating ? 'Traduciendo…' : '🌐 Traducir a 6 idiomas'}
+          </button>
+        </div>
+      </div>
+
       {errMsg && <p className="text-sm text-red-600">{errMsg}</p>}
 
       <div className="flex gap-2">
@@ -841,10 +929,17 @@ function NewColeccionForm({
   onCancel: () => void;
 }) {
   const [step, setStep] = useState<'source' | 'pick' | 'details'>('source');
-  const [fuente, setFuente] = useState<'caracteristica' | 'servicio'>('caracteristica');
+  const [fuente, setFuente] = useState<'caracteristica' | 'servicio' | 'ranking'>('caracteristica');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [selectedServicio, setSelectedServicio] = useState<string | null>(null);
   const [searchQ, setSearchQ] = useState('');
+
+  // Solo para fuente='ranking'
+  const [rankMetric, setRankMetric] = useState<'rating' | 'visitas' | 'pageviews'>('rating');
+  const [rankLimit, setRankLimit] = useState<10 | 20 | 30>(10);
+  const [rankScope, setRankScope] =
+    useState<'nacional' | 'norte' | 'sur' | 'este' | 'centro' | 'caracteristica' | 'servicio' | 'altura'>('nacional');
+  const [rankScopeTag, setRankScopeTag] = useState<string | null>(null);
 
   const [tituloEs, setTituloEs] = useState('');
   const [slug, setSlug] = useState('');
@@ -925,6 +1020,56 @@ function NewColeccionForm({
     setStep('details');
   }
 
+  function applyRankingPreset() {
+    const metricLbl =
+      rankMetric === 'rating' ? 'más bonitos'
+      : rankMetric === 'visitas' ? 'más visitados'
+      : 'más buscados online';
+    const scopeLbl =
+      rankScope === 'nacional' ? 'de España'
+      : rankScope === 'caracteristica'
+        ? (rankScopeTag
+            ? `con ${(tags.find((t) => t.tag === rankScopeTag)?.nombre_i18n.es ?? rankScopeTag).toLowerCase()}`
+            : 'por característica')
+      : rankScope === 'servicio' ? 'junto al mar'
+      : rankScope === 'altura' ? 'de montaña (>1000 m)'
+      : `del ${rankScope.charAt(0).toUpperCase()}${rankScope.slice(1)}`;
+    const titulo = `Los ${rankLimit} pueblos ${metricLbl} ${scopeLbl}`;
+
+    setTituloEs(titulo);
+    setSlug(autoSlug(titulo));
+    setIcono(rankMetric === 'rating' ? 'star' : rankMetric === 'visitas' ? 'users' : 'search');
+    setColor(rankMetric === 'rating' ? '#D4AF37' : rankMetric === 'visitas' ? '#5A8B6A' : '#4A7BB7');
+    setDescEs(
+      `Ranking dinámico de los ${rankLimit} pueblos ${metricLbl}${
+        rankScope === 'nacional' ? '' : ' ' + scopeLbl
+      } de la red Los Pueblos Más Bonitos de España. Calculado en tiempo real con datos reales.`,
+    );
+    setSeoTitleEs(`${titulo} | Los Pueblos Más Bonitos de España`);
+    setSeoDescEs(
+      `Descubre los ${rankLimit} pueblos ${metricLbl} ${scopeLbl} de la red oficial Los Pueblos Más Bonitos de España. Ranking actualizado.`,
+    );
+    setOrden(200);
+    setStep('details');
+  }
+
+  function buildRankingFiltro(): any {
+    const filtro: any = { metric: rankMetric, limit: rankLimit };
+    if (rankMetric === 'rating') filtro.minVotos = 3;
+
+    if (rankScope === 'nacional') return filtro;
+    if (['norte', 'sur', 'este', 'centro'].includes(rankScope)) {
+      filtro.scope = { region: rankScope };
+    } else if (rankScope === 'caracteristica' && rankScopeTag) {
+      filtro.scope = { caracteristica: { tag: rankScopeTag } };
+    } else if (rankScope === 'servicio') {
+      filtro.scope = { servicio: 'PLAYA' };
+    } else if (rankScope === 'altura') {
+      filtro.scope = { campo: { campo: 'altitud', op: 'gte', valor: 1000 } };
+    }
+    return filtro;
+  }
+
   async function handleCreate() {
     setSaving(true);
     setErrMsg(null);
@@ -933,11 +1078,14 @@ function NewColeccionForm({
       if (!finalSlug) throw new Error('Se necesita un título');
       if (!tituloEs.trim()) throw new Error('Se necesita un título');
 
-      const filtro = fuente === 'caracteristica'
-        ? { tag: selectedTag }
-        : { tipo: selectedServicio };
+      const filtro =
+        fuente === 'caracteristica'
+          ? { tag: selectedTag }
+          : fuente === 'servicio'
+          ? { tipo: selectedServicio }
+          : buildRankingFiltro();
 
-      const body = {
+      const body: any = {
         slug: finalSlug,
         fuente,
         icono,
@@ -950,6 +1098,8 @@ function NewColeccionForm({
         minPueblos,
         orden,
       };
+      // Las colecciones tipo ranking se crean ocultas: las activan los admin tras revisar.
+      if (fuente === 'ranking') body.activa = false;
 
       const res = await fetch('/api/admin/colecciones', {
         method: 'POST',
@@ -974,16 +1124,19 @@ function NewColeccionForm({
       <div className={sectionHead}>
         <h2 className="text-sm font-semibold text-foreground">
           {step === 'source' && 'Nueva colección — Paso 1: Tipo de página'}
-          {step === 'pick' && `Nueva colección — Paso 2: Elige ${fuente === 'caracteristica' ? 'la característica' : 'el servicio'}`}
+          {step === 'pick' && `Nueva colección — Paso 2: ${
+            fuente === 'caracteristica' ? 'Elige la característica' :
+            fuente === 'servicio' ? 'Elige el servicio' :
+            'Configura el ranking'
+          }`}
           {step === 'details' && 'Nueva colección — Paso 3: Detalles de la página'}
         </h2>
         <p className="mt-0.5 text-xs text-muted-foreground">
           {step === 'source' && '¿Qué tipo de dato alimenta esta colección?'}
-          {step === 'pick' && fuente === 'caracteristica'
-            ? `Se muestran las características que aún no tienen página (${availableTags.length} disponibles)`
-            : step === 'pick'
-            ? `Se muestran los servicios del mapa que aún no tienen página (${availableServicios.length} disponibles)`
-            : 'Revisa y personaliza los textos antes de crear la página'}
+          {step === 'pick' && fuente === 'caracteristica' && `Se muestran las características que aún no tienen página (${availableTags.length} disponibles)`}
+          {step === 'pick' && fuente === 'servicio' && `Se muestran los servicios del mapa que aún no tienen página (${availableServicios.length} disponibles)`}
+          {step === 'pick' && fuente === 'ranking' && 'Define qué métrica, tamaño y ámbito quieres rankear. Se actualizará automáticamente.'}
+          {step === 'details' && 'Revisa y personaliza los textos antes de crear la página'}
         </p>
       </div>
       <div className={`${sectionBody} space-y-4`}>
@@ -994,7 +1147,7 @@ function NewColeccionForm({
             <p className="text-sm text-foreground">
               Cada colección agrupa pueblos que comparten algo en común. Elige de dónde viene ese dato:
             </p>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-3">
               <button
                 onClick={() => { setFuente('caracteristica'); setStep('pick'); }}
                 className={`rounded-xl border-2 p-4 text-left transition-all hover:border-primary/50 hover:shadow-md ${
@@ -1004,7 +1157,7 @@ function NewColeccionForm({
                 <div className="text-lg">🏰</div>
                 <div className="mt-1 text-sm font-semibold text-foreground">Característica del pueblo</div>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  Catedrales, castillos, bodegas, murallas… marcadas por los alcaldes en la sección "Características".
+                  Catedrales, castillos, bodegas, murallas… marcadas por los alcaldes en la sección &quot;Características&quot;.
                 </p>
                 <p className="mt-1 text-[10px] font-medium text-emerald-600">
                   {availableTags.length} disponibles sin página
@@ -1023,6 +1176,21 @@ function NewColeccionForm({
                 </p>
                 <p className="mt-1 text-[10px] font-medium text-emerald-600">
                   {availableServicios.length} disponibles sin página
+                </p>
+              </button>
+              <button
+                onClick={() => { setFuente('ranking'); setStep('pick'); }}
+                className={`rounded-xl border-2 p-4 text-left transition-all hover:border-primary/50 hover:shadow-md ${
+                  fuente === 'ranking' ? 'border-primary bg-primary/5' : 'border-border'
+                }`}
+              >
+                <div className="text-lg">🏆</div>
+                <div className="mt-1 text-sm font-semibold text-foreground">Valoraciones y usuarios</div>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Top 10/20/30 dinámicos por valoración (Wilson), visitas reales o búsquedas online. Ámbito nacional, regional o por característica.
+                </p>
+                <p className="mt-1 text-[10px] font-medium text-amber-600">
+                  Se crea oculta · solo admins
                 </p>
               </button>
             </div>
@@ -1088,6 +1256,118 @@ function NewColeccionForm({
           </div>
         )}
 
+        {step === 'pick' && fuente === 'ranking' && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <button onClick={() => setStep('source')} className={btnSecondary}>
+                ← Atrás
+              </button>
+              <p className="text-xs text-muted-foreground">
+                Estas colecciones se calculan en tiempo real y se crean <strong>ocultas</strong> hasta que las actives.
+              </p>
+            </div>
+
+            {/* Métrica */}
+            <div>
+              <label className="text-xs font-semibold text-foreground">1. Métrica del ranking</label>
+              <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                {RANKING_METRICAS.map((m) => (
+                  <button
+                    key={m.metric}
+                    type="button"
+                    onClick={() => setRankMetric(m.metric)}
+                    className={`rounded-xl border-2 p-3 text-left text-sm transition-all hover:border-primary/50 ${
+                      rankMetric === m.metric ? 'border-primary bg-primary/5' : 'border-border'
+                    }`}
+                  >
+                    <div className="text-base">{m.emoji}</div>
+                    <div className="mt-1 font-semibold">{m.etiqueta}</div>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">{m.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Límite */}
+            <div>
+              <label className="text-xs font-semibold text-foreground">2. Tamaño del Top</label>
+              <div className="mt-2 flex gap-2">
+                {[10, 20, 30].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setRankLimit(n as 10 | 20 | 30)}
+                    className={`flex-1 rounded-xl border-2 px-3 py-2 text-sm font-semibold transition-all hover:border-primary/50 ${
+                      rankLimit === n ? 'border-primary bg-primary/5 text-foreground' : 'border-border text-muted-foreground'
+                    }`}
+                  >
+                    Top {n}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">Máximo 30 (la red tiene 126 pueblos).</p>
+            </div>
+
+            {/* Ámbito */}
+            <div>
+              <label className="text-xs font-semibold text-foreground">3. Ámbito</label>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {RANKING_SCOPES.map((s) => (
+                  <button
+                    key={s.scope}
+                    type="button"
+                    onClick={() => setRankScope(s.scope)}
+                    className={`rounded-xl border-2 p-2.5 text-left text-sm transition-all hover:border-primary/50 ${
+                      rankScope === s.scope ? 'border-primary bg-primary/5' : 'border-border'
+                    }`}
+                  >
+                    <div className="font-semibold text-foreground">{s.etiqueta}</div>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">{s.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Selector de característica si scope='caracteristica' */}
+            {rankScope === 'caracteristica' && (
+              <div>
+                <label className="text-xs font-semibold text-foreground">4. Característica</label>
+                <select
+                  value={rankScopeTag ?? ''}
+                  onChange={(e) => setRankScopeTag(e.target.value || null)}
+                  className={field}
+                >
+                  <option value="">— Elige una característica —</option>
+                  {tags
+                    .filter((t) => t.activo)
+                    .sort((a, b) => (a.nombre_i18n.es ?? a.tag).localeCompare(b.nombre_i18n.es ?? b.tag))
+                    .map((t) => {
+                      const cnt = counts.tags[t.tag] ?? 0;
+                      return (
+                        <option key={t.id} value={t.tag}>
+                          {t.nombre_i18n.es ?? t.tag} · {cnt} pueblos
+                        </option>
+                      );
+                    })}
+                </select>
+              </div>
+            )}
+
+            {/* Continuar */}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={applyRankingPreset}
+                disabled={rankScope === 'caracteristica' && !rankScopeTag}
+                className={btnPrimary}
+              >
+                Continuar →
+              </button>
+              <button onClick={onCancel} className={btnSecondary}>Cancelar</button>
+            </div>
+          </div>
+        )}
+
         {step === 'pick' && fuente === 'servicio' && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -1135,9 +1415,17 @@ function NewColeccionForm({
               <div className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-1.5">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
                 <span className="text-xs font-medium text-foreground">
-                  {fuente === 'caracteristica'
-                    ? tags.find((t) => t.tag === selectedTag)?.nombre_i18n.es ?? selectedTag
-                    : SERVICIOS_PARA_COLECCION.find((s) => s.tipo === selectedServicio)?.etiqueta ?? selectedServicio}
+                  {fuente === 'caracteristica' && (tags.find((t) => t.tag === selectedTag)?.nombre_i18n.es ?? selectedTag)}
+                  {fuente === 'servicio' && (SERVICIOS_PARA_COLECCION.find((s) => s.tipo === selectedServicio)?.etiqueta ?? selectedServicio)}
+                  {fuente === 'ranking' && (
+                    <>
+                      Top {rankLimit} ·{' '}
+                      {RANKING_METRICAS.find((m) => m.metric === rankMetric)?.etiqueta} ·{' '}
+                      {rankScope === 'caracteristica' && rankScopeTag
+                        ? tags.find((t) => t.tag === rankScopeTag)?.nombre_i18n.es ?? rankScopeTag
+                        : RANKING_SCOPES.find((s) => s.scope === rankScope)?.etiqueta}
+                    </>
+                  )}
                 </span>
               </div>
             </div>
