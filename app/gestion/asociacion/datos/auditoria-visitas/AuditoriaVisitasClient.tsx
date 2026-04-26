@@ -17,12 +17,15 @@ type AuditItem = {
   comunidad: string | null;
   origen: 'GPS' | 'MANUAL';
   source: VisitaSource;
+  flagged: boolean;
+  flagReason: string | null;
   fecha: string;
   addedBy: { userId: number; email: string; nombre: string | null } | null;
 };
 
 type AuditResponse = {
   total: number;
+  flaggedTotal: number;
   limit: number;
   offset: number;
   items: AuditItem[];
@@ -59,22 +62,38 @@ const SOURCE_META: Record<
   },
 };
 
+const FLAG_REASON_LABELS: Record<string, string> = {
+  MOCK_PROVIDER: 'GPS falseado (mock provider)',
+};
+
+function flagReasonLabel(reason: string | null): string {
+  if (!reason) return 'Sospechosa';
+  return FLAG_REASON_LABELS[reason] ?? reason;
+}
+
 const PAGE_SIZE = 50;
+
+type FlaggedFilter = '' | 'true' | 'false';
+type SourceFilter = '' | VisitaSource;
 
 export default function AuditoriaVisitasClient() {
   const [data, setData] = useState<AuditResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [source, setSource] = useState<VisitaSource | ''>('ADMIN_MANUAL');
+  // Por defecto mostramos las sospechosas — son las que requieren acción.
+  const [source, setSource] = useState<SourceFilter>('');
+  const [flagged, setFlagged] = useState<FlaggedFilter>('true');
   const [addedByUserId, setAddedByUserId] = useState('');
   const [userId, setUserId] = useState('');
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
   const [offset, setOffset] = useState(0);
+  const [actionMsg, setActionMsg] = useState<string | null>(null);
 
   const queryString = useMemo(() => {
     const p = new URLSearchParams();
     if (source) p.set('source', source);
+    if (flagged) p.set('flagged', flagged);
     if (addedByUserId.trim()) p.set('addedByUserId', addedByUserId.trim());
     if (userId.trim()) p.set('userId', userId.trim());
     if (desde) p.set('desde', new Date(desde).toISOString());
@@ -82,7 +101,7 @@ export default function AuditoriaVisitasClient() {
     p.set('limit', String(PAGE_SIZE));
     p.set('offset', String(offset));
     return p.toString();
-  }, [source, addedByUserId, userId, desde, hasta, offset]);
+  }, [source, flagged, addedByUserId, userId, desde, hasta, offset]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -108,6 +127,50 @@ export default function AuditoriaVisitasClient() {
     fetchData();
   }, [fetchData]);
 
+  const approveVisita = useCallback(
+    async (item: AuditItem) => {
+      const ok = window.confirm(
+        `¿Aprobar la visita de ${item.userEmail} a ${item.puebloNombre}?\n\n` +
+          `Se quitará la marca de sospechosa y la visita quedará como una visita normal. ` +
+          `Los puntos del usuario no cambian.`,
+      );
+      if (!ok) return;
+      try {
+        const res = await fetch(`/api/admin/datos/visitas/${item.id}/approve`, {
+          method: 'POST',
+        });
+        if (!res.ok) throw new Error(await res.text());
+        setActionMsg(`Visita ${item.id} aprobada.`);
+        await fetchData();
+      } catch (e: any) {
+        setActionMsg(`Error aprobando: ${e?.message || e}`);
+      }
+    },
+    [fetchData],
+  );
+
+  const deleteVisita = useCallback(
+    async (item: AuditItem) => {
+      const ok = window.confirm(
+        `¿ANULAR la visita de ${item.userEmail} a ${item.puebloNombre}?\n\n` +
+          `Esta acción ELIMINA la visita y RETIRA los puntos asociados al usuario. ` +
+          `No se puede deshacer.`,
+      );
+      if (!ok) return;
+      try {
+        const res = await fetch(`/api/admin/datos/visitas/${item.id}`, {
+          method: 'DELETE',
+        });
+        if (!res.ok) throw new Error(await res.text());
+        setActionMsg(`Visita ${item.id} anulada y puntos retirados.`);
+        await fetchData();
+      } catch (e: any) {
+        setActionMsg(`Error anulando: ${e?.message || e}`);
+      }
+    },
+    [fetchData],
+  );
+
   const totalPages = data ? Math.max(1, Math.ceil(data.total / PAGE_SIZE)) : 1;
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
 
@@ -125,27 +188,53 @@ export default function AuditoriaVisitasClient() {
         </div>
         <p className="text-sm text-muted-foreground max-w-3xl">
           Listado de todas las visitas con la fuente que las creó (app móvil, usuario, admin o
-          script). Útil para investigar visitas dudosas: por defecto se muestran las creadas por
-          administradores. Cambia el filtro «Fuente» para ver otros casos.
+          script) y marca de sospecha. Por defecto se muestran las{' '}
+          <strong>sospechosas pendientes</strong>: visitas en las que la app móvil detectó que el
+          usuario tenía activa una app de simulación de GPS. Se computan igualmente y suman puntos,
+          pero un admin debería revisarlas y decidir si <em>aprobar</em> (era un falso positivo) o{' '}
+          <em>anular</em> (la visita era falsa).
         </p>
+        {data && (
+          <p className="text-xs text-muted-foreground">
+            <strong className="text-red-700">{data.flaggedTotal}</strong> visita
+            {data.flaggedTotal === 1 ? '' : 's'} sospechosa{data.flaggedTotal === 1 ? '' : 's'} en
+            total en el sistema.
+          </p>
+        )}
       </header>
 
       <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3 lg:grid-cols-7">
+          <label className="flex flex-col text-xs font-medium text-muted-foreground">
+            Sospechosa
+            <select
+              value={flagged}
+              onChange={(e) => {
+                setOffset(0);
+                setFlagged(e.target.value as FlaggedFilter);
+              }}
+              className="mt-1 rounded border border-border bg-background px-2 py-1.5 text-sm text-foreground"
+            >
+              <option value="">Todas</option>
+              <option value="true">Solo sospechosas</option>
+              <option value="false">Solo limpias</option>
+            </select>
+          </label>
+
           <label className="flex flex-col text-xs font-medium text-muted-foreground">
             Fuente
             <select
               value={source}
               onChange={(e) => {
                 setOffset(0);
-                setSource(e.target.value as any);
+                setSource(e.target.value as SourceFilter);
               }}
               className="mt-1 rounded border border-border bg-background px-2 py-1.5 text-sm text-foreground"
             >
               <option value="">Todas</option>
-              <option value="ADMIN_MANUAL">Admin (manual)</option>
               <option value="APP_AUTO">App (auto)</option>
               <option value="USER_MANUAL">Usuario</option>
+              <option value="ADMIN_MANUAL">Admin (manual)</option>
               <option value="SCRIPT">Script</option>
               <option value="LEGACY">Anterior</option>
             </select>
@@ -221,6 +310,11 @@ export default function AuditoriaVisitasClient() {
           {error}
         </div>
       )}
+      {actionMsg && (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          {actionMsg}
+        </div>
+      )}
 
       <section className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
@@ -257,13 +351,15 @@ export default function AuditoriaVisitasClient() {
               <th className="px-4 py-2 font-medium">Pueblo</th>
               <th className="px-4 py-2 font-medium">Origen</th>
               <th className="px-4 py-2 font-medium">Fuente</th>
+              <th className="px-4 py-2 font-medium">Estado</th>
               <th className="px-4 py-2 font-medium">Añadido por</th>
+              <th className="px-4 py-2 font-medium text-right">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {!loading && data && data.items.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-10 text-center text-muted-foreground">
                   No hay visitas que cumplan los filtros.
                 </td>
               </tr>
@@ -271,7 +367,12 @@ export default function AuditoriaVisitasClient() {
             {data?.items.map((it) => {
               const meta = SOURCE_META[it.source] ?? SOURCE_META.LEGACY;
               return (
-                <tr key={it.id} className="border-b border-border last:border-0 hover:bg-muted/30">
+                <tr
+                  key={it.id}
+                  className={`border-b border-border last:border-0 hover:bg-muted/30 ${
+                    it.flagged ? 'bg-red-50/40' : ''
+                  }`}
+                >
                   <td className="px-4 py-2 whitespace-nowrap text-muted-foreground">
                     {new Date(it.fecha).toLocaleString('es-ES', {
                       day: '2-digit',
@@ -308,6 +409,23 @@ export default function AuditoriaVisitasClient() {
                     </span>
                   </td>
                   <td className="px-4 py-2">
+                    {it.flagged ? (
+                      <span
+                        className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-800"
+                        title={flagReasonLabel(it.flagReason)}
+                      >
+                        ⚠ Sospechosa
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-muted-foreground">OK</span>
+                    )}
+                    {it.flagged && it.flagReason && (
+                      <div className="mt-0.5 text-[10px] text-red-700">
+                        {flagReasonLabel(it.flagReason)}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-4 py-2">
                     {it.addedBy ? (
                       <Link
                         href={`/gestion/asociacion/datos/usuarios/${it.addedBy.userId}`}
@@ -319,6 +437,26 @@ export default function AuditoriaVisitasClient() {
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
+                  </td>
+                  <td className="px-4 py-2 text-right">
+                    <div className="flex flex-wrap justify-end gap-1">
+                      {it.flagged && (
+                        <button
+                          onClick={() => approveVisita(it)}
+                          className="rounded border border-emerald-300 bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-800 hover:bg-emerald-100"
+                          title="Quitar la marca de sospechosa (era un falso positivo)"
+                        >
+                          Aprobar
+                        </button>
+                      )}
+                      <button
+                        onClick={() => deleteVisita(it)}
+                        className="rounded border border-red-300 bg-red-50 px-2 py-1 text-[11px] font-medium text-red-800 hover:bg-red-100"
+                        title="Eliminar la visita y retirar los puntos del usuario"
+                      >
+                        Anular
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );

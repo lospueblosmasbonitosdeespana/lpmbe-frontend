@@ -21,6 +21,7 @@ type AddedByUser = {
 type VisitaSource = 'APP_AUTO' | 'USER_MANUAL' | 'ADMIN_MANUAL' | 'SCRIPT' | 'LEGACY';
 
 type PuebloVisitado = {
+  visitaId?: number;
   puebloId: number;
   nombre: string;
   slug: string;
@@ -31,6 +32,8 @@ type PuebloVisitado = {
   valoracion: number | null;
   source?: VisitaSource;
   addedBy?: AddedByUser | null;
+  flagged?: boolean;
+  flagReason?: string | null;
 };
 
 type UserDetail = {
@@ -688,8 +691,29 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
                 </tr>
               ) : (
                 user.pueblosVisitados.pueblos.map((p) => (
-                  <tr key={p.puebloId} className="border-b border-border last:border-0 hover:bg-muted/30">
-                    <td className="px-4 py-3 font-medium text-foreground">{p.nombre}</td>
+                  <tr
+                    key={p.puebloId}
+                    className={`border-b border-border last:border-0 hover:bg-muted/30 ${
+                      p.flagged ? 'bg-red-50/40 dark:bg-red-950/20' : ''
+                    }`}
+                  >
+                    <td className="px-4 py-3 font-medium text-foreground">
+                      <div className="flex flex-col gap-1">
+                        <span>{p.nombre}</span>
+                        {p.flagged && (
+                          <span
+                            className="inline-flex w-fit items-center rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-800 dark:bg-red-900/40 dark:text-red-200"
+                            title={
+                              p.flagReason === 'MOCK_PROVIDER'
+                                ? 'La app móvil detectó que el GPS estaba siendo falsificado por una app externa.'
+                                : (p.flagReason ?? 'Sospechosa')
+                            }
+                          >
+                            ⚠ Sospechosa
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-muted-foreground">{p.provincia ?? '—'}</td>
                     <td className="px-4 py-3 text-muted-foreground">{p.comunidad ?? '—'}</td>
                     <td className="px-4 py-3">
