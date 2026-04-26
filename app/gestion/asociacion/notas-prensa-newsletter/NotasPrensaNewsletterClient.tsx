@@ -2145,6 +2145,13 @@ export default function NotasPrensaNewsletterClient({
     if (pressPhotoFiles.length + pressPhotoUrls.length > 10) {
       throw new Error('Puedes subir un máximo de 10 fotos por nota de prensa');
     }
+    for (const file of pressPhotoFiles) {
+      if (file.size > 12 * 1024 * 1024) {
+        throw new Error(
+          `La foto "${file.name}" supera el límite de 12 MB para envío por email. Reduce su tamaño antes de subirla.`,
+        );
+      }
+    }
 
     setUploadingPhotos(true);
     try {
