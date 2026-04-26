@@ -158,6 +158,34 @@ function newBlockId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+/**
+ * Infiere el content-type real de una imagen a partir de su nombre.
+ * Antes mandábamos siempre `image/jpeg` y combinado con la sanitización
+ * agresiva del backend hacía que llegasen archivos como `.pn` o se
+ * renombrara erróneamente la extensión.
+ */
+function inferImageContentType(filename: string): string {
+  const ext = (filename.split('.').pop() || '').toLowerCase().split('?')[0];
+  switch (ext) {
+    case 'png':
+      return 'image/png';
+    case 'webp':
+      return 'image/webp';
+    case 'gif':
+      return 'image/gif';
+    case 'svg':
+      return 'image/svg+xml';
+    case 'heic':
+      return 'image/heic';
+    case 'heif':
+      return 'image/heif';
+    case 'jpeg':
+    case 'jpg':
+    default:
+      return 'image/jpeg';
+  }
+}
+
 function sanitizeTemplateUrl(raw: string): string {
   const url = String(raw || '').trim();
   if (!url) return '';
@@ -1937,7 +1965,7 @@ export default function NotasPrensaNewsletterClient({
     if (mode === 'press' && photoUrlsForSend.length > 0) {
       photoUrlsForSend.forEach((url, i) => {
         const fname = url.split('/').pop()?.split('?')[0] || `foto-nota-prensa-${i + 1}.jpg`;
-        allAttachments.push({ url, filename: fname, contentType: 'image/jpeg' });
+        allAttachments.push({ url, filename: fname, contentType: inferImageContentType(fname) });
       });
     }
     if (mode === 'press' && pressAttachments.length > 0) {
@@ -2029,7 +2057,7 @@ export default function NotasPrensaNewsletterClient({
         if (mode === 'press' && photoUrlsForTest.length > 0) {
           photoUrlsForTest.forEach((url, i) => {
             const fname = url.split('/').pop()?.split('?')[0] || `foto-nota-prensa-${i + 1}.jpg`;
-            testAttachments.push({ url, filename: fname, contentType: 'image/jpeg' });
+            testAttachments.push({ url, filename: fname, contentType: inferImageContentType(fname) });
           });
         }
         if (mode === 'press' && pressAttachments.length > 0) {
@@ -2478,7 +2506,7 @@ export default function NotasPrensaNewsletterClient({
           attachmentUrls.push({
             url: u,
             filename: fname,
-            contentType: 'image/jpeg',
+            contentType: inferImageContentType(fname),
           });
         });
       }
