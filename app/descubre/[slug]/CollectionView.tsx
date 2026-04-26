@@ -83,14 +83,29 @@ const VILLAGES_LABEL: Record<string, string> = {
   ca: "pobles",
 };
 
+const DISCOVER_LABEL: Record<string, string> = {
+  es: "Descubrir",
+  en: "Discover",
+  fr: "Découvrir",
+  de: "Entdecken",
+  pt: "Descobrir",
+  it: "Scopri",
+  ca: "Descobreix",
+};
+
 type TagBadge = { tag: string; icono: string; color: string; nombre_i18n: Record<string, string>; cantidad: number | null };
+
+const FEATURE_THRESHOLD = 20;
 
 export function CollectionView({ data, locale }: { data: CollectionData; locale: string }) {
   const backLabel = BACK_LABELS[locale] ?? BACK_LABELS.es;
   const villagesLabel = VILLAGES_LABEL[locale] ?? VILLAGES_LABEL.es;
+  const discoverLabel = DISCOVER_LABEL[locale] ?? DISCOVER_LABEL.es;
   // Las colecciones cuyo orden lo decide el backend (ranking por valoraciones/visitas/búsquedas
   // o meteo) NO se agrupan por CCAA: se muestran tal cual, en orden de posición.
   const isOrderedFlat = data.type === "meteo" || data.type === "ranking";
+  // Cuando hay pocos pueblos usamos tarjetas grandes (estilo destacado de portada).
+  const useFeature = data.pueblos.length <= FEATURE_THRESHOLD;
 
   const [bulkTags, setBulkTags] = React.useState<Record<string, TagBadge[]>>({});
   React.useEffect(() => {
@@ -183,10 +198,20 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
             </p>
           </div>
         ) : isOrderedFlat ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {data.pueblos.map((p) => (
-              <PuebloCard key={p.id} pueblo={p} color={data.color} tags={bulkTags[String(p.id)]} locale={locale} />
-            ))}
+          <div
+            className={
+              useFeature
+                ? "grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                : "grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            }
+          >
+            {data.pueblos.map((p) =>
+              useFeature ? (
+                <PuebloCardFeature key={p.id} pueblo={p} color={data.color} discoverLabel={discoverLabel} />
+              ) : (
+                <PuebloCard key={p.id} pueblo={p} color={data.color} tags={bulkTags[String(p.id)]} locale={locale} />
+              ),
+            )}
           </div>
         ) : (
           <div className="space-y-10">
@@ -205,10 +230,20 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
                     <span className="text-sm text-neutral-400">({byCCAA[ccaa].length})</span>
                     <div className="h-px flex-1 bg-[#e2d5cb] dark:bg-neutral-700" />
                   </div>
-                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {byCCAA[ccaa].map((p) => (
-                      <PuebloCard key={p.id} pueblo={p} color={data.color} tags={bulkTags[String(p.id)]} locale={locale} />
-                    ))}
+                  <div
+                    className={
+                      useFeature
+                        ? "grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                        : "grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                    }
+                  >
+                    {byCCAA[ccaa].map((p) =>
+                      useFeature ? (
+                        <PuebloCardFeature key={p.id} pueblo={p} color={data.color} discoverLabel={discoverLabel} />
+                      ) : (
+                        <PuebloCard key={p.id} pueblo={p} color={data.color} tags={bulkTags[String(p.id)]} locale={locale} />
+                      ),
+                    )}
                   </div>
                 </div>
               );
@@ -327,6 +362,104 @@ function PuebloCard({ pueblo: p, color, tags, locale = "es" }: { pueblo: Pueblo;
         className="h-0.5 w-full mt-auto transition-all group-hover:h-1"
         style={{ backgroundColor: color }}
       />
+    </Link>
+  );
+}
+
+// Tarjeta destacada (estilo portada): foto vertical grande, nombre serif debajo,
+// provincia y CTA "Descubrir →". Se usa cuando la colección tiene pocos pueblos.
+function PuebloCardFeature({
+  pueblo: p,
+  color,
+  discoverLabel,
+}: {
+  pueblo: Pueblo;
+  color: string;
+  discoverLabel: string;
+}) {
+  const flagSrc = getComunidadFlagSrc(p.comunidad);
+  const hasPhoto = !!p.foto_destacada;
+  const badge = p.highlightExtra ?? (p.habitantes ? `${p.habitantes} hab.` : null);
+  const href = p.linkUrl || `/pueblos/${p.slug}`;
+
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col"
+    >
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#efe2d8] to-[#d4c4b5] shadow-md transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
+        <div className="relative aspect-[4/5] overflow-hidden">
+          {hasPhoto ? (
+            <Image
+              src={p.foto_destacada!}
+              alt={p.linkedName ?? p.nombre}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-110"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <span className="text-5xl opacity-30">🏘️</span>
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+
+          {badge && (
+            <span
+              className="absolute top-3 right-3 rounded-full px-3 py-1 text-xs font-bold text-neutral-900 shadow-md"
+              style={{ backgroundColor: color }}
+            >
+              {badge}
+            </span>
+          )}
+
+          {p.meteo && p.meteo.temperatureC != null && !p.highlightExtra && (
+            <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-neutral-800 shadow-sm">
+              <WeatherIcon code={p.meteo.weatherCode} />
+              <span>{Math.round(p.meteo.temperatureC)}°</span>
+            </div>
+          )}
+
+          {p.visitable && (
+            <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-emerald-500/95 backdrop-blur-sm px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm">
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+              Visitable
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-4 px-1 text-center">
+        {p.linkedName && (
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 mb-1">
+            {p.linkedName}
+          </p>
+        )}
+        <h2 className="font-serif text-2xl font-bold text-[#3d2c1e] dark:text-neutral-100 leading-tight">
+          {p.nombre}
+        </h2>
+        <div className="mt-1.5 flex items-center justify-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400">
+          {flagSrc && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={flagSrc}
+              alt={p.comunidad}
+              className="h-3.5 w-5 rounded-[2px] object-cover shrink-0"
+            />
+          )}
+          <span className="truncate">{p.provincia}</span>
+        </div>
+        <div
+          className="mt-3 inline-flex items-center gap-1 text-sm font-semibold transition-all group-hover:gap-2"
+          style={{ color }}
+        >
+          {discoverLabel}
+          <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12h14" />
+            <path d="m13 6 6 6-6 6" />
+          </svg>
+        </div>
+      </div>
     </Link>
   );
 }
