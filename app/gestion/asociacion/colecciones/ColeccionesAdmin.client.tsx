@@ -80,7 +80,7 @@ const RANKING_METRICAS: Array<{
 ];
 
 const RANKING_SCOPES: Array<{
-  scope: 'nacional' | 'norte' | 'sur' | 'este' | 'centro' | 'caracteristica' | 'servicio' | 'altura';
+  scope: 'nacional' | 'norte' | 'sur' | 'este' | 'centro';
   etiqueta: string;
   desc: string;
 }> = [
@@ -89,9 +89,6 @@ const RANKING_SCOPES: Array<{
   { scope: 'sur', etiqueta: 'Región Sur', desc: 'Canarias, Andalucía, Murcia, Albacete, Badajoz' },
   { scope: 'este', etiqueta: 'Región Este', desc: 'Baleares, Aragón, Cataluña, Comunidad Valenciana, Navarra' },
   { scope: 'centro', etiqueta: 'Región Centro', desc: 'Castilla y León (resto), Castilla-La Mancha (resto), Cáceres, Madrid' },
-  { scope: 'caracteristica', etiqueta: 'Por característica', desc: 'Filtrar por una característica del pueblo (castillo, murallas…)' },
-  { scope: 'servicio', etiqueta: 'Junto al mar', desc: 'Pueblos con playa cercana (servicio PLAYA)' },
-  { scope: 'altura', etiqueta: 'En altura (>1000m)', desc: 'Pueblos por encima de 1.000 m de altitud' },
 ];
 
 const SERVICIOS_PARA_COLECCION: ServicioOption[] = [
@@ -938,8 +935,7 @@ function NewColeccionForm({
   const [rankMetric, setRankMetric] = useState<'rating' | 'visitas' | 'pageviews'>('rating');
   const [rankLimit, setRankLimit] = useState<10 | 20 | 30>(10);
   const [rankScope, setRankScope] =
-    useState<'nacional' | 'norte' | 'sur' | 'este' | 'centro' | 'caracteristica' | 'servicio' | 'altura'>('nacional');
-  const [rankScopeTag, setRankScopeTag] = useState<string | null>(null);
+    useState<'nacional' | 'norte' | 'sur' | 'este' | 'centro'>('nacional');
   const [rankPreviewCount, setRankPreviewCount] = useState<number | null>(null);
   const [rankPreviewLoading, setRankPreviewLoading] = useState(false);
 
@@ -997,14 +993,9 @@ function NewColeccionForm({
       : rankMetric === 'visitas' ? 'más visitados'
       : 'más buscados online';
     const scopeLbl =
-      rankScope === 'nacional' ? 'de España'
-      : rankScope === 'caracteristica'
-        ? (rankScopeTag
-            ? `con ${(tags.find((t) => t.tag === rankScopeTag)?.nombre_i18n.es ?? rankScopeTag).toLowerCase()}`
-            : 'por característica')
-      : rankScope === 'servicio' ? 'junto al mar'
-      : rankScope === 'altura' ? 'de montaña (>1000 m)'
-      : `del ${rankScope.charAt(0).toUpperCase()}${rankScope.slice(1)}`;
+      rankScope === 'nacional'
+        ? 'de España'
+        : `del ${rankScope.charAt(0).toUpperCase()}${rankScope.slice(1)}`;
     const titulo = `Los ${rankLimit} pueblos ${metricLbl} ${scopeLbl}`;
     const desc = `Ranking dinámico de los ${rankLimit} pueblos ${metricLbl}${
       rankScope === 'nacional' ? '' : ' ' + scopeLbl
@@ -1015,27 +1006,15 @@ function NewColeccionForm({
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
     return { titulo, desc, slug: slugPv };
-  }, [fuente, rankMetric, rankLimit, rankScope, rankScopeTag, tags]);
+  }, [fuente, rankMetric, rankLimit, rankScope]);
 
   // Cuenta en tiempo real cuántos pueblos coincidirían con el filtro de ranking
   useEffect(() => {
     if (fuente !== 'ranking') return;
-    if (rankScope === 'caracteristica' && !rankScopeTag) {
-      setRankPreviewCount(null);
-      return;
-    }
     const filtro: any = { metric: rankMetric, limit: rankLimit };
     if (rankMetric === 'rating') filtro.minVotos = 3;
-    if (rankScope === 'nacional') {
-      // Sin scope
-    } else if (['norte', 'sur', 'este', 'centro'].includes(rankScope)) {
+    if (rankScope !== 'nacional') {
       filtro.scope = { region: rankScope };
-    } else if (rankScope === 'caracteristica' && rankScopeTag) {
-      filtro.scope = { caracteristica: { tag: rankScopeTag } };
-    } else if (rankScope === 'servicio') {
-      filtro.scope = { servicio: 'PLAYA' };
-    } else if (rankScope === 'altura') {
-      filtro.scope = { campo: { campo: 'altitud', op: 'gte', valor: 1000 } };
     }
 
     const ctrl = new AbortController();
@@ -1063,7 +1042,7 @@ function NewColeccionForm({
       ctrl.abort();
       clearTimeout(t);
     };
-  }, [fuente, rankMetric, rankLimit, rankScope, rankScopeTag]);
+  }, [fuente, rankMetric, rankLimit, rankScope]);
 
   function autoSlug(title: string) {
     return title
@@ -1104,14 +1083,9 @@ function NewColeccionForm({
       : rankMetric === 'visitas' ? 'más visitados'
       : 'más buscados online';
     const scopeLbl =
-      rankScope === 'nacional' ? 'de España'
-      : rankScope === 'caracteristica'
-        ? (rankScopeTag
-            ? `con ${(tags.find((t) => t.tag === rankScopeTag)?.nombre_i18n.es ?? rankScopeTag).toLowerCase()}`
-            : 'por característica')
-      : rankScope === 'servicio' ? 'junto al mar'
-      : rankScope === 'altura' ? 'de montaña (>1000 m)'
-      : `del ${rankScope.charAt(0).toUpperCase()}${rankScope.slice(1)}`;
+      rankScope === 'nacional'
+        ? 'de España'
+        : `del ${rankScope.charAt(0).toUpperCase()}${rankScope.slice(1)}`;
     const titulo = `Los ${rankLimit} pueblos ${metricLbl} ${scopeLbl}`;
 
     setTituloEs(titulo);
@@ -1134,16 +1108,8 @@ function NewColeccionForm({
   function buildRankingFiltro(): any {
     const filtro: any = { metric: rankMetric, limit: rankLimit };
     if (rankMetric === 'rating') filtro.minVotos = 3;
-
-    if (rankScope === 'nacional') return filtro;
-    if (['norte', 'sur', 'este', 'centro'].includes(rankScope)) {
+    if (rankScope !== 'nacional') {
       filtro.scope = { region: rankScope };
-    } else if (rankScope === 'caracteristica' && rankScopeTag) {
-      filtro.scope = { caracteristica: { tag: rankScopeTag } };
-    } else if (rankScope === 'servicio') {
-      filtro.scope = { servicio: 'PLAYA' };
-    } else if (rankScope === 'altura') {
-      filtro.scope = { campo: { campo: 'altitud', op: 'gte', valor: 1000 } };
     }
     return filtro;
   }
@@ -1407,32 +1373,10 @@ function NewColeccionForm({
                       </button>
                     ))}
                   </div>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    Para rankings por característica (castillo, costeros, altura…) usa el tipo «Característica» o «Servicio» del paso 1.
+                  </p>
                 </div>
-
-                {/* Selector de característica si scope='caracteristica' */}
-                {rankScope === 'caracteristica' && (
-                  <div>
-                    <label className="text-xs font-semibold text-foreground">4. Característica</label>
-                    <select
-                      value={rankScopeTag ?? ''}
-                      onChange={(e) => setRankScopeTag(e.target.value || null)}
-                      className={field}
-                    >
-                      <option value="">— Elige una característica —</option>
-                      {tags
-                        .filter((t) => t.activo)
-                        .sort((a, b) => (a.nombre_i18n.es ?? a.tag).localeCompare(b.nombre_i18n.es ?? b.tag))
-                        .map((t) => {
-                          const cnt = counts.tags[t.tag] ?? 0;
-                          return (
-                            <option key={t.id} value={t.tag}>
-                              {t.nombre_i18n.es ?? t.tag} · {cnt} pueblos
-                            </option>
-                          );
-                        })}
-                    </select>
-                  </div>
-                )}
               </div>
 
               {/* Columna lateral: vista previa en vivo */}
@@ -1479,7 +1423,6 @@ function NewColeccionForm({
               <button
                 type="button"
                 onClick={applyRankingPreset}
-                disabled={rankScope === 'caracteristica' && !rankScopeTag}
                 className={btnPrimary}
               >
                 Continuar a edición de texto y SEO →
@@ -1542,9 +1485,7 @@ function NewColeccionForm({
                     <>
                       Top {rankLimit} ·{' '}
                       {RANKING_METRICAS.find((m) => m.metric === rankMetric)?.etiqueta} ·{' '}
-                      {rankScope === 'caracteristica' && rankScopeTag
-                        ? tags.find((t) => t.tag === rankScopeTag)?.nombre_i18n.es ?? rankScopeTag
-                        : RANKING_SCOPES.find((s) => s.scope === rankScope)?.etiqueta}
+                      {RANKING_SCOPES.find((s) => s.scope === rankScope)?.etiqueta}
                     </>
                   )}
                 </span>
