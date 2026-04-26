@@ -4853,30 +4853,67 @@ export default function NotasPrensaNewsletterClient({
               )}
 
               {mode === 'press' && pressSendMode === 'editor' ? (
-                <div className="space-y-3">
-                  <label className="block text-sm">
-                    Fotos para la nota (máximo 10)
-                    <input
-                      ref={photosInputRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={(e) =>
-                        setPressPhotoFiles(Array.from(e.target.files || []).slice(0, 10))
-                      }
-                      className="mt-1 block text-sm"
-                    />
-                  </label>
+                <div className="space-y-3 overflow-hidden rounded-2xl border border-sky-200/80 bg-gradient-to-b from-sky-50/40 to-white p-4 shadow-sm shadow-sky-100/40 dark:border-sky-800/50 dark:from-sky-950/30 dark:to-card dark:shadow-none">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 shadow-md shadow-sky-200/60">
+                      <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                        <path d="M3 9a2 2 0 012-2h2l2-3h6l2 3h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <circle cx="12" cy="13" r="3.5" />
+                      </svg>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm font-bold text-foreground">Fotos para la nota</h3>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        Máximo 10 imágenes (JPG, PNG, WEBP). Se enviarán como adjuntos del email.
+                      </p>
+                    </div>
+                    <span className="shrink-0 self-start rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-bold text-sky-700 ring-1 ring-sky-200 dark:bg-sky-950 dark:text-sky-200 dark:ring-sky-800">
+                      {pressPhotoUrls.length}/10
+                    </span>
+                  </div>
+                  <input
+                    ref={photosInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) =>
+                      setPressPhotoFiles(Array.from(e.target.files || []).slice(0, 10))
+                    }
+                    className="sr-only"
+                  />
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
                       onClick={handlePhotosButtonClick}
                       disabled={uploadingPhotos || loading}
-                      className="rounded-lg border border-border px-3 py-2 text-sm font-medium disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-sky-500 to-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-sky-200/60 transition hover:from-sky-600 hover:to-sky-700 disabled:opacity-50 active:scale-[0.98]"
                     >
-                      {uploadingPhotos ? 'Subiendo fotos...' : pressPhotoFiles.length > 0 ? 'Subir fotos' : 'Seleccionar fotos'}
+                      {uploadingPhotos ? (
+                        <>
+                          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                            <circle cx="12" cy="12" r="10" strokeOpacity=".3" />
+                            <path d="M22 12a10 10 0 01-10 10" />
+                          </svg>
+                          Subiendo fotos…
+                        </>
+                      ) : pressPhotoFiles.length > 0 ? (
+                        <>
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                            <path d="M17 8l-5-5-5 5M12 3v12" />
+                          </svg>
+                          Subir {pressPhotoFiles.length} {pressPhotoFiles.length === 1 ? 'foto' : 'fotos'}
+                        </>
+                      ) : (
+                        <>
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                            <path d="M12 5v14M5 12h14" />
+                          </svg>
+                          Seleccionar fotos
+                        </>
+                      )}
                     </button>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs font-medium text-muted-foreground">
                       {pressPhotoFiles.length} seleccionadas · {pressPhotoUrls.length} subidas
                     </span>
                   </div>
@@ -4957,44 +4994,78 @@ export default function NotasPrensaNewsletterClient({
           ) : null}
 
           {mode === 'press' && pressSendMode === 'pdf' ? (
-            <div className="space-y-3 rounded-lg border border-border p-3">
-              <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-900">
-                El PDF será el documento principal del envío. Las fotos de prensa deben añadirse abajo como
-                <strong> adjuntos adicionales</strong> para que vayan junto al PDF.
+            <div className="space-y-3 overflow-hidden rounded-2xl border border-rose-200/80 bg-gradient-to-b from-rose-50/40 to-white p-4 shadow-sm shadow-rose-100/40 dark:border-rose-800/50 dark:from-rose-950/30 dark:to-card dark:shadow-none">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 shadow-md shadow-rose-200/60">
+                  <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <path d="M8 13h8M8 17h6" />
+                  </svg>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-bold text-foreground">Subir PDF de la nota</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    El PDF será el documento principal. Las fotos de prensa van como adjuntos adicionales.
+                  </p>
+                </div>
               </div>
-              <label className="block text-sm">
-                Subir PDF de la nota
-                <input
-                  ref={pdfInputRef}
-                  type="file"
-                  accept="application/pdf,.pdf"
-                  onChange={(e) => {
-                    setPressPdfFile(e.target.files?.[0] || null);
-                    setPressPdfUrl('');
-                  }}
-                  className="mt-1 block text-sm"
-                />
-              </label>
+              <input
+                ref={pdfInputRef}
+                type="file"
+                accept="application/pdf,.pdf"
+                onChange={(e) => {
+                  setPressPdfFile(e.target.files?.[0] || null);
+                  setPressPdfUrl('');
+                }}
+                className="sr-only"
+              />
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={handlePdfButtonClick}
                   disabled={uploadingPdf || loading}
-                  className="rounded-lg border border-border px-3 py-2 text-sm font-medium disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-rose-500 to-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-rose-200/60 transition hover:from-rose-600 hover:to-rose-700 disabled:opacity-50 active:scale-[0.98]"
                 >
-                  {uploadingPdf ? 'Subiendo PDF...' : pressPdfFile ? 'Subir PDF' : 'Seleccionar PDF'}
+                  {uploadingPdf ? (
+                    <>
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                        <circle cx="12" cy="12" r="10" strokeOpacity=".3" />
+                        <path d="M22 12a10 10 0 01-10 10" />
+                      </svg>
+                      Subiendo PDF…
+                    </>
+                  ) : pressPdfFile ? (
+                    <>
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <path d="M17 8l-5-5-5 5M12 3v12" />
+                      </svg>
+                      Subir PDF
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                      Seleccionar PDF
+                    </>
+                  )}
                 </button>
                 {pressPdfFile || pressPdfUrl ? (
                   <button
                     type="button"
                     onClick={handleRemovePdf}
                     disabled={uploadingPdf || loading}
-                    className="rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-700 disabled:opacity-50"
+                    className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:bg-card dark:hover:bg-red-950/40"
                   >
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                      <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                    </svg>
                     Quitar PDF
                   </button>
                 ) : null}
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs font-medium text-muted-foreground">
                   {pressPdfFile ? `Seleccionado: ${pressPdfFile.name}` : pressPdfUrl ? 'PDF listo para enviar' : 'Aún no subido'}
                 </span>
               </div>
@@ -5003,8 +5074,12 @@ export default function NotasPrensaNewsletterClient({
                   href={pressPdfUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex text-sm text-blue-700 underline"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-rose-700 underline-offset-2 hover:underline dark:text-rose-300"
                 >
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
                   Ver PDF subido
                 </a>
               ) : null}
@@ -5013,28 +5088,46 @@ export default function NotasPrensaNewsletterClient({
 
           {/* Adjuntos adicionales — solo en modo prensa */}
           {mode === 'press' ? (
-            <div className="space-y-3 rounded-lg border border-border p-3">
-              <p className="text-sm font-medium">Adjuntos adicionales</p>
-              <p className="text-xs text-muted-foreground">
-                Vídeo (MP4, MOV), audio (MP3, WAV), documentos (Word, Excel, PowerPoint), imágenes o ZIP. Máx. 12MB por archivo · 5 adjuntos adicionales.
-              </p>
+            <div className="space-y-3 overflow-hidden rounded-2xl border border-indigo-200/80 bg-gradient-to-b from-indigo-50/40 to-white p-4 shadow-sm shadow-indigo-100/40 dark:border-indigo-800/50 dark:from-indigo-950/30 dark:to-card dark:shadow-none">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-md shadow-indigo-200/60">
+                  <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+                  </svg>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-bold text-foreground">Adjuntos adicionales</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Vídeo (MP4, MOV), audio (MP3, WAV), documentos (Word, Excel, PowerPoint), imágenes o ZIP. Máx. 12 MB por archivo.
+                  </p>
+                </div>
+                <span className="shrink-0 self-start rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-bold text-indigo-700 ring-1 ring-indigo-200 dark:bg-indigo-950 dark:text-indigo-200 dark:ring-indigo-800">
+                  {pressAttachments.length}/5
+                </span>
+              </div>
 
               {/* Lista de adjuntos ya añadidos */}
               {pressAttachments.length > 0 && (
-                <ul className="space-y-1">
+                <ul className="space-y-1.5">
                   {pressAttachments.map((a, i) => (
-                    <li key={i} className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-sm">
-                      <span className="flex-1 truncate">{a.name}</span>
-                      <span className="shrink-0 text-xs text-muted-foreground">
+                    <li key={i} className="flex items-center gap-2 rounded-lg border border-indigo-100 bg-white px-3 py-2 text-sm shadow-sm dark:border-indigo-900/60 dark:bg-card">
+                      <svg className="h-4 w-4 shrink-0 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                      </svg>
+                      <span className="flex-1 truncate font-medium text-foreground">{a.name}</span>
+                      <span className="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 ring-1 ring-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-200 dark:ring-indigo-900">
                         {a.size > 1024 * 1024 ? `${(a.size / 1024 / 1024).toFixed(1)} MB` : `${Math.round(a.size / 1024)} KB`}
                       </span>
                       <button
                         type="button"
                         onClick={() => setPressAttachments((prev) => prev.filter((_, j) => j !== i))}
-                        className="shrink-0 text-red-600 hover:text-red-800"
+                        className="shrink-0 rounded-md p-1 text-red-500 transition hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40"
                         aria-label="Eliminar adjunto"
                       >
-                        ✕
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                          <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                        </svg>
                       </button>
                     </li>
                   ))}
@@ -5048,9 +5141,24 @@ export default function NotasPrensaNewsletterClient({
                     type="button"
                     disabled={uploadingAttachment}
                     onClick={() => attachInputRef.current?.click()}
-                    className="rounded-lg border border-border px-3 py-2 text-sm font-medium disabled:opacity-50 hover:bg-muted/50"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-indigo-300 bg-white px-4 py-2 text-sm font-semibold text-indigo-700 transition hover:border-indigo-400 hover:bg-indigo-50 disabled:opacity-50 dark:border-indigo-800 dark:bg-card dark:text-indigo-200 dark:hover:bg-indigo-950/40"
                   >
-                    {uploadingAttachment ? 'Subiendo…' : '+ Añadir adjunto'}
+                    {uploadingAttachment ? (
+                      <>
+                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                          <circle cx="12" cy="12" r="10" strokeOpacity=".3" />
+                          <path d="M22 12a10 10 0 01-10 10" />
+                        </svg>
+                        Subiendo…
+                      </>
+                    ) : (
+                      <>
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                          <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        Añadir adjunto
+                      </>
+                    )}
                   </button>
                   <input
                     ref={attachInputRef}
@@ -5079,27 +5187,40 @@ export default function NotasPrensaNewsletterClient({
             </div>
           ) : null}
 
-          <div className="space-y-3 rounded-lg border border-border p-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm font-medium">Vista previa del envío</p>
+          <div className="space-y-3 overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-b from-slate-50/40 to-white p-4 shadow-sm shadow-slate-100/40 dark:border-slate-700/60 dark:from-slate-900/30 dark:to-card dark:shadow-none">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-600 to-slate-700 shadow-md">
+                  <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">Vista previa del envío</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Comprueba cómo verán los destinatarios el correo antes de enviar.
+                  </p>
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowSendPreview((v) => !v)}
-                className="rounded-md border border-border px-3 py-1 text-xs"
+                className="shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-card dark:text-slate-200 dark:hover:bg-slate-800/40"
               >
                 {showSendPreview ? 'Ocultar vista previa' : 'Ver vista previa'}
               </button>
             </div>
             {showSendPreview ? (
-              <div className="rounded-md border border-border bg-background p-3">
-                <h3 className="mb-1 text-base font-semibold">{campaignForm.subject || 'Sin asunto'}</h3>
+              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-inner dark:border-slate-700 dark:bg-card">
+                <h3 className="mb-1 text-base font-semibold text-foreground">{campaignForm.subject || 'Sin asunto'}</h3>
                 {campaignForm.preheader ? (
                   <p className="mb-3 text-xs text-muted-foreground">
                     <span className="font-medium">Preheader:</span> {campaignForm.preheader}
                   </p>
                 ) : null}
                 {mode === 'press' && pressSendMode === 'pdf' && !pressPdfUrl ? (
-                  <p className="text-sm text-amber-700">
+                  <p className="text-sm text-amber-700 dark:text-amber-300">
                     Sube un PDF para ver la vista previa final del envío en modo PDF.
                   </p>
                 ) : (
@@ -5113,24 +5234,39 @@ export default function NotasPrensaNewsletterClient({
           </div>
 
           {mode === 'press' && pressSendMode === 'editor' ? (
-            <div className="space-y-3 rounded-lg border border-border p-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-sm font-medium">Publicación en web (opcional)</p>
+            <div className="space-y-3 overflow-hidden rounded-2xl border border-emerald-200/80 bg-gradient-to-b from-emerald-50/40 to-white p-4 shadow-sm shadow-emerald-100/40 dark:border-emerald-800/50 dark:from-emerald-950/30 dark:to-card dark:shadow-none">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-md shadow-emerald-200/60">
+                    <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground">
+                      Publicación en web <span className="font-medium text-muted-foreground">(opcional)</span>
+                    </h3>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      Sube esta nota como noticia o artículo en la web pública además de enviarla por email.
+                    </p>
+                  </div>
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowWebPreview((v) => !v)}
-                  className="rounded-md border border-border px-3 py-1 text-xs"
+                  className="shrink-0 rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-800 dark:bg-card dark:text-emerald-200 dark:hover:bg-emerald-950/40"
                 >
                   {showWebPreview ? 'Ocultar vista previa' : 'Ver vista previa'}
                 </button>
               </div>
 
-              <label className="text-sm">
+              <label className="block text-sm font-medium text-foreground">
                 Guardar como
                 <select
                   value={webContentKind}
                   onChange={(e) => setWebContentKind(e.target.value as 'NOTICIA' | 'ARTICULO')}
-                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm md:w-80"
+                  className="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-normal shadow-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200/60 dark:border-emerald-800 dark:bg-card dark:focus:ring-emerald-900/40 md:w-80"
                 >
                   <option value="NOTICIA">Noticia de la asociación</option>
                   <option value="ARTICULO">Artículo de la asociación</option>
@@ -5138,7 +5274,7 @@ export default function NotasPrensaNewsletterClient({
               </label>
 
               <p className="text-xs text-muted-foreground">
-                Si indicas un `slug` de pueblo, se publicará también en ese pueblo sin quitarlo de asociación.
+                Si indicas un <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">slug</code> de pueblo, se publicará también en ese pueblo sin quitarlo de asociación.
               </p>
 
               {pressPhotoUrls.length > 0 ? (
@@ -5183,9 +5319,25 @@ export default function NotasPrensaNewsletterClient({
                   type="button"
                   onClick={handlePublishWeb}
                   disabled={publishingWeb || loading}
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-emerald-200/60 transition hover:from-emerald-600 hover:to-emerald-700 disabled:opacity-50 active:scale-[0.98]"
                 >
-                  {publishingWeb ? 'Subiendo a la web…' : 'Subir a la web'}
+                  {publishingWeb ? (
+                    <>
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                        <circle cx="12" cy="12" r="10" strokeOpacity=".3" />
+                        <path d="M22 12a10 10 0 01-10 10" />
+                      </svg>
+                      Subiendo a la web…
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <path d="M17 8l-5-5-5 5M12 3v12" />
+                      </svg>
+                      Subir a la web
+                    </>
+                  )}
                 </button>
               </div>
             </div>
