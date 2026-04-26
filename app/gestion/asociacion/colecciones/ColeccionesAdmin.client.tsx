@@ -940,6 +940,8 @@ function NewColeccionForm({
   const [rankScope, setRankScope] =
     useState<'nacional' | 'norte' | 'sur' | 'este' | 'centro' | 'caracteristica' | 'servicio' | 'altura'>('nacional');
   const [rankScopeTag, setRankScopeTag] = useState<string | null>(null);
+  const [rankPreviewCount, setRankPreviewCount] = useState<number | null>(null);
+  const [rankPreviewLoading, setRankPreviewLoading] = useState(false);
 
   const [tituloEs, setTituloEs] = useState('');
   const [slug, setSlug] = useState('');
@@ -986,6 +988,82 @@ function NewColeccionForm({
     }
     return groups;
   }, [filteredTags]);
+
+  // Preview en vivo del título/slug/descripción para fuente='ranking'
+  const rankingPreview = useMemo(() => {
+    if (fuente !== 'ranking') return null;
+    const metricLbl =
+      rankMetric === 'rating' ? 'más bonitos'
+      : rankMetric === 'visitas' ? 'más visitados'
+      : 'más buscados online';
+    const scopeLbl =
+      rankScope === 'nacional' ? 'de España'
+      : rankScope === 'caracteristica'
+        ? (rankScopeTag
+            ? `con ${(tags.find((t) => t.tag === rankScopeTag)?.nombre_i18n.es ?? rankScopeTag).toLowerCase()}`
+            : 'por característica')
+      : rankScope === 'servicio' ? 'junto al mar'
+      : rankScope === 'altura' ? 'de montaña (>1000 m)'
+      : `del ${rankScope.charAt(0).toUpperCase()}${rankScope.slice(1)}`;
+    const titulo = `Los ${rankLimit} pueblos ${metricLbl} ${scopeLbl}`;
+    const desc = `Ranking dinámico de los ${rankLimit} pueblos ${metricLbl}${
+      rankScope === 'nacional' ? '' : ' ' + scopeLbl
+    } de la red Los Pueblos Más Bonitos de España. Calculado en tiempo real con datos reales.`;
+    const slugPv = titulo
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    return { titulo, desc, slug: slugPv };
+  }, [fuente, rankMetric, rankLimit, rankScope, rankScopeTag, tags]);
+
+  // Cuenta en tiempo real cuántos pueblos coincidirían con el filtro de ranking
+  useEffect(() => {
+    if (fuente !== 'ranking') return;
+    if (rankScope === 'caracteristica' && !rankScopeTag) {
+      setRankPreviewCount(null);
+      return;
+    }
+    const filtro: any = { metric: rankMetric, limit: rankLimit };
+    if (rankMetric === 'rating') filtro.minVotos = 3;
+    if (rankScope === 'nacional') {
+      // Sin scope
+    } else if (['norte', 'sur', 'este', 'centro'].includes(rankScope)) {
+      filtro.scope = { region: rankScope };
+    } else if (rankScope === 'caracteristica' && rankScopeTag) {
+      filtro.scope = { caracteristica: { tag: rankScopeTag } };
+    } else if (rankScope === 'servicio') {
+      filtro.scope = { servicio: 'PLAYA' };
+    } else if (rankScope === 'altura') {
+      filtro.scope = { campo: { campo: 'altitud', op: 'gte', valor: 1000 } };
+    }
+
+    const ctrl = new AbortController();
+    const t = setTimeout(async () => {
+      try {
+        setRankPreviewLoading(true);
+        const res = await fetch('/api/admin/colecciones/preview-count', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fuente: 'ranking', filtro }),
+          credentials: 'include',
+          signal: ctrl.signal,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setRankPreviewCount(typeof data.count === 'number' ? data.count : null);
+        }
+      } catch {
+        // ignore aborts/errores
+      } finally {
+        setRankPreviewLoading(false);
+      }
+    }, 250);
+    return () => {
+      ctrl.abort();
+      clearTimeout(t);
+    };
+  }, [fuente, rankMetric, rankLimit, rankScope, rankScopeTag]);
 
   function autoSlug(title: string) {
     return title
@@ -1267,101 +1345,144 @@ function NewColeccionForm({
               </p>
             </div>
 
-            {/* Métrica */}
-            <div>
-              <label className="text-xs font-semibold text-foreground">1. Métrica del ranking</label>
-              <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                {RANKING_METRICAS.map((m) => (
-                  <button
-                    key={m.metric}
-                    type="button"
-                    onClick={() => setRankMetric(m.metric)}
-                    className={`rounded-xl border-2 p-3 text-left text-sm transition-all hover:border-primary/50 ${
-                      rankMetric === m.metric ? 'border-primary bg-primary/5' : 'border-border'
-                    }`}
-                  >
-                    <div className="text-base">{m.emoji}</div>
-                    <div className="mt-1 font-semibold">{m.etiqueta}</div>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">{m.desc}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+              {/* Columna principal: selectores */}
+              <div className="space-y-4">
+                {/* Métrica */}
+                <div>
+                  <label className="text-xs font-semibold text-foreground">1. Métrica del ranking</label>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                    {RANKING_METRICAS.map((m) => (
+                      <button
+                        key={m.metric}
+                        type="button"
+                        onClick={() => setRankMetric(m.metric)}
+                        className={`rounded-xl border-2 p-3 text-left text-sm transition-all hover:border-primary/50 ${
+                          rankMetric === m.metric ? 'border-primary bg-primary/5' : 'border-border'
+                        }`}
+                      >
+                        <div className="text-base">{m.emoji}</div>
+                        <div className="mt-1 font-semibold">{m.etiqueta}</div>
+                        <p className="mt-0.5 text-[11px] text-muted-foreground">{m.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-            {/* Límite */}
-            <div>
-              <label className="text-xs font-semibold text-foreground">2. Tamaño del Top</label>
-              <div className="mt-2 flex gap-2">
-                {[10, 20, 30].map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => setRankLimit(n as 10 | 20 | 30)}
-                    className={`flex-1 rounded-xl border-2 px-3 py-2 text-sm font-semibold transition-all hover:border-primary/50 ${
-                      rankLimit === n ? 'border-primary bg-primary/5 text-foreground' : 'border-border text-muted-foreground'
-                    }`}
-                  >
-                    Top {n}
-                  </button>
-                ))}
-              </div>
-              <p className="mt-1 text-[11px] text-muted-foreground">Máximo 30 (la red tiene 126 pueblos).</p>
-            </div>
+                {/* Límite */}
+                <div>
+                  <label className="text-xs font-semibold text-foreground">2. Tamaño del Top</label>
+                  <div className="mt-2 flex gap-2">
+                    {[10, 20, 30].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setRankLimit(n as 10 | 20 | 30)}
+                        className={`flex-1 rounded-xl border-2 px-3 py-2 text-sm font-semibold transition-all hover:border-primary/50 ${
+                          rankLimit === n ? 'border-primary bg-primary/5 text-foreground' : 'border-border text-muted-foreground'
+                        }`}
+                      >
+                        Top {n}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-1 text-[11px] text-muted-foreground">Máximo 30 (la red tiene 126 pueblos).</p>
+                </div>
 
-            {/* Ámbito */}
-            <div>
-              <label className="text-xs font-semibold text-foreground">3. Ámbito</label>
-              <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                {RANKING_SCOPES.map((s) => (
-                  <button
-                    key={s.scope}
-                    type="button"
-                    onClick={() => setRankScope(s.scope)}
-                    className={`rounded-xl border-2 p-2.5 text-left text-sm transition-all hover:border-primary/50 ${
-                      rankScope === s.scope ? 'border-primary bg-primary/5' : 'border-border'
-                    }`}
-                  >
-                    <div className="font-semibold text-foreground">{s.etiqueta}</div>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">{s.desc}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
+                {/* Ámbito */}
+                <div>
+                  <label className="text-xs font-semibold text-foreground">3. Ámbito</label>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                    {RANKING_SCOPES.map((s) => (
+                      <button
+                        key={s.scope}
+                        type="button"
+                        onClick={() => setRankScope(s.scope)}
+                        className={`rounded-xl border-2 p-2.5 text-left text-sm transition-all hover:border-primary/50 ${
+                          rankScope === s.scope ? 'border-primary bg-primary/5' : 'border-border'
+                        }`}
+                      >
+                        <div className="font-semibold text-foreground">{s.etiqueta}</div>
+                        <p className="mt-0.5 text-[11px] text-muted-foreground">{s.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-            {/* Selector de característica si scope='caracteristica' */}
-            {rankScope === 'caracteristica' && (
-              <div>
-                <label className="text-xs font-semibold text-foreground">4. Característica</label>
-                <select
-                  value={rankScopeTag ?? ''}
-                  onChange={(e) => setRankScopeTag(e.target.value || null)}
-                  className={field}
-                >
-                  <option value="">— Elige una característica —</option>
-                  {tags
-                    .filter((t) => t.activo)
-                    .sort((a, b) => (a.nombre_i18n.es ?? a.tag).localeCompare(b.nombre_i18n.es ?? b.tag))
-                    .map((t) => {
-                      const cnt = counts.tags[t.tag] ?? 0;
-                      return (
-                        <option key={t.id} value={t.tag}>
-                          {t.nombre_i18n.es ?? t.tag} · {cnt} pueblos
-                        </option>
-                      );
-                    })}
-                </select>
+                {/* Selector de característica si scope='caracteristica' */}
+                {rankScope === 'caracteristica' && (
+                  <div>
+                    <label className="text-xs font-semibold text-foreground">4. Característica</label>
+                    <select
+                      value={rankScopeTag ?? ''}
+                      onChange={(e) => setRankScopeTag(e.target.value || null)}
+                      className={field}
+                    >
+                      <option value="">— Elige una característica —</option>
+                      {tags
+                        .filter((t) => t.activo)
+                        .sort((a, b) => (a.nombre_i18n.es ?? a.tag).localeCompare(b.nombre_i18n.es ?? b.tag))
+                        .map((t) => {
+                          const cnt = counts.tags[t.tag] ?? 0;
+                          return (
+                            <option key={t.id} value={t.tag}>
+                              {t.nombre_i18n.es ?? t.tag} · {cnt} pueblos
+                            </option>
+                          );
+                        })}
+                    </select>
+                  </div>
+                )}
               </div>
-            )}
+
+              {/* Columna lateral: vista previa en vivo */}
+              <aside className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-primary">
+                  Vista previa
+                </div>
+                <h3 className="mt-1 text-base font-semibold text-foreground">
+                  {rankingPreview?.titulo ?? '—'}
+                </h3>
+                <p className="mt-2 break-all rounded-md bg-background/60 px-2 py-1 text-[11px] font-mono text-muted-foreground">
+                  /descubre/{rankingPreview?.slug ?? ''}
+                </p>
+                <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+                  {rankingPreview?.desc ?? ''}
+                </p>
+                <div className="mt-3 flex items-center justify-between rounded-lg border border-border/60 bg-background/60 px-3 py-2">
+                  <div className="text-[11px] text-muted-foreground">Pueblos disponibles</div>
+                  <div className="text-sm font-semibold text-foreground">
+                    {rankPreviewLoading ? (
+                      <span className="text-muted-foreground">…</span>
+                    ) : rankPreviewCount === null ? (
+                      <span className="text-muted-foreground">—</span>
+                    ) : (
+                      <>
+                        {Math.min(rankPreviewCount, rankLimit)} <span className="text-[11px] font-normal text-muted-foreground">/ {rankLimit}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                {rankPreviewCount !== null && rankPreviewCount < rankLimit && (
+                  <p className="mt-2 text-[11px] text-amber-700">
+                    ⚠️ Solo hay {rankPreviewCount} pueblos elegibles para este filtro. Considera bajar el tamaño del Top.
+                  </p>
+                )}
+                <p className="mt-3 text-[10px] text-muted-foreground">
+                  En el siguiente paso podrás <strong>editar título, slug, descripción, SEO e icono</strong> antes de crear la página.
+                </p>
+              </aside>
+            </div>
 
             {/* Continuar */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 border-t border-border/40 pt-3">
               <button
                 type="button"
                 onClick={applyRankingPreset}
                 disabled={rankScope === 'caracteristica' && !rankScopeTag}
                 className={btnPrimary}
               >
-                Continuar →
+                Continuar a edición de texto y SEO →
               </button>
               <button onClick={onCancel} className={btnSecondary}>Cancelar</button>
             </div>
