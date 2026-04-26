@@ -159,6 +159,13 @@ export default function DatosUsuariosPage() {
             >
               Gestionar contactos institucionales
             </Link>
+            <Link
+              href="/gestion/asociacion/datos/auditoria-visitas"
+              className="rounded-lg border border-amber-400 bg-white px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-100"
+              title="Ver quién creó cada visita (app, usuario, admin o script)"
+            >
+              Auditoría de visitas
+            </Link>
           </div>
         </div>
       </div>

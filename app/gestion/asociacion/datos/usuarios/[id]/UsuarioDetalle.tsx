@@ -12,6 +12,14 @@ type PuebloOption = {
   comunidad: string | null;
 };
 
+type AddedByUser = {
+  userId: number;
+  email: string | null;
+  nombre: string | null;
+};
+
+type VisitaSource = 'APP_AUTO' | 'USER_MANUAL' | 'ADMIN_MANUAL' | 'SCRIPT' | 'LEGACY';
+
 type PuebloVisitado = {
   puebloId: number;
   nombre: string;
@@ -21,6 +29,8 @@ type PuebloVisitado = {
   fecha: string;
   origen: string;
   valoracion: number | null;
+  source?: VisitaSource;
+  addedBy?: AddedByUser | null;
 };
 
 type UserDetail = {
@@ -66,6 +76,65 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
     <div className="flex items-start gap-2 py-2 border-b border-border last:border-0">
       <span className="w-40 shrink-0 text-sm font-medium text-muted-foreground">{label}</span>
       <span className="text-sm text-foreground">{value}</span>
+    </div>
+  );
+}
+
+const SOURCE_LABELS: Record<VisitaSource, { label: string; cls: string; tooltip: string }> = {
+  APP_AUTO: {
+    label: 'App (auto)',
+    cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+    tooltip: 'La app móvil del usuario detectó el pueblo automáticamente vía geolocalización.',
+  },
+  USER_MANUAL: {
+    label: 'Usuario',
+    cls: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300',
+    tooltip: 'El propio usuario marcó este pueblo como visitado desde su lista (web o app).',
+  },
+  ADMIN_MANUAL: {
+    label: 'Admin',
+    cls: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200',
+    tooltip: 'Un administrador añadió esta visita desde el panel de gestión (p. ej. el GPS no la detectó y se valida manualmente).',
+  },
+  SCRIPT: {
+    label: 'Script',
+    cls: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+    tooltip: 'Visita creada por un script de mantenimiento.',
+  },
+  LEGACY: {
+    label: 'Anterior',
+    cls: 'bg-muted text-muted-foreground',
+    tooltip: 'Visita creada antes de activar la auditoría (no se conoce la fuente).',
+  },
+};
+
+function SourceBadge({
+  source,
+  addedBy,
+}: {
+  source?: VisitaSource;
+  addedBy?: AddedByUser | null;
+}) {
+  const meta = SOURCE_LABELS[source ?? 'LEGACY'];
+  const adminTooltip = addedBy
+    ? `\nAñadido por: ${addedBy.nombre || addedBy.email || `#${addedBy.userId}`}`
+    : '';
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span
+        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${meta.cls}`}
+        title={meta.tooltip + adminTooltip}
+      >
+        {meta.label}
+      </span>
+      {addedBy && (
+        <span
+          className="text-[10px] text-muted-foreground truncate max-w-[160px]"
+          title={addedBy.email || ''}
+        >
+          por {addedBy.nombre || addedBy.email || `#${addedBy.userId}`}
+        </span>
+      )}
     </div>
   );
 }
@@ -604,6 +673,7 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Provincia</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Comunidad</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Origen</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground" title="Quién creó la visita: app móvil, el propio usuario, un admin o un script">Fuente</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Fecha</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Valoración</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground"></th>
@@ -612,7 +682,7 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
             <tbody>
               {!user.pueblosVisitados?.pueblos?.length ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                     Este usuario no ha visitado ningún pueblo
                   </td>
                 </tr>
@@ -633,6 +703,9 @@ export default function UsuarioDetalle({ userId }: { userId: string }) {
                         <option value="GPS">GPS</option>
                         <option value="MANUAL">Manual</option>
                       </select>
+                    </td>
+                    <td className="px-4 py-3">
+                      <SourceBadge source={p.source} addedBy={p.addedBy ?? null} />
                     </td>
                     <td className="px-4 py-3">
                       <input
