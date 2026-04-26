@@ -2546,45 +2546,148 @@ export default function NotasPrensaNewsletterClient({
 
   return (
     <div className={embeddedInShell ? 'space-y-8' : 'mt-8 space-y-8'}>
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs uppercase text-muted-foreground">Usuarios web</p>
-          <p className="mt-2 text-2xl font-semibold">{overview?.usersTotal ?? '—'}</p>
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <article className="group relative overflow-hidden rounded-2xl border border-sky-200/80 bg-gradient-to-br from-sky-50/60 via-white to-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-sky-800/50 dark:from-sky-950/30 dark:to-card">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 shadow-md shadow-sky-200/60">
+              <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21a8 8 0 0116 0" />
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-200">Usuarios web</p>
+              <p className="text-2xl font-bold text-foreground">{overview?.usersTotal ?? '—'}</p>
+            </div>
+          </div>
         </article>
+
         {mode === 'newsletter' ? (
-          <article className="rounded-xl border border-border bg-card p-4">
-            <p className="text-xs uppercase text-muted-foreground">Suscriptores newsletter</p>
-            <p className="mt-2 text-2xl font-semibold">{overview?.newsletterSubscribersTotal ?? '—'}</p>
+          <article className="group relative overflow-hidden rounded-2xl border border-violet-200/80 bg-gradient-to-br from-violet-50/60 via-white to-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-violet-800/50 dark:from-violet-950/30 dark:to-card">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 shadow-md shadow-violet-200/60">
+                <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <path d="M3 7l9 6 9-6" />
+                </svg>
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-200">Suscriptores</p>
+                <p className="text-2xl font-bold text-foreground">{overview?.newsletterSubscribersTotal ?? '—'}</p>
+              </div>
+            </div>
           </article>
         ) : (
-          <article className="rounded-xl border border-border bg-card p-4">
-            <p className="text-xs uppercase text-muted-foreground">Contactos de prensa</p>
-            <p className="mt-2 text-2xl font-semibold">{overview?.pressContactsTotal ?? '—'}</p>
+          <article className="group relative overflow-hidden rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50/60 via-white to-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-amber-800/50 dark:from-amber-950/30 dark:to-card">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 shadow-md shadow-amber-200/60">
+                <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                  <path d="M3 11l18-7v16L3 13z" />
+                  <path d="M11.6 16.8a3 3 0 11-5.8-1.6" />
+                </svg>
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-200">Contactos prensa</p>
+                <p className="text-2xl font-bold text-foreground">{overview?.pressContactsTotal ?? '—'}</p>
+              </div>
+            </div>
           </article>
         )}
-        <article className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs uppercase text-muted-foreground">Campañas registradas</p>
-          <p className="mt-2 text-2xl font-semibold">{overview?.campaignsTotal ?? '—'}</p>
+
+        <article className="group relative overflow-hidden rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/60 via-white to-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-emerald-800/50 dark:from-emerald-950/30 dark:to-card">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-md shadow-emerald-200/60">
+              <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                <path d="M22 12A10 10 0 1112 2" />
+                <path d="M22 4L12 14l-3-3" />
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-200">Campañas</p>
+              <p className="text-2xl font-bold text-foreground">{overview?.campaignsTotal ?? '—'}</p>
+            </div>
+          </div>
         </article>
+
+        {mode === 'press' ? (
+          <article className="group relative overflow-hidden rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50/60 via-white to-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-amber-800/50 dark:from-amber-950/30 dark:to-card">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 shadow-md shadow-amber-200/60">
+                <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                  <path d="M22 2L11 13" />
+                  <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+                </svg>
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-200">Modo prensa</p>
+                <p className="truncate text-sm font-bold text-foreground">Envío segmentado por medios</p>
+              </div>
+            </div>
+          </article>
+        ) : (
+          <article className="group relative overflow-hidden rounded-2xl border border-violet-200/80 bg-gradient-to-br from-violet-50/60 via-white to-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-violet-800/50 dark:from-violet-950/30 dark:to-card">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 shadow-md shadow-violet-200/60">
+                <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                  <path d="M22 2L11 13" />
+                  <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+                </svg>
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-200">Modo newsletter</p>
+                <p className="truncate text-sm font-bold text-foreground">Envío masivo a suscriptores</p>
+              </div>
+            </div>
+          </article>
+        )}
       </section>
 
       {message ? (
-        <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{message}</div>
+        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 shadow-sm dark:border-emerald-800/60 dark:bg-emerald-950/20">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500 shadow-sm shadow-emerald-200/60">
+            <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden>
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <p className="pt-0.5 text-sm font-medium text-emerald-800 dark:text-emerald-200">{message}</p>
+        </div>
       ) : null}
       {error ? (
-        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50/60 p-4 shadow-sm dark:border-red-800/60 dark:bg-red-950/20">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-500 shadow-sm shadow-red-200/60">
+            <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden>
+              <path d="M12 9v4M12 17h.01" />
+              <circle cx="12" cy="12" r="9" />
+            </svg>
+          </div>
+          <p className="pt-0.5 text-sm font-medium text-red-800 dark:text-red-200">{error}</p>
+        </div>
       ) : null}
 
       {mode === 'press' ? (
-        <section className="rounded-xl border border-border bg-card p-5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold">Añadir contacto de prensa a la base de datos</h2>
+        <section className="overflow-hidden rounded-2xl border border-amber-200/80 bg-gradient-to-b from-amber-50/40 to-white p-5 sm:p-6 shadow-sm shadow-amber-100/40 dark:border-amber-800/50 dark:from-amber-950/30 dark:to-card dark:shadow-none">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 shadow-md shadow-amber-200/60">
+                <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M3 21a6 6 0 0112 0" />
+                  <path d="M19 8v6M16 11h6" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-foreground">Añadir contacto de prensa</h2>
+                <p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
+                  Registra un nuevo medio en la base de datos. Asígnale un ámbito (nacional, CCAA, provincia&hellip;) para poder segmentar los envíos.
+                </p>
+              </div>
+            </div>
             <button
               type="button"
               onClick={() => setPressFormExpanded((v) => !v)}
-              className="rounded-md border border-border px-3 py-1 text-sm font-medium hover:bg-muted"
+              className="shrink-0 rounded-lg border border-amber-200 bg-white px-3 py-1.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-50 dark:border-amber-800 dark:bg-card dark:text-amber-200 dark:hover:bg-amber-950/40"
             >
-              {pressFormExpanded ? '▼ Ocultar formulario' : '▶ Mostrar formulario'}
+              {pressFormExpanded ? '▼ Ocultar' : '▶ Mostrar'}
             </button>
           </div>
 
@@ -2660,9 +2763,26 @@ export default function NotasPrensaNewsletterClient({
         </section>
       ) : null}
 
-      <section className="rounded-xl border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold">{mode === 'press' ? '2) Enviar nota de prensa' : '1) Enviar newsletter'}</h2>
-        <form onSubmit={handleSendCampaign} className="mt-4 space-y-3">
+      <section className={`overflow-hidden rounded-2xl border ${mode === 'press' ? 'border-amber-200/80 from-amber-50/40 dark:border-amber-800/50 dark:from-amber-950/30' : 'border-violet-200/80 from-violet-50/40 dark:border-violet-800/50 dark:from-violet-950/30'} bg-gradient-to-b to-white p-5 sm:p-6 shadow-sm dark:to-card`}>
+        <div className="mb-4 flex items-start gap-3">
+          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${mode === 'press' ? 'from-amber-500 to-amber-600 shadow-amber-200/60' : 'from-violet-500 to-violet-600 shadow-violet-200/60'} shadow-md`}>
+            <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+              <path d="M22 2L11 13" />
+              <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-foreground">
+              {mode === 'press' ? 'Enviar nota de prensa' : 'Enviar newsletter'}
+            </h2>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {mode === 'press'
+                ? 'Compón el email, segmenta los medios y dispara el envío con seguimiento de aperturas.'
+                : 'Compón la newsletter con el constructor visual y envíala a tus suscriptores activos.'}
+            </p>
+          </div>
+        </div>
+        <form onSubmit={handleSendCampaign} className="mt-2 space-y-3">
           <div className="grid gap-3 md:grid-cols-2">
             <label className="text-sm">
               Preheader <span className="text-xs text-muted-foreground">(texto de vista previa en el cliente de correo)</span>
