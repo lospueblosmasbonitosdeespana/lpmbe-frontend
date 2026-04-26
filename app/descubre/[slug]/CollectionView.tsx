@@ -88,7 +88,9 @@ type TagBadge = { tag: string; icono: string; color: string; nombre_i18n: Record
 export function CollectionView({ data, locale }: { data: CollectionData; locale: string }) {
   const backLabel = BACK_LABELS[locale] ?? BACK_LABELS.es;
   const villagesLabel = VILLAGES_LABEL[locale] ?? VILLAGES_LABEL.es;
-  const isMeteo = data.type === "meteo";
+  // Las colecciones cuyo orden lo decide el backend (ranking por valoraciones/visitas/búsquedas
+  // o meteo) NO se agrupan por CCAA: se muestran tal cual, en orden de posición.
+  const isOrderedFlat = data.type === "meteo" || data.type === "ranking";
 
   const [bulkTags, setBulkTags] = React.useState<Record<string, TagBadge[]>>({});
   React.useEffect(() => {
@@ -103,7 +105,7 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
   }, [data.pueblos]);
 
   const byCCAA = React.useMemo(() => {
-    if (isMeteo) return {};
+    if (isOrderedFlat) return {};
     const acc: Record<string, Pueblo[]> = {};
     for (const p of data.pueblos) {
       const key = p.comunidad || "—";
@@ -111,7 +113,7 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
       acc[key].push(p);
     }
     return acc;
-  }, [data.pueblos, isMeteo]);
+  }, [data.pueblos, isOrderedFlat]);
 
   const comunidades = React.useMemo(
     () => Object.keys(byCCAA).sort((a, b) => a.localeCompare(b, locale || "es")),
@@ -180,7 +182,7 @@ export function CollectionView({ data, locale }: { data: CollectionData; locale:
                 : "No villages in this collection at this time."}
             </p>
           </div>
-        ) : isMeteo ? (
+        ) : isOrderedFlat ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {data.pueblos.map((p) => (
               <PuebloCard key={p.id} pueblo={p} color={data.color} tags={bulkTags[String(p.id)]} locale={locale} />
