@@ -1,11 +1,13 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ContentBlock } from '@/app/_components/content-builder/ContentBlockBuilder';
 import DraftsAndScheduler, {
   type DraftRow,
 } from '../_components/DraftsAndScheduler';
+
+type Attachment = { name: string; url: string; contentType: string; size: number };
 
 const ContentBlockBuilder = dynamic(
   () => import('@/app/_components/content-builder/ContentBlockBuilder'),
@@ -95,6 +97,42 @@ export default function AyuntamientosComposerClient() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loadingCampaigns, setLoadingCampaigns] = useState(false);
 
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const attachInputRef = useRef<HTMLInputElement>(null);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfUrl, setPdfUrl] = useState('');
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+
+  const uploadFileNameBase = useMemo(
+    () =>
+      subject
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 60) || 'ayuntamientos',
+    [subject],
+  );
+
+  const attachmentUrlsForSend = useMemo(() => {
+    const list: Array<{ url: string; filename?: string; contentType?: string }> = [];
+    if (pdfUrl) {
+      const fromUrl = pdfUrl.split('/').pop()?.split('?')[0] || '';
+      const safe =
+        fromUrl && /\.pdf$/i.test(fromUrl)
+          ? fromUrl
+          : (fromUrl || `circular-${Date.now()}`).replace(/\.[^.]+$/, '') + '.pdf';
+      list.push({ url: pdfUrl, filename: safe, contentType: 'application/pdf' });
+    }
+    for (const a of attachments) {
+      list.push({ url: a.url, filename: a.name, contentType: a.contentType });
+    }
+    return list;
+  }, [pdfUrl, attachments]);
+
   const loadCampaigns = useCallback(async () => {
     setLoadingCampaigns(true);
     try {
@@ -154,8 +192,9 @@ export default function AyuntamientosComposerClient() {
       contentHtml: html,
       blocksJson: blocks,
       filters,
+      attachmentUrls: attachmentUrlsForSend,
     }),
-    [subject, html, blocks, filters],
+    [subject, html, blocks, filters, attachmentUrlsForSend],
   );
 
   const loadFromDraft = useCallback((draft: DraftRow) => {
@@ -173,10 +212,103 @@ export default function AyuntamientosComposerClient() {
       setIncludeAlcaldesUser(f.includeAlcaldesUser);
     if (typeof f.includeInstitutional === 'boolean')
       setIncludeInstitutional(f.includeInstitutional);
+
+    const incomingAttachments = Array.isArray(draft.attachmentUrls)
+      ? draft.attachmentUrls
+      : [];
+    const pdfEntry = incomingAttachments.find(
+      (a) =>
+        a.contentType === 'application/pdf' ||
+        (typeof a.filename === 'string' && /\.pdf$/i.test(a.filename)) ||
+        /\.pdf$/i.test(a.url),
+    );
+    setPdfFile(null);
+    setPdfUrl(pdfEntry ? pdfEntry.url : '');
+    if (pdfInputRef.current) pdfInputRef.current.value = '';
+    const others = incomingAttachments.filter((a) => a !== pdfEntry);
+    setAttachments(
+      others.map((a) => ({
+        name: a.filename || a.url.split('/').pop()?.split('?')[0] || 'adjunto',
+        url: a.url,
+        contentType: a.contentType || 'application/octet-stream',
+        size: 0,
+      })),
+    );
+    if (attachInputRef.current) attachInputRef.current.value = '';
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const canSend = subject.trim().length > 0 && html.trim().length > 0 && !sending;
+
+  async function uploadPdf(): Promise<string> {
+    if (!pdfFile) return pdfUrl;
+    if (!/\.pdf$/i.test(pdfFile.name) && pdfFile.type !== 'application/pdf') {
+      throw new Error('El archivo debe ser PDF');
+    }
+    if (pdfFile.size > 12 * 1024 * 1024) {
+      throw new Error('El PDF supera el límite máximo de 12 MB para envío por email');
+    }
+    setUploadingPdf(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', pdfFile);
+      fd.append('folder', 'newsletter/ayuntamientos-pdf');
+      fd.append('fileNameBase', uploadFileNameBase);
+      const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.url) {
+        throw new Error(data?.error || data?.message || 'Error subiendo PDF');
+      }
+      const url = String(data.url);
+      setPdfUrl(url);
+      return url;
+    } finally {
+      setUploadingPdf(false);
+    }
+  }
+
+  async function handlePdfButtonClick() {
+    if (!pdfFile) {
+      pdfInputRef.current?.click();
+      return;
+    }
+    setError(null);
+    try {
+      await uploadPdf();
+      setMessage('PDF subido correctamente.');
+    } catch (e: any) {
+      setError(e?.message || 'Error subiendo PDF');
+    }
+  }
+
+  function handleRemovePdf() {
+    setPdfFile(null);
+    setPdfUrl('');
+    if (pdfInputRef.current) pdfInputRef.current.value = '';
+    setMessage('PDF eliminado del envío.');
+    setError(null);
+  }
+
+  async function uploadAttachmentFile(file: File): Promise<Attachment> {
+    if (file.size > 12 * 1024 * 1024) {
+      throw new Error('El adjunto supera el límite máximo de 12 MB para envío por email');
+    }
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('folder', 'newsletter/ayuntamientos-attachments');
+    const res = await fetch('/api/admin/uploads/press-attachment', { method: 'POST', body: fd });
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    if (!res.ok || !data?.url) {
+      throw new Error(String(data?.error ?? data?.message ?? 'Error subiendo archivo'));
+    }
+    return {
+      url: String(data.url),
+      name: String(data.originalName ?? file.name),
+      contentType: String(data.contentType ?? file.type ?? 'application/octet-stream'),
+      size: Number(data.size ?? file.size),
+    };
+  }
 
   async function doTestSend() {
     if (!testEmail.trim()) {
@@ -191,6 +323,30 @@ export default function AyuntamientosComposerClient() {
     setError(null);
     setMessage(null);
     try {
+      let effectivePdfUrl = pdfUrl;
+      if (pdfFile && !pdfUrl) {
+        effectivePdfUrl = await uploadPdf();
+      }
+      const attachmentUrls = [
+        ...(effectivePdfUrl
+          ? [
+              {
+                url: effectivePdfUrl,
+                filename:
+                  (effectivePdfUrl.split('/').pop()?.split('?')[0] ||
+                    `circular-${Date.now()}.pdf`).toLowerCase().endsWith('.pdf')
+                    ? effectivePdfUrl.split('/').pop()?.split('?')[0]
+                    : `${(effectivePdfUrl.split('/').pop()?.split('?')[0] || `circular-${Date.now()}`).replace(/\.[^.]+$/, '')}.pdf`,
+                contentType: 'application/pdf',
+              },
+            ]
+          : []),
+        ...attachments.map((a) => ({
+          url: a.url,
+          filename: a.name,
+          contentType: a.contentType,
+        })),
+      ];
       const res = await fetch('/api/admin/newsletter/campaigns/test-send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -199,11 +355,16 @@ export default function AyuntamientosComposerClient() {
           subject: subject.trim(),
           html,
           to: testEmail.trim(),
+          ...(attachmentUrls.length > 0 ? { attachmentUrls } : {}),
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.message || 'No se pudo enviar la prueba');
-      setMessage(`Prueba enviada a ${testEmail.trim()}.`);
+      setMessage(
+        `Prueba enviada a ${testEmail.trim()}${
+          attachmentUrls.length > 0 ? ` con ${attachmentUrls.length} adjunto(s)` : ''
+        }.`,
+      );
     } catch (e: any) {
       setError(e?.message || 'Error al enviar prueba');
     } finally {
@@ -230,6 +391,31 @@ export default function AyuntamientosComposerClient() {
     setError(null);
     setMessage(null);
     try {
+      let effectivePdfUrl = pdfUrl;
+      if (pdfFile && !pdfUrl) {
+        effectivePdfUrl = await uploadPdf();
+      }
+      const attachmentUrls = [
+        ...(effectivePdfUrl
+          ? [
+              {
+                url: effectivePdfUrl,
+                filename:
+                  (effectivePdfUrl.split('/').pop()?.split('?')[0] ||
+                    `circular-${Date.now()}.pdf`).toLowerCase().endsWith('.pdf')
+                    ? effectivePdfUrl.split('/').pop()?.split('?')[0]
+                    : `${(effectivePdfUrl.split('/').pop()?.split('?')[0] || `circular-${Date.now()}`).replace(/\.[^.]+$/, '')}.pdf`,
+                contentType: 'application/pdf',
+              },
+            ]
+          : []),
+        ...attachments.map((a) => ({
+          url: a.url,
+          filename: a.name,
+          contentType: a.contentType,
+        })),
+      ];
+
       const res = await fetch('/api/admin/newsletter/campaigns/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -238,6 +424,7 @@ export default function AyuntamientosComposerClient() {
           subject: subject.trim(),
           html,
           filters,
+          ...(attachmentUrls.length > 0 ? { attachmentUrls } : {}),
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -245,7 +432,7 @@ export default function AyuntamientosComposerClient() {
       setMessage(
         `Campaña enviada · destinatarios: ${data?.totalRecipients ?? 0} · ok: ${data?.sentCount ?? 0}${
           data?.failedCount ? ` · fallos: ${data.failedCount}` : ''
-        }`,
+        }${attachmentUrls.length > 0 ? ` · adjuntos: ${attachmentUrls.length}` : ''}`,
       );
       await loadCampaigns();
     } catch (e: any) {
@@ -304,7 +491,233 @@ export default function AyuntamientosComposerClient() {
       </section>
 
       <section className="rounded-xl border border-border bg-card p-5">
-        <h2 className="text-base font-semibold">3. Destinatarios</h2>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold">3. Adjuntos (opcional)</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              PDF principal (circular oficial, convocatoria, etc.) y archivos
+              adicionales (imágenes, vídeo, audio, Word, Excel, ZIP). Máx.{' '}
+              <strong>12 MB por archivo</strong> y <strong>35 MB en total</strong> por correo.
+            </p>
+          </div>
+          {attachmentUrlsForSend.length > 0 ? (
+            <span className="shrink-0 rounded-full bg-teal-100 px-2.5 py-1 text-[11px] font-bold text-teal-700 ring-1 ring-teal-200 dark:bg-teal-950 dark:text-teal-200 dark:ring-teal-800">
+              {attachmentUrlsForSend.length} adjunto{attachmentUrlsForSend.length === 1 ? '' : 's'}
+            </span>
+          ) : null}
+        </div>
+
+        <div className="mt-4 space-y-3">
+          {/* PDF principal */}
+          <div className="space-y-3 overflow-hidden rounded-2xl border border-rose-200/80 bg-gradient-to-b from-rose-50/40 to-white p-4 shadow-sm shadow-rose-100/40 dark:border-rose-800/50 dark:from-rose-950/30 dark:to-card dark:shadow-none">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 shadow-md shadow-rose-200/60">
+                <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-bold text-foreground">PDF principal</h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Circular, convocatoria u oficio en formato PDF (máx. 12 MB).
+                </p>
+              </div>
+              {pdfUrl ? (
+                <span className="shrink-0 self-start rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-bold text-rose-700 ring-1 ring-rose-200 dark:bg-rose-950 dark:text-rose-200 dark:ring-rose-800">
+                  Listo
+                </span>
+              ) : null}
+            </div>
+            <input
+              ref={pdfInputRef}
+              type="file"
+              accept="application/pdf,.pdf"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                setPdfFile(file);
+                if (file) setPdfUrl('');
+              }}
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={handlePdfButtonClick}
+                disabled={uploadingPdf || sending}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-rose-500 to-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-rose-200/60 transition hover:from-rose-600 hover:to-rose-700 disabled:opacity-50 active:scale-[0.98]"
+              >
+                {uploadingPdf ? (
+                  <>
+                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                      <circle cx="12" cy="12" r="10" strokeOpacity=".3" />
+                      <path d="M22 12a10 10 0 01-10 10" />
+                    </svg>
+                    Subiendo PDF…
+                  </>
+                ) : pdfFile ? (
+                  <>
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                      <path d="M17 8l-5-5-5 5M12 3v12" />
+                    </svg>
+                    Subir PDF
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    Seleccionar PDF
+                  </>
+                )}
+              </button>
+              {pdfFile || pdfUrl ? (
+                <button
+                  type="button"
+                  onClick={handleRemovePdf}
+                  disabled={uploadingPdf || sending}
+                  className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:bg-card dark:hover:bg-red-950/40"
+                >
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                    <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                  </svg>
+                  Quitar PDF
+                </button>
+              ) : null}
+              <span className="text-xs font-medium text-muted-foreground">
+                {pdfFile
+                  ? `Seleccionado: ${pdfFile.name}`
+                  : pdfUrl
+                    ? 'PDF listo para enviar'
+                    : 'Aún no subido'}
+              </span>
+            </div>
+            {pdfUrl ? (
+              <a
+                href={pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm font-medium text-rose-700 underline-offset-2 hover:underline dark:text-rose-300"
+              >
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                Ver PDF subido
+              </a>
+            ) : null}
+          </div>
+
+          {/* Adjuntos adicionales */}
+          <div className="space-y-3 overflow-hidden rounded-2xl border border-indigo-200/80 bg-gradient-to-b from-indigo-50/40 to-white p-4 shadow-sm shadow-indigo-100/40 dark:border-indigo-800/50 dark:from-indigo-950/30 dark:to-card dark:shadow-none">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-md shadow-indigo-200/60">
+                <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+                </svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-bold text-foreground">Adjuntos adicionales</h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Imágenes (JPG, PNG, WEBP), vídeo (MP4, MOV), audio (MP3, WAV),
+                  Word, Excel, PowerPoint o ZIP. Máx. 12 MB por archivo.
+                </p>
+              </div>
+              <span className="shrink-0 self-start rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-bold text-indigo-700 ring-1 ring-indigo-200 dark:bg-indigo-950 dark:text-indigo-200 dark:ring-indigo-800">
+                {attachments.length}/5
+              </span>
+            </div>
+
+            {attachments.length > 0 && (
+              <ul className="space-y-1.5">
+                {attachments.map((a, i) => (
+                  <li
+                    key={`${a.url}-${i}`}
+                    className="flex items-center gap-2 rounded-lg border border-indigo-100 bg-white px-3 py-2 text-sm shadow-sm dark:border-indigo-900/60 dark:bg-card"
+                  >
+                    <svg className="h-4 w-4 shrink-0 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                    <span className="flex-1 truncate font-medium text-foreground">{a.name}</span>
+                    {a.size > 0 ? (
+                      <span className="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 ring-1 ring-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-200 dark:ring-indigo-900">
+                        {a.size > 1024 * 1024
+                          ? `${(a.size / 1024 / 1024).toFixed(1)} MB`
+                          : `${Math.round(a.size / 1024)} KB`}
+                      </span>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => setAttachments((prev) => prev.filter((_, j) => j !== i))}
+                      className="shrink-0 rounded-md p-1 text-red-500 transition hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40"
+                      aria-label="Eliminar adjunto"
+                    >
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                        <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                      </svg>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {attachments.length < 5 && (
+              <>
+                <button
+                  type="button"
+                  disabled={uploadingAttachment}
+                  onClick={() => attachInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-indigo-300 bg-white px-4 py-2 text-sm font-semibold text-indigo-700 transition hover:border-indigo-400 hover:bg-indigo-50 disabled:opacity-50 dark:border-indigo-800 dark:bg-card dark:text-indigo-200 dark:hover:bg-indigo-950/40"
+                >
+                  {uploadingAttachment ? (
+                    <>
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                        <circle cx="12" cy="12" r="10" strokeOpacity=".3" />
+                        <path d="M22 12a10 10 0 01-10 10" />
+                      </svg>
+                      Subiendo…
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                      Añadir adjunto
+                    </>
+                  )}
+                </button>
+                <input
+                  ref={attachInputRef}
+                  type="file"
+                  className="sr-only"
+                  disabled={uploadingAttachment}
+                  accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif,video/mp4,video/quicktime,video/webm,video/x-msvideo,audio/mpeg,audio/mp3,audio/wav,audio/wave,audio/x-wav,audio/aac,audio/ogg,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/csv,application/zip,.mp4,.mov,.mp3,.wav,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.zip,.avi"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setError(null);
+                    setUploadingAttachment(true);
+                    try {
+                      const uploaded = await uploadAttachmentFile(file);
+                      setAttachments((prev) => [...prev, uploaded]);
+                    } catch (err: any) {
+                      setError(err?.message || 'Error subiendo adjunto');
+                    } finally {
+                      setUploadingAttachment(false);
+                      e.currentTarget.value = '';
+                    }
+                  }}
+                />
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-border bg-card p-5">
+        <h2 className="text-base font-semibold">4. Destinatarios</h2>
         <p className="mt-1 text-xs text-muted-foreground">
           Se envía a la unión de <strong>alcaldes usuarios</strong> y{' '}
           <strong>contactos institucionales</strong> con los filtros activos. Sin filtros, entran todos.
@@ -424,7 +837,7 @@ export default function AyuntamientosComposerClient() {
       </section>
 
       <section className="rounded-xl border border-border bg-card p-5">
-        <h2 className="text-base font-semibold">4. Envío</h2>
+        <h2 className="text-base font-semibold">5. Envío</h2>
 
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <label className="text-sm">
@@ -464,6 +877,12 @@ export default function AyuntamientosComposerClient() {
               <code>ayuntamientos@lospueblosmasbonitosdeespana.org</code>. Se añade
               enlace de baja al pie.
             </p>
+            {attachmentUrlsForSend.length > 0 ? (
+              <p className="mt-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-200">
+                Con adjuntos, el envío es individual (~9 correos/seg) para garantizar la entrega.
+                Por ejemplo, 200 destinatarios tardarán ~25 segundos.
+              </p>
+            ) : null}
           </div>
         </div>
       </section>
