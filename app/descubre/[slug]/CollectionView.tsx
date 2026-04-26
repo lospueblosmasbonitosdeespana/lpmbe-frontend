@@ -97,6 +97,15 @@ type TagBadge = { tag: string; icono: string; color: string; nombre_i18n: Record
 
 const FEATURE_THRESHOLD = 20;
 
+// Si el badge tiene formato de ranking ("3 · 4,72" o "3 · 12.345 visitas"),
+// separa la posición de la métrica para pintarlas en dos chips distintos.
+function splitRankingBadge(badge: string | null | undefined): { position: string; metric: string } | null {
+  if (!badge) return null;
+  const match = badge.match(/^(\d+)\s+·\s+(.+)$/);
+  if (!match) return null;
+  return { position: match[1], metric: match[2] };
+}
+
 export function CollectionView({ data, locale }: { data: CollectionData; locale: string }) {
   const backLabel = BACK_LABELS[locale] ?? BACK_LABELS.es;
   const villagesLabel = VILLAGES_LABEL[locale] ?? VILLAGES_LABEL.es;
@@ -259,6 +268,7 @@ function PuebloCard({ pueblo: p, color, tags, locale = "es" }: { pueblo: Pueblo;
   const flagSrc = getComunidadFlagSrc(p.comunidad);
   const hasPhoto = !!p.foto_destacada;
   const badge = p.highlightExtra ?? (p.habitantes ? `${p.habitantes} hab.` : null);
+  const ranking = splitRankingBadge(p.highlightExtra);
   const href = p.linkUrl || `/pueblos/${p.slug}`;
 
   return (
@@ -282,14 +292,26 @@ function PuebloCard({ pueblo: p, color, tags, locale = "es" }: { pueblo: Pueblo;
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
-        {badge && (
+        {ranking ? (
+          <>
+            <span
+              className="absolute top-3 left-3 inline-flex h-7 min-w-7 items-center justify-center rounded-full px-2 text-xs font-extrabold text-neutral-900 shadow-md"
+              style={{ backgroundColor: color }}
+            >
+              {ranking.position}
+            </span>
+            <span className="absolute top-3 right-3 rounded-full bg-white/95 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-neutral-800 shadow-sm">
+              {ranking.metric}
+            </span>
+          </>
+        ) : badge ? (
           <span
             className="absolute top-3 right-3 rounded-full px-2.5 py-0.5 text-xs font-bold text-neutral-900 shadow-sm"
             style={{ backgroundColor: color }}
           >
             {badge}
           </span>
-        )}
+        ) : null}
 
         {p.meteo && p.meteo.temperatureC != null && !p.highlightExtra && (
           <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-neutral-800 shadow-sm">
@@ -380,6 +402,7 @@ function PuebloCardFeature({
   const flagSrc = getComunidadFlagSrc(p.comunidad);
   const hasPhoto = !!p.foto_destacada;
   const badge = p.highlightExtra ?? (p.habitantes ? `${p.habitantes} hab.` : null);
+  const ranking = splitRankingBadge(p.highlightExtra);
   const href = p.linkUrl || `/pueblos/${p.slug}`;
 
   return (
@@ -404,27 +427,32 @@ function PuebloCardFeature({
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
 
-          {badge && (
+          {ranking ? (
+            <>
+              <span
+                className="absolute top-3 left-3 inline-flex h-9 min-w-9 items-center justify-center rounded-full px-2.5 text-base font-extrabold text-neutral-900 shadow-md ring-2 ring-white/70"
+                style={{ backgroundColor: color }}
+              >
+                {ranking.position}
+              </span>
+              <span className="absolute top-3 right-3 rounded-full bg-white/95 backdrop-blur-sm px-3 py-1 text-xs font-semibold text-neutral-800 shadow-sm">
+                {ranking.metric}
+              </span>
+            </>
+          ) : badge ? (
             <span
               className="absolute top-3 right-3 rounded-full px-3 py-1 text-xs font-bold text-neutral-900 shadow-md"
               style={{ backgroundColor: color }}
             >
               {badge}
             </span>
-          )}
+          ) : null}
 
           {p.meteo && p.meteo.temperatureC != null && !p.highlightExtra && (
             <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-neutral-800 shadow-sm">
               <WeatherIcon code={p.meteo.weatherCode} />
               <span>{Math.round(p.meteo.temperatureC)}°</span>
             </div>
-          )}
-
-          {p.visitable && (
-            <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-emerald-500/95 backdrop-blur-sm px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm">
-              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-              Visitable
-            </span>
           )}
         </div>
       </div>
@@ -448,6 +476,12 @@ function PuebloCardFeature({
             />
           )}
           <span className="truncate">{p.provincia}</span>
+          {p.visitable && (
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+              Visitable
+            </span>
+          )}
         </div>
         <div
           className="mt-3 inline-flex items-center gap-1 text-sm font-semibold transition-all group-hover:gap-2"
