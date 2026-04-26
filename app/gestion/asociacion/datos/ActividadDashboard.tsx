@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   ResponsiveContainer,
@@ -575,6 +576,41 @@ export default function ActividadDashboard() {
 
   return (
     <div className="space-y-8">
+      {/* ─── Accesos rápidos ─── */}
+      <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Accesos rápidos
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/gestion/asociacion/datos/usuarios"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+          >
+            Listado completo de usuarios
+          </Link>
+          <Link
+            href="/gestion/asociacion/datos/auditoria-visitas"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-100 transition-colors dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200 dark:hover:bg-amber-900"
+            title="Investiga quién creó cada visita: app móvil, el propio usuario, un admin o un script"
+          >
+            <span aria-hidden>🛡️</span>
+            Auditoría de visitas
+          </Link>
+          <Link
+            href="/gestion/asociacion/datos/usuarios-por-pueblo"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+          >
+            Usuarios + institucionales por pueblo
+          </Link>
+          <Link
+            href="/gestion/asociacion/notas-prensa-newsletter/ayuntamientos/contactos"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+          >
+            Contactos institucionales
+          </Link>
+        </div>
+      </section>
+
       {/* ─── KPIs ─── */}
       <section>
         <h2 className="mb-4 text-lg font-semibold text-foreground">Resumen general</h2>
