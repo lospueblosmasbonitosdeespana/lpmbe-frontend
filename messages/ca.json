@@ -352,7 +352,7 @@
     "contactPress": "Premsa",
     "socialNetworks": "Xarxes socials",
     "aboutText": "Associació dedicada a preservar i promoure el patrimoni rural d'Espanya des del 2010.",
-    "copyright": "© {any} Els pobles més bonics d'Espanya. Tots els drets reservats.",
+    "copyright": "© {year} Els pobles més bonics d'Espanya. Tots els drets reservats.",
     "privacy": "Privacitat",
     "legal": "Avís legal",
     "cookies": "Galetes"
@@ -454,7 +454,7 @@
       "noResultsNearby": "No s'han trobat cap poble ni recurs a prop d'aquesta ruta. Prova d'augmentar la distància màxima.",
       "estimatedTime": "Temps estimat: {time}",
       "shareText": "🗺️ La meva ruta des de {origin} fins a {dest}{time}{dist} Pobles i recursos pel camí: {stops} Vegeu-ho a Google Maps: {url}",
-      "defaultRouteName": "Ruta des de {origen} fins a {destinació}",
+      "defaultRouteName": "Ruta des de {origin} fins a {dest}",
       "saveRoutePrompt": "Nom per a aquesta ruta:",
       "saveError": "Error en desar el camí. Torni a provar."
     },
@@ -665,7 +665,7 @@
     "noImage": "Cap imatge",
     "seeDetail": "Veure detalls",
     "location": "Ubicació",
-    "locationIn": "{name} es troba a {province}, {region}.",
+    "locationIn": "{nombre} es troba a {provincia}, {comunidad}.",
     "pointOfInterest": "Punt d'interès",
     "categoryNature": "Natura",
     "categoryNatureDesc": "Senderisme, paisatges i àrees naturals",
@@ -685,7 +685,7 @@
     "viewOnGoogleMaps": "Veure a Google Maps",
     "videos": "Vídeos",
     "h1Videos": "Vídeos de {nombre}",
-    "h1Webcam": "La webcam de {name}",
+    "h1Webcam": "La webcam de {nombre}",
     "h1Actualidad": "Actualitat de {nombre}",
     "h1Multiexperiencias": "Multiexperiències a {nombre}",
     "h1LugaresDeInteres": "Llocs d'interès a {nombre}",
@@ -699,7 +699,7 @@
     "h1CategoriaEn": "{categoria} a {nombre}"
   },
   "poiPage": {
-    "backTo": "← Tornar a {name}",
+    "backTo": "← Tornar a {nombre}",
     "principal": "Inici",
     "descriptionComingSoon": "Descripció pròximament.",
     "location": "Ubicació",
@@ -902,7 +902,7 @@
     "experience": "Experiència"
   },
   "mxPage": {
-    "backTo": "← Tornar a {name}",
+    "backTo": "← Tornar a {nombre}",
     "backToVillage": "Tornada al poble",
     "viewVillageMap": "Vegeu el mapa del poble",
     "howToGetThere": "Com arribar-hi",
@@ -1093,8 +1093,8 @@
     "dateUnavailable": "Data no disponible",
     "dateInvalid": "Data invàlida",
     "alertaPueblo": "Atenció, gent!",
-    "semaforoPuebloIs": "{town} és {status}",
-    "semaforoPuebloUpdated": "{town} ha actualitzat el seu sistema de semàfors.",
+    "semaforoPuebloIs": "{pueblo} és {status}",
+    "semaforoPuebloUpdated": "{pueblo} ha actualitzat el seu sistema de semàfors.",
     "semaforoStatusGreen": "en verd",
     "semaforoStatusYellow": "en groc",
     "semaforoStatusRed": "en vermell",
@@ -1365,8 +1365,8 @@
     "resourcesInVillages": "Recursos a les ciutats",
     "onlyHolder": "Només el títol",
     "discountOnlyHolder": "Descompte només per a titular de la targeta",
-    "upToAdults": "Fins a {count} adults",
-    "plusMinors": " + {count} minors (fins a {age} anys)",
+    "upToAdults": "Fins a {count} adult{plural}",
+    "plusMinors": " + {count} menor{plural} (fins a {age} anys)",
     "village": "Poble"
   },
   "cuenta": {
@@ -1479,7 +1479,7 @@
     "loadingProgram": "Cargant el programa...",
     "notParticipating": "Aquest poble no participa a La Nit Romàntica aquest any.",
     "comingSoonExclaim": "Pròximament!",
-    "emptyMessagePueblo": "Els detalls i els esdeveniments de la Nit Romàntica a {town} es publicaran aviat. Torna aviat per consultar el programa d'activitats, els restaurants participants, l'allotjament i les botigues.",
+    "emptyMessagePueblo": "Els detalls i els esdeveniments de la Nit Romàntica a {pueblo} es publicaran aviat. Torna aviat per consultar el programa d'activitats, els restaurants participants, l'allotjament i les botigues.",
     "programActivities": "Programa d'activitats",
     "whereEatSleepShop": "On menjar, dormir i comprar",
     "participatingEstablishments": "Establiments participants",

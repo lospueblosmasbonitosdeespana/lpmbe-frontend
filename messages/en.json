@@ -665,7 +665,7 @@
     "noImage": "No image",
     "seeDetail": "See detail",
     "location": "Location",
-    "locationIn": "{name} is located in {province}, {community}.",
+    "locationIn": "{nombre} is located in {provincia}, {comunidad}.",
     "pointOfInterest": "Point of interest",
     "categoryNature": "Nature",
     "categoryNatureDesc": "Hiking, landscapes and natural areas",
@@ -699,7 +699,7 @@
     "h1CategoriaEn": "{categoria} in {nombre}"
   },
   "poiPage": {
-    "backTo": "← Back to {name}",
+    "backTo": "← Back to {nombre}",
     "principal": "Principal",
     "descriptionComingSoon": "Description coming soon.",
     "location": "Location",
@@ -902,7 +902,7 @@
     "experience": "Experience"
   },
   "mxPage": {
-    "backTo": "← Back to {name}",
+    "backTo": "← Back to {nombre}",
     "backToVillage": "Back to the village",
     "viewVillageMap": "See map of the village",
     "howToGetThere": "How to get there",
@@ -1093,8 +1093,8 @@
     "dateUnavailable": "Date not available",
     "dateInvalid": "Invalid date",
     "alertaPueblo": "Village Alert",
-    "semaforoPuebloIs": "{town} is {status}",
-    "semaforoPuebloUpdated": "{town} updated its traffic light",
+    "semaforoPuebloIs": "{pueblo} is {status}",
+    "semaforoPuebloUpdated": "{pueblo} updated its traffic light",
     "semaforoStatusGreen": "in green",
     "semaforoStatusYellow": "in yellow",
     "semaforoStatusRed": "in red",
