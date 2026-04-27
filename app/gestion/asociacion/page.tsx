@@ -45,6 +45,7 @@ const SECCIONES: {
       { href: '/gestion/asociacion/notificaciones', title: 'Notificaciones', description: 'Noticias, eventos y alertas en un solo listado', emoji: '📋', accent: 'sky' },
       { href: '/gestion/asociacion/alertas', title: 'Alertas globales', description: 'Avisos visibles a nivel nacional', hubIcon: 'alert', accent: 'red' },
       { href: '/gestion/asociacion/colecciones', title: 'Colecciones', description: 'Páginas temáticas de Descubre: crear, activar/desactivar y ordenar', emoji: '📚', accent: 'orange' },
+      { href: '/gestion/asociacion/descubre-hero', title: 'Hero y SEO de Descubre', description: 'Copy del hero, imagen de fondo, SEO y bloque introductorio editable de /descubre', emoji: '✨', accent: 'amber' },
     ],
   },
   {
