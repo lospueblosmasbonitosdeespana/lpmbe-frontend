@@ -23,6 +23,7 @@ type PuntoServicioRow = {
   horario?: unknown;
   horarioTramos?: HorarioTramos | null;
   orden?: number | null;
+  principal?: boolean | null;
 };
 
 type FormState = {
@@ -31,7 +32,19 @@ type FormState = {
   lat: number | null;
   lng: number | null;
   horario: HorarioTramos;
+  principal: boolean;
 };
+
+/**
+ * Tipos para los que tiene sentido marcar el punto como "principal" del
+ * pueblo. La app móvil sugiere el principal por defecto al usuario al
+ * llegar al pueblo. El resto de tipos no muestran el toggle.
+ */
+const TIPOS_CON_PRINCIPAL: ReadonlyArray<TipoServicio> = ["PARKING", "CARAVANAS"];
+
+function tipoSoportaPrincipal(tipo: string): boolean {
+  return TIPOS_CON_PRINCIPAL.includes(tipo as TipoServicio);
+}
 
 function horarioVacio(): HorarioTramos {
   return {
@@ -52,6 +65,7 @@ function formVacio(): FormState {
     lat: null,
     lng: null,
     horario: horarioVacio(),
+    principal: false,
   };
 }
 
@@ -135,6 +149,7 @@ export default function ServiciosPuebloClient({
       lat: row.lat ?? null,
       lng: row.lng ?? null,
       horario: { ...horarioVacio(), ...tramos },
+      principal: row.principal === true,
     });
     setFormError(null);
     setShowHorario(hasAnyTramo(tramos));
@@ -174,6 +189,7 @@ export default function ServiciosPuebloClient({
               DIAS_SEMANA.map(({ key }) => [key, form.horario[key] ?? []]),
             )
           : null,
+        principal: tipoSoportaPrincipal(form.tipo) ? form.principal : false,
       };
 
       let r: Response;
@@ -351,6 +367,28 @@ export default function ServiciosPuebloClient({
             />
           </div>
 
+          {/* Marcar como principal (solo para PARKING / CARAVANAS) */}
+          {tipoSoportaPrincipal(form.tipo) && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-3 dark:border-amber-900/60 dark:bg-amber-950/20">
+              <label className="flex cursor-pointer items-start gap-2 text-xs">
+                <input
+                  type="checkbox"
+                  checked={form.principal}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, principal: e.target.checked }))
+                  }
+                  className="mt-0.5 h-4 w-4 cursor-pointer accent-amber-600"
+                />
+                <span className="text-foreground">
+                  <span className="font-semibold">Marcar como principal</span>
+                  <span className="ml-1 text-muted-foreground">
+                    — la app móvil sugerirá este {form.tipo === "PARKING" ? "aparcamiento" : "área de caravanas"} a los usuarios que lleguen al pueblo. Solo puede haber uno principal por tipo (si marcas otro, se desmarca el anterior).
+                  </span>
+                </span>
+              </label>
+            </div>
+          )}
+
           {/* Coordenadas */}
           <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
             {form.lat != null && form.lng != null ? (
@@ -460,10 +498,17 @@ export default function ServiciosPuebloClient({
                       dangerouslySetInnerHTML={{ __html: cfg?.svg ?? "📍" }}
                     />
                     <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {cfg?.etiqueta ?? row.tipo}
-                        {row.nombre && (
-                          <span className="ml-1 font-normal text-muted-foreground">— {row.nombre}</span>
+                      <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-foreground">
+                        <span>
+                          {cfg?.etiqueta ?? row.tipo}
+                          {row.nombre && (
+                            <span className="ml-1 font-normal text-muted-foreground">— {row.nombre}</span>
+                          )}
+                        </span>
+                        {row.principal === true && tipoSoportaPrincipal(row.tipo) && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                            ★ Principal
+                          </span>
                         )}
                       </p>
                       {row.lat != null && row.lng != null ? (
