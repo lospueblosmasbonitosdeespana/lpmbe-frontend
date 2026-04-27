@@ -6,6 +6,7 @@ import {
   attachLiveCountdowns,
   upgradeLegacyCountdownBlocks,
 } from '@/app/_lib/builder-countdown-dom';
+import { sanitizeRichHtml } from '@/app/_lib/sanitize-rich-html';
 
 interface SafeHtmlProps {
   html: string;
@@ -43,6 +44,10 @@ export default function SafeHtml({ html, className = '', altFallback }: SafeHtml
       .replace(/&gt;/g, '>')
       .replace(/&amp;/g, '&');
   }
+  // Elimina estilos inline heredados de copy-paste (Word, Notion, webs en
+  // dark mode…) que estropean el aspecto: fondos blancos, fondos negros,
+  // colores específicos, fuentes externas, etc.
+  processedHtml = sanitizeRichHtml(processedHtml);
   if (altFallback) {
     processedHtml = injectAltFallback(processedHtml, altFallback);
   }

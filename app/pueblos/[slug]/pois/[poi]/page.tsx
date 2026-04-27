@@ -16,6 +16,7 @@ import {
 } from "@/lib/seo";
 import { fetchWithTimeout } from "@/lib/fetch-safe";
 import { injectImgAlt, stripHtml } from "@/app/_lib/html";
+import { sanitizeRichHtml } from "@/app/_lib/sanitize-rich-html";
 import ZoomableImage from "@/app/components/ZoomableImage";
 import JsonLd from "@/app/components/seo/JsonLd";
 
@@ -349,7 +350,7 @@ export default async function PoiPage({
         <section className="mt-8 w-full max-w-3xl">
           <div
             className="prose prose-gray dark:prose-invert prose-lg max-w-none text-foreground [&_p]:leading-relaxed [&_p]:text-foreground [&_h2]:text-foreground [&_h3]:text-foreground [&_li]:text-foreground [&_strong]:text-foreground [&_p]:max-w-none"
-            dangerouslySetInnerHTML={{ __html: injectImgAlt(descripcionHtml, data.nombre ?? "Punto de interés") }}
+            dangerouslySetInnerHTML={{ __html: injectImgAlt(sanitizeRichHtml(descripcionHtml), data.nombre ?? "Punto de interés") }}
           />
         </section>
       ) : (
