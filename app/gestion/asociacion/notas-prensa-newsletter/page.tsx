@@ -192,6 +192,40 @@ export default async function NotasPrensaNewsletterPage() {
           </article>
         </section>
 
+        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 shadow-sm dark:border-slate-800 dark:from-slate-900/40 dark:to-card sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 shadow-md">
+              <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                <path d="M4 4h16v16H4z" />
+                <path d="M4 8l8 6 8-6" />
+              </svg>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-base font-bold text-foreground">Direcciones de envío</h2>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-700 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
+                  Admin
+                </span>
+              </div>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                Configura el remitente <code className="rounded bg-muted px-1 py-0.5 text-[12px]">From:</code> de cada uno de los 4 canales (Newsletter, Notas de prensa, Ayuntamientos, Club) y de los emails transaccionales.
+                Si lo dejas vacío se usa el valor por defecto del entorno.
+              </p>
+              <div className="mt-4">
+                <Link
+                  href="/gestion/asociacion/notas-prensa-newsletter/emails-envio"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-slate-700 to-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:from-slate-800 hover:to-slate-950 active:scale-[0.98]"
+                >
+                  Gestionar direcciones
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="rounded-2xl border border-border bg-gradient-to-b from-muted/30 to-card p-5 sm:p-6">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 shadow-md">

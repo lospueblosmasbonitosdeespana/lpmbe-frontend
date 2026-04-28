@@ -620,6 +620,6 @@ function buildPreviewHtml(asunto: string, body: string) {
     <div class="header"><h1>${subject}</h1></div>
     <div class="body">${body}</div>
     <div class="footer">Club de Amigos · Los Pueblos más Bonitos de España<br/>
-    Si no quieres recibir más comunicaciones, escribe a <a href="mailto:hola@lospueblosmasbonitosdeespana.org">hola@lospueblosmasbonitosdeespana.org</a></div>
+    Si no quieres recibir más comunicaciones, escribe a <a href="mailto:info@lospueblosmasbonitosdeespana.org">info@lospueblosmasbonitosdeespana.org</a></div>
   </div></body></html>`;
 }
