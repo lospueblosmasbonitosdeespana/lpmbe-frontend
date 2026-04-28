@@ -36,6 +36,12 @@ export default async function GestionAsociacionClubPage() {
           <Link href="/gestion/asociacion/club/sorteos" className={HERO_LINK}>
             Sorteos
           </Link>
+          <Link href="/gestion/asociacion/club/comunicaciones" className={HERO_LINK}>
+            Comunicaciones
+          </Link>
+          <Link href="/gestion/asociacion/club/catalogo" className={HERO_LINK}>
+            Estado catálogo RRTT
+          </Link>
         </div>
       }
     >
