@@ -229,7 +229,7 @@ function ActionButton({ icon, label, state = "idle", onClick, href, external, hi
     </>
   );
 
-  const baseClasses = "group flex flex-col items-center";
+  const baseClasses = "group flex flex-col items-center min-w-[68px]";
 
   if (href) {
     return (
@@ -356,7 +356,7 @@ export default function PuebloActions({
     <>
       <Section spacing="none" className={cn("border-b border-border")}>
         <Container>
-          <div className="grid grid-cols-3 gap-3 py-4 sm:flex sm:flex-wrap sm:justify-center sm:gap-6 md:gap-8 lg:gap-12">
+          <div className="flex flex-wrap items-start justify-center gap-x-5 gap-y-4 py-4 sm:gap-x-6 md:gap-x-8 lg:gap-x-12">
             <div className="relative flex flex-col items-center" ref={shareDropdownRef}>
               <ActionButton
                 icon={<ShareIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
@@ -437,25 +437,27 @@ export default function PuebloActions({
               href={`/pueblos/${puebloSlug}/club`}
               highlighted
             />
-            <div className="flex items-center gap-5">
-              <ActionButton
-                icon={<NewsIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
-                label={t("actionActualidad")}
-                href={`/pueblos/${puebloSlug}/actualidad`}
-                highlighted
-              />
-              {alertasActivasCount > 0 && (
-                <Link
-                  href={`/pueblos/${puebloSlug}/alertas`}
-                  className="ml-2 inline-flex items-center gap-2 rounded-md px-2.5 py-1 text-amber-700 hover:bg-amber-50"
-                  title={`Ver ${alertasActivasCount} alerta${alertasActivasCount === 1 ? "" : "s"}`}
-                  aria-label={`Ver ${alertasActivasCount} alerta${alertasActivasCount === 1 ? "" : "s"}`}
-                >
-                  <AlertTriangleIcon className="h-6 w-6" />
-                  <span className="text-base font-semibold leading-none">{alertasActivasCount}</span>
-                </Link>
-              )}
-            </div>
+            <ActionButton
+              icon={<NewsIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
+              label={t("actionActualidad")}
+              href={`/pueblos/${puebloSlug}/actualidad`}
+              highlighted
+            />
+            {alertasActivasCount > 0 && (
+              <Link
+                href={`/pueblos/${puebloSlug}/alertas`}
+                className="inline-flex flex-col items-center justify-start min-w-[68px] text-amber-700 hover:text-amber-800"
+                title={`Ver ${alertasActivasCount} alerta${alertasActivasCount === 1 ? "" : "s"}`}
+                aria-label={`Ver ${alertasActivasCount} alerta${alertasActivasCount === 1 ? "" : "s"}`}
+              >
+                <span className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-amber-100 transition-colors hover:bg-amber-200">
+                  <AlertTriangleIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                </span>
+                <span className="mt-1 sm:mt-1.5 text-[10px] sm:text-xs font-semibold">
+                  {alertasActivasCount} alerta{alertasActivasCount === 1 ? "" : "s"}
+                </span>
+              </Link>
+            )}
           </div>
 
           {/* Semáforo turístico: estado en tiempo real */}

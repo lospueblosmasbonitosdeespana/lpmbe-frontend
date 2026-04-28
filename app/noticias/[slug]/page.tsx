@@ -180,16 +180,16 @@ export default async function NoticiaPage({
 
         <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 20px' }}>
           <header style={{ marginBottom: '40px' }}>
-            <div style={{ fontSize: '13px', fontWeight: 500, color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '16px' }}>
-              Noticia
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '12px' }}>
-              <h1 style={{ fontSize: '36px', fontWeight: 700, lineHeight: '1.2', margin: 0, color: '#111', flex: 1, minWidth: 0 }}>
-                {noticia.titulo}
-              </h1>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '16px' }}>
+              <div style={{ fontSize: '13px', fontWeight: 500, color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Noticia
+              </div>
               <ShareButton url={`/noticias/${slug}`} title={noticia.titulo} variant="button" />
             </div>
+
+            <h1 style={{ fontSize: '36px', fontWeight: 700, lineHeight: '1.2', margin: 0, color: '#111' }}>
+              {noticia.titulo}
+            </h1>
 
             {fechaFormateada && (
               <p style={{ fontSize: '14px', color: '#666', marginTop: '8px' }}>
