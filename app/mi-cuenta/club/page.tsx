@@ -18,6 +18,14 @@ type ClubMe = {
   cancelAtPeriodEnd?: boolean;
   qrToken?: string | null;
   qrPayload?: string | null;
+  numeroSocio?: number | null;
+  datosSocio?: {
+    provincia: string | null;
+    fechaNacimiento: string | null;
+    intereses: string[];
+    aceptaMarketing: boolean;
+    idiomaPreferido: string | null;
+  };
   inscripcionesAbiertas?: boolean;
   precioAnualCents?: number;
   precioMensualCents?: number;
@@ -26,6 +34,15 @@ type ClubMe = {
     tipo: string;
     expiraEn: string | null;
     texto: string | null;
+  } | null;
+  lanzamiento?: {
+    activo: boolean;
+    mesesGratis: number;
+    finAt: string | null;
+    texto: string | null;
+    cupo: number | null;
+    cupoUsado: number;
+    cupoRestante: number | null;
   } | null;
 };
 
@@ -410,6 +427,11 @@ export default function ClubPage() {
                   <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                     {t('member')}
                   </span>
+                  {clubMe.numeroSocio != null && (
+                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                      Socio nº {String(clubMe.numeroSocio).padStart(5, '0')}
+                    </span>
+                  )}
                 </div>
               )}
               {/* Info de membresía */}
@@ -447,52 +469,60 @@ export default function ClubPage() {
                   : t('joinClubSoon')}
               </Caption>
               {clubMe?.inscripcionesAbiertas ? (
-                <div className="space-y-4">
-                  {/* Banner de oferta */}
-                  {clubMe.oferta && clubMe.oferta.descuento > 0 && (
-                    <OfertaBanner oferta={clubMe.oferta} />
-                  )}
-                  {/* Tarjetas de precio */}
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <PrecioCard
-                      titulo={t('planAnualTitulo')}
-                      precioCents={clubMe.precioAnualCents ?? 0}
-                      periodo={t('planAnualPeriodo')}
-                      subtitulo={t('planAnualSubtitulo')}
-                      oferta={clubMe.oferta}
-                      tipoOferta="ANUAL"
-                      ahorrasLabel={t('ahorras', { amount: '0' })}
-                      destacado
-                    />
-                    <PrecioCard
-                      titulo={t('planMensualTitulo')}
-                      precioCents={clubMe.precioMensualCents ?? 0}
-                      periodo={t('planMensualPeriodo')}
-                      subtitulo={t('planMensualSubtitulo')}
-                      oferta={clubMe.oferta}
-                      tipoOferta="MENSUAL"
-                      ahorrasLabel={t('ahorras', { amount: '0' })}
-                    />
+                clubMe.lanzamiento?.activo ? (
+                  <LanzamientoCard
+                    lanzamiento={clubMe.lanzamiento}
+                    activando={activandoMembresia}
+                    onActivar={() => handleActivarMembresia('ANUAL')}
+                  />
+                ) : (
+                  <div className="space-y-4">
+                    {/* Banner de oferta */}
+                    {clubMe.oferta && clubMe.oferta.descuento > 0 && (
+                      <OfertaBanner oferta={clubMe.oferta} />
+                    )}
+                    {/* Tarjetas de precio */}
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <PrecioCard
+                        titulo={t('planAnualTitulo')}
+                        precioCents={clubMe.precioAnualCents ?? 0}
+                        periodo={t('planAnualPeriodo')}
+                        subtitulo={t('planAnualSubtitulo')}
+                        oferta={clubMe.oferta}
+                        tipoOferta="ANUAL"
+                        ahorrasLabel={t('ahorras', { amount: '0' })}
+                        destacado
+                      />
+                      <PrecioCard
+                        titulo={t('planMensualTitulo')}
+                        precioCents={clubMe.precioMensualCents ?? 0}
+                        periodo={t('planMensualPeriodo')}
+                        subtitulo={t('planMensualSubtitulo')}
+                        oferta={clubMe.oferta}
+                        tipoOferta="MENSUAL"
+                        ahorrasLabel={t('ahorras', { amount: '0' })}
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        type="button"
+                        onClick={() => handleActivarMembresia('ANUAL')}
+                        disabled={activandoMembresia}
+                        className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
+                      >
+                        {activandoMembresia ? t('processing') : t('annualPlan')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleActivarMembresia('MENSUAL')}
+                        disabled={activandoMembresia}
+                        className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
+                      >
+                        {activandoMembresia ? t('processing') : t('monthlyPlan')}
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      onClick={() => handleActivarMembresia('ANUAL')}
-                      disabled={activandoMembresia}
-                      className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
-                    >
-                      {activandoMembresia ? t('processing') : t('annualPlan')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleActivarMembresia('MENSUAL')}
-                      disabled={activandoMembresia}
-                      className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
-                    >
-                      {activandoMembresia ? t('processing') : t('monthlyPlan')}
-                    </button>
-                  </div>
-                </div>
+                )
               ) : (
                 <div className="rounded-lg border border-border bg-muted/30 px-5 py-4 text-sm text-muted-foreground">
                   <p className="font-medium text-gray-700 mb-1">🔜 {t('comingSoonTitle')}</p>
@@ -568,6 +598,13 @@ export default function ClubPage() {
                 )}
               </Link>
               <Link
+                href="/mi-cuenta/club/negocios"
+                className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
+              >
+                <span className="font-medium">Negocios del Club (hoteles, restaurantes, comercios…)</span>
+                <Caption>Por categoría y pueblo</Caption>
+              </Link>
+              <Link
                 href="/mi-cuenta/club/visitados"
                 className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
               >
@@ -636,7 +673,106 @@ export default function ClubPage() {
   );
 }
 
-// ─── Componentes de oferta ────────────────────────────────────────────────
+// ─── Componentes ──────────────────────────────────────────────────────────
+
+type Lanzamiento = {
+  activo: boolean;
+  mesesGratis: number;
+  finAt: string | null;
+  texto: string | null;
+  cupo: number | null;
+  cupoUsado: number;
+  cupoRestante: number | null;
+};
+
+function LanzamientoCard({
+  lanzamiento,
+  activando,
+  onActivar,
+}: {
+  lanzamiento: Lanzamiento;
+  activando: boolean;
+  onActivar: () => void;
+}) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (!lanzamiento.finAt) return;
+    const i = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(i);
+  }, [lanzamiento.finAt]);
+
+  const fin = lanzamiento.finAt ? new Date(lanzamiento.finAt).getTime() : null;
+  const restante = fin ? Math.max(0, fin - now) : null;
+
+  function fmtCountdown(ms: number) {
+    const totalSecs = Math.floor(ms / 1000);
+    const d = Math.floor(totalSecs / 86400);
+    const h = Math.floor((totalSecs % 86400) / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    if (d > 0) return `${d}d ${h}h`;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+  }
+
+  return (
+    <div className="rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-yellow-50 to-amber-100 p-6 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+            🎉 Lanzamiento
+          </div>
+          <h3 className="text-2xl font-bold text-amber-900">
+            {lanzamiento.mesesGratis} {lanzamiento.mesesGratis === 1 ? 'mes' : 'meses'} gratis
+          </h3>
+          {lanzamiento.texto && (
+            <p className="mt-1 text-sm text-amber-800">{lanzamiento.texto}</p>
+          )}
+        </div>
+        {restante !== null && restante > 0 && (
+          <div className="shrink-0 text-right">
+            <div className="text-[10px] font-medium uppercase tracking-wider text-amber-700">
+              Termina en
+            </div>
+            <div className="text-xl font-bold tabular-nums text-amber-900">
+              {fmtCountdown(restante)}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <ul className="mt-4 space-y-2 text-sm text-amber-900">
+        <li className="flex items-start gap-2">
+          <span className="mt-0.5 text-amber-700">✓</span>
+          <span>Acceso completo a recursos turísticos del Club en los pueblos certificados</span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span className="mt-0.5 text-amber-700">✓</span>
+          <span>Descuentos y regalos en hoteles, casas rurales, restaurantes, comercios y experiencias</span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span className="mt-0.5 text-amber-700">✓</span>
+          <span>Tarjeta digital con QR de identidad y número de socio LPMBE</span>
+        </li>
+      </ul>
+
+      <button
+        type="button"
+        onClick={onActivar}
+        disabled={activando}
+        className="mt-5 w-full rounded-xl bg-amber-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-amber-700 disabled:opacity-50"
+      >
+        {activando ? 'Activando...' : 'Activar mi membresía gratis'}
+      </button>
+
+      <p className="mt-3 text-center text-[11px] text-amber-700">
+        Sin tarjeta. Sin renovación automática. Cuando termine podrás continuar al precio normal.
+        {lanzamiento.cupoRestante != null && lanzamiento.cupoRestante < 1000 && (
+          <> · Quedan {lanzamiento.cupoRestante} plazas disponibles.</>
+        )}
+      </p>
+    </div>
+  );
+}
 
 type Oferta = { descuento: number; tipo: string; expiraEn: string | null; texto: string | null };
 

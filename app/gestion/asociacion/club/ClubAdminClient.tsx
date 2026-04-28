@@ -17,6 +17,15 @@ type ClubConfig = {
     expiraEn: string | null;
     texto: string | null;
   };
+  lanzamiento: {
+    activo: boolean;
+    vigente: boolean;
+    mesesGratis: number;
+    finAt: string | null;
+    texto: string | null;
+    cupo: number | null;
+    cupoUsado: number;
+  };
 };
 
 type ClubStats = {
@@ -112,6 +121,14 @@ export default function ClubAdminClient() {
   const [savingOferta, setSavingOferta] = useState(false);
   const [ofertaMsg, setOfertaMsg] = useState<string | null>(null);
 
+  // Modo Lanzamiento
+  const [lanzMeses, setLanzMeses] = useState<number>(3);
+  const [lanzFinAt, setLanzFinAt] = useState('');
+  const [lanzTexto, setLanzTexto] = useState('');
+  const [lanzCupo, setLanzCupo] = useState<string>('');
+  const [savingLanz, setSavingLanz] = useState(false);
+  const [lanzMsg, setLanzMsg] = useState<string | null>(null);
+
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -132,6 +149,11 @@ export default function ClubAdminClient() {
         setOfertaTipo(cfg.oferta?.tipo ?? 'AMBOS');
         setOfertaExpiraEn(cfg.oferta?.expiraEn ? cfg.oferta.expiraEn.slice(0, 16) : '');
         setOfertaTexto(cfg.oferta?.texto ?? '');
+        // Modo Lanzamiento
+        setLanzMeses(cfg.lanzamiento?.mesesGratis ?? 3);
+        setLanzFinAt(cfg.lanzamiento?.finAt ? cfg.lanzamiento.finAt.slice(0, 16) : '');
+        setLanzTexto(cfg.lanzamiento?.texto ?? '');
+        setLanzCupo(cfg.lanzamiento?.cupo != null ? String(cfg.lanzamiento.cupo) : '');
       }
       if (statsRes.ok) setStats(await statsRes.json());
       if (usoRes.ok) setUsoRecursos(await usoRes.json());
@@ -217,6 +239,61 @@ export default function ClubAdminClient() {
       setOfertaMsg('Error al actualizar.');
     }
     setSavingOferta(false);
+  }
+
+  async function toggleLanzamiento() {
+    if (!config) return;
+    setSavingLanz(true);
+    setLanzMsg(null);
+    const next = !config.lanzamiento.activo;
+    const res = await fetch('/api/club/admin/config', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lanzamientoActivo: next }),
+    });
+    if (res.ok) {
+      const updated: ClubConfig = await res.json();
+      setConfig(updated);
+      setLanzMsg(next ? 'Modo Lanzamiento activado.' : 'Modo Lanzamiento desactivado.');
+    } else {
+      setLanzMsg('Error al actualizar.');
+    }
+    setSavingLanz(false);
+  }
+
+  async function saveLanzamiento() {
+    setSavingLanz(true);
+    setLanzMsg(null);
+    if (![1, 2, 3, 4, 5, 6].includes(lanzMeses)) {
+      setLanzMsg('Los meses gratis deben estar entre 1 y 6.');
+      setSavingLanz(false);
+      return;
+    }
+    const cupoNum = lanzCupo === '' ? null : parseInt(lanzCupo, 10);
+    if (cupoNum != null && (isNaN(cupoNum) || cupoNum < 0)) {
+      setLanzMsg('El cupo debe ser un número positivo (o vacío para ilimitado).');
+      setSavingLanz(false);
+      return;
+    }
+    const body: Record<string, unknown> = {
+      lanzamientoMesesGratis: lanzMeses,
+      lanzamientoTexto: lanzTexto || null,
+      lanzamientoFinAt: lanzFinAt ? new Date(lanzFinAt).toISOString() : null,
+      lanzamientoCupo: cupoNum,
+    };
+    const res = await fetch('/api/club/admin/config', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) {
+      const updated: ClubConfig = await res.json();
+      setConfig(updated);
+      setLanzMsg('Configuración del lanzamiento guardada.');
+    } else {
+      setLanzMsg('Error al guardar.');
+    }
+    setSavingLanz(false);
   }
 
   async function saveOferta() {
@@ -337,6 +414,151 @@ export default function ClubAdminClient() {
             </span>
           )}
         </div>
+      </section>
+
+      {/* ── MODO LANZAMIENTO ────────────────────────────────────────── */}
+      <section
+        className={`rounded-xl border-2 p-5 shadow-sm ${
+          config?.lanzamiento?.vigente
+            ? 'border-amber-400 bg-gradient-to-br from-amber-50 to-yellow-50'
+            : 'border-border bg-white'
+        }`}
+      >
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h2 className="flex items-center gap-2 text-base font-semibold text-gray-800">
+              <span className="inline-flex h-7 items-center rounded-full bg-amber-500 px-2.5 text-xs font-bold uppercase tracking-wider text-white">
+                Lanzamiento
+              </span>
+              Periodo gratuito de inicio
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Mientras esté activo, todo nuevo socio entra <strong>gratis</strong> durante los meses configurados.
+              La oferta porcentual queda anulada para nuevas altas.
+            </p>
+          </div>
+        </div>
+
+        <div className="mb-5 flex items-center justify-between rounded-lg border bg-white/70 p-4">
+          <div>
+            <div className="font-medium text-gray-800">Modo Lanzamiento</div>
+            <div className="mt-0.5 text-sm text-muted-foreground">
+              {config?.lanzamiento?.activo ? (
+                config?.lanzamiento?.vigente ? (
+                  <span className="font-medium text-amber-700">
+                    Activo — {config.lanzamiento.mesesGratis}{' '}
+                    {config.lanzamiento.mesesGratis === 1 ? 'mes' : 'meses'} gratis
+                    {config.lanzamiento.finAt && (
+                      <span className="font-normal text-muted-foreground">
+                        {' '}· Hasta {new Date(config.lanzamiento.finAt).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
+                    {config.lanzamiento.cupo != null && (
+                      <span className="font-normal text-muted-foreground">
+                        {' '}· Cupo: {config.lanzamiento.cupoUsado}/{config.lanzamiento.cupo}
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  <span className="font-medium text-orange-600">
+                    Activado pero {config.lanzamiento.cupo != null && config.lanzamiento.cupoUsado >= config.lanzamiento.cupo ? 'sin cupo disponible' : 'expirado'}
+                  </span>
+                )
+              ) : (
+                'Desactivado — los nuevos socios pagan el precio normal (con la oferta porcentual si aplica).'
+              )}
+            </div>
+          </div>
+          <button
+            onClick={toggleLanzamiento}
+            disabled={savingLanz}
+            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 ${
+              config?.lanzamiento?.activo ? 'bg-amber-500' : 'bg-gray-300'
+            }`}
+            title={config?.lanzamiento?.activo ? 'Desactivar lanzamiento' : 'Activar lanzamiento'}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                config?.lanzamiento?.activo ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Meses gratis</label>
+            <select
+              value={lanzMeses}
+              onChange={(e) => setLanzMeses(Number(e.target.value))}
+              className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <option key={n} value={n}>
+                  {n} {n === 1 ? 'mes' : 'meses'}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Válido hasta</label>
+            <input
+              type="datetime-local"
+              value={lanzFinAt}
+              onChange={(e) => setLanzFinAt(e.target.value)}
+              className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+            <p className="mt-1 text-[11px] text-muted-foreground">Vacío = sin fecha límite</p>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Cupo máximo</label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={lanzCupo}
+              onChange={(e) => setLanzCupo(e.target.value)}
+              placeholder="ilimitado"
+              className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              {config?.lanzamiento?.cupo != null
+                ? `Usados: ${config.lanzamiento.cupoUsado} / ${config.lanzamiento.cupo}`
+                : 'Vacío = sin cupo'}
+            </p>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Texto promocional</label>
+            <input
+              type="text"
+              value={lanzTexto}
+              onChange={(e) => setLanzTexto(e.target.value)}
+              placeholder="Ej: ¡Lanzamiento del Club! 3 meses gratis"
+              className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+        </div>
+
+        <div className="mt-3 flex items-center gap-3">
+          <button
+            onClick={saveLanzamiento}
+            disabled={savingLanz}
+            className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
+          >
+            {savingLanz ? 'Guardando...' : 'Guardar lanzamiento'}
+          </button>
+          {lanzMsg && (
+            <span className={`text-sm ${lanzMsg.startsWith('Error') ? 'text-red-600' : 'text-green-700'}`}>
+              {lanzMsg}
+            </span>
+          )}
+        </div>
+
+        {config?.lanzamiento?.vigente && (
+          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-100/60 p-3 text-sm text-amber-900">
+            ⚠ Mientras este modo esté activo, las altas son <strong>100% gratuitas</strong> durante {config.lanzamiento.mesesGratis} {config.lanzamiento.mesesGratis === 1 ? 'mes' : 'meses'}. La oferta porcentual del bloque inferior <strong>no se aplica</strong> a nuevas altas.
+          </div>
+        )}
       </section>
 
       {/* ── OFERTA / PROMOCIÓN ──────────────────────────────────────── */}
