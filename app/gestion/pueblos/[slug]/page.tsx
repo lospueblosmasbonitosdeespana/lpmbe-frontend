@@ -7,20 +7,16 @@ import { fetchWithTimeout } from '@/lib/fetch-safe';
 import { redirect } from 'next/navigation';
 import {
   GestionHubBackLink,
-  GestionHubCard,
-  GestionHubCardAccent,
-  GestionHubEmoji,
   GestionHubFooterLink,
   GestionHubHero,
-  GestionHubIconAlertTriangle,
-  GestionHubIconMultiexperiencia,
-  GestionHubIconPoiParadas,
-  GestionHubIconServiciosMap,
-  GestionHubIconVisitorParking,
-  GestionHubIconWebcamRound,
   GestionHubSection,
   GestionHubSectionTone,
 } from '../../_components/GestionHub';
+import {
+  GestionHubModernCard,
+  ModernIconKey,
+  ModernTone,
+} from '../../_components/GestionHubModern';
 
 type ArchivoAdicional = { url: string; nombre: string };
 
@@ -64,34 +60,15 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 export const revalidate = 0;
 
-type HubIconKind =
-  | 'emoji'
-  | 'alert'
-  | 'webcam'
-  | 'visitorParking'
-  | 'poiParadas'
-  | 'serviciosMap'
-  | 'multiexperiencia';
-
 type Accion = {
   href: string;
   title: string;
   description: string;
-  accent: GestionHubCardAccent;
-  emoji?: string;
-  hubIcon?: HubIconKind;
+  iconKey: ModernIconKey;
+  tone: ModernTone;
+  badge?: string;
   disabled?: boolean;
 };
-
-function renderHubIcon(item: Accion) {
-  if (item.hubIcon === 'alert') return <GestionHubIconAlertTriangle />;
-  if (item.hubIcon === 'webcam') return <GestionHubIconWebcamRound />;
-  if (item.hubIcon === 'visitorParking') return <GestionHubIconVisitorParking />;
-  if (item.hubIcon === 'poiParadas') return <GestionHubIconPoiParadas />;
-  if (item.hubIcon === 'serviciosMap') return <GestionHubIconServiciosMap />;
-  if (item.hubIcon === 'multiexperiencia') return <GestionHubIconMultiexperiencia />;
-  return <GestionHubEmoji emoji={item.emoji ?? '•'} />;
-}
 
 export default async function GestionPuebloPage({
   params,
@@ -132,6 +109,9 @@ export default async function GestionPuebloPage({
     ? `/gestion/pueblo/contenidos?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}`
     : '#';
 
+  // IMPORTANTE: cada `iconKey` aparece como mucho UNA VEZ en esta página.
+  // El icono `metrics` es el MISMO que se usa en /gestion/asociacion (Datos)
+  // para mantener identidad visual de "estadísticas" en toda la red.
   const secciones: {
     title: string;
     subtitle?: string;
@@ -143,11 +123,11 @@ export default async function GestionPuebloPage({
       subtitle: 'Marca del ayuntamiento, textos y páginas del pueblo en la web.',
       tone: 'warm',
       items: [
-        { href: `${baseUrl}/logo-papeleria`, title: 'Logo y papelería', description: 'Logotipos del ayuntamiento y documentos descargables', emoji: '🏷️', accent: 'amber' },
-        { href: contenidosUrl, title: 'Contenidos', description: 'Páginas, noticias y eventos del pueblo', emoji: '📰', accent: 'rose', disabled: !puebloId },
-        { href: `${baseUrl}/descripcion`, title: 'Información y descripción', description: 'Coordenadas, textos y descripciones', emoji: '📝', accent: 'sky' },
-        { href: `${baseUrl}/en-cifras`, title: 'En cifras', description: 'Datos y estadísticas del municipio', emoji: '📊', accent: 'violet' },
-        { href: `${baseUrl}/caracteristicas`, title: 'Características del pueblo', description: 'Castillo, murallas, naturaleza, piscinas… para colecciones temáticas', emoji: '🏰', accent: 'orange' },
+        { href: `${baseUrl}/logo-papeleria`, title: 'Logo y papelería',          description: 'Logotipos del ayuntamiento y documentos descargables',                                  iconKey: 'tagLabel',  tone: 'amber'  },
+        { href: contenidosUrl,               title: 'Contenidos',                description: 'Páginas, noticias y eventos del pueblo',                                              iconKey: 'newspaper', tone: 'rose',  disabled: !puebloId },
+        { href: `${baseUrl}/descripcion`,    title: 'Información y descripción', description: 'Coordenadas, textos y descripciones',                                                 iconKey: 'pencil',    tone: 'sky'    },
+        { href: `${baseUrl}/en-cifras`,      title: 'En cifras',                 description: 'Datos y estadísticas del municipio',                                                  iconKey: 'barChart',  tone: 'violet' },
+        { href: `${baseUrl}/caracteristicas`,title: 'Características del pueblo',description: 'Castillo, murallas, naturaleza, piscinas… para colecciones temáticas',                  iconKey: 'tower',     tone: 'orange' },
       ],
     },
     {
@@ -155,9 +135,9 @@ export default async function GestionPuebloPage({
       subtitle: 'Avisos, afluencia y redes: lo que el turista ve al planificar la visita.',
       tone: 'coral',
       items: [
-        { href: `${baseUrl}/alertas`, title: 'Alertas', description: 'Avisos y alertas del municipio', hubIcon: 'alert', accent: 'red' },
-        { href: `${baseUrl}/semaforo`, title: 'Semáforo', description: 'Estado turístico y aforo', emoji: '🚦', accent: 'lime' },
-        { href: `${baseUrl}/rrss`, title: 'Redes sociales', description: 'Instagram, Facebook, X, YouTube, TikTok y web', emoji: '📱', accent: 'fuchsia' },
+        { href: `${baseUrl}/alertas`,   title: 'Alertas',          description: 'Avisos y alertas del municipio',           iconKey: 'alertTriangle', tone: 'red',     badge: 'Urgente' },
+        { href: `${baseUrl}/semaforo`,  title: 'Semáforo',         description: 'Estado turístico y aforo',                 iconKey: 'trafficLight',  tone: 'lime'   },
+        { href: `${baseUrl}/rrss`,      title: 'Redes sociales',   description: 'Instagram, Facebook, X, YouTube, TikTok y web', iconKey: 'socialChat', tone: 'fuchsia' },
       ],
     },
     {
@@ -165,9 +145,9 @@ export default async function GestionPuebloPage({
       subtitle: 'Medios en la ficha pública del pueblo.',
       tone: 'sky',
       items: [
-        { href: `${baseUrl}/fotos`, title: 'Fotos del pueblo', description: 'Galería e imágenes destacadas', emoji: '🖼️', accent: 'pink' },
-        { href: `${baseUrl}/videos`, title: 'Videos', description: 'Enlaces a YouTube y videos del pueblo', emoji: '🎬', accent: 'violet' },
-        { href: `${baseUrl}/webcam`, title: 'Webcam', description: 'Webcams en directo del pueblo', hubIcon: 'webcam', accent: 'slate' },
+        { href: `${baseUrl}/fotos`,  title: 'Fotos del pueblo', description: 'Galería e imágenes destacadas',         iconKey: 'photo',  tone: 'pink'   },
+        { href: `${baseUrl}/videos`, title: 'Videos',           description: 'Enlaces a YouTube y videos del pueblo', iconKey: 'cinema', tone: 'violet' },
+        { href: `${baseUrl}/webcam`, title: 'Webcam',           description: 'Webcams en directo del pueblo',         iconKey: 'webcam', tone: 'slate'  },
       ],
     },
     {
@@ -175,9 +155,9 @@ export default async function GestionPuebloPage({
       subtitle: 'Lugares en el mapa y equipamientos para quien visita el pueblo.',
       tone: 'emerald',
       items: [
-        { href: `${baseUrl}/pois`, title: 'POIs', description: 'Puntos de interés en el mapa', hubIcon: 'poiParadas', accent: 'emerald' },
-        { href: `${baseUrl}/servicios`, title: 'Servicios del visitante', description: 'Lavabos, parking, turismo, pipicán, caravanas…', hubIcon: 'serviciosMap', accent: 'sky' },
-        { href: `${baseUrl}/multiexperiencias`, title: 'Multiexperiencias', description: 'Rutas y experiencias', hubIcon: 'multiexperiencia', accent: 'amber' },
+        { href: `${baseUrl}/pois`,              title: 'POIs',                  description: 'Puntos de interés en el mapa',                       iconKey: 'pinMap',       tone: 'emerald' },
+        { href: `${baseUrl}/servicios`,         title: 'Servicios del visitante', description: 'Lavabos, parking, turismo, pipicán, caravanas…',  iconKey: 'servicesPin',  tone: 'sky'     },
+        { href: `${baseUrl}/multiexperiencias`, title: 'Multiexperiencias',     description: 'Rutas y experiencias',                               iconKey: 'trail',        tone: 'amber'   },
       ],
     },
     {
@@ -185,8 +165,9 @@ export default async function GestionPuebloPage({
       subtitle: 'Programa de socios y métricas de la ficha.',
       tone: 'violet',
       items: [
-        { href: `${baseUrl}/club`, title: 'Club de Amigos', description: 'Métricas y recursos del club', emoji: '👥', accent: 'violet' },
-        { href: `${baseUrl}/metricas`, title: 'Métricas', description: 'Visitas, valoraciones y analítica web del pueblo', emoji: '📈', accent: 'indigo', disabled: !puebloId },
+        { href: `${baseUrl}/club`,     title: 'Club de Amigos', description: 'Métricas y recursos del club',                      iconKey: 'members', tone: 'violet' },
+        // MISMO iconKey "metrics" que se usa en /gestion/asociacion (Datos)
+        { href: `${baseUrl}/metricas`, title: 'Métricas',       description: 'Visitas, valoraciones y analítica web del pueblo', iconKey: 'metrics', tone: 'indigo', disabled: !puebloId },
       ],
     },
     {
@@ -194,9 +175,9 @@ export default async function GestionPuebloPage({
       subtitle: 'Participación en iniciativas de la red.',
       tone: 'festive',
       items: [
-        { href: `${baseUrl}/noche-romantica`, title: 'La Noche Romántica', description: 'Gestiona tu participación en La Noche Romántica', emoji: '❤️', accent: 'romance' },
-        { href: `${baseUrl}/semana-santa`, title: 'Semana Santa', description: 'Cartel, agenda y días de procesiones del pueblo', emoji: '✝️', accent: 'stone' },
-        { href: `${baseUrl}/navidad`, title: 'Navidad', description: 'Mercadillos, belenes, cabalgatas y eventos navideños', emoji: '🎄', accent: 'holiday' },
+        { href: `${baseUrl}/noche-romantica`, title: 'La Noche Romántica', description: 'Gestiona tu participación en La Noche Romántica',  iconKey: 'heart',    tone: 'romance' },
+        { href: `${baseUrl}/semana-santa`,    title: 'Semana Santa',       description: 'Cartel, agenda y días de procesiones del pueblo',  iconKey: 'cross',    tone: 'stone'   },
+        { href: `${baseUrl}/navidad`,         title: 'Navidad',            description: 'Mercadillos, belenes, cabalgatas y eventos',       iconKey: 'pineTree', tone: 'holiday' },
       ],
     },
     {
@@ -204,7 +185,7 @@ export default async function GestionPuebloPage({
       subtitle: 'Quién puede editar este pueblo.',
       tone: 'slate',
       items: [
-        { href: `${baseUrl}/autorizados`, title: 'Autorizados', description: 'Usuarios que pueden gestionar el pueblo', emoji: '🔑', accent: 'yellow' },
+        { href: `${baseUrl}/autorizados`, title: 'Autorizados', description: 'Usuarios que pueden gestionar el pueblo', iconKey: 'key', tone: 'yellow' },
       ],
     },
   ];
@@ -216,7 +197,7 @@ export default async function GestionPuebloPage({
       <GestionHubHero
         title="Gestión del pueblo"
         highlightTitle={puebloNombre}
-        subtitle="Cada bloque tiene un matiz de color suave para localizar antes la sección; dentro, iconos claros para cada tarea."
+        subtitle="Cada bloque agrupa tareas similares con un color de fondo distinto y un icono propio para localizar al vuelo."
       />
 
       {!puebloId && (
@@ -285,13 +266,14 @@ export default async function GestionPuebloPage({
       {secciones.map((sec) => (
         <GestionHubSection key={sec.title} title={sec.title} subtitle={sec.subtitle} tone={sec.tone}>
           {sec.items.map((item) => (
-            <GestionHubCard
+            <GestionHubModernCard
               key={item.href}
               href={item.href}
               title={item.title}
               description={item.description}
-              icon={renderHubIcon(item)}
-              accent={item.accent}
+              iconKey={item.iconKey}
+              tone={item.tone}
+              badge={item.badge}
               disabled={item.disabled}
             />
           ))}
