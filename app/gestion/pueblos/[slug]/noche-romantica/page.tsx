@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
 import MapLocationPicker from '@/app/components/MapLocationPicker';
 import { CAMPANA_NOCHE_ROMANTICA } from '../../../_components/gestion-campana-themes';
 import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
-import CampanaLandingEditor from '../../_components/CampanaLandingEditor';
 import { HeroIconHeart } from '../../_components/gestion-pueblo-hero-icons';
 
 // ==================== TYPES ====================
@@ -72,6 +72,8 @@ export default function GestionPuebloNocheRomanticaPage() {
   const [data, setData] = useState<NRPuebloData | null>(null);
   const [puebloId, setPuebloId] = useState<number | null>(null);
   const [campaignActive, setCampaignActive] = useState(true);
+  const [activeAnio, setActiveAnio] = useState<number | null>(null);
+  const [edicionesAnteriores, setEdicionesAnteriores] = useState<number[]>([]);
   const [notInscribed, setNotInscribed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -127,21 +129,66 @@ export default function GestionPuebloNocheRomanticaPage() {
           if (cfgRes.ok) {
             const cfg = await cfgRes.json();
             setCampaignActive(cfg?.activo ?? true);
+            setActiveAnio(cfg?.anio ?? null);
           } else {
             const pubRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/noche-romantica/config`);
-            if (pubRes.ok) { const cfg = await pubRes.json(); setCampaignActive(cfg?.activo ?? true); }
+            if (pubRes.ok) {
+              const cfg = await pubRes.json();
+              setCampaignActive(cfg?.activo ?? true);
+              setActiveAnio(cfg?.anio ?? null);
+            }
           }
         } catch { /* ignore */ }
+        try {
+          const edRes = await fetch(
+            `/api/admin/noche-romantica/pueblos/by-pueblo/${puebloId}/ediciones`,
+            { credentials: 'include', cache: 'no-store' },
+          );
+          if (edRes.ok) {
+            const body = await edRes.json();
+            const lista: Array<{ anio: number }> = Array.isArray(body)
+              ? body
+              : (body.ediciones ?? []);
+            const activeYear = body?.activeAnio ?? null;
+            const previas = lista
+              .map((e) => e.anio)
+              .filter((a) => activeYear == null || a !== activeYear)
+              .sort((a, b) => b - a);
+            setEdicionesAnteriores(previas);
+          }
+        } catch { /* noop */ }
         return;
       }
       if (!res.ok) throw new Error('Error cargando datos');
       const json = await res.json();
       const d = json.participante ?? json;
       setCampaignActive(json.config?.activo ?? false);
+      setActiveAnio(json.config?.anio ?? null);
       setData(d);
       setTitulo(d.titulo ?? '');
       setDescripcion(d.descripcion ?? '');
       setCartelUrl(d.cartelUrl ?? '');
+
+      try {
+        const edRes = await fetch(
+          `/api/admin/noche-romantica/pueblos/by-pueblo/${puebloId}/ediciones`,
+          { credentials: 'include', cache: 'no-store' },
+        );
+        if (edRes.ok) {
+          const body = await edRes.json();
+          const lista: Array<{ anio: number }> = Array.isArray(body)
+            ? body
+            : (body.ediciones ?? []);
+          const activeYear = json.config?.anio ?? body?.activeAnio ?? null;
+          const previas = lista
+            .map((e) => e.anio)
+            .filter((a) => activeYear == null || a !== activeYear)
+            .sort((a, b) => b - a);
+          setEdicionesAnteriores(previas);
+        }
+      } catch {
+        /* noop */
+      }
     } catch (e: any) {
       setError(e?.message ?? 'Error');
     } finally {
@@ -334,6 +381,19 @@ export default function GestionPuebloNocheRomanticaPage() {
 
   // ==================== RENDER ====================
 
+  const edicionesAnterioresButton =
+    edicionesAnteriores.length > 0 ? (
+      <Link
+        href={`/gestion/pueblos/${slug}/noche-romantica/anteriores`}
+        className="inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/15 px-3 py-2 text-sm font-medium text-white shadow-sm backdrop-blur-sm transition hover:bg-white/25"
+      >
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        Ediciones anteriores
+      </Link>
+    ) : null;
+
   if (loading && !data) {
     return (
       <GestionPuebloSubpageShell
@@ -355,13 +415,14 @@ export default function GestionPuebloNocheRomanticaPage() {
         title="La Noche Romántica"
         subtitle={
           <>
-            Participación en la red · <span className="font-semibold text-white/95">{slug}</span>
+            {activeAnio ? `Edición ${activeAnio} · ` : ''}
+            <span className="font-semibold text-white/95">{slug}</span>
           </>
         }
         heroIcon={<HeroIconHeart />}
+        heroAction={edicionesAnterioresButton}
         theme="nocheRomantica"
       >
-        <CampanaLandingEditor campana="noche-romantica" puebloId={puebloId} puebloSlug={slug} />
         {!campaignActive ? (
           <div className="rounded-xl border border-pink-200/80 bg-gradient-to-br from-pink-50 via-fuchsia-50/80 to-violet-50/60 px-6 py-8 text-center shadow-sm">
             <p className="text-2xl">❤️</p>
@@ -372,6 +433,18 @@ export default function GestionPuebloNocheRomanticaPage() {
               Las páginas del evento anterior siguen visibles en internet, pero la
               inscripción y edición no estarán disponibles hasta la próxima edición.
             </p>
+            {edicionesAnteriores.length > 0 && (
+              <p className="mt-3 text-sm text-pink-900">
+                Mientras tanto, puedes consultar{' '}
+                <Link
+                  href={`/gestion/pueblos/${slug}/noche-romantica/anteriores`}
+                  className="font-semibold underline underline-offset-2 hover:text-pink-700"
+                >
+                  las ediciones anteriores de tu pueblo
+                </Link>
+                .
+              </p>
+            )}
           </div>
         ) : (
           <div className="rounded-xl border border-pink-200/80 bg-gradient-to-br from-pink-50 via-fuchsia-50/80 to-violet-50/60 p-6 text-center shadow-sm dark:border-pink-900/50 dark:from-pink-950/40 dark:via-fuchsia-950/30 dark:to-violet-950/30">
@@ -381,6 +454,18 @@ export default function GestionPuebloNocheRomanticaPage() {
             <p className="mt-2 text-sm text-pink-800/90 dark:text-pink-200/90">
               Solicita al administrador que lo inscriba desde la sección de gestión de la asociación.
             </p>
+            {edicionesAnteriores.length > 0 && (
+              <p className="mt-3 text-sm text-pink-900 dark:text-pink-100">
+                Mientras tanto, puedes consultar{' '}
+                <Link
+                  href={`/gestion/pueblos/${slug}/noche-romantica/anteriores`}
+                  className="font-semibold underline underline-offset-2 hover:text-pink-700"
+                >
+                  las ediciones anteriores de tu pueblo
+                </Link>
+                .
+              </p>
+            )}
           </div>
         )}
       </GestionPuebloSubpageShell>
@@ -402,11 +487,12 @@ export default function GestionPuebloNocheRomanticaPage() {
       title="La Noche Romántica"
       subtitle={
         <>
-          Actividades, negocios y cartel ·{' '}
+          {activeAnio ? `Edición ${activeAnio} · ` : ''}
           <span className="font-semibold text-white/95">{data?.pueblo?.nombre ?? slug}</span>
         </>
       }
       heroIcon={<HeroIconHeart />}
+      heroAction={edicionesAnterioresButton}
       theme="nocheRomantica"
     >
       {error && (
@@ -415,8 +501,6 @@ export default function GestionPuebloNocheRomanticaPage() {
       {success && (
         <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>
       )}
-
-      <CampanaLandingEditor campana="noche-romantica" puebloId={puebloId} puebloSlug={slug} />
 
       {!campaignActive && (
         <div className="mb-6 rounded-xl border border-pink-200/80 bg-gradient-to-br from-pink-50 via-fuchsia-50/80 to-violet-50/60 px-5 py-4 shadow-sm">
