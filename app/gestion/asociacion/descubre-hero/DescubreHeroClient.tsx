@@ -19,6 +19,16 @@ type Settings = {
   descubreBgColeccionSlug: string | null;
 };
 
+/**
+ * Defaults: deben coincidir EXACTAMENTE con `DESCUBRE_DEFAULTS` en
+ * `backend/src/descubre/descubre.service.ts`, que es el texto real que
+ * /descubre devuelve cuando la BD no tiene nada guardado.
+ *
+ * Cuando un campo está null en la BD, la web pública usa este texto
+ * (interpolando `{N}` por el total de pueblos y `{M}` por el total de
+ * colecciones activas). Lo precargamos en el formulario para que el admin
+ * vea siempre lo que el visitante está leyendo en /descubre.
+ */
 const DEFAULTS: Settings = {
   descubreH1: 'Pueblos con encanto de España por temáticas',
   descubreSub:
@@ -41,6 +51,12 @@ export default function DescubreHeroClient() {
   const [success, setSuccess] = useState(false);
 
   const [form, setForm] = useState<Settings>(DEFAULTS);
+  /**
+   * Lo que vino del backend tal cual (con null cuando no se ha guardado nunca).
+   * Lo usamos para distinguir entre "valor por defecto del frontend" y
+   * "valor explícitamente guardado".
+   */
+  const [original, setOriginal] = useState<Settings>(DEFAULTS);
   const [collections, setCollections] = useState<Collection[]>([]);
 
   useEffect(() => {
@@ -60,13 +76,25 @@ export default function DescubreHeroClient() {
 
         const data = await settingsRes.json();
         if (cancelled) return;
-        setForm({
+
+        const fromApi: Settings = {
           descubreH1: data.descubreH1 ?? null,
           descubreSub: data.descubreSub ?? null,
           descubreSeoTitle: data.descubreSeoTitle ?? null,
           descubreSeoDescription: data.descubreSeoDescription ?? null,
           descubreIntroHtml: data.descubreIntroHtml ?? null,
           descubreBgColeccionSlug: data.descubreBgColeccionSlug ?? null,
+        };
+        setOriginal(fromApi);
+        // Precargamos los textos por defecto cuando la BD está vacía,
+        // para que el admin vea siempre lo que el visitante está leyendo en /descubre.
+        setForm({
+          descubreH1: fromApi.descubreH1 ?? DEFAULTS.descubreH1,
+          descubreSub: fromApi.descubreSub ?? DEFAULTS.descubreSub,
+          descubreSeoTitle: fromApi.descubreSeoTitle ?? DEFAULTS.descubreSeoTitle,
+          descubreSeoDescription: fromApi.descubreSeoDescription ?? DEFAULTS.descubreSeoDescription,
+          descubreIntroHtml: fromApi.descubreIntroHtml ?? DEFAULTS.descubreIntroHtml,
+          descubreBgColeccionSlug: fromApi.descubreBgColeccionSlug,
         });
 
         if (collectionsRes.ok) {
@@ -170,6 +198,15 @@ export default function DescubreHeroClient() {
           certificados y <code className="rounded bg-neutral-100 px-1 py-0.5 text-xs">{'{M}'}</code> para el número de
           colecciones activas.
         </p>
+        <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          <strong>Cómo leer este formulario:</strong> los campos marcados con la etiqueta{' '}
+          <span className="rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
+            por defecto
+          </span>{' '}
+          no se han guardado nunca: muestran el texto que el visitante está viendo ahora mismo
+          en /descubre (proviene del código). Edítalos y pulsa «Guardar y traducir» para
+          fijarlos en la base de datos en los 7 idiomas.
+        </div>
       </header>
 
       {error ? (
@@ -195,6 +232,7 @@ export default function DescubreHeroClient() {
           help="Aparece como título principal del hero."
           showReset={form.descubreH1 !== DEFAULTS.descubreH1}
           onReset={() => resetField('descubreH1')}
+          isDefault={original.descubreH1 === null}
         >
           <input
             type="text"
@@ -209,6 +247,7 @@ export default function DescubreHeroClient() {
           help="Línea bajo el H1. Puedes usar {N} (pueblos) y {M} (colecciones)."
           showReset={form.descubreSub !== DEFAULTS.descubreSub}
           onReset={() => resetField('descubreSub')}
+          isDefault={original.descubreSub === null}
         >
           <textarea
             rows={3}
@@ -285,6 +324,7 @@ export default function DescubreHeroClient() {
           help={`Caracteres: ${(form.descubreSeoTitle ?? '').length}`}
           showReset={form.descubreSeoTitle !== DEFAULTS.descubreSeoTitle}
           onReset={() => resetField('descubreSeoTitle')}
+          isDefault={original.descubreSeoTitle === null}
         >
           <input
             type="text"
@@ -299,6 +339,7 @@ export default function DescubreHeroClient() {
           help={`Caracteres: ${(form.descubreSeoDescription ?? '').length}`}
           showReset={form.descubreSeoDescription !== DEFAULTS.descubreSeoDescription}
           onReset={() => resetField('descubreSeoDescription')}
+          isDefault={original.descubreSeoDescription === null}
         >
           <textarea
             rows={3}
@@ -327,6 +368,7 @@ export default function DescubreHeroClient() {
           help="Recomendado entre 200 y 400 palabras. Usa palabras clave temáticas (castillos, costa, montaña, etc.)."
           showReset={form.descubreIntroHtml !== DEFAULTS.descubreIntroHtml}
           onReset={() => resetField('descubreIntroHtml')}
+          isDefault={original.descubreIntroHtml === null}
         >
           <textarea
             rows={10}
@@ -385,18 +427,35 @@ function Field({
   help,
   showReset,
   onReset,
+  isDefault,
   children,
 }: {
   label: string;
   help?: string;
   showReset?: boolean;
   onReset?: () => void;
+  /**
+   * Si true, el valor mostrado proviene del código (la BD no lo tiene
+   * guardado), así que el visitante ve este texto pero no está
+   * persistido en BD ni traducido a otros idiomas.
+   */
+  isDefault?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div className="mb-4">
-      <div className="mb-1.5 flex items-center justify-between">
-        <label className="block text-sm font-medium text-neutral-700">{label}</label>
+      <div className="mb-1.5 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <label className="block text-sm font-medium text-neutral-700">{label}</label>
+          {isDefault ? (
+            <span
+              className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800"
+              title="Este texto no está guardado en la base de datos. Es el texto por defecto del código."
+            >
+              por defecto
+            </span>
+          ) : null}
+        </div>
         {showReset && onReset ? (
           <button
             type="button"
