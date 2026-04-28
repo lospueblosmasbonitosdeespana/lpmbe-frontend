@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const params = new URLSearchParams();
-  ['limit', 'offset', 'userId', 'entityType', 'puebloId', 'desde', 'hasta'].forEach((key) => {
+  ['limit', 'offset', 'userId', 'entityType', 'puebloId', 'desde', 'hasta', 'q'].forEach((key) => {
     const val = searchParams.get(key);
     if (val != null && val !== '') params.set(key, val);
   });
