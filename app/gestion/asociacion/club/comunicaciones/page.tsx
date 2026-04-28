@@ -2,13 +2,20 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import LinkExt from '@tiptap/extension-link';
-import Placeholder from '@tiptap/extension-placeholder';
-import Image from '@tiptap/extension-image';
-import Underline from '@tiptap/extension-underline';
-import TextAlign from '@tiptap/extension-text-align';
+import dynamic from 'next/dynamic';
+import type { ContentBlock } from '@/app/_components/content-builder/ContentBlockBuilder';
+
+const ContentBlockBuilder = dynamic(
+  () => import('@/app/_components/content-builder/ContentBlockBuilder'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-2xl border border-border bg-white p-12 text-center text-sm text-muted-foreground">
+        Cargando constructor visual…
+      </div>
+    ),
+  },
+);
 
 const PROVINCIAS = [
   '', 'A Coruña', 'Álava', 'Albacete', 'Alicante', 'Almería', 'Asturias', 'Ávila',
@@ -45,10 +52,27 @@ type Plantilla = {
   nombre: string;
   descripcion: string;
   asunto: string;
-  html: string;
+  blocks: ContentBlock[];
   bypassOptIn?: boolean;
   thumb: string;
 };
+
+function id() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function block(type: ContentBlock['type'], patch: Partial<ContentBlock> = {}): ContentBlock {
+  return {
+    id: id(),
+    type,
+    align: 'left',
+    backgroundColor: '#ffffff',
+    textColor: '#111111',
+    paddingY: 12,
+    borderRadius: 8,
+    ...patch,
+  };
+}
 
 const PLANTILLAS: Plantilla[] = [
   {
@@ -57,8 +81,12 @@ const PLANTILLAS: Plantilla[] = [
     descripcion: 'Comunica un nuevo sorteo a socios activos.',
     thumb: '🎁',
     asunto: '🎁 Nuevo sorteo solo para socios del Club',
-    html:
-      '<h2>¡Tenemos un nuevo sorteo!</h2><p>Hola,</p><p>Como socio del <strong>Club de Amigos de los Pueblos más Bonitos de España</strong>, tienes acceso exclusivo a un nuevo sorteo.</p><p><a href="https://lospueblosmasbonitosdeespana.org/mi-cuenta/club/sorteos">Ver sorteo y apuntarme →</a></p><p>¡Mucha suerte!<br/>El equipo de LPMBE</p>',
+    blocks: [
+      block('heading', { content: '¡Tenemos un nuevo sorteo!', align: 'center' }),
+      block('text', { content: 'Como socio del <strong>Club de Amigos de los Pueblos más Bonitos de España</strong>, tienes acceso exclusivo a este sorteo.' }),
+      block('button', { label: 'Ver sorteo y apuntarme', url: 'https://lospueblosmasbonitosdeespana.org/mi-cuenta/club/sorteos', align: 'center', backgroundColor: '#9c5b3f', textColor: '#ffffff' }),
+      block('text', { content: '¡Mucha suerte!<br/>El equipo de LPMBE', align: 'center' }),
+    ],
   },
   {
     id: 'caducan',
@@ -66,9 +94,13 @@ const PLANTILLAS: Plantilla[] = [
     descripcion: 'Aviso transaccional a socios cuya membresía termina pronto.',
     thumb: '⏳',
     asunto: 'Tu Club de Amigos está a punto de finalizar',
-    html:
-      '<h2>Renueva tu Club de Amigos</h2><p>Hola,</p><p>Te avisamos de que tu pertenencia al <strong>Club de Amigos</strong> caduca pronto. Renueva en un clic desde tu panel:</p><p><a href="https://lospueblosmasbonitosdeespana.org/mi-cuenta/club">Renovar mi membresía →</a></p><p>Gracias por seguir descubriendo España con nosotros.</p>',
     bypassOptIn: true,
+    blocks: [
+      block('heading', { content: 'Renueva tu Club de Amigos' }),
+      block('text', { content: 'Te avisamos de que tu pertenencia al <strong>Club de Amigos</strong> caduca pronto. Renueva en un clic desde tu panel.' }),
+      block('button', { label: 'Renovar mi membresía', url: 'https://lospueblosmasbonitosdeespana.org/mi-cuenta/club', align: 'center', backgroundColor: '#9c5b3f', textColor: '#ffffff' }),
+      block('text', { content: 'Gracias por seguir descubriendo España con nosotros.' }),
+    ],
   },
   {
     id: 'lanzamiento',
@@ -76,8 +108,17 @@ const PLANTILLAS: Plantilla[] = [
     descripcion: 'Mensaje de bienvenida tras alta gratuita en periodo de lanzamiento.',
     thumb: '🚀',
     asunto: '¡Bienvenido al Club! Estos meses son nuestra invitación',
-    html:
-      '<h2>¡Bienvenido al Club de Amigos!</h2><p>Hola,</p><p>Has activado tu membresía en la oferta de lanzamiento. Disfruta de descuentos en RRTT, hoteles, restaurantes, casas rurales y comercios de los pueblos.</p><p><a href="https://lospueblosmasbonitosdeespana.org/mi-cuenta/club/negocios">Ver negocios con beneficios →</a></p><p>El equipo de LPMBE</p>',
+    blocks: [
+      block('heading', { content: '¡Bienvenido al Club de Amigos!', align: 'center' }),
+      block('text', { content: 'Has activado tu membresía en la oferta de lanzamiento. Disfruta de descuentos en RRTT, hoteles, restaurantes, casas rurales y comercios de los pueblos.' }),
+      block('button', { label: 'Ver negocios con beneficios', url: 'https://lospueblosmasbonitosdeespana.org/mi-cuenta/club/negocios', align: 'center', backgroundColor: '#9c5b3f', textColor: '#ffffff' }),
+      block('socialLinks', {
+        align: 'center',
+        socialFacebook: 'https://www.facebook.com/lospueblosmasbonitos/',
+        socialInstagram: 'https://www.instagram.com/lospueblosmbe/',
+        socialYoutube: 'https://www.youtube.com/@lospueblosmasbonitos',
+      }),
+    ],
   },
   {
     id: 'novedades',
@@ -85,8 +126,12 @@ const PLANTILLAS: Plantilla[] = [
     descripcion: 'Resumen mensual de pueblos, RRTT y rutas nuevas.',
     thumb: '📰',
     asunto: 'Novedades del Club este mes',
-    html:
-      '<h2>Novedades del Club</h2><p>Hola,</p><p>Estas son algunas novedades del mes para socios:</p><ul><li>📍 Nuevos pueblos en la red</li><li>🍽️ Restaurantes con descuento Club</li><li>🎨 Talleres y experiencias para socios</li></ul><p><a href="https://lospueblosmasbonitosdeespana.org/mi-cuenta/club">Entrar al panel del Club →</a></p>',
+    blocks: [
+      block('heading', { content: 'Novedades del Club' }),
+      block('text', { content: '<p>Hola,</p><p>Estas son algunas novedades del mes para socios:</p><ul><li>📍 Nuevos pueblos en la red</li><li>🍽️ Restaurantes con descuento Club</li><li>🎨 Talleres y experiencias para socios</li></ul>' }),
+      block('divider'),
+      block('button', { label: 'Entrar al panel del Club', url: 'https://lospueblosmasbonitosdeespana.org/mi-cuenta/club', align: 'center', backgroundColor: '#9c5b3f', textColor: '#ffffff' }),
+    ],
   },
   {
     id: 'reactivar',
@@ -94,8 +139,12 @@ const PLANTILLAS: Plantilla[] = [
     descripcion: 'Recupera socios que dejaron caducar la membresía.',
     thumb: '💌',
     asunto: 'Te echamos de menos en el Club',
-    html:
-      '<h2>Vuelve al Club de Amigos</h2><p>Hola,</p><p>Hace tiempo que no te vemos por el <strong>Club de Amigos</strong>. Tu sitio sigue aquí, con descuentos en pueblos, sorteos exclusivos y novedades cada mes.</p><p><a href="https://lospueblosmasbonitosdeespana.org/mi-cuenta/club">Reactivar mi membresía →</a></p><p>Te esperamos.</p>',
+    blocks: [
+      block('heading', { content: 'Vuelve al Club de Amigos', align: 'center' }),
+      block('text', { content: 'Hace tiempo que no te vemos por el <strong>Club de Amigos</strong>. Tu sitio sigue aquí, con descuentos en pueblos, sorteos exclusivos y novedades cada mes.' }),
+      block('button', { label: 'Reactivar mi membresía', url: 'https://lospueblosmasbonitosdeespana.org/mi-cuenta/club', align: 'center', backgroundColor: '#9c5b3f', textColor: '#ffffff' }),
+      block('text', { content: 'Te esperamos.', align: 'center' }),
+    ],
   },
 ];
 
@@ -103,9 +152,12 @@ export default function ComunicacionesPage() {
   const [filter, setFilter] = useState<Filter>({ clubStatus: 'ACTIVE', aceptaMarketing: true });
   const [preview, setPreview] = useState<{ total: number; sample: any[] } | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+
   const [asunto, setAsunto] = useState('');
-  const [html, setHtml] = useState('<p></p>');
-  const [editorMode, setEditorMode] = useState<'visual' | 'html'>('visual');
+  const [html, setHtml] = useState('');
+  const [blocks, setBlocks] = useState<ContentBlock[]>([]);
+  const [builderResetKey, setBuilderResetKey] = useState(0);
+
   const [bypassOptIn, setBypassOptIn] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
@@ -113,26 +165,6 @@ export default function ComunicacionesPage() {
   const [error, setError] = useState<string | null>(null);
   const [showGallery, setShowGallery] = useState(false);
   const [galleryPreview, setGalleryPreview] = useState<Plantilla | null>(null);
-
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({ heading: { levels: [2, 3] } }),
-      LinkExt.configure({ openOnClick: false, autolink: true }),
-      Image.configure({ inline: false, allowBase64: false }),
-      Underline,
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Placeholder.configure({ placeholder: 'Empieza por elegir una plantilla o escribe aquí…' }),
-    ],
-    content: html || '<p></p>',
-    onUpdate: ({ editor }) => setHtml(editor.getHTML()),
-    editorProps: {
-      attributes: {
-        class:
-          'min-h-[280px] rounded-md border border-input bg-white px-3 py-2 text-sm focus:outline-none prose prose-sm max-w-none',
-      },
-    },
-    immediatelyRender: false,
-  });
 
   function set<K extends keyof Filter>(k: K, v: Filter[K]) {
     setFilter((p) => ({ ...p, [k]: v }));
@@ -166,38 +198,16 @@ export default function ComunicacionesPage() {
 
   function applyPlantilla(p: Plantilla) {
     setAsunto(p.asunto);
-    setHtml(p.html);
+    setBlocks(p.blocks.map((b) => ({ ...b, id: id() })));
+    setBuilderResetKey((k) => k + 1);
     setBypassOptIn(!!p.bypassOptIn);
-    if (editor) editor.commands.setContent(p.html, { emitUpdate: false });
     setShowGallery(false);
     setGalleryPreview(null);
   }
 
-  function toggleEditorMode(next: 'visual' | 'html') {
-    if (next === editorMode) return;
-    if (next === 'html' && editor) {
-      setHtml(editor.getHTML());
-    } else if (next === 'visual' && editor) {
-      editor.commands.setContent(html || '<p></p>', { emitUpdate: false });
-    }
-    setEditorMode(next);
-  }
-
-  function setLink() {
-    if (!editor) return;
-    const prev = editor.getAttributes('link').href as string | undefined;
-    const url = window.prompt('URL del enlace', prev || 'https://');
-    if (url === null) return;
-    if (!url.trim()) {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run();
-      return;
-    }
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url.trim() }).run();
-  }
-
   async function handleEnviarPrueba() {
-    if (!asunto.trim() || !html.trim() || html === '<p></p>') {
-      alert('Asunto y contenido son obligatorios.');
+    if (!asunto.trim() || !html.trim()) {
+      alert('Asunto y contenido son obligatorios. Añade al menos un bloque.');
       return;
     }
     setSendingTest(true);
@@ -228,7 +238,7 @@ export default function ComunicacionesPage() {
       alert('No hay destinatarios con este filtro.');
       return;
     }
-    if (!asunto.trim() || !html.trim() || html === '<p></p>') {
+    if (!asunto.trim() || !html.trim()) {
       alert('Asunto y contenido son obligatorios.');
       return;
     }
@@ -252,17 +262,6 @@ export default function ComunicacionesPage() {
     }
   }
 
-  // Sincroniza editor cuando cargamos plantilla desde HTML
-  useEffect(() => {
-    if (editor && editorMode === 'visual') {
-      const current = editor.getHTML();
-      if (current !== html) {
-        editor.commands.setContent(html || '<p></p>', { emitUpdate: false });
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [html]);
-
   const previewWrapped = useMemo(() => buildPreviewHtml(asunto, html), [asunto, html]);
 
   return (
@@ -272,22 +271,23 @@ export default function ComunicacionesPage() {
       </Link>
       <h1 className="mb-2 text-3xl font-bold">Comunicaciones del Club</h1>
       <p className="mb-8 text-sm text-muted-foreground">
-        Envía emails segmentados a socios o usuarios. Edita en visual o HTML, previsualiza, manda
-        una prueba a tu propio email y solo entonces envía a la audiencia. Por seguridad, solo se
-        permite enviar a usuarios con consentimiento de marketing salvo que actives <em>bypass
-        opt-in</em> (uso transaccional, p. ej. avisos de fin de membresía o ganadores de sorteo).
+        Envía emails segmentados a socios o usuarios. Edita con el constructor visual de bloques
+        (igual que la Newsletter), previsualiza, manda una prueba a tu propio email y solo
+        entonces envía a la audiencia. Por seguridad, solo se permite enviar a usuarios con
+        consentimiento de marketing salvo que actives <em>bypass opt-in</em> (uso transaccional,
+        p. ej. avisos de fin de membresía o ganadores de sorteo).
       </p>
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        {/* ── 1. Filtros ───────────────────────────────────────── */}
-        <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold">1. Filtra la audiencia</h2>
-            <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rose-700">
-              Segmenta
-            </span>
-          </div>
+      {/* ── 1. Filtros ───────────────────────────────────────── */}
+      <section className="mb-6 rounded-2xl border border-border bg-white p-6 shadow-sm">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">1. Filtra la audiencia</h2>
+          <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rose-700">
+            Segmenta
+          </span>
+        </div>
 
+        <div className="grid gap-4 md:grid-cols-2">
           <Field
             label="Estado del Club"
             help="«Solo socios activos» = miembros del Club ahora mismo. «Solo NO socios» = usuarios registrados que NO son miembros (nunca lo fueron, dieron de baja o expiró su membresía sin renovar)."
@@ -316,107 +316,104 @@ export default function ComunicacionesPage() {
               ))}
             </select>
           </Field>
+        </div>
 
-          <Field label="Tipos de suscripción">
-            <div className="flex flex-wrap gap-2">
-              {TIPOS.map((t) => {
-                const active = (filter.tiposSuscripcion ?? []).includes(t);
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => toggleArr('tiposSuscripcion', t)}
-                    className={`rounded-full border px-3 py-1.5 text-xs ${active ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-border bg-white'}`}
-                  >
-                    {t}
-                  </button>
-                );
-              })}
-            </div>
-          </Field>
-
-          <Field label="Intereses (cualquiera)">
-            <div className="flex flex-wrap gap-2">
-              {INTERESES.map((i) => {
-                const active = (filter.intereses ?? []).includes(i);
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => toggleArr('intereses', i)}
-                    className={`rounded-full border px-3 py-1.5 text-xs ${active ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-border bg-white'}`}
-                  >
-                    {i}
-                  </button>
-                );
-              })}
-            </div>
-          </Field>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Edad mínima">
-              <input
-                type="number"
-                value={filter.edadMinima ?? ''}
-                onChange={(e) => set('edadMinima', e.target.value ? Number(e.target.value) : undefined)}
-                className="w-full rounded-lg border border-input px-3 py-2 text-sm"
-              />
-            </Field>
-            <Field label="Edad máxima">
-              <input
-                type="number"
-                value={filter.edadMaxima ?? ''}
-                onChange={(e) => set('edadMaxima', e.target.value ? Number(e.target.value) : undefined)}
-                className="w-full rounded-lg border border-input px-3 py-2 text-sm"
-              />
-            </Field>
+        <Field label="Tipos de suscripción">
+          <div className="flex flex-wrap gap-2">
+            {TIPOS.map((t) => {
+              const active = (filter.tiposSuscripcion ?? []).includes(t);
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => toggleArr('tiposSuscripcion', t)}
+                  className={`rounded-full border px-3 py-1.5 text-xs ${active ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-border bg-white'}`}
+                >
+                  {t}
+                </button>
+              );
+            })}
           </div>
+        </Field>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Caducan en (días)">
-              <input
-                type="number"
-                value={filter.caducanEnDias ?? ''}
-                onChange={(e) => set('caducanEnDias', e.target.value ? Number(e.target.value) : undefined)}
-                className="w-full rounded-lg border border-input px-3 py-2 text-sm"
-              />
-            </Field>
-            <label className="flex flex-col text-sm">
-              <span className="mb-1.5 block font-medium text-gray-800">Cancelan al expirar</span>
-              <input
-                type="checkbox"
-                checked={!!filter.cancelanAlExpirar}
-                onChange={(e) => set('cancelanAlExpirar', e.target.checked || undefined)}
-                className="h-5 w-5"
-              />
-            </label>
+        <Field label="Intereses (cualquiera)">
+          <div className="flex flex-wrap gap-2">
+            {INTERESES.map((i) => {
+              const active = (filter.intereses ?? []).includes(i);
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => toggleArr('intereses', i)}
+                  className={`rounded-full border px-3 py-1.5 text-xs ${active ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-border bg-white'}`}
+                >
+                  {i}
+                </button>
+              );
+            })}
           </div>
+        </Field>
 
-          <label className="mt-3 flex items-center gap-2 text-sm">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <Field label="Edad mínima">
+            <input
+              type="number"
+              value={filter.edadMinima ?? ''}
+              onChange={(e) => set('edadMinima', e.target.value ? Number(e.target.value) : undefined)}
+              className="w-full rounded-lg border border-input px-3 py-2 text-sm"
+            />
+          </Field>
+          <Field label="Edad máxima">
+            <input
+              type="number"
+              value={filter.edadMaxima ?? ''}
+              onChange={(e) => set('edadMaxima', e.target.value ? Number(e.target.value) : undefined)}
+              className="w-full rounded-lg border border-input px-3 py-2 text-sm"
+            />
+          </Field>
+          <Field label="Caducan en (días)">
+            <input
+              type="number"
+              value={filter.caducanEnDias ?? ''}
+              onChange={(e) => set('caducanEnDias', e.target.value ? Number(e.target.value) : undefined)}
+              className="w-full rounded-lg border border-input px-3 py-2 text-sm"
+            />
+          </Field>
+          <label className="flex flex-col text-sm">
+            <span className="mb-1.5 block font-medium text-gray-800">Cancelan al expirar</span>
             <input
               type="checkbox"
-              checked={!!filter.aceptaMarketing}
-              onChange={(e) => set('aceptaMarketing', e.target.checked || undefined)}
+              checked={!!filter.cancelanAlExpirar}
+              onChange={(e) => set('cancelanAlExpirar', e.target.checked || undefined)}
+              className="h-5 w-5"
             />
-            Solo opt-in marketing (recomendado)
           </label>
+        </div>
 
+        <label className="mt-3 flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={!!filter.aceptaMarketing}
+            onChange={(e) => set('aceptaMarketing', e.target.checked || undefined)}
+          />
+          Solo opt-in marketing (recomendado)
+        </label>
+
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <button
             onClick={handlePreview}
             disabled={previewLoading}
-            className="mt-4 w-full rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
+            className="rounded-lg bg-gray-900 px-5 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
           >
             {previewLoading ? 'Calculando…' : 'Calcular audiencia'}
           </button>
 
           {preview && (
-            <div className="mt-4 rounded-lg bg-blue-50 p-3 text-sm">
-              <strong>{preview.total}</strong> destinatarios coinciden con el filtro.
+            <div className="rounded-lg bg-blue-50 px-3 py-2 text-sm">
+              <strong>{preview.total}</strong> destinatarios coinciden.{' '}
               {preview.sample.length > 0 && (
-                <details className="mt-2">
-                  <summary className="cursor-pointer text-xs text-blue-800">
-                    Ver muestra de {preview.sample.length}
-                  </summary>
+                <details className="inline-block">
+                  <summary className="cursor-pointer text-xs text-blue-800">Ver muestra</summary>
                   <ul className="mt-2 max-h-40 overflow-auto text-xs">
                     {preview.sample.map((s: any) => (
                       <li key={s.id} className="text-gray-700">
@@ -429,133 +426,87 @@ export default function ComunicacionesPage() {
             </div>
           )}
         </div>
+      </section>
 
-        {/* ── 2. Compositor ───────────────────────────────────── */}
-        <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold">2. Redacta el mensaje</h2>
-            <button
-              type="button"
-              onClick={() => setShowGallery(true)}
-              className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100"
-            >
-              Galería de plantillas
-            </button>
-          </div>
-
-          <Field label="Asunto">
-            <input
-              value={asunto}
-              onChange={(e) => setAsunto(e.target.value)}
-              placeholder="Asunto del email…"
-              className="w-full rounded-lg border border-input px-3 py-2 text-sm"
-            />
-          </Field>
-
-          {/* Editor toggle */}
-          <div className="mb-2 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => toggleEditorMode('visual')}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${editorMode === 'visual' ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-border bg-white text-gray-700'}`}
-            >
-              ✍️ Visual
-            </button>
-            <button
-              type="button"
-              onClick={() => toggleEditorMode('html')}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${editorMode === 'html' ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-border bg-white text-gray-700'}`}
-            >
-              {'</>'} HTML
-            </button>
-          </div>
-
-          {editorMode === 'visual' && editor && (
-            <>
-              <div className="mb-2 flex flex-wrap items-center gap-1 rounded-lg border border-input bg-gray-50 p-1">
-                <ToolbarBtn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })}>H2</ToolbarBtn>
-                <ToolbarBtn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })}>H3</ToolbarBtn>
-                <ToolbarBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')}><strong>B</strong></ToolbarBtn>
-                <ToolbarBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')}><em>I</em></ToolbarBtn>
-                <ToolbarBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')}><u>U</u></ToolbarBtn>
-                <span className="mx-1 h-5 w-px bg-gray-300" />
-                <ToolbarBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')}>• Lista</ToolbarBtn>
-                <ToolbarBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')}>1. Lista</ToolbarBtn>
-                <span className="mx-1 h-5 w-px bg-gray-300" />
-                <ToolbarBtn onClick={() => editor.chain().focus().setTextAlign('left').run()}>⬅</ToolbarBtn>
-                <ToolbarBtn onClick={() => editor.chain().focus().setTextAlign('center').run()}>⬌</ToolbarBtn>
-                <ToolbarBtn onClick={() => editor.chain().focus().setTextAlign('right').run()}>➡</ToolbarBtn>
-                <span className="mx-1 h-5 w-px bg-gray-300" />
-                <ToolbarBtn onClick={setLink} active={editor.isActive('link')}>🔗 Link</ToolbarBtn>
-                <ToolbarBtn
-                  onClick={() => {
-                    const url = window.prompt('URL de la imagen', 'https://');
-                    if (url) editor.chain().focus().setImage({ src: url }).run();
-                  }}
-                >
-                  🖼️ Imagen
-                </ToolbarBtn>
-              </div>
-              <EditorContent editor={editor} />
-            </>
-          )}
-
-          {editorMode === 'html' && (
-            <textarea
-              rows={14}
-              value={html}
-              onChange={(e) => setHtml(e.target.value)}
-              className="w-full rounded-lg border border-input px-3 py-2 font-mono text-xs"
-              placeholder="<p>Escribe HTML…</p>"
-            />
-          )}
-
-          <label className="mt-3 flex items-start gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={bypassOptIn}
-              onChange={(e) => setBypassOptIn(e.target.checked)}
-              className="mt-1"
-            />
-            <span>
-              <strong>Bypass opt-in</strong> (solo para comunicaciones transaccionales como avisos
-              de fin de membresía o notificación a ganadores de sorteo).
-            </span>
-          </label>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={handleEnviarPrueba}
-              disabled={sendingTest}
-              className="flex-1 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 disabled:opacity-50"
-            >
-              {sendingTest ? 'Enviando prueba…' : '✉️ Enviar prueba a mí'}
-            </button>
-            <button
-              type="button"
-              onClick={handleEnviar}
-              disabled={sending || !preview || preview.total === 0}
-              className="flex-1 rounded-lg bg-gradient-to-r from-rose-600 to-rose-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:from-rose-700 hover:to-rose-800 disabled:opacity-50"
-            >
-              {sending ? 'Enviando…' : `🚀 Enviar a ${preview?.total ?? '?'}`}
-            </button>
-          </div>
-
-          {result && <p className="mt-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{result}</p>}
-          {error && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {/* ── 2. Compositor ───────────────────────────────────── */}
+      <section className="mb-6 rounded-2xl border border-border bg-white p-6 shadow-sm">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">2. Redacta el mensaje</h2>
+          <button
+            type="button"
+            onClick={() => setShowGallery(true)}
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100"
+          >
+            Galería de plantillas
+          </button>
         </div>
+
+        <Field label="Asunto">
+          <input
+            value={asunto}
+            onChange={(e) => setAsunto(e.target.value)}
+            placeholder="Asunto del email…"
+            className="w-full rounded-lg border border-input px-3 py-2 text-sm"
+          />
+        </Field>
+
+        <div className="mt-2 rounded-xl border border-dashed border-border bg-gray-50/50 p-1">
+          <ContentBlockBuilder
+            key={builderResetKey}
+            initialBlocks={blocks}
+            onChange={setHtml}
+            onBlocksChange={setBlocks}
+            draftKey="lpmbe-club-comunicaciones-builder"
+            showBrandLogos
+            uploadFileNameBase={asunto || 'club-newsletter'}
+          />
+        </div>
+
+        <label className="mt-4 flex items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={bypassOptIn}
+            onChange={(e) => setBypassOptIn(e.target.checked)}
+            className="mt-1"
+          />
+          <span>
+            <strong>Bypass opt-in</strong> (solo para comunicaciones transaccionales como avisos
+            de fin de membresía o notificación a ganadores de sorteo).
+          </span>
+        </label>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={handleEnviarPrueba}
+            disabled={sendingTest}
+            className="flex-1 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 disabled:opacity-50"
+          >
+            {sendingTest ? 'Enviando prueba…' : '✉️ Enviar prueba a mí'}
+          </button>
+          <button
+            type="button"
+            onClick={handleEnviar}
+            disabled={sending || !preview || preview.total === 0}
+            className="flex-1 rounded-lg bg-gradient-to-r from-rose-600 to-rose-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:from-rose-700 hover:to-rose-800 disabled:opacity-50"
+          >
+            {sending ? 'Enviando…' : `🚀 Enviar a ${preview?.total ?? '?'}`}
+          </button>
+        </div>
+
+        {result && <p className="mt-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{result}</p>}
+        {error && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
       </section>
 
       {/* ── 3. Vista previa ──────────────────────────────────── */}
-      <section className="mt-8 rounded-2xl border border-border bg-white p-6 shadow-sm">
+      <section className="rounded-2xl border border-border bg-white p-6 shadow-sm">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">3. Vista previa del email</h2>
           <span className="text-xs text-muted-foreground">Renderizado tal y como llegará al socio</span>
         </div>
         <iframe
           title="preview"
-          className="h-[520px] w-full rounded-lg border border-border bg-white"
+          className="h-[600px] w-full rounded-lg border border-border bg-white"
           srcDoc={previewWrapped}
         />
       </section>
@@ -600,7 +551,7 @@ export default function ComunicacionesPage() {
                   <h4 className="text-sm font-bold">Previa: {galleryPreview.nombre}</h4>
                   <button type="button" onClick={() => applyPlantilla(galleryPreview)} className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white">Usar esta plantilla</button>
                 </div>
-                <iframe title="plantilla-preview" className="h-[420px] w-full rounded-lg border border-border bg-white" srcDoc={buildPreviewHtml(galleryPreview.asunto, galleryPreview.html)} />
+                <PlantillaPreview plantilla={galleryPreview} />
               </div>
             )}
           </div>
@@ -620,16 +571,36 @@ function Field({ label, help, children }: { label: string; help?: string; childr
   );
 }
 
-function ToolbarBtn({ onClick, active, children }: { onClick: () => void; active?: boolean; children: React.ReactNode }) {
+/**
+ * Renderizado simple de los bloques de una plantilla para preview en la
+ * galería. Para el envío real, el HTML que se envía al backend lo produce
+ * `ContentBlockBuilder` (vía la prop `onChange` → `setHtml`).
+ */
+function PlantillaPreview({ plantilla }: { plantilla: Plantilla }) {
+  const inner = plantilla.blocks
+    .map((b) => {
+      switch (b.type) {
+        case 'heading':
+          return `<h2 style="text-align:${b.align ?? 'left'};color:${b.textColor};margin:0 0 12px 0">${b.content ?? ''}</h2>`;
+        case 'text':
+          return `<div style="text-align:${b.align ?? 'left'};color:${b.textColor};margin-bottom:12px">${b.content ?? ''}</div>`;
+        case 'button':
+          return `<div style="text-align:${b.align ?? 'left'};margin:16px 0"><a href="${b.url ?? '#'}" style="display:inline-block;padding:12px 24px;border-radius:8px;background:${b.backgroundColor};color:${b.textColor};text-decoration:none;font-weight:600">${b.label ?? 'Botón'}</a></div>`;
+        case 'divider':
+          return `<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0"/>`;
+        case 'socialLinks':
+          return `<div style="text-align:center;margin:16px 0;color:#6b7280;font-size:13px">Síguenos en redes</div>`;
+        default:
+          return '';
+      }
+    })
+    .join('');
   return (
-    <button
-      type="button"
-      onMouseDown={(e) => e.preventDefault()}
-      onClick={onClick}
-      className={`rounded px-2 py-1 text-xs font-medium ${active ? 'bg-rose-100 text-rose-700' : 'text-gray-700 hover:bg-gray-200'}`}
-    >
-      {children}
-    </button>
+    <iframe
+      title="plantilla-preview"
+      className="h-[420px] w-full rounded-lg border border-border bg-white"
+      srcDoc={buildPreviewHtml(plantilla.asunto, inner)}
+    />
   );
 }
 
