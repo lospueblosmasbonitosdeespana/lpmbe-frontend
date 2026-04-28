@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
 import { CAMPANA_NAVIDAD } from '../../../_components/gestion-campana-themes';
 import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
-import CampanaLandingEditor from '../../_components/CampanaLandingEditor';
 import { HeroIconTree } from '../../_components/gestion-pueblo-hero-icons';
 
 const TIPO_LABELS: Record<string, string> = {
@@ -113,6 +113,8 @@ export default function GestionPuebloNavidadPage() {
   const { slug } = useParams<{ slug: string }>();
   const [puebloId, setPuebloId] = useState<number | null>(null);
   const [campaignActive, setCampaignActive] = useState(true);
+  const [activeAnio, setActiveAnio] = useState<number | null>(null);
+  const [edicionesAnteriores, setEdicionesAnteriores] = useState<number[]>([]);
   const [data, setData] = useState<Participante | null>(null);
   const [notInscribed, setNotInscribed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -154,17 +156,51 @@ export default function GestionPuebloNavidadPage() {
           if (cfgRes.ok) {
             const cfg = await cfgRes.json();
             setCampaignActive(cfg?.activo ?? true);
+            setActiveAnio(cfg?.anio ?? null);
           } else {
             const pubRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/navidad/config`);
-            if (pubRes.ok) { const cfg = await pubRes.json(); setCampaignActive(cfg?.activo ?? true); }
+            if (pubRes.ok) {
+              const cfg = await pubRes.json();
+              setCampaignActive(cfg?.activo ?? true);
+              setActiveAnio(cfg?.anio ?? null);
+            }
           }
         } catch { /* ignore */ }
+        try {
+          const edRes = await fetch(
+            `/api/admin/navidad/pueblos/by-pueblo/${puebloId}/ediciones`,
+            { credentials: 'include', cache: 'no-store' },
+          );
+          if (edRes.ok) {
+            const body = await edRes.json();
+            const lista: Array<{ anio: number }> = Array.isArray(body) ? body : (body.ediciones ?? []);
+            const activeYear = body?.activeAnio ?? null;
+            setEdicionesAnteriores(
+              lista.map((e) => e.anio).filter((a) => activeYear == null || a !== activeYear).sort((a, b) => b - a),
+            );
+          }
+        } catch { /* noop */ }
         return;
       }
       if (!res.ok) throw new Error('Error cargando datos');
       const json = await res.json();
       setData(json.participante);
       setCampaignActive(json.config?.activo ?? false);
+      setActiveAnio(json.config?.anio ?? null);
+      try {
+        const edRes = await fetch(
+          `/api/admin/navidad/pueblos/by-pueblo/${puebloId}/ediciones`,
+          { credentials: 'include', cache: 'no-store' },
+        );
+        if (edRes.ok) {
+          const body = await edRes.json();
+          const lista: Array<{ anio: number }> = Array.isArray(body) ? body : (body.ediciones ?? []);
+          const activeYear = json.config?.anio ?? body?.activeAnio ?? null;
+          setEdicionesAnteriores(
+            lista.map((e) => e.anio).filter((a) => activeYear == null || a !== activeYear).sort((a, b) => b - a),
+          );
+        }
+      } catch { /* noop */ }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error');
     } finally {
@@ -453,6 +489,19 @@ export default function GestionPuebloNavidadPage() {
     );
   }
 
+  const edicionesAnterioresButton =
+    edicionesAnteriores.length > 0 ? (
+      <Link
+        href={`/gestion/pueblos/${slug}/navidad/anteriores`}
+        className="inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/15 px-3 py-2 text-sm font-medium text-white shadow-sm backdrop-blur-sm transition hover:bg-white/25"
+      >
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        Ediciones anteriores
+      </Link>
+    ) : null;
+
   if (loading && !data) {
     return (
       <GestionPuebloSubpageShell
@@ -475,15 +524,16 @@ export default function GestionPuebloNavidadPage() {
         title="Navidad"
         subtitle={
           <>
-            Mercadillos, belenes y eventos · <span className="font-semibold text-white/95">{slug}</span>
+            {activeAnio ? `Edición ${activeAnio} · ` : ''}
+            <span className="font-semibold text-white/95">{slug}</span>
           </>
         }
         heroIcon={<HeroIconTree />}
+        heroAction={edicionesAnterioresButton}
         maxWidthClass="max-w-5xl"
         theme="navidad"
       >
         {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-        <CampanaLandingEditor campana="navidad" puebloId={puebloId} puebloSlug={slug} />
         {!campaignActive ? (
           <div className="rounded-xl border border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-amber-50/70 to-red-50/80 px-6 py-8 text-center shadow-sm">
             <p className="text-2xl">🎄</p>
@@ -494,12 +544,36 @@ export default function GestionPuebloNavidadPage() {
               Las páginas del evento anterior siguen visibles en internet, pero la
               inscripción y edición no estarán disponibles hasta la próxima edición.
             </p>
+            {edicionesAnteriores.length > 0 && (
+              <p className="mt-3 text-sm text-emerald-900">
+                Mientras tanto, puedes consultar{' '}
+                <Link
+                  href={`/gestion/pueblos/${slug}/navidad/anteriores`}
+                  className="font-semibold underline underline-offset-2 hover:text-emerald-700"
+                >
+                  las ediciones anteriores de tu pueblo
+                </Link>
+                .
+              </p>
+            )}
           </div>
         ) : (
           <>
             <div className="rounded-xl border border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-amber-50/70 to-red-50/80 p-6 text-center shadow-sm dark:border-emerald-900/50 dark:from-emerald-950/40 dark:via-amber-950/25 dark:to-red-950/30">
               <p className="font-semibold text-emerald-900 dark:text-emerald-100">Este pueblo no está inscrito en Navidad este año.</p>
               <p className="mt-2 text-sm text-emerald-800/90 dark:text-emerald-200/85">Inscribe el pueblo para publicar mercadillos, belenes y cabalgatas.</p>
+              {edicionesAnteriores.length > 0 && (
+                <p className="mt-3 text-sm text-emerald-900 dark:text-emerald-100">
+                  Puedes consultar{' '}
+                  <Link
+                    href={`/gestion/pueblos/${slug}/navidad/anteriores`}
+                    className="font-semibold underline underline-offset-2 hover:text-emerald-700"
+                  >
+                    las ediciones anteriores
+                  </Link>
+                  .
+                </p>
+              )}
             </div>
             <div className="mt-4">
               <button
@@ -525,18 +599,17 @@ export default function GestionPuebloNavidadPage() {
       title="Navidad"
       subtitle={
         <>
-          Eventos navideños de tu pueblo ·{' '}
+          {activeAnio ? `Edición ${activeAnio} · ` : ''}
           <span className="font-semibold text-white/95">{data.pueblo.nombre}</span>
         </>
       }
       heroIcon={<HeroIconTree />}
+      heroAction={edicionesAnterioresButton}
       maxWidthClass="max-w-5xl"
       theme="navidad"
     >
       {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
       {success && <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>}
-
-      <CampanaLandingEditor campana="navidad" puebloId={puebloId} puebloSlug={slug} />
 
       {!campaignActive && (
         <div className="mb-6 rounded-xl border border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-amber-50/70 to-red-50/80 px-5 py-4 shadow-sm">
