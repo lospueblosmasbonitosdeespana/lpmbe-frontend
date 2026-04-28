@@ -180,10 +180,9 @@ function ActualidadContent() {
 
             return (
               <article key={item.id} className="border-b border-border pb-6 last:border-0">
-                <div className="flex items-start justify-between gap-4">
-                  <Link href={href} className="group flex-1 min-w-0">
-                    {item.coverUrl && item.coverUrl.trim() && (
-                    <div className="mb-4 overflow-hidden rounded-lg aspect-video bg-muted">
+                {item.coverUrl && item.coverUrl.trim() && (
+                  <Link href={href} className="group mb-4 block">
+                    <div className="aspect-video overflow-hidden rounded-lg bg-muted">
                       <img
                         src={item.coverUrl.trim()}
                         alt={item.titulo}
@@ -192,10 +191,13 @@ function ActualidadContent() {
                         className="h-full w-full object-contain p-2"
                       />
                     </div>
-                  )}
+                  </Link>
+                )}
 
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-medium text-muted-foreground uppercase">
+                {/* Misma línea que noticias/evento en detalle: tipo + fecha a la izq., compartir a la dcha. */}
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <span className="text-xs font-medium uppercase text-muted-foreground">
                       {tipoToLabel[item.tipo] ?? item.tipo}
                     </span>
                     {fechaFormateada && (
@@ -205,21 +207,27 @@ function ActualidadContent() {
                       </>
                     )}
                   </div>
+                  <ShareButton
+                    url={href}
+                    title={item.titulo}
+                    variant="icon"
+                    className="shrink-0"
+                  />
+                </div>
 
+                <Link href={href} className="group block min-w-0">
                   <h2 className="text-2xl font-semibold group-hover:underline">
                     {item.titulo}
                   </h2>
 
                   {item.resumen && (
-                    <p className="mt-3 text-muted-foreground line-clamp-2">{stripHtml(item.resumen)}</p>
+                    <p className="mt-3 line-clamp-2 text-muted-foreground">{stripHtml(item.resumen)}</p>
                   )}
 
                   <span className="mt-3 inline-block text-sm font-medium text-primary group-hover:underline">
                     {t('readMore')}
                   </span>
                 </Link>
-                  <ShareButton url={href} title={item.titulo} variant="icon" className="shrink-0 mt-1" />
-                </div>
               </article>
             );
           })}
