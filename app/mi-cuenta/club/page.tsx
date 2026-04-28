@@ -7,6 +7,7 @@ import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import { Headline, Title, Caption } from '@/app/components/ui/typography';
 import { ClubShield, getMemberYear } from '@/app/_components/club/ClubShield';
+import { CuentanosCard } from '@/app/_components/club/CuentanosCard';
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 
@@ -582,6 +583,36 @@ export default function ClubPage() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* Cuéntanos un poco más (datos de socio) */}
+          {clubMe?.isMember && (
+            <CuentanosCard
+              initial={{
+                provincia: clubMe?.datosSocio?.provincia ?? null,
+                fechaNacimiento: clubMe?.datosSocio?.fechaNacimiento ?? null,
+                intereses: clubMe?.datosSocio?.intereses ?? [],
+                aceptaMarketing: !!clubMe?.datosSocio?.aceptaMarketing,
+              }}
+              cardClassName={cardClass}
+              onSaved={(next) =>
+                setClubMe((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        datosSocio: {
+                          ...prev.datosSocio,
+                          provincia: next.provincia,
+                          fechaNacimiento: next.fechaNacimiento,
+                          intereses: next.intereses,
+                          aceptaMarketing: next.aceptaMarketing,
+                          idiomaPreferido: prev.datosSocio?.idiomaPreferido ?? null,
+                        },
+                      }
+                    : prev,
+                )
+              }
+            />
           )}
 
           {/* Accesos rápidos */}

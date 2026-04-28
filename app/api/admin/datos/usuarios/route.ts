@@ -10,7 +10,20 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const params = new URLSearchParams();
-  ['q', 'rol', 'limit', 'offset', 'order', 'orderBy', 'activo', 'createdFrom', 'createdTo'].forEach((key) => {
+  [
+    'q',
+    'rol',
+    'limit',
+    'offset',
+    'order',
+    'orderBy',
+    'activo',
+    'createdFrom',
+    'createdTo',
+    'clubStatus',
+    'aceptaMarketing',
+    'provincia',
+  ].forEach((key) => {
     const val = searchParams.get(key);
     if (val != null && val !== '') params.set(key, val);
   });

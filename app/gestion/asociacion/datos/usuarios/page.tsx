@@ -15,6 +15,12 @@ type Usuario = {
   esCliente: boolean;
   totalVisitas: number;
   totalPedidos: number;
+  clubStatus?: string | null;
+  clubPlan?: string | null;
+  clubValidUntil?: string | null;
+  numeroSocio?: number | null;
+  provincia?: string | null;
+  aceptaMarketing?: boolean;
 };
 
 type ListResponse = {
@@ -39,6 +45,7 @@ export default function DatosUsuariosPage() {
   const [rol, setRol] = useState<string>('');
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
   const [activo, setActivo] = useState<string>('true');
+  const [clubStatus, setClubStatus] = useState<string>('');
   const [debouncedQ, setDebouncedQ] = useState('');
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(100);
@@ -51,7 +58,7 @@ export default function DatosUsuariosPage() {
 
   useEffect(() => {
     setPage(0);
-  }, [debouncedQ, rol, limit, order, activo]);
+  }, [debouncedQ, rol, limit, order, activo, clubStatus]);
 
   useEffect(() => {
     async function load() {
@@ -65,6 +72,7 @@ export default function DatosUsuariosPage() {
         if (activo) params.set('activo', activo);
         if (debouncedQ) params.set('q', debouncedQ);
         if (rol) params.set('rol', rol);
+        if (clubStatus) params.set('clubStatus', clubStatus);
         const res = await fetch(`/api/admin/datos/usuarios?${params.toString()}`, {
           cache: 'no-store',
         });
@@ -82,7 +90,7 @@ export default function DatosUsuariosPage() {
       }
     }
     load();
-  }, [debouncedQ, rol, page, limit, order, activo]);
+  }, [debouncedQ, rol, page, limit, order, activo, clubStatus]);
 
   async function handleEliminar(u: Usuario) {
     if (u.rol === 'ADMIN') return;
@@ -200,6 +208,16 @@ export default function DatosUsuariosPage() {
           <option value="false">Inactivos</option>
         </select>
         <select
+          value={clubStatus}
+          onChange={(e) => setClubStatus(e.target.value)}
+          className="rounded-lg border border-border px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          title="Filtrar por estado en el Club de Amigos"
+        >
+          <option value="">Cualquier estado de Club</option>
+          <option value="ACTIVE">Solo socios del Club</option>
+          <option value="NONE">Solo NO socios</option>
+        </select>
+        <select
           value={order}
           onChange={(e) => setOrder(e.target.value as 'asc' | 'desc')}
           className="rounded-lg border border-border px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -249,6 +267,9 @@ export default function DatosUsuariosPage() {
                     Visitas
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Club
+                  </th>
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Pedidos
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -262,7 +283,7 @@ export default function DatosUsuariosPage() {
               <tbody className="divide-y divide-gray-200 bg-white">
                 {items.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
+                    <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
                       No hay usuarios
                     </td>
                   </tr>
@@ -279,6 +300,28 @@ export default function DatosUsuariosPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center text-sm">{u.totalVisitas}</td>
+                      <td className="px-4 py-3 text-center text-sm">
+                        {u.clubStatus === 'ACTIVE' ? (
+                          <div className="flex flex-col items-center">
+                            <span
+                              className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                                u.clubPlan === 'LANZAMIENTO'
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : 'bg-green-100 text-green-800'
+                              }`}
+                            >
+                              {u.clubPlan === 'LANZAMIENTO' ? 'Lanzamiento' : (u.clubPlan ?? 'Socio')}
+                            </span>
+                            {u.numeroSocio != null && (
+                              <span className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                                Nº {String(u.numeroSocio).padStart(5, '0')}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3 text-center text-sm">{u.totalPedidos}</td>
                       <td className="px-4 py-3">
                         <span
