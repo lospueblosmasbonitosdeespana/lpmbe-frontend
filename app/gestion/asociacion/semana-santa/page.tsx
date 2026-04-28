@@ -19,6 +19,7 @@ type Config = {
   subtitulo: string | null;
   descripcion: string | null;
   activo: boolean;
+  gestionActiva: boolean;
   dias: DiaConfig[];
 };
 
@@ -100,6 +101,7 @@ export default function GestionSemanaSantaAsociacionPage() {
         subtitulo: config.subtitulo || undefined,
         descripcion: config.descripcion || undefined,
         activo: config.activo,
+        gestionActiva: config.gestionActiva,
         dias: config.dias.map((d, idx) => ({
           fecha: d.fecha,
           nombreDia: d.nombreDia,
@@ -261,14 +263,87 @@ export default function GestionSemanaSantaAsociacionPage() {
                   onChange={(e) => setConfig({ ...config, descripcion: e.target.value || null })}
                 />
               </div>
-              <label className="sm:col-span-3 flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={config.activo}
-                  onChange={(e) => setConfig({ ...config, activo: e.target.checked })}
-                />
-                Campaña activa en la web pública
-              </label>
+              <div className="sm:col-span-3 mt-2 space-y-3 rounded-lg border bg-muted/20 p-4">
+                <p className="text-sm font-semibold">Estado de la campaña</p>
+                <p className="text-xs text-muted-foreground">
+                  Estos dos interruptores son <strong>independientes</strong>. Puedes abrir la
+                  zona de gestión a los alcaldes para que vayan rellenando información sin que
+                  la página pública esté todavía visible.
+                </p>
+
+                {/* 1. Web pública */}
+                <label className="flex items-start gap-3 rounded-lg border border-border bg-card p-3 hover:bg-muted/30 transition-colors cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={config.activo}
+                    onChange={(e) => setConfig({ ...config, activo: e.target.checked })}
+                    className="mt-0.5 h-4 w-4 rounded border-border accent-primary"
+                  />
+                  <div>
+                    <span className="text-sm font-semibold">Visible en la web pública</span>
+                    <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+                      Habilita la página{' '}
+                      <code className="rounded bg-muted px-1">/semana-santa</code>{' '}
+                      con los pueblos participantes. Los visitantes ven la campaña.
+                    </p>
+                    {config.activo && (
+                      <div className="mt-2 flex items-center gap-1.5 text-xs text-emerald-700">
+                        <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                        Visible en la web pública
+                      </div>
+                    )}
+                  </div>
+                </label>
+
+                {/* 2. Gestión activa para alcaldes */}
+                <label className="flex items-start gap-3 rounded-lg border border-violet-200 bg-card p-3 hover:bg-violet-50/40 transition-colors cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={config.gestionActiva}
+                    onChange={(e) => setConfig({ ...config, gestionActiva: e.target.checked })}
+                    className="mt-0.5 h-4 w-4 rounded border-border accent-violet-600"
+                  />
+                  <div>
+                    <span className="text-sm font-semibold">Abrir la zona de gestión a los alcaldes</span>
+                    <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+                      Permite que los alcaldes editen la edición vigente de Semana Santa{' '}
+                      <strong>aunque la web pública aún no esté publicada</strong>. Útil para que
+                      vayan preparando descripciones, días, agenda y carteles con tiempo. Si{' '}
+                      <em>«Visible en la web pública»</em> ya está activo, no hace falta tocar
+                      este interruptor.
+                    </p>
+                    {config.gestionActiva && !config.activo && (
+                      <div className="mt-2 flex items-center gap-1.5 text-xs text-violet-700">
+                        <span className="inline-block h-2 w-2 rounded-full bg-violet-500" />
+                        Los alcaldes pueden editar — la web pública aún no se ve
+                      </div>
+                    )}
+                    {config.activo && (
+                      <div className="mt-2 flex items-center gap-1.5 text-xs text-emerald-700">
+                        <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                        La gestión también está abierta porque la web pública está activa
+                      </div>
+                    )}
+                  </div>
+                </label>
+
+                {/* 3. Aviso sobre la app móvil */}
+                <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-xs text-amber-900">
+                  <p className="font-semibold">📱 ¿Y el botón de la app móvil?</p>
+                  <p className="mt-1 leading-relaxed">
+                    El botón del evento estacional que aparece en la <strong>home de la app</strong>{' '}
+                    no se controla aquí. Se elige en una pantalla aparte:
+                  </p>
+                  <p className="mt-2">
+                    <a
+                      href="/gestion/asociacion/app/evento-activo"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-white px-2.5 py-1.5 font-medium text-amber-900 shadow-sm transition hover:bg-amber-100"
+                    >
+                      Ir a «Evento estacional de la app» →
+                    </a>
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 

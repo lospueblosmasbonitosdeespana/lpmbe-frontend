@@ -138,7 +138,13 @@ export default function GestionPuebloSemanaSantaPage() {
   const { slug } = useParams<{ slug: string }>();
   const [puebloId, setPuebloId] = useState<number | null>(null);
   const [configDias, setConfigDias] = useState<DiaConfig[]>([]);
+  // `campaignActive` aquí significa "el alcalde puede editar". Es true cuando
+  // la web pública está visible (`activo`) o cuando admin ha abierto la gestión
+  // anticipada (`gestionActiva`).
   const [campaignActive, setCampaignActive] = useState(true);
+  // `webPublica` indica si la página pública está visible. Cuando es false pero
+  // `campaignActive` es true, mostramos un aviso de "preparando — aún no público".
+  const [webPublica, setWebPublica] = useState(true);
   const [activeAnio, setActiveAnio] = useState<number | null>(null);
   const [edicionesAnteriores, setEdicionesAnteriores] = useState<number[]>([]);
   const [data, setData] = useState<Participante | null>(null);
@@ -228,13 +234,19 @@ export default function GestionPuebloSemanaSantaPage() {
           const cfgRes = await fetch(`/api/admin/semana-santa/config`, { credentials: 'include', cache: 'no-store' });
           if (cfgRes.ok) {
             const cfg = await cfgRes.json();
-            setCampaignActive(cfg?.activo ?? true);
+            const visible = cfg?.activo ?? false;
+            const gest = cfg?.gestionActiva ?? false;
+            setCampaignActive(visible || gest);
+            setWebPublica(visible);
             setActiveAnio(cfg?.anio ?? null);
           } else {
             const pubRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/semana-santa/config`);
             if (pubRes.ok) {
               const cfg = await pubRes.json();
-              setCampaignActive(cfg?.activo ?? true);
+              const visible = cfg?.activo ?? false;
+              const gest = cfg?.gestionActiva ?? false;
+              setCampaignActive(visible || gest);
+              setWebPublica(visible);
               setActiveAnio(cfg?.anio ?? null);
             }
           }
@@ -259,7 +271,12 @@ export default function GestionPuebloSemanaSantaPage() {
       const json = await res.json();
       setData(json.participante);
       setConfigDias(json.config?.dias ?? []);
-      setCampaignActive(json.config?.activo ?? false);
+      {
+        const visible = json.config?.activo ?? false;
+        const gest = json.config?.gestionActiva ?? false;
+        setCampaignActive(visible || gest);
+        setWebPublica(visible);
+      }
       setActiveAnio(json.config?.anio ?? null);
       try {
         const edRes = await fetch(
@@ -726,6 +743,26 @@ export default function GestionPuebloSemanaSantaPage() {
     >
       {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
       {success && <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>}
+
+      {campaignActive && !webPublica && (
+        <div className="mb-6 rounded-xl border border-violet-300/80 bg-violet-50/80 px-5 py-4">
+          <div className="flex items-start gap-3">
+            <span className="text-xl">🛠️</span>
+            <div>
+              <h3 className="text-sm font-semibold text-violet-900">
+                Modo preparación · La página pública aún no está visible
+              </h3>
+              <p className="mt-1 text-sm text-violet-900/80">
+                La asociación ha abierto la zona de gestión para que vayas{' '}
+                <strong>preparando con tiempo</strong> la edición {activeAnio ?? ''} de Semana
+                Santa (descripción, días, agenda, carteles). De momento{' '}
+                <strong>nada de lo que rellenes se ve en la web pública</strong> ni en la app.
+                Cuando todo esté listo, la asociación publicará la campaña.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {!campaignActive && (
         <div className="mb-6 rounded-xl border border-stone-300 bg-stone-50 px-5 py-4">

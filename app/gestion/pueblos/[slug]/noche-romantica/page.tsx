@@ -87,7 +87,13 @@ export default function GestionPuebloNocheRomanticaPage() {
 
   const [data, setData] = useState<NRPuebloData | null>(null);
   const [puebloId, setPuebloId] = useState<number | null>(null);
+  // `campaignActive` aquí significa "el alcalde puede editar". Es true cuando
+  // la web pública está visible (`activo`) o cuando admin ha abierto la gestión
+  // anticipada (`gestionActiva`).
   const [campaignActive, setCampaignActive] = useState(true);
+  // `webPublica` indica si la página pública está visible. Cuando es false pero
+  // `campaignActive` es true, mostramos un aviso de "preparando — aún no público".
+  const [webPublica, setWebPublica] = useState(true);
   const [activeAnio, setActiveAnio] = useState<number | null>(null);
   const [activeFechaEvento, setActiveFechaEvento] = useState<string | null>(null);
   const [edicionesAnteriores, setEdicionesAnteriores] = useState<number[]>([]);
@@ -145,14 +151,20 @@ export default function GestionPuebloNocheRomanticaPage() {
           const cfgRes = await fetch(`/api/admin/noche-romantica/config`, { credentials: 'include', cache: 'no-store' });
           if (cfgRes.ok) {
             const cfg = await cfgRes.json();
-            setCampaignActive(cfg?.activo ?? true);
+            const visible = cfg?.activo ?? false;
+            const gest = cfg?.gestionActiva ?? false;
+            setCampaignActive(visible || gest);
+            setWebPublica(visible);
             setActiveAnio(cfg?.anio ?? null);
             setActiveFechaEvento(cfg?.fechaEvento ?? null);
           } else {
             const pubRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/noche-romantica/config`);
             if (pubRes.ok) {
               const cfg = await pubRes.json();
-              setCampaignActive(cfg?.activo ?? true);
+              const visible = cfg?.activo ?? false;
+              const gest = cfg?.gestionActiva ?? false;
+              setCampaignActive(visible || gest);
+              setWebPublica(visible);
               setActiveAnio(cfg?.anio ?? null);
               setActiveFechaEvento(cfg?.fechaEvento ?? null);
             }
@@ -181,7 +193,10 @@ export default function GestionPuebloNocheRomanticaPage() {
       if (!res.ok) throw new Error('Error cargando datos');
       const json = await res.json();
       const d = json.participante ?? json;
-      setCampaignActive(json.config?.activo ?? false);
+      const visible = json.config?.activo ?? false;
+      const gest = json.config?.gestionActiva ?? false;
+      setCampaignActive(visible || gest);
+      setWebPublica(visible);
       setActiveAnio(json.config?.anio ?? null);
       setActiveFechaEvento(json.config?.fechaEvento ?? null);
       setData(d);
@@ -520,6 +535,26 @@ export default function GestionPuebloNocheRomanticaPage() {
       )}
       {success && (
         <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>
+      )}
+
+      {campaignActive && !webPublica && (
+        <div className="mb-6 rounded-xl border border-violet-300/80 bg-gradient-to-br from-violet-50 via-fuchsia-50/60 to-pink-50/40 px-5 py-4 shadow-sm">
+          <div className="flex items-start gap-3">
+            <span className="text-xl">🛠️</span>
+            <div>
+              <h3 className="text-sm font-semibold text-violet-900">
+                Modo preparación · La página pública aún no está visible
+              </h3>
+              <p className="mt-1 text-sm text-violet-900/80">
+                La asociación ha abierto la zona de gestión para que vayas{' '}
+                <strong>preparando con tiempo</strong> la edición {activeAnio ?? ''} de La Noche
+                Romántica (descripción, fotos, actividades, negocios). De momento{' '}
+                <strong>nada de lo que rellenes se ve en la web pública</strong> ni en la app.
+                Cuando todo esté listo, la asociación publicará la campaña.
+              </p>
+            </div>
+          </div>
+        </div>
       )}
 
       {activeFechaEvento && campaignActive && (

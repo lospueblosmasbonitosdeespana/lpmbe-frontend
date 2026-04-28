@@ -23,6 +23,7 @@ interface NRConfig {
   videoTipo: 'YOUTUBE' | 'R2';
   activo: boolean;
   activaEnApp: boolean;
+  gestionActiva: boolean;
 }
 
 interface NRPueblo {
@@ -124,6 +125,7 @@ export default function GestionNocheRomanticaPage() {
         videoTipo: config.videoTipo,
         activo: config.activo,
         activaEnApp: config.activaEnApp,
+        gestionActiva: config.gestionActiva,
       };
       const res = await fetch('/api/admin/noche-romantica/config', {
         method: 'PUT',
@@ -497,9 +499,14 @@ export default function GestionNocheRomanticaPage() {
 
           {/* Estado — Controles de visibilidad */}
           <section className="rounded-lg border p-5">
-            <h2 className="mb-4 text-lg font-semibold">Estado de la campaña</h2>
+            <h2 className="mb-1 text-lg font-semibold">Estado de la campaña</h2>
+            <p className="mb-4 text-xs text-muted-foreground">
+              Estos dos interruptores son <strong>independientes</strong>. Puedes abrir la zona
+              de gestión a los alcaldes para que vayan rellenando información sin que la página
+              pública esté todavía visible.
+            </p>
             <div className="space-y-4">
-              {/* 1. Web pública: Header + página /noche-romantica + gestión alcaldes */}
+              {/* 1. Web pública: Header + página /noche-romantica */}
               <label className="flex items-start gap-3 rounded-lg border border-border p-3 hover:bg-muted/30 transition-colors cursor-pointer">
                 <input
                   type="checkbox"
@@ -508,47 +515,90 @@ export default function GestionNocheRomanticaPage() {
                   className="mt-0.5 h-4 w-4 rounded border-border accent-primary"
                 />
                 <div>
-                  <span className="text-sm font-semibold">Activar en la web pública</span>
+                  <span className="text-sm font-semibold">Visible en la web pública</span>
                   <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
-                    Muestra «La Noche Romántica» en el menú de navegación de la web y habilita la página pública.
-                    También permite a los alcaldes gestionar la participación de su pueblo.
+                    Muestra «La Noche Romántica» en el menú de navegación de la web pública y
+                    habilita la página <code className="rounded bg-muted px-1">/noche-romantica</code>{' '}
+                    con los pueblos participantes. Los visitantes pueden ver la campaña.
                   </p>
                   {config.activo && (
                     <div className="mt-2 flex items-center gap-1.5 text-xs text-emerald-700">
                       <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-                      Visible en la web — menú, página y gestión de alcaldes activos
+                      Visible en la web pública
                     </div>
                   )}
                 </div>
               </label>
 
-              {/* 2. App móvil */}
-              <label className="flex items-start gap-3 rounded-lg border border-rose-200 p-3 hover:bg-rose-50/40 transition-colors cursor-pointer">
+              {/* 2. Gestión activa para alcaldes */}
+              <label className="flex items-start gap-3 rounded-lg border border-violet-200 p-3 hover:bg-violet-50/40 transition-colors cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={config.activaEnApp}
-                  onChange={(e) => setConfig({ ...config, activaEnApp: e.target.checked })}
-                  className="mt-0.5 h-4 w-4 rounded border-border accent-rose-600"
+                  checked={config.gestionActiva}
+                  onChange={(e) => setConfig({ ...config, gestionActiva: e.target.checked })}
+                  className="mt-0.5 h-4 w-4 rounded border-border accent-violet-600"
                 />
                 <div>
-                  <span className="text-sm font-semibold">Activar en la app móvil</span>
+                  <span className="text-sm font-semibold">Abrir la zona de gestión a los alcaldes</span>
                   <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
-                    Muestra el logo y la sección de La Noche Romántica en la app (ficha de pueblos participantes, landing del evento).
+                    Permite que los alcaldes entren en{' '}
+                    <code className="rounded bg-muted px-1">/gestion/pueblos/&lt;pueblo&gt;/noche-romantica</code>{' '}
+                    y editen la edición vigente <strong>aunque la web pública aún no esté
+                    publicada</strong>. Útil para que vayan preparando descripciones, fotos,
+                    actividades y negocios participantes con tiempo. Si <em>«Visible en la web
+                    pública»</em> ya está activo, no hace falta tocar este interruptor: la
+                    gestión se abre automáticamente.
                   </p>
-                  {config.activaEnApp && (
-                    <div className="mt-2 flex items-center gap-1.5 text-xs text-rose-700">
-                      <span className="inline-block h-2 w-2 rounded-full bg-rose-500" />
-                      Activo en la app para {pueblos.length} pueblo{pueblos.length !== 1 ? 's' : ''} participante{pueblos.length !== 1 ? 's' : ''}
+                  {config.gestionActiva && !config.activo && (
+                    <div className="mt-2 flex items-center gap-1.5 text-xs text-violet-700">
+                      <span className="inline-block h-2 w-2 rounded-full bg-violet-500" />
+                      Los alcaldes pueden editar — la web pública aún no se ve
+                    </div>
+                  )}
+                  {config.activo && (
+                    <div className="mt-2 flex items-center gap-1.5 text-xs text-emerald-700">
+                      <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                      La gestión también está abierta porque la web pública está activa
                     </div>
                   )}
                 </div>
               </label>
+
+              {/* 3. Aviso sobre la app móvil */}
+              <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-xs text-amber-900">
+                <p className="font-semibold">📱 ¿Y el botón de la app móvil?</p>
+                <p className="mt-1 leading-relaxed">
+                  El botón del evento estacional que aparece en la <strong>home de la app</strong>{' '}
+                  (Semana Santa / Noche Romántica / Navidad) <strong>no se controla aquí</strong>.
+                  Se elige en una pantalla aparte:
+                </p>
+                <p className="mt-2">
+                  <a
+                    href="/gestion/asociacion/app/evento-activo"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-white px-2.5 py-1.5 font-medium text-amber-900 shadow-sm transition hover:bg-amber-100"
+                  >
+                    Ir a «Evento estacional de la app» →
+                  </a>
+                </p>
+                <p className="mt-2 leading-relaxed text-amber-800">
+                  Cuando llegue el momento de Noche Romántica, entra en esa pantalla y selecciona{' '}
+                  <em>«Noche Romántica»</em> para que aparezca el botón en la app.
+                </p>
+              </div>
 
               {/* Resumen visual */}
               <div className="rounded-md border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground space-y-1">
                 <p className="font-medium text-foreground/80">Resumen:</p>
-                <p>Web pública (header + página + alcaldes): <strong className={config.activo ? 'text-emerald-700' : 'text-red-600'}>{config.activo ? 'ACTIVO' : 'INACTIVO'}</strong></p>
-                <p>App móvil (logo + landing + pueblos): <strong className={config.activaEnApp ? 'text-rose-700' : 'text-red-600'}>{config.activaEnApp ? 'ACTIVO' : 'INACTIVO'}</strong></p>
+                <p>
+                  Web pública (header + página): <strong className={config.activo ? 'text-emerald-700' : 'text-red-600'}>{config.activo ? 'VISIBLE' : 'OCULTA'}</strong>
+                </p>
+                <p>
+                  Gestión de alcaldes:{' '}
+                  <strong className={config.activo || config.gestionActiva ? 'text-emerald-700' : 'text-red-600'}>
+                    {config.activo || config.gestionActiva ? 'ABIERTA' : 'CERRADA'}
+                  </strong>
+                  {!config.activo && config.gestionActiva ? ' (anticipada)' : ''}
+                </p>
               </div>
             </div>
           </section>
