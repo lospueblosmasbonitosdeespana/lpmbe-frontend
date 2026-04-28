@@ -636,6 +636,13 @@ export default function ClubPage() {
                 <Caption>Por categoría y pueblo</Caption>
               </Link>
               <Link
+                href="/mi-cuenta/club/sorteos"
+                className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
+              >
+                <span className="font-medium">Sorteos del Club</span>
+                <Caption>Concursos exclusivos para socios</Caption>
+              </Link>
+              <Link
                 href="/mi-cuenta/club/visitados"
                 className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
               >

@@ -33,6 +33,9 @@ export default async function GestionAsociacionClubPage() {
           <Link href="/gestion/asociacion/club/metricas" className={HERO_LINK}>
             Métricas validaciones
           </Link>
+          <Link href="/gestion/asociacion/club/sorteos" className={HERO_LINK}>
+            Sorteos
+          </Link>
         </div>
       }
     >
