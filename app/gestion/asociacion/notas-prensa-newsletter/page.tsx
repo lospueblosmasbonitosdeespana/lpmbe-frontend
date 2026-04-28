@@ -26,12 +26,12 @@ export default async function NotasPrensaNewsletterPage() {
     >
       <div className="space-y-8">
         <p className="max-w-3xl text-sm text-muted-foreground">
-          Tres canales de comunicación masiva con medidas anti-spam, plantillas reutilizables
+          Cuatro canales de comunicación masiva con medidas anti-spam, plantillas reutilizables
           y métricas de entrega/aperturas. Cada canal tiene su lista de contactos y su
           constructor visual.
         </p>
 
-        <section className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <section className="grid gap-5 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
           {/* Newsletter */}
           <article className="group relative overflow-hidden rounded-2xl border border-violet-200/80 bg-gradient-to-br from-violet-50/70 via-white to-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-lg dark:border-violet-800/50 dark:from-violet-950/40 dark:to-card">
             <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-violet-200/40 blur-3xl transition-opacity group-hover:opacity-80 dark:bg-violet-800/20" aria-hidden />
@@ -148,6 +148,48 @@ export default async function NotasPrensaNewsletterPage() {
               </Link>
             </div>
           </article>
+
+          {/* Club de Amigos */}
+          <article className="group relative overflow-hidden rounded-2xl border border-rose-200/80 bg-gradient-to-br from-rose-50/70 via-white to-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-lg dark:border-rose-800/50 dark:from-rose-950/40 dark:to-card">
+            <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-rose-200/40 blur-3xl transition-opacity group-hover:opacity-80 dark:bg-rose-800/20" aria-hidden />
+            <div className="relative flex items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 shadow-md shadow-rose-200/60">
+                <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                  <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 11l-3 3-1.5-1.5" />
+                </svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-lg font-bold text-foreground">Club de Amigos</h2>
+                  <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rose-700 ring-1 ring-rose-200 dark:bg-rose-950 dark:text-rose-200 dark:ring-rose-800">
+                    Socios
+                  </span>
+                </div>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  Comunicaciones segmentadas a socios: por estado, intereses, provincia, edad o caducidad.
+                </p>
+              </div>
+            </div>
+            <div className="relative mt-5 flex flex-wrap gap-2">
+              <Link
+                href="/gestion/asociacion/club/comunicaciones"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-rose-500 to-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-rose-200/60 transition-all hover:from-rose-600 hover:to-rose-700 active:scale-[0.98]"
+              >
+                Ir a Newsletter Club
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                  <path d="M5 12h14M13 5l7 7-7 7" />
+                </svg>
+              </Link>
+              <Link
+                href="/gestion/asociacion/datos/club"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition-all hover:bg-rose-50 dark:border-rose-800 dark:bg-card dark:text-rose-200 dark:hover:bg-rose-950/40"
+              >
+                Socios
+              </Link>
+            </div>
+          </article>
         </section>
 
         <section className="rounded-2xl border border-border bg-gradient-to-b from-muted/30 to-card p-5 sm:p-6">
@@ -170,7 +212,11 @@ export default async function NotasPrensaNewsletterPage() {
                 </li>
                 <li className="flex gap-2">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-teal-500" aria-hidden />
-                  Las notas de prensa <em>no</em> incluyen enlace de baja para que los periodistas no se autoexcluyan; las newsletters y comunicaciones a ayuntamientos sí.
+                  Las notas de prensa <em>no</em> incluyen enlace de baja para que los periodistas no se autoexcluyan; las newsletters, ayuntamientos y comunicaciones al Club sí.
+                </li>
+                <li className="flex gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" aria-hidden />
+                  En el <strong className="font-semibold text-foreground">Club de Amigos</strong>, los emails transaccionales (caducidad, sorteos, recordatorios) se envían siempre; el resto solo a quienes hayan aceptado marketing.
                 </li>
               </ul>
             </div>
