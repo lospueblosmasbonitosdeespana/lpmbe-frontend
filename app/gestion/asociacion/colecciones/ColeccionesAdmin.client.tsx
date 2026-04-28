@@ -266,15 +266,27 @@ export default function ColeccionesAdmin() {
       </div>
     ),
     heroAction: (
-      <button
-        onClick={() => setShowNew(true)}
-        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white/15 px-5 py-2.5 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm transition-all hover:bg-white/25 hover:ring-white/40 active:scale-[0.98]"
-      >
-        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-        </svg>
-        Nueva colección
-      </button>
+      <div className="flex shrink-0 flex-wrap items-center gap-2">
+        <Link
+          href="/gestion/asociacion/descubre-hero"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold text-white ring-1 ring-white/20 backdrop-blur-sm transition-all hover:bg-white/20 hover:ring-white/40 active:scale-[0.98]"
+          title="Edita el copy del hero, imagen de fondo, SEO y bloque introductorio editable de /descubre"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3l1.9 5.85h6.15l-4.97 3.62 1.9 5.85L12 14.7l-4.98 3.62 1.9-5.85L3.95 8.85H10.1L12 3z" />
+          </svg>
+          Hero y SEO
+        </Link>
+        <button
+          onClick={() => setShowNew(true)}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/15 px-5 py-2.5 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm transition-all hover:bg-white/25 hover:ring-white/40 active:scale-[0.98]"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+          </svg>
+          Nueva colección
+        </button>
+      </div>
     ),
   };
 
