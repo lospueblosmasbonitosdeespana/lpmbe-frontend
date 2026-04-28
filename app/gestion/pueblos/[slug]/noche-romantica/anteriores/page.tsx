@@ -96,6 +96,11 @@ export default function GestionPuebloNocheRomanticaAnterioresPage() {
           (la de {activeAnio ?? 'este año'}) la información, el cartel, las actividades o los
           negocios que ya tenías. Después podrás editar lo que importes.
         </p>
+        <p className="mt-2 text-xs text-pink-900/70">
+          <strong>Recuerda:</strong> La Noche Romántica cae cada año en el sábado más cercano al
+          solsticio de verano, así que <strong>la fecha cambia</strong>. Tras importar, repasa los
+          horarios de actividades y los textos por si había menciones a la fecha del año pasado.
+        </p>
       </div>
 
       {error && (

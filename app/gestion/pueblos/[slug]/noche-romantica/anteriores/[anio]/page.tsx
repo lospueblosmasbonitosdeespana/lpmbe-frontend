@@ -47,6 +47,20 @@ const NEGOCIO_LABEL: Record<string, string> = {
   OTRO: 'Otros',
 };
 
+function formatFechaLarga(iso: string | null | undefined): string {
+  if (!iso) return '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+  const d = new Date(`${iso}T12:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('es-ES', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Europe/Madrid',
+  });
+}
+
 export default function GestionPuebloNocheRomanticaAnoAnteriorPage() {
   const router = useRouter();
   const { slug, anio: anioParam } = useParams<{ slug: string; anio: string }>();
@@ -54,6 +68,7 @@ export default function GestionPuebloNocheRomanticaAnoAnteriorPage() {
 
   const [puebloId, setPuebloId] = useState<number | null>(null);
   const [activeAnio, setActiveAnio] = useState<number | null>(null);
+  const [activeFechaEvento, setActiveFechaEvento] = useState<string | null>(null);
   const [participante, setParticipante] = useState<Participante | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,6 +108,7 @@ export default function GestionPuebloNocheRomanticaAnoAnteriorPage() {
       if (!res.ok) throw new Error('No se pudo cargar la edición');
       const json = await res.json();
       setActiveAnio(json.activeAnio ?? null);
+      setActiveFechaEvento(json.activeFechaEvento ?? null);
       setParticipante(json.participante ?? null);
     } catch (e: any) {
       setError(e?.message ?? 'Error');
@@ -342,6 +358,15 @@ export default function GestionPuebloNocheRomanticaAnoAnteriorPage() {
                 Marca qué partes de la edición de {anioNum} quieres copiar a la edición actual de{' '}
                 {activeAnio}. <strong>Después podrás editar todo</strong> normalmente. Si no quieres
                 algo, lo desmarcas y no se tocará.
+              </p>
+              <p className="mt-2 rounded-md bg-amber-100/60 p-2 text-xs text-amber-900">
+                <strong>Aviso:</strong> La Noche Romántica se celebra cada año en el sábado más
+                cercano al solsticio de verano, así que la fecha cambia.
+                {activeFechaEvento && (
+                  <> En {activeAnio} cae el <strong>{formatFechaLarga(activeFechaEvento)}</strong>.</>
+                )}{' '}
+                Si importas actividades, <strong>repasa los horarios y los textos</strong> por si
+                había referencias a la fecha del año {anioNum}.
               </p>
             </div>
 

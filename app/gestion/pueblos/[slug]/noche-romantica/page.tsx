@@ -64,6 +64,22 @@ const NEGOCIO_LABEL: Record<string, string> = {
   OTRO: 'Otros',
 };
 
+// "2026-06-20" → "sábado 20 de junio de 2026"
+function formatFechaLarga(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return iso;
+  const d = new Date(`${iso}T12:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('es-ES', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Europe/Madrid',
+  });
+}
+
 // ==================== COMPONENT ====================
 
 export default function GestionPuebloNocheRomanticaPage() {
@@ -73,6 +89,7 @@ export default function GestionPuebloNocheRomanticaPage() {
   const [puebloId, setPuebloId] = useState<number | null>(null);
   const [campaignActive, setCampaignActive] = useState(true);
   const [activeAnio, setActiveAnio] = useState<number | null>(null);
+  const [activeFechaEvento, setActiveFechaEvento] = useState<string | null>(null);
   const [edicionesAnteriores, setEdicionesAnteriores] = useState<number[]>([]);
   const [notInscribed, setNotInscribed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -130,12 +147,14 @@ export default function GestionPuebloNocheRomanticaPage() {
             const cfg = await cfgRes.json();
             setCampaignActive(cfg?.activo ?? true);
             setActiveAnio(cfg?.anio ?? null);
+            setActiveFechaEvento(cfg?.fechaEvento ?? null);
           } else {
             const pubRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/noche-romantica/config`);
             if (pubRes.ok) {
               const cfg = await pubRes.json();
               setCampaignActive(cfg?.activo ?? true);
               setActiveAnio(cfg?.anio ?? null);
+              setActiveFechaEvento(cfg?.fechaEvento ?? null);
             }
           }
         } catch { /* ignore */ }
@@ -164,6 +183,7 @@ export default function GestionPuebloNocheRomanticaPage() {
       const d = json.participante ?? json;
       setCampaignActive(json.config?.activo ?? false);
       setActiveAnio(json.config?.anio ?? null);
+      setActiveFechaEvento(json.config?.fechaEvento ?? null);
       setData(d);
       setTitulo(d.titulo ?? '');
       setDescripcion(d.descripcion ?? '');
@@ -500,6 +520,17 @@ export default function GestionPuebloNocheRomanticaPage() {
       )}
       {success && (
         <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>
+      )}
+
+      {activeFechaEvento && campaignActive && (
+        <div className="mb-6 rounded-xl border border-pink-200/80 bg-gradient-to-br from-pink-50/70 via-fuchsia-50/40 to-violet-50/30 px-5 py-3 shadow-sm">
+          <p className="text-sm text-pink-900">
+            <span className="font-semibold">📅 Esta edición se celebra el {formatFechaLarga(activeFechaEvento)}.</span>{' '}
+            La Noche Romántica cae cada año en el sábado más cercano al solsticio de verano,
+            así que la fecha cambia respecto a la edición anterior. Ten en cuenta este día
+            cuando rellenes los <strong>horarios</strong> de actividades.
+          </p>
+        </div>
       )}
 
       {!campaignActive && (
