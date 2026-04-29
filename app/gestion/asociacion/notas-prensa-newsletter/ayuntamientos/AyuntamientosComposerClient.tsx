@@ -59,6 +59,19 @@ type Campaign = {
   createdAt: string;
 };
 
+type CampaignRecipient = {
+  id: number;
+  email: string;
+  status?: string | null;
+  lastEvent?: string | null;
+  deliveredAt?: string | null;
+  openedAt?: string | null;
+  clickedAt?: string | null;
+  bouncedAt?: string | null;
+  error?: string | null;
+  createdAt?: string | null;
+};
+
 function formatDate(value?: string | null): string {
   if (!value) return '—';
   try {
@@ -96,6 +109,13 @@ export default function AyuntamientosComposerClient() {
 
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loadingCampaigns, setLoadingCampaigns] = useState(false);
+  const [recipientsModalCampaign, setRecipientsModalCampaign] = useState<Campaign | null>(null);
+  const [recipientsLoading, setRecipientsLoading] = useState(false);
+  const [recipientsError, setRecipientsError] = useState<string | null>(null);
+  const [openedRecipients, setOpenedRecipients] = useState<CampaignRecipient[]>([]);
+  const [pendingRecipients, setPendingRecipients] = useState<CampaignRecipient[]>([]);
+  const [recipientsLoadedCount, setRecipientsLoadedCount] = useState(0);
+  const [recipientsTotal, setRecipientsTotal] = useState(0);
 
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const attachInputRef = useRef<HTMLInputElement>(null);
@@ -240,6 +260,53 @@ export default function AyuntamientosComposerClient() {
   }, []);
 
   const canSend = subject.trim().length > 0 && html.trim().length > 0 && !sending;
+
+  async function openRecipientsModal(campaign: Campaign) {
+    setRecipientsModalCampaign(campaign);
+    setRecipientsLoading(true);
+    setRecipientsError(null);
+    setOpenedRecipients([]);
+    setPendingRecipients([]);
+    setRecipientsLoadedCount(0);
+    setRecipientsTotal(0);
+
+    try {
+      const pageSize = 200;
+      const maxRows = 2000;
+      let offset = 0;
+      let total = 0;
+      const all: CampaignRecipient[] = [];
+
+      while (offset < maxRows) {
+        const res = await fetch(
+          `/api/admin/newsletter/campaigns/${campaign.id}/recipients?limit=${pageSize}&offset=${offset}`,
+          { cache: 'no-store' },
+        );
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(
+            data?.message || data?.error || 'No se pudieron cargar los destinatarios',
+          );
+        }
+
+        const items: CampaignRecipient[] = Array.isArray(data?.items) ? data.items : [];
+        total = Number(data?.total ?? total ?? 0);
+        all.push(...items);
+        offset += items.length;
+
+        if (items.length === 0 || (total > 0 && all.length >= total)) break;
+      }
+
+      setRecipientsTotal(total || all.length);
+      setRecipientsLoadedCount(all.length);
+      setOpenedRecipients(all.filter((r) => Boolean(r.openedAt)));
+      setPendingRecipients(all.filter((r) => !r.openedAt));
+    } catch (e: any) {
+      setRecipientsError(e?.message || 'Error cargando destinatarios');
+    } finally {
+      setRecipientsLoading(false);
+    }
+  }
 
   // ---------- Subida directa a R2 (evita el límite del proxy de Vercel) ----------
   // Vercel limita el body de las funciones serverless a ~4,5 MB. Para archivos
@@ -979,12 +1046,13 @@ export default function AyuntamientosComposerClient() {
                 <th className="px-2 py-2 text-right">OK</th>
                 <th className="px-2 py-2 text-right">Abrieron</th>
                 <th className="px-2 py-2 text-right">Rebotes</th>
+                <th className="px-2 py-2 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {campaigns.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-2 py-4 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-2 py-4 text-center text-muted-foreground">
                     {loadingCampaigns
                       ? 'Cargando…'
                       : 'Todavía no se ha enviado ninguna campaña a ayuntamientos.'}
@@ -1013,6 +1081,15 @@ export default function AyuntamientosComposerClient() {
                     >
                       {c.bouncedCount}
                     </td>
+                    <td className="px-2 py-2 text-right">
+                      <button
+                        type="button"
+                        onClick={() => openRecipientsModal(c)}
+                        className="rounded-md border border-border bg-white px-2 py-1 text-xs font-medium hover:bg-muted"
+                      >
+                        Ver vistos / pendientes
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -1020,6 +1097,104 @@ export default function AyuntamientosComposerClient() {
           </table>
         </div>
       </section>
+
+      {recipientsModalCampaign ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
+          <div className="max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-xl border border-border bg-background shadow-2xl">
+            <div className="flex items-start justify-between gap-3 border-b border-border p-4">
+              <div>
+                <h3 className="text-base font-semibold">Seguimiento de campaña</h3>
+                <p className="text-xs text-muted-foreground">
+                  {recipientsModalCampaign.subject || `Campaña #${recipientsModalCampaign.id}`}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRecipientsModalCampaign(null)}
+                className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-muted"
+              >
+                Cerrar
+              </button>
+            </div>
+
+            <div className="space-y-4 overflow-y-auto p-4">
+              {recipientsLoading ? (
+                <p className="text-sm text-muted-foreground">Cargando destinatarios…</p>
+              ) : recipientsError ? (
+                <p className="rounded-md border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+                  {recipientsError}
+                </p>
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="rounded-full bg-green-100 px-2 py-1 font-semibold text-green-700">
+                      Vistos: {openedRecipients.length}
+                    </span>
+                    <span className="rounded-full bg-amber-100 px-2 py-1 font-semibold text-amber-700">
+                      Pendientes: {pendingRecipients.length}
+                    </span>
+                    <span className="rounded-full bg-slate-100 px-2 py-1 font-semibold text-slate-700">
+                      Cargados: {recipientsLoadedCount} / {recipientsTotal || recipientsLoadedCount}
+                    </span>
+                  </div>
+
+                  {recipientsTotal > recipientsLoadedCount ? (
+                    <p className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
+                      Se han cargado {recipientsLoadedCount} de {recipientsTotal} destinatarios para evitar una consulta demasiado pesada.
+                    </p>
+                  ) : null}
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="rounded-lg border border-green-200 bg-green-50/40 p-3">
+                      <h4 className="text-sm font-semibold text-green-800">Lo han visto</h4>
+                      <div className="mt-2 max-h-[50vh] overflow-auto rounded border border-green-200 bg-white">
+                        {openedRecipients.length === 0 ? (
+                          <p className="p-3 text-xs text-muted-foreground">Sin aperturas registradas todavía.</p>
+                        ) : (
+                          <ul className="divide-y divide-green-100 text-sm">
+                            {openedRecipients.map((r) => (
+                              <li key={r.id} className="px-3 py-2">
+                                <div className="font-medium">{r.email}</div>
+                                <div className="text-[11px] text-muted-foreground">
+                                  Abierto: {formatDate(r.openedAt)}{r.clickedAt ? ` · Clic: ${formatDate(r.clickedAt)}` : ''}
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-3">
+                      <h4 className="text-sm font-semibold text-amber-800">Pendiente de abrir</h4>
+                      <div className="mt-2 max-h-[50vh] overflow-auto rounded border border-amber-200 bg-white">
+                        {pendingRecipients.length === 0 ? (
+                          <p className="p-3 text-xs text-muted-foreground">Todos los destinatarios cargados han abierto el correo.</p>
+                        ) : (
+                          <ul className="divide-y divide-amber-100 text-sm">
+                            {pendingRecipients.map((r) => (
+                              <li key={r.id} className="px-3 py-2">
+                                <div className="font-medium">{r.email}</div>
+                                <div className="text-[11px] text-muted-foreground">
+                                  {r.bouncedAt
+                                    ? `Rebotado: ${formatDate(r.bouncedAt)}`
+                                    : r.deliveredAt
+                                      ? `Entregado: ${formatDate(r.deliveredAt)}`
+                                      : 'Sin confirmación de entrega'}
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
