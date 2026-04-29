@@ -3,6 +3,17 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import {
+  Landmark,
+  Hotel,
+  Trophy,
+  BookmarkCheck,
+  History,
+  PartyPopper,
+  Check,
+  Hourglass,
+  ChevronRight,
+} from 'lucide-react';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import { Headline, Title, Caption } from '@/app/components/ui/typography';
@@ -526,7 +537,10 @@ export default function ClubPage() {
                 )
               ) : (
                 <div className="rounded-lg border border-border bg-muted/30 px-5 py-4 text-sm text-muted-foreground">
-                  <p className="font-medium text-gray-700 mb-1">🔜 {t('comingSoonTitle')}</p>
+                  <p className="mb-1 flex items-center gap-2 font-medium text-gray-700">
+                    <Hourglass size={16} aria-hidden />
+                    {t('comingSoonTitle')}
+                  </p>
                   <p>{t('comingSoon')}</p>
                 </div>
               )}
@@ -618,50 +632,52 @@ export default function ClubPage() {
           {/* Accesos rápidos */}
           <div className={cardClass}>
             <Title size="lg" className="mb-4">{t('access')}</Title>
-            <div className="space-y-3">
-              <Link
+            <div className="grid gap-3 sm:grid-cols-2">
+              <AccesoCard
                 href="/mi-cuenta/club/recursos"
-                className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
-              >
-                <span className="font-medium">{t('discountsOnResources')}</span>
-                {recursosDisponibles.length > 0 && (
-                  <Caption>({recursosDisponibles.length} {t('resources')})</Caption>
-                )}
-              </Link>
-              <Link
+                icon={<Landmark size={22} aria-hidden />}
+                title="Recursos Turísticos"
+                subtitle="Museos, castillos, bodegas, jardines…"
+                badge={recursosDisponibles.length > 0 ? `${recursosDisponibles.length}` : null}
+                tone="amber"
+              />
+              <AccesoCard
                 href="/mi-cuenta/club/negocios"
-                className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
-              >
-                <span className="font-medium">Negocios del Club (hoteles, restaurantes, comercios…)</span>
-                <Caption>Por categoría y pueblo</Caption>
-              </Link>
-              <Link
+                icon={<Hotel size={22} aria-hidden />}
+                title="Hoteles, casas rurales, comercios, actividades…"
+                subtitle="Descuentos y regalos exclusivos"
+                tone="rose"
+              />
+              <AccesoCard
                 href="/mi-cuenta/club/sorteos"
-                className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
-              >
-                <span className="font-medium">Sorteos del Club</span>
-                <Caption>Concursos exclusivos para socios</Caption>
-              </Link>
-              <Link
+                icon={<Trophy size={22} aria-hidden />}
+                title="Sorteos del Club"
+                subtitle="Concursos exclusivos para socios"
+                tone="violet"
+              />
+              <AccesoCard
                 href="/mi-cuenta/club/visitados"
-                className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
-              >
-                <span className="font-medium">{t('visitedResources')}</span>
-                {validaciones.filter(v => v.resultado === 'OK').length > 0 && (
-                  <Caption>({validaciones.filter(v => v.resultado === 'OK').length} {t('visits')})</Caption>
-                )}
-              </Link>
-              <Link
+                icon={<BookmarkCheck size={22} aria-hidden />}
+                title={t('visitedResources')}
+                subtitle="Tu colección de visitas"
+                badge={
+                  validaciones.filter((v) => v.resultado === 'OK').length > 0
+                    ? `${validaciones.filter((v) => v.resultado === 'OK').length}`
+                    : null
+                }
+                tone="emerald"
+              />
+              <AccesoCard
                 href="/mi-cuenta/club/validaciones"
-                className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
-              >
-                <span className="font-medium">{t('validationHistory')}</span>
-                {validaciones.length > 0 && (
-                  <Caption>({validaciones.length} {t('records')})</Caption>
-                )}
-              </Link>
+                icon={<History size={22} aria-hidden />}
+                title={t('validationHistory')}
+                subtitle="Todos los escaneos del Club"
+                badge={validaciones.length > 0 ? `${validaciones.length}` : null}
+                tone="sky"
+                className="sm:col-span-2"
+              />
             </div>
-            
+
             {ultimaValidacion && (
               <div className="mt-4 border-t border-border pt-4">
                 <Caption>
@@ -713,6 +729,99 @@ export default function ClubPage() {
 
 // ─── Componentes ──────────────────────────────────────────────────────────
 
+type AccesoTone = 'amber' | 'rose' | 'violet' | 'emerald' | 'sky';
+
+const ACCESO_TONES: Record<
+  AccesoTone,
+  { ring: string; bg: string; iconBg: string; iconText: string; badge: string }
+> = {
+  amber: {
+    ring: 'hover:border-amber-300',
+    bg: 'from-amber-50/70 to-white',
+    iconBg: 'bg-amber-100',
+    iconText: 'text-amber-700',
+    badge: 'bg-amber-100 text-amber-800',
+  },
+  rose: {
+    ring: 'hover:border-rose-300',
+    bg: 'from-rose-50/70 to-white',
+    iconBg: 'bg-rose-100',
+    iconText: 'text-rose-700',
+    badge: 'bg-rose-100 text-rose-800',
+  },
+  violet: {
+    ring: 'hover:border-violet-300',
+    bg: 'from-violet-50/70 to-white',
+    iconBg: 'bg-violet-100',
+    iconText: 'text-violet-700',
+    badge: 'bg-violet-100 text-violet-800',
+  },
+  emerald: {
+    ring: 'hover:border-emerald-300',
+    bg: 'from-emerald-50/70 to-white',
+    iconBg: 'bg-emerald-100',
+    iconText: 'text-emerald-700',
+    badge: 'bg-emerald-100 text-emerald-800',
+  },
+  sky: {
+    ring: 'hover:border-sky-300',
+    bg: 'from-sky-50/70 to-white',
+    iconBg: 'bg-sky-100',
+    iconText: 'text-sky-700',
+    badge: 'bg-sky-100 text-sky-800',
+  },
+};
+
+function AccesoCard({
+  href,
+  icon,
+  title,
+  subtitle,
+  badge,
+  tone,
+  className,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  badge?: string | null;
+  tone: AccesoTone;
+  className?: string;
+}) {
+  const t = ACCESO_TONES[tone];
+  return (
+    <Link
+      href={href}
+      className={`group relative flex items-center gap-4 overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${t.bg} px-4 py-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${t.ring} ${className ?? ''}`}
+    >
+      <span
+        className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${t.iconBg} ${t.iconText}`}
+      >
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="truncate text-sm font-semibold text-gray-900 sm:text-[15px]">
+            {title}
+          </span>
+          {badge && (
+            <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${t.badge}`}>
+              {badge}
+            </span>
+          )}
+        </div>
+        <p className="mt-0.5 truncate text-xs text-muted-foreground">{subtitle}</p>
+      </div>
+      <ChevronRight
+        size={18}
+        className="text-muted-foreground transition-transform group-hover:translate-x-0.5"
+        aria-hidden
+      />
+    </Link>
+  );
+}
+
 type Lanzamiento = {
   activo: boolean;
   mesesGratis: number;
@@ -757,7 +866,7 @@ function LanzamientoCard({
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
-            🎉 Lanzamiento
+            <PartyPopper size={14} aria-hidden /> Lanzamiento
           </div>
           <h3 className="text-2xl font-bold text-amber-900">
             {lanzamiento.mesesGratis} {lanzamiento.mesesGratis === 1 ? 'mes' : 'meses'} gratis
@@ -780,15 +889,15 @@ function LanzamientoCard({
 
       <ul className="mt-4 space-y-2 text-sm text-amber-900">
         <li className="flex items-start gap-2">
-          <span className="mt-0.5 text-amber-700">✓</span>
+          <Check size={16} className="mt-0.5 text-amber-700" aria-hidden />
           <span>Acceso completo a recursos turísticos del Club en los pueblos certificados</span>
         </li>
         <li className="flex items-start gap-2">
-          <span className="mt-0.5 text-amber-700">✓</span>
+          <Check size={16} className="mt-0.5 text-amber-700" aria-hidden />
           <span>Descuentos y regalos en hoteles, casas rurales, restaurantes, comercios y experiencias</span>
         </li>
         <li className="flex items-start gap-2">
-          <span className="mt-0.5 text-amber-700">✓</span>
+          <Check size={16} className="mt-0.5 text-amber-700" aria-hidden />
           <span>Tarjeta digital con QR de identidad y número de socio LPMBE</span>
         </li>
       </ul>

@@ -3,6 +3,7 @@
 import { useMemo, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { ChevronLeft, ChevronRight, Building2, Landmark } from 'lucide-react';
 import { useRecursosDisponibles } from '../_components/useRecursosDisponibles';
 
 function getPuebloNombre(r: any): string | null {
@@ -13,72 +14,69 @@ export default function RecursosPage() {
   const t = useTranslations('club');
   const tAccount = useTranslations('myAccount');
   const { loading, error, data: recursos } = useRecursosDisponibles();
-  const [pueblosMap, setPueblosMap] = useState<Record<number, string>>({});
+  const [pueblosMap, setPueblosMap] = useState<Record<number, { nombre: string; slug: string }>>({});
   const [loadingPueblos, setLoadingPueblos] = useState(false);
 
-  // Detectar si falta algún nombre y cargar mapa de pueblos si es necesario
+  // Detectar si falta algún slug y cargar mapa de pueblos si es necesario.
   useEffect(() => {
     if (loading || recursos.length === 0) return;
 
-    const faltaNombre = recursos.some(r => {
-      const puebloId = r.puebloId;
-      if (!puebloId) return false;
-      return !getPuebloNombre(r);
+    const faltaSlug = recursos.some((r) => {
+      if (!r.puebloId) return false;
+      return !r.puebloSlug;
     });
 
-    if (faltaNombre && Object.keys(pueblosMap).length === 0) {
+    if (faltaSlug && Object.keys(pueblosMap).length === 0) {
       setLoadingPueblos(true);
       fetch('/api/pueblos', { cache: 'no-store' })
-        .then(res => {
-          if (!res.ok) return;
-          return res.json();
-        })
-        .then(data => {
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
           if (Array.isArray(data)) {
-            const map: Record<number, string> = {};
+            const map: Record<number, { nombre: string; slug: string }> = {};
             data.forEach((p: any) => {
-              if (p.id && p.nombre) {
-                map[p.id] = p.nombre;
+              if (p?.id && p?.slug) {
+                map[p.id] = { nombre: p.nombre ?? `Pueblo ${p.id}`, slug: p.slug };
               }
             });
             setPueblosMap(map);
           }
         })
-        .catch(() => {
-          // Ignorar errores silenciosamente
-        })
-        .finally(() => {
-          setLoadingPueblos(false);
-        });
+        .catch(() => undefined)
+        .finally(() => setLoadingPueblos(false));
     }
   }, [recursos, loading, pueblosMap]);
 
-  // Separar recursos de asociación y de pueblo
   const recursosAsociacion = useMemo(() => {
     return recursos.filter((r: any) => r.scope === 'ASOCIACION' || !r.puebloId);
   }, [recursos]);
 
-  // Agrupar por pueblo (solo recursos con puebloId)
+  // Agrupar recursos de pueblo
   const pueblosConRecursos = useMemo(() => {
-    const map = new Map<number, { nombre: string; count: number }>();
-    
+    const map = new Map<
+      number,
+      { id: number; nombre: string; slug: string; count: number }
+    >();
+
     recursos.forEach((r) => {
       const puebloId = r.puebloId;
       if (!puebloId) return;
-      
-      const nombre = getPuebloNombre(r) ?? pueblosMap[puebloId] ?? `Pueblo ${puebloId}`;
+
+      const slug = r.puebloSlug ?? pueblosMap[puebloId]?.slug;
+      if (!slug) return;
+
+      const nombre =
+        getPuebloNombre(r) ?? pueblosMap[puebloId]?.nombre ?? `Pueblo ${puebloId}`;
       const existing = map.get(puebloId);
-      
       if (existing) {
         existing.count += 1;
       } else {
-        map.set(puebloId, { nombre, count: 1 });
+        map.set(puebloId, { id: puebloId, nombre, slug, count: 1 });
       }
     });
-    
-    return Array.from(map.entries())
-      .map(([id, info]) => ({ id, nombre: info.nombre, count: info.count }))
-      .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+    return Array.from(map.values()).sort((a, b) =>
+      a.nombre.localeCompare(b.nombre, 'es'),
+    );
   }, [recursos, pueblosMap]);
 
   if (loading || loadingPueblos) {
@@ -94,8 +92,11 @@ export default function RecursosPage() {
       <div className="mx-auto max-w-6xl px-6 py-6">
         <div className="text-red-500">{error}</div>
         <div className="mt-4">
-          <Link href="/mi-cuenta/club" className="text-primary hover:underline">
-            ← {t('backToClub')}
+          <Link
+            href="/mi-cuenta/club"
+            className="inline-flex items-center gap-1 text-primary hover:underline"
+          >
+            <ChevronLeft size={16} aria-hidden /> {t('backToClub')}
           </Link>
         </div>
       </div>
@@ -103,84 +104,118 @@ export default function RecursosPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-6">
+    <div className="mx-auto max-w-6xl px-6 py-8">
       <div className="mb-6">
-        <h1 className="mb-2 text-2xl font-bold text-foreground">{t('discountsOnResources')}</h1>
-        <div className="text-sm text-muted-foreground">
-          <Link href="/mi-cuenta/club" className="text-primary hover:underline">
-            ← {t('backToClub')}
-          </Link>
-        </div>
+        <Link
+          href="/mi-cuenta/club"
+          className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft size={16} aria-hidden /> {t('backToClub')}
+        </Link>
+        <h1 className="text-2xl font-bold text-foreground">
+          Recursos Turísticos del Club
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Museos, castillos, jardines, bodegas, monumentos… elige tu pueblo y entra para ver
+          todo el detalle: foto, descripción, horarios, ubicación y descuento.
+        </p>
       </div>
 
       {/* Recursos de asociación */}
       {recursosAsociacion.length > 0 && (
-        <div className="mb-8">
-          <h2 className="mb-3 text-lg font-semibold text-foreground">{t('associationResources')}</h2>
+        <section className="mb-10">
+          <div className="mb-3 flex items-center gap-2">
+            <Landmark size={20} className="text-amber-700" aria-hidden />
+            <h2 className="text-lg font-semibold text-foreground">
+              {t('associationResources')}
+            </h2>
+          </div>
           <p className="mb-3 text-sm text-muted-foreground">
             {t('associationResourcesDesc')}
           </p>
-          <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {recursosAsociacion.map((r: any) => (
               <Link
                 key={r.id}
                 href={r.slug ? `/recursos/${r.slug}` : '#'}
-                className="block rounded-lg border border-border bg-card p-4 text-foreground transition hover:shadow-md dark:bg-neutral-800 dark:border-neutral-700"
+                className="group block overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-md"
               >
-                <div className="font-semibold text-sm text-foreground">{r.nombre}</div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {r.tipo} · {r.provincia || r.comunidad || ''}
+                {r.fotoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={r.fotoUrl}
+                    alt={r.nombre}
+                    className="h-32 w-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="flex h-32 w-full items-center justify-center bg-amber-50 text-amber-300">
+                    <Landmark size={36} aria-hidden />
+                  </div>
+                )}
+                <div className="p-4">
+                  <div className="text-sm font-semibold text-foreground">
+                    {r.nombre}
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {r.tipo} · {r.provincia || r.comunidad || ''}
+                  </div>
+                  {r.descuentoPorcentaje != null && r.descuentoPorcentaje > 0 && (
+                    <span className="mt-2 inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800">
+                      −{r.descuentoPorcentaje}% Club
+                    </span>
+                  )}
                 </div>
-                {r.descuentoPorcentaje != null && r.descuentoPorcentaje > 0 && (
-                  <div className="mt-2 inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800 dark:bg-green-900/40 dark:text-green-300">
-                    −{r.descuentoPorcentaje}% Club
-                  </div>
-                )}
-                {r.maxAdultos != null && (
-                  <div className="mt-1 text-xs text-blue-700 dark:text-blue-400">
-                    {r.maxAdultos === 1 && (r.maxMenores ?? 0) === 0
-                      ? t('onlyHolder')
-                      : `${r.maxAdultos} adulto${r.maxAdultos > 1 ? 's' : ''}${(r.maxMenores ?? 0) > 0 ? ` + ${r.maxMenores} menor${(r.maxMenores ?? 0) > 1 ? 'es' : ''} (<${r.edadMaxMenor ?? 12} años)` : ''}`}
-                  </div>
-                )}
               </Link>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Recursos por pueblo */}
-      <h2 className="mb-3 text-lg font-semibold text-foreground">{t('resourcesInVillages')}</h2>
-      {pueblosConRecursos.length === 0 ? (
-        <div className="text-sm text-muted-foreground">{t('noResourcesAvailable')}</div>
-      ) : (
-        <table className="w-full border-collapse rounded-lg border border-border text-sm dark:border-neutral-700">
-          <thead>
-            <tr className="border-b border-border bg-muted text-foreground dark:bg-neutral-800 dark:border-neutral-700">
-              <th className="px-3 py-2 text-left">{t('town')}</th>
-              <th className="px-3 py-2 text-center">{t('numResources')}</th>
-              <th className="px-3 py-2 text-center">{t('view')}</th>
-            </tr>
-          </thead>
-          <tbody>
+      <section>
+        <div className="mb-4 flex items-center gap-2">
+          <Building2 size={20} className="text-primary" aria-hidden />
+          <h2 className="text-lg font-semibold text-foreground">
+            {t('resourcesInVillages')}
+          </h2>
+        </div>
+
+        {pueblosConRecursos.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-border bg-muted/20 p-6 text-center text-sm text-muted-foreground">
+            {t('noResourcesAvailable')}
+          </p>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {pueblosConRecursos.map((p) => (
-              <tr key={p.id} className="border-b border-border dark:border-neutral-700">
-                <td className="px-3 py-2 text-foreground">{p.nombre}</td>
-                <td className="px-3 py-2 text-center text-foreground">{p.count}</td>
-                <td className="px-3 py-2 text-center">
-                  <Link
-                    href={`/mi-cuenta/club/recursos/${p.id}`}
-                    className="text-primary hover:underline"
-                  >
-                    {t('view')}
-                  </Link>
-                </td>
-              </tr>
+              <Link
+                key={p.id}
+                href={`/mi-cuenta/club/recursos/${p.slug}`}
+                className="group flex items-center justify-between gap-3 rounded-2xl border border-border bg-gradient-to-br from-amber-50/60 to-white px-4 py-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-md"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                    <Building2 size={22} aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold text-gray-900 sm:text-[15px]">
+                      {p.nombre}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {p.count} {p.count === 1 ? 'recurso' : 'recursos'} con descuento
+                    </div>
+                  </div>
+                </div>
+                <ChevronRight
+                  size={18}
+                  className="text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                  aria-hidden
+                />
+              </Link>
             ))}
-          </tbody>
-        </table>
-      )}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
-

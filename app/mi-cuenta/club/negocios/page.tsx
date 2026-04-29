@@ -1,10 +1,23 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ComponentType } from 'react';
 import Link from 'next/link';
+import {
+  BedDouble,
+  UtensilsCrossed,
+  ShoppingBag,
+  Bike,
+  Sparkles,
+  Star,
+  Building2,
+  Gift,
+  Sparkle,
+} from 'lucide-react';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import { Headline, Title, Caption } from '@/app/components/ui/typography';
+
+type LucideIconType = ComponentType<{ size?: number; className?: string; 'aria-hidden'?: boolean }>;
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -73,15 +86,20 @@ const TAB_LABELS: Record<Tab, string> = {
   POR_PUEBLO: 'Por pueblo',
 };
 
-const TAB_ICONS: Record<Tab, string> = {
-  DORMIR: '🛏️',
-  COMER: '🍽️',
-  COMPRAR: '🛍️',
-  ACTIVIDADES: '🚲',
-  OTROS: '✨',
-  SELECTION: '⭐',
-  POR_PUEBLO: '🏘️',
+const TAB_ICONS: Record<Tab, LucideIconType> = {
+  DORMIR: BedDouble,
+  COMER: UtensilsCrossed,
+  COMPRAR: ShoppingBag,
+  ACTIVIDADES: Bike,
+  OTROS: Sparkles,
+  SELECTION: Star,
+  POR_PUEBLO: Building2,
 };
+
+function TabIcon({ tab, size = 16 }: { tab: Tab; size?: number }) {
+  const Icon = TAB_ICONS[tab];
+  return <Icon size={size} aria-hidden />;
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
@@ -192,7 +210,7 @@ export default function ClubNegociosPage() {
                     : 'border-border bg-card text-foreground hover:bg-muted'
                 }`}
               >
-                <span aria-hidden>{TAB_ICONS[t]}</span>
+                <TabIcon tab={t} />
                 <span>{TAB_LABELS[t]}</span>
                 {count > 0 && (
                   <span
@@ -267,8 +285,18 @@ function NegocioCard({ negocio: n }: { negocio: Negocio }) {
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-3xl text-muted-foreground/40">
-            {n.categoria === 'DORMIR' ? '🛏️' : n.categoria === 'COMER' ? '🍽️' : n.categoria === 'COMPRAR' ? '🛍️' : n.categoria === 'ACTIVIDADES' ? '🚲' : '✨'}
+          <div className="flex h-full w-full items-center justify-center text-muted-foreground/40">
+            {(() => {
+              const cat: Tab =
+                n.categoria === 'DORMIR' ||
+                n.categoria === 'COMER' ||
+                n.categoria === 'COMPRAR' ||
+                n.categoria === 'ACTIVIDADES'
+                  ? n.categoria
+                  : 'OTROS';
+              const Icon = TAB_ICONS[cat];
+              return <Icon size={40} aria-hidden />;
+            })()}
           </div>
         )}
 
@@ -276,7 +304,7 @@ function NegocioCard({ negocio: n }: { negocio: Negocio }) {
         <div className="absolute left-2 top-2 flex flex-wrap gap-1.5">
           {n.esSelection && (
             <span className="inline-flex items-center gap-1 rounded-full bg-gray-900/90 px-2.5 py-0.5 text-[11px] font-semibold text-amber-300 shadow-sm backdrop-blur-sm">
-              ⭐ Selection
+              <Star size={12} aria-hidden /> Selection
             </span>
           )}
           {n.beneficios.descuentoPorcentaje && n.beneficios.descuentoPorcentaje > 0 && (
@@ -285,8 +313,8 @@ function NegocioCard({ negocio: n }: { negocio: Negocio }) {
             </span>
           )}
           {n.beneficios.regalo && (
-            <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">
-              🎁 Regalo
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">
+              <Gift size={12} aria-hidden /> Regalo
             </span>
           )}
           {n.beneficios.ofertasCount > 0 && (
@@ -323,15 +351,15 @@ function NegocioCard({ negocio: n }: { negocio: Negocio }) {
         {(n.beneficios.regaloTitulo || n.ofertas.length > 0) && (
           <div className="mt-1 space-y-1.5 border-t border-border/60 pt-2">
             {n.beneficios.regaloTitulo && (
-              <div className="text-xs">
-                <span className="font-semibold text-amber-700">🎁 </span>
+              <div className="flex items-start gap-1.5 text-xs">
+                <Gift size={14} className="mt-0.5 shrink-0 text-amber-700" aria-hidden />
                 <span className="text-foreground">{n.beneficios.regaloTitulo}</span>
               </div>
             )}
             {n.ofertas.slice(0, 1).map((o) => (
-              <div key={o.id} className="text-xs text-foreground">
-                <span className="font-semibold text-primary">★ </span>
-                {o.titulo}
+              <div key={o.id} className="flex items-start gap-1.5 text-xs text-foreground">
+                <Sparkle size={14} className="mt-0.5 shrink-0 text-primary" aria-hidden />
+                <span>{o.titulo}</span>
                 {o.descuentoPorcentaje && o.descuentoPorcentaje > 0 && (
                   <span className="ml-1 font-semibold text-green-700">(-{o.descuentoPorcentaje}%)</span>
                 )}
@@ -406,7 +434,9 @@ function PorPuebloList({
 function EmptyState({ tab }: { tab: Tab }) {
   return (
     <div className="rounded-xl border border-dashed border-border bg-muted/20 p-12 text-center">
-      <div className="mb-2 text-4xl">{TAB_ICONS[tab]}</div>
+      <div className="mb-2 flex justify-center text-muted-foreground/60">
+        <TabIcon tab={tab} size={40} />
+      </div>
       <p className="text-sm text-muted-foreground">
         Aún no hay negocios en esta categoría con beneficios disponibles para socios.
         <br />

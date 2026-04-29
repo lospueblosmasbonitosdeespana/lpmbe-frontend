@@ -2,19 +2,52 @@
 
 import { useEffect, useState } from 'react';
 
+export type RecursoDisponibleImagen = {
+  id: number;
+  url: string;
+  alt?: string | null;
+  orden?: number;
+};
+
 export type RecursoDisponible = {
   id: number;
   nombre: string;
+  slug?: string | null;
   tipo: string;
+  scope?: string | null;
+  descripcion?: string | null;
+  fotoUrl?: string | null;
+  imagenes?: RecursoDisponibleImagen[];
   descuentoPorcentaje?: number | null;
   precioCents?: number | null;
   codigoQr: string;
   puebloId?: number | null;
   puebloNombre?: string | null;
+  puebloSlug?: string | null;
   activo?: boolean;
   maxAdultos?: number;
   maxMenores?: number;
   edadMaxMenor?: number;
+  // Geolocalización y contacto
+  lat?: number | null;
+  lng?: number | null;
+  horarios?: string | null;
+  contacto?: string | null;
+  telefono?: string | null;
+  whatsapp?: string | null;
+  email?: string | null;
+  web?: string | null;
+  bookingUrl?: string | null;
+  servicios?: string[] | null;
+  socialLinks?: Record<string, string> | null;
+  provincia?: string | null;
+  comunidad?: string | null;
+  // Regalo del Club
+  regaloActivo?: boolean;
+  regaloTitulo?: string | null;
+  regaloDescripcion?: string | null;
+  regaloFotoUrl?: string | null;
+  regaloCondiciones?: string | null;
 };
 
 export function useRecursosDisponibles() {

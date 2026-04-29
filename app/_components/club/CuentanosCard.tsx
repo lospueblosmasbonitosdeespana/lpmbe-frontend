@@ -1,6 +1,19 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ComponentType } from 'react';
+import {
+  UtensilsCrossed,
+  Mountain,
+  Castle,
+  Users as UsersIcon,
+  HeartHandshake,
+  Camera,
+  Wine,
+  Palette,
+  PartyPopper,
+  Sparkles,
+  PartyPopper as Confetti,
+} from 'lucide-react';
 import { Title, Caption } from '@/app/components/ui/typography';
 
 const PROVINCIAS_ESP = [
@@ -14,17 +27,19 @@ const PROVINCIAS_ESP = [
   'Valladolid', 'Vizcaya', 'Zamora', 'Zaragoza',
 ];
 
-const INTERESES_DISPONIBLES: Array<{ key: string; label: string; emoji: string }> = [
-  { key: 'GASTRONOMIA', label: 'Gastronomía', emoji: '🍽️' },
-  { key: 'NATURALEZA', label: 'Naturaleza y senderismo', emoji: '🌲' },
-  { key: 'PATRIMONIO', label: 'Patrimonio e historia', emoji: '🏰' },
-  { key: 'FAMILIA', label: 'Viajar en familia', emoji: '👨‍👩‍👧‍👦' },
-  { key: 'PAREJA', label: 'Escapadas en pareja', emoji: '💞' },
-  { key: 'FOTOGRAFIA', label: 'Fotografía', emoji: '📷' },
-  { key: 'ENOTURISMO', label: 'Enoturismo', emoji: '🍷' },
-  { key: 'ARTESANIA', label: 'Artesanía y compras', emoji: '🎨' },
-  { key: 'FIESTAS', label: 'Fiestas y tradiciones', emoji: '🎉' },
-  { key: 'BIENESTAR', label: 'Bienestar y desconexión', emoji: '🧘' },
+type LucideIconType = ComponentType<{ size?: number; className?: string; 'aria-hidden'?: boolean }>;
+
+const INTERESES_DISPONIBLES: Array<{ key: string; label: string; Icon: LucideIconType }> = [
+  { key: 'GASTRONOMIA', label: 'Gastronomía', Icon: UtensilsCrossed },
+  { key: 'NATURALEZA', label: 'Naturaleza y senderismo', Icon: Mountain },
+  { key: 'PATRIMONIO', label: 'Patrimonio e historia', Icon: Castle },
+  { key: 'FAMILIA', label: 'Viajar en familia', Icon: UsersIcon },
+  { key: 'PAREJA', label: 'Escapadas en pareja', Icon: HeartHandshake },
+  { key: 'FOTOGRAFIA', label: 'Fotografía', Icon: Camera },
+  { key: 'ENOTURISMO', label: 'Enoturismo', Icon: Wine },
+  { key: 'ARTESANIA', label: 'Artesanía y compras', Icon: Palette },
+  { key: 'FIESTAS', label: 'Fiestas y tradiciones', Icon: PartyPopper },
+  { key: 'BIENESTAR', label: 'Bienestar y desconexión', Icon: Sparkles },
 ];
 
 export type CuentanosInitial = {
@@ -161,6 +176,7 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
             {INTERESES_DISPONIBLES.map((it) => {
               const active = intereses.includes(it.key);
+              const Icon = it.Icon;
               return (
                 <button
                   key={it.key}
@@ -172,7 +188,7 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
                       : 'border-border bg-white text-gray-700 hover:bg-muted/40'
                   }`}
                 >
-                  <span aria-hidden>{it.emoji}</span>
+                  <Icon size={16} aria-hidden />
                   <span>{it.label}</span>
                 </button>
               );
@@ -212,7 +228,11 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
               Cancelar
             </button>
           )}
-          {done && <span className="text-sm font-medium text-green-700">¡Guardado! 🎉</span>}
+          {done && (
+            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-700">
+              <Confetti size={16} aria-hidden /> ¡Guardado!
+            </span>
+          )}
         </div>
       </form>
     </div>

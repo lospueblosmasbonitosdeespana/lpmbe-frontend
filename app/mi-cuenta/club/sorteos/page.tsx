@@ -2,6 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import {
+  Gift,
+  Hourglass,
+  Trophy,
+  Calendar,
+  Users,
+  MapPin,
+  Cake,
+  Ticket,
+  Check,
+  ChevronLeft,
+} from 'lucide-react';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import { Headline, Title, Caption } from '@/app/components/ui/typography';
@@ -92,9 +104,9 @@ export default function ClubSorteosPage() {
       <Container>
         <Link
           href="/mi-cuenta/club"
-          className="mb-4 inline-block text-sm text-muted-foreground hover:text-gray-900"
+          className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-gray-900"
         >
-          ← Volver al panel del Club
+          <ChevronLeft size={16} aria-hidden /> Volver al panel del Club
         </Link>
         <Headline>Sorteos del Club</Headline>
         <Caption className="mb-8 mt-2 block">
@@ -109,7 +121,8 @@ export default function ClubSorteosPage() {
         ) : (
           <div className="space-y-10">
             <Block
-              title="🎁 Abiertos"
+              title="Abiertos"
+              titleIcon={<Gift size={20} className="text-amber-600" aria-hidden />}
               empty="No hay sorteos abiertos en este momento. ¡Vuelve pronto!"
               sorteos={abiertos}
               renderAction={(s) =>
@@ -135,7 +148,8 @@ export default function ClubSorteosPage() {
               setOpenBases={setOpenBases}
             />
             <Block
-              title="⏳ Cerrados (pendientes de resolver)"
+              title="Cerrados (pendientes de resolver)"
+              titleIcon={<Hourglass size={20} className="text-sky-600" aria-hidden />}
               empty="—"
               sorteos={cerrados}
               hideEmpty
@@ -143,7 +157,8 @@ export default function ClubSorteosPage() {
               setOpenBases={setOpenBases}
             />
             <Block
-              title="🏆 Resueltos"
+              title="Resueltos"
+              titleIcon={<Trophy size={20} className="text-violet-600" aria-hidden />}
               empty="—"
               sorteos={resueltos}
               hideEmpty
@@ -159,6 +174,7 @@ export default function ClubSorteosPage() {
 
 function Block({
   title,
+  titleIcon,
   sorteos,
   empty,
   hideEmpty,
@@ -167,6 +183,7 @@ function Block({
   setOpenBases,
 }: {
   title: string;
+  titleIcon?: React.ReactNode;
   sorteos: SorteoMember[];
   empty: string;
   hideEmpty?: boolean;
@@ -177,7 +194,10 @@ function Block({
   if (sorteos.length === 0 && hideEmpty) return null;
   return (
     <section>
-      <Title size="lg" className="mb-4">{title}</Title>
+      <div className="mb-4 flex items-center gap-2">
+        {titleIcon}
+        <Title size="lg">{title}</Title>
+      </div>
       {sorteos.length === 0 ? (
         <p className="text-sm text-muted-foreground">{empty}</p>
       ) : (
@@ -198,13 +218,33 @@ function Block({
                 <div className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
                   <strong>Premio:</strong> {s.premio}
                 </div>
-                <ul className="mt-3 grid grid-cols-1 gap-1 text-xs text-muted-foreground sm:grid-cols-2">
-                  <li>📅 Cierra el {new Date(s.finAt).toLocaleDateString('es-ES')}</li>
-                  <li>👥 {s.participantesCount} participantes</li>
-                  {s.numGanadores > 1 && <li>🏆 {s.numGanadores} ganadores</li>}
-                  {s.provinciaFiltro && <li>📍 Solo {s.provinciaFiltro}</li>}
-                  {s.edadMinima != null && <li>🎂 Mín. {s.edadMinima} años</li>}
-                  {s.validacionesMinimas > 0 && <li>🎫 Mín. {s.validacionesMinimas} validaciones</li>}
+                <ul className="mt-3 grid grid-cols-1 gap-1.5 text-xs text-muted-foreground sm:grid-cols-2">
+                  <li className="flex items-center gap-1.5">
+                    <Calendar size={14} aria-hidden /> Cierra el {new Date(s.finAt).toLocaleDateString('es-ES')}
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <Users size={14} aria-hidden /> {s.participantesCount} participantes
+                  </li>
+                  {s.numGanadores > 1 && (
+                    <li className="flex items-center gap-1.5">
+                      <Trophy size={14} aria-hidden /> {s.numGanadores} ganadores
+                    </li>
+                  )}
+                  {s.provinciaFiltro && (
+                    <li className="flex items-center gap-1.5">
+                      <MapPin size={14} aria-hidden /> Solo {s.provinciaFiltro}
+                    </li>
+                  )}
+                  {s.edadMinima != null && (
+                    <li className="flex items-center gap-1.5">
+                      <Cake size={14} aria-hidden /> Mín. {s.edadMinima} años
+                    </li>
+                  )}
+                  {s.validacionesMinimas > 0 && (
+                    <li className="flex items-center gap-1.5">
+                      <Ticket size={14} aria-hidden /> Mín. {s.validacionesMinimas} validaciones
+                    </li>
+                  )}
                 </ul>
 
                 <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -217,8 +257,8 @@ function Block({
                     {openBases === s.id ? 'Ocultar bases' : 'Ver bases legales'}
                   </button>
                   {s.inscrito && s.estado === 'PUBLICADO' && (
-                    <span className="inline-flex rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
-                      Inscrito ✔︎
+                    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                      <Check size={12} aria-hidden /> Inscrito
                     </span>
                   )}
                 </div>
