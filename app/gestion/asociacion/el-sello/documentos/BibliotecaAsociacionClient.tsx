@@ -61,6 +61,7 @@ export default function BibliotecaAsociacionClient() {
   const [uploadingExtra, setUploadingExtra] = useState(false);
   const extraFileRef = useRef<HTMLInputElement>(null);
   const [removingFileIdx, setRemovingFileIdx] = useState<{ docId: number; idx: number } | null>(null);
+  const [removingMainFor, setRemovingMainFor] = useState<number | null>(null);
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editNombre, setEditNombre] = useState('');
@@ -250,6 +251,38 @@ export default function BibliotecaAsociacionClient() {
     finally { setRemovingFileIdx(null); }
   }
 
+  /**
+   * Elimina el archivo "principal" de un documento sin necesidad de borrar
+   * el documento entero. Si hay archivos adicionales, el siguiente
+   * (`archivosAdicionales[0]`) se promociona a principal y deja de aparecer
+   * como adicional. Si NO hay adicionales, se ofrece borrar el documento
+   * completo (delegado a `handleDelete`).
+   */
+  async function handleRemoveMainFile(doc: DocumentoItem) {
+    const archivos = doc.archivosAdicionales ?? [];
+    if (archivos.length === 0) {
+      if (!confirm(`Este es el único archivo del documento.\n\nSi lo eliminas, se borrará también el documento «${doc.nombre}» de la biblioteca.\n\n¿Continuar?`)) return;
+      await handleDelete(doc.id);
+      return;
+    }
+    if (!confirm('¿Eliminar el archivo principal?\n\nEl siguiente archivo pasará a ocupar el lugar del principal.')) return;
+    setRemovingMainFor(doc.id);
+    try {
+      const [nuevoPrincipal, ...resto] = archivos;
+      const patchRes = await fetch(`/api/admin/documentos-pueblo/${doc.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: nuevoPrincipal.url, archivosAdicionales: resto }),
+      });
+      if (!patchRes.ok) {
+        const err = await patchRes.json().catch(() => ({}));
+        throw new Error(err.message || 'No se pudo eliminar el archivo principal');
+      }
+      setDocs((prev) => prev.map((d) => d.id === doc.id ? { ...d, url: nuevoPrincipal.url, archivosAdicionales: resto } : d));
+    } catch (e) { alert(e instanceof Error ? e.message : 'Error'); }
+    finally { setRemovingMainFor(null); }
+  }
+
   async function handleToggleDestacado(doc: DocumentoItem) {
     const nuevoDestacado = !isDestacadoActivo(doc);
     setTogglingDestacado(doc.id);
@@ -429,6 +462,19 @@ export default function BibliotecaAsociacionClient() {
                 <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
                 Descargar
               </a>
+              <button
+                type="button"
+                disabled={removingMainFor === doc.id}
+                onClick={() => handleRemoveMainFile(doc)}
+                className="rounded-lg border border-red-200 p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-40 transition-all"
+                title={archivosExtra.length > 0
+                  ? 'Quitar este archivo (el siguiente pasa a principal)'
+                  : 'Eliminar este archivo (borrará el documento)'}
+              >
+                {removingMainFor === doc.id
+                  ? <span className="h-3.5 w-3.5 block animate-spin rounded-full border-2 border-red-200 border-t-red-500" />
+                  : <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>}
+              </button>
             </div>
           </div>
 

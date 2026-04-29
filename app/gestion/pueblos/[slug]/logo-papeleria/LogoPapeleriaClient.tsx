@@ -116,6 +116,7 @@ export default function LogoPapeleriaClient({
   const [uploadingExtraFile, setUploadingExtraFile] = useState(false);
   const extraFileRef = useRef<HTMLInputElement>(null);
   const [removingFileIdx, setRemovingFileIdx] = useState<{ docId: number; idx: number } | null>(null);
+  const [removingMainFor, setRemovingMainFor] = useState<number | null>(null);
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editNombre, setEditNombre] = useState('');
@@ -289,6 +290,38 @@ export default function LogoPapeleriaClient({
       setDocs((prev) => prev.map((d) => d.id === doc.id ? { ...d, archivosAdicionales: nuevosArchivos } : d));
     } catch (e) { alert(e instanceof Error ? e.message : 'Error'); }
     finally { setRemovingFileIdx(null); }
+  }
+
+  /**
+   * Elimina el archivo "principal" de un documento sin necesidad de borrar
+   * el documento entero. Si hay archivos adicionales, el siguiente
+   * (`archivosAdicionales[0]`) se promociona a principal y deja de aparecer
+   * como adicional. Si NO hay adicionales, se ofrece borrar el documento
+   * completo (delegado a `handleDeleteDoc`).
+   */
+  async function handleRemoveMainFile(doc: DocumentoItem) {
+    const archivos = doc.archivosAdicionales ?? [];
+    if (archivos.length === 0) {
+      if (!confirm(`Este es el único archivo del documento.\n\nSi lo eliminas, se borrará también el documento «${doc.nombre}».\n\n¿Continuar?`)) return;
+      await handleDeleteDoc(doc.id);
+      return;
+    }
+    if (!confirm('¿Eliminar el archivo principal?\n\nEl siguiente archivo pasará a ocupar el lugar del principal.')) return;
+    setRemovingMainFor(doc.id);
+    try {
+      const [nuevoPrincipal, ...resto] = archivos;
+      const patchRes = await fetch(`/api/admin/documentos-pueblo/${doc.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: nuevoPrincipal.url, archivosAdicionales: resto }),
+      });
+      if (!patchRes.ok) {
+        const err = await patchRes.json().catch(() => ({}));
+        throw new Error(err.message || 'No se pudo eliminar el archivo principal');
+      }
+      setDocs((prev) => prev.map((d) => d.id === doc.id ? { ...d, url: nuevoPrincipal.url, archivosAdicionales: resto } : d));
+    } catch (e) { alert(e instanceof Error ? e.message : 'Error'); }
+    finally { setRemovingMainFor(null); }
   }
 
   function handleOpenEdit(doc: DocumentoItem) {
@@ -880,6 +913,24 @@ export default function LogoPapeleriaClient({
                       <div className="flex shrink-0 gap-1.5">
                         <ViewFileButton href={doc.url} />
                         <DownloadFileButton href={doc.url} />
+                        <button
+                          type="button"
+                          disabled={removingMainFor === doc.id}
+                          onClick={() => handleRemoveMainFile(doc)}
+                          className="rounded-lg border border-red-200 p-1.5 text-red-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
+                          title={archivosExtra.length > 0
+                            ? 'Quitar este archivo (el siguiente pasa a principal)'
+                            : 'Eliminar este archivo (borrará el documento)'}
+                        >
+                          {removingMainFor === doc.id ? (
+                            <span className="block h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-200 border-t-red-500" />
+                          ) : (
+                            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          )}
+                        </button>
                       </div>
                     </div>
 
