@@ -4,6 +4,8 @@ import { getPuebloBySlug } from '@/lib/api';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import ClubRecursos from './ClubRecursos.client';
+import ClubRecursosRurales from './ClubRecursosRurales.client';
+import GamificacionResumen from './GamificacionResumen.client';
 import MetricasResumen from './MetricasResumen.client';
 import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
 import { HeroIconUsers } from '../../_components/gestion-pueblo-hero-icons';
@@ -63,7 +65,16 @@ export default async function ClubGestionPage({
         </div>
       </div>
 
+      <GamificacionResumen />
+
       <ClubRecursos puebloId={pueblo.id} slug={slug} puebloLat={pueblo.lat ?? null} puebloLng={pueblo.lng ?? null} />
+
+      <ClubRecursosRurales
+        puebloId={pueblo.id}
+        puebloNombre={pueblo.nombre}
+        puebloLat={pueblo.lat ?? null}
+        puebloLng={pueblo.lng ?? null}
+      />
     </GestionPuebloSubpageShell>
   );
 }

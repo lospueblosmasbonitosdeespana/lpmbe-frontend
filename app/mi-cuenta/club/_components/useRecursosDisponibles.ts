@@ -56,6 +56,9 @@ export type RecursoDisponible = {
   regaloDescripcion?: string | null;
   regaloFotoUrl?: string | null;
   regaloCondiciones?: string | null;
+  // Validación geo (recursos rurales/naturales sin QR)
+  validacionTipo?: 'QR' | 'GEO' | 'AMBOS' | null;
+  geoRadioMetros?: number | null;
 };
 
 export function useRecursosDisponibles() {

@@ -81,6 +81,18 @@ const QUICK_LINKS: QuickLink[] = [
     ),
   },
   {
+    href: '/gestion/asociacion/club/recursos-rurales',
+    title: 'Recursos rurales/naturales',
+    description: 'Cascadas, miradores, parajes · validados por GPS',
+    tone: 'emerald',
+    icon: (
+      <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <path d="M3 20l5-9 4 6 3-4 6 7z" />
+        <path d="M9 11l1.5-2L12 11" />
+      </svg>
+    ),
+  },
+  {
     href: '/gestion/asociacion/club/metricas',
     title: 'Métricas validaciones',
     description: 'QR escaneados por pueblo y día',

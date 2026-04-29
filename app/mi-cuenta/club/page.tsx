@@ -13,6 +13,7 @@ import {
   Check,
   Hourglass,
   ChevronRight,
+  Mountain,
 } from 'lucide-react';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
@@ -640,6 +641,13 @@ export default function ClubPage() {
                 subtitle="Museos, castillos, bodegas, jardines…"
                 badge={recursosDisponibles.length > 0 ? `${recursosDisponibles.length}` : null}
                 tone="amber"
+              />
+              <AccesoCard
+                href="/mi-cuenta/club/recursos-rurales"
+                icon={<Mountain size={22} aria-hidden />}
+                title="Recursos Rurales / Naturales"
+                subtitle="Cascadas, miradores, parajes · validados por GPS"
+                tone="emerald"
               />
               <AccesoCard
                 href="/mi-cuenta/club/negocios"

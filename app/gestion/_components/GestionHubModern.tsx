@@ -310,6 +310,9 @@ const ICONS = {
   servicesPin: <I><path d="M5 9.5C5 5.9 8 3 12 3s7 2.9 7 6.5c0 5-7 11-7 11S5 14.5 5 9.5z" /><path d="M9 9h2v3h-2zM11 9h1.5a1.5 1.5 0 010 3H11" /></I>,
   trail: <I><path d="M5 20l3-7-2-4 4-2 1-4 4 1 3-3 2 4-1 4 3 3-3 2 1 4-4 1-3 1-3-3" /></I>,
   key: <I><circle cx="8" cy="14" r="4" /><path d="M11 11l9-9M16 6l3 3M14 8l3 3" /></I>,
+  // ── Club: nuevos accesos ───────────────────────────────────────────
+  mountain: <I><path d="M3 20l5-9 4 6 3-4 6 7z" /><path d="M9 11l1.5-2L12 11" /></I>,
+  sparkles: <I><path d="M12 3l1.8 4.6 4.6 1.8-4.6 1.8L12 15.8l-1.8-4.6L5.6 9.4l4.6-1.8z" /><path d="M19 16l.8 1.8 1.8.8-1.8.8-.8 1.8-.8-1.8-1.8-.8 1.8-.8z" /></I>,
 };
 
 export type ModernIconKey = keyof typeof ICONS;
