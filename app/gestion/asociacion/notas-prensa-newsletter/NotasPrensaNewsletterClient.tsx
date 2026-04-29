@@ -148,10 +148,15 @@ type NewsletterDraftPayload = {
 };
 
 type SavedNewsletterDraft = {
-  id: string;
+  id: number; // id de la fila `campaigns` en el backend (compartido entre admins)
   name: string;
-  savedAt: string;
-  payload: NewsletterDraftPayload;
+  subject: string;
+  savedAt: string; // updatedAt del backend
+  payload: NewsletterDraftPayload | null;
+  status?: string;
+  scheduledAt?: string | null;
+  createdByUserId?: number | null;
+  updatedByUserId?: number | null;
 };
 
 function newBlockId(): string {
@@ -1131,60 +1136,140 @@ export default function NotasPrensaNewsletterClient({
     setMessage(`Borrador guardado (${new Date(payload.savedAt).toLocaleTimeString('es-ES')}).`);
   }
 
-  const nlDraftsKey = 'lpmbe-nl-saved-drafts';
+  /**
+   * Borradores compartidos entre admins.
+   *
+   * Antes había dos sistemas en paralelo: el botón naranja "Guardar borrador"
+   * escribía en `localStorage` (sólo el navegador del que pulsaba) y la sección
+   * "Borradores y programados" (`DraftsAndScheduler`) escribía en el backend.
+   * Resultado: lo que un admin guardaba arriba, otro nunca lo veía.
+   *
+   * Ahora todo va al endpoint `/api/admin/newsletter/drafts` (tabla `campaigns`),
+   * que ya es compartido para todos los ADMIN. El `localStorage` queda como
+   * red de seguridad por si la red falla en mitad de un guardado.
+   */
+  function draftKindForCurrentMode(): 'NEWSLETTER' | 'PRESS' {
+    return mode === 'newsletter' ? 'NEWSLETTER' : 'PRESS';
+  }
 
-  function readNlDrafts(): SavedNewsletterDraft[] {
-    if (typeof window === 'undefined') return [];
+  function rowToSavedDraft(row: any): SavedNewsletterDraft {
+    let payload: NewsletterDraftPayload | null = null;
+    const blocks = row?.blocksJson;
+    if (blocks && typeof blocks === 'object') {
+      payload = blocks as NewsletterDraftPayload;
+    } else if (typeof blocks === 'string') {
+      try { payload = JSON.parse(blocks) as NewsletterDraftPayload; } catch { payload = null; }
+    }
+    const id = Number(row?.id);
+    const subject = String(row?.subject ?? '');
+    const internalName = String(row?.internalName ?? '').trim();
+    const updatedAt = String(row?.updatedAt ?? row?.createdAt ?? new Date().toISOString());
+    const name = internalName || subject || `Borrador #${id}`;
+    return {
+      id,
+      name,
+      subject,
+      savedAt: updatedAt,
+      payload,
+      status: row?.status,
+      scheduledAt: row?.scheduledAt ?? null,
+      createdByUserId: row?.createdByUserId ?? null,
+      updatedByUserId: row?.updatedByUserId ?? null,
+    };
+  }
+
+  const refreshNlDrafts = useCallback(async (): Promise<SavedNewsletterDraft[]> => {
     try {
-      const raw = localStorage.getItem(nlDraftsKey);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return [];
-      return parsed
-        .filter((d: any) => d?.id && d?.payload)
-        .sort((a: any, b: any) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-    } catch { return []; }
-  }
+      const params = new URLSearchParams({
+        kind: draftKindForCurrentMode(),
+        status: 'ALL_EDITABLE',
+        limit: '100',
+      });
+      const res = await fetch(`/api/admin/newsletter/drafts?${params}`, { cache: 'no-store' });
+      const data = await res.json().catch(() => []);
+      const rows: any[] = Array.isArray(data) ? data : Array.isArray((data as any)?.items) ? (data as any).items : [];
+      const list = rows.map(rowToSavedDraft);
+      list.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
+      setNlDrafts(list);
+      return list;
+    } catch {
+      setNlDrafts([]);
+      return [];
+    }
+    // mode controla el `kind`; los demás helpers están definidos en el componente.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
-  function writeNlDrafts(list: SavedNewsletterDraft[]) {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(nlDraftsKey, JSON.stringify(list));
-    setNlDrafts(list);
-  }
-
-  function saveNlDraft() {
+  async function saveNlDraft() {
     const payload = buildDraftPayload();
     const now = new Date();
     const label = campaignForm.subject.trim()
       || `Borrador ${now.toLocaleString('es-ES', { hour12: false })}`;
-    const entry: SavedNewsletterDraft = {
-      id: newBlockId(),
-      name: label,
-      savedAt: now.toISOString(),
-      payload,
-    };
-    const list = readNlDrafts();
-    const next = [entry, ...list].slice(0, 50);
-    writeNlDrafts(next);
-    setDraftSavedAt(now.toISOString());
-    setHasStoredDraft(true);
-    setMessage(`Borrador "${label}" guardado.`);
+    // Persistimos también en localStorage como red de seguridad por si falla la red.
+    if (typeof window !== 'undefined') {
+      try { localStorage.setItem(getDraftStorageKey(), JSON.stringify(payload)); } catch {}
+    }
+    try {
+      const body = {
+        kind: draftKindForCurrentMode(),
+        internalName: label,
+        subject: campaignForm.subject || '',
+        contentHtml: campaignForm.html || '',
+        blocksJson: payload,
+        filters: mode === 'press' ? buildPressFilters() : { source: campaignForm.source },
+        tags: [],
+        attachmentUrls: [],
+      };
+      const res = await fetch('/api/admin/newsletter/drafts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error((data as any)?.message || 'No se pudo guardar el borrador en el servidor');
+      }
+      setDraftSavedAt(now.toISOString());
+      setHasStoredDraft(true);
+      setMessage(`Borrador "${label}" guardado y compartido con el resto de admins.`);
+      void refreshNlDrafts();
+    } catch (e: any) {
+      setError(`No se pudo guardar el borrador en el servidor (${e?.message || 'red caída'}). Se ha guardado localmente como copia de seguridad.`);
+      setDraftSavedAt(now.toISOString());
+      setHasStoredDraft(true);
+    }
   }
 
-  function loadNlDraft(id: string) {
+  async function loadNlDraft(id: number) {
     const target = nlDrafts.find((d) => d.id === id);
     if (!target) return;
-    applyDraftPayload(target.payload);
-    localStorage.setItem(getDraftStorageKey(), JSON.stringify(target.payload));
+    if (target.payload && typeof target.payload === 'object') {
+      applyDraftPayload(target.payload);
+      try { localStorage.setItem(getDraftStorageKey(), JSON.stringify(target.payload)); } catch {}
+    } else {
+      // Borrador sin payload completo: aplicamos al menos asunto y HTML.
+      setCampaignForm((prev) => ({
+        ...prev,
+        subject: target.subject || prev.subject,
+      }));
+    }
     setHasStoredDraft(true);
     setMessage(`Borrador "${target.name}" cargado.`);
     setShowNlDraftsModal(false);
   }
 
-  function deleteNlDraft(id: string) {
-    const next = nlDrafts.filter((d) => d.id !== id);
-    writeNlDrafts(next);
-    setMessage('Borrador eliminado.');
+  async function deleteNlDraft(id: number) {
+    try {
+      const res = await fetch(`/api/admin/newsletter/drafts/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error((data as any)?.message || 'No se pudo eliminar');
+      }
+      setMessage('Borrador eliminado.');
+      void refreshNlDrafts();
+    } catch (e: any) {
+      setError(`No se pudo eliminar el borrador (${e?.message || 'red caída'}).`);
+    }
   }
 
   function hasUnsavedContent(): boolean {
@@ -1370,7 +1455,8 @@ export default function NotasPrensaNewsletterClient({
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    setNlDrafts(readNlDrafts());
+    // Borradores compartidos vienen del backend (un admin guarda, todos lo ven).
+    void refreshNlDrafts();
     const hasDraft = Boolean(localStorage.getItem(getDraftStorageKey()));
     setHasStoredDraft(hasDraft);
     if (!hasDraft) return;
@@ -5405,11 +5491,7 @@ export default function NotasPrensaNewsletterClient({
               type="button"
               onClick={() => {
                 setError(null);
-                if (mode === 'newsletter') {
-                  saveNlDraft();
-                } else {
-                  saveDraftToLocal();
-                }
+                void saveNlDraft();
               }}
               disabled={loading}
               className="rounded-lg border border-amber-400 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-900 disabled:opacity-60"
@@ -5419,13 +5501,13 @@ export default function NotasPrensaNewsletterClient({
             <button
               type="button"
               onClick={() => {
-                setNlDrafts(readNlDrafts());
+                void refreshNlDrafts();
                 setShowNlDraftsModal(true);
               }}
               disabled={loading}
               className="rounded-lg border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-800 hover:bg-blue-100 disabled:opacity-60"
             >
-              Borradores ({mode === 'newsletter' ? nlDrafts.length : 0})
+              Borradores ({nlDrafts.length})
             </button>
             {hasStoredDraft ? (
               <button
@@ -5654,43 +5736,71 @@ export default function NotasPrensaNewsletterClient({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowNlDraftsModal(false)}>
           <div className="relative max-h-[85vh] w-full max-w-2xl overflow-auto rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <button type="button" onClick={() => setShowNlDraftsModal(false)} className="absolute right-3 top-3 rounded-full border px-2.5 py-1 text-xs font-bold hover:bg-muted">Cerrar</button>
-            <p className="mb-4 text-base font-bold">Mis borradores</p>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <p className="text-base font-bold">
+                Borradores compartidos ({mode === 'newsletter' ? 'Newsletter' : 'Notas de prensa'})
+              </p>
+              <button
+                type="button"
+                onClick={() => { void refreshNlDrafts(); }}
+                className="rounded-md border border-border bg-white px-2.5 py-1 text-xs font-semibold hover:bg-muted"
+                title="Refrescar lista"
+              >
+                Refrescar
+              </button>
+            </div>
+            <p className="mb-3 text-xs text-muted-foreground">
+              Todos los admins ven los mismos borradores. Lo que guardes aquí estará disponible para el resto del equipo.
+            </p>
             {nlDrafts.length === 0 ? (
               <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                Aún no tienes borradores guardados. Pulsa &quot;Guardar borrador&quot; para crear el primero.
+                Aún no hay borradores. Pulsa &quot;Guardar borrador&quot; para crear el primero.
               </p>
             ) : (
               <div className="space-y-2">
-                {nlDrafts.map((d) => (
-                  <div key={d.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background p-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold">{d.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(d.savedAt).toLocaleString('es-ES', { hour12: false })}
-                        {d.payload?.newsletterBlocks && Array.isArray(d.payload.newsletterBlocks) ? ` · ${(d.payload.newsletterBlocks as unknown[]).length} bloques` : ''}
-                      </p>
+                {nlDrafts.map((d) => {
+                  const blocks = d.payload && typeof d.payload === 'object' && Array.isArray((d.payload as any).newsletterBlocks)
+                    ? (d.payload as any).newsletterBlocks.length as number
+                    : null;
+                  const stateLabel = d.status === 'SCHEDULED'
+                    ? `Programado · ${d.scheduledAt ? new Date(d.scheduledAt).toLocaleString('es-ES', { hour12: false }) : ''}`
+                    : d.status === 'FAILED'
+                      ? 'Fallido'
+                      : 'Borrador';
+                  return (
+                    <div key={d.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background p-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold">{d.name}</p>
+                        {d.subject && d.subject !== d.name ? (
+                          <p className="truncate text-xs text-muted-foreground">Asunto: {d.subject}</p>
+                        ) : null}
+                        <p className="text-xs text-muted-foreground">
+                          {stateLabel} · Actualizado {new Date(d.savedAt).toLocaleString('es-ES', { hour12: false })}
+                          {blocks != null ? ` · ${blocks} bloques` : ''}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => { void loadNlDraft(d.id); }}
+                          className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                        >
+                          Cargar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!window.confirm(`¿Eliminar "${d.name}"? Se borra para todos los admins.`)) return;
+                            void deleteNlDraft(d.id);
+                          }}
+                          className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50"
+                        >
+                          Borrar
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => loadNlDraft(d.id)}
-                        className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
-                      >
-                        Cargar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!window.confirm(`¿Eliminar "${d.name}"?`)) return;
-                          deleteNlDraft(d.id);
-                        }}
-                        className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50"
-                      >
-                        Borrar
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
