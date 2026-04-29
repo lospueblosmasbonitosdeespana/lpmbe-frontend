@@ -289,6 +289,51 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
+/**
+ * Email-safe: compacta el HTML de bloque eliminando el `margin-top` del primer
+ * tag de bloque y el `margin-bottom` del último. Los `<p>`/`<h1..6>` que mete
+ * TipTap traen márgenes por defecto y, dentro de un `<td valign="top">`,
+ * desalinean el texto respecto a la imagen (ver bloque Img+Texto).
+ */
+function compactBlockMargins(html: string): string {
+  if (!html) return html;
+  const blockTags = '(p|h1|h2|h3|h4|h5|h6|ul|ol|div|blockquote)';
+
+  function applyToFirstTag(input: string): string {
+    return input.replace(
+      new RegExp(`^(\\s*)<${blockTags}((?:\\s[^>]*)?)>`, 'i'),
+      (_m, ws, tag, attrs) => {
+        const a = attrs || '';
+        const styleMatch = a.match(/\sstyle=("|')([^"']*)\1/i);
+        if (styleMatch) {
+          const newStyle = `margin-top:0;${styleMatch[2]}`;
+          const newAttrs = a.replace(styleMatch[0], ` style="${newStyle}"`);
+          return `${ws}<${tag}${newAttrs}>`;
+        }
+        return `${ws}<${tag}${a} style="margin-top:0">`;
+      },
+    );
+  }
+
+  function applyToLastTag(input: string): string {
+    return input.replace(
+      new RegExp(`<${blockTags}((?:\\s[^>]*)?)>([\\s\\S]*?)<\\/\\2>(\\s*)$`, 'i'),
+      (_m, tag, attrs, inner, tail) => {
+        const a = attrs || '';
+        const styleMatch = a.match(/\sstyle=("|')([^"']*)\1/i);
+        if (styleMatch) {
+          const newStyle = `${styleMatch[2]};margin-bottom:0`;
+          const newAttrs = a.replace(styleMatch[0], ` style="${newStyle}"`);
+          return `<${tag}${newAttrs}>${inner}</${tag}>${tail}`;
+        }
+        return `<${tag}${a} style="margin-bottom:0">${inner}</${tag}>${tail}`;
+      },
+    );
+  }
+
+  return applyToLastTag(applyToFirstTag(html));
+}
+
 /** Clave de temática para filtros (plantillas antiguas sin `theme` se infieren de `category`). */
 function getTemplateThemeKey(t: NewsletterTemplate): string {
   const m = t.metadata;
@@ -545,7 +590,14 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         const url = sanitizeTemplateUrl(String(block.url || ''));
         const raw = block.content || '';
         const isHtml = raw.includes('<');
-        const text = isHtml ? raw : escapeHtml(raw).replace(/\n/g, '<br/>');
+        // En clientes de email (Gmail web, Apple Mail, Outlook) los `<p>`/`<h*>`
+        // que mete TipTap traen `margin-top` por defecto. En la columna del
+        // bloque Img+Texto eso baja el texto unos 16px y rompe la alineación
+        // con el top de la imagen (la imagen empieza arriba, el texto centrado).
+        // Forzamos `margin-top:0` al primer hijo de bloque y `margin-bottom:0`
+        // al último para que el texto quede pegado al `valign="top"` del td.
+        const compactedRaw = isHtml ? compactBlockMargins(raw) : raw;
+        const text = isHtml ? compactedRaw : escapeHtml(compactedRaw).replace(/\n/g, '<br/>');
         if (!url) return `<div style="${boxStyle}"><div style="margin:0;font-size:16px;line-height:1.6;color:${textColor};">${text}</div></div>`;
         return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="40%" valign="top" style="padding:0 12px 0 0;"><img src="${escapeHtml(url)}" alt="Imagen del bloque" style="width:100%;height:auto;border-radius:8px;display:block;" /></td><td width="60%" valign="top" style="font-size:15px;line-height:1.6;color:${textColor};">${text}</td></tr></table></div>`;
       }

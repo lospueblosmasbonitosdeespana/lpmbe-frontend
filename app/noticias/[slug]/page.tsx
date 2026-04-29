@@ -127,8 +127,13 @@ export async function generateMetadata({
 
   const description = noticia.resumen ? seoDescription(noticia.resumen, 160) : undefined;
 
-  // Path sin barra final; canonical absoluta única para que Google no elija otra variante.
-  const path = `/noticias/${String(slug).replace(/\/$/, '')}`;
+  // Si es ARTICULO, la URL canónica vive en /c/{slug}. Aunque la página haga
+  // permanentRedirect en runtime, Google a veces lee `generateMetadata` antes;
+  // por eso publicamos la canonical hacia /c/{slug} para reforzar el destino.
+  const isArticle = noticia.tipo === 'ARTICULO';
+  const path = isArticle
+    ? `/c/${String(slug).replace(/\/$/, '')}`
+    : `/noticias/${String(slug).replace(/\/$/, '')}`;
   const canonicalUrl = getCanonicalUrl(path, lang);
   const title = seoTitle(noticia.titulo);
   return {
@@ -162,6 +167,15 @@ export default async function NoticiaPage({
   const noticia = await fetchNoticia(slug);
 
   if (!noticia) permanentRedirect('/actualidad');
+
+  // Los artículos editoriales viven en `/c/{slug}` como URL canónica.
+  // El backend de `/public/noticias/{slug}` también acepta ARTICULO por
+  // compatibilidad histórica, pero aquí redirigimos para evitar URL duplicada
+  // (/c/... y /noticias/...) y porque la cabecera de esta página dice
+  // "Noticia", lo que confunde al usuario al abrir un artículo de asociación.
+  if (noticia.tipo === 'ARTICULO') {
+    permanentRedirect(`/c/${slug}`);
+  }
 
   const locale = await getLocale();
   const lang = SUPPORTED_LOCALES.includes(locale as SupportedLocale) ? (locale as SupportedLocale) : 'es';
