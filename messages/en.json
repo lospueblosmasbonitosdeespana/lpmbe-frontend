@@ -1361,10 +1361,10 @@
     "ahorras": "You save {amount} €",
     "comingSoonTitle": "Coming soon",
     "associationResources": "Association Resources",
-    "associationResourcesDesc": "Castles, monasteries and other tourist resources with exclusive discount for Club members.",
+    "associationResourcesDesc": "Castles, monasteries and other tourist resources with exclusive benefits for Club members.",
     "resourcesInVillages": "Resources in Villages",
     "onlyHolder": "Headline only",
-    "discountOnlyHolder": "Discount for cardholder only",
+    "discountOnlyHolder": "Benefits for cardholder only",
     "upToAdults": "Up to {count} adult{plural}",
     "plusMinors": " + {count} minor{plural} (up to {age} years)",
     "village": "Village"

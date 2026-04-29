@@ -19,12 +19,32 @@ import {
   Landmark,
   CheckCircle2,
   CalendarCheck,
+  Sparkles,
 } from 'lucide-react';
 import {
   useRecursosDisponibles,
   type RecursoDisponible,
 } from '../../_components/useRecursosDisponibles';
 import { useValidacionesClub } from '../../_components/useValidacionesClub';
+import { useGamificacionConfig } from '../../_components/useGamificacionConfig';
+
+const DIAS_SEMANA_CORTO = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+function formatearHorariosSemana(
+  horariosSemana: NonNullable<RecursoDisponible['horariosSemana']>,
+): string[] {
+  return horariosSemana
+    .slice()
+    .sort((a, b) => a.diaSemana - b.diaSemana)
+    .map((h) => {
+      const dia = DIAS_SEMANA_CORTO[h.diaSemana] ?? `Día ${h.diaSemana}`;
+      if (!h.abierto) return `${dia}: cerrado`;
+      const abre = h.horaAbre ?? '';
+      const cierra = h.horaCierra ?? '';
+      const rango = abre && cierra ? `${abre}–${cierra}` : abre || cierra || 'Abierto';
+      return `${dia}: ${rango}`;
+    });
+}
 
 function esRecursoVisitado(
   validaciones: any[],
@@ -81,6 +101,8 @@ export default function RecursosPuebloPage() {
   } = useRecursosDisponibles();
   const { loading: loadingValidaciones, data: validaciones } =
     useValidacionesClub();
+  const { getPuntos } = useGamificacionConfig();
+  const puntosPorVisita = getPuntos('RECURSO_VISITADO');
 
   // Filtrar por slug del pueblo. Compatibilidad: si llegan ids antiguos, filtramos por id.
   const recursosDelPueblo = useMemo<RecursoDisponible[]>(() => {
@@ -148,7 +170,15 @@ export default function RecursosPuebloPage() {
         <div className="grid gap-6">
           {recursosDelPueblo.map((r) => {
             const { visitado, hoy } = esRecursoVisitado(validaciones, r.id);
-            return <RecursoCard key={r.id} r={r} visitado={visitado} visitadoHoy={hoy} />;
+            return (
+              <RecursoCard
+                key={r.id}
+                r={r}
+                visitado={visitado}
+                visitadoHoy={hoy}
+                puntosPorVisita={puntosPorVisita}
+              />
+            );
           })}
         </div>
       )}
@@ -160,10 +190,12 @@ function RecursoCard({
   r,
   visitado,
   visitadoHoy,
+  puntosPorVisita,
 }: {
   r: RecursoDisponible;
   visitado: boolean;
   visitadoHoy: boolean;
+  puntosPorVisita: number;
 }) {
   const fotos = useMemo<{ url: string; alt: string | null }[]>(() => {
     const principal = r.fotoUrl ? [{ url: r.fotoUrl, alt: r.nombre }] : [];
@@ -250,6 +282,14 @@ function RecursoCard({
                   <Gift size={12} aria-hidden /> Regalo
                 </span>
               )}
+              {puntosPorVisita > 0 && (
+                <span
+                  className="inline-flex items-center gap-1 rounded-full bg-violet-600 px-2.5 py-0.5 text-xs font-bold text-white"
+                  title={`Sumas ${puntosPorVisita} puntos al validar tu visita`}
+                >
+                  <Sparkles size={12} aria-hidden />+{puntosPorVisita} pts
+                </span>
+              )}
             </div>
           </div>
 
@@ -285,12 +325,29 @@ function RecursoCard({
             <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
               <CalendarCheck size={12} aria-hidden />
               {r.maxAdultos === 1 && (r.maxMenores ?? 0) === 0
-                ? 'Descuento solo para el titular'
+                ? 'Beneficios solo para el titular'
                 : `Hasta ${r.maxAdultos} adulto${r.maxAdultos > 1 ? 's' : ''}${
                     (r.maxMenores ?? 0) > 0
                       ? ` + ${r.maxMenores} menor${(r.maxMenores ?? 0) > 1 ? 'es' : ''}`
                       : ''
                   }${(r.maxMenores ?? 0) > 0 ? ` (<${r.edadMaxMenor ?? 12} años)` : ''}`}
+            </div>
+          )}
+
+          {/* Horarios por día (si los hay) */}
+          {(r.horariosSemana?.length ?? 0) > 0 && (
+            <div className="mt-4 rounded-xl border border-border bg-muted/30 p-3 text-sm text-foreground">
+              <div className="flex items-center gap-2 font-semibold text-foreground/90">
+                <Clock size={16} className="text-muted-foreground" aria-hidden />
+                Horario
+              </div>
+              <ul className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 text-sm text-foreground/90 sm:grid-cols-2">
+                {formatearHorariosSemana(r.horariosSemana ?? []).map((linea, i) => (
+                  <li key={i} className="flex items-center justify-between gap-2 tabular-nums">
+                    <span>{linea}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 

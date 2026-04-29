@@ -12,7 +12,7 @@ type QuickLink = {
   href: string;
   title: string;
   description: string;
-  tone: 'amber' | 'emerald' | 'sky' | 'violet' | 'rose' | 'teal';
+  tone: 'amber' | 'emerald' | 'sky' | 'violet' | 'rose' | 'teal' | 'fuchsia';
   icon: React.ReactNode;
 };
 
@@ -46,6 +46,11 @@ const TONES: Record<QuickLink['tone'], { card: string; bullet: string; iconBg: s
     card: 'border-teal-200/80 hover:border-teal-300 hover:shadow-teal-100/60 dark:border-teal-800/50 from-teal-50/70',
     bullet: 'text-teal-700 dark:text-teal-200',
     iconBg: 'from-teal-500 to-teal-600 shadow-teal-200/60',
+  },
+  fuchsia: {
+    card: 'border-fuchsia-200/80 hover:border-fuchsia-300 hover:shadow-fuchsia-100/60 dark:border-fuchsia-800/50 from-fuchsia-50/70',
+    bullet: 'text-fuchsia-700 dark:text-fuchsia-200',
+    iconBg: 'from-fuchsia-500 to-fuchsia-600 shadow-fuchsia-200/60',
   },
 };
 
@@ -121,6 +126,17 @@ const QUICK_LINKS: QuickLink[] = [
       <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
         <path d="M4 5a2 2 0 012-2h9l5 5v13a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" />
         <path d="M14 3v6h6M9 14l2 2 4-4" />
+      </svg>
+    ),
+  },
+  {
+    href: '/gestion/asociacion/club/gamificacion',
+    title: 'Gamificación',
+    description: 'Puntos por cada acción del socio · igual para todos los pueblos',
+    tone: 'fuchsia',
+    icon: (
+      <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <path d="M12 2l2.39 4.84 5.34.78-3.86 3.76.91 5.31L12 14.77l-4.78 2.51.91-5.31L4.27 7.62l5.34-.78L12 2z" />
       </svg>
     ),
   },

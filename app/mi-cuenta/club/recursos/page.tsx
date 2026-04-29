@@ -117,7 +117,8 @@ export default function RecursosPage() {
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Museos, castillos, jardines, bodegas, monumentos… elige tu pueblo y entra para ver
-          todo el detalle: foto, descripción, horarios, ubicación y descuento.
+          todo el detalle: foto, descripción, horarios, ubicación y los beneficios que
+          tenéis los socios del Club.
         </p>
       </div>
 
@@ -202,7 +203,7 @@ export default function RecursosPage() {
                       {p.nombre}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {p.count} {p.count === 1 ? 'recurso' : 'recursos'} con descuento
+                      {p.count} {p.count === 1 ? 'recurso' : 'recursos'} con beneficios para socios
                     </div>
                   </div>
                 </div>

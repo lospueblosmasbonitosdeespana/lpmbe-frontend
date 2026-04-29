@@ -1361,10 +1361,10 @@
     "ahorras": "Poupa {amount} €",
     "comingSoonTitle": "Em breve",
     "associationResources": "Recursos da Associação",
-    "associationResourcesDesc": "Castelos, mosteiros e outros recursos turísticos com desconto exclusivo para os membros do Clube.",
+    "associationResourcesDesc": "Castelos, mosteiros e outros recursos turísticos com benefícios exclusivos para os sócios do Clube.",
     "resourcesInVillages": "Recursos em aldeias",
     "onlyHolder": "Apenas o título",
-    "discountOnlyHolder": "Desconto apenas para o titular do cartão",
+    "discountOnlyHolder": "Benefícios apenas para o titular do cartão",
     "upToAdults": "Até {count} adulto{plural}",
     "plusMinors": " + {count} menor{plural} (até {age} anos)",
     "village": "Aldeia"

@@ -9,6 +9,13 @@ export type RecursoDisponibleImagen = {
   orden?: number;
 };
 
+export type RecursoDisponibleHorarioDia = {
+  diaSemana: number; // 0..6 (0=lunes según convención existente)
+  abierto: boolean;
+  horaAbre?: string | null;
+  horaCierra?: string | null;
+};
+
 export type RecursoDisponible = {
   id: number;
   nombre: string;
@@ -32,6 +39,7 @@ export type RecursoDisponible = {
   lat?: number | null;
   lng?: number | null;
   horarios?: string | null;
+  horariosSemana?: RecursoDisponibleHorarioDia[];
   contacto?: string | null;
   telefono?: string | null;
   whatsapp?: string | null;

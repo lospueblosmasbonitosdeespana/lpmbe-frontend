@@ -1361,10 +1361,10 @@
     "ahorras": "Risparmiate {amount} €",
     "comingSoonTitle": "Prossimamente",
     "associationResources": "Risorse dell'Associazione",
-    "associationResourcesDesc": "Castelli, monasteri e altre risorse turistiche con sconti esclusivi per i soci del Club.",
+    "associationResourcesDesc": "Castelli, monasteri e altre risorse turistiche con vantaggi esclusivi per i soci del Club.",
     "resourcesInVillages": "Risorse nei villaggi",
     "onlyHolder": "Solo titolo",
-    "discountOnlyHolder": "Sconto solo per i titolari di carta",
+    "discountOnlyHolder": "Vantaggi solo per il titolare della tessera",
     "upToAdults": "Fino a {count} adulti{plural}",
     "plusMinors": " + {count} minore{plural} (fino a {age} anni)",
     "village": "Villaggio"

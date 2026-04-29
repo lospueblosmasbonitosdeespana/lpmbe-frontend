@@ -1361,10 +1361,10 @@
     "ahorras": "Estalvies {amount} €",
     "comingSoonTitle": "Pròximament",
     "associationResources": "Recursos de l'associació",
-    "associationResourcesDesc": "Castells, monestirs i altres atraccions turístiques amb descomptes exclusius per als membres del Club.",
+    "associationResourcesDesc": "Castells, monestirs i altres atraccions turístiques amb beneficis exclusius per als socis del Club.",
     "resourcesInVillages": "Recursos a les ciutats",
     "onlyHolder": "Només el títol",
-    "discountOnlyHolder": "Descompte només per a titular de la targeta",
+    "discountOnlyHolder": "Beneficis només per al titular de la targeta",
     "upToAdults": "Fins a {count} adult{plural}",
     "plusMinors": " + {count} menor{plural} (fins a {age} anys)",
     "village": "Poble"

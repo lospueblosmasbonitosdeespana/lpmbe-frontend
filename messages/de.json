@@ -1360,10 +1360,10 @@
     "ahorras": "Sie sparen {amount} €",
     "comingSoonTitle": "Demnächst verfügbar",
     "associationResources": "Ressourcen der Vereinigung",
-    "associationResourcesDesc": "Schlösser, Klöster und andere touristische Einrichtungen mit exklusiven Rabatten für Clubmitglieder.",
+    "associationResourcesDesc": "Schlösser, Klöster und andere touristische Einrichtungen mit exklusiven Vorteilen für Clubmitglieder.",
     "resourcesInVillages": "Ressourcen in Dörfern",
     "onlyHolder": "Nur Überschrift",
-    "discountOnlyHolder": "Rabatt nur für Karteninhaber",
+    "discountOnlyHolder": "Vorteile nur für Karteninhaber",
     "upToAdults": "Bis zu {count} erwachsen{plural}",
     "plusMinors": " + {count} minderjährig{plural} (bis zu {age} Jahre)",
     "village": "Dorf"

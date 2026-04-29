@@ -1401,10 +1401,10 @@
     "ahorras": "Ahorras {amount} €",
     "comingSoonTitle": "Próximamente",
     "associationResources": "Recursos de la Asociación",
-    "associationResourcesDesc": "Castillos, monasterios y otros recursos turísticos con descuento exclusivo para miembros del Club.",
+    "associationResourcesDesc": "Castillos, monasterios y otros recursos turísticos con beneficios exclusivos para socios del Club.",
     "resourcesInVillages": "Recursos en Pueblos",
     "onlyHolder": "Solo titular",
-    "discountOnlyHolder": "Descuento solo para el titular",
+    "discountOnlyHolder": "Beneficios solo para el titular",
     "upToAdults": "Hasta {count} adulto{plural}",
     "plusMinors": " + {count} menor{plural} (hasta {age} años)",
     "village": "Pueblo"

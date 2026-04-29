@@ -1361,10 +1361,10 @@
     "ahorras": "Vous économisez {amount} €",
     "comingSoonTitle": "Prochainement",
     "associationResources": "Ressources de l'association",
-    "associationResourcesDesc": "Châteaux, monastères et autres ressources touristiques avec une réduction exclusive pour les membres du Club.",
+    "associationResourcesDesc": "Châteaux, monastères et autres ressources touristiques avec des avantages exclusifs pour les membres du Club.",
     "resourcesInVillages": "Ressources dans les villages",
     "onlyHolder": "Titre uniquement",
-    "discountOnlyHolder": "Réduction pour le titulaire de la carte uniquement",
+    "discountOnlyHolder": "Avantages pour le titulaire de la carte uniquement",
     "upToAdults": "Jusqu'à {count} adulte{plural}",
     "plusMinors": " + {count} mineur{plural} (jusqu'à {age} ans)",
     "village": "Village"
