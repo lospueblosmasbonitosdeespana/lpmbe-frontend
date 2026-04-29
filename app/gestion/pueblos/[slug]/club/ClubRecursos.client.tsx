@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import HorariosEditor, { HorarioDia, CierreEspecial } from '@/app/_components/editor/HorariosEditor';
 import MapLocationPicker from '@/app/components/MapLocationPicker';
-import { Gift, Layers, Euro, Plus, Trash2, Upload, Image as ImageIcon } from 'lucide-react';
+import { Gift, Layers, Euro, Plus, Trash2, Upload, Image as ImageIcon, Camera, Phone, MessageCircle, Globe, Mail, Clock, Ticket, FileText } from 'lucide-react';
 import { uploadImageToR2 } from '@/src/lib/uploadHelper';
 
 type RecursoPrecio = {
@@ -50,6 +50,16 @@ type Recurso = {
   edadMaxMenor: number;
   lat?: number | null;
   lng?: number | null;
+  // Información pública (visible para socios del Club)
+  fotoUrl?: string | null;
+  descripcion?: string | null;
+  horarios?: string | null;
+  contacto?: string | null;
+  telefono?: string | null;
+  whatsapp?: string | null;
+  email?: string | null;
+  web?: string | null;
+  bookingUrl?: string | null;
   horariosSemana?: HorarioDia[];
   cierresEspeciales?: CierreEspecial[];
   // Extras Club
@@ -117,6 +127,15 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
   const [nuevoEdadMaxMenor, setNuevoEdadMaxMenor] = useState('12');
   const [nuevoLat, setNuevoLat] = useState('');
   const [nuevoLng, setNuevoLng] = useState('');
+  // Información pública del recurso (foto + descripción + contacto + horarios)
+  const [nuevoFotoUrl, setNuevoFotoUrl] = useState('');
+  const [nuevoDescripcion, setNuevoDescripcion] = useState('');
+  const [nuevoHorarios, setNuevoHorarios] = useState('');
+  const [nuevoTelefono, setNuevoTelefono] = useState('');
+  const [nuevoWhatsapp, setNuevoWhatsapp] = useState('');
+  const [nuevoEmail, setNuevoEmail] = useState('');
+  const [nuevoWeb, setNuevoWeb] = useState('');
+  const [nuevoBookingUrl, setNuevoBookingUrl] = useState('');
   // Extras del recurso nuevo (regalo / combo / precios por tramo)
   const [nuevoRegaloActivo, setNuevoRegaloActivo] = useState(false);
   const [nuevoRegaloTitulo, setNuevoRegaloTitulo] = useState('');
@@ -184,6 +203,15 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
   const [editLng, setEditLng] = useState('');
   const [editHorariosSemana, setEditHorariosSemana] = useState<HorarioDia[]>([]);
   const [editCierresEspeciales, setEditCierresEspeciales] = useState<CierreEspecial[]>([]);
+  // Información pública del recurso
+  const [editFotoUrl, setEditFotoUrl] = useState('');
+  const [editDescripcion, setEditDescripcion] = useState('');
+  const [editHorarios, setEditHorarios] = useState('');
+  const [editTelefono, setEditTelefono] = useState('');
+  const [editWhatsapp, setEditWhatsapp] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editWeb, setEditWeb] = useState('');
+  const [editBookingUrl, setEditBookingUrl] = useState('');
   // Regalo
   const [editRegaloActivo, setEditRegaloActivo] = useState(false);
   const [editRegaloTitulo, setEditRegaloTitulo] = useState('');
@@ -301,6 +329,14 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
     setNuevoEdadMaxMenor('12');
     setNuevoLat('');
     setNuevoLng('');
+    setNuevoFotoUrl('');
+    setNuevoDescripcion('');
+    setNuevoHorarios('');
+    setNuevoTelefono('');
+    setNuevoWhatsapp('');
+    setNuevoEmail('');
+    setNuevoWeb('');
+    setNuevoBookingUrl('');
     setNuevoRegaloActivo(false);
     setNuevoRegaloTitulo('');
     setNuevoRegaloDescripcion('');
@@ -386,6 +422,14 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
         edadMaxMenor: Math.max(0, Number(nuevoEdadMaxMenor) || 12),
         lat: Number(nuevoLat),
         lng: Number(nuevoLng),
+        fotoUrl: nuevoFotoUrl.trim() || null,
+        descripcion: nuevoDescripcion.trim() || null,
+        horarios: nuevoHorarios.trim() || null,
+        telefono: nuevoTelefono.trim() || null,
+        whatsapp: nuevoWhatsapp.trim() || null,
+        email: nuevoEmail.trim() || null,
+        web: nuevoWeb.trim() || null,
+        bookingUrl: nuevoBookingUrl.trim() || null,
         regaloActivo: nuevoRegaloActivo,
         regaloTitulo: nuevoRegaloActivo ? nuevoRegaloTitulo.trim() || null : null,
         regaloDescripcion: nuevoRegaloActivo ? nuevoRegaloDescripcion.trim() || null : null,
@@ -448,6 +492,14 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
     setEditLng(r.lng != null ? String(r.lng) : '');
     setEditHorariosSemana(r.horariosSemana ?? []);
     setEditCierresEspeciales(r.cierresEspeciales ?? []);
+    setEditFotoUrl(r.fotoUrl ?? '');
+    setEditDescripcion(r.descripcion ?? '');
+    setEditHorarios(r.horarios ?? '');
+    setEditTelefono(r.telefono ?? '');
+    setEditWhatsapp(r.whatsapp ?? '');
+    setEditEmail(r.email ?? '');
+    setEditWeb(r.web ?? '');
+    setEditBookingUrl(r.bookingUrl ?? '');
     setEditRegaloActivo(r.regaloActivo === true);
     setEditRegaloTitulo(r.regaloTitulo ?? '');
     setEditRegaloDescripcion(r.regaloDescripcion ?? '');
@@ -477,6 +529,14 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
     setEditEsExterno(false);
     setEditLat('');
     setEditLng('');
+    setEditFotoUrl('');
+    setEditDescripcion('');
+    setEditHorarios('');
+    setEditTelefono('');
+    setEditWhatsapp('');
+    setEditEmail('');
+    setEditWeb('');
+    setEditBookingUrl('');
     setEditRegaloActivo(false);
     setEditRegaloTitulo('');
     setEditRegaloDescripcion('');
@@ -539,6 +599,15 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
         lng: Number(editLng),
         horariosSemana: editHorariosSemana.map(({ diaSemana, abierto, horaAbre, horaCierra }) => ({ diaSemana, abierto, horaAbre, horaCierra })),
         cierresEspeciales: editCierresEspeciales.map(({ fecha, motivo }) => ({ fecha, motivo })),
+        // Información pública del recurso
+        fotoUrl: editFotoUrl.trim() || null,
+        descripcion: editDescripcion.trim() || null,
+        horarios: editHorarios.trim() || null,
+        telefono: editTelefono.trim() || null,
+        whatsapp: editWhatsapp.trim() || null,
+        email: editEmail.trim() || null,
+        web: editWeb.trim() || null,
+        bookingUrl: editBookingUrl.trim() || null,
         // Regalo del Club
         regaloActivo: editRegaloActivo,
         regaloTitulo: editRegaloActivo ? editRegaloTitulo.trim() || null : null,
@@ -1052,6 +1121,18 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
             <label className="text-sm text-muted-foreground">Activo</label>
           </div>
 
+          <InfoPublicaEditor
+            disabled={creando}
+            fotoUrl={nuevoFotoUrl} setFotoUrl={setNuevoFotoUrl}
+            descripcion={nuevoDescripcion} setDescripcion={setNuevoDescripcion}
+            horarios={nuevoHorarios} setHorarios={setNuevoHorarios}
+            telefono={nuevoTelefono} setTelefono={setNuevoTelefono}
+            whatsapp={nuevoWhatsapp} setWhatsapp={setNuevoWhatsapp}
+            email={nuevoEmail} setEmail={setNuevoEmail}
+            web={nuevoWeb} setWeb={setNuevoWeb}
+            bookingUrl={nuevoBookingUrl} setBookingUrl={setNuevoBookingUrl}
+          />
+
           <ExtrasEditor
             disabled={creando}
             regaloActivo={nuevoRegaloActivo}
@@ -1236,6 +1317,18 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                     <label className="text-sm text-muted-foreground">Activo</label>
                   </div>
 
+                  <InfoPublicaEditor
+                    disabled={guardando}
+                    fotoUrl={editFotoUrl} setFotoUrl={setEditFotoUrl}
+                    descripcion={editDescripcion} setDescripcion={setEditDescripcion}
+                    horarios={editHorarios} setHorarios={setEditHorarios}
+                    telefono={editTelefono} setTelefono={setEditTelefono}
+                    whatsapp={editWhatsapp} setWhatsapp={setEditWhatsapp}
+                    email={editEmail} setEmail={setEditEmail}
+                    web={editWeb} setWeb={setEditWeb}
+                    bookingUrl={editBookingUrl} setBookingUrl={setEditBookingUrl}
+                  />
+
                   <ExtrasEditor
                     disabled={guardando}
                     regaloActivo={editRegaloActivo}
@@ -1310,7 +1403,19 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                 </>
               ) : (
                 <>
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-3">
+                    {r.fotoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={r.fotoUrl}
+                        alt={r.nombre}
+                        className="hidden sm:block h-20 w-20 object-cover rounded border flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="hidden sm:flex h-20 w-20 items-center justify-center rounded border-2 border-dashed border-amber-300 bg-amber-50 text-amber-700 text-[10px] text-center px-1 flex-shrink-0">
+                        Sin foto
+                      </div>
+                    )}
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium">{r.nombre}</span>
@@ -1323,6 +1428,12 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                         >
                           {r.esExterno ? 'Externo' : 'Municipal'}
                         </span>
+                        {!r.fotoUrl && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-amber-50 text-amber-800 border border-amber-200">
+                            <Camera className="h-3 w-3" aria-hidden />
+                            Sin foto
+                          </span>
+                        )}
                         {r.lat != null && r.lng != null ? (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1804,6 +1915,273 @@ function RegaloFotoUploader({
       )}
 
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+function RecursoFotoUploader({
+  fotoUrl,
+  setFotoUrl,
+  disabled,
+}: {
+  fotoUrl: string;
+  setFotoUrl: (v: string) => void;
+  disabled?: boolean;
+}) {
+  const [subiendo, setSubiendo] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFile = async (file: File | null | undefined) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setError('El archivo debe ser una imagen');
+      return;
+    }
+    setError(null);
+    setSubiendo(true);
+    try {
+      const { url } = await uploadImageToR2(file, 'recursos-club');
+      setFotoUrl(url);
+    } catch (e: any) {
+      setError(e?.message || 'Error subiendo la imagen');
+    } finally {
+      setSubiendo(false);
+    }
+  };
+
+  return (
+    <div>
+      <label className="block text-xs text-sky-900 mb-1">
+        <span className="inline-flex items-center gap-1">
+          <Camera className="h-3.5 w-3.5" aria-hidden />
+          Foto principal del recurso
+        </span>
+      </label>
+      <p className="text-[11px] text-sky-800 mb-2">
+        Esta foto se mostrará al socio del Club tanto en la web como en la app.
+        Usa una imagen vertical u horizontal de buena calidad. Se guarda automáticamente
+        en nuestro almacenamiento seguro.
+      </p>
+
+      {fotoUrl ? (
+        <div className="flex items-start gap-3 p-2 border rounded bg-white">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={fotoUrl}
+            alt="Foto del recurso"
+            className="h-32 w-32 object-cover rounded border"
+          />
+          <div className="flex-1 flex flex-col gap-2">
+            <label className="inline-flex items-center gap-2 px-3 py-1.5 text-xs border rounded bg-white hover:bg-muted/30 cursor-pointer w-fit">
+              <Upload className="h-3.5 w-3.5" aria-hidden />
+              {subiendo ? 'Subiendo…' : 'Cambiar foto'}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={disabled || subiendo}
+                onChange={(e) => handleFile(e.target.files?.[0])}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => setFotoUrl('')}
+              disabled={disabled || subiendo}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs border rounded bg-white text-red-700 hover:bg-red-50 disabled:opacity-50 w-fit"
+            >
+              <Trash2 className="h-3.5 w-3.5" aria-hidden />
+              Quitar foto
+            </button>
+          </div>
+        </div>
+      ) : (
+        <label className="inline-flex items-center gap-2 px-3 py-3 text-sm border-2 border-dashed rounded bg-white hover:bg-muted/30 cursor-pointer w-full justify-center text-sky-900">
+          {subiendo ? (
+            <>
+              <ImageIcon className="h-4 w-4" aria-hidden />
+              Subiendo…
+            </>
+          ) : (
+            <>
+              <Upload className="h-4 w-4" aria-hidden />
+              Subir foto del recurso
+            </>
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            disabled={disabled || subiendo}
+            onChange={(e) => handleFile(e.target.files?.[0])}
+          />
+        </label>
+      )}
+
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+type InfoPublicaEditorProps = {
+  disabled?: boolean;
+  fotoUrl: string; setFotoUrl: (v: string) => void;
+  descripcion: string; setDescripcion: (v: string) => void;
+  horarios: string; setHorarios: (v: string) => void;
+  telefono: string; setTelefono: (v: string) => void;
+  whatsapp: string; setWhatsapp: (v: string) => void;
+  email: string; setEmail: (v: string) => void;
+  web: string; setWeb: (v: string) => void;
+  bookingUrl: string; setBookingUrl: (v: string) => void;
+};
+
+function InfoPublicaEditor({
+  disabled,
+  fotoUrl, setFotoUrl,
+  descripcion, setDescripcion,
+  horarios, setHorarios,
+  telefono, setTelefono,
+  whatsapp, setWhatsapp,
+  email, setEmail,
+  web, setWeb,
+  bookingUrl, setBookingUrl,
+}: InfoPublicaEditorProps) {
+  return (
+    <div className="rounded-lg border-2 border-sky-300 bg-sky-50/50 p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <Camera className="h-5 w-5 text-sky-700" aria-hidden />
+        <h4 className="text-sm font-semibold text-sky-900">
+          Información pública del recurso
+        </h4>
+      </div>
+      <p className="text-xs text-sky-800">
+        Datos visibles para los socios del Club de Amigos en la ficha del recurso
+        (web y app): foto, descripción, horario, contacto y enlace de reserva.
+      </p>
+
+      <RecursoFotoUploader fotoUrl={fotoUrl} setFotoUrl={setFotoUrl} disabled={disabled} />
+
+      <div>
+        <label className="block text-xs text-sky-900 mb-1">
+          <span className="inline-flex items-center gap-1">
+            <FileText className="h-3.5 w-3.5" aria-hidden />
+            Descripción
+          </span>
+        </label>
+        <textarea
+          value={descripcion}
+          onChange={(e) => setDescripcion(e.target.value)}
+          disabled={disabled}
+          rows={3}
+          placeholder="Breve descripción del recurso (qué es, qué se visita, atractivos…). Se traducirá automáticamente."
+          className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
+        />
+      </div>
+
+      <div>
+        <label className="block text-xs text-sky-900 mb-1">
+          <span className="inline-flex items-center gap-1">
+            <Clock className="h-3.5 w-3.5" aria-hidden />
+            Horario (texto libre)
+          </span>
+        </label>
+        <input
+          type="text"
+          value={horarios}
+          onChange={(e) => setHorarios(e.target.value)}
+          disabled={disabled}
+          placeholder='Ej. "Mar-Dom 10:00-14:00 y 16:00-19:00 · Lun cerrado"'
+          className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
+        />
+        <p className="text-[11px] text-sky-700 mt-1">
+          Si rellenas el bloque de &quot;Horarios y cierres especiales&quot; más abajo,
+          ese se usa para validar disponibilidad. Este texto sirve como descripción
+          legible para el socio.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs text-sky-900 mb-1">
+            <span className="inline-flex items-center gap-1">
+              <Phone className="h-3.5 w-3.5" aria-hidden />
+              Teléfono
+            </span>
+          </label>
+          <input
+            type="tel"
+            value={telefono}
+            onChange={(e) => setTelefono(e.target.value)}
+            disabled={disabled}
+            placeholder="Ej. +34 942 81 81 81"
+            className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-sky-900 mb-1">
+            <span className="inline-flex items-center gap-1">
+              <MessageCircle className="h-3.5 w-3.5" aria-hidden />
+              WhatsApp
+            </span>
+          </label>
+          <input
+            type="tel"
+            value={whatsapp}
+            onChange={(e) => setWhatsapp(e.target.value)}
+            disabled={disabled}
+            placeholder="Ej. +34 600 12 34 56"
+            className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-sky-900 mb-1">
+            <span className="inline-flex items-center gap-1">
+              <Mail className="h-3.5 w-3.5" aria-hidden />
+              Email
+            </span>
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={disabled}
+            placeholder="Ej. info@museo.es"
+            className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-sky-900 mb-1">
+            <span className="inline-flex items-center gap-1">
+              <Globe className="h-3.5 w-3.5" aria-hidden />
+              Web
+            </span>
+          </label>
+          <input
+            type="url"
+            value={web}
+            onChange={(e) => setWeb(e.target.value)}
+            disabled={disabled}
+            placeholder="https://…"
+            className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-xs text-sky-900 mb-1">
+          <span className="inline-flex items-center gap-1">
+            <Ticket className="h-3.5 w-3.5" aria-hidden />
+            Enlace para reservar / comprar entrada (opcional)
+          </span>
+        </label>
+        <input
+          type="url"
+          value={bookingUrl}
+          onChange={(e) => setBookingUrl(e.target.value)}
+          disabled={disabled}
+          placeholder="https://… (si tu recurso vende entradas online)"
+          className="w-full px-3 py-2 border rounded text-sm disabled:opacity-50"
+        />
+      </div>
     </div>
   );
 }
