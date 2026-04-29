@@ -241,6 +241,68 @@ export default function AyuntamientosComposerClient() {
 
   const canSend = subject.trim().length > 0 && html.trim().length > 0 && !sending;
 
+  // ---------- Subida directa a R2 (evita el límite del proxy de Vercel) ----------
+  // Vercel limita el body de las funciones serverless a ~4,5 MB. Para archivos
+  // mayores (PDFs de circulares, vídeos, etc.) usamos el flujo de "ticket": el
+  // navegador pide un JWT corto al backend y luego sube el archivo directamente
+  // al backend (Railway), sin pasar por la función de Vercel. Si el backend
+  // todavía no expone /media/upload-ticket, caemos a una URL firmada de R2
+  // (presign) y hacemos PUT directo a Cloudflare R2.
+  async function uploadFileViaPresign(file: File, folder: string): Promise<string> {
+    const contentType = file.type || 'application/octet-stream';
+    const presignRes = await fetch('/api/media/presign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fileName: file.name, contentType, folder }),
+    });
+    if (!presignRes.ok) {
+      const txt = await presignRes.text().catch(() => '');
+      throw new Error(txt || `No se pudo firmar la subida (status ${presignRes.status})`);
+    }
+    const presign = await presignRes.json();
+    const uploadRes = await fetch(String(presign.uploadUrl), {
+      method: 'PUT',
+      headers: { 'Content-Type': String(presign.contentType || contentType) },
+      body: file,
+    });
+    if (!uploadRes.ok) throw new Error(`Error subiendo a R2 (status ${uploadRes.status})`);
+    const publicUrl = String(presign.publicUrl || '');
+    if (!publicUrl) throw new Error('R2 no devolvió URL pública');
+    return publicUrl;
+  }
+
+  async function uploadFileDirectToR2(file: File, folder: string): Promise<string> {
+    const ticketRes = await fetch('/api/media/upload-ticket', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder }),
+    });
+    if (!ticketRes.ok) {
+      const raw = await ticketRes.text().catch(() => '');
+      if (ticketRes.status === 404 || /Cannot POST \/media\/upload-ticket/i.test(raw)) {
+        return uploadFileViaPresign(file, folder);
+      }
+      throw new Error(raw || 'No se pudo preparar la subida');
+    }
+    const ticketData = await ticketRes.json();
+    const uploadUrl = String(ticketData.uploadUrl || '');
+    const ticket = String(ticketData.ticket || '');
+    if (!uploadUrl || !ticket) throw new Error('No se pudo preparar la subida');
+
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('ticket', ticket);
+    const uploadRes = await fetch(uploadUrl, { method: 'POST', body: fd });
+    if (!uploadRes.ok) {
+      const txt = await uploadRes.text().catch(() => '');
+      throw new Error(`Error subiendo archivo (status ${uploadRes.status})${txt ? `: ${txt}` : ''}`);
+    }
+    const data = await uploadRes.json().catch(() => ({}));
+    const publicUrl = String(data.publicUrl || data.url || '');
+    if (!publicUrl) throw new Error('R2 no devolvió URL pública');
+    return publicUrl;
+  }
+
   async function uploadPdf(): Promise<string> {
     if (!pdfFile) return pdfUrl;
     if (!/\.pdf$/i.test(pdfFile.name) && pdfFile.type !== 'application/pdf') {
@@ -251,16 +313,7 @@ export default function AyuntamientosComposerClient() {
     }
     setUploadingPdf(true);
     try {
-      const fd = new FormData();
-      fd.append('file', pdfFile);
-      fd.append('folder', 'newsletter/ayuntamientos-pdf');
-      fd.append('fileNameBase', uploadFileNameBase);
-      const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data?.url) {
-        throw new Error(data?.error || data?.message || 'Error subiendo PDF');
-      }
-      const url = String(data.url);
+      const url = await uploadFileDirectToR2(pdfFile, 'newsletter/ayuntamientos-pdf');
       setPdfUrl(url);
       return url;
     } finally {
@@ -294,19 +347,12 @@ export default function AyuntamientosComposerClient() {
     if (file.size > 12 * 1024 * 1024) {
       throw new Error('El adjunto supera el límite máximo de 12 MB para envío por email');
     }
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('folder', 'newsletter/ayuntamientos-attachments');
-    const res = await fetch('/api/admin/uploads/press-attachment', { method: 'POST', body: fd });
-    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-    if (!res.ok || !data?.url) {
-      throw new Error(String(data?.error ?? data?.message ?? 'Error subiendo archivo'));
-    }
+    const url = await uploadFileDirectToR2(file, 'newsletter/ayuntamientos-attachments');
     return {
-      url: String(data.url),
-      name: String(data.originalName ?? file.name),
-      contentType: String(data.contentType ?? file.type ?? 'application/octet-stream'),
-      size: Number(data.size ?? file.size),
+      url,
+      name: file.name,
+      contentType: file.type || 'application/octet-stream',
+      size: file.size,
     };
   }
 
@@ -491,15 +537,7 @@ export default function AyuntamientosComposerClient() {
             onBlocksChange={(next) => setBlocks(next)}
             draftKey={DRAFT_KEY}
             showBrandLogos
-            uploadFileNameBase={
-              subject
-                .toLowerCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/^-|-$/g, '')
-                .slice(0, 60) || 'ayuntamientos'
-            }
+            uploadFileNameBase={uploadFileNameBase}
           />
         </div>
       </section>
