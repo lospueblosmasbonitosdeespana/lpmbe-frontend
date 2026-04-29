@@ -311,8 +311,22 @@ export default function AyuntamientosComposerClient() {
   }
 
   async function doTestSend() {
-    if (!testEmail.trim()) {
+    // El backend acepta hasta 3 destinatarios separados por coma. Lo
+    // alineamos con el composer de Notas de prensa / Newsletter, que
+    // también pasa un array. Antes mandábamos un string suelto y el
+    // endpoint /admin/newsletter/campaigns/test-send respondía 400
+    // ("Campos obligatorios: to, subject, html") porque comprueba
+    // `Array.isArray(body.to)`.
+    const recipients = testEmail
+      .split(/[,;\s]+/)
+      .map((s) => s.trim().toLowerCase())
+      .filter((s) => s.length > 0);
+    if (recipients.length === 0) {
       setError('Indica un email de prueba.');
+      return;
+    }
+    if (recipients.length > 3) {
+      setError('Máximo 3 emails de prueba (separados por coma).');
       return;
     }
     if (!subject.trim() || !html.trim()) {
@@ -354,14 +368,14 @@ export default function AyuntamientosComposerClient() {
           kind: 'AYUNTAMIENTOS',
           subject: subject.trim(),
           html,
-          to: testEmail.trim(),
+          to: recipients,
           ...(attachmentUrls.length > 0 ? { attachmentUrls } : {}),
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.message || 'No se pudo enviar la prueba');
       setMessage(
-        `Prueba enviada a ${testEmail.trim()}${
+        `Prueba enviada a ${recipients.join(', ')}${
           attachmentUrls.length > 0 ? ` con ${attachmentUrls.length} adjunto(s)` : ''
         }.`,
       );
@@ -844,10 +858,11 @@ export default function AyuntamientosComposerClient() {
             Email de prueba
             <div className="mt-1 flex gap-2">
               <input
-                type="email"
+                type="text"
+                inputMode="email"
                 value={testEmail}
                 onChange={(e) => setTestEmail(e.target.value)}
-                placeholder="tu@email.es"
+                placeholder="tu@email.es (o hasta 3 separados por coma)"
                 className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm"
               />
               <button
@@ -859,6 +874,10 @@ export default function AyuntamientosComposerClient() {
                 {testing ? 'Enviando…' : 'Enviar prueba'}
               </button>
             </div>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Puedes poner hasta 3 emails separados por coma para revisar el
+              correo en distintas bandejas (Gmail, Outlook, móvil…).
+            </p>
           </label>
 
           <div className="flex flex-col justify-end">
