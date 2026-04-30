@@ -65,7 +65,7 @@ function ScopeIcon({ r }: { r: Recurso }) {
       <Store className="h-4 w-4 text-emerald-600" />
     );
   }
-  if (r.validacionTipo === 'GEO') {
+  if (r.validacionTipo === 'GEO' || r.validacionTipo === 'AMBOS') {
     return <Mountain className="h-4 w-4 text-teal-600" />;
   }
   if (r.scope === 'ASOCIACION') {
@@ -123,6 +123,17 @@ export default function PuntosRecursosClient() {
     }
     return items;
   }, [data, search, scopeFilter]);
+
+  const conteoTipos = useMemo(() => {
+    const base = filtered.length > 0 ? filtered : data?.items ?? [];
+    const naturales = base.filter(
+      (r) => r.validacionTipo === 'GEO' || r.validacionTipo === 'AMBOS',
+    ).length;
+    return {
+      naturales,
+      normales: Math.max(0, base.length - naturales),
+    };
+  }, [filtered, data?.items]);
 
   function startEdit(r: Recurso) {
     setEditingId(r.id);
@@ -227,6 +238,15 @@ export default function PuntosRecursosClient() {
             {data.sinCustom}
           </p>
         </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-800">
+          RRTT normales: {conteoTipos.normales}
+        </span>
+        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
+          RRTT rurales/naturales: {conteoTipos.naturales}
+        </span>
       </div>
 
       {/* Filtros */}
@@ -365,6 +385,17 @@ export default function PuntosRecursosClient() {
                         {SCOPE_LABEL[r.scope] ?? r.scope}
                       </span>
                       <span className="ml-2 text-xs">{r.tipo}</span>
+                      <span
+                        className={`ml-2 rounded px-2 py-0.5 text-[11px] font-medium ${
+                          r.validacionTipo === 'GEO' || r.validacionTipo === 'AMBOS'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}
+                      >
+                        {r.validacionTipo === 'GEO' || r.validacionTipo === 'AMBOS'
+                          ? 'Rural/Natural'
+                          : 'RRTT normal'}
+                      </span>
                     </td>
                     <td className="px-3 py-2.5 text-right tabular-nums">
                       <div className="font-semibold text-foreground">

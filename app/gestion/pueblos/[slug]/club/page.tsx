@@ -67,7 +67,13 @@ export default async function ClubGestionPage({
 
       <GamificacionResumen />
 
-      <ClubRecursos puebloId={pueblo.id} slug={slug} puebloLat={pueblo.lat ?? null} puebloLng={pueblo.lng ?? null} />
+      <ClubRecursos
+        puebloId={pueblo.id}
+        slug={slug}
+        puebloLat={pueblo.lat ?? null}
+        puebloLng={pueblo.lng ?? null}
+        esAdmin={me.rol === 'ADMIN'}
+      />
 
       <ClubRecursosRurales
         puebloId={pueblo.id}

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import HorariosEditor, { HorarioDia, CierreEspecial } from '@/app/_components/editor/HorariosEditor';
 import MapLocationPicker from '@/app/components/MapLocationPicker';
-import { Gift, Layers, Euro, Plus, Trash2, Upload, Image as ImageIcon, Camera, Phone, MessageCircle, Globe, Mail, Clock, Ticket, FileText } from 'lucide-react';
+import { Gift, Layers, Euro, Plus, Trash2, Upload, Image as ImageIcon, Camera, Phone, MessageCircle, Globe, Mail, Clock, Ticket, FileText, Sparkles, Lock } from 'lucide-react';
 import { uploadImageToR2 } from '@/src/lib/uploadHelper';
 
 type RecursoPrecio = {
@@ -39,6 +39,7 @@ type Recurso = {
   id: number;
   nombre: string;
   tipo: string;
+  validacionTipo?: 'QR' | 'GEO' | 'AMBOS' | string | null;
   descuentoPorcentaje?: number | null;
   precioCents?: number | null;
   activo: boolean;
@@ -81,6 +82,11 @@ type Recurso = {
     ahorroCents: number;
     ahorroPorcentaje: number;
   } | null;
+  // Gamificación (solo informativo en este listado)
+  puntosCustom?: number | null;
+  puntosGenericos?: number;
+  puntosEfectivos?: number;
+  reglaGenerica?: string;
 };
 
 function formatCondiciones(r: Recurso): string {
@@ -106,9 +112,10 @@ interface Props {
   slug: string;
   puebloLat: number | null;
   puebloLng: number | null;
+  esAdmin?: boolean;
 }
 
-export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: Props) {
+export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esAdmin = false }: Props) {
   const router = useRouter();
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [loading, setLoading] = useState(true);
@@ -916,6 +923,10 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
   }
 
   const sinGeolocalizar = recursos.filter((r) => r.lat == null || r.lng == null);
+  const recursosNaturales = recursos.filter(
+    (r) => r.validacionTipo === 'GEO' || r.validacionTipo === 'AMBOS',
+  );
+  const recursosNormales = recursos.length - recursosNaturales.length;
 
   const TIPO_OPTIONS = (
     <>
@@ -1026,6 +1037,21 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {/* Resumen rápido por tipo */}
+      {!loading && recursos.length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-700">
+            Total: {recursos.length}
+          </span>
+          <span className="rounded-full bg-blue-100 px-2 py-0.5 font-medium text-blue-800">
+            RRTT normales: {recursosNormales}
+          </span>
+          <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-medium text-emerald-800">
+            RRTT rurales/naturales: {recursosNaturales.length}
+          </span>
         </div>
       )}
 
@@ -1450,6 +1476,17 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                             Sin ubicación
                           </span>
                         )}
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded border ${
+                            r.validacionTipo === 'GEO' || r.validacionTipo === 'AMBOS'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-blue-50 text-blue-700 border-blue-200'
+                          }`}
+                        >
+                          {r.validacionTipo === 'GEO' || r.validacionTipo === 'AMBOS'
+                            ? 'Rural/Natural'
+                            : 'RRTT normal'}
+                        </span>
                         {r.regaloActivo && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-amber-50 text-amber-700 border border-amber-200">
                             <Gift className="h-3 w-3" aria-hidden />
@@ -1483,6 +1520,24 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-slate-100 text-slate-700 border border-slate-300">
                             <Euro className="h-3 w-3" aria-hidden />
                             {r.precios!.length} tramo{r.precios!.length > 1 ? 's' : ''}
+                          </span>
+                        )}
+                        {(r.puntosEfectivos ?? 0) > 0 && (
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded border ${
+                              r.puntosCustom != null
+                                ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                : 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200'
+                            }`}
+                            title={
+                              r.puntosCustom != null
+                                ? `Puntos personalizados (genérico: ${r.puntosGenericos ?? 0})`
+                                : `Valor genérico de la regla ${r.reglaGenerica ?? 'RECURSO_VISITADO'}`
+                            }
+                          >
+                            <Sparkles className="h-3 w-3" aria-hidden />
+                            +{r.puntosEfectivos} pts
+                            {r.puntosCustom != null ? ' · custom' : ''}
                           </span>
                         )}
                       </div>
@@ -1564,6 +1619,24 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng }: P
                     <a href={`/gestion/asociacion/club/metricas/${puebloId}`} className="px-3 py-1 text-sm border rounded hover:bg-blue-50 text-blue-600 border-blue-200 inline-block text-center">
                       Métricas
                     </a>
+                    {esAdmin ? (
+                      <a
+                        href={`/gestion/asociacion/datos/puntos-recursos?focus=${r.id}`}
+                        className="px-3 py-1 text-sm border rounded hover:bg-fuchsia-50 text-fuchsia-700 border-fuchsia-300 inline-flex items-center gap-1 text-center"
+                        title="Ajustar puntos del Club para este recurso"
+                      >
+                        <Sparkles className="h-3 w-3" aria-hidden />
+                        Ajustar puntos
+                      </a>
+                    ) : (r.puntosEfectivos ?? 0) > 0 ? (
+                      <span
+                        className="px-3 py-1 text-xs rounded bg-muted/30 text-muted-foreground inline-flex items-center gap-1"
+                        title="Solo el admin de la asociación puede modificar los puntos"
+                      >
+                        <Lock className="h-3 w-3" aria-hidden />
+                        Puntos: solo admin
+                      </span>
+                    ) : null}
                   </div>
                 </>
               )}
