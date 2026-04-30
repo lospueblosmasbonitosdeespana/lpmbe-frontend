@@ -19,6 +19,12 @@ export type ReglaGamificacion = {
   activo: boolean;
   orden: number;
   categoria: string;
+  /** Días entre validaciones puntuables del mismo recurso/usuario. */
+  cooldownDias: number;
+  /** Tope móvil (null = sin tope). */
+  maxValidacionesPeriodo: number | null;
+  /** Periodo del tope móvil en días (null = sin tope). */
+  periodoDias: number | null;
 };
 
 const KEYS_PROTEGIDAS = new Set([
@@ -119,7 +125,13 @@ export function GamificacionAdminEditor({
       }
       const data = await res.json();
       const arr: ReglaGamificacion[] = Array.isArray(data)
-        ? data.map((r: any) => ({ ...r, categoria: r.categoria ?? 'CLUB' }))
+        ? data.map((r: any) => ({
+            ...r,
+            categoria: r.categoria ?? 'CLUB',
+            cooldownDias: r.cooldownDias ?? 1,
+            maxValidacionesPeriodo: r.maxValidacionesPeriodo ?? null,
+            periodoDias: r.periodoDias ?? null,
+          }))
         : [];
       setReglas(arr);
     } catch {
@@ -158,6 +170,9 @@ export function GamificacionAdminEditor({
           activo: r.activo,
           orden: r.orden,
           categoria: r.categoria,
+          cooldownDias: r.cooldownDias,
+          maxValidacionesPeriodo: r.maxValidacionesPeriodo,
+          periodoDias: r.periodoDias,
         }),
       });
       if (!res.ok) {
@@ -402,6 +417,91 @@ export function GamificacionAdminEditor({
                           </select>
                         </div>
                       )}
+
+                      <div className="mt-3 rounded-xl border border-border bg-muted/30 p-3">
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          Límites antifraude
+                        </p>
+                        <p className="mb-3 text-xs text-muted-foreground">
+                          Evita que el mismo socio acumule puntos del mismo recurso a diario.
+                          Se puede afinar por recurso individual desde{' '}
+                          <span className="italic">Datos · Puntos por recurso</span>.
+                        </p>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                          <div>
+                            <label className="block text-xs font-medium text-muted-foreground">
+                              Cooldown (días)
+                            </label>
+                            <input
+                              type="number"
+                              min={0}
+                              value={r.cooldownDias}
+                              disabled={readOnly}
+                              onChange={(e) =>
+                                setReglaField(
+                                  r.id,
+                                  'cooldownDias',
+                                  Math.max(0, Number(e.target.value) || 0),
+                                )
+                              }
+                              className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm font-mono disabled:bg-muted/40 disabled:text-muted-foreground"
+                            />
+                            <p className="mt-1 text-[11px] text-muted-foreground">
+                              Mín. días entre visitas puntuadas (1 = 1/día, 30 = 1/mes)
+                            </p>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-muted-foreground">
+                              Máx. en periodo
+                            </label>
+                            <input
+                              type="number"
+                              min={0}
+                              value={r.maxValidacionesPeriodo ?? ''}
+                              placeholder="∞"
+                              disabled={readOnly}
+                              onChange={(e) =>
+                                setReglaField(
+                                  r.id,
+                                  'maxValidacionesPeriodo',
+                                  e.target.value === ''
+                                    ? null
+                                    : Math.max(0, Number(e.target.value) || 0),
+                                )
+                              }
+                              className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm font-mono disabled:bg-muted/40 disabled:text-muted-foreground"
+                            />
+                            <p className="mt-1 text-[11px] text-muted-foreground">
+                              Tope móvil (vacío = sin tope)
+                            </p>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-muted-foreground">
+                              Periodo (días)
+                            </label>
+                            <input
+                              type="number"
+                              min={0}
+                              value={r.periodoDias ?? ''}
+                              placeholder="—"
+                              disabled={readOnly}
+                              onChange={(e) =>
+                                setReglaField(
+                                  r.id,
+                                  'periodoDias',
+                                  e.target.value === ''
+                                    ? null
+                                    : Math.max(0, Number(e.target.value) || 0),
+                                )
+                              }
+                              className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm font-mono disabled:bg-muted/40 disabled:text-muted-foreground"
+                            />
+                            <p className="mt-1 text-[11px] text-muted-foreground">
+                              Ventana del tope (típico: 30 días)
+                            </p>
+                          </div>
+                        </div>
+                      </div>
 
                       {!readOnly && (
                         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">

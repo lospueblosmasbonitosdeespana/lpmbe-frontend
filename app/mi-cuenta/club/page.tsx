@@ -14,12 +14,14 @@ import {
   Hourglass,
   ChevronRight,
   Mountain,
+  Gift,
 } from 'lucide-react';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import { Headline, Title, Caption } from '@/app/components/ui/typography';
 import { ClubShield, getMemberYear } from '@/app/_components/club/ClubShield';
 import { CuentanosCard } from '@/app/_components/club/CuentanosCard';
+import { WalletHeader } from '@/app/_components/club/WalletHeader';
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 
@@ -661,10 +663,20 @@ export default function ClubPage() {
             />
           )}
 
+          {/* Wallet del Club: saldo + atajo a premios */}
+          {clubMe?.isMember && <WalletHeader />}
+
           {/* Accesos rápidos */}
           <div className={cardClass}>
             <Title size="lg" className="mb-4">{t('access')}</Title>
             <div className="grid gap-3 sm:grid-cols-2">
+              <AccesoCard
+                href="/mi-cuenta/club/recompensas"
+                icon={<Gift size={22} aria-hidden />}
+                title="Premios y recompensas"
+                subtitle="Canjea tus puntos por premios reales"
+                tone="amber"
+              />
               <AccesoCard
                 href="/mi-cuenta/club/recursos"
                 icon={<Landmark size={22} aria-hidden />}

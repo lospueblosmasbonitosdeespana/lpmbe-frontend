@@ -25,6 +25,15 @@ type Recurso = {
   puntosGenericos: number;
   reglaGenerica: string;
   puntosEfectivos: number;
+  cooldownDiasCustom: number | null;
+  cooldownDiasGenerico: number;
+  cooldownDiasEfectivo: number;
+  maxValidacionesPeriodoCustom: number | null;
+  maxValidacionesPeriodoGenerico: number | null;
+  maxValidacionesPeriodoEfectivo: number | null;
+  periodoDiasCustom: number | null;
+  periodoDiasGenerico: number | null;
+  periodoDiasEfectivo: number | null;
   esSelection: boolean;
 };
 
@@ -73,6 +82,9 @@ export default function PuntosRecursosClient() {
   const [search, setSearch] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [editCooldown, setEditCooldown] = useState('');
+  const [editMax, setEditMax] = useState('');
+  const [editPeriodo, setEditPeriodo] = useState('');
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
@@ -115,40 +127,65 @@ export default function PuntosRecursosClient() {
   function startEdit(r: Recurso) {
     setEditingId(r.id);
     setEditValue(r.puntosCustom != null ? String(r.puntosCustom) : '');
+    setEditCooldown(
+      r.cooldownDiasCustom != null ? String(r.cooldownDiasCustom) : '',
+    );
+    setEditMax(
+      r.maxValidacionesPeriodoCustom != null
+        ? String(r.maxValidacionesPeriodoCustom)
+        : '',
+    );
+    setEditPeriodo(
+      r.periodoDiasCustom != null ? String(r.periodoDiasCustom) : '',
+    );
   }
 
   function cancelEdit() {
     setEditingId(null);
     setEditValue('');
+    setEditCooldown('');
+    setEditMax('');
+    setEditPeriodo('');
   }
 
   async function saveEdit(id: number) {
-    const trimmed = editValue.trim();
-    let puntosCustom: number | null;
-    if (trimmed === '') {
-      puntosCustom = null;
-    } else {
-      const v = parseInt(trimmed, 10);
+    const parseNullableInt = (raw: string, name: string): number | null | false => {
+      const t = raw.trim();
+      if (t === '') return null;
+      const v = parseInt(t, 10);
       if (Number.isNaN(v) || v < 0) {
-        alert('Introduce un número entero ≥ 0, o deja vacío para usar el genérico.');
-        return;
+        alert(`${name}: introduce un entero ≥ 0, o vacío para usar el genérico.`);
+        return false;
       }
-      puntosCustom = v;
-    }
+      return v;
+    };
+
+    const puntosCustom = parseNullableInt(editValue, 'Puntos');
+    if (puntosCustom === false) return;
+    const cooldownDiasCustom = parseNullableInt(editCooldown, 'Cooldown');
+    if (cooldownDiasCustom === false) return;
+    const maxValidacionesPeriodoCustom = parseNullableInt(editMax, 'Máx. en periodo');
+    if (maxValidacionesPeriodoCustom === false) return;
+    const periodoDiasCustom = parseNullableInt(editPeriodo, 'Periodo');
+    if (periodoDiasCustom === false) return;
 
     setSaving(true);
     try {
       const res = await fetch(`/api/club/admin/recursos/${id}/puntos`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ puntosCustom }),
+        body: JSON.stringify({
+          puntosCustom,
+          cooldownDiasCustom,
+          maxValidacionesPeriodoCustom,
+          periodoDiasCustom,
+        }),
       });
       if (!res.ok) throw new Error('Error guardando');
-      // recargar para refrescar puntosEfectivos
       await load();
-      setEditingId(null);
+      cancelEdit();
     } catch {
-      alert('Error al guardar los puntos del recurso.');
+      alert('Error al guardar los ajustes del recurso.');
     } finally {
       setSaving(false);
     }
@@ -243,13 +280,10 @@ export default function PuntosRecursosClient() {
                 Tipo
               </th>
               <th className="px-3 py-3 text-right font-medium text-muted-foreground">
-                Puntos efectivos
+                Puntos
               </th>
               <th className="px-3 py-3 text-right font-medium text-muted-foreground">
-                Genérico
-              </th>
-              <th className="px-3 py-3 text-right font-medium text-muted-foreground">
-                Custom
+                Tope
               </th>
               <th className="w-36 px-3 py-3 text-center font-medium text-muted-foreground"></th>
             </tr>
@@ -258,21 +292,41 @@ export default function PuntosRecursosClient() {
             {filtered.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={6}
                   className="px-4 py-8 text-center text-muted-foreground"
                 >
                   Sin resultados
                 </td>
               </tr>
             ) : (
-              filtered.map((r) => {
+              filtered.flatMap((r) => {
                 const isEditing = editingId === r.id;
                 const isSelectionSinPuntos =
                   r.esSelection && r.puntosCustom == null;
-                return (
+                const tieneOverride =
+                  r.puntosCustom != null ||
+                  r.cooldownDiasCustom != null ||
+                  r.maxValidacionesPeriodoCustom != null ||
+                  r.periodoDiasCustom != null;
+
+                const formatTope = (
+                  max: number | null,
+                  periodo: number | null,
+                  cooldown: number,
+                ) => {
+                  if (max != null && periodo != null) {
+                    return `${max}/${periodo}d`;
+                  }
+                  if (cooldown >= 365) return '1/año';
+                  if (cooldown >= 30) return `1/${Math.round(cooldown / 30)}m`;
+                  if (cooldown > 1) return `1/${cooldown}d`;
+                  return '∞';
+                };
+
+                const rows: any[] = [
                   <tr
                     key={r.id}
-                    className={`border-b border-border last:border-0 transition-colors ${
+                    className={`border-b border-border transition-colors ${
                       isEditing
                         ? 'bg-blue-50/60 dark:bg-blue-950/30'
                         : isSelectionSinPuntos
@@ -312,70 +366,153 @@ export default function PuntosRecursosClient() {
                       </span>
                       <span className="ml-2 text-xs">{r.tipo}</span>
                     </td>
-                    <td className="px-3 py-2.5 text-right font-semibold tabular-nums">
-                      {r.puntosEfectivos > 0 ? (
-                        <span className="text-foreground">
-                          {r.puntosEfectivos}
-                        </span>
-                      ) : (
-                        <span className="text-red-500">0</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2.5 text-right text-muted-foreground tabular-nums">
-                      {r.puntosGenericos}
-                    </td>
                     <td className="px-3 py-2.5 text-right tabular-nums">
-                      {isEditing ? (
-                        <input
-                          type="number"
-                          min={0}
-                          placeholder="—"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') saveEdit(r.id);
-                            if (e.key === 'Escape') cancelEdit();
-                          }}
-                          autoFocus
-                          className="w-20 rounded border border-blue-400 bg-white px-2 py-1 text-right text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-card"
-                        />
-                      ) : r.puntosCustom != null ? (
-                        <span className="rounded bg-amber-100 px-2 py-0.5 font-semibold text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
-                          {r.puntosCustom}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
+                      <div className="font-semibold text-foreground">
+                        {r.puntosEfectivos > 0 ? r.puntosEfectivos : (
+                          <span className="text-red-500">0</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        gen: {r.puntosGenericos}
+                        {r.puntosCustom != null && (
+                          <span className="ml-1 rounded bg-amber-100 px-1 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                            custom
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5 text-right text-xs">
+                      <div className="font-medium text-foreground">
+                        {formatTope(
+                          r.maxValidacionesPeriodoEfectivo,
+                          r.periodoDiasEfectivo,
+                          r.cooldownDiasEfectivo,
+                        )}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground">
+                        cd: {r.cooldownDiasEfectivo}d
+                        {(r.cooldownDiasCustom != null ||
+                          r.maxValidacionesPeriodoCustom != null ||
+                          r.periodoDiasCustom != null) && (
+                          <span className="ml-1 rounded bg-amber-100 px-1 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                            custom
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-3 py-2.5 text-center">
-                      {isEditing ? (
-                        <span className="inline-flex gap-1">
-                          <button
-                            onClick={() => saveEdit(r.id)}
-                            disabled={saving}
-                            className="rounded bg-blue-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                          >
-                            {saving ? '…' : 'Guardar'}
-                          </button>
-                          <button
-                            onClick={cancelEdit}
-                            disabled={saving}
-                            className="rounded border border-border bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-muted/30 disabled:opacity-50"
-                          >
-                            X
-                          </button>
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => startEdit(r)}
-                          className="rounded border border-border bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground hover:border-blue-400 hover:text-blue-600"
-                        >
-                          {r.puntosCustom != null ? 'Editar' : 'Personalizar'}
-                        </button>
-                      )}
+                      <button
+                        onClick={() => (isEditing ? cancelEdit() : startEdit(r))}
+                        className={`rounded border px-2.5 py-1 text-xs font-medium ${
+                          isEditing
+                            ? 'border-blue-400 bg-blue-50 text-blue-700'
+                            : 'border-border bg-card text-muted-foreground hover:border-blue-400 hover:text-blue-600'
+                        }`}
+                      >
+                        {isEditing ? 'Cerrar' : tieneOverride ? 'Editar' : 'Personalizar'}
+                      </button>
                     </td>
-                  </tr>
-                );
+                  </tr>,
+                ];
+
+                if (isEditing) {
+                  rows.push(
+                    <tr
+                      key={`${r.id}-editor`}
+                      className="border-b border-border bg-blue-50/30 dark:bg-blue-950/20"
+                    >
+                      <td colSpan={6} className="px-3 py-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+                          <div>
+                            <label className="block text-xs font-medium text-muted-foreground">
+                              Puntos
+                            </label>
+                            <input
+                              type="number"
+                              min={0}
+                              placeholder={`gen: ${r.puntosGenericos}`}
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              className="mt-1 w-full rounded border border-blue-400 bg-white px-2 py-1 text-sm dark:bg-card"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-muted-foreground">
+                              Cooldown (días)
+                            </label>
+                            <input
+                              type="number"
+                              min={0}
+                              placeholder={`gen: ${r.cooldownDiasGenerico}`}
+                              value={editCooldown}
+                              onChange={(e) => setEditCooldown(e.target.value)}
+                              className="mt-1 w-full rounded border border-blue-400 bg-white px-2 py-1 text-sm dark:bg-card"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-muted-foreground">
+                              Máx. periodo
+                            </label>
+                            <input
+                              type="number"
+                              min={0}
+                              placeholder={
+                                r.maxValidacionesPeriodoGenerico != null
+                                  ? `gen: ${r.maxValidacionesPeriodoGenerico}`
+                                  : '∞'
+                              }
+                              value={editMax}
+                              onChange={(e) => setEditMax(e.target.value)}
+                              className="mt-1 w-full rounded border border-blue-400 bg-white px-2 py-1 text-sm dark:bg-card"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-muted-foreground">
+                              Periodo (días)
+                            </label>
+                            <input
+                              type="number"
+                              min={0}
+                              placeholder={
+                                r.periodoDiasGenerico != null
+                                  ? `gen: ${r.periodoDiasGenerico}`
+                                  : '—'
+                              }
+                              value={editPeriodo}
+                              onChange={(e) => setEditPeriodo(e.target.value)}
+                              className="mt-1 w-full rounded border border-blue-400 bg-white px-2 py-1 text-sm dark:bg-card"
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between">
+                          <p className="text-[11px] text-muted-foreground">
+                            Deja vacío cualquier campo para usar el valor genérico
+                            de la regla. Hoteles típicos: cooldown 1, máx 5,
+                            periodo 30.
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={cancelEdit}
+                              disabled={saving}
+                              className="rounded border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted/30"
+                            >
+                              Cancelar
+                            </button>
+                            <button
+                              onClick={() => saveEdit(r.id)}
+                              disabled={saving}
+                              className="rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                            >
+                              {saving ? 'Guardando…' : 'Guardar'}
+                            </button>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>,
+                  );
+                }
+
+                return rows;
               })
             )}
           </tbody>
