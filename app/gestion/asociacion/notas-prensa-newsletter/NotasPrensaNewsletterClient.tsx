@@ -603,20 +603,25 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
       }
       if (block.type === 'socialLinks') {
         const iconSize = 40;
-        const makeIcon = (url: string, bgColor: string, iconSlug: string, label: string) =>
-          `<a href="${escapeHtml(sanitizeTemplateUrl(url))}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:0 6px;text-decoration:none;" title="${label}">` +
-          `<table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table;border-collapse:collapse;"><tr>` +
-          `<td style="background:${bgColor};border-radius:50%;width:${iconSize}px;height:${iconSize}px;text-align:center;vertical-align:middle;padding:0;">` +
-          `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/${iconSlug}.svg" width="20" height="20" style="filter:invert(1);display:block;margin:10px auto;" alt="${label}" />` +
-          `</td></tr></table></a>`;
-        const items: string[] = [];
-        if (block.socialFacebook) items.push(makeIcon(block.socialFacebook, '#1877F2', 'facebook', 'Facebook'));
-        if (block.socialTwitter) items.push(makeIcon(block.socialTwitter, '#000000', 'x', 'X'));
-        if (block.socialInstagram) items.push(makeIcon(block.socialInstagram, 'linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)', 'instagram', 'Instagram'));
-        if (block.socialLinkedin) items.push(makeIcon(block.socialLinkedin, '#0077B5', 'linkedin', 'LinkedIn'));
-        if (block.socialYoutube) items.push(makeIcon(block.socialYoutube, '#FF0000', 'youtube', 'YouTube'));
-        if (!items.length) return '';
-        return `<div style="${boxStyle}"><p style="margin:0;text-align:${align};">${items.join('')}</p></div>`;
+        const iconInner = 20;
+        const iconMargin = Math.round((iconSize - iconInner) / 2);
+        const tdAlign = align === 'right' ? 'right' : align === 'left' ? 'left' : 'center';
+        const makeIconCell = (url: string, bgColor: string, iconSlug: string, label: string) =>
+          `<td align="center" valign="middle" style="padding:0 6px;">` +
+          `<a href="${escapeHtml(sanitizeTemplateUrl(url))}" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;" title="${label}">` +
+          `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;"><tr>` +
+          `<td align="center" valign="middle" style="background:${bgColor};border-radius:50%;width:${iconSize}px;height:${iconSize}px;padding:0;">` +
+          `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/${iconSlug}.svg" width="${iconInner}" height="${iconInner}" style="filter:invert(1);display:block;margin:${iconMargin}px auto;" alt="${label}" />` +
+          `</td></tr></table></a></td>`;
+        const cells: string[] = [];
+        if (block.socialFacebook) cells.push(makeIconCell(block.socialFacebook, '#1877F2', 'facebook', 'Facebook'));
+        if (block.socialTwitter) cells.push(makeIconCell(block.socialTwitter, '#000000', 'x', 'X'));
+        // En emails evitamos gradientes por compatibilidad entre clientes.
+        if (block.socialInstagram) cells.push(makeIconCell(block.socialInstagram, '#E1306C', 'instagram', 'Instagram'));
+        if (block.socialLinkedin) cells.push(makeIconCell(block.socialLinkedin, '#0077B5', 'linkedin', 'LinkedIn'));
+        if (block.socialYoutube) cells.push(makeIconCell(block.socialYoutube, '#FF0000', 'youtube', 'YouTube'));
+        if (!cells.length) return '';
+        return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;"><tr><td align="${tdAlign}" valign="middle"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:${tdAlign === 'right' ? '0 0 0 auto' : tdAlign === 'left' ? '0' : '0 auto'};"><tr>${cells.join('')}</tr></table></td></tr></table></div>`;
       }
       if (block.type === 'countdown') {
         const target = block.countdownDate ? new Date(block.countdownDate) : new Date();
