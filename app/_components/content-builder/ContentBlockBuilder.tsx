@@ -376,44 +376,65 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
       }
     } else if (b.type === 'socialLinks') {
       const iconSize = 40;
-      const links: string[] = [];
+      const iconInner = 20;
+      const iconMargin = Math.round((iconSize - iconInner) / 2);
+      const cells: string[] = [];
+
+      const buildSocialCell = (url: string, title: string, bgColor: string, iconSlug: string) =>
+        `<td align="center" valign="middle" style="padding:0 6px;">` +
+          `<a href="${escHtml(url)}" style="text-decoration:none;display:block;" title="${escHtml(title)}">` +
+            `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;">` +
+              `<tr><td align="center" valign="middle" style="background:${bgColor};border-radius:50%;width:${iconSize}px;height:${iconSize}px;">` +
+                `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/${iconSlug}.svg" width="${iconInner}" height="${iconInner}" style="filter:invert(1);display:block;margin:${iconMargin}px auto;" alt="${escHtml(title)}" />` +
+              `</td></tr>` +
+            `</table>` +
+          `</a>` +
+        `</td>`;
+
       // Facebook
-      if (b.socialFacebook) links.push(
-        `<a href="${escHtml(b.socialFacebook)}" style="display:inline-block;margin:0 6px;text-decoration:none;" title="Facebook">` +
-        `<table cellpadding="0" cellspacing="0" style="display:inline-table;"><tr><td style="background:#1877F2;border-radius:50%;width:${iconSize}px;height:${iconSize}px;text-align:center;vertical-align:middle;">` +
-        `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/facebook.svg" width="20" height="20" style="filter:invert(1);display:block;margin:10px auto;" alt="Facebook" />` +
-        `</td></tr></table></a>`
-      );
+      if (b.socialFacebook) {
+        cells.push(buildSocialCell(b.socialFacebook, 'Facebook', '#1877F2', 'facebook'));
+      }
       // X / Twitter
-      if (b.socialTwitter) links.push(
-        `<a href="${escHtml(b.socialTwitter)}" style="display:inline-block;margin:0 6px;text-decoration:none;" title="X">` +
-        `<table cellpadding="0" cellspacing="0" style="display:inline-table;"><tr><td style="background:#000000;border-radius:50%;width:${iconSize}px;height:${iconSize}px;text-align:center;vertical-align:middle;">` +
-        `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/x.svg" width="20" height="20" style="filter:invert(1);display:block;margin:10px auto;" alt="X" />` +
-        `</td></tr></table></a>`
-      );
-      // Instagram
-      if (b.socialInstagram) links.push(
-        `<a href="${escHtml(b.socialInstagram)}" style="display:inline-block;margin:0 6px;text-decoration:none;" title="Instagram">` +
-        `<table cellpadding="0" cellspacing="0" style="display:inline-table;"><tr><td style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border-radius:50%;width:${iconSize}px;height:${iconSize}px;text-align:center;vertical-align:middle;">` +
-        `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/instagram.svg" width="20" height="20" style="filter:invert(1);display:block;margin:10px auto;" alt="Instagram" />` +
-        `</td></tr></table></a>`
-      );
+      if (b.socialTwitter) {
+        cells.push(buildSocialCell(b.socialTwitter, 'X', '#000000', 'x'));
+      }
+      // Instagram (color sólido por compatibilidad en clientes de email)
+      if (b.socialInstagram) {
+        cells.push(buildSocialCell(b.socialInstagram, 'Instagram', '#E1306C', 'instagram'));
+      }
       // LinkedIn
-      if (b.socialLinkedin) links.push(
-        `<a href="${escHtml(b.socialLinkedin)}" style="display:inline-block;margin:0 6px;text-decoration:none;" title="LinkedIn">` +
-        `<table cellpadding="0" cellspacing="0" style="display:inline-table;"><tr><td style="background:#0077B5;border-radius:50%;width:${iconSize}px;height:${iconSize}px;text-align:center;vertical-align:middle;">` +
-        `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/linkedin.svg" width="20" height="20" style="filter:invert(1);display:block;margin:10px auto;" alt="LinkedIn" />` +
-        `</td></tr></table></a>`
-      );
+      if (b.socialLinkedin) {
+        cells.push(buildSocialCell(b.socialLinkedin, 'LinkedIn', '#0077B5', 'linkedin'));
+      }
       // YouTube
-      if (b.socialYoutube) links.push(
-        `<a href="${escHtml(b.socialYoutube)}" style="display:inline-block;margin:0 6px;text-decoration:none;" title="YouTube">` +
-        `<table cellpadding="0" cellspacing="0" style="display:inline-table;"><tr><td style="background:#FF0000;border-radius:50%;width:${iconSize}px;height:${iconSize}px;text-align:center;vertical-align:middle;">` +
-        `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/youtube.svg" width="20" height="20" style="filter:invert(1);display:block;margin:10px auto;" alt="YouTube" />` +
-        `</td></tr></table></a>`
-      );
-      if (links.length) {
-        parts.push(`<div style="${wrapStyle}text-align:center;">${links.join('')}</div>`);
+      if (b.socialYoutube) {
+        cells.push(buildSocialCell(b.socialYoutube, 'YouTube', '#FF0000', 'youtube'));
+      }
+
+      if (cells.length) {
+        if (webMode) {
+          // En web, el layout inline es suficiente.
+          const inlineLinks = cells
+            .map((cell) =>
+              cell
+                .replace(/^<td[^>]*>/, '')
+                .replace(/<\/td>$/, ''),
+            )
+            .join('');
+          parts.push(`<div style="${wrapStyle}text-align:center;">${inlineLinks}</div>`);
+        } else {
+          // En email, usar tablas con align=center evita descuadres en Outlook/Gmail/iOS Mail.
+          parts.push(
+            `<div style="${wrapStyle}">` +
+              `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;"><tr>` +
+                `<td align="center" valign="middle">` +
+                  `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 auto;"><tr>${cells.join('')}</tr></table>` +
+                `</td>` +
+              `</tr></table>` +
+            `</div>`,
+          );
+        }
       }
     } else if (b.type === 'countdown') {
       const targetDate = b.countdownDate ? new Date(b.countdownDate) : new Date(Date.now() + 7 * 86400000);
