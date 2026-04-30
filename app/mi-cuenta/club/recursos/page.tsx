@@ -12,6 +12,7 @@ function getPuebloNombre(r: any): string | null {
 
 export default function RecursosPage() {
   const t = useTranslations('club');
+  const tList = useTranslations('clubRecursosLista');
   const tAccount = useTranslations('myAccount');
   const { loading, error, data: recursos } = useRecursosDisponibles();
   const [pueblosMap, setPueblosMap] = useState<Record<number, { nombre: string; slug: string }>>({});
@@ -113,12 +114,12 @@ export default function RecursosPage() {
           <ChevronLeft size={16} aria-hidden /> {t('backToClub')}
         </Link>
         <h1 className="text-2xl font-bold text-foreground">
-          Recursos Turísticos del Club
+          {tList('title')}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Museos, castillos, jardines, bodegas, monumentos… elige tu pueblo y entra para ver
-          todo el detalle: foto, descripción, horarios, ubicación y los beneficios que
-          tenéis los socios del Club.
+          {pueblosConRecursos.length === 1
+            ? tList('subtitleSingular', { n: recursos.length, pueblos: pueblosConRecursos.length })
+            : tList('subtitlePlural', { n: recursos.length, pueblos: pueblosConRecursos.length })}
         </p>
       </div>
 
@@ -203,7 +204,7 @@ export default function RecursosPage() {
                       {p.nombre}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {p.count} {p.count === 1 ? 'recurso' : 'recursos'} con beneficios para socios
+                      {p.count === 1 ? tList('puebloCountSingular', { n: p.count }) : tList('puebloCountPlural', { n: p.count })}
                     </div>
                   </div>
                 </div>

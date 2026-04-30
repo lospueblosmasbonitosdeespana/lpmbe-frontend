@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type ComponentType } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   BedDouble,
   UtensilsCrossed,
@@ -76,14 +77,14 @@ type Data = {
 
 type Tab = 'DORMIR' | 'COMER' | 'COMPRAR' | 'ACTIVIDADES' | 'OTROS' | 'SELECTION' | 'POR_PUEBLO';
 
-const TAB_LABELS: Record<Tab, string> = {
-  DORMIR: 'Dormir',
-  COMER: 'Comer',
-  COMPRAR: 'Comprar',
-  ACTIVIDADES: 'Actividades',
-  OTROS: 'Otros',
-  SELECTION: 'Selection',
-  POR_PUEBLO: 'Por pueblo',
+const TAB_KEYS: Record<Tab, string> = {
+  DORMIR: 'tabDormir',
+  COMER: 'tabComer',
+  COMPRAR: 'tabComprar',
+  ACTIVIDADES: 'tabActividades',
+  OTROS: 'tabOtros',
+  SELECTION: 'tabSelection',
+  POR_PUEBLO: 'tabPorPueblo',
 };
 
 const TAB_ICONS: Record<Tab, LucideIconType> = {
@@ -110,6 +111,7 @@ function formatEuros(cents: number) {
 // ─── Main page ────────────────────────────────────────────────────────────
 
 export default function ClubNegociosPage() {
+  const t = useTranslations('clubNegociosWeb');
   const [data, setData] = useState<Data | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -128,23 +130,23 @@ export default function ClubNegociosPage() {
         }
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
-          throw new Error(body?.error ?? 'Error cargando negocios');
+          throw new Error(body?.error ?? t('loadError'));
         }
         const json: Data = await res.json();
         setData(json);
-        // Si la pestaña por defecto está vacía, ir a la primera con datos
         const firstWith =
           json.categorias.find(
             (c) => c.count > 0 && (c.id === 'DORMIR' || c.id === 'COMER' || c.id === 'COMPRAR' || c.id === 'ACTIVIDADES' || c.id === 'OTROS' || c.id === 'SELECTION'),
           )?.id ?? 'DORMIR';
         setTab(firstWith as Tab);
       } catch (e: any) {
-        setError(e?.message ?? 'Error');
+        setError(e?.message ?? t('errorGeneric'));
       } finally {
         setLoading(false);
       }
     }
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filtered: Negocio[] = useMemo(() => {
@@ -168,16 +170,16 @@ export default function ClubNegociosPage() {
       <Container>
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <Headline as="h1">Negocios del Club</Headline>
+            <Headline as="h1">{t('title')}</Headline>
             <Caption className="mt-1 block">
-              Hoteles, casas rurales, restaurantes, comercios y experiencias con descuentos y regalos exclusivos para socios.
+              {t('subtitle')}
             </Caption>
           </div>
           <Link
             href="/mi-cuenta/club"
             className="text-sm text-muted-foreground hover:text-foreground hover:underline"
           >
-            ← Volver al Club
+            ← {t('back')}
           </Link>
         </div>
 
@@ -193,25 +195,25 @@ export default function ClubNegociosPage() {
               'SELECTION',
               'POR_PUEBLO',
             ] as Tab[]
-          ).map((t) => {
-            const cat = data?.categorias.find((c) => c.id === t);
+          ).map((tabId) => {
+            const cat = data?.categorias.find((c) => c.id === tabId);
             const count =
-              t === 'POR_PUEBLO'
+              tabId === 'POR_PUEBLO'
                 ? data?.porPueblo.length ?? 0
                 : cat?.count ?? 0;
-            const isActive = tab === t;
+            const isActive = tab === tabId;
             return (
               <button
-                key={t}
-                onClick={() => setTab(t)}
+                key={tabId}
+                onClick={() => setTab(tabId)}
                 className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
                   isActive
                     ? 'border-primary bg-primary text-primary-foreground'
                     : 'border-border bg-card text-foreground hover:bg-muted'
                 }`}
               >
-                <TabIcon tab={t} />
-                <span>{TAB_LABELS[t]}</span>
+                <TabIcon tab={tabId} />
+                <span>{t(TAB_KEYS[tabId])}</span>
                 {count > 0 && (
                   <span
                     className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
@@ -230,7 +232,7 @@ export default function ClubNegociosPage() {
         <div className="mb-6">
           <input
             type="search"
-            placeholder="Buscar por nombre, tipo o pueblo…"
+            placeholder={t('searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -240,20 +242,20 @@ export default function ClubNegociosPage() {
         {/* Content */}
         {loading ? (
           <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
-            Cargando negocios…
+            {t('loading')}
           </div>
         ) : error ? (
           <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-sm text-destructive">
             {error}
           </div>
         ) : tab === 'POR_PUEBLO' ? (
-          <PorPuebloList porPueblo={data?.porPueblo ?? []} search={search} />
+          <PorPuebloList porPueblo={data?.porPueblo ?? []} search={search} t={t} />
         ) : filtered.length === 0 ? (
-          <EmptyState tab={tab} />
+          <EmptyState tab={tab} t={t} />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((n) => (
-              <NegocioCard key={n.id} negocio={n} />
+              <NegocioCard key={n.id} negocio={n} t={t} />
             ))}
           </div>
         )}
@@ -264,7 +266,7 @@ export default function ClubNegociosPage() {
 
 // ─── NegocioCard ──────────────────────────────────────────────────────────
 
-function NegocioCard({ negocio: n }: { negocio: Negocio }) {
+function NegocioCard({ negocio: n, t }: { negocio: Negocio; t: ReturnType<typeof useTranslations> }) {
   const hrefDetalle = n.pueblo
     ? `/pueblos/${n.pueblo.slug}/club/${n.slug}`
     : `/selection/${n.slug}`;
@@ -304,22 +306,24 @@ function NegocioCard({ negocio: n }: { negocio: Negocio }) {
         <div className="absolute left-2 top-2 flex flex-wrap gap-1.5">
           {n.esSelection && (
             <span className="inline-flex items-center gap-1 rounded-full bg-gray-900/90 px-2.5 py-0.5 text-[11px] font-semibold text-amber-300 shadow-sm backdrop-blur-sm">
-              <Star size={12} aria-hidden /> Selection
+              <Star size={12} aria-hidden /> {t('selectionBadge')}
             </span>
           )}
           {n.beneficios.descuentoPorcentaje && n.beneficios.descuentoPorcentaje > 0 && (
             <span className="rounded-full bg-green-600 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">
-              -{n.beneficios.descuentoPorcentaje}% socios
+              {t('discountBadge', { n: n.beneficios.descuentoPorcentaje })}
             </span>
           )}
           {n.beneficios.regalo && (
             <span className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">
-              <Gift size={12} aria-hidden /> Regalo
+              <Gift size={12} aria-hidden /> {t('giftBadge')}
             </span>
           )}
           {n.beneficios.ofertasCount > 0 && (
             <span className="rounded-full bg-primary/90 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">
-              {n.beneficios.ofertasCount} {n.beneficios.ofertasCount === 1 ? 'oferta' : 'ofertas'}
+              {n.beneficios.ofertasCount === 1
+                ? t('offersOne', { n: n.beneficios.ofertasCount })
+                : t('offersMany', { n: n.beneficios.ofertasCount })}
             </span>
           )}
         </div>
@@ -380,9 +384,11 @@ function NegocioCard({ negocio: n }: { negocio: Negocio }) {
 function PorPuebloList({
   porPueblo,
   search,
+  t,
 }: {
   porPueblo: Array<{ puebloId: number; puebloNombre: string; puebloSlug: string; items: Negocio[] }>;
   search: string;
+  t: ReturnType<typeof useTranslations>;
 }) {
   const filtered = useMemo(() => {
     if (!search.trim()) return porPueblo;
@@ -403,7 +409,7 @@ function PorPuebloList({
   if (filtered.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
-        No hay negocios que coincidan con la búsqueda.
+        {t('puebloNoMatch')}
       </div>
     );
   }
@@ -415,12 +421,14 @@ function PorPuebloList({
           <div className="mb-3 flex items-baseline justify-between gap-3">
             <Title size="lg">{p.puebloNombre}</Title>
             <Caption>
-              {p.items.length} {p.items.length === 1 ? 'negocio' : 'negocios'} con beneficios
+              {p.items.length === 1
+                ? t('puebloCountSingular', { n: p.items.length })
+                : t('puebloCountPlural', { n: p.items.length })}
             </Caption>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {p.items.map((n) => (
-              <NegocioCard key={n.id} negocio={n} />
+              <NegocioCard key={n.id} negocio={n} t={t} />
             ))}
           </div>
         </section>
@@ -431,16 +439,21 @@ function PorPuebloList({
 
 // ─── Empty state ──────────────────────────────────────────────────────────
 
-function EmptyState({ tab }: { tab: Tab }) {
+function EmptyState({ tab, t }: { tab: Tab; t: ReturnType<typeof useTranslations> }) {
+  const text = t('emptyTabText');
+  const lines = text.split('\n');
   return (
     <div className="rounded-xl border border-dashed border-border bg-muted/20 p-12 text-center">
       <div className="mb-2 flex justify-center text-muted-foreground/60">
         <TabIcon tab={tab} size={40} />
       </div>
       <p className="text-sm text-muted-foreground">
-        Aún no hay negocios en esta categoría con beneficios disponibles para socios.
-        <br />
-        El catálogo crece cada semana.
+        {lines.map((line, i) => (
+          <span key={i}>
+            {line}
+            {i < lines.length - 1 && <br />}
+          </span>
+        ))}
       </p>
     </div>
   );

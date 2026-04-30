@@ -463,7 +463,7 @@ export default function ClubPage() {
                   </span>
                   {clubMe.numeroSocio != null && (
                     <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                      Socio nº {String(clubMe.numeroSocio).padStart(5, '0')}
+                      {t('memberNumberLabel', { numero: String(clubMe.numeroSocio).padStart(5, '0') })}
                     </span>
                   )}
                 </div>
@@ -614,7 +614,7 @@ export default function ClubPage() {
                   {(qrIdentidad.codigoCortoFormateado || qrIdentidad.codigoCorto) && (
                     <div className="mt-3 text-center">
                       <p className="text-xs text-muted-foreground">
-                        Código corto para validador
+                        {t('shortCodeLabel')}
                       </p>
                       <p className="mt-1 font-mono text-lg font-semibold tracking-widest text-foreground">
                         {qrIdentidad.codigoCortoFormateado ??
@@ -673,44 +673,44 @@ export default function ClubPage() {
               <AccesoCard
                 href="/mi-cuenta/club/recompensas"
                 icon={<Gift size={22} aria-hidden />}
-                title="Premios y recompensas"
-                subtitle="Canjea tus puntos por premios reales"
+                title={t('accessRecompensasTitle')}
+                subtitle={t('accessRecompensasSub')}
                 tone="amber"
               />
               <AccesoCard
                 href="/mi-cuenta/club/recursos"
                 icon={<Landmark size={22} aria-hidden />}
-                title="Recursos Turísticos"
-                subtitle="Museos, castillos, bodegas, jardines…"
+                title={t('accessRecursosTitle')}
+                subtitle={t('accessRecursosSub')}
                 badge={recursosDisponibles.length > 0 ? `${recursosDisponibles.length}` : null}
                 tone="amber"
               />
               <AccesoCard
                 href="/mi-cuenta/club/recursos-rurales"
                 icon={<Mountain size={22} aria-hidden />}
-                title="Recursos Rurales / Naturales"
-                subtitle="Cascadas, miradores, parajes · validados por GPS"
+                title={t('accessRecursosRuralesTitle')}
+                subtitle={t('accessRecursosRuralesSub')}
                 tone="emerald"
               />
               <AccesoCard
                 href="/mi-cuenta/club/negocios"
                 icon={<Hotel size={22} aria-hidden />}
-                title="Hoteles, casas rurales, comercios, actividades…"
-                subtitle="Descuentos y regalos exclusivos"
+                title={t('accessNegociosTitle')}
+                subtitle={t('accessNegociosSub')}
                 tone="rose"
               />
               <AccesoCard
                 href="/mi-cuenta/club/sorteos"
                 icon={<Trophy size={22} aria-hidden />}
-                title="Sorteos del Club"
-                subtitle="Concursos exclusivos para socios"
+                title={t('accessSorteosTitle')}
+                subtitle={t('accessSorteosSub')}
                 tone="violet"
               />
               <AccesoCard
                 href="/mi-cuenta/club/visitados"
                 icon={<BookmarkCheck size={22} aria-hidden />}
                 title={t('visitedResources')}
-                subtitle="Tu colección de visitas"
+                subtitle={t('accessVisitadosSub')}
                 badge={
                   validaciones.filter((v) => v.resultado === 'OK').length > 0
                     ? `${validaciones.filter((v) => v.resultado === 'OK').length}`
@@ -722,7 +722,7 @@ export default function ClubPage() {
                 href="/mi-cuenta/club/validaciones"
                 icon={<History size={22} aria-hidden />}
                 title={t('validationHistory')}
-                subtitle="Todos los escaneos del Club"
+                subtitle={t('accessValidacionesSub')}
                 badge={validaciones.length > 0 ? `${validaciones.length}` : null}
                 tone="sky"
                 className="sm:col-span-2"
@@ -892,6 +892,7 @@ function LanzamientoCard({
   activando: boolean;
   onActivar: () => void;
 }) {
+  const t = useTranslations('club');
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     if (!lanzamiento.finAt) return;
@@ -917,10 +918,12 @@ function LanzamientoCard({
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
-            <PartyPopper size={14} aria-hidden /> Lanzamiento
+            <PartyPopper size={14} aria-hidden /> {t('lanzamientoBadge')}
           </div>
           <h3 className="text-2xl font-bold text-amber-900">
-            {lanzamiento.mesesGratis} {lanzamiento.mesesGratis === 1 ? 'mes' : 'meses'} gratis
+            {lanzamiento.mesesGratis === 1
+              ? t('lanzamientoMonthOne', { n: lanzamiento.mesesGratis })
+              : t('lanzamientoMonthMany', { n: lanzamiento.mesesGratis })}
           </h3>
           {lanzamiento.texto && (
             <p className="mt-1 text-sm text-amber-800">{lanzamiento.texto}</p>
@@ -929,7 +932,7 @@ function LanzamientoCard({
         {restante !== null && restante > 0 && (
           <div className="shrink-0 text-right">
             <div className="text-[10px] font-medium uppercase tracking-wider text-amber-700">
-              Termina en
+              {t('lanzamientoEndsIn')}
             </div>
             <div className="text-xl font-bold tabular-nums text-amber-900">
               {fmtCountdown(restante)}
@@ -941,15 +944,15 @@ function LanzamientoCard({
       <ul className="mt-4 space-y-2 text-sm text-amber-900">
         <li className="flex items-start gap-2">
           <Check size={16} className="mt-0.5 text-amber-700" aria-hidden />
-          <span>Acceso completo a recursos turísticos del Club en los pueblos certificados</span>
+          <span>{t('lanzamientoBenefit1')}</span>
         </li>
         <li className="flex items-start gap-2">
           <Check size={16} className="mt-0.5 text-amber-700" aria-hidden />
-          <span>Descuentos y regalos en hoteles, casas rurales, restaurantes, comercios y experiencias</span>
+          <span>{t('lanzamientoBenefit2')}</span>
         </li>
         <li className="flex items-start gap-2">
           <Check size={16} className="mt-0.5 text-amber-700" aria-hidden />
-          <span>Tarjeta digital con QR de identidad y número de socio LPMBE</span>
+          <span>{t('lanzamientoBenefit3')}</span>
         </li>
       </ul>
 
@@ -959,13 +962,13 @@ function LanzamientoCard({
         disabled={activando}
         className="mt-5 w-full rounded-xl bg-amber-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-amber-700 disabled:opacity-50"
       >
-        {activando ? 'Activando...' : 'Activar mi membresía gratis'}
+        {activando ? t('lanzamientoActivating') : t('lanzamientoActivate')}
       </button>
 
       <p className="mt-3 text-center text-[11px] text-amber-700">
-        Sin tarjeta. Sin renovación automática. Cuando termine podrás continuar al precio normal.
+        {t('lanzamientoFooter')}
         {lanzamiento.cupoRestante != null && lanzamiento.cupoRestante < 1000 && (
-          <> · Quedan {lanzamiento.cupoRestante} plazas disponibles.</>
+          <>{t('lanzamientoSeatsLeft', { n: lanzamiento.cupoRestante })}</>
         )}
       </p>
     </div>

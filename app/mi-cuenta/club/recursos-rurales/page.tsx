@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   ChevronLeft,
   Mountain,
@@ -19,6 +20,7 @@ function buildMapsLink(lat: number, lng: number): string {
 }
 
 export default function RecursosRuralesSocioPage() {
+  const t = useTranslations('clubRecursosRurales');
   const { loading, error, data } = useRecursosDisponibles();
   const { getPuntos } = useGamificacionConfig();
   const puntos = getPuntos('RECURSO_NATURAL_VISITADO');
@@ -38,7 +40,7 @@ export default function RecursosRuralesSocioPage() {
       const k = r.puebloId
         ? `pueblo-${r.puebloId}`
         : 'asociacion';
-      const titulo = r.puebloNombre ?? 'Recursos de la asociación';
+      const titulo = r.puebloNombre ?? t('associationResources');
       if (!map.has(k)) {
         map.set(k, {
           titulo,
@@ -49,7 +51,7 @@ export default function RecursosRuralesSocioPage() {
       map.get(k)!.recursos.push(r);
     }
     return [...map.values()];
-  }, [items]);
+  }, [items, t]);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
@@ -57,7 +59,7 @@ export default function RecursosRuralesSocioPage() {
         href="/mi-cuenta/club"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
-        <ChevronLeft className="h-4 w-4" /> Volver al Club de Amigos
+        <ChevronLeft className="h-4 w-4" /> {t('back')}
       </Link>
 
       <div className="mb-6 flex items-start gap-3">
@@ -66,11 +68,10 @@ export default function RecursosRuralesSocioPage() {
         </span>
         <div>
           <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-            Recursos rurales / naturales
+            {t('title')}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Cascadas, miradores, parajes, dólmenes, ermitas en ruta… Lugares
-            sin QR físico que se validan por GPS desde tu móvil.
+            {t('intro')}
           </p>
         </div>
       </div>
@@ -79,40 +80,39 @@ export default function RecursosRuralesSocioPage() {
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4">
           <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-emerald-900">
             <Smartphone className="h-4 w-4" />
-            Cómo funciona
+            {t('howWorksTitle')}
           </div>
           <p className="text-xs text-emerald-900/85">
-            Llega al recurso, abre la app de LPMBE y, en la ficha del recurso,
-            pulsa <strong>"Estoy aquí"</strong>. La app envía tu ubicación y
-            registra la visita si estás dentro del radio.
+            {t('howWorksTextPrefix')}
+            <strong>"{t('howWorksTextAction')}"</strong>
+            {t('howWorksTextSuffix')}
           </p>
         </div>
         <div className="rounded-2xl border border-fuchsia-200 bg-fuchsia-50/60 p-4">
           <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-fuchsia-900">
             <Sparkles className="h-4 w-4" />
-            Gamificación
+            {t('gamificationTitle')}
           </div>
           <p className="text-xs text-fuchsia-900/85">
-            Cada visita validada por GPS suma{' '}
-            <strong>+{puntos} puntos</strong> a tu marcador del Club.
+            {t('gamificationTextPrefix')}
+            <strong>{t('gamificationTextPoints', { puntos })}</strong>
+            {t('gamificationTextSuffix')}
           </p>
         </div>
         <div className="rounded-2xl border border-sky-200 bg-sky-50/60 p-4">
           <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-sky-900">
             <Wifi className="h-4 w-4" />
-            ¿Sin cobertura?
+            {t('noCoverageTitle')}
           </div>
           <p className="text-xs text-sky-900/85">
-            El GPS funciona sin datos. Para registrar la visita necesitas
-            conexión: si no la hay, la app te avisará y podrás reintentar al
-            volver a tener señal.
+            {t('noCoverageText')}
           </p>
         </div>
       </div>
 
       {loading && (
         <div className="rounded-lg bg-muted/40 p-4 text-sm text-muted-foreground">
-          Cargando recursos…
+          {t('loading')}
         </div>
       )}
       {error && !loading && (
@@ -123,8 +123,7 @@ export default function RecursosRuralesSocioPage() {
 
       {!loading && !error && grupos.length === 0 && (
         <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-8 text-center text-sm text-muted-foreground">
-          Aún no hay recursos rurales/naturales publicados. ¡Pronto se irán
-          añadiendo desde los pueblos y la asociación!
+          {t('emptyText')}
         </div>
       )}
 
@@ -134,7 +133,7 @@ export default function RecursosRuralesSocioPage() {
             <h2 className="mb-3 text-base font-semibold text-foreground">
               {g.titulo}{' '}
               <span className="text-xs font-normal text-muted-foreground">
-                · {g.recursos.length} {g.recursos.length === 1 ? 'recurso' : 'recursos'}
+                · {g.recursos.length === 1 ? t('countOne', { n: g.recursos.length }) : t('countMany', { n: g.recursos.length })}
               </span>
             </h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -165,7 +164,7 @@ export default function RecursosRuralesSocioPage() {
                       </div>
                       {puntos > 0 && (
                         <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-fuchsia-50 px-2 py-0.5 text-[11px] font-semibold text-fuchsia-800">
-                          <Sparkles className="h-3 w-3" />+{puntos} pts
+                          <Sparkles className="h-3 w-3" />{t('pointsBadge', { n: puntos })}
                         </span>
                       )}
                     </div>
@@ -182,7 +181,7 @@ export default function RecursosRuralesSocioPage() {
                         </span>
                       )}
                       <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-800">
-                        Radio {r.geoRadioMetros ?? 200} m
+                        {t('radioLabel', { m: r.geoRadioMetros ?? 200 })}
                       </span>
                     </div>
                     <div className="mt-3 flex items-center justify-between gap-2">
@@ -194,11 +193,11 @@ export default function RecursosRuralesSocioPage() {
                           className="inline-flex items-center gap-1 rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/30"
                         >
                           <Navigation className="h-3.5 w-3.5" />
-                          Cómo llegar
+                          {t('howToGetThere')}
                         </a>
                       )}
                       <span className="text-xs text-muted-foreground">
-                        Valida desde la app móvil
+                        {t('validateFromApp')}
                       </span>
                     </div>
                   </div>

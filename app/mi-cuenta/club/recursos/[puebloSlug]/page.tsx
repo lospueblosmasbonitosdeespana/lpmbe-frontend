@@ -28,20 +28,22 @@ import {
 import { useValidacionesClub } from '../../_components/useValidacionesClub';
 import { useGamificacionConfig } from '../../_components/useGamificacionConfig';
 
-const DIAS_SEMANA_CORTO = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-
 function formatearHorariosSemana(
   horariosSemana: NonNullable<RecursoDisponible['horariosSemana']>,
+  diasCortos: string[],
+  fallbackDiaTpl: string,
+  cerradoLabel: string,
+  abiertoLabel: string,
 ): string[] {
   return horariosSemana
     .slice()
     .sort((a, b) => a.diaSemana - b.diaSemana)
     .map((h) => {
-      const dia = DIAS_SEMANA_CORTO[h.diaSemana] ?? `Día ${h.diaSemana}`;
-      if (!h.abierto) return `${dia}: cerrado`;
+      const dia = diasCortos[h.diaSemana] ?? fallbackDiaTpl.replace('{n}', String(h.diaSemana));
+      if (!h.abierto) return `${dia}: ${cerradoLabel}`;
       const abre = h.horaAbre ?? '';
       const cierra = h.horaCierra ?? '';
-      const rango = abre && cierra ? `${abre}–${cierra}` : abre || cierra || 'Abierto';
+      const rango = abre && cierra ? `${abre}–${cierra}` : abre || cierra || abiertoLabel;
       return `${dia}: ${rango}`;
     });
 }
@@ -91,6 +93,8 @@ function buildEmbedSrc(r: RecursoDisponible): string | null {
 
 export default function RecursosPuebloPage() {
   const t = useTranslations('club');
+  const tPueblo = useTranslations('clubRecursosPueblo');
+  const tDet = useTranslations('clubRecursoDetalle');
   const tAccount = useTranslations('myAccount');
   const params = useParams();
   const puebloSlug = decodeURIComponent(String(params?.puebloSlug ?? ''));
@@ -155,9 +159,9 @@ export default function RecursosPuebloPage() {
         </h1>
         {recursosDelPueblo.length > 0 && (
           <p className="mt-1 text-sm text-muted-foreground">
-            {recursosDelPueblo.length}{' '}
-            {recursosDelPueblo.length === 1 ? 'recurso' : 'recursos'} con beneficios para
-            socios del Club.
+            {recursosDelPueblo.length === 1
+              ? tPueblo('headerSubtitleSingular', { n: 1 })
+              : tPueblo('headerSubtitlePlural', { n: recursosDelPueblo.length })}
           </p>
         )}
       </div>
@@ -177,6 +181,7 @@ export default function RecursosPuebloPage() {
                 visitado={visitado}
                 visitadoHoy={hoy}
                 puntosPorVisita={puntosPorVisita}
+                tDet={tDet}
               />
             );
           })}
@@ -191,12 +196,24 @@ function RecursoCard({
   visitado,
   visitadoHoy,
   puntosPorVisita,
+  tDet,
 }: {
   r: RecursoDisponible;
   visitado: boolean;
   visitadoHoy: boolean;
   puntosPorVisita: number;
+  tDet: ReturnType<typeof useTranslations>;
 }) {
+  const diasCortos = [
+    tDet('diaLun'),
+    tDet('diaMar'),
+    tDet('diaMie'),
+    tDet('diaJue'),
+    tDet('diaVie'),
+    tDet('diaSab'),
+    tDet('diaDom'),
+  ];
+
   const fotos = useMemo<{ url: string; alt: string | null }[]>(() => {
     const principal = r.fotoUrl ? [{ url: r.fotoUrl, alt: r.nombre }] : [];
     const extras = (r.imagenes ?? []).map((i) => ({ url: i.url, alt: i.alt ?? null }));
@@ -269,25 +286,25 @@ function RecursoCard({
                   }`}
                 >
                   <CheckCircle2 size={12} aria-hidden />
-                  {visitadoHoy ? 'Visitado hoy' : 'Visitado'}
+                  {visitadoHoy ? tDet('visitedToday') : tDet('visited')}
                 </span>
               )}
               {r.descuentoPorcentaje != null && r.descuentoPorcentaje > 0 && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-green-600 px-2.5 py-0.5 text-xs font-bold text-white">
-                  <Tag size={12} aria-hidden />−{r.descuentoPorcentaje}% socios
+                  <Tag size={12} aria-hidden />{tDet('discountSocios', { n: r.descuentoPorcentaje })}
                 </span>
               )}
               {r.regaloActivo && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-bold text-white">
-                  <Gift size={12} aria-hidden /> Regalo
+                  <Gift size={12} aria-hidden /> {tDet('giftBadge')}
                 </span>
               )}
               {puntosPorVisita > 0 && (
                 <span
                   className="inline-flex items-center gap-1 rounded-full bg-violet-600 px-2.5 py-0.5 text-xs font-bold text-white"
-                  title={`Sumas ${puntosPorVisita} puntos al validar tu visita`}
+                  title={tDet('pointsTooltip', { n: puntosPorVisita })}
                 >
-                  <Sparkles size={12} aria-hidden />+{puntosPorVisita} pts
+                  <Sparkles size={12} aria-hidden />{tDet('pointsBadge', { n: puntosPorVisita })}
                 </span>
               )}
             </div>
@@ -302,7 +319,7 @@ function RecursoCard({
           {/* Precio */}
           {r.precioCents != null && (
             <div className="mt-3 flex flex-wrap items-baseline gap-2 text-sm">
-              <span className="font-medium text-foreground">Precio:</span>
+              <span className="font-medium text-foreground">{tDet('priceLabel')}</span>
               {precioFinal != null ? (
                 <>
                   <span className="text-muted-foreground line-through">
@@ -325,12 +342,18 @@ function RecursoCard({
             <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
               <CalendarCheck size={12} aria-hidden />
               {r.maxAdultos === 1 && (r.maxMenores ?? 0) === 0
-                ? 'Beneficios solo para el titular'
-                : `Hasta ${r.maxAdultos} adulto${r.maxAdultos > 1 ? 's' : ''}${
+                ? tDet('onlyHolder')
+                : `${
+                    r.maxAdultos === 1
+                      ? tDet('upToAdults', { n: r.maxAdultos })
+                      : tDet('upToAdultsPlural', { n: r.maxAdultos })
+                  }${
                     (r.maxMenores ?? 0) > 0
-                      ? ` + ${r.maxMenores} menor${(r.maxMenores ?? 0) > 1 ? 'es' : ''}`
+                      ? (r.maxMenores === 1
+                          ? tDet('plusMinor', { n: r.maxMenores })
+                          : tDet('plusMinors', { n: r.maxMenores ?? 0 }))
                       : ''
-                  }${(r.maxMenores ?? 0) > 0 ? ` (<${r.edadMaxMenor ?? 12} años)` : ''}`}
+                  }${(r.maxMenores ?? 0) > 0 ? tDet('minorsAge', { n: r.edadMaxMenor ?? 12 }) : ''}`}
             </div>
           )}
 
@@ -339,10 +362,16 @@ function RecursoCard({
             <div className="mt-4 rounded-xl border border-border bg-muted/30 p-3 text-sm text-foreground">
               <div className="flex items-center gap-2 font-semibold text-foreground/90">
                 <Clock size={16} className="text-muted-foreground" aria-hidden />
-                Horario
+                {tDet('scheduleHeading')}
               </div>
               <ul className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 text-sm text-foreground/90 sm:grid-cols-2">
-                {formatearHorariosSemana(r.horariosSemana ?? []).map((linea, i) => (
+                {formatearHorariosSemana(
+                  r.horariosSemana ?? [],
+                  diasCortos,
+                  tDet('fallbackDia'),
+                  tDet('cerrado'),
+                  tDet('abierto'),
+                ).map((linea, i) => (
                   <li key={i} className="flex items-center justify-between gap-2 tabular-nums">
                     <span>{linea}</span>
                   </li>
@@ -385,7 +414,7 @@ function RecursoCard({
                   rel="noreferrer"
                   className="text-primary hover:underline"
                 >
-                  WhatsApp
+                  {tDet('whatsapp')}
                 </a>
               </li>
             )}
@@ -416,7 +445,7 @@ function RecursoCard({
           {r.regaloActivo && (r.regaloTitulo || r.regaloDescripcion) && (
             <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
               <div className="flex items-center gap-2 font-semibold">
-                <Gift size={16} aria-hidden /> {r.regaloTitulo ?? 'Regalo del Club'}
+                <Gift size={16} aria-hidden /> {r.regaloTitulo ?? tDet('giftDefault')}
               </div>
               {r.regaloDescripcion && (
                 <p className="mt-1 whitespace-pre-line text-amber-900/90">
@@ -437,7 +466,7 @@ function RecursoCard({
           {embedSrc ? (
             <div className="overflow-hidden rounded-xl border border-border bg-muted">
               <iframe
-                title={`Mapa de ${r.nombre}`}
+                title={tDet('mapTitle', { nombre: r.nombre })}
                 src={embedSrc}
                 loading="lazy"
                 className="h-48 w-full border-0"
@@ -445,7 +474,7 @@ function RecursoCard({
             </div>
           ) : (
             <div className="flex h-32 items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 text-xs text-muted-foreground">
-              Ubicación aproximada
+              {tDet('approxLocation')}
             </div>
           )}
           {mapsLink && (
@@ -455,7 +484,7 @@ function RecursoCard({
               rel="noreferrer"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:opacity-90"
             >
-              <Navigation size={16} aria-hidden /> Cómo llegar
+              <Navigation size={16} aria-hidden /> {tDet('howToGetThere')}
             </a>
           )}
           {r.bookingUrl && (
@@ -465,7 +494,7 @@ function RecursoCard({
               rel="noreferrer"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-white px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted/40"
             >
-              Reservar / Comprar entrada
+              {tDet('bookOrBuy')}
             </a>
           )}
         </aside>

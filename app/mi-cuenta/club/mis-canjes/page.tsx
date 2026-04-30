@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   ChevronLeft,
   Gift,
@@ -36,16 +37,18 @@ type Canje = {
   };
 };
 
-const ESTADO_CONFIG: Record<
+function buildEstadoConfig(t: (k: string) => string): Record<
   string,
   { label: string; tone: 'amber' | 'emerald' | 'rose' | 'zinc' }
-> = {
-  CANJEADO: { label: 'Activo · listo para usar', tone: 'amber' },
-  USADO: { label: 'Usado', tone: 'emerald' },
-  CADUCADO: { label: 'Caducado', tone: 'zinc' },
-  CANCELADO: { label: 'Cancelado', tone: 'rose' },
-  REEMBOLSADO: { label: 'Reembolsado · puntos devueltos', tone: 'emerald' },
-};
+> {
+  return {
+    CANJEADO: { label: t('stateActive'), tone: 'amber' },
+    USADO: { label: t('stateUsed'), tone: 'emerald' },
+    CADUCADO: { label: t('stateExpired'), tone: 'zinc' },
+    CANCELADO: { label: t('stateCancelled'), tone: 'rose' },
+    REEMBOLSADO: { label: t('stateRefunded'), tone: 'emerald' },
+  };
+}
 
 const TONE_CLASSES: Record<string, string> = {
   amber:
@@ -59,6 +62,9 @@ const TONE_CLASSES: Record<string, string> = {
 };
 
 export default function MisCanjesPage() {
+  const t = useTranslations('clubMisCanjes');
+  const locale = useLocale();
+  const ESTADO_CONFIG = useMemo(() => buildEstadoConfig(t), [t]);
   const [items, setItems] = useState<Canje[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,11 +78,11 @@ export default function MisCanjesPage() {
         window.location.href = '/entrar';
         return;
       }
-      if (!r.ok) throw new Error('No se pudieron cargar tus canjes');
+      if (!r.ok) throw new Error(t('loadError'));
       const data = (await r.json()) as Canje[];
       setItems(Array.isArray(data) ? data : []);
     } catch (e: any) {
-      setError(e?.message ?? 'Error desconocido');
+      setError(e?.message ?? t('errorUnknown'));
     } finally {
       setLoading(false);
     }
@@ -84,6 +90,7 @@ export default function MisCanjesPage() {
 
   useEffect(() => {
     reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const activos = items.filter((c) => c.estado === 'CANJEADO');
@@ -98,18 +105,18 @@ export default function MisCanjesPage() {
             className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
             <ChevronLeft size={16} aria-hidden />
-            Volver al Club
+            {t('back')}
           </Link>
         </div>
 
         <div className="mb-6">
-          <Title size="xl">Mis cupones</Title>
-          <Caption>Todos tus canjes del Club: los activos y los pasados.</Caption>
+          <Title size="xl">{t('title')}</Title>
+          <Caption>{t('subtitle')}</Caption>
         </div>
 
         {loading && (
           <div className="rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
-            Cargando…
+            {t('loading')}
           </div>
         )}
         {error && !loading && (
@@ -121,17 +128,13 @@ export default function MisCanjesPage() {
         {!loading && !error && items.length === 0 && (
           <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-10 text-center">
             <Gift size={28} className="mx-auto mb-3 text-muted-foreground" aria-hidden />
-            <Title size="lg" className="mb-1">
-              Aún no has canjeado nada
-            </Title>
-            <Caption>
-              Visita la sección de premios para empezar a usar tus puntos.
-            </Caption>
+            <Title size="lg" className="mb-1">{t('emptyTitle')}</Title>
+            <Caption>{t('emptyText')}</Caption>
             <Link
               href="/mi-cuenta/club/recompensas"
               className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-amber-600 px-4 py-2 text-sm font-semibold text-white"
             >
-              <Gift size={14} aria-hidden /> Ver premios
+              <Gift size={14} aria-hidden /> {t('viewCatalog')}
             </Link>
           </div>
         )}
@@ -139,11 +142,11 @@ export default function MisCanjesPage() {
         {activos.length > 0 && (
           <section className="mb-8">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Cupones activos ({activos.length})
+              {t('sectionActive', { n: activos.length })}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {activos.map((c) => (
-                <CanjeCard key={c.id} canje={c} />
+                <CanjeCard key={c.id} canje={c} estadoConfig={ESTADO_CONFIG} t={t} locale={locale} />
               ))}
             </div>
           </section>
@@ -152,11 +155,11 @@ export default function MisCanjesPage() {
         {historial.length > 0 && (
           <section>
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Histórico ({historial.length})
+              {t('sectionHistory', { n: historial.length })}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {historial.map((c) => (
-                <CanjeCard key={c.id} canje={c} compact />
+                <CanjeCard key={c.id} canje={c} compact estadoConfig={ESTADO_CONFIG} t={t} locale={locale} />
               ))}
             </div>
           </section>
@@ -166,17 +169,29 @@ export default function MisCanjesPage() {
   );
 }
 
-function formatDate(iso: string | null): string {
+function formatDate(iso: string | null, locale: string): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('es-ES', {
+  return new Date(iso).toLocaleDateString(locale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
   });
 }
 
-function CanjeCard({ canje, compact = false }: { canje: Canje; compact?: boolean }) {
-  const cfg = ESTADO_CONFIG[canje.estado] ?? {
+function CanjeCard({
+  canje,
+  compact = false,
+  estadoConfig,
+  t,
+  locale,
+}: {
+  canje: Canje;
+  compact?: boolean;
+  estadoConfig: ReturnType<typeof buildEstadoConfig>;
+  t: ReturnType<typeof useTranslations>;
+  locale: string;
+}) {
+  const cfg = estadoConfig[canje.estado] ?? {
     label: canje.estado,
     tone: 'zinc' as const,
   };
@@ -212,15 +227,15 @@ function CanjeCard({ canje, compact = false }: { canje: Canje; compact?: boolean
 
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1">
-              <Coins size={12} aria-hidden /> {canje.puntosUsados} pts
+              <Coins size={12} aria-hidden /> {t('pointsUsed', { n: canje.puntosUsados })}
             </span>
             <span>·</span>
-            <span>Canjeado el {formatDate(canje.canjeadoAt)}</span>
+            <span>{t('redeemedOn', { fecha: formatDate(canje.canjeadoAt, locale) })}</span>
             {canje.expiresAt && canje.estado === 'CANJEADO' && (
               <>
                 <span>·</span>
                 <span className="inline-flex items-center gap-1">
-                  <Clock size={12} aria-hidden /> Caduca el {formatDate(canje.expiresAt)}
+                  <Clock size={12} aria-hidden /> {t('validUntil', { fecha: formatDate(canje.expiresAt, locale) })}
                 </span>
               </>
             )}
@@ -229,7 +244,7 @@ function CanjeCard({ canje, compact = false }: { canje: Canje; compact?: boolean
           {canje.codigo && canje.estado === 'CANJEADO' && (
             <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/40">
               <p className="text-xs uppercase tracking-wide text-amber-900/80 dark:text-amber-200/70">
-                Código del cupón
+                {t('codeLabel')}
               </p>
               <p className="mt-0.5 font-mono text-lg font-bold tracking-widest text-amber-900 dark:text-amber-100">
                 {canje.codigo}
@@ -244,7 +259,7 @@ function CanjeCard({ canje, compact = false }: { canje: Canje; compact?: boolean
 
           {!compact && canje.motivoCancelacion && (
             <p className="mt-2 text-xs italic text-muted-foreground">
-              Motivo: {canje.motivoCancelacion}
+              {t('cancelReason', { motivo: canje.motivoCancelacion })}
             </p>
           )}
         </div>

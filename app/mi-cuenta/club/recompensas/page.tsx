@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   ChevronLeft,
   Gift,
@@ -54,17 +55,21 @@ type CanjeOk = {
   recompensa: { nombre: string; instrucciones: string | null };
 };
 
-const TIPO_LABEL: Record<string, string> = {
-  TIENDA: 'Tienda LPMBE',
-  EXPERIENCIA: 'Experiencia',
-  GUIA_DIGITAL: 'Guía digital',
-  PRODUCTO_FISICO: 'Producto',
-  DONACION: 'Donación',
-  OTRO: 'Otro',
-  GENERAL: 'Premio',
-};
+function buildTipoLabel(t: (key: string) => string): Record<string, string> {
+  return {
+    TIENDA: t('tipoTienda'),
+    EXPERIENCIA: t('tipoExperiencia'),
+    GUIA_DIGITAL: t('tipoGuiaDigital'),
+    PRODUCTO_FISICO: t('tipoProducto'),
+    DONACION: t('tipoDonacion'),
+    OTRO: t('tipoOtro'),
+    GENERAL: t('tipoGeneral'),
+  };
+}
 
 export default function RecompensasPage() {
+  const t = useTranslations('clubRecompensas');
+  const TIPO_LABEL = useMemo(() => buildTipoLabel(t), [t]);
   const [data, setData] = useState<CatalogoResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,11 +86,11 @@ export default function RecompensasPage() {
         window.location.href = '/entrar';
         return;
       }
-      if (!r.ok) throw new Error('No se pudo cargar el catálogo');
+      if (!r.ok) throw new Error(t('loadError'));
       const json = (await r.json()) as CatalogoResponse;
       setData(json);
     } catch (e: any) {
-      setError(e?.message ?? 'Error desconocido');
+      setError(e?.message ?? t('errorUnknown'));
     } finally {
       setLoading(false);
     }
@@ -93,13 +98,14 @@ export default function RecompensasPage() {
 
   useEffect(() => {
     reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleCanjear(rec: Recompensa) {
     if (!rec.puedeCanjear) return;
     if (
       !window.confirm(
-        `¿Canjear "${rec.nombre}" por ${rec.puntosCoste} puntos?\n\nEsta acción descuenta puntos de tu wallet del Club.`,
+        t('confirmRedeem', { nombre: rec.nombre, puntos: rec.puntosCoste }),
       )
     ) {
       return;
@@ -115,13 +121,13 @@ export default function RecompensasPage() {
       const json = await r.json().catch(() => ({}));
       if (!r.ok) {
         throw new Error(
-          json?.message || json?.detail || 'No se pudo completar el canje',
+          json?.message || json?.detail || t('redeemError'),
         );
       }
       setCanjeOk(json);
       reload();
     } catch (e: any) {
-      setCanjeErr(e?.message ?? 'Error en el canje');
+      setCanjeErr(e?.message ?? t('redeemErrorGeneric'));
     } finally {
       setCanjeando(null);
     }
@@ -147,16 +153,14 @@ export default function RecompensasPage() {
             className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
             <ChevronLeft size={16} aria-hidden />
-            Volver al Club
+            {t('back')}
           </Link>
         </div>
 
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <Title size="xl">Premios y recompensas</Title>
-            <Caption>
-              Canjea los puntos del Club por experiencias, productos y descuentos.
-            </Caption>
+            <Title size="xl">{t('title')}</Title>
+            <Caption>{t('subtitle')}</Caption>
           </div>
           <Sparkles className="hidden h-8 w-8 text-amber-500 sm:block" aria-hidden />
         </div>
@@ -168,11 +172,13 @@ export default function RecompensasPage() {
             <div className="flex items-start gap-3">
               <CheckCircle2 size={20} aria-hidden className="mt-0.5 shrink-0" />
               <div>
-                <p className="font-semibold">¡Canje realizado!</p>
+                <p className="font-semibold">{t('redeemedTitle')}</p>
                 <p className="mt-1 text-sm">
-                  Tu cupón <span className="font-mono font-semibold">{canjeOk.codigo}</span>{' '}
-                  está activo. Se han descontado{' '}
-                  <strong>{canjeOk.puntosUsados} puntos</strong> de tu wallet.
+                  {t('redeemedBodyPrefix')}
+                  <span className="font-mono font-semibold">{canjeOk.codigo}</span>
+                  {t('redeemedBodyMid')}
+                  <strong>{canjeOk.puntosUsados} {t('pointsUnit')}</strong>
+                  {t('redeemedBodySuffix')}
                 </p>
                 {canjeOk.recompensa.instrucciones && (
                   <p className="mt-2 text-sm">{canjeOk.recompensa.instrucciones}</p>
@@ -181,7 +187,7 @@ export default function RecompensasPage() {
                   href="/mi-cuenta/club/mis-canjes"
                   className="mt-3 inline-flex items-center gap-1 text-sm font-semibold underline"
                 >
-                  Ver mis cupones
+                  {t('viewMyCoupons')}
                 </Link>
               </div>
             </div>
@@ -199,7 +205,7 @@ export default function RecompensasPage() {
 
         {loading && (
           <div className="rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
-            Cargando premios…
+            {t('loading')}
           </div>
         )}
         {error && !loading && (
@@ -211,14 +217,8 @@ export default function RecompensasPage() {
         {!loading && !error && data && data.items.length === 0 && (
           <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-10 text-center">
             <Gift size={28} className="mx-auto mb-3 text-muted-foreground" aria-hidden />
-            <Title size="lg" className="mb-1">
-              Estamos preparando los premios
-            </Title>
-            <Caption>
-              Pronto podrás canjear tus puntos por experiencias en los pueblos más bonitos
-              de España. Mientras tanto sigue ganando puntos visitando recursos y negocios
-              de la red.
-            </Caption>
+            <Title size="lg" className="mb-1">{t('emptyTitle')}</Title>
+            <Caption>{t('emptyText')}</Caption>
           </div>
         )}
 
@@ -235,6 +235,7 @@ export default function RecompensasPage() {
                     recompensa={r}
                     canjeando={canjeando === r.id}
                     onCanjear={() => handleCanjear(r)}
+                    t={t}
                   />
                 ))}
               </div>
@@ -250,10 +251,12 @@ function RecompensaCard({
   recompensa: r,
   canjeando,
   onCanjear,
+  t,
 }: {
   recompensa: Recompensa;
   canjeando: boolean;
   onCanjear: () => void;
+  t: ReturnType<typeof useTranslations>;
 }) {
   const stockBajo =
     r.stockDisponible != null && r.stockDisponible > 0 && r.stockDisponible <= 5;
@@ -276,16 +279,16 @@ function RecompensaCard({
           </div>
         )}
         <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-amber-900 shadow-sm dark:bg-zinc-900/95 dark:text-amber-100">
-          <Coins size={12} aria-hidden /> {r.puntosCoste} pts
+          <Coins size={12} aria-hidden /> {r.puntosCoste} {t('pointsUnit')}
         </span>
         {sinStock && (
           <span className="absolute left-2 top-2 rounded-full bg-rose-600 px-2 py-0.5 text-xs font-semibold text-white">
-            Sin stock
+            {t('outOfStock')}
           </span>
         )}
         {!sinStock && stockBajo && (
           <span className="absolute left-2 top-2 rounded-full bg-amber-600 px-2 py-0.5 text-xs font-semibold text-white">
-            Quedan {r.stockDisponible}
+            {t('stockLeft', { n: r.stockDisponible ?? 0 })}
           </span>
         )}
       </div>
@@ -299,13 +302,14 @@ function RecompensaCard({
         <ul className="space-y-1 text-xs text-muted-foreground">
           {r.validezDias != null && (
             <li className="flex items-center gap-1.5">
-              <Info size={12} aria-hidden /> Válido {r.validezDias} días tras canjear
+              <Info size={12} aria-hidden /> {t('validFor', { n: r.validezDias })}
             </li>
           )}
           {r.maxPorUsuario != null && (
             <li className="flex items-center gap-1.5">
-              <Info size={12} aria-hidden /> Máximo {r.maxPorUsuario} canje{r.maxPorUsuario === 1 ? '' : 's'} por socio
-              {r.canjesUsuarioActual > 0 && ` · ya tienes ${r.canjesUsuarioActual}`}
+              <Info size={12} aria-hidden />{' '}
+              {(r.maxPorUsuario === 1 ? t('maxOne', { n: r.maxPorUsuario }) : t('maxMany', { n: r.maxPorUsuario }))}
+              {r.canjesUsuarioActual > 0 && t('alreadyHave', { n: r.canjesUsuarioActual })}
             </li>
           )}
         </ul>
@@ -319,10 +323,10 @@ function RecompensaCard({
               className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-amber-700 disabled:opacity-60"
             >
               {canjeando ? (
-                'Canjeando…'
+                t('redeeming')
               ) : (
                 <>
-                  <Gift size={14} aria-hidden /> Canjear por {r.puntosCoste} pts
+                  <Gift size={14} aria-hidden /> {t('redeemFor', { puntos: r.puntosCoste })}
                 </>
               )}
             </button>
@@ -332,7 +336,7 @@ function RecompensaCard({
               disabled
               className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground"
             >
-              <CheckCircle2 size={14} aria-hidden /> Ya canjeado el máximo
+              <CheckCircle2 size={14} aria-hidden /> {t('alreadyMaxed')}
             </button>
           ) : sinStock ? (
             <button
@@ -340,7 +344,7 @@ function RecompensaCard({
               disabled
               className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground"
             >
-              Sin stock
+              {t('outOfStock')}
             </button>
           ) : (
             <button
@@ -348,7 +352,7 @@ function RecompensaCard({
               disabled
               className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100"
             >
-              <Lock size={14} aria-hidden /> Te faltan {r.puntosFaltan} pts
+              <Lock size={14} aria-hidden /> {t('missingPoints', { n: r.puntosFaltan })}
             </button>
           )}
         </div>
