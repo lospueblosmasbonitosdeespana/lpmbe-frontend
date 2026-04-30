@@ -100,6 +100,8 @@ type RecursoDisponible = {
 type QrIdentidad = {
   qrPayload: string;
   expiresAt: string;
+  codigoCorto?: string | null;
+  codigoCortoFormateado?: string | null;
 };
 
 function formatFecha(fecha: string | null | undefined): string {
@@ -122,6 +124,16 @@ function formatFechaHora(fecha: string | null | undefined): string {
   const hours = String(d.getHours()).padStart(2, '0');
   const minutes = String(d.getMinutes()).padStart(2, '0');
   return `${day}/${month}/${year} ${hours}:${minutes}`;
+}
+
+function formatCodigoCorto(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const cleaned = String(raw)
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .slice(0, 6);
+  if (cleaned.length !== 6) return null;
+  return `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
 }
 
 export default function ClubPage() {
@@ -342,9 +354,16 @@ export default function ClubPage() {
       }
 
       const data = await res.json();
+      const codigoCorto = data?.codigoCorto ?? data?.shortCode ?? null;
+      const codigoCortoFormateado =
+        data?.codigoCortoFormateado ??
+        data?.shortCodeFormatted ??
+        formatCodigoCorto(codigoCorto);
       setQrIdentidad({
         qrPayload: data.qrPayload,
         expiresAt: data.expiresAt,
+        codigoCorto,
+        codigoCortoFormateado,
       });
     } catch (e: any) {
       setQrIdentidadError(e?.message ?? t('errorUnknown'));
@@ -589,6 +608,18 @@ export default function ClubPage() {
                   <Caption className="mt-3 block text-center">
                     {t('qrShowCode')}
                   </Caption>
+
+                  {(qrIdentidad.codigoCortoFormateado || qrIdentidad.codigoCorto) && (
+                    <div className="mt-3 text-center">
+                      <p className="text-xs text-muted-foreground">
+                        Código corto para validador
+                      </p>
+                      <p className="mt-1 font-mono text-lg font-semibold tracking-widest text-foreground">
+                        {qrIdentidad.codigoCortoFormateado ??
+                          formatCodigoCorto(qrIdentidad.codigoCorto)}
+                      </p>
+                    </div>
+                  )}
 
                   {tiempoRestanteIdentidad !== null && (
                     <p className="mt-2 text-center text-sm text-muted-foreground">
