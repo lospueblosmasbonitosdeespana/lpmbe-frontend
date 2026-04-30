@@ -152,6 +152,17 @@ const QUICK_LINKS: QuickLink[] = [
       </svg>
     ),
   },
+  {
+    href: '/gestion/asociacion/datos/puntos-recursos',
+    title: 'Puntos por recurso',
+    description: 'Ajustes individuales · imprescindible para SELECTION',
+    tone: 'rose',
+    icon: (
+      <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6" />
+      </svg>
+    ),
+  },
 ];
 
 export default async function GestionAsociacionClubPage() {

@@ -21,7 +21,13 @@ export type ReglaGamificacion = {
   categoria: string;
 };
 
-const KEYS_PROTEGIDAS = new Set(['RECURSO_VISITADO', 'RECURSO_NATURAL_VISITADO']);
+const KEYS_PROTEGIDAS = new Set([
+  'RECURSO_VISITADO',
+  'RECURSO_NATURAL_VISITADO',
+  'NEGOCIO_VISITADO_FREE',
+  'NEGOCIO_VISITADO_RECOMENDADO',
+  'NEGOCIO_VISITADO_PREMIUM',
+]);
 
 const CATEGORIAS: Array<{ id: string; label: string; descripcion: string; color: string }> = [
   {
@@ -42,7 +48,7 @@ const CATEGORIAS: Array<{ id: string; label: string; descripcion: string; color:
     id: 'NEGOCIOS',
     label: 'Negocios',
     descripcion:
-      'Reservado para futuras mecánicas con negocios (visita validada, reseña, reserva…).',
+      'Visita validada (QR/código corto) a un negocio del Club. Hay una regla por plan (FREE / Recomendado / Premium). Para Selection se ajusta individualmente desde "Puntos por recurso".',
     color: 'teal',
   },
   {
@@ -64,11 +70,27 @@ export function GamificacionAdminEditor({
   categoriaFiltro,
   readOnly = false,
 }: {
-  /** Si se pasa, solo se ven/crean reglas en esa categoría. */
-  categoriaFiltro?: string;
+  /**
+   * Si se pasa, solo se ven/crean reglas en esa(s) categoría(s).
+   * Acepta un único valor o un array (para incluir varias en una misma vista).
+   */
+  categoriaFiltro?: string | string[];
   /** Para alcaldes: solo lectura. */
   readOnly?: boolean;
 }) {
+  const filtroSet = useMemo(() => {
+    if (!categoriaFiltro) return null;
+    return new Set(
+      Array.isArray(categoriaFiltro) ? categoriaFiltro : [categoriaFiltro],
+    );
+  }, [categoriaFiltro]);
+  const categoriaPorDefecto = useMemo(() => {
+    if (Array.isArray(categoriaFiltro) && categoriaFiltro.length > 0) {
+      return categoriaFiltro[0];
+    }
+    if (typeof categoriaFiltro === 'string') return categoriaFiltro;
+    return 'CLUB';
+  }, [categoriaFiltro]);
   const [reglas, setReglas] = useState<ReglaGamificacion[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<number | null>(null);
@@ -83,7 +105,7 @@ export function GamificacionAdminEditor({
   const [newDescripcion, setNewDescripcion] = useState('');
   const [newPuntos, setNewPuntos] = useState('5');
   const [newActivo, setNewActivo] = useState(true);
-  const [newCategoria, setNewCategoria] = useState(categoriaFiltro ?? 'CLUB');
+  const [newCategoria, setNewCategoria] = useState(categoriaPorDefecto);
 
   async function load() {
     setLoading(true);
@@ -219,9 +241,9 @@ export function GamificacionAdminEditor({
   }
 
   const reglasFiltradas = useMemo(() => {
-    if (!categoriaFiltro) return reglas;
-    return reglas.filter((r) => r.categoria === categoriaFiltro);
-  }, [reglas, categoriaFiltro]);
+    if (!filtroSet) return reglas;
+    return reglas.filter((r) => filtroSet.has(r.categoria));
+  }, [reglas, filtroSet]);
 
   const reglasPorCategoria = useMemo(() => {
     const map = new Map<string, ReglaGamificacion[]>();

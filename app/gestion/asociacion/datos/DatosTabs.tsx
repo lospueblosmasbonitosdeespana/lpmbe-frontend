@@ -12,6 +12,7 @@ const WebDashboard = lazy(() => import('./WebDashboard'));
 const AppDashboard = dynamic(() => import('./AppDashboard'), { ssr: false });
 const InternoDashboard = lazy(() => import('./InternoDashboard'));
 const PuntosPueblosClient = lazy(() => import('./puntos-pueblos/PuntosPueblosClient'));
+const PuntosRecursosClient = lazy(() => import('./puntos-recursos/PuntosRecursosClient'));
 const NewsletterDashboard = lazy(() => import('./NewsletterDashboard'));
 const HttpErroresDashboard = lazy(() => import('./HttpErroresDashboard'));
 const SeoAuditoriaDashboard = lazy(() => import('./SeoAuditoriaDashboard'));
@@ -25,6 +26,7 @@ const TABS = [
   { key: 'metricas-pueblos' as const, label: 'Métricas pueblos' as const },
   { key: 'web' as const, labelKey: 'tabWeb' as const },
   { key: 'puntos' as const, labelKey: 'tabPuntosPueblos' as const },
+  { key: 'puntos-recursos' as const, label: 'Puntos recursos' as const },
   { key: 'errores' as const, label: 'Errores' as const },
   { key: 'seo' as const, label: 'SEO' as const },
 ] as const;
@@ -122,6 +124,11 @@ export default function DatosTabs({
       {active === 'puntos' && (
         <Suspense fallback={<Spinner label={t('loading')} />}>
           <PuntosPueblosClient />
+        </Suspense>
+      )}
+      {active === 'puntos-recursos' && (
+        <Suspense fallback={<Spinner label={t('loading')} />}>
+          <PuntosRecursosClient />
         </Suspense>
       )}
       {active === 'errores' && canViewErrores && (

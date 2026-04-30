@@ -23,10 +23,18 @@ export default function GamificacionClubAdminPage() {
             Gamificación del Club
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Reglas de la categoría <strong>Club de Amigos</strong>. Los pueblos
-            no pueden modificar nada — todos los recursos turísticos suman lo
-            mismo. Para ver TODAS las categorías de gamificación de la web,
-            usa la{' '}
+            Reglas que otorgan puntos al socio: <strong>Club</strong> (RRTT,
+            naturales, sorteos…) y <strong>Negocios</strong> (visita validada,
+            puntos por plan). Los alcaldes no pueden modificarlas. Si necesitas
+            ajustar puntos individuales por recurso (p. ej. SELECTION o una
+            cascada lejana), usa{' '}
+            <Link
+              href="/gestion/asociacion/datos/puntos-recursos"
+              className="font-medium text-fuchsia-700 underline hover:text-fuchsia-900"
+            >
+              Puntos por recurso
+            </Link>
+            . Para ver TODAS las categorías (también Pueblos y General), usa la{' '}
             <Link
               href="/gestion/asociacion/gamificacion"
               className="inline-flex items-center gap-1 text-fuchsia-700 underline hover:text-fuchsia-900"
@@ -38,7 +46,7 @@ export default function GamificacionClubAdminPage() {
         </div>
       </div>
 
-      <GamificacionAdminEditor categoriaFiltro="CLUB" />
+      <GamificacionAdminEditor categoriaFiltro={['CLUB', 'NEGOCIOS']} />
     </main>
   );
 }
