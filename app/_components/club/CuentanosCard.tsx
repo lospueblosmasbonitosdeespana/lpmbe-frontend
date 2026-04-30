@@ -13,6 +13,8 @@ import {
   PartyPopper,
   Sparkles,
   PartyPopper as Confetti,
+  CircleCheckBig,
+  PenLine,
 } from 'lucide-react';
 import { Title, Caption } from '@/app/components/ui/typography';
 
@@ -113,23 +115,43 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
   if (collapsed && isCompleteNow) {
     return (
       <div className={baseClass}>
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <Title size="lg" className="mb-1">Tus datos de socio</Title>
-            <Caption>
-              Provincia: <strong>{provincia}</strong> · Cumple:{' '}
-              <strong>{fechaNacimiento}</strong> · Intereses:{' '}
-              <strong>{intereses.length}</strong>
-              {aceptaMarketing && ' · Recibes novedades por email'}
-            </Caption>
+        <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-emerald-50/50 p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
+                <CircleCheckBig size={14} aria-hidden />
+                Perfil de socio completo
+              </div>
+              <Title size="lg" className="mb-2">Tus datos de socio</Title>
+              <div className="flex flex-wrap gap-2">
+                <span className="rounded-full border border-border bg-white px-2.5 py-1 text-xs text-gray-700">
+                  <strong>Provincia:</strong> {provincia}
+                </span>
+                <span className="rounded-full border border-border bg-white px-2.5 py-1 text-xs text-gray-700">
+                  <strong>Cumple:</strong> {fechaNacimiento}
+                </span>
+                <span className="rounded-full border border-border bg-white px-2.5 py-1 text-xs text-gray-700">
+                  <strong>Intereses:</strong> {intereses.length}
+                </span>
+                {aceptaMarketing && (
+                  <span className="rounded-full border border-emerald-200 bg-emerald-100/60 px-2.5 py-1 text-xs font-medium text-emerald-800">
+                    Recibe novedades
+                  </span>
+                )}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCollapsed(false)}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium hover:bg-muted/40"
+            >
+              <PenLine size={13} aria-hidden />
+              Editar
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setCollapsed(false)}
-            className="rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium hover:bg-muted/40"
-          >
-            Editar
-          </button>
+          <Caption className="mt-2 block">
+            Puedes modificar estos datos cuando quieras desde este mismo botón.
+          </Caption>
         </div>
       </div>
     );
