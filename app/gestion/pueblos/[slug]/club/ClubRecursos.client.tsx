@@ -121,6 +121,51 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Editor inline de puntos del Club (solo admin)
+  const [editandoPuntosId, setEditandoPuntosId] = useState<number | null>(null);
+  const [editPuntosValor, setEditPuntosValor] = useState('');
+  const [guardandoPuntos, setGuardandoPuntos] = useState(false);
+
+  function startEditPuntos(r: Recurso) {
+    setEditandoPuntosId(r.id);
+    setEditPuntosValor(
+      r.puntosCustom != null ? String(r.puntosCustom) : '',
+    );
+  }
+
+  async function handleGuardarPuntos(
+    id: number,
+    payload: { puntosCustom: number | null },
+  ) {
+    setGuardandoPuntos(true);
+    try {
+      const res = await fetch(`/api/club/admin/recursos/${id}/puntos`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(parseApiError(data, 'No se pudieron guardar los puntos.'));
+        return;
+      }
+      // Refrescar el listado para reflejar los nuevos puntos
+      const list = await fetch(`/api/club/recursos/pueblo/${puebloId}`, {
+        cache: 'no-store',
+      });
+      if (list.ok) {
+        const data = await list.json();
+        setRecursos(Array.isArray(data) ? data : data.items || []);
+      }
+      setEditandoPuntosId(null);
+      setEditPuntosValor('');
+    } catch {
+      alert('Error de red al guardar los puntos.');
+    } finally {
+      setGuardandoPuntos(false);
+    }
+  }
+
   // Form nuevo recurso
   const [showForm, setShowForm] = useState(false);
   const [nuevoNombre, setNuevoNombre] = useState('');
@@ -1620,14 +1665,15 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
                       Métricas
                     </a>
                     {esAdmin ? (
-                      <a
-                        href={`/gestion/asociacion/datos/puntos-recursos?focus=${r.id}`}
-                        className="px-3 py-1 text-sm border rounded hover:bg-fuchsia-50 text-fuchsia-700 border-fuchsia-300 inline-flex items-center gap-1 text-center"
-                        title="Ajustar puntos del Club para este recurso"
+                      <button
+                        type="button"
+                        onClick={() => startEditPuntos(r)}
+                        className="px-3 py-1 text-sm border rounded hover:bg-fuchsia-50 text-fuchsia-700 border-fuchsia-300 inline-flex items-center gap-1"
+                        title="Cambiar los puntos del Club que otorga este recurso"
                       >
                         <Sparkles className="h-3 w-3" aria-hidden />
-                        Ajustar puntos
-                      </a>
+                        Puntos
+                      </button>
                     ) : (r.puntosEfectivos ?? 0) > 0 ? (
                       <span
                         className="px-3 py-1 text-xs rounded bg-muted/30 text-muted-foreground inline-flex items-center gap-1"
@@ -1638,6 +1684,23 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
                       </span>
                     ) : null}
                   </div>
+                  {esAdmin && editandoPuntosId === r.id ? (
+                    <PuntosEditor
+                      recursoId={r.id}
+                      puntosCustom={r.puntosCustom ?? null}
+                      puntosGenericos={r.puntosGenericos ?? 0}
+                      saving={guardandoPuntos}
+                      onCancel={() => {
+                        setEditandoPuntosId(null);
+                        setEditPuntosValor('');
+                      }}
+                      onSave={async (valor) => {
+                        await handleGuardarPuntos(r.id, valor);
+                      }}
+                      valor={editPuntosValor}
+                      setValor={setEditPuntosValor}
+                    />
+                  ) : null}
                 </>
               )}
             </div>
@@ -1645,6 +1708,98 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
         )}
       </div>
     </>
+  );
+}
+
+function PuntosEditor({
+  recursoId,
+  puntosCustom,
+  puntosGenericos,
+  saving,
+  valor,
+  setValor,
+  onCancel,
+  onSave,
+}: {
+  recursoId: number;
+  puntosCustom: number | null;
+  puntosGenericos: number;
+  saving: boolean;
+  valor: string;
+  setValor: (v: string) => void;
+  onCancel: () => void;
+  onSave: (payload: { puntosCustom: number | null }) => Promise<void>;
+}) {
+  const tieneCustom = puntosCustom != null;
+
+  function parsePayload(): { puntosCustom: number | null } | null {
+    const t = valor.trim();
+    if (t === '') return { puntosCustom: null };
+    const v = parseInt(t, 10);
+    if (Number.isNaN(v) || v < 0) {
+      alert('Introduce un entero ≥ 0, o vacío para usar el valor genérico.');
+      return null;
+    }
+    return { puntosCustom: v };
+  }
+
+  return (
+    <div className="mt-3 rounded-lg border border-fuchsia-200 bg-fuchsia-50/40 p-3">
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex-1 min-w-[180px]">
+          <label className="block text-xs font-semibold text-fuchsia-900 mb-1">
+            Puntos del Club al validar este recurso
+          </label>
+          <input
+            type="number"
+            min={0}
+            step={1}
+            placeholder={`gen: ${puntosGenericos}`}
+            value={valor}
+            onChange={(e) => setValor(e.target.value)}
+            className="w-full rounded border border-fuchsia-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-400/40"
+            autoFocus
+          />
+          <p className="mt-1 text-[11px] text-fuchsia-800/80">
+            Deja el campo vacío para volver al genérico ({puntosGenericos} pts).
+            {tieneCustom ? ' Ahora mismo este recurso tiene un valor personalizado.' : ' Ahora mismo hereda el genérico.'}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={saving}
+            className="rounded border border-border bg-card px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted/30"
+          >
+            Cancelar
+          </button>
+          {tieneCustom ? (
+            <button
+              type="button"
+              onClick={() => onSave({ puntosCustom: null })}
+              disabled={saving}
+              className="rounded border border-fuchsia-300 bg-white px-3 py-1.5 text-sm font-medium text-fuchsia-700 hover:bg-fuchsia-50"
+              title="Vuelve al valor genérico definido en gestión › gamificación"
+            >
+              Volver al genérico
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={async () => {
+              const payload = parsePayload();
+              if (!payload) return;
+              await onSave(payload);
+            }}
+            disabled={saving}
+            className="rounded bg-fuchsia-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-fuchsia-700 disabled:opacity-50"
+          >
+            {saving ? 'Guardando…' : 'Guardar puntos'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

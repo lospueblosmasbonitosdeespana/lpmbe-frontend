@@ -293,6 +293,28 @@ export function GamificacionAdminEditor({
         </div>
       )}
 
+      {!readOnly && (
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3 text-sm text-fuchsia-900">
+          <Info className="mt-0.5 h-4 w-4 shrink-0" />
+          <div>
+            <p className="font-medium">Cómo afecta cambiar el valor genérico</p>
+            <p className="text-fuchsia-900/85">
+              Cambiar los puntos / cooldown / topes de una regla aquí{' '}
+              <strong>solo afectará a los nuevos recursos</strong> que se den de
+              alta a partir de ahora. Los recursos existentes que aún heredaban
+              el valor genérico se quedan fijados con el valor anterior, y los
+              que tenían un valor personalizado tampoco cambian. Para forzar un
+              cambio en un recurso concreto, edítalo desde el botón “Puntos” en
+              la lista del pueblo o en{' '}
+              <a className="underline" href="/gestion/asociacion/datos/puntos-recursos">
+                Puntos por recurso
+              </a>
+              .
+            </p>
+          </div>
+        </div>
+      )}
+
       {error && (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
           {error}

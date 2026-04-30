@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import ClubRecursos from './ClubRecursos.client';
 import ClubRecursosRurales from './ClubRecursosRurales.client';
-import GamificacionResumen from './GamificacionResumen.client';
 import MetricasResumen from './MetricasResumen.client';
 import { GestionPuebloSubpageShell } from '../../_components/GestionPuebloSubpageShell';
 import { HeroIconUsers } from '../../_components/gestion-pueblo-hero-icons';
@@ -64,8 +63,6 @@ export default async function ClubGestionPage({
           </Link>
         </div>
       </div>
-
-      <GamificacionResumen />
 
       <ClubRecursos
         puebloId={pueblo.id}
