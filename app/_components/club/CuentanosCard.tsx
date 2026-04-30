@@ -69,6 +69,10 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
   }, [initial]);
 
   const [collapsed, setCollapsed] = useState(isComplete);
+  const isCompleteNow = useMemo(
+    () => Boolean(provincia && fechaNacimiento && intereses.length > 0),
+    [provincia, fechaNacimiento, intereses.length],
+  );
 
   const toggleInteres = (key: string) =>
     setIntereses((prev) => (prev.includes(key) ? prev.filter((i) => i !== key) : [...prev, key]));
@@ -94,6 +98,7 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
       }
       setDone(true);
       onSaved?.({ provincia: provincia || null, fechaNacimiento: fechaNacimiento || null, intereses, aceptaMarketing });
+      setCollapsed(true);
       setTimeout(() => setDone(false), 2500);
     } catch (e) {
       setError((e as Error).message);
@@ -105,17 +110,17 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
   const baseClass =
     cardClassName ?? 'rounded-2xl border border-border bg-card p-6 shadow-sm';
 
-  if (collapsed && isComplete) {
+  if (collapsed && isCompleteNow) {
     return (
       <div className={baseClass}>
         <div className="flex items-center justify-between gap-4">
           <div>
             <Title size="lg" className="mb-1">Tus datos de socio</Title>
             <Caption>
-              Provincia: <strong>{initial.provincia}</strong> · Cumple:{' '}
-              <strong>{initial.fechaNacimiento}</strong> · Intereses:{' '}
-              <strong>{initial.intereses.length}</strong>
-              {initial.aceptaMarketing && ' · Recibes novedades por email'}
+              Provincia: <strong>{provincia}</strong> · Cumple:{' '}
+              <strong>{fechaNacimiento}</strong> · Intereses:{' '}
+              <strong>{intereses.length}</strong>
+              {aceptaMarketing && ' · Recibes novedades por email'}
             </Caption>
           </div>
           <button
