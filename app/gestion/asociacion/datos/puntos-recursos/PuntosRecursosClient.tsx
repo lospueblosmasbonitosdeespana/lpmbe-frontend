@@ -15,6 +15,7 @@ import {
   Store,
 } from 'lucide-react';
 
+
 type ScopeFilter =
   | 'todos'
   | 'PUEBLO_QR'
@@ -67,7 +68,35 @@ function isNatural(r: Recurso) {
 }
 
 // ─── Badge de validación ────────────────────────────────────────────────────
+const PLAN_BADGE: Record<string, { bg: string; text: string; label: string }> = {
+  FREE:        { bg: 'bg-emerald-100', text: 'text-emerald-800', label: 'Negocio Free' },
+  RECOMENDADO: { bg: 'bg-blue-100',    text: 'text-blue-800',    label: 'Recomendado' },
+  PREMIUM:     { bg: 'bg-purple-100',  text: 'text-purple-800',  label: 'Premium' },
+  SELECTION:   { bg: 'bg-amber-100',   text: 'text-amber-800',   label: 'Selection' },
+};
+
 function ValidacionBadge({ r }: { r: Recurso }) {
+  // Negocios: badge con el plan
+  if (r.scope === 'NEGOCIO') {
+    const plan = r.planNegocio ?? 'FREE';
+    const style = PLAN_BADGE[plan] ?? PLAN_BADGE.FREE;
+    return (
+      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${style.bg} ${style.text}`}>
+        <Store className="h-3 w-3" />
+        {style.label}
+      </span>
+    );
+  }
+  // Recursos naturales (GPS)
+  if (r.validacionTipo === 'GEO') {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
+        <Mountain className="h-3 w-3" />
+        Natural GPS
+      </span>
+    );
+  }
+  // QR + GPS
   if (r.validacionTipo === 'AMBOS') {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-semibold text-teal-800">
@@ -77,14 +106,7 @@ function ValidacionBadge({ r }: { r: Recurso }) {
       </span>
     );
   }
-  if (r.validacionTipo === 'GEO') {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
-        <Mountain className="h-3 w-3" />
-        Natural GPS
-      </span>
-    );
-  }
+  // QR normal
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-800">
       <QrCode className="h-3 w-3" />
