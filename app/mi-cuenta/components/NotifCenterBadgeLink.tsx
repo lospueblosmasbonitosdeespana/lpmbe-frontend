@@ -60,7 +60,7 @@ export default function NotifCenterBadgeLink({
     <Link
       href={href}
       onClick={handleClick}
-      className="group relative flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
+      className="group relative flex min-h-[178px] flex-col items-center justify-center rounded-2xl border border-border/80 bg-gradient-to-br from-white via-card to-card p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg"
     >
       {/* Badge */}
       {unread > 0 && (
@@ -69,8 +69,8 @@ export default function NotifCenterBadgeLink({
         </span>
       )}
       <Bell className="mb-3 h-8 w-8 text-primary" />
-      <span className="mb-1 text-xs font-medium uppercase tracking-wide text-center">{title}</span>
-      <p className="text-center text-sm text-muted-foreground group-hover:text-foreground">
+      <span className="mb-1 text-center text-[15px] font-bold text-foreground">{title}</span>
+      <p className="text-center text-[14px] text-muted-foreground group-hover:text-foreground">
         {description}
       </p>
     </Link>

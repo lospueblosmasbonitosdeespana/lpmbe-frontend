@@ -105,7 +105,7 @@ export default async function MiCuentaPage() {
   ] as const;
 
   const cardClass =
-    'group relative overflow-hidden flex flex-col rounded-2xl border border-border/80 bg-gradient-to-br from-white via-card to-card p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg';
+    'group relative overflow-hidden flex min-h-[178px] flex-col items-center justify-center rounded-2xl border border-border/80 bg-gradient-to-br from-white via-card to-card p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg';
 
   const sectionToneClass: Record<
     SectionTone,
